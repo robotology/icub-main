@@ -49,7 +49,6 @@ namespace eth {
     public:
 
         enum { maxEthBoards = 32 };
-        enum { ethboardNameMaxSize = 32 };
 
     public:
 

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
- * Authors: Alberto Cardellino
+ * Author:  Alberto Cardellino, Marco Accame
+ * email:   alberto.cardellino@iit.it, marco.accame@iit.it
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
  */
@@ -255,9 +256,6 @@ bool HostTransceiver::init2(yarp::os::Searchable &cfgtotal, eOipv4addressing_t& 
 // if signature is eo_rop_SIGNATUREdummy (0xffffffff) we dont send the signature. if writelocalcache is true we copy data into local ram of the EOnv 
 bool HostTransceiver::addSetROP__(eOprotID32_t id32, uint8_t* data, uint32_t signature, bool writelocalrxcache)
 {
-#ifdef    ETHRES_DEBUG_DONTREADBACK   // in test beds in which no EMS are connected, just skip this and go on
-return true;
-#endif
     eOresult_t eores = eores_NOK_generic;
     int32_t err = -1;
     int32_t info0 = -1;

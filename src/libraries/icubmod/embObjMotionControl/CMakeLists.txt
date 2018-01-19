@@ -10,10 +10,6 @@ yarp_prepare_plugin(embObjMotionControl
 
  IF (NOT SKIP_embObjMotionControl)
 
-    if(ETHRES_DEBUG_DONTREADBACK)
-        add_definitions( -DETHRES_DEBUG_DONTREADBACK)
-    endif(ETHRES_DEBUG_DONTREADBACK)
-
   if (ICUB_ASK_REFERENCE_TO_FIRMWARE)
       add_definitions(-DASK_REFERENCE_TO_FIRMWARE)
   endif()

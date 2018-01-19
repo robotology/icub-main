@@ -103,8 +103,6 @@ namespace eth {
         // for future use: ask of multiple values on the same ipv4 board.
 
 
-
-
         // sends read parallel requests to many network variables to the same ip address and waits
         bool ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout = 0.5);
 

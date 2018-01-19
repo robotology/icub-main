@@ -996,10 +996,6 @@ bool embObjAnalogSensor::getFullscaleValues()
     // }
     // moreover, even if properly initted, it is required to set the size to 0 because the size being not 0 is the check of reception of a message.
 
-#ifdef ETHRES_DEBUG_DONTREADBACK   // in test beds in which no EMS are connected, just skip this and go on
-    yWarning() << "embObjAnalogSensor::getFullscaleValues() is in ETHRES_DEBUG_DONTREADBACK mode";
-    return true;
-#endif
     
 
    // Check initial size of array...  it should be zero.

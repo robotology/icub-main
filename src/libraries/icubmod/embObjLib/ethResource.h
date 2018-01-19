@@ -3,8 +3,8 @@
 
 /*
  * Copyright (C) 2017 iCub Facility - Istituto Italiano di Tecnologia
- * Author:  Marco Accame
- * email:   marco.accame@iit.it
+ * Author:  Alberto Cardellino, Marco Accame
+ * email:   alberto.cardellino@iit.it, marco.accame@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -53,17 +53,13 @@ namespace eth {
         bool            close();
         bool            isID32supported(eOprotID32_t id32);
 
-        //ACE_INET_Addr   getRemoteAddress(void);
-
-        eOipv4addr_t getIPv4remoteAddress(void);
-        bool getIPv4remoteAddressing(eOipv4addressing_t &addressing);
+        eOipv4addr_t getIPv4(void);
+        bool getIPv4addressing(eOipv4addressing_t &addressing);
 
         const string & getName(void);
         const string & getIPv4string(void);
         eObrd_ethtype_t getBoardType(void);
         const string & getBoardTypeString(void);
-
-        void getBoardInfo(eOdate_t &date, eOversion_t &version);
 
         // the function returns true if the packet can be transmitted.
         // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
@@ -78,6 +74,10 @@ namespace eth {
         bool setRemoteValue(const eOprotID32_t id32, void *value);
 
         bool setcheckRemoteValue(const eOprotID32_t id32, void *value, const unsigned int retries = 10, const double waitbeforecheck = 0.001, const double timeout = 0.050);
+
+        //bool getLocalValue(eOprotID32_t id32,  void *value);  // local means ... what we have received
+        //bool setLocalValue(eOprotID32_t id32,  void *value);  //
+        bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
 
 
         bool verifyEPprotocol(eOprot_endpoint_t ep);
@@ -96,13 +96,19 @@ namespace eth {
         bool Tick();
         bool Check();
 
-        bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
+
+
         bool addSetMessage(eOprotID32_t id32, uint8_t* data);
         bool addGetMessage(eOprotID32_t id32);
         bool addGetMessage(eOprotID32_t id32, std::uint32_t signature);
+
+
         bool addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data);
         bool readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size);
+
         EOnv* getNVhandler(eOprotID32_t id32, EOnv* nv);
+
+
         bool isFake();
 
 

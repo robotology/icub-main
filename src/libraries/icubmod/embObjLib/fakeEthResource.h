@@ -33,7 +33,7 @@
 
 namespace eth {
            
-    class FakeEthResource :  public eth::AbstractEthResource
+    class FakeEthResource : public eth::AbstractEthResource
     {
 
     public:
@@ -46,8 +46,8 @@ namespace eth {
         bool close();
         bool isID32supported(eOprotID32_t id32);
 
-        eOipv4addr_t getIPv4remoteAddress(void);
-        bool getIPv4remoteAddressing(eOipv4addressing_t &addressing);
+        eOipv4addr_t getIPv4(void);
+        bool getIPv4addressing(eOipv4addressing_t &addressing);
 
 
         const string & getName(void);
@@ -56,7 +56,6 @@ namespace eth {
         eObrd_ethtype_t getBoardType(void);
         const string & getBoardTypeString(void);
 
-        void getBoardInfo(eOdate_t &date, eOversion_t &version);
 
         // the function returns true if the packet can be transmitted.
         // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
@@ -120,7 +119,7 @@ namespace eth {
         uint16_t            usedNumberOfRegularROPs;
 
         TheEthManager *ethManager;
-        HostTransceiver myHostTrans;
+        HostTransceiver transceiver;
 
 
     private:

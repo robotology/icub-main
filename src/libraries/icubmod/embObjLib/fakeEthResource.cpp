@@ -26,6 +26,8 @@
 #include "EoManagement.h"
 #include "EoProtocolMN.h"
 
+#include "ethParser.h"
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
@@ -80,159 +82,65 @@ bool FakeEthResource::lock(bool on)
 
 bool FakeEthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 {
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
 
-    Bottle groupEthBoard  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
-    if(groupEthBoard.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD group in config files";
-        return NULL;
-    }
-    Bottle groupEthBoardProps = Bottle(groupEthBoard.findGroup("ETH_BOARD_PROPERTIES"));
-    if(groupEthBoardProps.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
-        return NULL;
-    }
-    Bottle groupEthBoardSettings = Bottle(groupEthBoard.findGroup("ETH_BOARD_SETTINGS"));
-    if(groupEthBoardSettings.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
-        return NULL;
-    }
+    eth::parser::pc104Data pc104data;
+    eth::parser::read(cfgtotal, pc104data);
+//    eth::parser::print(pc104data);
 
 
-    // remote address
+    eth::parser::boardData brddata;
+    eth::parser::read(cfgtotal, brddata);
+//    eth::parser::print(brddata);
+
+
+
+    // i fill remote address
     ipv4addr = remIP;
-//    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
-    ipv4addressing.addr = remIP;
-    ipv4addressing.port = 12345;
+    ipv4addrstring = brddata.properties.ipv4string;
+    ipv4addressing = brddata.properties.ipv4addressing;
 
-    if(true == groupEthBoardProps.check("IpPort"))
-    {
-        ipv4addressing.port = groupEthBoardProps.find("IpPort").asInt();;
-    }
+    ethboardtype = brddata.properties.type;
+    boardTypeString = brddata.properties.typestring;
 
-    Bottle b_ETH_BOARD_PROPERTIES_Type = groupEthBoardProps.findGroup("Type");
-    ConstString Type = b_ETH_BOARD_PROPERTIES_Type.get(1).asString();
-    const char *strType = Type.c_str();
-    // 1. compare with the exceptions which may be in some old xml files ("EMS4", "MC4PLUS", "MC2PLUS"), and then then call proper functions
-    if(0 == strcmp(strType, "EMS4"))
-    {
-        ethboardtype = eobrd_ethtype_ems4;
-    }
-    else if(0 == strcmp(strType, "MC4PLUS"))
-    {
-        ethboardtype = eobrd_ethtype_mc4plus;
-    }
-    else if(0 == strcmp(strType, "MC2PLUS"))
-    {
-        ethboardtype = eobrd_ethtype_mc2plus;
-    }
-    else
-    {
-        eObrd_type_t brd = eobrd_unknown;
-        if(eobrd_unknown == (brd = eoboards_string2type2(strType, eobool_true)))
-        {
-            brd = eoboards_string2type2(strType, eobool_false);
-        }
+    boardName = brddata.settings.name;
 
-        // if not found in compact or extended string format, we accept that the board is unknown
 
-        ethboardtype = eoboards_type2ethtype(brd);
-    }
+    eth::EthMonitorPresence::Config mpConfig;
 
-//    snprintf(boardTypeString, sizeof(boardTypeString), "%s", eoboards_type2string2(eoboards_ethtype2type(ethboardtype), eobool_true));
+    // default values ...
+    mpConfig.enabled = brddata.actions.monitorpresence_enabled;
+    mpConfig.timeout = brddata.actions.monitorpresence_timeout;
+    mpConfig.periodmissingreport = brddata.actions.monitorpresence_periodofmissingreport;
+    mpConfig.name = ipv4addrstring + " (" + boardName + ")";
 
-    Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
-    char xmlboardname[64] = {0};
-    snprintf(xmlboardname, sizeof(xmlboardname), "%s", paramNameBoard.toString().c_str());
+
+
+    // now i init objects
 
     lock(true);
 
+    // 1. init transceiver
 
     eOipv4addressing_t localIPv4 = ethManager->getLocalIPV4addressing();
 
-    bool ret;
-    uint8_t num = 0;
-    eo_common_ipv4addr_to_decimal(remIP, NULL, NULL, NULL, &num);
-    if(!myHostTrans.init2(groupEthBoard, localIPv4, remIP))
+
+    if(false == transceiver.init2(cfgtotal, localIPv4, remIP))
     {
-        ret = false;
-        char ipinfo[20] = {0};
-        eo_common_ipv4addr_to_string(remIP, ipinfo, sizeof(ipinfo));
-        yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << xmlboardname << "IP" << ipinfo;
-    }
-    else
-    {
-        ret = true;
+        yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << boardName << "IP" << ipv4addrstring;
+        lock(false);
+        return false;
     }
 
+    // 2. init monitor presence
 
+    //monitorpresence.config(mpConfig);
+    //monitorpresence.tick();
 
-//    if(0 != strlen(xmlboardname))
-//    {
-//        snprintf(boardName, sizeof(boardName), "%s", xmlboardname);
-//    }
-//    else
-//    {
-//        snprintf(boardName, sizeof(boardName), "NOT-NAMED");
-//    }
-
-
-
-    Bottle groupEthBoardActions = Bottle(groupEthBoard.findGroup("ETH_BOARD_ACTIONS"));
-    if(!groupEthBoardActions.isNull())
-    {
-
-        Bottle groupEthBoardActions_Monitor = Bottle(groupEthBoardActions.findGroup("MONITOR_ITS_PRESENCE"));
-        if(!groupEthBoardActions_Monitor.isNull())
-        {
-
-            Bottle groupEthBoardActions_Monitor_enabled = groupEthBoardActions_Monitor.findGroup("enabled");
-            ConstString Ena = groupEthBoardActions_Monitor_enabled.get(1).asString();
-            const char *strEna = Ena.c_str();
-
-            double presenceTimeout;
-            if(true == groupEthBoardActions_Monitor.check("timeout"))
-            {
-                presenceTimeout = groupEthBoardActions_Monitor.find("timeout").asDouble();
-
-                if(presenceTimeout <= 0)
-                {
-                    presenceTimeout = 0;
-                }
-
-                if(presenceTimeout > 0.100)
-                {
-                    presenceTimeout = 0.100;
-                }
-
-            }
-
-
-            if(true == groupEthBoardActions_Monitor.check("periodOfMissingReport"))
-            {
-                double reportMissingPeriod = groupEthBoardActions_Monitor.find("periodOfMissingReport").asDouble();
-
-                if(reportMissingPeriod <= 0)
-                {
-                    reportMissingPeriod = 0.0;
-                }
-
-                if(reportMissingPeriod > 600)
-                {
-                    reportMissingPeriod = 600;
-                }
-
-                yDebug() << "CFG_PRINT" << boardName <<" Enabled monitor parasence = "<< strEna << "with period=" <<  presenceTimeout<< " and report period="<< reportMissingPeriod ; 
-            }
-        }
-    }
 
     lock(false);
 
-    return ret;
+    return true;
 }
 
 
@@ -269,7 +177,7 @@ bool FakeEthResource::canProcessRXpacket(uint64_t *data, uint16_t size)
     if(NULL == data)
         return false;
 
-    if(size > myHostTrans.getCapacityOfRXpacket())
+    if(size > transceiver.getCapacityOfRXpacket())
         return false;
 
     return true;
@@ -281,12 +189,12 @@ void FakeEthResource::processRXpacket(uint64_t *data, uint16_t size)
 
 
 
-eOipv4addr_t FakeEthResource::getIPv4remoteAddress(void)
+eOipv4addr_t FakeEthResource::getIPv4(void)
 {
     return ipv4addr;
 }
 
-bool FakeEthResource::getIPv4remoteAddressing(eOipv4addressing_t &addressing)
+bool FakeEthResource::getIPv4addressing(eOipv4addressing_t &addressing)
 {
     addressing = ipv4addressing;
     return true;
@@ -311,13 +219,6 @@ const string & FakeEthResource::getBoardTypeString(void)
 {
     return boardTypeString;
 }
-
-void FakeEthResource::getBoardInfo(eOdate_t &date, eOversion_t &version)
-{
-    date = {0};
-    version = {0};
-}
-
 
 
 bool FakeEthResource::isRunning(void)
@@ -442,7 +343,7 @@ bool FakeEthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* 
 
 EOnv* FakeEthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
 {
-    return myHostTrans.getnvhandler(id32, nv);
+    return transceiver.getnvhandler(id32, nv);
 }
 
 bool FakeEthResource::isFake()

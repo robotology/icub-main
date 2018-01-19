@@ -1,6 +1,6 @@
 /* Copyright (C) 2012  iCub Facility, Istituto Italiano di Tecnologia
- * Author: Alberto Cardellino
- * email: alberto.cardellino@iit.it
+ * Author:  Alberto Cardellino, Marco Accame
+ * email:   alberto.cardellino@iit.it, marco.accame@iit.it
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.

@@ -42,9 +42,6 @@
 #include "ace/OS_NS_sys_socket.h"
 
 // YARP includes
-#include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/os/RateThread.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>

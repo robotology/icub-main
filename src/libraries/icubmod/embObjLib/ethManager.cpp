@@ -233,7 +233,7 @@ void ethEvalTXropframe(eth::AbstractEthResource *r, void* p)
     if(true == transmitthepacket)
     {
         eOipv4addressing_t ipv4addressing;
-        r->getIPv4remoteAddressing(ipv4addressing);
+        r->getIPv4addressing(ipv4addressing);
         ethman->sendPacket(data2send, (size_t)numofbytes, ipv4addressing);
     }
 }
@@ -267,7 +267,7 @@ bool TheEthManager::CheckPresence(void)
     return true;
 }
 
-#if 1
+
 
 bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t &boardipv4, string boardipv4string, string boardname)
 {
@@ -288,91 +288,7 @@ bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4add
 
 
 
-#else
 
-bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize, char *boardNameStr, int sizeofBoardNameStr)
-{
-    // Get PC104 address and port from config file
-    Bottle groupPC104  = Bottle(cfgtotal.findGroup("PC104"));
-    if (groupPC104.isNull())
-    {
-        yError() << "TheEthManager::verifyEthBoardInfo() cannot find PC104 group in config files";
-        return false;
-    }
-    Value *PC104IpAddress_p;
-    if (!groupPC104.check("PC104IpAddress", PC104IpAddress_p))
-    {
-        yError() << "TheEthManager::verifyEthBoardInfo() cannot find PC104/PC104IpAddress";
-        return false;
-    }
-    Value *PC104IpPort_p;
-    if (!groupPC104.check("PC104IpPort", PC104IpPort_p))
-    {
-        yError() << "TheEthManager::verifyEthBoardInfo() cannot find PC104/PC104IpPort";
-        return false;
-    }
-
-
-    // get ip adress and port for board from config file
-    Bottle groupETH_BOARD  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
-    if (groupETH_BOARD.isNull())
-    {
-        yError() << "TheEthManager::verifyEthBoardInfo() cannot find ETH_BOARD group in config files";
-        return false;
-    }
-    Bottle groupETH_BOARD_PROPERTIES  = Bottle(groupETH_BOARD.findGroup("ETH_BOARD_PROPERTIES"));
-    if (groupETH_BOARD_PROPERTIES.isNull())
-    {
-        yError() << "TheEthManager::verifyEthBoardInfo() cannot find ETH_BOARD_PROPERTIES group in config files";
-        return false;
-    }
-
-    Value *BOARDIpAddress_p;
-    if (!groupETH_BOARD_PROPERTIES.check("IpAddress", BOARDIpAddress_p))
-    {
-        yError() << "TheEthManager::verifyEthBoardInfo() cannot find ETH_BOARD_PROPERTIES/IpAddress";
-        return false;
-    }
-
-    char strIPaddress[32];
-    Bottle parameter2( groupETH_BOARD_PROPERTIES.find("IpAddress").asString() );
-    strcpy(strIPaddress, parameter2.toString().c_str());
-
-    int ip1, ip2, ip3, ip4;
-    sscanf(strIPaddress,"\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
-
-    eOipv4addr_t ipv4 = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
-
-    if(NULL != boardipv4)
-    {
-        *boardipv4 = ipv4;
-    }
-
-    if((NULL != boardipv4string) && (stringsize > 0))
-    {
-        eo_common_ipv4addr_to_string(ipv4, boardipv4string, stringsize);
-    }
-
-
-
-    if((NULL != boardNameStr) && (0 != sizeofBoardNameStr))
-    {
-        Bottle groupEthBoardSettings = Bottle(groupETH_BOARD.findGroup("ETH_BOARD_SETTINGS"));
-        if(groupEthBoardSettings.isNull())
-        {
-            yError() << "TheEthManager::verifyEthBoardInfo() cannot find ETH_BOARD_SETTINGS group in config files";
-            return NULL;
-        }
-
-        Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
-        snprintf(boardNameStr, sizeofBoardNameStr, "%s", paramNameBoard.toString().c_str());
-    }
-    return true;
-}
-
-#endif
-
-#if 1
 bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
 {
     eth::parser::pc104Data pcdata;
@@ -401,103 +317,7 @@ bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
     return true;
 }
 
-#else
-bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
-{
-    int txrate = -1;                    // it uses default
-    int rxrate = -1;                    // it uses default
 
-    embBoardsConnected = true;
-
-
-
-    Bottle groupDEBUG  = cfgtotal.findGroup("DEBUG");
-    if ((! groupDEBUG.isNull()) && (groupDEBUG.check("embBoardsConnected")))
-        embBoardsConnected = groupDEBUG.find("embBoardsConnected").asBool();
-
-    if(!embBoardsConnected)
-    {
-        yError() << "ATTENTION: NO EMBEDDED BOARDS CONNECTED. YOU ARE IN DEBUG MODE";
-    }
-
-    // localaddress
-
-    Bottle groupPC104  = Bottle(cfgtotal.findGroup("PC104"));
-    if (groupPC104.isNull())
-    {
-        yError() << "TheEthManager::initCommunication cannot find PC104 group in config files";
-        return false;
-    }
-
-    Value *value;
-
-    if (!groupPC104.check("PC104IpAddress", value))
-    {
-        yError() << "missing PC104/PC104IpAddress in config files";
-        return false;
-    }
-    if (!groupPC104.check("PC104IpPort", value))
-    {
-        yError() << "missing PC104/PC104IpPort in config files";
-        return false;
-    }
-
-    Bottle paramIPaddress(groupPC104.find("PC104IpAddress").asString());
-    ACE_UINT16 port = groupPC104.find("PC104IpPort").asInt();              // .get(1).asInt();
-    char strIP[64] = {0};
-
-
-    snprintf(strIP, sizeof(strIP), "%s", paramIPaddress.toString().c_str());
-    // strIP is now "10.0.1.104" ... i want to remove the "".... VERY IMPORTANT: use \" in sscanf
-    int ip1, ip2, ip3, ip4;
-    sscanf(strIP, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
-
-    eOipv4addressing_t tmpaddress;
-    tmpaddress.addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
-    tmpaddress.port = port;
-
-    yDebug() << "TheEthManager::initCommunication() has found IP for PC104 = " << strIP;
-
-    // txrate
-    if(cfgtotal.findGroup("PC104").check("PC104TXrate"))
-    {
-        int value = cfgtotal.findGroup("PC104").find("PC104TXrate").asInt();
-        if(value > 0)
-            txrate = value;
-    }
-    else
-    {
-        yWarning () << "TheEthManager::initCommunication() cannot find ETH/PC104TXrate. thus using default value" << EthSender::EthSenderDefaultRate;
-    }
-
-    // rxrate
-    if(cfgtotal.findGroup("PC104").check("PC104RXrate"))
-    {
-        int value = cfgtotal.findGroup("PC104").find("PC104RXrate").asInt();
-        if(value > 0)
-            rxrate = value;
-    }
-    else
-    {
-        yWarning () << "TheEthManager::initCommunication() cannot find ETH/PC104RXrate. thus using default value" << EthReceiver::EthReceiverDefaultRate;
-    }
-
-    // localaddress
-    if(false == createCommunicationObjects(tmpaddress, txrate, rxrate) )
-    {
-        yError () << "TheEthManager::initCommunication() cannot create communication objects";
-        return false;
-    }
-
-    // save local address
-    ipv4local.addr = tmpaddress.addr;
-    ipv4local.port = tmpaddress.port;
-
-    return true;
-}
-#endif
-
-#if 1
 
 eth::AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
 {
@@ -534,7 +354,7 @@ eth::AbstractEthResource *TheEthManager::requestResource2(IethResource *interfac
 
         if(true == embBoardsConnected)
         {
-            rr = new EthResource();
+            rr = new eth::EthResource();
         }
         else
         {
@@ -570,91 +390,6 @@ eth::AbstractEthResource *TheEthManager::requestResource2(IethResource *interfac
     return(rr);
 }
 
-#else
-
-eth::AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
-{
-    if(communicationIsInitted == false)
-    {
-        yTrace() << "TheEthManager::requestResource2(): we need to init the communication";
-
-        if(false == initCommunication(cfgtotal))
-        {
-            yError() << "TheEthManager::requestResource2(): cannot init the communication";
-            return NULL;
-        }
-    }
-
-    // now we extract the ip address of the board
-
-    Bottle groupEthBoard  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
-    if(groupEthBoard.isNull())
-    {
-        yError() << "TheEthManager::requestResource2() cannot find ETH_BOARD group in config files";
-        return NULL;
-    }
-    Bottle groupEthBoardProps = Bottle(groupEthBoard.findGroup("ETH_BOARD_PROPERTIES"));
-    if(groupEthBoardProps.isNull())
-    {
-        yError() << "TheEthManager::requestResource2() cannot find ETH_BOARD_PROPERTIES group in config files";
-        return NULL;
-    }
-
-    Bottle paramIPboard(groupEthBoardProps.find("IpAddress").asString());
-    char str[64] = {0};
-    strcpy(str, paramIPboard.toString().c_str());
-    int ip1, ip2, ip3, ip4;
-    sscanf(str, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
-    eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
-
-    // i want to lock the use of resources managed by ethBoards to avoid that we attempt to use for TX a ethres not completely initted
-
-    lockTXRX(true);
-
-    // i do an attempt to get the resource.
-    eth::AbstractEthResource *rr = ethBoards->get_resource(ipv4addr);
-
-    if(NULL == rr)
-    {
-        // i dont have the resource yet ...
-
-        char ipinfo[20] = {0};
-        eo_common_ipv4addr_to_string(ipv4addr, ipinfo, sizeof(ipinfo));
-
-        if(embBoardsConnected)
-            rr = new EthResource();
-        else
-            rr = new eth::FakeEthResource();
-
-        if(true == rr->open2(ipv4addr, cfgtotal))
-        {
-            ethBoards->add(rr);
-        }
-        else
-        {
-
-            yError() << "TheEthManager::requestResource2(): error creating a new ethResource for IP = " << ipinfo;
-            if(NULL != rr)
-            {
-                delete rr;
-            }
-
-            rr = NULL;
-            return NULL;
-        }
-
-        yDebug() << "TheEthManager::requestResource2(): has just succesfully created a new EthResource for board of type" << rr->getBoardTypeString()<< "with IP = " << ipinfo;
-    }
-
-
-    ethBoards->add(rr, interface);
-
-
-    lockTXRX(false);
-
-    return(rr);
-}
-#endif
 
 
 int TheEthManager::releaseResource2(eth::AbstractEthResource* ethresource, IethResource* interface)

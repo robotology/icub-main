@@ -2,7 +2,8 @@
 
 /*
  * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
- * Authors: Alberto Cardellino
+ * Author:  Alberto Cardellino, Marco Accame
+ * email:   alberto.cardellino@iit.it, marco.accame@iit.it
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
  */
@@ -112,7 +113,7 @@ bool EthResource::lock(bool on)
     return true;
 }
 
-#if 1
+
 bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 {
     ethManager = eth::TheEthManager::instance();
@@ -176,230 +177,6 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
     return true;
 }
 
-#else
-bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
-{
-    ethManager = eth::TheEthManager::instance();
-
-//    eth::parser::pc104Data pc104data;
-//    eth::parser::read(cfgtotal, pc104data);
-//    eth::parser::print(pc104data);
-
-
-//    eth::parser::boardData brddata;
-//    eth::parser::read(cfgtotal, brddata);
-//    eth::parser::print(brddata);
-
-
-    Bottle groupEthBoard  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
-    if(groupEthBoard.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD group in config files";
-        return NULL;
-    }
-    Bottle groupEthBoardProps = Bottle(groupEthBoard.findGroup("ETH_BOARD_PROPERTIES"));
-    if(groupEthBoardProps.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
-        return NULL;
-    }
-    Bottle groupEthBoardSettings = Bottle(groupEthBoard.findGroup("ETH_BOARD_SETTINGS"));
-    if(groupEthBoardSettings.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
-        return NULL;
-    }
-
-    // i fill remote address
-    ipv4addr = remIP;
-    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
-    ipv4addressing.addr = remIP;
-    ipv4addressing.port = 12345;
-
-
-    // -> ETH_BOARD/ETH_BOARD_PROPERTIES
-
-    // IpAddress:
-    // it is already inside remIP
-
-    // IpPort:
-    if(true == groupEthBoardProps.check("IpPort"))
-    {
-        ipv4addressing.port = groupEthBoardProps.find("IpPort").asInt();;
-    }
-
-    // Type:
-    Bottle b_ETH_BOARD_PROPERTIES_Type = groupEthBoardProps.findGroup("Type");
-    ConstString Type = b_ETH_BOARD_PROPERTIES_Type.get(1).asString();
-    const char *strType = Type.c_str();
-    // 1. compare with the exceptions which may be in some old xml files ("EMS4", "MC4PLUS", "MC2PLUS"), and then then call proper functions
-    if(0 == strcmp(strType, "EMS4"))
-    {
-        ethboardtype = eobrd_ethtype_ems4;
-    }
-    else if(0 == strcmp(strType, "MC4PLUS"))
-    {
-        ethboardtype = eobrd_ethtype_mc4plus;
-    }
-    else if(0 == strcmp(strType, "MC2PLUS"))
-    {
-        ethboardtype = eobrd_ethtype_mc2plus;
-    }
-    else
-    {
-        eObrd_type_t brd = eobrd_unknown;
-        if(eobrd_unknown == (brd = eoboards_string2type2(strType, eobool_true)))
-        {
-            brd = eoboards_string2type2(strType, eobool_false);
-        }
-
-        // if not found in compact or extended string format, we accept that the board is unknown
-
-        ethboardtype = eoboards_type2ethtype(brd);
-    }
-    snprintf(boardTypeString, sizeof(boardTypeString), "%s", eoboards_type2string2(eoboards_ethtype2type(ethboardtype), eobool_true));
-
-    // maxSizeRXpacket:
-    // maxSizeROP:
-    // dont do it in here ...
-
-    // <- ETH_BOARD/ETH_BOARD_PROPERTIES
-
-
-    // -> ETH_BOARD/ETH_BOARD_SETTINGS
-
-    Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
-    char xmlboardname[64] = {0};
-    snprintf(xmlboardname, sizeof(xmlboardname), "%s", paramNameBoard.toString().c_str());
-
-
-    if(0 != strlen(xmlboardname))
-    {
-        snprintf(boardName, sizeof(boardName), "%s", xmlboardname);
-    }
-    else
-    {
-        snprintf(boardName, sizeof(boardName), "NOT-NAMED");
-    }
-
-
-    // -> ETH_BOARD/ETH_BOARD_SETTINGS/RUNNINGMODE
-    // we dont do it in here
-    // <- ETH_BOARD/ETH_BOARD_SETTINGS/RUNNINGMODE
-
-
-    // <- ETH_BOARD/ETH_BOARD_SETTINGS
-
-
-    // -> ETH_BOARD/ETH_BOARD_ACTIONS
-    // -> ETH_BOARD/ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE
-    eth::EthMonitorPresence::Config mpConfig;
-
-    // default values ...
-    mpConfig.enabled = true;
-    mpConfig.timeout = 0.020;
-    mpConfig.periodmissingreport = 60.0;
-    mpConfig.name = std::string(ipv4addrstring) + " (" + std::string(boardName) + ")";
-
-    // do we have a proper section ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE? if so we change its config
-
-    Bottle groupEthBoardActions = Bottle(groupEthBoard.findGroup("ETH_BOARD_ACTIONS"));
-    if(!groupEthBoardActions.isNull())
-    {
-
-        Bottle groupEthBoardActions_Monitor = Bottle(groupEthBoardActions.findGroup("MONITOR_ITS_PRESENCE"));
-        if(!groupEthBoardActions_Monitor.isNull())
-        {
-
-            Bottle groupEthBoardActions_Monitor_enabled = groupEthBoardActions_Monitor.findGroup("enabled");
-            ConstString Ena = groupEthBoardActions_Monitor_enabled.get(1).asString();
-            const char *strEna = Ena.c_str();
-
-            if(0 == strcmp(strEna, "true"))
-            {
-                mpConfig.enabled = true;
-            }
-
-            if(true == groupEthBoardActions_Monitor.check("timeout"))
-            {
-                double presenceTimeout = groupEthBoardActions_Monitor.find("timeout").asDouble();
-
-                if(presenceTimeout <= 0)
-                {
-                    presenceTimeout = 0;
-                    mpConfig.enabled = false;
-                }
-
-                if(presenceTimeout > 0.100)
-                {
-                    presenceTimeout = 0.100;
-                }
-
-                mpConfig.timeout = presenceTimeout;
-
-            }
-
-
-            if(true == groupEthBoardActions_Monitor.check("periodOfMissingReport"))
-            {
-                double reportMissingPeriod = groupEthBoardActions_Monitor.find("periodOfMissingReport").asDouble();
-
-                if(reportMissingPeriod <= 0)
-                {
-                    reportMissingPeriod = 0.0;
-                }
-
-                if(reportMissingPeriod > 600)
-                {
-                    reportMissingPeriod = 600;
-                }
-
-                mpConfig.periodmissingreport = reportMissingPeriod;
-
-            }
-        }
-    }
-
-    // <- ETH_BOARD/ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE
-    // <- ETH_BOARD/ETH_BOARD_ACTIONS
-
-
-
-    // now i init objects
-
-    lock(true);
-
-    // 1. init transceiver
-
-    eOipv4addressing_t localIPv4 = ethManager->getLocalIPV4addressing();
-
-    bool ret;
-    uint8_t num = 0;
-    eo_common_ipv4addr_to_decimal(remIP, NULL, NULL, NULL, &num);
-    if(false == transceiver.init2(groupEthBoard, localIPv4, remIP))
-    {
-        ret = false;
-        char ipinfo[20] = {0};
-        eo_common_ipv4addr_to_string(remIP, ipinfo, sizeof(ipinfo));
-        yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << xmlboardname << "IP" << ipinfo;
-    }
-    else
-    {
-        ret = true;
-    }
-
-    // 2. init monitor presence
-
-    monitorpresence.config(mpConfig);
-    monitorpresence.tick();
-
-
-    lock(false);
-
-
-    return ret;
-}
-#endif
 
 
 bool EthResource::close()
@@ -456,17 +233,13 @@ void EthResource::processRXpacket(uint64_t *data, uint16_t size)
 }
 
 
-//ACE_INET_Addr EthResource::getRemoteAddress()
-//{
-//    return remote_dev;
-//}
 
-eOipv4addr_t EthResource::getIPv4remoteAddress(void)
+eOipv4addr_t EthResource::getIPv4(void)
 {
     return ipv4addr;
 }
 
-bool EthResource::getIPv4remoteAddressing(eOipv4addressing_t &addressing)
+bool EthResource::getIPv4addressing(eOipv4addressing_t &addressing)
 {
     addressing = ipv4addressing;
     return true;
@@ -490,12 +263,6 @@ eObrd_ethtype_t EthResource::getBoardType(void)
 const string & EthResource::getBoardTypeString(void)
 {
     return boardTypeString;
-}
-
-void EthResource::getBoardInfo(eOdate_t &date, eOversion_t &version)
-{
-    date = boardDate;
-    version = boardVersion;
 }
 
 
@@ -586,12 +353,6 @@ bool EthResource::verifyBoardTransceiver()
 
 bool EthResource::setTimingOfRunningCycle()
 {
-
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "EthResource::setTimingOfRunningCycle() is in ETHRES_DEBUG_DONTREADBACK mode";
-    txrateISset = true;
-    return true;
-#endif
 
     if(txrateISset)
     {
@@ -684,12 +445,6 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
         yError() << "EthResource::verifyEPprotocol() cannot ask the version to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
         return(false);
     }
-
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    verifiedEPprotocol[ep] =  true;
-    yWarning() << "EthResource::verifyEPprotocol() is in ETHRES_DEBUG_DONTREADBACK mode";
-    return true;
-#endif
 
     // 1. send a set<eoprot_tag_mn_comm_cmmnds_command_queryarray> and wait for the arrival of a sig<eoprot_tag_mn_comm_cmmnds_command_replyarray>
     //    the opc to send is eomn_opc_query_array_EPdes which will trigger a opc in reception eomn_opc_reply_array_EPdes
@@ -833,12 +588,6 @@ bool EthResource::verifyBoardPresence(void)
 bool EthResource::askBoardVersion(void)
 {
 
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "EthResource::askBoardVersion() is in ETHRES_DEBUG_DONTREADBACK mode";
-    askedBoardVersion =  true;
-    return true;
-#endif
-
     if(askedBoardVersion)
     {
         return(true);
@@ -892,11 +641,6 @@ bool EthResource::askBoardVersion(void)
 
 bool EthResource::getRemoteValue(const eOprotID32_t id32, void *value, const double timeout, const unsigned int retries)
 {
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "EthResource::getRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
-    return true;
-#endif
-
     bool replied = false;
 
     double start_time = yarp::os::Time::now();
@@ -1024,12 +768,6 @@ bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
 
 bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times)
 {
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "EthResource::serviceCommand() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not send the command";
-    return true;
-#endif
-
-
     eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_cmmnds_command);
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult);;
 

@@ -95,7 +95,7 @@ size_t eth::EthBoards::number_of_interfaces(eth::AbstractEthResource * res)
         return(0);
     }
 
-    eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
+    eOipv4addr_t ipv4 = res->getIPv4();
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
@@ -122,13 +122,14 @@ bool eth::EthBoards::add(eth::AbstractEthResource* res)
         return false;
     }
 
-    eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
+    eOipv4addr_t ipv4 = res->getIPv4();
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
 
     if(index>=maxEthBoards)
     {
+        //yError() << "eth::EthBoards::add() fails because index =" << index << "is >= maxEthBoards" << maxEthBoards;
         return false;
     }
 
@@ -170,7 +171,7 @@ bool eth::EthBoards::add(eth::AbstractEthResource* res, eth::IethResource* inter
     }
 
     // now i compute the index
-    eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
+    eOipv4addr_t ipv4 = res->getIPv4();
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
@@ -206,7 +207,7 @@ bool eth::EthBoards::rem(eth::AbstractEthResource* res)
     }
 
     // now i compute the index
-    eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
+    eOipv4addr_t ipv4 = res->getIPv4();
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
@@ -244,7 +245,7 @@ bool eth::EthBoards::rem(eth::AbstractEthResource* res, iethresType_t type)
     }
 
     // now i compute the index
-    eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
+    eOipv4addr_t ipv4 = res->getIPv4();
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;

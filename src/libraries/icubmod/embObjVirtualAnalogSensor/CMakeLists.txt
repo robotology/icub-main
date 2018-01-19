@@ -6,10 +6,6 @@ yarp_prepare_plugin(embObjVirtualAnalogSensor CATEGORY device TYPE yarp::dev::em
 
 IF (NOT SKIP_embObjVirtualAnalogSensor)
 
-    if(ETHRES_DEBUG_DONTREADBACK)
-        add_definitions( -DETHRES_DEBUG_DONTREADBACK)
-    endif(ETHRES_DEBUG_DONTREADBACK)
-
     set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
     INCLUDE(../embObjLib/embObjLib.cmake)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} )

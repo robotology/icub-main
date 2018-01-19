@@ -8,13 +8,6 @@ SET(PROJECTNAME ethResources)
 PROJECT(${PROJECTNAME})
 
 
-option(ETHRES_DEBUG_DONTREADBACK "Compile EmbObj Library to run in testbed without EMS (will not work of course, just for debugging high level code)" FALSE)
-mark_as_advanced (ETHRES_DEBUG_DONTREADBACK)
-
-if(ETHRES_DEBUG_DONTREADBACK)
-    add_definitions( -DETHRES_DEBUG_DONTREADBACK)
-endif(ETHRES_DEBUG_DONTREADBACK)
-
 
 add_definitions(-D_ICUB_CALLBACK_ -DUSE_EOPROT_XML -DEOPROT_CFG_OVERRIDE_CALLBACKS_IN_RUNTIME)
 

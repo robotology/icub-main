@@ -751,7 +751,7 @@ bool eth::theNVmanager::Impl::ask(eth::AbstractEthResource *res, const eOprotID3
         return false;
     }
 
-    const eOprotIP_t ipv4 = res->getIPv4remoteAddress();
+    const eOprotIP_t ipv4 = res->getIPv4();
 
     if(false == validparameters(res, ipv4, id32, value))
     {

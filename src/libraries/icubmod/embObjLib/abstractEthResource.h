@@ -48,16 +48,15 @@ namespace eth {
 
         virtual bool isID32supported(eOprotID32_t id32) = 0;
 
-        virtual eOipv4addr_t getIPv4remoteAddress(void) = 0;
-        virtual bool getIPv4remoteAddressing(eOipv4addressing_t &addressing) = 0;
+        virtual eOipv4addr_t getIPv4(void) = 0;
+        virtual bool getIPv4addressing(eOipv4addressing_t &addressing) = 0;
 
-        virtual const string & getName(void) = 0;
         virtual const string & getIPv4string(void) = 0;
 
+        virtual const string & getName(void) = 0;
         virtual eObrd_ethtype_t getBoardType(void) = 0;
         virtual const string & getBoardTypeString(void) = 0;
 
-        virtual void getBoardInfo(eOdate_t &date, eOversion_t &version) = 0;
 
         // the function returns true if the packet can be transmitted.
         // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
