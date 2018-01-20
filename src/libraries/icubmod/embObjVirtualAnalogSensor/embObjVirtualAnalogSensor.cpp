@@ -245,17 +245,17 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
  *
  */
 
-int embObjVirtualAnalogSensor::getState(int ch)
+IVirtualAnalogSensor::VAS_status embObjVirtualAnalogSensor::getVirtualAnalogSensorStatus(int ch)
 {
     return VAS_OK;
 };
 
-int embObjVirtualAnalogSensor::getChannels()
+int embObjVirtualAnalogSensor::getVirtualAnalogSensorChannels()
 {
     return _channels;
 };
 
-bool embObjVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &measure)
+bool embObjVirtualAnalogSensor::updateVirtualAnalogSensorMeasure(yarp::sig::Vector &measure)
 {
     bool ret = true;
     if(measure.size() != _channels)
@@ -266,12 +266,12 @@ bool embObjVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &measure)
 
     for(int ch=0; ch< _channels; ch++)
     {
-        ret &= updateMeasure(ch, measure[ch]);
+        ret &= updateVirtualAnalogSensorMeasure(ch, measure[ch]);
     }
     return true;
 }
 
-bool embObjVirtualAnalogSensor::updateMeasure(int ch, double &measure)
+bool embObjVirtualAnalogSensor::updateVirtualAnalogSensorMeasure(int ch, double &measure)
 {
     if (measure < ( - _fullscale[ch]) )
         measure =  (-_fullscale[ch]);

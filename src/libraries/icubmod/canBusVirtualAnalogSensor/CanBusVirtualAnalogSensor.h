@@ -4,8 +4,8 @@
 // Authors: Marco Randazzo <marco.randazzo@iit.it>
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-#ifndef __SKIN_MESH_THREAD_H__
-#define __SKIN_MESH_THREAD_H__
+#ifndef __CANBUS_VIRTUAL_ANALOG_SENSOR_H__
+#define __CANBUS_VIRTUAL_ANALOG_SENSOR_H__
 
 //#include <stdio.h>
 #include <string>
@@ -13,7 +13,6 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/IVirtualAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -74,18 +73,12 @@ public:
     virtual bool close();
    
     
-    //IAnalogSensor interface
-    virtual int read(yarp::sig::Vector &out);
-    virtual int getState(int ch);
-    virtual int getChannels();
-    int calibrateSensor();
-    virtual int calibrateChannel(int ch, double v);
-
-    virtual int calibrateSensor(const yarp::sig::Vector& v);
-    virtual int calibrateChannel(int ch);
-
-    virtual bool updateMeasure(int ch, double &measure);
-    virtual bool updateMeasure(yarp::sig::Vector &data);
+    //IVirtualAnalogSensor interface
+    virtual IVirtualAnalogSensor::VAS_status getVirtualAnalogSensorStatus (int ch);
+    virtual int getVirtualAnalogSensorChannels();
+   
+    virtual bool updateVirtualAnalogSensorMeasure(int ch, double &measure);
+    virtual bool updateVirtualAnalogSensorMeasure(yarp::sig::Vector &data);
 
     virtual bool threadInit();
     virtual void threadRelease();

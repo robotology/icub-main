@@ -78,10 +78,10 @@ public:
     virtual iethresType_t type();
 
     // IvirtualAnalogSensor interface
-    virtual int getState(int ch);
-    virtual int getChannels();
-    virtual bool updateMeasure(yarp::sig::Vector &measure);
-    virtual bool updateMeasure(int ch, double &measure);
+    virtual IVirtualAnalogSensor::VAS_status getVirtualAnalogSensorStatus(int ch);
+    virtual int getVirtualAnalogSensorChannels();
+    virtual bool updateVirtualAnalogSensorMeasure(yarp::sig::Vector &measure);
+    virtual bool updateVirtualAnalogSensorMeasure(int ch, double &measure);
 };
 
 
