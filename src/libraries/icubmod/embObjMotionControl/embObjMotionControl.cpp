@@ -3827,28 +3827,28 @@ bool embObjMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
  *
  */
 
-int embObjMotionControl::getState(int ch)
+IVirtualAnalogSensor::VAS_status embObjMotionControl::getVirtualAnalogSensorStatus(int ch)
 {
     return VAS_OK;
 };
 
-int embObjMotionControl::getChannels()
+int embObjMotionControl::getVirtualAnalogSensorChannels()
 {
     return _njoints;
 };
 
-bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
+bool embObjMotionControl::updateVirtualAnalogSensorMeasure(yarp::sig::Vector &fTorques)
 {
     bool ret = true;
 
     for(int j=0; j< _njoints; j++)
     {
-        ret = ret && updateMeasure(j, fTorques[j]);
+        ret = ret && updateVirtualAnalogSensorMeasure(j, fTorques[j]);
     }
     return ret;
 }
 
-bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorque)
+bool embObjMotionControl::updateVirtualAnalogSensorMeasure(int userLevel_jointNumber, double &fTorque)
 {
     int j = _axisMap[userLevel_jointNumber];
 

@@ -606,10 +606,10 @@ public:
     /////////////// END AMPLIFIER INTERFACE
 
     // virtual analog sensor
-    virtual int getState(int ch);
-    virtual int getChannels();
-    virtual bool updateMeasure(yarp::sig::Vector &fTorques);
-    virtual bool updateMeasure(int j, double &fTorque);
+    virtual IVirtualAnalogSensor::VAS_status getVirtualAnalogSensorStatus(int ch);
+    virtual int getVirtualAnalogSensorChannels();
+    virtual bool updateVirtualAnalogSensorMeasure(yarp::sig::Vector &fTorques);
+    virtual bool updateVirtualAnalogSensorMeasure(int j, double &fTorque);
 
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     //----------------------------------------------
