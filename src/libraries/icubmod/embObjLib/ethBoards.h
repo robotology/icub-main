@@ -83,14 +83,12 @@ namespace eth {
 
         typedef struct
         {
-            eOipv4addr_t        ipv4;
-            eObrd_ethtype_t     type;
-            string              nameoftype;
-            string              name;
-            uint8_t             numberofinterfaces;
-            uint8_t             boardnumber;
-            AbstractEthResource*  resource;
-            IethResource*       interfaces[iethresType_numberof];
+            eOipv4addr_t            ipv4;
+            string                  name;
+            uint8_t                 numberofinterfaces;
+            uint8_t                 boardnumber;
+            AbstractEthResource*    resource;
+            IethResource*           interfaces[iethresType_numberof];
         } ethboardProperties_t;
 
 

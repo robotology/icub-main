@@ -39,6 +39,7 @@ namespace eth { namespace parser {
         eObrd_ethtype_t     type;
         std::uint16_t       maxSizeRXpacket;
         std::uint16_t       maxSizeROP;
+        std::string         ipv4addressingstring;
         std::string         ipv4string;
         std::string         typestring;
 
@@ -47,7 +48,7 @@ namespace eth { namespace parser {
         }
         void reset() {
             type = eobrd_ethtype_none; ipv4addressing.addr = 0; ipv4addressing.port = 0;
-            maxSizeRXpacket = 768; maxSizeROP = 384; ipv4string = "";
+            maxSizeRXpacket = 768; maxSizeROP = 384; ipv4string = ""; ipv4addressingstring = "";
         }
     };
 

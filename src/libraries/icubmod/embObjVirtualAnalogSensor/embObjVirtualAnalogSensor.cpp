@@ -234,7 +234,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
 
 
 
-    yTrace() << "embObjVirtualAnalogSensor::open(); succefully called for BOARD" << res->getName() << "IP" << res->getIPv4string() << "instantiated correctly";
+    yTrace() << "embObjVirtualAnalogSensor::open(): succefully called for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "instantiated correctly";
 
     opened = true;
     return true;
@@ -281,15 +281,19 @@ bool embObjVirtualAnalogSensor::updateVirtualAnalogSensorMeasure(int ch, double 
 
     // Here measure is supposed to be a Torque
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, ch, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
-                //    example measure * 32768.0/12.0;
+    //    example measure * 32768.0/12.0;
     // measure should to saturated to resolution -2.0 to avoid casting problem.
     eOmeas_torque_t meas_torque = (eOmeas_torque_t)( measure * ((_resolution[ch]-2.0)/_fullscale[ch]));
-    return res->addSetMessageAndCacheLocally(protid, (uint8_t*) &meas_torque);
+
+    // i write also locally because somebody may read it back later
+    res->setLocalValue(protid, &meas_torque);
+    // and i want also to send it to the board
+    return res->setRemoteValue(protid, &meas_torque);
 }
 
 void embObjVirtualAnalogSensor::cleanup(void)
 {
-    yTrace() << "embObjVirtualAnalogSensor::cleanup(): called for BOARD" << res->getName() << "IP" << res->getIPv4string();
+    yTrace() << "embObjVirtualAnalogSensor::cleanup(): called for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
 
     if(_fullscale != NULL)
         delete(_fullscale);

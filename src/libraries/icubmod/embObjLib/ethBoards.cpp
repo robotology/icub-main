@@ -95,7 +95,7 @@ size_t eth::EthBoards::number_of_interfaces(eth::AbstractEthResource * res)
         return(0);
     }
 
-    eOipv4addr_t ipv4 = res->getIPv4();
+    eOipv4addr_t ipv4 = res->getProperties().ipv4addr;
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
@@ -122,7 +122,7 @@ bool eth::EthBoards::add(eth::AbstractEthResource* res)
         return false;
     }
 
-    eOipv4addr_t ipv4 = res->getIPv4();
+    eOipv4addr_t ipv4 = res->getProperties().ipv4addr;
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
@@ -140,10 +140,8 @@ bool eth::EthBoards::add(eth::AbstractEthResource* res)
 
     LUT[index].resource = res;
     LUT[index].ipv4 = ipv4;
-    LUT[index].type = res->getBoardType();
-    LUT[index].nameoftype = res->getBoardTypeString();
     LUT[index].boardnumber = index;
-    LUT[index].name = res->getName();
+    LUT[index].name = res->getProperties().boardnameString;
     LUT[index].numberofinterfaces = 0;
     for(int i=0; i<iethresType_numberof; i++)
     {
@@ -171,7 +169,7 @@ bool eth::EthBoards::add(eth::AbstractEthResource* res, eth::IethResource* inter
     }
 
     // now i compute the index
-    eOipv4addr_t ipv4 = res->getIPv4();
+    eOipv4addr_t ipv4 = res->getProperties().ipv4addr;
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
@@ -207,7 +205,7 @@ bool eth::EthBoards::rem(eth::AbstractEthResource* res)
     }
 
     // now i compute the index
-    eOipv4addr_t ipv4 = res->getIPv4();
+    eOipv4addr_t ipv4 = res->getProperties().ipv4addr;
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
@@ -245,7 +243,7 @@ bool eth::EthBoards::rem(eth::AbstractEthResource* res, iethresType_t type)
     }
 
     // now i compute the index
-    eOipv4addr_t ipv4 = res->getIPv4();
+    eOipv4addr_t ipv4 = res->getProperties().ipv4addr;
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;

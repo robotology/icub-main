@@ -352,7 +352,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     if(false == res->serviceVerifyActivate(servcategory, NULL))
     {
-        yError() << "embObjAnalogSensor::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getName() << "IP" << res->getIPv4string();
+        yError() << "embObjAnalogSensor::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         cleanup();
         return false;
     }
@@ -465,7 +465,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     if(false == res->serviceStart(servcategory))
     {
-        yError() << "embObjAnalogSensor::open() fails to start as service for  BOARD" << res->getName() << "IP" << res->getIPv4string() << ": cannot continue";
+        yError() << "embObjAnalogSensor::open() fails to start as service for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": cannot continue";
         cleanup();
         return false;
     }
@@ -473,7 +473,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::open() correctly starts as service of BOARD" << res->getName() << "IP" << res->getIPv4string();
+            yDebug() << "embObjAnalogSensor::open() correctly starts as service of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -529,14 +529,14 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
 
     if(false == res->setcheckRemoteValue(id32, &strainConfig, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjAnalogSensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -569,14 +569,14 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 
     if(false == res->setcheckRemoteValue(id32, &datarate, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais datarate in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais datarate in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjAnalogSensor::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -587,14 +587,14 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 
     if(false == res->setcheckRemoteValue(id32, &maismode, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais mode in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais mode in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjAnalogSensor::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -685,14 +685,14 @@ bool embObjAnalogSensor::configServiceInertials(Searchable& globalConfig)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config_service);
     if(false == res->setRemoteValueUntilVerified(id32, &inertialServiceConfig, sizeof(inertialServiceConfig), 10, 0.010, 0.050, 2))
     {
-        yError() << "FATAL: embObjAnalogSensor::configServiceInertials() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjAnalogSensor::configServiceInertials() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::configServiceInertials() correctly configured the service in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjAnalogSensor::configServiceInertials() correctly configured the service in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -772,14 +772,14 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config_sensors);
     if(false == res->setRemoteValueUntilVerified(id32, &inertialSensorsConfig, sizeof(inertialSensorsConfig), 10, 0.010, 0.050, 2))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2SkinInertial() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2SkinInertial() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::sendConfig2SkinInertial() correctly configured enabled sensors with period" << _period << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjAnalogSensor::sendConfig2SkinInertial() correctly configured enabled sensors with period" << _period << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -1001,7 +1001,6 @@ bool embObjAnalogSensor::getFullscaleValues()
    // Check initial size of array...  it should be zero.
     bool gotFullScaleValues = false;
     int timeout, NVsize;
-    uint16_t tmpNVsize;
     EOnv tmpNV;
     EOnv *p_tmpNV = NULL;
     eOas_arrayofupto12bytes_t fullscale_values = {0};
@@ -1012,15 +1011,10 @@ bool embObjAnalogSensor::getFullscaleValues()
     eOprotID32_t protoid_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
 
         
-    // now we impose that the value of the EOnv described by eoprot_tag_as_strain_status_fullscale is what in fullscale_values.
-    // we need to do that because the ram of the EOnv is ... of zero value unless one overrides the relevant INIT function.
-    // if of zero value, then ... capacity is not 6 and itemsize is not 2.
-    p_tmpNV = res->getNVhandler(protoid_fullscale, &tmpNV);
-    eo_nv_Set(p_tmpNV, &fullscale_values, eobool_true, eo_nv_upd_dontdo); 
+    // at first we impose that the local value of fullscales is zero.
+    res->setLocalValue(protoid_fullscale, &fullscale_values);
 
-    // now we are sure that we have a value of the array inside the EOnv which is consistent and ... of zero size.
 
-        
     // Prepare analog sensor
     eOas_strain_config_t strainConfig = {0};
     strainConfig.datarate               = _period;
@@ -1037,7 +1031,7 @@ bool embObjAnalogSensor::getFullscaleValues()
         res->setRemoteValue(protoid_strain_config, &strainConfig);
         SystemClock::delaySystem(1.0);
         // read fullscale values
-        res->readBufferedValue(protoid_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);
+        res->getLocalValue(protoid_fullscale, &fullscale_values);
         // If data arrives, size is bigger than zero
         //#warning --> marco.accame says: to wait for 1 sec and read size is ok. a different way is to ... wait for a semaphore incremented by the reply of the board. think of it!
         NVsize = eo_array_Size((EOarray *)&fullscale_values);
@@ -1051,19 +1045,19 @@ bool embObjAnalogSensor::getFullscaleValues()
         timeout--;
         if(verbosewhenok)
         {
-            yWarning() << "embObjAnalogSensor::getFullscaleValues(): for  BOARD" << res->getName() << "IP" << res->getIPv4string() << ": full scale val not arrived yet... retrying in 1 sec";
+            yWarning() << "embObjAnalogSensor::getFullscaleValues(): for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": full scale val not arrived yet... retrying in 1 sec";
         }
     }
 
     if((false == gotFullScaleValues) && (0 == timeout))
     {
-        yError() << "embObjAnalogSensor::getFullscaleValues(): ETH Analog sensor: request for calibration parameters timed out for  BOARD" << res->getName() << "IP" << res->getIPv4string();
+        yError() << "embObjAnalogSensor::getFullscaleValues(): ETH Analog sensor: request for calibration parameters timed out for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         return false;
     }
 
     if((NVsize != _channels))
     {
-        yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "Aborting";
+        yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "Aborting";
         return false;
     }
 
@@ -1074,8 +1068,8 @@ bool embObjAnalogSensor::getFullscaleValues()
     {
         if(verbosewhenok)
         {
-            yWarning() << "embObjAnalogSensor::getFullscaleValues() detected that already has full scale values for BOARD" << res->getName() << "IP" << res->getIPv4string();
-            yDebug()   << "embObjAnalogSensor::getFullscaleValues(): Fullscale values for BOARD" << res->getName() << "IP" << res->getIPv4string() << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  _channels;
+            yWarning() << "embObjAnalogSensor::getFullscaleValues() detected that already has full scale values for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+            yDebug()   << "embObjAnalogSensor::getFullscaleValues(): Fullscale values for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  _channels;
         }
 
         for(int i=0; i<_channels; i++)
@@ -1160,7 +1154,7 @@ bool embObjAnalogSensor::init()
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::init() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjAnalogSensor::init() added" << id32v.size() << "regular rops to BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
             char nvinfo[128];
             for (size_t r = 0; r<id32v.size(); r++)
             {

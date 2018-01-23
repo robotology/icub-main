@@ -41,6 +41,8 @@
 #include "EoProtocol.h"
 #include "EoProtocolMN.h"
 
+#include<abstractEthResource.h>
+
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -271,39 +273,42 @@ struct eth::theNVmanager::Impl
     eth::AbstractEthResource * ethresourceID32(const eOprotIP_t ipv4, const eOprotID32_t id32);
     eth::AbstractEthResource * ethresourceID32s(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s);
 
-    bool validparameters(eth::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value);
 
-    bool validparameters(eth::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value);
+    eth::HostTransceiver * transceiver(eth::AbstractEthResource *res);
+    eth::HostTransceiver * transceiver(const eOprotIP_t ipv4);
+
+    bool validparameters(eth::HostTransceiver *t, const eOprotID32_t id32, void *value);
+
+    bool validparameters(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value);
 
 
-    bool validparameters(eth::AbstractEthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values);
+    bool validparameters(eth::HostTransceiver *t, eth::AbstractEthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values);
 
-    bool set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value);
-    bool setcheck(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout);
+    bool set(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value);
+    bool setcheck(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout);
     
 
     //size_t maxSizeOfNV(const eOprotIP_t ipv4);
 
-    bool ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout = 0.5, const unsigned int retries = 20);
+    bool ping(eth::HostTransceiver *t, eoprot_version_t &mnprotversion, const double timeout = 0.5, const unsigned int retries = 20);
 
-    bool ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout);
-    bool ask(eth::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout);
+    bool ask(eth::HostTransceiver *t, const eOprotID32_t id32, void *value, const double timeout);
 
-    bool askboard(eth::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout);
+    bool ask(eth::HostTransceiver *t, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout);
 
-    bool ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout);
-
-    bool check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries);
+    bool check(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries);
 
     bool signatureisvalid(const std::uint32_t signature);
     bool onarrival(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const std::uint32_t signature);
 
-    bool wait(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const double timeout);
+    bool wait(const ropCode ropcode, eth::HostTransceiver *t, const eOprotID32_t id32, const double timeout);
 
-    bool read(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value);
+    bool read(eth::HostTransceiver *t, const eOprotID32_t id32, void *value);
 
-    bool command(const eOprotIP_t ipv4, const eOprotID32_t id32cmd, const void *cmd, const eOprotID32_t id32rep, void *rep, double timeout = 0.5);
-                          
+    bool command(eth::HostTransceiver *t, const eOprotID32_t id32cmd, const void *cmd, const eOprotID32_t id32rep, void *rep, double timeout = 0.5);
+
+    const eth::AbstractEthResource::Properties & getboardproperties(eth::HostTransceiver *t);
+    string getid32string(eOprotID32_t id32);
 };
 
 
@@ -317,24 +322,35 @@ yarp::os::Semaphore eth::theNVmanager::Impl::mtx = 1;
 //    return true;
 //}
 
+const eth::AbstractEthResource::Properties& eth::theNVmanager::Impl::getboardproperties(eth::HostTransceiver *t)
+{
+    return t->getResource()->getProperties();
+}
+
+string eth::theNVmanager::Impl::getid32string(eOprotID32_t id32)
+{
+    char nvinfo[128];
+    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+    return nvinfo;
+}
 
 bool eth::theNVmanager::Impl::supported(const eOprotIP_t ipv4)
 {
-    eth::AbstractEthResource * res = ethresource(ipv4);
+    eth::HostTransceiver *t = transceiver(ipv4);
 
-    return (nullptr == res) ? false : true;
+    return (nullptr == t) ? false : true;
 }
 
 bool eth::theNVmanager::Impl::supported(const eOprotIP_t ipv4, const eOprotID32_t id32)
 {
-    eth::AbstractEthResource * res = ethresource(ipv4);
+    eth::HostTransceiver *t = transceiver(ipv4);
 
-    if(nullptr == res)
+    if(nullptr == t)
     {
         return false;
     }
 
-    return res->isID32supported(id32);
+    return t->isID32supported(id32);
 }
 
 size_t eth::theNVmanager::Impl::sizeofnv(const eOprotID32_t id32)
@@ -343,142 +359,162 @@ size_t eth::theNVmanager::Impl::sizeofnv(const eOprotID32_t id32)
 }
 
 
-eth::AbstractEthResource * eth::theNVmanager::Impl::ethresource(const eOprotIP_t ipv4)
+
+
+eth::HostTransceiver * eth::theNVmanager::Impl::transceiver(const eOprotIP_t ipv4)
 {
     eth::AbstractEthResource * res = eth::TheEthManager::instance()->getEthResource(ipv4);
     if(nullptr == res)
     {
         char ipinfo[20];
         eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
-        yError("theNVmanager::Impl::ethresource() cannot obtain from TheEthManager a EthResource * for IP = %s", ipinfo);
+        yError("theNVmanager::Impl::transceiverZ() cannot obtain from TheEthManager a EthResource * for IP = %s", ipinfo);
     }
 
-    return res;
-}
-
-
-eth::AbstractEthResource * eth::theNVmanager::Impl::ethresourceID32(const eOprotIP_t ipv4, const eOprotID32_t id32)
-{
-    eth::AbstractEthResource * res = eth::TheEthManager::instance()->getEthResource(ipv4);
     if(nullptr == res)
     {
-        char ipinfo[20];
-        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
-        yError("theNVmanager::Impl::ethresourceID32() cannot obtain from TheEthManager a EthResource * for IP = %s", ipinfo);
         return nullptr;
     }
 
-    if(false == res->isID32supported(id32))
-    {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::ethresourceID32() called with an invalid ID in BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
-        return nullptr;
-    }
-
-    return res;
+    return res->getTransceiver();
 }
 
 
-eth::AbstractEthResource * eth::theNVmanager::Impl::ethresourceID32s(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s)
+//eth::AbstractEthResource * eth::theNVmanager::Impl::ethresourceID32(const eOprotIP_t ipv4, const eOprotID32_t id32)
+//{
+//    eth::AbstractEthResource * res = eth::TheEthManager::instance()->getEthResource(ipv4);
+//    if(nullptr == res)
+//    {
+//        char ipinfo[20];
+//        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
+//        yError("theNVmanager::Impl::ethresourceID32() cannot obtain from TheEthManager a EthResource * for IP = %s", ipinfo);
+//        return nullptr;
+//    }
+
+//    eth::HostTransceiver *t = transceiver(res);
+//    if(nullptr == tra)
+//    {
+//        return nullptr;
+//    }
+
+//    if(false == t->isID32supported(id32))
+//    {
+//        char nvinfo[128];
+//        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+//        yError() << "theNVmanager::Impl::ethresourceID32() called with an invalid ID in BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << nvinfo;
+//        return nullptr;
+//    }
+
+//    return res;
+//}
+
+
+//eth::AbstractEthResource * eth::theNVmanager::Impl::ethresourceID32s(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s)
+//{
+//    eth::AbstractEthResource * res = eth::TheEthManager::instance()->getEthResource(ipv4);
+//    if(nullptr == res)
+//    {
+//        char ipinfo[20];
+//        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
+//        yError("theNVmanager::Impl::ethresourceID32() cannot obtain from TheEthManager a EthResource * for IP = %s", ipinfo);
+//        return nullptr;
+//    }
+
+//    eth::HostTransceiver *t = transceiver(res);
+//    if(nullptr == tra)
+//    {
+//        return nullptr;
+//    }
+
+//    for(int i=0; i<id32s.size(); i++)
+//    {
+//        if(false == t->isID32supported(id32s[i]))
+//        {
+//            char nvinfo[128];
+//            eoprot_ID2information(id32s[i], nvinfo, sizeof(nvinfo));
+//            yError() << "theNVmanager::Impl::ethresourceID32s(ip, vector<eOprotID32_t>) called with an invalid ID in BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << nvinfo;
+//            return nullptr;
+//        }
+//    }
+
+
+//    return res;
+//}
+
+bool eth::theNVmanager::Impl::validparameters(eth::HostTransceiver *t, const eOprotID32_t id32, void *value)
 {
-    eth::AbstractEthResource * res = eth::TheEthManager::instance()->getEthResource(ipv4);
-    if(nullptr == res)
-    {
-        char ipinfo[20];
-        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
-        yError("theNVmanager::Impl::ethresourceID32() cannot obtain from TheEthManager a EthResource * for IP = %s", ipinfo);
-        return nullptr;
-    }
-
-    for(int i=0; i<id32s.size(); i++)
-    {
-        if(false == res->isID32supported(id32s[i]))
-        {
-            char nvinfo[128];
-            eoprot_ID2information(id32s[i], nvinfo, sizeof(nvinfo));
-            yError() << "theNVmanager::Impl::ethresourceID32s(ip, vector<eOprotID32_t>) called with an invalid ID in BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
-            return nullptr;
-        }
-    }
-
-
-    return res;
-}
-
-bool eth::theNVmanager::Impl::validparameters(eth::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void* value)
-{
-    if(nullptr == res)
+    if(nullptr == t)
     {
         return false;
     }
 
-    if(false == res->isID32supported(id32))
+    if(false == t->isID32supported(id32))
     {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::validparameters() called with an invalid ID in BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);;
+        yError() << "theNVmanager::Impl::validparameters() called with an invalid ID in BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << getid32string(id32);
         return false;
     }
 
     if(nullptr == value)
     {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::validparameters(res, ipv4, id32, value) found invalid params in BOARD" << res->getName() << "IP" << res->getIPv4string();
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::validparameters(res, ipv4, id32, value) found invalid params in BOARD" << props.boardnameString << "IP" << props.ipv4addrString;
         return false;
     }
 
     return true;
 }
 
-bool eth::theNVmanager::Impl::validparameters(eth::AbstractEthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values)
+//bool eth::theNVmanager::Impl::validparameters(eth::HostTransceiver *t, eth::AbstractEthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values)
+//{
+//    if(nullptr == res)
+//    {
+//        return false;
+//    }
+
+//    if(nullptr == tra)
+//    {
+//        return false;
+//    }
+
+//    for(int i=0; i<id32s.size(); i++)
+//    {
+//        if(false == t->isID32supported(id32s[i]))
+//        {
+//            char nvinfo[128];
+//            eoprot_ID2information(id32s[i], nvinfo, sizeof(nvinfo));
+//            yError() << "theNVmanager::Impl::theNVmanager::Impl::validparameters(res, ipv4, id32s, values, sizes) called with an invalid ID in BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << nvinfo;
+//            return false;
+//        }
+//    }
+
+//    if((0 == id32s.size()) || (id32s.size() != values.size()))
+//    {
+//        yError() << "theNVmanager::Impl::validparameters(res, ipv4, id32s, values) found invalid params in BOARD" << props.boardnameString << "IP" << props.ipv4addrString;
+//        return false;
+//    }
+
+//    return true;
+//}
+
+bool eth::theNVmanager::Impl::validparameters(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value)
 {
-    if(nullptr == res)
+    if(nullptr == t)
     {
         return false;
     }
 
-    for(int i=0; i<id32s.size(); i++)
+    if(false == t->isID32supported(id32))
     {
-        if(false == res->isID32supported(id32s[i]))
-        {
-            char nvinfo[128];
-            eoprot_ID2information(id32s[i], nvinfo, sizeof(nvinfo));
-            yError() << "theNVmanager::Impl::theNVmanager::Impl::validparameters(res, ipv4, id32s, values, sizes) called with an invalid ID in BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
-            return false;
-        }
-    }
-
-    if((0 == id32s.size()) || (id32s.size() != values.size()))
-    {
-        yError() << "theNVmanager::Impl::validparameters(res, ipv4, id32s, values) found invalid params in BOARD" << res->getName() << "IP" << res->getIPv4string();
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::validparameters() called with an invalid ID in BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << getid32string(id32);
         return false;
     }
 
-    return true;
-}
-
-bool eth::theNVmanager::Impl::validparameters(eth::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
-{
-    if(nullptr == res)
+    if(nullptr == value)
     {
-        return false;
-    }
-
-    if(false == res->isID32supported(id32))
-    {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::validparameters() called with an invalid ID in BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
-        return false;
-    }
-
-    if((nullptr == value))
-    {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::validparameters(res, ipv4, id32, value) found invalid params in BOARD" << res->getName() << "IP" << res->getIPv4string();
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::validparameters(res, ipv4, id32, value) found invalid params in BOARD" << props.boardnameString << "IP" << props.ipv4addrString;
         return false;
     }
 
@@ -487,14 +523,13 @@ bool eth::theNVmanager::Impl::validparameters(eth::AbstractEthResource *res, con
 
 
 
-bool eth::theNVmanager::Impl::setcheck(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout)
+bool eth::theNVmanager::Impl::setcheck(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout)
 {
     int attempt = 0;
     bool done = false;
 
-    eth::AbstractEthResource * res = ethresource(ipv4);
 
-    if(false == validparameters(res, ipv4, id32, value))
+    if(false == validparameters(t, id32, value))
     {
         return false;
     }
@@ -504,18 +539,20 @@ bool eth::theNVmanager::Impl::setcheck(const eOprotIP_t ipv4, const eOprotID32_t
 
     for(attempt=0; (attempt<maxattempts) && (false == done); attempt++)
     {
-        if(false == set(ipv4, id32, value))
+        if(false == set(t, id32, value))
         {
-            yWarning() << "theNVmanager::Impl::setcheck() had an error while calling set() in BOARD" << res->getName() << "with IP" << res->getIPv4string() << "at attempt #" << attempt+1;
+            const AbstractEthResource::Properties & props = getboardproperties(t);
+            yWarning() << "theNVmanager::Impl::setcheck() had an error while calling set() in BOARD" << props.boardnameString << "with IP" << props.ipv4addrString << "at attempt #" << attempt+1;
             continue;
         }
 
         // ok, now i wait some time before asking the value back for verification
         SystemClock::delaySystem(waitbeforecheck);
 
-        if(false == check(ipv4, id32, value, timeout, 0))
+        if(false == check(t, id32, value, timeout, 0))
         {
-            yWarning() << "theNVmanager::Impl::setcheck() had an error while calling check() in BOARD" << res->getName() << "with IP" << res->getIPv4string() << "at attempt #" << attempt+1;
+            const AbstractEthResource::Properties & props = getboardproperties(t);
+            yWarning() << "theNVmanager::Impl::setcheck() had an error while calling check() in BOARD" << props.boardnameString << "with IP" << props.ipv4addrString << "at attempt #" << attempt+1;
         }
         else
         {
@@ -524,26 +561,26 @@ bool eth::theNVmanager::Impl::setcheck(const eOprotIP_t ipv4, const eOprotID32_t
 
     }
 
-    char nvinfo[128];
-    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
 
     if(done)
     {
         if(attempt > 1)
         {
-            yWarning() << "theNVmanager::Impl::setcheck() has set and verified ID" << nvinfo << "in BOARD" << res->getName() << "with IP" << res->getIPv4string() << "at attempt #" << attempt;
+            const AbstractEthResource::Properties & props = getboardproperties(t);
+            yWarning() << "theNVmanager::Impl::setcheck() has set and verified ID" << getid32string(id32) << "in BOARD" << props.boardnameString << "with IP" << props.ipv4addrString << "at attempt #" << attempt;
         }
         else
         {
 //            if(verbosewhenok)
 //            {
-//                yDebug() << "EthResource::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << attempt;
+//                yDebug() << "EthResource::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "at attempt #" << attempt;
 //            }
         }
     }
     else
     {
-        yError() << "FATAL: theNVmanager::Impl::setcheck() could not set and verify ID" << nvinfo << "in BOARD" << res->getName() << "with IP" << res->getIPv4string() << " even after " << attempt << "attempts";
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "FATAL: theNVmanager::Impl::setcheck() could not set and verify ID" << getid32string(id32) << "in BOARD" << props.boardnameString << "with IP" << props.ipv4addrString << " even after " << attempt << "attempts";
     }
 
 
@@ -551,14 +588,9 @@ bool eth::theNVmanager::Impl::setcheck(const eOprotIP_t ipv4, const eOprotID32_t
 }
 
 
-bool eth::theNVmanager::Impl::check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries)
-{
-    if(false == supported(ipv4, id32))
-    {
-        return false;
-    }
-
-    if((nullptr == value))
+bool eth::theNVmanager::Impl::check(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries)
+{    
+    if(false == validparameters(t, id32, value))
     {
         return false;
     }
@@ -570,7 +602,7 @@ bool eth::theNVmanager::Impl::check(const eOprotIP_t ipv4, const eOprotID32_t id
 
     for(int i=0; i<(retries+1); i++)
     {
-        if(true == ask(ipv4, id32, reinterpret_cast<void*>(vv), timeout))
+        if(true == ask(t, id32, reinterpret_cast<void*>(vv), timeout))
         {
             if(0 == std::memcmp(value, vv, size))
             {
@@ -587,17 +619,17 @@ bool eth::theNVmanager::Impl::check(const eOprotIP_t ipv4, const eOprotID32_t id
 
 
 
-bool eth::theNVmanager::Impl::wait(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const double timeout)
+bool eth::theNVmanager::Impl::wait(const ropCode ropcode, eth::HostTransceiver *t, const eOprotID32_t id32, const double timeout)
 {
-    eth::AbstractEthResource * res = ethresourceID32(ipv4, id32);
+    const eOprotIP_t ipv4 = t->getIPv4();
 
-    if(nullptr == res)
+    if(false == supported(ipv4, id32))
     {
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::wait() fails because the following ipv4-id32 is not supported: ipv4 =" << props.ipv4addrString << "id32 =" << getid32string(id32);
         return false;
     }
-
     // 2. must prepare wait data etc.
-
 
     askTransaction* transaction = new askTransaction;
 
@@ -621,9 +653,8 @@ bool eth::theNVmanager::Impl::wait(const ropCode ropcode, const eOprotIP_t ipv4,
         // and delete it
         delete transaction;
 
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::wait() had a timeout for BOARD" << res->getName() << "IP" << res->getIPv4string() << "and nv" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::wait() had a timeout for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "and nv" << getid32string(id32);
         return false;
     }
 
@@ -637,28 +668,20 @@ bool eth::theNVmanager::Impl::wait(const ropCode ropcode, const eOprotIP_t ipv4,
     return true;
 }
 
-bool eth::theNVmanager::Impl::read(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value)
+
+bool eth::theNVmanager::Impl::read(eth::HostTransceiver *t, const eOprotID32_t id32, void *value)
 {
-    if(nullptr == value)
-    {
-        return false;
-    }
-
-    eth::AbstractEthResource * res = ethresourceID32(ipv4, id32);
-
-    if(nullptr == res)
+    if(false == validparameters(t, id32, value))
     {
         return false;
     }
 
 
     // 2. must prepare wait data etc.
-    uint16_t ss = 0;
-    if(false == res->readBufferedValue(id32, reinterpret_cast<uint8_t*>(value), &ss))
+    if(false == t->read(id32, value))
     {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::ask() fails res->readBufferedValue() for BOARD" << res->getName() << "IP" << res->getIPv4string() << "and nv" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::ask() fails t->read() for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "and nv" << getid32string(id32);
         return false;
     }
 
@@ -666,35 +689,26 @@ bool eth::theNVmanager::Impl::read(const eOprotIP_t ipv4, const eOprotID32_t id3
 }
 
 
-bool eth::theNVmanager::Impl::command(const eOprotIP_t ipv4, const eOprotID32_t id32cmd, const void *cmd, const eOprotID32_t id32rep, void *rep, double timeout)
+bool eth::theNVmanager::Impl::command(eth::HostTransceiver *t, const eOprotID32_t id32cmd, const void *cmd, const eOprotID32_t id32rep, void *rep, double timeout)
 {
-    if(false == set(ipv4, id32cmd, cmd))
+    if(false == set(t, id32cmd, cmd))
     {
-        char ipinfo[32];
-        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
-        char nvinfo[128];
-        eoprot_ID2information(id32cmd, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::command() fails a set() to IP" << ipinfo << "for nv" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::command() fails a set() to IP" << props.ipv4addrString << "for nv" << getid32string(id32cmd);
         return false;
     }
 
-    if(false == wait(theNVmanager::ropCode::sig, ipv4, id32rep, timeout))
+    if(false == wait(theNVmanager::ropCode::sig, t, id32rep, timeout))
     {
-        char ipinfo[32];
-        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
-        char nvinfo[128];
-        eoprot_ID2information(id32rep, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::command() fails a wait() from IP" << ipinfo << "for nv" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::command() fails a wait() from IP" << props.ipv4addrString << "for nv" << getid32string(id32rep);
         return false;
     }
 
-    if(false == read(ipv4, id32rep, rep))
+    if(false == read(t, id32rep, rep))
     {
-        char ipinfo[32];
-        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
-        char nvinfo[128];
-        eoprot_ID2information(id32rep, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::command() fails a read() for IP" << ipinfo << "and nv" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::command() fails a read() for IP" << props.ipv4addrString << "and nv" << getid32string(id32rep);
         return false;
     }
 
@@ -714,24 +728,21 @@ bool eth::theNVmanager::Impl::command(const eOprotIP_t ipv4, const eOprotID32_t 
 //    return res->getMaxSizeofROP();
 //}
 
-bool eth::theNVmanager::Impl::ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout, const unsigned int retries)
+bool eth::theNVmanager::Impl::ping(eth::HostTransceiver *t, eoprot_version_t &mnprotversion, const double timeout, const unsigned int retries)
 {
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status_managementprotocolversion);
     bool replied = false;
 
-    if(false == supported(ipv4, id32))
+    if(false == supported(t->getIPv4(), id32))
     {
-        char ipinfo[32];
-        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::ping() fails because the following ipv4-id32 is not supported: ipv4 =" << ipinfo << "id32 =" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::ping() fails because the following ipv4-id32 is not supported: ipv4 =" << props.ipv4addrString << "id32 =" << getid32string(id32);
         return replied;
     }
 
     for(int i=0; i<(1+retries); i++)
     {
-        if(true == ask(ipv4, id32, &mnprotversion, timeout))
+        if(true == ask(t, id32, &mnprotversion, timeout))
         {
             replied = true;
             break;
@@ -743,41 +754,14 @@ bool eth::theNVmanager::Impl::ping(const eOprotIP_t ipv4, eoprot_version_t &mnpr
 
 
 
-bool eth::theNVmanager::Impl::ask(eth::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout)
+bool eth::theNVmanager::Impl::ask(eth::HostTransceiver *t, const eOprotID32_t id32, void *value, const double timeout)
 {
-    if(nullptr == res)
+    if(false == validparameters(t, id32, value))
     {
-        yError() << "theNVmanager::Impl::ask() called with a nullptr EthResource*";
+        yError() << "theNVmanager::Impl::ask() called with invalid parameters";
         return false;
     }
 
-    const eOprotIP_t ipv4 = res->getIPv4();
-
-    if(false == validparameters(res, ipv4, id32, value))
-    {
-        return false;
-    }
-
-    return askboard(res, ipv4, id32, value, timeout);
-
-}
-
-bool eth::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
-{
-    eth::AbstractEthResource * res = ethresource(ipv4);
-
-    if(false == validparameters(res, ipv4, id32, value))
-    {
-        return false;
-    }
-
-    return askboard(res, ipv4, id32, value, timeout);
-}
-
-
-
-bool eth::theNVmanager::Impl::askboard(eth::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
-{
     // 1. must prepare wait data etc.
 
     askTransaction* transaction = new askTransaction;
@@ -785,17 +769,16 @@ bool eth::theNVmanager::Impl::askboard(eth::AbstractEthResource *res, const eOpr
 
     data.lock();
 
-    data.insert(transaction, ipv4, id32, assignedsignature);
+    data.insert(transaction, t->getIPv4(), id32, assignedsignature);
 
     data.unlock();
 
     // 2. must send a request
 
-    if(false == res->addGetMessage(id32, assignedsignature))
+    if(false == t->addROPask(id32, assignedsignature))
     {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::ask() fails res->addGetROP() to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::ask() fails res->addROPask() to BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << getid32string(id32);
 
         // remove the transaction
         data.lock();
@@ -821,9 +804,8 @@ bool eth::theNVmanager::Impl::askboard(eth::AbstractEthResource *res, const eOpr
         // and delete it
         delete transaction;
 
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::ask() had a timeout for BOARD" << res->getName() << "IP" << res->getIPv4string() << "and nv" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::ask() had a timeout for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "and nv" << getid32string(id32);
         return false;
     }
 
@@ -835,12 +817,10 @@ bool eth::theNVmanager::Impl::askboard(eth::AbstractEthResource *res, const eOpr
     delete transaction;
 
     // 4. can retrieve value now
-    uint16_t size = 0;
-    if(false == res->readBufferedValue(id32, reinterpret_cast<uint8_t*>(value), &size))
+    if(false == t->read(id32, value))
     {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::ask() fails res->readBufferedValue() for BOARD" << res->getName() << "IP" << res->getIPv4string() << "and nv" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::ask() fails res->getLocalValue() for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "and nv" << getid32string(id32);
         return false;
     }
 
@@ -872,11 +852,11 @@ bool eth::theNVmanager::Impl::askboard(eth::AbstractEthResource *res, const eOpr
 
 //    // 3. must send a request
 
-//    if(false == res->addGetROPwithSignature(id32, assignedsignature))
+//    if(false == res->addROPask(id32, assignedsignature))
 //    {
 //        char nvinfo[128];
 //        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//        yError() << "theNVmanager::Impl::ask() fails res->addGetROP() to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+//        yError() << "theNVmanager::Impl::ask() fails res->addGetROP() to BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << nvinfo;
 
 //        // remove the transaction
 //        data.lock();
@@ -904,7 +884,7 @@ bool eth::theNVmanager::Impl::askboard(eth::AbstractEthResource *res, const eOpr
 
 //        char nvinfo[128];
 //        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//        yError() << "theNVmanager::Impl::ask() had a timeout for BOARD" << res->getName() << "IP" << res->getIPv4string() << "and nv" << nvinfo;
+//        yError() << "theNVmanager::Impl::ask() had a timeout for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "and nv" << nvinfo;
 //        return false;
 //    }
 
@@ -921,7 +901,7 @@ bool eth::theNVmanager::Impl::askboard(eth::AbstractEthResource *res, const eOpr
 //    {
 //        char nvinfo[128];
 //        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//        yError() << "theNVmanager::Impl::ask() fails res->readBufferedValue() for BOARD" << res->getName() << "IP" << res->getIPv4string() << "and nv" << nvinfo;
+//        yError() << "theNVmanager::Impl::ask() fails res->readBufferedValue() for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "and nv" << nvinfo;
 //        return false;
 //    }
 
@@ -929,15 +909,17 @@ bool eth::theNVmanager::Impl::askboard(eth::AbstractEthResource *res, const eOpr
 //}
 
 
-bool eth::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
+bool eth::theNVmanager::Impl::ask(eth::HostTransceiver *t, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
 {
 
-    eth::AbstractEthResource * res = ethresource(ipv4);
+    const eOprotIP_t ipv4 = t->getIPv4();
 
-    if(false == validparameters(res, ipv4, id32s, values))
-    {
-        return false;
-    }
+//    if(false == validparameters(tra, res, ipv4, id32s, values))
+//    {
+//        return false;
+//    }
+
+
 
     // 2. must prepare wait data etc.
 
@@ -955,11 +937,10 @@ bool eth::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOpro
 
     for(int i=0; i<id32s.size(); i++)
     {
-        if(false == res->addGetMessage(id32s[i], assignedsignature))
+        if(false == t->addROPask(id32s[i], assignedsignature))
         {
-            char nvinfo[128];
-            eoprot_ID2information(id32s[i], nvinfo, sizeof(nvinfo));
-            yError() << "theNVmanager::Impl::ask() fails res->addGetROP() to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+            const AbstractEthResource::Properties & props = getboardproperties(t);
+            yError() << "theNVmanager::Impl::ask() fails t->addROPask() to BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << getid32string(id32s[i]);
 
             // remove the transaction
             data.lock();
@@ -986,7 +967,8 @@ bool eth::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOpro
         // and delete it
         delete transaction;
 
-        yError() << "theNVmanager::Impl::ask() had a timeout for BOARD" << res->getName() << "IP" << res->getIPv4string() << "w/ multiple NVs. Received only" << numberOfReceivedROPs << "out of" << id32s.size();
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::ask() had a timeout for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "w/ multiple NVs. Received only" << numberOfReceivedROPs << "out of" << id32s.size();
         return false;
     }
 
@@ -1000,12 +982,10 @@ bool eth::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOpro
     // 5. can retrieve values now
     for(int i=0; i<id32s.size(); i++)
     {
-        uint16_t size = 0;
-        if(false == res->readBufferedValue(id32s[i], reinterpret_cast<uint8_t*>(values[i]), &size))
+        if(false == t->read(id32s[i], values[i]))
         {
-            char nvinfo[128];
-            eoprot_ID2information(id32s[i], nvinfo, sizeof(nvinfo));
-            yError() << "theNVmanager::Impl::ask() fails res->readBufferedValue() for BOARD" << res->getName() << "IP" << res->getIPv4string() << "and nv" << nvinfo;
+            const AbstractEthResource::Properties & props = getboardproperties(t);
+            yError() << "theNVmanager::Impl::ask() fails res->getLocalValue() for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "and nv" << getid32string(id32s[i]);
             return false;
         }
     }
@@ -1013,21 +993,19 @@ bool eth::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOpro
     return true;
 }
 
-bool eth::theNVmanager::Impl::set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
+
+bool eth::theNVmanager::Impl::set(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value)
 {
-    eth::AbstractEthResource * res = ethresource(ipv4);
 
-    if(false == validparameters(res, ipv4, id32, value))
+//    if(false == validparameters(t, id32, value))
+//    {
+//        return false;
+//    }
+
+    if(false == t->addROPset(id32, value))
     {
-        return false;
-    }
-
-
-    if(false == res->addSetMessage(id32, reinterpret_cast<uint8_t*>(const_cast<void*>(value))))
-    {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::set() fails res->addSetMessage() to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::set() fails t->addSetROP() to BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << getid32string(id32);
         return false;
     }
 
@@ -1047,10 +1025,6 @@ bool eth::theNVmanager::Impl::signatureisvalid(const std::uint32_t signature)
 
 bool eth::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const std::uint32_t signature)
 {
-    eth::AbstractEthResource * res = ethresource(ipv4);
-    char nvinfo[128];
-    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-
     static double tprev = SystemClock::nowSystem();
     double tcurr = SystemClock::nowSystem();
 
@@ -1058,19 +1032,21 @@ bool eth::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t 
 
     tprev = tcurr;
 
+    eth::HostTransceiver *t = transceiver(ipv4);
 
-    if(nullptr == res)
+    if(nullptr == t)
     {
         char ipinfo[32];
         eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
-        yDebug() << "theNVmanager::Impl::onarrival() called for unsupported IP" << ipinfo << "for nv" << nvinfo << "w/ signature" << signature;
+        yDebug() << "theNVmanager::Impl::onarrival() called for unsupported IP" << ipinfo << "for nv" << getid32string(id32) << "w/ signature" << signature;
         //#warning meglio CONTROLLARE CHE NON CI SIA NULLA QUI ...
         return false;
     }
 
     if(ropCode::say == ropcode)
     {
-        //yDebug() << "theNVmanager::Impl::onarrival(ropCode::say) called for BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo << "w/ signature" << signature << "after sec" << delta;
+        //const AbstractEthResource::Properties & props = getboardproperties(t);
+        //yDebug() << "theNVmanager::Impl::onarrival(ropCode::say) called for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << getid32string(id32) << "w/ signature" << signature << "after sec" << delta;
 
         // we manage a reply. we decide that we search only by signature.
 
@@ -1090,7 +1066,8 @@ bool eth::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t 
     }
     else if(ropCode::sig == ropcode)
     {
-        //yDebug() << "theNVmanager::Impl::onarrival(ropCode::sig) called for BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo << "w/ signature" << signature << "after sec" << delta;
+        //const AbstractEthResource::Properties & props = getboardproperties(t);
+        //yDebug() << "theNVmanager::Impl::onarrival(ropCode::sig) called for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << getid32string(id32) << "w/ signature" << signature << "after sec" << delta;
 
         // we manage an expected sig<>. we search by [ipv4-id32].
 
@@ -1181,40 +1158,62 @@ size_t eth::theNVmanager::sizeOfNV(const eOprotID32_t id32)
 
 bool eth::theNVmanager::ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout, const unsigned int retries)
 {
-    return pImpl->ping(ipv4, mnprotversion, timeout, retries);
+    eth::HostTransceiver *t = pImpl->transceiver(ipv4);
+    return pImpl->ping(t, mnprotversion, timeout, retries);
 }
 
 bool eth::theNVmanager::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
 {
-    return pImpl->ask(ipv4, id32, value, timeout);
+    eth::HostTransceiver *t = pImpl->transceiver(ipv4);
+    return pImpl->ask(t, id32, value, timeout);
 }
 
-bool eth::theNVmanager::ask(eth::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout)
+bool eth::theNVmanager::ask(eth::HostTransceiver *t, const eOprotID32_t id32, void *value, const double timeout)
 {
-    return pImpl->ask(res, id32, value, timeout);
+    return pImpl->ask(t, id32, value, timeout);
 }
 
 
 
 bool eth::theNVmanager::ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
 {
-    return pImpl->ask(ipv4, id32s, values, timeout);
+    eth::HostTransceiver *t = pImpl->transceiver(ipv4);
+    return pImpl->ask(t, id32s, values, timeout);
+}
+
+bool eth::theNVmanager::set(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value)
+{
+    return pImpl->set(t, id32, value);
 }
 
 bool eth::theNVmanager::set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
 {
-    return pImpl->set(ipv4, id32, value);
+    eth::HostTransceiver *t = pImpl->transceiver(ipv4);
+    return pImpl->set(t, id32, value);
+}
+
+
+bool eth::theNVmanager::check(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries)
+{
+    return pImpl->check(t, id32, value, timeout, retries);
 }
 
 bool eth::theNVmanager::check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries)
 {
-    return pImpl->check(ipv4, id32, value, timeout, retries);
+    eth::HostTransceiver *t = pImpl->transceiver(ipv4);
+    return pImpl->check(t, id32, value, timeout, retries);
 }
 
 
 bool eth::theNVmanager::setcheck(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout)
 {
-    return pImpl->setcheck(ipv4, id32, value, retries, waitbeforecheck, timeout);
+    eth::HostTransceiver *t = pImpl->transceiver(ipv4);
+    return pImpl->setcheck(t, id32, value, retries, waitbeforecheck, timeout);
+}
+
+bool eth::theNVmanager::setcheck(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout)
+{
+    return pImpl->setcheck(t, id32, value, retries, waitbeforecheck, timeout);
 }
 
 bool eth::theNVmanager::onarrival(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const std::uint32_t signature)
@@ -1234,7 +1233,8 @@ bool eth::theNVmanager::onarrival(const ropCode ropcode, const eOprotIP_t ipv4, 
 
 bool eth::theNVmanager::command(const eOprotIP_t ipv4, const eOprotID32_t id32cmd, const void *cmd, const eOprotID32_t id32rep, void *rep, double timeout)
 {
-    return pImpl->command(ipv4, id32cmd, cmd, id32rep, rep, timeout);
+    eth::HostTransceiver *t = pImpl->transceiver(ipv4);
+    return pImpl->command(t, id32cmd, cmd, id32rep, rep, timeout);
 }
 
 

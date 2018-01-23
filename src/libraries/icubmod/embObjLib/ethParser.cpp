@@ -71,6 +71,7 @@ bool eth::parser::print(const boardData &boarddata)
 
     yDebug() << "eth::parser::print(boardData):";
 
+    yDebug() << "ipv4addressingstring = " << boarddata.properties.ipv4addressingstring;
     yDebug() << "ETH_BOARD_PROPERTIES/IpAddress = " << boarddata.properties.ipv4string;
     yDebug() << "ETH_BOARD_PROPERTIES/IpPort = " << boarddata.properties.ipv4addressing.port;
     yDebug() << "ETH_BOARD_PROPERTIES/Type = " << boarddata.properties.typestring;
@@ -228,6 +229,9 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     {
         yWarning() << "eth::parser::read() cannot find ETH_BOARD_PROPERTIES/IpPort group in config files";
     }
+
+    snprintf(ipinfo, sizeof(ipinfo), ":%d", boarddata.properties.ipv4addressing.port);
+    boarddata.properties.ipv4addressingstring = boarddata.properties.ipv4string + ipinfo;
 
 
     // Type:

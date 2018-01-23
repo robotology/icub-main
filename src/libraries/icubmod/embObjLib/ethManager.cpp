@@ -50,7 +50,6 @@
 #include <unistd.h>
 #endif
 
-using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
@@ -223,19 +222,33 @@ void ethEvalTXropframe(eth::AbstractEthResource *r, void* p)
         return;
     }
 
-    TheEthManager *ethman = (TheEthManager*)p;
+    TheEthManager *ethman = reinterpret_cast<TheEthManager*>(p);
 
+#if 0
     uint16_t numofbytes = 0;
     uint16_t numofrops = 0;
     uint8_t* data2send = NULL;
-    bool transmitthepacket = r->getTXpacket(&data2send, &numofbytes, &numofrops);
+    bool transmitthepacket = r->getTXpacket(&data2send, numofbytes, numofrops);
 
     if(true == transmitthepacket)
     {
         eOipv4addressing_t ipv4addressing;
         r->getIPv4addressing(ipv4addressing);
-        ethman->sendPacket(data2send, (size_t)numofbytes, ipv4addressing);
+        ethman->sendPacket(data2send, static_cast<size_t>(numofbytes), ipv4addressing);
     }
+#else
+
+    eOipv4addressing_t ipv4addressing;
+    size_t numofbytes = 0;
+    uint16_t numofrops = 0;
+    const void * data2send = r->getUDPtransmit(ipv4addressing, numofbytes, numofrops);
+
+    if(nullptr != data2send)
+    {
+        ethman->sendPacket(data2send, numofbytes, ipv4addressing);
+    }
+
+#endif
 }
 
 
@@ -378,7 +391,7 @@ eth::AbstractEthResource *TheEthManager::requestResource2(IethResource *interfac
             return NULL;
         }
 
-        yDebug() << "TheEthManager::requestResource2(): has just succesfully created a new EthResource for board of type" << rr->getBoardTypeString()<< "with IP = " << bdata.properties.ipv4string;
+        yDebug() << "TheEthManager::requestResource2(): has just succesfully created a new EthResource for board of type" << rr->getProperties().boardtypeString << "with IP = " << bdata.properties.ipv4string;
     }
 
 
@@ -612,7 +625,7 @@ bool TheEthManager::stopCommunicationThreads()
 
 
 
-int TheEthManager::sendPacket(void *udpframe, size_t len, const eOipv4addressing_t &toaddressing)
+int TheEthManager::sendPacket(const void *udpframe, size_t len, const eOipv4addressing_t &toaddressing)
 {
     ACE_INET_Addr inetaddr = toaceinet(toaddressing);
     ssize_t ret = UDP_socket->send(udpframe, len, inetaddr);
@@ -648,17 +661,13 @@ bool TheEthManager::Reception(eOipv4addr_t from, uint64_t* data, ssize_t size)
 
     eth::AbstractEthResource* r = ethBoards->get_resource(from);
 
-    if((NULL != r) && (!r->isFake()))
+    if((size >=0) && (NULL != r) && (!r->isFake()))
     {
         r->Tick();
 
-        if(false == r->canProcessRXpacket(data, size))
+        if(false == r->processRXpacket(data, size))
         {   // cannot give packet to ethresource
-            yError() << "TheEthManager::Reception() cannot give a received packet of size" << size << "to EthResource because EthResource::canProcessRXpacket() returns false.";
-        }
-        else
-        {
-            r->processRXpacket(data, size);
+            yError() << "TheEthManager::Reception() cannot give a received packet of size" << size << "to EthResource because EthResource::processRXpacket() returns false.";
         }
 
     }

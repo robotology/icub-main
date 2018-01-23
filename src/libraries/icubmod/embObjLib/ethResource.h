@@ -48,79 +48,59 @@ namespace eth {
         EthResource();
         ~EthResource();
 
+        bool open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal);
+        bool close();
 
-        bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal);
-        bool            close();
-        bool            isID32supported(eOprotID32_t id32);
 
-        eOipv4addr_t getIPv4(void);
-        bool getIPv4addressing(eOipv4addressing_t &addressing);
+        const Properties & getProperties();
 
-        const string & getName(void);
-        const string & getIPv4string(void);
-        eObrd_ethtype_t getBoardType(void);
-        const string & getBoardTypeString(void);
+        // FAKE: its size is 0 and it returen nullptr.
+        const void * getUDPtransmit(eOipv4addressing_t &destination, size_t &sizeofpacket, uint16_t &numofrops);
 
-        // the function returns true if the packet can be transmitted.
-        // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
-        bool getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops);
+        // FAKE: it just returns true.
+        bool processRXpacket(const void *data, size_t size);
 
-        bool canProcessRXpacket(uint64_t *data, uint16_t size);
-
-        void processRXpacket(uint64_t *data, uint16_t size);
-
+        // FAKE: it just returns true.
         bool getRemoteValue(const eOprotID32_t id32, void *value, const double timeout = 0.100, const unsigned int retries = 0);
 
+        // FAKE: it just returns true or ... does the same
         bool setRemoteValue(const eOprotID32_t id32, void *value);
 
+        // FAKE: it just returns true.
         bool setcheckRemoteValue(const eOprotID32_t id32, void *value, const unsigned int retries = 10, const double waitbeforecheck = 0.001, const double timeout = 0.050);
 
-        //bool getLocalValue(eOprotID32_t id32,  void *value);  // local means ... what we have received
-        //bool setLocalValue(eOprotID32_t id32,  void *value);  //
-        bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
+        // FAKE: it just returns true.
+        bool getLocalValue(const eOprotID32_t id32, void *value);
+
+        // FAKE: it just returns true.
+        bool setLocalValue(eOprotID32_t id32, const void *value);
 
 
+        // FAKE: it just returns true.
         bool verifyEPprotocol(eOprot_endpoint_t ep);
 
+        // move it ???
         bool CANPrintHandler(eOmn_info_basic_t* infobasic);
 
 
+        // FAKE make the internal serviceCommand() return always true ...
         bool serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout = 0.500);
-
         bool serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout = 0.500);
-
         bool serviceStart(eOmn_serv_category_t category, double timeout = 0.500);
-
         bool serviceStop(eOmn_serv_category_t category, double timeout = 0.500);
 
+        // FAKE: they both return true
         bool Tick();
         bool Check();
 
 
-
-        bool addSetMessage(eOprotID32_t id32, uint8_t* data);
-        bool addGetMessage(eOprotID32_t id32);
-        bool addGetMessage(eOprotID32_t id32, std::uint32_t signature);
-
-
-        bool addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data);
-        bool readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size);
-
-        EOnv* getNVhandler(eOprotID32_t id32, EOnv* nv);
-
-
         bool isFake();
+
+        HostTransceiver * getTransceiver();
 
 
     private:
 
-//        ACE_INET_Addr     remote_dev;
-        eOipv4addressing_t ipv4addressing;
-        eOipv4addr_t        ipv4addr;
-        string              ipv4addrstring;
-        string              boardName;
-        string              boardTypeString;
-        eObrd_ethtype_t     ethboardtype;
 
         bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
 
@@ -131,8 +111,7 @@ namespace eth {
         bool                verifiedEPprotocol[eoprot_endpoints_numberof];
         bool                verifiedBoardPresence;
         bool                askedBoardVersion;
-        eOdate_t            boardDate;
-        eOversion_t         boardVersion;
+
         eoprot_version_t    boardMNprotocolversion;
         eObrd_ethtype_t     detectedBoardType;
 
@@ -151,7 +130,13 @@ namespace eth {
 
         bool regularsAreSet;
 
+        eOmn_appl_config_t txconfig;
+
+        Properties properties;
+
     private:
+
+        enum { defTXrateOfRegularROPs = 3, defcycletime = 1000, defmaxtimeRX = 400, defmaxtimeDO = 300, defmaxtimeTX = 300 };
 
 
         bool verifyBoard();

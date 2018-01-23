@@ -28,7 +28,6 @@
 
 #include "ethParser.h"
 
-using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
@@ -93,7 +92,13 @@ bool FakeEthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
     eth::parser::read(cfgtotal, brddata);
 //    eth::parser::print(brddata);
 
-
+    properties.ipv4addr = remIP;
+    properties.ipv4addressing = brddata.properties.ipv4addressing;
+    properties.boardtype = brddata.properties.type;
+    properties.ipv4addrString = brddata.properties.ipv4string;
+    properties.ipv4addressingString = brddata.properties.ipv4addressingstring;
+    properties.boardtypeString = brddata.properties.typestring;
+    properties.boardnameString = brddata.settings.name;
 
     // i fill remote address
     ipv4addr = remIP;
@@ -125,7 +130,7 @@ bool FakeEthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
     eOipv4addressing_t localIPv4 = ethManager->getLocalIPV4addressing();
 
 
-    if(false == transceiver.init2(cfgtotal, localIPv4, remIP))
+    if(false == transceiver.init2(this, cfgtotal, localIPv4, remIP))
     {
         yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << boardName << "IP" << ipv4addrstring;
         lock(false);
@@ -152,11 +157,10 @@ bool FakeEthResource::close()
 }
 
 
-bool FakeEthResource::getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops)
+const void * FakeEthResource::getUDPtransmit(eOipv4addressing_t &destination, size_t &sizeofpacket, uint16_t &numofrops)
 {
-    return false;
+    return nullptr;
 }
-
 
 
 bool FakeEthResource::Tick()
@@ -172,53 +176,44 @@ bool FakeEthResource::Check()
 
 
 
-bool FakeEthResource::canProcessRXpacket(uint64_t *data, uint16_t size)
+
+bool FakeEthResource::processRXpacket(const void *data, const size_t size)
 {
-    if(NULL == data)
-        return false;
-
-    if(size > transceiver.getCapacityOfRXpacket())
-        return false;
-
     return true;
 }
 
 
-void FakeEthResource::processRXpacket(uint64_t *data, uint16_t size)
-{;}
 
-
-
-eOipv4addr_t FakeEthResource::getIPv4(void)
+const AbstractEthResource::Properties & FakeEthResource::getProperties()
 {
-    return ipv4addr;
+    return properties;
 }
 
-bool FakeEthResource::getIPv4addressing(eOipv4addressing_t &addressing)
-{
-    addressing = ipv4addressing;
-    return true;
-}
+//eOipv4addr_t FakeEthResource::getIPv4(void)
+//{
+//    return ipv4addr;
+//}
 
-const string & FakeEthResource::getName(void)
-{
-    return boardName;
-}
 
-const string & FakeEthResource::getIPv4string(void)
-{
-    return ipv4addrstring;
-}
+//const string & FakeEthResource::getName(void)
+//{
+//    return boardName;
+//}
 
-eObrd_ethtype_t FakeEthResource::getBoardType(void)
-{
-    return ethboardtype;
-}
+//const string & FakeEthResource::getIPv4string(void)
+//{
+//    return ipv4addrstring;
+//}
 
-const string & FakeEthResource::getBoardTypeString(void)
-{
-    return boardTypeString;
-}
+//eObrd_ethtype_t FakeEthResource::getBoardType(void)
+//{
+//    return ethboardtype;
+//}
+
+//const string & FakeEthResource::getBoardTypeString(void)
+//{
+//    return boardTypeString;
+//}
 
 
 bool FakeEthResource::isRunning(void)
@@ -243,7 +238,7 @@ bool FakeEthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 
     if(false == verifyBoard())
     {
-        yError() << "FakeEthResource::verifyEPprotocol() cannot verify BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        yError() << "FakeEthResource::verifyEPprotocol() cannot verify BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << ": cannot proceed any further";
         return(false);
     }
 
@@ -308,53 +303,61 @@ bool FakeEthResource::serviceStop(eOmn_serv_category_t category, double timeout)
     return true;
 }
 
-
-bool FakeEthResource::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
-{
-    *size=0;
-    true;
-}
-
-bool FakeEthResource::addSetMessage(eOprotID32_t id32, uint8_t* data)
+bool FakeEthResource::getLocalValue(const eOprotID32_t id32, void *data)
 {
     return true;
 }
 
-bool FakeEthResource::addGetMessage(eOprotID32_t id32)
+bool FakeEthResource::setLocalValue(eOprotID32_t id32, const void *value)
 {
     return true;
 }
 
-bool FakeEthResource::addGetMessage(eOprotID32_t id32, std::uint32_t signature)
-{
-    return true;
-}
+//bool FakeEthResource::addSetMessage(eOprotID32_t id32, uint8_t* data)
+//{
+//    return true;
+//}
 
-bool FakeEthResource::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
-{
-    return true;
-}
+//bool FakeEthResource::addGetMessage(eOprotID32_t id32)
+//{
+//    return true;
+//}
 
-bool FakeEthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
-{
-    *size=0;
-    return true;
-}
+//bool FakeEthResource::addGetMessage(eOprotID32_t id32, std::uint32_t signature)
+//{
+//    return true;
+//}
 
-EOnv* FakeEthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
-{
-    return transceiver.getnvhandler(id32, nv);
-}
+//bool FakeEthResource::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
+//{
+//    return true;
+//}
+
+//bool FakeEthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
+//{
+//    *size=0;
+//    return true;
+//}
+
+//EOnv* FakeEthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
+//{
+//    return transceiver.getnvhandler(id32, nv);
+//}
 
 bool FakeEthResource::isFake()
 {
     return true;
 }
 
-bool FakeEthResource::isID32supported(eOprotID32_t id32)
+HostTransceiver * FakeEthResource::getTransceiver()
 {
-    return true;
+    return nullptr;
 }
+
+//bool FakeEthResource::isID32supported(eOprotID32_t id32)
+//{
+//    return true;
+//}
 
 
 

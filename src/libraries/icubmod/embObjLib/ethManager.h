@@ -62,7 +62,6 @@
 
 
 using namespace yarp::os;
-using namespace yarp::dev;
 using namespace std;
 
 
@@ -134,7 +133,7 @@ namespace eth {
 
         const string & getName(eOipv4addr_t ipv4);
 
-        int sendPacket(void *udpframe, size_t len, const eOipv4addressing_t &toaddressing);
+        int sendPacket(const void *udpframe, size_t len, const eOipv4addressing_t &toaddressing);
 
         eOipv4addr_t toipv4addr(const ACE_INET_Addr &aceinetaddr);
 

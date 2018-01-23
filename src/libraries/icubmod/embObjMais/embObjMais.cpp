@@ -249,13 +249,13 @@ bool embObjMais::open(yarp::os::Searchable &config)
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mc, mcservparam, 5.0))
     {
-        yError() << "embObjMais::open() has an error in call of ethResources::serviceVerifyActivate(MC) for BOARD" << res->getName() << "IP" << res->getIPv4string();
+        yError() << "embObjMais::open() has an error in call of ethResources::serviceVerifyActivate(MC) for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         cleanup();
         return false;
     }
     if(false == res->serviceStart(eomn_serv_category_mc))
     {
-        yError() << "embObjMais::open() fails to start MC service for BOARD" << res->getName() << "IP" << res->getIPv4string() << ": cannot continue";
+        yError() << "embObjMais::open() fails to start MC service for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": cannot continue";
         cleanup();
         return false;
     }
@@ -263,7 +263,7 @@ bool embObjMais::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjMais::open() correctly starts MC service of BOARD" << res->getName() << "IP" << res->getIPv4string();
+            yDebug() << "embObjMais::open() correctly starts MC service of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -286,7 +286,7 @@ bool embObjMais::open(yarp::os::Searchable &config)
     if(false == res->serviceVerifyActivate(eomn_serv_category_mais, servparam, 5.0))
     {
         SystemClock::delaySystem(1);
-        yError() << "embObjMais::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getName() << "IP" << res->getIPv4string();
+        yError() << "embObjMais::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         //printServiceConfig();
         cleanup();
         return false;
@@ -318,7 +318,7 @@ bool embObjMais::open(yarp::os::Searchable &config)
 
     if(false == res->serviceStart(eomn_serv_category_mais))
     {
-        yError() << "embObjMais::open() fails to start as service for  BOARD" << res->getName() << "IP" << res->getIPv4string() << ": cannot continue";
+        yError() << "embObjMais::open() fails to start as service for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": cannot continue";
         cleanup();
         return false;
     }
@@ -326,7 +326,7 @@ bool embObjMais::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjMais::open() correctly starts as service of BOARD" << res->getName() << "IP" << res->getIPv4string();
+            yDebug() << "embObjMais::open() correctly starts as service of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -349,14 +349,14 @@ bool embObjMais::sendConfig2Mais(void)
 
     if(false == res->setcheckRemoteValue(id32, &datarate, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjMais::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais datarate in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjMais::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais datarate in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjMais::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjMais::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -367,14 +367,14 @@ bool embObjMais::sendConfig2Mais(void)
 
     if(false == res->setcheckRemoteValue(id32, &maismode, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjMais::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais mode in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjMais::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais mode in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjMais::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjMais::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -410,7 +410,7 @@ bool embObjMais::initRegulars()
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjMais::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjMais::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
             char nvinfo[128];
             for (size_t r = 0; r<id32v.size(); r++)
             {
@@ -600,8 +600,8 @@ void embObjMais::printServiceConfig(void)
     char fir[20] = {0};
     char pro[20] = {0};
 
-    const char * boardname = (NULL != res) ? (res->getName().c_str()) : ("NOT-ASSIGNED-YET");
-    const char * ipv4 = (NULL != res) ? (res->getIPv4string().c_str()) : ("NOT-ASSIGNED-YET");
+    const char * boardname = (NULL != res) ? (res->getProperties().boardnameString.c_str()) : ("NOT-ASSIGNED-YET");
+    const char * ipv4 = (NULL != res) ? (res->getProperties().ipv4addrString.c_str()) : ("NOT-ASSIGNED-YET");
 
     parser->convert(serviceConfig.ethservice.configuration.data.as.mais.canloc, loc, sizeof(loc));
     parser->convert(serviceConfig.ethservice.configuration.data.as.mais.version.firmware, fir, sizeof(fir));

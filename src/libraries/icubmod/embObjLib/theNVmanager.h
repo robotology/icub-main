@@ -28,7 +28,7 @@
 #include <cstdint>
 
 #include "EoProtocol.h"
-#include "abstractEthResource.h"
+#include <hostTransceiver.hpp>
 
 namespace eth {
            
@@ -38,22 +38,9 @@ namespace eth {
         static theNVmanager& getInstance();
                 
     public:
-//        struct Config
-//        {
-//            std::uint8_t    param1;
-//            Config() :
-//                param1(0)
-//                {}
-//            Config(std::uint8_t _p1) :
-//                param1(_p1)
-//                {}
-//        };
 
         enum class ropCode { sig = eo_ropcode_sig, say = eo_ropcode_say };
         
-        
-        //bool initialise(const Config &config);
-
         // value and values[i] must point to memory with enough space to host the reply. the ask() functions will just copy the reply
         // into these memory locations, hence the user must pre-allocate enough memory before calling ask()
         // but what must be the size of the memory? well, it depends on {ipv4, id32}. in any case, it is upper bounded.
@@ -77,13 +64,16 @@ namespace eth {
         // it sends a ask<> ROP to a single network variable and waits the say<> reply ROP until timeout.
         // result is in value, which must be a buffer with at least sizeOfNV(id32) bytes
         bool ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout = 0.5);
-        bool ask(eth::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout = 0.5);
+        bool ask(eth::HostTransceiver *t, const eOprotID32_t id32, void *value, const double timeout = 0.5);
         // imposes a value to a given network variable. it does not wait nor verify
         bool set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value);
+        bool set(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value);
         // it asks the value of a single network variable and checks vs a given value which points to a buffer of at least sizeOfNV(id32) bytes
         bool check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const double timeout = 0.5, const unsigned int retries = 0);
+        bool check(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const double timeout = 0.5, const unsigned int retries = 0);
         // it sends set<> ROP to a given varaible and it checks that the value is really written. it repeats this cycle until done, at most retries + 1 times.
         bool setcheck(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const unsigned int retries = 10, double waitbeforecheck = 0.001, double timeout = 0.5);
+        bool setcheck(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const unsigned int retries = 10, double waitbeforecheck = 0.001, double timeout = 0.5);
 
         // function which must be placed in the reception handlers to unblock the waiting of replies from a given board
         bool onarrival(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const std::uint32_t signature);
