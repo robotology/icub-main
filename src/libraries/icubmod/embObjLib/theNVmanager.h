@@ -93,20 +93,32 @@ namespace eth {
         // for future use: ask of multiple values on the same ipv4 board.
 
 
-        // sends read parallel requests to many network variables to the same ip address and waits
+        // sends read parallel requests for many network variables to the same ip address and waits
         bool ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout = 0.5);
+        bool ask(eth::HostTransceiver *t, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout = 0.5);
 
 
-        // the thread locks the object
-        bool parallel_ask_start();
-        // it adds as many requests are it likes. it adds ip, vector<id>, vector<data*> which are added in vector<ips> and vector<vector<id>> vector<vector<data*>>
-        bool parallel_ask_add();
-        // and finally the request all start. they all have the same signature. the thread is locked until
-        // it receives all the replies. results are in previous vectors
-        bool parallel_ask_wait(const double timeout = 0.5);
+        // tobedone: i want to group several requests before i start to wait.
+        // i need:
+        // - group_start() which tells the nvmanager to use a given signature for all successive group_add_ask() until group_add_stop()
+        // - group_ask() which adds to the nvmanager a vector of ask rops identified by the same signature.
+        //   this function can be repeated as many times one want. typically by different devices but by the same thread.
+        // - group_stop() which starts the wait for the replies. when this function returns, the various values vector will contain
+        //   the replies.
+        // some more explanation:
+        // we shall use the same signature if the calling thread is the same as the one which called group_start().
+        // in this way, we can target the operation to a given thread without blocking other threads using normal ask() requests. .
+        // i would say however, that if another thread starts a group_start() during an active session .... it musts wait.
+        // also let's give some limitations:
+        // start of proper ask sending is done by group_stop() and not directly by group_ask().
+        // we can have at most one active session at any time.
+        // we can call group_ask() at most ... 8 times (boh, maybe it is not necessary to give a limit).
+        // the calling thread will be retrieved inside.
+        // i use a ACE_Recursive_Thread_Mutex to perform synch amongst different threads.
 
-
-//        bool check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const std::uint16_t size, const double timeout = 0.5);
+        bool group_start();
+        bool group_ask(eth::HostTransceiver *t, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values);
+        bool group_stop(const double timeout = 0.5);
 
     private:
         theNVmanager(); 

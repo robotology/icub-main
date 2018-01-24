@@ -63,6 +63,8 @@ namespace eth {
         // FAKE: it just returns true.
         bool getRemoteValue(const eOprotID32_t id32, void *value, const double timeout = 0.100, const unsigned int retries = 0);
 
+        bool getRemoteValues(const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout = 0.500);
+
         // FAKE: it just returns true or ... does the same
         bool setRemoteValue(const eOprotID32_t id32, void *value);
 
@@ -101,8 +103,7 @@ namespace eth {
 
     private:
 
-
-        bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
+        bool isInRunningMode;
 
         yarp::os::Semaphore* objLock;
 
@@ -154,6 +155,8 @@ namespace eth {
         bool serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times);
 
         bool verbosewhenok;
+
+        bool testMultipleASK();
     };
 
 

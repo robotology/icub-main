@@ -47,15 +47,6 @@ namespace eth {
 
         const Properties & getProperties();
 
-//        eOipv4addr_t getIPv4(void);
-
-//        const string & getName(void);
-//        const string & getIPv4string(void);
-
-//        eObrd_ethtype_t getBoardType(void);
-//        const string & getBoardTypeString(void);
-
-
         const void * getUDPtransmit(eOipv4addressing_t &destination, size_t &sizeofpacket, uint16_t &numofrops);
 
 
@@ -63,6 +54,8 @@ namespace eth {
 
 
         bool getRemoteValue(const eOprotID32_t id32, void *value, const double timeout = 0.100, const unsigned int retries = 0);
+
+        bool getRemoteValues(const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout = 0.500);
 
         bool setRemoteValue(const eOprotID32_t id32, void *value);
 

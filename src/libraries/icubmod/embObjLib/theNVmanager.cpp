@@ -282,7 +282,7 @@ struct eth::theNVmanager::Impl
     bool validparameters(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value);
 
 
-    bool validparameters(eth::HostTransceiver *t, eth::AbstractEthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values);
+    bool validparameters(eth::HostTransceiver *t, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values);
 
     bool set(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value);
     bool setcheck(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout);
@@ -465,37 +465,32 @@ bool eth::theNVmanager::Impl::validparameters(eth::HostTransceiver *t, const eOp
     return true;
 }
 
-//bool eth::theNVmanager::Impl::validparameters(eth::HostTransceiver *t, eth::AbstractEthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values)
-//{
-//    if(nullptr == res)
-//    {
-//        return false;
-//    }
+bool eth::theNVmanager::Impl::validparameters(eth::HostTransceiver *t, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values)
+{
+    if(nullptr == t)
+    {
+        return false;
+    }
 
-//    if(nullptr == tra)
-//    {
-//        return false;
-//    }
+    for(int i=0; i<id32s.size(); i++)
+    {
+        if(false == t->isID32supported(id32s[i]))
+        {
+            const AbstractEthResource::Properties & props = getboardproperties(t);
+            yError() << "theNVmanager::Impl::validparameters(vector<>) called with an invalid ID in BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << getid32string(id32s[i]);
+            return false;
+        }
+    }
 
-//    for(int i=0; i<id32s.size(); i++)
-//    {
-//        if(false == t->isID32supported(id32s[i]))
-//        {
-//            char nvinfo[128];
-//            eoprot_ID2information(id32s[i], nvinfo, sizeof(nvinfo));
-//            yError() << "theNVmanager::Impl::theNVmanager::Impl::validparameters(res, ipv4, id32s, values, sizes) called with an invalid ID in BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "for nv" << nvinfo;
-//            return false;
-//        }
-//    }
+    if((0 == id32s.size()) || (id32s.size() != values.size()))
+    {
+        const AbstractEthResource::Properties & props = getboardproperties(t);
+        yError() << "theNVmanager::Impl::validparameters(vector<>) found invalid params in BOARD" << props.boardnameString << "IP" << props.ipv4addrString;
+        return false;
+    }
 
-//    if((0 == id32s.size()) || (id32s.size() != values.size()))
-//    {
-//        yError() << "theNVmanager::Impl::validparameters(res, ipv4, id32s, values) found invalid params in BOARD" << props.boardnameString << "IP" << props.ipv4addrString;
-//        return false;
-//    }
-
-//    return true;
-//}
+    return true;
+}
 
 bool eth::theNVmanager::Impl::validparameters(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value)
 {
@@ -911,14 +906,12 @@ bool eth::theNVmanager::Impl::ask(eth::HostTransceiver *t, const eOprotID32_t id
 
 bool eth::theNVmanager::Impl::ask(eth::HostTransceiver *t, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
 {
-
     const eOprotIP_t ipv4 = t->getIPv4();
 
-//    if(false == validparameters(tra, res, ipv4, id32s, values))
-//    {
-//        return false;
-//    }
-
+    if(false == validparameters(t, id32s, values))
+    {
+        return false;
+    }
 
 
     // 2. must prepare wait data etc.
@@ -971,6 +964,8 @@ bool eth::theNVmanager::Impl::ask(eth::HostTransceiver *t, const std::vector<eOp
         yError() << "theNVmanager::Impl::ask() had a timeout for BOARD" << props.boardnameString << "IP" << props.ipv4addrString << "w/ multiple NVs. Received only" << numberOfReceivedROPs << "out of" << id32s.size();
         return false;
     }
+
+    //yDebug() << "received" << numberOfReceivedROPs << "numberOfReceivedROPs";
 
     // remove the transaction
     data.lock();
@@ -1178,6 +1173,11 @@ bool eth::theNVmanager::ask(eth::HostTransceiver *t, const eOprotID32_t id32, vo
 bool eth::theNVmanager::ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
 {
     eth::HostTransceiver *t = pImpl->transceiver(ipv4);
+    return pImpl->ask(t, id32s, values, timeout);
+}
+
+bool eth::theNVmanager::ask(eth::HostTransceiver *t, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
+{
     return pImpl->ask(t, id32s, values, timeout);
 }
 

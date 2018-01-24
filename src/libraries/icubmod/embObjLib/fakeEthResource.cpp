@@ -189,32 +189,6 @@ const AbstractEthResource::Properties & FakeEthResource::getProperties()
     return properties;
 }
 
-//eOipv4addr_t FakeEthResource::getIPv4(void)
-//{
-//    return ipv4addr;
-//}
-
-
-//const string & FakeEthResource::getName(void)
-//{
-//    return boardName;
-//}
-
-//const string & FakeEthResource::getIPv4string(void)
-//{
-//    return ipv4addrstring;
-//}
-
-//eObrd_ethtype_t FakeEthResource::getBoardType(void)
-//{
-//    return ethboardtype;
-//}
-
-//const string & FakeEthResource::getBoardTypeString(void)
-//{
-//    return boardTypeString;
-//}
-
 
 bool FakeEthResource::isRunning(void)
 {
@@ -259,6 +233,12 @@ bool FakeEthResource::getRemoteValue(const eOprotID32_t id32, void *value, const
 {
     return true;
 }
+
+bool FakeEthResource::getRemoteValues(const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
+{
+    return true;
+}
+
 
 
 bool FakeEthResource::setRemoteValue(const eOprotID32_t id32, void *value)

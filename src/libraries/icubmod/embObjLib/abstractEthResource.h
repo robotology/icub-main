@@ -72,6 +72,8 @@ namespace eth {
 
         virtual bool getRemoteValue(const eOprotID32_t id32, void *value, const double timeout = 0.100, const unsigned int retries = 0) = 0;
 
+        virtual bool getRemoteValues(const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout = 0.500) = 0;
+       
         virtual bool setRemoteValue(const eOprotID32_t id32, void *value) = 0;
 
         virtual bool setcheckRemoteValue(const eOprotID32_t id32, void *value, const unsigned int retries = 10, const double waitbeforecheck = 0.001, const double timeout = 0.050) = 0;

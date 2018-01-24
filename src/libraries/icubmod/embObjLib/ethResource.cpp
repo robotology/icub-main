@@ -380,6 +380,108 @@ bool EthResource::cleanBoardBehaviour(void)
 
 }
 
+bool EthResource::testMultipleASK()
+{
+#if 1
+    return true;
+#else
+
+
+    // i ask multiple values such as:
+    eOprotID32_t id32_commstatus = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
+    eOmn_comm_status_t value_commstatus = {0};
+
+    eOprotID32_t id32_applconfig = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_config);
+    eOmn_appl_config_t value_applconfig = {0};
+
+    eOprotID32_t id32_applconfig_txratedivider = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_config_txratedivider);
+    uint8_t txratedivider = 0;
+
+    std::vector<eOprotID32_t> id32s;
+    std::vector<void*> values;
+
+    id32s.push_back(id32_commstatus);
+    values.push_back(&value_commstatus);
+
+    id32s.push_back(id32_applconfig);
+    values.push_back(&value_applconfig);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    theNVmanager& nvman = theNVmanager::getInstance();
+
+    double tprev = SystemClock::nowSystem();
+    double tcurr = SystemClock::nowSystem();
+
+    double delta = tcurr - tprev;
+
+    yDebug() << "before";
+    yDebug() << "value_commstatus.managementprotocolversion.major = " << value_commstatus.managementprotocolversion.major << "value_commstatus.managementprotocolversion.minor = " << value_commstatus.managementprotocolversion.minor;
+    yDebug() << "value_applconfig.cycletime = " << value_applconfig.cycletime << "value_applconfig.txratedivider" << value_applconfig.txratedivider << "etc";
+    yDebug() << "txratedivider = " << txratedivider;
+
+    tprev = SystemClock::nowSystem();
+    //bool ok = nvman.ask(&transceiver, id32s, values, 3.0);
+    bool ok = getRemoteValues(id32s, values, 3.0);
+    delta = SystemClock::nowSystem() - tprev;
+
+    yDebug() << "parallel mode: after" << delta << "seconds";
+    yDebug() << "value_commstatus.managementprotocolversion.major = " << value_commstatus.managementprotocolversion.major << "value_commstatus.managementprotocolversion.minor = " << value_commstatus.managementprotocolversion.minor;
+    yDebug() << "value_applconfig.cycletime = " << value_applconfig.cycletime << "value_applconfig.txratedivider" << value_applconfig.txratedivider << "etc";
+    yDebug() << "txratedivider = " << txratedivider;
+
+    memset(&value_commstatus, 0, sizeof(value_commstatus));
+    memset(&value_applconfig, 0, sizeof(value_applconfig));
+    txratedivider = 0;
+
+
+    tprev = SystemClock::nowSystem();
+    nvman.ask(&transceiver, id32_commstatus, &value_commstatus, 3.0);
+    nvman.ask(&transceiver, id32_applconfig, &value_applconfig, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    delta = SystemClock::nowSystem() - tprev;
+
+    yDebug() << "serial mode: after" << delta << "seconds";
+    yDebug() << "value_commstatus.managementprotocolversion.major = " << value_commstatus.managementprotocolversion.major << "value_commstatus.managementprotocolversion.minor = " << value_commstatus.managementprotocolversion.minor;
+    yDebug() << "value_applconfig.cycletime = " << value_applconfig.cycletime << "value_applconfig.txratedivider" << value_applconfig.txratedivider << "etc";
+    yDebug() << "txratedivider = " << txratedivider;
+
+    for(;;);
+
+
+    return true;
+
+#endif
+}
 
 bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 {
@@ -405,6 +507,9 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
         yError() << "EthResource::verifyEPprotocol() cannot ask the version to BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << ": cannot proceed any further";
         return(false);
     }
+
+    testMultipleASK();
+
 
     // 1. send a set<eoprot_tag_mn_comm_cmmnds_command_queryarray> and wait for the arrival of a sig<eoprot_tag_mn_comm_cmmnds_command_replyarray>
     //    the opc to send is eomn_opc_query_array_EPdes which will trigger a opc in reception eomn_opc_reply_array_EPdes
@@ -640,6 +745,25 @@ bool EthResource::getRemoteValue(const eOprotID32_t id32, void *value, const dou
     if(false == replied)
     {
         yError() << "  FATAL: EthResource::getRemoteValue() DID NOT have replies from BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << " even after" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+    }
+
+    return replied;
+}
+
+
+bool EthResource::getRemoteValues(const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
+{
+    theNVmanager& nvman = theNVmanager::getInstance();
+
+    double start_time = yarp::os::Time::now();
+
+    bool replied = nvman.ask(&transceiver, id32s, values, timeout);
+
+    double end_time = yarp::os::Time::now();
+
+    if(false == replied)
+    {
+        yError() << "  FATAL: EthResource::getRemoteValues() DID NOT have replies from BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << " even after" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
     }
 
     return replied;
