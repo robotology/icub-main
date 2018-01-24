@@ -784,7 +784,7 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
         return false;
     }
 
-    yDebug() << "result is:" << result.latestcommandisok;
+    //yDebug() << "result is:" << result.latestcommandisok;
 
     return(result.latestcommandisok);
 }
