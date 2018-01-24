@@ -304,17 +304,20 @@ bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4add
 
 bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
 {
-    eth::parser::pc104Data pcdata;
-    if(false == eth::parser::read(cfgtotal, pcdata))
+    eth::parser::pc104Data pc104data;
+    if(false == eth::parser::read(cfgtotal, pc104data))
     {
         yError() << "TheEthManager::initCommunication() fails";
+        eth::parser::print(pc104data);
         return false;
     }
 
-    int txrate = pcdata.txrate;
-    int rxrate = pcdata.rxrate;
-    eOipv4addressing_t tmpaddress = pcdata.localaddressing;
-    embBoardsConnected = pcdata.embBoardsConnected;
+    eth::parser::print(pc104data);
+
+    int txrate = pc104data.txrate;
+    int rxrate = pc104data.rxrate;
+    eOipv4addressing_t tmpaddress = pc104data.localaddressing;
+    embBoardsConnected = pc104data.embBoardsConnected;
 
     // localaddress
     if(false == createCommunicationObjects(tmpaddress, txrate, rxrate) )

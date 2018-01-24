@@ -1012,7 +1012,9 @@ bool embObjAnalogSensor::getFullscaleValues()
 
         
     // at first we impose that the local value of fullscales is zero.
-    res->setLocalValue(protoid_fullscale, &fullscale_values);
+    // we also force the change because this variable is readonly
+    const bool overrideROprotection = true;
+    res->setLocalValue(protoid_fullscale, &fullscale_values, overrideROprotection);
 
 
     // Prepare analog sensor

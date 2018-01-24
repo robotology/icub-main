@@ -73,7 +73,7 @@ namespace eth {
         bool getLocalValue(const eOprotID32_t id32, void *value);
 
         // FAKE: it just returns true.
-        bool setLocalValue(eOprotID32_t id32, const void *value);
+        bool setLocalValue(eOprotID32_t id32, const void *value, bool overrideROprotection = false);
 
 
         // FAKE: it just returns true.

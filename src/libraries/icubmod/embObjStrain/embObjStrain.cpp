@@ -344,7 +344,9 @@ bool embObjStrain::fillScaleFactor()
 
         
     // at first we impose that the local value of fullscales is zero.
-    res->setLocalValue(id32_fullscale, &fullscale_values);
+    // we also force the change because this variable is readonly
+    const bool overrideROprotection = true;
+    res->setLocalValue(id32_fullscale, &fullscale_values, overrideROprotection);
 
         
     // Prepare analog sensor

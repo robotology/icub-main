@@ -78,7 +78,7 @@ namespace eth {
 
         virtual bool getLocalValue(const eOprotID32_t id32, void *value) = 0;
 
-        virtual bool setLocalValue(eOprotID32_t id32, const void *value) = 0;
+        virtual bool setLocalValue(eOprotID32_t id32, const void *value, bool overrideROprotection = false) = 0;
 
         virtual bool verifyEPprotocol(eOprot_endpoint_t ep) = 0;
 

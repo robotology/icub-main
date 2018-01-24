@@ -308,7 +308,7 @@ bool FakeEthResource::getLocalValue(const eOprotID32_t id32, void *data)
     return true;
 }
 
-bool FakeEthResource::setLocalValue(eOprotID32_t id32, const void *value)
+bool FakeEthResource::setLocalValue(eOprotID32_t id32, const void *value, bool overrideROprotection)
 {
     return true;
 }

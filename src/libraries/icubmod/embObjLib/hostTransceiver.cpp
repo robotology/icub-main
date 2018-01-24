@@ -240,29 +240,8 @@ AbstractEthResource * HostTransceiver::getResource()
     return _owner;
 }
 
-//bool HostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd)
-//{
-//    if((NULL == nv) || (NULL == dat))
-//    {
-//        yError() << "eo HostTransceiver: called nvSetData() with NULL nv or dat";
-//        return false;
-//    }
-    
-//    lock_nvs(true);
-//    eOresult_t eores = eo_nv_Set(nv, dat, forceset, upd);
-//    lock_nvs(false);
 
-//    bool ret = true;
-//    if(eores_OK != eores)
-//    {
-//        yError() << "HostTransceiver::nvSetData(): error while setting NV data w/ eo_nv_Set()\n";
-//        ret = false;
-//    }
-
-//    return ret;
-//}
-
-bool HostTransceiver::write(const eOprotID32_t id32, const void* data)
+bool HostTransceiver::write(const eOprotID32_t id32, const void* data, bool forcewriteOfReadOnly)
 {
     eOresult_t eores = eores_NOK_generic;
 
@@ -282,8 +261,8 @@ bool HostTransceiver::write(const eOprotID32_t id32, const void* data)
     }
 
 
-    EOnv    nv;
-    EOnv*   nv_ptr = NULL;
+    EOnv nv;
+    EOnv* nv_ptr = NULL;
 
     nv_ptr = getnvhandler(id32, &nv);
 
@@ -293,16 +272,25 @@ bool HostTransceiver::write(const eOprotID32_t id32, const void* data)
         return false;
     }
 
+
     lock_nvs(true);
-    eores = eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo);
+    eores = eo_nv_Set(&nv, data, forcewriteOfReadOnly, eo_nv_upd_dontdo);
     lock_nvs(false);
 
     // marco.accame on 09 apr 2014:
     // we write data into
     if(eores_OK != eores)
     {
-        // the nv is not writeable
-        yError() << "HostTransceiver::write(): Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
+        bool ROvariable = (eo_nv_rwmode_RO == eo_nv_GetRWmode(&nv)) ? true : false;
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yError() << "HostTransceiver::write(): eo_nv_Set() has failed for IP" << remoteipstring << "and" << nvinfo << "RO mode = " << ((ROvariable) ? "true." : "false.");
+
+        if((eobool_false == forcewriteOfReadOnly) && (true == ROvariable))
+        {
+            yError() << "HostTransceiver::write(): called with forcewriteOfReadOnly = false for a READ ONLY variable";
+
+        }
         return false;
     }
 
@@ -427,90 +415,10 @@ bool HostTransceiver::addROPset(const eOprotID32_t id32, const void* data, const
 }
 
 
-
-//bool HostTransceiver::addGetROP__(eOprotID32_t id32, uint32_t signature)
-//{
-//    eOresult_t eores = eores_NOK_generic;
-//    int32_t err = -1;
-//    int32_t info0 = -1;
-//    int32_t info1 = -1;
-//    int32_t info2 = -1;
-
-//    if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
-//    {
-//        char nvinfo[128];
-//        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//        yError() << "HostTransceiver::addGetROP__() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
-//                    "with id: " << nvinfo;
-//        return false;
-//    }
-
-//    eOropdescriptor_t ropdesc = {0};
-//    // marco.accame: recommend to use eok_ropdesc_basic
-//    memcpy(&ropdesc, &eok_ropdesc_basic, sizeof(eOropdescriptor_t));
-//    ropdesc.control.plustime    = 1;
-//    ropdesc.control.plussign    = (eo_rop_SIGNATUREdummy == signature) ? 0 : 1;
-//    ropdesc.ropcode             = eo_ropcode_ask;
-//    ropdesc.id32                = id32;
-//    ropdesc.size                = 0;
-//    ropdesc.data                = NULL;
-//    ropdesc.signature           = signature;
-
-
-//    bool ret = false;
-
-//    for(int i=0; ( (i<maxNumberOfROPloadingAttempts) && (!ret) ); i++)
-//    {
-//        lock_transceiver(true);
-//        eores = eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc);
-//        lock_transceiver(false);
-
-//        if(eores_OK != eores)
-//        {
-//            char nvinfo[128];
-//            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//            yWarning() << "HostTransceiver::addGetROP__(): eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring<< "unsuccessfull at attempt num " << i+1 <<
-//                          "with id: " << nvinfo;
-
-//            eo_transceiver_lasterror_tx_Get(pc104txrx, &err, &info0, &info1, &info2);
-//            yWarning() << "HostTransceiver::addGetROP__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
-
-//            yarp::os::Time::delay(delayAfterROPloadingFailure);
-//        }
-//        else
-//        {
-//            if(i!=0)
-//            {
-//                char nvinfo[128];
-//                eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//                yDebug() << "HostTransceiver::addGetROP__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "succesful ONLY at attempt num " << i+1 <<
-//                              "with id: " << nvinfo;
-
-//            }
-//            ret = true;
-//        }
-//    }
-//    if(!ret)
-//    {
-//        char nvinfo[128];
-//        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//        yError() << "HostTransceiver::addGetROP__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring << "after all attempts " <<
-//                    "with id: " << nvinfo;
-//    }
-//    return ret;
-//}
-
 bool HostTransceiver::isID32supported(const eOprotID32_t id32)
 {
     return (eobool_false == eoprot_id_isvalid(protboardnumber, id32)) ? false : true;
 }
-
-
-//uint16_t HostTransceiver::getROPcapacity()
-//{
-//    return maxSizeOfROP;
-//}
-
 
 bool HostTransceiver::addROPask(const eOprotID32_t id32, const uint32_t signature)
 {
@@ -622,45 +530,6 @@ bool HostTransceiver::read(const eOprotID32_t id32, void *data)
 
     return ret;
 }
-
-
-//// use the readSentValue() to retrieve a value previously set into a EOnv with method ::addSetROP__(id32, data, signature, bool writelocalcache = true).
-//// take in mind however, that the opration is not clean.
-//// the ram of EOnv is done to accept values coming from the network. if robot-interface writes data into a EOnv, then a received rop of type say<> or sig<> will
-//// overwrite the same memory area. we need to re-think the mode with which someone wants to retrieve the last sent value of a EOnv.
-
-//bool HostTransceiver::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
-//{
-//    bool ret = false;
-//    if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
-//    {
-//        char nvinfo[128];
-//        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//        yError() << "HostTransceiver::readSentValue() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
-//                    "with id: " << nvinfo;
-//        return false;
-//    }
-
-//    if((NULL == data) || (NULL == size))
-//    {
-//        yError() << "eo HostTransceiver: called readSentValue() with NULL data or size";
-//        return false;
-//    }
-    
-//    EOnv nv;
-//    EOnv *nv_ptr = getnvhandler(id32, &nv);
-
-//    if(NULL == nv_ptr)
-//    {
-//        yError() << "readSentValue: Unable to get pointer to desired NV with id = " << id32;
-//        return false;
-//    }
-//    // protection on reading data by yarp
-//    lock_nvs(true);
-//    ret = (eores_OK == eo_nv_Get(nv_ptr, eo_nv_strg_volatile, data, size)) ? true : false;
-//    lock_nvs(false);
-//    return true;
-//}
 
 
 

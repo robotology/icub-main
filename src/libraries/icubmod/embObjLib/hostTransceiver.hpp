@@ -83,8 +83,8 @@ namespace eth {
         // reads locally.
         bool read(const eOprotID32_t id32, void *data);
 
-        // writes lcoally
-        bool write(const eOprotID32_t id32, const void* data);
+        // writes locally
+        bool write(const eOprotID32_t id32, const void* data, bool forcewriteOfReadOnly);
 
         // adds a set<> ROP to the UDP packet
         bool addROPset(const eOprotID32_t id32, const void* data, const uint32_t signature = eo_rop_SIGNATUREdummy);

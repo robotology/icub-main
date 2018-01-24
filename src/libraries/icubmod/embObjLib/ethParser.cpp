@@ -57,11 +57,11 @@ using namespace yarp::os;
 bool eth::parser::print(const pc104Data &pc104data)
 {
 
-    yDebug() << "eth::parser::print(pc104Data):";
+    yDebug() << "eth::parser::print(pc104Data) for PC104:";
 
-    yDebug() << "PC104IpAddress:PC104IpPort = " << pc104data.addressingstring;
-    yDebug() << "PC104TXrate = " << pc104data.txrate;
-    yDebug() << "PC104RXrate = " << pc104data.rxrate;
+    yDebug() << "PC104/PC104IpAddress:PC104IpPort = " << pc104data.addressingstring;
+    yDebug() << "PC104/PC104TXrate = " << pc104data.txrate;
+    yDebug() << "PC104/PC104RXrate = " << pc104data.rxrate;
 
     return true;
 }
@@ -69,15 +69,22 @@ bool eth::parser::print(const pc104Data &pc104data)
 bool eth::parser::print(const boardData &boarddata)
 {
 
-    yDebug() << "eth::parser::print(boardData):";
+    yDebug() << "eth::parser::print(boardData) for BOARD" << boarddata.settings.name;
 
-    yDebug() << "ipv4addressingstring = " << boarddata.properties.ipv4addressingstring;
-    yDebug() << "ETH_BOARD_PROPERTIES/IpAddress = " << boarddata.properties.ipv4string;
-    yDebug() << "ETH_BOARD_PROPERTIES/IpPort = " << boarddata.properties.ipv4addressing.port;
-    yDebug() << "ETH_BOARD_PROPERTIES/Type = " << boarddata.properties.typestring;
-    yDebug() << "ETH_BOARD_PROPERTIES/maxSizeRXpacket = " << boarddata.properties.maxSizeRXpacket;
-    yDebug() << "ETH_BOARD_PROPERTIES/maxSizeROP = " << boarddata.properties.maxSizeROP;
+    yDebug() << "ETH_BOARD/ETH_BOARD_PROPERTIES:";
+    yDebug() << "ETH_BOARD/ETH_BOARD_PROPERTIES/IpAddress = " << boarddata.properties.ipv4string;
+    yDebug() << "ETH_BOARD/ETH_BOARD_PROPERTIES/IpPort = " << boarddata.properties.ipv4addressing.port;
+    yDebug() << "ETH_BOARD/ETH_BOARD_PROPERTIES/Type = " << boarddata.properties.typestring;
+    yDebug() << "ETH_BOARD/ETH_BOARD_PROPERTIES/maxSizeRXpacket = " << boarddata.properties.maxSizeRXpacket;
+    yDebug() << "ETH_BOARD/ETH_BOARD_PROPERTIES/maxSizeROP = " << boarddata.properties.maxSizeROP;
 
+    yDebug() << "ETH_BOARD/ETH_BOARD_SETTINGS:";
+    yDebug() << "ETH_BOARD/ETH_BOARD_SETTINGS/Name = " << boarddata.settings.name;
+    yDebug() << "ETH_BOARD/ETH_BOARD_SETTINGS/RUNNINGMODE/(period, maxTimeOfRXactivity, maxTimeOfDOactivity, maxTimeOfTXactivity, TXrateOfRegularROPs) = " <<
+                boarddata.settings.txconfig.cycletime << boarddata.settings.txconfig.maxtimeRX << boarddata.settings.txconfig.maxtimeDO << boarddata.settings.txconfig.maxtimeTX << boarddata.settings.txconfig.txratedivider;
+    yDebug() << "ETH_BOARD/ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE";
+    yDebug() << "ETH_BOARD/ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE/(enabled, timeout, periodOfMissingReport) = " <<
+                boarddata.actions.monitorpresence_enabled << boarddata.actions.monitorpresence_timeout << boarddata.actions.monitorpresence_periodofmissingreport;
 
     return true;
 }
@@ -168,7 +175,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, pc104Data &pc104data)
 
     // now i print all the found values
 
-    print(pc104data);
+    //print(pc104data);
 
     return true;
 }
@@ -227,7 +234,8 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     }
     else
     {
-        yWarning() << "eth::parser::read() cannot find ETH_BOARD_PROPERTIES/IpPort group in config files";
+        boarddata.properties.ipv4addressing.port = 12345;
+        yWarning() << "eth::parser::read() cannot find ETH_BOARD_PROPERTIES/IpPort group in config files." << " using:" << boarddata.properties.ipv4addressing.port;
     }
 
     snprintf(ipinfo, sizeof(ipinfo), ":%d", boarddata.properties.ipv4addressing.port);
@@ -272,23 +280,26 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     if(true == groupEthBoardProps.check("maxSizeRXpacket"))
     {
         boarddata.properties.maxSizeRXpacket = groupEthBoardProps.find("maxSizeRXpacket").asInt();
-        yDebug() << "eth::parser::read() has detected capacityofTXpacket =" << boarddata.properties.maxSizeRXpacket << "for BOARD w/ IP" << boarddata.properties.ipv4string;
+        //yDebug() << "eth::parser::read() has detected capacityofTXpacket =" << boarddata.properties.maxSizeRXpacket << "for BOARD w/ IP" << boarddata.properties.ipv4string;
     }
     else
     {
-
+        boarddata.properties.maxSizeRXpacket = 768;
+        yWarning() << "eth::parser::read() in BOARD w/ IP" << boarddata.properties.ipv4string << "cannot find: capacityofTXpacket. using:" << boarddata.properties.maxSizeRXpacket;
     }
 
     // maxSizeROP:
     if(true == groupEthBoardProps.check("maxSizeROP"))
     {
         boarddata.properties.maxSizeROP = groupEthBoardProps.find("maxSizeROP").asInt();
-        yDebug() << "eth::parser::read() has detected maxSizeOfROP =" << boarddata.properties.maxSizeROP << "for BOARD w/ IP" << boarddata.properties.ipv4string;
+        //yDebug() << "eth::parser::read() has detected maxSizeOfROP =" << boarddata.properties.maxSizeROP << "for BOARD w/ IP" << boarddata.properties.ipv4string;
     }
     else
     {
-
+        boarddata.properties.maxSizeROP = 384;
+        yWarning() << "eth::parser::read() in BOARD w/ IP" << boarddata.properties.ipv4string << "cannot find: maxSizeROP. using:" << boarddata.properties.maxSizeROP;
     }
+
 
 
     // <- ETH_BOARD/ETH_BOARD_PROPERTIES
@@ -403,9 +414,6 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
             boarddata.settings.txconfig.maxtimeDO = 300;
             boarddata.settings.txconfig.maxtimeTX = 300;
         }
-
-        yInfo() << "Found group ETH_BOARD_PROPERTIES/RUNNINGMODE with values: (period, maxTimeOfRXactivity, maxTimeOfDOactivity, maxTimeOfTXactivity, TXrateOfRegularROPs) = " <<
-                    boarddata.settings.txconfig.cycletime << boarddata.settings.txconfig.maxtimeRX << boarddata.settings.txconfig.maxtimeDO << boarddata.settings.txconfig.maxtimeTX << boarddata.settings.txconfig.txratedivider;
 
     }
 

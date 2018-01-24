@@ -681,7 +681,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     yDebug() << "embObjMotionControl:serviceVerifyActivate OK!";
 
 
-    yDebug() << "embObjMotionControl:new eoRequestsQueue OK!";
     if(!init() )
     {
         yError() << "embObjMotionControl::open() has an error in call of embObjMotionControl::init() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;

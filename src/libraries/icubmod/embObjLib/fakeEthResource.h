@@ -70,7 +70,7 @@ namespace eth {
 
         bool getLocalValue(const eOprotID32_t id32,  void *value);
 
-        bool setLocalValue(const eOprotID32_t id32,  const void *value);
+        bool setLocalValue(const eOprotID32_t id32,  const void *value, bool overrideROprotection = false);
 
         bool verifyEPprotocol(eOprot_endpoint_t ep);
 

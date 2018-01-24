@@ -184,16 +184,16 @@ const void * EthResource::getUDPtransmit(eOipv4addressing_t &destination, size_t
     destination = properties.ipv4addressing;
     const void * udp = transceiver.getUDP(sizeofpacket, numofrops);
 
-    const EOropframeHeader_t * header = reinterpret_cast<const EOropframeHeader_t *>(udp);
+//    const EOropframeHeader_t * header = reinterpret_cast<const EOropframeHeader_t *>(udp);
 
-    if(nullptr != header)
-    {
-        yDebug() << "EthResource::getUDPtransmit(): the header has: sequencenumber = " << header->sequencenumber << "numofrops = " << header->ropsnumberof << "sizeofrops = " << header->ropssizeof;
-    }
-    else
-    {
+//    if(nullptr != header)
+//    {
+//        yDebug() << "EthResource::getUDPtransmit(): the header has: sequencenumber = " << header->sequencenumber << "numofrops = " << header->ropsnumberof << "sizeofrops = " << header->ropssizeof;
+//    }
+//    else
+//    {
 
-    }
+//    }
 
     return udp;
 }
@@ -848,9 +848,9 @@ bool EthResource::getLocalValue(const eOprotID32_t id32, void *data)
 }
 
 
-bool EthResource::setLocalValue(eOprotID32_t id32, const void *value)
+bool EthResource::setLocalValue(eOprotID32_t id32, const void *value, bool overrideROprotection)
 {
-    return transceiver.write(id32, value);
+    return transceiver.write(id32, value, overrideROprotection);
 }
 
 
