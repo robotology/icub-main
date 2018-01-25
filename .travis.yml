@@ -19,7 +19,6 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo sh -c 'echo "deb http://www.icub.org/ubuntu trusty contrib/science" > /etc/apt/sources.list.d/icub.list'; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get --assume-yes --force-yes install cmake libeigen3-dev icub-common libv4lconvert0 libv4l-dev; fi
-
   # macOS dependencies
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/cask; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies yarp; fi
@@ -32,7 +31,9 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="$PATH:/usr/local/opt/qt/bin"; fi
   #use the same set of cmake options used in the dashboard build
   - source ./admin/scripts/generate-cmake-options.sh
-  #install yarp from master
+  # Setup the YARP branch
+  - if [ "$TRAVIS_BRANCH" = "devel" ] ; then export YARP_BRANCH="devel" && echo "Using yarp devel branch" ; fi
+  #install yarp
   - git clone --depth 1 -b $YARP_BRANCH https://github.com/robotology/yarp
   - cd yarp
   - mkdir build
@@ -51,4 +52,3 @@ script:
   - cmake --build .
   - sudo make install
   - sudo make uninstall
-
