@@ -16,7 +16,7 @@ add_subdirectory(embObjProtoTools/boardTransceiver)
 #canLoader needs GtkPlus, but it contains a library needed by other modules
 add_subdirectory(canLoader)
 add_subdirectory(ethLoader)
-
+add_subdirectory(strainCalibrationDataAcquisition)
 
 # Tools available both for Qt5 and GTK2
 if(ICUB_USE_Qt5)
