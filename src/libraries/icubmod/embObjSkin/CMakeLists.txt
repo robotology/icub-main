@@ -5,9 +5,6 @@
 yarp_prepare_plugin(embObjSkin CATEGORY device TYPE EmbObjSkin INCLUDE embObjSkin.h EXTRA_CONFIG WRAPPER=skinWrapper)
 
 if (NOT SKIP_embObjSkin)
-    if(ETHRES_DEBUG_DONTREADBACK)
-        add_definitions( -DETHRES_DEBUG_DONTREADBACK)
-    endif(ETHRES_DEBUG_DONTREADBACK)
 
     set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
     INCLUDE(../embObjLib/embObjLib.cmake)

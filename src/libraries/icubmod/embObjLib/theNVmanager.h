@@ -28,7 +28,7 @@
 #include <cstdint>
 
 #include "EoProtocol.h"
-#include "ethResource.h"
+#include <hostTransceiver.hpp>
 
 namespace eth {
            
@@ -38,22 +38,9 @@ namespace eth {
         static theNVmanager& getInstance();
                 
     public:
-//        struct Config
-//        {
-//            std::uint8_t    param1;
-//            Config() :
-//                param1(0)
-//                {}
-//            Config(std::uint8_t _p1) :
-//                param1(_p1)
-//                {}
-//        };
 
         enum class ropCode { sig = eo_ropcode_sig, say = eo_ropcode_say };
         
-        
-        //bool initialise(const Config &config);
-
         // value and values[i] must point to memory with enough space to host the reply. the ask() functions will just copy the reply
         // into these memory locations, hence the user must pre-allocate enough memory before calling ask()
         // but what must be the size of the memory? well, it depends on {ipv4, id32}. in any case, it is upper bounded.
@@ -77,13 +64,16 @@ namespace eth {
         // it sends a ask<> ROP to a single network variable and waits the say<> reply ROP until timeout.
         // result is in value, which must be a buffer with at least sizeOfNV(id32) bytes
         bool ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout = 0.5);
-        bool ask(yarp::dev::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout = 0.5);
+        bool ask(eth::HostTransceiver *t, const eOprotID32_t id32, void *value, const double timeout = 0.5);
         // imposes a value to a given network variable. it does not wait nor verify
         bool set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value);
+        bool set(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value);
         // it asks the value of a single network variable and checks vs a given value which points to a buffer of at least sizeOfNV(id32) bytes
         bool check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const double timeout = 0.5, const unsigned int retries = 0);
+        bool check(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const double timeout = 0.5, const unsigned int retries = 0);
         // it sends set<> ROP to a given varaible and it checks that the value is really written. it repeats this cycle until done, at most retries + 1 times.
         bool setcheck(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const unsigned int retries = 10, double waitbeforecheck = 0.001, double timeout = 0.5);
+        bool setcheck(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const unsigned int retries = 10, double waitbeforecheck = 0.001, double timeout = 0.5);
 
         // function which must be placed in the reception handlers to unblock the waiting of replies from a given board
         bool onarrival(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const std::uint32_t signature);
@@ -103,22 +93,32 @@ namespace eth {
         // for future use: ask of multiple values on the same ipv4 board.
 
 
-
-
-        // sends read parallel requests to many network variables to the same ip address and waits
+        // sends read parallel requests for many network variables to the same ip address and waits
         bool ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout = 0.5);
+        bool ask(eth::HostTransceiver *t, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout = 0.5);
 
 
-        // the thread locks the object
-        bool parallel_ask_start();
-        // it adds as many requests are it likes. it adds ip, vector<id>, vector<data*> which are added in vector<ips> and vector<vector<id>> vector<vector<data*>>
-        bool parallel_ask_add();
-        // and finally the request all start. they all have the same signature. the thread is locked until
-        // it receives all the replies. results are in previous vectors
-        bool parallel_ask_wait(const double timeout = 0.5);
+        // tobedone: i want to group several requests before i start to wait.
+        // i need:
+        // - group_start() which tells the nvmanager to use a given signature for all successive group_add_ask() until group_add_stop()
+        // - group_ask() which adds to the nvmanager a vector of ask rops identified by the same signature.
+        //   this function can be repeated as many times one want. typically by different devices but by the same thread.
+        // - group_stop() which starts the wait for the replies. when this function returns, the various values vector will contain
+        //   the replies.
+        // some more explanation:
+        // we shall use the same signature if the calling thread is the same as the one which called group_start().
+        // in this way, we can target the operation to a given thread without blocking other threads using normal ask() requests. .
+        // i would say however, that if another thread starts a group_start() during an active session .... it musts wait.
+        // also let's give some limitations:
+        // start of proper ask sending is done by group_stop() and not directly by group_ask().
+        // we can have at most one active session at any time.
+        // we can call group_ask() at most ... 8 times (boh, maybe it is not necessary to give a limit).
+        // the calling thread will be retrieved inside.
+        // i use a ACE_Recursive_Thread_Mutex to perform synch amongst different threads.
 
-
-//        bool check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const std::uint16_t size, const double timeout = 0.5);
+        bool group_start();
+        bool group_ask(eth::HostTransceiver *t, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values);
+        bool group_stop(const double timeout = 0.5);
 
     private:
         theNVmanager(); 
@@ -136,7 +136,7 @@ namespace eth {
     };       
 
 
-} // namespace tbd
+} // namespace eth
 
 
 #endif  // include-guard

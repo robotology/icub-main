@@ -33,11 +33,12 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
-// embObjLib includes
-#include <ethManager.h>
-#include <ethResource.h>
-#include "FeatureInterface.h"
+
 #include "IethResource.h"
+#include <ethManager.h>
+#include <abstractEthResource.h>
+
+
 #include "SkinConfigReader.h"
 #include <SkinDiagnostics.h>
 #include "serviceParser.h"
@@ -71,7 +72,7 @@ class SkinConfig
 
 class EmbObjSkin :  public yarp::dev::IAnalogSensor,
                     public DeviceDriver,
-                    public IethResource
+                    public eth::IethResource
 {
 
 public:
@@ -83,11 +84,12 @@ public:
 
 protected:
 
-    char boardIPstring[20];
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
 
-    TheEthManager   *ethManager;
-    PolyDriver      resource;
-    AbstractEthResource    *res;
+    eth::TheEthManager *ethManager;
+    eth::AbstractEthResource *res;
 
     Semaphore       mutex;
     //int             totalCardsNum;
@@ -104,7 +106,6 @@ protected:
     bool            init();
     bool            fromConfig(yarp::os::Searchable& config);
     bool            initWithSpecialConfig(yarp::os::Searchable& config);
-    bool            isEpManagedByBoard();
     bool            start();
     bool            configPeriodicMessage(void);
     eOprotIndex_t convertIdPatch2IndexNv(int idPatch)
@@ -150,9 +151,9 @@ public:
     virtual int     calibrateSensor(const yarp::sig::Vector& v);
     virtual int     calibrateChannel(int ch);
 
-    virtual bool    initialised();
-    virtual iethresType_t type();
-    virtual bool    update(eOprotID32_t id32, double timestamp, void *rxdata);
+    virtual bool initialised();
+    virtual eth::iethresType_t type();
+    virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
 
 };
 

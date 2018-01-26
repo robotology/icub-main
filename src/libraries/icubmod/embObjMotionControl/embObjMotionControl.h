@@ -54,8 +54,7 @@ using namespace std;
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
-//#include <yarp/dev/ControlBoardInterfacesImpl.h>
-//#include <yarp/dev/ControlBoardInterfacesImpl.inl>
+
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
 
@@ -64,20 +63,9 @@ using namespace std;
 
 
 
-// ACE udp socket
-#include <ace/ACE.h>
-#include <ace/SOCK_Dgram_Bcast.h>
-
-#include "FeatureInterface.h"
-
-
-#include "EoMotionControl.h"
-#include <ethManager.h>
-#include <ethResource.h>
-#include "../embObjLib/hostTransceiver.hpp"
-// #include "IRobotInterface.h"
 #include "IethResource.h"
-#include "EoMotionControl.h"
+#include <ethManager.h>
+#include <abstractEthResource.h>
 
 #include "serviceParser.h"
 #include "mcParser.h"
@@ -132,11 +120,6 @@ typedef struct
 } eomc_jointsetsInfo_t;
 
 
-typedef struct
-{
-
-} eomc_measureCovFactors_t;
-
 
 namespace yarp {
     namespace dev  {
@@ -189,17 +172,18 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementPWMControl,
     public ICurrentControlRaw,
     public ImplementCurrentControl,
-    public IethResource
+    public eth::IethResource
 {
 
 
 private:
 
-    char boardIPstring[20];
-    char boardName[30];
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
 
-    TheEthManager* ethManager;
-    AbstractEthResource* res;
+    eth::TheEthManager* ethManager;
+    eth::AbstractEthResource* res;
     ServiceParser* parser;
     mcParser *_mcparser;
 
@@ -306,7 +290,7 @@ private:
     bool checkRemoteControlModeStatus(int joint, int target_mode);
 
     bool dealloc();
-    bool isEpManagedByBoard();
+
 
     bool convertPosPid(eomcParser_pidInfo myPidInfo[]);
     bool convertTrqPid(eomcParser_trqPidInfo myPidInfo[]);
@@ -435,7 +419,7 @@ public:
     bool fromConfig(yarp::os::Searchable &config);
 
     virtual bool initialised();
-    virtual iethresType_t type();
+    virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
 
 

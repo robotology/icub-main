@@ -8,13 +8,6 @@ SET(PROJECTNAME ethResources)
 PROJECT(${PROJECTNAME})
 
 
-option(ETHRES_DEBUG_DONTREADBACK "Compile EmbObj Library to run in testbed without EMS (will not work of course, just for debugging high level code)" FALSE)
-mark_as_advanced (ETHRES_DEBUG_DONTREADBACK)
-
-if(ETHRES_DEBUG_DONTREADBACK)
-    add_definitions( -DETHRES_DEBUG_DONTREADBACK)
-endif(ETHRES_DEBUG_DONTREADBACK)
-
 
 add_definitions(-D_ICUB_CALLBACK_ -DUSE_EOPROT_XML -DEOPROT_CFG_OVERRIDE_CALLBACKS_IN_RUNTIME)
 
@@ -179,6 +172,12 @@ set(PROT_HEADER             ${PROT_FOLDER}/transport/EOhostTransceiver_hid.h
 set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/ethManager.cpp
                             ${EXTRA_FOLDER}/ethResource.cpp
+                            ${EXTRA_FOLDER}/ethMonitorPresence.cpp
+                            ${EXTRA_FOLDER}/ethBoards.cpp
+                            ${EXTRA_FOLDER}/ethSender.cpp
+                            ${EXTRA_FOLDER}/ethReceiver.cpp
+                            ${EXTRA_FOLDER}/ethParser.cpp
+                            ${EXTRA_FOLDER}/IethResource.cpp
                             ${EXTRA_FOLDER}/fakeEthResource.cpp
                             ${EXTRA_FOLDER}/serviceParser.cpp
                             ${EXTRA_FOLDER}/theNVmanager.cpp

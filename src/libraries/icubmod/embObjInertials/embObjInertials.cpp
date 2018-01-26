@@ -381,7 +381,7 @@ bool embObjInertials::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "embObjInertials::open() fails to instantiate ethManager";
@@ -389,7 +389,7 @@ bool embObjInertials::open(yarp::os::Searchable &config)
     }
 
 
-    if(false == ethManager->verifyEthBoardInfo(config, &ipv4addr, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjInertials::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -434,7 +434,7 @@ bool embObjInertials::open(yarp::os::Searchable &config)
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_inertials, servparam, 5.0))
     {
-        yError() << "embObjInertials::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getName() << "IP" << res->getIPv4string();
+        yError() << "embObjInertials::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         printServiceConfig();
         cleanup();
         return false;
@@ -459,7 +459,7 @@ bool embObjInertials::open(yarp::os::Searchable &config)
 
     if(false == res->serviceStart(eomn_serv_category_inertials))
     {
-        yError() << "embObjInertials::open() fails to start as service for BOARD" << res->getName() << "IP" << res->getIPv4string() << ": cannot continue";
+        yError() << "embObjInertials::open() fails to start as service for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": cannot continue";
         cleanup();
         return false;
     }
@@ -467,7 +467,7 @@ bool embObjInertials::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjInertials::open() correctly starts service of BOARD" << res->getName() << "IP" << res->getIPv4string();
+            yDebug() << "embObjInertials::open() correctly starts service of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -517,14 +517,14 @@ bool embObjInertials::sendConfig2MTBboards(Searchable& globalConfig)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config);
     if(false == res->setcheckRemoteValue(id32, &config, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjInertials::sendConfig2MTBboards() had an error while calling setcheckRemoteValue() for config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjInertials::sendConfig2MTBboards() had an error while calling setcheckRemoteValue() for config in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjInertials::sendConfig2MTBboards() correctly configured enabled sensors with period" << serviceConfig.acquisitionrate << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjInertials::sendConfig2MTBboards() correctly configured enabled sensors with period" << serviceConfig.acquisitionrate << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -558,7 +558,7 @@ bool embObjInertials::initRegulars()
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjInertials::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjInertials::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
             char nvinfo[128];
             for (size_t r = 0; r<id32v.size(); r++)
             {
@@ -680,9 +680,9 @@ int embObjInertials::calibrateChannel(int ch, double v)
 }
 
 
-iethresType_t embObjInertials::type()
+eth::iethresType_t embObjInertials::type()
 {
-    return iethres_analoginertial;
+    return eth::iethres_analoginertial;
 }
 
 
@@ -760,8 +760,8 @@ void embObjInertials::printServiceConfig(void)
     char fir[20] = {0};
     char pro[20] = {0};
 
-    const char * boardname = (NULL != res) ? (res->getName()) : ("NOT-ASSIGNED-YET");
-    const char * ipv4 = (NULL != res) ? (res->getIPv4string()) : ("NOT-ASSIGNED-YET");
+    const char * boardname = (NULL != res) ? (res->getProperties().boardnameString.c_str()) : ("NOT-ASSIGNED-YET");
+    const char * ipv4 = (NULL != res) ? (res->getProperties().ipv4addrString.c_str()) : ("NOT-ASSIGNED-YET");
 
 
     yInfo() << "The embObjInertials device using BOARD" << boardname << "w/ IP" << ipv4 << "has the following service config:";

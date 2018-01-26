@@ -2,7 +2,8 @@
 
 /*
  * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
- * Authors: Alberto Cardellino
+ * Author:  Alberto Cardellino, Marco Accame
+ * email:   alberto.cardellino@iit.it, marco.accame@iit.it
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
  */
@@ -21,119 +22,22 @@
 #include "EoProtocolMN.h"
 #include "can_string_eth.h"
 
-using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
 #include <theNVmanager.h>
+#include "ethParser.h"
 using namespace eth;
 
-// - class EthMonitorPresence
-
-EthMonitorPresence::EthMonitorPresence()
-{
-    lastTickTime = 0;
-    lastMissingReportTime = 0;
-    lastHeardTime = 0;
-    reportedMissing = false;
-}
 
 
-EthMonitorPresence::~EthMonitorPresence()
-{
-
-}
-
-
-void EthMonitorPresence::config(const Config &cfg)
-{
-    configuration = cfg;
-    // i dont check consistency... use sensibly
-}
-
-
-void EthMonitorPresence::enable(bool en)
-{
-    configuration.enabled = en;
-}
-
-
-bool EthMonitorPresence::isenabled()
-{
-    return configuration.enabled;
-}
-
-
-void EthMonitorPresence::tick()
-{
-    lastTickTime = yarp::os::Time::now();
-}
-
-
-bool EthMonitorPresence::check()
-{
-
-    if(false == configuration.enabled)
-    {
-        return true;
-    }
-
-
-    double tnow = yarp::os::Time::now();
-
-    if((true == reportedMissing) && (lastTickTime > 0))
-    {
-        yDebug() << "EthMonitorPresence: BOARD" << configuration.name << "has shown after being lost for" << tnow - lastHeardTime << "sec";
-        reportedMissing = false;
-        lastHeardTime = tnow;
-    }
-
-    if((true == reportedMissing) && (configuration.periodmissingreport > 0))
-    {
-        // i report the board is still missing. but at a smaller rate
-        if((tnow - lastMissingReportTime) >= configuration.periodmissingreport)
-        {
-            yDebug() << "EthMonitorPresence: BOARD" << configuration.name << "has been silent for another" << tnow - lastMissingReportTime << "sec, for a total of" << tnow - lastHeardTime << "sec";
-            lastMissingReportTime = tnow;
-        }
-        return false;
-    }
-
-
-    // check vs the target timeout
-    double delta = tnow - lastTickTime;
-
-    if(delta > configuration.timeout)
-    {
-        yDebug() << "EthMonitorPresence: BOARD" << configuration.name << "has been silent for" << delta << "sec (its timeout is" << configuration.timeout << "sec)";
-
-        // also: mark the board as lost.
-        lastMissingReportTime = tnow;
-        reportedMissing = true;
-        lastHeardTime = lastTickTime;
-        lastTickTime = -1;
-
-        return false;
-    }
-
-    // we have the board and we hard of it by its timeout
-    return true;
-}
 
 
 // - class EthResource
 
 EthResource::EthResource()
 {
-    yTrace();
-
-    ipv4addr = 0;
-    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
-    ethboardtype = detectedBoardType = eobrd_ethtype_unknown;
-    snprintf(boardTypeString, sizeof(boardTypeString), "unknown");
-
     ethManager                  = NULL;
-    lastRecvMsgTimestamp        = -1.0;
     isInRunningMode             = false;
     objLock                     = new Semaphore(1);
 
@@ -143,20 +47,23 @@ EthResource::EthResource()
     txrateISset                 = false;
     cleanedBoardBehaviour       = false;
 
-    boardVersion.major = boardVersion.minor = 0;
     boardMNprotocolversion.major = boardMNprotocolversion.minor;
-    boardDate.year = 1999;
-    boardDate.month = 9;
-    boardDate.day = 9;
-    boardDate.hour = 12;
-    boardDate.min = 12;
+
+
+    txconfig.cycletime = defcycletime;
+    txconfig.txratedivider = defTXrateOfRegularROPs;
+    txconfig.maxtimeRX = defmaxtimeRX;
+    txconfig.maxtimeDO = defmaxtimeDO;
+    txconfig.maxtimeTX = defmaxtimeTX;
 
     memset(verifiedEPprotocol, 0, sizeof(verifiedEPprotocol));
 
-    usedNumberOfRegularROPs     = 0;
+    usedNumberOfRegularROPs = 0;
 
     for(int i = 0; i<16; i++)
-        c_string_handler[i]     = NULL;
+    {
+        c_string_handler[i] = NULL;
+    }
 
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
@@ -179,8 +86,6 @@ EthResource::~EthResource()
     ethManager = NULL;
     delete objLock;
 
-//    delete ethQuery;
-//    delete ethQueryServices;
 
     // Delete every initialized can_string_eth object
     for(int i=0; i<16; i++)
@@ -206,177 +111,55 @@ bool EthResource::lock(bool on)
 
 bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 {
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
 
-    Bottle groupEthBoard  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
-    if(groupEthBoard.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD group in config files";
-        return NULL;
-    }
-    Bottle groupEthBoardProps = Bottle(groupEthBoard.findGroup("ETH_BOARD_PROPERTIES"));
-    if(groupEthBoardProps.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
-        return NULL;
-    }
-    Bottle groupEthBoardSettings = Bottle(groupEthBoard.findGroup("ETH_BOARD_SETTINGS"));
-    if(groupEthBoardSettings.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
-        return NULL;
-    }
+    eth::parser::pc104Data pc104data;
+    eth::parser::read(cfgtotal, pc104data);
+//    eth::parser::print(pc104data);
 
-    Bottle b_ETH_BOARD_PROPERTIES_Type = groupEthBoardProps.findGroup("Type");
-    ConstString Type = b_ETH_BOARD_PROPERTIES_Type.get(1).asString();
-    const char *strType = Type.c_str();
-    // 1. compare with the exceptions which may be in some old xml files ("EMS4", "MC4PLUS", "MC2PLUS"), and then then call proper functions
-    if(0 == strcmp(strType, "EMS4"))
-    {
-        ethboardtype = eobrd_ethtype_ems4;
-    }
-    else if(0 == strcmp(strType, "MC4PLUS"))
-    {
-        ethboardtype = eobrd_ethtype_mc4plus;
-    }
-    else if(0 == strcmp(strType, "MC2PLUS"))
-    {
-        ethboardtype = eobrd_ethtype_mc2plus;
-    }
-    else
-    {
-        eObrd_type_t brd = eobrd_unknown;
-        if(eobrd_unknown == (brd = eoboards_string2type2(strType, eobool_true)))
-        {
-            brd = eoboards_string2type2(strType, eobool_false);
-        }
 
-        // if not found in compact or extended string format, we accept that the board is unknown
+    eth::parser::boardData brddata;
+    eth::parser::read(cfgtotal, brddata);
+    eth::parser::print(brddata);
 
-        ethboardtype = eoboards_type2ethtype(brd);
-    }
+    txconfig = brddata.settings.txconfig;
 
-    snprintf(boardTypeString, sizeof(boardTypeString), "%s", eoboards_type2string2(eoboards_ethtype2type(ethboardtype), eobool_true));
+    properties.ipv4addr = remIP;
+    properties.ipv4addressing = brddata.properties.ipv4addressing;
+    properties.boardtype = brddata.properties.type;
+    properties.ipv4addrString = brddata.properties.ipv4string;
+    properties.ipv4addressingString = brddata.properties.ipv4addressingstring;
+    properties.boardtypeString = brddata.properties.typestring;
+    properties.boardnameString = brddata.settings.name;
 
-    Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
-    char xmlboardname[64] = {0};
-    snprintf(xmlboardname, sizeof(xmlboardname), "%s", paramNameBoard.toString().c_str());
+
+    eth::EthMonitorPresence::Config mpConfig;
+
+    // default values ...
+    mpConfig.enabled = brddata.actions.monitorpresence_enabled;
+    mpConfig.timeout = brddata.actions.monitorpresence_timeout;
+    mpConfig.periodmissingreport = brddata.actions.monitorpresence_periodofmissingreport;
+    mpConfig.name = brddata.properties.ipv4string + " (" + brddata.settings.name + ")";
+
+
+
+    // now i init objects
 
     lock(true);
 
+    // 1. init transceiver
+
     eOipv4addressing_t localIPv4 = ethManager->getLocalIPV4addressing();
 
-    bool ret;
-    uint8_t num = 0;
-    eo_common_ipv4addr_to_decimal(remIP, NULL, NULL, NULL, &num);
-    if(!HostTransceiver::init2(groupEthBoard, localIPv4, remIP))
+
+    if(false == transceiver.init2(this, cfgtotal, localIPv4, remIP))
     {
-        ret = false;
-        char ipinfo[20] = {0};
-        eo_common_ipv4addr_to_string(remIP, ipinfo, sizeof(ipinfo));
-        yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << xmlboardname << "IP" << ipinfo;
-    }
-    else
-    {
-        ret = true;
+        yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << properties.boardnameString << "IP" << properties.ipv4addrString;
+        lock(false);
+        return false;
     }
 
-    uint8_t ip1, ip2, ip3, ip4;
-    eo_common_ipv4addr_to_decimal(remIP, &ip1, &ip2, &ip3, &ip4);
-    ACE_UINT32 hostip = (ip1 << 24) | (ip2 << 16) | (ip3 << 8) | (ip4);
-    ACE_INET_Addr myIP((u_short)localIPv4.port, hostip);
-    remote_dev = myIP;
-    ipv4addr = remIP;
-    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
-
-
-    if(0 != strlen(xmlboardname))
-    {
-        snprintf(boardName, sizeof(boardName), "%s", xmlboardname);
-    }
-    else
-    {
-        snprintf(boardName, sizeof(boardName), "NOT-NAMED");
-    }
-
-
-    // init EthMonitorPresence object now when we have the address and boardname strings
-
-    EthMonitorPresence::Config mpConfig;
-
-    // default values ...
-    mpConfig.enabled = true;
-    mpConfig.timeout = 0.020;
-    mpConfig.periodmissingreport = 60.0;
-    mpConfig.name = std::string(ipv4addrstring) + " (" + std::string(boardName) + ")";
-
-    // do we have a proper section ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE? if so we change its config
-
-    Bottle groupEthBoardActions = Bottle(groupEthBoard.findGroup("ETH_BOARD_ACTIONS"));
-    if(!groupEthBoardActions.isNull())
-    {
-
-        Bottle groupEthBoardActions_Monitor = Bottle(groupEthBoardActions.findGroup("MONITOR_ITS_PRESENCE"));
-        if(!groupEthBoardActions_Monitor.isNull())
-        {
-
-            Bottle groupEthBoardActions_Monitor_enabled = groupEthBoardActions_Monitor.findGroup("enabled");
-            ConstString Ena = groupEthBoardActions_Monitor_enabled.get(1).asString();
-            const char *strEna = Ena.c_str();
-
-            if(0 == strcmp(strEna, "true"))
-            {
-                mpConfig.enabled = true;
-            }
-
-            if(true == groupEthBoardActions_Monitor.check("timeout"))
-            {
-                double presenceTimeout = groupEthBoardActions_Monitor.find("timeout").asDouble();
-
-                if(presenceTimeout <= 0)
-                {
-                    presenceTimeout = 0;
-                    mpConfig.enabled = false;
-                }
-
-                if(presenceTimeout > 0.100)
-                {
-                    presenceTimeout = 0.100;
-                }
-
-                mpConfig.timeout = presenceTimeout;
-
-            }
-
-
-            if(true == groupEthBoardActions_Monitor.check("periodOfMissingReport"))
-            {
-                double reportMissingPeriod = groupEthBoardActions_Monitor.find("periodOfMissingReport").asDouble();
-
-                if(reportMissingPeriod <= 0)
-                {
-                    reportMissingPeriod = 0.0;
-                }
-
-                if(reportMissingPeriod > 600)
-                {
-                    reportMissingPeriod = 600;
-                }
-
-                mpConfig.periodmissingreport = reportMissingPeriod;
-
-            }
-        }
-    }
-
-    if(mpConfig.enabled)
-    {
-        yDebug() << "EthResource::open2(): monitoring of presence is ON for BOARD" << mpConfig.name << "with timeout =" << mpConfig.timeout << "sec and period of missing report =" << mpConfig.periodmissingreport << "sec";
-    }
-    else
-    {
-        yDebug() << "EthResource::open2(): monitoring of presence is OFF for BOARD" << mpConfig.name;
-    }
+    // 2. init monitor presence
 
     monitorpresence.config(mpConfig);
     monitorpresence.tick();
@@ -384,7 +167,7 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 
     lock(false);
 
-    return ret;
+    return true;
 }
 
 
@@ -396,9 +179,23 @@ bool EthResource::close()
 }
 
 
-bool EthResource::getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops)
+const void * EthResource::getUDPtransmit(eOipv4addressing_t &destination, size_t &sizeofpacket, uint16_t &numofrops)
 {
-    return HostTransceiver::getTransmit(packet, size, numofrops);
+    destination = properties.ipv4addressing;
+    const void * udp = transceiver.getUDP(sizeofpacket, numofrops);
+
+//    const EOropframeHeader_t * header = reinterpret_cast<const EOropframeHeader_t *>(udp);
+
+//    if(nullptr != header)
+//    {
+//        yDebug() << "EthResource::getUDPtransmit(): the header has: sequencenumber = " << header->sequencenumber << "numofrops = " << header->ropsnumberof << "sizeofrops = " << header->ropssizeof;
+//    }
+//    else
+//    {
+
+//    }
+
+    return udp;
 }
 
 
@@ -421,86 +218,23 @@ bool EthResource::Check()
 
 
 
-bool EthResource::canProcessRXpacket(uint64_t *data, uint16_t size)
+bool EthResource::processRXpacket(const void *data, const size_t size)
 {
-    if(NULL == data)
-        return false;
-
-    if(size > HostTransceiver::getCapacityOfRXpacket())
-        return false;
-
-    return true;
+    return transceiver.parseUDP(data, size);
 }
 
 
-void EthResource::processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics)
+const AbstractEthResource::Properties & EthResource::getProperties()
 {
-    bool collect = collectStatistics && isInRunningMode;
-
-    double curr_timeBeforeParsing = 0;
-
-    if(true == collect)
-    {
-        curr_timeBeforeParsing = yarp::os::Time::now();
-    }
-
-    HostTransceiver::onMsgReception(data, size);
-
-    if(true == collect)
-    {
-        double curr_timeAfterParsing = yarp::os::Time::now();
-    }
-}
-
-
-ACE_INET_Addr EthResource::getRemoteAddress()
-{
-    return remote_dev;
-}
-
-eOipv4addr_t EthResource::getIPv4remoteAddress(void)
-{
-    return ipv4addr;
-}
-
-const char * EthResource::getName(void)
-{
-    return boardName;
-}
-
-const char * EthResource::getIPv4string(void)
-{
-    return ipv4addrstring;
-}
-
-eObrd_ethtype_t EthResource::getBoardType(void)
-{
-    return ethboardtype;
-}
-
-const char * EthResource::getBoardTypeString(void)
-{
-    return boardTypeString;
-}
-
-void EthResource::getBoardInfo(eOdate_t &date, eOversion_t &version)
-{
-    date = boardDate;
-    version = boardVersion;
+    return properties;
 }
 
 
 
-//#warning --- still used???
-bool EthResource::isEPsupported(eOprot_endpoint_t ep)
-{
-    return HostTransceiver::isSupported(ep);
-}
-
-bool EthResource::isID32supported(eOprotID32_t id32)
-{
-    return HostTransceiver::isID32supported(id32);
-}
+//bool EthResource::isID32supported(eOprotID32_t id32)
+//{
+//    return transceiver.isID32supported(id32);
+//}
 
 
 
@@ -546,7 +280,7 @@ bool EthResource::verifyBoardTransceiver()
 
     if(false == rr)
     {
-        yError() << "EthResource::verifyBoardTransceiver() cannot read brdstatus w/ theNVmanager for BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        yError() << "EthResource::verifyBoardTransceiver() cannot read brdstatus w/ theNVmanager for BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << ": cannot proceed any further";
         return(false);
     }
 
@@ -557,21 +291,21 @@ bool EthResource::verifyBoardTransceiver()
     if(pc104versionMN->major != brdversionMN->major)
     {
         yError() << "EthResource::verifyBoardTransceiver() detected different mn protocol major versions: local =" << pc104versionMN->major << ", remote =" << brdversionMN->major << ": cannot proceed any further";
-        yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
+        yError() << "ACTION REQUIRED: BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "needs a FW update.";
         return(false);
     }
 
     if(pc104versionMN->minor != brdversionMN->minor)
     {
         yError() << "EthResource::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": cannot proceed any further.";
-        yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
+        yError() << "ACTION REQUIRED: BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "needs a FW update.";
         return(false);
     }
 
 
     if(verbosewhenok)
     {
-        yDebug() << "EthResource::verifyBoardTransceiver() has validated the transceiver of BOARD" << getName() << "with IP" << getIPv4string();
+        yDebug() << "EthResource::verifyBoardTransceiver() has validated the transceiver of BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString;
     }
 
     verifiedBoardTransceiver = true;
@@ -584,12 +318,6 @@ bool EthResource::verifyBoardTransceiver()
 bool EthResource::setTimingOfRunningCycle()
 {
 
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "EthResource::setTimingOfRunningCycle() is in ETHRES_DEBUG_DONTREADBACK mode";
-    txrateISset = true;
-    return true;
-#endif
-
     if(txrateISset)
     {
         return(true);
@@ -601,25 +329,19 @@ bool EthResource::setTimingOfRunningCycle()
     // call a set until verified
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_config);
-    eOmn_appl_config_t config = {0};
-    config.cycletime = HostTransceiver::cycletime;
-    config.maxtimeRX = HostTransceiver::maxtimeRX;
-    config.maxtimeDO = HostTransceiver::maxtimeDO;
-    config.maxtimeTX = HostTransceiver::maxtimeTX;
-    config.txratedivider = HostTransceiver::TXrateOfRegularROPs;
 
     theNVmanager& nvman = theNVmanager::getInstance();
 
-    if(false == nvman.setcheck(ipv4addr, id32, &config, 5, 0.010, 2.0))
+    if(false == nvman.setcheck(properties.ipv4addr, id32, &txconfig, 5, 0.010, 2.0))
     {
-        yWarning() << "EthResource::setTimingOfRunningCycle() for BOARD" << getName() << "with IP" << getIPv4string() << "could not configure: cycletime =" << config.cycletime << "usec, RX DO TX = (" << config.maxtimeRX << config.maxtimeDO << config.maxtimeTX << ") usec and TX rate =" << config.txratedivider << " every cycle";
+        yWarning() << "EthResource::setTimingOfRunningCycle() for BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "could not configure: cycletime =" << txconfig.cycletime << "usec, RX DO TX = (" << txconfig.maxtimeRX << txconfig.maxtimeDO << txconfig.maxtimeTX << ") usec and TX rate =" << txconfig.txratedivider << " every cycle";
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "EthResource::setTimingOfRunningCycle() for BOARD" << getName() << "with IP" << getIPv4string() << "has succesfully set: cycletime =" << config.cycletime << "usec, RX DO TX = (" << config.maxtimeRX << config.maxtimeDO << config.maxtimeTX << ") usec and TX rate =" << config.txratedivider << " every cycle";
+            yDebug() << "EthResource::setTimingOfRunningCycle() for BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "has succesfully set: cycletime =" << txconfig.cycletime << "usec, RX DO TX = (" << txconfig.maxtimeRX << txconfig.maxtimeDO << txconfig.maxtimeTX << ") usec and TX rate =" << txconfig.txratedivider << " every cycle";
         }
     }
 
@@ -640,7 +362,7 @@ bool EthResource::cleanBoardBehaviour(void)
     // send a ...
     if(false == serviceStop(eomn_serv_category_all))
     {
-        yError() << "EthResource::cleanBoardBehaviour() cannot stop services for BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        yError() << "EthResource::cleanBoardBehaviour() cannot stop services for BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << ": cannot proceed any further";
         return(false);
     }
 
@@ -649,7 +371,7 @@ bool EthResource::cleanBoardBehaviour(void)
 
     if(verbosewhenok)
     {
-        yDebug() << "EthResource::cleanBoardBehaviour() has cleaned the application in BOARD" << getName() << "with IP" << getIPv4string() << ": config mode + cleared all its regulars";
+        yDebug() << "EthResource::cleanBoardBehaviour() has cleaned the application in BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << ": config mode + cleared all its regulars";
     }
 
     cleanedBoardBehaviour = true;
@@ -658,6 +380,108 @@ bool EthResource::cleanBoardBehaviour(void)
 
 }
 
+bool EthResource::testMultipleASK()
+{
+#if 1
+    return true;
+#else
+
+
+    // i ask multiple values such as:
+    eOprotID32_t id32_commstatus = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
+    eOmn_comm_status_t value_commstatus = {0};
+
+    eOprotID32_t id32_applconfig = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_config);
+    eOmn_appl_config_t value_applconfig = {0};
+
+    eOprotID32_t id32_applconfig_txratedivider = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_config_txratedivider);
+    uint8_t txratedivider = 0;
+
+    std::vector<eOprotID32_t> id32s;
+    std::vector<void*> values;
+
+    id32s.push_back(id32_commstatus);
+    values.push_back(&value_commstatus);
+
+    id32s.push_back(id32_applconfig);
+    values.push_back(&value_applconfig);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    id32s.push_back(id32_applconfig_txratedivider);
+    values.push_back(&txratedivider);
+
+    theNVmanager& nvman = theNVmanager::getInstance();
+
+    double tprev = SystemClock::nowSystem();
+    double tcurr = SystemClock::nowSystem();
+
+    double delta = tcurr - tprev;
+
+    yDebug() << "before";
+    yDebug() << "value_commstatus.managementprotocolversion.major = " << value_commstatus.managementprotocolversion.major << "value_commstatus.managementprotocolversion.minor = " << value_commstatus.managementprotocolversion.minor;
+    yDebug() << "value_applconfig.cycletime = " << value_applconfig.cycletime << "value_applconfig.txratedivider" << value_applconfig.txratedivider << "etc";
+    yDebug() << "txratedivider = " << txratedivider;
+
+    tprev = SystemClock::nowSystem();
+    //bool ok = nvman.ask(&transceiver, id32s, values, 3.0);
+    bool ok = getRemoteValues(id32s, values, 3.0);
+    delta = SystemClock::nowSystem() - tprev;
+
+    yDebug() << "parallel mode: after" << delta << "seconds";
+    yDebug() << "value_commstatus.managementprotocolversion.major = " << value_commstatus.managementprotocolversion.major << "value_commstatus.managementprotocolversion.minor = " << value_commstatus.managementprotocolversion.minor;
+    yDebug() << "value_applconfig.cycletime = " << value_applconfig.cycletime << "value_applconfig.txratedivider" << value_applconfig.txratedivider << "etc";
+    yDebug() << "txratedivider = " << txratedivider;
+
+    memset(&value_commstatus, 0, sizeof(value_commstatus));
+    memset(&value_applconfig, 0, sizeof(value_applconfig));
+    txratedivider = 0;
+
+
+    tprev = SystemClock::nowSystem();
+    nvman.ask(&transceiver, id32_commstatus, &value_commstatus, 3.0);
+    nvman.ask(&transceiver, id32_applconfig, &value_applconfig, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    nvman.ask(&transceiver, id32_applconfig_txratedivider, &txratedivider, 3.0);
+    delta = SystemClock::nowSystem() - tprev;
+
+    yDebug() << "serial mode: after" << delta << "seconds";
+    yDebug() << "value_commstatus.managementprotocolversion.major = " << value_commstatus.managementprotocolversion.major << "value_commstatus.managementprotocolversion.minor = " << value_commstatus.managementprotocolversion.minor;
+    yDebug() << "value_applconfig.cycletime = " << value_applconfig.cycletime << "value_applconfig.txratedivider" << value_applconfig.txratedivider << "etc";
+    yDebug() << "txratedivider = " << txratedivider;
+
+    for(;;);
+
+
+    return true;
+
+#endif
+}
 
 bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 {
@@ -674,21 +498,18 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 
     if(false == verifyBoard())
     {
-        yError() << "EthResource::verifyEPprotocol() cannot verify BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        yError() << "EthResource::verifyEPprotocol() cannot verify BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << ": cannot proceed any further";
         return(false);
     }
 
     if(false == askBoardVersion())
     {
-        yError() << "EthResource::verifyEPprotocol() cannot ask the version to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        yError() << "EthResource::verifyEPprotocol() cannot ask the version to BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << ": cannot proceed any further";
         return(false);
     }
 
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    verifiedEPprotocol[ep] =  true;
-    yWarning() << "EthResource::verifyEPprotocol() is in ETHRES_DEBUG_DONTREADBACK mode";
-    return true;
-#endif
+    testMultipleASK();
+
 
     // 1. send a set<eoprot_tag_mn_comm_cmmnds_command_queryarray> and wait for the arrival of a sig<eoprot_tag_mn_comm_cmmnds_command_replyarray>
     //    the opc to send is eomn_opc_query_array_EPdes which will trigger a opc in reception eomn_opc_reply_array_EPdes
@@ -701,7 +522,6 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
     eOprotID32_t id2send = eo_prot_ID32dummy;
     eOprotID32_t id2wait = eo_prot_ID32dummy;
     eOmn_command_t command = {0};
-    uint16_t size = 0;
 
 
     // step 1: ask all the EP descriptors. from them we can extract protocol version of MN and of the target ep
@@ -718,9 +538,9 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 
     theNVmanager& nvman = theNVmanager::getInstance();
 
-    if(false == nvman.command(ipv4addr, id2send, &command, id2wait, &command, timeout))
+    if(false == nvman.command(properties.ipv4addr, id2send, &command, id2wait, &command, timeout))
     {
-        yError() << "EthResource::verifyEPprotocol() retrieve the endpoint descriptors from BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        yError() << "EthResource::verifyEPprotocol() retrieve the endpoint descriptors from BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << ": cannot proceed any further";
         return(false);
     }
 
@@ -742,15 +562,15 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
             if(pc104versionMN->major != epd->version.major)
             {
                 yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionMN->major << "and board.version.major =" << epd->version.major;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getName() << "with IP" << getIPv4string() << "for eoprot_endpoint_management: cannot proceed any further.";
-                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "for eoprot_endpoint_management: cannot proceed any further.";
+                yError() << "ACTION REQUIRED: BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "needs a FW update.";
                 return(false);
             }
             if(pc104versionMN->minor != epd->version.minor)
             {
                 yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionMN->minor << "and board.version.minor =" << epd->version.minor;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor BOARD" << getName() << "with IP" << getIPv4string() << "for eoprot_endpoint_management: cannot proceed any further.";
-                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "for eoprot_endpoint_management: cannot proceed any further.";
+                yError() << "ACTION REQUIRED: BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "needs a FW update.";
                 return false;
             }
         }
@@ -760,15 +580,15 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
             if(pc104versionEP->major != epd->version.major)
             {
                 yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionEP->major << "and board.version.major =" << epd->version.major;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getName() << "with IP" << getIPv4string() << " for" << eoprot_EP2string(ep) << ": cannot proceed any further.";
-                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update to offer services for" << eoprot_EP2string(ep);
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << " for" << eoprot_EP2string(ep) << ": cannot proceed any further.";
+                yError() << "ACTION REQUIRED: BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "needs a FW update to offer services for" << eoprot_EP2string(ep);
                 return(false);
             }
             if(pc104versionEP->minor != epd->version.minor)
             {
                 yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionEP->minor << "and board.version.minor =" << epd->version.minor;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor in BOARD" << getName() << "with IP" << getIPv4string() << " for" << eoprot_EP2string(ep) << ": annot proceed any further";
-                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update to offer services for" << eoprot_EP2string(ep);
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor in BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << " for" << eoprot_EP2string(ep) << ": annot proceed any further";
+                yError() << "ACTION REQUIRED: BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "needs a FW update to offer services for" << eoprot_EP2string(ep);
                 return(false);
             }
         }
@@ -809,7 +629,7 @@ bool EthResource::verifyBoardPresence(void)
     double start_time = yarp::os::Time::now();
 
     theNVmanager& nvman = theNVmanager::getInstance();
-    verifiedBoardPresence = nvman.ping(ipv4addr, boardMNprotocolversion, timeout, retries);
+    verifiedBoardPresence = nvman.ping(properties.ipv4addr, boardMNprotocolversion, timeout, retries);
 
     double end_time = yarp::os::Time::now();
 
@@ -818,12 +638,12 @@ bool EthResource::verifyBoardPresence(void)
         verifiedBoardPresence = true;
         if(verbosewhenok)
         {
-            yDebug() << "EthResource::verifyBoardPresence() found BOARD" << getName() << "with IP" << getIPv4string() << "after" << end_time-start_time << "seconds";
+            yDebug() << "EthResource::verifyBoardPresence() found BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "after" << end_time-start_time << "seconds";
         }
     }
     else
     {
-        yError() << "EthResource::verifyBoardPresence() DID NOT have replies from BOARD" << getName() << "with IP" << getIPv4string() << "after" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+        yError() << "EthResource::verifyBoardPresence() DID NOT have replies from BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "after" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
     }
 
     return(verifiedBoardPresence);
@@ -832,12 +652,6 @@ bool EthResource::verifyBoardPresence(void)
 
 bool EthResource::askBoardVersion(void)
 {
-
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "EthResource::askBoardVersion() is in ETHRES_DEBUG_DONTREADBACK mode";
-    askedBoardVersion =  true;
-    return true;
-#endif
 
     if(askedBoardVersion)
     {
@@ -851,24 +665,34 @@ bool EthResource::askBoardVersion(void)
 
     theNVmanager& nvman = theNVmanager::getInstance();
 
-    askedBoardVersion = nvman.ask(ipv4addr, id32, &applstatus, timeout);
+    askedBoardVersion = nvman.ask(properties.ipv4addr, id32, &applstatus, timeout);
 
     if(false == askedBoardVersion)
     {
-        yError() << "EthResource::askBoardVersion() cannot reach BOARD" << getName() << "with IP" << getIPv4string() << "w/ timeout of" << timeout << "seconds";
+        yError() << "EthResource::askBoardVersion() cannot reach BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "w/ timeout of" << timeout << "seconds";
         return false;
     }
 
 
     // now i store the ....
-    boardVersion.major = applstatus.version.major;
-    boardVersion.minor = applstatus.version.minor;
 
-    boardDate.year = applstatus.buildate.year;
-    boardDate.month = applstatus.buildate.month;
-    boardDate.day = applstatus.buildate.day;
-    boardDate.hour = applstatus.buildate.hour;
-    boardDate.min = applstatus.buildate.min;
+    properties.firmwareversion.major = applstatus.version.major;
+    properties.firmwareversion.minor = applstatus.version.minor;
+
+
+    properties.firmwaredate.year = applstatus.buildate.year;
+    properties.firmwaredate.month = applstatus.buildate.month;
+    properties.firmwaredate.day = applstatus.buildate.day;
+    properties.firmwaredate.hour = applstatus.buildate.hour;
+    properties.firmwaredate.min = applstatus.buildate.min;
+
+    char versstr[32] = {0};
+    snprintf(versstr, sizeof(versstr), "ver %d.%d built on ", properties.firmwareversion.major, properties.firmwareversion.minor);
+    char datestr[32] = {0};
+    eo_common_date_to_string(properties.firmwaredate, datestr, sizeof(datestr));
+
+    properties.firmwareString = string(versstr) + string(datestr);
+
 
     if(eobool_true == eoboards_is_eth((eObrd_type_t)applstatus.boardtype))
     {
@@ -879,11 +703,13 @@ bool EthResource::askBoardVersion(void)
         detectedBoardType = eobrd_ethtype_unknown;
     }
 
+    if(detectedBoardType != properties.boardtype)
+    {
+        yWarning() << "EthResource::askBoardVersion(): detected wrong board. expecting" << properties.boardtypeString << "and detected" << eoboards_type2string2(eoboards_ethtype2type(detectedBoardType), eobool_true);
+    }
 
-    char datestr[32] = {0};
-    eo_common_date_to_string(boardDate, datestr, sizeof(datestr));
 
-    yInfo() << "EthResource::askBoardVersion() found BOARD" << getName() << "@ IP" << getIPv4string() << "of type" << eoboards_type2string2(eoboards_ethtype2type(detectedBoardType), eobool_true) << "with FW version = ("<< boardVersion.major << "," << boardVersion.minor << ") and build date" << datestr;
+    yInfo() << "EthResource::askBoardVersion() found BOARD" << properties.boardnameString << "@ IP" << properties.ipv4addrString << "of type" << properties.boardtypeString<< "with FW =" << properties.firmwareString;
 
 
     return(askedBoardVersion);
@@ -892,11 +718,6 @@ bool EthResource::askBoardVersion(void)
 
 bool EthResource::getRemoteValue(const eOprotID32_t id32, void *value, const double timeout, const unsigned int retries)
 {
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "EthResource::getRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
-    return true;
-#endif
-
     bool replied = false;
 
     double start_time = yarp::os::Time::now();
@@ -905,7 +726,7 @@ bool EthResource::getRemoteValue(const eOprotID32_t id32, void *value, const dou
 
     for(unsigned int numOfattempts=0; numOfattempts<(retries+1); numOfattempts++)
     {
-        if(true == nvman.ask(this, id32, value, timeout))
+        if(true == nvman.ask(&transceiver, id32, value, timeout))
         {
             replied = true;
             // stop attempts
@@ -914,7 +735,7 @@ bool EthResource::getRemoteValue(const eOprotID32_t id32, void *value, const dou
 
         if(!replied)
         {
-            yWarning() << "EthResource::getRemoteValue() cannot have a reply from BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << numOfattempts+1 << "w/ timeout of" << timeout << "seconds";
+            yWarning() << "EthResource::getRemoteValue() cannot have a reply from BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "at attempt #" << numOfattempts+1 << "w/ timeout of" << timeout << "seconds";
         }
 
     }
@@ -923,7 +744,26 @@ bool EthResource::getRemoteValue(const eOprotID32_t id32, void *value, const dou
 
     if(false == replied)
     {
-        yError() << "  FATAL: EthResource::getRemoteValue() DID NOT have replies from BOARD" << getName() << "with IP" << getIPv4string() << " even after" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+        yError() << "  FATAL: EthResource::getRemoteValue() DID NOT have replies from BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << " even after" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+    }
+
+    return replied;
+}
+
+
+bool EthResource::getRemoteValues(const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
+{
+    theNVmanager& nvman = theNVmanager::getInstance();
+
+    double start_time = yarp::os::Time::now();
+
+    bool replied = nvman.ask(&transceiver, id32s, values, timeout);
+
+    double end_time = yarp::os::Time::now();
+
+    if(false == replied)
+    {
+        yError() << "  FATAL: EthResource::getRemoteValues() DID NOT have replies from BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << " even after" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
     }
 
     return replied;
@@ -933,13 +773,13 @@ bool EthResource::getRemoteValue(const eOprotID32_t id32, void *value, const dou
 bool EthResource::setRemoteValue(const eOprotID32_t id32, void *value)
 {
     theNVmanager& nvman = theNVmanager::getInstance();
-    return nvman.set(ipv4addr, id32, value);
+    return nvman.set(properties.ipv4addr, id32, value);
 }
 
 bool EthResource::setcheckRemoteValue(const eOprotID32_t id32, void *value, const unsigned int retries, const double waitbeforecheck, const double timeout)
 {
     theNVmanager& nvman = theNVmanager::getInstance();
-    return nvman.setcheck(ipv4addr, id32, value, retries, waitbeforecheck, timeout);
+    return nvman.setcheck(properties.ipv4addr, id32, value, retries, waitbeforecheck, timeout);
 }
 
 bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
@@ -965,14 +805,14 @@ bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
     uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
     uint32_t usec = infobasic->timestamp % 1000;
 
-    const char *boardstr = boardName;
+    const char *boardstr = properties.boardnameString.c_str();
 
     // Validity check
     if(address > 15)
     {
         snprintf(canfullmessage,sizeof(canfullmessage),"Error while parsing the message: CAN address detected is out of allowed range");
         snprintf(str,sizeof(str), "from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
-                                    ipv4addrstring,
+                                    properties.ipv4addrString.c_str(),
                                     boardstr,
                                     str_source,
                                     address,
@@ -1005,7 +845,7 @@ bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
             c_string_handler[address]->clear_string(ret);
 
             snprintf(str,sizeof(str), "from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
-                                        ipv4addrstring,
+                                        properties.ipv4addrString.c_str(),
                                         boardstr,
                                         str_source,
                                         address,
@@ -1024,12 +864,6 @@ bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
 
 bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times)
 {
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "EthResource::serviceCommand() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not send the command";
-    return true;
-#endif
-
-
     eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_cmmnds_command);
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult);;
 
@@ -1061,7 +895,7 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
     bool replied = false;
     for(int i=0; i<times; i++)
     {
-        if(true == nvman.command(ipv4addr, id2send, &command, id2wait, &result, timeout))
+        if(true == nvman.command(properties.ipv4addr, id2send, &command, id2wait, &result, timeout))
         {
             replied = true;
             break;
@@ -1070,11 +904,11 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
 
     if(false == replied)
     {
-        yError() << "EthResource::serviceCommand() failed an acked activation request to BOARD" << getName() << "with IP" << getIPv4string() << "after" << times << "attempts" << "each with waiting timeout of" << timeout << "seconds";
+        yError() << "EthResource::serviceCommand() failed an acked activation request to BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << "after" << times << "attempts" << "each with waiting timeout of" << timeout << "seconds";
         return false;
     }
 
-    yDebug() << "result is:" << result.latestcommandisok;
+    //yDebug() << "result is:" << result.latestcommandisok;
 
     return(result.latestcommandisok);
 }
@@ -1132,44 +966,26 @@ bool EthResource::serviceStop(eOmn_serv_category_t category, double timeout)
 
 // new methods from host transceiver
 
-bool EthResource::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
+bool EthResource::getLocalValue(const eOprotID32_t id32, void *data)
 {
-    return HostTransceiver::readBufferedValue(id32, data, size);
+    return transceiver.read(id32, data);
 }
 
-bool EthResource::addSetMessage(eOprotID32_t id32, uint8_t* data)
+
+bool EthResource::setLocalValue(eOprotID32_t id32, const void *value, bool overrideROprotection)
 {
-    return HostTransceiver::addSetROP(id32, data);
+    return transceiver.write(id32, value, overrideROprotection);
 }
 
-bool EthResource::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
-{
-    return HostTransceiver::addSetROPandCacheLocally(id32, data);
-}
-
-bool EthResource::addGetMessage(eOprotID32_t id32)
-{
-    return HostTransceiver::addGetROP(id32);
-}
-
-bool EthResource::addGetMessage(eOprotID32_t id32, std::uint32_t signature)
-{
-    return HostTransceiver::addGetROPwithSignature(id32, signature);
-}
-
-EOnv* EthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
-{
-    return HostTransceiver::getnvhandler(id32, nv);
-}
-
-bool EthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
-{
-    return HostTransceiver::readSentValue(id32, data, size);
-}
 
 bool EthResource::isFake()
 {
     return false;
+}
+
+HostTransceiver * EthResource::getTransceiver()
+{
+    return &transceiver;
 }
 
 // eof

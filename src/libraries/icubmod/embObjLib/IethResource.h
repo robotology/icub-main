@@ -1,11 +1,7 @@
 
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup TheEthManager TheEthManager
- *
-*/
+
 /* Copyright (C) 2014  iCub Facility, Istituto Italiano di Tecnologia
  * Author: Marco Accame
  * email: marco.accame@iit.it
@@ -59,45 +55,43 @@
 // manages decoding of received UDP packets and calls the callbacks of the EOnv which in turn call IethResource::update().
 //
 
-class eoThreadFifo;
-class eoThreadEntry;
 
-typedef enum
-{
-    iethres_none            = 255,
-    iethres_management      = 0,
-    iethres_analogmais      = 1,
-    iethres_analogstrain    = 2,
-    iethres_motioncontrol   = 3,
-    iethres_skin            = 4,
-    iethres_analogvirtual   = 5,
-    iethres_analoginertial  = 6,
-    iethres_analogmultienc  = 7,
-} iethresType_t;
+namespace eth {
 
-enum { iethresType_numberof = 8 };
+    typedef enum
+    {
+        iethres_none            = 255,
+        iethres_management      = 0,
+        iethres_analogmais      = 1,
+        iethres_analogstrain    = 2,
+        iethres_motioncontrol   = 3,
+        iethres_skin            = 4,
+        iethres_analogvirtual   = 5,
+        iethres_analoginertial  = 6,
+        iethres_analogmultienc  = 7,
+    } iethresType_t;
 
-
-class IethResource
-{
-
-public:
-        virtual ~IethResource() {}
-
-        virtual bool initialised() = 0;
-        virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata) = 0;
-        virtual iethresType_t type() = 0;
-        virtual eoThreadFifo * getFifo(uint32_t variableProgNum) { return NULL;}
-        virtual eoThreadEntry *getThreadTable(int  threadId) {return NULL;}
-
-public:
-        const char * stringOfType();
-
-private:
-        static const char * names[iethresType_numberof+1];
-};
+    enum { iethresType_numberof = 8 };
 
 
+    class IethResource
+    {
+
+    public:
+            virtual ~IethResource() {}
+
+            virtual bool initialised() = 0;
+            virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata) = 0;
+            virtual iethresType_t type() = 0;
+
+    public:
+            const char * stringOfType();
+
+    private:
+            static const char * names[iethresType_numberof+1];
+    };
+
+} // namespace eth
 
 #endif
 

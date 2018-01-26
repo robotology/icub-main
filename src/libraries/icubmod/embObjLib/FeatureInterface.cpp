@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
- * Authors: Alberto Cardellino
+ * Author:  Alberto Cardellino, Marco Accame
+ * email:   alberto.cardellino@iit.it, marco.accame@iit.it
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
  */
@@ -9,13 +10,12 @@
 // --------------------------------------------------------------------------------------------------------------------
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
- 
-#include "EOconstvector_hid.h"
 
 #include <ethManager.h>
-#include "embObjMotionControl.h"
-#include "embObjAnalogSensor.h"
-#include "embObjSkin.h"
+#include <IethResource.h>
+#include <abstractEthResource.h>
+#include <theNVmanager.h>
+
 
 #include <yarp/os/Time.h>
 #include <yarp/os/Semaphore.h>
@@ -26,8 +26,9 @@
 #include <ace/config.h>
 #include <ace/Recursive_Thread_Mutex.h>
 
-#include <theNVmanager.h>
+
 using namespace eth;
+
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -69,7 +70,7 @@ using namespace eth;
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
 
-static TheEthManager *_interface2ethManager = NULL;
+static eth::TheEthManager *_interface2ethManager = NULL;
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -79,9 +80,9 @@ static TheEthManager *_interface2ethManager = NULL;
 
 void feat_Initialise(void *handleOfTheEthManager)
 {
-    if(_interface2ethManager == NULL )
+    if(NULL == _interface2ethManager)
     {
-        _interface2ethManager = (TheEthManager*) handleOfTheEthManager;
+        _interface2ethManager = reinterpret_cast<eth::TheEthManager*>(handleOfTheEthManager);
     }
 }
 
@@ -243,13 +244,10 @@ void* feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32)
 }
 
 
-
-
 double feat_yarp_time_now(void)
 {
     return(yarp::os::Time::now());
 }
-
 
 eObool_t feat_signal_network_onsay(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature)
 {
@@ -273,7 +271,7 @@ eObool_t feat_CANprint(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic)
         return(eobool_false);
     }
 
-    AbstractEthResource* ethres = _interface2ethManager->getEthResource(ipv4);
+    eth::AbstractEthResource* ethres = _interface2ethManager->getEthResource(ipv4);
 
     bool res = ethres->CANPrintHandler(infobasic);
     return res;
@@ -289,7 +287,7 @@ const char * feat_GetBoardName(eOipv4addr_t ipv4)
         return errorstr;
     }
 
-    return(_interface2ethManager->getName(ipv4));
+    return(_interface2ethManager->getName(ipv4).c_str());
 }
 
 
@@ -333,14 +331,14 @@ void feat_PrintFatal(char *string)
 void* ace_mutex_new(void)
 {
     ACE_Recursive_Thread_Mutex* mtx = new ACE_Recursive_Thread_Mutex();
-    return((void*)mtx);
+    return(mtx);
 }
 
 
 // returns 0 on success to take mutex, -3 on failure upon timeout, -2 on failure upon null pointer. m is pointer obtained w/ ace_mutex_new(), tout_usec is in microsec (no timeout is 0xffffffff).
 int8_t ace_mutex_take(void* m, uint32_t tout_usec)
 {
-    ACE_Recursive_Thread_Mutex* acemtx = (ACE_Recursive_Thread_Mutex*)m;
+    ACE_Recursive_Thread_Mutex* acemtx = reinterpret_cast<ACE_Recursive_Thread_Mutex*>(m);
     if(NULL == acemtx)
     {
         return(-2);
@@ -355,7 +353,7 @@ int8_t ace_mutex_take(void* m, uint32_t tout_usec)
 // returns 0 on success to take mutex, -1 on genric failure of releasing mutex, -2 on failure upon null pointer. m is pointer obtained w/ ace_mutex_new(),
 int8_t ace_mutex_release(void* m)
 {
-    ACE_Recursive_Thread_Mutex* acemtx = (ACE_Recursive_Thread_Mutex*)m;
+    ACE_Recursive_Thread_Mutex* acemtx = reinterpret_cast<ACE_Recursive_Thread_Mutex*>(m);
     if(NULL == acemtx)
     {
         return(-2);
@@ -369,7 +367,7 @@ int8_t ace_mutex_release(void* m)
 
 void ace_mutex_delete(void* m)
 {
-    ACE_Recursive_Thread_Mutex* acemtx = (ACE_Recursive_Thread_Mutex*)m;
+    ACE_Recursive_Thread_Mutex* acemtx = reinterpret_cast<ACE_Recursive_Thread_Mutex*>(m);
     if(NULL != acemtx)
     {
         delete acemtx;

@@ -7,6 +7,12 @@
  *
  */
 
+// api
+
+#include <fakeEthResource.h>
+
+// other includes
+
 #include "ethResource.h"
 #include <ethManager.h>
 #include <yarp/os/Time.h>
@@ -20,22 +26,25 @@
 #include "EoManagement.h"
 #include "EoProtocolMN.h"
 
-using namespace yarp::dev;
+#include "ethParser.h"
+
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
+using namespace eth;
 
-
-
+// implemention of the class
 
 FakeEthResource::FakeEthResource()
 {
     yTrace();
 
     ipv4addr = 0;
-    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
+    ipv4addressing.addr = 0;
+    ipv4addressing.port = 0;
+    ipv4addrstring = "0.0.0.0";
     ethboardtype = eobrd_ethtype_unknown;
-    snprintf(boardTypeString, sizeof(boardTypeString), "unknown");
+    boardTypeString = "unknown";
 
     ethManager                  = NULL;
     isInRunningMode             = false;
@@ -49,7 +58,6 @@ FakeEthResource::FakeEthResource()
     usedNumberOfRegularROPs     = 0;
     memset(&boardCommStatus, 0, sizeof(boardCommStatus));
 
-    myHostTrans = new HostTransceiver();
 }
 
 
@@ -73,154 +81,71 @@ bool FakeEthResource::lock(bool on)
 
 bool FakeEthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 {
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
 
-    Bottle groupEthBoard  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
-    if(groupEthBoard.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD group in config files";
-        return NULL;
-    }
-    Bottle groupEthBoardProps = Bottle(groupEthBoard.findGroup("ETH_BOARD_PROPERTIES"));
-    if(groupEthBoardProps.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
-        return NULL;
-    }
-    Bottle groupEthBoardSettings = Bottle(groupEthBoard.findGroup("ETH_BOARD_SETTINGS"));
-    if(groupEthBoardSettings.isNull())
-    {
-        yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
-        return NULL;
-    }
+    eth::parser::pc104Data pc104data;
+    eth::parser::read(cfgtotal, pc104data);
+//    eth::parser::print(pc104data);
 
-    Bottle b_ETH_BOARD_PROPERTIES_Type = groupEthBoardProps.findGroup("Type");
-    ConstString Type = b_ETH_BOARD_PROPERTIES_Type.get(1).asString();
-    const char *strType = Type.c_str();
-    // 1. compare with the exceptions which may be in some old xml files ("EMS4", "MC4PLUS", "MC2PLUS"), and then then call proper functions
-    if(0 == strcmp(strType, "EMS4"))
-    {
-        ethboardtype = eobrd_ethtype_ems4;
-    }
-    else if(0 == strcmp(strType, "MC4PLUS"))
-    {
-        ethboardtype = eobrd_ethtype_mc4plus;
-    }
-    else if(0 == strcmp(strType, "MC2PLUS"))
-    {
-        ethboardtype = eobrd_ethtype_mc2plus;
-    }
-    else
-    {
-        eObrd_type_t brd = eobrd_unknown;
-        if(eobrd_unknown == (brd = eoboards_string2type2(strType, eobool_true)))
-        {
-            brd = eoboards_string2type2(strType, eobool_false);
-        }
 
-        // if not found in compact or extended string format, we accept that the board is unknown
+    eth::parser::boardData brddata;
+    eth::parser::read(cfgtotal, brddata);
+//    eth::parser::print(brddata);
 
-        ethboardtype = eoboards_type2ethtype(brd);
-    }
+    properties.ipv4addr = remIP;
+    properties.ipv4addressing = brddata.properties.ipv4addressing;
+    properties.boardtype = brddata.properties.type;
+    properties.ipv4addrString = brddata.properties.ipv4string;
+    properties.ipv4addressingString = brddata.properties.ipv4addressingstring;
+    properties.boardtypeString = brddata.properties.typestring;
+    properties.boardnameString = brddata.settings.name;
 
-    snprintf(boardTypeString, sizeof(boardTypeString), "%s", eoboards_type2string2(eoboards_ethtype2type(ethboardtype), eobool_true));
+    // i fill remote address
+    ipv4addr = remIP;
+    ipv4addrstring = brddata.properties.ipv4string;
+    ipv4addressing = brddata.properties.ipv4addressing;
 
-    Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
-    char xmlboardname[64] = {0};
-    snprintf(xmlboardname, sizeof(xmlboardname), "%s", paramNameBoard.toString().c_str());
+    ethboardtype = brddata.properties.type;
+    boardTypeString = brddata.properties.typestring;
+
+    boardName = brddata.settings.name;
+
+
+    eth::EthMonitorPresence::Config mpConfig;
+
+    // default values ...
+    mpConfig.enabled = brddata.actions.monitorpresence_enabled;
+    mpConfig.timeout = brddata.actions.monitorpresence_timeout;
+    mpConfig.periodmissingreport = brddata.actions.monitorpresence_periodofmissingreport;
+    mpConfig.name = ipv4addrstring + " (" + boardName + ")";
+
+
+
+    // now i init objects
 
     lock(true);
 
+    // 1. init transceiver
 
     eOipv4addressing_t localIPv4 = ethManager->getLocalIPV4addressing();
 
-    bool ret;
-    uint8_t num = 0;
-    eo_common_ipv4addr_to_decimal(remIP, NULL, NULL, NULL, &num);
-    if(!myHostTrans->init2(groupEthBoard, localIPv4, remIP))
+
+    if(false == transceiver.init2(this, cfgtotal, localIPv4, remIP))
     {
-        ret = false;
-        char ipinfo[20] = {0};
-        eo_common_ipv4addr_to_string(remIP, ipinfo, sizeof(ipinfo));
-        yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << xmlboardname << "IP" << ipinfo;
-    }
-    else
-    {
-        ret = true;
+        yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << boardName << "IP" << ipv4addrstring;
+        lock(false);
+        return false;
     }
 
-    uint8_t ip1, ip2, ip3, ip4;
-    eo_common_ipv4addr_to_decimal(remIP, &ip1, &ip2, &ip3, &ip4);
-    ACE_UINT32 hostip = (ip1 << 24) | (ip2 << 16) | (ip3 << 8) | (ip4);
-    ACE_INET_Addr myIP((u_short)localIPv4.port, hostip);
-    remote_dev = myIP;
-    ipv4addr = remIP;
-    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
+    // 2. init monitor presence
 
+    //monitorpresence.config(mpConfig);
+    //monitorpresence.tick();
 
-    if(0 != strlen(xmlboardname))
-    {
-        snprintf(boardName, sizeof(boardName), "%s", xmlboardname);
-    }
-    else
-    {
-        snprintf(boardName, sizeof(boardName), "NOT-NAMED");
-    }
-
-
-
-    Bottle groupEthBoardActions = Bottle(groupEthBoard.findGroup("ETH_BOARD_ACTIONS"));
-    if(!groupEthBoardActions.isNull())
-    {
-
-        Bottle groupEthBoardActions_Monitor = Bottle(groupEthBoardActions.findGroup("MONITOR_ITS_PRESENCE"));
-        if(!groupEthBoardActions_Monitor.isNull())
-        {
-
-            Bottle groupEthBoardActions_Monitor_enabled = groupEthBoardActions_Monitor.findGroup("enabled");
-            ConstString Ena = groupEthBoardActions_Monitor_enabled.get(1).asString();
-            const char *strEna = Ena.c_str();
-
-            double presenceTimeout;
-            if(true == groupEthBoardActions_Monitor.check("timeout"))
-            {
-                presenceTimeout = groupEthBoardActions_Monitor.find("timeout").asDouble();
-
-                if(presenceTimeout <= 0)
-                {
-                    presenceTimeout = 0;
-                }
-
-                if(presenceTimeout > 0.100)
-                {
-                    presenceTimeout = 0.100;
-                }
-
-            }
-
-
-            if(true == groupEthBoardActions_Monitor.check("periodOfMissingReport"))
-            {
-                double reportMissingPeriod = groupEthBoardActions_Monitor.find("periodOfMissingReport").asDouble();
-
-                if(reportMissingPeriod <= 0)
-                {
-                    reportMissingPeriod = 0.0;
-                }
-
-                if(reportMissingPeriod > 600)
-                {
-                    reportMissingPeriod = 600;
-                }
-
-                yDebug() << "CFG_PRINT" << boardName <<" Enabled monitor parasence = "<< strEna << "with period=" <<  presenceTimeout<< " and report period="<< reportMissingPeriod ; 
-            }
-        }
-    }
 
     lock(false);
 
-    return ret;
+    return true;
 }
 
 
@@ -232,11 +157,10 @@ bool FakeEthResource::close()
 }
 
 
-bool FakeEthResource::getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops)
+const void * FakeEthResource::getUDPtransmit(eOipv4addressing_t &destination, size_t &sizeofpacket, uint16_t &numofrops)
 {
-    return false;
+    return nullptr;
 }
-
 
 
 bool FakeEthResource::Tick()
@@ -252,65 +176,18 @@ bool FakeEthResource::Check()
 
 
 
-bool FakeEthResource::canProcessRXpacket(uint64_t *data, uint16_t size)
+
+bool FakeEthResource::processRXpacket(const void *data, const size_t size)
 {
-    if(NULL == data)
-        return false;
-
-    if(size > myHostTrans->getCapacityOfRXpacket())
-        return false;
-
     return true;
 }
 
 
-void FakeEthResource::processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics)
-{;}
 
-
-ACE_INET_Addr FakeEthResource::getRemoteAddress()
+const AbstractEthResource::Properties & FakeEthResource::getProperties()
 {
-    return remote_dev;
+    return properties;
 }
-
-eOipv4addr_t FakeEthResource::getIPv4remoteAddress(void)
-{
-    return ipv4addr;
-}
-
-const char * FakeEthResource::getName(void)
-{
-    return boardName;
-}
-
-const char * FakeEthResource::getIPv4string(void)
-{
-    return ipv4addrstring;
-}
-
-eObrd_ethtype_t FakeEthResource::getBoardType(void)
-{
-    return ethboardtype;
-}
-
-const char * FakeEthResource::getBoardTypeString(void)
-{
-    return boardTypeString;
-}
-
-void FakeEthResource::getBoardInfo(eOdate_t &date, eOversion_t &version)
-{
-    date = {0};
-    version = {0};
-}
-
-
-
-bool FakeEthResource::isEPsupported(eOprot_endpoint_t ep)
-{
-    return myHostTrans->isSupported(ep);
-}
-
 
 
 bool FakeEthResource::isRunning(void)
@@ -335,7 +212,7 @@ bool FakeEthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 
     if(false == verifyBoard())
     {
-        yError() << "FakeEthResource::verifyEPprotocol() cannot verify BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        yError() << "FakeEthResource::verifyEPprotocol() cannot verify BOARD" << getProperties().boardnameString << "with IP" << getProperties().ipv4addrString << ": cannot proceed any further";
         return(false);
     }
 
@@ -356,6 +233,12 @@ bool FakeEthResource::getRemoteValue(const eOprotID32_t id32, void *value, const
 {
     return true;
 }
+
+bool FakeEthResource::getRemoteValues(const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
+{
+    return true;
+}
+
 
 
 bool FakeEthResource::setRemoteValue(const eOprotID32_t id32, void *value)
@@ -400,53 +283,61 @@ bool FakeEthResource::serviceStop(eOmn_serv_category_t category, double timeout)
     return true;
 }
 
-
-bool FakeEthResource::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
-{
-    *size=0;
-    true;
-}
-
-bool FakeEthResource::addSetMessage(eOprotID32_t id32, uint8_t* data)
+bool FakeEthResource::getLocalValue(const eOprotID32_t id32, void *data)
 {
     return true;
 }
 
-bool FakeEthResource::addGetMessage(eOprotID32_t id32)
+bool FakeEthResource::setLocalValue(eOprotID32_t id32, const void *value, bool overrideROprotection)
 {
     return true;
 }
 
-bool FakeEthResource::addGetMessage(eOprotID32_t id32, std::uint32_t signature)
-{
-    return true;
-}
+//bool FakeEthResource::addSetMessage(eOprotID32_t id32, uint8_t* data)
+//{
+//    return true;
+//}
 
-bool FakeEthResource::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
-{
-    return true;
-}
+//bool FakeEthResource::addGetMessage(eOprotID32_t id32)
+//{
+//    return true;
+//}
 
-bool FakeEthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
-{
-    *size=0;
-    return true;
-}
+//bool FakeEthResource::addGetMessage(eOprotID32_t id32, std::uint32_t signature)
+//{
+//    return true;
+//}
 
-EOnv* FakeEthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
-{
-    return myHostTrans->getnvhandler(id32, nv);
-}
+//bool FakeEthResource::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
+//{
+//    return true;
+//}
+
+//bool FakeEthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
+//{
+//    *size=0;
+//    return true;
+//}
+
+//EOnv* FakeEthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
+//{
+//    return transceiver.getnvhandler(id32, nv);
+//}
 
 bool FakeEthResource::isFake()
 {
     return true;
 }
 
-bool FakeEthResource::isID32supported(eOprotID32_t id32)
+HostTransceiver * FakeEthResource::getTransceiver()
 {
-    return true;
+    return nullptr;
 }
+
+//bool FakeEthResource::isID32supported(eOprotID32_t id32)
+//{
+//    return true;
+//}
 
 
 
