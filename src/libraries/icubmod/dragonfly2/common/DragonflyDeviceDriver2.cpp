@@ -62,11 +62,9 @@ int DragonflyDeviceDriver2Raw::height () const
 
 ////////////////////////////////////////////////////
 
-DragonflyDeviceDriver2::DragonflyDeviceDriver2(bool raw=false)
+DragonflyDeviceDriver2::DragonflyDeviceDriver2(bool raw) :
+    raw(raw), system_resources(NULL)
 {
-    this->raw=raw;
-    system_resources=NULL;
-	//ACE_ASSERT(system_resources!=NULL);
 }
 
 DragonflyDeviceDriver2::~DragonflyDeviceDriver2()
