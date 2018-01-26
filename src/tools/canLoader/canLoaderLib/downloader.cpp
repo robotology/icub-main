@@ -958,6 +958,103 @@ int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigne
 }
 
 
+int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemilli, bool uncalib, string *errorstring)
+{
+    // check if driver is running
+    if (m_idriver == NULL)
+       {
+           if(_verbose) yError ("Driver not ready\n");
+           return -1;
+       }
+
+    int ret = 0;
+
+    // Send transmission rate to strain board
+    txBuffer[0].setId((2 << 8) + target_id);
+    txBuffer[0].setLen(2);
+    txBuffer[0].getData()[0]= 0x08;
+    txBuffer[0].getData()[1]= txratemilli;
+    set_bus(txBuffer[0], bus);
+    ret = m_idriver->send_message(txBuffer, 1);
+    // check if send_message was successful
+    if (ret==0)
+        {
+            if(_verbose) yError ("Unable to send txrate set message\n");
+            return -1;
+        }
+
+   // Send transmission command to strain board
+   txBuffer[0].setId((2 << 8) + target_id);
+   txBuffer[0].setLen(2);
+   txBuffer[0].getData()[0]= 0x07;
+   txBuffer[0].getData()[1]= (true == uncalib) ? (0x03) : (0x00);
+   set_bus(txBuffer[0], bus);
+   ret = m_idriver->send_message(txBuffer, 1);
+   // check if send_message was successful
+   if (ret==0)
+       {
+           if(_verbose) yError ("Unable to send start tx message\n");
+           return -1;
+       }
+   return 0;
+
+}
+
+int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring)
+{
+    // check if driver is running
+    if (m_idriver == NULL)
+       {
+           if(_verbose) yError ("Driver not ready\n");
+           return -1;
+       }
+
+   // Send transmission command to strain board
+   txBuffer[0].setId((2 << 8) + target_id);
+   txBuffer[0].setLen(2);
+   txBuffer[0].getData()[0]= 0x07;
+   txBuffer[0].getData()[1]= 0x02;
+   set_bus(txBuffer[0], bus);
+   int ret = m_idriver->send_message(txBuffer, 1);
+   // check if send_message was successful
+   if (ret==0)
+       {
+           if(_verbose) yError ("Unable to send stop tx message\n");
+           return -1;
+       }
+   return 0;
+
+}
+
+int cDownloader::strain_acquire_getvalue(int bus, int target_id, vector<triple16_t> &values, string *errorstring)
+{
+    double TOUT = 3.0;
+    int read_messages = m_idriver->receive_message(rxBuffer, 2, TOUT);
+
+    values.clear();
+
+    for(int i=0; i<read_messages; i++)
+    {
+        uint32_t id = rxBuffer[i].getId();
+        uint8_t type = id & 0xf;
+
+        triple16_t triple;
+
+        triple.type = type;
+        triple.valid = (6 == rxBuffer[i].getLen()) ? (true) : (false);
+
+        // values in little endian
+        triple.x = static_cast<uint16_t>(rxBuffer[i].getData()[0]) | (static_cast<uint16_t>(rxBuffer[i].getData()[1]) >> 8);
+        triple.y = static_cast<uint16_t>(rxBuffer[i].getData()[2]) | (static_cast<uint16_t>(rxBuffer[i].getData()[3]) >> 8);
+        triple.z = static_cast<uint16_t>(rxBuffer[i].getData()[4]) | (static_cast<uint16_t>(rxBuffer[i].getData()[5]) >> 8);
+
+        values.push_back(triple);
+    }
+
+
+    return 0;
+}
+
 //*****************************************************************/
 int cDownloader::strain_start_sampling    (int bus, int target_id, string *errorstring)
 {
@@ -1151,7 +1248,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
         for(int nr=0; nr<NUMofCHANNELS; nr++)
         {
-            int rm = m_idriver->receive_message(rxBuffer, 1.0);
+            int rm = m_idriver->receive_message(rxBuffer, 1, 1.0);
             for(int i=0; i<rm; i++)
             {
                 if (rxBuffer[i].getData()[0]==0x2A)
@@ -1180,7 +1277,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
         for(int nr=0; nr<NUMofCHANNELS; nr++)
         {
-            int rm = m_idriver->receive_message(rxBuffer, 1.0);
+            int rm = m_idriver->receive_message(rxBuffer, 1, 1.0);
             for(int i=0; i<rm; i++)
             {
                 if (rxBuffer[i].getData()[0]==0x20)
@@ -1225,7 +1322,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
         yDebug() << "message sent." << "the strain2 is attempting to regularise its 6 output values to" << middle_val << "mae tolerence is" << tolerance << "and samples2average =" << samples2average << "now we wait for a reply";
 
-        int read_messages = m_idriver->receive_message(rxBuffer, TOUT);
+        int read_messages = m_idriver->receive_message(rxBuffer, 1, TOUT);
         for(int i=0; i<read_messages; i++)
         {
             if (rxBuffer[i].getData()[0]==0x22)
@@ -1490,7 +1587,7 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
         return -1;
     }
 
-    read_messages = m_idriver->receive_message(rxBuffer, 1, 1);
+    read_messages = m_idriver->receive_message(rxBuffer, 1, 1.0);
 
     if(0 == read_messages)
     {   // it does not support teh message
@@ -1571,7 +1668,7 @@ int cDownloader::get_board_info       (int bus, int target_id, char* board_info)
     //drv_sleep(10);
 
     //riceve la risposta
-    read_messages = m_idriver->receive_message(rxBuffer, 64, 1);
+    read_messages = m_idriver->receive_message(rxBuffer, 64, 1.0);
 
     //One (or more) answers received
     int endString=0;

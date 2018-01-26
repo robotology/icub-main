@@ -223,6 +223,21 @@ int sg6_obsolete_get_amp_gain      (int bus, int target_id, char channel, unsign
 int sg6_obsolete_set_amp_gain      (int bus, int target_id, char channel, unsigned int  gain1, unsigned int  gain2 );
 
 
+// for use by the future strain calibration data acquisition gui
+struct triple16_t
+{
+    uint8_t type; // of the calib/uncalib/trq/frc 0 is none....
+    bool valid;
+    uint16_t x;
+    uint16_t y;
+    uint16_t z;
+    triple16_t() : type(0), valid(true), x(0), y(0), z(0) {}
+};
+
+int strain_acquire_start(int bus, int target_id, uint8_t txratemilli = 20, bool uncalib = true, string *errorstring = NULL);
+int strain_acquire_stop(int bus, int target_id, string *errorstring = NULL);
+int strain_acquire_getvalue(int bus, int target_id, vector<triple16_t> &values, string *errorstring = NULL);
+
 cDownloader(bool verbose = true);
 
 void set_verbose(bool verbose);
