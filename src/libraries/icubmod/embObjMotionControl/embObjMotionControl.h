@@ -400,8 +400,6 @@ public:
     embObjMotionControl();
     ~embObjMotionControl();
 
-    Semaphore           semaphore;
-
 
     void cleanup(void);
 
