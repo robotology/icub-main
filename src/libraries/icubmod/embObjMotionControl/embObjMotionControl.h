@@ -49,17 +49,13 @@ using namespace std;
 
 //  Yarp stuff
 #include <yarp/os/Bottle.h>
-#include <yarp/os/Time.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
-#include <yarp/os/RateThread.h>
 
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
 
-
-#include <iCub/FactoryInterface.h>
 
 
 
@@ -89,8 +85,6 @@ using namespace std;
 //
 //   Help structure
 //
-using namespace yarp::os;
-using namespace yarp::dev;
 
 
 struct SpeedEstimationParameters
