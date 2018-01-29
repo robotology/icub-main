@@ -172,9 +172,6 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
 
 private:
 
-    string boardIPstring;
-    string boardName;
-    eOipv4addr_t ipv4addr;
 
     eth::TheEthManager* ethManager;
     eth::AbstractEthResource* res;
@@ -280,6 +277,7 @@ private:
 
 private:
 
+    std::string getBoardInfo(void);
     bool askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size);
     bool checkRemoteControlModeStatus(int joint, int target_mode);
 

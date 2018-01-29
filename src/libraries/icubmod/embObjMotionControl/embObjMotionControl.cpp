@@ -370,6 +370,18 @@ bool embObjMotionControl::interactionModeStatusConvert_embObj2yarp(eOenum08_t em
 }
 
 
+std::string embObjMotionControl::getBoardInfo(void)
+{
+    if(nullptr == res)
+    {
+        return " BOARD name_unknown (IP unknown) ";
+    }
+    else
+    {
+        return ("BOARD " + res->getProperties().boardnameString +  " (IP "  + res->getProperties().ipv4addrString + ") ");
+    }
+}
+
 
 bool embObjMotionControl::alloc(int nj)
 {
@@ -622,6 +634,9 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
+    eOipv4addr_t ipv4addr;
+    string boardIPstring;
+    string boardName;
     if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjMotionControl::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
@@ -638,22 +653,21 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
     // - now all other things
 
-    // READ CONFIGURATION
-    if(!fromConfig(config))
-    {
-        yError() << "Missing parameters in config file";
-        return false;
-    }
-
-
     // -- instantiate EthResource etc.
 
     res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
-        yError() << "embObjMotionControl::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << boardIPstring << " ... unable to continue";
+        yError() << "embObjMotionControl::open() fails because could not instantiate the ethResource for " << getBoardInfo() << " ... unable to continue";
         return false;
     }
+    // READ CONFIGURATION
+    if(!fromConfig(config))
+    {
+        yError() << getBoardInfo() << "Missing motion control parameters in config file";
+        return false;
+    }
+    
 
 
     if(!res->verifyEPprotocol(eoprot_endpoint_motioncontrol))
@@ -673,7 +687,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mc, servparam))
     {
-        yError() << "embObjMotionControl::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+        yError() << "embObjMotionControl::open() has an error in call of ethResources::serviceVerifyActivate() for" << getBoardInfo();
         cleanup();
         return false;
     }
@@ -683,21 +697,21 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
     if(!init() )
     {
-        yError() << "embObjMotionControl::open() has an error in call of embObjMotionControl::init() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+        yError() << "embObjMotionControl::open() has an error in call of embObjMotionControl::init() for" << getBoardInfo();
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjMotionControl::init() has succesfully initted BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+            yDebug() << "embObjMotionControl::init() has succesfully initted" << getBoardInfo();
         }
     }
 
 
     if(false == res->serviceStart(eomn_serv_category_mc))
     {
-        yError() << "embObjMotionControl::open() fails to start mc service for board" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": cannot continue";
+        yError() << "embObjMotionControl::open() fails to start mc service for" << getBoardInfo() << ": cannot continue";
         cleanup();
         return false;
     }
@@ -705,7 +719,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjMotionControl::open() correctly starts mc service of board" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+            yDebug() << "embObjMotionControl::open() correctly starts mc service of" << getBoardInfo();
         }
     }
 
@@ -802,7 +816,7 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_p
 
        if(numofjoints== 0 )
        {
-            yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+            yError() << "embObjMC" << getBoardInfo() <<  "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
             return false;
        }
         int firstjoint = _jsets[s].joints[0];//get firts joint of set s
@@ -813,7 +827,7 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_p
 
             if(pidInfo[firstjoint].usernamePidSelected != pidInfo[otherjoint].usernamePidSelected)
             {
-                yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Joints beloning to same set must be have same control law. Joint " << otherjoint << " differs from " << firstjoint << "Set num " << s ;
+                yError() << "embObjMC "<< getBoardInfo() <<  "Joints beloning to same set must be have same control law. Joint " << otherjoint << " differs from " << firstjoint << "Set num " << s ;
                 yError() << pidInfo[firstjoint].usernamePidSelected << "***" << pidInfo[otherjoint].usernamePidSelected;
                 return false;
             }
@@ -834,7 +848,7 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_t
 
        if(numofjoints== 0 )
        {
-            yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+           yError() << "embObjMC "<< getBoardInfo() << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
             return false;
        }
         int firstjoint = _jsets[s].joints[0];//get firts joint of set s
@@ -845,7 +859,7 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_t
 
             if(pidInfo[firstjoint].usernamePidSelected != pidInfo[otherjoint].usernamePidSelected)
             {
-                yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Joints beloning to same set must be have same control law. Joint " << otherjoint << " differs from " << firstjoint << "Set num " << s ;
+                yError() << "embObjMC"<< getBoardInfo() << "Joints beloning to same set must be have same control law. Joint " << otherjoint << " differs from " << firstjoint << "Set num " << s ;
                 yError() << pidInfo[firstjoint].usernamePidSelected << "***" << pidInfo[otherjoint].usernamePidSelected;
                 return false;
             }
@@ -869,7 +883,7 @@ eOmc_pidoutputtype_t embObjMotionControl::pidOutputTypeConver_eomc2fw(PidAlgorit
              return(eomc_pidoutputtype_iqq);
          default:
          {
-             yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "pidOutputTypeConver_eomc2fw: unknown pid output type" ;
+             yError() << "embObjMC "<< getBoardInfo() << "pidOutputTypeConver_eomc2fw: unknown pid output type" ;
              return(eomc_pidoutputtype_unknown);
          }
      }
@@ -881,7 +895,7 @@ bool embObjMotionControl::updatedJointsetsCfgWithControlInfo()
     {
         if(_jsets[s].getNumberofJoints() == 0)
         {
-            yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+            yError() << "embObjMC"<< getBoardInfo() << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
             return false;
         }
         int joint = _jsets[s].joints[0];
@@ -941,7 +955,7 @@ bool embObjMotionControl::saveCouplingsData(void)
 
     if(_joint2set.size() > 4 )
     {
-        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Jointsset size is bigger than 4. I can't send jointset information to fw.";
+        yError() << "embObjMC "<< getBoardInfo() << "Jointsset size is bigger than 4. I can't send jointset information to fw.";
         return false;
     }
 
@@ -1166,7 +1180,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     ////// IMPEDANCE PARAMETERS
     if(! _mcparser->parseImpedanceGroup(config,_impedance_params))
     {
-        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "IMPEDANCE section: error detected in parameters syntax";
+        yError() << "embObjMC " << getBoardInfo() << "IMPEDANCE section: error detected in parameters syntax";
         return false;
     }
 
@@ -1223,7 +1237,7 @@ bool embObjMotionControl::verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk 
         int numofjointsinset = _jsets[s].getNumberofJoints();
         if(numofjointsinset == 0 )
         {
-                yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+            yError() << "embObjMC " << getBoardInfo() << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
                 return false;
         }
 
@@ -1233,7 +1247,7 @@ bool embObjMotionControl::verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk 
             int joint = _jsets[s].joints[j];
             if(useMotorSpeedFbk[firstjointofset] != useMotorSpeedFbk[joint])
             {
-                yError() << "embObjMC BOARD " << boardIPstring << ". Param useMotorSpeedFbk should have same value for joints belong same set. See joint " << firstjointofset << " and " << joint;
+                yError() << "embObjMC " << getBoardInfo() << ". Param useMotorSpeedFbk should have same value for joints belong same set. See joint " << firstjointofset << " and " << joint;
                 return false;
             }
         }
@@ -1268,7 +1282,7 @@ bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(GenericControlUnitsTy
         {
             if(_tpids[firstjoint].ctrlUnitsType != _tpids[i].ctrlUnitsType)
             {
-                yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
+                yError() << "embObjMC " << getBoardInfo() << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
                 return false;
             }
         }
@@ -1321,13 +1335,13 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
 
     if(false == parser->parseService(config, serviceConfig))
     {
-        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "cannot parse service" ;
+        yError() << "embObjMC " << getBoardInfo() << "cannot parse service" ;
         return false;
     }
 
     if(eomn_serv_MC_generic == serviceConfig.ethservice.configuration.type)
     {
-        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "it is no longer possible use eomn_serv_MC_generic, because firmware cannot configure itself!" ;
+        yError() << "embObjMC " << getBoardInfo() << "it is no longer possible use eomn_serv_MC_generic, because firmware cannot configure itself!" ;
         return false;
     }
 
@@ -1383,19 +1397,19 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if(0 == _njoints)
     {
-        yError() << "embObjMC BOARD " << boardIPstring << "(" << boardName << ")"<< "fromConfig(): detected _njoints = " << _njoints;
+        yError() << "embObjMC"<< getBoardInfo() << "fromConfig(): detected _njoints = " << _njoints;
         return false;
     }
 
     // we have number of joints inside _njoints. we allocate all required buffers
     if(!alloc(_njoints))
     {
-        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" <<"fromConfig(): alloc() failed for _njoints = " << _njoints;
+        yError() << "embObjMC"<< getBoardInfo() << "fromConfig(): alloc() failed for _njoints = " << _njoints;
         return false;
     }
 
 
-    _mcparser = new mcParser(_njoints, string(boardName));
+    _mcparser = new mcParser(_njoints, string(res->getProperties().boardnameString));
 
     ////// check motion control xml files version
     int currentMCversion =0;
@@ -1404,7 +1418,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (currentMCversion != PARSER_MOTION_CONTROL_VERSION)
     {
-        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please try to update configuration files of robot and if the problem persists contact icub-support@iit.it";
+        yError() << "embObjMC" << getBoardInfo() << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please try to update configuration files of robot and if the problem persists contact icub-support@iit.it";
         return false;
     }
 
@@ -1455,7 +1469,7 @@ bool embObjMotionControl::init()
 
         if(false == res->setRemoteValue(protid, &controlMode))
         {
-            yError() << "embObjMotionControl::init() had an error while setting eomc_controlmode_cmd_idle in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+            yError() << "embObjMotionControl::init() had an error while setting eomc_controlmode_cmd_idle in "<< getBoardInfo();
             // return(false); i dont return false. because even if a failure, that is not a severe error.
             // MOREOVER: to verify we must read the status of the joint and NOT the command ... THINK OF IT
         }
@@ -1480,14 +1494,14 @@ bool embObjMotionControl::init()
 
     if(false == res->serviceSetRegulars(eomn_serv_category_mc, id32v))
     {
-        yError() << "embObjMotionControl::init() fails to add its variables to regulars in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString << ": cannot proceed any further";
+        yError() << "embObjMotionControl::init() fails to add its variables to regulars in "<< getBoardInfo() << ": cannot proceed any further";
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjMotionControl::init() added" << id32v.size() << "regular rops to BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+            yDebug() << "embObjMotionControl::init() added" << id32v.size() << "regular rops to "<< getBoardInfo();
             char nvinfo[128];
             for(unsigned int r=0; r<id32v.size(); r++)
             {
@@ -1554,14 +1568,14 @@ bool embObjMotionControl::init()
 
         if(false == res->setcheckRemoteValue(protid, &jconfig, 10, 0.010, 0.050))
         {
-            yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for joint config fisico #" << fisico << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for joint config fisico #" << fisico << "in "<< getBoardInfo();
             return false;
         }
         else
         {
             if(verbosewhenok)
             {
-                yDebug() << "embObjMotionControl::init() correctly configured joint config fisico #" << fisico << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+                yDebug() << "embObjMotionControl::init() correctly configured joint config fisico #" << fisico << "in "<< getBoardInfo();
             }
         }
     }
@@ -1625,14 +1639,14 @@ bool embObjMotionControl::init()
         
         if (false == res->setcheckRemoteValue(protid, &motor_cfg, 10, 0.010, 0.050))
         {
-            yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for motor config fisico #" << fisico << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for motor config fisico #" << fisico << "in "<< getBoardInfo(); 
             return false;
         }
         else
         {
             if (verbosewhenok)
             {
-                yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+                yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in "<< getBoardInfo();
             }
         }
 
@@ -1645,7 +1659,7 @@ bool embObjMotionControl::init()
 
     //to be done
 
-    yTrace() << "embObjMotionControl::init(): correctly instantiated for BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+    yTrace() << "embObjMotionControl::init(): correctly instantiated for " << getBoardInfo();
     return true;
 }
 
@@ -1805,7 +1819,7 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
 
     if(false == res->setRemoteValue(protoId, &outPid))
     {
-        yError() << "while setting position PIDs for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j;
+        yError() << "while setting position PIDs for " << getBoardInfo() << " joint " << j;
         return false;
     }
 
@@ -2062,7 +2076,7 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
         (mode != VOCAB_CM_IMPEDANCE_VEL) &&
         (mode != VOCAB_CM_IDLE))
     {
-        yError() << "velocityMoveRaw: skipping command because BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " is not in VOCAB_CM_VELOCITY mode";
+        yError() << "velocityMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_VELOCITY mode";
         return true;
     }
 
@@ -2106,7 +2120,7 @@ bool embObjMotionControl::velocityMoveRaw(const double *sp)
 
 bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationParameters& params)
 {
-    yTrace() << "setCalibrationParametersRaw for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "joint" << j;
+    yTrace() << "setCalibrationParametersRaw for " << getBoardInfo() << "joint" << j;
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_calibration);
     eOmc_calibrator_t calib;
@@ -2230,7 +2244,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
 
 bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, double p2, double p3)
 {
-    yTrace() << "calibrate2Raw for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "joint" << j;
+    yTrace() << "calibrate2Raw for" << getBoardInfo() << "joint" << j;
 
     // Tenere il check o forzare questi sottostati?
 //    if(!_enabledAmp[j ] )
@@ -2313,7 +2327,7 @@ bool embObjMotionControl::doneRaw(int axis)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_core_modes_controlmodestatus);
     if(false == askRemoteValue(id32, &temp, size))
     {
-        yError ("Failure of askRemoteValue() inside embObjMotionControl::doneRaw(axis=%d) for BOARD %s IP %s", axis, res->getProperties().boardnameString.c_str(), res->getProperties().ipv4addrString.c_str());
+        yError () << "Failure of askRemoteValue() inside embObjMotionControl::doneRaw(axis=" << axis << ") for " << getBoardInfo();
         return false;
     }
 
@@ -2382,7 +2396,7 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
         (mode != VOCAB_CM_IMPEDANCE_POS) &&
         (mode != VOCAB_CM_IDLE))
     {
-        yError() << "positionMoveRaw: skipping command because BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " is not in VOCAB_CM_POSITION mode";
+        yError() << "positionMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION mode";
         return true;
     }
 
@@ -2428,7 +2442,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core_modes_ismotiondone);
     if(false == askRemoteValue(id32, &ismotiondone, size))
     {
-        yError ("Failure of askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=%d) for BOARD %s IP %s", j, res->getProperties().boardnameString.c_str(), res->getProperties().ipv4addrString.c_str());
+        yError () << "Failure of askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=" << j << ") for " << getBoardInfo();
         return false;
     }
 
@@ -2735,14 +2749,14 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 
     if(!controlModeCommandConvert_yarp2embObj(_mode, controlmodecommand) )
     {
-        yError() << "SetControlMode: received unknown control mode for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(_mode);
+        yError() << "SetControlMode: received unknown control mode for " << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
         return false;
     }
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
     if(false == res->setRemoteValue(protid, &controlmodecommand) )
     {
-        yError() << "setControlModeRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(_mode);
+        yError() << "setControlModeRaw failed for " << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
         return false;
     }
 
@@ -2751,7 +2765,7 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 
     if(false == ret)
     {
-        yError("In embObjMotionControl::setControlModeRaw(j=%d, mode=%s) for BOARD %s IP %s has failed checkRemoteControlModeStatus()", j, yarp::os::Vocab::decode(_mode).c_str(), res->getProperties().boardnameString.c_str(), res->getProperties().ipv4addrString.c_str());
+        yError() << "In embObjMotionControl::setControlModeRaw(j=" << j << ", mode=" << yarp::os::Vocab::decode(_mode).c_str() << ") for " << getBoardInfo() << " has failed checkRemoteControlModeStatus()";
     }
 
     return ret;
@@ -2770,7 +2784,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
 
         if(!controlModeCommandConvert_yarp2embObj(modes[i], controlmodecommand) )
         {
-            yError() << "SetControlModesRaw(): received unknown control mode for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
+            yError() << "SetControlModesRaw(): received unknown control mode for " << getBoardInfo() << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
 
             return false;
         }
@@ -2778,7 +2792,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joints[i], eoprot_tag_mc_joint_cmmnds_controlmode);
         if(false == res->setRemoteValue(protid, &controlmodecommand) )
         {
-            yError() << "setControlModesRaw() could not send set<cmmnds_controlmode> for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
+            yError() << "setControlModesRaw() could not send set<cmmnds_controlmode> for " << getBoardInfo() << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
 
             return false;
         }
@@ -2786,7 +2800,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         bool tmpresult = checkRemoteControlModeStatus(i, modes[i]);
         if(false == tmpresult)
         {
-             yError() << "setControlModesRaw(const int n_joint, const int *joints, int *modes) could not check with checkRemoteControlModeStatus() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
+            yError() << "setControlModesRaw(const int n_joint, const int *joints, int *modes) could not check with checkRemoteControlModeStatus() for " << getBoardInfo() << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
         }
 
         ret = ret && tmpresult;
@@ -2812,21 +2826,21 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 
         if(!controlModeCommandConvert_yarp2embObj(modes[i], controlmodecommand) )
         {
-            yError() << "SetControlMode: received unknown control mode forBOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << i << " mode " << Vocab::decode(modes[i]);
+            yError() << "SetControlMode: received unknown control mode for" << getBoardInfo() << " joint " << i << " mode " << Vocab::decode(modes[i]);
             return false;
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, i, eoprot_tag_mc_joint_cmmnds_controlmode);
         if(false == res->setRemoteValue(protid, &controlmodecommand) )
         {
-            yError() << "setControlModesRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << i << " mode " << Vocab::decode(modes[i]);
+            yError() << "setControlModesRaw failed for " << getBoardInfo() << " joint " << i << " mode " << Vocab::decode(modes[i]);
             return false;
         }
 
         bool tmpresult = checkRemoteControlModeStatus(i, modes[i]);
         if(false == tmpresult)
         {
-             yError() << "setControlModesRaw(int *modes) could not check with checkRemoteControlModeStatus() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << i << " mode " << Vocab::decode(modes[i]);
+            yError() << "setControlModesRaw(int *modes) could not check with checkRemoteControlModeStatus() for" << getBoardInfo() << " joint " << i << " mode " << Vocab::decode(modes[i]);
         }
 
         ret = ret && tmpresult;
@@ -3145,7 +3159,7 @@ bool embObjMotionControl::setMaxCurrentRaw(int j, double val)
     
     if(!askRemoteValue(protid, &currentlimits, size))
     {
-        yError() << "embObjMotionControl::setMaxCurrentRaw() could not read max current for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "joint " << j;
+        yError() << "embObjMotionControl::setMaxCurrentRaw() could not read max current for " << getBoardInfo() << "joint " << j;
         return false;
     }
 
@@ -3165,7 +3179,7 @@ bool embObjMotionControl::getMaxCurrentRaw(int j, double *val)
 
     if(!askRemoteValue(protid, &currentlimits, size))
     {
-        yError() << "embObjMotionControl::getMaxCurrentRaw() could not read max current for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "joint " << j;
+        yError() << "embObjMotionControl::getMaxCurrentRaw() could not read max current for " << getBoardInfo() << "joint " << j;
         return false;
     }
 
@@ -3926,7 +3940,7 @@ bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
 
     if(!res->getLocalValue(id32, &jcore))
     {
-        yError() << "embObjMotionControl::getRefTorqueRaw() could not read pid torque reference pos for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "joint " << j;
+        yError() << "embObjMotionControl::getRefTorqueRaw() could not read pid torque reference pos for " << getBoardInfo() << "joint " << j;
         return false;
     }
 
@@ -4113,7 +4127,7 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
 
     if(false == res->setRemoteValue(id32, &eo_params))
     {
-        yError() << "embObjMotionControl::setMotorTorqueParamsRaw() could not send set message for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "joint " << j;
+        yError() << "embObjMotionControl::setMotorTorqueParamsRaw() could not send set message for" << getBoardInfo() << "joint " << j;
         return false;
     }
 
@@ -4140,7 +4154,7 @@ bool embObjMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
 
     if(!_vpids[j].enabled)
     {
-        yError() << "eoMc board " << boardIPstring  << "(" << boardName << ")" << ": it is not possible set velocity pid for joint " << j <<", because velocity pid is enabled in xml files";
+        yError() << "eoMc " << getBoardInfo() << ": it is not possible set velocity pid for joint " << j <<", because velocity pid is enabled in xml files";
         return false;
     }
     if(_vpids[j].ctrlUnitsType == controlUnits_metric)
@@ -4155,14 +4169,14 @@ bool embObjMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
     }
     else
     {
-        yError() << "eoMc board " << boardIPstring  << "(" << boardName << ")" << ": Unknown _positionControlUnits, needed by setVelPidRaw()";
+        yError() << "eoMc " << getBoardInfo() << ": Unknown _positionControlUnits, needed by setVelPidRaw()";
     }
 
     copyPid_iCub2eo(&hwPid, &outPid);
 
     if (false == res->setRemoteValue(protoId, &outPid))
     {
-        yError() << "while setting velocity PIDs for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j;
+        yError() << "while setting velocity PIDs for" << getBoardInfo() << " joint " << j;
         return false;
     }
 
@@ -4192,7 +4206,7 @@ bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
     }
     else
     {
-        yError() << "eoMc board " << boardIPstring  << "(" << boardName << ")" << ":Unknown _positionControlUnits needed by getVelPid()";
+        yError() << "eoMc " << getBoardInfo() << ":Unknown _positionControlUnits needed by getVelPid()";
     }
 
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
@@ -4206,7 +4220,7 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
     if (mode != VOCAB_CM_POSITION_DIRECT &&
         mode != VOCAB_CM_IDLE)
     {
-        yError() << "setReferenceRaw: skipping command because BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
+        yError() << "setReferenceRaw: skipping command because" << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
         return true;
     }
 
@@ -4254,7 +4268,7 @@ bool embObjMotionControl::getTargetPositionRaw(int axis, double *ref)
     eOmc_joint_status_target_t  target = {0};
     if(!askRemoteValue(id32, &target, size))
     {
-        yError() << "embObjMotionControl::getTargetPositionRaw() could not read reference pos for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "joint " << axis;
+        yError() << "embObjMotionControl::getTargetPositionRaw() could not read reference pos for " << getBoardInfo() << "joint " << axis;
         return false;
     }
 
@@ -4299,7 +4313,7 @@ bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
     eOmc_joint_status_target_t  target = {0};
     if(!askRemoteValue(id32, &target, size))
     {
-        yError() << "embObjMotionControl::getRefVelocityRaw() could not read reference vel for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "joint " << axis;
+        yError() << "embObjMotionControl::getRefVelocityRaw() could not read reference vel for " << getBoardInfo() << "joint " << axis;
         return false;
     }
     *ref = (double) target.trgt_velocity;
@@ -4341,7 +4355,7 @@ bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
     eOmc_joint_status_target_t  target = {0};
     if(!askRemoteValue(id32, &target, size))
     {
-        yError() << "embObjMotionControl::getRefPositionRaw() could not read reference pos for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "joint " << axis;
+        yError() << "embObjMotionControl::getRefPositionRaw() could not read reference pos for " << getBoardInfo() << "joint " << axis;
         return false;
     }
 
@@ -4423,20 +4437,20 @@ bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
     eOenum08_t interactionmodecommand = 0;
 
 
-//    yDebug() << "received setInteractionModeRaw command (SINGLE) for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(_mode);
+    //    yDebug() << "received setInteractionModeRaw command (SINGLE) for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
 
     if (_mode == VOCAB_IM_COMPLIANT && _tpids[j].enabled  == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
 
     if(!interactionModeCommandConvert_yarp2embObj(_mode, interactionmodecommand) )
     {
-        yError() << "setInteractionModeRaw: received unknown mode for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(_mode);
+        yError() << "setInteractionModeRaw: received unknown mode for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
     }
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
 
     if(false == res->setRemoteValue(protid, &interactionmodecommand) )
     {
-        yError() << "setInteractionModeRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(_mode);
+        yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
         return false;
     }
 
@@ -4449,7 +4463,7 @@ bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
 
     if((false == ret) || (interactionmodecommand != interactionmodestatus))
     {
-        yError() << "check of embObjMotionControl::setInteractionModeRaw() failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(_mode);
+    yError() << "check of embObjMotionControl::setInteractionModeRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
         return false;
     }
 #endif
@@ -4470,14 +4484,14 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], interactionmodecommand) )
         {
-            yError() << "embObjMotionControl::setInteractionModesRaw(): received unknown interactionMode for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(modes[j]) << " " << modes[j];
+            yError() << "embObjMotionControl::setInteractionModesRaw(): received unknown interactionMode for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]) << " " << modes[j];
             return false;
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
         if(false == res->setRemoteValue(protid, &interactionmodecommand) )
         {
-            yError() << "embObjMotionControl::setInteractionModesRaw() failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "embObjMotionControl::setInteractionModesRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]);
             return false;
         }
 
@@ -4492,16 +4506,16 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
         {
             if(false == ret)
             {
-                yError() << "check of embObjMotionControl::setInteractionModesRaw() failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "check of embObjMotionControl::setInteractionModesRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]);
                 return false;
             }
 
             int tmp;
             if(interactionModeStatusConvert_embObj2yarp(interactionmodestatus, tmp) )
-                yError() << "setInteractionModeRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+                yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " because of interactionMode mismatching \n\tSet " \
                          << Vocab::decode(modes[j]) << " Got " << Vocab::decode(tmp);
             else
-                yError() << "setInteractionModeRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+                yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " because of interactionMode mismatching \n\tSet " \
                          << Vocab::decode(modes[j]) << " Got an unknown value!";
             return false;
         }
@@ -4527,14 +4541,14 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], interactionmodecommand) )
         {
-            yError() << "setInteractionModeRaw: received unknown interactionMode for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "setInteractionModeRaw: received unknown interactionMode for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]);
             return false;
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
         if(false == res->setRemoteValue(protid, &interactionmodecommand) )
         {
-            yError() << "setInteractionModeRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]);
             return false;
         }
 
@@ -4549,16 +4563,16 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
         {
             if(false == ret)
             {
-                yError() << "check of embObjMotionControl::setInteractionModesRaw() failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "check of embObjMotionControl::setInteractionModesRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]);
                 return false;
             }
 
             int tmp;
             if(interactionModeStatusConvert_embObj2yarp(interactionmodestatus, tmp) )
-                yError() << "setInteractionModeRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+                yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " because of interactionMode mismatching \n\tSet " \
                          << Vocab::decode(modes[j]) << " Got " << Vocab::decode(tmp);
             else
-                yError() << "setInteractionModeRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+                yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " because of interactionMode mismatching \n\tSet " \
                          << Vocab::decode(modes[j]) << " Got an unknown value!";
             return false;
         }
@@ -4639,7 +4653,7 @@ bool embObjMotionControl::getTemperatureRaw(int m, double* val)
     }
     else
     {
-        yError() << "embObjMotionControl::getTemperatureRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << m ;
+        yError() << "embObjMotionControl::getTemperatureRaw failed for" << getBoardInfo() << " motor " << m ;
         *val = 0;
     }
 
@@ -4664,7 +4678,7 @@ bool embObjMotionControl::getTemperatureLimitRaw(int m, double *temp)
     *temp = 0;
     if(!askRemoteValue(protid, &temperaturelimit, size))
     {
-        yError() << "embObjMotionControl::getTemperatureLimitRaw() can't read temperature limits  for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << m;
+        yError() << "embObjMotionControl::getTemperatureLimitRaw() can't read temperature limits  for" << getBoardInfo() << " motor " << m;
         return false;
     }
 
@@ -4689,7 +4703,7 @@ bool embObjMotionControl::getPeakCurrentRaw(int m, double *val)
     *val = 0;
     if(!askRemoteValue(protid, &currentlimits, size))
     {
-        yError() << "embObjMotionControl::getPeakCurrentRaw() can't read current limits  for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << m;
+        yError() << "embObjMotionControl::getPeakCurrentRaw() can't read current limits  for" << getBoardInfo() << " motor " << m;
         return false;
     }
 
@@ -4705,7 +4719,7 @@ bool embObjMotionControl::setPeakCurrentRaw(int m, const double val)
     eOmc_current_limits_params_t currentlimits = {0};
     if(!askRemoteValue(protid, &currentlimits, size))
     {
-        yError() << "embObjMotionControl::setPeakCurrentRaw can't read current limits for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << m ;
+        yError() << "embObjMotionControl::setPeakCurrentRaw can't read current limits for" << getBoardInfo() << " motor " << m ;
         return false;
     }
 
@@ -4716,7 +4730,7 @@ bool embObjMotionControl::setPeakCurrentRaw(int m, const double val)
     bool ret = res->setRemoteValue(protid, &currentlimits);
     if(!ret)
     {
-         yError() << "embObjMotionControl::setPeakCurrentRaw failed sending new value for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << m ;
+        yError() << "embObjMotionControl::setPeakCurrentRaw failed sending new value for" << getBoardInfo() << " motor " << m ;
     }
     return ret;
 }
@@ -4729,7 +4743,7 @@ bool embObjMotionControl::getNominalCurrentRaw(int m, double *val)
     *val = 0;
     if(!askRemoteValue(protid, &currentlimits, size))
     {
-        yError() << "embObjMotionControl::getNominalCurrentRaw() can't read current limits  for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << m;
+        yError() << "embObjMotionControl::getNominalCurrentRaw() can't read current limits  for" << getBoardInfo() << " motor " << m;
         return false;
     }
 
@@ -4746,7 +4760,7 @@ bool embObjMotionControl::setNominalCurrentRaw(int m, const double val)
     eOmc_current_limits_params_t currentlimits = {0};
     if(!askRemoteValue(protid, &currentlimits, size))
     {
-        yError() << "embObjMotionControl::setNominalCurrentRaw can't read current limits for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << m ;
+        yError() << "embObjMotionControl::setNominalCurrentRaw can't read current limits for" << getBoardInfo() << " motor " << m ;
         return false;
     }
 
@@ -4757,7 +4771,7 @@ bool embObjMotionControl::setNominalCurrentRaw(int m, const double val)
     bool ret = res->setRemoteValue(protid, &currentlimits);
     if(!ret)
     {
-         yError() << "embObjMotionControl::setNominalCurrentRaw failed sending new value for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << m ;
+        yError() << "embObjMotionControl::setNominalCurrentRaw failed sending new value for" << getBoardInfo() << " motor " << m ;
     }
 
     return ret;
@@ -4775,7 +4789,7 @@ bool embObjMotionControl::getPWMRaw(int j, double* val)
     }
     else
     {
-        yError() << "embObjMotionControl::getPWMRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << j ;
+        yError() << "embObjMotionControl::getPWMRaw failed for" << getBoardInfo() << " motor " << j ;
         *val = 0;
     }
 
@@ -4795,7 +4809,7 @@ bool embObjMotionControl::getPWMLimitRaw(int j, double* val)
     }
     else
     {
-        yError() << "embObjMotionControl::getPWMLimitRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << j ;
+        yError() << "embObjMotionControl::getPWMLimitRaw failed for" << getBoardInfo() << " motor " << j ;
         *val = 0;
     }
 
@@ -4806,7 +4820,7 @@ bool embObjMotionControl::setPWMLimitRaw(int j, const double val)
 {
     if (val < 0)
     {
-        yError() << "embObjMotionControl::setPWMLimitRaw failed because pwmLimit is negative for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << j ;
+        yError() << "embObjMotionControl::setPWMLimitRaw failed because pwmLimit is negative for" << getBoardInfo() << " motor " << j ;
         return true; //return true because the error ios not due to communication error
     }
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pwmlimit);
@@ -4827,7 +4841,7 @@ bool embObjMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
     }
     else
     {
-        yError() << "embObjMotionControl::getPowerSupplyVoltageRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << j ;
+        yError() << "embObjMotionControl::getPowerSupplyVoltageRaw failed for" << getBoardInfo() << " motor " << j ;
         *val = 0;
     }
 
@@ -4960,7 +4974,7 @@ bool embObjMotionControl::getRefDutyCycleRaw(int j, double *v)
 
     if (!askRemoteValue(protoId, &target, size))
     {
-        yError() << "embObjMotionControl::getRefDutyCycleRaw() could not read openloop reference for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "joint " << j;
+        yError() << "embObjMotionControl::getRefDutyCycleRaw() could not read openloop reference for " << getBoardInfo() << "joint " << j;
         return false;
     }
 
@@ -4991,7 +5005,7 @@ bool embObjMotionControl::getDutyCycleRaw(int j, double *v)
     }
     else
     {
-        yError() << "embObjMotionControl::getDutyCycleRaw failed for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " motor " << j;
+        yError() << "embObjMotionControl::getDutyCycleRaw failed for" << getBoardInfo() << " motor " << j;
         *v = 0;
     }
 
