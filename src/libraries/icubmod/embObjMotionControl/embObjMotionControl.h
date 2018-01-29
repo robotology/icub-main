@@ -124,8 +124,8 @@ using namespace yarp::dev;
 
 
 
-enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000,  MAX_U32 = 0xffffffff, MIN_U32 = 0x00, MAX_U16 = 0xffff, MIN_U16 = 0x0000};
-enum { CAN_SKIP_ADDR = 0x80 };
+// enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000,  MAX_U32 = 0xffffffff, MIN_U32 = 0x00, MAX_U16 = 0xffff, MIN_U16 = 0x0000};
+// enum { CAN_SKIP_ADDR = 0x80 };
 
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IPidControlRaw,
@@ -300,27 +300,6 @@ private:
     bool isTorqueControlEnabled(int joint);
     bool isVelocityControlEnabled(int joint);
 
-    bool interactionModeStatusConvert_embObj2yarp(eOenum08_t embObjMode, int &vocabOut);
-    bool interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut);
-
-    bool controlModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut);
-    int  controlModeCommandConvert_embObj2yarp(eOmc_controlmode_command_t embObjMode);
-
-    bool controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut);
-    int  controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode);
-
-    eOmc_pidoutputtype_t pidOutputTypeConver_eomc2fw(PidAlgorithmType_t controlLaw); //maybe a day we convert from yarp to fw!
-
-    void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
-    void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
-
-    //bool pidsAreEquals(Pid &pid1, Pid &pid2);
-
-    bool EncoderType_iCub2eo(const string* in, uint8_t *out);
-    bool EncoderType_eo2iCub(const uint8_t *in, string* out);
-
-    // eOmn_serv_type_t getMcServiceType(void);
-
     bool iNeedCouplingsInfo(void); //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
     bool iMange2focBoards(void);
 
@@ -332,91 +311,51 @@ private:
     void updateDeadZoneWithDefaultValues(void);
     bool getJointDeadZoneRaw(int j, double &jntDeadZone);
 
-    // saturation check and rounding for 16 bit unsigned integer
-    int U_16(double x) const
-    {
-        if (x <= double(MIN_U16) )
-            return MIN_U16;
-        else
-            if (x >= double(MAX_U16))
-                return MAX_U16;
-        else
-            return int(x + .5);
-    }
-
-    // saturation check and rounding for 16 bit signed integer
-    short S_16(double x)
-    {
-        if (x <= double(-(MAX_SHORT))-1)
-            return MIN_SHORT;
-        else
-            if (x >= double(MAX_SHORT))
-                return MAX_SHORT;
-        else
-            if  (x>0)
-                return short(x + .5);
-            else
-                return short(x - .5);
-    }
-
-    // saturation check and rounding for 32 bit unsigned integer
-    int U_32(double x) const
-    {
-        if (x <= double(MIN_U32) )
-            return MIN_U32;
-        else
-            if (x >= double(MAX_U32))
-                return MAX_U32;
-        else
-            return int(x + .5);
-    }
-
-    // saturation check and rounding for 32 bit signed integer
-    int S_32(double x) const
-    {
-        if (x <= double(-(MAX_INT))-1.0)
-            return MIN_INT;
-        else
-            if (x >= double(MAX_INT))
-                return MAX_INT;
-        else
-            if  (x>0)
-                return int(x + .5);
-            else
-                return int(x - .5);
-    }
-
-
 private:
-
+    
+    //functions used in init this object
+    bool fromConfig(yarp::os::Searchable &config);
     int fromConfig_NumOfJoints(yarp::os::Searchable &config);
     bool fromConfig_getGeneralInfo(yarp::os::Searchable &config); //get general info: useRawEncoderData, useLiitedPwm, etc....
     bool fromConfig_Step2(yarp::os::Searchable &config);
     bool fromConfig_readServiceCfg(yarp::os::Searchable &config);
     bool initializeInterfaces(measureConvFactors &f);
-
+    bool alloc(int njoints);
+    bool init(void);
+    
+    //function used in the closing this object
+    void cleanup(void);
+    
+    //used in pid interface
+    bool helper_setPosPidRaw( int j, const Pid &pid);
+    bool helper_getPosPidRaw(int j, Pid *pid);
+    
+    //used in torque control interface
+    bool helper_setTrqPidRaw( int j, const Pid &pid);
+    bool helper_getTrqPidRaw(int j, Pid *pid);
+    
+    //used in velocity control interface
+    bool helper_setVelPidRaw( int j, const Pid &pid);
+    bool helper_getVelPidRaw(int j, Pid *pid);
+    
+    //used in current control interface
+    bool helper_setCurPidRaw(int j, const Pid &pid);
+    bool helper_getCurPidRaw(int j, Pid *pid);
+    
+    
 public:
 
     embObjMotionControl();
     ~embObjMotionControl();
 
 
-    void cleanup(void);
-
     // Device Driver
     virtual bool open(yarp::os::Searchable &par);
     virtual bool close();
-    bool fromConfig(yarp::os::Searchable &config);
 
     virtual bool initialised();
     virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
-
-
-
-
-    bool alloc(int njoints);
-    bool init(void);
 
     /////////   PID INTERFACE   /////////
     virtual bool setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid);
@@ -459,8 +398,7 @@ public:
     virtual bool getRefAccelerationsRaw(double *accs);
     virtual bool stopRaw(int j);
     virtual bool stopRaw();
-    bool helper_setPosPidRaw( int j, const Pid &pid);
-    bool helper_getPosPidRaw(int j, Pid *pid);
+
 
     // Position Control2 Interface
     virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs);
@@ -618,17 +556,14 @@ public:
     virtual bool getRefTorqueRaw(int j, double *t);
     virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
     virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
-    int32_t getRefSpeedInTbl(uint8_t boardNum, int j, eOmeas_position_t pos);
-    bool helper_setTrqPidRaw( int j, const Pid &pid);
-    bool helper_getTrqPidRaw(int j, Pid *pid);
+
 
     // IVelocityControl2
     virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
     virtual bool getRefVelocityRaw(const int joint, double *ref);
     virtual bool getRefVelocitiesRaw(double *refs);
     virtual bool getRefVelocitiesRaw(const int n_joint, const int *joints, double *refs);
-    bool helper_setVelPidRaw( int j, const Pid &pid);
-    bool helper_getVelPidRaw(int j, Pid *pid);
+
 
     // Impedance interface
     virtual bool getImpedanceRaw(int j, double *stiffness, double *damping);
@@ -685,9 +620,7 @@ public:
     virtual bool getRefCurrentsRaw(double *t);
     virtual bool getRefCurrentRaw(int j, double *t);
 
-    //helper
-    bool helper_setCurPidRaw(int j, const Pid &pid);
-    bool helper_getCurPidRaw(int j, Pid *pid);
+    
 };
 
 #endif // include guard

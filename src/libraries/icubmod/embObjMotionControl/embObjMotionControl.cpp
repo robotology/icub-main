@@ -30,9 +30,16 @@
 
 #include <yarp/os/NetType.h>
 
+
+#include "eomc_utils.h"
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
+
+
+
+using namespace yarp::dev::eomc;
 
 
 // macros
@@ -41,125 +48,6 @@ using namespace yarp::os::impl;
 #define PARSER_MOTION_CONTROL_VERSION   4
 
 
-// Utilities
-
-
-
-bool embObjMotionControl::EncoderType_iCub2eo(const string* in, uint8_t *out)
-{
-    if (*in == "NONE")
-    {
-        *out = 0;
-        return true;
-    }
-    else if (*in == "AEA")
-    {
-        *out = 1;
-        return true;
-    }
-    else if (*in == "ROIE")
-    {
-        *out = 2;
-        return true;
-    }
-    else if (*in == "HALL_ADC")
-    {
-        *out = 3;
-        return true;
-    }
-    else if (*in == "MAIS")
-    {
-        *out = 4;
-        return true;
-    }
-    else if (*in == "OPTICAL_QUAD")
-    {
-        *out = 5;
-        return true;
-    }
-    else if (*in == "HALL_MOTOR_SENS")
-    {
-        *out = 6;
-        return true;
-    }
-    *out = 0;
-    return false;
-}
-
-bool embObjMotionControl::EncoderType_eo2iCub(const uint8_t *in, string* out)
-{
-    if (*in == 0)
-    {
-        *out = "NONE";
-        return true;
-    }
-    else if (*in == 1)
-    {
-        *out = "AEA";
-        return true;
-    }
-    else if (*in == 2)
-    {
-        *out = "ROIE";
-        return true;
-    }
-    else if (*in == 3)
-    {
-        *out = "HALL_ADC";
-        return true;
-    }
-    else if (*in == 4)
-    {
-        *out = "MAIS";
-        return true;
-    }
-    else if (*in == 5)
-    {
-        *out = "OPTICAL_QUAD";
-        return true;
-    }
-    else if (*in == 6)
-    {
-        *out = "HALL_MOTOR_SENS";
-        return true;
-    }
-    else if(*in == 9)
-    {
-        *out = "AMO";
-        return true;
-    }
-    *out = "ERROR";
-    return false;
-}
-
-void embObjMotionControl::copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
-{
-    memset(out, 0, sizeof(eOmc_PID_t));     // marco.accame: it is good thing to clear the out struct before copying. this prevent future members of struct not yet managed to be dirty.
-    out->kp = (float) (in->kp);
-    out->ki = (float) (in->ki);
-    out->kd = (float) (in->kd);
-    out->limitonintegral = (float)(in->max_int);
-    out->limitonoutput = (float)(in->max_output);
-    out->offset = (float) (in->offset);
-    out->scale = (int8_t) (in->scale);
-    out->kff = (float) (in->kff);
-    out->stiction_down_val = (float)(in->stiction_down_val);
-    out->stiction_up_val = (float)(in->stiction_up_val);
-}
-
-void embObjMotionControl::copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
-{
-    // marco.accame: in here i dont clear the out class because there is not a clear() method
-    out->kp = (double) in->kp;
-    out->ki = (double) in->ki;
-    out->kd = (double) in->kd;
-    out->max_int = (double) in->limitonintegral;
-    out->max_output = (double) in->limitonoutput;
-    out->offset = (double) in->offset;
-    out->scale = (double) in->scale;
-    out->setStictionValues(in->stiction_up_val, in->stiction_down_val);
-    out->setKff(in->kff);
-}
 
 
 
@@ -184,190 +72,11 @@ static bool nv_not_found(void)
 }
 
 
-bool embObjMotionControl::controlModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut)
-{
-    bool ret = true;
-
-    switch(vocabMode)
-    {
-    case VOCAB_CM_IDLE:
-        embOut = eomc_controlmode_cmd_idle;
-        break;
-
-    case VOCAB_CM_POSITION:
-        embOut = eomc_controlmode_cmd_position;
-        break;
-
-    case VOCAB_CM_POSITION_DIRECT:
-        embOut = eomc_controlmode_cmd_direct;
-        break;
-
-    case VOCAB_CM_VELOCITY:
-        embOut = eomc_controlmode_cmd_velocity;
-        break;
-
-    case VOCAB_CM_MIXED:
-        embOut = eomc_controlmode_cmd_mixed;
-        break;
-
-    case VOCAB_CM_TORQUE:
-        embOut = eomc_controlmode_cmd_torque;
-        break;
-
-    case VOCAB_CM_IMPEDANCE_POS:
-        embOut = eomc_controlmode_cmd_impedance_pos;
-        break;
-
-    case VOCAB_CM_IMPEDANCE_VEL:
-        embOut = eomc_controlmode_cmd_impedance_vel;
-        break;
-
-    case VOCAB_CM_PWM:
-        embOut = eomc_controlmode_cmd_openloop;
-        break;
-
-    case VOCAB_CM_CURRENT:
-        embOut = eomc_controlmode_cmd_current;
-        break;
-
-    case VOCAB_CM_FORCE_IDLE:
-        embOut = eomc_controlmode_cmd_force_idle;
-        break;
-
-    default:
-        ret = false;
-        break;
-    }
-    return ret;
-}
-
-int embObjMotionControl::controlModeCommandConvert_embObj2yarp(eOmc_controlmode_command_t embObjMode)
-{
-    yError() << "embObjMotionControl::controlModeCommandConvert_embObj2yarp" << " is not yet implemented for embObjMotionControl";
-    return 0;
-
-}
-
-bool embObjMotionControl::controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut)
-{
-    yError() << "controlModeStatusConvert_yarp2embObj" << " is not yet implemented for embObjMotionControl";
-    return false;
-}
-
-int embObjMotionControl::controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode)
-{
-    int vocabOut;
-    switch(embObjMode)
-    {
-    case eomc_controlmode_idle:
-        vocabOut = VOCAB_CM_IDLE;
-        break;
-
-    case eomc_controlmode_position:
-        vocabOut = VOCAB_CM_POSITION;
-        break;
-
-    case eomc_controlmode_velocity:
-        vocabOut = VOCAB_CM_VELOCITY;
-        break;
-
-    case eomc_controlmode_direct:
-        vocabOut = VOCAB_CM_POSITION_DIRECT;
-        break;
-
-    case eomc_controlmode_mixed:
-    case eomc_controlmode_velocity_pos:      // they are the same, this will probably removed in the future
-        vocabOut = VOCAB_CM_MIXED;
-        break;
-
-    case eomc_controlmode_torque:
-        vocabOut = VOCAB_CM_TORQUE;
-        break;
-
-    case eomc_controlmode_calib:
-        vocabOut = VOCAB_CM_CALIBRATING;
-        break;
-
-    case eomc_controlmode_impedance_pos:
-        vocabOut = VOCAB_CM_IMPEDANCE_POS;
-        break;
-
-    case eomc_controlmode_impedance_vel:
-        vocabOut = VOCAB_CM_IMPEDANCE_VEL;
-        break;
-
-    case eomc_controlmode_openloop:
-        vocabOut = VOCAB_CM_PWM;
-        break;
-
-    case eomc_controlmode_current:
-        vocabOut = VOCAB_CM_CURRENT;
-        break;
-
-    case eomc_controlmode_hwFault:
-        vocabOut = VOCAB_CM_HW_FAULT;
-        break;
-
-    case eomc_controlmode_notConfigured:
-        vocabOut = VOCAB_CM_NOT_CONFIGURED;
-        break;
-
-    case eomc_controlmode_configured:
-        vocabOut = VOCAB_CM_CONFIGURED;
-        break;
-
-    default:
-        printf("embObj to yarp unknown controlmode %d\n", embObjMode);
-        vocabOut = VOCAB_CM_UNKNOWN;
-        break;
-    }
-    return vocabOut;
-}
 
 
-bool embObjMotionControl::interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut)
-{
-    bool ret = true;
-
-    switch(vocabMode)
-    {
-    case VOCAB_IM_STIFF:
-        embOut = eOmc_interactionmode_stiff;
-        break;
-
-    case VOCAB_IM_COMPLIANT:
-        embOut = eOmc_interactionmode_compliant;
-        break;
-
-    default:
-        ret = false;
-        break;
-    }
-    return ret;
-}
 
 
-bool embObjMotionControl::interactionModeStatusConvert_embObj2yarp(eOenum08_t embObjMode, int &vocabOut)
-{
-    bool ret = true;
-    switch(embObjMode)
-    {
-    case eOmc_interactionmode_stiff:
-        vocabOut = VOCAB_IM_STIFF;
-        break;
 
-    case eOmc_interactionmode_compliant:
-        vocabOut = VOCAB_IM_COMPLIANT;
-        break;
-
-    default:
-        vocabOut = 666; //VOCAB_CM_UNKNOWN;
-        yError() << "Received an unknown interactionMode from the EMS boards with value " << embObjMode;
-//        ret = false;
-        break;
-    }
-    return ret;
-}
 
 
 std::string embObjMotionControl::getBoardInfo(void)
@@ -868,26 +577,6 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_t
     return true;
 }
 
-//maybe a day we convert from yarp to fw!
-eOmc_pidoutputtype_t embObjMotionControl::pidOutputTypeConver_eomc2fw(PidAlgorithmType_t controlLaw)
-{
-     switch(controlLaw)
-     {
-         case PidAlgo_simple:
-            return(eomc_pidoutputtype_pwm);
-
-         case PIdAlgo_velocityInnerLoop:
-            return(eomc_pidoutputtype_vel);
-
-         case PidAlgo_currentInnerLoop:
-             return(eomc_pidoutputtype_iqq);
-         default:
-         {
-             yError() << "embObjMC "<< getBoardInfo() << "pidOutputTypeConver_eomc2fw: unknown pid output type" ;
-             return(eomc_pidoutputtype_unknown);
-         }
-     }
-}
 
 bool embObjMotionControl::updatedJointsetsCfgWithControlInfo()
 {
@@ -899,7 +588,13 @@ bool embObjMotionControl::updatedJointsetsCfgWithControlInfo()
             return false;
         }
         int joint = _jsets[s].joints[0];
-        _jsets[s].setPidOutputType(pidOutputTypeConver_eomc2fw(_ppids[joint].controlLaw));
+        eOmc_pidoutputtype_t pid_out_type = pidOutputTypeConver_eomc2fw(_ppids[joint].controlLaw);
+        if(eomc_pidoutputtype_unknown == pid_out_type)
+        {
+            yError() << "embObjMC"<< getBoardInfo() << "pid output type is unknown for joint " << joint;
+            return false;
+        }
+        _jsets[s].setPidOutputType(pid_out_type);
         _jsets[s].setCanDoTorqueControl(isTorqueControlEnabled(joint));
     }
     return true;
