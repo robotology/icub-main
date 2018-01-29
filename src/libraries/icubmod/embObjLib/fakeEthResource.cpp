@@ -25,6 +25,7 @@
 #include "EoProtocol.h"
 #include "EoManagement.h"
 #include "EoProtocolMN.h"
+#include "EoProtocolAS.h"
 
 #include "ethParser.h"
 
@@ -280,17 +281,30 @@ bool FakeEthResource::serviceStart(eOmn_serv_category_t category, double timeout
 
 bool FakeEthResource::serviceStop(eOmn_serv_category_t category, double timeout)
 {
-    return true;
+    return true; 
 }
 
 bool FakeEthResource::getLocalValue(const eOprotID32_t id32, void *data)
 {
-    return true;
+    bool ret = transceiver.read(id32, data);
+    if(false == ret)
+        return ret;
+    
+    //manage special case:
+    if(id32 == eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale))
+    {
+        //I need to set size to 6, else the device strain can't be opened
+        eOas_arrayofupto12bytes_t * fullscale = (eOas_arrayofupto12bytes_t *)data;
+        fullscale->head.size = 6;
+    }
+    
+    return ret;
 }
 
 bool FakeEthResource::setLocalValue(eOprotID32_t id32, const void *value, bool overrideROprotection)
 {
-    return true;
+    return transceiver.write(id32, value, overrideROprotection);
+    //return true;
 }
 
 //bool FakeEthResource::addSetMessage(eOprotID32_t id32, uint8_t* data)
