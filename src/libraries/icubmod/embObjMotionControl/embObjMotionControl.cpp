@@ -97,12 +97,6 @@ bool embObjMotionControl::alloc(int nj)
     _axisMap = allocAndCheck<int>(nj);
 
     _encodersStamp = allocAndCheck<double>(nj);
-    _jointEncoderType = allocAndCheck<uint8_t>(nj);
-    _rotorEncoderType = allocAndCheck<uint8_t>(nj);
-    _jointEncoderRes = allocAndCheck<int>(nj);
-    _jointEncoderTolerance = allocAndCheck<double>(nj);
-    _rotorEncoderTolerance = allocAndCheck<double>(nj);
-    _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox_M2J = allocAndCheck<double>(nj);
     _gearbox_E2J = allocAndCheck<double>(nj);
     _deadzone = allocAndCheck<double>(nj);
@@ -136,6 +130,9 @@ bool embObjMotionControl::alloc(int nj)
     _timeouts.reserve(nj);
     _impedance_params.reserve(nj);
     _axesInfo.reserve(nj);
+    _jointEncs.reserve(nj);
+    _motorEncs.reserve(nj);
+    
     //debug purpose
 
     return true;
@@ -145,12 +142,6 @@ bool embObjMotionControl::dealloc()
 {
     checkAndDestroy(_axisMap);
     checkAndDestroy(_encodersStamp);
-    checkAndDestroy(_jointEncoderRes);
-    checkAndDestroy(_rotorEncoderRes);
-    checkAndDestroy(_jointEncoderType);
-    checkAndDestroy(_rotorEncoderType);
-    checkAndDestroy(_jointEncoderTolerance);
-    checkAndDestroy(_rotorEncoderTolerance);
     checkAndDestroy(_gearbox_M2J);
     checkAndDestroy(_gearbox_E2J);
     checkAndDestroy(_deadzone);
@@ -218,7 +209,9 @@ embObjMotionControl::embObjMotionControl() :
     _joint2set(0),
     _timeouts(0),
     _impedance_params(0),
-    _axesInfo(0)
+    _axesInfo(0),
+    _jointEncs(0),
+    _motorEncs(0)
 {
     _gearbox_M2J  = 0;
     _gearbox_E2J  = 0;
@@ -235,12 +228,6 @@ embObjMotionControl::embObjMotionControl() :
     _twofocinfo = NULL;
     _cacheImpedance   = NULL;
     _impedance_limits = NULL;
-    _jointEncoderRes  = NULL;
-    _jointEncoderType = NULL;
-    _rotorEncoderRes  = NULL;
-    _rotorEncoderType = NULL;
-    _jointEncoderTolerance = NULL;
-    _rotorEncoderTolerance = NULL;
     _ref_accs         = NULL;
     _ref_command_speeds   = NULL;
     _ref_command_positions= NULL;
@@ -261,17 +248,17 @@ embObjMotionControl::embObjMotionControl() :
     _calibrated       = NULL;
     _last_position_move_time = NULL;
 
-    _useRawEncoderData = false;
-    _pwmIsLimited     = false;
+    behFlags.useRawEncoderData = false;
+    behFlags.pwmIsLimited     = false;
 
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
-        verbosewhenok = (bool)NetType::toInt(tmp);
+        behFlags.verbosewhenok = (bool)NetType::toInt(tmp);
     }
     else
     {
-        verbosewhenok = false;
+        behFlags.verbosewhenok = false;
     }
     parser = NULL;
     _mcparser = NULL;
@@ -411,7 +398,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
     else
     {
-        if(verbosewhenok)
+        if(behFlags.verbosewhenok)
         {
             yDebug() << "embObjMotionControl::init() has succesfully initted" << getBoardInfo();
         }
@@ -426,7 +413,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
     else
     {
-        if(verbosewhenok)
+        if(behFlags.verbosewhenok)
         {
             yDebug() << "embObjMotionControl::open() correctly starts mc service of" << getBoardInfo();
         }
@@ -720,7 +707,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             return false;
 
          ////// measures conversion factors
-        if(_useRawEncoderData)
+        if(behFlags.useRawEncoderData)
         {
             for (i = 0; i < _njoints; i++)
             {
@@ -1002,7 +989,7 @@ void embObjMotionControl::updateDeadZoneWithDefaultValues(void)
 {
     for(int i=0; i<_njoints; i++)
     {
-        switch(_jointEncoderType[i])
+        switch(_jointEncs[i].type)
         {
             case eomc_enc_aea:
                 _deadzone[i] = eomc_defaultValue::DeadZone::jointWithAEA;// 0.0494;
@@ -1051,29 +1038,29 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
 
         if(NULL == jointEncoder_ptr)
         {
-            _jointEncoderRes[i]  = 1;
-            _jointEncoderType[i] = eomc_enc_none;
-            _jointEncoderTolerance[i]  = 0;
+            _jointEncs[i].resolution = 1;
+            _jointEncs[i].type = eomc_enc_none;
+            _jointEncs[i].tolerance  = 0;
         }
         else
         {
-            _jointEncoderRes[i]  = jointEncoder_ptr->resolution;
-            _jointEncoderType[i] = jointEncoder_ptr->desc.type;
-            _jointEncoderTolerance[i]   = jointEncoder_ptr->tolerance;
+            _jointEncs[i].resolution  = jointEncoder_ptr->resolution;
+            _jointEncs[i].type = jointEncoder_ptr->desc.type;
+            _jointEncs[i].tolerance  = jointEncoder_ptr->tolerance;
         }
 
 
         if(NULL == motorEncoder_ptr)
         {
-            _rotorEncoderRes[i] = 1;
-            _rotorEncoderRes[i] = eomc_enc_none;
-            _rotorEncoderTolerance[i] = 0;
+            _motorEncs[i].resolution = 1;
+            _motorEncs[i].type = eomc_enc_none;
+            _motorEncs[i].tolerance = 0;
         }
         else
         {
-            _rotorEncoderRes[i]  = motorEncoder_ptr->resolution;
-            _rotorEncoderType[i] = motorEncoder_ptr->desc.type;
-            _rotorEncoderTolerance[i]   = motorEncoder_ptr->tolerance;
+            _motorEncs[i].resolution = motorEncoder_ptr->resolution;
+            _motorEncs[i].type = motorEncoder_ptr->desc.type;
+            _motorEncs[i].tolerance = motorEncoder_ptr->tolerance;
         }
 
 
@@ -1129,7 +1116,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         return false;
     }
 
-    if(!_mcparser->parseBehaviourFalgs(config, _useRawEncoderData, _pwmIsLimited ))//in general info group
+    if(!_mcparser->parseBehaviourFalgs(config, behFlags.useRawEncoderData, behFlags.pwmIsLimited ))//in general info group
     {
         return false;
     }
@@ -1194,7 +1181,7 @@ bool embObjMotionControl::init()
     }
     else
     {
-        if(verbosewhenok)
+        if(behFlags.verbosewhenok)
         {
             yDebug() << "embObjMotionControl::init() added" << id32v.size() << "regular rops to "<< getBoardInfo();
             char nvinfo[128];
@@ -1244,9 +1231,9 @@ bool embObjMotionControl::init()
         jconfig.maxvelocityofjoint = S_32(_measureConverter->posA2E(_jointsLimits[logico].velMax, fisico)); //icubdeg/s
         jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].velocity);
 
-        jconfig.jntEncoderResolution = _jointEncoderRes[logico];
-        jconfig.jntEncoderType = _jointEncoderType[logico];
-        jconfig.jntEncTolerance = _jointEncoderTolerance[logico];
+        jconfig.jntEncoderResolution = _jointEncs[logico].resolution;
+        jconfig.jntEncoderType = _jointEncs[logico].type;
+        jconfig.jntEncTolerance = _jointEncs[logico].tolerance;
 
         //printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, _tpids[logico].kbemf, _tpids[logico].ktau);
         jconfig.motor_params.bemf_value = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(fisico,  _tpids[logico].kbemf);
@@ -1268,7 +1255,7 @@ bool embObjMotionControl::init()
         }
         else
         {
-            if(verbosewhenok)
+            if(behFlags.verbosewhenok)
             {
                 yDebug() << "embObjMotionControl::init() correctly configured joint config fisico #" << fisico << "in "<< getBoardInfo();
             }
@@ -1306,8 +1293,8 @@ bool embObjMotionControl::init()
         motor_cfg.currentLimits.overloadCurrent = _currentLimits[logico].overloadCurrent;
         motor_cfg.currentLimits.peakCurrent = _currentLimits[logico].peakCurrent;
         motor_cfg.gearbox_M2J = _gearbox_M2J[logico];
-        motor_cfg.rotorEncoderResolution = _rotorEncoderRes[logico];
-        motor_cfg.rotEncTolerance = _rotorEncoderTolerance[logico];
+        motor_cfg.rotorEncoderResolution = _motorEncs[logico].resolution;
+        motor_cfg.rotEncTolerance = _motorEncs[logico].tolerance;
         motor_cfg.hasHallSensor = _twofocinfo[logico].hasHallSensor;
         motor_cfg.hasRotorEncoder = _twofocinfo[logico].hasRotorEncoder;
         motor_cfg.hasTempSensor = _twofocinfo[logico].hasTempSensor;
@@ -1316,7 +1303,7 @@ bool embObjMotionControl::init()
         motor_cfg.verbose = _twofocinfo[logico].verbose;
         motor_cfg.motorPoles = _twofocinfo[logico].motorPoles;
         motor_cfg.rotorIndexOffset = _twofocinfo[logico].rotorIndexOffset;
-        motor_cfg.rotorEncoderType = _rotorEncoderType[logico];
+        motor_cfg.rotorEncoderType = _motorEncs[logico].type;
         motor_cfg.pwmLimit =_rotorsLimits[logico].pwmMax;
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMin, fisico ));
@@ -1339,7 +1326,7 @@ bool embObjMotionControl::init()
         }
         else
         {
-            if (verbosewhenok)
+            if (behFlags.verbosewhenok)
             {
                 yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in "<< getBoardInfo();
             }

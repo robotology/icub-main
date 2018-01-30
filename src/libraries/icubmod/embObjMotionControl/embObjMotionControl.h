@@ -83,27 +83,8 @@ using namespace std;
 
 
 //
-//   Help structure
+//   helper structures
 //
-
-
-struct SpeedEstimationParameters
-{
-    double jnt_Vel_estimator_shift;
-    double jnt_Acc_estimator_shift;
-    double mot_Vel_estimator_shift;
-    double mot_Acc_estimator_shift;
-
-    SpeedEstimationParameters()
-    {
-        jnt_Vel_estimator_shift=0;
-        jnt_Acc_estimator_shift=0;
-        mot_Vel_estimator_shift=0;
-        mot_Acc_estimator_shift=0;
-    }
-};
-
-
 
 typedef struct
 {
@@ -112,6 +93,20 @@ typedef struct
     int                                 numofjointsets;
     vector<eOmc_jointset_configuration_t> jointset_cfgs;
 } eomc_jointsetsInfo_t;
+
+typedef struct
+{
+    uint8_t type;                 /** joint encoder type*/
+    double  tolerance;              /** Num of error bits passable for joint encoder */
+    int     resolution;
+} eomc_encoder_t;
+
+typedef struct
+{
+    bool verbosewhenok;         /** its value depends on environment variable "ETH_VERBOSEWHENOK" */
+    bool useRawEncoderData;     /** if true than do not use calibration data */
+    bool pwmIsLimited;          /** set to true if pwm is limited */
+}eomc_behaviour_flags_t;
 
 
 
@@ -123,9 +118,6 @@ namespace yarp {
 using namespace yarp::dev;
 
 
-
-// enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000,  MAX_U32 = 0xffffffff, MIN_U32 = 0x00, MAX_U16 = 0xffff, MIN_U16 = 0x0000};
-// enum { CAN_SKIP_ADDR = 0x80 };
 
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IPidControlRaw,
@@ -172,80 +164,50 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
 
 private:
 
-
-    eth::TheEthManager* ethManager;
-    eth::AbstractEthResource* res;
-    ServiceParser* parser;
-    mcParser *_mcparser;
-
-    bool opened;
-    bool verbosewhenok;
-
-    ////////////////////
-    // parameters
-    servConfigMC_t serviceConfig;
+    eth::TheEthManager*        ethManager;
+    eth::AbstractEthResource*  res;
+    ServiceParser*             parser;
+    mcParser *                 _mcparser;
+    measuresConverter*         _measureConverter;
+    yarp::os::Semaphore        _mutex;
+    
+    bool opened; //internal state
 
 
-    //int tot_packet_recv;
-    //int errors;
+     /////configuartion info (read from xml files)
+    int                                     _njoints;       /** Number of joints handled by this EMS */
+    eomc_behaviour_flags_t                  behFlags;       /** Contains all flags that define the behaviour of this device */
+    servConfigMC_t                          serviceConfig;  /** contains the needed data for configure motion control service, like i.e. board ports where joint are connected */ 
+    double *                                _gearbox_M2J;   /** the gearbox ratio motor to joint */
+    double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
+    double *                                _deadzone;
 
-    yarp::os::Semaphore _mutex;
+    eomc_twofocSpecificInfo *               _twofocinfo;
 
-
-     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
-    uint8_t *_jointEncoderType;                 /** joint encoder type*/
-    double *_jointEncoderTolerance;              /** Num of error bits passable for joint encoder */
-    int    *_jointEncoderRes;                   /** joint encoder resolution */
-    int    *_rotorEncoderRes;                   /** rotor encoder resolution */
-    double *_rotorEncoderTolerance;              /** Num of error bits passable for joint encoder */
-    uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
-    double *_gearbox_M2J;                           /** the gearbox ratio */
-    double *_gearbox_E2J;                        /** the gearbox ratio */
-    double *_deadzone;
-
-    eomc_twofocSpecificInfo *_twofocinfo;
-
-
+    std::vector<eomc_encoder_t>             _jointEncs;
+    std::vector<eomc_encoder_t>             _motorEncs;
 
     std::vector<eomc_rotorLimits>           _rotorsLimits; /** contains limit about rotors such as position and pwm */
     std::vector<eomc_jointLimits>           _jointsLimits; /** contains limit about joints such as position and velocity */
     std::vector<eomc_motorCurrentLimits>    _currentLimits;
     eomc_couplingInfo_t                     _couplingInfo; /** contains coupling matrix */
     std::vector<eomc_jointsSet>             _jsets;
-    std::vector<int>                        _joint2set;
+    std::vector<int>                        _joint2set;   /** for each joint says the number of  set it belongs to */
     std::vector<eomc_timeouts_t>            _timeouts;
 
     std::vector<eomc_impedanceParameters>  _impedance_params;   /** impedance parameters */ // TODO doubled!!! optimize using just one of the 2!!!
-    eomc_impedanceLimits                   *_impedance_limits;  /** impedancel imits */
-    eOmc_impedance_t                       *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
+    eomc_impedanceLimits *                 _impedance_limits;  /** impedancel imits */
 
 
-    eomcParser_pidInfo      *_ppids;
-    eomcParser_pidInfo      *_vpids;
-    eomcParser_trqPidInfo   *_tpids;
-    eomcParser_pidInfo      *_cpids;
+    eomcParser_pidInfo    *                _ppids;
+    eomcParser_pidInfo    *                _vpids;
+    eomcParser_trqPidInfo *                _tpids;
+    eomcParser_pidInfo    *                _cpids;
 
-    SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
+    int *                                  _axisMap;   /** axies map*/
+    std::vector<eomc_axisInfo_t>           _axesInfo;
+    /////// end configuration info
 
-    int *_axisMap;                              /** axies map*/
-    std::vector<eomc_axisInfo_t> _axesInfo;
-
-
-    bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
-    #define MAX_POSITION_MOVE_INTERVAL 0.080
-    double *_last_position_move_time;           /** time stamp for last received position move command*/
-
-
-
-    //behaviour flags
-    bool        _useRawEncoderData;              /** if true than do not use calibration data */
-    bool        _pwmIsLimited;                  /** set to true if pwm is limited */
-
-
-     measuresConverter       *_measureConverter;
-
-
-    // debug purpose
 
 #ifdef VERIFY_ROP_SETIMPEDANCE
     uint32_t *impedanceSignature;
@@ -257,8 +219,6 @@ private:
 #endif
 
 
-    // basic knowledge of my joints
-    int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
 
     double  SAFETY_THRESHOLD;
 
@@ -272,7 +232,12 @@ private:
     double  *_ref_command_speeds;   // used for velocity control.
     double  *_ref_positions;    // used for direct position control.
     double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
-
+    double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
+    bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
+    #define MAX_POSITION_MOVE_INTERVAL 0.080
+    double *_last_position_move_time;           /** time stamp for last received position move command*/    
+    eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
+    
 
 
 private:
