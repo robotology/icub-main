@@ -299,7 +299,7 @@ public:
     /**
     * Constructor.
     */
-    DragonflyDeviceDriver2(bool raw);
+    DragonflyDeviceDriver2(bool raw = false);
 
     /**
     * Destructor.
