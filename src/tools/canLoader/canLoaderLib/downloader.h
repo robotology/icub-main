@@ -154,6 +154,8 @@ private:
     // the id of the can bus is moved inside the struct sBoard because we want to manage boards from different CAN buses.
     int canbus_id;
 
+    bool strain_is_acquiring_in_calibratedmode;
+
 private:
 int download_motorola_line(char* line, int len, int bus, int board_pid);
 int download_hexintel_line(char* line, int len, int bus, int board_pid, bool eeprom, int board_type);
@@ -224,19 +226,27 @@ int sg6_obsolete_set_amp_gain      (int bus, int target_id, char channel, unsign
 
 
 // for use by the future strain calibration data acquisition gui
-struct triple16_t
+
+struct strain_value_t
 {
-    uint8_t type; // of the calib/uncalib/trq/frc 0 is none....
-    bool valid;
-    uint16_t x;
-    uint16_t y;
-    uint16_t z;
-    triple16_t() : type(0), valid(true), x(0), y(0), z(0) {}
+    bool valid;                                             // the acquisition is meaninful
+    bool calibrated;                                        // the values are calibrated
+    bool saturated;                                         // at least one measure is saturated. see saturationinfo[6] to know more
+    unsigned int channel[6];                                // the values
+    icubCanProto_strain_saturationInfo_t saturationinfo[6]; // the saturation info
+    strain_value_t() : calibrated(false), valid(false), saturated(false) {
+        channel[0] = channel[1] = channel[2] = channel[3] = channel[4] = channel[5] = 0;
+        saturationinfo[0] = saturationinfo[1] = saturationinfo[2] = saturationinfo[3] = saturationinfo[4] = saturationinfo[5] = saturationNONE;
+    }
+    void extract(signed short *ss6) const {
+        if(NULL == ss6) return;
+        for(size_t i=0; i<6; i++) { ss6[i] = static_cast<unsigned short>(channel[i]) - 0x7fff; }
+    }
 };
 
-int strain_acquire_start(int bus, int target_id, uint8_t txratemilli = 20, bool uncalib = true, string *errorstring = NULL);
+int strain_acquire_start(int bus, int target_id, uint8_t txratemilli = 20, bool calibmode = true, string *errorstring = NULL);
+int strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany = 10, string *errorstring = NULL);
 int strain_acquire_stop(int bus, int target_id, string *errorstring = NULL);
-int strain_acquire_getvalue(int bus, int target_id, vector<triple16_t> &values, string *errorstring = NULL);
 
 cDownloader(bool verbose = true);
 

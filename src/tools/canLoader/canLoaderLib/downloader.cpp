@@ -958,7 +958,7 @@ int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigne
 }
 
 
-int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemilli, bool uncalib, string *errorstring)
+int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemilli, bool calibmode, string *errorstring)
 {
     // check if driver is running
     if (m_idriver == NULL)
@@ -987,7 +987,7 @@ int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemill
    txBuffer[0].setId((2 << 8) + target_id);
    txBuffer[0].setLen(2);
    txBuffer[0].getData()[0]= 0x07;
-   txBuffer[0].getData()[1]= (true == uncalib) ? (0x03) : (0x00);
+   txBuffer[0].getData()[1]= (false == calibmode) ? (0x03) : (0x00);
    set_bus(txBuffer[0], bus);
    ret = m_idriver->send_message(txBuffer, 1);
    // check if send_message was successful
@@ -996,6 +996,9 @@ int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemill
            if(_verbose) yError ("Unable to send start tx message\n");
            return -1;
        }
+
+   strain_is_acquiring_in_calibratedmode = calibmode;
+
    return 0;
 
 }
@@ -1022,38 +1025,125 @@ int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring
            if(_verbose) yError ("Unable to send stop tx message\n");
            return -1;
        }
-   return 0;
 
+
+   // we should empty the rx buffer for a while...
+
+   const double TOUT = 0.100;
+   const size_t maxframes = rxBuffer.size() - 1;
+   for(size_t n=0; n<10; n++)
+   {
+        int read_messages = m_idriver->receive_message(rxBuffer, maxframes, TOUT);
+        yDebug() << "cDownloader::strain_acquire_stop() has removed" << read_messages << "can frames from rxbuffer";
+        if(0 == read_messages)
+        {
+            break;
+        }
+   }
+
+   return 0;
 }
 
-int cDownloader::strain_acquire_getvalue(int bus, int target_id, vector<triple16_t> &values, string *errorstring)
+int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany, string *errorstring)
 {
-    double TOUT = 3.0;
-    int read_messages = m_idriver->receive_message(rxBuffer, 2, TOUT);
+    // i must read howmany pairs of can frames of type 0xA and 0xB. to simplify i assume that they will arrive in pairs.
+
 
     values.clear();
 
-    for(int i=0; i<read_messages; i++)
+    if(0 == howmany)
     {
-        uint32_t id = rxBuffer[i].getId();
-        uint8_t type = id & 0xf;
+        return -1;
+    }
 
-        triple16_t triple;
+    const double TOUT = 3.0;
 
-        triple.type = type;
-        triple.valid = (6 == rxBuffer[i].getLen()) ? (true) : (false);
+    for(unsigned int s=0; s<howmany; s++)
+    {
 
-        // values in little endian
-        triple.x = static_cast<uint16_t>(rxBuffer[i].getData()[0]) | (static_cast<uint16_t>(rxBuffer[i].getData()[1]) >> 8);
-        triple.y = static_cast<uint16_t>(rxBuffer[i].getData()[2]) | (static_cast<uint16_t>(rxBuffer[i].getData()[3]) >> 8);
-        triple.z = static_cast<uint16_t>(rxBuffer[i].getData()[4]) | (static_cast<uint16_t>(rxBuffer[i].getData()[5]) >> 8);
+        int read_messages = m_idriver->receive_message(rxBuffer, 2, TOUT);
+        strain_value_t sv;
 
-        values.push_back(triple);
+        sv.channel[0] = 0x66666;
+        sv.channel[4] = 0x66666;
+
+        if(2 == read_messages)
+        {
+            for(unsigned int i=0; i<2; i++)
+            {
+                uint32_t id = rxBuffer[i].getId();
+                uint8_t type = id & 0xf;
+
+                if((0xA != type) && (0xB != type))
+                {
+                    yError() << "cDownloader::strain_acquire_get() has detected strange can frames.... operation aborted";
+                    return -1;
+                }
+
+                // values in little endian
+                uint16_t x = static_cast<uint16_t>(rxBuffer[i].getData()[0]) | (static_cast<uint16_t>(rxBuffer[i].getData()[1]) << 8);
+                uint16_t y = static_cast<uint16_t>(rxBuffer[i].getData()[2]) | (static_cast<uint16_t>(rxBuffer[i].getData()[3]) << 8);
+                uint16_t z = static_cast<uint16_t>(rxBuffer[i].getData()[4]) | (static_cast<uint16_t>(rxBuffer[i].getData()[5]) << 8);
+
+                sv.saturated = (6 == rxBuffer[i].getLen()) ? (true) : (false);
+                sv.valid = true;
+
+                sv.calibrated = strain_is_acquiring_in_calibratedmode;
+
+                if(0xA == type)
+                {
+                    sv.channel[0] = x;
+                    sv.channel[1] = y;
+                    sv.channel[2] = z;
+                    if(false == sv.saturated)
+                    {
+                        void *tmp = &rxBuffer[i].getData()[6];
+                        icubCanProto_strain_forceSaturationInfo_t *sinfo = reinterpret_cast<icubCanProto_strain_forceSaturationInfo_t*>(tmp);
+                        if(1 == sinfo->thereIsSaturationInAtLeastOneChannel)
+                        {
+                            sv.saturationinfo[0] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_0);
+                            sv.saturationinfo[1] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_1);
+                            sv.saturationinfo[2] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_2);
+                        }
+                    }
+                }
+                else if(0xB == type)
+                {
+                    sv.channel[3] = x;
+                    sv.channel[4] = y;
+                    sv.channel[5] = z;
+                    if(false == sv.saturated)
+                    {
+                        void *tmp = &rxBuffer[i].getData()[6];
+                        icubCanProto_strain_torqueSaturationInfo_t *sinfo = reinterpret_cast<icubCanProto_strain_torqueSaturationInfo_t*>(tmp);
+                        if(1 == sinfo->thereIsSaturationInAtLeastOneChannel)
+                        {
+                            sv.saturationinfo[3] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_3);
+                            sv.saturationinfo[4] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_4);
+                            sv.saturationinfo[5] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_5);
+                        }
+                    }
+                }
+
+            }
+
+            if((0x66666 == sv.channel[0]) || (0x66666 == sv.channel[4]))
+            {
+                yDebug() << "cDownloader::strain_acquire_get(): did not receive two consecutive 0xA and 0xB. please check!";
+            }
+            else
+            {
+                values.push_back(sv);
+            }
+        }
+
     }
 
 
     return 0;
 }
+
+
 
 //*****************************************************************/
 int cDownloader::strain_start_sampling    (int bus, int target_id, string *errorstring)

@@ -17,6 +17,7 @@ add_subdirectory(embObjProtoTools/boardTransceiver)
 add_subdirectory(canLoader)
 add_subdirectory(ethLoader)
 add_subdirectory(strainCalibrationDataAcquisition)
+add_subdirectory(strainCalib)
 
 # Tools available both for Qt5 and GTK2
 if(ICUB_USE_Qt5)
