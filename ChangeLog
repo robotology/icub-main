@@ -1,3 +1,6 @@
+2018-02-03 Ugo Pattacini <ugo.pattacini@iit.it>
+    * conditional compilation of ctrlLib upon ICUB_USE_GSL
+
 2018-01-20 Marco Randazzo <marco.randazzo@iit>
     * changes to various icubmod devices to adopt the new IVirtualAnalogSensor methods
       introduced in https://github.com/robotology/yarp/pull/1517
