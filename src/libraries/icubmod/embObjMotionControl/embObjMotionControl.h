@@ -64,7 +64,7 @@ using namespace std;
 #include <abstractEthResource.h>
 
 #include "serviceParser.h"
-#include "mcParser.h"
+#include "eomcParser.h"
 #include "measuresConverter.h"
 
 // - public #define  --------------------------------------------------------------------------------------------------
@@ -82,6 +82,9 @@ using namespace std;
 #define     EMBOBJMC_DONT_USE_MAIS
 
 
+
+using namespace yarp::dev;
+using namespace yarp::dev::eomc;
 //
 //   helper structures
 //
@@ -96,10 +99,10 @@ typedef struct
 
 typedef struct
 {
-    uint8_t type;                 /** joint encoder type*/
-    double  tolerance;              /** Num of error bits passable for joint encoder */
-    int     resolution;
-} eomc_encoder_t;
+    eOmc_encoder_t  type;                 /** joint encoder type*/
+    double          tolerance;              /** Num of error bits passable for joint encoder */
+    int             resolution;
+} encoder_t;
 
 typedef struct
 {
@@ -115,7 +118,7 @@ namespace yarp {
     class embObjMotionControl;
     }
 }
-using namespace yarp::dev;
+
 
 
 
@@ -184,8 +187,8 @@ private:
 
     eomc_twofocSpecificInfo *               _twofocinfo;
 
-    std::vector<eomc_encoder_t>             _jointEncs;
-    std::vector<eomc_encoder_t>             _motorEncs;
+    std::vector<encoder_t>                  _jointEncs;
+    std::vector<encoder_t>                  _motorEncs;
 
     std::vector<eomc_rotorLimits>           _rotorsLimits; /** contains limit about rotors such as position and pwm */
     std::vector<eomc_jointLimits>           _jointsLimits; /** contains limit about joints such as position and velocity */

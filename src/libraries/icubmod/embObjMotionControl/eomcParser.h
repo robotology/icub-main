@@ -70,6 +70,10 @@
 // - public #define  --------------------------------------------------------------------------------------------------
 
 
+namespace yarp {
+    namespace dev  {
+        namespace eomc {
+
 
 typedef enum
 {
@@ -385,5 +389,7 @@ public:
     bool parseImpedanceGroup(yarp::os::Searchable &config,std::vector<eomc_impedanceParameters> &impedance);
     bool parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found);
 };
+
+}}}; //close namespaces
 
 #endif // include guard

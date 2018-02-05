@@ -14,7 +14,7 @@
 
 
 
-#include <mcParser.h>
+#include <eomcParser.h>
 
 #include <yarp/os/LogStream.h>
 
@@ -29,6 +29,7 @@
 using namespace std;
 using namespace yarp::dev;
 using namespace yarp::os;
+using namespace yarp::dev::eomc;
 
 
 mcParser::mcParser(int numofjoints, string boardname)

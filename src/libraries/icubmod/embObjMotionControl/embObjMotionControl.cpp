@@ -31,7 +31,7 @@
 #include <yarp/os/NetType.h>
 
 
-#include "eomc_utils.h"
+#include "eomcUtils.h"
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -1045,7 +1045,7 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
         else
         {
             _jointEncs[i].resolution  = jointEncoder_ptr->resolution;
-            _jointEncs[i].type = jointEncoder_ptr->desc.type;
+            _jointEncs[i].type = (eOmc_encoder_t)jointEncoder_ptr->desc.type; //Here I'm sure that type belong to eOmc_encoder_t enum.It is filled by eomc_string2encoder function
             _jointEncs[i].tolerance  = jointEncoder_ptr->tolerance;
         }
 
@@ -1059,7 +1059,7 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
         else
         {
             _motorEncs[i].resolution = motorEncoder_ptr->resolution;
-            _motorEncs[i].type = motorEncoder_ptr->desc.type;
+            _motorEncs[i].type = (eOmc_encoder_t)motorEncoder_ptr->desc.type; //Here I'm sure that type belong to eOmc_encoder_t enum.It is filled by eomc_string2encoder function
             _motorEncs[i].tolerance = motorEncoder_ptr->tolerance;
         }
 
