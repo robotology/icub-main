@@ -32,7 +32,9 @@ using namespace yarp::os;
 using namespace yarp::dev::eomc;
 
 
-mcParser::mcParser(int numofjoints, string boardname)
+
+
+yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
 {
     _njoints = numofjoints;
     _boardname = boardname;
@@ -53,7 +55,7 @@ mcParser::mcParser(int numofjoints, string boardname)
 
 };
 
-mcParser::~mcParser()
+Parser::~Parser()
 {
     checkAndDestroy(_kbemf);
     checkAndDestroy(_ktau);
@@ -61,7 +63,7 @@ mcParser::~mcParser()
 }
 
 
-bool mcParser::parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids, eomcParser_pidInfo *cpids, bool currentPidisMandatory)
+bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids, PidInfo *cpids, bool currentPidisMandatory)
 {
 
     if(!parseControlsGroup(config))
@@ -82,7 +84,7 @@ bool mcParser::parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids
     return true;
 }
 
-bool mcParser::parseControlsGroup(yarp::os::Searchable &config)
+bool Parser::parseControlsGroup(yarp::os::Searchable &config)
 {
     Bottle xtmp;
     int i;
@@ -140,7 +142,7 @@ bool mcParser::parseControlsGroup(yarp::os::Searchable &config)
 
 }
 
-bool mcParser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentPidisMandatory, eomcParser_pidInfo *cpids)
+bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentPidisMandatory, PidInfo *cpids)
 {
     //first of all verify current pid has been configured if it is mandatory
     for(int i=0; i<_njoints; i++)
@@ -219,7 +221,7 @@ bool mcParser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool curren
 }
 
 
-bool mcParser::parseSelectedPositionControl(yarp::os::Searchable &config)
+bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config)
 {
     for(int i=0; i<_njoints; i++)
     {
@@ -268,7 +270,7 @@ bool mcParser::parseSelectedPositionControl(yarp::os::Searchable &config)
 }
 
 
-bool mcParser::parseSelectedVelocityControl(yarp::os::Searchable &config)
+bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config)
 {
     for(int i=0; i<_njoints; i++)
     {
@@ -314,7 +316,7 @@ bool mcParser::parseSelectedVelocityControl(yarp::os::Searchable &config)
 
 }
 
-bool mcParser::parseSelectedTorqueControl(yarp::os::Searchable &config)
+bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config)
 {
     for(int i=0; i<_njoints; i++)
     {
@@ -369,7 +371,7 @@ bool mcParser::parseSelectedTorqueControl(yarp::os::Searchable &config)
 }
 
 
-bool mcParser::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
+bool Parser::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
 {
     int j=0;
     Bottle xtmp;
@@ -388,7 +390,7 @@ bool mcParser::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
     return true;
 }
 
-bool mcParser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size, bool mandatory)
+bool Parser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size, bool mandatory)
 {
     size++;
     Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
@@ -414,7 +416,7 @@ bool mcParser::extractGroup(Bottle &input, Bottle &out, const std::string &key1,
 
 
 
-bool mcParser::parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw)
+bool Parser::parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw)
 {
     bool alreadyParsed = false;
     map<string, Pid_Algorithm*>::iterator it = posAlgoMap.find(controlLaw);
@@ -442,7 +444,7 @@ bool mcParser::parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw)
 }
 
 
-bool mcParser::parsePid_inVel_outPwm(Bottle &b_pid, string controlLaw)
+bool Parser::parsePid_inVel_outPwm(Bottle &b_pid, string controlLaw)
 {
     bool alreadyParsed = false;
     map<string, Pid_Algorithm*>::iterator it = velAlgoMap.find(controlLaw);
@@ -469,7 +471,7 @@ bool mcParser::parsePid_inVel_outPwm(Bottle &b_pid, string controlLaw)
     return true;
 }
 
-bool mcParser::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw)
+bool Parser::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw)
 {
     bool alreadyParsed = false;
     map<string, Pid_Algorithm*>::iterator it = trqAlgoMap.find(controlLaw);
@@ -503,7 +505,7 @@ bool mcParser::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw)
     return true;
 }
 
-bool mcParser::parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw)
+bool Parser::parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw)
 {
 
     bool alreadyParsed = false;
@@ -534,7 +536,7 @@ bool mcParser::parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw)
 }
 
 
-bool mcParser::parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw)
+bool Parser::parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw)
 {
 
     bool alreadyParsed = false;
@@ -575,16 +577,16 @@ bool mcParser::parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw)
 
 
 
-bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids)
+bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids)
 {
     Pid_Algorithm *pidAlgo_ptr = NULL;
     Pid_Algorithm *vpidAlgo_ptr = NULL;
     Pid_Algorithm *tpidAlgo_ptr = NULL;
 
     //since some joints could not have all pid configured, reset pid values to 0.
-    memset(ppids, 0, sizeof(eomcParser_pidInfo)*_njoints);
-    memset(vpids, 0, sizeof(eomcParser_pidInfo)*_njoints);
-    memset(tpids, 0, sizeof(eomcParser_trqPidInfo)*_njoints);
+    memset(ppids, 0, sizeof(PidInfo)*_njoints);
+    memset(vpids, 0, sizeof(PidInfo)*_njoints);
+    memset(tpids, 0, sizeof(TrqPidInfo)*_njoints);
 
     map<string, Pid_Algorithm*>::iterator it;
 
@@ -826,7 +828,7 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
 }
 
 
-bool mcParser::parsePidUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitstype)
+bool Parser::parsePidUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitstype)
 {
 
     Value &controlUnits=bPid.find("controlUnits");
@@ -861,7 +863,7 @@ bool mcParser::parsePidUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitst
 }
 
 
-bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificInfo *twofocinfo)
+bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificInfo_t *twofocinfo)
 {
      Bottle &focGroup=config.findGroup("2FOC");
      if (focGroup.isNull() )
@@ -1005,7 +1007,7 @@ bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificI
 
 
 
-bool mcParser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<eomc_jointsSet> &jsets, std::vector<int> &joint2set)
+bool Parser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &joint2set)
 {
     Bottle jointsetcfg = config.findGroup("JOINTSET_CFG");
     if (jointsetcfg.isNull())
@@ -1121,7 +1123,7 @@ bool mcParser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<e
     return true;
 }
 
-bool mcParser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<eomc_timeouts_t> &timeouts, int defaultVelocityTimeout)
+bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts, int defaultVelocityTimeout)
 {
     if(!checkAndSetVectorSize(timeouts, _njoints, "parseTimeoutsGroup"))
         return false;
@@ -1153,7 +1155,7 @@ bool mcParser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<eomc
 
 }
 
-bool mcParser::parseCurrentLimits(yarp::os::Searchable &config, std::vector<eomc_motorCurrentLimits> &currLimits)
+bool Parser::parseCurrentLimits(yarp::os::Searchable &config, std::vector<motorCurrentLimits_t> &currLimits)
 {
     Bottle &limits=config.findGroup("LIMITS");
     if (limits.isNull())
@@ -1188,7 +1190,7 @@ bool mcParser::parseCurrentLimits(yarp::os::Searchable &config, std::vector<eomc
 
 }
 
-bool mcParser::parseJointsLimits(yarp::os::Searchable &config, std::vector<eomc_jointLimits> &jointsLimits)
+bool Parser::parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLimits_t> &jointsLimits)
 {
     Bottle &limits=config.findGroup("LIMITS");
     if (limits.isNull())
@@ -1262,7 +1264,7 @@ bool mcParser::parseJointsLimits(yarp::os::Searchable &config, std::vector<eomc_
 }
 
 
-bool mcParser::parseRotorsLimits(yarp::os::Searchable &config, std::vector<eomc_rotorLimits> &rotorsLimits)
+bool Parser::parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLimits_t> &rotorsLimits)
 {
     Bottle &limits=config.findGroup("LIMITS");
     if (limits.isNull())
@@ -1312,7 +1314,7 @@ bool mcParser::parseRotorsLimits(yarp::os::Searchable &config, std::vector<eomc_
 
 
 
-bool mcParser::parseCouplingInfo(yarp::os::Searchable &config, eomc_couplingInfo_t &couplingInfo)
+bool Parser::parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &couplingInfo)
 {
     Bottle coupling_bottle = config.findGroup("COUPLINGS");
     if (coupling_bottle.isNull())
@@ -1369,7 +1371,7 @@ bool mcParser::parseCouplingInfo(yarp::os::Searchable &config, eomc_couplingInfo
 }
 
 
-bool mcParser::parseMotioncontrolVersion(yarp::os::Searchable &config, int &version)
+bool Parser::parseMotioncontrolVersion(yarp::os::Searchable &config, int &version)
 {
     if (!config.findGroup("GENERAL").find("MotioncontrolVersion").isInt())
     {
@@ -1382,7 +1384,7 @@ bool mcParser::parseMotioncontrolVersion(yarp::os::Searchable &config, int &vers
 
 }
 
-bool mcParser::isVerboseEnabled(yarp::os::Searchable &config)
+bool Parser::isVerboseEnabled(yarp::os::Searchable &config)
 {
     bool ret = false;
     if(!config.findGroup("GENERAL").find("verbose").isBool())
@@ -1398,7 +1400,7 @@ bool mcParser::isVerboseEnabled(yarp::os::Searchable &config)
     return ret;
 }
 
-bool mcParser::parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncoderData, bool  &pwmIsLimited )
+bool Parser::parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncoderData, bool  &pwmIsLimited )
 {
 
     // Check useRawEncoderData = do not use calibration data!
@@ -1451,7 +1453,7 @@ bool mcParser::parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEnc
 
 
 
-bool mcParser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<eomc_axisInfo_t> &axisInfo)
+bool Parser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<axisInfo_t> &axisInfo)
 {
 
     Bottle xtmp;
@@ -1515,7 +1517,7 @@ bool mcParser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::v
 
 
 
-bool mcParser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFactor[])
+bool Parser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFactor[])
 {
     Bottle general = config.findGroup("GENERAL");
     if (general.isNull())
@@ -1546,7 +1548,7 @@ bool mcParser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFa
     return true;
 }
 
-bool mcParser::parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToPWM[])
+bool Parser::parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToPWM[])
 {
     Bottle general = config.findGroup("GENERAL");
     if (general.isNull())
@@ -1580,7 +1582,7 @@ bool mcParser::parsefullscalePWM(yarp::os::Searchable &config, double dutycycleT
 }
 
 
-bool mcParser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor[])
+bool Parser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor[])
 {
     Bottle general = config.findGroup("GENERAL");
     if (general.isNull())
@@ -1613,7 +1615,7 @@ bool mcParser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSens
     return true;
 }
 
-bool mcParser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[])
+bool Parser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[])
 {
     Bottle general = config.findGroup("GENERAL");
     if (general.isNull())
@@ -1663,7 +1665,7 @@ bool mcParser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M
     return true;
 }
 
-bool mcParser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found)
+bool Parser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found)
 {
 //     Bottle general = config.findGroup("GENERAL");
 //     if (general.isNull())
@@ -1700,7 +1702,7 @@ bool mcParser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[
 }
 
 
-bool mcParser::parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[])
+bool Parser::parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[])
 {
     Bottle general = config.findGroup("GENERAL");
     if (general.isNull())
@@ -1730,7 +1732,7 @@ bool mcParser::parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorS
 
 
 
-bool mcParser::parseImpedanceGroup(yarp::os::Searchable &config,std::vector<eomc_impedanceParameters> &impedance)
+bool Parser::parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impedanceParameters_t> &impedance)
 {
     Bottle impedanceGroup;
     impedanceGroup=config.findGroup("IMPEDANCE","IMPEDANCE parameters");
@@ -1774,7 +1776,7 @@ bool mcParser::parseImpedanceGroup(yarp::os::Searchable &config,std::vector<eomc
 
 }
 
-bool mcParser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
+bool Parser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -1799,7 +1801,7 @@ bool mcParser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jse
 
 
 
-bool mcParser::convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize)
+bool Parser::convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize)
 {
     matrix.resize(0);
 
@@ -1831,7 +1833,7 @@ bool mcParser::convert(Bottle &bottle, vector<double> &matrix, bool &formaterror
 //////////////////////////////////////////////////////////////////////////////
 /////////////////// DEBUG FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////
-void mcParser::debugUtil_printControlLaws(void)
+void Parser::debugUtil_printControlLaws(void)
 {
     //////// debug prints
     yError() << "position control law: ";
@@ -1857,7 +1859,7 @@ void mcParser::debugUtil_printControlLaws(void)
 }
 
 
-void eomcParser_pidInfo::dumpdata(void)
+void PidInfo::dumpdata(void)
 {
 
     cout <<  "Is enabled " << enabled;
@@ -1891,7 +1893,7 @@ void eomcParser_pidInfo::dumpdata(void)
 
 }
 
-void eomc_jointsSet::dumpdata(void)
+void JointsSet::dumpdata(void)
 {
     switch(cfg.constraints.type)
     {

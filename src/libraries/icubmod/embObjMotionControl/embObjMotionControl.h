@@ -83,19 +83,20 @@ using namespace std;
 
 
 
-using namespace yarp::dev;
-using namespace yarp::dev::eomc;
 //
 //   helper structures
 //
-
+namespace yarp {
+    namespace dev {
+        namespace eomc {
+            
 typedef struct
 {
     vector<int>                         joint2set;
     vector <vector <int> >              set2joint;
     int                                 numofjointsets;
     vector<eOmc_jointset_configuration_t> jointset_cfgs;
-} eomc_jointsetsInfo_t;
+} jointsetsInfo_t;
 
 typedef struct
 {
@@ -109,9 +110,9 @@ typedef struct
     bool verbosewhenok;         /** its value depends on environment variable "ETH_VERBOSEWHENOK" */
     bool useRawEncoderData;     /** if true than do not use calibration data */
     bool pwmIsLimited;          /** set to true if pwm is limited */
-}eomc_behaviour_flags_t;
+}behaviour_flags_t;
 
-
+}}};
 
 namespace yarp {
     namespace dev  {
@@ -120,6 +121,8 @@ namespace yarp {
 }
 
 
+
+using namespace yarp::dev;
 
 
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
@@ -170,7 +173,7 @@ private:
     eth::TheEthManager*        ethManager;
     eth::AbstractEthResource*  res;
     ServiceParser*             parser;
-    mcParser *                 _mcparser;
+    eomc::Parser *             _mcparser;
     measuresConverter*         _measureConverter;
     yarp::os::Semaphore        _mutex;
     
@@ -179,36 +182,36 @@ private:
 
      /////configuartion info (read from xml files)
     int                                     _njoints;       /** Number of joints handled by this EMS */
-    eomc_behaviour_flags_t                  behFlags;       /** Contains all flags that define the behaviour of this device */
+    eomc::behaviour_flags_t                  behFlags;       /** Contains all flags that define the behaviour of this device */
     servConfigMC_t                          serviceConfig;  /** contains the needed data for configure motion control service, like i.e. board ports where joint are connected */ 
     double *                                _gearbox_M2J;   /** the gearbox ratio motor to joint */
     double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
     double *                                _deadzone;
 
-    eomc_twofocSpecificInfo *               _twofocinfo;
+    eomc::twofocSpecificInfo_t *            _twofocinfo;
 
-    std::vector<encoder_t>                  _jointEncs;
-    std::vector<encoder_t>                  _motorEncs;
+    std::vector<eomc::encoder_t>            _jointEncs;
+    std::vector<eomc::encoder_t>            _motorEncs;
 
-    std::vector<eomc_rotorLimits>           _rotorsLimits; /** contains limit about rotors such as position and pwm */
-    std::vector<eomc_jointLimits>           _jointsLimits; /** contains limit about joints such as position and velocity */
-    std::vector<eomc_motorCurrentLimits>    _currentLimits;
-    eomc_couplingInfo_t                     _couplingInfo; /** contains coupling matrix */
-    std::vector<eomc_jointsSet>             _jsets;
+    std::vector<eomc::rotorLimits_t>        _rotorsLimits; /** contains limit about rotors such as position and pwm */
+    std::vector<eomc::jointLimits_t>        _jointsLimits; /** contains limit about joints such as position and velocity */
+    std::vector<eomc::motorCurrentLimits_t> _currentLimits;
+    eomc::couplingInfo_t                    _couplingInfo; /** contains coupling matrix */
+    std::vector<eomc::JointsSet>            _jsets;
     std::vector<int>                        _joint2set;   /** for each joint says the number of  set it belongs to */
-    std::vector<eomc_timeouts_t>            _timeouts;
+    std::vector<eomc::timeouts_t>           _timeouts;
 
-    std::vector<eomc_impedanceParameters>  _impedance_params;   /** impedance parameters */ // TODO doubled!!! optimize using just one of the 2!!!
-    eomc_impedanceLimits *                 _impedance_limits;  /** impedancel imits */
+    std::vector<eomc::impedanceParameters_t> _impedance_params;   /** impedance parameters */ // TODO doubled!!! optimize using just one of the 2!!!
+    eomc::impedanceLimits_t *               _impedance_limits;  /** impedancel imits */
 
 
-    eomcParser_pidInfo    *                _ppids;
-    eomcParser_pidInfo    *                _vpids;
-    eomcParser_trqPidInfo *                _tpids;
-    eomcParser_pidInfo    *                _cpids;
+    eomc::PidInfo    *                      _ppids;
+    eomc::PidInfo    *                      _vpids;
+    eomc::TrqPidInfo *                      _tpids;
+    eomc::PidInfo    *                      _cpids;
 
-    int *                                  _axisMap;   /** axies map*/
-    std::vector<eomc_axisInfo_t>           _axesInfo;
+    int *                                   _axisMap;   /** axies map*/
+    std::vector<eomc::axisInfo_t>           _axesInfo;
     /////// end configuration info
 
 
@@ -252,12 +255,12 @@ private:
     bool dealloc();
 
 
-    bool convertPosPid(eomcParser_pidInfo myPidInfo[]);
-    bool convertTrqPid(eomcParser_trqPidInfo myPidInfo[]);
+    bool convertPosPid(eomc::PidInfo myPidInfo[]);
+    bool convertTrqPid(eomc::TrqPidInfo myPidInfo[]);
 
-    bool verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *ipdInfo);
-    bool verifyUserControlLawConsistencyInJointSet(eomcParser_trqPidInfo *pidInfo);
-    bool verifyTorquePidshasSameUnitTypes(GenericControlUnitsType_t &unittype);
+    bool verifyUserControlLawConsistencyInJointSet(eomc::PidInfo *ipdInfo);
+    bool verifyUserControlLawConsistencyInJointSet(eomc::TrqPidInfo *pidInfo);
+    bool verifyTorquePidshasSameUnitTypes(eomc::GenericControlUnitsType_t &unittype);
     bool verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk []);
     bool updatedJointsetsCfgWithControlInfo(void);
     bool saveCouplingsData(void);

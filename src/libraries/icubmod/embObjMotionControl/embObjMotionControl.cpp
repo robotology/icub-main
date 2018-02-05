@@ -100,12 +100,12 @@ bool embObjMotionControl::alloc(int nj)
     _gearbox_M2J = allocAndCheck<double>(nj);
     _gearbox_E2J = allocAndCheck<double>(nj);
     _deadzone = allocAndCheck<double>(nj);
-    _twofocinfo=allocAndCheck<eomc_twofocSpecificInfo>(nj);
-    _ppids= new eomcParser_pidInfo[nj];
-    _vpids= new eomcParser_pidInfo[nj];
-    _tpids= new eomcParser_trqPidInfo [nj];
-    _cpids= new eomcParser_pidInfo[nj];
-    _impedance_limits=allocAndCheck<eomc_impedanceLimits>(nj);
+    _twofocinfo=allocAndCheck<eomc::twofocSpecificInfo_t>(nj);
+    _ppids= new eomc::PidInfo[nj];
+    _vpids= new eomc::PidInfo[nj];
+    _tpids= new eomc::TrqPidInfo [nj];
+    _cpids= new eomc::PidInfo[nj];
+    _impedance_limits=allocAndCheck<eomc::impedanceLimits_t>(nj);
     checking_motiondone=allocAndCheck<bool>(nj);
     _last_position_move_time=allocAndCheck<double>(nj);
 
@@ -427,7 +427,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 
 
-bool embObjMotionControl::convertPosPid(eomcParser_pidInfo myPidInfo[])
+bool embObjMotionControl::convertPosPid(eomc::PidInfo myPidInfo[])
 {
 
     //conversion from metric to machine units (if applicable)
@@ -449,7 +449,7 @@ bool embObjMotionControl::convertPosPid(eomcParser_pidInfo myPidInfo[])
 
 
 
-bool embObjMotionControl::convertTrqPid(eomcParser_trqPidInfo myPidInfo[])
+bool embObjMotionControl::convertTrqPid(eomc::TrqPidInfo myPidInfo[])
 {
     //conversion from metric to machine units (if applicable)
     for (int j=0; j<_njoints; j++)
@@ -503,7 +503,7 @@ void embObjMotionControl::debugUtil_printJointsetInfo(void)
 
 
 
-bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *pidInfo)
+bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomc::PidInfo *pidInfo)
 {
 
     for(size_t s=0; s<_jsets.size(); s++)
@@ -536,7 +536,7 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_p
 
 
 
-bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_trqPidInfo *pidInfo)
+bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomc::TrqPidInfo *pidInfo)
 {
     for(size_t s=0; s<_jsets.size(); s++)
     {
@@ -799,7 +799,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if(!verifyUserControlLawConsistencyInJointSet(_tpids))
             return false;
 
-        GenericControlUnitsType_t trqunittype;
+        eomc::GenericControlUnitsType_t trqunittype;
         if(!verifyTorquePidshasSameUnitTypes(trqunittype))
             return false;
 
@@ -941,7 +941,7 @@ bool embObjMotionControl::verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk 
 
 }
 
-bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(GenericControlUnitsType_t &unittype)
+bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(eomc::GenericControlUnitsType_t &unittype)
 {
     unittype = controlUnits_unknown;
     //get first joint with enabled torque
@@ -1091,7 +1091,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
 
 
-    _mcparser = new mcParser(_njoints, string(res->getProperties().boardnameString));
+    _mcparser = new eomc::Parser(_njoints, string(res->getProperties().boardnameString));
 
     ////// check motion control xml files version
     int currentMCversion =0;
