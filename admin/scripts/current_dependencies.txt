@@ -1,4 +1,4 @@
 == YARP VERSION ==
 
-This snapshot was released with yarp 2.3.70
+This snapshot was released with yarp 2.3.72
 
