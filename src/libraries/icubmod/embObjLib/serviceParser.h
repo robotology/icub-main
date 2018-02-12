@@ -145,7 +145,7 @@ typedef struct
 {
     eOmc_encoder_descriptor_t       desc;
     int32_t                         resolution;
-    uint8_t                         numofnoisebits;
+    double                          tolerance;
 } servMC_encoder_t;
 
 
@@ -252,7 +252,8 @@ public:
     bool convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
     servMC_encoder_t * getEncoderAtMotor(int index);
     servMC_encoder_t * getEncoderAtJoint(int index);
-public:
+    bool parse_debugEmbBoardsNotConnected(Searchable &config, bool &embBoardsConnected);
+   public:
 
     servAScollector_t           as_service;
     servASstrainSettings_t      as_strain_settings;

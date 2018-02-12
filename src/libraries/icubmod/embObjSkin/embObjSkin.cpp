@@ -118,7 +118,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
         if(p>=_skCfg.patchInfoList.size())
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of BOARD" << res->getName() << "IP" << res->getIPv4string() << ": patch " << boardCfgList[j].patch << "not exists";
+            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": patch " << boardCfgList[j].patch << "not exists";
             return false;
         }
         //now p is the index of patch.
@@ -130,7 +130,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             boardIdx = _skCfg.patchInfoList[p].checkCardAddrIsInList(a);
             if(-1 == boardIdx)
             {
-                yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of BOARD" << res->getName() << "IP" << res->getIPv4string() << " card with address " << a << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
+                yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " card with address " << a << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
                 return(false);
             }
         }
@@ -166,16 +166,15 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmmnds_boardscfg);
 
-
-        if(! res->addSetMessage(protoid, (uint8_t*)&bcfg))
+        if(false == res->setRemoteValue(protoid, &bcfg))
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getName() << "IP" << res->getIPv4string() << " Error in send special board config for mtb with addr from"<<  bcfg.addrstart << " to addr " << bcfg.addrend;
+            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send special board config for mtb with addr from"<<  bcfg.addrstart << " to addr " << bcfg.addrend;
             return false;
         }
 
     } //end for for each special board cfg
 
-    Time::delay(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
+    SystemClock::delaySystem(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
 
     //-----------------------------------------------------------------------------------------------------
     //------------ read special cfg triangle --------------------------------------------------------------
@@ -196,7 +195,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
         if(p >= _skCfg.patchInfoList.size())
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of bBOARD" << res->getName() << "IP" << res->getIPv4string() << ": patch " << triangleCfg[j].patch << "not exists";
+            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of bBOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": patch " << triangleCfg[j].patch << "not exists";
             return false;
         }
         //now p is index patch
@@ -204,7 +203,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         //check if bcfg.boardAddr is in my patches list
         if(-1 == _skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of BOARD" << res->getName() << "IP" << res->getIPv4string() <<  " card with address " << triangleCfg[j].boardAddr << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
+            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString <<  " card with address " << triangleCfg[j].boardAddr << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
             return(false);
         }
 
@@ -229,16 +228,16 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         // otherwise the board sends up a diagnostics message telling that it cannot send a message in can bus
         // we do that by ... sic ... adding a small delay. 
         // the above "yDebug() << "\n Special triangle cfg num " << j;" used to test was probably doing the same effect as a delay of a few ms
-        Time::delay(0.010);
+        SystemClock::delaySystem(0.010);
 
-        if(! res->addSetMessage(protoid, (uint8_t*)&tcfg))
+        if(false == res->setRemoteValue(protoid, &tcfg))
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getName() << "IP" << res->getIPv4string() << " Error in send default triangle config for mtb "<<  tcfg.boardaddr;
+            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send default triangle config for mtb "<<  tcfg.boardaddr;
             return false;
         }
     }
 
-    Time::delay(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
+    SystemClock::delaySystem(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
 
     return true;
 }
@@ -254,7 +253,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     bPatches = config.findGroup("patches", "skin patches connected to this device");
     if(bPatches.isNull())
     {
-        yError() << "EmbObjSkin::fromConfig(): in skin BOARD" << res->getName() << "IP" << res->getIPv4string() << "patches group is missing";
+        yError() << "EmbObjSkin::fromConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "patches group is missing";
         return(false);
     }
 
@@ -277,7 +276,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         int id = bPatchList.get(j-1).asInt();
         if((id!=1) && (id!=2))
         {
-            yError() << "EmbObjSkin::fromConfig(): in skin BOARD" << res->getName() << "IP" << res->getIPv4string() << "expecting at most 2 patches";
+            yError() << "EmbObjSkin::fromConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "expecting at most 2 patches";
             return false;
         }
         _skCfg.patchInfoList[j-1].idPatch = id;
@@ -294,7 +293,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         xtmp = bPatches.findGroup(tmp);
         if(xtmp.isNull())
         {
-            yError() << "EmbObjSkin::fromConfig(): skin BOARD" << res->getName() << "IP" << res->getIPv4string() << "doesn't find " << tmp << "in xml file";
+            yError() << "EmbObjSkin::fromConfig(): skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "doesn't find " << tmp << "in xml file";
             return false;
         }
 
@@ -434,15 +433,14 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "EmbObjSkin::open() fails to instantiate ethManager";
         return false;
     }
 
-    eOipv4addr_t boardIPaddress = 0;
-    if(false == ethManager->verifyEthBoardInfo(config, &boardIPaddress, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjSkin::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -461,7 +459,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     // read config file
     if(false == fromConfig(config))
     {
-        yError() << "embObjSkin::init() fails in function fromConfig() for BOARD" << res->getName() << "IP" << res->getIPv4string() << ": CANNOT PROCEED ANY FURTHER";
+        yError() << "embObjSkin::init() fails in function fromConfig() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": CANNOT PROCEED ANY FURTHER";
         cleanup();
         return false;
     }
@@ -479,7 +477,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     // now we have an ip address, thus we can set the name in object SkinConfigReader
     char name[80];
-    snprintf(name, sizeof(name), "embObjSkin on BOARD %s IP %s", res->getName(), res->getIPv4string());
+    snprintf(name, sizeof(name), "embObjSkin on BOARD %s IP %s", res->getProperties().boardnameString.c_str(), res->getProperties().ipv4addrString.c_str());
     _cfgReader.setName(name);
 
 
@@ -494,7 +492,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_skin, servparam, 5.0))
     {
-        yError() << "embObjSkin::open() has an error in call of ethResources::serviceVerifyActivate() for board" << res->getName() << "IP" << res->getIPv4string();
+        yError() << "embObjSkin::open() has an error in call of ethResources::serviceVerifyActivate() for board" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         cleanup();
         return false;
     }
@@ -505,7 +503,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
 
     /* Following delay is necessary in order to give enough time to skin boards to configure all its triangles */
-    Time::delay(0.500);
+    SystemClock::delaySystem(0.500);
 
     if(!initWithSpecialConfig(config))
     {
@@ -529,7 +527,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     if(false == res->serviceStart(eomn_serv_category_skin))
     {
-        yError() << "embObjSkin::open() fails to start skin service for BOARD" << res->getName() << "IP" << res->getIPv4string() << ": cannot continue";
+        yError() << "embObjSkin::open() fails to start skin service for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": cannot continue";
         cleanup();
         return false;
     }
@@ -537,7 +535,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjSkin::open() correctly starts skin service of BOARD" << res->getName() << "IP" << res->getIPv4string();
+            yDebug() << "embObjSkin::open() correctly starts skin service of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         }
     }
 
@@ -545,10 +543,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 }
 
 
-bool EmbObjSkin::isEpManagedByBoard()
-{
-    return res->isEPsupported(eoprot_endpoint_skin);
-}
 
 void EmbObjSkin::cleanup(void)
 {
@@ -630,10 +624,10 @@ bool EmbObjSkin::start()
     for(i=0; i<_skCfg.numOfPatches;i++)
     {
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_config_sigmode);
-        ret = res->addSetMessage(protoid, &dat);
+        ret = res->setRemoteValue(protoid, &dat);
         if(!ret)
         {
-            yError() << "EmbObjSkin::start(): unable to start skin for BOARD" << res->getName() << "IP" << res->getIPv4string() << " on port " <<  _skCfg.patchInfoList[i].idPatch;
+            yError() << "EmbObjSkin::start(): unable to start skin for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " on port " <<  _skCfg.patchInfoList[i].idPatch;
             return false;
         }
     }
@@ -666,7 +660,7 @@ bool EmbObjSkin::configPeriodicMessage(void)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
             char nvinfo[128];
             for (size_t r = 0; r<id32v.size(); r++)
             {
@@ -676,7 +670,7 @@ bool EmbObjSkin::configPeriodicMessage(void)
             }
         }
     }
-    Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)
+    SystemClock::delaySystem(0.005);  // 5 ms (m.a.a-delay: before it was 0)
 
     return true;
 }
@@ -727,14 +721,14 @@ bool EmbObjSkin::init()
         defBoardCfg.addrstart = minAddr;
         defBoardCfg.addrend = maxAddr;
 
-        if(!res->addSetMessage(protoid, (uint8_t*)&defBoardCfg))
+        if(false == res->setRemoteValue(protoid, &defBoardCfg))
         {
-            yError() << "EmbObjSkin::init(): in skin BOARD" << res->getName() << "IP" << res->getIPv4string() << " Error in send default board config for mtb with addr from "<<  defBoardCfg.addrstart << "to " << defBoardCfg.addrend;
+            yError() << "EmbObjSkin::init(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send default board config for mtb with addr from "<<  defBoardCfg.addrstart << "to " << defBoardCfg.addrend;
             return false;
         }
 
     }
-    Time::delay(0.010);
+    SystemClock::delaySystem(0.010);
 
     for(i=0; i<_skCfg.numOfPatches;i++)
     {
@@ -743,9 +737,9 @@ bool EmbObjSkin::init()
         for(k=0; k<_skCfg.patchInfoList[i].cardAddrList.size(); k++)
         {
             defTriangleCfg.boardaddr = _skCfg.patchInfoList[i].cardAddrList[k];
-            if(! res->addSetMessage(protoid, (uint8_t*)&defTriangleCfg))
+            if(false == res->setRemoteValue(protoid, &defTriangleCfg))
             {
-                yError() << "EmbObjSkin::init(): in skin BOARD" << res->getName() << "IP" << res->getIPv4string() << " Error in send default triangle config for mtb "<<  defTriangleCfg.boardaddr;
+                yError() << "EmbObjSkin::init(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send default triangle config for mtb "<<  defTriangleCfg.boardaddr;
                 return false;
             }
         }
@@ -761,9 +755,9 @@ bool EmbObjSkin::initialised()
     return opened;
 }
 
-iethresType_t EmbObjSkin::type()
+eth::iethresType_t EmbObjSkin::type()
 {
-    return iethres_skin;
+    return eth::iethres_skin;
 }
 
 bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
@@ -784,7 +778,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
     }
     if(p >= _skCfg.numOfPatches)
     {
-        yError() << "EmbObjSkin::update(): skin of BOARD" << res->getName() << "IP" << res->getIPv4string() << ": received data of patch with nvindex= " << indexpatch;
+        yError() << "EmbObjSkin::update(): skin of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": received data of patch with nvindex= " << indexpatch;
         return false;
     }
 
@@ -887,8 +881,8 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                         if (fullMsg != SkinErrorCode::StatusOK)
                         {
                             yError() << "embObjSkin error code: " <<
-                                        "BOARD: " << res->getName()  <<
-                                        "IP:"     << res->getIPv4string() <<
+                                        "BOARD: " << res->getProperties().boardnameString  <<
+                                        "IP:"     << res->getProperties().ipv4addrString <<
                                         "canDeviceNum: " << errors[i].net <<
                                         "board: " <<  errors[i].board <<
                                         "sensor: " << errors[i].sensor <<
@@ -911,7 +905,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
         else
         {
             if(error == 0)
-                yError() << "EMS: " << res->getIPv4string() << " Unknown Message received from skin (" << i<<"/"<< sizeofarray <<"): frameID=" << canframeid11<< " len="<<canframesize << "canframe.data="<<canframedata[0] << " " <<canframedata[1] << " " <<canframedata[2] << " " <<canframedata[3] <<"\n" ;
+                yError() << "EMS: " << res->getProperties().ipv4addrString << " Unknown Message received from skin (" << i<<"/"<< sizeofarray <<"): frameID=" << canframeid11<< " len="<<canframesize << "canframe.data="<<canframedata[0] << " " <<canframedata[1] << " " <<canframedata[2] << " " <<canframedata[3] <<"\n" ;
             error++;
             if (error == 10000)
                 error = 0;

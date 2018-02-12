@@ -26,7 +26,7 @@
 #define     MATRIX_COUNT        3
 
 
-CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, CustomTreeWidgetItem *item, QWidget *parent) :
+CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boardType_t b, CustomTreeWidgetItem *item, QWidget *parent) :
     QMainWindow(parent),mutex(QMutex::Recursive),
     ui(new Ui::CalibrationWindow)
 {
@@ -49,6 +49,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, CustomTreeWidget
     matrix_changed[1] = false;
     matrix_changed[2] = false;
 
+    boardtype = b; // we can have either a icubCanProto_boardType__strain or a icubCanProto_boardType__strain2 ...
     eeprom_saved_status=true;
     first_time = true;
     for(int i=0;i<CHANNEL_COUNT;i++){
@@ -78,7 +79,14 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, CustomTreeWidget
         QWidget *container = new QWidget(ui->tableParamters);
         QSlider *slider = new QSlider(container);
         slider->setMinimum(0);
-        slider->setMaximum(0x3FF);
+        if(icubCanProto_boardType__strain2 == boardtype)
+        {
+            slider->setMaximum(0xFFFF);
+        }
+        else
+        {
+            slider->setMaximum(0x3FF);
+        }
         slider_gain.append(slider);
         slider->setOrientation(Qt::Horizontal);
 
@@ -327,7 +335,7 @@ void CalibrationWindow::autoAdjust()
     mutex.lock();
     loading();
     string msg;
-    core->getDownloader()->strain_calibrate_offset(bus,id,ui->slider_zero->value(),&msg);
+    core->getDownloader()->strain_calibrate_offset(bus,id, boardtype, ui->slider_zero->value(),&msg);
     loading(false);
     mutex.unlock();
 }

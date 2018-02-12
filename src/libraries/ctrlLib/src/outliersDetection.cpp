@@ -156,7 +156,7 @@ set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &opti
         mean=options.find("mean").asDouble();
         stdev=options.find("std").asDouble();
     }
-    else
+    else if (N>0)
     {
         // find mean and standard deviation
         for (size_t i=0; i<data.length(); i++)

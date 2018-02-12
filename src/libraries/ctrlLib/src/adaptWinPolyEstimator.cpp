@@ -19,7 +19,7 @@
 #include <cmath>
 #include <algorithm>
 
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
@@ -111,7 +111,7 @@ Vector AWPolyEstimator::estimate()
     yAssert(elemList.size()>0);
 
     size_t dim=elemList[0].data.length();
-    Vector esteem(dim);
+    Vector esteem(dim,0.0);
 
     if (firstRun)
     {    
@@ -124,12 +124,22 @@ Vector AWPolyEstimator::estimate()
     int delta=L-N;
 
     if (delta<0)
-        return esteem=0.0;
+        return esteem;
 
     // retrieve the time vector
     // starting from t=0 (numeric stability reason)
-    for (unsigned int j=0; j<N; j++)
+    t[0]=0.0;
+    for (unsigned int j=1; j<N; j++)
+    {
         t[j]=elemList[delta+j].time-elemList[delta].time;
+
+        // enforce condition on time vector
+        if (t[j]<=0.0)
+        {
+            yWarning()<<"Provided non-increasing time vector";
+            return esteem;
+        }
+    }
 
     // cycle upon all elements
     for (unsigned int i=0; i<dim; i++)

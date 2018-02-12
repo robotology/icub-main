@@ -54,78 +54,15 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
     return false;
 }
 
-// generic function that checks is key1 is present in input bottle and that the result has size elements
-// return true/false
-bool embObjStrain::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
-{
-    size++;  // size includes also the name of the parameter
-    Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
-    if (tmp.isNull())
-    {
-        yError ("%s not found\n", key1.c_str());
-        return false;
-    }
-
-    if(tmp.size()!=size)
-    {
-        yError("%s incorrect number of entries\n", key1.c_str());
-        return false;
-    }
-
-    out=tmp;
-
-    return true;
-}
-
 
 bool embObjStrain::fromConfig(yarp::os::Searchable &_config)
 {
-#if defined(EMBOBJSTRAIN_USESERVICEPARSER)
-
-
     if(false == parser->parseService(_config, serviceConfig))
     {
         return false;
     }
 
     return true;
-
-#else
-
-    Bottle xtmp;
-
-    int _period = 0;
-    int _useCalibration = 0;
-
-    // Analog Sensor stuff
-    Bottle config = _config.findGroup("GENERAL");
-    if (!extractGroup(config, xtmp, "Period", "transmitting period of the sensors", 1))
-    {
-        yError() << "embObjStrain Using default value = 0 (disabled)";
-        _period = 0;
-    }
-    else
-    {
-        _period = xtmp.get(1).asInt();
-        yDebug() << "embObjStrain::fromConfig() detects embObjStrain Using value of" << _period;
-    }
-
-
-    if (!extractGroup(config, xtmp, "UseCalibration", "Calibration parameters are needed", 1))
-    {
-        return false;
-    }
-    else
-    {
-        _useCalibration = xtmp.get(1).asInt();
-    }
-
-    return true;
-
-    serviceConfig.acquisitionrate = _period;
-    serviceConfig.useCalibration = (0 == _useCalibration) ? false : true;
-
-#endif
 }
 
 
@@ -191,7 +128,7 @@ bool embObjStrain::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "embObjStrain::open() fails to instantiate ethManager";
@@ -199,7 +136,7 @@ bool embObjStrain::open(yarp::os::Searchable &config)
     }
 
 
-    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjStrain::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -210,17 +147,6 @@ bool embObjStrain::open(yarp::os::Searchable &config)
 
 
     // - now all other things
-
-
-//    bool ret = false;
-
-//    std::string str;
-//    if(config.findGroup("GENERAL").find("verbose").asBool())
-//        str=config.toString().c_str();
-//    else
-//        str="\n";
-//    yTrace() << str;
-
 
     if(NULL == parser)
     {
@@ -273,11 +199,12 @@ bool embObjStrain::open(yarp::os::Searchable &config)
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_strain, servparam, 5.0))
     {
-        yError() << "embObjStrain::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getName() << "IP" << res->getIPv4string();
+        yError() << "embObjStrain::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         printServiceConfig();
         cleanup();
         return false;
     }
+
 
     printServiceConfig();
 
@@ -303,7 +230,7 @@ bool embObjStrain::open(yarp::os::Searchable &config)
 
     if(false == res->serviceStart(eomn_serv_category_strain))
     {
-        yError() << "embObjStrain::open() fails to start service for BOARD" << res->getName() << "IP" << res->getIPv4string() << ": cannot continue";
+        yError() << "embObjStrain::open() fails to start service for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": cannot continue";
         cleanup();
         return false;
     }
@@ -311,18 +238,12 @@ bool embObjStrain::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjStrain::open() correctly starts as service of BOARD" << res->getName() << "IP" << res->getIPv4string();
+            yDebug() << "embObjStrain::open() correctly starts as service of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         }
     }
 
     opened = true;
     return true;
-}
-
-
-bool embObjStrain::isEpManagedByBoard()
-{    
-    return res->isEPsupported(eoprot_endpoint_analogsensors);
 }
 
 
@@ -336,23 +257,22 @@ bool embObjStrain::sendConfig2Strain(void)
 
     // version with read-back
 
-    eOprotID32_t id32 =  eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
 
-    if(false == res->setRemoteValueUntilVerified(id32, &strainConfig, sizeof(strainConfig), 10, 0.010, 0.050, 2))
+    if(false == res->setcheckRemoteValue(id32, &strainConfig, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjStrain::sendConfig2Strain() had an error while calling setRemoteValueUntilVerified() for strain config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjStrain::sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjStrain::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjStrain::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
         }
     }
 
     return true;
-
 }
 
 
@@ -364,6 +284,8 @@ bool embObjStrain::sendConfig2Strain(void)
 // EVEN better: in serviceVerifyActivate() we allow the retrieval of a parameter which the ETH board sends back. in such a param it is contained
 // the fullscales values ...
 
+// marco.accame on 09 jan 2018: much better using an ask(id32_fullscale) and making this variable proxied inside the ETH board ...
+
 bool embObjStrain::fillScaleFactor()
 {
     // if we already have set the scalefactor ...
@@ -373,7 +295,7 @@ bool embObjStrain::fillScaleFactor()
     }
 
     // at first we set the scale factors to 1, so that we are sure they have a safe value. it redundant, as we already set it to 1.0
-    for (size_t i = 0; i<scaleFactor.size(); i++)
+    for(size_t i = 0; i<scaleFactor.size(); i++)
     {
         scaleFactor[i] = 1.0f;
     }
@@ -392,6 +314,7 @@ bool embObjStrain::fillScaleFactor()
 
     // if we need calibration, then we need to ask the fullscales directly to the strain
 
+
     // marco.accame on 11 apr 2014:
     // added the code under ifdef 1. the reason is that one cannot rely on validity of data structures inside the EOnv, as in protocol v2 the requirement is that
     // the initialisation is not specialised and is ... all zeros. if the user wants to init to proper values must redefine the relevant INIT funtion.
@@ -404,19 +327,12 @@ bool embObjStrain::fillScaleFactor()
     // }
     // moreover, even if properly initted, it is required to set the size to 0 because the size being not 0 is the check of reception of a message.
 
-#ifdef ETHRES_DEBUG_DONTREADBACK   // in test beds in which no EMS are connected, just skip this and go on
-    yWarning() << "embObjStrain::fillScaleFactor() is in ETHRES_DEBUG_DONTREADBACK mode";
-    return true;
-#endif
-    
-
 
     bool gotFullScaleValues = false;
 
 
     // Check initial size of array...  it should be zero.
     int timeout, NVsize;
-    uint16_t tmpNVsize;
     EOnv tmpNV;
     EOnv *p_tmpNV = NULL;
     eOas_arrayofupto12bytes_t fullscale_values = {0};
@@ -427,13 +343,10 @@ bool embObjStrain::fillScaleFactor()
     eOprotID32_t id32_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
 
         
-    // now we impose that the value of the EOnv described by eoprot_tag_as_strain_status_fullscale is what in fullscale_values.
-    // we need to do that because the ram of the EOnv is ... of zero value unless one overrides the relevant INIT function.
-    // if of zero value, then ... capacity is not 6 and itemsize is not 2.
-    p_tmpNV = res->getNVhandler(id32_fullscale, &tmpNV);
-    eo_nv_Set(p_tmpNV, &fullscale_values, eobool_true, eo_nv_upd_dontdo); 
-
-    // now we are sure that we have a value of the array inside the EOnv which is consistent and ... of zero size.
+    // at first we impose that the local value of fullscales is zero.
+    // we also force the change because this variable is readonly
+    const bool overrideROprotection = true;
+    res->setLocalValue(id32_fullscale, &fullscale_values, overrideROprotection);
 
         
     // Prepare analog sensor
@@ -449,10 +362,10 @@ bool embObjStrain::fillScaleFactor()
     // wait for response
     while(!gotFullScaleValues && (timeout != 0))
     {
-        res->addSetMessage(id32_strain_config, (uint8_t *) &strainConfig);
-        Time::delay(1.0);
+        res->setRemoteValue(id32_strain_config, &strainConfig);
+        SystemClock::delaySystem(1.0);
         // read fullscale values
-        res->readBufferedValue(id32_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);
+        res->getLocalValue(id32_fullscale, &fullscale_values);
         // If data arrives, size is bigger than zero
         //#warning --> marco.accame says: to wait for 1 sec and read size is ok. a different way is to ... wait for a semaphore incremented by the reply of the board. think of it!
         NVsize = eo_array_Size((EOarray *)&fullscale_values);
@@ -466,19 +379,19 @@ bool embObjStrain::fillScaleFactor()
         timeout--;
         if(verbosewhenok)
         {
-            yWarning() << "embObjStrain::fillScaleFactor(): for  BOARD" << res->getName() << "IP" << res->getIPv4string() << ": full scale val not arrived yet... retrying in 1 sec";
+            yWarning() << "embObjStrain::fillScaleFactor(): for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": full scale val not arrived yet... retrying in 1 sec";
         }
     }
 
     if((false == gotFullScaleValues) && (0 == timeout))
     {
-        yError() << "embObjStrain::fillScaleFactor(): ETH Analog sensor: request for calibration parameters timed out for  BOARD" << res->getName() << "IP" << res->getIPv4string();
+        yError() << "embObjStrain::fillScaleFactor(): ETH Analog sensor: request for calibration parameters timed out for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
         return false;
     }
 
     if((strain_Channels != NVsize))
     {
-        yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "Aborting";
+        yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "Aborting";
         return false;
     }
 
@@ -487,8 +400,8 @@ bool embObjStrain::fillScaleFactor()
     {
         if(verbosewhenok)
         {
-            yWarning() << "embObjStrain::fillScaleFactor() detected that already has full scale values for BOARD" << res->getName() << "IP" << res->getIPv4string();
-            yDebug()   << "embObjStrain::fillScaleFactor(): Fullscale values for BOARD" << res->getName() << "IP" << res->getIPv4string() << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  strain_Channels;
+            yWarning() << "embObjStrain::fillScaleFactor() detected that already has full scale values for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+            yDebug()   << "embObjStrain::fillScaleFactor(): Fullscale values for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  strain_Channels;
         }
 
         for (size_t i = 0; i<scaleFactor.size(); i++)
@@ -551,7 +464,7 @@ bool embObjStrain::initRegulars()
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjStrain::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yDebug() << "embObjStrain::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
             char nvinfo[128];
             for (size_t r = 0; r<id32v.size(); r++)
             {
@@ -679,9 +592,9 @@ int embObjStrain::calibrateChannel(int ch, double v)
     return AS_OK;
 }
 
-iethresType_t embObjStrain::type()
+eth::iethresType_t embObjStrain::type()
 {
-    return iethres_analogstrain;
+    return eth::iethres_analogstrain;
 }
 
 bool embObjStrain::update(eOprotID32_t id32, double timestamp, void* rxdata)
@@ -748,21 +661,22 @@ bool embObjStrain::close()
 
 
 void embObjStrain::printServiceConfig(void)
-{
+{    
     char loc[20] = {0};
     char fir[20] = {0};
     char pro[20] = {0};
-    const char * boardname = (NULL != res) ? (res->getName()) : ("NOT-ASSIGNED-YET");
-    const char * ipv4 = (NULL != res) ? (res->getIPv4string()) : ("NOT-ASSIGNED-YET");
+    const char * boardname = (NULL != res) ? (res->getProperties().boardnameString.c_str()) : ("NOT-ASSIGNED-YET");
+    const char * ipv4 = (NULL != res) ? (res->getProperties().ipv4addrString.c_str()) : ("NOT-ASSIGNED-YET");
+    const char * boardtype = eoboards_type2string2(static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.as.strain.boardtype.type), eobool_true);
 
     parser->convert(serviceConfig.ethservice.configuration.data.as.strain.canloc, loc, sizeof(loc));
-    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.version.firmware, fir, sizeof(fir));
-    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.version.protocol, pro, sizeof(pro));
+    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.boardtype.firmware, fir, sizeof(fir));
+    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.boardtype.protocol, pro, sizeof(pro));
 
     yInfo() << "The embObjStrain device using BOARD" << boardname << " w/ IP" << ipv4 << "has the following service config:";
     yInfo() << "- acquisitionrate =" << serviceConfig.acquisitionrate;
     yInfo() << "- useCalibration =" << serviceConfig.useCalibration;
-    yInfo() << "- STRAIN named" << serviceConfig.nameOfStrain << "@" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
+    yInfo() << "- STRAIN of type" << boardtype << "named" << serviceConfig.nameOfStrain << "@" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
 }
 
 

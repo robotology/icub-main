@@ -104,90 +104,69 @@ static const char * s_get_sourceofmessage(eOmn_info_basic_t* infobasic, uint8_t 
 
 extern void eoprot_fun_ONSAY_mn(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    // marco.accame on 18 mar 2014: this function is called when a say<id32, data> rop is received
-    // and the id32 is about the management endpoint. this function is common to every board.
-    // it is used this function and not another one because inside the hostTransceiver object it was called:
-    // eoprot_config_onsay_endpoint_set(eoprot_endpoint_management, eoprot_fun_ONSAY_mn);
-
-    // the aim of this function is to wake up a thread which is blocked because it has sent an ask<id32>
-    // the wake up funtionality is implemented in one mode only:
-    // a. in initialisation, someone sets some values and then reads them back.
-    //    the read back sends an ask<id32, signature=0xaa000000>. in such a case the board sends back
-    //    a say<id32, data, signature = 0xaa000000>. thus, if the received signature is 0xaa000000, then
-    //    we must unblock using feat_signal_network_reply().
-
-    if(0xaa000000 == rd->signature)
-    {   // case a:
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
-        {
-            char str[256] = {0};
-            char nvinfo[128];
-            char ipinfo[20];
-            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
-            eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
-            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mn() received an unexpected message w/ 0xaa000000 signature for IP %s and NV %s", ipinfo, nvinfo);
-            feat_PrintWarning(str);
-            return;
-       }
-    }
+    feat_signal_network_onsay(eo_nv_GetIP(nv), rd->id32, rd->signature);
 }
 
 
 
 extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {   // callback used to print diagnostics sent by eth boards in full form (with strings)
-    eOmn_info_status_t* infostatus = (eOmn_info_status_t*) rd->data;
-    s_eoprot_print_mninfo_status(&infostatus->basic, infostatus->extra, nv, rd);
+    if(eo_ropcode_sig == rd->ropcode)
+    {
+        eOmn_info_status_t* infostatus = (eOmn_info_status_t*) rd->data;
+        s_eoprot_print_mninfo_status(&infostatus->basic, infostatus->extra, nv, rd);
+    }
 }
 
 
 extern void eoprot_fun_UPDT_mn_info_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
 {   // callback used to print diagnostics sent by eth boards in compact form
-    eOmn_info_basic_t* infostatusbasic = (eOmn_info_basic_t*) rd->data;
-    s_eoprot_print_mninfo_status(infostatusbasic, NULL, nv, rd);
+    if(eo_ropcode_sig == rd->ropcode)
+    {
+        eOmn_info_basic_t* infostatusbasic = (eOmn_info_basic_t*) rd->data;
+        s_eoprot_print_mninfo_status(infostatusbasic, NULL, nv, rd);
+    }
 }
 
 
 extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    // marco.accame on 19 mar 2014: the ethResource class sends a set<command, value> and it blocks to wait a reply.
-    // the reply arrives in the form sig<command, value>. the signature in here does not work, as it works only with
-    // ask<> / say<>.
-
     if(eo_ropcode_sig == rd->ropcode)
-    {   // in here we have a sig and we cannot have the 0xaa000000 signature
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+    {
+        if(eobool_false == feat_signal_network_onsig(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             feat_PrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message");
             return;
         }
     }
-
+    else
+    {
+        feat_PrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected opcode");
+    }
 }
 
 
 extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    // marco.accame on 19 mar 2014: the ethResource class sends a set<command, value> and it blocks to wait a reply.
-    // the reply arrives in the form sig<command, value>. the signature in here does not work, as it works only with
-    // ask<> / say<>.
-
     if(eo_ropcode_sig == rd->ropcode)
-    {   // in here we have a sig and we cannot have the 0xaa000000 signature
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+    {
+        if(eobool_false == feat_signal_network_onsig(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             feat_PrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message");
             return;
         }
     }
-
+    else
+    {
+        feat_PrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected opcode");
+    }
 }
 
 extern void eoprot_fun_UPDT_mn_service_status_commandresult(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     if(eo_ropcode_sig == rd->ropcode)
-    {   // in here we have a sig
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+    {
+        if(eobool_false == feat_signal_network_onsig(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             feat_PrintError("eoprot_fun_UPDT_mn_service_status_commandresult() has received an unexpected message");
             return;

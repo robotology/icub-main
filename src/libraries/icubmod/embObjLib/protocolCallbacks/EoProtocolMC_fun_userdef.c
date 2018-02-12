@@ -53,8 +53,6 @@
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
 
-static void wake(const EOnv* nv);
-
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
@@ -69,38 +67,7 @@ static void wake(const EOnv* nv);
 
 extern void eoprot_fun_ONSAY_mc(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    // marco.accame on 18 mar 2014: this function is called when a say<id32, data> rop is received
-    // and the id32 is about the motion control endpoint. this function is common to every board.
-    // it is used this function and not another one because inside the hostTransceiver object it was called:
-    // eoprot_config_onsay_endpoint_set(eoprot_endpoint_motioncontrol, eoprot_fun_ONSAY_mc);
-
-    // the aim of this function is to wake up a thread which is blocked because it has sent an ask<id32>
-    // the wake up funtionality is implemented in two modes, depending on the wait mechanism used:
-    // a. in initialisation, embObjMotionControl sets some values and then reads them back.
-    //    the read back sends an ask<id32, signature=0xaa000000>. in such a case the board sends back
-    //    a say<id32, data, signature = 0xaa000000>. thus, if the received signature is 0xaa000000, then
-    //    we must unblock using feat_signal_network_reply().
-    // b. during runtime, some methods send a blocking ask<id32> without signature. It is the case of instance
-    //    of getPidRaw() which waits with a eoThreadEntry::synch() call. in such a case the board send back a
-    //    normal say<id32, data> with nos signature. in this case we unlock with wake().
-
-
-    if(0xaa000000 == rd->signature)
-    {   // case a:
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
-        {
-            char str[256] = {0};
-            char nvinfo[128];
-            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
-            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mc() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
-            feat_PrintWarning(str);
-            return;
-        }
-    }
-    else
-    {   //case b:
-        wake(nv);
-    }
+    feat_signal_network_onsay(eo_nv_GetIP(nv), rd->id32, rd->signature);
 }
 
 
@@ -120,6 +87,7 @@ extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescripto
     feat_manage_motioncontrol_data(eo_nv_GetIP(nv), rd->id32, (void *)rd->data);
 }
 
+
 extern void eoprot_fun_UPDT_mc_joint_status_addinfo_multienc(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     feat_manage_motioncontrol_addinfo_multienc(eo_nv_GetIP(nv), rd->id32, (void *)rd->data);
@@ -128,33 +96,7 @@ extern void eoprot_fun_UPDT_mc_joint_status_addinfo_multienc(const EOnv* nv, con
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions
 // --------------------------------------------------------------------------------------------------------------------
-
-
-static void wake(const EOnv* nv)
-{
-    eOprotID32_t id32 = 0;
-    eOprotProgNumber_t prognum = 0 ;
-    void *mchandler = (void*) feat_MC_handler_get(eo_nv_GetIP(nv), eo_nv_GetID32(nv));
-    if(NULL == mchandler)
-    {
-        printf("eoMC class not found\n");
-        return;
-    }
-
-    id32 = eo_nv_GetID32(nv);
-    prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), id32);
-    if(eobool_false == feat_MC_mutex_post(mchandler, prognum) )
-    {
-        char nvinfo[128];
-        char ipinfo[20];
-        char str[256] = {0};
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
-        snprintf(str, sizeof(str),"while releasing mutex for IP %s and NV %s", ipinfo, nvinfo);
-        feat_PrintWarning(str);
-    }
-
-}
+// empty-section
 
 
 

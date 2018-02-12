@@ -312,15 +312,14 @@ public:
     /************************************************************************/
     void setGravityDirection(const Vector &gDir)
     {
-        // we assume that gDir is provided in homogeneous form
+        Vector gDir_=SE3inv(chain.getH(2,true)).submatrix(0,2,0,2)*gDir;
+
         // rest pitch
-        Vector gDirHp=SE3inv(chain.getH(2,true))*gDir;
-        qRest[0]=-atan2(gDirHp[0],gDirHp[1]);
+        qRest[0]=CTRL_PI/2.0+atan2(gDir_[1],gDir_[0]);
         qRest[0]=sat(qRest[0],chain(0).getMin(),chain(0).getMax());
 
         // rest roll
-        Vector gDirHr=SE3inv(chain.getH(3,true))*gDir;
-        qRest[1]=atan2(gDirHr[1],gDirHr[0]);
+        qRest[1]=-CTRL_PI/2.0-atan2(gDir_[1],gDir_[2]);
         qRest[1]=sat(qRest[1],chain(1).getMin(),chain(1).getMax());
     }
 

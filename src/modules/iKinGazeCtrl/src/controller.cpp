@@ -155,6 +155,21 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
 
 
 /************************************************************************/
+Controller::~Controller()
+{
+    delete neck;
+    delete eyeL;
+    delete eyeR;
+    delete imu;
+    delete mjCtrlNeck;
+    delete mjCtrlEyes;
+    delete IntState;
+    delete IntPlan;
+    delete IntStabilizer;
+}
+
+
+/************************************************************************/
 void Controller::findMinimumAllowedVergence()
 {
     iKinChain cl(*chainEyeL), cr(*chainEyeR);
@@ -357,6 +372,29 @@ bool Controller::threadInit()
     q_stamp=Time::now();
 
     return true;
+}
+
+
+/************************************************************************/
+void Controller::threadRelease()
+{
+    stopLimb();
+    notifyEvent("closing");
+
+    port_x.interrupt();
+    port_x.close();
+
+    port_q.interrupt();
+    port_q.close();
+
+    port_event.interrupt();
+    port_event.close();
+
+    if (commData->debugInfoEnabled)
+    {
+        port_debug.interrupt();
+        port_debug.close();
+    }
 }
 
 
@@ -949,39 +987,6 @@ void Controller::run()
     commData->set_q(fbHead);
     commData->set_torso(fbTorso);
     commData->set_v(v);
-}
-
-
-/************************************************************************/
-void Controller::threadRelease()
-{
-    stopLimb();
-    notifyEvent("closing");
-
-    port_x.interrupt();
-    port_x.close();
-
-    port_q.interrupt();
-    port_q.close();
-
-    port_event.interrupt();
-    port_event.close();
-
-    if (commData->debugInfoEnabled)
-    {
-        port_debug.interrupt();
-        port_debug.close();
-    }
-
-    delete neck;
-    delete eyeL;
-    delete eyeR;
-    delete imu;
-    delete mjCtrlNeck;
-    delete mjCtrlEyes;
-    delete IntState;
-    delete IntPlan;
-    delete IntStabilizer;
 }
 
 

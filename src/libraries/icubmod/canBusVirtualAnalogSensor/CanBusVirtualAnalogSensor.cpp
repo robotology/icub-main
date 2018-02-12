@@ -115,13 +115,13 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     return true;
 }
 
-bool CanBusVirtualAnalogSensor::updateMeasure(int ch, double &measure)
+bool CanBusVirtualAnalogSensor::updateVirtualAnalogSensorMeasure(int ch, double &measure)
 {
     //NOT YET IMPLEMENTED
     return false;
 }
 
-bool CanBusVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &dval)
+bool CanBusVirtualAnalogSensor::updateVirtualAnalogSensorMeasure(yarp::sig::Vector &dval)
 {
     int fakeId = 0;
     short int val[6] = {0,0,0,0,0,0};
@@ -366,47 +366,14 @@ bool CanBusVirtualAnalogSensor::close()
     return true;
 }
 
-int CanBusVirtualAnalogSensor::read(yarp::sig::Vector &out) 
+yarp::dev::IVirtualAnalogSensor::VAS_status CanBusVirtualAnalogSensor::getVirtualAnalogSensorStatus (int ch)
 {
-    mutex.wait();
-    out=data;
-    mutex.post();
-
-    return yarp::dev::IAnalogSensor::AS_OK;
+    return yarp::dev::IVirtualAnalogSensor::VAS_OK;
 }
 
-int CanBusVirtualAnalogSensor::getState(int ch)
-{
-    return yarp::dev::IAnalogSensor::AS_OK;
-}
-
-int CanBusVirtualAnalogSensor::getChannels()
+int CanBusVirtualAnalogSensor::getVirtualAnalogSensorChannels()
 {
     return channelsNum;
-}
-
-int CanBusVirtualAnalogSensor::calibrateSensor()
-{
-    //NOT YET IMPLEMENTED
-    return 0;
-}
-
-int CanBusVirtualAnalogSensor::calibrateChannel(int ch, double v)
-{
-    //NOT YET IMPLEMENTED
-    return 0;
-}
-
-int CanBusVirtualAnalogSensor::calibrateSensor(const yarp::sig::Vector& v)
-{
-    //NOT YET IMPLEMENTED
-    return 0;
-}
-
-int CanBusVirtualAnalogSensor::calibrateChannel(int ch)
-{
-    //NOT YET IMPLEMENTED
-    return 0;
 }
 
 bool CanBusVirtualAnalogSensor::threadInit()
@@ -523,7 +490,7 @@ void CanBusVirtualAnalogSensor::run()
         const char   type     = ((msgid&0x700)>>8);
 
         //parse data here
-        status=IAnalogSensor::AS_OK;
+        status=IVirtualAnalogSensor::VAS_OK;
 
         if (type==0x02) //configuration command
         {
@@ -563,29 +530,29 @@ void CanBusVirtualAnalogSensor::run()
                 {
                     case ANALOG_FORMAT_8_BIT:
                         ret=decode8(buff, msgid, data.data());
-                        status=IAnalogSensor::AS_OK;
+                        status=IVirtualAnalogSensor::VAS_OK;
                         break;
                     case ANALOG_FORMAT_16_BIT:
                         if (len==6) 
                         {
                             ret=decode16(buff, msgid, data.data());
-                            status=IAnalogSensor::AS_OK;
+                            status=IVirtualAnalogSensor::VAS_OK;
                         }
                         else
                         {
                             if (len==7 && buff[6] == 1)
                             {
-                                status=IAnalogSensor::AS_OVF;
+                                status=IVirtualAnalogSensor::VAS_OVF;
                             }
                             else
                             {
-                                status=IAnalogSensor::AS_ERROR;
+                                status=IVirtualAnalogSensor::VAS_ERROR;
                             }
                             ret=decode16(buff, msgid, data.data());
                         }
                         break;
                     default:
-                        status=IAnalogSensor::AS_ERROR;
+                        status=IVirtualAnalogSensor::VAS_ERROR;
                         ret=false;
                 }
             }
@@ -595,7 +562,7 @@ void CanBusVirtualAnalogSensor::run()
     //if 100ms have passed since the last received message
     if (timeStamp+0.1<timeNow)
     {
-        status=IAnalogSensor::AS_TIMEOUT;
+        status=IVirtualAnalogSensor::VAS_TIMEOUT;
     }
 
     mutex.post();

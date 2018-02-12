@@ -13,11 +13,12 @@
 
 
 #include <iCub/FactoryInterface.h>
-#include <hostTransceiver.hpp>
 #include <yarp/dev/IVirtualAnalogSensor.h>
-#include <ethManager.h>
-#include "FeatureInterface.h"
+
 #include "IethResource.h"
+#include <ethManager.h>
+#include <abstractEthResource.h>
+
 
 #include <yarp/os/LogStream.h>
 
@@ -29,23 +30,22 @@ namespace yarp{
 }
 
 
-class TheEthManager;
 
-class EthResource;
 /*! class yarp::dev::embObjVirtualAnalogSensor
  * 
  */
 class yarp::dev::embObjVirtualAnalogSensor:     public yarp::dev::IVirtualAnalogSensor,
                                                 public yarp::dev::DeviceDriver,
-                                                public IethResource
+                                                public eth::IethResource
 {
 private:
 
-    char boardIPstring[20];
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
 
-    //! embObj stuff
-    TheEthManager       *ethManager;
-    EthResource         *res;
+    eth::TheEthManager *ethManager;
+    eth::AbstractEthResource *res;
 
     ////////////////////
     // parameters
@@ -75,13 +75,13 @@ public:
 
     virtual bool initialised();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
-    virtual iethresType_t type();
+    virtual eth::iethresType_t type();
 
     // IvirtualAnalogSensor interface
-    virtual int getState(int ch);
-    virtual int getChannels();
-    virtual bool updateMeasure(yarp::sig::Vector &measure);
-    virtual bool updateMeasure(int ch, double &measure);
+    virtual IVirtualAnalogSensor::VAS_status getVirtualAnalogSensorStatus(int ch);
+    virtual int getVirtualAnalogSensorChannels();
+    virtual bool updateVirtualAnalogSensorMeasure(yarp::sig::Vector &measure);
+    virtual bool updateVirtualAnalogSensorMeasure(int ch, double &measure);
 };
 
 

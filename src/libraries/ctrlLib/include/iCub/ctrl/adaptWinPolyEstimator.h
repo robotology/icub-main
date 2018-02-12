@@ -186,7 +186,8 @@ public:
 /**
 * \ingroup adaptWinPolyEstimator
 *
-* Adaptive window linear fitting.
+* Adaptive window linear fitting to estimate the first
+* derivative.
 */
 class AWLinEstimator : public AWPolyEstimator
 {
@@ -208,7 +209,8 @@ public:
 /**
 * \ingroup adaptWinPolyEstimator
 *
-* Adaptive window quadratic fitting.
+* Adaptive window quadratic fitting to estimate the second
+* derivative.
 */
 class AWQuadEstimator : public AWPolyEstimator
 {

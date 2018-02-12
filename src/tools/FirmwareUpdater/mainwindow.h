@@ -64,6 +64,7 @@ private:
     QTreeWidget *infoTreeWidget;
     int loadCounter;
     QFutureWatcher<bool> watcher;
+    icubCanProto_boardType_t sgboardtype;
 
 signals:
     void appendInfo(boardInfo2_t,eOipv4addr_t);

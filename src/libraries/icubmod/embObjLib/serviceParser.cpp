@@ -941,9 +941,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
 
 
     // first check we do is about thestrain_props.type
-    if(eobrd_cantype_strain != thestrain_props.type)
+    if((eobrd_cantype_strain != thestrain_props.type) && (eobrd_cantype_strain2 != thestrain_props.type))
     {
-        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_strain but is a:" << eoboards_type2string2(eoboards_cantype2type(thestrain_props.type), eobool_false);
+        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_strain or eobrd_strain2 but is a:" << eoboards_type2string2(eoboards_cantype2type(thestrain_props.type), eobool_false);
         return false;
     }
 
@@ -954,8 +954,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
     memset(&strainconfig.ethservice.configuration, 0, sizeof(strainconfig.ethservice.configuration));
 
     strainconfig.ethservice.configuration.type = eomn_serv_AS_strain;
-    memcpy(&strainconfig.ethservice.configuration.data.as.strain.version.protocol, &thestrain_props.protocol, sizeof(eObrd_protocolversion_t));
-    memcpy(&strainconfig.ethservice.configuration.data.as.strain.version.firmware, &thestrain_props.firmware, sizeof(eObrd_firmwareversion_t));
+    strainconfig.ethservice.configuration.data.as.strain.boardtype.type = thestrain_props.type;
+    memcpy(&strainconfig.ethservice.configuration.data.as.strain.boardtype.protocol, &thestrain_props.protocol, sizeof(eObrd_protocolversion_t));
+    memcpy(&strainconfig.ethservice.configuration.data.as.strain.boardtype.firmware, &thestrain_props.firmware, sizeof(eObrd_firmwareversion_t));
 
     // second check we do is about thestrain_sensor.location
     if(eobrd_place_can != thestrain_sensor.location.any.place)
@@ -1283,7 +1284,7 @@ bool ServiceParser::parse_actuator_port(ConstString const &fromstring, eObrd_eth
             // read it as a CAN address
             eObrd_location_t loc;
             bool result = convert(fromstring, loc, formaterror);
-
+            ret = true;
             if(false == result)
             {
                 yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a eObrd_location_t";
@@ -1305,7 +1306,12 @@ bool ServiceParser::parse_actuator_port(ConstString const &fromstring, eObrd_eth
                     ret = false;
                 }
             }
-
+            
+            if(false == ret)
+            {
+                return ret;
+            }
+            
             if(eomc_act_foc == type)
             {
                 // copy into todes.foc
@@ -2155,10 +2161,10 @@ bool ServiceParser::check_motion(Searchable &config)
             yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.resolution";
             return false;
         }
-        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("numofnoisebits"));
-        if(b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits.isNull())
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_tolerance = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("tolerance"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER1_tolerance.isNull())
         {
-            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.numofnoisebits";
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.tolerance";
             return false;
         }
 
@@ -2188,10 +2194,10 @@ bool ServiceParser::check_motion(Searchable &config)
             yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.resolution";
             return false;
         }
-        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("numofnoisebits"));
-        if(b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits.isNull())
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_tolerance = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("tolerance"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER2_tolerance.isNull())
         {
-            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.numofnoisebits";
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.tolerance";
             return false;
         }
         // now the size of the vectors must all be equal
@@ -2202,12 +2208,12 @@ bool ServiceParser::check_motion(Searchable &config)
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_port.size())      ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_position.size())  ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.size())||
-            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits.size()) ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_tolerance.size()) ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_type.size())      ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_port.size())      ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_position.size())  ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.size()) ||
-            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits.size())
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_tolerance.size())
             )
         {
             yError() << "ServiceParser::check_motion() detected wrong number of columns somewhere inside PROPERTIES.JOINTMAPPING";
@@ -2311,7 +2317,7 @@ bool ServiceParser::check_motion(Searchable &config)
 
             enc1.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.get(i+1).asInt();
 
-            enc1.numofnoisebits = b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits.get(i+1).asInt();
+            enc1.tolerance = b_PROPERTIES_JOINTMAPPING_ENCODER1_tolerance.get(i+1).asDouble();
 
 
 
@@ -2364,7 +2370,7 @@ bool ServiceParser::check_motion(Searchable &config)
             enc2.desc.pos = encposition;
 
             enc2.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.get(i+1).asInt();
-            enc2.numofnoisebits = b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits.get(i+1).asInt();
+            enc2.tolerance = b_PROPERTIES_JOINTMAPPING_ENCODER2_tolerance.get(i+1).asDouble();
 
 
             // ok, we push act, enc1, enc2

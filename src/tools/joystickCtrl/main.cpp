@@ -305,7 +305,7 @@ public:
             }
             else
             {
-                fprintf ( stderr, "Unknown [OUTPUT] property\n");
+                yError() << "Unknown [OUTPUT] property";
                 return false;
             }
         }
@@ -322,11 +322,17 @@ public:
             output_port_name = "/joystickCtrl:o";
             yWarning ( "outputPortName not found, using %s \n", output_port_name.c_str());
         }
-        port_command.open(output_port_name.c_str());
+        bool ret=true;
+        ret &= port_command.open(output_port_name.c_str());
         //@@@ TO BE COMPLETED: port name prefix to be set in the ini file
-        port_axis_only.open("/joystickCtrl/raw_axis:o");
-        port_buttons_only.open("/joystickCtrl/raw_buttons:o");
-        
+        ret &= port_axis_only.open("/joystickCtrl/raw_axis:o");
+        ret &= port_buttons_only.open("/joystickCtrl/raw_buttons:o");
+        if (ret==false)
+        {
+            yError() << "Unable to open module ports";
+            return false;
+        }
+
         //get the list of the commands to be executed with the buttons
         Bottle& exec_comm_bottle = rf.findGroup("BUTTONS_EXECUTE");
         int joystick_actions_count = 0;
@@ -408,14 +414,23 @@ public:
         {
             joy_id=0;
             yInfo ( "One joystick found \n");
+#if (SDL_MAJOR_VERSION == 2)
+            yInfo ( "Using joystick: %s \n", SDL_JoystickNameForIndex(joy_id));
+#else
             yInfo ( "Using joystick: %s \n", SDL_JoystickName(joy_id));
+#endif
+
         }
         else
         {
             yInfo ( "More than one joystick found:\n");
             for (int i=0; i<joystick_num; i++)
             {
+#if (SDL_MAJOR_VERSION == 2)
+                yInfo ( "%d: %s\n",i,SDL_JoystickNameForIndex(i));
+#else
                 yInfo ( "%d: %s\n",i,SDL_JoystickName(i));
+#endif
             }
             yInfo ( "\n");
 

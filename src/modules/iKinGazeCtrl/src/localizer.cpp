@@ -123,6 +123,27 @@ Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
 
 
 /************************************************************************/
+Localizer::~Localizer()
+{
+    delete eyeL;
+    delete eyeR;
+    delete pid;
+
+    if (PrjL!=NULL)
+    {
+        delete PrjL;
+        delete invPrjL;
+    }
+
+    if (PrjR!=NULL)
+    {
+        delete PrjR;
+        delete invPrjR;
+    }
+}
+
+
+/************************************************************************/
 bool Localizer::threadInit()
 { 
     port_mono.open((commData->localStemName+"/mono:i").c_str());
@@ -132,6 +153,20 @@ bool Localizer::threadInit()
 
     yInfo("Starting Localizer at %d ms",period);
     return true;
+}
+
+/************************************************************************/
+void Localizer::threadRelease()
+{
+    port_mono.interrupt();
+    port_stereo.interrupt();
+    port_anglesIn.interrupt();
+    port_anglesOut.interrupt();
+
+    port_mono.close();
+    port_stereo.close();
+    port_anglesIn.close();
+    port_anglesOut.close();
 }
 
 
@@ -695,37 +730,6 @@ void Localizer::run()
     handleStereoInput();
     handleAnglesInput();
     handleAnglesOutput();
-}
-
-
-/************************************************************************/
-void Localizer::threadRelease()
-{
-    port_mono.interrupt();
-    port_stereo.interrupt();
-    port_anglesIn.interrupt();
-    port_anglesOut.interrupt();
-
-    port_mono.close();
-    port_stereo.close();
-    port_anglesIn.close();
-    port_anglesOut.close();
-
-    delete eyeL;
-    delete eyeR;
-    delete pid;
-
-    if (PrjL!=NULL)
-    {
-        delete PrjL;
-        delete invPrjL;
-    }
-
-    if (PrjR!=NULL)
-    {
-        delete PrjR;
-        delete invPrjR;
-    }
 }
 
 

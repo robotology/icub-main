@@ -10,10 +10,6 @@ yarp_prepare_plugin(embObjMotionControl
 
  IF (NOT SKIP_embObjMotionControl)
 
-    if(ETHRES_DEBUG_DONTREADBACK)
-        add_definitions( -DETHRES_DEBUG_DONTREADBACK)
-    endif(ETHRES_DEBUG_DONTREADBACK)
-
   if (ICUB_ASK_REFERENCE_TO_FIRMWARE)
       add_definitions(-DASK_REFERENCE_TO_FIRMWARE)
   endif()
@@ -25,7 +21,7 @@ yarp_prepare_plugin(embObjMotionControl
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${iCubDev_INCLUDE_DIRS})
 
 #    yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h usrcbk/eOcfg_nvsEP_mc_usrcbk_pippo.c )
-    yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h mcParser.cpp mcParser.h)
+    yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h eomcParser.cpp eomcParser.h measuresConverter.cpp measuresConverter.h eomcUtils.h)
     TARGET_LINK_LIBRARIES(embObjMotionControl ethResources iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES})
     icub_export_plugin(embObjMotionControl)
     

@@ -166,9 +166,9 @@ bool embObjVirtualAnalogSensor::update(eOprotID32_t id32, double timestamp, void
     return true;
 }
 
-iethresType_t embObjVirtualAnalogSensor::type()
+eth::iethresType_t embObjVirtualAnalogSensor::type()
 {
-    return iethres_analogvirtual;
+    return eth::iethres_analogvirtual;
 }
 
 
@@ -177,7 +177,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "embObjVirtualAnalogSensor::open() fails to instantiate ethManager";
@@ -185,7 +185,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     }
 
 
-    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjVirtualAnalogSensor::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -234,7 +234,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
 
 
 
-    yTrace() << "embObjVirtualAnalogSensor::open(); succefully called for BOARD" << res->getName() << "IP" << res->getIPv4string() << "instantiated correctly";
+    yTrace() << "embObjVirtualAnalogSensor::open(): succefully called for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "instantiated correctly";
 
     opened = true;
     return true;
@@ -245,17 +245,17 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
  *
  */
 
-int embObjVirtualAnalogSensor::getState(int ch)
+IVirtualAnalogSensor::VAS_status embObjVirtualAnalogSensor::getVirtualAnalogSensorStatus(int ch)
 {
     return VAS_OK;
 };
 
-int embObjVirtualAnalogSensor::getChannels()
+int embObjVirtualAnalogSensor::getVirtualAnalogSensorChannels()
 {
     return _channels;
 };
 
-bool embObjVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &measure)
+bool embObjVirtualAnalogSensor::updateVirtualAnalogSensorMeasure(yarp::sig::Vector &measure)
 {
     bool ret = true;
     if(measure.size() != _channels)
@@ -266,12 +266,12 @@ bool embObjVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &measure)
 
     for(int ch=0; ch< _channels; ch++)
     {
-        ret &= updateMeasure(ch, measure[ch]);
+        ret &= updateVirtualAnalogSensorMeasure(ch, measure[ch]);
     }
     return true;
 }
 
-bool embObjVirtualAnalogSensor::updateMeasure(int ch, double &measure)
+bool embObjVirtualAnalogSensor::updateVirtualAnalogSensorMeasure(int ch, double &measure)
 {
     if (measure < ( - _fullscale[ch]) )
         measure =  (-_fullscale[ch]);
@@ -281,15 +281,19 @@ bool embObjVirtualAnalogSensor::updateMeasure(int ch, double &measure)
 
     // Here measure is supposed to be a Torque
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, ch, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
-                //    example measure * 32768.0/12.0;
+    //    example measure * 32768.0/12.0;
     // measure should to saturated to resolution -2.0 to avoid casting problem.
     eOmeas_torque_t meas_torque = (eOmeas_torque_t)( measure * ((_resolution[ch]-2.0)/_fullscale[ch]));
-    return res->addSetMessageAndCacheLocally(protid, (uint8_t*) &meas_torque);
+
+    // i write also locally because somebody may read it back later
+    res->setLocalValue(protid, &meas_torque);
+    // and i want also to send it to the board
+    return res->setRemoteValue(protid, &meas_torque);
 }
 
 void embObjVirtualAnalogSensor::cleanup(void)
 {
-    yTrace() << "embObjVirtualAnalogSensor::cleanup(): called for BOARD" << res->getName() << "IP" << res->getIPv4string();
+    yTrace() << "embObjVirtualAnalogSensor::cleanup(): called for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
 
     if(_fullscale != NULL)
         delete(_fullscale);

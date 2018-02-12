@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
- * Authors: Alberto Cardellino
+ * Author:  Alberto Cardellino, Marco Accame
+ * email:   alberto.cardellino@iit.it, marco.accame@iit.it
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
  */
@@ -39,7 +40,7 @@ using namespace std;
 #include "EoProtocol.h"
 
 #include "ethManager.h"
-
+#include "ethParser.h"
 
 #include "FeatureInterface.h"
 
@@ -56,7 +57,7 @@ using namespace std;
 
 #include <yarp/os/Time.h>
 
-
+using namespace eth;
 
 bool HostTransceiver::lock_transceiver(bool on)
 {
@@ -104,11 +105,6 @@ HostTransceiver::HostTransceiver():delayAfterROPloadingFailure(0.001) // 1ms
     nvset               = NULL;
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
 
-    TXrateOfRegularROPs = defTXrateOfRegularROPs;
-    cycletime = defcycletime;
-    maxtimeRX = defmaxtimeRX;
-    maxtimeDO = defmaxtimeDO;
-    maxtimeTX = defmaxtimeTX;
 
 
     capacityofTXpacket = defMaxSizeOfTXpacket;
@@ -148,17 +144,21 @@ HostTransceiver::~HostTransceiver()
 }
 
 
-bool HostTransceiver::init2(yarp::os::Searchable &cfgEthBoard, eOipv4addressing_t& localIPaddressing, eOipv4addr_t remoteIP, uint16_t rxpktsize)
+bool HostTransceiver::init2(AbstractEthResource *owner, yarp::os::Searchable &cfgtotal, eOipv4addressing_t& localIPaddressing, eOipv4addr_t remoteIP, uint16_t rxpktsize)
 {
-    // the configuration of the transceiver: it is specific of a given remote board
-    yTrace();
-
-
     if(NULL != hosttxrx)
     {
         yError() << "HostTransceiver::init(): called but ... its EOhostTransceiver is already created";
         return false;
     }
+
+    if(nullptr == owner)
+    {
+        yError() << "HostTransceiver::init2(): called w/ nullptr";
+    }
+
+
+    _owner = owner;
 
     // ok. we can go on. assign values of some member variables
 
@@ -187,7 +187,7 @@ bool HostTransceiver::init2(yarp::os::Searchable &cfgEthBoard, eOipv4addressing_
 
 
 
-    if(!prepareTransceiverConfig2(cfgEthBoard))
+    if(!prepareTransceiverConfig2(cfgtotal))
     {
         yError() << "HostTransceiver::init() -> HostTransceiver::prepareTransceiverConfig2() fails";
         return false;
@@ -230,37 +230,77 @@ bool HostTransceiver::init2(yarp::os::Searchable &cfgEthBoard, eOipv4addressing_
     return true;
 }
 
+eOipv4addr_t HostTransceiver::getIPv4()
+{
+    return remoteipaddr;
+}
+
+AbstractEthResource * HostTransceiver::getResource()
+{
+    return _owner;
+}
 
 
-//bool HostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd)
-//{
-//    if((NULL == nv) || (NULL == dat))
-//    {
-//        yError() << "eo HostTransceiver: called nvSetData() with NULL nv or dat";
-//        return false;
-//    }
-    
-//    lock_nvs(true);
-//    eOresult_t eores = eo_nv_Set(nv, dat, forceset, upd);
-//    lock_nvs(false);
+bool HostTransceiver::write(const eOprotID32_t id32, const void* data, bool forcewriteOfReadOnly)
+{
+    eOresult_t eores = eores_NOK_generic;
 
-//    bool ret = true;
-//    if(eores_OK != eores)
-//    {
-//        yError() << "HostTransceiver::nvSetData(): error while setting NV data w/ eo_nv_Set()\n";
-//        ret = false;
-//    }
+    if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
+    {
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yError() << "HostTransceiver::write() called w/ invalid id on BOARD /w IP" << remoteipstring <<
+                    "with id: " << nvinfo;
+        return false;
+    }
 
-//    return ret;
-//}
+    if(NULL == data)
+    {
+        yError() << "HostTransceiver::write() called w/ with NULL data";
+        return false;
+    }
+
+
+    EOnv nv;
+    EOnv* nv_ptr = NULL;
+
+    nv_ptr = getnvhandler(id32, &nv);
+
+    if(NULL == nv_ptr)
+    {
+        yError() << "HostTransceiver::write(): Unable to get pointer to desired NV with id32" << id32;
+        return false;
+    }
+
+
+    lock_nvs(true);
+    eores = eo_nv_Set(&nv, data, forcewriteOfReadOnly, eo_nv_upd_dontdo);
+    lock_nvs(false);
+
+    // marco.accame on 09 apr 2014:
+    // we write data into
+    if(eores_OK != eores)
+    {
+        bool ROvariable = (eo_nv_rwmode_RO == eo_nv_GetRWmode(&nv)) ? true : false;
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yError() << "HostTransceiver::write(): eo_nv_Set() has failed for IP" << remoteipstring << "and" << nvinfo << "RO mode = " << ((ROvariable) ? "true." : "false.");
+
+        if((eobool_false == forcewriteOfReadOnly) && (true == ROvariable))
+        {
+            yError() << "HostTransceiver::write(): called with forcewriteOfReadOnly = false for a READ ONLY variable";
+
+        }
+        return false;
+    }
+
+    return true;
+}
 
 
 // if signature is eo_rop_SIGNATUREdummy (0xffffffff) we dont send the signature. if writelocalcache is true we copy data into local ram of the EOnv 
-bool HostTransceiver::addSetMessage__(eOprotID32_t id32, uint8_t* data, uint32_t signature, bool writelocalrxcache)
+bool HostTransceiver::addSetROP__(const eOprotID32_t id32, const void* data, const uint32_t signature, bool writelocalrxcache)
 {
-#ifdef    ETHRES_DEBUG_DONTREADBACK   // in test beds in which no EMS are connected, just skip this and go on
-return true;
-#endif
     eOresult_t eores = eores_NOK_generic;
     int32_t err = -1;
     int32_t info0 = -1;
@@ -271,14 +311,14 @@ return true;
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::addSetMessage__() called w/ invalid id on BOARD /w IP" << remoteipstring <<
+        yError() << "HostTransceiver::addSetROP__() called w/ invalid id on BOARD /w IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return false;
     }
 
     if(NULL == data)
     {
-        yError() << "HostTransceiver::addSetMessage__() called w/ with NULL data";
+        yError() << "HostTransceiver::addSetROP__() called w/ with NULL data";
         return false;
     }
     
@@ -287,11 +327,11 @@ return true;
         EOnv    nv;
         EOnv*   nv_ptr = NULL;
 
-        nv_ptr = getNVhandler(id32, &nv);
+        nv_ptr = getnvhandler(id32, &nv);
 
         if(NULL == nv_ptr)
         {
-            yError() << "HostTransceiver::addSetMessage__(): Unable to get pointer to desired NV with id32" << id32;
+            yError() << "HostTransceiver::addSetROP__(): Unable to get pointer to desired NV with id32" << id32;
             return false;
         }
 
@@ -304,7 +344,7 @@ return true;
         if(eores_OK != eores)
         {
             // the nv is not writeable
-            yError() << "HostTransceiver::addSetMessage__(): Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
+            yError() << "HostTransceiver::addSetROP__(): Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
             return false;
         }
         
@@ -320,7 +360,7 @@ return true;
     ropdesc.ropcode             = eo_ropcode_set;
     ropdesc.id32                = id32;
     ropdesc.size                = 0;        // marco.accame: the size is internally computed from the id32
-    ropdesc.data                = data;
+    ropdesc.data                = reinterpret_cast<uint8_t *>(const_cast<void*>(data));
     ropdesc.signature           = signature;
 
     bool ret = false;
@@ -335,11 +375,11 @@ return true;
         {
             char nvinfo[128];
             eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-            yWarning() << "HostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "unsuccessful at attempt num " << i+1 <<
+            yWarning() << "HostTransceiver::addSetROP__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "unsuccessful at attempt num " << i+1 <<
                           "with id: " << nvinfo;
 
             eo_transceiver_lasterror_tx_Get(pc104txrx, &err, &info0, &info1, &info2);
-            yWarning() << "HostTransceiver::addSetMessage__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
+            yWarning() << "HostTransceiver::addSetROP__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
 
             yarp::os::Time::delay(delayAfterROPloadingFailure);
         }
@@ -349,7 +389,7 @@ return true;
             {
                 char nvinfo[128];
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-                yDebug() << "HostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "successful ONLY at attempt num " << i+1 <<
+                yDebug() << "HostTransceiver::addSetROP__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "successful ONLY at attempt num " << i+1 <<
                               "with id: " << nvinfo;                
             }
 
@@ -360,7 +400,7 @@ return true;
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::addSetMessage__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring+1 << "after all attempts" <<
+        yError() << "HostTransceiver::addSetROP__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring+1 << "after all attempts" <<
                     "with id: " << nvinfo;
     }
 
@@ -368,25 +408,19 @@ return true;
 }
 
 
-bool HostTransceiver::addSetMessage(eOprotID32_t id32, uint8_t* data)
+
+bool HostTransceiver::addROPset(const eOprotID32_t id32, const void* data, const uint32_t signature)
 {
-   return(HostTransceiver::addSetMessage__(id32, data, eo_rop_SIGNATUREdummy, false));
+   return(HostTransceiver::addSetROP__(id32, data, signature, false));
 }
 
 
-bool HostTransceiver::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
+bool HostTransceiver::isID32supported(const eOprotID32_t id32)
 {
-   return(HostTransceiver::addSetMessage__(id32, data, eo_rop_SIGNATUREdummy, true));
+    return (eobool_false == eoprot_id_isvalid(protboardnumber, id32)) ? false : true;
 }
 
-
-bool HostTransceiver::addSetMessageWithSignature(eOprotID32_t id32, uint8_t* data, uint32_t sig)
-{
-    return(HostTransceiver::addSetMessage__(id32, data, sig, false));
-}
-
-
-bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
+bool HostTransceiver::addROPask(const eOprotID32_t id32, const uint32_t signature)
 {
     eOresult_t eores = eores_NOK_generic;
     int32_t err = -1;
@@ -398,7 +432,7 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::addGetMessage__() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
+        yError() << "HostTransceiver::addROPask() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return false;
     }
@@ -427,11 +461,11 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
         {
             char nvinfo[128];
             eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-            yWarning() << "HostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring<< "unsuccessfull at attempt num " << i+1 <<
+            yWarning() << "HostTransceiver::addROPask(): eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring<< "unsuccessfull at attempt num " << i+1 <<
                           "with id: " << nvinfo;
 
             eo_transceiver_lasterror_tx_Get(pc104txrx, &err, &info0, &info1, &info2);
-            yWarning() << "HostTransceiver::addGetMessage__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
+            yWarning() << "HostTransceiver::addROPask(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
 
             yarp::os::Time::delay(delayAfterROPloadingFailure);
         }
@@ -441,7 +475,7 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
             {
                 char nvinfo[128];
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-                yDebug() << "HostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "succesful ONLY at attempt num " << i+1 <<
+                yDebug() << "HostTransceiver::addROPask(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "succesful ONLY at attempt num " << i+1 <<
                               "with id: " << nvinfo;
 
             }
@@ -452,114 +486,67 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::addGetMessage__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring << "after all attempts " <<
+        yError() << "HostTransceiver::addROPask(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring << "after all attempts " <<
                     "with id: " << nvinfo;
     }
+
     return ret;
 }
 
 
-bool HostTransceiver::addGetMessage(eOprotID32_t id32)
-{
-    return(HostTransceiver::addGetMessage__(id32, eo_rop_SIGNATUREdummy));
-}
 
-
-bool HostTransceiver::addGetMessageWithSignature(eOprotID32_t id32, uint32_t signature)
-{
-    return(HostTransceiver::addGetMessage__(id32, signature));
-}
-
-
-bool HostTransceiver::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
+bool HostTransceiver::read(const eOprotID32_t id32, void *data)
 {      
     if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::readBufferedValue() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
+        yError() << "HostTransceiver::read() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return false;
     }
     
-    if((NULL == data) || (NULL == size))
+    if(NULL == data)
     {
-        yError() << "eo HostTransceiver: called readBufferedValue() with NULL data or size";
+        yError() << "HostTransceiver:read() called w/ NULL data";
         return false;
     }       
     
     EOnv nv;
-    EOnv *nv_ptr = getNVhandler(id32, &nv);
+    EOnv *nv_ptr = getnvhandler(id32, &nv);
 
     if(NULL == nv_ptr)
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "readBufferedValue: Unable to get pointer to desired NV with: " << nvinfo;
+        yError() << "HostTransceiver::read() Unable to get pointer to desired NV with: " << nvinfo;
         return false;
     }
 
+    uint16_t size = 0;
     // marco.accame: protection is inside getNVvalue() member function  
-    bool ret = getNVvalue(nv_ptr, data, size);
+    bool ret = getNVvalue(nv_ptr, reinterpret_cast<uint8_t *>(data), &size);
  
 
     return ret;
 }
 
 
-// use the readSentValue() to retrieve a value previously set into a EOnv with method ::addSetMessage__(id32, data, signature, bool writelocalcache = true).
-// take in mind however, that the opration is not clean.
-// the ram of EOnv is done to accept values coming from the network. if robot-interface writes data into a EOnv, then a received rop of type say<> or sig<> will
-// overwrite the same memory area. we need to re-think the mode with which someone wants to retrieve the last sent value of a EOnv.
-
-bool HostTransceiver::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
-{
-    bool ret = false;
-    if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
-    {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::readSentValue() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
-                    "with id: " << nvinfo;
-        return false;
-    }
-
-    if((NULL == data) || (NULL == size))
-    {
-        yError() << "eo HostTransceiver: called readSentValue() with NULL data or size";
-        return false;
-    }    
-    
-    EOnv nv;
-    EOnv *nv_ptr = getNVhandler(id32, &nv);
-
-    if(NULL == nv_ptr)
-    {
-        yError() << "readSentValue: Unable to get pointer to desired NV with id = " << id32;
-        return false;
-    }
-    // protection on reading data by yarp
-    lock_nvs(true);
-    ret = (eores_OK == eo_nv_Get(nv_ptr, eo_nv_strg_volatile, data, size)) ? true : false;
-    lock_nvs(false);
-    return true;
-}
-
-
-int HostTransceiver::getCapacityOfRXpacket(void)
-{
-    return pktsizerx;
-}
-
 
 // somebody passes the received packet - this is used just as an interface
-void HostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
+bool HostTransceiver::parseUDP(const void *data, const uint16_t size)
 {
     if(NULL == data)
     {
-        yError() << "eo HostTransceiver::onMsgReception() called with NULL data";
-        return;
+        yError() << "eo HostTransceiver::parse() called with NULL data";
+        return false;
     } 
+
+    if(size > pktsizerx)
+    {
+        yError() << "eo HostTransceiver::parse() called too big a packet: max size is" << pktsizerx;
+        return false;
+    }
     
     uint16_t numofrops;
     uint64_t txtime;
@@ -569,10 +556,10 @@ void HostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
     if(size > capacityrxpkt)
     {
         yError () << "received packet has size " << size << "which is higher than capacity of rx pkt = " << capacityrxpkt << "\n";
-        return;
+        return false;
     } 
 
-    eo_packet_Payload_Set(p_RxPkt, (uint8_t*)data, size);
+    eo_packet_Payload_Set(p_RxPkt, reinterpret_cast<uint8_t*>(const_cast<void*>(data)), size);
     eo_packet_Addressing_Set(p_RxPkt, remoteipaddr, ipport);
 
     // the transceiver can receive and transmit in parallel because reception manipulates memory passed externally
@@ -585,10 +572,12 @@ void HostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
     // for this reason, we use eo_trans_protection_enabled and eo_nvset_protection_one_per_endpoint when we initialise the transceiver.
     // that solves concurrency problems for the transceiver
     eo_transceiver_Receive(pc104txrx, p_RxPkt, &numofrops, &txtime);
+
+    return true;
 }
 
 
-bool HostTransceiver::isSupported(eOprot_endpoint_t ep)
+bool HostTransceiver::isEPsupported(const eOprot_endpoint_t ep)
 {
     if(eobool_true == eoprot_endpoint_configured_is(get_protBRDnumber(), ep))
     {
@@ -599,30 +588,20 @@ bool HostTransceiver::isSupported(eOprot_endpoint_t ep)
 }
 
 
-/* This function just modify the pointer 'data', in order to point to transceiver's memory where a copy of the ropframe
- * to be sent is stored.
- * The memory holding this ropframe will be written ONLY in case of a new call of eo_transceiver_Transmit function,
- * therefore it is safe to use it. No concurrency is involved here.
- */
-bool HostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops)
+const void * HostTransceiver::getUDP(size_t &size, uint16_t &numofrops)
 {
+    const void * udpframe = nullptr;
+    size = 0;
+    numofrops = 0;
+
     // marco.accame on 14oct14: as long as this function is called by one thread only, it is possible to limit the protection to
     //                          only one function: eo_transceiver_outpacket_Prepare().
 
-    if((NULL == data) || (NULL == size) || (NULL == numofrops))
-    {
-        yError() << "eo HostTransceiver::getTransmit() called with NULL data or zero size or zero numofrops";
-        return false;
-    }  
 
     EOpacket* ptrpkt = NULL;
+    uint8_t *data = NULL;
     eOresult_t res;
 
-
-    // it is important set all these values to NULL and zero because they are used by the caller to decide if it will tx any data or not
-    *data = NULL;
-    *size = 0;
-    *numofrops = 0;
 
 #if !defined(HOSTTRANSCEIVER_EmptyROPframesAreTransmitted)
     // marco.accame: robotInterface uses only occasionals, thus we dont need to pass arguments for replies and regulars
@@ -633,7 +612,7 @@ bool HostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
     lock_transceiver(false);
     if(0 == numofoccasionals)
     {
-        return false;
+        return nullptr;
     }
 #endif
 
@@ -651,7 +630,7 @@ bool HostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
     if((eores_OK != res) || (0 == tmpnumofrops)) // transmit only if res is ok and there is at least one rop to send
 #endif
     {
-        return false;
+        return nullptr;
     }
 
     // this function does not use data used by concurrent threads, thus it can be left un-protected.
@@ -659,21 +638,23 @@ bool HostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
 
     if(eores_OK != res)
     {
-        return false;
+        return nullptr;
     }
 
     // after these two lines, in data, size and numofrops we have what we need
-    eo_packet_Payload_Get(ptrpkt, data, size);
-    *numofrops = tmpnumofrops;
+    uint16_t tmpsize = 0;
+    eo_packet_Payload_Get(ptrpkt, &data, &tmpsize);
 
-    if(tmpnumofrops > 0)
-        return true;
-    else
-        return false;
+    size = tmpsize;
+    numofrops = tmpnumofrops;
+    udpframe = (tmpnumofrops > 0) ? data : nullptr;
+
+
+    return udpframe;
 }
 
 
-EOnv* HostTransceiver::getNVhandler(eOprotID32_t id32, EOnv* nv)
+EOnv* HostTransceiver::getnvhandler(eOprotID32_t id32, EOnv* nv)
 {
     eOresult_t    res;
     res = eo_nvset_NV_Get(nvset, id32, nv);
@@ -681,7 +662,7 @@ EOnv* HostTransceiver::getNVhandler(eOprotID32_t id32, EOnv* nv)
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::getNVhandler() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
+        yError() << "HostTransceiver::getnvhandler() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return NULL;
     }
@@ -709,16 +690,6 @@ bool HostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
     return ret;
 }
 
-
-uint16_t HostTransceiver::getNVnumber(eOnvEP8_t ep)
-{
-    return(eoprot_endpoint_numberofvariables_get(protboardnumber, ep));
-}
-
-uint32_t HostTransceiver::translate_NVid2index(eOprotID32_t id32)
-{
-    return(eoprot_endpoint_id2prognum(protboardnumber, id32));
-}
 
 
 eOprotBRD_t HostTransceiver::get_protBRDnumber(void)
@@ -976,7 +947,7 @@ void HostTransceiver::eoprot_override_as(void)
     // -----------------------------------------------------------------------------------------------------------------------------------
     // -- initialisation of onsay() function common in AS endpoint for every board
 
-    // function eoprot_fun_ONSAY_mc() is called by any say<> ROP which is received related to the AS endpoint
+    // function eoprot_fun_ONSAY_as() is called by any say<> ROP which is received related to the AS endpoint
     // it is used to unlock a waiting mutex
 
     eoprot_config_onsay_endpoint_set(eoprot_endpoint_analogsensors, eoprot_fun_ONSAY_as);
@@ -1049,7 +1020,7 @@ void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(EOreceiver *r
     char *ipaddr = (char*)&err->remipv4addr;
     //printf("\nERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
     char errmsg[256] = {0};
-    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR in sequence number from IP = %d.%d.%d.%d. Expected: %llu, Received: %llu, Missing: %llu, Prev Frame TX at %llu us, This Frame TX at %llu us",
+    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::parse() detected an ERROR in sequence number from IP = %d.%d.%d.%d. Expected: %llu, Received: %llu, Missing: %llu, Prev Frame TX at %llu us, This Frame TX at %llu us",
                                     ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3],
                                     exp, rec, rec-exp,
                                     timeoftxofprevious, timeoftxofcurrent);
@@ -1077,153 +1048,33 @@ void cpp_protocol_callback_incaseoferror_invalidFrame(EOreceiver *r)
     long long unsigned int sequencenumber = header->sequencenumber;
     uint16_t ropframesize = 0;
     eo_ropframe_Size_Get(err->ropframe, &ropframesize);
-    //snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR of type INVALID FRAME from IP = TBD");
-    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR of type INVALID FRAME from IP = %d.%d.%d.%d", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]);
+    //snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::parse() detected an ERROR of type INVALID FRAME from IP = TBD");
+    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::parse() detected an ERROR of type INVALID FRAME from IP = %d.%d.%d.%d", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]);
     yError() << errmsg;
-    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected: ropframesize = %d, ropsizeof = %d, ropsnumberof = %d, ageoframe = %llu, sequencenumber = %llu", ropframesize, header->ropssizeof, header->ropsnumberof, ageofframe, sequencenumber);
+    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::parse() detected: ropframesize = %d, ropsizeof = %d, ropsnumberof = %d, ageoframe = %llu, sequencenumber = %llu", ropframesize, header->ropssizeof, header->ropsnumberof, ageofframe, sequencenumber);
     yDebug() << errmsg;
 
 }
 
 
-bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoard)
+bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgtotal)
 {
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     hosttxrxcfg.remoteboardipv4addr     = remoteipaddr;
     hosttxrxcfg.remoteboardipv4port     = ipport;
 
 
-    Bottle groupEthBoardProperties = Bottle(cfgEthBoard.findGroup("ETH_BOARD_PROPERTIES"));
-    if(groupEthBoardProperties.isNull())
-    {
-        yError() << "HostTransceiver::method() cannot find ETH_BOARD_PROPERTIES group in config files for BOARD w/ IP" << remoteipstring;
-        return NULL;
-    }
+    eth::parser::pc104Data pc104data;
+    eth::parser::read(cfgtotal, pc104data);
+//    eth::parser::print(pc104data);
 
 
-    Bottle groupEthBoardSettings = Bottle(cfgEthBoard.findGroup("ETH_BOARD_SETTINGS"));
-    if(groupEthBoardSettings.isNull())
-    {
-        yError() << "HostTransceiver::method() cannot find ETH_BOARD_SETTINGS group in config files for BOARD w/ IP" << remoteipstring;
-        return NULL;
-    }
-    else
-    {
-        TXrateOfRegularROPs = defTXrateOfRegularROPs;
-        cycletime = defcycletime;
-        maxtimeRX = defmaxtimeRX;
-        maxtimeDO = defmaxtimeDO;
-        maxtimeTX = defmaxtimeTX;
+    eth::parser::boardData brddata;
+    eth::parser::read(cfgtotal, brddata);
+//    eth::parser::print(brddata);
 
-        Bottle groupEthBoardSettings_RunningMode = Bottle(groupEthBoardSettings.findGroup("RUNNINGMODE"));
-        if(groupEthBoardSettings_RunningMode.isNull())
-        {
-            yWarning() << "HostTransceiver::method(): cannot find ETH_BOARD_PROPERTIES/RUNNINGMODE group in config files for BOARD w/ IP" << remoteipstring << " and will use default values";
-            yWarning() << "Default values for ETH_BOARD_PROPERTIES/RUNNINGMODE group: (period, maxTimeOfRXactivity, maxTimeOfDOactivity, maxTimeOfTXactivity, TXrateOfRegularROPs) = " <<
-                          cycletime << maxtimeRX << maxtimeDO << maxtimeTX << TXrateOfRegularROPs;
-        }
-        else
-        {
-
-            if(true == groupEthBoardSettings_RunningMode.check("period"))
-            {
-                int tmp = groupEthBoardSettings_RunningMode.find("period").asInt();
-
-                if(1000 != tmp)
-                {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::period can be only 1000 (so far) and it was:" << tmp;
-                    tmp = 1000;
-                }
-                cycletime = tmp;
-            }
-
-            if(true == groupEthBoardSettings_RunningMode.check("maxTimeOfRXactivity"))
-            {
-                int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfRXactivity").asInt();
-
-                if((tmp < 5) || (tmp > 990))
-                {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxTimeOfRXactivity must be in [5, 990] (so far) and it was:" << tmp << "Using default value";
-                    tmp = defmaxtimeRX;
-                }
-
-                maxtimeRX = tmp;
-            }
-
-            if(true == groupEthBoardSettings_RunningMode.check("maxTimeOfDOactivity"))
-            {
-                int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfDOactivity").asInt();
-
-                if((tmp < 5) || (tmp > 990))
-                {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfDOactivity must be in [5, 990] (so far) and it was:" << tmp << "Using default value";
-                    tmp = defmaxtimeDO;
-                }
-
-                maxtimeDO = tmp;
-            }
-
-            if(true == groupEthBoardSettings_RunningMode.check("maxTimeOfTXactivity"))
-            {
-                int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfTXactivity").asInt();
-
-                if((tmp < 5) || (tmp > 990))
-                {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxTimeOfTXactivity must be in [5, 990] (so far) and it was:" << tmp << "Using default value";
-                    tmp = defmaxtimeTX;
-                }
-
-                maxtimeTX = tmp;
-            }
-
-
-            if(true == groupEthBoardSettings_RunningMode.check("TXrateOfRegularROPs"))
-            {
-                int tmp = groupEthBoardSettings_RunningMode.find("TXrateOfRegularROPs").asInt();
-
-                if(tmp <=0)
-                {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::TXrateOfRegularROPs must be in [1, 20] and it was:" << tmp << "Using value = 1";
-                    tmp = 1;
-                }
-                if(tmp >200)
-                {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::TXrateOfRegularROPs must be in [1, 20] and it was:" << tmp << "Using value = 20";
-                    tmp = 20;
-                }
-                TXrateOfRegularROPs = tmp;
-            }
-
-            // consistency check
-            if((maxtimeRX+maxtimeDO+maxtimeTX) != cycletime)
-            {
-                yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "In ETH_BOARD_SETTINGS::RUNNINGMODE sum(maxTimeOfRXactivity, maxTimeOfDOactivity, maxTimeOfTXactivity) != period !!! Using default values";
-
-                yError() << maxtimeRX+maxtimeDO+maxtimeTX;
-                cycletime = defcycletime;
-                maxtimeRX = defmaxtimeRX;
-                maxtimeDO = defmaxtimeDO;
-                maxtimeTX = defmaxtimeTX;
-            }
-
-            yInfo() << "Found group ETH_BOARD_PROPERTIES/RUNNINGMODE with values: (period, maxTimeOfRXactivity, maxTimeOfDOactivity, maxTimeOfTXactivity, TXrateOfRegularROPs) = " <<
-                        cycletime << maxtimeRX << maxtimeDO << maxtimeTX << TXrateOfRegularROPs;
-
-        }
-    }
-
-
-    if(true == groupEthBoardProperties.check("maxSizeRXpacket"))
-    {
-        capacityofTXpacket = groupEthBoardProperties.find("maxSizeRXpacket").asInt();
-        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected capacityofTXpacket =" << capacityofTXpacket << "for BOARD w/ IP" << remoteipstring;
-    }
-
-    if(true == groupEthBoardProperties.check("maxSizeROP"))
-    {
-        maxSizeOfROP = groupEthBoardProperties.find("maxSizeROP").asInt();
-        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected maxSizeOfROP =" << maxSizeOfROP << "for BOARD w/ IP" << remoteipstring;
-    }
+    capacityofTXpacket = brddata.properties.maxSizeRXpacket;
+    maxSizeOfROP = brddata.properties.maxSizeROP;
 
 
 

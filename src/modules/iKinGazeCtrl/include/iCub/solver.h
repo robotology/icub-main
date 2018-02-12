@@ -27,6 +27,7 @@
 #include <yarp/math/Math.h>
 
 #include <iCub/ctrl/pids.h>
+#include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/gazeNlp.h>
 #include <iCub/utils.h>
 #include <iCub/localizer.h>
@@ -37,7 +38,7 @@
 #define SACCADES_INHIBITION_PERIOD          0.2     // [s]
 #define SACCADES_ACTIVATION_ANGLE           10.0    // [deg]
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
-#define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.1     // [deg]
+#define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.5     // [deg/s]
 #define NECKSOLVER_ACTIVATIONANGLE          2.5     // [deg]
 #define NECKSOLVER_RESTORINGANGLE           5.0     // [deg]
 
@@ -92,6 +93,7 @@ protected:
 public:
     EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                   Controller *_ctrl, const Vector &_counterRotGain, const unsigned int _period);
+    virtual ~EyePinvRefGen();
 
     void   enable()  { genOn=true;  }
     void   disable() { genOn=false; }
@@ -102,9 +104,9 @@ public:
     bool   clearEyes();
     void   manageBindEyes(const double ver);
     bool   threadInit();
+    void   threadRelease();
     void   afterStart(bool s);
     void   run();
-    void   threadRelease();
     void   suspend();
     void   resume();
 };
@@ -137,7 +139,8 @@ protected:
     Vector fbHead;
     Vector neckPos;
     Vector gazePos;
-    Vector fbTorsoOld;
+
+    AWLinEstimator *torsoVel;
 
     double neckPitchMin;
     double neckPitchMax;
@@ -153,6 +156,7 @@ public:
     Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
            EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
            const unsigned int _period);
+    virtual ~Solver();
 
     // Returns a measure of neck angle required to reach the target
     double neckTargetRotAngle(const Vector &xd);
@@ -168,9 +172,9 @@ public:
     double getNeckAngleUserTolerance() const;
     void   setNeckAngleUserTolerance(const double angle);    
     bool   threadInit();
+    void   threadRelease();
     void   afterStart(bool s);
     void   run();
-    void   threadRelease();
     void   suspend();
     void   resume();
 };

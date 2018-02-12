@@ -20,15 +20,11 @@
 
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
-#include <hostTransceiver.hpp>
-#include <ethResource.h>
-#include <ethManager.h>
-
-
-#include "FeatureInterface.h"  
-#include "EoAnalogSensors.h"
 
 #include "IethResource.h"
+#include <ethManager.h>
+#include <abstractEthResource.h>
+
 
 #include <yarp/os/LogStream.h>
 
@@ -38,7 +34,6 @@
 namespace yarp {
     namespace dev {
         class embObjStrain;
-        class TheEthManager;
     }
 }
 
@@ -49,7 +44,7 @@ namespace yarp {
 
 class yarp::dev::embObjStrain:      public yarp::dev::IAnalogSensor,
                                     public yarp::dev::DeviceDriver,
-                                    public IethResource
+                                    public eth::IethResource
 {
 
 public:
@@ -76,15 +71,17 @@ public:
 
     // IethResource interface
     virtual bool initialised();
-    virtual iethresType_t type();
+    virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 
 private:
 
-    char boardIPstring[20];
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
 
-    TheEthManager* ethManager;
-    EthResource* res;
+    eth::TheEthManager* ethManager;
+    eth::AbstractEthResource* res;
     ServiceParser* parser;
 
     bool opened;
@@ -113,13 +110,10 @@ private:
 private:
 
     // for all
-    bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     bool fromConfig(yarp::os::Searchable &config);
     bool initRegulars();
     void cleanup(void);
     void printServiceConfig(void);
-    // not used ...
-    bool isEpManagedByBoard();
 
     // for strain
     bool fillScaleFactor();

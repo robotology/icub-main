@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
- * Authors: Alberto Cardellino
+ * Author:  Alberto Cardellino, Marco Accame
+ * email:   alberto.cardellino@iit.it, marco.accame@iit.it
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
  */
@@ -14,14 +15,16 @@
 extern "C" {
 #endif
 
-// -- this file can be included also by C modules. it provides interface to C++ classes by means of its functions.
+// -- this .h file can be included also by C modules. it provides interface to C++ classes by means of its functions.
+//    these c funtions are used inside the callbacks in reception of particular ROPs.
+//    for instance, function feat_signal_network_onsay() is used inside eoprot_fun_ONSAY_mc() to unlock the wait
+//    of embObjMotionControl.
 
 // - external dependencies --------------------------------------------------------------------------------------------
 
 #include "EoCommon.h"
 #include "EoProtocol.h"
-#include "EOconstvector.h"
-#include "EOnvSet.h"
+
 
 
 // - public #define  --------------------------------------------------------------------------------------------------
@@ -48,11 +51,11 @@ eObool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, vo
 
 void * feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32);
 
-eObool_t feat_MC_mutex_post(void * mchandler, uint32_t prognum);
-
 double feat_yarp_time_now(void);
 
-eObool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature);
+eObool_t feat_signal_network_onsay(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature);
+
+eObool_t feat_signal_network_onsig(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature);
 
 eObool_t feat_CANprint(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic);
 

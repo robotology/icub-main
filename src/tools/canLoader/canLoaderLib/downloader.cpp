@@ -241,15 +241,19 @@ int cDownloader::strain_save_to_eeprom  (int bus, int target_id, string *errorst
 }
 
 //*****************************************************************/
-int cDownloader::sg6_get_amp_gain      (int bus, int target_id, char channel, unsigned int& gain1, unsigned int& gain2 )
+int cDownloader::sg6_obsolete_get_amp_gain      (int bus, int target_id, char channel, unsigned int& gain1, unsigned int& gain2 )
 {
+#if 1
+    yError ("sg6_obsolete_get_amp_gain() is obsolete. \n");
+    return -1;
+#else
      // check if driver is running
      if (m_idriver == NULL)
         {
             if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
-     
+#error command ID 0x1D is not available anymore
      // Send read gain command to strain board
      txBuffer[0].setId((2 << 8) + target_id);
      txBuffer[0].setLen(2);
@@ -289,18 +293,23 @@ int cDownloader::sg6_get_amp_gain      (int bus, int target_id, char channel, un
         }
 
      return -1;
+#endif
 }
 
 //*****************************************************************/
-int cDownloader::sg6_set_amp_gain      (int bus, int target_id, char channel, unsigned int  gain1, unsigned int  gain2 )
+int cDownloader::sg6_obsolete_set_amp_gain      (int bus, int target_id, char channel, unsigned int  gain1, unsigned int  gain2 )
 {
+#if 1
+    yError ("sg6_obsolete_set_amp_gain() is obsolete. \n");
+    return -1;
+#else
      // check if driver is running
      if (m_idriver == NULL)
         {
             if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
-
+#error command ID 0x1E is not available anymore
     //set amp gain
     txBuffer[0].setId((2 << 8) + target_id);
     txBuffer[0].setLen(6);
@@ -314,6 +323,7 @@ int cDownloader::sg6_set_amp_gain      (int bus, int target_id, char channel, un
     int ret = m_idriver->send_message(txBuffer, 1);
 
      return 0;
+#endif
 }
 
 //*****************************************************************/
@@ -948,6 +958,193 @@ int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigne
 }
 
 
+int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemilli, bool calibmode, string *errorstring)
+{
+    // check if driver is running
+    if (m_idriver == NULL)
+       {
+           if(_verbose) yError ("Driver not ready\n");
+           return -1;
+       }
+
+    int ret = 0;
+
+    // Send transmission rate to strain board
+    txBuffer[0].setId((2 << 8) + target_id);
+    txBuffer[0].setLen(2);
+    txBuffer[0].getData()[0]= 0x08;
+    txBuffer[0].getData()[1]= txratemilli;
+    set_bus(txBuffer[0], bus);
+    ret = m_idriver->send_message(txBuffer, 1);
+    // check if send_message was successful
+    if (ret==0)
+        {
+            if(_verbose) yError ("Unable to send txrate set message\n");
+            return -1;
+        }
+
+   // Send transmission command to strain board
+   txBuffer[0].setId((2 << 8) + target_id);
+   txBuffer[0].setLen(2);
+   txBuffer[0].getData()[0]= 0x07;
+   txBuffer[0].getData()[1]= (false == calibmode) ? (0x03) : (0x00);
+   set_bus(txBuffer[0], bus);
+   ret = m_idriver->send_message(txBuffer, 1);
+   // check if send_message was successful
+   if (ret==0)
+       {
+           if(_verbose) yError ("Unable to send start tx message\n");
+           return -1;
+       }
+
+   strain_is_acquiring_in_calibratedmode = calibmode;
+
+   return 0;
+
+}
+
+int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring)
+{
+    // check if driver is running
+    if (m_idriver == NULL)
+       {
+           if(_verbose) yError ("Driver not ready\n");
+           return -1;
+       }
+
+   // Send transmission command to strain board
+   txBuffer[0].setId((2 << 8) + target_id);
+   txBuffer[0].setLen(2);
+   txBuffer[0].getData()[0]= 0x07;
+   txBuffer[0].getData()[1]= 0x02;
+   set_bus(txBuffer[0], bus);
+   int ret = m_idriver->send_message(txBuffer, 1);
+   // check if send_message was successful
+   if (ret==0)
+       {
+           if(_verbose) yError ("Unable to send stop tx message\n");
+           return -1;
+       }
+
+
+   // we should empty the rx buffer for a while...
+
+   const double TOUT = 0.100;
+   const size_t maxframes = rxBuffer.size() - 1;
+   for(size_t n=0; n<10; n++)
+   {
+        int read_messages = m_idriver->receive_message(rxBuffer, maxframes, TOUT);
+        yDebug() << "cDownloader::strain_acquire_stop() has removed" << read_messages << "can frames from rxbuffer";
+        if(0 == read_messages)
+        {
+            break;
+        }
+   }
+
+   return 0;
+}
+
+int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany, string *errorstring)
+{
+    // i must read howmany pairs of can frames of type 0xA and 0xB. to simplify i assume that they will arrive in pairs.
+
+
+    values.clear();
+
+    if(0 == howmany)
+    {
+        return -1;
+    }
+
+    const double TOUT = 3.0;
+
+    for(unsigned int s=0; s<howmany; s++)
+    {
+
+        int read_messages = m_idriver->receive_message(rxBuffer, 2, TOUT);
+        strain_value_t sv;
+
+        sv.channel[0] = 0x66666;
+        sv.channel[4] = 0x66666;
+
+        if(2 == read_messages)
+        {
+            for(unsigned int i=0; i<2; i++)
+            {
+                uint32_t id = rxBuffer[i].getId();
+                uint8_t type = id & 0xf;
+
+                if((0xA != type) && (0xB != type))
+                {
+                    yError() << "cDownloader::strain_acquire_get() has detected strange can frames.... operation aborted";
+                    return -1;
+                }
+
+                // values in little endian
+                uint16_t x = static_cast<uint16_t>(rxBuffer[i].getData()[0]) | (static_cast<uint16_t>(rxBuffer[i].getData()[1]) << 8);
+                uint16_t y = static_cast<uint16_t>(rxBuffer[i].getData()[2]) | (static_cast<uint16_t>(rxBuffer[i].getData()[3]) << 8);
+                uint16_t z = static_cast<uint16_t>(rxBuffer[i].getData()[4]) | (static_cast<uint16_t>(rxBuffer[i].getData()[5]) << 8);
+
+                sv.saturated = (6 == rxBuffer[i].getLen()) ? (true) : (false);
+                sv.valid = true;
+
+                sv.calibrated = strain_is_acquiring_in_calibratedmode;
+
+                if(0xA == type)
+                {
+                    sv.channel[0] = x;
+                    sv.channel[1] = y;
+                    sv.channel[2] = z;
+                    if(false == sv.saturated)
+                    {
+                        void *tmp = &rxBuffer[i].getData()[6];
+                        icubCanProto_strain_forceSaturationInfo_t *sinfo = reinterpret_cast<icubCanProto_strain_forceSaturationInfo_t*>(tmp);
+                        if(1 == sinfo->thereIsSaturationInAtLeastOneChannel)
+                        {
+                            sv.saturationinfo[0] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_0);
+                            sv.saturationinfo[1] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_1);
+                            sv.saturationinfo[2] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_2);
+                        }
+                    }
+                }
+                else if(0xB == type)
+                {
+                    sv.channel[3] = x;
+                    sv.channel[4] = y;
+                    sv.channel[5] = z;
+                    if(false == sv.saturated)
+                    {
+                        void *tmp = &rxBuffer[i].getData()[6];
+                        icubCanProto_strain_torqueSaturationInfo_t *sinfo = reinterpret_cast<icubCanProto_strain_torqueSaturationInfo_t*>(tmp);
+                        if(1 == sinfo->thereIsSaturationInAtLeastOneChannel)
+                        {
+                            sv.saturationinfo[3] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_3);
+                            sv.saturationinfo[4] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_4);
+                            sv.saturationinfo[5] = static_cast<icubCanProto_strain_saturationInfo_t>(sinfo->saturationInChannel_5);
+                        }
+                    }
+                }
+
+            }
+
+            if((0x66666 == sv.channel[0]) || (0x66666 == sv.channel[4]))
+            {
+                yDebug() << "cDownloader::strain_acquire_get(): did not receive two consecutive 0xA and 0xB. please check!";
+            }
+            else
+            {
+                values.push_back(sv);
+            }
+        }
+
+    }
+
+
+    return 0;
+}
+
+
+
 //*****************************************************************/
 int cDownloader::strain_start_sampling    (int bus, int target_id, string *errorstring)
 {
@@ -1001,14 +1198,263 @@ int cDownloader::strain_stop_sampling    (int bus, int target_id, string *errors
 }
 
 //*****************************************************************/
-int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int middle_val, string *errorstring)
+int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_boardType_t boardtype, unsigned int middle_val, string *errorstring)
 {
-     // check if driver is running
-     if (m_idriver == NULL)
+
+    // check if driver is running
+    if (m_idriver == NULL)
+    {
+       if(_verbose) yError ("Driver not ready\n");
+       return -1;
+    }
+
+    int daclimit = 0x3ff;
+    int dacstep = 1;
+    long tolerance = 256;
+
+#define STRAIN2_USE_NEW_MODE
+
+#if !defined(STRAIN2_USE_NEW_MODE)
+    if(icubCanProto_boardType__strain2 == boardtype)
+    {
+        daclimit = 0xffff;
+        dacstep = 16;
+        tolerance = 64;
+    }
+#else
+    if(icubCanProto_boardType__strain2 == boardtype)
+    {
+        yDebug() << "we have a strain2 to calibrate with the new mode";
+
+
+
+        uint8_t set = 0;
+        uint8_t everychannel = 0x0f;
+        tolerance = 256;
+        uint8_t samples2average = 8; // if zero, the board uses its default (= 4)
+
+#define TESTMODE_STRAIN2
+#undef TESTMODE_STRAIN2_SAMEGAIN
+
+#if defined(TESTMODE_STRAIN2)
+
+#define NUMofGAINS      8
+#define NUMofREGS       6
+#define NUMofCHANNELS   6
+
+        const int index48 = 0;
+        const int index36 = 1;
+        const int index24 = 2;
+        const int index20 = 3;
+        const int index16 = 4;
+        const int index10 = 5;
+        const int index08 = 6;
+        const int index06 = 7;
+
+
+        const uint8_t cfg1map[NUMofGAINS][NUMofREGS] =
         {
-            if(_verbose) yError ("Driver not ready\n");
+            {0x00, 0x40, 0x46, 0x25, 0x00, 0x80},   // gain = 48
+            {0x00, 0x10, 0x46, 0x25, 0x00, 0x80},   // gain = 36
+            {0x00, 0x40, 0x42, 0x25, 0x00, 0x80},   // gain = 24 [or 0x26 instead of 0x42]
+            {0x00, 0x20, 0x42, 0x25, 0x00, 0x80},   // gain = 20 [or 0x26 instead of 0x42]
+            {0x00, 0x00, 0x42, 0x25, 0x00, 0x80},   // gain = 16 [or 0x26 instead of 0x42]
+            {0x00, 0xC0, 0x02, 0x25, 0x00, 0x80},   // gain = 10 [or 0x10 instead of 0x02]
+            {0x00, 0x80, 0x02, 0x25, 0x00, 0x80},   // gain = 08 [or 0x10 instead of 0x02]
+            {0x00, 0x40, 0x02, 0x25, 0x00, 0x80}    // gain = 06 [or 0x10 instead of 0x02]
+        };
+        const float gainvalues[NUMofGAINS] = {48, 36, 24, 20, 16, 10, 8, 6};
+
+#if defined(TESTMODE_STRAIN2_SAMEGAIN)
+
+        const int i2u_all = index24;
+
+        yDebug() << "imposing gain =" << gainvalues[i2u_all] << "in every channel";
+
+        txBuffer[0].setId((2 << 8) + target_id);
+        txBuffer[0].setLen(8);
+        txBuffer[0].getData()[0]= 0x2B;
+        txBuffer[0].getData()[1]= ((set << 4) & 0xf0) | (everychannel & 0x0f);
+        txBuffer[0].getData()[2]= cfg1map[i2u_all][0]; // lsb of gd
+        txBuffer[0].getData()[3]= cfg1map[i2u_all][1]; // msb of gd
+        txBuffer[0].getData()[4]= cfg1map[i2u_all][2];
+        txBuffer[0].getData()[5]= cfg1map[i2u_all][3]; // vc0
+        txBuffer[0].getData()[6]= cfg1map[i2u_all][4];
+        txBuffer[0].getData()[7]= cfg1map[i2u_all][5];
+        set_bus(txBuffer[0], bus);
+        yDebug("sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+
+        m_idriver->send_message(txBuffer, 1);
+
+        // i wait some 100 ms
+        yarp::os::Time::delay(1.0);
+
+#else
+
+        // gain = 24 is on channels 0, 1, 3; gain = 48 is on channels 2, 4, 5
+        int channel2index[NUMofCHANNELS] = {index24, index24, index48, index24, index48, index48};
+
+        yDebug() << "imposing gains which are different of each channel";
+
+        for(int channel=0; channel<NUMofCHANNELS; channel++)
+        {
+            int index = channel2index[channel];
+            yDebug() << "on channel" << channel << "we impose gain =" << gainvalues[index];
+
+            txBuffer[0].setId((2 << 8) + target_id);
+            txBuffer[0].setLen(8);
+            txBuffer[0].getData()[0]= 0x2B;
+            txBuffer[0].getData()[1]= ((set << 4) & 0xf0) | (channel & 0x0f);
+            txBuffer[0].getData()[2]= cfg1map[index][0]; // lsb of gd
+            txBuffer[0].getData()[3]= cfg1map[index][1]; // msb of gd
+            txBuffer[0].getData()[4]= cfg1map[index][2];
+            txBuffer[0].getData()[5]= cfg1map[index][3]; // vc0
+            txBuffer[0].getData()[6]= cfg1map[index][4];
+            txBuffer[0].getData()[7]= cfg1map[index][5];
+            set_bus(txBuffer[0], bus);
+            yDebug("sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+
+            m_idriver->send_message(txBuffer, 1);
+
+            // i wait some 100 ms
+            yarp::os::Time::delay(1.0);
+        }
+
+
+#endif // #else of #if defined(TESTMODE_STRAIN2_SAMEGAIN)
+
+
+
+        yDebug() << "i get the amplifier reg config";
+
+        txBuffer[0].setId((2 << 8) + target_id);
+        txBuffer[0].setLen(2);
+        txBuffer[0].getData()[0]= 0x2A;
+        txBuffer[0].getData()[1]= 0xf;
+        set_bus(txBuffer[0], bus);
+        m_idriver->send_message(txBuffer, 1);
+
+        yDebug() << "i print the amplifier reg config";
+
+        for(int nr=0; nr<NUMofCHANNELS; nr++)
+        {
+            int rm = m_idriver->receive_message(rxBuffer, 1, 1.0);
+            for(int i=0; i<rm; i++)
+            {
+                if (rxBuffer[i].getData()[0]==0x2A)
+                {
+
+                    uint8_t from = rxBuffer[i].getData()[1];
+                    yDebug("from %d: [%x, %x, %x, %x, %x, %x]", from, rxBuffer[i].getData()[2], rxBuffer[i].getData()[3], rxBuffer[i].getData()[4], rxBuffer[i].getData()[5], rxBuffer[i].getData()[6], rxBuffer[i].getData()[7]);
+                }
+                break;
+            }
+        }
+
+        yarp::os::Time::delay(2.0);
+
+
+        yDebug() << "i get the amplifier gains";
+
+        txBuffer[0].setId((2 << 8) + target_id);
+        txBuffer[0].setLen(2);
+        txBuffer[0].getData()[0]= 0x20;
+        txBuffer[0].getData()[1]= 0xf;
+        set_bus(txBuffer[0], bus);
+        m_idriver->send_message(txBuffer, 1);
+
+        yDebug() << "i print the amplifier gains";
+
+        for(int nr=0; nr<NUMofCHANNELS; nr++)
+        {
+            int rm = m_idriver->receive_message(rxBuffer, 1, 1.0);
+            for(int i=0; i<rm; i++)
+            {
+                if (rxBuffer[i].getData()[0]==0x20)
+                {
+
+                    uint8_t from = rxBuffer[i].getData()[1];
+                    uint16_t gain = static_cast<uint16_t>(rxBuffer[i].getData()[2]) | static_cast<uint16_t>(rxBuffer[i].getData()[3]) << 8;
+                    float fg = static_cast<float>(gain) / 100;
+                    yDebug("from %d: gain = %f", from, fg);
+                }
+                break;
+            }
+        }
+
+        yarp::os::Time::delay(2.0);
+
+#endif
+
+        // sending an autocalib message
+        txBuffer[0].setId((2 << 8) + target_id);
+        txBuffer[0].setLen(8);
+        txBuffer[0].getData()[0]= 0x22;
+        txBuffer[0].getData()[1]= ((set << 4) & 0xf0) | (everychannel & 0x0f);
+        txBuffer[0].getData()[2]= 0; // mode oneshot, the only possible so far
+        txBuffer[0].getData()[3]= middle_val & 0x00ff;          // little endian
+        txBuffer[0].getData()[4]= (middle_val >> 8) & 0x00ff;   // little endian
+        txBuffer[0].getData()[5]= tolerance & 0x00ff;          // little endian
+        txBuffer[0].getData()[6]= (tolerance >> 8) & 0x00ff;   // little endian
+        txBuffer[0].getData()[7]= samples2average;
+        set_bus(txBuffer[0], bus);
+        yDebug("sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+        int ret = m_idriver->send_message(txBuffer, 1);
+        // check if send_message was successful
+        if (ret==0)
+        {
+            if(_verbose) yError ("Unable to send message\n");
             return -1;
         }
+
+        // now wait for a reply for most 3 seconds
+        double TOUT = 3.0;
+
+        yDebug() << "message sent." << "the strain2 is attempting to regularise its 6 output values to" << middle_val << "mae tolerence is" << tolerance << "and samples2average =" << samples2average << "now we wait for a reply";
+
+        int read_messages = m_idriver->receive_message(rxBuffer, 1, TOUT);
+        for(int i=0; i<read_messages; i++)
+        {
+            if (rxBuffer[i].getData()[0]==0x22)
+            {
+                //dac = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
+                uint8_t noisychannelmask = rxBuffer[i].getData()[2];
+                uint8_t algorithmOKmask = rxBuffer[i].getData()[3];
+                uint8_t finalmeasureOKmask = rxBuffer[i].getData()[4];
+                uint16_t mae =  (static_cast<uint32_t>(rxBuffer[i].getData()[6]))       |
+                                (static_cast<uint32_t>(rxBuffer[i].getData()[7]) << 8);
+
+                if(algorithmOKmask != 0x3f)
+                {
+                    yDebug() << "calibration to value" << middle_val << "has sadly failed because algorithm found required values ot of range of registers CFG0.OS or ZDAC.";
+                    yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+                    for(int i=0; i<NUMofCHANNELS; i++)
+                    {
+                        if((algorithmOKmask & (i<<i)) == 0)
+                        {
+                            yDebug() << "calibration fails in channel" << i;
+                        }
+                    }
+                }
+                else
+                {
+                    yDebug() << "calibration to value" << middle_val << "is done and MAE = " << mae;
+                    if(0 != noisychannelmask)
+                    {
+                        yDebug() << "however we found some noisy channels";
+                        yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+
+                    }
+                }
+                break;
+            }
+        }
+
+
+        return 0;
+    }
+#endif
+
 
     int channel=0;
     int i=0;
@@ -1021,6 +1467,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int 
 
     for (channel=0; channel<6; channel++)
     {
+        // yDebug() << "starting OFFSET of channel" << channel;
         // Send read channel command to strain board
         txBuffer[0].setId((2 << 8) + target_id);
         txBuffer[0].setLen(3);
@@ -1067,13 +1514,15 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int 
         error = long(measure) - long(middle_val);
         cycle=0;
 
-        while (abs(error)>128 && cycle<0x03FF)
+        while (abs(error)>tolerance && cycle<daclimit)
         {
-            if (error>0) dac--;
-            else         dac++;
+            if (error>0) dac -= dacstep;
+            else         dac += dacstep;
 
-            if (dac>0x3ff) dac = 0x3ff;
-            if (dac<0)       dac = 0;
+            if (dac>daclimit)       dac = daclimit;
+            if (dac<0)              dac = 0;
+
+            //yDebug() << "iter" << cycle << "err = " << error << "next dac =" << dac;
 
             // Send transmission command to strain board
             txBuffer[0].setId((2 << 8) + target_id);
@@ -1228,7 +1677,7 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
         return -1;
     }
 
-    read_messages = m_idriver->receive_message(rxBuffer, 1, 1);
+    read_messages = m_idriver->receive_message(rxBuffer, 1, 1.0);
 
     if(0 == read_messages)
     {   // it does not support teh message
@@ -1309,7 +1758,7 @@ int cDownloader::get_board_info       (int bus, int target_id, char* board_info)
     //drv_sleep(10);
 
     //riceve la risposta
-    read_messages = m_idriver->receive_message(rxBuffer, 64, 1);
+    read_messages = m_idriver->receive_message(rxBuffer, 64, 1.0);
 
     //One (or more) answers received
     int endString=0;

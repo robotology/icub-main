@@ -56,8 +56,6 @@ INCLUDE_DIRECTORIES(${learningMachine_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 # add YARP include directories
 INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
-# add ACE dependency (temporary workaround)
-INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${LM_TRAIN_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_EVENT_SRC} src/TrainModule.cpp src/PredictModule.cpp src/bin/train.cpp)
 ADD_EXECUTABLE(${LM_PREDICT_EXEC} ${LM_HEADER} ${LM_MODULE_SRC} ${LM_EVENT_SRC} src/PredictModule.cpp src/bin/predict.cpp)

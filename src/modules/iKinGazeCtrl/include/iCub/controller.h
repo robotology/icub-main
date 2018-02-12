@@ -127,6 +127,7 @@ public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                const double _neckTime, const double _eyesTime,
                const double _min_abs_vel, const unsigned int _period);
+    virtual ~Controller();
 
     void   findMinimumAllowedVergence();
     void   minAllowedVergenceChanged();
@@ -136,9 +137,9 @@ public:
     void   stopControl();    
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
     bool   threadInit();
+    void   threadRelease();
     void   afterStart(bool s);
     void   run();
-    void   threadRelease();
     void   suspend();
     void   resume();
     double getTneck() const;

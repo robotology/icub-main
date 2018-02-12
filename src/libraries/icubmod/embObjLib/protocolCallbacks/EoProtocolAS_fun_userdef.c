@@ -71,64 +71,59 @@ static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd);
 
 extern void eoprot_fun_ONSAY_as(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    // marco.accame on 18 mar 2014: this function is called when a say<id32, data> rop is received
-    // and the id32 is about the analog sensors endpoint. this function is common to every board.
-    // it is used this function and not another one because inside the hostTransceiver object it was called:
-    // eoprot_config_onsay_endpoint_set(eoprot_endpoint_analogsensors, eoprot_fun_ONSAY_as);
-
-    // the aim of this function is to wake up a thread which is blocked because it has sent an ask<id32>
-    // the wake up funtionality is implemented in one mode only:
-    // a. in initialisation, embObjAnalogSensor sets some values and then reads them back.
-    //    the read back sends an ask<id32, signature=0xaa000000>. in such a case the board sends back
-    //    a say<id32, data, signature = 0xaa000000>. thus, if the received signature is 0xaa000000, then
-    //    we must unblock using feat_signal_network_reply().
-
-    if(0xaa000000 == rd->signature)
-    {   // case a:
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
-        {
-            char str[256] = {0};
-            char nvinfo[128];
-            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
-            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_as() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
-            feat_PrintWarning(str);
-            return;
-        }
-    }
+    feat_signal_network_onsay(eo_nv_GetIP(nv), rd->id32, rd->signature);
 }
 
 
 extern void eoprot_fun_UPDT_as_strain_status_calibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data_analogarray(nv, rd);
+    if(eo_ropcode_sig == rd->ropcode)
+    {
+        handle_data_analogarray(nv, rd);
+    }
 }
 
 
 extern void eoprot_fun_UPDT_as_strain_status_uncalibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data_analogarray(nv, rd);
+    if(eo_ropcode_sig == rd->ropcode)
+    {
+        handle_data_analogarray(nv, rd);
+    }
 }
 
 
 extern void eoprot_fun_UPDT_as_mais_status_the15values(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data_analogarray(nv, rd);
+    if(eo_ropcode_sig == rd->ropcode)
+    {
+        handle_data_analogarray(nv, rd);
+    }
 }
 
 
 extern void eoprot_fun_UPDT_as_inertial_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data_inertial(nv, rd);
+    if(eo_ropcode_sig == rd->ropcode)
+    {
+        handle_data_inertial(nv, rd);
+    }
 }
 
 //extern void eoprot_fun_UPDT_as_inertial_status_accelerometer(const EOnv* nv, const eOropdescriptor_t* rd)
 //{
-//    handle_data_inertial_acc(nv, rd);
+//    if(eo_ropcode_sig == rd->ropcode)
+//    {
+//        handle_data_inertial_acc(nv, rd);
+//    }
 //}
 
 //extern void eoprot_fun_UPDT_as_inertial_status_gyroscope(const EOnv* nv, const eOropdescriptor_t* rd)
 //{
-//    handle_data_inertial_gyr(nv, rd);
+//    if(eo_ropcode_sig == rd->ropcode)
+//    {
+//        handle_data_inertial_gyr(nv, rd);
+//    }
 //}
 
 

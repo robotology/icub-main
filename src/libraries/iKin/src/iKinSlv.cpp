@@ -391,11 +391,11 @@ bool CartesianSolver::alignJointsBounds()
 bool CartesianSolver::setLimits(int axis, double min, double max)
 {
     if (axis>=(int)prt->chn->getN())
-    {
         yError("#%d>#%d: requested out of range axis!",
                axis,prt->chn->getN());
-        return false;
-    }
+    else if (min>max)
+        yError("joint #%d: requested wrong bounds [%g,%g]!",
+               axis,min,max);
     else if ((min>=hwLimits(axis,0)) && (max<=hwLimits(axis,1)))
     {
         (*prt->chn)[axis].setMin(CTRL_DEG2RAD*min);
@@ -407,10 +407,9 @@ bool CartesianSolver::setLimits(int axis, double min, double max)
         return true;
     }
     else
-    {
         yWarning("joint #%d: requested out of range limit!",axis);
-        return false;
-    }
+
+    return false;
 }
 
 

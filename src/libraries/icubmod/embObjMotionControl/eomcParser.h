@@ -70,6 +70,10 @@
 // - public #define  --------------------------------------------------------------------------------------------------
 
 
+namespace yarp {
+    namespace dev  {
+        namespace eomc {
+
 
 typedef enum
 {
@@ -155,7 +159,7 @@ public:
 //     }
 // };
 
-class eomcParser_pidInfo
+class PidInfo
 {
 public:
 
@@ -165,13 +169,13 @@ public:
     std::string usernamePidSelected;
     bool enabled;
 
-    eomcParser_pidInfo()//:usernamePidSelected("none")
+    PidInfo()//:usernamePidSelected("none")
     {
         enabled = false;
         controlLaw = PidAlgo_simple;
         ctrlUnitsType = controlUnits_machine;
     }
-    ~eomcParser_pidInfo()
+    ~PidInfo()
     {
         //delete (usernamePidSelected);
     }
@@ -180,7 +184,7 @@ public:
 
 };
 
-class eomcParser_trqPidInfo : public eomcParser_pidInfo
+class TrqPidInfo : public PidInfo
 {
 public:
     double kbemf;                             /** back-emf compensation parameter */
@@ -199,10 +203,11 @@ typedef struct
     int  rotorIndexOffset;
     int  motorPoles;
     bool hasSpeedEncoder ; //facoltativo
-} eomc_twofocSpecificInfo;
+    bool verbose;
+} twofocSpecificInfo_t;
 
 
-class eomc_jointsSet
+class JointsSet
 {
 public:
     int           id; //num of set. it can be between 0 and max number of joint (_njoints)
@@ -210,7 +215,7 @@ public:
 
     eOmc_jointset_configuration_t cfg;
 
-    eomc_jointsSet(int num=0)
+    JointsSet(int num=0)
     {
         id=num;
         joints.resize(0);
@@ -234,14 +239,14 @@ public:
 typedef struct
 {
     int velocity;
-}eomc_timeouts_t;
+} timeouts_t;
 
 typedef struct
 {
     double nominalCurrent;
     double peakCurrent;
     double overloadCurrent;
-}eomc_motorCurrentLimits;
+} motorCurrentLimits_t;
 
 
 typedef struct
@@ -251,14 +256,14 @@ typedef struct
     double posHwMax;                       /** hardaware joint limits, max */
     double posHwMin;                       /** hardaware joint limits, min */
     double velMax;
-}eomc_jointLimits;
+} jointLimits_t;
 
 typedef struct
 {
     double posMin;
     double posMax;
     double pwmMax;
-}eomc_rotorLimits;
+} rotorLimits_t;
 
 
 typedef struct
@@ -266,14 +271,14 @@ typedef struct
     std::vector<double>                  matrixJ2M;
     std::vector<double>                  matrixM2J;
     std::vector<double>                  matrixE2J;
-} eomc_couplingInfo_t;
+} couplingInfo_t;
 
 typedef struct
 {
     int             mappedto;
     std::string     name;
     JointTypeEnum   type;
-}eomc_axisInfo_t;
+} axisInfo_t;
 
 typedef struct
 {
@@ -284,19 +289,19 @@ typedef struct
     double param_a;
     double param_b;
     double param_c;
-} eomc_impedanceLimits;
+} impedanceLimits_t;
 
 
 typedef struct
 {
     double stiffness;
     double damping;
-    eomc_impedanceLimits limits;
-}eomc_impedanceParameters;
+    impedanceLimits_t limits;
+} impedanceParameters_t;
 
 //template <class T>
 
-class mcParser
+class Parser
 {
 
 private:
@@ -326,14 +331,14 @@ private:
     bool parseSelectedPositionControl(yarp::os::Searchable &config);
     bool parseSelectedVelocityControl(yarp::os::Searchable &config);
     bool parseSelectedTorqueControl(yarp::os::Searchable &config);
-    bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentPidisMandatory, eomcParser_pidInfo *cpids);
+    bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentPidisMandatory, PidInfo *cpids);
     bool parsePid_inPos_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePid_inVel_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePid_inTrq_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePidPos_withInnerVelPid(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePidTrq_withInnerVelPid(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePidsGroup(yarp::os::Bottle& pidsGroup, yarp::dev::Pid myPid[], std::string prefix);
-    bool getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids);
+    bool getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids);
     bool parsePidUnitsType(yarp::os::Bottle &bPid, GenericControlUnitsType_t &unitstype);
 
 
@@ -341,7 +346,7 @@ private:
     bool convert(yarp::os::Bottle &bottle, std::vector<double> &matrix, bool &formaterror, int targetsize);
 
     //general utils functions
-    bool extractGroup(yarp::os::Bottle &input, yarp::os::Bottle &out, const std::string &key1, const std::string &txt, int size);
+    bool extractGroup(yarp::os::Bottle &input, yarp::os::Bottle &out, const std::string &key1, const std::string &txt, int size, bool mandatory=true);
     template <class T>
     bool checkAndSetVectorSize(std::vector<T> &vec, int size, const std::string &funcName)
     {
@@ -360,28 +365,31 @@ private:
 
 
 public:
-    mcParser(int numofjoints, std::string boardname);
-    ~mcParser();
+    Parser(int numofjoints, std::string boardname);
+    ~Parser();
 
-    bool parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids, eomcParser_pidInfo *cpids, bool currentPidisMandatory);
-    bool parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificInfo *twofocinfo);
-    //bool parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids);//deprecated
-    bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<eomc_jointsSet> &jsets, std::vector<int> &jointtoset);
-    bool parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<eomc_timeouts_t> &timeouts, int defaultVelocityTimeout);
-    bool parseCurrentLimits(yarp::os::Searchable &config, std::vector<eomc_motorCurrentLimits> &currLimits);
-    bool parseJointsLimits(yarp::os::Searchable &config, std::vector<eomc_jointLimits> &jointsLimits);
-    bool parseRotorsLimits(yarp::os::Searchable &config, std::vector<eomc_rotorLimits> &rotorsLimits);
-    bool parseCouplingInfo(yarp::os::Searchable &config, eomc_couplingInfo_t &couplingInfo);
+    bool parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids, PidInfo *cpids, bool currentPidisMandatory);
+    bool parse2FocGroup(yarp::os::Searchable &config, twofocSpecificInfo_t *twofocinfo);
+    //bool parseCurrentPid(yarp::os::Searchable &config, PidInfo *cpids);//deprecated
+    bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &jointtoset);
+    bool parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts, int defaultVelocityTimeout);
+    bool parseCurrentLimits(yarp::os::Searchable &config, std::vector<motorCurrentLimits_t> &currLimits);
+    bool parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLimits_t> &jointsLimits);
+    bool parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLimits_t> &rotorsLimits);
+    bool parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &couplingInfo);
     bool parseMotioncontrolVersion(yarp::os::Searchable &config, int &version);
     bool parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncoderData, bool  &pwmIsLimited );
     bool isVerboseEnabled(yarp::os::Searchable &config);
-    bool parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<eomc_axisInfo_t> &axisInfo);
+    bool parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<axisInfo_t> &axisInfo);
     bool parseEncoderFactor(yarp::os::Searchable &config, double encoderFactor[]);
     bool parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToPWM[]);
     bool parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor[]);
     bool parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[]);
     bool parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[]);
-    bool parseImpedanceGroup(yarp::os::Searchable &config,std::vector<eomc_impedanceParameters> &impedance);
+    bool parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impedanceParameters_t> &impedance);
+    bool parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found);
 };
+
+}}}; //close namespaces
 
 #endif // include guard

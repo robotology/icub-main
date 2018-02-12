@@ -25,8 +25,8 @@ project(iCub)
 #### Find YARP, require that YARP version is at least ICUB_REQYARP_VERSION
 set(ICUB_REQYARP_VERSION_MAJOR "2")
 set(ICUB_REQYARP_VERSION_MINOR "3")
-set(ICUB_REQYARP_VERSION_PATCH "70")
-set(ICUB_REQYARP_VERSION_TWEAK "")
+set(ICUB_REQYARP_VERSION_PATCH "71")
+set(ICUB_REQYARP_VERSION_TWEAK "1")
 
 if(ICUB_REQYARP_VERSION_TWEAK)
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
@@ -150,22 +150,6 @@ endforeach()
 # export the build tree
 message(STATUS "Now exporting build tree")
 include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
-
-################ copying python scripts (see app/iCubCluster for copy/installation of cluster related scripts)
-message(STATUS "Installing manager.py")
-install(FILES  app/default/scripts/manager.py DESTINATION bin COMPONENT Core PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-
-# add target to copy manager.py to bin -- notice that in windows this can be bin/debug or bin/release
-# so we need to use ${CMAKE_CFG_INTDIR}
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/python-scripts-cmd
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
-      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/app/default/scripts/manager.py ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}
-      COMMENT "Copying manager.py to ${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INTDIR}")
-add_custom_target(python-scripts ALL DEPENDS ${CMAKE_BINARY_DIR}/python-scripts-cmd)
-if (ICUB_EXPERIMENTAL_APP_INSTALL)
-    add_dependencies(install_applications python-scripts)
-endif(ICUB_EXPERIMENTAL_APP_INSTALL)
-###############################
 
 # export the installed project
 message(STATUS "Now exporting for install")

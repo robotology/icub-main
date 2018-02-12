@@ -194,7 +194,7 @@ protected:
     Property          drvOptions;
     PolyDriver       *drv;
     IControlMode2    *mode;
-    IPositionControl *pos;
+    IPositionControl2*pos;
     IEncoders        *enc;
     Actions actions;
     Semaphore mutex;
@@ -247,14 +247,31 @@ protected:
         // don't blend together the two "for"
         // since we have to enforce the modes on the whole
         // prior to commanding the joints
-        for (size_t i=0; i<disp.length(); i++)
-            mode->setControlMode(offset+i,VOCAB_CM_POSITION);
+        std::vector<int>    joints;
+        std::vector<int>    modes;
+        std::vector<double> speeds;
+        std::vector<double> positions;
 
         for (size_t i=0; i<disp.length(); i++)
         {
-            pos->setRefSpeed(offset+i,disp[i]/time);
-            pos->positionMove(offset+i,x->getCmd()[i]);
+            joints.push_back(offset+i);
+            speeds.push_back(disp[i]/time);
+            modes.push_back(VOCAB_CM_POSITION);
+            positions.push_back(x->getCmd()[i]);
         }
+
+        mode->setControlModes(disp.length(), joints.data(), modes.data());
+        yarp::os::Time::delay(0.01);  // give time to update control modes value
+        mode->getControlModes(disp.length(), joints.data(), modes.data());
+        for (size_t i=0; i<disp.length(); i++)
+        {
+            if(modes[i] != VOCAB_CM_POSITION)
+            {
+                yError() << "Joint " << i << " not in position mode";
+            }
+        }
+        pos->setRefSpeeds(disp.length(), joints.data(), speeds.data());
+        pos->positionMove(disp.length(), joints.data(), positions.data());
 
         cout << "Script port: " << const_cast<Vector &>(x->getCmd()).toString() << endl;
     }

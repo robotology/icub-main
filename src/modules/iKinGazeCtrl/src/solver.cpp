@@ -122,6 +122,17 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
 
 
 /************************************************************************/
+EyePinvRefGen::~EyePinvRefGen()
+{
+    delete neck;
+    delete eyeL;
+    delete eyeR;
+    delete imu;
+    delete I;
+}
+
+
+/************************************************************************/
 void EyePinvRefGen::minAllowedVergenceChanged()
 {
     LockGuard lg(mutex);
@@ -269,6 +280,12 @@ bool EyePinvRefGen::threadInit()
     saccadesClock=Time::now();
 
     return true;
+}
+
+
+/************************************************************************/
+void EyePinvRefGen::threadRelease()
+{
 }
 
 
@@ -426,17 +443,6 @@ void EyePinvRefGen::run()
 
 
 /************************************************************************/
-void EyePinvRefGen::threadRelease()
-{
-    delete neck;
-    delete eyeL;
-    delete eyeR;
-    delete imu;
-    delete I;
-}
-
-
-/************************************************************************/
 void EyePinvRefGen::suspend()
 {    
     RateThread::suspend();
@@ -465,6 +471,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
     eyeL=new iCubEye("left_"+commData->headVersion2String());
     eyeR=new iCubEye("right_"+commData->headVersion2String());
     imu=new iCubInertialSensor(commData->headVersion2String());
+    torsoVel=new AWLinEstimator(16,0.5);    
 
     // remove constraints on the links: logging purpose
     imu->setAllConstraints(false);
@@ -477,7 +484,9 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
     // Get the chain objects
     chainNeck=neck->asChain();
     chainEyeL=eyeL->asChain();        
-    chainEyeR=eyeR->asChain();    
+    chainEyeR=eyeR->asChain();
+
+    invNeck=new GazeIpOptMin(*chainNeck,1e-3,1e-3,20);
 
     // add aligning matrices read from configuration file
     getAlignHN(commData->rf_cameras,"ALIGN_KIN_LEFT",eyeL->asChain());
@@ -542,8 +551,19 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
     eyePos[1]=gazePos[1]-gazePos[2]/2.0;
     chainEyeR->setAng(eyePos);
 
-    fbTorsoOld=fbTorso;
     neckAngleUserTolerance=0.0;
+}
+
+
+/************************************************************************/
+Solver::~Solver()
+{
+    delete neck;
+    delete eyeL;
+    delete eyeR;
+    delete imu;
+    delete torsoVel;
+    delete invNeck;
 }
 
 
@@ -712,9 +732,6 @@ Vector Solver::computeTargetUserTolerance(const Vector &xd)
 /************************************************************************/
 bool Solver::threadInit()
 {
-    // Instantiate optimizer
-    invNeck=new GazeIpOptMin(*chainNeck,1e-3,1e-3,20);
-
     // Initialization
     Vector fp;
     CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp);    
@@ -735,6 +752,13 @@ bool Solver::threadInit()
 
     yInfo("Starting Solver at %d ms",period);
     return true;
+}
+
+
+/************************************************************************/
+void Solver::threadRelease()
+{
+    eyesRefGen->disable();
 }
 
 
@@ -768,7 +792,8 @@ void Solver::run()
     updateTorsoBlockedJoints(chainEyeL,fbTorso);
     updateTorsoBlockedJoints(chainEyeR,fbTorso);
 
-    bool torsoChanged=(norm(fbTorso-fbTorsoOld)>NECKSOLVER_ACTIVATIONANGLE_JOINTS*CTRL_DEG2RAD);
+    torsoVel->feedData(AWPolyElement(fbTorso,Time::now()));
+    bool torsoChanged=(norm(torsoVel->estimate())>NECKSOLVER_ACTIVATIONANGLE_JOINTS*CTRL_DEG2RAD);
 
     // update kinematics
     updateAngles();
@@ -803,15 +828,12 @@ void Solver::run()
     // call the solver for neck
     if (doSolve)
     {
-        Vector gDir(4,0.0);
-        gDir[2]=gDir[3]=1.0;
+        Vector gDir(3,0.0); gDir[2]=-1.0;
         if (commData->stabilizationOn)
         {
-            Vector acc=commData->get_imu().subVector(3,5); 
-            acc.push_back(1.0); // impose homogeneous coordinates
-
+            Vector acc=-1.0*commData->get_imu().subVector(3,5);
             Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)));
-            gDir=H*acc;            
+            gDir=H.submatrix(0,2,0,2)*acc;
         }
 
         Vector xdUserTol=computeTargetUserTolerance(xd);
@@ -829,8 +851,8 @@ void Solver::run()
     if (state_==ctrl_off)
     {
         // keep neck targets equal to current angles
-        // to avoid glitches in the control (especially
-        // during stabilization)
+        // to avoid glitches in the control,
+        // especially during stabilization
         commData->set_qd(0,neckPos[0]);
         commData->set_qd(1,neckPos[1]);
         commData->set_qd(2,neckPos[2]);
@@ -845,22 +867,6 @@ void Solver::run()
         if (!commData->ctrlActive)
             state_=ctrl_off;
     }
-    
-    // latch quantities
-    fbTorsoOld=fbTorso;
-}
-
-
-/************************************************************************/
-void Solver::threadRelease()
-{
-    eyesRefGen->disable();
-
-    delete invNeck;
-    delete neck;
-    delete eyeL;
-    delete eyeR;
-    delete imu;
 }
 
 
@@ -892,10 +898,9 @@ void Solver::resume()
     chainEyeL->setAng(nJointsTorso+3,gazePos[0]);                chainEyeR->setAng(nJointsTorso+3,gazePos[0]);
     chainEyeL->setAng(nJointsTorso+4,gazePos[1]+gazePos[2]/2.0); chainEyeR->setAng(nJointsTorso+4,gazePos[1]-gazePos[2]/2.0);
 
-    // update latched quantities
-    fbTorsoOld=fbTorso;
-    
+    torsoVel->reset();       
     commData->port_xd->unlock();
+
     RateThread::resume();
     yInfo("Solver has been resumed!");
 }
