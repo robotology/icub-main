@@ -22,7 +22,6 @@ source_group("Header Files" FILES ${folder_header})
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${iKin_INCLUDE_DIRS}
                     ${skinDynLib_INCLUDE_DIRS}
-                    ${GSL_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 # import math symbols from standard cmath
@@ -30,7 +29,6 @@ add_definitions(-D_USE_MATH_DEFINES)
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
 target_link_libraries(${PROJECT_NAME} iKin
                                       skinDynLib
-                                      ${GSL_LIBRARIES}
                                       ${YARP_LIBRARIES})
 
 icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include

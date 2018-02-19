@@ -16,11 +16,10 @@
 * Public License for more details
 */
 
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <iomanip>
-
-#include <gsl/gsl_math.h>
+#include <cmath>
 
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>

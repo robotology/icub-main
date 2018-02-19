@@ -76,20 +76,10 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubOptions.cmake)
 # find dependencies and set variables
 include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
-# check for libraries that are strictly required
-if (NOT ICUB_HAS_GSL)
-  message(FATAL_ERROR "Cannot find GSL")
-else (NOT ICUB_HAS_GSL)
-  if (NOT ICUB_USE_GSL)
-    message(STATUS "GSL is strictly required: GSL enabled")
-    set(ICUB_USE_GSL TRUE CACHE BOOL "Use package GSL" FORCE)
-  endif (NOT ICUB_USE_GSL)
-endif (NOT ICUB_HAS_GSL)
-
 ### enable testing
 option(ICUB_DASHBOARD_SUBMIT "Submit compile tests to cdash" FALSE)
 
-if (ICUB_DASHBOARD_SUBMIT)
+if(ICUB_DASHBOARD_SUBMIT)
     include (CTest)
 endif()
 
