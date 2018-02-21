@@ -1,5 +1,7 @@
 2018-02-19 Ugo Pattacini <ugo.pattacini@iit.it>
     * GSL dependency made optional
+    * re-licesing of ctrlLib to BSD3
+    * re-licesing of iKin to BSD3
 
 2018-02-12 Matteo Brunettini <matteo.brunettini@iit.it>
     * Tagging version 1.10.0
