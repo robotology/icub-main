@@ -11,7 +11,8 @@
 
 #include <gtkmm.h>
 #include <yarp/os/all.h>
-#include <yarp/dev/RemoteFrameGrabber.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/FrameGrabberInterfaces.h>
 
 class iCubFocusGuiThread : public yarp::os::Thread
 {
@@ -24,16 +25,15 @@ public:
         //p.put("local",loc);
         //p.put("remote",rem);
         // grabber
-        pFG=new yarp::dev::RemoteFrameGrabber();
-        pFG->open(config);
+        poly.open(config);
+        poly.view(pFG);
     }
 
     ~iCubFocusGuiThread()
     {
         if (pFG)
         {
-            pFG->close();
-            delete pFG;
+            poly.close();
             pFG=NULL;
         }
     }
@@ -88,7 +88,8 @@ protected:
     double mR;
     double mD;
 
-    yarp::dev::RemoteFrameGrabber *pFG;
+    yarp::dev::PolyDriver poly;
+    yarp::dev::IFrameGrabberImage *pFG;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> img;
 
     inline int R(int x,int y){ return (y*mW+x)*3;   }
