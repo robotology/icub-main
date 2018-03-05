@@ -125,6 +125,7 @@ namespace yarp {
 using namespace yarp::dev;
 
 
+
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IPidControlRaw,
     public IControlCalibration2Raw,
@@ -250,6 +251,8 @@ private:
 
     std::string getBoardInfo(void);
     bool askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size);
+    template <class T> 
+    bool askRemoteValues(eOprotEndpoint_t ep, eOprotEntity_t entity, eOprotTag_t tag, T* values);
     bool checkRemoteControlModeStatus(int joint, int target_mode);
 
     bool dealloc();
@@ -300,18 +303,22 @@ private:
     //used in pid interface
     bool helper_setPosPidRaw( int j, const Pid &pid);
     bool helper_getPosPidRaw(int j, Pid *pid);
+    bool helper_getPosPidsRaw(Pid *pid);
     
     //used in torque control interface
     bool helper_setTrqPidRaw( int j, const Pid &pid);
     bool helper_getTrqPidRaw(int j, Pid *pid);
+    bool helper_getTrqPidsRaw(Pid *pid);
     
     //used in velocity control interface
     bool helper_setVelPidRaw( int j, const Pid &pid);
     bool helper_getVelPidRaw(int j, Pid *pid);
+    bool helper_getVelPidsRaw(Pid *pid);
     
     //used in current control interface
     bool helper_setCurPidRaw(int j, const Pid &pid);
     bool helper_getCurPidRaw(int j, Pid *pid);
+    bool helper_getCurPidsRaw(Pid *pid);
     
     
 public:

@@ -1642,17 +1642,62 @@ bool embObjMotionControl::helper_getPosPidRaw(int j, Pid *pid)
     return true;
 }
 
+bool embObjMotionControl::helper_getPosPidsRaw(Pid *pid)
+{
+    eOmc_PID_t eoPIDList[_njoints] = {0};
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_config_pidposition, eoPIDList);
+    if(!ret)
+    {
+        yError() << "failed helper_getPosPidsRaw for" << getBoardInfo();
+        return false;
+    }
+    
+    for(int j=0; j<_njoints; j++)
+    {
+        copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
+        
+        //printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
+        
+        if(_ppids[j].ctrlUnitsType == controlUnits_metric)
+        {
+            _measureConverter->convertPosPid_E2A(j, pid[j]);
+        }
+        else if(_ppids[j].ctrlUnitsType == controlUnits_machine)
+        {
+            pid[j].kp = pid[j].kp;  //[PWM/icubdegrees]
+            pid[j].ki = pid[j].ki;  //[PWM/icubdegrees]
+            pid[j].kd = pid[j].kd;  //[PWM/icubdegrees]
+        }
+        else
+        {
+            yError() << "Unknown _positionControlUnits";
+        }
+    }
+    return true;
+}
+
+
 bool embObjMotionControl::getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids)
 {
-    bool ret = true;
-
-    // just one joint at time, wait answer before getting to the next.
-    // This is because otherwise too many msg will be placed into can queue
-    for(int j=0, index=0; j<_njoints; j++, index++)
+    switch (pidtype)
     {
-        ret &=getPidRaw(pidtype, j, &pids[j]);
+        case VOCAB_PIDTYPE_POSITION:
+            helper_getPosPidsRaw(pids);
+            break;
+        case VOCAB_PIDTYPE_VELOCITY:
+            helper_getVelPidsRaw(pids);
+            break;
+        case VOCAB_PIDTYPE_CURRENT:
+            helper_getCurPidsRaw(pids);
+            break;
+        case VOCAB_PIDTYPE_TORQUE:
+            helper_getTrqPidsRaw(pids);
+            break;
+        default:
+            yError()<<"Invalid pidtype:"<<pidtype;
+            break;
     }
-    return ret;
+    return true;
 }
 
 bool embObjMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref)
@@ -2136,16 +2181,20 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 
 bool embObjMotionControl::checkMotionDoneRaw(bool *flag)
 {
-    bool ret = true;
-    bool val, tot_res = true;
 
-    for(int j=0, index=0; j< _njoints; j++, index++)
+    eObool_t ismotiondoneList[_njoints] = {0};
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_core_modes_ismotiondone, ismotiondoneList);
+    if(false == ret)
     {
-        ret &= checkMotionDoneRaw(j, &val);
-        tot_res &= val;
+        yError () << "Failure of askRemoteValues() inside embObjMotionControl::checkMotionDoneRaw for all joints of" << getBoardInfo();
+        return false;
     }
-    *flag = tot_res;
-    return ret;
+    
+    for(int j=0; j<_njoints; j++)
+    {
+        flag[j] = ismotiondoneList[j]; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
+    }
+    return true;
 }
 
 bool embObjMotionControl::setRefSpeedRaw(int j, double sp)
@@ -2287,17 +2336,25 @@ bool embObjMotionControl::relativeMoveRaw(const int n_joint, const int *joints, 
 
 bool embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
 {
-    bool ret = true;
-    bool val = true;
     bool tot_val = true;
+    bool isDoneList[_njoints] = {0};
+    *flag = false;
+    
+    if(! checkMotionDoneRaw(isDoneList))
+        return false;
 
     for(int j=0; j<n_joint; j++)
     {
-        ret = ret && checkMotionDoneRaw(joints[j], &val);
-        tot_val &= val;
+        if(joints[j] >= _njoints)
+        {
+            yError() << getBoardInfo() << ":checkMotionDoneRaw required for not existing joint ( " << joints[j] << ")";
+            return false;
+        }
+        tot_val &= isDoneList[joints[j]];
     }
+    
     *flag = tot_val;
-    return ret;
+    return true;
 }
 
 bool embObjMotionControl::setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds)
@@ -3670,6 +3727,23 @@ bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
     return true;
 }
 
+bool embObjMotionControl::helper_getTrqPidsRaw(Pid *pid)
+{
+    eOmc_PID_t eoPIDList[_njoints];
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_config_pidtorque, eoPIDList);
+    if(! ret)
+        return false;
+    for(int j=0; j< _njoints; j++)
+    {    
+        copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
+        //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
+        
+        _measureConverter->convertTrqPid_S2N(j, pid[j]);
+    }
+    return true;
+}
+
+
 bool embObjMotionControl::getImpedanceRaw(int j, double *stiffness, double *damping)
 {
     // first set is done in the open function because the whole joint config is sent to the EMSs
@@ -3894,6 +3968,36 @@ bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
+bool embObjMotionControl::helper_getVelPidsRaw(Pid *pid)
+{
+    eOmc_PID_t eoPIDList[_njoints];
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_config_pidvelocity, eoPIDList);
+    if(!ret)
+        return false;
+    
+    for(int j=0; j<_njoints; j++)
+    {
+        copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
+        
+        
+        if(_vpids[j].ctrlUnitsType == controlUnits_metric)
+        {
+            _measureConverter->convertPosPid_E2A(j, pid[j]);//the conversion of velocity pid and position pid are equal
+        }
+        else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
+        {
+            pid[j].kp = pid[j].kp;  //[PWM/icubdegrees]
+            pid[j].ki = pid[j].ki;  //[PWM/icubdegrees]
+            pid[j].kd = pid[j].kd;  //[PWM/icubdegrees]
+        }
+        else
+        {
+            yError() << "eoMc " << getBoardInfo() << ":Unknown _positionControlUnits needed by getVelPid()";
+        }
+    }
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
+
 // PositionDirect Interface
 bool embObjMotionControl::setPositionRaw(int j, double ref)
 {
@@ -4008,22 +4112,45 @@ bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
 
 bool embObjMotionControl::getRefVelocitiesRaw(double *refs)
 {
-    bool ret = true;
-    for (int i = 0; i<_njoints; i++)
+    #if ASK_REFERENCE_TO_FIRMWARE
+    eOmc_joint_status_target_t  targetList[_njoints] = {0};
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_target, targetList);
+    if(!ret)
     {
-        ret &= getRefVelocityRaw(i, &refs[i]);
+        yError() << "embObjMotionControl::getRefVelocitiesRaw() could not read reference vel for " << getBoardInfo() ;
+        return false;
     }
-    return ret;
+    // Get the value
+    for(int j=0; j<_njoints; j++)
+    {
+        refs[j] = (double) targetList[j].trgt_velocity;
+    }
+    return true;
+    #else
+    for(int j=0; j<_njoints; j++)
+    {
+        refs[j] = _ref_command_speeds[j];
+    }
+    return true;
+    #endif
 }
 
 bool embObjMotionControl::getRefVelocitiesRaw(int nj, const int * jnts, double *refs)
 {
-    bool ret = true;
+    double refsList[_njoints];
+    if(!getRefVelocitiesRaw(refsList))
+        return false;
+    
     for (int i = 0; i<nj; i++)
     {
-        ret &= getRefVelocityRaw(jnts[i], &refs[i]);
+        if(jnts[i]>= _njoints)
+        {
+            yError() << getBoardInfo() << "getRefVelocitiesRaw: joint " << jnts[i] << "doesn't exist";
+            return false;
+        }
+        refs[i] = refsList[jnts[i]];
     }
-    return ret;
+    return true;
 }
 
 bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
@@ -4051,12 +4178,23 @@ bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
 
 bool embObjMotionControl::getRefPositionsRaw(double *refs)
 {
-    bool ret = true;
-    for (int i = 0; i<_njoints; i++)
+    #if ASK_REFERENCE_TO_FIRMWARE
+    eOmc_joint_status_target_t  targetList[_njoints] = {0};
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_target, targetList);
+    if(!ret)
     {
-        ret &= getRefPositionRaw(i, &refs[i]);
+        yError() << "embObjMotionControl::getRefPositionRaw() could not read reference pos for " << getBoardInfo();
+        return false;
     }
-    return ret;
+    // Get the value
+    for(int j=0; j< _njoints; j++)
+        refs[j] = (double) targetList[j].trgt_positionraw;
+    return true;
+    #else
+    for(int j=0; j< _njoints; j++)
+        refs[j] = _ref_positions[j];
+    return true;
+    #endif
 }
 
 bool embObjMotionControl::getRefPositionsRaw(int nj, const int * jnts, double *refs)
@@ -4536,6 +4674,30 @@ bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_
 }
 
 
+template <class T> 
+bool embObjMotionControl::askRemoteValues(eOprotEndpoint_t ep, eOprotEntity_t entity, eOprotTag_t tag, T *values)
+{
+    std::vector<eOprotID32_t> idList;
+    std::vector<void*> valueList;
+    idList.clear();
+    valueList.clear();
+    for(int j=0; j<_njoints; j++)
+    {
+        eOprotID32_t protoId = eoprot_ID_get(ep, entity, j, tag);
+        idList.push_back(protoId);
+        valueList.push_back((void*)&values[j]);
+    }
+    
+    bool ret = res->getRemoteValues(idList, valueList);
+    if(!ret)
+    {
+        yError() << "embObjMotionControl::askRemoteValues failed for all joints of" << getBoardInfo();
+    }
+    
+    return ret;
+}
+
+
 
 
 bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mode)
@@ -4667,10 +4829,16 @@ bool embObjMotionControl::getRefDutyCycleRaw(int j, double *v)
 
 bool embObjMotionControl::getRefDutyCyclesRaw(double *v)
 {
-    bool ret = true;
+    eOmc_joint_status_target_t  targetList[_njoints] = { 0 };
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_target, targetList);
+    if(!ret)
+    {
+        yError() << "embObjMotionControl::getDutyCyclesRaw failed for all joints of" << getBoardInfo();
+    }
+    
     for (int j = 0; j<_njoints; j++)
     {
-        ret = ret && getRefDutyCycleRaw(j, &v[j]);
+        v[j]= targetList[j].trgt_openloop;
     }
     return ret;
 }
@@ -4769,6 +4937,21 @@ bool embObjMotionControl::helper_getCurPidRaw(int j, Pid *pid)
     eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg.pidcurrent;
     copyPid_eo2iCub(&tmp, pid);
 
+    return true;
+}
+
+bool embObjMotionControl::helper_getCurPidsRaw(Pid *pid)
+{
+    eOmc_motor_config_t    motor_cfg_list[_njoints];
+    bool ret = askRemoteValues<eOmc_motor_config_t>(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, eoprot_tag_mc_motor_config, motor_cfg_list);
+    if(! ret)
+        return false;
+    
+    for(int j=0; j<_njoints; j++)
+    {
+        eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg_list[j].pidcurrent;
+        copyPid_eo2iCub(&tmp, &pid[j]);
+    }
     return true;
 }
 
