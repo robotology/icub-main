@@ -3551,11 +3551,11 @@ bool embObjMotionControl::updateVirtualAnalogSensorMeasure(int userLevel_jointNu
 // Torque control
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
-    eOmeas_torque_t meas_torque = 0;
+    eOmc_joint_status_core_t jstatus;
     uint16_t size;
-    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
-    bool ret = res->getLocalValue(protoid, &meas_torque);
-    *t = (double) _measureConverter->trqS2N(meas_torque, j);
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
+    bool ret = res->getLocalValue(protoid, &jstatus);
+    *t = (double) _measureConverter->trqS2N(jstatus.measures.meas_torque, j);
     return ret;
 }
 
