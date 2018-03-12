@@ -919,11 +919,6 @@ public:
     /////////////////////////////// END Impedance Control INTERFACE
 
     // ControlMode
-    virtual bool setPositionModeRaw(int j);
-    virtual bool setVelocityModeRaw(int j);
-    virtual bool setTorqueModeRaw(int j);
-    virtual bool setImpedancePositionModeRaw(int j);
-    virtual bool setImpedanceVelocityModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int* v);
 
@@ -1164,7 +1159,6 @@ protected:
     bool _readByte8(int msg, int axis, int& value);
     bool _writeByteWords16(int msg, int axis, unsigned char value, short s1, short s2, short s3);
     axisTorqueHelper      *_axisTorqueHelper;
-    torqueControlHelper   *_torqueControlHelper;
     axisImpedanceHelper   *_axisImpedanceHelper;
     firmwareVersionHelper *_firmwareVersionHelper;
     speedEstimationHelper *_speedEstimationHelper;

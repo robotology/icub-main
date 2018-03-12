@@ -19,6 +19,8 @@
 #include <yarp/dev/PolyDriver.h>
 #include <ace/config.h>
 #include <ace/Log_Msg.h>
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Log.h>
 
 //the following activates the DEBUG macro in canControlUtil.h
 //#define CAN_DEBUG
@@ -2411,7 +2413,6 @@ _done(0)
     ACE_ASSERT (system_resources != NULL);
     _opened = false;
     _axisTorqueHelper = 0;
-    _torqueControlHelper = 0;
     _firmwareVersionHelper = 0;
     _speedEstimationHelper = 0;
     _MCtorqueControlEnabled = false;
@@ -2535,8 +2536,8 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
     
-    if      (p._torqueControlUnits==CanBusMotionControlParameters::MACHINE_UNITS) {_torqueControlHelper = new torqueControlHelper(p._njoints, tmpOnes, tmpOnes);}
-    else if (p._torqueControlUnits==CanBusMotionControlParameters::METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(p._njoints, p._angleToEncoder, p._newtonsToSensor);}
+    if      (p._torqueControlUnits==CanBusMotionControlParameters::MACHINE_UNITS) {}
+    else if (p._torqueControlUnits==CanBusMotionControlParameters::METRIC_UNITS)  {}
     else    {yError() << "Invalid _torqueControlUnits value: %d" << p._torqueControlUnits; return false;}
     
     _axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_limits);
@@ -3040,8 +3041,6 @@ bool CanBusMotionControl::close (void)
        {delete threadPool; threadPool = 0;}
     if (_axisTorqueHelper != 0)
        {delete _axisTorqueHelper; _axisTorqueHelper = 0;}
-    if (_torqueControlHelper != 0)
-       {delete _torqueControlHelper; _torqueControlHelper=0;}
     if (_firmwareVersionHelper != 0)
        {delete _firmwareVersionHelper; _firmwareVersionHelper =0;}
 
@@ -3833,31 +3832,6 @@ void CanBusMotionControl:: run()
 
 
     // ControlMode
-bool CanBusMotionControl::setPositionModeRaw(int j)
-{
-    return DEPRECATED("setPositionModeRaw");
-}
-
-bool CanBusMotionControl::setVelocityModeRaw(int j)
-{
-    return DEPRECATED("setVelocityModeRaw");
-}
-
-bool CanBusMotionControl::setTorqueModeRaw(int j)
-{
-    return DEPRECATED("setTorqueModeRaw");
-}
-
-bool CanBusMotionControl::setImpedancePositionModeRaw(int j)
-{
-    return DEPRECATED("setImpedancePositionModeRaw");
-}
-
-bool CanBusMotionControl::setImpedanceVelocityModeRaw(int j)
-{
-    return DEPRECATED("setImpedanceVelocityModeRaw");
-}
-
 bool CanBusMotionControl::getControlModesRaw(int *v)
 {
     DEBUG_FUNC("Calling GET_CONTROL_MODES\n");
