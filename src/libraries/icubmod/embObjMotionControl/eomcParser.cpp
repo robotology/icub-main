@@ -24,6 +24,7 @@
 #include "EoProtocolMN.h"
 #include "EoProtocolMC.h"
 #include "EoProtocolAS.h"
+#include <vector>
 
 
 using namespace std;
@@ -926,7 +927,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
             twofocinfo[i - 1].verbose = xtmp.get(i).asInt();
     }
 
-    int AutoCalibration[_njoints];
+	std::vector<int> AutoCalibration (_njoints);
     if (!extractGroup(focGroup, xtmp, "AutoCalibration", "AutoCalibration 0/1 ", _njoints, false))
     {
         //return false;
