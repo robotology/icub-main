@@ -252,7 +252,7 @@ private:
     std::string getBoardInfo(void);
     bool askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size);
     template <class T> 
-    bool askRemoteValues(eOprotEndpoint_t ep, eOprotEntity_t entity, eOprotTag_t tag, T* values);
+    bool askRemoteValues(eOprotEndpoint_t ep, eOprotEntity_t entity, eOprotTag_t tag, std::vector<T>& values);
     bool checkRemoteControlModeStatus(int joint, int target_mode);
 
     bool dealloc();
@@ -405,11 +405,6 @@ public:
     /////////////////////////////// END Position Control INTERFACE
 
     // ControlMode
-    virtual bool setPositionModeRaw(int j);
-    virtual bool setVelocityModeRaw(int j);
-    virtual bool setTorqueModeRaw(int j);
-    virtual bool setImpedancePositionModeRaw(int j);
-    virtual bool setImpedanceVelocityModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int *v);
 
