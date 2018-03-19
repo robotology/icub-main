@@ -3538,9 +3538,10 @@ bool embObjMotionControl::updateVirtualAnalogSensorMeasure(int userLevel_jointNu
     meas_torque = (eOmeas_torque_t) S_32(_measureConverter->trqN2S(fTorque, j));
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
-
-    // i write also locally because i want to read it back later on inside getTorqueRaw()
-    res->setLocalValue(protoid, &meas_torque);
+//  We don't need anymore to cache locally because ems board broadcast its torque value in joint status core
+//     // i write also locally because i want to read it back later on inside getTorqueRaw()
+//     res->setLocalValue(protoid, &meas_torque);
+    
     // and i want also to send it to the board
     return res->setRemoteValue(protoid, &meas_torque);
 }
