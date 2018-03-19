@@ -9,6 +9,7 @@
 
 #define CHANNEL_COUNT   6
 #define HEX_VALC 0x8000
+#define RANGE32K 32768
 
 #define     COL_CURRMEASURE     0
 
@@ -24,6 +25,32 @@
 #define     COL_NEWTONMEASURE   3
 
 #define     MATRIX_COUNT        3
+
+int convert_to_signed32k(unsigned int v)
+{
+    return static_cast<int>(v)-32768; // it is the 0x8000 used in q15 transformation
+}
+
+int showasQ15(int v)
+{
+    return static_cast<std::int16_t>(v&0xffff);
+}
+
+// bias, tare, offset. in here we mean what we add to the sixe values before or after mraix multiplication.
+int showBias(unsigned int v)
+{
+    // marco.accame:
+    // the gui has always shown the value at it is.
+    // it should however show the value w/ showasQ15()
+    return v;
+}
+
+
+
+unsigned int q15_from(int v)
+{
+    return v+0x8000;
+}
 
 
 CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boardType_t b, CustomTreeWidgetItem *item, QWidget *parent) :
@@ -57,8 +84,9 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
         adc[i]              = 0;
         calib_bias[i]       = 0;
         curr_bias[i]        = 0;
-        maxadc[i]           = 0;
-        minadc[i]           = 65535;
+        // marco.accame: we want to show the maximum / minimum values in the same way the adc values are displayed: in range [-32k, +32k)
+        maxadc[i]           = -32768;
+        minadc[i]           = +32767;
 
         sliderPressed[i]    = false;
         amp_gain1[i]        = 0;
@@ -1060,15 +1088,15 @@ void CalibrationWindow::onTimeout()
 
         for (int i=0;i<CHANNEL_COUNT;i++){
             if (!bool_raw){
-                if(adc[i]>maxadc[i]){
-                    maxadc[i]=adc[i];
+                if(convert_to_signed32k(adc[i])>maxadc[i]){
+                    maxadc[i]=convert_to_signed32k(adc[i]);
                 }
-                if (adc[i]<minadc[i]){
-                    minadc[i]=adc[i];
+                if (convert_to_signed32k(adc[i])<minadc[i]){
+                    minadc[i]=convert_to_signed32k(adc[i]);
                 }
             } else {
-                maxadc[i]=0;
-                minadc[i]=65535;
+                maxadc[i]=-32768;
+                minadc[i]=+32767;
             }
         }
 
@@ -1090,14 +1118,14 @@ void CalibrationWindow::onTimeout()
         for (int i=0;i<CHANNEL_COUNT;i++){
             core->getDownloader()->strain_get_calib_bias(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, calib_bias[i],&msg);
             appendLogMsg(msg.c_str());
-            sprintf(tempbuf,"%d",calib_bias[i]);
+            sprintf(tempbuf,"%d",showBias(calib_bias[i]));
             QTableWidgetItem *item = ui->tableParamters->item(i,COL_CALIBBIAS);
             //item->setText(tempbuf);
             setText(item,tempbuf);
 
             core->getDownloader()->strain_get_curr_bias(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, curr_bias[i],&msg);
             appendLogMsg(msg.c_str());
-            sprintf(tempbuf,"%d",curr_bias[i]);
+            sprintf(tempbuf,"%d",showBias(curr_bias[i]));
             QTableWidgetItem *item1 = ui->tableParamters->item(i,COL_CURRBIAS);
             //item1->setText(tempbuf);
             setText(item1,tempbuf);
@@ -1111,7 +1139,10 @@ void CalibrationWindow::onTimeout()
             //slider->setValue(offset[i]);
             setSliderValue(slider,offset[i]);
 
-            sprintf(tempbuf,"%d",adc[i]-HEX_VALC);
+            // marco.accame: we always show the received value in range [-32k, +32k).
+            // in case of true == bool_raw: it is the adc value
+            // in case of false == bool_raw: it is = M * (adc+calibtare) + currtare
+            sprintf(tempbuf,"%d",convert_to_signed32k(adc[i]));
             QTableWidgetItem *item3 = ui->tableCurr->item(i,COL_CURRMEASURE);
             //item3->setText(tempbuf);
             setText(item3,tempbuf);
@@ -1135,9 +1166,13 @@ void CalibrationWindow::onTimeout()
 
                 if (skip_display_calib==false){
                     if(i<=2){
-                        sprintf(tempbuf,"%+.3f N",(int(adc[i])-HEX_VALC)/float(HEX_VALC)*full_scale_const[currentMatrixIndex - 1][i]);
+                        // asfidanken:
+                        //sprintf(tempbuf,"%+.3f ?",float(convert_to_signed32k(adc[i])));
+                        sprintf(tempbuf,"%+.3f N",(convert_to_signed32k(adc[i]))/float(RANGE32K)*full_scale_const[currentMatrixIndex - 1][i]);
                     }else{
-                        sprintf(tempbuf,"%+.3f Nm",(int(adc[i])-HEX_VALC)/float(HEX_VALC)*full_scale_const[currentMatrixIndex - 1][i]);
+                        // asfidanken:
+                        //sprintf(tempbuf,"%+.3f ??",float(convert_to_signed32k(adc[i])));
+                        sprintf(tempbuf,"%+.3f Nm",(convert_to_signed32k(adc[i]))/float(RANGE32K)*full_scale_const[currentMatrixIndex - 1][i]);
                     }
                     QTableWidgetItem *item3 = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
                     setText(item3,tempbuf);

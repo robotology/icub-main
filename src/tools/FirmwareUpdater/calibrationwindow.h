@@ -50,8 +50,8 @@ private:
     icubCanProto_boardType_t boardtype;
     bool sliderPressed[6];
     unsigned int adc[6];
-    unsigned int maxadc[6];
-    unsigned int minadc[6];
+    signed int maxadc[6];
+    signed int minadc[6];
     bool first_time;
     unsigned int offset[6];
     unsigned int amp_gain1[6];
