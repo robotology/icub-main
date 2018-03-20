@@ -815,7 +815,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         // NOTE: (TODO) translate "fisico" and "logico" variables name in English.
 
         measureConvFactors measConvFactors_remaped (_njoints);
-        int fakeAxisMap[_njoints];
+        std::vector<int> fakeAxisMap(_njoints);
         for(int i=0; i<_njoints; i++)
         {
             measConvFactors_remaped.angleToEncoder[_axisMap[i]]  = measConvFactors.angleToEncoder[i];
@@ -838,7 +838,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
              trqCtrlConvFactors.init(tmpOnes.data(), tmpOnes.data());
         }
 
-        _measureConverter = new measuresConverter(_njoints,  fakeAxisMap, trqCtrlConvFactors, measConvFactors_remaped);
+        _measureConverter = new measuresConverter(_njoints,  fakeAxisMap.data(), trqCtrlConvFactors, measConvFactors_remaped);
 
 
         // 2) convert pid values from metrics units to fw units(i.e. icubDegrees)
@@ -1644,7 +1644,7 @@ bool embObjMotionControl::helper_getPosPidRaw(int j, Pid *pid)
 
 bool embObjMotionControl::helper_getPosPidsRaw(Pid *pid)
 {
-    eOmc_PID_t eoPIDList[_njoints] = {0};
+    std::vector<eOmc_PID_t> eoPIDList(_njoints);
     bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_config_pidposition, eoPIDList);
     if(!ret)
     {
@@ -2181,8 +2181,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 
 bool embObjMotionControl::checkMotionDoneRaw(bool *flag)
 {
-
-    eObool_t ismotiondoneList[_njoints] = {0};
+    std::vector <eObool_t> ismotiondoneList(_njoints);
     bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_core_modes_ismotiondone, ismotiondoneList);
     if(false == ret)
     {
@@ -2337,7 +2336,10 @@ bool embObjMotionControl::relativeMoveRaw(const int n_joint, const int *joints, 
 bool embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
 {
     bool tot_val = true;
-    bool isDoneList[_njoints] = {0};
+   
+    //std::vector <bool> isDoneList(_njoints); //this cannot be used here because .data() is not implemented for std::vector <bool>
+    bool* isDoneList = new bool[_njoints];
+   
     *flag = false;
     
     if(! checkMotionDoneRaw(isDoneList))
@@ -2348,12 +2350,14 @@ bool embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int *joint
         if(joints[j] >= _njoints)
         {
             yError() << getBoardInfo() << ":checkMotionDoneRaw required for not existing joint ( " << joints[j] << ")";
+            delete [] isDoneList;
             return false;
         }
         tot_val &= isDoneList[joints[j]];
     }
     
     *flag = tot_val;
+    delete[] isDoneList;
     return true;
 }
 
@@ -2410,32 +2414,7 @@ bool embObjMotionControl::stopRaw(const int n_joint, const int *joints)
 ///////////// END Position Control INTERFACE  //////////////////
 
 // ControlMode
-bool embObjMotionControl::setPositionModeRaw(int j)
-{
-    return DEPRECATED("setPositionModeRaw");
-}
 
-bool embObjMotionControl::setVelocityModeRaw(int j)
-{
-    return DEPRECATED("setVelocityModeRaw");
-}
-
-bool embObjMotionControl::setTorqueModeRaw(int j)
-{
-    return DEPRECATED("setTorqueModeRaw");
-}
-
-bool embObjMotionControl::setImpedancePositionModeRaw(int j)
-{
-    return DEPRECATED("setImpedancePositionModeRaw");
-}
-
-bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
-{
-    return DEPRECATED("setImpedanceVelocityModeRaw");
-}
-
-// puo' essere richiesto con get
 bool embObjMotionControl::getControlModeRaw(int j, int *v)
 {
     eOmc_joint_status_core_t jcore = {0};
@@ -3730,7 +3709,7 @@ bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
 
 bool embObjMotionControl::helper_getTrqPidsRaw(Pid *pid)
 {
-    eOmc_PID_t eoPIDList[_njoints];
+    std::vector<eOmc_PID_t> eoPIDList (_njoints);
     bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_config_pidtorque, eoPIDList);
     if(! ret)
         return false;
@@ -3768,9 +3747,9 @@ bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
         return false;
 
     // refresh cached value when reading data from the EMS
-    _cacheImpedance->damping   = (double) imped.damping;
-    _cacheImpedance->stiffness = (double) imped.stiffness;
-    _cacheImpedance->offset    = (double) imped.offset;
+    _cacheImpedance->damping   =  imped.damping;
+    _cacheImpedance->stiffness =  imped.stiffness;
+    _cacheImpedance->offset    =  imped.offset;
     return true;
 }
 
@@ -3971,7 +3950,7 @@ bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 
 bool embObjMotionControl::helper_getVelPidsRaw(Pid *pid)
 {
-    eOmc_PID_t eoPIDList[_njoints];
+    std::vector <eOmc_PID_t> eoPIDList (_njoints);
     bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_config_pidvelocity, eoPIDList);
     if(!ret)
         return false;
@@ -4114,7 +4093,7 @@ bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
 bool embObjMotionControl::getRefVelocitiesRaw(double *refs)
 {
     #if ASK_REFERENCE_TO_FIRMWARE
-    eOmc_joint_status_target_t  targetList[_njoints] = {0};
+    std::vector <eOmc_joint_status_target_t> targetList(_njoints);
     bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_target, targetList);
     if(!ret)
     {
@@ -4138,8 +4117,8 @@ bool embObjMotionControl::getRefVelocitiesRaw(double *refs)
 
 bool embObjMotionControl::getRefVelocitiesRaw(int nj, const int * jnts, double *refs)
 {
-    double refsList[_njoints];
-    if(!getRefVelocitiesRaw(refsList))
+    std::vector <double> refsList(_njoints);
+    if(!getRefVelocitiesRaw(refsList.data()))
         return false;
     
     for (int i = 0; i<nj; i++)
@@ -4180,7 +4159,7 @@ bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
 bool embObjMotionControl::getRefPositionsRaw(double *refs)
 {
     #if ASK_REFERENCE_TO_FIRMWARE
-    eOmc_joint_status_target_t  targetList[_njoints] = {0};
+    std::vector <eOmc_joint_status_target_t> targetList(_njoints);
     bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_target, targetList);
     if(!ret)
     {
@@ -4676,7 +4655,7 @@ bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_
 
 
 template <class T> 
-bool embObjMotionControl::askRemoteValues(eOprotEndpoint_t ep, eOprotEntity_t entity, eOprotTag_t tag, T *values)
+bool embObjMotionControl::askRemoteValues(eOprotEndpoint_t ep, eOprotEntity_t entity, eOprotTag_t tag, std::vector<T>& values)
 {
     std::vector<eOprotID32_t> idList;
     std::vector<void*> valueList;
@@ -4830,7 +4809,7 @@ bool embObjMotionControl::getRefDutyCycleRaw(int j, double *v)
 
 bool embObjMotionControl::getRefDutyCyclesRaw(double *v)
 {
-    eOmc_joint_status_target_t  targetList[_njoints] = { 0 };
+    std::vector <eOmc_joint_status_target_t> targetList(_njoints);
     bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_target, targetList);
     if(!ret)
     {
@@ -4943,7 +4922,7 @@ bool embObjMotionControl::helper_getCurPidRaw(int j, Pid *pid)
 
 bool embObjMotionControl::helper_getCurPidsRaw(Pid *pid)
 {
-    eOmc_motor_config_t    motor_cfg_list[_njoints];
+    std::vector <eOmc_motor_config_t> motor_cfg_list(_njoints);
     bool ret = askRemoteValues<eOmc_motor_config_t>(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, eoprot_tag_mc_motor_config, motor_cfg_list);
     if(! ret)
         return false;
