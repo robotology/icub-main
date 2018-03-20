@@ -20,6 +20,7 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <vector>
 #include <algorithm>
 #include <iomanip>
 
@@ -2702,9 +2703,8 @@ bool MotorThread::exploreTorso(Bottle &options)
     double step_time=2.0;
     double kp_pos_torso=0.6;
 
-    VectorOf<int> modes(3);
-    modes[0]=modes[1]=modes[2]=VOCAB_CM_VELOCITY;
-    ctrl_mode_torso->setControlModes(modes.getFirst());
+    vector<int> modes(3,VOCAB_CM_VELOCITY);
+    ctrl_mode_torso->setControlModes(modes.data());
 
     double init_walking_time=Time::now();
 
@@ -2762,17 +2762,17 @@ bool MotorThread::exploreTorso(Bottle &options)
                 q_dot=(q_dot_saturation/q_dot_mag)*q_dot;
 
             // account for specific order
-            VectorOf<int> jnts(2);
+            vector<int> jnts(2);
             jnts[0]=2;
             jnts[1]=1;
-            vel_torso->velocityMove(jnts.size(),jnts.getFirst(),q_dot.data());
+            vel_torso->velocityMove((int)jnts.size(),jnts.data(),q_dot.data());
             Time::delay(0.01);
         }
     }
 
     //go back to torso initial position
     modes[0]=modes[1]=modes[2]=VOCAB_CM_POSITION;
-    ctrl_mode_torso->setControlModes(modes.getFirst());
+    ctrl_mode_torso->setControlModes(modes.data());
     pos_torso->positionMove(torso_init_joints.data());
     bool done=false;
     while (isRunning() && !done)
@@ -2838,10 +2838,8 @@ bool MotorThread::exploreHand(Bottle &options)
     int nJnts;
     enc_arm[arm]->getAxes(&nJnts);
 
-    VectorOf<int> modes(nJnts);
-    for (int i=0; i<nJnts; i++)
-        modes[i]=VOCAB_CM_POSITION; 
-    ctrl_mode_arm[arm]->setControlModes(modes.getFirst());
+    vector<int> modes(nJnts,VOCAB_CM_POSITION);
+    ctrl_mode_arm[arm]->setControlModes(modes.data());
 
     //start exploration
     Vector destination(nJnts);

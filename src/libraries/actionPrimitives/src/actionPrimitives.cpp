@@ -1489,12 +1489,12 @@ bool ActionPrimitives::cmdHand(const Action &action)
         size_t sz=std::min(fingersJnts.size(),std::min(poss.length(),vels.length()));
         for (size_t i=0; i<sz; i++)
         {
-            size_t j=fingersJnts[i];
+            int j=fingersJnts[i];
             modCtrl->setControlMode(j,VOCAB_CM_POSITION);
             posCtrl->setRefSpeed(j,vels[j-jHandMin]);
         }
         
-        posCtrl->positionMove(sz,fingersJnts.getFirst(),poss.data());
+        posCtrl->positionMove((int)sz,fingersJnts.data(),poss.data());
 
         latchHandMoveDone=handMoveDone=false;
         handSeqTerminator=action.handSeqTerminator;
@@ -1862,7 +1862,7 @@ bool ActionPrimitives::stopControl()
         clearActionsQueue();
 
         cartCtrl->stopControl();
-        posCtrl->stop(fingersJnts.size(),fingersJnts.getFirst());
+        posCtrl->stop((int)fingersJnts.size(),fingersJnts.data());
 
         armMoveDone =latchArmMoveDone =true;
         handMoveDone=latchHandMoveDone=true;

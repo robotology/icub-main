@@ -20,6 +20,7 @@
 #define __CONTROLLER_H__
 
 #include <string>
+#include <vector>
 #include <set>
 
 #include <yarp/os/all.h>
@@ -106,8 +107,8 @@ protected:
     Vector v,vNeck,vEyes;
     Vector q0,qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
-    VectorOf<int> neckJoints,eyesJoints;
-    VectorOf<int> jointsToSet;
+    vector<int> neckJoints,eyesJoints;
+    vector<int> jointsToSet;
 
     multiset<double> motionOngoingEvents;
     multiset<double> motionOngoingEventsCurrent;

@@ -1286,15 +1286,15 @@ bool ServerCartesianController::getNewTarget()
 
 
 /************************************************************************/
-bool ServerCartesianController::areJointsHealthyAndSet(VectorOf<int> &jointsToSet)
+bool ServerCartesianController::areJointsHealthyAndSet(vector<int> &jointsToSet)
 {    
-    VectorOf<int> modes(maxPartJoints);
+    vector<int> modes(maxPartJoints);
     int chainCnt=0;
 
     jointsToSet.clear();
     for (int i=0; (i<numDrv) && ctrlModeAvailable; i++)
     {
-        lMod[i]->getControlModes(modes.getFirst());
+        lMod[i]->getControlModes(modes.data());
         for (int j=0; j<lJnt[i]; j++)
         {
             if (!(*chainState)[chainCnt].isBlocked())
@@ -1319,7 +1319,7 @@ bool ServerCartesianController::areJointsHealthyAndSet(VectorOf<int> &jointsToSe
 
 
 /************************************************************************/
-void ServerCartesianController::setJointsCtrlMode(const VectorOf<int> &jointsToSet)
+void ServerCartesianController::setJointsCtrlMode(const vector<int> &jointsToSet)
 {
     if (jointsToSet.size()==0)
         return;
@@ -1329,8 +1329,8 @@ void ServerCartesianController::setJointsCtrlMode(const VectorOf<int> &jointsToS
 
     for (int i=0; i<numDrv; i++)
     {
-        VectorOf<int> joints;
-        VectorOf<int> modes;
+        vector<int> joints;
+        vector<int> modes;
         for (int j=0; j<lJnt[i]; j++)
         {
             if (chainCnt==jointsToSet[k])
@@ -1345,8 +1345,7 @@ void ServerCartesianController::setJointsCtrlMode(const VectorOf<int> &jointsToS
         }
 
         if (joints.size()>0)
-            lMod[i]->setControlModes(joints.size(),joints.getFirst(),
-                                     modes.getFirst());
+            lMod[i]->setControlModes((int)joints.size(),joints.data(),modes.data());
     }
 }
 
@@ -1355,7 +1354,7 @@ void ServerCartesianController::setJointsCtrlMode(const VectorOf<int> &jointsToS
 Bottle ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
 {
     Bottle info;
-    VectorOf<int> joints;
+    vector<int> joints;
     Vector refs;
     int cnt=0;
     int j=0;
@@ -1387,7 +1386,7 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
         if (++k>=lJnt[j])
         {
             if (joints.size()>0)
-                lPos[j]->setPositions(joints.size(),joints.getFirst(),refs.data());
+                lPos[j]->setPositions((int)joints.size(),joints.data(),refs.data());
 
             joints.clear();
             refs.clear();
@@ -1404,7 +1403,7 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
 Bottle ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
 {
     Bottle info;
-    VectorOf<int> joints;
+    vector<int> joints;
     Vector vels;
     int cnt=0;
     int j=0;
@@ -1441,7 +1440,7 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
         if (++k>=lJnt[j])
         {
             if (joints.size()>0)
-                static_cast<IVelocityControl2*>(lVel[j])->velocityMove(joints.size(),joints.getFirst(),vels.data());
+                static_cast<IVelocityControl2*>(lVel[j])->velocityMove((int)joints.size(),joints.data(),vels.data());
 
             joints.clear();
             vels.clear();
@@ -1627,7 +1626,7 @@ void ServerCartesianController::run()
         else
             txInfo.update();
 
-        VectorOf<int> jointsToSet;
+        vector<int> jointsToSet;
         jointsHealthy=areJointsHealthyAndSet(jointsToSet);
         if (!jointsHealthy)
             stopControlHelper();

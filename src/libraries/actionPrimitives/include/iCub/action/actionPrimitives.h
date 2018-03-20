@@ -80,6 +80,7 @@
 #define __AFFACTIONPRIMITIVES_H__
 
 #include <string>
+#include <vector>
 #include <deque>
 #include <set>
 #include <map>
@@ -244,10 +245,10 @@ protected:
     double            curHandTmo;
     double            latchTimerHand;
 
-    yarp::sig::VectorOf<int> fingersJnts;
-    std::set<int>            fingersJntsSet;
-    std::set<int>            fingersMovingJntsSet;
-    std::multimap<int,int>   fingers2JntsMap;
+    std::vector<int>       fingersJnts;
+    std::set<int>          fingersJntsSet;
+    std::set<int>          fingersMovingJntsSet;
+    std::multimap<int,int> fingers2JntsMap;
 
     friend class ArmWayPoints;
 

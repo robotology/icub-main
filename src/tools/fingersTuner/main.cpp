@@ -87,6 +87,7 @@ Windows, Linux
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <vector>
 #include <map>
 
 #include <yarp/os/all.h>
@@ -118,7 +119,7 @@ protected:
         double st_down;
         double encs_ratio;
         pidStatus status;
-        VectorOf<int> idling_joints;
+        vector<int> idling_joints;
         PidData() : Kp(0.0), Ki(0.0), Kd(0.0), scale(0.0),
                     st_up(0.0), st_down(0.0), encs_ratio(1.0),
                     status(download) { }
