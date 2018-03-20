@@ -2513,7 +2513,7 @@ bool CanBusMotionControl::open (Searchable &config)
 //    ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::
 //        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementPidControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, NULL, p._newtonsToSensor, p._ampsToSensor);
+    ImplementPidControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, NULL, p._newtonsToSensor, p._ampsToSensor, p._dutycycleToPwm);
 
     ImplementEncodersTimed::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 

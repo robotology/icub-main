@@ -302,7 +302,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     ImplementPositionControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementVelocityControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementPidControl::initialize(njoints, axisMap, angleToEncoder, zeros,newtonsToSensor,ampsToSensor);
+    ImplementPidControl::initialize(njoints, axisMap, angleToEncoder, zeros,newtonsToSensor,ampsToSensor, dutycycleToPwm);
     ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementMotorEncoders::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::

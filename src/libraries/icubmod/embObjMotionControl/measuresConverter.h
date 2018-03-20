@@ -95,13 +95,13 @@ public:
 
     double getAngleToEncoder(int j);
 
-    void convertTrqPid_N2S(int j, yarp::dev::Pid &pid);//NEWTON TO SENSOR
+    //$$$void convertTrqPid_N2S(int j, yarp::dev::Pid &pid);//NEWTON TO SENSOR
 
-    void convertTrqPid_S2N(int j, yarp::dev::Pid &pid);
+    //$$$void convertTrqPid_S2N(int j, yarp::dev::Pid &pid);
 
-    void convertPosPid_A2E(int j, yarp::dev::Pid &pid);//ANGLE TO SENSOR
+    //$$$void convertPosPid_A2E(int j, yarp::dev::Pid &pid);//ANGLE TO SENSOR
 
-    void convertPosPid_E2A(int j, yarp::dev::Pid &pid);
+    //$$$void convertPosPid_E2A(int j, yarp::dev::Pid &pid);
 
     double convertTrqMotorBemfParam_MachineUnitsToMetric(int j, double bemf);
 

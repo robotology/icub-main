@@ -300,7 +300,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementEncodersTimed::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotorEncoders::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementPositionControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementPidControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor);
+    ImplementPidControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM);
     ImplementControlMode2::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementVelocityControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
@@ -427,44 +427,44 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 
 
-bool embObjMotionControl::convertPosPid(eomc::PidInfo myPidInfo[])
-{
-
-    //conversion from metric to machine units (if applicable)
-    for (int j=0; j<_njoints; j++)
-    {
-        if(myPidInfo[j].ctrlUnitsType ==  controlUnits_metric)
-        {
-            _measureConverter->convertPosPid_A2E(j, myPidInfo[j].pid);
-        }
-
-        else
-        {
-            //do nothing
-        }
-    }
-     return true;
-}
-
-
+//$$$bool embObjMotionControl::convertPosPid(eomc::PidInfo myPidInfo[])
+//$$${
+//$$$
+//$$$    //conversion from metric to machine units (if applicable)
+//$$$    for (int j=0; j<_njoints; j++)
+//$$$    {
+//$$$        if(myPidInfo[j].ctrlUnitsType ==  controlUnits_metric)
+//$$$        {
+//$$$            _measureConverter->convertPosPid_A2E(j, myPidInfo[j].pid);
+//$$$        }
+//$$$
+//$$$        else
+//$$$        {
+//$$$            //do nothing
+//$$$        }
+//$$$    }
+//$$$     return true;
+//$$$}
 
 
-bool embObjMotionControl::convertTrqPid(eomc::TrqPidInfo myPidInfo[])
-{
-    //conversion from metric to machine units (if applicable)
-    for (int j=0; j<_njoints; j++)
-    {
-        if(!myPidInfo[j].enabled)
-            continue;
 
-        if(myPidInfo[j].ctrlUnitsType ==  controlUnits_metric)
-        {
-            _measureConverter->convertTrqPid_N2S(j, myPidInfo[j].pid);
-        }
-    }
 
-    return true;
-}
+//$$$bool embObjMotionControl::convertTrqPid(eomc::TrqPidInfo myPidInfo[])
+//$$${
+//$$$    //conversion from metric to machine units (if applicable)
+//$$$    for (int j=0; j<_njoints; j++)
+//$$$    {
+//$$$        if(!myPidInfo[j].enabled)
+//$$$            continue;
+//$$$
+//$$$        if(myPidInfo[j].ctrlUnitsType ==  controlUnits_metric)
+//$$$        {
+//$$$            _measureConverter->convertTrqPid_N2S(j, myPidInfo[j].pid);
+//$$$        }
+//$$$    }
+//$$$
+//$$$    return true;
+//$$$}
 
 
 
@@ -1482,20 +1482,20 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
 
-    if(_ppids[j].ctrlUnitsType == controlUnits_metric)
-    {
-        _measureConverter->convertPosPid_A2E(j, hwPid);
-    }
-    if(_ppids[j].ctrlUnitsType == controlUnits_machine)
-    {
-        hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
-        hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
-        hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
-    }
-    else
-    {
-        yError() << "Unknown _positionControlUnits";
-    }
+//$$$    if(_ppids[j].ctrlUnitsType == controlUnits_metric)
+//$$$    {
+//$$$        _measureConverter->convertPosPid_A2E(j, hwPid);
+//$$$    }
+//$$$    if(_ppids[j].ctrlUnitsType == controlUnits_machine)
+//$$$    {
+//$$$        hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
+//$$$        hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
+//$$$        hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
+//$$$    }
+//$$$    else
+//$$$    {
+//$$$        yError() << "Unknown _positionControlUnits";
+//$$$    }
     //printf("helper_setPosPid: kp=%f ki=%f kd=%f\n", hwPid.kp, hwPid.ki, hwPid.kd);
     copyPid_iCub2eo(&hwPid, &outPid);
 
@@ -1624,20 +1624,20 @@ bool embObjMotionControl::helper_getPosPidRaw(int j, Pid *pid)
     
     //printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
     
-    if(_ppids[j].ctrlUnitsType == controlUnits_metric)
-    {
-        _measureConverter->convertPosPid_E2A(j, *pid);
-    }
-    else if(_ppids[j].ctrlUnitsType == controlUnits_machine)
-    {
-        pid->kp = pid->kp;  //[PWM/icubdegrees]
-        pid->ki = pid->ki;  //[PWM/icubdegrees]
-        pid->kd = pid->kd;  //[PWM/icubdegrees]
-    }
-    else
-    {
-        yError() << "Unknown _positionControlUnits";
-    }
+//$$$   if(_ppids[j].ctrlUnitsType == controlUnits_metric)
+//$$$   {
+//$$$       _measureConverter->convertPosPid_E2A(j, *pid);
+//$$$   }
+//$$$   else if(_ppids[j].ctrlUnitsType == controlUnits_machine)
+//$$$   {
+//$$$       pid->kp = pid->kp;  //[PWM/icubdegrees]
+//$$$       pid->ki = pid->ki;  //[PWM/icubdegrees]
+//$$$       pid->kd = pid->kd;  //[PWM/icubdegrees]
+//$$$   }
+//$$$   else
+//$$$   {
+//$$$       yError() << "Unknown _positionControlUnits";
+//$$$   }
 
     return true;
 }
@@ -1658,20 +1658,20 @@ bool embObjMotionControl::helper_getPosPidsRaw(Pid *pid)
         
         //printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
         
-        if(_ppids[j].ctrlUnitsType == controlUnits_metric)
-        {
-            _measureConverter->convertPosPid_E2A(j, pid[j]);
-        }
-        else if(_ppids[j].ctrlUnitsType == controlUnits_machine)
-        {
-            pid[j].kp = pid[j].kp;  //[PWM/icubdegrees]
-            pid[j].ki = pid[j].ki;  //[PWM/icubdegrees]
-            pid[j].kd = pid[j].kd;  //[PWM/icubdegrees]
-        }
-        else
-        {
-            yError() << "Unknown _positionControlUnits";
-        }
+//$$$        if(_ppids[j].ctrlUnitsType == controlUnits_metric)
+//$$$        {
+//$$$            _measureConverter->convertPosPid_E2A(j, pid[j]);
+//$$$        }
+//$$$        else if(_ppids[j].ctrlUnitsType == controlUnits_machine)
+//$$$        {
+//$$$            pid[j].kp = pid[j].kp;  //[PWM/icubdegrees]
+//$$$            pid[j].ki = pid[j].ki;  //[PWM/icubdegrees]
+//$$$            pid[j].kd = pid[j].kd;  //[PWM/icubdegrees]
+//$$$        }
+//$$$        else
+//$$$        {
+//$$$            yError() << "Unknown _positionControlUnits";
+//$$$        }
     }
     return true;
 }
@@ -3745,7 +3745,7 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
 
-    _measureConverter->convertTrqPid_N2S(j, hwPid);
+    //$$$_measureConverter->convertTrqPid_N2S(j, hwPid);
     //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
 
     copyPid_iCub2eo(&hwPid, &outPid);
@@ -3766,7 +3766,7 @@ bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
     copyPid_eo2iCub(&eoPID, pid);
     //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
 
-    _measureConverter->convertTrqPid_S2N(j, *pid);
+    //$$$_measureConverter->convertTrqPid_S2N(j, *pid);
     return true;
 }
 
@@ -3781,7 +3781,7 @@ bool embObjMotionControl::helper_getTrqPidsRaw(Pid *pid)
         copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
         //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
         
-        _measureConverter->convertTrqPid_S2N(j, pid[j]);
+        //$$$_measureConverter->convertTrqPid_S2N(j, pid[j]);
     }
     return true;
 }
@@ -3956,20 +3956,20 @@ bool embObjMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
         yError() << "eoMc " << getBoardInfo() << ": it is not possible set velocity pid for joint " << j <<", because velocity pid is enabled in xml files";
         return false;
     }
-    if(_vpids[j].ctrlUnitsType == controlUnits_metric)
-    {
-        _measureConverter->convertPosPid_A2E(j, hwPid); //the conversion of velocity pid and position pid are equal
-    }
-    else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
-    {
-        hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
-        hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
-        hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
-    }
-    else
-    {
-        yError() << "eoMc " << getBoardInfo() << ": Unknown _positionControlUnits, needed by setVelPidRaw()";
-    }
+    //$$$   if(_vpids[j].ctrlUnitsType == controlUnits_metric)
+    //$$${
+    //$$$    _measureConverter->convertPosPid_A2E(j, hwPid); //the conversion of velocity pid and position pid are equal
+    //$$$}
+    //$$$else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
+    //$$${
+    //$$$    hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
+    //$$$    hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
+    //$$$    hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
+    //$$$}
+    //$$$else
+    //$$${
+    //$$$    yError() << "eoMc " << getBoardInfo() << ": Unknown _positionControlUnits, needed by setVelPidRaw()";
+    //$$$}
 
     copyPid_iCub2eo(&hwPid, &outPid);
 
@@ -3992,21 +3992,21 @@ bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 
     copyPid_eo2iCub(&eoPID, pid);
 
-
-    if(_vpids[j].ctrlUnitsType == controlUnits_metric)
-    {
-        _measureConverter->convertPosPid_E2A(j, *pid);//the conversion of velocity pid and position pid are equal
-    }
-    else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
-    {
-        pid->kp = pid->kp;  //[PWM/icubdegrees]
-        pid->ki = pid->ki;  //[PWM/icubdegrees]
-        pid->kd = pid->kd;  //[PWM/icubdegrees]
-    }
-    else
-    {
-        yError() << "eoMc " << getBoardInfo() << ":Unknown _positionControlUnits needed by getVelPid()";
-    }
+//$$$
+//$$$    if(_vpids[j].ctrlUnitsType == controlUnits_metric)
+//$$$    {
+//$$$        _measureConverter->convertPosPid_E2A(j, *pid);//the conversion of velocity pid and position pid are equal
+//$$$    }
+//$$$    else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
+//$$$    {
+//$$$        pid->kp = pid->kp;  //[PWM/icubdegrees]
+//$$$        pid->ki = pid->ki;  //[PWM/icubdegrees]
+//$$$        pid->kd = pid->kd;  //[PWM/icubdegrees]
+//$$$    }
+//$$$    else
+//$$$    {
+//$$$        yError() << "eoMc " << getBoardInfo() << ":Unknown _positionControlUnits needed by getVelPid()";
+//$$$    }
 
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
@@ -4021,22 +4021,20 @@ bool embObjMotionControl::helper_getVelPidsRaw(Pid *pid)
     for(int j=0; j<_njoints; j++)
     {
         copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
-        
-        
-        if(_vpids[j].ctrlUnitsType == controlUnits_metric)
-        {
-            _measureConverter->convertPosPid_E2A(j, pid[j]);//the conversion of velocity pid and position pid are equal
-        }
-        else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
-        {
-            pid[j].kp = pid[j].kp;  //[PWM/icubdegrees]
-            pid[j].ki = pid[j].ki;  //[PWM/icubdegrees]
-            pid[j].kd = pid[j].kd;  //[PWM/icubdegrees]
-        }
-        else
-        {
-            yError() << "eoMc " << getBoardInfo() << ":Unknown _positionControlUnits needed by getVelPid()";
-        }
+//$$$        if(_vpids[j].ctrlUnitsType == controlUnits_metric)
+//$$$        {
+//$$$            _measureConverter->convertPosPid_E2A(j, pid[j]);//the conversion of velocity pid and position pid are equal
+//$$$        }
+//$$$        else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
+//$$$        {
+//$$$            pid[j].kp = pid[j].kp;  //[PWM/icubdegrees]
+//$$$            pid[j].ki = pid[j].ki;  //[PWM/icubdegrees]
+//$$$            pid[j].kd = pid[j].kd;  //[PWM/icubdegrees]
+//$$$        }
+//$$$        else
+//$$$        {
+//$$$            yError() << "eoMc " << getBoardInfo() << ":Unknown _positionControlUnits needed by getVelPid()";
+//$$$        }
     }
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }

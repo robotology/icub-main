@@ -258,8 +258,8 @@ private:
     bool dealloc();
 
 
-    bool convertPosPid(eomc::PidInfo myPidInfo[]);
-    bool convertTrqPid(eomc::TrqPidInfo myPidInfo[]);
+    //$$$bool convertPosPid(eomc::PidInfo myPidInfo[]);
+    //$$$bool convertTrqPid(eomc::TrqPidInfo myPidInfo[]);
 
     bool verifyUserControlLawConsistencyInJointSet(eomc::PidInfo *ipdInfo);
     bool verifyUserControlLawConsistencyInJointSet(eomc::TrqPidInfo *pidInfo);

@@ -90,45 +90,45 @@ double measuresConverter::getAngleToEncoder(int j)
     return angleToEncoders[j];
 }
 
-void measuresConverter::convertTrqPid_N2S(int j, yarp::dev::Pid &pid)
-{
-    //Here i need to use the conversion factors related to the torque control that could be different from the other torque conversion
-    double trq_factor_N2S = trqCrtlFactors->get_N2S(j);
+//$$$void measuresConverter::convertTrqPid_N2S(int j, yarp::dev::Pid &pid)
+//$$${
+//$$$    //Here i need to use the conversion factors related to the torque control that could be different from the other torque conversion
+//$$$    double trq_factor_N2S = trqCrtlFactors->get_N2S(j);
 
-    pid.kp = pid.kp / trq_factor_N2S ;  //[PWM/Nm] ==> [PWM/microNm]
-    pid.ki = pid.ki / trq_factor_N2S;   //[PWM/Nm] ==> [PWM/microNm]
-    pid.kd = pid.kd / trq_factor_N2S;   //[PWM/Nm] ==> [PWM/microNm]
-    pid.stiction_up_val   = pid.stiction_up_val * trq_factor_N2S;   //[Nm] ==> [microNm]
-    pid.stiction_down_val = pid.stiction_down_val * trq_factor_N2S; //[Nm] ==> [microNm]
-}
-
-
-void measuresConverter::convertTrqPid_S2N(int j, yarp::dev::Pid &pid)
-{
-    //Here i need to use the conversion factors related to the torque control that could be different from the other torque conversion
-    double trq_factor_N2S = trqCrtlFactors->get_N2S(j);
-
-    pid.kp = pid.kp * trq_factor_N2S; //[PWM/microNm] ==> [PWM/Nm]
-    pid.ki = pid.ki * trq_factor_N2S; //[PWM/microNm] ==> [PWM/Nm]
-    pid.kd = pid.kd * trq_factor_N2S; //[PWM/microNm] ==> [PWM/Nm]
-    pid.stiction_up_val   = pid.stiction_up_val   / trq_factor_N2S; //[microNm] ==> [Nm]
-    pid.stiction_down_val = pid.stiction_down_val / trq_factor_N2S; //[microNm] ==> [Nm]
-}
+//$$$    pid.kp = pid.kp / trq_factor_N2S ;  //[PWM/Nm] ==> [PWM/microNm]
+//$$$    pid.ki = pid.ki / trq_factor_N2S;   //[PWM/Nm] ==> [PWM/microNm]
+//$$$    pid.kd = pid.kd / trq_factor_N2S;   //[PWM/Nm] ==> [PWM/microNm]
+//$$$    pid.stiction_up_val   = pid.stiction_up_val * trq_factor_N2S;   //[Nm] ==> [microNm]
+//$$$    pid.stiction_down_val = pid.stiction_down_val * trq_factor_N2S; //[Nm] ==> [microNm]
+//$$$}
 
 
-void measuresConverter::convertPosPid_A2E(int j, yarp::dev::Pid &pid)
-{
-    pid.kp = pid.kp / getAngleToEncoder(j);  //[PWM/deg] ==> [PWM/icubdegrees]
-    pid.ki = pid.ki / getAngleToEncoder(j);  //[PWM/deg] ==> [PWM/icubdegrees]
-    pid.kd = pid.kd / getAngleToEncoder(j);  //[PWM/deg] ==> [PWM/icubdegrees]
-}
+//$$$void measuresConverter::convertTrqPid_S2N(int j, yarp::dev::Pid &pid)
+//$$${
+//$$$    //Here i need to use the conversion factors related to the torque control that could be different from the other torque conversion
+//$$$    double trq_factor_N2S = trqCrtlFactors->get_N2S(j);
 
-void measuresConverter::convertPosPid_E2A(int j, yarp::dev::Pid &pid)
-{
-    pid.kp = pid.kp * getAngleToEncoder(j); //[PWM/icubdegrees] ==> [PWM/deg]
-    pid.ki = pid.ki * getAngleToEncoder(j); //[PWM/icubdegrees] ==> [PWM/deg]
-    pid.kd = pid.kd * getAngleToEncoder(j); //[PWM/icubdegrees] ==> [PWM/deg]
-}
+//$$$    pid.kp = pid.kp * trq_factor_N2S; //[PWM/microNm] ==> [PWM/Nm]
+//$$$    pid.ki = pid.ki * trq_factor_N2S; //[PWM/microNm] ==> [PWM/Nm]
+//$$$    pid.kd = pid.kd * trq_factor_N2S; //[PWM/microNm] ==> [PWM/Nm]
+//$$$    pid.stiction_up_val   = pid.stiction_up_val   / trq_factor_N2S; //[microNm] ==> [Nm]
+//$$$    pid.stiction_down_val = pid.stiction_down_val / trq_factor_N2S; //[microNm] ==> [Nm]
+//$$$}
+
+
+//$$$void measuresConverter::convertPosPid_A2E(int j, yarp::dev::Pid &pid)
+//$$${
+//$$$    pid.kp = pid.kp / getAngleToEncoder(j);  //[PWM/deg] ==> [PWM/icubdegrees]
+//$$$    pid.ki = pid.ki / getAngleToEncoder(j);  //[PWM/deg] ==> [PWM/icubdegrees]
+//$$$    pid.kd = pid.kd / getAngleToEncoder(j);  //[PWM/deg] ==> [PWM/icubdegrees]
+//$$$}
+
+//$$$void measuresConverter::convertPosPid_E2A(int j, yarp::dev::Pid &pid)
+//$$${
+//$$$    pid.kp = pid.kp * getAngleToEncoder(j); //[PWM/icubdegrees] ==> [PWM/deg]
+//$$$    pid.ki = pid.ki * getAngleToEncoder(j); //[PWM/icubdegrees] ==> [PWM/deg]
+//$$$    pid.kd = pid.kd * getAngleToEncoder(j); //[PWM/icubdegrees] ==> [PWM/deg]
+//$$$}
 
 double measuresConverter::convertTrqMotorBemfParam_MachineUnitsToMetric(int j, double bemf)
 {
