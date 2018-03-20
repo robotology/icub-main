@@ -469,6 +469,8 @@ public:
     bool getTorqueControlFilterType(int j, int& type) ;
     bool getRotorLimitsRaw(int j, double *rotorMin, double *rotorMax) ;
     bool getWholeImpedanceRaw(int j, eOmc_impedance_t &imped);
+    bool setPidSlopeTimeRaw(const PidControlTypeEnum& pidtype, int j, const int time_ms);
+    bool getPidSlopeTimeRaw(const PidControlTypeEnum& pidtype, int j, int & time_ms);
 
     ////// Amplifier interface
     virtual bool enableAmpRaw(int j) override;

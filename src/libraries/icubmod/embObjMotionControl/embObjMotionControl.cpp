@@ -757,7 +757,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
         //2) since some joint sets configuration info is in control and ids group, get that info and save them in jointset data struct.
         updatedJointsetsCfgWithControlInfo();
-    }
+        }
 
     ///////////////INIT INTERFACES
     _measureConverter = new ControlBoardHelper(_njoints, _axisMap, measConvFactors.angleToEncoder, NULL, measConvFactors.newtonsToSensor, measConvFactors.ampsToSensor, nullptr, measConvFactors.dutycycleToPWM , measConvFactors.bemf2raw, measConvFactors.ktau2raw);
@@ -1223,11 +1223,11 @@ bool embObjMotionControl::init()
         motor_cfg.pwmLimit =_rotorsLimits[logico].pwmMax;
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMin, fisico ));
-        
+
         yarp::dev::Pid tmp;
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_CURRENT, _cpids[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &motor_cfg.pidcurrent);
-                
+        
         if (false == res->setcheckRemoteValue(protid, &motor_cfg, 10, 0.010, 0.050))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for motor config fisico #" << fisico << "in "<< getBoardInfo(); 
@@ -1535,7 +1535,7 @@ bool embObjMotionControl::helper_getPosPidsRaw(Pid *pid)
         copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
         
         //printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
-    }
+        }
     return true;
 }
 
@@ -3062,6 +3062,66 @@ bool embObjMotionControl::getJointDeadZoneRaw(int j, double &jntDeadZone)
     return true;
 }
 
+bool embObjMotionControl::setPidSlopeTimeRaw(const PidControlTypeEnum& pidtype, int j, const int time_ms)
+{
+    eOprotID32_t protid1;
+    if      (pidtype == VOCAB_PIDTYPE_POSITION) { protid1 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition); }
+    else if (pidtype == VOCAB_PIDTYPE_TORQUE)   { protid1 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque); }
+    else
+    {
+        yError() << "getPidSlopeTimeRaw(): invalid pidtype";
+        return false;
+    }
+   
+    uint16_t size;
+    eOmc_PID_t eoPID = { 0 };
+    if (!askRemoteValue(protid1, &eoPID, size))
+    {
+        yError() << "setPidSlopeTimeRaw() " << getBoardInfo() << " joint " << j;
+        return false;
+    }
+
+    eoPID.slope_time_ms = time_ms;
+
+    eOprotID32_t protid2;
+    if      (pidtype == VOCAB_PIDTYPE_POSITION) { protid2 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition); }
+    else if (pidtype == VOCAB_PIDTYPE_TORQUE)   { protid2 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque); }
+    else
+    {
+        yError() << "getPidSlopeTimeRaw(): invalid pidtype";
+        return false;
+    }
+
+    if (!res->setRemoteValue(protid2, &eoPID))
+    {
+        yError() << "setPidSlopeTimeRaw() " << getBoardInfo() << " joint " << j;
+        return false;
+    }
+    return true;
+}
+
+bool embObjMotionControl::getPidSlopeTimeRaw(const PidControlTypeEnum& pidtype, int j, int & time_ms)
+{
+    eOprotID32_t protid;
+    if      (pidtype == VOCAB_PIDTYPE_POSITION) {protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition); }
+    else if (pidtype == VOCAB_PIDTYPE_TORQUE)   {protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque); }
+    else
+    {
+        yError() << "getPidSlopeTimeRaw(): invalid pidtype";
+        return false;
+    }
+    uint16_t size;
+    eOmc_PID_t eoPID = { 0 };
+    if (!askRemoteValue(protid, &eoPID, size))
+    {
+        yError() << "getPidSlopeTimeRaw() " << getBoardInfo() << " joint " << j;
+        return false;
+    }
+
+    time_ms = eoPID.slope_time_ms;
+    return true;
+}
+
 // IRemoteVariables
 bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
 {
@@ -3338,6 +3398,18 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         }
         return true;
     }
+    else if (key == "posPidSlopeTime")
+    {
+        int tmp1;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getPidSlopeTimeRaw(VOCAB_PIDTYPE_POSITION, i, tmp1);  r.addInt(tmp1); }
+        return true;
+    }
+    else if (key == "trqPidSlopeTime")
+    {
+        int tmp1;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getPidSlopeTimeRaw(VOCAB_PIDTYPE_TORQUE, i, tmp1);  r.addInt(tmp1); }
+        return true;
+    }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
@@ -3369,6 +3441,16 @@ bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const 
     else if (key == "PWMLimit")
     {
         for (int i = 0; i < _njoints; i++) setPWMLimitRaw(i, val.get(i).asDouble());
+        return true;
+    }
+    else if (key == "posPidSlopeTime")
+    {
+        for (int i = 0; i < _njoints; i++) setPidSlopeTimeRaw(VOCAB_PIDTYPE_POSITION, i, val.get(i).asInt());
+        return true;
+    }
+    else if (key == "trqPidSlopeTime")
+    {
+        for (int i = 0; i < _njoints; i++) setPidSlopeTimeRaw(VOCAB_PIDTYPE_TORQUE, i, val.get(i).asInt());
         return true;
     }
     //disabled for used safety
@@ -3437,6 +3519,8 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("readonly_current_PIDraw");
     listOfKeys->addString("readonly_torque_PIDraw");
     listOfKeys->addString("readonly_motor_torque_params_raw");
+    listOfKeys->addString("posPidSlopeTime");
+    listOfKeys->addString("trqPidSlopeTime");
     return true;
 }
 
@@ -3767,9 +3851,9 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f\n",j, params.bemf, params.ktau);
 
     eo_params.bemf_value  = (float)   params.bemf;
-    eo_params.bemf_scale  = (uint8_t) params.bemf_scale;
+    eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
     eo_params.ktau_value  = (float)   params.ktau;
-    eo_params.ktau_scale  = (uint8_t) params.ktau_scale;
+    eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
 
     if(false == res->setRemoteValue(id32, &eo_params))
     {
@@ -3838,7 +3922,7 @@ bool embObjMotionControl::helper_getVelPidsRaw(Pid *pid)
     for(int j=0; j<_njoints; j++)
     {
         copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
-    }
+        }
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
