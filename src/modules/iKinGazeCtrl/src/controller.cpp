@@ -267,10 +267,10 @@ void Controller::stopLimb(const bool execStopPosition)
     if (commData->neckPosCtrlOn)
     {
         if (execStopPosition)
-            posHead->stop(neckJoints.size(),neckJoints.getFirst());
+            posHead->stop((int)neckJoints.size(),neckJoints.data());
 
         // note: vel==0.0 is always achievable
-        velHead->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),
+        velHead->velocityMove((int)eyesJoints.size(),eyesJoints.data(),
                               Vector(eyesJoints.size(),0.0).data());
     }
     else
@@ -487,8 +487,8 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
     ang_[1]=CTRL_RAD2DEG*sat(ang[1],lim(eyesJoints[1],0),lim(eyesJoints[1],1));
     ang_[2]=CTRL_RAD2DEG*sat(ang[2],lim(eyesJoints[2],0),lim(eyesJoints[2],1));
 
-    posHead->setRefSpeeds(eyesJoints.size(),eyesJoints.getFirst(),vel.data());
-    posHead->positionMove(eyesJoints.size(),eyesJoints.getFirst(),ang_.data());
+    posHead->setRefSpeeds((int)eyesJoints.size(),eyesJoints.data(),vel.data());
+    posHead->positionMove((int)eyesJoints.size(),eyesJoints.data(),ang_.data());
 
     if (commData->debugInfoEnabled && (port_debug.getOutputCount()>0))
     {
@@ -545,15 +545,15 @@ void Controller::resetCtrlEyes()
 /************************************************************************/
 bool Controller::areJointsHealthyAndSet()
 {
-    VectorOf<int> modes(nJointsHead);
-    modHead->getControlModes(modes.getFirst());
+    vector<int> modes(nJointsHead);
+    modHead->getControlModes(modes.data());
 
     jointsToSet.clear();
-    for (size_t i=0; i<modes.size(); i++)
+    for (int i=0; i<(int)modes.size(); i++)
     {
         if ((modes[i]==VOCAB_CM_HW_FAULT) || (modes[i]==VOCAB_CM_IDLE))
             return false;
-        else if (i<(size_t)eyesJoints[0])
+        else if (i<eyesJoints[0])
         {
             if (commData->neckPosCtrlOn)
             {
@@ -577,8 +577,8 @@ void Controller::setJointsCtrlMode()
     if (jointsToSet.size()==0)
         return;
 
-    VectorOf<int> modes;
-    for (size_t i=0; i<jointsToSet.size(); i++)
+    vector<int> modes;
+    for (int i=0; i<(int)jointsToSet.size(); i++)
     {
         if (jointsToSet[i]<eyesJoints[0])
         {
@@ -591,8 +591,7 @@ void Controller::setJointsCtrlMode()
             modes.push_back(VOCAB_CM_MIXED);
     }
 
-    modHead->setControlModes(jointsToSet.size(),jointsToSet.getFirst(),
-                             modes.getFirst());
+    modHead->setControlModes((int)jointsToSet.size(),jointsToSet.data(),modes.data());
 }
 
 
@@ -661,7 +660,7 @@ void Controller::run()
     if (commData->saccadeUnderway && (Time::now()-saccadeStartTime>=Ts))
     {
         bool done;
-        posHead->checkMotionDone(eyesJoints.size(),eyesJoints.getFirst(),&done);
+        posHead->checkMotionDone((int)eyesJoints.size(),eyesJoints.data(),&done);
         commData->saccadeUnderway=!done;
 
         if (!commData->saccadeUnderway)
@@ -902,8 +901,8 @@ void Controller::run()
         if (commData->neckPosCtrlOn)
         {
             posdeg=(CTRL_RAD2DEG)*IntPlan->get();
-            posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
-            velHead->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),vdeg.subVector(3,5).data());
+            posNeck->setPositions((int)neckJoints.size(),neckJoints.data(),posdeg.data());
+            velHead->velocityMove((int)eyesJoints.size(),eyesJoints.data(),vdeg.subVector(3,5).data());
         }
         else
             velHead->velocityMove(vdeg.data());

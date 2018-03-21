@@ -41,6 +41,7 @@
 #define __SERVERCARTESIANCONTROLLER_H__
 
 #include <string>
+#include <vector>
 #include <set>
 #include <deque>
 #include <map>
@@ -240,8 +241,8 @@ protected:
     double getFeedback(yarp::sig::Vector &_fb);
     void   createController();
     bool   getNewTarget();
-    bool   areJointsHealthyAndSet(yarp::sig::VectorOf<int> &jointsToSet);
-    void   setJointsCtrlMode(const yarp::sig::VectorOf<int> &jointsToSet);
+    bool   areJointsHealthyAndSet(std::vector<int> &jointsToSet);
+    void   setJointsCtrlMode(const std::vector<int> &jointsToSet);
     void   stopLimb(const bool execStopPosition=true);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
