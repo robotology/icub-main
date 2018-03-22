@@ -795,6 +795,152 @@ int cDownloader::strain_set_matrix_gain     (int bus, int target_id, unsigned in
      return 0;
 }
 
+float cDownloader::strain_amplifier_cfg2gain(strain_ampl_cfg_t c)
+{
+    static const float mapofgains[ampcfg_gain_numberOf] =
+    {
+        48, 36, 24, 20, 16, 10, 8, 6, 4
+    };
+
+    return mapofgains[static_cast<unsigned int>(c)];
+}
+
+int cDownloader::strain_set_amplifier_cfg(int bus, int target_id, unsigned char channel, strain_ampl_cfg_t ampcfg, string *errorstring)
+{
+    // check if driver is running
+    if (m_idriver == NULL)
+    {
+        if(_verbose) yError ("Driver not ready\n");
+        return -1;
+    }
+
+    // not for normal strain
+
+    #define _NUMofREGS       6
+
+
+        // constant value of offset registers
+//        const uint8_t _cfg1map[amp_gain_numberOf][_NUMofREGS] =
+//        {
+//            {0x00, 0x40, 0x46, 0x25, 0x00, 0x80},   // gain = 48
+//            {0x00, 0x10, 0x46, 0x25, 0x00, 0x80},   // gain = 36
+//            {0x00, 0x40, 0x42, 0x25, 0x00, 0x80},   // gain = 24 [or 0x26 instead of 0x42]
+//            {0x00, 0x20, 0x42, 0x25, 0x00, 0x80},   // gain = 20 [or 0x26 instead of 0x42]
+//            {0x00, 0x00, 0x42, 0x25, 0x00, 0x80},   // gain = 16 [or 0x26 instead of 0x42]
+//            {0x00, 0xC0, 0x02, 0x25, 0x00, 0x80},   // gain = 10 [or 0x10 instead of 0x02]
+//            {0x00, 0x80, 0x02, 0x25, 0x00, 0x80},   // gain = 08 [or 0x10 instead of 0x02]
+//            {0x00, 0x40, 0x02, 0x25, 0x00, 0x80},   // gain = 06 [or 0x10 instead of 0x02]
+//            {0x00, 0x40, 0x00, 0x25, 0x00, 0x80}    // gain = 04
+//        };
+
+    // offset all equal to 32k-1
+    static const uint8_t _cfg1map[ampcfg_gain_numberOf][_NUMofREGS] =
+    {
+        {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 48
+        {0x00, 0x10, 0x46, 0x2a, 0x80, 0x80},   // gain = 36
+        {0x00, 0x40, 0x42, 0x3e, 0x62, 0x7f},   // gain = 24 [or 0x26 instead of 0x42]
+        {0x00, 0x20, 0x42, 0x4b, 0x15, 0x80},   // gain = 20 [or 0x26 instead of 0x42]
+        {0x00, 0x00, 0x42, 0x5e, 0x72, 0x80},   // gain = 16 [or 0x26 instead of 0x42]
+        {0x00, 0xC0, 0x02, 0x64, 0xf6, 0x6e},   // gain = 10 [or 0x10 instead of 0x02]
+        {0x00, 0x80, 0x02, 0x64, 0x29, 0x62},   // gain = 08 [or 0x10 instead of 0x02]
+        {0x00, 0x40, 0x02, 0x64, 0xd4, 0x4c},   // gain = 06 [or 0x10 instead of 0x02]
+        {0x00, 0x40, 0x00, 0x64, 0x29, 0x22}    // gain = 04
+    };
+
+
+    unsigned int index = static_cast<unsigned int>(ampcfg);
+
+    const int set = 0;
+    txBuffer[0].setId((2 << 8) + target_id);
+    txBuffer[0].setLen(8);
+    txBuffer[0].getData()[0]= 0x2B;
+    txBuffer[0].getData()[1]= ((set << 4) & 0xf0) | (channel & 0x0f);
+    txBuffer[0].getData()[2]= _cfg1map[index][0]; // lsb of gd
+    txBuffer[0].getData()[3]= _cfg1map[index][1]; // msb of gd
+    txBuffer[0].getData()[4]= _cfg1map[index][2];
+    txBuffer[0].getData()[5]= _cfg1map[index][3]; // vc0
+    txBuffer[0].getData()[6]= _cfg1map[index][4];
+    txBuffer[0].getData()[7]= _cfg1map[index][5];
+    set_bus(txBuffer[0], bus);
+    yDebug("strain_set_amplifier_cfg() is sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+
+    m_idriver->send_message(txBuffer, 1);
+
+    // i wait some 10 ms
+    yarp::os::Time::delay(0.010);
+
+
+    return 0;
+}
+
+int cDownloader::strain_get_amplifier_gain_offset      (int bus, int target_id, unsigned char channel, float &gain, uint16_t &offset, string *errorstring)
+{
+     // check if driver is running
+     if (m_idriver == NULL)
+        {
+            if(_verbose) yError ("Driver not ready\n");
+            return -1;
+        }
+
+     txBuffer[0].setId((2 << 8) + target_id);
+     txBuffer[0].setLen(2);
+     txBuffer[0].getData()[0]= 0x20;
+     txBuffer[0].getData()[1]= channel;
+     set_bus(txBuffer[0], bus);
+     m_idriver->send_message(txBuffer, 1);
+
+
+//     for(int nr=0; nr<1; nr++)
+     {
+         int rm = m_idriver->receive_message(rxBuffer, 1, 1.0);
+         for(int i=0; i<rm; i++)
+         {
+             if (rxBuffer[i].getData()[0]==0x20)
+             {
+
+                 uint8_t chn = rxBuffer[i].getData()[1];
+                 uint16_t g16 = static_cast<uint16_t>(rxBuffer[i].getData()[2]) | static_cast<uint16_t>(rxBuffer[i].getData()[3]) << 8;
+                 float fg = static_cast<float>(g16) / 100;
+                 gain = fg;
+                 uint16_t o16 = static_cast<uint16_t>(rxBuffer[i].getData()[4]) | static_cast<uint16_t>(rxBuffer[i].getData()[5]) << 8;
+                 offset = o16;
+             }
+             break;
+         }
+     }
+
+     return 0;
+}
+
+int cDownloader::strain_set_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float gain, uint16_t offset, string *errorstring)
+{
+     // check if driver is running
+     if (m_idriver == NULL)
+        {
+            if(_verbose) yError ("Driver not ready\n");
+            return -1;
+        }
+
+
+     txBuffer[0].setId((2 << 8) + target_id);
+     txBuffer[0].setLen(7);
+     txBuffer[0].getData()[0]= 0x21;
+     txBuffer[0].getData()[1]= channel;
+     txBuffer[0].getData()[2]= 0; // mode is set both of them
+     uint16_t gg = static_cast<uint16_t>(gain*100.0f);
+     txBuffer[0].getData()[3] = (gg & 0x00ff);             // little endian
+     txBuffer[0].getData()[4] = (gg & 0xff00) >> 8;        // little endian
+     txBuffer[0].getData()[5] = (offset & 0x00ff);         // little endian
+     txBuffer[0].getData()[6] = (offset & 0xff00) >> 8;    // little endian
+
+     set_bus(txBuffer[0], bus);
+     int ret = m_idriver->send_message(txBuffer, 1);
+     drv_sleep(5);
+
+     return 0;
+}
+
+
 //*****************************************************************/
 int cDownloader::strain_get_full_scale      (int bus, int target_id, unsigned char channel, unsigned int&  full_scale, int matrix, string *errorstring)
 {
@@ -1224,46 +1370,22 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 #else
     if(icubCanProto_boardType__strain2 == boardtype)
     {
-        yDebug() << "we have a strain2 to calibrate with the new mode";
+        yDebug() << "strain2-amplifier-tuning: see the various STEP-x";
 
-
-
-        uint8_t set = 0;
-        uint8_t everychannel = 0x0f;
+        const uint8_t set = 0;
+        const uint8_t everychannel = 0x0f;
         tolerance = 256;
         uint8_t samples2average = 8; // if zero, the board uses its default (= 4)
 
 #define TESTMODE_STRAIN2
 #undef TESTMODE_STRAIN2_SAMEGAIN
 
+//#define DEBUGLEVEL_MAXIMUM
+
 #if defined(TESTMODE_STRAIN2)
 
-#define NUMofGAINS      8
-#define NUMofREGS       6
-#define NUMofCHANNELS   6
+    const unsigned int NUMofCHANNELS = 6;
 
-        const int index48 = 0;
-        const int index36 = 1;
-        const int index24 = 2;
-        const int index20 = 3;
-        const int index16 = 4;
-        const int index10 = 5;
-        const int index08 = 6;
-        const int index06 = 7;
-
-
-        const uint8_t cfg1map[NUMofGAINS][NUMofREGS] =
-        {
-            {0x00, 0x40, 0x46, 0x25, 0x00, 0x80},   // gain = 48
-            {0x00, 0x10, 0x46, 0x25, 0x00, 0x80},   // gain = 36
-            {0x00, 0x40, 0x42, 0x25, 0x00, 0x80},   // gain = 24 [or 0x26 instead of 0x42]
-            {0x00, 0x20, 0x42, 0x25, 0x00, 0x80},   // gain = 20 [or 0x26 instead of 0x42]
-            {0x00, 0x00, 0x42, 0x25, 0x00, 0x80},   // gain = 16 [or 0x26 instead of 0x42]
-            {0x00, 0xC0, 0x02, 0x25, 0x00, 0x80},   // gain = 10 [or 0x10 instead of 0x02]
-            {0x00, 0x80, 0x02, 0x25, 0x00, 0x80},   // gain = 08 [or 0x10 instead of 0x02]
-            {0x00, 0x40, 0x02, 0x25, 0x00, 0x80}    // gain = 06 [or 0x10 instead of 0x02]
-        };
-        const float gainvalues[NUMofGAINS] = {48, 36, 24, 20, 16, 10, 8, 6};
 
 #if defined(TESTMODE_STRAIN2_SAMEGAIN)
 
@@ -1291,38 +1413,23 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
 #else
 
-        // gain = 24 is on channels 0, 1, 3; gain = 48 is on channels 2, 4, 5
-        int channel2index[NUMofCHANNELS] = {index24, index24, index48, index24, index48, index48};
 
-        yDebug() << "imposing gains which are different of each channel";
+#if defined(DEBUGLEVEL_MAXIMUM)
 
-        for(int channel=0; channel<NUMofCHANNELS; channel++)
+        yDebug() << "reading (gain, offset) of front end amplifiers";
+
+        for(int c=0; c<NUMofCHANNELS; c++)
         {
-            int index = channel2index[channel];
-            yDebug() << "on channel" << channel << "we impose gain =" << gainvalues[index];
-
-            txBuffer[0].setId((2 << 8) + target_id);
-            txBuffer[0].setLen(8);
-            txBuffer[0].getData()[0]= 0x2B;
-            txBuffer[0].getData()[1]= ((set << 4) & 0xf0) | (channel & 0x0f);
-            txBuffer[0].getData()[2]= cfg1map[index][0]; // lsb of gd
-            txBuffer[0].getData()[3]= cfg1map[index][1]; // msb of gd
-            txBuffer[0].getData()[4]= cfg1map[index][2];
-            txBuffer[0].getData()[5]= cfg1map[index][3]; // vc0
-            txBuffer[0].getData()[6]= cfg1map[index][4];
-            txBuffer[0].getData()[7]= cfg1map[index][5];
-            set_bus(txBuffer[0], bus);
-            yDebug("sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
-
-            m_idriver->send_message(txBuffer, 1);
-
-            // i wait some 100 ms
-            yarp::os::Time::delay(1.0);
+            float gaain = 0;
+            uint16_t ooffset = 0;
+            strain_get_amplifier_gain_offset(bus, target_id, c, gaain, ooffset, errorstring);
+            yDebug("channel %d: gain = %f, offset = %d", c, gaain, ooffset);
+            //strain_set_amplifier_gain_offset(bus, target_id, c, gaain+1.0f, ooffset+128, errorstring);
+            //yarp::os::Time::delay(1.0);
+            //gaain = 0; ooffset = 0;
+            //strain_get_amplifier_gain_offset(bus, target_id, c, gaain, ooffset, errorstring);
+            //yDebug("channel %d: new gain = %f, new offset = %d", c, gaain, ooffset);
         }
-
-
-#endif // #else of #if defined(TESTMODE_STRAIN2_SAMEGAIN)
-
 
 
         yDebug() << "i get the amplifier reg config";
@@ -1353,30 +1460,73 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
         yarp::os::Time::delay(2.0);
 
+#endif // #if defined(DEBUGLEVEL_MAXIMUM)
 
-        yDebug() << "i get the amplifier gains";
+
+        // step1: i set the amplifiers
+
+
+        // the chosen gains:
+        const strain_ampl_cfg_t ampsets[NUMofCHANNELS] =
+        {
+            ampcfg_gain08, ampcfg_gain24, ampcfg_gain24,
+            ampcfg_gain10, ampcfg_gain10, ampcfg_gain24
+        };
+
+        yDebug() << "strain2-amplifier-tuning: STEP-1. imposing gains which are different of each channel";
+
+        for(int channel=0; channel<NUMofCHANNELS; channel++)
+        {
+            yDebug() << "strain2-amplifier-tuning: STEP-1. on channel" << channel << "we impose gain =" << strain_amplifier_cfg2gain(ampsets[channel]);
+
+            strain_set_amplifier_cfg(bus, target_id, channel, ampsets[channel], errorstring);
+
+            // i wait some time
+            yarp::os::Time::delay(1.0);
+        }
+
+
+#endif // #else of #if defined(TESTMODE_STRAIN2_SAMEGAIN)
+
+
+        // step2: i read back gains just to be sure ..
+
+        yDebug() << "strain2-amplifier-tuning: STEP-2. reading (gain, offset) of front end amplifiers";
+
+        for(int c=0; c<NUMofCHANNELS; c++)
+        {
+            float gaain = 0;
+            uint16_t ooffset = 0;
+            strain_get_amplifier_gain_offset(bus, target_id, c, gaain, ooffset, errorstring);
+            yDebug("strain2-amplifier-tuning: STEP-2. channel %d: gain = %f, offset = %d", c, gaain, ooffset);
+        }
+
+        yarp::os::Time::delay(2.0);
+
+
+#if defined(DEBUGLEVEL_MAXIMUM)
+
+        yDebug() << "i get the amplifier reg config";
 
         txBuffer[0].setId((2 << 8) + target_id);
         txBuffer[0].setLen(2);
-        txBuffer[0].getData()[0]= 0x20;
+        txBuffer[0].getData()[0]= 0x2A;
         txBuffer[0].getData()[1]= 0xf;
         set_bus(txBuffer[0], bus);
         m_idriver->send_message(txBuffer, 1);
 
-        yDebug() << "i print the amplifier gains";
+        yDebug() << "i print the amplifier reg config";
 
         for(int nr=0; nr<NUMofCHANNELS; nr++)
         {
             int rm = m_idriver->receive_message(rxBuffer, 1, 1.0);
             for(int i=0; i<rm; i++)
             {
-                if (rxBuffer[i].getData()[0]==0x20)
+                if (rxBuffer[i].getData()[0]==0x2A)
                 {
 
                     uint8_t from = rxBuffer[i].getData()[1];
-                    uint16_t gain = static_cast<uint16_t>(rxBuffer[i].getData()[2]) | static_cast<uint16_t>(rxBuffer[i].getData()[3]) << 8;
-                    float fg = static_cast<float>(gain) / 100;
-                    yDebug("from %d: gain = %f", from, fg);
+                    yDebug("from %d: [%x, %x, %x, %x, %x, %x]", from, rxBuffer[i].getData()[2], rxBuffer[i].getData()[3], rxBuffer[i].getData()[4], rxBuffer[i].getData()[5], rxBuffer[i].getData()[6], rxBuffer[i].getData()[7]);
                 }
                 break;
             }
@@ -1384,7 +1534,18 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
         yarp::os::Time::delay(2.0);
 
+#endif // #if defined(DEBUGLEVEL_MAXIMUM)
+
+
+
 #endif
+
+
+        // step3: autocalib
+
+        yDebug() << "strain2-amplifier-tuning: STEP-3. regularisation of ADC to " << middle_val;
+        yDebug() << "strain2-amplifier-tuning: STEP-3. other params: mae tolerence is" << tolerance << "and samples2average =" << samples2average;
+
 
         // sending an autocalib message
         txBuffer[0].setId((2 << 8) + target_id);
@@ -1398,7 +1559,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
         txBuffer[0].getData()[6]= (tolerance >> 8) & 0x00ff;   // little endian
         txBuffer[0].getData()[7]= samples2average;
         set_bus(txBuffer[0], bus);
-        yDebug("sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+        yDebug("strain2-amplifier-tuning: STEP-3. sent message = [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
         int ret = m_idriver->send_message(txBuffer, 1);
         // check if send_message was successful
         if (ret==0)
@@ -1410,7 +1571,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
         // now wait for a reply for most 3 seconds
         double TOUT = 3.0;
 
-        yDebug() << "message sent." << "the strain2 is attempting to regularise its 6 output values to" << middle_val << "mae tolerence is" << tolerance << "and samples2average =" << samples2average << "now we wait for a reply";
+        yDebug() << "strain2-amplifier-tuning: STEP-3. results ...";
 
         int read_messages = m_idriver->receive_message(rxBuffer, 1, TOUT);
         for(int i=0; i<read_messages; i++)
@@ -1426,7 +1587,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
                 if(algorithmOKmask != 0x3f)
                 {
-                    yDebug() << "calibration to value" << middle_val << "has sadly failed because algorithm found required values ot of range of registers CFG0.OS or ZDAC.";
+                    yDebug() << "strain2-amplifier-tuning: STEP-3. KO. regularisation to value" << middle_val << "has sadly failed because algorithm found required values ot of range of registers CFG0.OS or ZDAC.";
                     yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
                     for(int i=0; i<NUMofCHANNELS; i++)
                     {
@@ -1438,7 +1599,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
                 }
                 else
                 {
-                    yDebug() << "calibration to value" << middle_val << "is done and MAE = " << mae;
+                    yDebug() << "strain2-amplifier-tuning: STEP-3. OK. regularisation to value" << middle_val << "is done and MAE = " << mae;
                     if(0 != noisychannelmask)
                     {
                         yDebug() << "however we found some noisy channels";

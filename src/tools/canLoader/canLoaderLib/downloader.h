@@ -166,6 +166,14 @@ int get_dst_from_id (int id);
 
 int verify_ack(int command, int read_messages);
 
+enum strain_ampl_cfg_t
+{
+    ampcfg_gain48 = 0, ampcfg_gain36 = 1, ampcfg_gain24 = 2, ampcfg_gain20 = 3, ampcfg_gain16 = 4,
+    ampcfg_gain10 = 5, ampcfg_gain08 = 6, ampcfg_gain06 = 7, ampcfg_gain04 = 8
+};
+
+
+enum { ampcfg_gain_numberOf = 9 };
 
 
 public:
@@ -205,6 +213,10 @@ int strain_get_matrix_rc	 (int bus, int target_id, char r, char c, unsigned int&
 int strain_set_matrix_rc	 (int bus, int target_id, char r, char c, unsigned int  elem, int matrix = 0, string *errorstring = NULL);
 int strain_get_matrix_gain	 (int bus, int target_id, unsigned int& gain, int matrix = 0, string *errorstring = NULL);
 int strain_set_matrix_gain	 (int bus, int target_id, unsigned int  gain, int matrix = 0, string *errorstring = NULL);
+float strain_amplifier_cfg2gain(strain_ampl_cfg_t c);
+int strain_set_amplifier_cfg(int bus, int target_id, unsigned char channel, strain_ampl_cfg_t ampset, string *errorstring);
+int strain_get_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float &gain, uint16_t &offset, string *errorstring);
+int strain_set_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float gain, uint16_t offset, string *errorstring);
 int strain_get_calib_bias	 (int bus, int target_id, char channel, signed int& bias, string *errorstring = NULL);
 int strain_set_calib_bias	 (int bus, int target_id, string *errorstring = NULL);
 int strain_set_calib_bias	 (int bus, int target_id, char channel, signed int bias, string *errorstring = NULL);

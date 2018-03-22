@@ -59,6 +59,8 @@ private:
     int ch[6];
     int calib_bias[6];
     int curr_bias[6];
+    uint16_t amp_offsets[6];
+    float amp_gains[6];
     unsigned int matrix[3][6][6];
     unsigned int calib_matrix[3][6][6];
     unsigned int calibration_value;
