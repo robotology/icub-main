@@ -29,9 +29,6 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/CanBusInterface.h>
-#include <yarp/sig/Vector.h>
-#include <yarp/sig/Matrix.h>
 
 
 #include "IethResource.h"
@@ -130,7 +127,7 @@ private:
     /*************************************************************/
 
     /** The detected skin errors. These are used for diagnostics purposes. */
-    yarp::sig::VectorOf<iCub::skin::diagnostics::DetectedError> errors;
+    std::vector<iCub::skin::diagnostics::DetectedError> errors;
 
 public:
 
