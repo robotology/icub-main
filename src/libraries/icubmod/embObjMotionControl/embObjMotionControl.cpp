@@ -2515,7 +2515,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
             return false;
         }
 
-        bool tmpresult = checkRemoteControlModeStatus(i, modes[i]);
+        bool tmpresult = checkRemoteControlModeStatus(joints[i], modes[i]);
         if(false == tmpresult)
         {
             yError() << "setControlModesRaw(const int n_joint, const int *joints, int *modes) could not check with checkRemoteControlModeStatus() for " << getBoardInfo() << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
