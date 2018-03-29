@@ -60,6 +60,14 @@ typedef struct
 } servConfigInertials_t;
 
 
+typedef struct
+{
+    eOmn_serv_parameter_t               ethservice;
+    int                                 acquisitionrate;
+    vector<eOas_inertial3_descriptor_t> inertials;
+    vector<string>                      id;
+} servConfigInertials3_t;
+
 #if defined(SERVICE_PARSER_USE_MC)
 typedef struct
 {
