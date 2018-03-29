@@ -104,7 +104,7 @@ private:
     eth::TheEthManager* ethManager;
     eth::AbstractEthResource* res;
     ServiceParser* parser;
-    servConfigInertials3_t servCfg;
+    servConfigImu_t servCfg;
     bool opened;
     bool verbosewhenok;
     

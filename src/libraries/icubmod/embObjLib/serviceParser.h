@@ -66,7 +66,7 @@ typedef struct
     int                                 acquisitionrate;
     vector<eOas_inertial3_descriptor_t> inertials;
     vector<string>                      id;
-} servConfigInertials3_t;
+} servConfigImu_t;
 
 #if defined(SERVICE_PARSER_USE_MC)
 typedef struct
@@ -98,6 +98,7 @@ typedef struct
     string                      id;
     eOas_sensor_t               type;
     eObrd_location_t            location;
+    eObrd_type_t                boardtype;
 } servAnalogSensor_t;
 
 
@@ -216,6 +217,7 @@ public:
     bool parseService(yarp::os::Searchable &config, servConfigMais_t& maisconfig);
     bool parseService(Searchable &config, servConfigStrain_t &strainconfig);
     bool parseService(Searchable &config, servConfigInertials_t &inertialsconfig);
+    bool parseService(Searchable &config, servConfigImu_t &imuconfig);
 
 #if defined(SERVICE_PARSER_USE_MC)
     bool parseService(Searchable &config, servConfigMC_t &mcconfig);

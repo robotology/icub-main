@@ -63,6 +63,11 @@ std::string embObjIMU::getBoardInfo(void)
 
 bool embObjIMU::fromConfig(yarp::os::Searchable &config)
 {
+    if(false == parser->parseService(config, servCfg))
+    {
+        return false;
+    }
+    
     return true;
 }
 
@@ -79,7 +84,31 @@ void embObjIMU::cleanup(void)
 
 bool embObjIMU::sendConfing2board(void)
 {
+    eOas_inertial3_config_t cfg ={0};
+    cfg.datarate = servCfg.acquisitionrate;
+    cfg.enabled = 0;
+    
+    for(size_t i=0; i<servCfg.inertials.size(); i++)
+    {
+        eo_common_word_bitset(&cfg.enabled, i);
+    }
+
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial3, 0, 0/*eoprot_tag_as_inertial3_config*/);
+    if(false == res->setcheckRemoteValue(id32, &cfg, 10, 0.010, 0.050))
+    {
+        yError() << "FATAL: embObjIMU::sendConfing2board() had an error while calling setcheckRemoteValue() for config in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+        return false;
+    }
+    else
+    {
+        if(verbosewhenok)
+        {
+            yDebug() << "embObjIMU::sendConfing2board() correctly configured enabled sensors with period" << cfg.datarate << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+        }
+    }
+    
     return true;
+
 }
 
 bool embObjIMU::initRegulars(void)
@@ -142,7 +171,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     
     const eOmn_serv_parameter_t* servparam = &servCfg.ethservice;
     
-    if(false == res->serviceVerifyActivate(eomn_serv_category_inertials, servparam, 5.0))
+    if(false == res->serviceVerifyActivate(eomn_serv_category_inertials3, servparam, 5.0))
     {
         yError() << "embObjIMU::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD " << boardName << "IP " << boardIPstring;
 

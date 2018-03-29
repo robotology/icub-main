@@ -538,7 +538,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 {
     bool formaterror = false;
     // so far we check for eomn_serv_AS_mais / strain / inertial only
-    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type))
+    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) && (eomn_serv_AS_inertials3 != type))
     {
         yError() << "ServiceParser::check() is called with wrong type";
         return false;
@@ -718,13 +718,28 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.location";
                 return false;
             }
+            Bottle b_PROPERTIES_SENSORS_boardtype;
+            if(type == eomn_serv_AS_inertials3)
+            {
+                Bottle b_PROPERTIES_SENSORS_boardtype = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
+                if(b_PROPERTIES_SENSORS_boardtype.isNull())
+                {
+                    yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.boardType";
+                    return false;
+                }
+            }
+            else
+            {
+                b_PROPERTIES_SENSORS_boardtype.clear();
+            }
 
             int tmp = b_PROPERTIES_SENSORS_id.size();
             int numsensors = tmp - 1;    // first position of bottle contains the tag "id"
 
             // check if all other fields have the same size.
             if( (tmp != b_PROPERTIES_SENSORS_type.size()) ||
-                (tmp != b_PROPERTIES_SENSORS_location.size())
+                (tmp != b_PROPERTIES_SENSORS_location.size()) ||
+                ((type == eomn_serv_AS_inertials3) && (b_PROPERTIES_SENSORS_boardtype.size() != tmp))
               )
             {
                 yError() << "ServiceParser::check() in PROPERTIES.SENSORS some param has inconsistent length";
@@ -744,6 +759,14 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), item.id, formaterror);
                 convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
                 convert(b_PROPERTIES_SENSORS_location.get(i+1).asString(), item.location, formaterror);
+                if(type == eomn_serv_AS_inertials3)
+                {
+                    convert(b_PROPERTIES_SENSORS_boardtype.get(i+1).asString(), item.boardtype, formaterror);
+                }
+                else
+                {
+                    item.boardtype = eobrd_none;
+                }
 
                 as_service.properties.sensors.push_back(item);
             }
@@ -1034,7 +1057,96 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
 }
 
 
+bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
+{
+    if(false == check_analog(config, eomn_serv_AS_inertials3))
+    {
+        yError() << "ServiceParser::parseService(IMU) has received an invalid SERVICE group for IMU";
+        return false;
+    }
+    
+    
+    //check the num of type of boards. At max we have 4 board type  (see eOas_inertials3_boardinfos_maxnumber)
+    
+    if(as_service.properties.canboards.size() > eOas_inertials3_boardinfos_maxnumber)
+    {
+        yError() << "ServiceParser::parseService(IMU): too many type board info are configured. The max num is " << eOas_inertials3_boardinfos_maxnumber;
+        return false;
+    }
 
+    //reset configuration service
+    memset(&imuconfig.ethservice.configuration, 0, sizeof(imuconfig.ethservice.configuration));
+    
+    //set type of service
+    imuconfig.ethservice.configuration.type = eomn_serv_AS_inertials3;
+    
+    
+    //get acquisition rate 
+    imuconfig.acquisitionrate = as_service.settings.acquisitionrate;
+    
+    //get enabled sensor and fill canboard array. Note that we get only the enabled sensor, not all configured sensors !!!
+    
+    imuconfig.inertials.resize(0);
+    
+    eOas_inertial3_setof_boardinfos_t * boardInfoSet_ptr = &imuconfig.ethservice.configuration.data.as.inertial3.setofboardinfos;
+    eOresult_t res = eoas_inertial3_setof_boardinfos_clear(boardInfoSet_ptr);
+    if(res != eores_OK)
+    {
+        yError() << "ServiceParser::parseService(IMU). Error in eoas_inertial3_setof_boardinfos_clear()";
+        return false;
+    }
+    
+    EOarray* array = eo_array_New(eOas_inertials3_descriptors_maxnumber, sizeof(eOas_inertial3_descriptor_t), &imuconfig.ethservice.configuration.data.as.inertial3.arrayofdescriptor);
+    for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
+    {
+        servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
+        eOas_sensor_t type = sensor.type;
+
+        //TODO: temperature???
+        if( (eoas_imu_acc != type) && (eoas_imu_mag != type) && (eoas_imu_gyr != type) && (eoas_imu_eul != type) && 
+            (eoas_imu_qua != type) && (eoas_imu_lia != type) && (eoas_imu_grv != type) && (eoas_imu_status != type) )
+        {
+            yWarning() << "ServiceParser::parseService() has detected a wrong inertial sensor:" << eoas_sensor2string(type) << " ...  we drop it";
+            continue;
+        }
+        // if ok, i copy it inside ...
+        
+        eOas_inertial3_descriptor_t des = {0};
+        des.typeofsensor = type;
+        memcpy(&des.on, &sensor.location, sizeof(eObrd_location_t));
+        
+        const eObrd_info_t *boardInfo_ptr =  eoas_inertial3_setof_boardinfos_find(boardInfoSet_ptr, sensor.boardtype);
+        if(nullptr == boardInfo_ptr)//if I did not already insert the borad info with type == sensor.boardtype, now I insert it
+        {
+            //first of all I need to find the board info for this board type
+            int b;
+            for(b=0; b<as_service.properties.canboards.size(); b++)
+            {
+                if(as_service.properties.canboards.at(b).type == sensor.boardtype)
+                    break;
+            }
+            
+            eObrd_info_t boardInfo = {0};
+            boardInfo.type =  as_service.properties.canboards.at(b).type;
+            memcpy(&boardInfo.protocol , &as_service.properties.canboards.at(b).protocol, sizeof(eObrd_protocolversion_t));
+            memcpy(&boardInfo.firmware, &as_service.properties.canboards.at(b).firmware, sizeof(eObrd_firmwareversion_t));
+            res = eoas_inertial3_setof_boardinfos_add(boardInfoSet_ptr, &boardInfo);
+            if(eores_OK != res)
+            {
+                yError() << "ServiceParser::parseService(IMU). Error in eoas_inertial3_setof_boardinfos_add()";
+                return false;
+            }
+        }
+        des.typeofboard = sensor.boardtype;
+        
+        eo_array_PushBack(array, &des);
+        imuconfig.inertials.push_back(des);
+        imuconfig.id.push_back(sensor.id);
+    }
+    
+    
+    return true;
+}
 #if defined(SERVICE_PARSER_USE_MC)
 
 
