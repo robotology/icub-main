@@ -2533,7 +2533,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementControlLimits2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementControlMode2::initialize(p._njoints, p._axisMap);
-    ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
+    ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor, p._ampsToSensor, nullptr);
     _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
     
     if      (p._torqueControlUnits==CanBusMotionControlParameters::MACHINE_UNITS) {}

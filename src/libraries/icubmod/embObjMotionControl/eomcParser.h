@@ -55,6 +55,7 @@
 #include <yarp/dev/ControlBoardHelper.h>
 #include <yarp/os/ConstString.h>
 
+#include <yarp/dev/PidEnums.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
@@ -83,18 +84,12 @@ typedef enum
 } PidAlgorithmType_t;
 
 
-typedef enum
-{
-    controlUnits_machine = 0,
-    controlUnits_metric = 1,
-    controlUnits_unknown = 255
-} GenericControlUnitsType_t;
-
 class Pid_Algorithm
 {
 public:
     PidAlgorithmType_t type;
-    GenericControlUnitsType_t ctrlUnitsType;
+    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
+    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
     virtual ~Pid_Algorithm() {;};
 
 };
@@ -164,7 +159,8 @@ class PidInfo
 public:
 
     yarp::dev::Pid pid;
-    GenericControlUnitsType_t ctrlUnitsType;
+    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
+    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
     PidAlgorithmType_t controlLaw;
     std::string usernamePidSelected;
     bool enabled;
@@ -173,7 +169,8 @@ public:
     {
         enabled = false;
         controlLaw = PidAlgo_simple;
-        ctrlUnitsType = controlUnits_machine;
+        fbk_PidUnits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
+        out_PidUnits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
     }
     ~PidInfo()
     {
@@ -339,7 +336,7 @@ private:
     bool parsePidTrq_withInnerVelPid(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePidsGroup(yarp::os::Bottle& pidsGroup, yarp::dev::Pid myPid[], std::string prefix);
     bool getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids);
-    bool parsePidUnitsType(yarp::os::Bottle &bPid, GenericControlUnitsType_t &unitstype);
+    bool parsePidUnitsType(yarp::os::Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
 
 
     bool convert(yarp::os::ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);

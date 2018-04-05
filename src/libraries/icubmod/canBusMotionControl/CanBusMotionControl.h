@@ -582,7 +582,7 @@ class axisPositionDirectHelper
     int  jointsNum;
     double* maxHwStep;
     double* maxUserStep;
-    ControlBoardHelper* helper;
+    yarp::dev::ControlBoardHelper* helper;
     
     public:
     axisPositionDirectHelper(int njoints, const int *aMap, const double *angToEncs, double* _maxStep);

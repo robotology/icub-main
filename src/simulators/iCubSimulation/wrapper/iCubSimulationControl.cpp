@@ -310,7 +310,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlLimits2::initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor);
+    ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor, ampsToSensor, dutycycleToPwm);
     ImplementControlMode2::initialize(njoints, axisMap);
     ImplementInteractionMode::initialize(njoints, axisMap);
     ImplementPositionDirect::initialize(njoints, axisMap, angleToEncoder, zeros);

@@ -29,6 +29,7 @@
 #include "motionControlDefaultValues.h"
 
 #include <yarp/os/NetType.h>
+#include <yarp/dev/ControlBoardHelper.h>
 
 
 #include "eomcUtils.h"
@@ -45,7 +46,7 @@ using namespace yarp::dev::eomc;
 // macros
 #define ASK_REFERENCE_TO_FIRMWARE 1
 
-#define PARSER_MOTION_CONTROL_VERSION   4
+#define PARSER_MOTION_CONTROL_VERSION   5
 
 
 
@@ -306,7 +307,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementVelocityControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementControlLimits2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
-    ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
+    ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM);
     ImplementPositionDirect::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementInteractionMode::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotor::initialize(_njoints, _axisMap);
@@ -423,49 +424,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     opened = true;
     return true;
 }
-
-
-
-
-//$$$bool embObjMotionControl::convertPosPid(eomc::PidInfo myPidInfo[])
-//$$${
-//$$$
-//$$$    //conversion from metric to machine units (if applicable)
-//$$$    for (int j=0; j<_njoints; j++)
-//$$$    {
-//$$$        if(myPidInfo[j].ctrlUnitsType ==  controlUnits_metric)
-//$$$        {
-//$$$            _measureConverter->convertPosPid_A2E(j, myPidInfo[j].pid);
-//$$$        }
-//$$$
-//$$$        else
-//$$$        {
-//$$$            //do nothing
-//$$$        }
-//$$$    }
-//$$$     return true;
-//$$$}
-
-
-
-
-//$$$bool embObjMotionControl::convertTrqPid(eomc::TrqPidInfo myPidInfo[])
-//$$${
-//$$$    //conversion from metric to machine units (if applicable)
-//$$$    for (int j=0; j<_njoints; j++)
-//$$$    {
-//$$$        if(!myPidInfo[j].enabled)
-//$$$            continue;
-//$$$
-//$$$        if(myPidInfo[j].ctrlUnitsType ==  controlUnits_metric)
-//$$$        {
-//$$$            _measureConverter->convertTrqPid_N2S(j, myPidInfo[j].pid);
-//$$$        }
-//$$$    }
-//$$$
-//$$$    return true;
-//$$$}
-
 
 
 int embObjMotionControl::fromConfig_NumOfJoints(yarp::os::Searchable &config)
@@ -681,7 +639,6 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     int i,j;
 
     measureConvFactors measConvFactors (_njoints);
-    torqueControlConvFactors trqCtrlConvFactors(_njoints);
 
     if(iNeedCouplingsInfo())
     {
@@ -777,20 +734,6 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
        if(!_mcparser->parsePids(config, _ppids, _vpids, _tpids, _cpids, currentPidisMandatory))
             return false;
 
-       for(int logico=0; logico< _njoints; logico++)
-       {
-           MotorTorqueParameters params;
-           params.bemf = _tpids[logico].kbemf;
-           params.bemf_scale = 0;
-           params.ktau = _tpids[logico].ktau;
-           params.ktau_scale = 0;
-           //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
-           //printf("after file has been read : j%d, bemf=%f, ktau=%f \n", logico, params.bemf, params.ktau);
-
-       }
-
-
-
         // 1) verify joint beloning to same set has same control law
         if(!verifyUserControlLawConsistencyInJointSet(_ppids))
             return false;
@@ -799,60 +742,24 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if(!verifyUserControlLawConsistencyInJointSet(_tpids))
             return false;
 
-        eomc::GenericControlUnitsType_t trqunittype;
-        if(!verifyTorquePidshasSameUnitTypes(trqunittype))
+        yarp::dev::PidFeedbackUnitsEnum fbk_TrqPidUnits;
+        yarp::dev::PidOutputUnitsEnum   out_TrqPidUnits;
+        if(!verifyTorquePidshasSameUnitTypes(fbk_TrqPidUnits, out_TrqPidUnits))
             return false;
 
-
-        // Due to historical reasons, the joint number used at user level, should be different from the number joint at device level (embObjMotioncontrol).
-        // Infact in configuration files there is the AxisMap parameter, that lets us to "translate" joint number from user level to device level.
-        // The configuration data written in xml files are given using "user" joint number, so when embObjMotioncontrol needs to send the configuration to fw or
-        // to save in its memory, it have to remaped the information using "device" joint number.
-        // For this reason,  in the following the _measureConverter uses the ramapped conversion factor and embObjMotionControl::init() discriminates between
-        // joint "fisico" from "logico".
-        // It is important to notice that functions ...*Raw are called with the joint numer at device level, so in those functions it is not necessary to perform any
-        // joint number translation.
-        // NOTE: (TODO) translate "fisico" and "logico" variables name in English.
-
-        measureConvFactors measConvFactors_remaped (_njoints);
-        std::vector<int> fakeAxisMap(_njoints);
-        for(int i=0; i<_njoints; i++)
-        {
-            measConvFactors_remaped.angleToEncoder[_axisMap[i]]  = measConvFactors.angleToEncoder[i];
-            measConvFactors_remaped.dutycycleToPWM[_axisMap[i]]  = measConvFactors.dutycycleToPWM[i];
-            measConvFactors_remaped.ampsToSensor[_axisMap[i]]    = measConvFactors.ampsToSensor[i];
-            measConvFactors_remaped.newtonsToSensor[_axisMap[i]] = measConvFactors.newtonsToSensor[i];
-
-            fakeAxisMap[i]=i;
-        }
-
-
-        if (trqunittype==controlUnits_metric)
-        {
-
-            trqCtrlConvFactors.init(measConvFactors_remaped.angleToEncoder, measConvFactors_remaped.newtonsToSensor);
-        }
-        else
-        {
-             yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0);
-             trqCtrlConvFactors.init(tmpOnes.data(), tmpOnes.data());
-        }
-
-        _measureConverter = new measuresConverter(_njoints,  fakeAxisMap.data(), trqCtrlConvFactors, measConvFactors_remaped);
-
-
-        // 2) convert pid values from metrics units to fw units(i.e. icubDegrees)
-        convertPosPid(_ppids);
-        convertPosPid(_vpids);
-        convertTrqPid(_tpids);
-
-        //3) since some joint sets configuration info is in control and ids group, get that info and save them in jointset data struct.
+        //2) since some joint sets configuration info is in control and ids group, get that info and save them in jointset data struct.
         updatedJointsetsCfgWithControlInfo();
-
     }
 
     ///////////////INIT INTERFACES
+    _measureConverter = new ControlBoardHelper(_njoints, _axisMap, measConvFactors.angleToEncoder, NULL, measConvFactors.newtonsToSensor, measConvFactors.ampsToSensor, measConvFactors.dutycycleToPWM);
+
     initializeInterfaces(measConvFactors);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, _ppids->fbk_PidUnits, _ppids->out_PidUnits);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, _vpids->fbk_PidUnits, _vpids->out_PidUnits);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE,   _tpids->fbk_PidUnits, _tpids->out_PidUnits);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT,  _cpids->fbk_PidUnits, _cpids->out_PidUnits);
+
 
     //Now save in data in structures EmbObj protocol compatible
     if(!saveCouplingsData())
@@ -941,9 +848,10 @@ bool embObjMotionControl::verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk 
 
 }
 
-bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(eomc::GenericControlUnitsType_t &unittype)
+bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits)
 {
-    unittype = controlUnits_unknown;
+    fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
+    out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
     //get first joint with enabled torque
     int firstjoint = -1;
     for(int i=0; i<_njoints; i++)
@@ -962,7 +870,8 @@ bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(eomc::GenericControlU
     {
         if(_tpids[i].enabled)
         {
-            if(_tpids[firstjoint].ctrlUnitsType != _tpids[i].ctrlUnitsType)
+            if(_tpids[firstjoint].fbk_PidUnits != _tpids[i].fbk_PidUnits ||
+               _tpids[firstjoint].out_PidUnits != _tpids[i].out_PidUnits)
             {
                 yError() << "embObjMC " << getBoardInfo() << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
                 return false;
@@ -970,7 +879,8 @@ bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(eomc::GenericControlU
         }
     }
 
-    unittype = _tpids[firstjoint].ctrlUnitsType;
+    fbk_pidunits = _tpids[firstjoint].fbk_PidUnits;
+    out_pidunits = _tpids[firstjoint].out_PidUnits;
     return true;
 }
 
@@ -1208,14 +1118,18 @@ bool embObjMotionControl::init()
 
         eOmc_joint_config_t jconfig = {0};
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
-        copyPid_iCub2eo(&(_ppids[logico].pid),  &jconfig.pidposition);
-        copyPid_iCub2eo(&(_vpids[logico].pid), &jconfig.pidvelocity);
-        copyPid_iCub2eo(&(_tpids[logico].pid), &jconfig.pidtorque);
+        yarp::dev::Pid tmp; 
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_POSITION,_ppids[logico].pid, fisico);
+        copyPid_iCub2eo(&tmp,  &jconfig.pidposition);
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_VELOCITY, _vpids[logico].pid, fisico);
+        copyPid_iCub2eo(&tmp, &jconfig.pidvelocity);
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_TORQUE, _tpids[logico].pid, fisico);
+        copyPid_iCub2eo(&tmp, &jconfig.pidtorque);
 
         //stiffness and damping read in xml file are in Nm/deg and Nm/(Deg/sec), so we need to convert before send to fw.
         jconfig.impedance.damping   = (eOmeas_damping_t) _measureConverter->impN2S(_impedance_params[logico].damping, fisico);
         jconfig.impedance.stiffness = (eOmeas_stiffness_t) _measureConverter->impN2S(_impedance_params[logico].stiffness, fisico);
-        jconfig.impedance.offset    = 0; //impedance_params[j];
+        jconfig.impedance.offset    = 0;
 
         _cacheImpedance[logico].stiffness = jconfig.impedance.stiffness;
         _cacheImpedance[logico].damping   = jconfig.impedance.damping;
@@ -1235,10 +1149,9 @@ bool embObjMotionControl::init()
         jconfig.jntEncoderType = _jointEncs[logico].type;
         jconfig.jntEncTolerance = _jointEncs[logico].tolerance;
 
-        //printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, _tpids[logico].kbemf, _tpids[logico].ktau);
-        jconfig.motor_params.bemf_value = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(fisico,  _tpids[logico].kbemf);
+        jconfig.motor_params.bemf_value = _measureConverter->bemfuser2bemfraw(_tpids[logico].kbemf, fisico);
         jconfig.motor_params.bemf_scale = 0;
-        jconfig.motor_params.ktau_value = (float) _measureConverter->convertTrqMotorKtaufParam_MetricToMachineUnits(fisico, _tpids[logico].ktau);
+        jconfig.motor_params.ktau_value = _measureConverter->ktauuser2ktauraw(_tpids[logico].ktau, fisico);
         jconfig.motor_params.ktau_scale = 0;
 
         jconfig.gearbox_E2J = _gearbox_E2J[logico];
@@ -1261,21 +1174,6 @@ bool embObjMotionControl::init()
             }
         }
     }
-
-//     /////////////////////////////////////////////////////////
-//     // invia la configurazione dei parametri di stiction   //
-//     /////////////////////////////////////////////////////////
-//     for(int logico=0; logico< _njoints; logico++)
-//     {
-//         MotorTorqueParameters params;
-//         params.bemf = _tpids[logico].kbemf;
-//         params.bemf_scale = 0;
-//         params.ktau = _tpids[logico].ktau;
-//         params.ktau_scale = 0;
-//         //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
-//         printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, params.bemf, params.ktau);
-//         setMotorTorqueParams(logico,params);
-//     }
 
     //////////////////////////////////////////
     // invia la configurazione dei MOTORI   //
@@ -1307,17 +1205,10 @@ bool embObjMotionControl::init()
         motor_cfg.pwmLimit =_rotorsLimits[logico].pwmMax;
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMin, fisico ));
-
-        if(_cpids[logico].enabled)
-        {
-            copyPid_iCub2eo(&(_cpids[logico].pid),  &motor_cfg.pidcurrent);
-        }
-        else
-        {
-            motor_cfg.pidcurrent.kp = 8;
-            motor_cfg.pidcurrent.ki = 2;
-            motor_cfg.pidcurrent.scale = 10;
-        }
+        
+        //this is a memo: pids should be set = 0 in jconfig, and set to their value using yarp interfaces only.
+        //Morever remember to call this->setPid() to perform the conversion and not this->setPidRaw()
+        memset(&motor_cfg.pidcurrent, 0, sizeof(eOmc_PID_t));
         
         if (false == res->setcheckRemoteValue(protid, &motor_cfg, 10, 0.010, 0.050))
         {
@@ -1331,8 +1222,6 @@ bool embObjMotionControl::init()
                 yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in "<< getBoardInfo();
             }
         }
-
-
     }
 
     /////////////////////////////////////////////
@@ -1482,20 +1371,6 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
 
-//$$$    if(_ppids[j].ctrlUnitsType == controlUnits_metric)
-//$$$    {
-//$$$        _measureConverter->convertPosPid_A2E(j, hwPid);
-//$$$    }
-//$$$    if(_ppids[j].ctrlUnitsType == controlUnits_machine)
-//$$$    {
-//$$$        hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
-//$$$        hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
-//$$$        hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
-//$$$    }
-//$$$    else
-//$$$    {
-//$$$        yError() << "Unknown _positionControlUnits";
-//$$$    }
     //printf("helper_setPosPid: kp=%f ki=%f kd=%f\n", hwPid.kp, hwPid.ki, hwPid.kd);
     copyPid_iCub2eo(&hwPid, &outPid);
 
@@ -1624,21 +1499,6 @@ bool embObjMotionControl::helper_getPosPidRaw(int j, Pid *pid)
     
     //printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
     
-//$$$   if(_ppids[j].ctrlUnitsType == controlUnits_metric)
-//$$$   {
-//$$$       _measureConverter->convertPosPid_E2A(j, *pid);
-//$$$   }
-//$$$   else if(_ppids[j].ctrlUnitsType == controlUnits_machine)
-//$$$   {
-//$$$       pid->kp = pid->kp;  //[PWM/icubdegrees]
-//$$$       pid->ki = pid->ki;  //[PWM/icubdegrees]
-//$$$       pid->kd = pid->kd;  //[PWM/icubdegrees]
-//$$$   }
-//$$$   else
-//$$$   {
-//$$$       yError() << "Unknown _positionControlUnits";
-//$$$   }
-
     return true;
 }
 
@@ -1657,21 +1517,6 @@ bool embObjMotionControl::helper_getPosPidsRaw(Pid *pid)
         copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
         
         //printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
-        
-//$$$        if(_ppids[j].ctrlUnitsType == controlUnits_metric)
-//$$$        {
-//$$$            _measureConverter->convertPosPid_E2A(j, pid[j]);
-//$$$        }
-//$$$        else if(_ppids[j].ctrlUnitsType == controlUnits_machine)
-//$$$        {
-//$$$            pid[j].kp = pid[j].kp;  //[PWM/icubdegrees]
-//$$$            pid[j].ki = pid[j].ki;  //[PWM/icubdegrees]
-//$$$            pid[j].kd = pid[j].kd;  //[PWM/icubdegrees]
-//$$$        }
-//$$$        else
-//$$$        {
-//$$$            yError() << "Unknown _positionControlUnits";
-//$$$        }
     }
     return true;
 }
@@ -3229,7 +3074,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     }
     else if (key == "encoders")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { r.addDouble(_measureConverter->getAngleToEncoder(i)); }
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { r.addDouble(_measureConverter->posA2E(1.0, i)); }
         return true;
     }
     else if (key == "rotorEncoderResolution")
@@ -3652,7 +3497,6 @@ bool embObjMotionControl::updateVirtualAnalogSensorMeasure(int userLevel_jointNu
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
     eOmc_joint_status_core_t jstatus;
-    uint16_t size;
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     bool ret = res->getLocalValue(protoid, &jstatus);
     *t = (double) _measureConverter->trqS2N(jstatus.measures.meas_torque, j);
@@ -3745,7 +3589,6 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
 
-    //$$$_measureConverter->convertTrqPid_N2S(j, hwPid);
     //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
 
     copyPid_iCub2eo(&hwPid, &outPid);
@@ -3766,7 +3609,6 @@ bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
     copyPid_eo2iCub(&eoPID, pid);
     //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
 
-    //$$$_measureConverter->convertTrqPid_S2N(j, *pid);
     return true;
 }
 
@@ -3780,8 +3622,6 @@ bool embObjMotionControl::helper_getTrqPidsRaw(Pid *pid)
     {    
         copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
         //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
-        
-        //$$$_measureConverter->convertTrqPid_S2N(j, pid[j]);
     }
     return true;
 }
@@ -3902,9 +3742,9 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     if(! askRemoteValue(protoid, &eo_params, size))
         return false;
 
-    params->bemf       = _measureConverter->convertTrqMotorBemfParam_MachineUnitsToMetric(j, eo_params.bemf_value);
+    params->bemf =       eo_params.bemf_value;
     params->bemf_scale = eo_params.bemf_scale;
-    params->ktau       = _measureConverter->convertTrqMotorKtaufParam_MachineUnitsToMetric(j, eo_params.ktau_value);   //eo_params.ktau_value * _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+    params->ktau       = eo_params.ktau_value;
     params->ktau_scale = eo_params.ktau_scale;
     //printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
 
@@ -3918,11 +3758,10 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
 
     //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f\n",j, params.bemf, params.ktau);
 
-    eo_params.bemf_value    = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(j, params.bemf); //(float) params.bemf * _torqueControlHelper->getNewtonsToSensor(j) /  _torqueControlHelper->getAngleToEncoders(j); //[Nm/deg/s]
-    eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
-    eo_params.ktau_value    = (float) _measureConverter->convertTrqMotorKtaufParam_MetricToMachineUnits(j, params.ktau); //[PWM/Nm]
-    eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
-    //printf("setMotorTorqueParamsRaw(AFTER CONV): benf=%f %f ktau=%f %f\n",  params.bemf, params.bemf_scale, params.ktau,params.ktau_scale);
+    eo_params.bemf_value  = (float)   params.bemf;
+    eo_params.bemf_scale  = (uint8_t) params.bemf_scale;
+    eo_params.ktau_value  = (float)   params.ktau;
+    eo_params.ktau_scale  = (uint8_t) params.ktau_scale;
 
     if(false == res->setRemoteValue(id32, &eo_params))
     {
@@ -3956,20 +3795,6 @@ bool embObjMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
         yError() << "eoMc " << getBoardInfo() << ": it is not possible set velocity pid for joint " << j <<", because velocity pid is enabled in xml files";
         return false;
     }
-    //$$$   if(_vpids[j].ctrlUnitsType == controlUnits_metric)
-    //$$${
-    //$$$    _measureConverter->convertPosPid_A2E(j, hwPid); //the conversion of velocity pid and position pid are equal
-    //$$$}
-    //$$$else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
-    //$$${
-    //$$$    hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
-    //$$$    hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
-    //$$$    hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
-    //$$$}
-    //$$$else
-    //$$${
-    //$$$    yError() << "eoMc " << getBoardInfo() << ": Unknown _positionControlUnits, needed by setVelPidRaw()";
-    //$$$}
 
     copyPid_iCub2eo(&hwPid, &outPid);
 
@@ -3992,22 +3817,6 @@ bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 
     copyPid_eo2iCub(&eoPID, pid);
 
-//$$$
-//$$$    if(_vpids[j].ctrlUnitsType == controlUnits_metric)
-//$$$    {
-//$$$        _measureConverter->convertPosPid_E2A(j, *pid);//the conversion of velocity pid and position pid are equal
-//$$$    }
-//$$$    else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
-//$$$    {
-//$$$        pid->kp = pid->kp;  //[PWM/icubdegrees]
-//$$$        pid->ki = pid->ki;  //[PWM/icubdegrees]
-//$$$        pid->kd = pid->kd;  //[PWM/icubdegrees]
-//$$$    }
-//$$$    else
-//$$$    {
-//$$$        yError() << "eoMc " << getBoardInfo() << ":Unknown _positionControlUnits needed by getVelPid()";
-//$$$    }
-
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
@@ -4021,20 +3830,6 @@ bool embObjMotionControl::helper_getVelPidsRaw(Pid *pid)
     for(int j=0; j<_njoints; j++)
     {
         copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
-//$$$        if(_vpids[j].ctrlUnitsType == controlUnits_metric)
-//$$$        {
-//$$$            _measureConverter->convertPosPid_E2A(j, pid[j]);//the conversion of velocity pid and position pid are equal
-//$$$        }
-//$$$        else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
-//$$$        {
-//$$$            pid[j].kp = pid[j].kp;  //[PWM/icubdegrees]
-//$$$            pid[j].ki = pid[j].ki;  //[PWM/icubdegrees]
-//$$$            pid[j].kd = pid[j].kd;  //[PWM/icubdegrees]
-//$$$        }
-//$$$        else
-//$$$        {
-//$$$            yError() << "eoMc " << getBoardInfo() << ":Unknown _positionControlUnits needed by getVelPid()";
-//$$$        }
     }
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }

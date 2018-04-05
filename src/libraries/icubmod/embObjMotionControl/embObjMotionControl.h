@@ -52,7 +52,7 @@ using namespace std;
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
-
+#include <yarp/dev/ControlBoardHelper.h>
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
 
@@ -175,7 +175,7 @@ private:
     eth::AbstractEthResource*  res;
     ServiceParser*             parser;
     eomc::Parser *             _mcparser;
-    measuresConverter*         _measureConverter;
+    ControlBoardHelper*       _measureConverter;
     yarp::os::Semaphore        _mutex;
     
     bool opened; //internal state
@@ -258,18 +258,13 @@ private:
     bool dealloc();
 
 
-    //$$$bool convertPosPid(eomc::PidInfo myPidInfo[]);
-    //$$$bool convertTrqPid(eomc::TrqPidInfo myPidInfo[]);
-
     bool verifyUserControlLawConsistencyInJointSet(eomc::PidInfo *ipdInfo);
     bool verifyUserControlLawConsistencyInJointSet(eomc::TrqPidInfo *pidInfo);
-    bool verifyTorquePidshasSameUnitTypes(eomc::GenericControlUnitsType_t &unittype);
+    bool verifyTorquePidshasSameUnitTypes(yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
     bool verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk []);
     bool updatedJointsetsCfgWithControlInfo(void);
     bool saveCouplingsData(void);
-    bool updatedJointsetsCfg(int joint, eOmc_pidoutputtype_t pidoutputtype);
     void debugUtil_printJointsetInfo(void);
-    void debugUtil_printControlLaws(void);
 
     bool isTorqueControlEnabled(int joint);
     bool isVelocityControlEnabled(int joint);
