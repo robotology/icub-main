@@ -721,7 +721,8 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             Bottle b_PROPERTIES_SENSORS_boardtype;
             if(type == eomn_serv_AS_inertials3)
             {
-                Bottle b_PROPERTIES_SENSORS_boardtype = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
+                
+                b_PROPERTIES_SENSORS_boardtype = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
                 if(b_PROPERTIES_SENSORS_boardtype.isNull())
                 {
                     yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.boardType";
