@@ -1153,9 +1153,9 @@ bool embObjMotionControl::init()
         jconfig.jntEncoderType = _jointEncs[logico].type;
         jconfig.jntEncTolerance = _jointEncs[logico].tolerance;
 
-        jconfig.motor_params.bemf_value = _measureConverter->bemfuser2bemfraw(_tpids[logico].kbemf, fisico);
+        jconfig.motor_params.bemf_value = _measureConverter->bemf_user2raw(_tpids[logico].kbemf, fisico);
         jconfig.motor_params.bemf_scale = 0;
-        jconfig.motor_params.ktau_value = _measureConverter->ktauuser2ktauraw(_tpids[logico].ktau, fisico);
+        jconfig.motor_params.ktau_value = _measureConverter->ktau_user2raw(_tpids[logico].ktau, fisico);
         jconfig.motor_params.ktau_scale = 0;
 
         jconfig.gearbox_E2J = _gearbox_E2J[logico];
