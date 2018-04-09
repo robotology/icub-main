@@ -3284,22 +3284,22 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     }
     else if (key == "pidCurrentKp")
     {
-        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { Pid p; helper_getCurPidRaw(i, &p); r.addDouble(p.kp); }
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.kp); }
         return true;
     }
     else if (key == "pidCurrentKi")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { Pid p; helper_getCurPidRaw(i, &p); r.addDouble(p.ki); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.ki); }
         return true;
     }
     else if (key == "pidCurrentShift")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; helper_getCurPidRaw(i, &p); r.addDouble(p.scale); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.scale); }
         return true;
     }
     else if (key == "pidCurrentOutput")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; helper_getCurPidRaw(i, &p); r.addDouble(p.max_output); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.max_output); }
         return true;
     }
     else if (key == "jointEncoderType")
@@ -3417,6 +3417,64 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointDeadZoneRaw(i, tmp1);  r.addDouble(tmp1); }
         return true;
     }
+    else if (key == "readonly_position_PIDraw")
+    {
+        Bottle& r = val.addList();
+        for (int i = 0; i < _njoints; i++)
+        { Pid p;
+          getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, i, &p);
+          char buff[1000];
+          snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+          r.addString(buff);
+        }
+        return true;
+    }
+    else if (key == "readonly_velocity_PIDraw")
+    {
+        Bottle& r = val.addList();
+        for (int i = 0; i < _njoints; i++)
+        { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, i, &p);
+          char buff[1000];
+          snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+          r.addString(buff);
+        }
+        return true;
+    }
+    else if (key == "readonly_torque_PIDraw")
+    {
+        Bottle& r = val.addList();
+        for (int i = 0; i < _njoints; i++)
+        { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE, i, &p);
+         char buff[1000];
+         snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+         r.addString(buff);
+        }
+        return true;
+    }
+    else if (key == "readonly_current_PIDraw")
+    {
+        Bottle& r = val.addList();
+        for (int i = 0; i < _njoints; i++)
+        { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p);
+         char buff[1000];
+         snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+         r.addString(buff);
+        }
+        return true;
+    }
+    else if (key == "readonly_motor_torque_params_raw")
+    {
+        Bottle& r = val.addList();
+        for (int i = 0; i < _njoints; i++)
+        {
+            MotorTorqueParameters params;
+            getMotorTorqueParamsRaw(i, &params);
+            char buff[1000];
+            snprintf(buff, 1000, "J %d : bemf %+3.3f bemf_scale %+3.3f ktau %+3.3f ktau_scale %+3.3f ", i, params.bemf, params.bemf_scale, params.ktau, params.ktau_scale);
+            r.addString(buff);
+        }
+        return true;
+    }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
@@ -3511,6 +3569,11 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("jointEncTolerance");
     listOfKeys->addString("motorEncTolerance");
     listOfKeys->addString("jointDeadZone");
+    listOfKeys->addString("readonly_position_PIDraw");
+    listOfKeys->addString("readonly_velocity_PIDraw");
+    listOfKeys->addString("readonly_current_PIDraw");
+    listOfKeys->addString("readonly_torque_PIDraw");
+    listOfKeys->addString("readonly_motor_torque_params_raw");
     return true;
 }
 
