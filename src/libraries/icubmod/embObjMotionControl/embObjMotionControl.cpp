@@ -1210,10 +1210,10 @@ bool embObjMotionControl::init()
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMin, fisico ));
         
-        //this is a memo: pids should be set = 0 in jconfig, and set to their value using yarp interfaces only.
-        //Morever remember to call this->setPid() to perform the conversion and not this->setPidRaw()
-        memset(&motor_cfg.pidcurrent, 0, sizeof(eOmc_PID_t));
-        
+        yarp::dev::Pid tmp;
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_CURRENT, _cpids[logico].pid, fisico);
+        copyPid_iCub2eo(&tmp, &motor_cfg.pidcurrent);
+                
         if (false == res->setcheckRemoteValue(protid, &motor_cfg, 10, 0.010, 0.050))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for motor config fisico #" << fisico << "in "<< getBoardInfo(); 
