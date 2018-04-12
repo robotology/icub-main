@@ -52,7 +52,7 @@ using namespace eth;
 const char * IethResource::names[iethresType_numberof+1] =
 {
     "resManagement", "resAnalogMais", "resAnalogStrain", "resMotionControl",
-    "resSkin", "resAnalogVirtual", "resAnalogInertial", "resAnalogmultienc", "resNONE"
+    "resSkin", "resAnalogVirtual", "resAnalogInertial", "resAnalogmultienc", "resAnalogInertial3", "resNONE"
 };
 
 const char * IethResource::stringOfType()

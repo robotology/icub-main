@@ -1116,14 +1116,14 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
         des.typeofsensor = type;
         memcpy(&des.on, &sensor.location, sizeof(eObrd_location_t));
         
-        const eObrd_info_t *boardInfo_ptr =  eoas_inertial3_setof_boardinfos_find(boardInfoSet_ptr, sensor.boardtype);
+        const eObrd_info_t *boardInfo_ptr =  eoas_inertial3_setof_boardinfos_find(boardInfoSet_ptr, eoboards_type2cantype(sensor.boardtype));
         if(nullptr == boardInfo_ptr)//if I did not already insert the borad info with type == sensor.boardtype, now I insert it
         {
             //first of all I need to find the board info for this board type
             int b;
             for(b=0; b<as_service.properties.canboards.size(); b++)
             {
-                if(as_service.properties.canboards.at(b).type == sensor.boardtype)
+                if(as_service.properties.canboards.at(b).type == eoboards_type2cantype(sensor.boardtype))
                     break;
             }
             

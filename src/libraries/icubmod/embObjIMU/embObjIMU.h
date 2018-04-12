@@ -6,11 +6,42 @@
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 
+
+#ifndef __embObjIMU_h__
+#define __embObjIMU_h__
+
+//#define MORPH_IT_INTO_ANALOGSENSOR
+
+#if defined(MORPH_IT_INTO_ANALOGSENSOR)
+
+#include <yarp/dev/DeviceDriver.h>
+#include <yarp/dev/IAnalogSensor.h>
+#include <yarp/os/Semaphore.h>
+#include <yarp/os/RateThread.h>
+#include <string>
+#include <list>
+
+#include <iCub/FactoryInterface.h>
+#include <iCub/LoggerInterfaces.h>
+
+#include "IethResource.h"
+#include <ethManager.h>
+#include <abstractEthResource.h>
+
+#include <serviceParser.h>
+
+#include "FeatureInterface.h"
+#include "EoAnalogSensors.h"
+
+
+#include <yarp/os/LogStream.h>
+
+#else
+
 #include <string>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/GenericSensorInterfaces.h>
-#include </usr/local/src/robot/yarp-silvio/src/libYARP_dev/include/yarp/dev/MultipleAnalogSensorsInterfaces.h>
-//#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/PreciselyTimed.h>
 
@@ -24,23 +55,31 @@
 
 #include "FeatureInterface.h"  
 
-namespace yarp{
-    namespace dev{
+#endif
+
+namespace yarp {
+    namespace dev {
         class embObjIMU;
     }
 }
 
-#define DEFAULT_PERIOD 10   //ms
+#if defined(MORPH_IT_INTO_ANALOGSENSOR)
 
-class yarp::dev::embObjIMU :  public DeviceDriver,
-                            public IGenericSensor,
-                            public yarp::dev::IPreciselyTimed,
-                            public yarp::dev::IThreeAxisGyroscopes,
-                            public yarp::dev::IThreeAxisLinearAccelerometers,
-                            public yarp::dev::IThreeAxisMagnetometers,
-                            public yarp::dev::IOrientationSensors,
-                            public eth::IethResource
+class yarp::dev::embObjIMU:             public yarp::dev::IAnalogSensor,
+                                        public yarp::dev::DeviceDriver,
+                                        public eth::IethResource
 {
+#else
+class yarp::dev::embObjIMU :            public DeviceDriver,
+                                        public IGenericSensor,
+                                        public yarp::dev::IPreciselyTimed,
+                                        public yarp::dev::IThreeAxisGyroscopes,
+                                        public yarp::dev::IThreeAxisLinearAccelerometers,
+                                        public yarp::dev::IThreeAxisMagnetometers,
+                                        public yarp::dev::IOrientationSensors,
+                                        public eth::IethResource
+{
+#endif
 public:
     embObjIMU();
     ~embObjIMU();
@@ -49,6 +88,16 @@ public:
     virtual bool open(yarp::os::Searchable &config) override;
     virtual bool close() override;
 
+#if defined(MORPH_IT_INTO_ANALOGSENSOR)
+    // IAnalogSensor interface
+    virtual int read(yarp::sig::Vector &out);
+    virtual int getState(int ch);
+    virtual int getChannels();
+    virtual int calibrateChannel(int ch, double v);
+    virtual int calibrateSensor();
+    virtual int calibrateSensor(const yarp::sig::Vector& value);
+    virtual int calibrateChannel(int ch);
+#else
     // IGenericSensor interface.
     virtual bool read(yarp::sig::Vector &out) override;
     virtual bool getChannels(int *nc) override;
@@ -84,15 +133,20 @@ public:
     virtual bool getOrientationSensorName(size_t sens_index, yarp::os::ConstString &name) const override;
     virtual bool getOrientationSensorFrameName(size_t sens_index, yarp::os::ConstString &frameName) const override;
     virtual bool getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index, yarp::sig::Vector& rpy, double& timestamp) const override;
-    
-    /* Iethresource */
+
+#endif
+
+    /* Iethresource methods */
     virtual bool initialised();
     virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 
+#if defined(MORPH_IT_INTO_ANALOGSENSOR)
+#else
     yarp::sig::Vector rpy, gravity;
     yarp::sig::Matrix dcm;
     yarp::sig::Vector accels;
+#endif
 
 private:
     std::string getBoardInfo(void);
@@ -107,16 +161,33 @@ private:
     servConfigImu_t servCfg;
     bool opened;
     bool verbosewhenok;
+    yarp::os::Semaphore mutex;
+
+
+#if defined(MORPH_IT_INTO_ANALOGSENSOR)
+#else
     
     //da lasciare???
     yarp::dev::MAS_status genericGetStatus(size_t sens_index) const;
     bool genericGetSensorName(size_t sens_index, yarp::os::ConstString &name) const;
-    bool genericGetFrameName(size_t sens_index, yarp::os::ConstString &frameName) const;
-    
+    bool genericGetFrameName(size_t sens_index, yarp::os::ConstString &frameName) const;    
     
     unsigned int nchannels;
     double dummy_value;
+
     yarp::os::Stamp lastStamp;
     yarp::os::ConstString m_sensorName;
     yarp::os::ConstString m_frameName;
+#endif
+
+    // data used for handling the received messsages
+    std::uint8_t positionmap[eoas_sensors_numberof][eOcanports_number][16];
+    std::uint8_t numberof[eoas_sensors_numberof];
+
+    bool buildmaps(void);
+    bool getIndex(const eOas_inertial3_data_t *data, uint8_t &index);
+
 };
+
+#endif //__embObjIMU_h__
+
