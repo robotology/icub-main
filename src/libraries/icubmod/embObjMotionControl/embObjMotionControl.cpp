@@ -1100,7 +1100,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (currentMCversion != PARSER_MOTION_CONTROL_VERSION)
     {
-        yError() << "embObjMC" << getBoardInfo() << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please try to update configuration files of robot and if the problem persists contact icub-support@iit.it";
+        yError() << "embObjMC" << getBoardInfo() << "------ ATTENTION!!!! Wrong value of <MotioncontrolVersion> parameter !!!! ---------------------------------------------------------------------------------------";
+        yError() << "embObjMC" << getBoardInfo() << "------ This means that the configuration files of this device are not compatible with my parser, so I cannot start. ";
+        yError() << "embObjMC" << getBoardInfo() << "------ I need version " << PARSER_MOTION_CONTROL_VERSION << ", but in configuration files have version " << currentMCversion << ".";
+        yError() << "embObjMC" << getBoardInfo() << "------ Please update configuration files in robots-configuration repository. (see http://wiki.icub.org/wiki/Robot_configuration for more information). ";
+        yError() << "embObjMC" << getBoardInfo() << "------ If the problem persists contact icub-support@iit.it .";
+        yError() << "embObjMC" << getBoardInfo() << "----------------------------------------------------------------------------------------------------------------------------------------------------------------";
         return false;
     }
 
