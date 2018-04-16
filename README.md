@@ -2,6 +2,8 @@
 iCub
 ====
 
+<a href="https://zenhub.com"><img src="https://raw.githubusercontent.com/ZenHubIO/support/master/zenhub-badge.png"></a>
+
 See COPYING and AUTHORS for licensing info, authors and copyright holders.
 
 The iCub manual contains more details about the structure of the 
