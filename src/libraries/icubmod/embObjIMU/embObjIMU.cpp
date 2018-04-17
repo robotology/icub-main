@@ -251,7 +251,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
         
         uint8_t enable = 1;
         
-        eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial3, 0, eoprot_tag_as_inertial_cmmnds_enable);
+        eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial3, 0, eoprot_tag_as_inertial3_cmmnds_enable);
         if(false == res->setRemoteValue(id32, &enable))
         {
             yError() << "embObjIMU" << getBoardInfo() << "open() fails to command the start transmission of the configured inertials";
