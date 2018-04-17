@@ -54,6 +54,8 @@
 #include <serviceParser.h>
 
 #include "FeatureInterface.h"  
+#include <mutex>
+#include <stdexcept>
 
 #endif
 
@@ -71,7 +73,7 @@ class yarp::dev::embObjIMU:             public yarp::dev::IAnalogSensor,
 {
 #else
 class yarp::dev::embObjIMU :            public DeviceDriver,
-                                        public IGenericSensor,
+                                        //public IGenericSensor,
                                         public yarp::dev::IPreciselyTimed,
                                         public yarp::dev::IThreeAxisGyroscopes,
                                         public yarp::dev::IThreeAxisLinearAccelerometers,
@@ -98,10 +100,10 @@ public:
     virtual int calibrateSensor(const yarp::sig::Vector& value);
     virtual int calibrateChannel(int ch);
 #else
-    // IGenericSensor interface.
-    virtual bool read(yarp::sig::Vector &out) override;
-    virtual bool getChannels(int *nc) override;
-    virtual bool calibrate(int ch, double v) override;
+//     // IGenericSensor interface.
+//     virtual bool read(yarp::sig::Vector &out) override;
+//     virtual bool getChannels(int *nc) override;
+//     virtual bool calibrate(int ch, double v) override;
 
     // IPreciselyTimed interface
     virtual yarp::os::Stamp getLastInputStamp() override;
@@ -149,7 +151,7 @@ public:
 #endif
 
 private:
-    std::string getBoardInfo(void);
+    std::string getBoardInfo(void) const;
     bool fromConfig(yarp::os::Searchable &config);
     void cleanup(void);
     bool sendConfing2board(void);
@@ -161,32 +163,45 @@ private:
     servConfigImu_t servCfg;
     bool opened;
     bool verbosewhenok;
-    yarp::os::Semaphore mutex;
-
+    mutable std::mutex mutex;
+    typedef struct
+    {
+        std::string name;
+        std::string framename;
+        std::vector<int> values;
+        yarp::dev::MAS_status state; 
+        double timestamp;
+    } sensorInfo_t;
+    std::vector<std::vector<sensorInfo_t>> sensorsData;
 
 #if defined(MORPH_IT_INTO_ANALOGSENSOR)
 #else
-    
-    //da lasciare???
-    yarp::dev::MAS_status genericGetStatus(size_t sens_index) const;
-    bool genericGetSensorName(size_t sens_index, yarp::os::ConstString &name) const;
-    bool genericGetFrameName(size_t sens_index, yarp::os::ConstString &frameName) const;    
     
     unsigned int nchannels;
     double dummy_value;
 
     yarp::os::Stamp lastStamp;
-    yarp::os::ConstString m_sensorName;
-    yarp::os::ConstString m_frameName;
+
 #endif
 
     // data used for handling the received messsages
     std::uint8_t positionmap[eoas_sensors_numberof][eOcanports_number][16];
-    std::uint8_t numberof[eoas_sensors_numberof];
+//     std::uint8_t numberof[eoas_sensors_numberof];
 
     bool buildmaps(void);
-    bool getIndex(const eOas_inertial3_data_t *data, uint8_t &index);
-
+    bool getIndex(const eOas_inertial3_data_t *data, uint8_t &index, eOas_sensor_t &type);
+    yarp::dev::MAS_status sensorState_eo2yarp(uint8_t eo_state);
+   // bool initSensorsData(void);
+    
+    
+    bool outOfRangeErrorHandler(const std::out_of_range& oor) const;
+    
+    /*private methos ti ge info of a sensor fiven index and type */
+    size_t getNumOfSensors(eOas_sensor_t type) const;
+    yarp::dev::MAS_status getSensorStatus(size_t sens_index, eOas_sensor_t type) const;
+    bool getSensorName(size_t sens_index, eOas_sensor_t type, yarp::os::ConstString &name) const;
+    bool getSensorFrameName(size_t sens_index, eOas_sensor_t type, yarp::os::ConstString &frameName) const;
+    bool getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::sig::Vector& out, double& timestamp) const;
 };
 
 #endif //__embObjIMU_h__

@@ -60,7 +60,7 @@ embObjIMU::~embObjIMU()
     close();
 }
 
-std::string embObjIMU::getBoardInfo(void)
+std::string embObjIMU::getBoardInfo(void) const
 {
     if(nullptr == res)
     {
@@ -107,14 +107,14 @@ bool embObjIMU::sendConfing2board(void)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial3, 0, eoprot_tag_as_inertial3_config);
     if(false == res->setcheckRemoteValue(id32, &cfg, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjIMU::sendConfing2board() had an error while calling setcheckRemoteValue() for config in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+        yError() << "embObjIMU" << getBoardInfo() << "FATAL: sendConfing2board() had an error while calling setcheckRemoteValue() for config the board";
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjIMU::sendConfing2board() correctly configured enabled sensors with period" << cfg.datarate << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+            yError() << "embObjIMU" << getBoardInfo() << "sendConfing2board() correctly configured enabled sensors with period" << cfg.datarate;
         }
     }
     
@@ -135,14 +135,14 @@ bool embObjIMU::initRegulars(void)
 
     if(false == res->serviceSetRegulars(eomn_serv_category_inertials3, id32v))
     {
-        yError() << "embObjIMU::initRegulars() fails to add its variables to regulars: cannot proceed any further";
+        yError() << "embObjIMU" << getBoardInfo() <<"initRegulars() fails to add its variables to regulars: cannot proceed any further";
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjIMU::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+            yError() << "embObjIMU" << getBoardInfo()  <<"initRegulars() added" << id32v.size() << " regular rops to the board";
             char nvinfo[128];
             for (size_t r = 0; r<id32v.size(); r++)
             {
@@ -163,7 +163,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
-        yFatal() << "embObjIMU::open() fails to instantiate ethManager";
+        yFatal() << "embObjIMU" << getBoardInfo() << "open() fails to instantiate ethManager";
         return false;
     }
     
@@ -173,7 +173,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     
     if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
-        yError() << "embObjIMU::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
+        yError() << "embObjIMU" << getBoardInfo() << "open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
     }
     
@@ -188,7 +188,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     // read stuff from config file
     if(!fromConfig(config))
     {
-        yError() << "embObjIMU missing some configuration parameter. Check logs and your config file.";
+        yError() << "embObjIMU" << getBoardInfo() << ": missing some configuration parameter. Check logs and your config file.";
         return false;
     }
     
@@ -198,7 +198,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
-        yError() << "embObjIMU::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << boardIPstring << " ... unable to continue";
+        yError() << "embObjIMU" << getBoardInfo() << "open() fails because could not instantiate the ethResource ... unable to continue";
         return false;
     }
     
@@ -213,7 +213,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     
     if(false == res->serviceVerifyActivate(eomn_serv_category_inertials3, servparam, 5.0))
     {
-        yError() << "embObjIMU::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD " << boardName << "IP " << boardIPstring;
+        yError() << "embObjIMU" << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate() ";
 
         cleanup();
         return false;
@@ -238,7 +238,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     
     if(false == res->serviceStart(eomn_serv_category_inertials3))
     {
-        yError() << "embObjIMU::open() fails to start as service for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": cannot continue";
+        yError() << "embObjIMU" << getBoardInfo() << "open() fails to start as service.... cannot continue";
         cleanup();
         return false;
     }
@@ -246,7 +246,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjIMU::open() correctly starts service of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+            yDebug() << "embObjIMU" << getBoardInfo() << "open() correctly starts service";
         }
     }
 
@@ -261,7 +261,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
         eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial3, 0, eoprot_tag_as_inertial_cmmnds_enable);
         if(false == res->setRemoteValue(id32, &enable))
         {
-            yError() << "embObjIMU::open() fails to command the start transmission of the configured inertials";
+            yError() << "embObjIMU" << getBoardInfo() << "open() fails to command the start transmission of the configured inertials";
             cleanup();
             return false;
         }
@@ -384,242 +384,184 @@ int embObjIMU::calibrateChannel(int ch, double v)
 
 #else
 
-bool embObjIMU::read(Vector &out)
-{
-#if 0
-    if(out.size() != nchannels)
-        out.resize(nchannels);
 
-    out.zero();
-
-    // Euler angle
-    for(unsigned int i=0; i<3; i++)
-    {
-        out[i] = dummy_value;
-    }
-
-    // accelerations
-    for(unsigned int i=0; i<3; i++)
-    {
-        out[3+i] = accels[i];
-    }
-
-    // gyro
-    for(unsigned int i=0; i<3; i++)
-    {
-        out[6+i] = dummy_value;
-    }
-
-    // magnetometer
-    for(unsigned int i=0; i<3; i++)
-    {
-        out[9+i] = dummy_value;
-    }
-#endif
-
-    return true;
-}
-
-bool embObjIMU::getChannels(int *nc)
-{
-    *nc=nchannels;
-    return true;
-}
-
-bool embObjIMU::calibrate(int ch, double v)
-{
-    yWarning("Not implemented yet\n");
-    return false;
-}
 
 yarp::os::Stamp embObjIMU::getLastInputStamp()
 {
     return lastStamp;
 }
 
-yarp::dev::MAS_status embObjIMU::genericGetStatus(size_t sens_index) const
+bool embObjIMU::outOfRangeErrorHandler(const std::out_of_range& oor) const
 {
-    if (sens_index!=0) {
-        return yarp::dev::MAS_status::MAS_ERROR;
-    }
-
-    return yarp::dev::MAS_status::MAS_OK;
+    yError() << "embObjIMU" << getBoardInfo()  << "Out of Range error: " << oor.what();
+    return false;
 }
 
-bool embObjIMU::genericGetSensorName(size_t sens_index, yarp::os::ConstString &name) const
+size_t embObjIMU::getNumOfSensors(eOas_sensor_t type) const
 {
-    if (sens_index!=0) {
-        return false;
-    }
-
-    name = m_sensorName;
-    return true;
+    std::lock_guard<std::mutex> lck (mutex);
+    return sensorsData[type].size();
 }
 
-bool embObjIMU::genericGetFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
+yarp::dev::MAS_status embObjIMU::getSensorStatus(size_t sens_index, eOas_sensor_t type) const
 {
-    if (sens_index!=0) {
-        return false;
+    try
+    {
+        std::lock_guard<std::mutex> lck (mutex);
+        return sensorsData[type].at(sens_index).state;
     }
-
-    frameName = m_frameName;
-    return true;
+    catch (const std::out_of_range& oor) 
+    {
+        outOfRangeErrorHandler(oor);
+        return yarp::dev::MAS_ERROR;
+    }
+    
 }
+bool embObjIMU::getSensorName(size_t sens_index, eOas_sensor_t type, yarp::os::ConstString &name) const
+{
+    try
+    {
+        std::lock_guard<std::mutex> lck (mutex);
+        name = sensorsData[type].at(sens_index).name;
+        return true;
+    }
+    catch (const std::out_of_range& oor) 
+    {
+        return outOfRangeErrorHandler(oor);
+    }
+    
+}
+bool embObjIMU::getSensorFrameName(size_t sens_index, eOas_sensor_t type, yarp::os::ConstString &frameName) const
+{
+    try
+    {
+        std::lock_guard<std::mutex> lck (mutex);
+        frameName = sensorsData[type].at(sens_index).framename;
+        return true;
+    }
+    catch (const std::out_of_range& oor) 
+    {
+        return outOfRangeErrorHandler(oor);
+    }
+    
+    
+}
+bool embObjIMU::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::sig::Vector& out, double& timestamp) const
+{
+    try
+    {   std::lock_guard<std::mutex> lck (mutex);
+        out.resize(0);
+        for(int i=0; i<sensorsData[type].at(sens_index).values.size(); i++)
+            out.push_back(sensorsData[type].at(sens_index).values[i]);// TODO Verifica la copia o usa il vector di yarp
+        timestamp = sensorsData[type].at(sens_index).timestamp;
+        return true;
+    }
+    catch (const std::out_of_range& oor) 
+    {
+        return outOfRangeErrorHandler(oor);
+    }
+    
+}
+
 
 size_t embObjIMU::getNrOfThreeAxisGyroscopes() const
 {
-    return 1;
+    return getNumOfSensors(eoas_imu_gyr);
 }
 
 yarp::dev::MAS_status embObjIMU::getThreeAxisGyroscopeStatus(size_t sens_index) const
 {
-    return genericGetStatus(sens_index);
+    return getSensorStatus(sens_index, eoas_imu_gyr);
 }
 
 bool embObjIMU::getThreeAxisGyroscopeName(size_t sens_index, yarp::os::ConstString &name) const
 {
-    return genericGetSensorName(sens_index, name);
+    return getSensorName(sens_index, eoas_imu_gyr, name);
 }
 
 bool embObjIMU::getThreeAxisGyroscopeFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
 {
-    return genericGetFrameName(sens_index, frameName);
+    return getSensorFrameName(sens_index, eoas_imu_gyr, frameName);
 }
 
 bool embObjIMU::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-    if (sens_index!=0) {
-        return false;
-    }
-
-#if 0
-    out.resize(3);
-    out[0] = dummy_value;
-    out[1] = dummy_value;
-    out[2] = dummy_value;
-
-    // Workaround for https://github.com/robotology/yarp/issues/1610
-    yarp::os::Stamp copyStamp(lastStamp);
-    timestamp = copyStamp.getTime();
-#endif
-
-    return true;
+    return getSensorMeasure(sens_index, eoas_imu_gyr, out, timestamp);
 }
 
 size_t embObjIMU::getNrOfThreeAxisLinearAccelerometers() const
 {
-    return 1;
+    return getNumOfSensors(eoas_imu_acc);
 }
 
 yarp::dev::MAS_status embObjIMU::getThreeAxisLinearAccelerometerStatus(size_t sens_index) const
 {
-    return genericGetStatus(sens_index);
+    return getSensorStatus(sens_index, eoas_imu_acc);
 }
 
 bool embObjIMU::getThreeAxisLinearAccelerometerName(size_t sens_index, yarp::os::ConstString &name) const
 {
-    return genericGetSensorName(sens_index, name);
+    return getSensorName(sens_index, eoas_imu_acc, name);
 }
 
 bool embObjIMU::getThreeAxisLinearAccelerometerFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
 {
-    return genericGetFrameName(sens_index, frameName);
+    return getSensorFrameName(sens_index, eoas_imu_acc, frameName);
 }
 
 bool embObjIMU::getThreeAxisLinearAccelerometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-    if (sens_index!=0) {
-        return false;
-    }
-
-    out.resize(3);
-    out[0] = accels[0];
-    out[1] = accels[1];
-    out[2] = accels[2];
-
-    // Workaround for https://github.com/robotology/yarp/issues/1610
-    yarp::os::Stamp copyStamp(lastStamp);
-    timestamp = copyStamp.getTime();
-
-    return true;
+    return getSensorMeasure(sens_index, eoas_imu_acc, out, timestamp);
 }
 
 size_t embObjIMU::getNrOfThreeAxisMagnetometers() const
 {
-    return 1;
+    return getNumOfSensors(eoas_imu_mag);
 }
 
 yarp::dev::MAS_status embObjIMU::getThreeAxisMagnetometerStatus(size_t sens_index) const
 {
-    return genericGetStatus(sens_index);
+    return getSensorStatus(sens_index, eoas_imu_mag);
 }
 
 bool embObjIMU::getThreeAxisMagnetometerName(size_t sens_index, yarp::os::ConstString &name) const
 {
-    return genericGetSensorName(sens_index, name);
+    return getSensorName(sens_index, eoas_imu_mag, name);
 }
 
 bool embObjIMU::getThreeAxisMagnetometerFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
 {
-    return genericGetFrameName(sens_index, frameName);
+    return getSensorFrameName(sens_index, eoas_imu_mag, frameName);
 }
 
 bool embObjIMU::getThreeAxisMagnetometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-    if (sens_index!=0) {
-        return false;
-    }
-#if 0
-    out.resize(3);
-    out[0] = dummy_value;
-    out[1] = dummy_value;
-    out[2] = dummy_value;
-
-    // Workaround for https://github.com/robotology/yarp/issues/1610
-    yarp::os::Stamp copyStamp(lastStamp);
-    timestamp = copyStamp.getTime();
-#endif
-    return true;
-}
+    return getSensorMeasure(sens_index, eoas_imu_mag, out, timestamp);}
 
 size_t embObjIMU::getNrOfOrientationSensors() const
 {
-    return 1;
+    return getNumOfSensors(eoas_imu_eul);
 }
 
 yarp::dev::MAS_status embObjIMU::getOrientationSensorStatus(size_t sens_index) const
 {
-    return genericGetStatus(sens_index);
+    return getSensorStatus(sens_index, eoas_imu_eul);
 }
 
 bool embObjIMU::getOrientationSensorName(size_t sens_index, yarp::os::ConstString &name) const
 {
-    return genericGetSensorName(sens_index, name);
+    return getSensorName(sens_index, eoas_imu_eul, name);
 }
 
 bool embObjIMU::getOrientationSensorFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
 {
-    return genericGetFrameName(sens_index, frameName);
+    return getSensorFrameName(sens_index, eoas_imu_eul, frameName);
 }
 
 bool embObjIMU::getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index, yarp::sig::Vector& rpy_out, double& timestamp) const
 {
-    if (sens_index!=0) {
-        return false;
-    }
-
-#if 0
-    rpy_out.resize(3);
-    rpy_out[0] = dummy_value;
-    rpy_out[1] = dummy_value;
-    rpy_out[2] = dummy_value;
-
-    // Workaround for https://github.com/robotology/yarp/issues/1610
-    yarp::os::Stamp copyStamp(lastStamp);
-    timestamp = copyStamp.getTime();
-#endif
-
-    return true;
+    return getSensorMeasure(sens_index, eoas_imu_eul, rpy_out, timestamp);
+    
 }
 
 #endif
@@ -635,24 +577,17 @@ eth::iethresType_t embObjIMU::type()
     return eth::iethres_analoginertial3;
 }
 
-// TODO
-// we must put the received eOas_inertial3_status_t into a proper place.
-// we can detect what data is by looking at eOas_inertial3_status_t::typeofsensor (accel, gyro, etc)
-// we need to put eOas_inertial3_status_t::x, ::y, ::z into the relevant vector in a given order
-// the order is determined by eOas_inertial3_status_t::id which contains the can address CANx:y, where y = id & 0xf and x = (id >> 4) + 1
-// the solution is to build for each sensor type a uint8_t map[2][16] which maps the address into a position of teh vector.
-// we build these maps when we send the service configuration down to the board.
 
-
+yarp::dev::MAS_status embObjIMU::sensorState_eo2yarp(uint8_t eo_state)
+{
+    //TODO
+    return yarp::dev::MAS_OK;
+}
 
 bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
-//    mutex.wait();
-
-    // important note: use mutex to protect what we write in here which is later read by the ::get* methods
-
-//    mutex.post();
-
+    std::lock_guard<std::mutex> lck (mutex);
+    
     static int prog = 1;
     static double prevtime =  yarp::os::Time::now();
 
@@ -665,62 +600,142 @@ bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
 
     EOconstarray* arrayofvalues = eo_constarray_Load(reinterpret_cast<const EOarray*>(&i3s->arrayofdata));
 
-    uint8_t n = eo_constarray_Size(arrayofvalues);
+    uint8_t numofIntem2update = eo_constarray_Size(arrayofvalues);
 
-    //EOarray * array = reinterpret_cast<EOarray*>(&i3s->arrayofdata);
-
-    //uint8_t n = eo_array_Size(array);
-
-    //yDebug() << "embObjIMU::update(): size =" << n << "values";
-
-    if(n > 0)
+    for(int i=0; i<numofIntem2update; i++)
     {
-        prog++;
-//        if(0 == (prog%20))
+        eOas_inertial3_data_t *data = (eOas_inertial3_data_t*) eo_constarray_At(arrayofvalues, i);
+        if(data == NULL)
         {
-            yDebug() << "embObjIMU::update(): received" << n << "values after" << milli << "milli";
-
-            for(int i=0; i<n; i++)
-            {
-                eOas_inertial3_data_t *data = (eOas_inertial3_data_t*) eo_constarray_At(arrayofvalues, i);
-                if(NULL == data)
-                {
-                    yDebug() << "embObjIMU::update(): NULL";
-                }
-                else
-                {
-                    uint8_t pos = 0xff;
-                    getIndex(data, pos);
-                    yDebug("value[%i] is: seq = %d, timestamp = %d, type = %s, id = %d, v= ((%d), %d, %d, %d), status = %d, pos = %d",
-                           i,
-                           data->seq,
-                           data->timestamp,
-                           eoas_sensor2string(static_cast<eOas_sensor_t>(data->typeofsensor)),
-                           data->id,
-                           data->w, data->x, data->y, data->z,
-                           data->status,
-                           pos);
-                }
-            }
-
+            yError() << "embObjIMU" << getBoardInfo() << "update(): I have to update " << numofIntem2update << "items, but the " << i << "-th item is null.";
+            continue; 
+            //NOTE: I signal this strange situation with an arror for debug porpouse...maybe we can convert in in warning when the device is stable....
         }
-
+        uint8_t index;
+        eOas_sensor_t type;
+        bool validdata =  getIndex(data, index, type);
+        
+        if(!validdata)
+        {
+            yError("NOT VALID value[%i] is: seq = %d, timestamp = %d, type = %s, id = %d, v= ((%d), %d, %d, %d), status = %d",
+                    i,
+                    data->seq,
+                    data->timestamp,
+                    eoas_sensor2string(static_cast<eOas_sensor_t>(data->typeofsensor)),
+                    data->id,
+                    data->w, data->x, data->y, data->z,
+                    data->status);
+            continue;
+        }
+        
+        sensorInfo_t *info = &sensorsData[type][index];
+        
+        info->values[0] = data->x;
+        info->values[1] = data->y;
+        info->values[2] = data->z;
+        info->state = sensorState_eo2yarp(data->status);
+        info->timestamp = yarp::os::Time::now();
     }
+    
+    
+    
+    
+    
+    //FOR DEBUG
+//     if(n > 0)
+//     {
+//         prog++;
+// //        if(0 == (prog%20))
+//         {
+//             yDebug() << "embObjIMU::update(): received" << n << "values after" << milli << "milli";
+// 
+//             for(int i=0; i<n; i++)
+//             {
+//                 eOas_inertial3_data_t *data = (eOas_inertial3_data_t*) eo_constarray_At(arrayofvalues, i);
+//                 if(NULL == data)
+//                 {
+//                     yDebug() << "embObjIMU::update(): NULL";
+//                 }
+//                 else
+//                 {
+//                     uint8_t pos = 0xff;
+//                     getIndex(data, pos);
+//                     yDebug("value[%i] is: seq = %d, timestamp = %d, type = %s, id = %d, v= ((%d), %d, %d, %d), status = %d, pos = %d",
+//                            i,
+//                            data->seq,
+//                            data->timestamp,
+//                            eoas_sensor2string(static_cast<eOas_sensor_t>(data->typeofsensor)),
+//                            data->id,
+//                            data->w, data->x, data->y, data->z,
+//                            data->status,
+//                            pos);
+//                 }
+//             }
+// 
+//         }
+// 
+//     }
 
 
     return true;
 }
 
 
+
+// bool embObjIMU::initSensorsData(void)
+// {
+//     sensorsData.resize(eoas_sensors_numberof);
+//     
+//     for(int t=0; t<eoas_sensors_numberof; t++)
+//     {
+//         sensorsData[t].resize(0);
+//     }
+//         
+//     const eOas_inertial3_arrayof_descriptors_t* tmp = &servCfg.ethservice.configuration.data.as.inertial3.arrayofdescriptor;
+//     EOconstarray* array = eo_constarray_Load(reinterpret_cast<const EOarray*>(tmp));
+//     uint8_t size = eo_constarray_Size(array);
+//     
+//     for(uint8_t i=0; i<size; i++)
+//     {
+//         eOas_inertial3_descriptor_t *des = (eOas_inertial3_descriptor_t*)eo_constarray_At(array, i);
+//         if(nullptr != des)
+//         {
+//             // use des.
+//             if(des->typeofsensor < eoas_sensors_numberof)
+//             {
+//                 sensorInfo_t newSens = {0};
+// //                 std::string name;
+// //                 std::string fieldname;
+// //                 int values[4]; //vector??
+// //                 int state; //stato dell'interfaccia??
+//                 newSens.name = servCfg.id[0]; //???
+//                 newSens.fieldname = newSens.name;
+//                 newSens.values.resize(0);
+//                 newSens.state = yarp::dev::MAS_OK;
+//                 sensorsData[des->typeofsensor].push_back(newSens);
+//             }
+//         }
+//         
+//     }
+//     return true;
+// }
+
+
+
 bool embObjIMU::buildmaps(void)
 {
+    //initis internals maps
+    
     memset(positionmap, 0xff, sizeof(positionmap));
+    std::uint8_t numberof[eoas_sensors_numberof];
     memset(numberof, 0, sizeof(numberof));
 
+    sensorsData.resize(eoas_sensors_numberof);
+    for(int t=0; t<eoas_sensors_numberof; t++)
+    { sensorsData[t].resize(0); }
+    
     // and now we list the service config to fill the map withe proper indices.
-    // tobedone
-
-
+    
     const eOas_inertial3_arrayof_descriptors_t* tmp = &servCfg.ethservice.configuration.data.as.inertial3.arrayofdescriptor;
     EOconstarray* array = eo_constarray_Load(reinterpret_cast<const EOarray*>(tmp));
     uint8_t size = eo_constarray_Size(array);
@@ -736,47 +751,107 @@ bool embObjIMU::buildmaps(void)
                 {
                     positionmap[des->typeofsensor][des->on.can.port][des->on.can.addr] = numberof[des->typeofsensor];
                     numberof[des->typeofsensor]++;
-                    yDebug() << "one more" << eoas_sensor2string(static_cast<eOas_sensor_t>(des->typeofsensor));
+                    yDebug() << "embObjIMU" << getBoardInfo() << "one more" << eoas_sensor2string(static_cast<eOas_sensor_t>(des->typeofsensor));
                 }
                 else if(des->on.any.place == eobrd_place_eth)
                 {
                     // must manage the case of gyro on ems
                 }
-            }
-        }
 
+                sensorInfo_t newSens;
+                newSens.name = servCfg.id[i];
+                newSens.framename = newSens.name;
+                newSens.values.resize(3);
+                newSens.state = yarp::dev::MAS_OK;
+                sensorsData[des->typeofsensor].push_back(newSens);
+            }
+
+        }
     }
 
     return true;
 }
 
 
-bool embObjIMU::getIndex(const eOas_inertial3_data_t *data, uint8_t &index)
+// bool embObjIMU::getIndex(const eOas_inertial3_descriptor_t *des, uint8_t &index, eOas_sensor_t &type)
+// {
+//     if(nullptr == des)
+//     {
+//         return false;
+//     }
+//     uint8_t can = (des->on.can.port <<4 | des->on.can.addr);
+//     getIndex_core(des->typeofsensor, can,
+//     if(des->typeofsensor >= eoas_sensors_numberof)
+//     {   // it is not a valid index
+//         return false;
+//     }
+// 
+//     uint8_t canbus = data->id >> 4;
+// 
+//     if(canbus >= eOcanports_number)
+//     {
+//         return false;
+//     }
+// 
+//     uint8_t canaddress = data->id & 0x0f;
+// 
+//     index = positionmap[data->typeofsensor][canbus][canaddress];
+// 
+//     type = data->typeofsensor;
+//     return (0xff == index) ? false : true;
+// 
+// }
+
+
+bool embObjIMU::getIndex(const eOas_inertial3_data_t *data, uint8_t &index, eOas_sensor_t &type)
 {
     if(nullptr == data)
     {
         return false;
     }
-
+    
     if(data->typeofsensor >= eoas_sensors_numberof)
     {   // it is not a valid index
         return false;
     }
-
+    
     uint8_t canbus = data->id >> 4;
-
+    
     if(canbus >= eOcanports_number)
     {
         return false;
     }
-
+    
     uint8_t canaddress = data->id & 0x0f;
-
+    
     index = positionmap[data->typeofsensor][canbus][canaddress];
-
+    
+    type = static_cast<eOas_sensor_t>(data->typeofsensor);
     return (0xff == index) ? false : true;
-
+    
 }
 
+// bool embObjIMU::getIndex_core(eOas_sensor_t type, uint8_t idcan, uint8_t &index)
+// {
+//     
+//     if(Type >= eoas_sensors_numberof)
+//     {   // it is not a valid index
+//         return false;
+//     }
+//     
+//     uint8_t canbus = idcan >> 4;
+//     
+//     if(canbus >= eOcanports_number)
+//     {
+//         return false;
+//     }
+//     
+//     uint8_t canaddress = idcan & 0x0f;
+//     
+//     index = positionmap[type][canbus][canaddress];
+//     
+//     return (0xff == index) ? false : true;
+//     
+// }
 // eof
 

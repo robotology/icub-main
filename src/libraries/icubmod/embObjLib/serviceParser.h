@@ -64,7 +64,7 @@ typedef struct
 {
     eOmn_serv_parameter_t               ethservice;
     int                                 acquisitionrate;
-    vector<eOas_inertial3_descriptor_t> inertials;
+    vector<eOas_inertial3_descriptor_t> inertials; //TODO vale e' da rimuovere e' doppio!!!
     vector<string>                      id;
 } servConfigImu_t;
 
