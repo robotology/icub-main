@@ -26,7 +26,6 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
-//using namespace yarp::math;
 
 /**
  * This device implements the embObjIMU sensor
@@ -47,12 +46,6 @@ embObjIMU::embObjIMU()
     {
         verbosewhenok = false;
     }
-
-    // verbosewhenok = true;
-
-    // al others:
-    nchannels = 0;
-    dummy_value = 0;
 }
 
 embObjIMU::~embObjIMU()
@@ -278,118 +271,6 @@ bool embObjIMU::close()
 }
 
 
-#if defined(MORPH_IT_INTO_ANALOGSENSOR)
-
-int embObjIMU::read(yarp::sig::Vector &out)
-{
-    // This method gives analogdata to the analogServer
-
-    if(false == opened)
-    {
-        return IAnalogSensor::AS_ERROR;
-    }
-
-//    mutex.wait();
-
-
-//    // errors are not handled for now... it'll always be OK!!
-//    if (status != IAnalogSensor::AS_OK)
-//    {
-//        switch (status)
-//        {
-//            case IAnalogSensor::AS_OVF:
-//            {
-//              counterSat++;
-//            }  break;
-//            case IAnalogSensor::AS_ERROR:
-//            {
-//              counterError++;
-//            } break;
-//            case IAnalogSensor::AS_TIMEOUT:
-//            {
-//             counterTimeout++;
-//            } break;
-//            default:
-//            {
-//              counterError++;
-//            } break;
-//        }
-//        mutex.post();
-//        return status;
-//    }
-
-//    out.resize(analogdata.size());
-//    for (size_t k = 0; k<analogdata.size(); k++)
-//    {
-//        out[k] = analogdata[k];
-//    }
-
-
- //   mutex.post();
-
-    return IAnalogSensor::AS_OK;
-
-}
-
-
-//void embObjIMU::resetCounters()
-//{
-////    counterSat = 0;
-////    counterError = 0;
-////    counterTimeout = 0;
-//}
-
-
-//void embObjIMU::getCounters(unsigned int &sat, unsigned int &err, unsigned int &to)
-//{
-////    sat = counterSat;
-////    err = counterError;
-////    to = counterTimeout;
-//}
-
-
-int embObjIMU::getState(int ch)
-{
-    printf("getstate\n");
-    return AS_OK;
-}
-
-int embObjIMU::getChannels()
-{
-    return 6;
-}
-
-
-int embObjIMU::calibrateSensor()
-{
-    return AS_OK;
-}
-
-
-int embObjIMU::calibrateSensor(const yarp::sig::Vector& value)
-{
-    return AS_OK;
-}
-
-int embObjIMU::calibrateChannel(int ch)
-{
-    return AS_OK;
-}
-
-
-int embObjIMU::calibrateChannel(int ch, double v)
-{
-    return AS_OK;
-}
-
-#else
-
-
-
-yarp::os::Stamp embObjIMU::getLastInputStamp()
-{
-    return lastStamp;
-}
 
 bool embObjIMU::outOfRangeErrorHandler(const std::out_of_range& oor) const
 {
@@ -443,9 +324,9 @@ bool embObjIMU::getSensorFrameName(size_t sens_index, eOas_sensor_t type, yarp::
     {
         return outOfRangeErrorHandler(oor);
     }
-    
-    
 }
+
+
 bool embObjIMU::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::sig::Vector& out, double& timestamp) const
 {
     try
@@ -564,8 +445,6 @@ bool embObjIMU::getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index, yar
     
 }
 
-#endif
-
 
 bool embObjIMU::initialised()
 {
@@ -588,14 +467,6 @@ bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
     std::lock_guard<std::mutex> lck (mutex);
     
-    static int prog = 1;
-    static double prevtime =  yarp::os::Time::now();
-
-    double delta = yarp::os::Time::now() - prevtime;
-    double millidelta = 1000.0 *delta;
-    long milli = static_cast<long>(millidelta);
-
-
     eOas_inertial3_status_t *i3s  = (eOas_inertial3_status_t*)rxdata;
 
     EOconstarray* arrayofvalues = eo_constarray_Load(reinterpret_cast<const EOarray*>(&i3s->arrayofdata));
@@ -636,90 +507,62 @@ bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
         info->state = sensorState_eo2yarp(data->status);
         info->timestamp = yarp::os::Time::now();
     }
-    
-    
-    
-    
-    
-    //FOR DEBUG
-//     if(n > 0)
-//     {
-//         prog++;
-// //        if(0 == (prog%20))
-//         {
-//             yDebug() << "embObjIMU::update(): received" << n << "values after" << milli << "milli";
-// 
-//             for(int i=0; i<n; i++)
-//             {
-//                 eOas_inertial3_data_t *data = (eOas_inertial3_data_t*) eo_constarray_At(arrayofvalues, i);
-//                 if(NULL == data)
-//                 {
-//                     yDebug() << "embObjIMU::update(): NULL";
-//                 }
-//                 else
-//                 {
-//                     uint8_t pos = 0xff;
-//                     getIndex(data, pos);
-//                     yDebug("value[%i] is: seq = %d, timestamp = %d, type = %s, id = %d, v= ((%d), %d, %d, %d), status = %d, pos = %d",
-//                            i,
-//                            data->seq,
-//                            data->timestamp,
-//                            eoas_sensor2string(static_cast<eOas_sensor_t>(data->typeofsensor)),
-//                            data->id,
-//                            data->w, data->x, data->y, data->z,
-//                            data->status,
-//                            pos);
-//                 }
-//             }
-// 
-//         }
-// 
-//     }
 
-
-    return true;
 }
 
+//this function can be called inside update function to print the received data
+void embObjIMU::updateDebugPrints(eOprotID32_t id32, double timestamp, void* rxdata)
+{
+    std::lock_guard<std::mutex> lck (mutex);
+    static int prog = 1;
+    static double prevtime =  yarp::os::Time::now();
+    
+    double delta = yarp::os::Time::now() - prevtime;
+    double millidelta = 1000.0 *delta;
+    long milli = static_cast<long>(millidelta);
+    
+    
+    eOas_inertial3_status_t *i3s  = (eOas_inertial3_status_t*)rxdata;
+    
+    EOconstarray* arrayofvalues = eo_constarray_Load(reinterpret_cast<const EOarray*>(&i3s->arrayofdata));
+    
+    uint8_t n = eo_constarray_Size(arrayofvalues);
+    
+    if(n > 0)
+    {
+        prog++;
+    //        if(0 == (prog%20))
+        {
+            yDebug() << "embObjIMU::update(): received" << n << "values after" << milli << "milli";
 
+            for(int i=0; i<n; i++)
+            {
+                eOas_inertial3_data_t *data = (eOas_inertial3_data_t*) eo_constarray_At(arrayofvalues, i);
+                if(NULL == data)
+                {
+                    yDebug() << "embObjIMU::update(): NULL";
+                }
+                else
+                {
+                    uint8_t pos = 0xff;
+                    eOas_sensor_t type;
+                    getIndex(data, pos, type);
+                    yDebug("value[%i] is: seq = %d, timestamp = %d, type = %s, id = %d, v= ((%d), %d, %d, %d), status = %d, pos = %d",
+                            i,
+                            data->seq,
+                            data->timestamp,
+                            eoas_sensor2string(static_cast<eOas_sensor_t>(type)),
+                            data->id,
+                            data->w, data->x, data->y, data->z,
+                            data->status,
+                            pos);
+                }
+            }
 
-// bool embObjIMU::initSensorsData(void)
-// {
-//     sensorsData.resize(eoas_sensors_numberof);
-//     
-//     for(int t=0; t<eoas_sensors_numberof; t++)
-//     {
-//         sensorsData[t].resize(0);
-//     }
-//         
-//     const eOas_inertial3_arrayof_descriptors_t* tmp = &servCfg.ethservice.configuration.data.as.inertial3.arrayofdescriptor;
-//     EOconstarray* array = eo_constarray_Load(reinterpret_cast<const EOarray*>(tmp));
-//     uint8_t size = eo_constarray_Size(array);
-//     
-//     for(uint8_t i=0; i<size; i++)
-//     {
-//         eOas_inertial3_descriptor_t *des = (eOas_inertial3_descriptor_t*)eo_constarray_At(array, i);
-//         if(nullptr != des)
-//         {
-//             // use des.
-//             if(des->typeofsensor < eoas_sensors_numberof)
-//             {
-//                 sensorInfo_t newSens = {0};
-// //                 std::string name;
-// //                 std::string fieldname;
-// //                 int values[4]; //vector??
-// //                 int state; //stato dell'interfaccia??
-//                 newSens.name = servCfg.id[0]; //???
-//                 newSens.fieldname = newSens.name;
-//                 newSens.values.resize(0);
-//                 newSens.state = yarp::dev::MAS_OK;
-//                 sensorsData[des->typeofsensor].push_back(newSens);
-//             }
-//         }
-//         
-//     }
-//     return true;
-// }
+        }
 
+    }
+}
 
 
 bool embObjIMU::buildmaps(void)
