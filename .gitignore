@@ -18,8 +18,8 @@ licenses-authors.txt
 licenses-bad.txt
 licenses-copyright-compact.txt
 licenses-good.txt
-
 .DS_Store
 .Spotlight-V100
 .Trashes
-
+.vs/
+CMakeSettings.json
