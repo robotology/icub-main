@@ -690,7 +690,12 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             measConvFactors.newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
         
             measConvFactors.bemf2raw[i] = measConvFactors.newtonsToSensor[i] / measConvFactors.angleToEncoder[i];
-            measConvFactors.ktau2raw[i] = measConvFactors.dutycycleToPWM[i] / measConvFactors.newtonsToSensor[i];
+            if (_tpids->out_PidUnits == yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT)
+            {   measConvFactors.ktau2raw[i] = measConvFactors.dutycycleToPWM[i] / measConvFactors.newtonsToSensor[i];  }
+            else if (_tpids->out_PidUnits == yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS)
+            {   measConvFactors.ktau2raw[i] = 1.0 / measConvFactors.newtonsToSensor[i];  }
+            else 
+            {   yError() << "Invalid ktau units"; return false;  }
         }
 
 
