@@ -771,12 +771,12 @@ public:
                 }
                 else if (dataToDump[i] == "getTorqueErrors")
                 {
-                    if (ddBoard.view(itrq))
+                    if (ddBoard.view(ipid))
                         {
                             yInfo("Initializing a getTorqueErrors thread\n");
                             myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetTrqErrs.setInterface(itrq);
+                            myGetTrqErrs.setInterface(ipid);
                             if (ddBoard.view(istmp))
                             {
                                 yInfo("getTorqueErrors::The time stamp initalization interfaces was successfull! \n");

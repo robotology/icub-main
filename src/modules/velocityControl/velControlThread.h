@@ -24,7 +24,7 @@ private:
     yarp::dev::IVelocityControl *ivel;
     yarp::dev::IPositionControl *ipos;
     yarp::dev::IEncoders        *ienc;
-    yarp::dev::IControlMode     *imod;
+    yarp::dev::IControlMode2    *imod;
     yarp::dev::IPidControl      *ipid;
     int nJoints;
     yarp::dev::PolyDriver *driver;

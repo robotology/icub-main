@@ -89,7 +89,7 @@ public:
         double outs[50];
         if (driver && driver->ipid_ll)
         {
-            driver->ipid_ll->getOutputs(outs);
+            driver->ipid_ll->getPidOutputs(VOCAB_PIDTYPE_POSITION,outs);
         }
         else
         {
@@ -100,7 +100,7 @@ public:
         double errs[50];
         if (driver && driver->ipid_ll)
         {
-            driver->ipid_ll->getErrors(errs);
+            driver->ipid_ll->getPidErrors(VOCAB_PIDTYPE_POSITION,errs);
         }
         else
         {

@@ -168,10 +168,10 @@ public:
 class GetTrqErrs : public GetData
 {
 public:
-  void setInterface (ITorqueControl *);
+  void setInterface (IPidControl *);
   virtual bool getData(double *);
 
-  ITorqueControl *itrq;
+  IPidControl *ipid;
 };
 
 class GetTrqRefs : public GetData

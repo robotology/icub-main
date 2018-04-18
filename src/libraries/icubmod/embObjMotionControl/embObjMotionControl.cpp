@@ -3731,16 +3731,6 @@ bool embObjMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
     return true;
 }
 
-bool embObjMotionControl::getBemfParamRaw(int j, double *bemf)
-{
-    return DEPRECATED("getBemfParamRaw");
-}
-
-bool embObjMotionControl::setBemfParamRaw(int j, double bemf)
-{
-    return DEPRECATED("setBemfParamRaw");
-}
-
 bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);

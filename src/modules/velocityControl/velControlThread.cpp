@@ -134,7 +134,7 @@ void velControlThread::run()
                 if (fabs(targets(i)-encoders(i))>6.0)
                     ipos->positionMove(i,targets(i));
                 else
-                    ipid->setReference(i,targets(i));
+                    ipid->setPidReference(yarp::dev::VOCAB_PIDTYPE_POSITION,i,targets(i));
             }
         }
         else
@@ -176,8 +176,8 @@ void velControlThread::threadRelease()
     for(int k=0;k<nJoints;k++)
     {
         ivel->stop();
-        for(int k = 0; k < nJoints; k++)
-            imod->setPositionMode(k);
+        for (int k = 0; k < nJoints; k++)
+            imod->setControlMode(k, VOCAB_CM_POSITION);
         suspended = true;
     }
 
