@@ -307,7 +307,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementVelocityControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementControlLimits2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
-    ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM);
+    ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM, f.bemf2raw, f.ktau2raw);
     ImplementPositionDirect::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementInteractionMode::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotor::initialize(_njoints, _axisMap);
@@ -688,6 +688,9 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         for (i = 0; i < _njoints; i++)
         {
             measConvFactors.newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
+        
+            measConvFactors.bemf2raw[i] = measConvFactors.newtonsToSensor[i] / measConvFactors.angleToEncoder[i];
+            measConvFactors.ktau2raw[i] = measConvFactors.dutycycleToPWM[i] / measConvFactors.newtonsToSensor[i];
         }
 
 
@@ -757,6 +760,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, _vpids->fbk_PidUnits, _vpids->out_PidUnits);
     _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE, _tpids->fbk_PidUnits, _tpids->out_PidUnits);
     _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, _cpids->fbk_PidUnits, _cpids->out_PidUnits);
+
 
     initializeInterfaces(measConvFactors);
     ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, _ppids->fbk_PidUnits, _ppids->out_PidUnits);
@@ -3454,9 +3458,9 @@ bool embObjMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
  *
  */
 
-IVirtualAnalogSensor::VAS_status embObjMotionControl::getVirtualAnalogSensorStatus(int ch)
+yarp::dev::VAS_status embObjMotionControl::getVirtualAnalogSensorStatus(int ch)
 {
-    return VAS_OK;
+    return VAS_status::VAS_OK;
 };
 
 int embObjMotionControl::getVirtualAnalogSensorChannels()
