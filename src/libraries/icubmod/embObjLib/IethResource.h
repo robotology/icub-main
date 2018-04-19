@@ -1,10 +1,6 @@
 
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-<<<<<<< 0e0449d15ef4573fd626ce0c1cf2338444a86b0a
-
-=======
->>>>>>> [icubmod] Cleanup doxygen documentation
 /* Copyright (C) 2014  iCub Facility, Istituto Italiano di Tecnologia
  * Author: Marco Accame
  * email: marco.accame@iit.it

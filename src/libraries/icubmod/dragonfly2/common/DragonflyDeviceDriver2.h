@@ -51,7 +51,7 @@ It can acquire RGB color images in 320x240 or 640x480 resolutions.
 In 640x480 there are two options: Bayer decoding performed on board by the camera or Bayer pattern decoding performed by the driver. In the second mode the bandwidth required to the Firewire bus is lower, and thus the framerate can be up to 60 fps. In the first mode the framerate is limited to 15 fps with two cameras on the same channel. Moreover, once the resolution is chosen,
 the image can be cropped on board by the camera before the transfer on the Firewire bus.
 
-These functionalities are made availabe thought two YARP devices: dragonfly2 (for RGB images) and dragondly2raw (for raw images with Bayer encoding).
+These functionalities are made available thought two YARP devices: dragonfly2 (for RGB images) and dragondly2raw (for raw images with Bayer encoding).
 
 Runtime parameters can be changed using the graphical interface: \ref icub_framegrabbergui2.
 
@@ -85,7 +85,7 @@ PGRFlyCapture (Windows)
 The video_type parameter determines how images are acquired by the dragonfly chip.
 
 -video_type 1: the image is acquired by the Dragonfly2 camera in 320x240 resolution as RGB color image, and transferred to the framegrabber driver memory buffer in this format. The Firewire bandwidth allows maximum framerate (60 fps) with two cameras. If specified, the --width and --height parameters will '''crop''' the image to the specified dimension.
-
+e
 -video_type 2: the image is acquired by the Dragonfly2 camera in 640x480 resolution as RGB color image, and transferred to the framegrabber driver memory buffer in this format. The Firewire bandwidth allows 15 fps with two cameras. If specified, the --width and --height parameters will '''crop''' the image to the specified dimension.
 
 -video_type 3: the image is acquired as a raw Bayer pattern 640x480 image, and transferred in this format to the framegrabber driver memory buffer. In this way, the bandwidth required to the Firewire bus is lower than in the previous format, allowing 60 fps. The Bayer decoding to the usual RGB format provided by the DragonflyDeviceDriver2 framegrabber is performed at software level by the driver itself. If specified, the --width and --height parameters will '''crop''' the original 640 x 480 image to the specified dimension.

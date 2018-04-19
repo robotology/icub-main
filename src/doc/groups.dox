@@ -90,7 +90,7 @@
 * interfaces. Most often they wrap vendor's libraries for hardware
 * devices (dragonfly cameras, or the can bus), and the calibrator classes of the robot.
 *
-* The compilation of this devices is typically optional and regulated by
+* The compilation of these devices is typically optional and regulated by
 * the ENABLE_devicename CMake option.
 * The device can be instantiated from the yarpdev or yarprobotinterface executables
 * or in the code by using yarp::dev::PolyDriver factory class.
