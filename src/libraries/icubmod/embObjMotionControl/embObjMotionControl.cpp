@@ -120,6 +120,8 @@ bool embObjMotionControl::alloc(int nj)
     _enabledAmp = allocAndCheck<bool>(nj);
     _enabledPid = allocAndCheck<bool>(nj);
     _calibrated = allocAndCheck<bool>(nj);
+    _PosPidSlope = allocAndCheck<double>(nj);
+    _TrqPidSlope = allocAndCheck<double>(nj);
     _cacheImpedance = allocAndCheck<eOmc_impedance_t>(nj);
 
 
@@ -158,6 +160,8 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
     checkAndDestroy(_twofocinfo);
+    checkAndDestroy(_PosPidSlope);
+    checkAndDestroy(_TrqPidSlope);
 
 
     if(_ppids)
@@ -247,6 +251,8 @@ embObjMotionControl::embObjMotionControl() :
     _enabledPid       = NULL;
     _enabledAmp       = NULL;
     _calibrated       = NULL;
+    _PosPidSlope      = NULL;
+    _TrqPidSlope      = NULL;
     _last_position_move_time = NULL;
 
     behFlags.useRawEncoderData = false;
@@ -1391,6 +1397,7 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
 
     //printf("helper_setPosPid: kp=%f ki=%f kd=%f\n", hwPid.kp, hwPid.ki, hwPid.kd);
     copyPid_iCub2eo(&hwPid, &outPid);
+    outPid.slope_time_ms = _PosPidSlope[j];
 
     if(false == res->setRemoteValue(protoId, &outPid))
     {
@@ -3064,37 +3071,11 @@ bool embObjMotionControl::getJointDeadZoneRaw(int j, double &jntDeadZone)
 
 bool embObjMotionControl::setPidSlopeTimeRaw(const PidControlTypeEnum& pidtype, int j, const int time_ms)
 {
-    eOprotID32_t protid1;
-    if      (pidtype == VOCAB_PIDTYPE_POSITION) { protid1 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition); }
-    else if (pidtype == VOCAB_PIDTYPE_TORQUE)   { protid1 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque); }
+    if (pidtype == VOCAB_PIDTYPE_POSITION)      { _PosPidSlope[j] = time_ms; }
+    else if (pidtype == VOCAB_PIDTYPE_TORQUE)   { _TrqPidSlope[j] = time_ms; }
     else
     {
-        yError() << "getPidSlopeTimeRaw(): invalid pidtype";
-        return false;
-    }
-   
-    uint16_t size;
-    eOmc_PID_t eoPID = { 0 };
-    if (!askRemoteValue(protid1, &eoPID, size))
-    {
-        yError() << "setPidSlopeTimeRaw() " << getBoardInfo() << " joint " << j;
-        return false;
-    }
-
-    eoPID.slope_time_ms = time_ms;
-
-    eOprotID32_t protid2;
-    if      (pidtype == VOCAB_PIDTYPE_POSITION) { protid2 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition); }
-    else if (pidtype == VOCAB_PIDTYPE_TORQUE)   { protid2 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque); }
-    else
-    {
-        yError() << "getPidSlopeTimeRaw(): invalid pidtype";
-        return false;
-    }
-
-    if (!res->setRemoteValue(protid2, &eoPID))
-    {
-        yError() << "setPidSlopeTimeRaw() " << getBoardInfo() << " joint " << j;
+        yError() << "setPidSlopeTimeRaw(): invalid pidtype";
         return false;
     }
     return true;
@@ -3103,22 +3084,13 @@ bool embObjMotionControl::setPidSlopeTimeRaw(const PidControlTypeEnum& pidtype, 
 bool embObjMotionControl::getPidSlopeTimeRaw(const PidControlTypeEnum& pidtype, int j, int & time_ms)
 {
     eOprotID32_t protid;
-    if      (pidtype == VOCAB_PIDTYPE_POSITION) {protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition); }
-    else if (pidtype == VOCAB_PIDTYPE_TORQUE)   {protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque); }
+    if (pidtype == VOCAB_PIDTYPE_POSITION)      { time_ms = _PosPidSlope[j]; }
+    else if (pidtype == VOCAB_PIDTYPE_TORQUE)   { time_ms = _TrqPidSlope[j]; }
     else
     {
         yError() << "getPidSlopeTimeRaw(): invalid pidtype";
         return false;
     }
-    uint16_t size;
-    eOmc_PID_t eoPID = { 0 };
-    if (!askRemoteValue(protid, &eoPID, size))
-    {
-        yError() << "getPidSlopeTimeRaw() " << getBoardInfo() << " joint " << j;
-        return false;
-    }
-
-    time_ms = eoPID.slope_time_ms;
     return true;
 }
 
@@ -3694,6 +3666,8 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
     //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
 
     copyPid_iCub2eo(&hwPid, &outPid);
+    outPid.slope_time_ms = _TrqPidSlope[j];
+
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
     return res->setRemoteValue(protid, &outPid);
 }
