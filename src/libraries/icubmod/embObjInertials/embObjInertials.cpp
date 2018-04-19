@@ -232,6 +232,7 @@ bool embObjInertials::fromConfig(yarp::os::Searchable &_config)
     {
         return false;
     }
+    //TODO prepare local data where cache the periodic sent ifo
 
 #if defined(EMBOBJINERTIALS_PUBLISH_OLDSTYLE)
 
