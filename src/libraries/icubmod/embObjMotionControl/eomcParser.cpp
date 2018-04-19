@@ -872,12 +872,10 @@ bool Parser::parsePidUnitsType(Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &f
     if(fbkControlUnits.toString()==string("metric_units"))
     {
         fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::METRIC;
-        return true;
     }
     else if(fbkControlUnits.toString()==string("machine_units"))
     {
         fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
-        return true;
     }
     else
     {
@@ -888,19 +886,17 @@ bool Parser::parsePidUnitsType(Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &f
     if (outControlUnits.toString() == string("dutycycle_percent"))
     {
         out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT;
-        return true;
     }
     else if (outControlUnits.toString() == string("machine_units"))
     {
         out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
-        return true;
     }
     else
     {
         yError() << "embObjMC BOARD " << _boardname << "invalid outputControlUnits value: " << outControlUnits.toString().c_str();
         return false;
     }
-
+    return true;
 }
 
 
