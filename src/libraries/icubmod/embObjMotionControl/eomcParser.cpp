@@ -846,32 +846,58 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
 bool Parser::parsePidUnitsType(Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits)
 {
 
-    Value &controlUnits=bPid.find("controlUnits");
-    if(controlUnits.isNull())
+    Value &fbkControlUnits=bPid.find("fbkControlUnits");
+    Value &outControlUnits = bPid.find("outputControlUnits");
+    if(fbkControlUnits.isNull())
     {
-        yError() << "embObjMC BOARD " << _boardname << " missing controlUnits parameter";
+        yError() << "embObjMC BOARD " << _boardname << " missing fbkControlUnits parameter";
         return false;
     }
-    if(!controlUnits.isString())
+    if(!fbkControlUnits.isString())
     {
-        yError() << "embObjMC BOARD " << _boardname << " controlUnits parameter is not a string";
+        yError() << "embObjMC BOARD " << _boardname << " fbkControlUnits parameter is not a string";
+        return false;
+    }
+    if (outControlUnits.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " missing outputControlUnits parameter";
+        return false;
+    }
+    if (!outControlUnits.isString())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " outputControlUnits parameter is not a string";
         return false;
     }
 
-    out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS; ////<<<@@@### THIS NEEDS TO BE IMPLEMENTED
-    if(controlUnits.toString()==string("metric_units"))
+    if(fbkControlUnits.toString()==string("metric_units"))
     {
         fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::METRIC;
         return true;
     }
-    else if(controlUnits.toString()==string("machine_units"))
+    else if(fbkControlUnits.toString()==string("machine_units"))
     {
         fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
         return true;
     }
     else
     {
-        yError() << "embObjMC BOARD " << _boardname << "invalid controlUnits value: " <<controlUnits.toString().c_str();
+        yError() << "embObjMC BOARD " << _boardname << "invalid fbkControlUnits value: " << fbkControlUnits.toString().c_str();
+        return false;
+    }
+
+    if (outControlUnits.toString() == string("dutycycle_percent"))
+    {
+        out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT;
+        return true;
+    }
+    else if (outControlUnits.toString() == string("machine_units"))
+    {
+        out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
+        return true;
+    }
+    else
+    {
+        yError() << "embObjMC BOARD " << _boardname << "invalid outputControlUnits value: " << outControlUnits.toString().c_str();
         return false;
     }
 

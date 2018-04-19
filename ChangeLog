@@ -1,3 +1,8 @@
+2018-04-19 Marco Randazzo <marco.randazzo@iit>
+    * Multiple changes to XXXmotionControl use Yarp 3.0.0
+    * Removed deprecated control board interface methods
+    * Changed file format for embObjMotionControl robot configuration files. Now using MotioncontrolVersion 5. 
+
 2018-02-19 Ugo Pattacini <ugo.pattacini@iit.it>
     * GSL dependency made optional
     * re-licesing of ctrlLib to BSD3
