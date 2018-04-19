@@ -18,9 +18,8 @@
  */
 
 
-#ifndef __SKIN_MESH_THREAD_H__
-#define __SKIN_MESH_THREAD_H__
-
+#ifndef __EMBOBJSKIN_H__
+#define __EMBOBJSKIN_H__
 
 #include <string>
 
