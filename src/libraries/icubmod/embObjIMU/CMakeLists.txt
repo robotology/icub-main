@@ -8,7 +8,7 @@ yarp_prepare_plugin(embObjIMU    CATEGORY device
                                  EXTRA_CONFIG WRAPPER=inertial)
                                  #EXTRA_CONFIG WRAPPER=AnalogServer o serverInertial???)
 
-#IF (NOT SKIP_embObjIMU)
+IF (NOT SKIP_embObjIMU)
 
 
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
@@ -23,5 +23,5 @@ yarp_prepare_plugin(embObjIMU    CATEGORY device
 
   yarp_install(FILES embObjIMU.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
-#ENDIF (NOT SKIP_embObjIMU)
+ENDIF (NOT SKIP_embObjIMU)
 
