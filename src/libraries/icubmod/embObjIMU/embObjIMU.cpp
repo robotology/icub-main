@@ -507,6 +507,7 @@ bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
         info->state = sensorState_eo2yarp(data->status);
         info->timestamp = yarp::os::Time::now();
     }
+    return true;
 
 }
 
