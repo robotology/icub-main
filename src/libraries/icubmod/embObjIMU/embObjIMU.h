@@ -12,22 +12,20 @@
 
 #include <string>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/GenericSensorInterfaces.h>
+
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/dev/PreciselyTimed.h>
+//#include <yarp/os/Stamp.h>
+
 
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
 
 #include "IethResource.h"
-#include <ethManager.h>
-#include <abstractEthResource.h>
+
+
+
 #include <serviceParser.h>
 
-#include "FeatureInterface.h"  
-#include <mutex>
-#include <stdexcept>
 
 
 namespace yarp {
@@ -89,47 +87,16 @@ public:
 
 
 private:
+    
+    void *mPriv;
+    
     std::string getBoardInfo(void) const;
-    bool fromConfig(yarp::os::Searchable &config);
+    bool fromConfig(yarp::os::Searchable &config, servConfigImu_t &servCfg);
     void cleanup(void);
-    bool sendConfing2board(void);
+    bool sendConfing2board(servConfigImu_t &servCfg);
     bool initRegulars(void);
+    static yarp::dev::MAS_status sensorState_eo2yarp(uint8_t eo_state);
     
-    eth::TheEthManager* ethManager;
-    eth::AbstractEthResource* res;
-    ServiceParser* parser;
-    servConfigImu_t servCfg;
-    bool opened;
-    bool verbosewhenok;
-    mutable std::mutex mutex;
-    typedef struct
-    {
-        std::string name;
-        std::string framename;
-        std::vector<int> values;
-        yarp::dev::MAS_status state; 
-        double timestamp;
-    } sensorInfo_t;
-    std::vector<std::vector<sensorInfo_t>> sensorsData;
-
-
-    // data used for handling the received messsages
-    std::uint8_t positionmap[eoas_sensors_numberof][eOcanports_number][16];
-
-    bool buildmaps(void);
-    bool getIndex(const eOas_inertial3_data_t *data, uint8_t &index, eOas_sensor_t &type);
-    yarp::dev::MAS_status sensorState_eo2yarp(uint8_t eo_state);
-    
-    
-    bool outOfRangeErrorHandler(const std::out_of_range& oor) const;
-    
-    /*private methos ti ge info of a sensor fiven index and type */
-    size_t getNumOfSensors(eOas_sensor_t type) const;
-    yarp::dev::MAS_status getSensorStatus(size_t sens_index, eOas_sensor_t type) const;
-    bool getSensorName(size_t sens_index, eOas_sensor_t type, yarp::os::ConstString &name) const;
-    bool getSensorFrameName(size_t sens_index, eOas_sensor_t type, yarp::os::ConstString &frameName) const;
-    bool getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::sig::Vector& out, double& timestamp) const;
-
     //debug
     void updateDebugPrints(eOprotID32_t id32, double timestamp, void* rxdata);
     
