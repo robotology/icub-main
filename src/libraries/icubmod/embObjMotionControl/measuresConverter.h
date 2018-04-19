@@ -50,66 +50,12 @@ public:
     double* dutycycleToPWM;
     double* ampsToSensor;
     double* newtonsToSensor;
+    double* bemf2raw;
+    double* ktau2raw;
 
     measureConvFactors(int numofjoints);
 
     ~measureConvFactors();
-
-};
-
-class torqueControlConvFactors
-{
-
-private:
-    int numofjoints;
-public:
-    double * angleToEncoder;
-    double * newtonsToSensor;
-
-
-
-    torqueControlConvFactors(int numofjoints);
-
-    bool init (const double *angleToEncoderFactors, const double *newtonsToSensorFactors);
-
-    ~torqueControlConvFactors();
-
-    double get_N2S(int joint);
-
-    double get_A2E(int joint);
-};
-
-
-
-class measuresConverter : public ControlBoardHelper
-{
-
-private:
-    torqueControlConvFactors *trqCrtlFactors;
-
-public:
-
-     measuresConverter( int n, const int *aMap, torqueControlConvFactors &trqCrtlFact, measureConvFactors &measFact);
-
-    ~measuresConverter();
-
-    double getAngleToEncoder(int j);
-
-    void convertTrqPid_N2S(int j, yarp::dev::Pid &pid);//NEWTON TO SENSOR
-
-    void convertTrqPid_S2N(int j, yarp::dev::Pid &pid);
-
-    void convertPosPid_A2E(int j, yarp::dev::Pid &pid);//ANGLE TO SENSOR
-
-    void convertPosPid_E2A(int j, yarp::dev::Pid &pid);
-
-    double convertTrqMotorBemfParam_MachineUnitsToMetric(int j, double bemf);
-
-    double convertTrqMotorKtaufParam_MachineUnitsToMetric(int j, double ktau);
-
-    double convertTrqMotorBemfParam_MetricToMachineUnits(int j, double bemf);
-
-    double convertTrqMotorKtaufParam_MetricToMachineUnits(int j, double ktau);
 };
 
 #endif

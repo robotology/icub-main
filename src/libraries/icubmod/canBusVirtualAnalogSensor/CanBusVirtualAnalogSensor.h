@@ -53,7 +53,7 @@ protected:
     unsigned short     boardId;
     unsigned short     canId;
     //std::string        deviceName;
-    short              status;
+    yarp::dev::VAS_status   status;
     double             timeStamp;
     AnalogDataFormat   dataFormat;
     yarp::sig::Vector  data;
@@ -74,7 +74,7 @@ public:
    
     
     //IVirtualAnalogSensor interface
-    virtual IVirtualAnalogSensor::VAS_status getVirtualAnalogSensorStatus (int ch);
+    virtual yarp::dev::VAS_status getVirtualAnalogSensorStatus (int ch);
     virtual int getVirtualAnalogSensorChannels();
    
     virtual bool updateVirtualAnalogSensorMeasure(int ch, double &measure);

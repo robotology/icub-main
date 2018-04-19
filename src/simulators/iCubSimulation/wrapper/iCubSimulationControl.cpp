@@ -302,7 +302,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     ImplementPositionControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementVelocityControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementPidControl::initialize(njoints, axisMap, angleToEncoder, zeros,newtonsToSensor,ampsToSensor);
+    ImplementPidControl::initialize(njoints, axisMap, angleToEncoder, zeros,newtonsToSensor,ampsToSensor, dutycycleToPwm);
     ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementMotorEncoders::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::
@@ -310,7 +310,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlLimits2::initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor);
+    ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor, ampsToSensor, dutycycleToPwm,nullptr,nullptr);
     ImplementControlMode2::initialize(njoints, axisMap);
     ImplementInteractionMode::initialize(njoints, axisMap);
     ImplementPositionDirect::initialize(njoints, axisMap, angleToEncoder, zeros);

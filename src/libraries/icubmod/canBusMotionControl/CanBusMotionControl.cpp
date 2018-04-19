@@ -2513,7 +2513,7 @@ bool CanBusMotionControl::open (Searchable &config)
 //    ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::
 //        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementPidControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, NULL, p._newtonsToSensor, p._ampsToSensor);
+    ImplementPidControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, NULL, p._newtonsToSensor, p._ampsToSensor, p._dutycycleToPwm);
 
     ImplementEncodersTimed::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
@@ -2533,7 +2533,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementControlLimits2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementControlMode2::initialize(p._njoints, p._axisMap);
-    ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
+    ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor, p._ampsToSensor, nullptr,nullptr,nullptr);
     _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
     
     if      (p._torqueControlUnits==CanBusMotionControlParameters::MACHINE_UNITS) {}
@@ -2585,9 +2585,9 @@ bool CanBusMotionControl::open (Searchable &config)
         
         for (int i=0; i<p._njoints; i++)
         {
-            yarp::os::Time::delay(0.002);
-            this->setBemfParam(i,p._bemfGain[i]);
-            //this->setMotorParam(i,p._bemfGain[i]); //ktau e bmef qui!
+            MotorTorqueParameters ps;
+            ps.bemf = p._bemfGain[i];
+            this->setMotorTorqueParams(i,ps);
 
             yarp::os::Time::delay(0.002);
             this->setFilterTypeRaw(i,p._filterType[i]);
@@ -2670,7 +2670,7 @@ bool CanBusMotionControl::open (Searchable &config)
         {
             for(int k=0;k<analogList.size();k++)
             {
-                std::string analogId=analogList.get(k).asString().c_str();;
+                std::string analogId=analogList.get(k).asString().c_str();
 
                 TBR_AnalogSensor *as=instantiateAnalog(config, analogId);
                 if (as!=0)
@@ -5805,23 +5805,6 @@ bool CanBusMotionControl::getRefTorqueRaw (int axis, double *ref_trq)
     return true;
 }
 
-bool CanBusMotionControl::getBemfParamRaw (int axis, double *bemf)
-{
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    short value = 0;
-
-    if (_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_MOTOR_PARAMS, axis, value))
-    {
-        *bemf = double (value);
-    }
-    else
-        return false;
-
-    return true;
-}
-
 bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParameters *param)
 {
     CanBusResources& r = RES(system_resources);
@@ -5909,32 +5892,6 @@ bool CanBusMotionControl::setFilterTypeRaw (int j, int type)
         r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_TCFILTER_TYPE, axis);
         *((short *)(r._writeBuffer[0].getData()+1)) = S_16(type);
         r._writeBuffer[0].setLen(2);
-        r.writePacket();
-    _mutex.post();
-
-    return true;
-}
-
-bool CanBusMotionControl::setBemfParamRaw (int j, double bemf)
-{
-    const int axis = j;
-
-     /// prepare Can message.
-    CanBusResources& r = RES(system_resources);
-
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    _mutex.wait();
-        r.startPacket();
-        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_MOTOR_PARAMS, axis);
-        *((short *)(r._writeBuffer[0].getData()+1)) = S_16(bemf);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = (unsigned char) (0);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+4)) = (unsigned char) (0);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+5)) = (unsigned char) (0);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = (unsigned char) (0);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = (unsigned char) (0);
-        r._writeBuffer[0].setLen(8);
         r.writePacket();
     _mutex.post();
 

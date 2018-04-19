@@ -152,7 +152,7 @@ bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentP
         {
             if(_currentControlLaw[i] == "none")
             {
-                yError() << "embObjMC BOARD " << _boardname << "CuuentPid is mandatory. It shlould be different from none ";
+                yError() << "embObjMC BOARD " << _boardname << "CurrentPid is mandatory. It should be different from none ";
                 return false;
             }
             if(_currentControlLaw[i] != _currentControlLaw[0])
@@ -194,15 +194,10 @@ bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentP
 
     yarp::dev::Pid *mycpids =  new yarp::dev::Pid[_njoints];
 
-    GenericControlUnitsType_t unitstype;
-    if(!parsePidUnitsType(currControlLaw, unitstype))
+    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+    yarp::dev::PidOutputUnitsEnum    out_unitstype;
+    if(!parsePidUnitsType(currControlLaw, fbk_unitstype, out_unitstype))
         return false;
-
-    if(unitstype != controlUnits_metric)
-    {
-        yError() << "embObjMC BOARD " << _boardname << " current pids can use only metric units";
-        return false;
-    }
 
     if(!parsePidsGroup(currControlLaw, mycpids, string("cur_")))
         return false;
@@ -210,7 +205,8 @@ bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentP
     for(int i=0; i<_njoints; i++)
     {
         cpids[i].enabled = true;
-        cpids[i].ctrlUnitsType = unitstype;
+        cpids[i].fbk_PidUnits = fbk_unitstype;
+        cpids[i].out_PidUnits = out_unitstype;
         cpids[i].controlLaw = PidAlgo_simple;
         cpids[i].pid = mycpids[i];
     }
@@ -430,10 +426,12 @@ bool Parser::parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw)
     Pid_Algorithm_simple *pidSimple_ptr = new Pid_Algorithm_simple(_njoints);
     pidSimple_ptr->type = PidAlgo_simple;
 
-    GenericControlUnitsType_t unitstype;
-    if(!parsePidUnitsType(b_pid, unitstype))
+    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
+    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
+    if(!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits))
         return false;
-    pidSimple_ptr->ctrlUnitsType = unitstype;
+    pidSimple_ptr->fbk_PidUnits = fbk_PidUnits;
+    pidSimple_ptr->out_PidUnits = out_PidUnits;
 
     if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("pos_")))
         return false;
@@ -458,10 +456,12 @@ bool Parser::parsePid_inVel_outPwm(Bottle &b_pid, string controlLaw)
     Pid_Algorithm_simple *pidSimple_ptr = new Pid_Algorithm_simple(_njoints);
     pidSimple_ptr->type = PidAlgo_simple;
 
-    GenericControlUnitsType_t unitstype;
-    if(!parsePidUnitsType(b_pid, unitstype))
+    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
+    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
+    if(!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits))
         return false;
-    pidSimple_ptr->ctrlUnitsType = unitstype;
+    pidSimple_ptr->fbk_PidUnits = fbk_PidUnits;
+    pidSimple_ptr->out_PidUnits = out_PidUnits;
 
     if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("vel_")))
         return false;
@@ -485,11 +485,12 @@ bool Parser::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw)
     Pid_Algorithm_simple *pidSimple_ptr = new Pid_Algorithm_simple(_njoints);
     pidSimple_ptr->type = PidAlgo_simple;
 
-    GenericControlUnitsType_t unitstype;
-    if(!parsePidUnitsType(b_pid, unitstype))
+    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
+    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
+    if(!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits))
         return false;
-
-    pidSimple_ptr->ctrlUnitsType = unitstype;
+    pidSimple_ptr->fbk_PidUnits = fbk_PidUnits;
+    pidSimple_ptr->out_PidUnits = out_PidUnits;
 
     if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("trq_")))
         return false;
@@ -520,10 +521,12 @@ bool Parser::parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw)
     PidAlgorithm_VelocityInnerLoop *pidInnerVel_ptr = new PidAlgorithm_VelocityInnerLoop(_njoints);
     pidInnerVel_ptr->type = PIdAlgo_velocityInnerLoop;
 
-    GenericControlUnitsType_t unitstype;
-    if(!parsePidUnitsType(b_pid, unitstype))
+    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
+    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
+    if(!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits))
         return false;
-    pidInnerVel_ptr->ctrlUnitsType = unitstype;
+    pidInnerVel_ptr->fbk_PidUnits = fbk_PidUnits;
+    pidInnerVel_ptr->out_PidUnits = out_PidUnits;
 
     if(!parsePidsGroup(b_pid, pidInnerVel_ptr->extPid, string("pos_")))
         return false;
@@ -551,11 +554,12 @@ bool Parser::parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw)
     PidAlgorithm_VelocityInnerLoop *pidInnerVel_ptr = new PidAlgorithm_VelocityInnerLoop(_njoints);
     pidInnerVel_ptr->type = PIdAlgo_velocityInnerLoop;
 
-    GenericControlUnitsType_t unitstype;
-    if(!parsePidUnitsType(b_pid, unitstype))
+    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
+    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
+    if(!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits))
         return false;
-    pidInnerVel_ptr->ctrlUnitsType = unitstype;
-
+    pidInnerVel_ptr->fbk_PidUnits = fbk_PidUnits;
+    pidInnerVel_ptr->out_PidUnits = out_PidUnits;
 
     if(!parsePidsGroup(b_pid, pidInnerVel_ptr->extPid, string("trq_")))
         return false;
@@ -653,7 +657,8 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
             {
 
                 //pids are equal if they have same control units type and same values
-                if( ( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->ctrlUnitsType != ((Pid_Algorithm_simple*)vpidAlgo_ptr)->ctrlUnitsType) ||
+                if( ( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->fbk_PidUnits != ((Pid_Algorithm_simple*)vpidAlgo_ptr)->fbk_PidUnits) ||
+                     (((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->out_PidUnits != ((Pid_Algorithm_simple*)vpidAlgo_ptr)->out_PidUnits) ||
                      ( ! (((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[i]==((Pid_Algorithm_simple*)vpidAlgo_ptr)->pid[i]) ) )
                 {
                     yError() << "embObjMC BOARD " << _boardname << ":Joint" << i << ": velocity pid values of inner loop of position control are not equal to velocity control pid values";
@@ -665,7 +670,8 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
             {
                 for(int x =0; x<_njoints; x++)
                 {
-                    if( ( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->ctrlUnitsType != ((Pid_Algorithm_simple*)vpidAlgo_ptr)->ctrlUnitsType ) ||
+                    if( ( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->fbk_PidUnits != ((Pid_Algorithm_simple*)vpidAlgo_ptr)->fbk_PidUnits) ||
+                        (((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->out_PidUnits != ((Pid_Algorithm_simple*)vpidAlgo_ptr)->out_PidUnits) ||
                         ( ! (((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[x]==((PidAlgorithm_VelocityInnerLoop*)tpidAlgo_ptr)->innerVelPid[x]) ) )
                     {
                         yError() << "embObjMC BOARD " <<_boardname << ":Joint" << i << ":velocity pid values of inner loop of torque control are not equal to velocity pid values of inner position pid ";
@@ -687,7 +693,8 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
                     return false;
                 }
                 ppids[i].pid = pidAlgo_simple_ptr->pid[i];
-                ppids[i].ctrlUnitsType = pidAlgo_simple_ptr->ctrlUnitsType;
+                ppids[i].fbk_PidUnits = pidAlgo_simple_ptr->fbk_PidUnits;
+                ppids[i].out_PidUnits = pidAlgo_simple_ptr->out_PidUnits;
                 ppids[i].controlLaw =  pidAlgo_simple_ptr->type;
                 ppids[i].usernamePidSelected = _posistionControlLaw[i];
                 ppids[i].enabled = true;
@@ -701,7 +708,8 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
                         return false;
                     }
                     vpids[i].pid = vpidAlgo_simple_ptr->pid[i];
-                    vpids[i].ctrlUnitsType = vpidAlgo_simple_ptr->ctrlUnitsType;
+                    vpids[i].fbk_PidUnits = vpidAlgo_simple_ptr->fbk_PidUnits;
+                    vpids[i].out_PidUnits = vpidAlgo_simple_ptr->out_PidUnits;
                     vpids[i].controlLaw =  vpidAlgo_simple_ptr->type;
                     vpids[i].usernamePidSelected = _velocityControlLaw[i];
                     vpids[i].enabled = true;
@@ -722,7 +730,8 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
                         return false;
                     }
                     tpids[i].pid = tpidAlgo_simple_ptr->pid[i];
-                    tpids[i].ctrlUnitsType = tpidAlgo_simple_ptr->ctrlUnitsType;
+                    tpids[i].fbk_PidUnits = tpidAlgo_simple_ptr->fbk_PidUnits;
+                    tpids[i].out_PidUnits = tpidAlgo_simple_ptr->out_PidUnits;
                     tpids[i].controlLaw =  tpidAlgo_simple_ptr->type;
                     tpids[i].usernamePidSelected = _torqueControlLaw[i];
                     tpids[i].enabled = true;
@@ -747,12 +756,14 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
                     return false;
                 }
                 ppids[i].pid = pidAlgo_innerVelLoop_ptr->extPid[i];
-                ppids[i].ctrlUnitsType = pidAlgo_innerVelLoop_ptr->ctrlUnitsType;
+                ppids[i].fbk_PidUnits = pidAlgo_innerVelLoop_ptr->fbk_PidUnits;
+                ppids[i].out_PidUnits = pidAlgo_innerVelLoop_ptr->out_PidUnits;
                 ppids[i].controlLaw =  pidAlgo_innerVelLoop_ptr->type;
                 ppids[i].usernamePidSelected = _posistionControlLaw[i];
                 ppids[i].enabled = true;
                 vpids[i].pid = pidAlgo_innerVelLoop_ptr->innerVelPid[i];
-                vpids[i].ctrlUnitsType = pidAlgo_innerVelLoop_ptr->ctrlUnitsType;
+                vpids[i].fbk_PidUnits = pidAlgo_innerVelLoop_ptr->fbk_PidUnits;
+                ppids[i].out_PidUnits = pidAlgo_innerVelLoop_ptr->out_PidUnits;
                 vpids[i].controlLaw =  pidAlgo_innerVelLoop_ptr->type;
                 vpids[i].usernamePidSelected = _velocityControlLaw[i];
                 vpids[i].enabled = true;
@@ -766,7 +777,8 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
                         return false;
                     }
                     tpids[i].pid = tpidAlgo_innerVelLoop_ptr->extPid[i];
-                    tpids[i].ctrlUnitsType = tpidAlgo_innerVelLoop_ptr->ctrlUnitsType;
+                    tpids[i].fbk_PidUnits = tpidAlgo_innerVelLoop_ptr->fbk_PidUnits;
+                    tpids[i].out_PidUnits = tpidAlgo_innerVelLoop_ptr->out_PidUnits;
                     tpids[i].controlLaw =  tpidAlgo_innerVelLoop_ptr->type;
                     tpids[i].usernamePidSelected = _torqueControlLaw[i];
                     tpids[i].enabled = true;
@@ -774,7 +786,8 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
                     tpids[i].ktau = _ktau[i];
                     tpids[i].filterType = _filterType[i];
                     vpids[i].pid = tpidAlgo_innerVelLoop_ptr->innerVelPid[i];
-                    vpids[i].ctrlUnitsType = tpidAlgo_innerVelLoop_ptr->ctrlUnitsType;
+                    vpids[i].fbk_PidUnits = tpidAlgo_innerVelLoop_ptr->fbk_PidUnits;
+                    vpids[i].out_PidUnits = tpidAlgo_innerVelLoop_ptr->out_PidUnits;
                     vpids[i].controlLaw =  tpidAlgo_innerVelLoop_ptr->type;
                     vpids[i].usernamePidSelected = _velocityControlLaw[i];
                     vpids[i].enabled = true;
@@ -816,7 +829,8 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
     {
         if(tpids[i].enabled)
         {
-            if(tpids[firstjoint].ctrlUnitsType != tpids[i].ctrlUnitsType)
+            if(tpids[firstjoint].fbk_PidUnits != tpids[i].fbk_PidUnits ||
+               tpids[firstjoint].out_PidUnits != tpids[i].out_PidUnits)
             {
                 yError() << "embObjMC BOARD " << _boardname << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
                 return false;
@@ -829,38 +843,60 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInf
 }
 
 
-bool Parser::parsePidUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitstype)
+bool Parser::parsePidUnitsType(Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits)
 {
 
-    Value &controlUnits=bPid.find("controlUnits");
-    if(controlUnits.isNull())
+    Value &fbkControlUnits=bPid.find("fbkControlUnits");
+    Value &outControlUnits = bPid.find("outputControlUnits");
+    if(fbkControlUnits.isNull())
     {
-        yError() << "embObjMC BOARD " << _boardname << " missing controlUnits parameter";
+        yError() << "embObjMC BOARD " << _boardname << " missing fbkControlUnits parameter";
         return false;
     }
-    if(!controlUnits.isString())
+    if(!fbkControlUnits.isString())
     {
-        yError() << "embObjMC BOARD " << _boardname << " controlUnits parameter is not a string";
+        yError() << "embObjMC BOARD " << _boardname << " fbkControlUnits parameter is not a string";
+        return false;
+    }
+    if (outControlUnits.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " missing outputControlUnits parameter";
+        return false;
+    }
+    if (!outControlUnits.isString())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " outputControlUnits parameter is not a string";
         return false;
     }
 
-
-    if(controlUnits.toString()==string("metric_units"))
+    if(fbkControlUnits.toString()==string("metric_units"))
     {
-        unitstype = controlUnits_metric;
-        return true;
+        fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::METRIC;
     }
-    else if(controlUnits.toString()==string("machine_units"))
+    else if(fbkControlUnits.toString()==string("machine_units"))
     {
-        unitstype = controlUnits_machine;
-        return true;
+        fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
     }
     else
     {
-        yError() << "embObjMC BOARD " << _boardname << "invalid controlUnits value: " <<controlUnits.toString().c_str();
+        yError() << "embObjMC BOARD " << _boardname << "invalid fbkControlUnits value: " << fbkControlUnits.toString().c_str();
         return false;
     }
 
+    if (outControlUnits.toString() == string("dutycycle_percent"))
+    {
+        out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT;
+    }
+    else if (outControlUnits.toString() == string("machine_units"))
+    {
+        out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
+    }
+    else
+    {
+        yError() << "embObjMC BOARD " << _boardname << "invalid outputControlUnits value: " << outControlUnits.toString().c_str();
+        return false;
+    }
+    return true;
 }
 
 
@@ -1882,12 +1918,8 @@ void PidInfo::dumpdata(void)
             cout <<  ". Control law is " << "unknown";
     }
 
-    if(ctrlUnitsType == controlUnits_machine)
-        cout << ". ctr Unit type is " << "controlUnits_machine.";
-    else if (ctrlUnitsType == controlUnits_metric)
-        cout << ". ctr Unit type is " << "controlUnits_metric.";
-    else
-        cout << ". ctr Unit type is " << "unknown.";
+    cout << ". PID fbk Unit type is " << (int)fbk_PidUnits;
+    cout << ". PID out Unit type is " << (int)out_PidUnits;
 
     cout << " kp is " << pid.kp;
     cout << endl;

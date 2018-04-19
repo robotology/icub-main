@@ -147,7 +147,7 @@ embObjVirtualAnalogSensor::embObjVirtualAnalogSensor()
     _useCalibration = 0;
     _channels       = 0;
     _verbose        = false;
-    _status         = VAS_OK;
+    _status         = yarp::dev::VAS_status::VAS_OK;
     opened          =  false;
 }
 
@@ -245,9 +245,9 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
  *
  */
 
-IVirtualAnalogSensor::VAS_status embObjVirtualAnalogSensor::getVirtualAnalogSensorStatus(int ch)
+yarp::dev::VAS_status embObjVirtualAnalogSensor::getVirtualAnalogSensorStatus(int ch)
 {
-    return VAS_OK;
+    return yarp::dev::VAS_status::VAS_OK;
 };
 
 int embObjVirtualAnalogSensor::getVirtualAnalogSensorChannels()
