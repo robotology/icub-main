@@ -4,8 +4,8 @@
 // Authors: Lorenzo Natale
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-#ifndef __SKIN_MESH_THREAD_H__
-#define __SKIN_MESH_THREAD_H__
+#ifndef __SKINPROTOTYPE_H__
+#define __SKINPROTOTYPE_H__
 
 //#include <stdio.h>
 #include <string>

@@ -4,8 +4,8 @@
 // Authors: Lorenzo Natale, Francesco Giovannini
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-#ifndef __SKIN_MESH_THREAD_H__
-#define __SKIN_MESH_THREAD_H__
+#ifndef __CANBUSSKIN_H__
+#define __CANBUSSKIN_H__
 
 #include <string>
 
