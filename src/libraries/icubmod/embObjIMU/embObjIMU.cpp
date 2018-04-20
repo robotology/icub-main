@@ -241,9 +241,10 @@ bool SensorsData::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::
 {
     try
     {   std::lock_guard<std::mutex> lck (mutex);
-        out.resize(0);
-        for(int i=0; i<mysens[type].at(sens_index).values.size(); i++)
-            out.push_back(mysens[type].at(sens_index).values[i]);// TODO Verifica la copia o usa il vector di yarp
+        out = mysens[type].at(sens_index).values;
+//         out.resize(0);
+//         for(int i=0; i<mysens[type].at(sens_index).values.size(); i++)
+//             out.push_back(mysens[type].at(sens_index).values[i]);// TODO Verifica la copia o usa il vector di yarp
             timestamp = mysens[type].at(sens_index).timestamp;
         return true;
     }
