@@ -40,8 +40,18 @@ typedef struct
     int                     acquisitionrate;
     bool                    useCalibration;
     string                  nameOfStrain;
+    eObrd_cantype_t         boardType;
 } servConfigStrain_t;
 
+typedef struct
+{
+    eOmn_serv_parameter_t   ethservice;
+    int                     acquisitionrate;
+    bool                    useCalibration;
+    string                  nameOfStrain;
+    eObrd_cantype_t         boardType;
+    int                     temperatureAcquisitionrate;
+} servConfigFTsensor_t;
 
 typedef struct
 {
@@ -215,6 +225,7 @@ public:
 
     bool parseService(yarp::os::Searchable &config, servConfigMais_t& maisconfig);
     bool parseService(Searchable &config, servConfigStrain_t &strainconfig);
+    bool parseService(Searchable &config, servConfigFTsensor_t &ftconfig);
     bool parseService(Searchable &config, servConfigInertials_t &inertialsconfig);
     bool parseService(Searchable &config, servConfigImu_t &imuconfig);
 

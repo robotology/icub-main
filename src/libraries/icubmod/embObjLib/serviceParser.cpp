@@ -963,7 +963,6 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
     servCanBoard_t thestrain_props = as_service.properties.canboards.at(0);
     servAnalogSensor_t thestrain_sensor = as_service.settings.enabledsensors.at(0);
 
-
     // first check we do is about thestrain_props.type
     if((eobrd_cantype_strain != thestrain_props.type) && (eobrd_cantype_strain2 != thestrain_props.type))
     {
@@ -997,6 +996,64 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
     return true;
 }
 
+bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftconfig)
+{
+    if(false == check_analog(config, eomn_serv_AS_strain))
+    {
+        yError() << "ServiceParser::parseService() has received an invalid SERVICE group for strain";
+        return false;
+    }
+    
+    // now we extract values ... so far we dont make many checks ... we just assume the vector<> are of size 1.
+    servCanBoard_t thestrain_props = as_service.properties.canboards.at(0);
+    servAnalogSensor_t thestrain_sensor = as_service.settings.enabledsensors.at(0);
+    
+    // first check we do is about thestrain_props.type
+    if(eobrd_cantype_strain2 != thestrain_props.type)
+    {
+        yError() << "ServiceParser::parseService() for embObjFTsensor has detected an invalid type of board. it should be a eobrd_strain2 but is a:" << eoboards_type2string2(eoboards_cantype2type(thestrain_props.type), eobool_false);
+        return false;
+    }
+    
+    ftconfig.acquisitionrate = as_service.settings.acquisitionrate;
+    ftconfig.useCalibration = as_strain_settings.useCalibration;
+    ftconfig.nameOfStrain = thestrain_sensor.id;
+    
+    memset(&ftconfig.ethservice.configuration, 0, sizeof(ftconfig.ethservice.configuration));
+    
+    ftconfig.ethservice.configuration.type = eomn_serv_AS_strain;
+    ftconfig.ethservice.configuration.data.as.strain.boardtype.type = thestrain_props.type;
+    memcpy(&ftconfig.ethservice.configuration.data.as.strain.boardtype.protocol, &thestrain_props.protocol, sizeof(eObrd_protocolversion_t));
+    memcpy(&ftconfig.ethservice.configuration.data.as.strain.boardtype.firmware, &thestrain_props.firmware, sizeof(eObrd_firmwareversion_t));
+    
+    // second check we do is about thestrain_sensor.location
+    if(eobrd_place_can != thestrain_sensor.location.any.place)
+    {
+        yError() << "ServiceParser::parseService() has received an invalid location for strain. it is not a CANx:adr location";
+        return false;
+    }
+    ftconfig.ethservice.configuration.data.as.strain.canloc.port = thestrain_sensor.location.can.port;
+    ftconfig.ethservice.configuration.data.as.strain.canloc.addr = thestrain_sensor.location.can.addr;
+    ftconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eobrd_caninsideindex_none;
+    
+    
+    
+    Bottle b_SERVICE(config.findGroup("SERVICE")); //b_SERVICE and b_SETTINGS could not be null, otherwise parseService function would have returned false
+    Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
+    Bottle b_SETTINGS_temp = Bottle(b_SETTINGS.findGroup("temperature-acquisitionRate"));
+    if(b_SETTINGS_temp.isNull())
+    {
+        yError() << "ServiceParser::parseService() for embObjFTsensor device cannot find SETTINGS.temperature-acquisitionRate";
+        return false;
+    }
+    else
+    {
+        ftconfig.temperatureAcquisitionrate = b_SETTINGS_temp.get(1).asInt();
+        //TODO: chek that the acquisition rate is inside a reasonable range
+    }
+    
+    return true;
+}
 
 bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &inertialsconfig)
 {
