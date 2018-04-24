@@ -29,3 +29,6 @@ source_group("Header Files" FILES ${folder_header})
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})
 
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+
+icub_export_library(ethLoaderLib)
+
