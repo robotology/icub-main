@@ -795,6 +795,88 @@ int cDownloader::strain_set_matrix_gain     (int bus, int target_id, unsigned in
      return 0;
 }
 
+int cDownloader::strain_set_amplifier_regs(int bus, int target_id, unsigned char channel, const strain2_ampl_regs_t &ampregs, string *errorstring)
+{
+    // check if driver is running
+    if (m_idriver == NULL)
+    {
+        if(_verbose) yError ("Driver not ready\n");
+        return -1;
+    }
+
+    // not for normal strain
+
+    const int set = 0;
+    txBuffer[0].setId((2 << 8) + target_id);
+    txBuffer[0].setLen(8);
+    txBuffer[0].getData()[0]= 0x2B;
+    txBuffer[0].getData()[1]= ((set << 4) & 0xf0) | (channel & 0x0f);
+    txBuffer[0].getData()[2]= ampregs.data[0]; // lsb of gd
+    txBuffer[0].getData()[3]= ampregs.data[1]; // msb of gd
+    txBuffer[0].getData()[4]= ampregs.data[2];
+    txBuffer[0].getData()[5]= ampregs.data[3]; // vc0
+    txBuffer[0].getData()[6]= ampregs.data[4];
+    txBuffer[0].getData()[7]= ampregs.data[5];
+    set_bus(txBuffer[0], bus);
+    //yDebug("strain_set_amplifier_regs() is sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+
+    m_idriver->send_message(txBuffer, 1);
+
+    // i wait some 10 ms
+    yarp::os::Time::delay(0.010);
+
+
+    return 0;
+}
+
+
+int cDownloader::strain_get_amplifier_regs(int bus, int target_id, unsigned char channel, strain2_ampl_regs_t &ampregs, string *errorstring)
+{
+    // check if driver is running
+    if (m_idriver == NULL)
+    {
+        if(_verbose) yError ("Driver not ready\n");
+        return -1;
+    }
+
+    // not for normal strain
+
+    const int set = 0;
+
+    txBuffer[0].setId((2 << 8) + target_id);
+    txBuffer[0].setLen(2);
+    txBuffer[0].getData()[0]= 0x2A;
+    txBuffer[0].getData()[1]= ((set << 4) & 0xf0) | (channel & 0x0f);;
+    set_bus(txBuffer[0], bus);
+
+    //yDebug("strain_get_amplifier_regs() is sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+
+    m_idriver->send_message(txBuffer, 1);
+
+    // i wait some 10 ms
+    yarp::os::Time::delay(0.010);
+
+    int rm = m_idriver->receive_message(rxBuffer, 1, 1.0);
+    for(int i=0; i<rm; i++)
+    {
+        if (rxBuffer[i].getData()[0]==0x2A)
+        {
+            ampregs.data[0] = rxBuffer[i].getData()[2];
+            ampregs.data[1] = rxBuffer[i].getData()[3];
+            ampregs.data[2] = rxBuffer[i].getData()[4];
+            ampregs.data[3] = rxBuffer[i].getData()[5];
+            ampregs.data[4] = rxBuffer[i].getData()[6];
+            ampregs.data[5] = rxBuffer[i].getData()[7];
+            //uint8_t from = rxBuffer[i].getData()[1];
+            //yDebug("from %d: [%x, %x, %x, %x, %x, %x]", from, rxBuffer[i].getData()[2], rxBuffer[i].getData()[3], rxBuffer[i].getData()[4], rxBuffer[i].getData()[5], rxBuffer[i].getData()[6], rxBuffer[i].getData()[7]);
+        }
+        break;
+    }
+
+
+    return 0;
+}
+
 float cDownloader::strain_amplifier_cfg2gain(strain_ampl_cfg_t c)
 {
     static const float mapofgains[ampcfg_gain_numberOf] =

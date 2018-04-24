@@ -135,6 +135,11 @@ typedef struct
 
 #endif
 
+struct strain2_ampl_regs_t
+{
+   uint8_t data[6];
+};
+
 
 class cDownloader
 {
@@ -213,10 +218,12 @@ int strain_get_matrix_rc	 (int bus, int target_id, char r, char c, unsigned int&
 int strain_set_matrix_rc	 (int bus, int target_id, char r, char c, unsigned int  elem, int matrix = 0, string *errorstring = NULL);
 int strain_get_matrix_gain	 (int bus, int target_id, unsigned int& gain, int matrix = 0, string *errorstring = NULL);
 int strain_set_matrix_gain	 (int bus, int target_id, unsigned int  gain, int matrix = 0, string *errorstring = NULL);
+int strain_set_amplifier_regs(int bus, int target_id, unsigned char channel, const strain2_ampl_regs_t &ampregs, string *errorstring = NULL);
+int strain_get_amplifier_regs(int bus, int target_id, unsigned char channel, strain2_ampl_regs_t &ampregs, string *errorstring = NULL);
 float strain_amplifier_cfg2gain(strain_ampl_cfg_t c);
 int strain_set_amplifier_cfg(int bus, int target_id, unsigned char channel, strain_ampl_cfg_t ampset, string *errorstring);
-int strain_get_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float &gain, uint16_t &offset, string *errorstring);
-int strain_set_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float gain, uint16_t offset, string *errorstring);
+int strain_get_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float &gain, uint16_t &offset, string *errorstring = NULL);
+int strain_set_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float gain, uint16_t offset, string *errorstring = NULL);
 int strain_get_calib_bias	 (int bus, int target_id, char channel, signed int& bias, string *errorstring = NULL);
 int strain_set_calib_bias	 (int bus, int target_id, string *errorstring = NULL);
 int strain_set_calib_bias	 (int bus, int target_id, char channel, signed int bias, string *errorstring = NULL);
