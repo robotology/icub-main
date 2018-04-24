@@ -471,7 +471,7 @@ void CalibrationWindow::loadCalibrationFile(QString fileName)
     int index = ui->tabWidget->currentIndex();
     loading();
     //load data file
-    if(!calibration_load_v2 (fileName.toLatin1().data(), bus, id,index)){
+    if(!calibration_load_v3 (fileName.toLatin1().data(), bus, id,index)){
         loading(false);
         mutex.unlock();
     }
@@ -559,21 +559,48 @@ void CalibrationWindow::saveCalibrationFile(QString filePath)
     int i=0;
     char buffer[256];
 
-    //file version
-    filestr<<"File version:"<<endl;
-    filestr<<"2"<<endl;
 
-    //serial number
-    filestr<<"Serial number:"<<endl;
-    sprintf (buffer,"%s",serial_no);
-    filestr<<buffer<<endl;
-
-    //offsets
-    filestr<<"Offsets:"<<endl;
-    for (i=0;i<CHANNEL_COUNT; i++){
-        sprintf (buffer,"%d",offset[i]);
+    if(icubCanProto_boardType__strain2 == boardtype)
+    {
+        // file version
+        filestr<<"File version:"<<endl;
+        filestr<<"3"<<endl;
+        // board type
+        filestr<<"Board type:"<<endl;
+        filestr<<"strain2"<<endl;
+        // serial number
+        filestr<<"Serial number:"<<endl;
+        sprintf (buffer,"%s",serial_no);
         filestr<<buffer<<endl;
+        // amplifier registers
+        filestr<<"Amplifier registers:"<<endl;
+        for (i=0;i<CHANNEL_COUNT; i++){
+            sprintf (buffer,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
+                    amp_registers[i].data[0], amp_registers[i].data[1], amp_registers[i].data[2],
+                    amp_registers[i].data[3], amp_registers[i].data[4], amp_registers[i].data[5]);
+            filestr<<buffer<<endl;
+        }
     }
+    else
+    {
+        //file version
+        filestr<<"File version:"<<endl;
+        filestr<<"2"<<endl;
+
+        //serial number
+        filestr<<"Serial number:"<<endl;
+        sprintf (buffer,"%s",serial_no);
+        filestr<<buffer<<endl;
+
+        //offsets
+        filestr<<"Offsets:"<<endl;
+        for (i=0;i<CHANNEL_COUNT; i++){
+            sprintf (buffer,"%d",offset[i]);
+            filestr<<buffer<<endl;
+        }
+    }
+
+
 
     //calibration matrix
     filestr<<"Calibration matrix:"<<endl;
@@ -1011,6 +1038,9 @@ void CalibrationWindow::onTimeout()
 
             core->getDownloader()->strain_get_serial_number(core->getDownloader()->board_list[selected].bus,
                                                             core->getDownloader()->board_list[selected].pid, serial_no,&msg);
+
+
+
             appendLogMsg(msg.c_str());
             setText(ui->edit_serial,serial_no);
         }
@@ -1147,6 +1177,7 @@ void CalibrationWindow::onTimeout()
 
             if(icubCanProto_boardType__strain2 == boardtype)
             {
+                core->getDownloader()->strain_get_amplifier_regs(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_registers[i], &msg);
                 core->getDownloader()->strain_get_amplifier_gain_offset(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_gains[i], amp_offsets[i], &msg);
                 appendLogMsg(msg.c_str());
                 sprintf(tempbuf,"%6.3f",amp_gains[i]);
@@ -1267,6 +1298,162 @@ void CalibrationWindow::onTimeout()
 
 }
 
+bool CalibrationWindow::calibration_load_v3 (char* filename, int selected_bus, int selected_id, int index)
+{
+    if (filename==NULL){
+        yError("File not found!\n");
+        appendLogMsg("File not found!");
+        return false;
+    }
+    if (selected_id <1 || selected_id >= 15){
+        yError("Invalid board address!\n");
+        appendLogMsg("Invalid board address!");
+        return false;
+    }
+
+    int file_version=0;
+    fstream filestr;
+    filestr.open (filename, fstream::in);
+    if (!filestr.is_open()){
+        yError("Error opening calibration file!\n");
+        appendLogMsg("Error opening calibration file!");
+        return false;
+    }
+
+    int i=0;
+    char buffer[256];
+
+    //file version
+    filestr.getline (buffer,256);
+    filestr.getline (buffer,256);
+    sscanf (buffer,"%d",&file_version);
+
+
+    if((icubCanProto_boardType__strain2 == boardtype) && (3 != file_version))
+    {
+        yError("Wrong file. Calibration version not supported for strain2: %d\n", file_version);
+        appendLogMsg("Wrong file. Calibration version not supported for strain2");
+        return false;
+    }
+    else if((icubCanProto_boardType__strain == boardtype) && (2 != file_version))
+    {
+        yError("Wrong file. Calibration version not supported: %d\n", file_version);
+        appendLogMsg("Wrong file. Calibration version not supported");
+        return false;
+    }
+
+    if(3 == file_version)
+    {
+        // Board type:
+        filestr.getline (buffer,256);
+        filestr.getline (buffer,256);
+        if(0 != strcmp(buffer, "strain2"))
+        {
+            yError("Wrong file. Board type not supported: %s\n", buffer);
+            appendLogMsg("Wrong file. Board type not supported");
+            return false;
+        }
+
+        // Serial number:
+        filestr.getline (buffer,256);
+        filestr.getline (buffer,256);
+        sprintf(serial_no,"%s", buffer);
+        core->getDownloader()->strain_set_serial_number(bus,id, serial_no);
+        //yDebug() << buffer;
+
+        // Amplifier registers:
+        filestr.getline (buffer,256);
+        for (i=0;i<CHANNEL_COUNT; i++)
+        {
+            filestr.getline (buffer,256);
+            yDebug() << buffer;
+            unsigned int t08[6] = {0};
+            sscanf  (buffer,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", &t08[0], &t08[1], &t08[2], &t08[3], &t08[4], &t08[5]);
+            for(int j=0; j<6; j++) amp_registers[i].data[j] = t08[j];
+
+            core->getDownloader()->strain_set_amplifier_regs(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_registers[i]);
+
+            // downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, offset[i]);
+            //core->getDownloader()->strain_set_offset (bus,id, i, offset[i]);
+            //printf("0X%02x, 0X%02x, 0X%02x, 0X%02x, 0X%02x,0X%02x", amp_registers[i].data[0], amp_registers[i].data[1], amp_registers[i].data[2], amp_registers[i].data[3], amp_registers[i].data[4], amp_registers[i].data[5]);
+            //fflush(stdout);
+            drv_sleep(10);
+        }
+
+    }
+    else
+    {
+
+        //serial number
+        filestr.getline (buffer,256);
+        filestr.getline (buffer,256);
+        sprintf(serial_no,"%s", buffer);
+        core->getDownloader()->strain_set_serial_number(bus,id, serial_no);
+
+        //offsets
+        filestr.getline (buffer,256);
+        for (i=0;i<CHANNEL_COUNT; i++)
+        {
+            filestr.getline (buffer,256);
+            sscanf  (buffer,"%d",&offset[i]);
+            // downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, offset[i]);
+            core->getDownloader()->strain_set_offset (bus,id, i, offset[i]);
+            drv_sleep(200);
+        }
+    }
+
+    //calibration matrix
+    filestr.getline (buffer,256);
+    for (i=0;i<36; i++){
+        int ri=i/6;
+        int ci=i%6;
+        filestr.getline (buffer,256);
+        sscanf (buffer,"%x",&calib_matrix[index][ri][ci]);
+        printf("%d %x\n", calib_matrix[index][ri][ci],calib_matrix[index][ri][ci]);
+        core->getDownloader()->strain_set_matrix_rc(bus,id, ri, ci, calib_matrix[index][ri][ci]);
+    }
+
+
+
+    //matrix gain
+    filestr.getline (buffer,256);
+    filestr.getline (buffer,256);
+    int cc=0;
+    sscanf (buffer,"%d",&cc);
+    core->getDownloader()->strain_set_matrix_gain(bus,id, cc);
+
+    //tare
+    filestr.getline (buffer,256);
+    for (i=0;i<CHANNEL_COUNT; i++){
+        filestr.getline (buffer,256);
+        sscanf  (buffer,"%d",&calib_bias[i]);
+        core->getDownloader()->strain_set_calib_bias(bus,id, i, calib_bias[i]);
+    }
+
+    //full scale values
+    filestr.getline (buffer,256);
+    for (i=0;i<CHANNEL_COUNT; i++){
+        filestr.getline (buffer,256);
+        sscanf  (buffer,"%d",&full_scale_const[index][i]);
+        core->getDownloader()->strain_set_full_scale(bus,id, i, full_scale_const[index][i]);
+    }
+
+
+
+    filestr.close();
+    filestr.clear();
+
+    matrix_changed[0]=true;
+    matrix_changed[1]=true;
+    matrix_changed[2]=true;
+    something_changed=true;
+    printf ("Calibration file loaded!\n");
+    appendLogMsg("Calibration file loaded!");
+
+    return true;
+}
+
+#if 0
 bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, int selected_id, int index)
 {
     if (filename==NULL){
@@ -1369,4 +1556,5 @@ bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, i
 
     return true;
 }
+#endif
 

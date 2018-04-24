@@ -38,7 +38,8 @@ protected:
     void loadCalibrationFile(QString fileName);
     void saveCalibrationFile(QString filePath);
     void importCalibrationFile(QString fileName);
-    bool calibration_load_v2 (char* filename, int selected_bus, int selected_id, int index);
+    //bool calibration_load_v2 (char* filename, int selected_bus, int selected_id, int index);
+    bool calibration_load_v3 (char* filename, int selected_bus, int selected_id, int index);
     void useMatrix(int);
     void resetCalibration();
 
@@ -61,6 +62,7 @@ private:
     int curr_bias[6];
     uint16_t amp_offsets[6];
     float amp_gains[6];
+    strain2_ampl_regs_t amp_registers[6];
     unsigned int matrix[3][6][6];
     unsigned int calib_matrix[3][6][6];
     unsigned int calibration_value;
