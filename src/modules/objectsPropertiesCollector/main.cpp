@@ -670,10 +670,11 @@ public:
                 else for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
                 {
                     Bottle &item=bottle.addList();
+                    item.read(*it->second.prop);
+
                     Bottle &idList=item.addList();
                     idList.addString(PROP_ID);
                     idList.addInt(it->first);
-                    item.read(*it->second.prop);
                 }
 
                 pBroadcastPort->writeStrict();
