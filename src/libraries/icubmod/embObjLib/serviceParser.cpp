@@ -1121,12 +1121,20 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
         {
             //first of all I need to find the board info for this board type
             int b;
+            bool found=false;
             for(b=0; b<as_service.properties.canboards.size(); b++)
             {
                 if(as_service.properties.canboards.at(b).type == eoboards_type2cantype(sensor.boardtype))
+                {
+                    found=true;
                     break;
+                }
             }
-            
+            if(!found)
+            {
+                yError() << "ServiceParser::parseService(IMU). The sensor " << i << "with type "<<  eoas_sensor2string(static_cast<eOas_sensor_t> (des.typeofsensor)) << "has borad type  " << eoboards_type2string2(sensor.boardtype, false) << " that is not declared in the SERVICE.PROPERTIES.CANBOARDS tag";
+                return false;
+            }
             eObrd_info_t boardInfo = {0};
             boardInfo.type =  as_service.properties.canboards.at(b).type;
             memcpy(&boardInfo.protocol , &as_service.properties.canboards.at(b).protocol, sizeof(eObrd_protocolversion_t));
