@@ -27,7 +27,8 @@
 #include <ethManager.h>
 #include <abstractEthResource.h>
 #include "FeatureInterface.h"
-//#include <serviceParser.h>
+
+#include "embObjGeneralDevPrivData.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -284,16 +285,9 @@ bool SensorsData::update(eOas_sensor_t type, uint8_t index, eOas_inertial3_data_
 
 
 
-class eo_imu_privData
+class eo_imu_privData : public yarp::dev::embObjDevPrivData
 {
 public:
-    eth::TheEthManager* ethManager;
-    eth::AbstractEthResource* res;
-    struct behFlags
-    {
-        bool opened;
-        bool verbosewhenok;
-    }behFlags;
     SensorsData sens;
     PositionMaps maps;
     
@@ -303,20 +297,7 @@ public:
 };
 
 eo_imu_privData::eo_imu_privData()
-{
-    ethManager = nullptr;
-    res = nullptr;
-    behFlags.opened = false;
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
-    if (tmp != "")
-    {
-        behFlags.verbosewhenok = (bool)NetType::toInt(tmp);
-    }
-    else
-    {
-        behFlags.verbosewhenok = false;
-    }
-}
+{;}
 eo_imu_privData::~eo_imu_privData()
 {;}
 
@@ -348,14 +329,7 @@ embObjIMU::~embObjIMU()
 
 std::string embObjIMU::getBoardInfo(void) const
 {
-    if(nullptr == GET_privData(mPriv).res)
-    {
-        return " BOARD name_unknown (IP unknown) ";
-    }
-    else
-    {
-        return ("BOARD " + GET_privData(mPriv).res->getProperties().boardnameString +  " (IP "  + GET_privData(mPriv).res->getProperties().ipv4addrString + ") ");
-    }
+   return GET_privData(mPriv).getBoardInfo();
 }
 
 bool embObjIMU::fromConfig(yarp::os::Searchable &config, servConfigImu_t &servCfg)
