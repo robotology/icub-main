@@ -13,8 +13,6 @@
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
-#include <yarp/os/Semaphore.h>
-#include <yarp/os/RateThread.h>
 #include <string>
 #include <list>
 
@@ -42,7 +40,7 @@ namespace yarp {
 
 // -- class embObjFTsensor
 
-class yarp::dev::embObjFTsensor:      public yarp::dev::IAnalogSensor,
+class yarp::dev::embObjFTsensor:    public yarp::dev::IAnalogSensor,
                                     public yarp::dev::DeviceDriver,
                                     public eth::IethResource
 {
@@ -75,25 +73,9 @@ public:
     virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 
 private:
-
-    string boardIPstring;
-    string boardName;
-    eOipv4addr_t ipv4addr;
-
-    eth::TheEthManager* ethManager;
-    eth::AbstractEthResource* res;
-    ServiceParser* parser;
-
-    bool opened;
-    bool verbosewhenok;
-
-    unsigned int    counterSat;
-    unsigned int    counterError;
-    unsigned int    counterTimeout;
-
-
-
-    yarp::os::Semaphore mutex;
+    void *mPriv;
+    
+    
 
     vector<double> analogdata;
     vector<double> offset;
@@ -101,7 +83,7 @@ private:
 
     bool scaleFactorIsFilled;
 
-    short status;
+    //short status;
     bool useCalibValues;
     bool useTemperature;
     int lastTemperature;

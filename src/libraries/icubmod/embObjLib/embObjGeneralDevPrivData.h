@@ -11,7 +11,7 @@
 #define __embObjDevPrivData_h__
 
 
-
+#include <yarp/os/LogStream.h>
 
 
 namespace yarp {
@@ -41,9 +41,16 @@ public:
     {return ethManager;}
     
     inline bool isOpen() {return behFlags.opened;}
+    inline void setOpen(bool flag) {behFlags.opened=flag;}
     inline bool isVerbose() {return behFlags.verbosewhenok;}
     
     std::string getBoardInfo(void) const; //This function need to be const
+    
+    inline bool NOT_YET_IMPLEMENTED(const char *txt, const char *classname)
+    {
+        yWarning() << std::string(txt) << " not yet implemented for "<< std::string(classname) << "\n";
+        return false;
+    }
 };
 
 yarp::dev::embObjDevPrivData::embObjDevPrivData()

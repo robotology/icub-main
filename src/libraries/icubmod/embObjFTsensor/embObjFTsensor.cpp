@@ -22,12 +22,12 @@
 #include <yarp/dev/PolyDriver.h>
 #include <ace/config.h>
 #include <ace/Log_Msg.h>
+#include <yarp/os/Semaphore.h>
 
 
 // specific to this device driver.
 #include <embObjFTsensor.h>
 #include <ethManager.h>
-#include <yarp/os/LogStream.h>
 #include "EoAnalogSensors.h"
 #include "EOnv_hid.h"
 
@@ -42,6 +42,7 @@
 #pragma warning(once:4355)
 #endif
 
+#include "embObjGeneralDevPrivData.h"
 
 
 using namespace yarp;
@@ -49,58 +50,47 @@ using namespace yarp::os;
 using namespace yarp::dev;
 
 
-inline bool NOT_YET_IMPLEMENTED(const char *txt)
+class eo_ftsens_privData : public embObjDevPrivData
 {
-    yWarning() << std::string(txt) << " not yet implemented for embObjFTsensor\n";
-    return false;
-}
+public:
+    yarp::os::Semaphore mutex;
+    eo_ftsens_privData();
+    ~eo_ftsens_privData();
+    
+};
+
+eo_ftsens_privData::eo_ftsens_privData()
+{;}
+eo_ftsens_privData::~eo_ftsens_privData()
+{;}
+
+#define GET_privData(x) (*((static_cast<eo_ftsens_privData*>(x))))
 
 
 bool embObjFTsensor::fromConfig(yarp::os::Searchable &_config, servConfigFTsensor_t &serviceConfig)
 {
-    if(false == parser->parseService(_config, serviceConfig))
-    {
-        return false;
-    }
+    
+    ServiceParser* parser = new ServiceParser;
+    bool ret = parser->parseService(_config, serviceConfig);
+    delete parser;
     
     useCalibValues = serviceConfig.useCalibration;
     if(serviceConfig.temperatureAcquisitionrate > 0)
         useTemperature = true;
-
-    return true;
+    
+    return ret;
 }
 
 
 embObjFTsensor::embObjFTsensor()
 {
-    counterSat=0;
-    counterError=0;
-    counterTimeout=0;
-
-    status = IAnalogSensor::AS_OK;
-
-    opened = false;
+    mPriv = new eo_ftsens_privData();
     useCalibValues = false;
     useTemperature = false;
     analogdata.resize(0);
     offset.resize(0);
     scaleFactor.resize(0);
-
     scaleFactorIsFilled = false;
-
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
-    if (tmp != "")
-    {
-        verbosewhenok = (bool)NetType::toInt(tmp);
-    }
-    else
-    {
-        verbosewhenok = false;
-    }
-
-    parser = NULL;
-    res = NULL;
-
 }
 
 
@@ -110,29 +100,17 @@ embObjFTsensor::~embObjFTsensor()
     offset.resize(0);
     scaleFactor.resize(0);
 
-    if(NULL != parser)
-    {
-        delete parser;
-        parser = NULL;
-    }
 }
 
 
 std::string embObjFTsensor::getBoardInfo(void) const
 {
-    if(nullptr == res)
-    {
-        return " BOARD name_unknown (IP unknown) ";
-    }
-    else
-    {
-        return ("BOARD " + res->getProperties().boardnameString +  " (IP "  + res->getProperties().ipv4addrString + ") ");
-    }
+    return GET_privData(mPriv).getBoardInfo();
 }
 
 bool embObjFTsensor::initialised()
 {
-    return opened;
+    return GET_privData(mPriv).isOpen();
 }
 
 
@@ -140,15 +118,19 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = eth::TheEthManager::instance();
-    if(NULL == ethManager)
+    GET_privData(mPriv).ethManager = eth::TheEthManager::instance();
+    if(NULL == GET_privData(mPriv).ethManager)
     {
         yFatal() << "embObjFTsensor::open() fails to instantiate ethManager";
         return false;
     }
 
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
+    
 
-    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
+    if(false == GET_privData(mPriv).ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjFTsensor::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -159,11 +141,6 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
 
 
     // - now all other things
-
-    if(NULL == parser)
-    {
-        parser = new ServiceParser;
-    }
 
     // read stuff from config file
     servConfigFTsensor_t serviceConfig;
@@ -188,8 +165,8 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
 
     // -- instantiate EthResource etc.
 
-    res = ethManager->requestResource2(this, config);
-    if(NULL == res)
+    GET_privData(mPriv).res = GET_privData(mPriv).ethManager->requestResource2(this, config);
+    if(NULL == GET_privData(mPriv).res)
     {
         yError() << "embObjFTsensor::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << boardIPstring << " ... unable to continue";
         return false;
@@ -197,7 +174,7 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
 
     printServiceConfig(serviceConfig);
 
-    if(!res->verifyEPprotocol(eoprot_endpoint_analogsensors))
+    if(!GET_privData(mPriv).res->verifyEPprotocol(eoprot_endpoint_analogsensors))
     {
         cleanup();
         return false;
@@ -210,9 +187,9 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
     const eOmn_serv_parameter_t* servparam = NULL;
 #endif
 
-    if(false == res->serviceVerifyActivate(eomn_serv_category_strain, servparam, 5.0))
+    if(false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_strain, servparam, 5.0))
     {
-        yError() << "embObjFTsensor::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+        yError() << "embObjFTsensor::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << GET_privData(mPriv).getBoardInfo();
         printServiceConfig(serviceConfig);
         cleanup();
         return false;
@@ -241,21 +218,21 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
     }
 
 
-    if(false == res->serviceStart(eomn_serv_category_strain))
+    if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_strain))
     {
-        yError() << "embObjFTsensor::open() fails to start service for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": cannot continue";
+        yError() << "embObjFTsensor::open() fails to start service for BOARD" << GET_privData(mPriv).getBoardInfo();
         cleanup();
         return false;
     }
     else
     {
-        if(verbosewhenok)
+        if(GET_privData(mPriv).isVerbose())
         {
-            yDebug() << "embObjFTsensor::open() correctly starts as service of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+            yDebug() << "embObjFTsensor::open() correctly starts as service of BOARD" << GET_privData(mPriv).getBoardInfo();
         }
     }
 
-    opened = true;
+    GET_privData(mPriv).setOpen(true);
     return true;
 }
 
@@ -272,16 +249,16 @@ bool embObjFTsensor::sendConfig2Strain(servConfigFTsensor_t &serviceConfig)
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
 
-    if(false == res->setcheckRemoteValue(id32, &strainConfig, 10, 0.010, 0.050))
+    if(false == GET_privData(mPriv).res->setcheckRemoteValue(id32, &strainConfig, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjFTsensor::sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+        yError() << "FATAL: embObjFTsensor::sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config in BOARD" << GET_privData(mPriv).getBoardInfo();
         return false;
     }
     else
     {
-        if(verbosewhenok)
+        if(GET_privData(mPriv).isVerbose())
         {
-            yDebug() << "embObjFTsensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+            yDebug() << "embObjFTsensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << GET_privData(mPriv).getBoardInfo();
         }
     }
     
@@ -327,7 +304,7 @@ bool embObjFTsensor::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
     // if we dont need calibration we are done
     if(false == useCalibValues)
     {
-        if(verbosewhenok)
+        if(GET_privData(mPriv).isVerbose())
         {
             yDebug() << "embObjFTsensor::fillScaleFactor(): we DONT use calibration, thus all scale factors are set to 1.0";
         }
@@ -370,7 +347,7 @@ bool embObjFTsensor::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
     // at first we impose that the local value of fullscales is zero.
     // we also force the change because this variable is readonly
     const bool overrideROprotection = true;
-    res->setLocalValue(id32_fullscale, &fullscale_values, overrideROprotection);
+    GET_privData(mPriv).res->setLocalValue(id32_fullscale, &fullscale_values, overrideROprotection);
 
         
     // Prepare analog sensor
@@ -386,10 +363,10 @@ bool embObjFTsensor::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
     // wait for response
     while(!gotFullScaleValues && (timeout != 0))
     {
-        res->setRemoteValue(id32_strain_config, &strainConfig);
+        GET_privData(mPriv).res->setRemoteValue(id32_strain_config, &strainConfig);
         SystemClock::delaySystem(1.0);
         // read fullscale values
-        res->getLocalValue(id32_fullscale, &fullscale_values);
+        GET_privData(mPriv).res->getLocalValue(id32_fullscale, &fullscale_values);
         // If data arrives, size is bigger than zero
         //#warning --> marco.accame says: to wait for 1 sec and read size is ok. a different way is to ... wait for a semaphore incremented by the reply of the board. think of it!
         NVsize = eo_array_Size((EOarray *)&fullscale_values);
@@ -401,31 +378,31 @@ bool embObjFTsensor::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
         }
 
         timeout--;
-        if(verbosewhenok)
+        if(GET_privData(mPriv).isVerbose())
         {
-            yWarning() << "embObjFTsensor::fillScaleFactor(): for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": full scale val not arrived yet... retrying in 1 sec";
+            yWarning() << "embObjFTsensor::fillScaleFactor(): for  BOARD" << GET_privData(mPriv).getBoardInfo();
         }
     }
 
     if((false == gotFullScaleValues) && (0 == timeout))
     {
-        yError() << "embObjFTsensor::fillScaleFactor(): ETH Analog sensor: request for calibration parameters timed out for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+        yError() << "embObjFTsensor::fillScaleFactor(): ETH Analog sensor: request for calibration parameters timed out for  BOARD" << GET_privData(mPriv).getBoardInfo();
         return false;
     }
 
     if((strain_Channels != NVsize))
     {
-        yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for  BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "Aborting";
+        yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for  BOARD" << GET_privData(mPriv).getBoardInfo();
         return false;
     }
 
 
     if(gotFullScaleValues)
     {
-        if(verbosewhenok)
+        if(GET_privData(mPriv).isVerbose())
         {
-            yWarning() << "embObjFTsensor::fillScaleFactor() detected that already has full scale values for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
-            yDebug()   << "embObjFTsensor::fillScaleFactor(): Fullscale values for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  strain_Channels;
+            yWarning() << "embObjFTsensor::fillScaleFactor() detected that already has full scale values for BOARD" << GET_privData(mPriv).getBoardInfo();
+            yDebug()   << "embObjFTsensor::fillScaleFactor(): Fullscale values for BOARD" << GET_privData(mPriv).getBoardInfo() << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  strain_Channels;
         }
 
         for (size_t i = 0; i<scaleFactor.size(); i++)
@@ -440,7 +417,7 @@ bool embObjFTsensor::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
             // Got from CanBusMotionControl... here order of bytes seems inverted with respect to calibratedValues or uncalibratedValues (see callback of can strain messages inside the FW of ETHBOARD)
             scaleFactor[i] = ((uint16_t)(msg[0]<<8) | msg[1]);
             //yError() << " scale factor[" << i << "] = " << scaleFactor[i];
-            if(verbosewhenok)
+            if(GET_privData(mPriv).isVerbose())
             {
                 yDebug() << "embObjFTsensor::fillScaleFactor(): channel " << i << "full scale value " << scaleFactor[i];
             }
@@ -482,16 +459,16 @@ bool embObjFTsensor::initRegulars(servConfigFTsensor_t &serviceConfig)
     
     // now we send the vector
 
-    if(false == res->serviceSetRegulars(eomn_serv_category_strain, id32v))
+    if(false == GET_privData(mPriv).res->serviceSetRegulars(eomn_serv_category_strain, id32v))
     {
         yError() << "embObjFTsensor::initRegulars() fails to add its variables to regulars: cannot proceed any further";
         return false;
     }
     else
     {
-        if(verbosewhenok)
+        if(GET_privData(mPriv).isVerbose())
         {
-            yDebug() << "embObjFTsensor::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+            yDebug() << "embObjFTsensor::initRegulars() added" << id32v.size() << "regular rops to BOARD" << GET_privData(mPriv).getBoardInfo();
             char nvinfo[128];
             for (size_t r = 0; r<id32v.size(); r++)
             {
@@ -514,39 +491,12 @@ int embObjFTsensor::read(yarp::sig::Vector &out)
 {
     // This method gives analogdata to the analogServer
 
-    if(false == opened)
+    if(false == GET_privData(mPriv).isOpen())
     {
         return false;
     }
 
-    mutex.wait();
-
-
-    // errors are not handled for now... it'll always be OK!!
-    if (status != IAnalogSensor::AS_OK)
-    {
-        switch (status)
-        {
-            case IAnalogSensor::AS_OVF:
-            {
-              counterSat++;
-            }  break;
-            case IAnalogSensor::AS_ERROR:
-            {
-              counterError++;
-            } break;
-            case IAnalogSensor::AS_TIMEOUT:
-            {
-             counterTimeout++;
-            } break;
-            default:
-            {
-              counterError++;
-            } break;
-        }
-        mutex.post();
-        return status;
-    }
+    GET_privData(mPriv).mutex.wait();
 
     out.resize(analogdata.size());
     for (size_t k = 0; k<analogdata.size(); k++)
@@ -555,26 +505,12 @@ int embObjFTsensor::read(yarp::sig::Vector &out)
     }
 
 
-    mutex.post();
+    GET_privData(mPriv).mutex.post();
     
-    return status;
+    return IAnalogSensor::AS_OK;;
 }
 
 
-void embObjFTsensor::resetCounters()
-{
-    counterSat=0;
-    counterError=0;
-    counterTimeout=0;
-}
-
-
-void embObjFTsensor::getCounters(unsigned int &sat, unsigned int &err, unsigned int &to)
-{
-    sat=counterSat;
-    err=counterError;
-    to=counterTimeout;
-}
 
 
 int embObjFTsensor::getState(int ch)
@@ -592,12 +528,12 @@ int embObjFTsensor::getChannels()
 
 int embObjFTsensor::calibrateSensor()
 {
-    mutex.wait();
+    GET_privData(mPriv).mutex.wait();
     for (size_t i = 0; i < analogdata.size(); i++)
     {
         offset[i] = -analogdata[i];
     }
-    mutex.post();
+    GET_privData(mPriv).mutex.post();
     return AS_OK;
 }
 
@@ -628,7 +564,7 @@ bool embObjFTsensor::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
     bool ret = false;
 
-    if(false == opened)
+    if(false == GET_privData(mPriv).isOpen())
     {
         return ret;;
     }
@@ -674,7 +610,7 @@ bool embObjFTsensor::updateStrainValues(eOprotID32_t id32, double timestamp, voi
     }
     
     // lock analogdata
-    mutex.wait();
+    GET_privData(mPriv).mutex.wait();
     
     for (size_t k = 0; k<analogdata.size(); k++)
     {
@@ -697,7 +633,7 @@ bool embObjFTsensor::updateStrainValues(eOprotID32_t id32, double timestamp, voi
     }
     
     // unlock analogdata
-    mutex.post();
+    GET_privData(mPriv).mutex.post();
 
     return true;
 }
@@ -733,7 +669,7 @@ bool embObjFTsensor::updateTemperatureValues(eOprotID32_t id32, double timestamp
 
 bool embObjFTsensor::close()
 {
-    opened = false;
+    GET_privData(mPriv).setOpen(false);
 
     cleanup();
     return true;
@@ -745,10 +681,10 @@ void embObjFTsensor::printServiceConfig(servConfigFTsensor_t &serviceConfig)
     char loc[20] = {0};
     char fir[20] = {0};
     char pro[20] = {0};
-    const char * boardname = (NULL != res) ? (res->getProperties().boardnameString.c_str()) : ("NOT-ASSIGNED-YET");
-    const char * ipv4 = (NULL != res) ? (res->getProperties().ipv4addrString.c_str()) : ("NOT-ASSIGNED-YET");
+    const char * boardname = (NULL != GET_privData(mPriv).res) ? (GET_privData(mPriv).res->getProperties().boardnameString.c_str()) : ("NOT-ASSIGNED-YET");
+    const char * ipv4 = (NULL != GET_privData(mPriv).res) ? (GET_privData(mPriv).res->getProperties().ipv4addrString.c_str()) : ("NOT-ASSIGNED-YET");
     const char * boardtype = eoboards_type2string2(static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.as.strain.boardtype.type), eobool_true);
-
+    ServiceParser *parser =  new ServiceParser();
     parser->convert(serviceConfig.ethservice.configuration.data.as.strain.canloc, loc, sizeof(loc));
     parser->convert(serviceConfig.ethservice.configuration.data.as.strain.boardtype.firmware, fir, sizeof(fir));
     parser->convert(serviceConfig.ethservice.configuration.data.as.strain.boardtype.protocol, pro, sizeof(pro));
@@ -757,17 +693,18 @@ void embObjFTsensor::printServiceConfig(servConfigFTsensor_t &serviceConfig)
     yInfo() << "- acquisitionrate =" << serviceConfig.acquisitionrate;
     yInfo() << "- useCalibration =" << serviceConfig.useCalibration;
     yInfo() << "- STRAIN of type" << boardtype << "named" << serviceConfig.nameOfStrain << "@" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
+    delete parser;
 }
 
 
 void embObjFTsensor::cleanup(void)
 {
-    if(ethManager == NULL) return;
+    if(GET_privData(mPriv).ethManager == NULL) return;
 
-    int ret = ethManager->releaseResource2(res, this);
-    res = NULL;
+    int ret = GET_privData(mPriv).ethManager->releaseResource2(GET_privData(mPriv).res, this);
+    GET_privData(mPriv).res = NULL;
     if(ret == -1)
-        ethManager->killYourself();
+        GET_privData(mPriv).ethManager->killYourself();
 }
 
 // eof
