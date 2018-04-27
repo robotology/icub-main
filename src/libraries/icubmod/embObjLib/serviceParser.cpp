@@ -46,6 +46,7 @@
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
+using namespace std;
 
 
 ServiceParser::ServiceParser()

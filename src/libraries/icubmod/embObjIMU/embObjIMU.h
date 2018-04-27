@@ -1,13 +1,18 @@
 /*
  * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
  * All rights reserved.
- * 
- * Author Valentina Gaggero
- * 
+ * Author: Valentina Gaggero
  * This software may be modified and distributed under the terms of the
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 
+/**
+ * @ingroup icub_hardware_modules 
+ * \defgroup analogSensorEth
+ *
+ * To Do: add description
+ *
+ */
 
 #ifndef __embObjIMU_h__
 #define __embObjIMU_h__
@@ -16,11 +21,6 @@
 #include <yarp/dev/DeviceDriver.h>
 
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
-//#include <yarp/os/Stamp.h>
-
-
-#include <iCub/FactoryInterface.h>
-#include <iCub/LoggerInterfaces.h>
 
 #include "IethResource.h"
 

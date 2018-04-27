@@ -12,6 +12,10 @@
 
 
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Network.h>
+#include <yarp/os/NetType.h>
+#include <ethManager.h>
+#include <abstractEthResource.h>
 
 
 namespace yarp {

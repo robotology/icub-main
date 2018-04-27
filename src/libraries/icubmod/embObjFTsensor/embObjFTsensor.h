@@ -1,4 +1,10 @@
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+/*
+ * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+ * All rights reserved.
+ * Author: Valentina Gaggero
+ * This software may be modified and distributed under the terms of the
+ * BSD-3-Clause license. See the accompanying LICENSE file for details.
+ */
 
 /**
  * @ingroup icub_hardware_modules 
@@ -13,18 +19,8 @@
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
-#include <string>
-#include <list>
-
-#include <iCub/FactoryInterface.h>
-#include <iCub/LoggerInterfaces.h>
-
 #include "IethResource.h"
-#include <ethManager.h>
-#include <abstractEthResource.h>
 
-
-#include <yarp/os/LogStream.h>
 
 #include "serviceParser.h"
 
@@ -74,16 +70,12 @@ public:
 
 private:
     void *mPriv;
-    
-    
 
-    vector<double> analogdata;
-    vector<double> offset;
-    vector<double> scaleFactor;
+    std::vector<double> analogdata;
+    std::vector<double> offset;
+    std::vector<double> scaleFactor;
 
     bool scaleFactorIsFilled;
-
-    //short status;
     bool useCalibValues;
     bool useTemperature;
     int lastTemperature;
@@ -91,7 +83,7 @@ private:
 private:
 
     // for all
-    bool fromConfig(yarp::os::Searchable &config, servConfigFTsensor_t &serviceConfig);
+    bool fromConfig(yarp::os::Searchable &config,  servConfigFTsensor_t &serviceConfig);
     bool initRegulars(servConfigFTsensor_t &serviceConfig);
     void cleanup(void);
     void printServiceConfig(servConfigFTsensor_t &serviceConfig);

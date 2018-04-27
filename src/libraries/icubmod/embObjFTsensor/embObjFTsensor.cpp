@@ -15,28 +15,17 @@
 
 // Yarp Includes
 #include <yarp/os/Time.h>
-#include <yarp/os/Log.h>
-#include <yarp/os/LogStream.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <yarp/dev/PolyDriver.h>
-#include <ace/config.h>
-#include <ace/Log_Msg.h>
 #include <yarp/os/Semaphore.h>
 
 
 // specific to this device driver.
 #include <embObjFTsensor.h>
-#include <ethManager.h>
+
 #include "EoAnalogSensors.h"
 #include "EOnv_hid.h"
-
-#include "EoProtocol.h"
-#include "EoProtocolMN.h"
 #include "EoProtocolAS.h"
 #include "EOconstarray.h"
 
-#include <yarp/os/NetType.h>
 
 #ifdef WIN32
 #pragma warning(once:4355)
