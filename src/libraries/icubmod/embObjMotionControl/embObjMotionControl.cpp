@@ -4717,25 +4717,25 @@ bool embObjMotionControl::getDutyCyclesRaw(double *v)
 }
 
 // Current interface
-/*bool embObjMotionControl::getCurrentRaw(int j, double *t)
-{
-return NOT_YET_IMPLEMENTED("getCurrentRaw");
-}
-
-bool embObjMotionControl::getCurrentsRaw(double *t)
-{
-return NOT_YET_IMPLEMENTED("getCurrentsRaw");
-}
-*/
 
 bool embObjMotionControl::getCurrentRangeRaw(int j, double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getCurrentRangeRaw");
+    //this should be completed with numbers obtained from configuration files.
+    //some caveats: currently current limits are expressed in robot configuration files in milliAmperes. Amperes should be used instead.
+    //yarp does not perform any conversion on these numbers. Should it?
+    *min = -10.0;
+    *max = 10.0;
+    return true;
 }
 
 bool embObjMotionControl::getCurrentRangesRaw(double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getCurrentRangesRaw");
+    bool ret = true;
+    for (int j = 0; j< _njoints; j++)
+    {
+        ret &= getCurrentRangeRaw(j, &min[j], &max[j]);
+    }
+    return ret;
 }
 
 bool embObjMotionControl::setRefCurrentsRaw(const double *t)
