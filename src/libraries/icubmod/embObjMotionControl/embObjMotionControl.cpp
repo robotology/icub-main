@@ -297,7 +297,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
 {
 
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL,f.ampsToSensor);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotorEncoders::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementPositionControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
