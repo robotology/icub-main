@@ -59,6 +59,12 @@ typedef struct
     vector<string>                      id;
 } servConfigInertials_t;
 
+typedef struct
+{
+    double accFactor;
+    double gyrFactor;
+    double magFactor;
+} imuConvFactors_t;
 
 typedef struct
 {
@@ -66,6 +72,7 @@ typedef struct
     int                                 acquisitionrate;
     vector<eOas_inertial3_descriptor_t> inertials; //TODO vale e' da rimuovere e' doppio!!!
     vector<string>                      id;
+    imuConvFactors_t                    convFactors;
 } servConfigImu_t;
 
 #if defined(SERVICE_PARSER_USE_MC)

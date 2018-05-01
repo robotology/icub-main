@@ -30,6 +30,8 @@
 
 #include "embObjGeneralDevPrivData.h"
 
+#include "imuMeasureConverter.h"
+
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
@@ -131,7 +133,9 @@ private:
     std::vector<std::vector<sensorInfo_t>> mysens;
     mutable std::mutex mutex;
     string errorstring;
+    
 public:
+    ImuMeasureConverter measConverter;
     SensorsData();
     void init(servConfigImu_t &servCfg, string error_string);
     bool update(eOas_sensor_t type, uint8_t index, eOas_inertial3_data_t *newdata);
@@ -243,11 +247,26 @@ bool SensorsData::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::
     try
     {   std::lock_guard<std::mutex> lck (mutex);
         out = mysens[type].at(sens_index).values;
-//         out.resize(0);
-//         for(int i=0; i<mysens[type].at(sens_index).values.size(); i++)
-//             out.push_back(mysens[type].at(sens_index).values[i]);// TODO Verifica la copia o usa il vector di yarp
-            timestamp = mysens[type].at(sens_index).timestamp;
-        return true;
+        switch(type)
+        {
+            case eoas_imu_acc:
+            {
+                for(int i=0; i<out.size(); i++)
+                    out[i] = measConverter.convertAcc_raw2metric(out[i]);
+            }break;
+            
+            case  eoas_imu_mag:
+            {    for(int i=0; i<out.size(); i++)
+                    out[i] = measConverter.convertMag_raw2metric(out[i]);
+            }break;
+            
+            case eoas_imu_gyr:
+            {    for(int i=0; i<out.size(); i++)
+                out[i] = measConverter.convertGyr_raw2metric(out[i]);
+            }break;
+            
+            default: break;
+        };
     }
     catch (const std::out_of_range& oor) 
     {
@@ -473,6 +492,15 @@ bool embObjIMU::open(yarp::os::Searchable &config)
         return false;
     }
     
+    //init conversion factor
+    //TODO: currently the conversion factors are not read from xml files, but configured here.
+    //please read IMUbosh datasheet for more information
+    
+    servCfg.convFactors.accFactor = 100.0; // 1 m/sec2 = 100 binary units
+    servCfg.convFactors.magFactor = 16.0;  // 1 microT = 16 binary units
+    servCfg.convFactors.gyrFactor = 16.0;  // 1 degree/sec = 16 binary units
+    //eul angles don't need a conversion.
+    GET_privData(mPriv).sens.measConverter.Initialize(servCfg.convFactors.accFactor, servCfg.convFactors.gyrFactor,  servCfg.convFactors.magFactor);
     
     // configure the sensor(s)
     
@@ -608,7 +636,8 @@ bool embObjIMU::getThreeAxisMagnetometerFrameName(size_t sens_index, yarp::os::C
 
 bool embObjIMU::getThreeAxisMagnetometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-    return GET_privData(mPriv).sens.getSensorMeasure(sens_index, eoas_imu_mag, out, timestamp);}
+    return GET_privData(mPriv).sens.getSensorMeasure(sens_index, eoas_imu_mag, out, timestamp);
+}
 
 size_t embObjIMU::getNrOfOrientationSensors() const
 {
