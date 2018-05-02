@@ -21,17 +21,41 @@ int verbosity = 1;
 
 using namespace yarp::os;
 
+enum action_t
+{
+    action_impossible = -1,
+    action_none = 0,
+    action_discover = 1,
+    action_verify = 2,
+    action_program = 3,
+    action_forcemaintenance = 4,
+    action_forceapplication = 5,
+    action_query = 6
+};
+
 
 bool checkApplicationLock();
 void removeApplicationLock();
-void printCanDevices(QList<sBoard> canBoards);
-int printSecondLevelDevices(FirmwareUpdaterCore*,QString device,QString id);
-int printThirdLevelDevices(FirmwareUpdaterCore*,QString device,QString id,QString board, bool forceMaintenance, bool forceApplication);
+void printCanDevices(QList<sBoard> canBoards, QString onIPboard, bool slimprint);
+int printSecondLevelDevices(FirmwareUpdaterCore*,QString device,QString id, bool slimprint);
+int printThirdLevelDevices(FirmwareUpdaterCore*,QString device,QString id,QString board, bool forceMaintenance, bool forceApplication, bool slimprint);
 int programEthDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString file);
 int programCanDevice(FirmwareUpdaterCore*, QString device, QString id, QString board, QString canLine, QString canId, QString file, bool eraseEEprom);
 int setBoardToApplication(FirmwareUpdaterCore *core,QString device,QString id,QString board);
 int setBoardToMaintenance(FirmwareUpdaterCore *core,QString device,QString id,QString board);
-int eraseEthEEprom(FirmwareUpdaterCore *core,QString device,QString id,QString board);
+//int eraseEthEEprom(FirmwareUpdaterCore *core,QString device,QString id,QString board);
+
+int verifyOnSecondLevel(FirmwareUpdaterCore *core,QString device,QString id, const QString &targetIPaddr, const QString &targetCANline, const QString &targetCANaddr, const QString &targetFWvers);
+int verifyOnSecondLevel_ETHboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetIPaddr, const QString &targetFWvers);
+int verifyOnSecondLevel_CANboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetCANline, const QString &targetCANaddr, const QString &targetFWvers);
+int verifyCanDevices(QList<sBoard> canBoards, const QString &targetCANline, const QString &targetCANaddr, const QString &targetFWvers);
+int verifyOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QString id, QString board, const QString &targetCANline, const QString &targetCANaddr, const QString &targetFWvers);
+
+//int queryOnSecondLevel(FirmwareUpdaterCore *core,QString device,QString id, const QString &targetIPaddr, const QString &targetCANline, const QString &targetCANaddr);
+int queryOnSecondLevel_ETHboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetIPaddr);
+int queryOnSecondLevel_CANboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetCANline, const QString &targetCANaddr);
+int queryCanDevices(QList<sBoard> canBoards, const QString onIPboard, const QString &targetCANline, const QString &targetCANaddr);
+int queryOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QString id, const QString board, const QString &targetCANline, const QString &targetCANaddr);
 
 int main(int argc, char *argv[])
 {
@@ -68,8 +92,11 @@ int main(int argc, char *argv[])
     QCommandLineOption ethCanIdOption(QStringList() << "n" << "can_id", "Select a can id","can_id","");
     QCommandLineOption ethForceMaintenance(QStringList() << "m" << "force-eth-maintenance", "Force the board to go in maintenace mode","");
     QCommandLineOption ethForceApplication(QStringList() << "o" << "force-eth-application", "Force the board to go in application mode","");
-    QCommandLineOption eraseEEpromOption(QStringList() << "p" << "erase_eeprom" << "Erase EEprom","");
+    QCommandLineOption eraseEEpromOption(QStringList() << "p" << "erase_eeprom" << "Erase EEPROM of STRAIN during FW update","");
     QCommandLineOption verbosityOption(QStringList() << "x" << "verbosity", "Choose a verbosity level [0, 1]","verbosity","");
+    QCommandLineOption verifyOption(QStringList() << "y" << "verify", "Verify FW version [ma.mi / ma.mi.re]. returns 0 if address and FW both match, 1 if board is found but FW does not match, 2 if board is not even found","verify","");
+    QCommandLineOption queryOption(QStringList() << "q" << "query", "Queries a given address for its type and FW version [ma.mi / ma.mi.re]. prints a result on stdout. it returns 1 if it does not find a board at address");
+//    QCommandLineOption queryOption(QStringList() << "q" << "query", "Queries a given address for its type and FW version [ma.mi / ma.mi.re]. prints a result on stdout. it returns 1 if it does not find a board at address","query","");
 
 
     parser.addOption(noGuiOption);
@@ -89,6 +116,8 @@ int main(int argc, char *argv[])
     parser.addOption(ethForceApplication);
     parser.addOption(eraseEEpromOption);
     parser.addOption(verbosityOption);
+    parser.addOption(verifyOption);
+    parser.addOption(queryOption);
 
     parser.process(a);
 
@@ -153,6 +182,8 @@ int main(int argc, char *argv[])
     }else{
         bool discover = parser.isSet(discoverOption);
         bool program = parser.isSet(programOption);
+        bool verify = parser.isSet(verifyOption);
+        bool query = parser.isSet(queryOption);
         QString device = parser.value(deviceOption);
         QString id = parser.value(idOption);
         QString board = parser.value(boardOption);
@@ -160,6 +191,7 @@ int main(int argc, char *argv[])
         QString canLine = parser.value(ethCanLineOption);
         QString canId = parser.value(ethCanIdOption);
 
+        QString targetFW = parser.value(verifyOption);
 
         bool forceMaintenance = parser.isSet(ethForceMaintenance);
         bool forceApplication = parser.isSet(ethForceApplication);
@@ -167,7 +199,303 @@ int main(int argc, char *argv[])
 
         core.setVerbosity(verbosity);
 
+        action_t action = action_none;
 
+        // check mutual exclusive actions: discover or query or verify or program or forceapplication or forcemaintenance
+        // to do: move code into functions
+
+        if((discover) && (action_impossible != action))
+        {
+            if(action == action_none)
+            {
+                action = action_discover;
+            }
+            else
+            {
+                action = action_impossible;
+            }
+        }
+
+        if((query) && (action_impossible != action))
+        {
+            if(action == action_none)
+            {
+                action = action_query;
+            }
+            else
+            {
+                action = action_impossible;
+            }
+        }
+
+        if((verify) && (action_impossible != action))
+        {
+            if(action == action_none)
+            {
+                action = action_verify;
+            }
+            else
+            {
+                action = action_impossible;
+            }
+        }
+
+        if((program) && (action_impossible != action))
+        {
+            if(action == action_none)
+            {
+                action = action_program;
+            }
+            else
+            {
+                action = action_impossible;
+            }
+        }
+
+        if((forceMaintenance) && (action_impossible != action))
+        {
+            if(action == action_none)
+            {
+                action = action_forcemaintenance;
+            }
+            else
+            {
+                action = action_impossible;
+            }
+        }
+
+        if((forceApplication) && (action_impossible != action))
+        {
+            if(action == action_none)
+            {
+                action = action_forceapplication;
+            }
+            else
+            {
+                action = action_impossible;
+            }
+        }
+
+        // now use a switch case
+
+        switch(action)
+        {
+            default:
+            case action_none:
+            {
+                ret = 1;
+
+                if(verbosity >= 1) qDebug() << "specify at least one option amongst discover / verify / program / forcemaintenance / forceapplication";
+
+            } break;
+
+            case action_impossible:
+            {
+                ret = 1;
+
+                if(verbosity >= 1) qDebug() << "specify only one option amongst discover / verify / program / forcemaintenance / forceapplication";
+
+            } break;
+
+            case action_discover:
+            {
+                ret = 1;
+                //yDebug() << "discover";
+
+                if(device.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a device to be set";
+                }else if(id.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need an id to be set";
+                }else{
+
+                    if(board.isEmpty()){
+                        ret = printSecondLevelDevices(&core,device,id, true);
+                    }else{
+                        ret = printThirdLevelDevices(&core,device,id,board,true,false, true);
+                    }
+                }
+
+            } break;
+
+            case action_query:
+            {
+                ret = 1;
+                //yDebug() << "query";
+
+                if(device.isEmpty())
+                {
+                    if(verbosity >= 1) qDebug() << "Need a device";
+                }
+                else if (device.contains("ETH"))
+                {
+                    // second level eth (ipaddr + ethfwversion) or third level can_under_eth (ipaddr+canaddr + canfwversion) or ..
+                    if(board.isEmpty())
+                    {
+                        if(verbosity >= 1) qDebug() << "Need an IP address";
+                    }
+                    else if((canLine.isEmpty()) && (canId.isEmpty()))
+                    {
+                        // we query the fw version of an eth board
+                        ret = queryOnSecondLevel_ETHboard(&core, device, id, board);
+                    }
+                    else if((!canLine.isEmpty()) && (!canId.isEmpty()))
+                    {
+                        // we query the fw version of a can board below eth
+                        // FirmwareUpdater --nogui --verbosity 1 --device ETH --id eth1 --eth_board 10.0.1.1 --can_line 2 --can_id 2 --query
+                        ret = queryOnThirdLevel_CANunderETH(&core, device, id, board, canLine, canId);
+                    }
+                    else
+                    {
+                        if(verbosity >= 1) qDebug() << "Must have both can line and address";
+                    }
+                }
+                else
+                {
+                    // second level cfw2 or other can driver
+                    if((canLine.isEmpty()) || (canId.isEmpty()))
+                    {
+                        if(verbosity >= 1) qDebug() << "Must have both can line and address";
+                    }
+                    else
+                    {
+                        // we query the fw version of a can board below cfw2
+                        ret = queryOnSecondLevel_CANboard(&core, device, id, canLine, canId);
+                    }
+
+                }
+
+            } break;
+
+
+            case action_verify:
+            {
+                ret = 2;
+                //yDebug() << "verify";
+
+                if(device.isEmpty())
+                {
+                    if(verbosity >= 1) qDebug() << "Need a device";
+                }
+                else if (device.contains("ETH"))
+                {
+                    // second level eth (ipaddr + ethfwversion) or third level can_under_eth (ipaddr+canaddr + canfwversion) or ..
+                    if(board.isEmpty())
+                    {
+                        if(verbosity >= 1) qDebug() << "Need an ip address";
+                    }
+                    else if(targetFW.isEmpty())
+                    {
+                        if(verbosity >= 1) qDebug() << "Need a target fw version";
+                    }
+                    else if((canLine.isEmpty()) && (canId.isEmpty()))
+                    {
+                        // we evaluate the fw version of an eth board
+                        ret = verifyOnSecondLevel_ETHboard(&core, device, id, board, targetFW);
+                    }
+                    else if((!canLine.isEmpty()) && (!canId.isEmpty()))
+                    {
+                        // we evaluate the fw version of a can board below eth
+                        // FirmwareUpdater --nogui --verbosity 1 --device ETH --id eth1 --eth_board 10.0.1.1 --can_line 2 --can_id 2 --verify 1.3.7
+                        ret = verifyOnThirdLevel_CANunderETH(&core, device, id, board, canLine, canId, targetFW);
+                    }
+                    else
+                    {
+                        if(verbosity >= 1) qDebug() << "Must have both can line and address";
+                    }
+                }
+                else
+                {
+                    // second level cfw2 or other can driver
+                    if(targetFW.isEmpty())
+                    {
+                        if(verbosity >= 1) qDebug() << "Need a target fw version";
+                    }
+                    else if((canLine.isEmpty()) || (canId.isEmpty()))
+                    {
+                        if(verbosity >= 1) qDebug() << "Must have both can line and address";
+                    }
+                    else
+                    {
+                        // we evaluate the fw version of a can board below eth
+                        ret = verifyOnSecondLevel_CANboard(&core, device, id, canLine, canId, targetFW);
+                    }
+
+                }
+
+            } break;
+
+            case action_program:
+            {
+                ret = 1;
+                //yDebug() << "program";
+
+                if(device.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a device to be set";
+                }else if(id.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need an id to be set";
+                }else if(board.isEmpty() && device.contains("ETH")){
+                    if(verbosity >= 1) qDebug() << "Need a board to be set";
+                }else if(file.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a file path to be set";
+                }else if(canLine.isEmpty() && canId.isEmpty()){
+                    ret = programEthDevice(&core,device,id,board,file);
+//                    if(eraseEEprom && ret == 0){
+//                        ret = eraseEthEEprom(&core,device,id,board);
+//                    }
+                }else{
+                    if(canLine.isEmpty()){
+                        if(verbosity >= 1) qDebug() << "Need a can line to be set";
+                    } else if(canId.isEmpty()){
+                        if(verbosity >= 1) qDebug() << "Need a can id to be set";
+                    }else{
+                        ret = programCanDevice(&core,device,id,board,canLine,canId,file,eraseEEprom);
+                    }
+                }
+
+            } break;
+
+            case action_forcemaintenance:
+            {
+                ret = 1;
+                //yDebug() << "forcemaintenance";
+
+                if(device.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a device to be set";
+                }else if(id.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need an id to be set";
+                }else if(board.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a board to be set";
+                }else{
+
+                    ret = setBoardToMaintenance(&core,device,id,board);
+                }
+
+            } break;
+
+            case action_forceapplication:
+            {
+                ret = 1;
+                yDebug() << "forceapplication";
+
+                if(device.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a device to be set";
+                }else if(id.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need an id to be set";
+                }else if(board.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a board to be set";
+                }else{
+
+                    ret = setBoardToApplication(&core,device,id,board);
+                }
+
+            } break;
+
+        };
+
+
+
+#if 0
+// old code now substituted by the switch-case
         if(discover){
             if(device.isEmpty()){
                 if(verbosity >= 1) qDebug() << "Need a device to be set";
@@ -192,9 +520,9 @@ int main(int argc, char *argv[])
                 if(verbosity >= 1) qDebug() << "Need a file path to be set";
             }else if(canLine.isEmpty() && canId.isEmpty()){
                 ret = programEthDevice(&core,device,id,board,file);
-                if(eraseEEprom && ret == 0){
-                    ret = eraseEthEEprom(&core,device,id,board);
-                }
+//                if(eraseEEprom && ret == 0){
+//                    ret = eraseEthEEprom(&core,device,id,board);
+//                }
             }else{
                 if(canLine.isEmpty()){
                     if(verbosity >= 1) qDebug() << "Need a can line to be set";
@@ -219,10 +547,12 @@ int main(int argc, char *argv[])
                 }
 
             }
-            if(eraseEEprom && ret == 0){
-                ret = eraseEthEEprom(&core,device,id,board);
-            }
+//            if(eraseEEprom && ret == 0){
+//                ret = eraseEthEEprom(&core,device,id,board);
+//            }
         }
+#endif
+
     }
 
 
@@ -237,17 +567,17 @@ int main(int argc, char *argv[])
 
 /**************************************************/
 
-int eraseEthEEprom(FirmwareUpdaterCore *core,QString device,QString id,QString board)
-{
-    int boards = core->connectTo(device,id);
-    if(boards > 0){
-        if(device.contains("ETH")){
-            core->setSelectedEthBoard(board,true);
-            core->eraseEthEprom();
-        }
-    }
-    return 0;
-}
+//int eraseEthEEprom(FirmwareUpdaterCore *core,QString device,QString id,QString board)
+//{
+//    int boards = core->connectTo(device,id);
+//    if(boards > 0){
+//        if(device.contains("ETH")){
+//            core->setSelectedEthBoard(board,true);
+//            core->eraseEthEprom();
+//        }
+//    }
+//    return 0;
+//}
 
 int setBoardToApplication(FirmwareUpdaterCore *core,QString device,QString id,QString board)
 {
@@ -383,7 +713,7 @@ int programEthDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
 
 }
 
-int printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id)
+int printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id, bool slimprint)
 {
     if(device.contains("ETH")){
         int boards = core->connectTo(device,id);
@@ -398,6 +728,7 @@ int printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id)
             char board_type[24];
             char running_process[24];
             char board_info[32];
+            char appl_version[32] = {0};
 
             memset(board_ipaddr,0,sizeof(board_ipaddr));
             memset(board_mac,0,sizeof(board_mac));
@@ -433,17 +764,34 @@ int printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id)
                 snprintf(board_info, sizeof(board_info), "%s", board.getInfoOnEEPROM().c_str());
                 snprintf(board_date, sizeof(board_date), "%s", board.getDatefRunning().c_str());
                 snprintf(board_built, sizeof(board_date), "%s", board.getCompilationDateOfRunning().c_str());
+                snprintf(appl_version, sizeof(appl_version), "%d.%d", board.getInfo().processes.info[2].version.major, board.getInfo().processes.info[2].version.minor);
 
-                if(verbosity >= 1) qDebug() << "************** Device " << i << " ******************";
-                if(verbosity >= 1) qDebug() << "Ip:        "<< board_ipaddr;
-                if(verbosity >= 1) qDebug() << "Mac:       "<< board_mac;
-                if(verbosity >= 1) qDebug() << "Version:   "<< board_version;
-                if(verbosity >= 1) qDebug() << "Type:      "<< board_type;
-                if(verbosity >= 1) qDebug() << "Process:   "<< running_process;
-                if(verbosity >= 1) qDebug() << "Info:      "<< board_info;
-                if(verbosity >= 1) qDebug() << "Date:      "<< board_date;
-                if(verbosity >= 1) qDebug() << "Built:     "<< board_built;
-                if(verbosity >= 1) qDebug() << "\n";
+                if(true == slimprint)
+                {
+                    char IPslimstring[512] = {0};
+                    snprintf(IPslimstring, sizeof(IPslimstring), "%s: type = %s, application = %d.%d, updater = %d.%d, loader = %d.%d",
+                                board.getIPV4string().c_str(),
+                                eoboards_type2string2(eoboards_ethtype2type(board.getInfo().boardtype), eobool_true),
+                                board.getInfo().processes.info[2].version.major, board.getInfo().processes.info[2].version.minor,
+                                board.getInfo().processes.info[1].version.major, board.getInfo().processes.info[1].version.minor,
+                                board.getInfo().processes.info[0].version.major, board.getInfo().processes.info[0].version.minor);
+
+                    qDebug() << IPslimstring;
+                }
+                else
+                {
+                    if(verbosity >= 1) qDebug() << "************** Device " << i << " ******************";
+                    if(verbosity >= 1) qDebug() << "Ip:        "<< board_ipaddr;
+                    if(verbosity >= 1) qDebug() << "Mac:       "<< board_mac;
+                    if(verbosity >= 1) qDebug() << "Version:   "<< board_version;
+                    if(verbosity >= 1) qDebug() << "Appl Ver:  "<< appl_version;
+                    if(verbosity >= 1) qDebug() << "Type:      "<< board_type;
+                    if(verbosity >= 1) qDebug() << "Process:   "<< running_process;
+                    if(verbosity >= 1) qDebug() << "Info:      "<< board_info;
+                    if(verbosity >= 1) qDebug() << "Date:      "<< board_date;
+                    if(verbosity >= 1) qDebug() << "Built:     "<< board_built;
+                    if(verbosity >= 1) qDebug() << "\n";
+                }
 
             }
             if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
@@ -455,14 +803,23 @@ int printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id)
         if(canBoards.count() <= 0){
             if(verbosity >= 1) qDebug() <<  retString;
         }else{
-            printCanDevices(canBoards);
+            QString empty;
+            printCanDevices(canBoards, empty, slimprint);
         }
     }
     return 0;
 }
 
-int printThirdLevelDevices(FirmwareUpdaterCore *core,QString device,QString id,QString board, bool forceMaintenance, bool forceApplication)
+int printThirdLevelDevices(FirmwareUpdaterCore *core,QString device,QString id,QString board, bool forceMaintenance, bool forceApplication, bool slimprint)
 {
+
+//    if(forceMaintenance)
+//    {
+//        yDebug() << "printThirdLevelDevices() is sending in manteinance mode:" << board.toStdString();
+//        int ret = setBoardToMaintenance(core,device,id,board);
+//        yDebug() << "ret is " << ret;
+//    }
+
     int boards = core->connectTo(device,id);
     if(boards > 0){
         if(device.contains("ETH")){
@@ -479,11 +836,11 @@ int printThirdLevelDevices(FirmwareUpdaterCore *core,QString device,QString id,Q
                 if(canBoards.count() <= 0){
                     if(verbosity >= 1) qDebug() <<  retString;
                 }else{
-                    printCanDevices(canBoards);
+                    printCanDevices(canBoards, board, slimprint);
                 }
 
             }else{
-                if(verbosity >= 1) qDebug() << "You have to put the device in maintenace mode to perform this operation.";
+                if(verbosity >= 1) qDebug() << "for board" << board << "You have to put the device in maintenace mode to perform this operation.";
             }
 
         }
@@ -494,7 +851,7 @@ int printThirdLevelDevices(FirmwareUpdaterCore *core,QString device,QString id,Q
     return 0;
 }
 
-void printCanDevices(QList<sBoard> canBoards)
+void printCanDevices(QList<sBoard> canBoards, QString onIPboard, bool slimprint)
 {
     if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
     for(int i=0;i<canBoards.count();i++){
@@ -504,7 +861,7 @@ void printCanDevices(QList<sBoard> canBoards)
         char board_process     [50]; memset (board_process,0,50);
         char board_status      [50]; memset (board_status,0,50);
         char board_add_info    [50]; memset (board_add_info,0,50);
-        char board_firmware_version  [10]; memset (board_firmware_version,0,10);
+        char board_firmware_version  [32]; memset (board_firmware_version,0,32);
         char board_appl_minor  [10]; memset (board_appl_minor,0,10);
         char board_appl_build  [10]; memset (board_appl_build,0,10);
         char board_serial      [10]; memset (board_serial,0,10);
@@ -546,9 +903,9 @@ void printCanDevices(QList<sBoard> canBoards)
         strncpy  (board_add_info, board.add_info,32);
 
         if(-1 == board.appl_vers_build){
-            sprintf (board_firmware_version, "%d.0x%x", board.appl_vers_major, board.appl_vers_minor);
+            snprintf (board_firmware_version, sizeof(board_firmware_version), "%d.%d", board.appl_vers_major, board.appl_vers_minor);
         } else {
-            sprintf (board_firmware_version, "%d.0x%x.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
+            snprintf (board_firmware_version, sizeof(board_firmware_version), "%d.%d.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
         }
 
         sprintf (board_appl_minor,"%d",board.appl_vers_minor);
@@ -564,17 +921,37 @@ void printCanDevices(QList<sBoard> canBoards)
             snprintf (board_protocol, sizeof(board_protocol), "%d.%d", board.prot_vers_major, board.prot_vers_minor);
         }
 
-        if(verbosity >= 1) qDebug() << "************** Board " << i << " ******************";
-        if(verbosity >= 1) qDebug() << "Type:              " << board_type;
-        if(verbosity >= 1) qDebug() << "Id:                " << board.pid;
-        if(verbosity >= 1) qDebug() << "Address:           " << "CAN_" << board.bus;
-        if(verbosity >= 1) qDebug() << "Process:           " << board_process;
-        if(verbosity >= 1) qDebug() << "Status:            " << board_status;
-        if(verbosity >= 1) qDebug() << "Info:              " << board_add_info;
-        if(verbosity >= 1) qDebug() << "Firmware Version:  " << board_firmware_version;
-        if(verbosity >= 1) qDebug() << "Serial:            " << board_serial;
-        if(verbosity >= 1) qDebug() << "Protocol:          " << board_protocol;
-        if(verbosity >= 1) qDebug() << "\n";
+        if(true == slimprint)
+        {
+            char CANslimstring[512] = {0};
+            char IPstr[24] = {0};
+            if(false == onIPboard.isEmpty())
+            {
+                snprintf(IPstr, sizeof(IPstr), "%s:", onIPboard.toStdString().c_str());
+            }
+            snprintf(CANslimstring, sizeof(CANslimstring), "%sCAN%d:%d: type = %s, application = %s",
+                        IPstr,
+                        board.bus, board.pid,
+                        //board.getIPV4string().c_str(),
+                        eoboards_type2string2((eObrd_type_t)board.type, eobool_true),
+                        board_firmware_version);
+
+            qDebug() << CANslimstring;
+        }
+        else
+        {
+            if(verbosity >= 1) qDebug() << "************** Board " << i << " ******************";
+            if(verbosity >= 1) qDebug() << "Type:              " << board_type;
+            if(verbosity >= 1) qDebug() << "Id:                " << board.pid;
+            if(verbosity >= 1) qDebug() << "Address:           " << "CAN_" << board.bus;
+            if(verbosity >= 1) qDebug() << "Process:           " << board_process;
+            if(verbosity >= 1) qDebug() << "Status:            " << board_status;
+            if(verbosity >= 1) qDebug() << "Info:              " << board_add_info;
+            if(verbosity >= 1) qDebug() << "Firmware Version:  " << board_firmware_version;
+            if(verbosity >= 1) qDebug() << "Serial:            " << board_serial;
+            if(verbosity >= 1) qDebug() << "Protocol:          " << board_protocol;
+            if(verbosity >= 1) qDebug() << "\n";
+        }
     }
     if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
 }
@@ -627,3 +1004,500 @@ void removeApplicationLock()
     f.remove();
 
 }
+
+int verifyOnSecondLevel(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetIPaddr, const QString &targetCANline, const QString &targetCANaddr, const QString &targetFWvers)
+{
+    int ret = 1;
+
+    if(device.contains("ETH"))
+    {
+        int boards = core->connectTo(device, id);
+        if(boards > 0)
+        {
+
+            if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
+
+            bool found =  false;
+            for(int i=0;i<core->getEthBoardList().size();i++)
+            {
+                EthBoard board = core->getEthBoardList()[i];
+
+                if(targetIPaddr.toStdString() == board.getIPV4string())
+                {
+                    found = true;
+
+                    char board_ipaddr[16] = {0};
+                    char appl_version[32] = {0};
+
+                    snprintf(board_ipaddr, sizeof(board_ipaddr), "%s", board.getIPV4string().c_str());
+                    snprintf(appl_version, sizeof(appl_version), "%d.%d", board.getInfo().processes.info[2].version.major, board.getInfo().processes.info[2].version.minor);
+
+                    if(targetFWvers == appl_version)
+                    {
+                        ret = 0;
+                        if(verbosity >= 1)  qDebug() << "MATCHED";
+                    }
+                    else
+                    {
+                        ret = 1;
+                        if(verbosity >= 1)  qDebug() << "NOT MATCHED";
+                    }
+
+                    break;
+                }
+
+
+
+            }
+
+            if(!found)
+            {
+                ret = 1;
+                if(verbosity >= 1)  qDebug() << "NOT MATCHED (IP = " << targetIPaddr << " not in found boards)";
+            }
+            if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
+
+        }
+        else
+        {
+            ret = 1;
+            if(verbosity >= 1)  qDebug() << "NOT MATCHED (found no board)";
+        }
+    }
+    else
+    {
+        QString retString;
+        QList <sBoard> canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
+        if(canBoards.count() <= 0)
+        {
+            ret = 1;
+            if(verbosity >= 1) qDebug() <<  retString;
+        }
+        else
+        {
+            ret = verifyCanDevices(canBoards, targetCANline, targetCANaddr,  targetFWvers);
+        }
+    }
+
+    return ret;
+}
+
+int verifyOnSecondLevel_ETHboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetIPaddr, const QString &targetFWvers)
+{
+    int ret = 2;
+
+//    if(device.contains("ETH"))
+//    {
+        int boards = core->connectTo(device, id);
+        if(boards > 0)
+        {
+
+            if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
+
+            bool found =  false;
+            for(int i=0;i<core->getEthBoardList().size();i++)
+            {
+                EthBoard board = core->getEthBoardList()[i];
+
+                if(targetIPaddr.toStdString() == board.getIPV4string())
+                {
+                    found = true;
+                    ret = 1;
+
+                    char board_ipaddr[16] = {0};
+                    char appl_version[32] = {0};
+
+                    snprintf(board_ipaddr, sizeof(board_ipaddr), "%s", board.getIPV4string().c_str());
+                    snprintf(appl_version, sizeof(appl_version), "%d.%d", board.getInfo().processes.info[2].version.major, board.getInfo().processes.info[2].version.minor);
+
+                    if(targetFWvers == appl_version)
+                    {
+                        ret = 0;
+                        if(verbosity >= 1)  qDebug() << "ETH FOUND + FW MATCHED";
+                    }
+                    else
+                    {
+                        ret = 1;
+                        if(verbosity >= 1)  qDebug() << "ETH FOUND + FW NOT MATCHED";
+                    }
+
+                    break;
+                }
+
+
+
+            }
+
+            if(!found)
+            {
+                ret = 2;
+                if(verbosity >= 1)  qDebug() << "NOT MATCHED (IP = " << targetIPaddr << " not in found boards)";
+            }
+            if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
+
+        }
+        else
+        {
+            ret = 2;
+            if(verbosity >= 1)  qDebug() << "NOT MATCHED (found no board)";
+        }
+
+//    }
+//    else
+//    {
+//        QString retString;
+//        QList <sBoard> canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
+//        if(canBoards.count() <= 0)
+//        {
+//            ret = 1;
+//            if(verbosity >= 1) qDebug() <<  retString;
+//        }
+//        else
+//        {
+//            ret = verifyCanDevices(canBoards, targetCANline, targetCANaddr,  targetFWvers);
+//        }
+//    }
+
+    return ret;
+}
+
+int verifyOnSecondLevel_CANboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetCANline, const QString &targetCANaddr, const QString &targetFWvers)
+{
+    int ret = 2; // not found, not matched
+
+    QString retString;
+    QList <sBoard> canBoards = core->getCanBoardsFromDriver(device, id.toInt(), &retString, true);
+    if(canBoards.count() <= 0)
+    {
+        ret = 2;
+        if(verbosity >= 1) qDebug() <<  retString;
+    }
+    else
+    {
+        ret = verifyCanDevices(canBoards, targetCANline, targetCANaddr,  targetFWvers);
+    }
+
+
+    return ret;
+}
+
+int verifyCanDevices(QList<sBoard> canBoards, const QString &targetCANline, const QString &targetCANaddr, const QString &targetFWvers)
+{
+    int ret = 2; // not found, not matched
+
+    bool found = false;
+
+    for(int i=0;i<canBoards.count();i++)
+    {
+        sBoard board = canBoards.at(i);
+
+        if(verbosity >= 1) qDebug() << "---------------------------------------------------------";
+
+        // see if address matches
+        char line[8] = {0};
+        snprintf(line, sizeof(line), "%d", board.bus);
+        char addr[8] = {0};
+        snprintf(addr, sizeof(addr), "%d", board.pid);
+
+        //if(verbosity >= 1) qDebug() << targetCANline << targetCANaddr;
+        //printf("line+addr = %s %s", line, addr);
+
+        if((targetCANline.toStdString() == string(line)) && (targetCANaddr.toStdString() == string(addr)) )
+        {
+            found =  true;
+            ret = 1; // found, maybe not yet fw match
+
+            if(verbosity >= 1) qDebug() << "CAN ADDRESS: FOUND";
+
+            //snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string2((eObrd_type_t)board.type, eobool_true));
+
+            if(true == board.applicationisrunning)
+            {
+                char board_firmware_version  [32] = {0};
+                snprintf (board_firmware_version, sizeof(board_firmware_version), "%d.%d.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
+                //printf("ss %s", board_firmware_version);
+
+                if(string(board_firmware_version) == targetFWvers.toStdString())
+                {
+                    ret = 0; // match!
+                    if(verbosity >= 1) qDebug() << "CAN FW VERSION: MATCHES";
+                }
+            }
+
+            break;
+        }
+    }
+
+    if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
+
+    return ret;
+}
+
+
+int verifyOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QString id, QString board, const QString &targetCANline, const QString &targetCANaddr, const QString &targetFWvers)
+{
+    int ret = 2;
+
+    const bool forceMaintenance = true;
+
+    int boards = core->connectTo(device, id);
+
+    if(boards > 0)
+    {
+        if(device.contains("ETH"))
+        {
+            if(forceMaintenance)
+            {
+                core->setSelectedEthBoard(board, true);
+                core->goToMaintenance();
+            }
+
+            if(core->isBoardInMaintenanceMode(board))
+            {
+                QString retString;
+                QList <sBoard> canBoards = core->getCanBoardsFromEth(board, &retString);
+                if(canBoards.count() <= 0)
+                {
+                    if(verbosity >= 1) qDebug() <<  retString;
+                }
+                else
+                {
+                    ret = verifyCanDevices(canBoards, targetCANline, targetCANaddr, targetFWvers);
+                }
+
+            }
+            else
+            {
+                if(verbosity >= 1) qDebug() << "You have to put the device in maintenace mode to perform this operation.";
+            }
+
+        }
+    }
+    else
+    {
+        if(verbosity >= 1) qDebug() << "No boards Found";
+    }
+
+    return ret;
+}
+
+
+int queryOnSecondLevel_ETHboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetIPaddr)
+{
+    int ret = 1;
+
+    const bool slimprint = true;
+
+    bool found =  false;
+
+    if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
+
+    int boards = core->connectTo(device, id);
+    if(boards > 0)
+    {
+        for(int i=0;i<core->getEthBoardList().size();i++)
+        {
+            EthBoard board = core->getEthBoardList()[i];
+
+            if(targetIPaddr.toStdString() == board.getIPV4string())
+            {
+                found = true;
+                ret = 0;
+
+                if(true == slimprint)
+                {
+                    char IPslimstring[512] = {0};
+                    snprintf(IPslimstring, sizeof(IPslimstring), "%s: type = %s, application = %d.%d, updater = %d.%d, loader = %d.%d",
+                                board.getIPV4string().c_str(),
+                                eoboards_type2string2(eoboards_ethtype2type(board.getInfo().boardtype), eobool_true),
+                                board.getInfo().processes.info[2].version.major, board.getInfo().processes.info[2].version.minor,
+                                board.getInfo().processes.info[1].version.major, board.getInfo().processes.info[1].version.minor,
+                                board.getInfo().processes.info[0].version.major, board.getInfo().processes.info[0].version.minor);
+
+                    qDebug() << IPslimstring;
+                }
+
+                break;
+            }
+
+
+        }
+
+
+    }
+
+    if(!found)
+    {
+        ret = 1;
+        char notfound[512] = {0};
+        snprintf(notfound, sizeof(notfound), "%s: not found",
+                    targetIPaddr.toStdString().c_str());
+
+        qDebug() << notfound;
+    }
+    if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
+
+
+    return ret;
+}
+
+
+int queryOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QString id, const QString board, const QString &targetCANline, const QString &targetCANaddr)
+{
+    int ret = 1;
+
+    const bool forceMaintenance = true;
+
+    char notfound[256] = {0};
+
+    int boards = core->connectTo(device, id);
+
+    if(boards > 0)
+    {
+        if(device.contains("ETH"))
+        {
+            if(forceMaintenance)
+            {
+                core->setSelectedEthBoard(board, true);
+                core->goToMaintenance();
+            }
+
+            if(core->isBoardInMaintenanceMode(board))
+            {
+                QString retString;
+                QList <sBoard> canBoards = core->getCanBoardsFromEth(board, &retString);
+                if(canBoards.count() <= 0)
+                {
+                    if(verbosity >= 1) qDebug() <<  retString;
+                    snprintf(notfound, sizeof(notfound), "%s: no can board beneath", board.toStdString().c_str());
+                    qDebug() << notfound;
+                }
+                else
+                {
+                    ret = queryCanDevices(canBoards, board, targetCANline, targetCANaddr);
+                }
+
+            }
+            else
+            {
+                if(verbosity >= 1) qDebug() << "You have to put the device in maintenace mode to perform this operation.";
+            }
+
+        }
+    }
+    else
+    {
+        if(verbosity >= 1) qDebug() << "No boards Found";
+        snprintf(notfound, sizeof(notfound), "%s: cannot find it", board.toStdString().c_str());
+        qDebug() << notfound;
+    }
+
+    return ret;
+}
+
+
+int queryCanDevices(QList<sBoard> canBoards, const QString onIPboard, const QString &targetCANline, const QString &targetCANaddr)
+{
+    int ret = 1; // not found
+
+    bool found = false;
+    const bool slimprint = true;
+
+    for(int i=0;i<canBoards.count();i++)
+    {
+        sBoard board = canBoards.at(i);
+
+        if(verbosity >= 1) qDebug() << "---------------------------------------------------------";
+
+        // see if address matches
+        char line[8] = {0};
+        snprintf(line, sizeof(line), "%d", board.bus);
+        char addr[8] = {0};
+        snprintf(addr, sizeof(addr), "%d", board.pid);
+
+
+        if((targetCANline.toStdString() == string(line)) && (targetCANaddr.toStdString() == string(addr)) )
+        {
+            found =  true;
+            ret = 0; // found
+
+            char board_firmware_version[32] = {0};
+
+            if(true == board.applicationisrunning)
+            {
+                snprintf (board_firmware_version, sizeof(board_firmware_version), "%d.%d.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
+            }
+            else
+            {
+                snprintf (board_firmware_version, sizeof(board_firmware_version), "%d.%d", board.appl_vers_major, board.appl_vers_minor);
+            }
+
+            if(true == slimprint)
+            {
+                char CANslimstring[512] = {0};
+                char IPstr[24] = {0};
+                if(false == onIPboard.isEmpty())
+                {
+                    snprintf(IPstr, sizeof(IPstr), "%s:", onIPboard.toStdString().c_str());
+                }
+                snprintf(CANslimstring, sizeof(CANslimstring), "%sCAN%d:%d: type = %s, application = %s",
+                            IPstr,
+                            board.bus, board.pid,
+                            eoboards_type2string2((eObrd_type_t)board.type, eobool_true),
+                            board_firmware_version);
+
+                qDebug() << CANslimstring;
+            }
+
+            break;
+        }
+    }
+
+    if(!found)
+    {
+        ret = 1;
+        char notfound[512] = {0};
+        char IPstr[24] = {0};
+        if(false == onIPboard.isEmpty())
+        {
+            snprintf(IPstr, sizeof(IPstr), "%s:", onIPboard.toStdString().c_str());
+        }
+        snprintf(notfound, sizeof(notfound), "%sCAN%s:%s: not found",
+                 IPstr,
+                 targetCANline.toStdString().c_str(), targetCANaddr.toStdString().c_str());
+
+        qDebug() << notfound;
+    }
+
+    if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
+
+    return ret;
+}
+
+
+int queryOnSecondLevel_CANboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetCANline, const QString &targetCANaddr)
+{
+    int ret = 1; // not found
+
+    char notfound[256] = {0};
+
+    QString retString;
+    QList <sBoard> canBoards = core->getCanBoardsFromDriver(device, id.toInt(), &retString, true);
+    if(canBoards.count() <= 0)
+    {
+        ret = 1;
+        if(verbosity >= 1) qDebug() <<  retString;
+        snprintf(notfound, sizeof(notfound), "<%s>: no can boards beneath", device.toStdString().c_str());
+        qDebug() << notfound;
+    }
+    else
+    {
+        QString none;
+        ret = queryCanDevices(canBoards, targetCANline, none, targetCANaddr);
+    }
+
+
+    return ret;
+}
+
+
