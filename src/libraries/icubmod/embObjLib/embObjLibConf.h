@@ -1,10 +1,5 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup embObjLibConfig embObjLibConfig
- *
-*/
 /* Copyright (C) 2013  iCub Facility, Istituto Italiano di Tecnologia
  * Author: Marco Accame
  * email: marco.accame@iit.it

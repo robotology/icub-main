@@ -1,11 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_calibrators 
- * \defgroup parametricCalibratorEth
- *
- * Implement calibration routines for the iCub arm(s) (version 1.2).
- *
+/*
  * Copyright (C) 20014 iCub Facility, Istituto Italiano di Tecnologia
  *
  * Authors: Alberto Cardellino, Marco Randazzo, Valentina Gaggero
@@ -38,7 +33,8 @@ namespace yarp {
  */
 
 /**
- * @ingroup dev_impl
+ * @ingroup icub_calibrators
+ * @brief `parametricCalibrator`: implement calibration routines for the iCub arm(s) (version 1.2).
  * 
  * A calibrator interface implementation for the Arm of the robot iCub.
  */

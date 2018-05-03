@@ -6,19 +6,6 @@
  *
  */
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup xsensemtx xsensemtx
- *
- * Provide Linux interface for the xsensemtx gyroscope.
- *
- * Copyright (C) 2006 Radu Bogdan Rasu, Alexis Maldonado
- *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * This file can be edited at src/modules/xsensmtx/XSensMTx.h
- */
-
 #ifndef __XSENSMTX__
 #define __XSENSMTX__
 
@@ -42,11 +29,13 @@ struct XSensMTxParameters
 };
 
 /**
- *
- * @ingroup dev_impl
- *
- * Driver for XSens's MTx IMU unit.
+ * @ingroup icub_hardware_modules
+ * @brief `xsensmtx` : driver for XSens's MTx IMU unit.
  * @author Radu Bogdan Rusu, Alexis Maldonado
+ *
+ * | YARP device name |
+ * |:-----------------:|
+ * | `xsensmtx` |
  */
 class yarp::dev::XSensMTx : public IGenericSensor, public yarp::dev::IPreciselyTimed, public DeviceDriver
 {

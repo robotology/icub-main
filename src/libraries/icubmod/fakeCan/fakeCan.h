@@ -5,27 +5,6 @@
  *
  */
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup fakecan fakecan
- *
- * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus <\a> interface for a software (fake) can bus board.
- * It accepts the same parameter file that can be passed to the real hw 
- * (you just need to replace ecan or pcan with fakecan). Useful for debugging 
- * robot code in absence of real hw.
- * 
- * The behavior of the fake boards is very simplified, this module 
- * is not simulating a real robot. 
- *
- * Copyright (C) 2008 RobotCub Consortium.
- *
- * Author: Lorenzo Natale
- *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * This file can be edited at src/modules/fakeCan/fakeCan.h
- */
-
 #ifndef __FAKECAN__
 #define __FAKECAN__
 
@@ -107,6 +86,22 @@ class Boards: public std::list<FakeBoard *>
 typedef std::list<FakeBoard *>::iterator BoardsIt;
 typedef std::list<FakeBoard *>::const_iterator BoardsConstIt;
 
+
+/**
+ * @ingroup icub_hardware_modules
+ * @brief `fakecan` : implements yarp::dev::ICanBus for a software (fake) can bus board.
+ *
+  * It accepts the same parameter file that can be passed to the real hw
+ * (you just need to replace ecan or pcan with fakecan). Useful for debugging
+ * robot code in absence of real hw.
+ *
+ * The behavior of the fake boards is very simplified, this module
+ * is not simulating a real robot.
+ *
+ * | YARP device name |
+ * |:-----------------:|
+ * | `fakecan` |
+ */
 class yarp::dev::FakeCan: public ImplementCanBufferFactory<FakeCanMessage, FCMSG>,
     public ICanBus, 
     public DeviceDriver

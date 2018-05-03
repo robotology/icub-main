@@ -19,6 +19,7 @@
 
 const int CAN_DRIVER_BUFFER_SIZE = 500;
 const int DEFAULT_THREAD_PERIOD = 10;
+
 class SharedCanBus : public yarp::os::RateThread
 {
 public:

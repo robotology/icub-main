@@ -1,12 +1,5 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup analogSensorEth
- *
- * To Do: add description
- *
- */
 
 #ifndef __embObjStrain_h__
 #define __embObjStrain_h__
@@ -42,6 +35,20 @@ namespace yarp {
 
 // -- class embObjStrain
 
+/**
+*  @ingroup icub_hardware_modules
+*
+* @brief `embObjStrain` : driver for communication with IIT's STRAIN board over EMS boards.
+*
+* For the description of the parameters supported by this device, please check the
+* template configuration file available in robotology/robots-configuration,
+* i.e.  https://github.com/robotology/robots-configuration/blob/master/iCubTemplates/iCubTemplateV4_0/hardware/FT/body_part-ebX-strain.xml .
+*
+* | YARP device name |
+* |:-----------------:|
+* | `embObjStrain` |
+*
+*/
 class yarp::dev::embObjStrain:      public yarp::dev::IAnalogSensor,
                                     public yarp::dev::DeviceDriver,
                                     public eth::IethResource

@@ -16,17 +16,7 @@
  * Public License for more details
 */
 
-/**
- * \defgroup clientcartesiancontroller clientcartesiancontroller
- * @ingroup icub_hardware_modules 
- *  
- * Implements the client part of the <a 
- * href="http://wiki.icub.org/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian
- * Interface</a>. 
- *  
- * @note Please read carefully the \ref icub_cartesian_interface
- *       "Cartesian Interface" documentation.
- *
+/*
  * Copyright (C) 2010 RobotCub Consortium.
  *
  * Author: Ugo Pattacini
@@ -68,7 +58,19 @@ public:
 };
 
 
-/************************************************************************/
+/**
+*  @ingroup icub_hardware_modules
+*
+* @brief `clientcartesiancontroller` : implements the client part of the
+* [Cartesian Interface](http://www.yarp.it/classyarp_1_1dev_1_1ICartesianControl.html).
+*
+* @note Please read carefully the \ref icub_cartesian_interface "Cartesian Interface" documentation.
+*
+* | YARP device name |
+* |:-----------------:|
+* | `clientcartesiancontroller` |
+*
+*/
 class ClientCartesianController : public    yarp::dev::DeviceDriver,
                                   public    yarp::dev::ICartesianControl,
                                   protected iCub::iKin::CartesianHelper

@@ -1,12 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_hardware_modules 
- * \defgroup shcan shcan
- *
- * Implements ICanBus interface for multiple access from a single access can driver (for example cfw2can).
- * It wraps the low level device driver (physdevice in the configuration file) in a higher level, multiple
- * access virtual device driver.
  *
  * Copyright (C) 2012 RobotCub Consortium.
  *
@@ -40,6 +34,17 @@ namespace yarp{
 
 class SharedCanBus;
 
+/**
+ * @ingroup icub_hardware_modules
+ * @brief `sharedcan` : implements ICanBus interface for multiple access from a single access can driver (for example cfw2can).
+ *
+ * It wraps the low level device driver (physdevice in the configuration file) in a higher level, multiple
+ * access virtual device driver.
+ *
+ * | YARP device name |
+ * |:-----------------:|
+ * | `sharedcan` |
+ */
 class yarp::dev::CanBusAccessPoint : 
     public ICanBus, 
     public ICanBufferFactory,

@@ -16,26 +16,7 @@
  * Public License for more details
 */
 
-/**
- * \defgroup servercartesiancontroller servercartesiancontroller
- * @ingroup icub_hardware_modules 
- *  
- * Implements the server part of the <a 
- * href="http://wiki.icub.org/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian
- * Interface</a>. 
- *  
- * @note Please read carefully the \ref icub_cartesian_interface
- *       "Cartesian Interface" documentation.
- *
- * Copyright (C) 2010 RobotCub Consortium.
- *
- * Author: Ugo Pattacini
- *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * This file can be edited at 
- * src/modules/cartesianController/ServerCartesianController.h 
- */
+
 
 #ifndef __SERVERCARTESIANCONTROLLER_H__
 #define __SERVERCARTESIANCONTROLLER_H__
@@ -106,7 +87,20 @@ public:
     virtual ~TaskRefVelTargetGenerator();
 };
 
-
+/**
+*  @ingroup icub_hardware_modules
+*
+* @brief `servercartesiancontroller` : implements the server part of the
+* [Cartesian Interface](http://www.yarp.it/classyarp_1_1dev_1_1ICartesianControl.html).
+*
+* @note Please read carefully the \ref icub_cartesian_interface
+*       "Cartesian Interface" documentation.
+*
+* | YARP device name |
+* |:-----------------:|
+* | `servercartesiancontroller` |
+*
+*/
 class ServerCartesianController : public    yarp::dev::DeviceDriver,
                                   public    yarp::dev::IMultipleWrapper,
                                   public    yarp::dev::ICartesianControl,

@@ -1,12 +1,5 @@
 ﻿// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup analogSensorEth
- *
- * To Do: add description
- *
- */
 
 #ifndef __embObjMais_h__
 #define __embObjMais_h__

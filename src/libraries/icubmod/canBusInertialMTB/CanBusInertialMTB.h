@@ -20,29 +20,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 
 
-/**
-*  @ingroup icub_hardware_modules
-*  \defgroup canbusinertialmtb canbusinertialmtb
-*
-*
-* Driver for CAN communication with inertial sensors (accelerometers, gyroscopes)
-*        mounted on MTB boards.
-*
-* The minimum MTB firmware version supported by this device is 2.10.17 .
-*
-* It is possible to read from multiple MTB. This readings will be combined in a single vector.
-*
-* Parameters accepted in the config argument of the open method:
-* | Parameter name | Type   | Units | Default Value | Required | Description | Notes |
-* |:--------------:|:------:|:-----:|:-------------:|:--------:|:-----------:|:-----:|
-* | canbusDevice   | string | -     | - | Yes | Yarp device name of CAN Bus wrapper | - |
-* | physDevice     | string | -     | - | Yes | Yarp device name for the low level CAN device driver | - |
-* | canDeviceNum   | int    | -     | - | Yes | ID of the CAN Bus line | - |
-* | canAddress     | vector of int    | -     | - | Yes | Vector of the CAN Bus Addresses for the sensor boards | - |
-* | period         | int    | milliseconds | 10 | No | Period of the thread reading messages from the CAN bus | - |
-* | sensorType     | int |       | - | Yes | Type of sensor to read from MTBs.  | Possible values: acc for the internal LIS331DLH accelerometer of the MTB, extAccAndGyro for the external LIS331DLH accelerometer and L3G4200D gyroscope. |
-* | sensorPeriod   | int    | milliseconds | 5 | No | Every sensorPeriod milliseconds the MTB publishes the sensor measurements on the CAN Bus | Possible values: from 1 to 255 |
-*/
+
 
 struct MTBInertialBoardInfo
 {
@@ -57,11 +35,28 @@ struct MTBInertialBoardInfo
 };
 
 /**
- * Class implementing the canBusInertialMTB device driver. 
- * 
- * Check \ref canbusinertialmtb for more information about this driver and the required parameters.
- * 
- */
+*  @ingroup icub_hardware_modules
+*  @brief `canbusinertialmtb` : driver for CAN communication with inertial sensors (accelerometers, gyroscopes) mounted on MTB boards.
+*
+* The minimum MTB firmware version supported by this device is 2.10.17 .
+*
+* It is possible to read from multiple MTB. This readings will be combined in a single vector.
+*
+* | YARP device name |
+* |:-----------------:|
+* | `canbusinertialmtb` |
+*
+* Parameters accepted in the config argument of the open method:
+* | Parameter name | Type   | Units | Default Value | Required | Description | Notes |
+* |:--------------:|:------:|:-----:|:-------------:|:--------:|:-----------:|:-----:|
+* | canbusDevice   | string | -     | - | Yes | Yarp device name of CAN Bus wrapper | - |
+* | physDevice     | string | -     | - | Yes | Yarp device name for the low level CAN device driver | - |
+* | canDeviceNum   | int    | -     | - | Yes | ID of the CAN Bus line | - |
+* | canAddress     | vector of int    | -     | - | Yes | Vector of the CAN Bus Addresses for the sensor boards | - |
+* | period         | int    | milliseconds | 10 | No | Period of the thread reading messages from the CAN bus | - |
+* | sensorType     | int |       | - | Yes | Type of sensor to read from MTBs.  | Possible values: acc for the internal LIS331DLH accelerometer of the MTB, extAccAndGyro for the external LIS331DLH accelerometer and L3G4200D gyroscope. |
+* | sensorPeriod   | int    | milliseconds | 5 | No | Every sensorPeriod milliseconds the MTB publishes the sensor measurements on the CAN Bus | Possible values: from 1 to 255 |
+*/
 class CanBusInertialMTB : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver
 {
 private:

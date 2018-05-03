@@ -1,10 +1,5 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_hardware_modules
- * \defgroup stat stat
- *
-*/
 /* Copyright (C) 2012  iCub Facility, Istituto Italiano di Tecnologia
  * Author: Valentina Gaggero
  * email: valentina.gaggero@iit.it

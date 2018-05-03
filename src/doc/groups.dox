@@ -82,27 +82,27 @@
 */
 
 /**
-* \defgroup icub_mod_library iCub mod library
+* \defgroup icub_mod_library iCub YARP devices library
 * @ingroup icub_modules_all
 *
-* Objects that can be conditionally compiled in the main build. 
-* All these objects are compiled in a single library called 
-* icubmod; they can be instantiated from the icubmoddev
-* executable or in the code by calling the polydriver.
+* [YARP devices](http://www.yarp.it/note_devices.html) contained in icub-main .
+* The YARP devices are classes that implement one or more YARP virtual
+* interfaces. Most often they wrap vendor's libraries for hardware
+* devices (dragonfly cameras, or the can bus), and the calibrator classes of the robot.
 *
-* These objects are classes that implement one or more YARP virtual 
-* interfaces. Most often they wrap vendor's libraries for hardware 
-* devices (dragonfly cameras, or the can bus),
-* and the calibrator classes of the robot. 
-* 
-* Each object is stored in a directory within icub-main/src/modules. 
+* The compilation of these devices is typically optional and regulated by
+* the ENABLE_devicename CMake option.
+* The device can be instantiated from the yarpdev or yarprobotinterface executables
+* or in the code by using yarp::dev::PolyDriver factory class.
+*
+* Each device is stored in a directory within icub-main/src/libraries/icubmod .
 *
 * To add a module to this list please add this in the source code:
 *
 \verbatim
   /**
-   * \defgroup icub_your_mod_library your_mod_library
    * @ingroup icub_mod_library
+   * @brief `yarpdevicename` : device description.
    *
    */
 \endverbatim
@@ -111,17 +111,17 @@
 */
 
 /**
-* \defgroup icub_hardware_modules Hardware modules
+* \defgroup icub_hardware_modules Hardware YARP devices
 * @ingroup icub_mod_library
 *
-* Objects that provide access to the robot hardware. 
+* YARP devices that provide access to the robot hardware.
 *
-* To add a module to this list please add this in the source code:
+* To add a device to this list please add this in the source code:
 *
 \verbatim
   /**
-   * \defgroup icub_your_mod_library your_mod_library
    * @ingroup icub_hardware_modules
+   * @brief `yarpdevicename` : device description.
    *
    */
 \endverbatim
@@ -130,19 +130,19 @@
 */
 
 /**
-* \defgroup icub_calibrators Calibrator classes
+* \defgroup icub_calibrators Calibrator YARP devices
 * @ingroup icub_mod_library
 *
-* Objects that contain the routines
+* YARP devices that contain the routines
 * for calibrating the robot at startup. They are very 
 * iCub specific.
 *
-* To add a module to this group add this in the source code:
+* To add a module to this group add this in the doxygen block of the device class:
 *
 \verbatim
   /**
-   * \defgroup icub_your_calibrator your_calibrator
    * @ingroup icub_calibrators
+   * @brief `yarpdevicename` : device description.
    *
    */
 \endverbatim
