@@ -16,17 +16,6 @@
  * Public License for more details
 */
 
-/*
- * Copyright (C) 2010 RobotCub Consortium.
- *
- * Author: Ugo Pattacini
- *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * This file can be edited at 
- * src/modules/cartesianController/ClientCartesianController.h 
- */
-
 #ifndef __CLIENTCARTESIANCONTROLLER_H__
 #define __CLIENTCARTESIANCONTROLLER_H__
 

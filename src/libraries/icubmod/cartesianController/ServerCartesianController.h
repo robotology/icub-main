@@ -16,8 +16,6 @@
  * Public License for more details
 */
 
-
-
 #ifndef __SERVERCARTESIANCONTROLLER_H__
 #define __SERVERCARTESIANCONTROLLER_H__
 

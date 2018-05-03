@@ -16,9 +16,6 @@
  * Public License for more details
 */
 
-// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
-// Developed by Ugo Pattacini
-
 #ifndef __COMMONCARTESIANCONTROLLER_H__
 #define __COMMONCARTESIANCONTROLLER_H__
 
