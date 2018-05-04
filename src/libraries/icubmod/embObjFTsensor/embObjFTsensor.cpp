@@ -92,7 +92,7 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
 
     if(false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_strain, servparam, 5.0))
     {
-        yError() << "embObjFTsensor::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << getBoardInfo();
+        yError() << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate()";
         cleanup();
         return false;
     }
@@ -100,7 +100,7 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
     // we always prepare the fullscales.
     if(false == GET_privData(mPriv).fillScaleFactor(serviceConfig))
     {
-        yError() << "embObjFTsensor::open() has failed in calling  embObjFTsensor::fillScaleFactor()";
+        yError() << getBoardInfo() << "open() has failed in calling  embObjFTsensor::fillScaleFactor()";
         return false;
     }
 
@@ -119,7 +119,7 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
 
     if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_strain))
     {
-        yError() << "embObjFTsensor::open() fails to start service for BOARD" << GET_privData(mPriv).getBoardInfo();
+        yError() << getBoardInfo() << "open() fails to start service";
         cleanup();
         return false;
     }
@@ -127,7 +127,7 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
     {
         if(GET_privData(mPriv).isVerbose())
         {
-            yDebug() << "embObjFTsensor::open() correctly starts as service of BOARD" << GET_privData(mPriv).getBoardInfo();
+            yDebug()  << getBoardInfo() << "open() correctly starts as service ";
         }
     }
 
@@ -175,7 +175,7 @@ bool embObjFTsensor::update(eOprotID32_t id32, double timestamp, void* rxdata)
         default:
         {
             ret = false;
-            yError() << "embObjFTsensor::update failed for board " <<getBoardInfo();
+            yError() << getBoardInfo() << "update() failed ";
         }
     };
     return ret;
@@ -238,14 +238,14 @@ bool embObjFTsensor::updateTemperatureValues(eOprotID32_t id32, double timestamp
     uint8_t numofIntem2update = eo_constarray_Size(arrayofvalues);
 
     if(numofIntem2update>1)
-        yError() << "embObjFTStrain" << getBoardInfo() << "update(): I expect 1 item, but I received " << numofIntem2update ;
+        yError() << getBoardInfo() << "updateTemperature: I expect 1 item, but I received " << numofIntem2update ;
 
     for(int i=0; i<numofIntem2update; i++)
     {
         eOas_temperature_data_t *data = (eOas_temperature_data_t*) eo_constarray_At(arrayofvalues, i);
         if(data == NULL)
         {
-            yError() << "embObjFTStrain" << getBoardInfo() << "update(): I have to update " << numofIntem2update << "items, but the " << i << "-th item is null.";
+            yError() << getBoardInfo() << "update(): I have to update " << numofIntem2update << "items, but the " << i << "-th item is null.";
             continue;
             //NOTE: I signal this strange situation with an arror for debug porpouse...maybe we can convert in in warning when the device is stable....
         }

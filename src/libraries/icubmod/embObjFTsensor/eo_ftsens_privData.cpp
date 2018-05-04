@@ -41,7 +41,7 @@ bool eo_ftsens_privData::fromConfig(yarp::os::Searchable &_config, servConfigFTs
     
     if(!ret)
     {
-        yError() << deviceNameType << "for BOARD " << getBoardInfo() << "is missing some configuration parameter. Check logs and your config file.";
+        yError() << getBoardInfo() << "is missing some configuration parameter. Check logs and your config file.";
         return false;
     }
     
@@ -86,7 +86,7 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
     {
         if(isVerbose())
         {
-            yDebug() << "embObjFTsensor::fillScaleFactor(): we DONT use calibration, thus all scale factors are set to 1.0";
+            yDebug() << getBoardInfo() << "fillScaleFactor(): we DONT use calibration, thus all scale factors are set to 1.0";
         }
         
         scaleFactorIsFilled = true;
@@ -160,19 +160,19 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
         timeout--;
         if(isVerbose())
         {
-            yWarning() << "embObjFTsensor::fillScaleFactor(): for  BOARD" << getBoardInfo();
+            yWarning() << getBoardInfo() << "filling ScaleFactor ....";
         }
     }
     
     if((false == gotFullScaleValues) && (0 == timeout))
     {
-        yError() << "embObjFTsensor::fillScaleFactor(): ETH Analog sensor: request for calibration parameters timed out for  BOARD" << getBoardInfo();
+        yError() << getBoardInfo()  << "fillScaleFactor(): ETH Analog sensor: request for calibration parameters timed out ";
         return false;
     }
     
     if((strain_Channels != NVsize))
     {
-        yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for  BOARD" << getBoardInfo();
+        yError()  << getBoardInfo() << "Analog sensor Calibration data has a different size from channels number in configuration file ";
         return false;
     }
     
@@ -181,8 +181,8 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
     {
         if(isVerbose())
         {
-            yWarning() << "embObjFTsensor::fillScaleFactor() detected that already has full scale values for BOARD" << getBoardInfo();
-            yDebug()   << "embObjFTsensor::fillScaleFactor(): Fullscale values for BOARD" << getBoardInfo() << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  strain_Channels;
+            yWarning() << getBoardInfo() << "fillScaleFactor() detected that already has full scale values";
+            yDebug()   << getBoardInfo() << "fillScaleFactor(): Fullscale values are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  strain_Channels;
         }
         
         for (size_t i = 0; i<scaleFactor.size(); i++)
@@ -191,7 +191,7 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
             uint8_t *msg = (uint8_t *) eo_array_At((EOarray *) &fullscale_values, i);
             if(NULL == msg)
             {
-                yError() << "I don't receive data for channel " << i;
+                yError() << getBoardInfo() << "fillScaleFactor() doesn't receive data for channel " << i;
                 return false;
             }
             // Got from CanBusMotionControl... here order of bytes seems inverted with respect to calibratedValues or uncalibratedValues (see callback of can strain messages inside the FW of ETHBOARD)
@@ -199,7 +199,7 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
             //yError() << " scale factor[" << i << "] = " << scaleFactor[i];
             if(isVerbose())
             {
-                yDebug() << "embObjFTsensor::fillScaleFactor(): channel " << i << "full scale value " << scaleFactor[i];
+                yDebug() << getBoardInfo() << "fillScaleFactor(): channel " << i << "full scale value " << scaleFactor[i];
             }
         }
         
@@ -241,14 +241,14 @@ bool eo_ftsens_privData::initRegulars(servConfigFTsensor_t &serviceConfig)
     
     if(false == res->serviceSetRegulars(eomn_serv_category_strain, id32v))
     {
-        yError() << "embObjFTsensor::initRegulars() fails to add its variables to regulars: cannot proceed any further";
+        yError() << getBoardInfo() << "initRegulars() fails to add its variables to regulars: cannot proceed any further";
         return false;
     }
     else
     {
         if(isVerbose())
         {
-            yDebug() << "embObjFTsensor::initRegulars() added" << id32v.size() << "regular rops to BOARD" << getBoardInfo();
+            yDebug() << getBoardInfo() << "initRegulars() added" << id32v.size() << "regular rops ";
             char nvinfo[128];
             for (size_t r = 0; r<id32v.size(); r++)
             {
@@ -297,14 +297,14 @@ bool eo_ftsens_privData::sendConfig2Strain(servConfigFTsensor_t &serviceConfig)
     
     if(false == res->setcheckRemoteValue(id32, &strainConfig, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjFTsensor::sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config in BOARD" << getBoardInfo();
+        yError() << getBoardInfo() << "FATAL: sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config ";
         return false;
     }
     else
     {
         if(isVerbose())
         {
-            yDebug() << "embObjFTsensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << getBoardInfo();
+            yDebug() << getBoardInfo() << "sendConfig2Strain() correctly configured strain coinfig ";
         }
     }
     

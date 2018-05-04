@@ -37,11 +37,11 @@ std::string yarp::dev::embObjDevPrivData::getBoardInfo(void) const
 {
     if(nullptr == res)
     {
-        return " BOARD name_unknown (IP unknown) ";
+        return deviceNameType + ": BOARD name_unknown (IP unknown) ";
     }
     else
     {
-        return ("BOARD " + res->getProperties().boardnameString +  " (IP "  + res->getProperties().ipv4addrString + ") ");
+        return (deviceNameType + ": BOARD " + res->getProperties().boardnameString +  " (IP "  + res->getProperties().ipv4addrString + ") ");
     }
 }
 

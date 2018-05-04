@@ -90,8 +90,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     
     if(false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_inertials3, servparam, 5.0))
     {
-        yError() << "embObjIMU" << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate() ";
-
+        yError() << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate() ";
         cleanup();
         return false;
     }
@@ -124,7 +123,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     
     if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_inertials3))
     {
-        yError() << "embObjIMU" << getBoardInfo() << "open() fails to start as service.... cannot continue";
+        yError() << getBoardInfo() << "open() fails to start as service.... cannot continue";
         cleanup();
         return false;
     }
@@ -132,7 +131,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     {
         if(GET_privData(mPriv).isVerbose())
         {
-            yDebug() << "embObjIMU" << getBoardInfo() << "open() correctly starts service";
+            yDebug() << getBoardInfo() << "open() correctly starts service";
         }
     }
 
@@ -147,7 +146,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
         eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial3, 0, eoprot_tag_as_inertial3_cmmnds_enable);
         if(false == GET_privData(mPriv).res->setRemoteValue(id32, &enable))
         {
-            yError() << "embObjIMU" << getBoardInfo() << "open() fails to command the start transmission of the configured inertials";
+            yError() << getBoardInfo() << "open() fails to command the start transmission of the configured inertials";
             cleanup();
             return false;
         }
@@ -304,7 +303,7 @@ bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
         eOas_inertial3_data_t *data = (eOas_inertial3_data_t*) eo_constarray_At(arrayofvalues, i);
         if(data == NULL)
         {
-            yError() << "embObjIMU" << getBoardInfo() << "update(): I have to update " << numofIntem2update << "items, but the " << i << "-th item is null.";
+            yError() << getBoardInfo() << "update(): I have to update " << numofIntem2update << "items, but the " << i << "-th item is null.";
             continue; 
             //NOTE: I signal this strange situation with an arror for debug porpouse...maybe we can convert in in warning when the device is stable....
         }
