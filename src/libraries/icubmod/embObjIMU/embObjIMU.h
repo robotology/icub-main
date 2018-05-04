@@ -37,7 +37,6 @@ namespace yarp {
 }
 
 class yarp::dev::embObjIMU :            public DeviceDriver,
-                                        //public IGenericSensor,
                                         public yarp::dev::IThreeAxisGyroscopes,
                                         public yarp::dev::IThreeAxisLinearAccelerometers,
                                         public yarp::dev::IThreeAxisMagnetometers,
@@ -93,10 +92,7 @@ private:
     void *mPriv;
     
     std::string getBoardInfo(void) const;
-    bool fromConfig(yarp::os::Searchable &config, servConfigImu_t &servCfg);
     void cleanup(void);
-    bool sendConfing2board(servConfigImu_t &servCfg);
-    bool initRegulars(void);
     static yarp::dev::MAS_status sensorState_eo2yarp(uint8_t eo_state);
     
     //debug
