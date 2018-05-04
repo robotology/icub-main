@@ -86,5 +86,6 @@ void yarp::dev::embObjDevPrivData::cleanup(eth::IethResource *interface)
     res = NULL;
     if(ret == -1)
         ethManager->killYourself();
+    behFlags.opened = false;
 }
 
