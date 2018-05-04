@@ -21,8 +21,7 @@
 #include <yarp/dev/IAnalogSensor.h>
 #include "IethResource.h"
 
-
-#include "serviceParser.h"
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 
 
 namespace yarp {
@@ -36,15 +35,12 @@ namespace yarp {
 
 // -- class embObjFTsensor
 
-class yarp::dev::embObjFTsensor:    public yarp::dev::IAnalogSensor,
-                                    public yarp::dev::DeviceDriver,
-                                    public eth::IethResource
+class yarp::dev::embObjFTsensor:    public yarp::dev::DeviceDriver,
+                                    public eth::IethResource,
+                                    public yarp::dev::IAnalogSensor,
+                                    public yarp::dev::ITemperatureSensors,
+                                    public yarp::dev::ISixAxisForceTorqueSensors
 {
-
-public:
-
-    enum { strain_Channels = 6, strain_FormatData = 16 };
-
 public:
 
     embObjFTsensor();
@@ -67,36 +63,31 @@ public:
     virtual bool initialised();
     virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
+    
+    // ITemperatureSensors
+    virtual size_t getNrOfTemperatureSensors() const override;
+    virtual yarp::dev::MAS_status getTemperatureSensorStatus(size_t sens_index) const override;
+    virtual bool getTemperatureSensorName(size_t sens_index, yarp::os::ConstString &name) const override;
+    virtual bool getTemperatureSensorFrameName(size_t sens_index, yarp::os::ConstString &frameName) const override;
+    virtual bool getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const override;
+    virtual bool getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+    
+    // ISixAxisForceTorqueSensors
+    virtual size_t getNrOfSixAxisForceTorqueSensors() const override;
+    virtual yarp::dev::MAS_status getSixAxisForceTorqueSensorStatus(size_t sens_index) const override;
+    virtual bool getSixAxisForceTorqueSensorName(size_t sens_index, yarp::os::ConstString &name) const override;
+    virtual bool getSixAxisForceTorqueSensorFrameName(size_t sens_index, yarp::os::ConstString &frameName) const override;
+    virtual bool getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+
 
 private:
     void *mPriv;
 
-    std::vector<double> analogdata;
-    std::vector<double> offset;
-    std::vector<double> scaleFactor;
-
-    bool scaleFactorIsFilled;
-    bool useCalibValues;
-    bool useTemperature;
-    int lastTemperature;
-
-private:
-
-    // for all
-    bool fromConfig(yarp::os::Searchable &config,  servConfigFTsensor_t &serviceConfig);
-    bool initRegulars(servConfigFTsensor_t &serviceConfig);
     void cleanup(void);
-    void printServiceConfig(servConfigFTsensor_t &serviceConfig);
     std::string getBoardInfo(void) const;
-    // for strain
-    bool fillScaleFactor(servConfigFTsensor_t &serviceConfig);
-    bool sendConfig2Strain(servConfigFTsensor_t &serviceConfig);
     bool updateStrainValues(eOprotID32_t id32, double timestamp, void* rxdata);
-    
-    //for temeprature
     bool updateTemperatureValues(eOprotID32_t id32, double timestamp, void* rxdata);
-    
-    // for ??
+
     void resetCounters();
     void getCounters(unsigned int &saturations, unsigned int &errors, unsigned int &timeouts);
 };

@@ -16,7 +16,7 @@ IF (NOT SKIP_embObjFTsensor)
 #   message(INFO " embObjFTsensor - embObj_includes: ${embObj_includes}, ${CMAKE_CURRENT_SOURCE_DIR}/")
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} )
 
-  yarp_add_plugin(embObjFTsensor embObjFTsensor.cpp embObjFTsensor.h)
+  yarp_add_plugin(embObjFTsensor embObjFTsensor.cpp embObjFTsensor.h eo_ftsens_privData.cpp eo_ftsens_privData.h)
   TARGET_LINK_LIBRARIES(embObjFTsensor ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
   icub_export_plugin(embObjFTsensor)
 

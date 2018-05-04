@@ -303,12 +303,12 @@ public:
     SensorsData sens;
     PositionMaps maps;
     
-    eo_imu_privData();
+    eo_imu_privData(ConstString name);
     ~eo_imu_privData();
 
 };
 
-eo_imu_privData::eo_imu_privData()
+eo_imu_privData::eo_imu_privData(ConstString name):embObjDevPrivData(name)
 {;}
 eo_imu_privData::~eo_imu_privData()
 {;}
@@ -329,7 +329,7 @@ eo_imu_privData::~eo_imu_privData()
  */
 embObjIMU::embObjIMU()
 {
-    mPriv = new eo_imu_privData();
+    mPriv = new eo_imu_privData("embObjIMU");
 
 }
 

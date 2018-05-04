@@ -12,8 +12,6 @@
 
 
 #include <yarp/os/LogStream.h>
-#include <yarp/os/Network.h>
-#include <yarp/os/NetType.h>
 #include <ethManager.h>
 #include <abstractEthResource.h>
 
@@ -34,8 +32,9 @@ public:
         bool opened;
         bool verbosewhenok;
     }behFlags;
+    ConstString deviceNameType;
     
-    embObjDevPrivData();
+    embObjDevPrivData(ConstString name);
     ~embObjDevPrivData();
     
     inline  eth::AbstractEthResource* getEthRes()
@@ -48,44 +47,24 @@ public:
     inline void setOpen(bool flag) {behFlags.opened=flag;}
     inline bool isVerbose() {return behFlags.verbosewhenok;}
     
-    std::string getBoardInfo(void) const; //This function need to be const
-    
     inline bool NOT_YET_IMPLEMENTED(const char *txt, const char *classname)
     {
         yWarning() << std::string(txt) << " not yet implemented for "<< std::string(classname) << "\n";
         return false;
-    }
+    };
+    
+    std::string getBoardInfo(void) const; //This function need to be const
+    
+    bool prerareEthService(yarp::os::Searchable &config, eth::IethResource *interface);
+    void cleanup(eth::IethResource *interface);
+
+
 };
 
-yarp::dev::embObjDevPrivData::embObjDevPrivData()
-{
-    ethManager = nullptr;
-    res = nullptr;
-    behFlags.opened = false;
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
-    if (tmp != "")
-    {
-        behFlags.verbosewhenok = (bool)NetType::toInt(tmp);
-    }
-    else
-    {
-        behFlags.verbosewhenok = false;
-    }
-    
-}
-yarp::dev::embObjDevPrivData::~embObjDevPrivData()
-{;}
 
-std::string yarp::dev::embObjDevPrivData::getBoardInfo(void) const
-{
-    if(nullptr == res)
-    {
-        return " BOARD name_unknown (IP unknown) ";
-    }
-    else
-    {
-        return ("BOARD " + res->getProperties().boardnameString +  " (IP "  + res->getProperties().ipv4addrString + ") ");
-    }
-}
+
+
+
+
 
 #endif //__embObjDevPrivData_h__
