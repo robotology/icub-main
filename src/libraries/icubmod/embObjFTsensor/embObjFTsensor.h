@@ -7,12 +7,18 @@
  */
 
 /**
- * @ingroup icub_hardware_modules 
- * \defgroup analogSensorEth
+ *  @ingroup icub_hardware_modules
+ *  \defgroup analogSensorEth analogSensorEth
  *
- * To Do: add description
  *
+ * Driver for Ethernet communication with Force-Torque sensors, the Strain2 board.
+ * It is also possible read the temperature of tthe sensor.
+ *
+ * The parameters accepted in the config argument of the open method are described in http://wiki.icub.org/wiki/Robot_configuration.
  */
+
+
+
 
 #ifndef __embObjFTsensor_h__
 #define __embObjFTsensor_h__

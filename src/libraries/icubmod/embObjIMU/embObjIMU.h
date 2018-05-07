@@ -6,13 +6,6 @@
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup analogSensorEth
- *
- * To Do: add description
- *
- */
 
 #ifndef __embObjIMU_h__
 #define __embObjIMU_h__
@@ -26,7 +19,19 @@
 
 
 
-#include <serviceParser.h>
+/**
+ *  @ingroup icub_hardware_modules
+ *  \defgroup analogSensorEth analogSensorEth
+ *
+ *
+ * Driver for Ethernet communication with inertial sensors (accelerometers, gyroscopes)
+ *        mounted on Strain2 board.
+ *
+ * It is possible to read from multiple strain2 board.
+ * The parameters accepted in the config argument of the open method are described in http://wiki.icub.org/wiki/Robot_configuration.
+ */
+
+
 
 
 
