@@ -363,7 +363,7 @@ bool embObjFTsensor::getTemperatureSensorFrameName(size_t sens_index, yarp::os::
 bool embObjFTsensor::getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const
 {
     GET_privData(mPriv).mutex.wait();
-    out = GET_privData(mPriv).lastTemperature;
+    out = GET_privData(mPriv).lastTemperature/10; //I need to convert from tenths of degree centigrade to degree centigrade
     timestamp =  GET_privData(mPriv).timestampTemperature;
     GET_privData(mPriv).mutex.post();
     return true;
@@ -373,7 +373,7 @@ bool embObjFTsensor::getTemperatureSensorMeasure(size_t sens_index, yarp::sig::V
 {
     GET_privData(mPriv).mutex.wait();
     out.resize(1);
-    out[0] = GET_privData(mPriv).lastTemperature;
+    out[0] = GET_privData(mPriv).lastTemperature/10; //I need to convert from tenths of degree centigrade to degree centigrade
     timestamp =  GET_privData(mPriv).timestampTemperature;
     GET_privData(mPriv).mutex.post();
     return true;
