@@ -6,7 +6,6 @@
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 #include "eo_imu_privData.h"
-#include <mutex>
 #include <stdexcept>
 
 #include "EoProtocolAS.h"
@@ -230,8 +229,10 @@ bool SensorsData::update(eOas_sensor_t type, uint8_t index, eOas_inertial3_data_
 
 }
 
-eo_imu_privData::eo_imu_privData(ConstString name):embObjDevPrivData(name)
-{;}
+eo_imu_privData::eo_imu_privData(yarp::os::ConstString name):embObjDevPrivData(name)
+{
+    yError() << "embObjIMU" << getBoardInfo() << ": sono nel costruttore.";
+}
 eo_imu_privData::~eo_imu_privData()
 {;}
 

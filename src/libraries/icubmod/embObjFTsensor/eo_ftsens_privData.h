@@ -27,7 +27,7 @@ public:
     enum { strain_Channels = 6, strain_FormatData = 16 };
     
     yarp::os::Semaphore mutex;
-    ConstString devicename;
+    yarp::os::ConstString devicename;
     std::vector<double> analogdata;
     std::vector<double> offset;
     std::vector<double> scaleFactor;
@@ -41,13 +41,12 @@ public:
     double timestampTemperature;
     
     
-    eo_ftsens_privData(ConstString name);
+    eo_ftsens_privData(yarp::os::ConstString name);
     ~eo_ftsens_privData();
     
     bool fromConfig(yarp::os::Searchable &config,  servConfigFTsensor_t &serviceConfig);
     bool initRegulars(servConfigFTsensor_t &serviceConfig);
     void printServiceConfig(servConfigFTsensor_t &serviceConfig);
-    std::string getBoardInfo(void) const;
     bool fillScaleFactor(servConfigFTsensor_t &serviceConfig);
     bool sendConfig2Strain(servConfigFTsensor_t &serviceConfig);
     bool updateStrainValues(eOprotID32_t id32, double timestamp, void* rxdata);

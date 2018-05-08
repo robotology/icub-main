@@ -11,6 +11,9 @@
 
 #include "embObjGeneralDevPrivData.h"
 #include "imuMeasureConverter.h"
+#include <yarp/sig/Vector.h>
+#include <mutex>
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 
 
 #include "serviceParser.h"
@@ -20,6 +23,7 @@ namespace yarp {
     namespace dev {
         class eo_imu_privData;
         class PositionMaps;
+        class SensorsData;
     }
 }
 
@@ -38,14 +42,14 @@ public:
 
 typedef struct
 {
-    std::string name;
-    std::string framename;
+    yarp::os::ConstString name;
+    yarp::os::ConstString framename;
     yarp::sig::Vector values;
     uint8_t state;
     double timestamp;
 } sensorInfo_t;
 
-class SensorsData
+class yarp::dev::SensorsData
 {
 private:
     std::vector<std::vector<sensorInfo_t>> mysens;
@@ -74,15 +78,14 @@ public:
 class yarp::dev::eo_imu_privData : public yarp::dev::embObjDevPrivData
 {
 public:
-    SensorsData sens;
-    PositionMaps maps;
+    yarp::dev::SensorsData sens;
+    yarp::dev::PositionMaps maps;
 
-    eo_imu_privData(ConstString name);
+    eo_imu_privData(yarp::os::ConstString name);
     ~eo_imu_privData();
     bool fromConfig(yarp::os::Searchable &config, servConfigImu_t &servCfg);
     bool sendConfing2board(servConfigImu_t &servCfg);
     bool initRegulars(void);
-
 
 };
 

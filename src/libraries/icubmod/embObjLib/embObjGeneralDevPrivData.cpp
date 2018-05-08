@@ -11,15 +11,15 @@
 #include <yarp/os/NetType.h>
 #include "embObjGeneralDevPrivData.h"
 
-
 using namespace yarp::dev;
 
-yarp::dev::embObjDevPrivData::embObjDevPrivData(ConstString name):deviceNameType(name)
+yarp::dev::embObjDevPrivData::embObjDevPrivData(yarp::os::ConstString name):deviceNameType(name)
 {
     ethManager = nullptr;
     res = nullptr;
     behFlags.opened = false;
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+
+    yarp::os::ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         behFlags.verbosewhenok = (bool)NetType::toInt(tmp);
