@@ -683,22 +683,6 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if (!_mcparser->parseAmpsToSensor(config, measConvFactors.ampsToSensor))
             return false;
 
-
-        //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
-        for (i = 0; i < _njoints; i++)
-        {
-            measConvFactors.newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
-        
-            measConvFactors.bemf2raw[i] = measConvFactors.newtonsToSensor[i] / measConvFactors.angleToEncoder[i];
-            if (_tpids->out_PidUnits == yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT)
-            {   measConvFactors.ktau2raw[i] = measConvFactors.dutycycleToPWM[i] / measConvFactors.newtonsToSensor[i];  }
-            else if (_tpids->out_PidUnits == yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS)
-            {   measConvFactors.ktau2raw[i] = 1.0 / measConvFactors.newtonsToSensor[i];  }
-            else 
-            {   yError() << "Invalid ktau units"; return false;  }
-        }
-
-
         //VALE: i have to parse GeneralMecGroup after parsing jointsetcfg, because inside generalmec group there is useMotorSpeedFbk that needs jointset info.
 
         if(!_mcparser->parseGearboxValues(config, _gearbox_M2J, _gearbox_E2J))
@@ -715,7 +699,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
                 return false;
             }
             //Note: currently in eth protocol this parameter belongs to jointset configuration. So
-            // i need to check that every joint belog to same set has the same value
+            // i need to check that every joint belong to same set has the same value
             if (!verifyUseMotorSpeedFbkInJointSet(useMotorSpeedFbk))
             {
                 delete[] useMotorSpeedFbk;
@@ -726,7 +710,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         bool deadzoneIsAvailable;
         if(!_mcparser->parseDeadzoneValue(config, _deadzone, &deadzoneIsAvailable))
             return false;
-        if(!deadzoneIsAvailable) // if parametr is not writte in configuration files then use default values
+        if(!deadzoneIsAvailable) // if parameter is not written in configuration files then use default values
         {
             updateDeadZoneWithDefaultValues();
         }
@@ -742,7 +726,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
        if(!_mcparser->parsePids(config, _ppids, _vpids, _tpids, _cpids, currentPidisMandatory))
             return false;
 
-        // 1) verify joint beloning to same set has same control law
+        // 1) verify joint belonging to same set has same control law
         if(!verifyUserControlLawConsistencyInJointSet(_ppids))
             return false;
         if(!verifyUserControlLawConsistencyInJointSet(_vpids))
@@ -757,6 +741,25 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
         //2) since some joint sets configuration info is in control and ids group, get that info and save them in jointset data struct.
         updatedJointsetsCfgWithControlInfo();
+    }
+
+    for (i = 0; i < _njoints; i++)
+    {
+        measConvFactors.newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
+
+        measConvFactors.bemf2raw[i] = measConvFactors.newtonsToSensor[i] / measConvFactors.angleToEncoder[i];
+        if (_tpids->out_PidUnits == yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT)
+        {
+            measConvFactors.ktau2raw[i] = measConvFactors.dutycycleToPWM[i] / measConvFactors.newtonsToSensor[i];
+        }
+        else if (_tpids->out_PidUnits == yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS)
+        {
+            measConvFactors.ktau2raw[i] = 1.0 / measConvFactors.newtonsToSensor[i];
+        }
+        else
+        {
+            yError() << "Invalid ktau units"; return false;
+        }
     }
 
     ///////////////INIT INTERFACES
