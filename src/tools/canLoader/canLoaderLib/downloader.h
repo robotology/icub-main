@@ -10,11 +10,18 @@
 #ifndef DOWNLOADER_H
 #define DOWNLOADER_H
 
+#include "EoBoards.h"
+#include "EoCommon.h"
+
+#include "driver.h"
+
+#include <canProtocolLib/iCubCanProto_types.h>
+
 #include <yarp/os/Searchable.h>
 #include <yarp/dev/CanBusInterface.h>
 
 #include <fstream>
-#include "stdint.h"
+#include <stdint.h>
 
 
 //*****************************************************************/
@@ -71,13 +78,6 @@ void drv_sleep (double time);
 //*****************************************************************/
 
 
-
-#include "driver.h"
-
-#include "EoBoards.h"
-#include "EoCommon.h"
-
-#include <canProtocolLib/iCubCanProto_types.h>
 
 // it forces the use of the new driver2 interface
 #define DOWNLOADER_USE_IDRIVER2
