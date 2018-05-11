@@ -1993,7 +1993,7 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         (*this)[2].setMin(CTRL_DEG2RAD*min);
         (*this)[2].setMax(CTRL_DEG2RAD*max/2.0);
     }
-    if (finger=="ring" || finger=="little")
+    else if (finger=="ring" || finger=="little")
     {
         if (!limFinger.getLimits(7,&min,&max))
             return false;
