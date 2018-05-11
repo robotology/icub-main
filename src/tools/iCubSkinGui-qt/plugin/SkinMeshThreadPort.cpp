@@ -5,7 +5,7 @@
  * Author: Marco Randazzo, Marco Maggiali, Alessandro Scalzo
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- */ 
+ */
 
 #include "include/SkinMeshThreadPort.h"
 
@@ -54,7 +54,7 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
     bool useCalibration = config.check("useCalibration");
     if (useCalibration==true)   yInfo("Using calibrated skin values (0-255)");
     else                        yDebug("Using raw skin values (255-0)");
-    
+
     Bottle *color = config.find("color").asList();
     unsigned char r=255, g=0, b=0;
     if(color)
@@ -85,13 +85,24 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
     yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
 
     for (int t=0; t<sensorSetConfig.size(); ++t)
-    {       
+    {
         yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
         std::string type(sensorConfig.get(0).asString());
-      
-        if (type=="triangle"       || type=="fingertip" || type=="fingertip2L" || type=="fingertip2R" ||
-            type=="triangle_10pad" || type=="quad16"    || type=="palmR"       || type=="palmL" || type == "cer_sh_pdl")
+
+        if (type=="triangle"       ||
+            type=="fingertip"      ||
+            type=="fingertip2L"    ||
+            type=="fingertip2R"    ||
+            type=="triangle_10pad" ||
+            type=="quad16"         ||
+            type=="palmR"          ||
+            type=="palmL"          ||
+            type == "cer_sh_pdl"   ||
+            type == "cer_sh_pdr"   ||
+            type == "cer_sh_pp"    ||
+            type == "cer_sh_td"    ||
+            type == "cer_sh_tp")
         {
             int    id=sensorConfig.get(1).asInt();
             double xc=sensorConfig.get(2).asDouble();
@@ -147,6 +158,26 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
                     {
                         sensor[id]=new PalmL(xc,yc,th,gain,layoutNum,lrMirror);
                     }
+                    else if (type == "cer_sh_pdl")
+                    {
+                        sensor[id] = new CER_SH_PDL(xc, yc, th, gain, layoutNum, lrMirror);
+                    }
+                    else if (type == "cer_sh_pdr")
+                    {
+                        sensor[id] = new CER_SH_PDR(xc, yc, th, gain, layoutNum, lrMirror);
+                    }
+                    else if (type == "cer_sh_pp")
+                    {
+                        sensor[id] = new CER_SH_PP(xc, yc, th, gain, layoutNum, lrMirror);
+                    }
+                    else if (type == "cer_sh_td")
+                    {
+                        sensor[id] = new CER_SH_TD(xc, yc, th, gain, layoutNum, lrMirror);
+                    }
+                    else if (type == "cer_sh_tp")
+                    {
+                        sensor[id] = new CER_SH_TP(xc, yc, th, gain, layoutNum, lrMirror);
+                    }
 
                     sensor[id]->setCalibrationFlag(useCalibration);
                     ++sensorsNum;
@@ -166,19 +197,19 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
     int max_tax=0;
     for (int t=0; t<MAX_SENSOR_NUM; ++t)
     {
-        
-        if (sensor[t]) 
+
+        if (sensor[t])
         {
             sensor[t]->min_tax=max_tax;
             max_tax = sensor[t]->min_tax+sensor[t]->get_nTaxels();
             sensor[t]->max_tax=max_tax-1;
             sensor[t]->setColor(r, g, b);
-        } 
+        }
         else
         {
             //this deals with the fact that some traingles can be not present,
             //but they anyway broadcast an array of zeros...
-            max_tax += 12; 
+            max_tax += 12;
         }
     }
 
@@ -187,10 +218,10 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
 
 bool SkinMeshThreadPort::threadInit()
 {
-	yDebug("SkinMeshThreadPort initialising..");
+    yDebug("SkinMeshThreadPort initialising..");
     yDebug("..done!");
 
-	yInfo("Waiting for port connection..");
+    yInfo("Waiting for port connection..");
     return true;
 }
 
@@ -222,7 +253,7 @@ void SkinMeshThreadPort::run()
     {
         yTrace("Reading from virtual contacts...");
         gotVirtualData=true;
-        
+
         Bottle *data_virtual  = input_virtual->get(0).asList();
         skin_value_virtual.resize(data_virtual->size(),0.0);
         Bottle *color_virtual = input_virtual->get(1).asList();
@@ -302,8 +333,8 @@ void SkinMeshThreadPort::run()
                 }
             }
         }
-        else if (gotRealData || gotVirtualData) 
-        {    
+        else if (gotRealData || gotVirtualData)
+        {
             for (int sensorId=0; sensorId<MAX_SENSOR_NUM; sensorId++)
             {
                 if (sensor[sensorId]==0) continue;
@@ -311,7 +342,7 @@ void SkinMeshThreadPort::run()
                 for (int i=sensor[sensorId]->min_tax; i<=sensor[sensorId]->max_tax; i++)
                 {
                     int curr_tax = i-sensor[sensorId]->min_tax;
-                
+
                     if (gotRealData)
                     {
                         sensor[sensorId]->setActivationFromPortData(skin_value[i],curr_tax);
