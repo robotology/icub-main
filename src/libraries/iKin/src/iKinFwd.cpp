@@ -1873,6 +1873,52 @@ void iCubFinger::allocate(const string &_type)
         pushLink(new iKinLink(0.0240, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
     }
+    else if (finger=="ring")
+    {
+	H0(0,0)=0.9998; H0(0,1)=0.0192;  H0(0,2)=0.0;     H0(0,3)=0.001569230;
+	H0(1,0)=0.0191; H0(1,1)=-0.9960; H0(1,2)=0.0872;  H0(1,3)=0.007158757;
+	H0(2,0)=0.0017; H0(2,1)=-0.0871; H0(2,2)=-0.9962; H0(2,3)=-0.011458935;
+	H0(3,0)=0.0;    H0(3,1)=0.0;     H0(3,2)=0.0;     H0(3,3)=1.0;
+
+	if (hand=="left")
+	{
+	    H0(2,0)=-H0(2,0);
+	    H0(2,1)=-H0(2,1);
+	    H0(1,2)=-H0(1,2);
+	    H0(2,3)=-H0(2,3);
+
+	    pushLink(new iKinLink(0.0148, 0.0, M_PI/2.0, -20.0*CTRL_DEG2RAD, 0.0, 20.0*CTRL_DEG2RAD));
+	}
+	else
+	    pushLink(new iKinLink(0.0148, 0.0, -M_PI/2.0, -20.0*CTRL_DEG2RAD, 0.0, 20.0*CTRL_DEG2RAD));
+
+	pushLink(new iKinLink(0.0259, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+	pushLink(new iKinLink(0.0220, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+	pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+    }
+    else if (finger=="little")
+    {
+	H0(0,0)=0.9998; H0(0,1)=0.0192;  H0(0,2)=0.0;     H0(0,3)=-0.00042147;
+	H0(1,0)=0.0191; H0(1,1)=-0.9960; H0(1,2)=0.0872;  H0(1,3)=0.0232755;
+	H0(2,0)=0.0017; H0(2,1)=-0.0871; H0(2,2)=-0.9962; H0(2,3)=-0.00956329;
+	H0(3,0)=0.0;    H0(3,1)=0.0;     H0(3,2)=0.0;     H0(3,3)=1.0;
+
+	if (hand=="left")
+	{
+	    H0(2,0)=-H0(2,0);
+	    H0(2,1)=-H0(2,1);
+	    H0(1,2)=-H0(1,2);
+	    H0(2,3)=-H0(2,3);
+
+	    pushLink(new iKinLink(0.0148, 0.0, M_PI/2.0, -20.0*CTRL_DEG2RAD, 0.0, 20.0*CTRL_DEG2RAD));
+	}
+	else
+	    pushLink(new iKinLink(0.0148, 0.0, -M_PI/2.0, -20.0*CTRL_DEG2RAD, 0.0, 20.0*CTRL_DEG2RAD));
+
+	pushLink(new iKinLink(0.0219, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+	pushLink(new iKinLink(0.0190, 0.0,       0.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+	pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
+    }
 
     setH0(H0);
 }
@@ -1947,6 +1993,24 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         (*this)[2].setMin(CTRL_DEG2RAD*min);
         (*this)[2].setMax(CTRL_DEG2RAD*max/2.0);
     }
+    if (finger=="ring" || finger=="little")
+    {
+        if (!limFinger.getLimits(7,&min,&max))
+            return false;
+
+        (*this)[0].setMin(CTRL_DEG2RAD*min);
+        (*this)[0].setMax(CTRL_DEG2RAD*max/3.0);
+
+        if (!limFinger.getLimits(15,&min,&max))
+            return false;
+
+        (*this)[1].setMin(CTRL_DEG2RAD*min);
+        (*this)[1].setMax(CTRL_DEG2RAD*max/3.0);
+        (*this)[2].setMin(CTRL_DEG2RAD*min);
+        (*this)[2].setMax(CTRL_DEG2RAD*max/3.0);
+        (*this)[3].setMin(CTRL_DEG2RAD*min);
+        (*this)[3].setMax(CTRL_DEG2RAD*max/3.0);
+    }
 
     return true;
 }
@@ -1983,6 +2047,13 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
         chainJoints[0]=motorEncoders[offs+6];
         chainJoints[1]=motorEncoders[offs+7]/2.0;
         chainJoints[2]=chainJoints[1];
+    }
+    else if (finger=="ring" || finger=="little")
+    {
+	chainJoints.resize(4);
+	chainJoints[0]=motorEncoders[offs+0]/3.0;
+	chainJoints[1]=motorEncoders[offs+8]/3.0;
+	chainJoints[3]=chainJoints[2]=chainJoints[1];
     }
     else
         return false;
@@ -2052,6 +2123,36 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
                 c=std::min(1.0,std::max(0.0,(jointEncoders[i+6]-bounds(i+6,0))/span));
             else if (span<0.0)
                 c=1.0-std::min(1.0,std::max(0.0,(bounds(i+6,1)-jointEncoders[i+6])/span));
+            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
+        }
+    }
+    else if (finger=="ring")
+    {
+	chainJoints.resize(4);
+	chainJoints[0]=motorEncoders[offs+0]/3.0;
+        for (size_t i=1; i<chainJoints.length(); i++)
+        {
+            double c=0.0;
+            double span=bounds(i+8,1)-bounds(i+8,0);
+            if (span>0.0)
+                c=std::min(1.0,std::max(0.0,(jointEncoders[i+8]-bounds(i+8,0))/span));
+            else if (span<0.0)
+                c=1.0-std::min(1.0,std::max(0.0,(bounds(i+8,1)-jointEncoders[i+8])/span));
+            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
+        }
+    }
+    else if (finger == "little")
+    {
+	chainJoints.resize(4);
+	chainJoints[0]=motorEncoders[offs+0]/3.0;
+        for (size_t i=1; i<chainJoints.length(); i++)
+        {
+            double c=0.0;
+            double span=bounds(i+11,1)-bounds(i+11,0);
+            if (span>0.0)
+                c=std::min(1.0,std::max(0.0,(jointEncoders[i+11]-bounds(i+11,0))/span));
+            else if (span<0.0)
+                c=1.0-std::min(1.0,std::max(0.0,(bounds(i+11,1)-jointEncoders[i+11])/span));
             chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
         }
     }
