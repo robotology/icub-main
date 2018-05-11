@@ -1993,7 +1993,7 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         (*this)[2].setMin(CTRL_DEG2RAD*min);
         (*this)[2].setMax(CTRL_DEG2RAD*max/2.0);
     }
-    else if (finger=="ring" || finger=="little")
+    else if ((finger=="ring") || (finger=="little"))
     {
         if (!limFinger.getLimits(7,&min,&max))
             return false;
@@ -2048,7 +2048,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
         chainJoints[1]=motorEncoders[offs+7]/2.0;
         chainJoints[2]=chainJoints[1];
     }
-    else if (finger=="ring" || finger=="little")
+    else if ((finger=="ring") || (finger=="little"))
     {
 	chainJoints.resize(4);
 	chainJoints[0]=motorEncoders[offs+0]/3.0;
