@@ -480,8 +480,8 @@ public:
         dX[n] = 10.0; dY[n++] = 23;   // 151
         dX[n] = 10.0; dY[n++] = 17;   // 152
         dX[n] = 10.0; dY[n++] = 11;   // 153
-        connected[n++] = false;         // 154
-        connected[n++] = false;         // 155
+        connected[n++] = false;       // 154
+        connected[n++] = false;       // 155
 
 
         for (int i = 0; i < nTaxels; ++i)

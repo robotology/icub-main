@@ -15,7 +15,7 @@
 #ifndef __ALE_TOUCHSENSOR_H__
 #define __ALE_TOUCHSENSOR_H__
 
-#define MAX_TAXELS 128
+#define MAX_TAXELS 192
 
 class TouchSensor
 {
