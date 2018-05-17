@@ -33,6 +33,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 
+#include <yarp/os/ConstString.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 using yarp::os::Log;

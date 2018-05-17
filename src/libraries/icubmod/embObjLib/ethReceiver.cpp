@@ -32,6 +32,7 @@
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
 
+#include <yarp/os/ConstString.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/NetType.h>
 

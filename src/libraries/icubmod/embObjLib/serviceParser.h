@@ -3,6 +3,7 @@
 #ifndef __serviceParser_h__
 #define __serviceParser_h__
 
+#include <yarp/os/ConstString.h>
 
 #include <stdio.h>
 #include <iostream>

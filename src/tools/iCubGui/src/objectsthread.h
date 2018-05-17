@@ -21,6 +21,7 @@
 #include <qstring.h>
 #include <qthread.h>
 #include <vector>
+#include <yarp/os/ConstString.h>
 #include <yarp/os/Log.h>
 #include <yarp/sig/Vector.h>
 #include <iCub/skinDynLib/skinContactList.h>

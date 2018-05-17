@@ -29,6 +29,7 @@
  *
  */
 
+#include <yarp/os/ConstString.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/Bottle.h>

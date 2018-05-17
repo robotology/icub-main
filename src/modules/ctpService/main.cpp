@@ -86,6 +86,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 Author: Lorenzo Natale 
 */ 
 
+#include <yarp/os/ConstString.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>

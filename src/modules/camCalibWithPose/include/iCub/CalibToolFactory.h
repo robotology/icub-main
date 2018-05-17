@@ -14,6 +14,8 @@
 #include <vector>
 #include <string>
 
+#include <yarp/os/ConstString.h>
+
 // iCub
 #include <iCub/ICalibTool.h>
 

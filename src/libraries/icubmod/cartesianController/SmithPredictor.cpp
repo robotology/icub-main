@@ -20,6 +20,7 @@
 #include <cmath>
 
 #include <yarp/os/Bottle.h>
+#include <yarp/os/ConstString.h>
 #include <yarp/math/Math.h>
 
 #include "SmithPredictor.h"

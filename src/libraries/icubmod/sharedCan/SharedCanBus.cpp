@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <yarp/os/Time.h>
+#include <yarp/os/ConstString.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/RateThread.h>

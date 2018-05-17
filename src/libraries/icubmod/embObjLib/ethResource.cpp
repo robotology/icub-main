@@ -13,6 +13,7 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/NetType.h>
+#include <yarp/os/ConstString.h>
 
 // embobj
 #include "EOropframe_hid.h"
