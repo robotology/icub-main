@@ -181,6 +181,7 @@ set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/fakeEthResource.cpp
                             ${EXTRA_FOLDER}/serviceParser.cpp
                             ${EXTRA_FOLDER}/theNVmanager.cpp
+                            ${EXTRA_FOLDER}/embObjGeneralDevPrivData.cpp
                             )
 
 set(DEBUG_SOURCE            ${DEBUG_FOLDER}/eODeb_eoProtoParser.c

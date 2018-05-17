@@ -1,9 +1,7 @@
 /*
  * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
  * All rights reserved.
- * 
- * Author Valentina Gaggero
- * 
+ * Author: Valentina Gaggero
  * This software may be modified and distributed under the terms of the
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
@@ -16,17 +14,24 @@
 #include <yarp/dev/DeviceDriver.h>
 
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
-//#include <yarp/os/Stamp.h>
-
-
-#include <iCub/FactoryInterface.h>
-#include <iCub/LoggerInterfaces.h>
 
 #include "IethResource.h"
 
 
 
-#include <serviceParser.h>
+/**
+ *  @ingroup icub_hardware_modules
+ *  \defgroup analogSensorEth analogSensorEth
+ *
+ *
+ * Driver for Ethernet communication with inertial sensors (accelerometers, gyroscopes)
+ *        mounted on Strain2 board.
+ *
+ * It is possible to read from multiple strain2 board.
+ * The parameters accepted in the config argument of the open method are described in http://wiki.icub.org/wiki/Robot_configuration.
+ */
+
+
 
 
 
@@ -37,7 +42,6 @@ namespace yarp {
 }
 
 class yarp::dev::embObjIMU :            public DeviceDriver,
-                                        //public IGenericSensor,
                                         public yarp::dev::IThreeAxisGyroscopes,
                                         public yarp::dev::IThreeAxisLinearAccelerometers,
                                         public yarp::dev::IThreeAxisMagnetometers,
@@ -93,10 +97,7 @@ private:
     void *mPriv;
     
     std::string getBoardInfo(void) const;
-    bool fromConfig(yarp::os::Searchable &config, servConfigImu_t &servCfg);
     void cleanup(void);
-    bool sendConfing2board(servConfigImu_t &servCfg);
-    bool initRegulars(void);
     static yarp::dev::MAS_status sensorState_eo2yarp(uint8_t eo_state);
     
     //debug
