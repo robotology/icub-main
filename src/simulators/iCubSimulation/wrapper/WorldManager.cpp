@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <cstring>
 
+#include <yarp/os/ConstString.h>
 #include <yarp/os/Value.h>
 
 class ManagerState {

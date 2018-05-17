@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <yarp/os/ConstString.h>
 #include <yarp/os/Log.h>
 
 #include "simFaceExp.h"

@@ -22,6 +22,7 @@
 #ifndef ICUBSIMULATION_ROBOTCONFIG_INC
 #define ICUBSIMULATION_ROBOTCONFIG_INC
 
+#include <yarp/os/ConstString.h>
 #include <yarp/os/ResourceFinder.h>
 
 class RobotFlags {
