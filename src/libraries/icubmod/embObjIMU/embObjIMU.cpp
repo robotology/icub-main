@@ -284,10 +284,11 @@ yarp::dev::MAS_status embObjIMU::sensorState_eo2yarp(uint8_t eo_state)
 {
     /*Note: 9 means that gyro, acc and mag are completely calibrated
      For more information see IMUbosgh BNO055 data sheet page 68 */
-    if(eo_state == 9)
+/*    if(eo_state == 9)
         return yarp::dev::MAS_OK;
     else
-        return  yarp::dev::MAS_ERROR;
+        return  yarp::dev::MAS_ERROR;*/
+    return yarp::dev::MAS_OK;
 }
 
 bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
