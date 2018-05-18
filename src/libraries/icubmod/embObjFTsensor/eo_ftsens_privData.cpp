@@ -352,7 +352,7 @@ bool eo_ftsens_privData::sendConfig2Strain(servConfigFTsensor_t &serviceConfig)
     if(serviceConfig.temperatureAcquisitionrate > 0)
     {
         tempconfig.enabled = 1;
-        tempconfig.datarate = 3; //serviceConfig.temperatureAcquisitionrate/1000;
+        tempconfig.datarate = serviceConfig.temperatureAcquisitionrate/1000;
     }
 
 

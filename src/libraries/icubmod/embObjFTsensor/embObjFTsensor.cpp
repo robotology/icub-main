@@ -157,7 +157,7 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-/*
+
     if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_strain))
     {
         yError() << getBoardInfo() << "open() fails to start service strain";
@@ -171,7 +171,7 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
             yDebug()  << getBoardInfo() << "open() correctly starts as service strain";
         }
     }
-*/
+
     if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_temperatures))
     {
         yError() << getBoardInfo() << "open() fails to start service temperature";
