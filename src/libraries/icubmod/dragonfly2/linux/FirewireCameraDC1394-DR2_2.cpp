@@ -18,6 +18,7 @@
 #include <arpa/inet.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/ConstString.h>
 
 #include <sched.h>
 #include <unistd.h>
