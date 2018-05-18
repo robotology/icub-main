@@ -83,6 +83,7 @@
  **/
 
 #include "iCub/skinManagerGui/guiCallback.h"
+#include <yarp/os/ConstString.h>
 
 bool initGuiStatus() {
     Bottle reply = sendRpcCommand(true, get_binarization);
