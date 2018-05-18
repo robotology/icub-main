@@ -66,13 +66,13 @@ bool skinManager::configure(yarp::os::ResourceFinder &rf) {
     int addThreshold        = (int)rf.check("addThreshold", Value(ADD_THRESHOLD_DEFAULT), 
        "Value added to all the touch thresholds (positive int)").asInt();
     
-    bool zeroUpRawData = rf.check("zeroUpRawData", ZERO_UP_RAW_DATA_DEFAULT, 
+    bool zeroUpRawData = rf.check("zeroUpRawData", Value(ZERO_UP_RAW_DATA_DEFAULT),
         "if true the raw data are considered from zero up, otherwise from 255 down (bool)").asBool();
-    bool smoothFilter = rf.check("smoothFilter", SMOOTH_FILTER_DEFAULT,
+    bool smoothFilter = rf.check("smoothFilter", Value(SMOOTH_FILTER_DEFAULT),
             "if true then the smoothing filter is active (bool)").asBool();
     float smoothFactor      = (float) rf.check("smoothFactor", Value(SMOOTH_FACTOR_DEFAULT), 
        "Determine the smoothing intensity (float in [0,1])").asDouble();
-    bool binarization = rf.check("binarization", BINARIZATION_DEFAULT,
+    bool binarization = rf.check("binarization", Value(BINARIZATION_DEFAULT),
             "if true then the binarization is active (bool)").asBool();
 
     /*

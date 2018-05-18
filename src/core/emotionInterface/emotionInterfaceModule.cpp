@@ -40,7 +40,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
 
     _highlevelemotions = config.check("emotions", Value(0), "Number of predefined facial expressions").asInt();
     _auto = config.check("auto");
-    _period = config.check("period", 10, "Period for expression switching in auto mode").asDouble();
+    _period = config.check("period", Value(10.0), "Period for expression switching in auto mode").asDouble();
     if(_highlevelemotions == 0) 
     {
         _emotion_table = NULL;

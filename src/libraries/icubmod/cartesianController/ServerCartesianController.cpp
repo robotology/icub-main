@@ -2473,7 +2473,7 @@ bool ServerCartesianController::setPosePriority(const ConstString &p)
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
-        command.add(p=="position"?IKINSLV_VOCAB_VAL_PRIO_XYZ:IKINSLV_VOCAB_VAL_PRIO_ANG);
+        command.addInt(p=="position"?IKINSLV_VOCAB_VAL_PRIO_XYZ:IKINSLV_VOCAB_VAL_PRIO_ANG);
 
         // send command to solver and wait for reply
         if (portSlvRpc.write(command,reply))

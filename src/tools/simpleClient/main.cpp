@@ -1485,7 +1485,7 @@ void handleControlModeMsg_DEBUG(IControlMode2 *iMode, const yarp::os::Bottle& cm
         case VOCAB_SET:
             {
                 int axis = cmd.get(3).asInt();
-                yarp::os::Value mode_vocab=cmd.get(2).asVocab();
+                yarp::os::Value mode_vocab=cmd.get(2);
                 int mode = mode_vocab.asInt();
                 printf ("setting mode: %s (%d)",mode_vocab.toString().c_str(), mode);
                 *ok = iMode->setControlMode(axis, mode);

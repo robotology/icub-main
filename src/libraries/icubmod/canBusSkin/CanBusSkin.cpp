@@ -473,18 +473,18 @@ bool CanBusSkin::readOldConfiguration(yarp::os::Searchable& config)
     int numofcards = cardId.size();
     // Check parameter list length
     // 4C Message
-    checkParameterListLength("4C_Timer", msg4C_Timer, numofcards, 0x01);
-    checkParameterListLength("4C_CDCOffsetL", msg4C_CDCOffsetL, numofcards, 0x00);
-    checkParameterListLength("4C_CDCOffsetH", msg4C_CDCOffsetH, numofcards, 0x20);
-    checkParameterListLength("4C_TimeL", msg4C_TimeL, numofcards, 0x00);
-    checkParameterListLength("4C_TimeH", msg4C_TimeH, numofcards, 0x00);
+    checkParameterListLength("4C_Timer", msg4C_Timer, numofcards, Value(0x01));
+    checkParameterListLength("4C_CDCOffsetL", msg4C_CDCOffsetL, numofcards, Value(0x00));
+    checkParameterListLength("4C_CDCOffsetH", msg4C_CDCOffsetH, numofcards, Value(0x20));
+    checkParameterListLength("4C_TimeL", msg4C_TimeL, numofcards, Value(0x00));
+    checkParameterListLength("4C_TimeH", msg4C_TimeH, numofcards, Value(0x00));
     // 4C Message
-    checkParameterListLength("4E_Shift", msg4E_Shift, numofcards, 0x02);
-    checkParameterListLength("4E_Shift3_1", msg4E_Shift3_1, numofcards, 0x22);
-    checkParameterListLength("4E_NoLoad", msg4E_NoLoad, numofcards, 0xF0);
-    checkParameterListLength("4E_Param", msg4E_Param, numofcards, 0x00);
-    checkParameterListLength("4E_EnaL", msg4E_EnaL, numofcards, 0xFF);
-    checkParameterListLength("4E_EnaH", msg4E_EnaH, numofcards, 0xFF);
+    checkParameterListLength("4E_Shift", msg4E_Shift, numofcards, Value(0x02));
+    checkParameterListLength("4E_Shift3_1", msg4E_Shift3_1, numofcards, Value(0x22));
+    checkParameterListLength("4E_NoLoad", msg4E_NoLoad, numofcards, Value(0xF0));
+    checkParameterListLength("4E_Param", msg4E_Param, numofcards, Value(0x00));
+    checkParameterListLength("4E_EnaL", msg4E_EnaL, numofcards, Value(0xFF));
+    checkParameterListLength("4E_EnaH", msg4E_EnaH, numofcards, Value(0xFF));
     /* ********************************************** */
 
 //    yDebug() << "msg4E_NoLoad size is " << msg4E_NoLoad.size();
