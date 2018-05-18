@@ -217,7 +217,7 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
 bool eo_ftsens_privData::initRegulars(servConfigFTsensor_t &serviceConfig)
 {
     // configure regular rops
-    
+    {
     vector<eOprotID32_t> id32v(0);
     eOprotID32_t id32 = eo_prot_ID32dummy;
     
@@ -235,10 +235,6 @@ bool eo_ftsens_privData::initRegulars(servConfigFTsensor_t &serviceConfig)
     
     // put it inside vector
     
-    id32v.push_back(id32);
-    
-    //Configure to send temperature status
-    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_temperature, 0, eoprot_tag_as_temperature_status);
     id32v.push_back(id32);
     
     // now we send the vector
@@ -262,7 +258,43 @@ bool eo_ftsens_privData::initRegulars(servConfigFTsensor_t &serviceConfig)
             }
         }
     }
-    
+    }
+    //temperature
+    vector<eOprotID32_t> id32vectTemp(0);
+    eOprotID32_t id32temp = eo_prot_ID32dummy;
+
+    // we need to choose the id32 to put inside the vector
+
+    //Configure to send temperature status
+    id32temp = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_temperature, 0, eoprot_tag_as_temperature_status);
+    id32vectTemp.push_back(id32temp);
+
+    // now we send the vector
+
+    if(false == res->serviceSetRegulars(eomn_serv_category_temperatures, id32vectTemp))
+    {
+        yError() << getBoardInfo() << "initRegulars() fails to add its variables to regulars: cannot proceed any further";
+        return false;
+    }
+    else
+    {
+        if(isVerbose())
+        {
+            yDebug() << getBoardInfo() << "initRegulars() added" << id32vectTemp.size() << "regular rops ";
+            char nvinfo[128];
+            for (size_t r = 0; r<id32vectTemp.size(); r++)
+            {
+                uint32_t item = id32vectTemp.at(r);
+                eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
+                yDebug() << "\t it added regular rop for" << nvinfo;
+            }
+        }
+    }
+
+
+
+
+
     return true;
 }
 
@@ -320,9 +352,22 @@ bool eo_ftsens_privData::sendConfig2Strain(servConfigFTsensor_t &serviceConfig)
     if(serviceConfig.temperatureAcquisitionrate > 0)
     {
         tempconfig.enabled = 1;
-        tempconfig.datarate = serviceConfig.temperatureAcquisitionrate;
+        tempconfig.datarate = 3; //serviceConfig.temperatureAcquisitionrate/1000;
     }
-    
+
+
+    if(false == res->setcheckRemoteValue(id32, &tempconfig, 10, 0.010, 0.050))
+    {
+        yError() << getBoardInfo() << "FATAL: sendConfig2Strain(temperature) had an error while calling setcheckRemoteValue() for strain config ";
+        return false;
+    }
+    else
+    {
+        if(isVerbose())
+        {
+            yDebug() << getBoardInfo() << "sendConfig2Strain() correctly configured strain coinfig ";
+        }
+    }
     return true;
 }
 

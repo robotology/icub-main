@@ -163,8 +163,8 @@ static void handle_data_inertial3(const EOnv* nv, const eOropdescriptor_t* rd)
 
 static void handle_data_temperature(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    eOas_temperature_status_t *inertial3status  = (eOas_temperature_status_t*)rd->data;
-    feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)inertial3status);
+    eOas_temperature_status_t *tempstatus  = (eOas_temperature_status_t*)rd->data;
+    feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)tempstatus);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

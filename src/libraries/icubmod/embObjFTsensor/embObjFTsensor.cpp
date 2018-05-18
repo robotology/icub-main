@@ -24,6 +24,7 @@
 
 #include "EoAnalogSensors.h"
 #include "EOconstarray.h"
+#include "EoProtocolAS.h"
 
 
 #ifdef WIN32
@@ -85,12 +86,52 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
 
 
 #if defined(EMBOBJSTRAIN_USESERVICEPARSER)
-    const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
+    const eOmn_serv_parameter_t* servparamstrain = &serviceConfig.ethservice;
+    eOmn_serv_parameter_t servparamtemp;
+    const eOmn_serv_parameter_t* servparamtemp_ptr = &servparamtemp;
+    servparamtemp.configuration.type = eomn_serv_AS_temperatures;
+    EOarray* array = eo_array_New(eOas_inertials3_descriptors_maxnumber, sizeof(eOas_inertial3_descriptor_t), &(servparamtemp.configuration.data.as.temperature.arrayofdescriptor));
+    eOas_temperature_descriptor_t descr= {0};
+    descr.typeofboard = eobrd_strain2 ;
+    descr.typeofsensor = eoas_temperature_t1;
+    descr.on.can.place = eobrd_place_can;
+    descr.on.can.port = servparamstrain->configuration.data.as.strain.canloc.port;
+    descr.on.can.addr = servparamstrain->configuration.data.as.strain.canloc.addr;
+    eo_array_PushBack(array, &descr);
+
+    eOas_temperature_setof_boardinfos_t * boardInfoSet_ptr = &servparamtemp.configuration.data.as.temperature.setofboardinfos;
+    eOresult_t res = eoas_temperature_setof_boardinfos_clear(boardInfoSet_ptr);
+    if(res != eores_OK)
+    {
+        yError() << getBoardInfo() << "Error in eoas_temperature_setof_boardinfos_clear()";
+        return false;
+    }
+
+    eObrd_info_t boardInfo = {0};
+    boardInfo.type =  servparamstrain->configuration.data.as.strain.boardtype.type;
+    memcpy(&boardInfo.protocol , &(servparamstrain->configuration.data.as.strain.boardtype.protocol), sizeof(eObrd_protocolversion_t));
+    memcpy(&boardInfo.firmware, &(servparamstrain->configuration.data.as.strain.boardtype.firmware), sizeof(eObrd_firmwareversion_t));
+    res = eoas_temperature_setof_boardinfos_add(boardInfoSet_ptr, &boardInfo);
+    if(eores_OK != res)
+    {
+        yError() << getBoardInfo() << "Error in eoas_temperature_setof_boardinfos_add()";
+        return false;
+    }
+
+
 #else
-    const eOmn_serv_parameter_t* servparam = NULL;
+    const eOmn_serv_parameter_t* servparamstrain = NULL;
+    const eOmn_serv_parameter_t* servparamtemp_ptr = NULL;
 #endif
 
-    if(false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_strain, servparam, 5.0))
+    if(false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_strain, servparamstrain, 5.0))
+    {
+        yError() << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate()";
+        cleanup();
+        return false;
+    }
+
+    if(false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_temperatures, servparamtemp_ptr, 5.0))
     {
         yError() << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate()";
         cleanup();
@@ -116,10 +157,10 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-
+/*
     if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_strain))
     {
-        yError() << getBoardInfo() << "open() fails to start service";
+        yError() << getBoardInfo() << "open() fails to start service strain";
         cleanup();
         return false;
     }
@@ -127,9 +168,40 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
     {
         if(GET_privData(mPriv).isVerbose())
         {
-            yDebug()  << getBoardInfo() << "open() correctly starts as service ";
+            yDebug()  << getBoardInfo() << "open() correctly starts as service strain";
         }
     }
+*/
+    if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_temperatures))
+    {
+        yError() << getBoardInfo() << "open() fails to start service temperature";
+        cleanup();
+        return false;
+    }
+    else
+    {
+        if(GET_privData(mPriv).isVerbose())
+        {
+            yDebug()  << getBoardInfo() << "open() correctly starts as service temperature";
+        }
+    }
+
+
+    {   // start the configured sensors. so far, we must keep it in here. later on we can remove this command
+
+        uint8_t enable = 1;
+
+        eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_temperature, 0, eoprot_tag_as_temperature_cmmnds_enable);
+        if(false == GET_privData(mPriv).res->setRemoteValue(id32, &enable))
+        {
+            yError() << getBoardInfo() << "open() fails to command the start transmission of the configured temeprature";
+            cleanup();
+            return false;
+        }
+    }
+
+
+
 
     GET_privData(mPriv).setOpen(true);
     return true;
@@ -233,7 +305,7 @@ bool embObjFTsensor::updateTemperatureValues(eOprotID32_t id32, double timestamp
 {
     eOas_temperature_status_t *temp_st = (eOas_temperature_status_t *)rxdata;
 
-    EOconstarray* arrayofvalues = eo_constarray_Load(reinterpret_cast<const EOarray*>(&temp_st->arrayofdata));
+    EOconstarray* arrayofvalues = eo_constarray_Load(reinterpret_cast<const EOarray*>(&(temp_st->arrayofdata)));
 
     uint8_t numofIntem2update = eo_constarray_Size(arrayofvalues);
 
