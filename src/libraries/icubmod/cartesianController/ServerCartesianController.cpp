@@ -2393,10 +2393,7 @@ bool ServerCartesianController::setTrackingModeHelper(const bool f)
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_MODE);
-        if (f)
-            command.addInt(IKINSLV_VOCAB_VAL_MODE_TRACK);
-        else
-            command.addInt(IKINSLV_VOCAB_VAL_MODE_SINGLE);
+        command.addVocab(f?IKINSLV_VOCAB_VAL_MODE_TRACK:IKINSLV_VOCAB_VAL_MODE_SINGLE);
 
         // send command to solver and wait for reply
         bool ret=false;
@@ -2473,7 +2470,7 @@ bool ServerCartesianController::setPosePriority(const ConstString &p)
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
-        command.addInt(p=="position"?IKINSLV_VOCAB_VAL_PRIO_XYZ:IKINSLV_VOCAB_VAL_PRIO_ANG);
+        command.addVocab(p=="position"?IKINSLV_VOCAB_VAL_PRIO_XYZ:IKINSLV_VOCAB_VAL_PRIO_ANG);
 
         // send command to solver and wait for reply
         if (portSlvRpc.write(command,reply))
