@@ -50,6 +50,7 @@ public:
     bool fillScaleFactor(servConfigFTsensor_t &serviceConfig);
     bool sendConfig2Strain(servConfigFTsensor_t &serviceConfig);
     bool updateStrainValues(eOprotID32_t id32, double timestamp, void* rxdata);
+    bool fillTemperatureEthServiceInfo(eOmn_serv_parameter_t &ftSrv, eOmn_serv_parameter_t &tempSrv);
     
 };
 

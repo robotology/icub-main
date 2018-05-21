@@ -89,3 +89,27 @@ void yarp::dev::embObjDevPrivData::cleanup(eth::IethResource *interface)
     behFlags.opened = false;
 }
 
+bool yarp::dev::embObjDevPrivData::serviceSetRegilars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout)
+{
+
+    if(false == res->serviceSetRegulars(eomn_serv_category_strain, id32vector, timeout))
+    {
+        yError() << getBoardInfo() << "initRegulars() fails to add its variables to regulars: cannot proceed any further";
+        return false;
+    }
+    else
+    {
+        if(isVerbose())
+        {
+            yDebug() << getBoardInfo() << "initRegulars() added" << id32vector.size() << "regular rops ";
+            char nvinfo[128];
+            for (size_t r = 0; r<id32vector.size(); r++)
+            {
+                uint32_t item = id32vector.at(r);
+                eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
+                yDebug() << "\t it added regular rop for" << nvinfo;
+            }
+        }
+    }
+}
+

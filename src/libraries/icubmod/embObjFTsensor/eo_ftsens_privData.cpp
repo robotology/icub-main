@@ -216,13 +216,10 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
 
 bool eo_ftsens_privData::initRegulars(servConfigFTsensor_t &serviceConfig)
 {
-    // configure regular rops
-    {
-    vector<eOprotID32_t> id32v(0);
+    vector<eOprotID32_t> id32v(0); //vector with id of nv to configure as regulars
     eOprotID32_t id32 = eo_prot_ID32dummy;
-    
-    // we need to choose the id32 to put inside the vector
-    
+
+    //1) set regulars for ft (strain) service
     if(true == serviceConfig.useCalibration)
     {
         id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_calibratedvalues);
@@ -231,69 +228,21 @@ bool eo_ftsens_privData::initRegulars(servConfigFTsensor_t &serviceConfig)
     {
         id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_uncalibratedvalues);
     }
-    
-    
-    // put it inside vector
-    
+
     id32v.push_back(id32);
-    
-    // now we send the vector
-    
-    if(false == res->serviceSetRegulars(eomn_serv_category_strain, id32v))
-    {
-        yError() << getBoardInfo() << "initRegulars() fails to add its variables to regulars: cannot proceed any further";
+
+    if(!serviceSetRegilars(eomn_serv_category_strain, id32v))
         return false;
-    }
-    else
-    {
-        if(isVerbose())
-        {
-            yDebug() << getBoardInfo() << "initRegulars() added" << id32v.size() << "regular rops ";
-            char nvinfo[128];
-            for (size_t r = 0; r<id32v.size(); r++)
-            {
-                uint32_t item = id32v.at(r);
-                eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
-                yDebug() << "\t it added regular rop for" << nvinfo;
-            }
-        }
-    }
-    }
-    //temperature
-    vector<eOprotID32_t> id32vectTemp(0);
-    eOprotID32_t id32temp = eo_prot_ID32dummy;
 
-    // we need to choose the id32 to put inside the vector
+    //2) set regulars for temperature service
+    id32v.resize(0);
+    id32 = eo_prot_ID32dummy;
 
-    //Configure to send temperature status
-    id32temp = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_temperature, 0, eoprot_tag_as_temperature_status);
-    id32vectTemp.push_back(id32temp);
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_temperature, 0, eoprot_tag_as_temperature_status);
+    id32v.push_back(id32);
 
-    // now we send the vector
-
-    if(false == res->serviceSetRegulars(eomn_serv_category_temperatures, id32vectTemp))
-    {
-        yError() << getBoardInfo() << "initRegulars() fails to add its variables to regulars: cannot proceed any further";
+    if(!serviceSetRegilars(eomn_serv_category_temperatures, id32v))
         return false;
-    }
-    else
-    {
-        if(isVerbose())
-        {
-            yDebug() << getBoardInfo() << "initRegulars() added" << id32vectTemp.size() << "regular rops ";
-            char nvinfo[128];
-            for (size_t r = 0; r<id32vectTemp.size(); r++)
-            {
-                uint32_t item = id32vectTemp.at(r);
-                eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
-                yDebug() << "\t it added regular rop for" << nvinfo;
-            }
-        }
-    }
-
-
-
-
 
     return true;
 }
@@ -371,3 +320,42 @@ bool eo_ftsens_privData::sendConfig2Strain(servConfigFTsensor_t &serviceConfig)
     return true;
 }
 
+bool eo_ftsens_privData::fillTemperatureEthServiceInfo(eOmn_serv_parameter_t &ftSrv, eOmn_serv_parameter_t &tempSrv)
+{
+//     const eOmn_serv_parameter_t* servparamstrain = &serviceConfig.ethservice;
+//     eOmn_serv_parameter_t servparamtemp;
+//     const eOmn_serv_parameter_t* servparamtemp_ptr = &servparamtemp;
+
+    tempSrv.configuration.type = eomn_serv_AS_temperatures;
+
+    EOarray* array = eo_array_New(eOas_inertials3_descriptors_maxnumber, sizeof(eOas_inertial3_descriptor_t), &(tempSrv.configuration.data.as.temperature.arrayofdescriptor));
+    eOas_temperature_descriptor_t descr= {0};
+    descr.typeofboard = ftSrv.configuration.data.as.strain.boardtype.type; //eobrd_strain2 ;
+    descr.typeofsensor = eoas_temperature_t1;
+    descr.on.can.place = eobrd_place_can;
+    descr.on.can.port = ftSrv.configuration.data.as.strain.canloc.port;
+    descr.on.can.addr = ftSrv.configuration.data.as.strain.canloc.addr;
+    eo_array_PushBack(array, &descr);
+
+    eOas_temperature_setof_boardinfos_t * boardInfoSet_ptr = &tempSrv.configuration.data.as.temperature.setofboardinfos;
+    eOresult_t res = eoas_temperature_setof_boardinfos_clear(boardInfoSet_ptr);
+    if(res != eores_OK)
+    {
+        yError() << getBoardInfo() << "Error in eoas_temperature_setof_boardinfos_clear()";
+        return false;
+    }
+
+    eObrd_info_t boardInfo = {0};
+    boardInfo.type =  ftSrv.configuration.data.as.strain.boardtype.type;
+    memcpy(&boardInfo.protocol , &(ftSrv.configuration.data.as.strain.boardtype.protocol), sizeof(eObrd_protocolversion_t));
+    memcpy(&boardInfo.firmware, &(ftSrv.configuration.data.as.strain.boardtype.firmware), sizeof(eObrd_firmwareversion_t));
+    res = eoas_temperature_setof_boardinfos_add(boardInfoSet_ptr, &boardInfo);
+    if(eores_OK != res)
+    {
+        yError() << getBoardInfo() << "Error in eoas_temperature_setof_boardinfos_add()";
+        return false;
+    }
+
+    return true;
+
+}

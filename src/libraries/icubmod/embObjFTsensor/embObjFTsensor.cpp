@@ -19,7 +19,7 @@
 
 
 // specific to this device driver.
-#include <embObjFTsensor.h>
+#include "embObjFTsensor.h"
 #include "eo_ftsens_privData.h"
 
 #include "EoAnalogSensors.h"
@@ -86,38 +86,15 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
 
 
 #if defined(EMBOBJSTRAIN_USESERVICEPARSER)
-    const eOmn_serv_parameter_t* servparamstrain = &serviceConfig.ethservice;
+
+    //Fill temperature service data in servparamtemp: some of these data are copied from the serviceconfig of ft because both services used tha same board.
     eOmn_serv_parameter_t servparamtemp;
+    bool ret = GET_privData(mPriv).fillTemperatureEthServiceInfo(serviceConfig.ethservice, servparamtemp);
+    if(!ret)
+        return false;
+
     const eOmn_serv_parameter_t* servparamtemp_ptr = &servparamtemp;
-    servparamtemp.configuration.type = eomn_serv_AS_temperatures;
-    EOarray* array = eo_array_New(eOas_inertials3_descriptors_maxnumber, sizeof(eOas_inertial3_descriptor_t), &(servparamtemp.configuration.data.as.temperature.arrayofdescriptor));
-    eOas_temperature_descriptor_t descr= {0};
-    descr.typeofboard = eobrd_strain2 ;
-    descr.typeofsensor = eoas_temperature_t1;
-    descr.on.can.place = eobrd_place_can;
-    descr.on.can.port = servparamstrain->configuration.data.as.strain.canloc.port;
-    descr.on.can.addr = servparamstrain->configuration.data.as.strain.canloc.addr;
-    eo_array_PushBack(array, &descr);
-
-    eOas_temperature_setof_boardinfos_t * boardInfoSet_ptr = &servparamtemp.configuration.data.as.temperature.setofboardinfos;
-    eOresult_t res = eoas_temperature_setof_boardinfos_clear(boardInfoSet_ptr);
-    if(res != eores_OK)
-    {
-        yError() << getBoardInfo() << "Error in eoas_temperature_setof_boardinfos_clear()";
-        return false;
-    }
-
-    eObrd_info_t boardInfo = {0};
-    boardInfo.type =  servparamstrain->configuration.data.as.strain.boardtype.type;
-    memcpy(&boardInfo.protocol , &(servparamstrain->configuration.data.as.strain.boardtype.protocol), sizeof(eObrd_protocolversion_t));
-    memcpy(&boardInfo.firmware, &(servparamstrain->configuration.data.as.strain.boardtype.firmware), sizeof(eObrd_firmwareversion_t));
-    res = eoas_temperature_setof_boardinfos_add(boardInfoSet_ptr, &boardInfo);
-    if(eores_OK != res)
-    {
-        yError() << getBoardInfo() << "Error in eoas_temperature_setof_boardinfos_add()";
-        return false;
-    }
-
+    const eOmn_serv_parameter_t* servparamstrain = &serviceConfig.ethservice;
 
 #else
     const eOmn_serv_parameter_t* servparamstrain = NULL;
