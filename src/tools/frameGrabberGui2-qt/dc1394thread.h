@@ -2,8 +2,8 @@
 #define DC1394THREAD_H
 
 #include <QThread>
+#include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/RemoteFrameGrabberDC1394.h>
 #include <QMutex>
 #include <QWaitCondition>
 #include <QSize>

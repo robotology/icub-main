@@ -23,7 +23,6 @@ bool DC1394Thread::getCameraDescription(CameraDescriptor *camera)
 void DC1394Thread::run()
 {
     // create firewire thread
-    //DC1394Control = new yarp::dev::RemoteFrameGrabberControlsDC1394();
 
     grabberControl = new yarp::dev::PolyDriver;
     // create usb thread
