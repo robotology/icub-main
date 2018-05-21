@@ -152,7 +152,7 @@ uint8_t SensorsData::getSensorStatus(size_t sens_index, eOas_sensor_t type) cons
     }
 
 }
-bool SensorsData::getSensorName(size_t sens_index, eOas_sensor_t type, yarp::os::ConstString &name) const
+bool SensorsData::getSensorName(size_t sens_index, eOas_sensor_t type, std::string &name) const
 {
     try
     {
@@ -166,7 +166,7 @@ bool SensorsData::getSensorName(size_t sens_index, eOas_sensor_t type, yarp::os:
     }
 
 }
-bool SensorsData::getSensorFrameName(size_t sens_index, eOas_sensor_t type, yarp::os::ConstString &frameName) const
+bool SensorsData::getSensorFrameName(size_t sens_index, eOas_sensor_t type, std::string &frameName) const
 {
     try
     {
@@ -229,7 +229,7 @@ bool SensorsData::update(eOas_sensor_t type, uint8_t index, eOas_inertial3_data_
 
 }
 
-eo_imu_privData::eo_imu_privData(yarp::os::ConstString name):embObjDevPrivData(name)
+eo_imu_privData::eo_imu_privData(std::string name):embObjDevPrivData(name)
 {;}
 eo_imu_privData::~eo_imu_privData()
 {;}

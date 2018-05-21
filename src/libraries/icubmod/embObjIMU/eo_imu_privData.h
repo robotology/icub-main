@@ -42,8 +42,8 @@ public:
 
 typedef struct
 {
-    yarp::os::ConstString name;
-    yarp::os::ConstString framename;
+    std::string name;
+    std::string framename;
     yarp::sig::Vector values;
     uint8_t state;
     double timestamp;
@@ -65,8 +65,8 @@ public:
 
     size_t getNumOfSensors(eOas_sensor_t type) const;
     uint8_t getSensorStatus(size_t sens_index, eOas_sensor_t type) const;
-    bool getSensorName(size_t sens_index, eOas_sensor_t type, yarp::os::ConstString &name) const;
-    bool getSensorFrameName(size_t sens_index, eOas_sensor_t type, yarp::os::ConstString &frameName) const;
+    bool getSensorName(size_t sens_index, eOas_sensor_t type, std::string &name) const;
+    bool getSensorFrameName(size_t sens_index, eOas_sensor_t type, std::string &frameName) const;
     bool getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::sig::Vector& out, double& timestamp) const;
 };
 
@@ -81,7 +81,7 @@ public:
     yarp::dev::SensorsData sens;
     yarp::dev::PositionMaps maps;
 
-    eo_imu_privData(yarp::os::ConstString name);
+    eo_imu_privData(std::string name);
     ~eo_imu_privData();
     bool fromConfig(yarp::os::Searchable &config, servConfigImu_t &servCfg);
     bool sendConfing2board(servConfigImu_t &servCfg);

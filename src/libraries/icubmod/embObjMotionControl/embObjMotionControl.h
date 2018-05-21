@@ -30,7 +30,7 @@
 
 using namespace std;
 
-
+#include <string>
 //  Yarp stuff
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/DeviceDriver.h>
@@ -446,13 +446,13 @@ public:
     ///////////////////////// END MotorEncoder Interface
 
     //////////////////////// BEGIN RemoteVariables Interface
-    virtual bool getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val) override;
-    virtual bool setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val) override;
+    virtual bool getRemoteVariableRaw(std::string key, yarp::os::Bottle& val) override;
+    virtual bool setRemoteVariableRaw(std::string key, const yarp::os::Bottle& val) override;
     virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys) override;
     ///////////////////////// END RemoteVariables Interface
 
     //////////////////////// BEGIN IAxisInfo Interface
-    virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name) override;
+    virtual bool getAxisNameRaw(int axis, std::string& name) override;
     virtual bool getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type) override;
     ///////////////////////// END IAxisInfo Interface
 

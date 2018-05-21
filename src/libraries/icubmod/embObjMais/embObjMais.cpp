@@ -136,7 +136,7 @@ embObjMais::embObjMais()
     analogdata.resize(0);
 
 
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         verbosewhenok = (bool)NetType::toInt(tmp);

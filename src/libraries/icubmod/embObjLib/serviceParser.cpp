@@ -14,7 +14,6 @@
 #include <string.h>
 
 // Yarp Includes
-#include <yarp/os/ConstString.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
@@ -64,7 +63,7 @@ ServiceParser::ServiceParser()
     as_service.settings.enabledsensors.resize(0);
 }
 
-bool ServiceParser::convert(ConstString const &fromstring, eOmn_serv_type_t& toservicetype, bool& formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eOmn_serv_type_t& toservicetype, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -82,7 +81,7 @@ bool ServiceParser::convert(ConstString const &fromstring, eOmn_serv_type_t& tos
 }
 
 
-bool ServiceParser::convert(ConstString const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror)
 {
     const char *t = fromstring.c_str();
     eObool_t usecompactstring = eobool_false;
@@ -104,7 +103,7 @@ bool ServiceParser::convert(ConstString const &fromstring, eOmc_ctrlboard_t &con
     return true;
 }
 
-bool ServiceParser::convert(ConstString const &fromstring, eOas_sensor_t &tosensortype, bool &formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eOas_sensor_t &tosensortype, bool &formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -121,7 +120,7 @@ bool ServiceParser::convert(ConstString const &fromstring, eOas_sensor_t &tosens
 }
 
 
-bool ServiceParser::convert(ConstString const &fromstring, eObrd_type_t& tobrdtype, bool& formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eObrd_type_t& tobrdtype, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -145,7 +144,7 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_type_t& tobrdty
 }
 
 
-bool ServiceParser::convert(ConstString const &fromstring, eOmc_pidoutputtype_t& pidoutputtype, bool& formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eOmc_pidoutputtype_t& pidoutputtype, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -168,7 +167,7 @@ bool ServiceParser::convert(ConstString const &fromstring, eOmc_pidoutputtype_t&
     return true;
 }
 
-bool ServiceParser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -191,7 +190,7 @@ bool ServiceParser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t
     return true;
 }
 
-bool ServiceParser::convert(ConstString const &fromstring, eObrd_cantype_t& tobrdcantype, bool& formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eObrd_cantype_t& tobrdcantype, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -222,7 +221,7 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_cantype_t& tobr
     return true;
 }
 
-bool ServiceParser::convert(ConstString const &fromstring, eObrd_ethtype_t& tobrdethtype, bool& formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eObrd_ethtype_t& tobrdethtype, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -254,7 +253,7 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_ethtype_t& tobr
 }
 
 
-bool ServiceParser::convert(ConstString const &fromstring, bool& tobool, bool& formaterror)
+bool ServiceParser::convert(std::string const &fromstring, bool& tobool, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -330,7 +329,7 @@ bool ServiceParser::convert(const int number, uint16_t& tou16, bool& formaterror
 
 
 
-bool ServiceParser::convert(ConstString const &fromstring, const uint8_t strsize, char *str, bool &formaterror)
+bool ServiceParser::convert(std::string const &fromstring, const uint8_t strsize, char *str, bool &formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -356,7 +355,7 @@ bool ServiceParser::convert(ConstString const &fromstring, const uint8_t strsize
 }
 
 
-bool ServiceParser::convert(ConstString const &fromstring, string &str, bool &formaterror)
+bool ServiceParser::convert(std::string const &fromstring, string &str, bool &formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -376,7 +375,7 @@ bool ServiceParser::convert(ConstString const &fromstring, string &str, bool &fo
 
 
 
-bool ServiceParser::convert(ConstString const &fromstring, eObrd_location_t &location, bool &formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eObrd_location_t &location, bool &formaterror)
 {
     // it is actually a micro-parser: PRE-num
     // at
@@ -827,7 +826,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         {
             servAnalogSensor_t founditem;
 
-            ConstString s_enabled_id = b_SETTINGS_enabledSensors.get(i+1).asString();
+            std::string s_enabled_id = b_SETTINGS_enabledSensors.get(i+1).asString();
 //            const char *str = s_enabled_id.c_str();
 //            std::string cpp_str = str;
 
@@ -1219,7 +1218,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
 
 
 
-bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror)
+bool ServiceParser::parse_encoder_port(std::string const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -1313,7 +1312,7 @@ bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_etht
 }
 
 
-bool ServiceParser::parse_port_conn(ConstString const &fromstring, eObrd_ethtype_t const ethboard, uint8_t &toport, bool &formaterror)
+bool ServiceParser::parse_port_conn(std::string const &fromstring, eObrd_ethtype_t const ethboard, uint8_t &toport, bool &formaterror)
 {
     const char *t = fromstring.c_str();
     bool ret = false;
@@ -1349,7 +1348,7 @@ bool ServiceParser::parse_port_conn(ConstString const &fromstring, eObrd_ethtype
 
 
 
-bool ServiceParser::parse_port_mais(ConstString const &fromstring, uint8_t &toport, bool &formaterror)
+bool ServiceParser::parse_port_mais(std::string const &fromstring, uint8_t &toport, bool &formaterror)
 {
     const char *t = fromstring.c_str();
     bool ret = false;
@@ -1373,7 +1372,7 @@ bool ServiceParser::parse_port_mais(ConstString const &fromstring, uint8_t &topo
     return ret;
 }
 
-//bool ServiceParser::parse_mais(ConstString const &fromstring, eObrd_portmais_t &pmais, bool &formaterror)
+//bool ServiceParser::parse_mais(std::string const &fromstring, eObrd_portmais_t &pmais, bool &formaterror)
 //{
 //    // parses MAIS:eobrd_portmais_thumbproximal or MAIS:thumbproximal
 
@@ -1415,7 +1414,7 @@ bool ServiceParser::parse_port_mais(ConstString const &fromstring, uint8_t &topo
 // we want to fill the des with relevant info:
 // we may have CAN1:1:0 if we have a act_foc or an act_mc4, or a CONN:P4 if we have a pwm.
 // hence, we need ... the string, the type of actuator, the ethboard (for transforming P4 into teh proper port value.
-bool ServiceParser::parse_actuator_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror)
+bool ServiceParser::parse_actuator_port(std::string const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror)
 {
     const char *t = fromstring.c_str();
 
@@ -1550,7 +1549,7 @@ bool ServiceParser::parse_actuator_port(ConstString const &fromstring, eObrd_eth
 }
 
 
-bool ServiceParser::convert(ConstString const &fromstring, eOmc_actuator_t &toactuatortype, bool &formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eOmc_actuator_t &toactuatortype, bool &formaterror)
 {
     const char *t = fromstring.c_str();
     eObool_t usecompactstring = eobool_false;
@@ -1573,7 +1572,7 @@ bool ServiceParser::convert(ConstString const &fromstring, eOmc_actuator_t &toac
 }
 
 
-bool ServiceParser::convert(ConstString const &fromstring, eOmc_position_t &toposition, bool &formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eOmc_position_t &toposition, bool &formaterror)
 {
     const char *t = fromstring.c_str();
     eObool_t usecompactstring = eobool_false;
@@ -1595,7 +1594,7 @@ bool ServiceParser::convert(ConstString const &fromstring, eOmc_position_t &topo
     return true;
 }
 
-bool ServiceParser::parse_connector(const ConstString &fromstring, eObrd_connector_t &toconnector, bool &formaterror)
+bool ServiceParser::parse_connector(const std::string &fromstring, eObrd_connector_t &toconnector, bool &formaterror)
 {
     // parses CONN:P4 or CONN:eobrd_conn_P4
 
@@ -1632,7 +1631,7 @@ bool ServiceParser::parse_connector(const ConstString &fromstring, eObrd_connect
     return true;
 }
 
-bool ServiceParser::parse_mais(const ConstString &fromstring, eObrd_portmais_t &toportmais, bool &formaterror)
+bool ServiceParser::parse_mais(const std::string &fromstring, eObrd_portmais_t &toportmais, bool &formaterror)
 {
     // parses MAIS:eobrd_portmais_thumbproximal or MAIS:thumbproximal
 
@@ -1670,7 +1669,7 @@ bool ServiceParser::parse_mais(const ConstString &fromstring, eObrd_portmais_t &
 }
 
 
-bool ServiceParser::convert(ConstString const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror)
+bool ServiceParser::convert(std::string const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror)
 {
     const char *t = fromstring.c_str();
     eObool_t usecompactstring = eobool_false;

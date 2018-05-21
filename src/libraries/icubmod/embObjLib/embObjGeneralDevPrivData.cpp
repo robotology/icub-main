@@ -6,20 +6,20 @@
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 
-
+#include <string>
 #include <yarp/os/Network.h>
 #include <yarp/os/NetType.h>
 #include "embObjGeneralDevPrivData.h"
 
 using namespace yarp::dev;
 
-yarp::dev::embObjDevPrivData::embObjDevPrivData(yarp::os::ConstString name):deviceNameType(name)
+yarp::dev::embObjDevPrivData::embObjDevPrivData(std::string name):deviceNameType(name)
 {
     ethManager = nullptr;
     res = nullptr;
     behFlags.opened = false;
 
-    yarp::os::ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         behFlags.verbosewhenok = (bool)NetType::toInt(tmp);

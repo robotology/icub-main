@@ -13,7 +13,6 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/NetType.h>
-#include <yarp/os/ConstString.h>
 
 // embobj
 #include "EOropframe_hid.h"
@@ -66,7 +65,7 @@ EthResource::EthResource()
         c_string_handler[i] = NULL;
     }
 
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         verbosewhenok = (bool)NetType::toInt(tmp);

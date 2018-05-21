@@ -88,7 +88,7 @@ embObjStrain::embObjStrain()
 
     scaleFactorIsFilled = false;
 
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         verbosewhenok = (bool)NetType::toInt(tmp);

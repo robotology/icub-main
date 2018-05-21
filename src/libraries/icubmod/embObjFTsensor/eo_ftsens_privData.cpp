@@ -14,7 +14,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 
 
-eo_ftsens_privData::eo_ftsens_privData(ConstString name):
+eo_ftsens_privData::eo_ftsens_privData(std::string name):
                     embObjDevPrivData(name),
                     useCalibValues(false),
                     useTemperature(false),

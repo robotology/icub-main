@@ -1813,7 +1813,7 @@ bool Parser::parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impeda
 
 }
 
-bool Parser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
+bool Parser::convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 

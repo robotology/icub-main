@@ -3,8 +3,6 @@
 #ifndef __serviceParser_h__
 #define __serviceParser_h__
 
-#include <yarp/os/ConstString.h>
-
 #include <stdio.h>
 #include <iostream>
 #include <vector>
@@ -227,34 +225,34 @@ public:
 #if defined(SERVICE_PARSER_USE_MC)
     bool parseService(yarp::os::Searchable &config, servConfigMC_t &mcconfig);
     bool parseService2(yarp::os::Searchable &config, servConfigMC_t &mcconfig); // the fixed one.
-    bool convert(yarp::os::ConstString const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror);
+    bool convert(std::string const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror);
     //bool convert(Bottle &bottle, std::vector<double> &matrix, bool &formaterror, int targetsize);
-    bool convert(yarp::os::ConstString const &fromstring, eOmc_actuator_t &toactuatortype, bool &formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, eOmc_position_t &toposition, bool &formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror);
+    bool convert(std::string const &fromstring, eOmc_actuator_t &toactuatortype, bool &formaterror);
+    bool convert(std::string const &fromstring, eOmc_position_t &toposition, bool &formaterror);
+    bool convert(std::string const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror);
 
-    bool parse_connector(const yarp::os::ConstString &fromstring, eObrd_connector_t &toconnector, bool &formaterror);
-    bool parse_mais(yarp::os::ConstString const &fromstring, eObrd_portmais_t &pmais, bool &formaterror);
+    bool parse_connector(const std::string &fromstring, eObrd_connector_t &toconnector, bool &formaterror);
+    bool parse_mais(std::string const &fromstring, eObrd_portmais_t &pmais, bool &formaterror);
 
-    bool parse_port_conn(yarp::os::ConstString const &fromstring, eObrd_ethtype_t const ethboard, uint8_t &toport, bool &formaterror);
-    bool parse_port_mais(yarp::os::ConstString const &fromstring, uint8_t &toport, bool &formaterror);
+    bool parse_port_conn(std::string const &fromstring, eObrd_ethtype_t const ethboard, uint8_t &toport, bool &formaterror);
+    bool parse_port_mais(std::string const &fromstring, uint8_t &toport, bool &formaterror);
 
-    bool parse_actuator_port(yarp::os::ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror);
-    bool parse_encoder_port(yarp::os::ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror);
+    bool parse_actuator_port(std::string const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror);
+    bool parse_encoder_port(std::string const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror);
 
 #endif
 
-    bool convert(yarp::os::ConstString const &fromstring, eOmn_serv_type_t &toservicetype, bool &formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, eObrd_type_t& tobrdtype, bool& formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, eObrd_cantype_t &tobrdcantype, bool &formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, eObrd_ethtype_t& tobrdethtype, bool& formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, bool &tobool, bool &formaterror);
+    bool convert(std::string const &fromstring, eOmn_serv_type_t &toservicetype, bool &formaterror);
+    bool convert(std::string const &fromstring, eObrd_type_t& tobrdtype, bool& formaterror);
+    bool convert(std::string const &fromstring, eObrd_cantype_t &tobrdcantype, bool &formaterror);
+    bool convert(std::string const &fromstring, eObrd_ethtype_t& tobrdethtype, bool& formaterror);
+    bool convert(std::string const &fromstring, bool &tobool, bool &formaterror);
     bool convert(const int number, uint8_t &tou8, bool &formaterror);
     bool convert(const int number, uint16_t &tou16, bool &formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, eOas_sensor_t &tosensortype, bool &formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, std::string &str, bool &formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, const uint8_t strsize, char *str, bool &formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, eObrd_location_t &location, bool &formaterror);
+    bool convert(std::string const &fromstring, eOas_sensor_t &tosensortype, bool &formaterror);
+    bool convert(std::string const &fromstring, std::string &str, bool &formaterror);
+    bool convert(std::string const &fromstring, const uint8_t strsize, char *str, bool &formaterror);
+    bool convert(std::string const &fromstring, eObrd_location_t &location, bool &formaterror);
 
 
     bool convert(eObrd_location_t const &loc, char *str, int len);
@@ -263,8 +261,8 @@ public:
     bool convert(eObrd_protocolversion_t const &prot, char *str, int len);
     bool convert(eObrd_firmwareversion_t const &firm, char *str, int len);
 
-    bool convert(yarp::os::ConstString const &fromstring, eOmc_pidoutputtype_t& pidoutputtype, bool& formaterror);
-    bool convert(yarp::os::ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
+    bool convert(std::string const &fromstring, eOmc_pidoutputtype_t& pidoutputtype, bool& formaterror);
+    bool convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
     servMC_encoder_t * getEncoderAtMotor(int index);
     servMC_encoder_t * getEncoderAtJoint(int index);
     bool parse_debugEmbBoardsNotConnected(yarp::os::Searchable &config, bool &embBoardsConnected);

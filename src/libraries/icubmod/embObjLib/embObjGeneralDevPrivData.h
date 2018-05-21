@@ -10,7 +10,7 @@
 #ifndef __embObjDevPrivData_h__
 #define __embObjDevPrivData_h__
 
-#include <yarp/os/ConstString.h>
+#include <string>
 #include <yarp/os/LogStream.h>
 #include <ethManager.h>
 #include <abstractEthResource.h>
@@ -32,9 +32,9 @@ public:
         bool opened;
         bool verbosewhenok;
     }behFlags;
-    yarp::os::ConstString deviceNameType;
+    std::string deviceNameType;
     
-    embObjDevPrivData(yarp::os::ConstString name);
+    embObjDevPrivData(std::string name);
     ~embObjDevPrivData();
     
     inline  eth::AbstractEthResource* getEthRes()

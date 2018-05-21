@@ -32,7 +32,6 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/ControlBoardPid.h>
 #include <yarp/dev/ControlBoardHelper.h>
-#include <yarp/os/ConstString.h>
 
 #include <yarp/dev/PidEnums.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
@@ -318,7 +317,7 @@ private:
     bool parsePidUnitsType(yarp::os::Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
 
 
-    bool convert(yarp::os::ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
+    bool convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
     bool convert(yarp::os::Bottle &bottle, std::vector<double> &matrix, bool &formaterror, int targetsize);
 
     //general utils functions

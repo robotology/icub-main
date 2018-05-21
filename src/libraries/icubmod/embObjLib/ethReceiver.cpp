@@ -32,7 +32,6 @@
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <yarp/os/ConstString.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/NetType.h>
 
@@ -68,7 +67,7 @@ EthReceiver::EthReceiver(int raterx): RateThread(raterx)
     yDebug() << "EthReceiver is a RateThread with rxrate =" << rateofthread << "ms";
     // ok, and now i get it from xml file ... if i find it.
 
-//    ConstString tmp = NetworkBase::getEnvironment("ETHSTAT_PRINT_INTERVAL");
+//    std::string tmp = NetworkBase::getEnvironment("ETHSTAT_PRINT_INTERVAL");
 //    if (tmp != "")
 //    {
 //        statPrintInterval = (double)NetType::toInt(tmp);
@@ -104,7 +103,7 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     int len = sizeof(mysize);
 
     // the user can change buffer size by environment variable ETHRECEIVER_BUFFER_SIZE
-    ConstString _dgram_buffer_size = NetworkBase::getEnvironment("ETHRECEIVER_BUFFER_SIZE");
+    std::string _dgram_buffer_size = NetworkBase::getEnvironment("ETHRECEIVER_BUFFER_SIZE");
     if (_dgram_buffer_size!="")
         mysize = NetType::toInt(_dgram_buffer_size);
 

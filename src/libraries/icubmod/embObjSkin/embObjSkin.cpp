@@ -56,7 +56,7 @@ EmbObjSkin::EmbObjSkin() :  mutex(1), _isDiagnosticPresent(false)
     _skCfg.numOfPatches = 0;
     _skCfg.totalCardsNum = 0;
 
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         verbosewhenok = (bool)NetType::toInt(tmp);

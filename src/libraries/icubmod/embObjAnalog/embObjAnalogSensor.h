@@ -162,7 +162,7 @@ private:
     bool fillDatOfInertial(void *inertialdata);
     bool configServiceInertials(Searchable& globalConfig);
     bool sendConfig2SkinInertial(yarp::os::Searchable &config);
-    //eOas_inertial1_position_t getLocationOfInertialSensor(yarp::os::ConstString &strpos);
+    //eOas_inertial1_position_t getLocationOfInertialSensor(std::string &strpos);
 
 
     // for ??

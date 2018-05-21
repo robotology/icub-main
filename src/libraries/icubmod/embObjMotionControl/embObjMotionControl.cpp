@@ -252,7 +252,7 @@ embObjMotionControl::embObjMotionControl() :
     behFlags.useRawEncoderData = false;
     behFlags.pwmIsLimited     = false;
 
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         behFlags.verbosewhenok = (bool)NetType::toInt(tmp);
@@ -3024,7 +3024,7 @@ bool embObjMotionControl::getRotorIndexOffsetRaw(int j, double& rotorOffset)
     return true;
 }
 
-bool embObjMotionControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
+bool embObjMotionControl::getAxisNameRaw(int axis, std::string& name)
 {
     if (axis >= 0 && axis < _njoints)
     {
@@ -3066,7 +3066,7 @@ bool embObjMotionControl::getJointDeadZoneRaw(int j, double &jntDeadZone)
 }
 
 // IRemoteVariables
-bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
+bool embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle& val)
 {
     val.clear();
     if (key == "kinematic_mj")
@@ -3345,7 +3345,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     return false;
 }
 
-bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val)
+bool embObjMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::Bottle& val)
 {
     string s1 = val.toString();
     if (val.size() != _njoints)
