@@ -29,6 +29,11 @@
 #include <iCub/LoggerInterfaces.h>
 #include <messages.h>
 
+#ifndef YARP_NO_DEPRECATED //since 3.0.0
+#include <yarp/dev/IControlLimits2.h>
+#include <yarp/dev/IControlLimits2Impl.h>
+#endif
+
 namespace yarp{
     namespace dev{
         class CanBusMotionControl;
@@ -658,7 +663,6 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IPidControlRaw, 
             public IPositionControl2Raw,
             public IPositionDirectRaw,
-            public IControlCalibration2Raw,
             public IVelocityControl2Raw,
             public IAmplifierControlRaw,
             public IControlCalibrationRaw,
@@ -678,7 +682,6 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IMotorRaw,
             public ImplementMotor,
             public ImplementControlCalibration<CanBusMotionControl, IControlCalibration>,    
-            public ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>,
             public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
             public ImplementControlLimits2,
             public ImplementTorqueControl,
@@ -1021,7 +1024,7 @@ public:
     ////// calibration
     virtual bool calibrateRaw(int j, double p) override;
     virtual bool doneRaw(int j) override;
-    virtual bool calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3) override;
+    virtual bool calibrateRaw(int axis, unsigned int type, double p1, double p2, double p3) override;
     virtual bool setCalibrationParametersRaw(int j, const CalibrationParameters& params) override;
 
     /// IControlDebug Interface
