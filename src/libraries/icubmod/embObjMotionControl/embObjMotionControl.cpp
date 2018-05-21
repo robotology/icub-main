@@ -179,13 +179,12 @@ bool embObjMotionControl::dealloc()
 }
 
 embObjMotionControl::embObjMotionControl() :
-    ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>(this),
+    ImplementControlCalibration<embObjMotionControl, IControlCalibration2>(this),
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>(this),
     ImplementPidControl(this),
     ImplementEncodersTimed(this),
     ImplementPositionControl2(this),
-    ImplementVelocityControl<embObjMotionControl, IVelocityControl>(this),
-    ImplementVelocityControl2(this),
+    ImplementVelocityControl(this),
     ImplementControlMode2(this),
     ImplementImpedanceControl(this),
     ImplementMotorEncoders(this),
@@ -296,15 +295,14 @@ bool embObjMotionControl::initialised()
 bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
 {
 
-    ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementControlCalibration<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL,f.ampsToSensor);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotorEncoders::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementPositionControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementPidControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM);
     ImplementControlMode2::initialize(_njoints, _axisMap);
-    ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementVelocityControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementVelocityControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementControlLimits2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM, f.bemf2raw, f.ktau2raw);
@@ -1265,10 +1263,9 @@ bool embObjMotionControl::close()
     ImplementEncodersTimed::uninitialize();
     ImplementMotorEncoders::uninitialize();
     ImplementPositionControl2::uninitialize();
-    ImplementVelocityControl<embObjMotionControl, IVelocityControl>::uninitialize();
-    ImplementVelocityControl2::uninitialize();
+    ImplementVelocityControl::uninitialize();
     ImplementPidControl::uninitialize();
-    ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::uninitialize();
+    ImplementControlCalibration<embObjMotionControl, IControlCalibration2>::uninitialize();
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::uninitialize();
     ImplementImpedanceControl::uninitialize();
     ImplementControlLimits2::uninitialize();
@@ -1835,9 +1832,9 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
     return true;
 }
 
-bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, double p2, double p3)
+bool embObjMotionControl::calibrateRaw(int j, unsigned int type, double p1, double p2, double p3)
 {
-    yTrace() << "calibrate2Raw for" << getBoardInfo() << "joint" << j;
+    yTrace() << "calibrateRaw for" << getBoardInfo() << "joint" << j;
 
     // Tenere il check o forzare questi sottostati?
 //    if(!_enabledAmp[j ] )

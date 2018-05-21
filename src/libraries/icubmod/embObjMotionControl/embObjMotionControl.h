@@ -51,6 +51,11 @@ using namespace std;
 #include "eomcParser.h"
 #include "measuresConverter.h"
 
+#ifndef YARP_NO_DEPRECATED //since 3.0.0
+#include <yarp/dev/IControlLimits2.h>
+#include <yarp/dev/IControlLimits2Impl.h>
+#endif
+
 // - public #define  --------------------------------------------------------------------------------------------------
 
 #undef  VERIFY_ROP_SETIMPEDANCE     // this macro let you send setimpedence rop with signature.
@@ -148,10 +153,9 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementControlLimits2,
     public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
     public ImplementPositionControl2,
-    public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
+    public ImplementControlCalibration<embObjMotionControl, IControlCalibration2>,
     public ImplementPidControl,
-    public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
-    public ImplementVelocityControl2,
+    public ImplementVelocityControl,
     public ITorqueControlRaw,
     public ImplementTorqueControl,
     public IVirtualAnalogSensor,
@@ -395,7 +399,7 @@ public:
 
     // calibration2raw
     virtual bool setCalibrationParametersRaw(int axis, const CalibrationParameters& params) override;
-    virtual bool calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3) override;
+    virtual bool calibrateRaw(int axis, unsigned int type, double p1, double p2, double p3) override;
     virtual bool doneRaw(int j) override;
 
 
