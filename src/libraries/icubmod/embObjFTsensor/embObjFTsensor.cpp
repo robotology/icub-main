@@ -420,13 +420,13 @@ yarp::dev::MAS_status embObjFTsensor::getTemperatureSensorStatus(size_t sens_ind
     return yarp::dev::MAS_OK;
 }
 
-bool embObjFTsensor::getTemperatureSensorName(size_t sens_index, yarp::os::ConstString &name) const
+bool embObjFTsensor::getTemperatureSensorName(size_t sens_index, std::string &name) const
 {
     name = GET_privData(mPriv).devicename;
     return true;
 }
 
-bool embObjFTsensor::getTemperatureSensorFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
+bool embObjFTsensor::getTemperatureSensorFrameName(size_t sens_index, std::string &frameName) const
 {
     frameName = GET_privData(mPriv).devicename;
     return true;
@@ -463,13 +463,13 @@ yarp::dev::MAS_status embObjFTsensor::getSixAxisForceTorqueSensorStatus(size_t s
     return yarp::dev::MAS_OK;
 }
 
-bool embObjFTsensor::getSixAxisForceTorqueSensorName(size_t sens_index, yarp::os::ConstString &name) const
+bool embObjFTsensor::getSixAxisForceTorqueSensorName(size_t sens_index, std::string &name) const
 {
     name = GET_privData(mPriv).devicename;
     return true;
 }
 
-bool embObjFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
+bool embObjFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string &frameName) const
 {
     frameName = GET_privData(mPriv).devicename;
     return true;

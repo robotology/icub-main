@@ -177,12 +177,12 @@ yarp::dev::MAS_status embObjIMU::getThreeAxisGyroscopeStatus(size_t sens_index) 
     return sensorState_eo2yarp(GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_gyr));
 }
 
-bool embObjIMU::getThreeAxisGyroscopeName(size_t sens_index, yarp::os::ConstString &name) const
+bool embObjIMU::getThreeAxisGyroscopeName(size_t sens_index, std::string &name) const
 {
     return GET_privData(mPriv).sens.getSensorName(sens_index, eoas_imu_gyr, name);
 }
 
-bool embObjIMU::getThreeAxisGyroscopeFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
+bool embObjIMU::getThreeAxisGyroscopeFrameName(size_t sens_index, std::string &frameName) const
 {
     return GET_privData(mPriv).sens.getSensorFrameName(sens_index, eoas_imu_gyr, frameName);
 }
@@ -202,12 +202,12 @@ yarp::dev::MAS_status embObjIMU::getThreeAxisLinearAccelerometerStatus(size_t se
     return sensorState_eo2yarp(GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_acc));
 }
 
-bool embObjIMU::getThreeAxisLinearAccelerometerName(size_t sens_index, yarp::os::ConstString &name) const
+bool embObjIMU::getThreeAxisLinearAccelerometerName(size_t sens_index, std::string &name) const
 {
     return GET_privData(mPriv).sens.getSensorName(sens_index, eoas_imu_acc, name);
 }
 
-bool embObjIMU::getThreeAxisLinearAccelerometerFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
+bool embObjIMU::getThreeAxisLinearAccelerometerFrameName(size_t sens_index, std::string &frameName) const
 {
     return GET_privData(mPriv).sens.getSensorFrameName(sens_index, eoas_imu_acc, frameName);
 }
@@ -227,12 +227,12 @@ yarp::dev::MAS_status embObjIMU::getThreeAxisMagnetometerStatus(size_t sens_inde
     return sensorState_eo2yarp(GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_mag));
 }
 
-bool embObjIMU::getThreeAxisMagnetometerName(size_t sens_index, yarp::os::ConstString &name) const
+bool embObjIMU::getThreeAxisMagnetometerName(size_t sens_index, std::string &name) const
 {
     return GET_privData(mPriv).sens.getSensorName(sens_index, eoas_imu_mag, name);
 }
 
-bool embObjIMU::getThreeAxisMagnetometerFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
+bool embObjIMU::getThreeAxisMagnetometerFrameName(size_t sens_index, std::string &frameName) const
 {
     return GET_privData(mPriv).sens.getSensorFrameName(sens_index, eoas_imu_mag, frameName);
 }
@@ -252,12 +252,12 @@ yarp::dev::MAS_status embObjIMU::getOrientationSensorStatus(size_t sens_index) c
     return sensorState_eo2yarp(GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_eul));
 }
 
-bool embObjIMU::getOrientationSensorName(size_t sens_index, yarp::os::ConstString &name) const
+bool embObjIMU::getOrientationSensorName(size_t sens_index, std::string &name) const
 {
     return GET_privData(mPriv).sens.getSensorName(sens_index, eoas_imu_eul, name);
 }
 
-bool embObjIMU::getOrientationSensorFrameName(size_t sens_index, yarp::os::ConstString &frameName) const
+bool embObjIMU::getOrientationSensorFrameName(size_t sens_index, std::string &frameName) const
 {
     return GET_privData(mPriv).sens.getSensorFrameName(sens_index, eoas_imu_eul, frameName);
 }
