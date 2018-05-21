@@ -1674,6 +1674,11 @@ bool iCubSimulationControl::calibrateRaw(int axis, double p)
     return NOT_YET_IMPLEMENTED("calibrateRaw");
 }
 
+bool iCubSimulationControl::calibrateRaw(int axis, unsigned int type, double p1, double p2, double p3)
+{
+    return NOT_YET_IMPLEMENTED("calibrateRaw");
+}
+
 bool iCubSimulationControl::doneRaw(int axis)
 {
     return NOT_YET_IMPLEMENTED("doneRaw");

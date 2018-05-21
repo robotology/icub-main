@@ -38,6 +38,11 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 
+#ifndef YARP_NO_DEPRECATED //since 3.0.0
+#include <yarp/dev/IControlLimits2.h>
+#include <yarp/dev/IControlLimits2Impl.h>
+#endif
+
 #include "LogicalJoints.h"
 
 //control mode definitions
@@ -274,6 +279,7 @@ class yarp::dev::iCubSimulationControl :
 
   ////// calibration
   virtual bool calibrateRaw(int j, double p);
+  virtual bool calibrateRaw(int axis, unsigned int type, double p1, double p2, double p3);
   virtual bool doneRaw(int j);
 
   /////// Limits
