@@ -2392,7 +2392,6 @@ ImplementVelocityControl2(this),
 ImplementPidControl(this),
 ImplementEncodersTimed(this),
 ImplementControlCalibration<CanBusMotionControl, IControlCalibration>(this),
-ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>(this),
 ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
 ImplementControlLimits2(this),
 ImplementTorqueControl(this),
@@ -2522,9 +2521,6 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementMotor::initialize(p._njoints, p._axisMap);
 
     ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
-
-    ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::
@@ -3008,7 +3004,6 @@ bool CanBusMotionControl::close (void)
         ImplementEncodersTimed::uninitialize();
         ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::uninitialize();
-        ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>::uninitialize();
         ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
         ImplementControlLimits2::uninitialize();
 
@@ -5631,7 +5626,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
     return true;
 }
 
-bool CanBusMotionControl::calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3)
+bool CanBusMotionControl::calibrateRaw(int axis, unsigned int type, double p1, double p2, double p3)
 {
     bool b = _writeByteWords16(ICUBCANPROTO_POL_MC_CMD__CALIBRATE_ENCODER, axis, type, S_16(p1), S_16(p2), S_16(p3));
     return b;
