@@ -82,8 +82,8 @@
  *This file can be edited at main/src/tools/skinManagerGui/src/main.cpp.
  **/
 
+#include <string>
 #include "iCub/skinManagerGui/guiCallback.h"
-#include <yarp/os/ConstString.h>
 
 bool initGuiStatus() {
     Bottle reply = sendRpcCommand(true, get_binarization);
@@ -299,7 +299,7 @@ int main (int argc, char *argv[])
         return 0;
 
     rf.setDefault("gladeFile", "skinManGui.glade");
-    ConstString gladeFile = rf.findFile("gladeFile");
+    string gladeFile = rf.findFile("gladeFile");
     
     if( !gtk_builder_add_from_file (builder, gladeFile.c_str(), &error)){
         g_warning( "%s", error->message );

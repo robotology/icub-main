@@ -153,9 +153,9 @@ private:
     IInteractionMode *iint_arm_left;
     IInteractionMode *iint_arm_right;
     IInteractionMode *iint_head;
-    IControlMode2 *icmd_arm_left;
-    IControlMode2 *icmd_arm_right;
-    IControlMode2 *icmd_head;
+    IControlMode *icmd_arm_left;
+    IControlMode *icmd_arm_right;
+    IControlMode *icmd_head;
 
     PolyDriver *ddLL;
     PolyDriver *ddLR;
@@ -166,9 +166,9 @@ private:
     IInteractionMode *iint_leg_left;
     IInteractionMode *iint_leg_right;
     IInteractionMode *iint_torso;
-    IControlMode2 *icmd_leg_left;
-    IControlMode2 *icmd_leg_right;
-    IControlMode2 *icmd_torso;
+    IControlMode *icmd_leg_left;
+    IControlMode *icmd_leg_right;
+    IControlMode *icmd_torso;
 
     string part;
 

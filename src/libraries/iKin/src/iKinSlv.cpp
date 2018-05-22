@@ -294,7 +294,7 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     rpcPort=new Port;
     cmdProcessor=new RpcProcessor(this);
     rpcPort->setReader(*cmdProcessor);
-    rpcPort->open(("/"+slvName+"/rpc").c_str());
+    rpcPort->open("/"+slvName+"/rpc");
 
     // token
     token=0.0;
@@ -308,7 +308,7 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
 /************************************************************************/
 PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
 {    
-    string partName=partOpt.find("part").asString().c_str();
+    string partName=partOpt.find("part").asString();
     PolyDriver *pDrv=NULL;
 
     double t0=Time::now();
@@ -1291,7 +1291,7 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     Property DHTable; prt->lmb->toLinksProperties(DHTable);
-    yInfo()<<"DH Table: "<<DHTable.toString().c_str();  // stream version to prevent long strings truncation
+    yInfo()<<"DH Table: "<<DHTable.toString();  // stream version to prevent long strings truncation
     
     if (options.check("ping_robot_tmo"))
         ping_robot_tmo=options.find("ping_robot_tmo").asDouble();
@@ -1454,8 +1454,8 @@ bool CartesianSolver::open(Searchable &options)
     // open ports as very last thing, so that
     // the solver is completely operative
     // when it becomes yarp-visible
-    inPort->open(("/"+slvName+"/in").c_str());
-    outPort->open(("/"+slvName+"/out").c_str());
+    inPort->open("/"+slvName+"/in");
+    outPort->open("/"+slvName+"/out");
 
     return true;
 }
@@ -1771,31 +1771,31 @@ PartDescriptor *iCubArmCartesianSolver::getPartDesc(Searchable &options)
     string part_type=type;
     if (options.check("type"))
     {
-        type=options.find("type").asString().c_str();
+        type=options.find("type").asString();
         part_type=type.substr(0,type.find("_"));
         if ((part_type!="left") && (part_type!="right"))
             type=part_type="right";
     }
 
-    string robot=options.check("robot",Value("icub")).asString().c_str();
+    string robot=options.check("robot",Value("icub")).asString();
     Property optTorso("(device remote_controlboard)");
     Property optArm("(device remote_controlboard)");
 
     string partTorso  ="torso";
     string remoteTorso="/"+robot+"/"+partTorso;
     string localTorso ="/"+slvName+"/"+partTorso;
-    optTorso.put("remote",remoteTorso.c_str());
-    optTorso.put("local",localTorso.c_str());
-    optTorso.put("robot",robot.c_str());
-    optTorso.put("part",partTorso.c_str());
+    optTorso.put("remote",remoteTorso);
+    optTorso.put("local",localTorso);
+    optTorso.put("robot",robot);
+    optTorso.put("part",partTorso);
 
     string partArm  =part_type=="left"?"left_arm":"right_arm";
     string remoteArm="/"+robot+"/"+partArm;
     string localArm ="/"+slvName+"/"+partArm;
-    optArm.put("remote",remoteArm.c_str());
-    optArm.put("local",localArm.c_str());
-    optArm.put("robot",robot.c_str());
-    optArm.put("part",partArm.c_str());
+    optArm.put("remote",remoteArm);
+    optArm.put("local",localArm);
+    optArm.put("robot",robot);
+    optArm.put("part",partArm);
 
     PartDescriptor *p=new PartDescriptor;
     p->lmb=new iCubArm(type);
@@ -1862,23 +1862,23 @@ PartDescriptor *iCubLegCartesianSolver::getPartDesc(Searchable &options)
     string part_type=type;
     if (options.check("type"))
     {
-        type=options.find("type").asString().c_str();
+        type=options.find("type").asString();
         part_type=type.substr(0,type.find("_"));
         if ((part_type!="left") && (part_type!="right"))
             type=part_type="right";
     }
 
-    string robot=options.check("robot",Value("icub")).asString().c_str();
+    string robot=options.check("robot",Value("icub")).asString();
     Property optLeg("(device remote_controlboard)");
 
     string partLeg  =part_type=="left"?"left_leg":"right_leg";
     string remoteLeg="/"+robot+"/"+partLeg;
     string localLeg ="/"+slvName+"/"+partLeg;
 
-    optLeg.put("remote",remoteLeg.c_str());
-    optLeg.put("local",localLeg.c_str());
-    optLeg.put("robot",robot.c_str());
-    optLeg.put("part",partLeg.c_str());
+    optLeg.put("remote",remoteLeg);
+    optLeg.put("local",localLeg);
+    optLeg.put("robot",robot);
+    optLeg.put("part",partLeg);
 
     PartDescriptor *p=new PartDescriptor;
     p->lmb=new iCubLeg(type);

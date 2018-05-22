@@ -59,8 +59,8 @@ public:
     /**********************************************************/
     bool configure(ResourceFinder &rf)
     {
-        string name=rf.check("name",Value("imuFilter")).asString().c_str();
-        string robot=rf.check("robot",Value("icub")).asString().c_str();
+        string name=rf.check("name",Value("imuFilter")).asString();
+        string robot=rf.check("robot",Value("icub")).asString();
         size_t gyro_order=(size_t)rf.check("gyro-order",Value(5)).asInt();
         size_t mag_order=(size_t)rf.check("mag-order",Value(51)).asInt();
         mag_vel_thres_up=rf.check("mag-vel-thres-up",Value(0.04)).asDouble();
@@ -74,12 +74,12 @@ public:
         gyroBias.resize(3,0.0);
         adaptGyroBias=false;
 
-        iPort.open(("/"+name+"/inertial:i").c_str());
-        oPort.open(("/"+name+"/inertial:o").c_str());
-        bPort.open(("/"+name+"/bias:o").c_str());
+        iPort.open("/"+name+"/inertial:i");
+        oPort.open("/"+name+"/inertial:o");
+        bPort.open("/"+name+"/bias:o");
 
         string imuPortName=("/"+robot+"/inertial");
-        if (!Network::connect(imuPortName.c_str(),iPort.getName().c_str()))
+        if (!Network::connect(imuPortName,iPort.getName()))
             yWarning("Unable to connect to %s",imuPortName.c_str());
 
         Time::turboBoost();

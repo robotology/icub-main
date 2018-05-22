@@ -6,13 +6,14 @@
 #ifndef __POSDIRCONTROLTHREAD__
 #define __POSDIRCONTROLTHREAD__
 
+#include <string>
+
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/sig/Vector.h>
-#include <yarp/os/ConstString.h>
 #include <yarp/os/Time.h>
 
 class positionDirectControlThread: public yarp::os::RateThread
@@ -23,7 +24,7 @@ private:
     yarp::dev::IControlLimits   *ilim;
     yarp::dev::IPositionControl *ipos;
     yarp::dev::IEncoders        *ienc;
-    yarp::dev::IControlMode2    *imod;
+    yarp::dev::IControlMode     *imod;
     
     unsigned int part_joints;
     unsigned int control_joints;
@@ -51,7 +52,7 @@ public:
     positionDirectControlThread(int rate);
     ~positionDirectControlThread();
 
-    bool init(yarp::dev::PolyDriver *d, yarp::os::ConstString moduleName, yarp::os::ConstString partName, yarp::os::ConstString robotName, yarp::os::Bottle* jointsList);
+    bool init(yarp::dev::PolyDriver *d, std::string moduleName, std::string partName, std::string robotName, yarp::os::Bottle* jointsList);
 
     void halt();
     void go();

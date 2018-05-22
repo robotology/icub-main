@@ -186,7 +186,7 @@ public:
 class worldSim : public worldSimData {
 public:
     static const bool textured = true;
-    yarp::os::ConstString actWorld;
+    std::string actWorld;
     dTriMeshDataID TriData[100];
     dTriMeshX trimesh[100];
 
@@ -292,7 +292,7 @@ public:
     WorldObjectListOf<MyObject3> sphere_static;
     WorldObjectListOf<MyObject3> sphere_dynamic;
 
-    yarp::os::ConstString texture;
+    std::string texture;
     std::string model_DIR;
 public:
 
@@ -304,7 +304,7 @@ public:
     void activateWorld(RobotConfig& config);
     void init( dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
                RobotConfig& config);
-    void loadTexture(yarp::os::ConstString texture, int numTexture);
+    void loadTexture(std::string texture, int numTexture);
 
 
     ~worldSim();

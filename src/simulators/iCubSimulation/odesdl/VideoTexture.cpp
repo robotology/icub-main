@@ -80,7 +80,7 @@ bool TextureInput::open(Searchable& config) {
     textureIndex = config.check("textureIndex",Value(-1),
                                 "texture index").asInt();
 
-    ConstString texturePort = config.check("port",Value("/texture"),"local port name").asString();
+    string texturePort = config.check("port",Value("/texture"),"local port name").asString();
 
     string portStr = this->moduleName + texturePort.c_str();
     port.open( portStr.c_str() );

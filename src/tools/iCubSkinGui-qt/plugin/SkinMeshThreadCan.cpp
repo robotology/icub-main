@@ -15,10 +15,10 @@ const int CAN_DRIVER_BUFFER_SIZE=2047;
 
 bool SkinMeshThreadCan::threadInit()
 {
-	printf("Image Thread initialising...\n");
+    printf("Image Thread initialising...\n");
 
-	Property prop;
-    prop.put("device", deviceName.c_str());
+    Property prop;
+    prop.put("device", deviceName);
     prop.put("CanTxTimeout", 500);
     prop.put("CanRxTimeout", 500);
     prop.put("CanDeviceNum", netId);
@@ -63,7 +63,7 @@ bool SkinMeshThreadCan::threadInit()
 }
 
 void SkinMeshThreadCan::run()
-{	
+{   
     mutex.wait();
 
     unsigned int canMessages=0;
@@ -97,8 +97,8 @@ void SkinMeshThreadCan::run()
 
 void SkinMeshThreadCan::threadRelease()
 {
-	printf("Skin Mesh Thread releasing...\n");	
-	if (pCanBufferFactory) 
+    printf("Skin Mesh Thread releasing...\n");  
+    if (pCanBufferFactory) 
     {
         pCanBufferFactory->destroyBuffer(canBuffer);
     }

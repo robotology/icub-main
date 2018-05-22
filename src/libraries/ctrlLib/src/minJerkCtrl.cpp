@@ -214,9 +214,9 @@ void minJerkVelCtrlForNonIdealPlant::setPlantParameters(const Property &paramete
     {        
         ostringstream entry;
         entry<<entryTag<<"_"<<(ordering.size()==0?i:ordering.get(i).asInt());
-        if (parameters.check(entry.str().c_str()))
+        if (parameters.check(entry.str()))
         {
-            if (Bottle *options=parameters.find(entry.str().c_str()).asList())
+            if (Bottle *options=parameters.find(entry.str()).asList())
             {
                 if (options->check("Kp"))
                     Kp[i]=options->find("Kp").asDouble();
@@ -252,10 +252,10 @@ void minJerkVelCtrlForNonIdealPlant::getPlantParameters(Property &parameters,
         prop.put("Tw",Tw[i]);
         prop.put("Zeta",Zeta[i]);
 
-        entry<<prop.toString().c_str()<<")) ";
+        entry<<prop.toString()<<")) ";
     }
 
-    parameters.fromString(entry.str().c_str());
+    parameters.fromString(entry.str());
 }
 
 

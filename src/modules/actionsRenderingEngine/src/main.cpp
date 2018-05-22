@@ -450,7 +450,7 @@ protected:
         bool found=false;
         for(int i=0; i<bot.size(); i++)
         {
-            if(bot.get(i).asString()==name.c_str())
+            if(bot.get(i).asString()==name)
             {
                 found=true;
                 break;
@@ -468,7 +468,7 @@ public:
 
     bool initialize(ResourceFinder &rf)
     {
-        string name=rf.check("name",Value("actionsRenderingEngine")).asString().c_str();
+        string name=rf.check("name",Value("actionsRenderingEngine")).asString();
 
         initializer=new Initializer(rf);
 
@@ -545,7 +545,7 @@ public:
                 rep+="\"impedance on/off\"\\off\t\t\tset the impedance control on or off\n";
                 rep+="\"mode homography\"\\disparity\\network\t\t\tset the 'stereo to cartesian' mode";
                 rep+="\"status\"\t\t\tget the module current status\n";
-                reply.addString(rep.c_str());
+                reply.addString(rep);
                 break;
             }
 
@@ -635,7 +635,7 @@ public:
             {
                 if (command.size()>=4)
                 {
-                    string arm=command.get(1).asString().c_str();
+                    string arm=command.get(1).asString();
                     double height=command.get(2).asDouble();
                     double weight=command.get(3).asDouble();
 
@@ -898,9 +898,9 @@ public:
 
                                 default:
                                 {
-                                    string rep=command.get(1).asString().c_str();
+                                    string rep=command.get(1).asString();
                                     reply.addVocab(NACK);
-                                    reply.addString(("parameter '"+rep+"' not supported by 'explore' command.").c_str());
+                                    reply.addString("parameter '"+rep+"' not supported by 'explore' command.");
                                     break;
                                 }
                             }
@@ -976,16 +976,16 @@ public:
                     {
                         if(check(command,"start"))
                         {
-                            string action_name=command.get(1).asString().c_str();
+                            string action_name=command.get(1).asString();
 
                             Bottle &action=command.addList();
                             action.addString("action_name");
-                            action.addString(action_name.c_str());
+                            action.addString(action_name);
 
                             if(!motorThr->startLearningModeAction(command))
                             {
                                 reply.addVocab(NACK);
-                                reply.addString(("action "+action_name+" already known").c_str());
+                                reply.addString("action "+action_name+" already known");
                             }
                             else
                             {
@@ -1013,23 +1013,23 @@ public:
 
                     case CMD_ACTION_IMITATE:
                     {
-                        string action_name=command.get(1).asString().c_str();
+                        string action_name=command.get(1).asString();
 
                         Bottle &action=command.addList();
                         action.addString("action_name");
-                        action.addString(action_name.c_str());
+                        action.addString(action_name);
 
                         motorThr->lookAtHand(command);
 
                         if(!motorThr->imitateAction(command))
                         {
                             reply.addVocab(NACK);
-                            reply.addString(("action "+action_name+" unknown").c_str());
+                            reply.addString("action "+action_name+" unknown");
                         }
                         else
                         {
                             reply.addVocab(ACK);
-                            reply.addString(("action "+action_name+" done").c_str());
+                            reply.addString("action "+action_name+" done");
                         }
                         motorThr->setGazeIdle();
 
@@ -1040,7 +1040,7 @@ public:
 
                     case CMD_LEARN_MIL:
                     {
-                        string obj_name=command.get(1).asString().c_str();
+                        string obj_name=command.get(1).asString();
                         if(motorThr->isHolding(command)) //
                             motorThr->deploy(command);
 
@@ -1052,11 +1052,11 @@ public:
                             visuoThr->getTarget(v,command);
                         }
 
-                        visuoThr->startLearningMIL(obj_name.c_str());
+                        visuoThr->startLearningMIL(obj_name);
                         motorThr->exploreTorso(command);
                         visuoThr->trainMIL();
 
-                        reply.addString((obj_name + " learned").c_str());
+                        reply.addString(obj_name + " learned");
                         break;
                     }
 
@@ -1485,7 +1485,7 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        string name=rf.check("name",Value("actionsRenderingEngine")).asString().c_str();
+        string name=rf.check("name",Value("actionsRenderingEngine")).asString();
         setName(name.c_str());
 
         are=new ActionsRenderingEngine();
@@ -1502,9 +1502,9 @@ public:
         port_cmd.setReader(*port_reader_cmd);
         port_get.setReader(*port_reader_get);
 
-        port_cmd.open(("/"+name+"/cmd:io").c_str());
-        port_get.open(("/"+name+"/get:io").c_str());
-        port_rpc.open(("/"+name+"/rpc").c_str());
+        port_cmd.open("/"+name+"/cmd:io");
+        port_get.open("/"+name+"/get:io");
+        port_rpc.open("/"+name+"/rpc");
 
         attach(port_rpc);
 

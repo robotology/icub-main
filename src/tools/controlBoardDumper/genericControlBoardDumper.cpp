@@ -183,7 +183,7 @@ bool GetTrqs::getData(double *e)
     return 0;
 }
 
-void GetControlModes::setInterface(IControlMode2 *i, int n_joints)
+void GetControlModes::setInterface(IControlMode *i, int n_joints)
 {
     icmd = i;
     nj=n_joints;

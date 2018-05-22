@@ -493,22 +493,21 @@ CamCalibModule::~CamCalibModule()
 
 bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
 {
-
-    ConstString str = rf.check("name", Value("/camCalib"), "module name (string)").asString();
+    string str = rf.check("name", Value("/camCalib"), "module name (string)").asString();
     setName(str.c_str()); // modulePortName
 
     double maxDelay = rf.check("maxDelay", Value(0.010), "Max delay between image and encoders").asDouble();
 
     // pass configuration over to bottle
-    Bottle botConfig(rf.toString().c_str());
+    Bottle botConfig(rf.toString());
     botConfig.setMonitor(rf.getMonitor());
     // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
     if(botConfig.check("group", valGroup, "Configuration group to load module options from (string).")) {
-        strGroup = valGroup->asString().c_str();
+        strGroup = valGroup->asString();
         // is group a valid bottle?
-        if (botConfig.check(strGroup.c_str())){
-            Bottle &group=botConfig.findGroup(strGroup.c_str(),string("Loading configuration from group " + strGroup).c_str());
+        if (botConfig.check(strGroup)){
+            Bottle &group=botConfig.findGroup(strGroup,"Loading configuration from group " + strGroup);
             botConfig.fromString(group.toString());
         } else {
             yError() << "Group " << strGroup << " not found.";
@@ -521,7 +520,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
 
     string calibToolName = botConfig.check("projection",
                                            Value("pinhole"),
-                                           "Projection/mapping applied to calibrated image [projection|spherical] (string).").asString().c_str();
+                                           "Projection/mapping applied to calibrated image [projection|spherical] (string).").asString();
 
     _calibTool = CalibToolFactories::getPool().get(calibToolName.c_str());
     if (_calibTool!=NULL) {

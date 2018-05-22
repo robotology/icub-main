@@ -8,9 +8,9 @@
 
 #include <yarp/os/Time.h>
 #include <yarp/os/Log.h>
-#include <yarp/os/ConstString.h>
 #include <iostream>
-#include <string.h>
+#include <cstring>
+#include <string>
 
 #include <canProtocolLib/iCubCanProto_skinMessages.h>
 
@@ -33,7 +33,7 @@ using namespace std;
 
 
 bool checkRequiredParamIsString(yarp::os::Searchable& config,
-                                const yarp::os::ConstString& paramName)
+                                const std::string& paramName)
 {
     bool correct = config.check(paramName);
     if( correct )
@@ -50,7 +50,7 @@ bool checkRequiredParamIsString(yarp::os::Searchable& config,
 }
 
 bool checkRequiredParamIsInt(yarp::os::Searchable& config,
-                             const yarp::os::ConstString& paramName)
+                             const std::string& paramName)
 {
     bool correct = config.check(paramName);
     if( correct )
@@ -67,7 +67,7 @@ bool checkRequiredParamIsInt(yarp::os::Searchable& config,
 }
 
 bool checkRequiredParamIsVectorOfInt(yarp::os::Searchable& config,
-                                     const yarp::os::ConstString& paramName,
+                                     const std::string& paramName,
                                      std::vector<int> & output_vector)
 {
     bool correct = !(config.findGroup(paramName).isNull());
@@ -91,7 +91,7 @@ bool checkRequiredParamIsVectorOfInt(yarp::os::Searchable& config,
 
 // \todo TODO bug ? 
 bool checkRequiredParamIsVectorOfString(yarp::os::Searchable& config,
-                                     const yarp::os::ConstString& paramName,
+                                     const std::string& paramName,
                                      std::vector<std::string> & output_vector)
 {
     bool correct = !(config.findGroup(paramName).isNull());

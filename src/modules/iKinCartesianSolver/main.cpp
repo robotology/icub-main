@@ -161,11 +161,11 @@ protected:
             return NULL;
         }
 
-        string robot=options.find("robot").asString().c_str();
+        string robot=options.find("robot").asString();
         yInfo()<<"Configuring solver for "<<robot<<" ...";
 
         Property linksOptions;
-        linksOptions.fromConfigFile(pathToCustomKinFile.c_str());
+        linksOptions.fromConfigFile(pathToCustomKinFile);
         iKinLimb *limb=new iKinLimb(linksOptions);
         if (!limb->isValid())
         {
@@ -185,7 +185,7 @@ protected:
         {
             ostringstream str;
             str<<"driver_"<<cnt;
-            Bottle &driver=options.findGroup(str.str().c_str());
+            Bottle &driver=options.findGroup(str.str());
             if (driver.isNull())
             {
                 yError()<<"\""<<str.str()<<"\" option is missing!";
@@ -207,15 +207,15 @@ protected:
                 break;
             }
 
-            string part=driver.find("Key").asString().c_str();
+            string part=driver.find("Key").asString();
             bool directOrder=(driver.find("JointsOrder").asString()=="direct");
 
             Property optPart;
             optPart.put("device","remote_controlboard");
-            optPart.put("remote",("/"+robot+"/"+part).c_str());
-            optPart.put("local",("/"+slvName+"/"+part).c_str());
-            optPart.put("robot",robot.c_str());
-            optPart.put("part",part.c_str());
+            optPart.put("remote","/"+robot+"/"+part);
+            optPart.put("local","/"+slvName+"/"+part);
+            optPart.put("robot",robot);
+            optPart.put("part",part);
             p->prp.push_back(optPart);
             p->rvs.push_back(directOrder);
         }
@@ -255,14 +255,14 @@ public:
     {                
         string part, slvName;
         if (rf.check("part"))
-            part=rf.find("part").asString().c_str();
+            part=rf.find("part").asString();
         else
         {
             yError()<<"part option is not specified";
             return false;
         }
 
-        Bottle &group=rf.findGroup(part.c_str());
+        Bottle &group=rf.findGroup(part);
         if (group.isNull())
         {
             yError()<<"unable to locate "<<part<<" definition";
@@ -270,7 +270,7 @@ public:
         }
 
         if (group.check("name"))
-            slvName=group.find("name").asString().c_str();
+            slvName=group.find("name").asString();
         else
         {
             yError()<<"name option is missing";
@@ -283,9 +283,9 @@ public:
 
             ResourceFinder rf_kin;
             rf_kin.setVerbose(true);
-            rf_kin.setDefaultContext(rf.getContext().c_str());
+            rf_kin.setDefaultContext(rf.getContext());
             rf_kin.configure(0,NULL);
-            pathToCustomKinFile=rf_kin.findFileByName(group.find("CustomKinFile").asString()).c_str();
+            pathToCustomKinFile=rf_kin.findFileByName(group.find("CustomKinFile").asString());
 
             slv=new CustomCartesianSolver(slvName);
         }

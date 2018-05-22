@@ -89,7 +89,7 @@ void ClientGazeController::init()
 /************************************************************************/
 bool ClientGazeController::open(Searchable &config)
 {
-    ConstString remote, local, carrier;
+    string remote, local, carrier;
 
     if (config.check("remote"))
         remote=config.find("remote").asString();
@@ -107,18 +107,18 @@ bool ClientGazeController::open(Searchable &config)
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
         
-    portCmdFp.open((local+"/xd:o").c_str());
-    portCmdAng.open((local+"/angles:o").c_str());
-    portCmdMono.open((local+"/mono:o").c_str());
-    portCmdStereo.open((local+"/stereo:o").c_str());
-    portStateFp.open((local+"/x:i").c_str());
-    portStateAng.open((local+"/angles:i").c_str());
-    portStateHead.open((local+"/q:i").c_str());
-    portEvents.open((local+"/events:i").c_str());
-    portRpc.open((local+"/rpc").c_str());    
+    portCmdFp.open(local+"/xd:o");
+    portCmdAng.open(local+"/angles:o");
+    portCmdMono.open(local+"/mono:o");
+    portCmdStereo.open(local+"/stereo:o");
+    portStateFp.open(local+"/x:i");
+    portStateAng.open(local+"/angles:i");
+    portStateHead.open(local+"/q:i");
+    portEvents.open(local+"/events:i");
+    portRpc.open(local+"/rpc");    
 
     bool ok=true;
-    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());
+    ok&=Network::connect(portRpc.getName(),remote+"/rpc");
     if (ok)
     {
         Bottle info;
@@ -144,14 +144,14 @@ bool ClientGazeController::open(Searchable &config)
         return false;
     }
 
-    ok&=Network::connect(portCmdFp.getName().c_str(),(remote+"/xd:i").c_str(),carrier.c_str());
-    ok&=Network::connect(portCmdAng.getName().c_str(),(remote+"/angles:i").c_str(),carrier.c_str());
-    ok&=Network::connect(portCmdMono.getName().c_str(),(remote+"/mono:i").c_str(),carrier.c_str());
-    ok&=Network::connect(portCmdStereo.getName().c_str(),(remote+"/stereo:i").c_str(),carrier.c_str());
-    ok&=Network::connect((remote+"/x:o").c_str(),portStateFp.getName().c_str(),carrier.c_str());
-    ok&=Network::connect((remote+"/angles:o").c_str(),portStateAng.getName().c_str(),carrier.c_str());
-    ok&=Network::connect((remote+"/q:o").c_str(),portStateHead.getName().c_str(),carrier.c_str());
-    ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),carrier.c_str());
+    ok&=Network::connect(portCmdFp.getName(),remote+"/xd:i",carrier);
+    ok&=Network::connect(portCmdAng.getName(),remote+"/angles:i",carrier);
+    ok&=Network::connect(portCmdMono.getName(),remote+"/mono:i",carrier);
+    ok&=Network::connect(portCmdStereo.getName(),remote+"/stereo:i",carrier);
+    ok&=Network::connect(remote+"/x:o",portStateFp.getName(),carrier);
+    ok&=Network::connect(remote+"/angles:o",portStateAng.getName(),carrier);
+    ok&=Network::connect(remote+"/q:o",portStateHead.getName(),carrier);
+    ok&=Network::connect(remote+"/events:o",portEvents.getName(),carrier);
 
     return connected=ok;
 }
@@ -793,7 +793,7 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o,
     Bottle command, reply;
     command.addString("get");
     command.addString("pose");
-    command.addString(poseSel.c_str());
+    command.addString(poseSel);
 
     if (!portRpc.write(command,reply))
     {
@@ -1360,7 +1360,7 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const double min,
 
     Bottle command, reply;
     command.addString("bind");
-    command.addString(joint.c_str());
+    command.addString(joint);
     command.addDouble(min);
     command.addDouble(max);
 
@@ -1394,7 +1394,7 @@ bool ClientGazeController::getNeckJointRange(const string &joint, double *min,
 
     Bottle command, reply;
     command.addString("get");
-    command.addString(joint.c_str());
+    command.addString(joint);
 
     if (!portRpc.write(command,reply))
     {
@@ -1421,7 +1421,7 @@ bool ClientGazeController::clearJoint(const string &joint)
 
     Bottle command, reply;
     command.addString("clear");
-    command.addString(joint.c_str());
+    command.addString(joint);
 
     if (!portRpc.write(command,reply))
     {
@@ -1896,7 +1896,7 @@ bool ClientGazeController::getInfo(Bottle &info)
 /************************************************************************/
 void ClientGazeController::eventHandling(Bottle &event)
 {
-    string type=event.get(0).asString().c_str();
+    string type=event.get(0).asString();
     double time=event.get(1).asDouble();
     double checkPoint=(type=="motion-ongoing")?event.get(2).asDouble():-1.0;
     map<string,GazeEvent*>::iterator itr;
@@ -1908,7 +1908,7 @@ void ClientGazeController::eventHandling(Bottle &event)
         if (itr->second!=NULL)
         {
             GazeEvent &Event=*itr->second;
-            Event.gazeEventVariables.type=ConstString(type.c_str());
+            Event.gazeEventVariables.type=type;
             Event.gazeEventVariables.time=time;
 
             if (checkPoint>=0.0)
@@ -1933,7 +1933,7 @@ void ClientGazeController::eventHandling(Bottle &event)
         if (itr->second!=NULL)
         {
             GazeEvent &Event=*itr->second;
-            Event.gazeEventVariables.type=ConstString(type.c_str());
+            Event.gazeEventVariables.type=type;
             Event.gazeEventVariables.time=time;
 
             if (checkPoint>=0.0)
@@ -1951,7 +1951,7 @@ bool ClientGazeController::registerEvent(GazeEvent &event)
     if (!connected)
         return false;
 
-    string type=event.gazeEventParameters.type.c_str();
+    string type=event.gazeEventParameters.type;
     if (type=="motion-ongoing")
     {
         double checkPoint=event.gazeEventParameters.motionOngoingCheckPoint;
@@ -1986,7 +1986,7 @@ bool ClientGazeController::unregisterEvent(GazeEvent &event)
     if (!connected)
         return false;
 
-    string type=event.gazeEventParameters.type.c_str();
+    string type=event.gazeEventParameters.type;
     if (type=="motion-ongoing")
     {
         double checkPoint=event.gazeEventParameters.motionOngoingCheckPoint;

@@ -33,7 +33,7 @@
 #include "rendering.h"
 #pragma warning(disable:4244 4305)  //for VC++, no precision loss complaints
 #include "VideoTexture.h"
-#include <string.h>
+#include <cstring>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
@@ -86,31 +86,31 @@ bool setup_opengl(ResourceFinder& finder){
     //glMaterialfv(GL_FRONT,GL_DIFFUSE,light_color); // colour
     glClearColor(0.0,0.0,0.0,0); // background color
 
-    ConstString floor = finder.findFile("floor");
+    string floor = finder.findFile("floor");
     Texture[0] = LoadTextureRAW( floor.c_str(), false );
 
-    ConstString body1 = finder.findFile("body1");
+    string body1 = finder.findFile("body1");
     Texture[1] = LoadTextureRAW( body1.c_str(), false );
 
-    ConstString body2 = finder.findFile("body2");
+    string body2 = finder.findFile("body2");
     Texture[2] = LoadTextureRAW( body2.c_str(), false );
 
-    ConstString skybox_ft = finder.findFile("skybox_ft");
+    string skybox_ft = finder.findFile("skybox_ft");
     Texture[3] = LoadTextureRAW( skybox_ft.c_str(), false );
 
-    ConstString skybox_bk = finder.findFile("skybox_bk");
+    string skybox_bk = finder.findFile("skybox_bk");
     Texture[4] = LoadTextureRAW( skybox_bk.c_str(), false );
 
-    ConstString skybox_lt = finder.findFile("skybox_lt");
+    string skybox_lt = finder.findFile("skybox_lt");
     Texture[5] = LoadTextureRAW( skybox_lt.c_str(), false );
 
-    ConstString skybox_rt = finder.findFile("skybox_rt");
+    string skybox_rt = finder.findFile("skybox_rt");
     Texture[6] = LoadTextureRAW( skybox_rt.c_str(), false );
 
-    ConstString skybox_up = finder.findFile("skybox_up");
+    string skybox_up = finder.findFile("skybox_up");
     Texture[7] = LoadTextureRAW( skybox_up.c_str(), false );
 
-    ConstString face = finder.findFile("face");
+    string face = finder.findFile("face");
     Texture[8] = LoadTextureRAW( face.c_str(), false );
 
     if (!Texture[1]){

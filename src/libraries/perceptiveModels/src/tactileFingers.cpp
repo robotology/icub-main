@@ -40,7 +40,7 @@ bool TactileFinger::fromProperty(const Property &options)
     callbacks.clear();
     neighbors.clear();
 
-    name=options.find("name").asString().c_str();
+    name=options.find("name").asString();
     directLogic=(options.check("logic",Value("direct")).asString()=="direct");
     outputGain=options.check("output_gain",Value(1.0)).asDouble();
 
@@ -56,7 +56,7 @@ bool TactileFinger::fromProperty(const Property &options)
 void TactileFinger::toProperty(Property &options) const
 {
     options.clear();
-    options.put("name",name.c_str());
+    options.put("name",name);
     options.put("logic",directLogic?"direct":"inverse");
     options.put("output_gain",outputGain);
 }
@@ -184,19 +184,19 @@ bool TactileFingersModel::fromProperty(const Property &options)
     if (configured)
         close();
 
-    name=options.find("name").asString().c_str();
-    type=options.find("type").asString().c_str();
-    robot=options.check("robot",Value("icub")).asString().c_str();
-    carrier=options.check("carrier",Value("udp")).asString().c_str();
+    name=options.find("name").asString();
+    type=options.find("type").asString();
+    robot=options.check("robot",Value("icub")).asString();
+    carrier=options.check("carrier",Value("udp")).asString();
     compensation=(options.check("compensation",Value("false")).asString()=="true");
     verbosity=options.check("verbosity",Value(0)).asInt();
 
-    port->open(("/"+name+"/"+type+"_hand:i").c_str());
-    string skinPortName(("/"+robot+"/skin/"+type+"_hand").c_str());
+    port->open("/"+name+"/"+type+"_hand:i");
+    string skinPortName("/"+robot+"/skin/"+type+"_hand");
     if (compensation)
         skinPortName+="_comp";
 
-    if (!Network::connect(skinPortName.c_str(),port->getName().c_str(),carrier.c_str()))
+    if (!Network::connect(skinPortName,port->getName(),carrier))
     {
         printMessage(log::error,1,"unable to connect to %s",skinPortName.c_str());
         close();
@@ -211,7 +211,7 @@ bool TactileFingersModel::fromProperty(const Property &options)
         tag<<"In_"<<(j%12);
 
         Property prop;
-        prop.put("name",tag.str().c_str());
+        prop.put("name",tag.str());
         prop.put("index",j);
 
         if (!sensPort[j].configure(pPort,prop))
@@ -279,29 +279,29 @@ void TactileFingersModel::toProperty(Property &options) const
         fingers[4].toProperty(prop[4]);
 
         string thumb="(thumb ";
-        thumb+=prop[0].toString().c_str();
+        thumb+=prop[0].toString();
         thumb+=")";
 
         string index="(index ";
-        index+=prop[1].toString().c_str();
+        index+=prop[1].toString();
         index+=")";
 
         string middle="(middle ";
-        middle+=prop[2].toString().c_str();
+        middle+=prop[2].toString();
         middle+=")";
 
         string ring="(ring ";
-        ring+=prop[3].toString().c_str();
+        ring+=prop[3].toString();
         ring+=")";
 
         string little="(little ";
-        little+=prop[4].toString().c_str();
+        little+=prop[4].toString();
         little+=")";
 
-        options.fromString((thumb+index+middle+ring+little).c_str());
-        options.put("name",name.c_str());
-        options.put("type",type.c_str());
-        options.put("robot",robot.c_str());
+        options.fromString(thumb+index+middle+ring+little);
+        options.put("name",name);
+        options.put("type",type);
+        options.put("robot",robot);
         options.put("compensation",compensation?"true":"false");
         options.put("verbosity",verbosity);
     }

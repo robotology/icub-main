@@ -301,7 +301,7 @@ bool SimulatorModule::read(ConnectionReader& connection){
 }
 
 bool SimulatorModule::respond(const Bottle &command, Bottle &reply) {
-    ConstString cmd = command.get(0).asString();
+    string cmd = command.get(0).asString();
     bool ok = true;
     bool done = false;
     if (cmd=="help") {
@@ -337,9 +337,9 @@ bool SimulatorModule::respond(const Bottle &command, Bottle &reply) {
 yarp::dev::PolyDriver *SimulatorModule::createPart(const char *name) {
     yDebug("Creating interface for body part %s\n", name);
     Property options;
-    ConstString part_file = finder.findFile(name);
+    string part_file = finder.findFile(name);
     options.fromConfigFile(part_file.c_str());
-    ConstString part_port = options.check("name",Value(1),"what did the user select?").asString();
+    string part_port = options.check("name",Value(1),"what did the user select?").asString();
     string full_name = moduleName + part_port.c_str();
     options.put("name", full_name.c_str() );
     options.put("joint_device", "robot_joints");
@@ -488,39 +488,39 @@ bool SimulatorModule::initSimulatorModule()
 void SimulatorModule::initImagePorts() {
     Property options;
 
-    ConstString cameras = finder.findFile("cameras");
+    string cameras = finder.findFile("cameras");
     options.fromConfigFile(cameras.c_str());
     
-    ConstString nameExternal = 
+    string nameExternal = 
         options.check("name_wide",
                       Value("/cam"),
                       "Name of external view camera port").asString();
     
-    ConstString nameLeft = 
+    string nameLeft = 
         options.check("name_left",
                       Value("/cam/left"),
                       "Name of left camera port").asString();
     
-    ConstString nameRight = 
+    string nameRight = 
         options.check("name_right",
                       Value("/cam/right"),
                       "Name of right camera port").asString();
 
 #ifndef OMIT_LOGPOLAR
-    ConstString nameLeftFov = 
+    string nameLeftFov = 
         options.check("name_leftFov",
                       Value("/cam/left/fov"),
                       "Name of left camera fovea port").asString();
-    ConstString nameRightFov = 
+    string nameRightFov = 
         options.check("name_rightFov",
                       Value("/cam/right/fov"),
                       "Name of right camera fovea port ").asString();
 
-    ConstString nameLeftLog = 
+    string nameLeftLog = 
         options.check("name_leftLog",
                       Value("/cam/left/logpolar"),
                       "Name of left camera logpolar port").asString();
-    ConstString nameRightLog = 
+    string nameRightLog = 
         options.check("name_rightLog",
                       Value("/cam/right/logpolar"),
                       "Name of right camera logpolar port").asString();

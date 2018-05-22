@@ -491,11 +491,11 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     
     if (optGeneral.check("port"))
     {
-        string name=optGeneral.find("port").asString().c_str();
+        string name=optGeneral.find("port").asString();
         if (name[0]!='/')
             name="/"+name;
 
-        if (!port.open(name.c_str()))
+        if (!port.open(name))
             return false;
     }
 
@@ -851,7 +851,7 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
 
     double tau=options.find("tau").asDouble();
     double K=options.find("K").asDouble();
-    string type=options.check("type",Value("PI")).asString().c_str();
+    string type=options.check("type",Value("PI")).asString();
     double omega_c=2.0*M_PI*options.find("f_c").asDouble();
     double Kp,Ki;
 

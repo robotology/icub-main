@@ -47,7 +47,7 @@ bool SensorEncoders::configure(void *source, const Property &options)
         return false;
 
     this->source=source;
-    name=options.find("name").asString().c_str();
+    name=options.find("name").asString();
     size=options.find("size").asInt();
     index=options.find("index").asInt();
 
@@ -76,7 +76,7 @@ bool SensorPort::configure(void *source, const Property &options)
         return false;
 
     this->source=source;
-    name=options.find("name").asString().c_str();
+    name=options.find("name").asString();
     index=options.find("index").asInt();
 
     return configured=true;

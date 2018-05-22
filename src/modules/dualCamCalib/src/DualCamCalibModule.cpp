@@ -29,7 +29,7 @@ CamCalibModule::~CamCalibModule()
 
 bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
 {
-    ConstString str = rf.check("name", Value("/camCalib"), "module name (string)").asString();
+    string str = rf.check("name", Value("/camCalib"), "module name (string)").asString();
     verboseExecTime = rf.check("verboseExecTime");
 
     if      (rf.check("w_align")) align=ALIGN_WIDTH;

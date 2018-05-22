@@ -18,10 +18,10 @@
 #ifndef OBJECTSTHREAD_H
 #define OBJECTSTHREAD_H
 
+#include <string>
 #include <qstring.h>
 #include <qthread.h>
 #include <vector>
-#include <yarp/os/ConstString.h>
 #include <yarp/os/Log.h>
 #include <yarp/sig/Vector.h>
 #include <iCub/skinDynLib/skinContactList.h>
@@ -192,7 +192,7 @@ protected:
 
 void ObjectsManager::manage(yarp::os::Bottle *msg)
 {
-    yarp::os::ConstString cmd=msg->get(0).asString();
+    std::string cmd=msg->get(0).asString();
 
     if (cmd=="reset")
     {

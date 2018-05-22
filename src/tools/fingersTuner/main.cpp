@@ -196,7 +196,7 @@ protected:
 
         ostringstream joint;
         joint<<"joint_"<<i;
-        Bottle &bJoint=bGroup.findGroup(joint.str().c_str());
+        Bottle &bJoint=bGroup.findGroup(joint.str());
 
         pid.Kp=bJoint.check("Kp",Value(0.0)).asDouble();
         pid.Ki=bJoint.check("Ki",Value(0.0)).asDouble();
@@ -237,7 +237,7 @@ protected:
     /************************************************************************/
     void idlingCoupledJoints(const int i, const bool sw)
     {
-        IControlMode2 *imod;
+        IControlMode *imod;
         driver->view(imod);
 
         PidData &pid=pids[i];
@@ -254,11 +254,11 @@ protected:
         Property pGeneral;
         pGeneral.put("joint",i);
         string sGeneral="(general ";
-        sGeneral+=pGeneral.toString().c_str();
+        sGeneral+=pGeneral.toString();
         sGeneral+=')';
 
         Bottle bGeneral,bPlantEstimation,bStictionEstimation;
-        bGeneral.fromString(sGeneral.c_str());
+        bGeneral.fromString(sGeneral);
         bPlantEstimation.fromString("(plant_estimation (Ts 0.01) (Q 1.0) (R 1.0) (P0 100000.0) (tau 1.0) (K 1.0) (max_pwm 800.0))");
         bStictionEstimation.fromString("(stiction_estimation (Ts 0.01) (T 2.0) (vel_thres 5.0) (e_thres 1.0) (gamma (10.0 10.0)) (stiction (0.0 0.0)))");
 
@@ -355,7 +355,7 @@ protected:
         pid.st_down=floor(pResults.find("stiction").asList()->get(1).asDouble());
         yInfo("Stiction values: up = %g; down = %g",pid.st_up,pid.st_down);
 
-        IControlMode2 *imod;
+        IControlMode *imod;
         IPositionControl *ipos;
         IEncoders *ienc;
         driver->view(imod);
@@ -405,7 +405,7 @@ public:
             return false;
         }
 
-        Bottle &bPart=rf.findGroup(part.c_str());
+        Bottle &bPart=rf.findGroup(part);
         if (bPart.isNull())
         {
             yError("group [%s] is missing!",part.c_str());
@@ -418,10 +418,10 @@ public:
             return false;
         }
 
-        name=bGeneral.check("name",Value("fingersTuner")).asString().c_str();
-        robot=bGeneral.check("robot",Value("icub")).asString().c_str();
+        name=bGeneral.check("name",Value("fingersTuner")).asString();
+        robot=bGeneral.check("robot",Value("icub")).asString();
         double ping_robot_tmo=bGeneral.check("ping_robot_tmo",Value(0.0)).asDouble();
-        device=bPart.find("device").asString().c_str();
+        device=bPart.find("device").asString();
 
         if (Bottle *rj=bGeneral.find("relevantJoints").asList())
             rJoints=*rj;
@@ -436,9 +436,9 @@ public:
         {
             ostringstream item;
             item<<"alias_"<<i;
-            Bottle &bAlias=bGeneral.findGroup(item.str().c_str());
+            Bottle &bAlias=bGeneral.findGroup(item.str());
             if (Bottle *joints=bAlias.find("joints").asList())
-                alias[bAlias.find("tag").asString().c_str()]=*joints;
+                alias[bAlias.find("tag").asString()]=*joints;
         }
 
         // special wildcard to point to all the joints
@@ -454,8 +454,8 @@ public:
         portsSuffix<<instances<<"/"<<device;
 
         Property option("(device remote_controlboard)");
-        option.put("remote",("/"+robot+"/"+device).c_str());
-        option.put("local",("/"+name+"/"+portsSuffix.str()).c_str());
+        option.put("remote","/"+robot+"/"+device);
+        option.put("local","/"+name+"/"+portsSuffix.str());
 
         if (ping_robot_tmo>0.0)
             driver=waitPart(option,ping_robot_tmo);
@@ -479,7 +479,7 @@ public:
             joints.addInt(sel.asInt());
         else if (sel.isString())
         {
-            map<string,Bottle>::iterator it=alias.find(sel.asString().c_str());
+            map<string,Bottle>::iterator it=alias.find(sel.asString());
             if (it!=alias.end())
                 joints=it->second;
             else
@@ -523,7 +523,7 @@ public:
             joints.addInt(sel.asInt());
         else if (sel.isString())
         {
-            map<string,Bottle>::iterator it=alias.find(sel.asString().c_str());
+            map<string,Bottle>::iterator it=alias.find(sel.asString());
             if (it!=alias.end())
                 joints=it->second;
             else
@@ -582,7 +582,7 @@ public:
             prop.put("status",pid.status==download?"download":"upload");
 
             stream<<"joint_"<<j<<"   ";
-            stream<<prop.toString().c_str()<<endl;
+            stream<<prop.toString()<<endl;
         }
 
         return stream.str();
@@ -628,14 +628,14 @@ public:
             return false;
         }
 
-        string name=bGeneral.check("name",Value("fingersTuner")).asString().c_str();
+        string name=bGeneral.check("name",Value("fingersTuner")).asString();
         setName(name.c_str());
 
         if (Bottle *bParts=bGeneral.find("relevantParts").asList())
         {
             for (int i=0; (i<bParts->size()) && !interrupting; i++)
             {
-                string part=bParts->get(i).asString().c_str();
+                string part=bParts->get(i).asString();
                 tuners[part]=new Tuner;
                 Tuner *tuner=tuners[part];
 
@@ -654,7 +654,7 @@ public:
             return false;
         }
 
-        rpcPort.open(("/"+name+"/rpc").c_str());
+        rpcPort.open("/"+name+"/rpc");
         attach(rpcPort);
 
         // request high resolution scheduling
@@ -723,17 +723,17 @@ public:
     /************************************************************************/
     bool save()
     {
-        string fileName=rf->getHomeContextPath().c_str();
+        string fileName=rf->getHomeContextPath();
         fileName+="/";
-        fileName+=rf->find("from").asString().c_str();
+        fileName+=rf->find("from").asString();
 
         ofstream fout;
         fout.open(fileName.c_str());
 
         Bottle &bGeneral=rf->findGroup("general");
-        fout<<"["<<bGeneral.get(0).asString().c_str()<<"]"<<endl;
+        fout<<"["<<bGeneral.get(0).asString()<<"]"<<endl;
         for (int i=1; i<bGeneral.size(); i++)
-            fout<<bGeneral.get(i).toString().c_str()<<endl;
+            fout<<bGeneral.get(i).toString()<<endl;
 
         fout<<endl;
         for (map<string,Tuner*>::iterator it=tuners.begin(); it!=tuners.end(); ++it)

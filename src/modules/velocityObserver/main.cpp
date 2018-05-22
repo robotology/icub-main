@@ -252,7 +252,7 @@ public:
         // request high resolution scheduling
         Time::turboBoost();
 
-        string portName=rf.check("name",Value("/velObs")).asString().c_str();
+        string portName=rf.check("name",Value("/velObs")).asString();
 
         unsigned int NVel=rf.check("lenVel",Value(16)).asInt();
         unsigned int NAcc=rf.check("lenAcc",Value(25)).asInt();
@@ -284,14 +284,14 @@ public:
             DAcc=0.0;
         }
 
-        port_vel.open((portName+"/vel:o").c_str());
-        port_acc.open((portName+"/acc:o").c_str());
+        port_vel.open(portName+"/vel:o");
+        port_acc.open(portName+"/acc:o");
 
         port_pos=new dataCollector(NVel,DVel,port_vel,NAcc,DAcc,port_acc);
         port_pos->useCallback();
-        port_pos->open((portName+"/pos:i").c_str());
+        port_pos->open(portName+"/pos:i");
 
-        rpcPort.open((portName+"/rpc").c_str());
+        rpcPort.open(portName+"/rpc");
         attach(rpcPort);
 
         return true;

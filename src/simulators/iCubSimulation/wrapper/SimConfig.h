@@ -54,15 +54,15 @@ public:
     // to be fixed.
     std::string configure(int argc, char *argv[], std::string &moduleName, int &verbosity);
     
-    //yarp::os::ConstString find(const char *fileName);
-    //yarp::os::ConstString findPath(const char *key);
+    //std::stringfind(const char *fileName);
+    //std::string findPath(const char *key);
     //bool isActive();
 
     //void deleteFinder();
 
     // RobotConfig interface
 
-    virtual yarp::os::ConstString getModuleName() {
+    virtual std::string getModuleName() {
         return moduleName.c_str();
     }
     

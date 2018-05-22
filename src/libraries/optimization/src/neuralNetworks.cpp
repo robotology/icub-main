@@ -64,7 +64,7 @@ protected:
     bool getBounds(const string &tag, double &min, double &max)
     {
         min=-1.0; max=1.0;
-        if (Bottle *b=bounds.find(tag.c_str()).asList())
+        if (Bottle *b=bounds.find(tag).asList())
         {
             if (b->size()>=2)
             {

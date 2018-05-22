@@ -14,21 +14,19 @@
 #include <vector>
 #include <string>
 
-#include <yarp/os/ConstString.h>
-
 // iCub
 #include <iCub/ICalibTool.h>
 
 class CalibToolFactory {
 public:
     virtual ICalibTool *create() = 0;
-    virtual yarp::os::ConstString getName() = 0;
+    virtual std::string getName() = 0;
 };
 
 template <class T>
 class CalibToolFactoryOf : public CalibToolFactory {
 private:
-    yarp::os::ConstString name;
+    std::string name;
 public:
     CalibToolFactoryOf(const char *name) : name(name) {
     }
@@ -37,7 +35,7 @@ public:
         return new T;
     }
     
-    virtual yarp::os::ConstString getName() {
+    virtual std::string getName() {
         return name;
     }
 };

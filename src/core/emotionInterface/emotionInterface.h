@@ -28,12 +28,12 @@ public:
     
     virtual ~IEmotionInterface(){}
    
-    virtual bool setEyelids(const ConstString s)=0;    
-    virtual bool setMouth(const ConstString s)=0;
-    virtual bool setLeftEyebrow(const ConstString s)=0;
-    virtual bool setRightEyebrow(const ConstString s)=0;
-    virtual bool setAll(const ConstString s)=0;
-    virtual bool setRaw(const ConstString s)=0;
+    virtual bool setEyelids(const std::string s)=0;    
+    virtual bool setMouth(const std::string s)=0;
+    virtual bool setLeftEyebrow(const std::string s)=0;
+    virtual bool setRightEyebrow(const std::string s)=0;
+    virtual bool setAll(const std::string s)=0;
+    virtual bool setRaw(const std::string s)=0;
 
 };
 

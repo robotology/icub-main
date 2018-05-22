@@ -632,7 +632,7 @@ protected:
     /************************************************************************/
     PolyDriver *waitPart(const Property &partOpt, const double ping_robot_tmo)
     {
-        string partName=partOpt.find("part").asString().c_str();
+        string partName=partOpt.find("part").asString();
         PolyDriver *pDrv=NULL;
 
         double t0=Time::now();
@@ -1010,7 +1010,7 @@ protected:
         loc->getExtrinsicsMatrix("right",HNR);
 
         ofstream fout;
-        string tweakFile=rf->getHomeContextPath().c_str();
+        string tweakFile=rf->getHomeContextPath();
         tweakFile+="/"+commData.tweakFile;
         fout.open(tweakFile.c_str());
         if (fout.is_open())
@@ -1117,15 +1117,15 @@ public:
         Bottle &tweakGroup=rf.findGroup("tweak");
 
         // get params from the command-line
-        ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString().c_str();
-        headName=rf.check("head",Value("head")).asString().c_str();
-        torsoName=rf.check("torso",Value("torso")).asString().c_str();
+        ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString();
+        headName=rf.check("head",Value("head")).asString();
+        torsoName=rf.check("torso",Value("torso")).asString();
         neckTime=trajTimeGroup.check("neck",Value(0.75)).asDouble();
         eyesTime=trajTimeGroup.check("eyes",Value(0.25)).asDouble();
         min_abs_vel=CTRL_DEG2RAD*fabs(rf.check("min_abs_vel",Value(0.0)).asDouble());
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();
 
-        commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
+        commData.robotName=rf.check("robot",Value("icub")).asString();
         commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-12.0)).asDouble();
         commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asDouble();
         commData.head_version=constrainHeadVersion(rf.check("head_version",Value(1.0)).asDouble());
@@ -1152,15 +1152,15 @@ public:
         {
             commData.rf_cameras.setQuiet();
             camerasGroup.check("context")?
-            commData.rf_cameras.setDefaultContext(camerasGroup.find("context").asString().c_str()):
-            commData.rf_cameras.setDefaultContext(rf.getContext().c_str());
+            commData.rf_cameras.setDefaultContext(camerasGroup.find("context").asString()):
+            commData.rf_cameras.setDefaultContext(rf.getContext());
             commData.rf_cameras.setDefaultConfigFile(camerasGroup.find("file").asString().c_str());
             commData.rf_cameras.configure(0,NULL);
         }
 
         commData.rf_tweak.setQuiet();
-        commData.rf_tweak.setDefaultContext(rf.getContext().c_str());
-        commData.tweakFile=tweakGroup.check("file",Value("tweak.ini")).asString().c_str();
+        commData.rf_tweak.setDefaultContext(rf.getContext());
+        commData.tweakFile=tweakGroup.check("file",Value("tweak.ini")).asString();
         commData.tweakOverwrite=(tweakGroup.check("overwrite",Value("on")).asString()=="on");
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,NULL);
@@ -1176,17 +1176,17 @@ public:
 
         // check if we have to retrieve IMU data from a different port
         if (imuGroup.check("source_port_name"))
-            remoteInertialName=imuGroup.find("source_port_name").asString().c_str();
+            remoteInertialName=imuGroup.find("source_port_name").asString();
 
         Property optTorso("(device remote_controlboard)");
-        optTorso.put("remote",remoteTorsoName.c_str());
-        optTorso.put("local",localTorsoName.c_str());
-        optTorso.put("part",torsoName.c_str());
+        optTorso.put("remote",remoteTorsoName);
+        optTorso.put("local",localTorsoName);
+        optTorso.put("part",torsoName);
 
         Property optHead("(device remote_controlboard)");
-        optHead.put("remote",remoteHeadName.c_str());
-        optHead.put("local",localHeadName.c_str());
-        optHead.put("part",headName.c_str());
+        optHead.put("remote",remoteHeadName);
+        optHead.put("local",localHeadName);
+        optHead.put("part",headName);
         // mixed position/velocity control entails
         // to send two packets per control slot
         optHead.put("writeStrict","on");
@@ -1226,8 +1226,8 @@ public:
         imuPort.setExchangeData(&commData);
         if (commData.stabilizationOn)
         {
-            imuPort.open((commData.localStemName+"/inertial:i").c_str());
-            if (Network::connect(remoteInertialName.c_str(),imuPort.getName().c_str()))
+            imuPort.open(commData.localStemName+"/inertial:i");
+            if (Network::connect(remoteInertialName,imuPort.getName()))
                 yInfo("Receiving IMU data from %s",remoteInertialName.c_str());
             else
             {
@@ -1250,7 +1250,7 @@ public:
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,20);
 
         commData.port_xd=new xdPort(slv);
-        commData.port_xd->open((commData.localStemName+"/xd:i").c_str());
+        commData.port_xd->open(commData.localStemName+"/xd:i");
 
         // this switch-on order does matter !!
         eyesRefGen->start();
@@ -1258,7 +1258,7 @@ public:
         ctrl->start();
         loc->start();
 
-        rpcPort.open((commData.localStemName+"/rpc").c_str());
+        rpcPort.open(commData.localStemName+"/rpc");
         attach(rpcPort);
 
         contextIdCnt=0;
@@ -1421,7 +1421,7 @@ public:
                         }
                         else if ((type==VOCAB4('p','o','s','e')) && (command.size()>2))
                         {
-                            string poseSel=command.get(2).asString().c_str();
+                            string poseSel=command.get(2).asString();
                             Vector x;
                             Stamp  stamp;
 
@@ -1444,7 +1444,7 @@ public:
                                 if (bOpt->size()>3)
                                 {
                                     Vector x(3);
-                                    string eye=bOpt->get(0).asString().c_str();
+                                    string eye=bOpt->get(0).asString();
                                     x[0]=bOpt->get(1).asDouble();
                                     x[1]=bOpt->get(2).asDouble();
                                     x[2]=bOpt->get(3).asDouble();
@@ -1468,7 +1468,7 @@ public:
                                 {
                                     if (bOpt->size()>3)
                                     {
-                                        string eye=bOpt->get(0).asString().c_str();
+                                        string eye=bOpt->get(0).asString();
                                         double u=bOpt->get(1).asDouble();
                                         double v=bOpt->get(2).asDouble();
                                         double z=bOpt->get(3).asDouble();
@@ -1512,7 +1512,7 @@ public:
                                     if (bOpt->size()>6)
                                     {
                                         Vector plane(4);
-                                        string eye=bOpt->get(0).asString().c_str();
+                                        string eye=bOpt->get(0).asString();
                                         double u=bOpt->get(1).asDouble();
                                         double v=bOpt->get(2).asDouble();
                                         plane[0]=bOpt->get(3).asDouble();
@@ -1537,7 +1537,7 @@ public:
                                     if (bOpt->size()>3)
                                     {
                                         Vector ang(3);
-                                        string type=bOpt->get(0).asString().c_str();
+                                        string type=bOpt->get(0).asString();
                                         ang[0]=CTRL_DEG2RAD*bOpt->get(1).asDouble();
                                         ang[1]=CTRL_DEG2RAD*bOpt->get(2).asDouble();
                                         ang[2]=CTRL_DEG2RAD*bOpt->get(3).asDouble();
@@ -1731,7 +1731,7 @@ public:
                             {
                                 if (bOpt->size()>3)
                                 {
-                                    string eye=bOpt->get(0).asString().c_str();
+                                    string eye=bOpt->get(0).asString();
                                     double u=bOpt->get(1).asDouble();
                                     double v=bOpt->get(2).asDouble();
                                     double z;
@@ -1795,7 +1795,7 @@ public:
                                 if (bOpt->size()>3)
                                 {
                                     Vector ang(3);
-                                    string type=bOpt->get(0).asString().c_str();
+                                    string type=bOpt->get(0).asString();
                                     ang[0]=CTRL_DEG2RAD*bOpt->get(1).asDouble();
                                     ang[1]=CTRL_DEG2RAD*bOpt->get(2).asDouble();
                                     ang[2]=CTRL_DEG2RAD*bOpt->get(3).asDouble();
