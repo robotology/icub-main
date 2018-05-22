@@ -74,17 +74,17 @@ static string configureFinder(int argc, char *argv[],
 }
 
 /*
-ConstString SimConfig::find(const char *fileName) {
+string SimConfig::find(const char *fileName) {
     yDebug("SimConfig::find\n");
     // yDebug("SimConfig: asked to find %s\n", fileName);
-    ConstString location = findFile(fileName);
+    string location = findFile(fileName);
     if (location!="") {
         //yDebug("Found config: %s\n", location.c_str());
     }
     return location;
 }
 
-ConstString SimConfig::findPath(const char *key) {
+string SimConfig::findPath(const char *key) {
     yDebug("SimConfig::findPath\n");
    // yDebug("SimConfig: asked to find %s\n", fileName);
     return ResourceFinder::findPath(key);//find(key);

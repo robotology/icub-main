@@ -244,7 +244,7 @@ bool BcbBattery::getBatteryTemperature(double &temperature)
     return false;
 }
 
-bool BcbBattery::getBatteryInfo(yarp::os::ConstString &info)
+bool BcbBattery::getBatteryInfo(string &info)
 {
     this->mutex.wait();
     info = battery_info;

@@ -68,7 +68,7 @@ protected:
     PolyDriver         drvCartL;
     PolyDriver         drvCartR;
     PolyDriver         drvGaze;
-    IControlMode2     *imods;
+    IControlMode      *imods;
     IEncoders         *iencs;
     IPositionControl  *iposs;
     IAnalogSensor     *ianalog;
@@ -130,7 +130,7 @@ protected:
     bool pushExtrinsics(const string &eye, const Matrix &H);
     bool getDepth(const Vector &px, Vector &x, Vector &pxr);
     bool getDepthAveraged(const Vector &px, Vector &x, Vector &pxr, const int maxSamples=5);
-    void openHand(IControlMode2 *imod, IPositionControl *ipos);
+    void openHand(IControlMode *imod, IPositionControl *ipos);
     void postureHelper(const Vector &gaze_ang, const Matrix &targetL, const Matrix &targetR);
     void prepareRobot();
     int removeOutliers();

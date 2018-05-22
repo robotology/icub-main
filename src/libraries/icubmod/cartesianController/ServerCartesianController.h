@@ -42,7 +42,7 @@ class ServerCartesianController;
 
 struct DriverDescriptor
 {
-    yarp::os::ConstString key;
+    std::string key;
     bool jointsDirectOrder;
 
     yarp::sig::Vector minAbsVels;
@@ -120,16 +120,15 @@ protected:
     bool posDirectEnabled;
     bool posDirectAvailable;
     bool multipleJointsControlEnabled;
-    bool multipleJointsVelAvailable;
     bool pidAvailable;
     bool useReferences;
     bool jointsHealthy;
     bool debugInfoEnabled;
 
-    yarp::os::ConstString ctrlName;
-    yarp::os::ConstString slvName;
-    yarp::os::ConstString kinPart;
-    yarp::os::ConstString kinType;
+    std::string ctrlName;
+    std::string slvName;
+    std::string kinPart;
+    std::string kinType;
     int numDrv;
 
     iCub::iKin::iKinLimb            *limbState,*limbPlan;
@@ -141,7 +140,7 @@ protected:
     SmithPredictor     smithPredictor;
 
     std::deque<DriverDescriptor>             lDsc;
-    std::deque<yarp::dev::IControlMode2*>    lMod;
+    std::deque<yarp::dev::IControlMode*>     lMod;
     std::deque<yarp::dev::IEncoders*>        lEnc;
     std::deque<yarp::dev::IEncodersTimed*>   lEnt;
     std::deque<yarp::dev::IPidControl*>      lPid;
@@ -196,20 +195,20 @@ protected:
 
     struct Context
     {
-        yarp::sig::Vector     dof;
-        yarp::sig::Vector     restPos;
-        yarp::sig::Vector     restWeights;
-        yarp::sig::Vector     tip_x;
-        yarp::sig::Vector     tip_o;
-        yarp::sig::Matrix     limits;
-        double                trajTime;
-        double                tol;
-        bool                  mode;
-        bool                  useReferences;
-        double                straightness;
-        yarp::os::ConstString posePriority;
-        yarp::os::Value       task_2;
-        yarp::os::Bottle      solverConvergence;
+        yarp::sig::Vector dof;
+        yarp::sig::Vector restPos;
+        yarp::sig::Vector restWeights;
+        yarp::sig::Vector tip_x;
+        yarp::sig::Vector tip_o;
+        yarp::sig::Matrix limits;
+        double            trajTime;
+        double            tol;
+        bool              mode;
+        bool              useReferences;
+        double            straightness;
+        std::string       posePriority;
+        yarp::os::Value   task_2;
+        yarp::os::Bottle  solverConvergence;
     };
 
     int contextIdCnt;
@@ -281,8 +280,8 @@ public:
     bool getTrackingMode(bool *f);
     bool setReferenceMode(const bool f);
     bool getReferenceMode(bool *f);
-    bool setPosePriority(const yarp::os::ConstString &p);
-    bool getPosePriority(yarp::os::ConstString &p);
+    bool setPosePriority(const std::string &p);
+    bool getPosePriority(std::string &p);
     bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);

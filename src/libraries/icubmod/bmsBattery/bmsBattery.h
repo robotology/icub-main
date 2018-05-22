@@ -65,7 +65,7 @@ public:
     virtual bool getBatteryCurrent     (double &current);
     virtual bool getBatteryCharge      (double &charge);
     virtual bool getBatteryStatus      (int &status);
-    virtual bool getBatteryInfo        (yarp::os::ConstString &info);
+    virtual bool getBatteryInfo        (std::string &info);
     virtual bool getBatteryTemperature (double &temperature);
 
     virtual bool threadInit();

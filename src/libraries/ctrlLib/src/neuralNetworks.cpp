@@ -50,14 +50,14 @@ void ff2LayNN::setItem(Property &options, const string &tag, const Vector &item)
     for (size_t i=0; i<item.length(); i++)
         v.addDouble(item[i]);
 
-    options.put(tag.c_str(),b.get(0));
+    options.put(tag,b.get(0));
 }
 
 
 /***************************************************************************/
 bool ff2LayNN::getItem(const Property &options, const string &tag, Vector &item) const
 {
-    if (Bottle *b=options.find(tag.c_str()).asList())
+    if (Bottle *b=options.find(tag).asList())
     {
         item.resize(b->size());
         for (size_t i=0; i<item.length(); i++)
@@ -335,17 +335,17 @@ bool ff2LayNN::printStructure(ostream &stream) const
 
     stream<<"***** Hidden Layer Weights *****"<<endl;
     for (size_t i=0; i<IW.size(); i++)
-        stream<<"IW_"<<i<<": ["<<IW[i].toString(16,1).c_str()<<"]"<<endl;
+        stream<<"IW_"<<i<<": ["<<IW[i].toString(16,1)<<"]"<<endl;
 
     stream<<"***** Hidden Layer Bias *****"<<endl;
-    stream<<"b1: ["<<b1.toString(16,1).c_str()<<"]"<<endl;
+    stream<<"b1: ["<<b1.toString(16,1)<<"]"<<endl;
 
     stream<<"***** Output Layer Weights *****"<<endl;
     for (size_t i=0; i<LW.size(); i++)
-        stream<<"LW_"<<i<<": ["<<LW[i].toString(16,1).c_str()<<"]"<<endl;
+        stream<<"LW_"<<i<<": ["<<LW[i].toString(16,1)<<"]"<<endl;
 
     stream<<"***** Output Layer Bias *****"<<endl;
-    stream<<"b2: ["<<b2.toString(16,1).c_str()<<"]"<<endl;
+    stream<<"b2: ["<<b2.toString(16,1)<<"]"<<endl;
 
     stream<<"***** Output Layer Range *****"<<endl;
     for (size_t i=0; i<outMinMaxX.size(); i++)

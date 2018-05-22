@@ -60,10 +60,10 @@ public:
   }
 
   // read and write structure on a connection
-  bool read(yarp::os::idl::WireReader& reader);
-  bool read(yarp::os::ConnectionReader& connection);
-  bool write(yarp::os::idl::WireWriter& writer);
-  bool write(yarp::os::ConnectionWriter& connection);
+  bool read(yarp::os::idl::WireReader& reader) override;
+  bool read(yarp::os::ConnectionReader& connection) override;
+  bool write(yarp::os::idl::WireWriter& writer) override;
+  bool write(yarp::os::ConnectionWriter& connection) override;
 
 private:
   bool write_result(yarp::os::idl::WireWriter& writer);
@@ -85,7 +85,7 @@ private:
 
 public:
 
-  yarp::os::ConstString toString();
+  std::string toString();
 
   // if you want to serialize this class without nesting, use this helper
   typedef yarp::os::idl::Unwrapped<PointReq > unwrapped;
@@ -183,8 +183,8 @@ public:
     void clean() {
       dirty_flags(false);
     }
-    bool read(yarp::os::ConnectionReader& connection);
-    bool write(yarp::os::ConnectionWriter& connection);
+    bool read(yarp::os::ConnectionReader& connection) override;
+    bool write(yarp::os::ConnectionWriter& connection) override;
   private:
 
     PointReq *obj;

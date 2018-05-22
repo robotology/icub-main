@@ -1350,7 +1350,7 @@ void iKinLimb::pushLink(iKinLink *pl)
 void iKinLimb::getMatrixFromProperties(const Property &options, const string &tag,
                                        Matrix &H)
 {
-    if (Bottle *bH=options.find(tag.c_str()).asList())
+    if (Bottle *bH=options.find(tag).asList())
     {
         int i=0;
         int j=0;
@@ -1378,7 +1378,7 @@ void iKinLimb::setMatrixToProperties(Property &options, const string &tag,
         for (int c=0; c<H.cols(); c++)
             l.addDouble(H(r,c));
 
-    options.put(tag.c_str(),b.get(0));
+    options.put(tag,b.get(0));
 }
 
 
@@ -1387,7 +1387,7 @@ bool iKinLimb::fromLinksProperties(const Property &options)
 {
     dispose();    
 
-    type=options.check("type",Value("right")).asString().c_str();
+    type=options.check("type",Value("right")).asString();
 
     getMatrixFromProperties(options,"H0",H0);
     getMatrixFromProperties(options,"HN",HN);
@@ -1409,7 +1409,7 @@ bool iKinLimb::fromLinksProperties(const Property &options)
         ostringstream link;
         link<<"link_"<<i;
 
-        Bottle &bLink=options.findGroup(link.str().c_str());
+        Bottle &bLink=options.findGroup(link.str());
         if (bLink.isNull())
         {
             yError("%s is missing!",link.str().c_str());
@@ -1447,7 +1447,7 @@ bool iKinLimb::toLinksProperties(Property &options)
         Bottle &link=links.addList();
         ostringstream tag;
         tag<<"link_"<<i;
-        link.addString(tag.str().c_str());
+        link.addString(tag.str());
 
         Bottle &A=link.addList();
         A.addString("A");
@@ -1483,7 +1483,7 @@ bool iKinLimb::toLinksProperties(Property &options)
 
     links.write(options);
 
-    options.put("type",getType().c_str());
+    options.put("type",getType());
     options.put("numLinks",(int)N);
 
     setMatrixToProperties(options,"H0",H0);

@@ -24,17 +24,18 @@
 #include <yarp/os/LogStream.h>
 #include <iostream>
 #include <cstdlib>
+#include <string>
 
 using namespace yarp::os;
 using namespace std;
 
-static void set_flag(bool& flag,const ConstString& str) {
+static void set_flag(bool& flag,const string& str) {
     flag = (str=="on" || str=="1" || str=="ON" || str=="true" || str=="TRUE");
 }
 #define FLAGIFY(flags,name) set_flag(flags.name,name)
 
 void RobotConfig::setFlags() {
-    ConstString parts = getFinder().findFile("parts");
+    string parts = getFinder().findFile("parts");
     if (parts == ""){
          parts = getFinder().findFile("general");
     }
@@ -43,100 +44,100 @@ void RobotConfig::setFlags() {
     options.fromConfigFile(parts.c_str());
 
     RobotFlags& flags = getFlags();
-	//bool proceed = false;
+    //bool proceed = false;
 
-    ConstString actElevation = options.findGroup("SETUP").check("elevation",Value(1),"what did the user select?").asString();
-	if ( actElevation.length()<1 ) stopConfig("actElevation");//, proceed);
+    string actElevation = options.findGroup("SETUP").check("elevation",Value(1),"what did the user select?").asString();
+    if ( actElevation.length()<1 ) stopConfig("actElevation");//, proceed);
     FLAGIFY(flags,actElevation);
 
-    ConstString actStartHomePos = options.findGroup("SETUP").check("startHomePos",Value(1),"what did the user select?").asString();
+    string actStartHomePos = options.findGroup("SETUP").check("startHomePos",Value(1),"what did the user select?").asString();
     if (actStartHomePos.length()<1 ) stopConfig("actStartHomePos");//, proceed);
-	FLAGIFY(flags, actStartHomePos);
+    FLAGIFY(flags, actStartHomePos);
 
-    ConstString actLegs = options.findGroup("PARTS").check("legs",Value(1),"what did the user select?").asString();
-	if (actLegs.length()<1 ) stopConfig("actLegs");//, proceed);
-	FLAGIFY(flags,actLegs);
+    string actLegs = options.findGroup("PARTS").check("legs",Value(1),"what did the user select?").asString();
+    if (actLegs.length()<1 ) stopConfig("actLegs");//, proceed);
+    FLAGIFY(flags,actLegs);
 
-    ConstString actTorso = options.findGroup("PARTS").check("torso",Value(1),"what did the user select?").asString();
-	if (actTorso.length()<1 ) stopConfig("actTorso");//, proceed);
+    string actTorso = options.findGroup("PARTS").check("torso",Value(1),"what did the user select?").asString();
+    if (actTorso.length()<1 ) stopConfig("actTorso");//, proceed);
     FLAGIFY(flags,actTorso);
 
-    ConstString actLArm = options.findGroup("PARTS").check("left_arm",Value(1),"what did the user select?").asString();
-	if (actLArm.length()<1 ) stopConfig("actLArm");//, proceed);
+    string actLArm = options.findGroup("PARTS").check("left_arm",Value(1),"what did the user select?").asString();
+    if (actLArm.length()<1 ) stopConfig("actLArm");//, proceed);
     FLAGIFY(flags,actLArm);
 
-    ConstString actRArm = options.findGroup("PARTS").check("right_arm",Value(1),"what did the user select?").asString();
-	if (actRArm.length()<1 ) stopConfig("actRArm");//, proceed);
+    string actRArm = options.findGroup("PARTS").check("right_arm",Value(1),"what did the user select?").asString();
+    if (actRArm.length()<1 ) stopConfig("actRArm");//, proceed);
     FLAGIFY(flags,actRArm);
 
-    ConstString actLHand = options.findGroup("PARTS").check("left_hand",Value(1),"what did the user select?").asString();
+    string actLHand = options.findGroup("PARTS").check("left_hand",Value(1),"what did the user select?").asString();
     if (actLHand.length()<1 ) stopConfig("actLHand");//, proceed);
-	FLAGIFY(flags,actLHand);
+    FLAGIFY(flags,actLHand);
     
-	ConstString actRHand = options.findGroup("PARTS").check("right_hand",Value(1),"what did the user select?").asString();
-	if (actRHand.length()<1 ) stopConfig("actRHand");//, proceed);
+    string actRHand = options.findGroup("PARTS").check("right_hand",Value(1),"what did the user select?").asString();
+    if (actRHand.length()<1 ) stopConfig("actRHand");//, proceed);
     FLAGIFY(flags,actRHand);
 
-    ConstString actHead = options.findGroup("PARTS").check("head",Value(1),"what did the user select?").asString();
-	if (actHead.length()<1 ) stopConfig("actHead");//, proceed);
+    string actHead = options.findGroup("PARTS").check("head",Value(1),"what did the user select?").asString();
+    if (actHead.length()<1 ) stopConfig("actHead");//, proceed);
     FLAGIFY(flags,actHead);
 
-    ConstString actfixedHip = options.findGroup("PARTS").check("fixed_hip",Value(1),"what did the user select?").asString();
-	if (actfixedHip.length()<1 ) stopConfig("actfixedHip");//, proceed);
+    string actfixedHip = options.findGroup("PARTS").check("fixed_hip",Value(1),"what did the user select?").asString();
+    if (actfixedHip.length()<1 ) stopConfig("actfixedHip");//, proceed);
     FLAGIFY(flags,actfixedHip);
     
-    ConstString actSelfCol = options.findGroup("COLLISIONS").check("self_collisions",Value(1),"what did the user select?").asString();
+    string actSelfCol = options.findGroup("COLLISIONS").check("self_collisions",Value(1),"what did the user select?").asString();
     if (actSelfCol.length()<1 ) stopConfig("actSelfCol");//, proceed);
     FLAGIFY(flags,actSelfCol);
 
-    ConstString actCoversCol = options.findGroup("COLLISIONS").check("covers_collisions",Value(1),"what did the user select?").asString();
+    string actCoversCol = options.findGroup("COLLISIONS").check("covers_collisions",Value(1),"what did the user select?").asString();
     if (actCoversCol.length()<1 ) stopConfig("actCoversCol");//, proceed);
     FLAGIFY(flags,actCoversCol);
     
-    ConstString actVision = options.findGroup("VISION").check("cam",Value(1),"What did the user select?").asString();
-	if (actVision.length()<1 ) stopConfig("actVision");//, proceed);
+    string actVision = options.findGroup("VISION").check("cam",Value(1),"What did the user select?").asString();
+    if (actVision.length()<1 ) stopConfig("actVision");//, proceed);
     FLAGIFY(flags,actVision);
 
-    ConstString actPressure = options.findGroup("SENSORS").check("pressure",Value(1),"What did the user select?").asString();
-	if (actPressure.length()<1 ) stopConfig("actPressure");//, proceed);
+    string actPressure = options.findGroup("SENSORS").check("pressure",Value(1),"What did the user select?").asString();
+    if (actPressure.length()<1 ) stopConfig("actPressure");//, proceed);
     FLAGIFY(flags,actPressure);
     
-    ConstString actSkinEmul = options.findGroup("SENSORS").check("whole_body_skin_emul",Value(1),"What did the user select?").asString();
+    string actSkinEmul = options.findGroup("SENSORS").check("whole_body_skin_emul",Value(1),"What did the user select?").asString();
     if (actSkinEmul.length()<1 ) stopConfig("actSkinEmul");//, proceed);
     FLAGIFY(flags,actSkinEmul);
 
-    ConstString actWorld = options.findGroup("RENDER").check("objects",Value(1),"What did the user select?").asString();
-	if (actWorld.length()<1 ) stopConfig("actWorld");//, proceed);
+    string actWorld = options.findGroup("RENDER").check("objects",Value(1),"What did the user select?").asString();
+    if (actWorld.length()<1 ) stopConfig("actWorld");//, proceed);
     FLAGIFY(flags,actWorld);
 
-    ConstString actScreen = options.findGroup("RENDER").check("screen",Value(1),"What did the user select?").asString();
-	if (actScreen.length()<1 ) stopConfig("actScreen");//, proceed);
+    string actScreen = options.findGroup("RENDER").check("screen",Value(1),"What did the user select?").asString();
+    if (actScreen.length()<1 ) stopConfig("actScreen");//, proceed);
     FLAGIFY(flags,actScreen);
 
-    ConstString actHeadCover = options.findGroup("RENDER").check("head_cover",Value(1),"What did the user select?").asString();
-	if (actHeadCover.length()<1 ) stopConfig("actHeadCover");//, proceed);
+    string actHeadCover = options.findGroup("RENDER").check("head_cover",Value(1),"What did the user select?").asString();
+    if (actHeadCover.length()<1 ) stopConfig("actHeadCover");//, proceed);
     FLAGIFY(flags,actHeadCover);
     
-    ConstString actLegsCovers = options.findGroup("RENDER").check("legs_covers",Value(1),"What did the user select?").asString();
-	if (actLegsCovers.length()<1 ) stopConfig("actLegsCovers");//, proceed);
+    string actLegsCovers = options.findGroup("RENDER").check("legs_covers",Value(1),"What did the user select?").asString();
+    if (actLegsCovers.length()<1 ) stopConfig("actLegsCovers");//, proceed);
     FLAGIFY(flags,actLegsCovers);
     
-    ConstString actLeftArmCovers = options.findGroup("RENDER").check("left_arm_covers",Value(1),"What did the user select?").asString();
-	if (actLeftArmCovers.length()<1 ) stopConfig("actLeftArmCovers");//, proceed);
+    string actLeftArmCovers = options.findGroup("RENDER").check("left_arm_covers",Value(1),"What did the user select?").asString();
+    if (actLeftArmCovers.length()<1 ) stopConfig("actLeftArmCovers");//, proceed);
     FLAGIFY(flags,actLeftArmCovers);
 
-    ConstString actRightArmCovers = options.findGroup("RENDER").check("right_arm_covers",Value(1),"What did the user select?").asString();
-	if (actRightArmCovers.length()<1 ) stopConfig("actRightArmCovers");//, proceed);
+    string actRightArmCovers = options.findGroup("RENDER").check("right_arm_covers",Value(1),"What did the user select?").asString();
+    if (actRightArmCovers.length()<1 ) stopConfig("actRightArmCovers");//, proceed);
     FLAGIFY(flags,actRightArmCovers);
 
-    ConstString actTorsoCovers = options.findGroup("RENDER").check("torso_covers",Value(1),"What did the user select?").asString();
-	if ( actTorsoCovers.length()<1 ) stopConfig("actTorsoCovers");//, proceed);
+    string actTorsoCovers = options.findGroup("RENDER").check("torso_covers",Value(1),"What did the user select?").asString();
+    if ( actTorsoCovers.length()<1 ) stopConfig("actTorsoCovers");//, proceed);
     FLAGIFY(flags,actTorsoCovers);
 
-	//if (proceed)
-		flags.valid = true;
-	//else
-		//flags.valid = false;
+    //if (proceed)
+        flags.valid = true;
+    //else
+        //flags.valid = false;
 
         yInfo() << "The iCub simulator will start with the following configuration: \n\n" <<
         "Elevation : " << actElevation << "\n" <<
@@ -161,18 +162,18 @@ void RobotConfig::setFlags() {
         "Right arm Covers : " << actRightArmCovers << "\n" <<
         "Torso Cover : " << actTorsoCovers << "\n" <<
         "Screen : " << actScreen << "\n" << "\n";
-		
+        
 }
 
 
-//bool RobotConfig::stopConfig(ConstString error, bool proceed){
-void RobotConfig::stopConfig( ConstString error ){
+//bool RobotConfig::stopConfig(string error, bool proceed){
+void RobotConfig::stopConfig( string error ){
 
-	yError() << "\n\n\nThere seems to be a conflict with the " << error << " configuration file";
-	yError() << "Check the iCub_parts_activation.ini under $ICUB_ROOT/app/simConfig ";
-	yError() << "If it still does not work (update svn) and re-install the app folder\n\n";
-	yError() << "The iCub simulator will not start..\n\n\n";
-	std::exit(1); // we can do this as no port has been created yet
-	//return false;
+    yError() << "\n\n\nThere seems to be a conflict with the " << error << " configuration file";
+    yError() << "Check the iCub_parts_activation.ini under $ICUB_ROOT/app/simConfig ";
+    yError() << "If it still does not work (update svn) and re-install the app folder\n\n";
+    yError() << "The iCub simulator will not start..\n\n\n";
+    std::exit(1); // we can do this as no port has been created yet
+    //return false;
 }
 

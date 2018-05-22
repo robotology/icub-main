@@ -5,9 +5,9 @@
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 #include "positionDirectThread.h"
-#include <string.h>
+#include <cstring>
 #include <string>
-#include <math.h>
+#include <cmath>
 
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
@@ -126,7 +126,7 @@ void positionDirectControlThread::threadRelease()
     command_port.close();
 }
 
-bool positionDirectControlThread::init(PolyDriver *d, ConstString moduleName, ConstString partName, ConstString robotName, Bottle* jointsList)
+bool positionDirectControlThread::init(PolyDriver *d, std::string moduleName, std::string partName, std::string robotName, Bottle* jointsList)
 {
     yarp::os::Time::turboBoost();
 

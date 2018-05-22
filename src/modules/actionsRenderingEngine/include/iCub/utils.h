@@ -126,8 +126,8 @@ public:
 public:
     Initializer(ResourceFinder &rf)
     {
-        string name=rf.find("name").asString().c_str();
-        port_opc.open(("/"+name+"/OPC:io").c_str());
+        string name=rf.find("name").asString();
+        port_opc.open("/"+name+"/OPC:io");
     }
 
     bool interrupt()

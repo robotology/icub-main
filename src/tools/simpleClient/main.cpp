@@ -29,7 +29,6 @@
  *
  */
 
-#include <yarp/os/ConstString.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/Bottle.h>
@@ -37,7 +36,6 @@
 #include <yarp/os/Vocab.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/IControlLimits2.h>
 #include <yarp/dev/PolyDriver.h>
 
 #include <yarp/os/LogStream.h>
@@ -54,8 +52,8 @@ using namespace yarp::os;
 
 void handleTorqueMsg(ITorqueControl *itq, IPidControl *ipid, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
 void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
-void handleControlModeMsg(IControlMode2 *icm, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
-void handleControlModeMsg_DEBUG(IControlMode2 *icm, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
+void handleControlModeMsg(IControlMode *icm, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
+void handleControlModeMsg_DEBUG(IControlMode *icm, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
 void handleInteractionModeMsg(IInteractionMode *_iInteract, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
 
 //
@@ -117,16 +115,13 @@ int main(int argc, char *argv[])
     }
 
     IPositionControl *ipos=0;
-    IPositionControl2 *ipos2=0;
     IPositionDirect  *iposDir=0;
-    IVelocityControl2 *vel=0;
+    IVelocityControl *vel=0;
     IEncoders *enc=0;
     IPidControl *pid=0;
     IAmplifierControl *amp=0;
     IControlLimits *lim=0;
-    IControlLimits2 *lim2 = 0;
-//    IControlMode *icm=0;
-    IControlMode2 *iMode2=0;
+    IControlMode *iMode2=0;
     IMotor *imot=0;
     ITorqueControl *itorque=0;
     IPWMControl *ipwm=0;
@@ -137,13 +132,11 @@ int main(int argc, char *argv[])
 
     bool ok;
     ok = dd.view(ipos);
-    ok &= dd.view(ipos2);
     ok &= dd.view(vel);
     ok &= dd.view(enc);
     ok &= dd.view(pid);
     ok &= dd.view(amp);
     ok &= dd.view(lim);
-    ok &= dd.view(lim2);
 //    ok &= dd.view(icm);
     ok &= dd.view(itorque);
     ok &= dd.view(ipwm);
@@ -392,26 +385,26 @@ int main(int argc, char *argv[])
             {
                 case VOCAB_POSITION_MOVE:
                 {
-                    if(!ipos2)
+                    if(!ipos)
                     {
                         printf ("unavailable interface\n");
                         break;
                     }
                     double ref;
                     int j = p.get(2).asInt();
-                    bool ret = ipos2->getTargetPosition(j, &ref);
+                    bool ret = ipos->getTargetPosition(j, &ref);
                     printf("Ref joint %d is %.2f - [ret val is %s]\n", j, ref, ret?"true":"false");
                 }
                 break;
 
                 case VOCAB_POSITION_MOVES:
                 {
-                    if(!ipos2)
+                    if(!ipos)
                     {
                         printf ("unavailable interface\n");
                         break;
                     }
-                    bool ret = ipos2->getTargetPositions(tmp);
+                    bool ret = ipos->getTargetPositions(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_POSITION_MOVES).c_str());
                     for(i = 0; i < jnts; i++)
                         printf ("%.2f ", tmp[i]);
@@ -465,7 +458,7 @@ int main(int argc, char *argv[])
                 {
                    int j = p.get(2).asInt();
                    if (iInfo == 0) { printf("unavailable interface\n"); break; }
-                   yarp::os::ConstString tmp_str;
+                   std::string tmp_str;
                    iInfo->getAxisName(j,tmp_str);
                    printf("%s: %d %s\n", Vocab::decode(VOCAB_INFO_NAME).c_str(), j, tmp_str.c_str());
                 }
@@ -501,9 +494,9 @@ int main(int argc, char *argv[])
 
                 case VOCAB_MOTION_DONE_GROUP:
                 {
-                    if (ipos2==0) {yError ("unavailable interface iPos2\n"); break;}
+                    if (ipos==0) {yError ("unavailable interface iPos\n"); break;}
                     bool b=false;
-                    ipos2->checkMotionDone(jnts, jtmp ,&b);
+                    ipos->checkMotionDone(jnts, jtmp ,&b);
                     if (b==true) printf("1");
                     else printf ("0");
                 }
@@ -643,7 +636,7 @@ int main(int argc, char *argv[])
                 case VOCAB_VEL_LIMITS: {
                      double min, max;
                      int j = p.get(2).asInt();
-                     lim2->getVelLimits(j, &min, &max);
+                     lim->getVelLimits(j, &min, &max);
                      printf("%s: ", Vocab::decode(VOCAB_VEL_LIMITS).c_str());
                      printf("limits: (%.2f %.2f)\n", min, max);
                 }
@@ -1464,7 +1457,7 @@ void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd,
     //torque->
 }
 
-void handleControlModeMsg_DEBUG(IControlMode2 *iMode, const yarp::os::Bottle& cmd,
+void handleControlModeMsg_DEBUG(IControlMode *iMode, const yarp::os::Bottle& cmd,
                           yarp::os::Bottle& response, bool *rec, bool *ok)
 {
     //THE PURPOSE OF THIS FUCTION IS BEING ABLE TO SET ALL POSSIBILE CONTROL MODES, ALSO THE ONES THAT CANNOT BE NORMALLY SET (e.g. HW_FAULT)
@@ -1517,7 +1510,7 @@ void handleControlModeMsg_DEBUG(IControlMode2 *iMode, const yarp::os::Bottle& cm
     }
 }
 
-void handleControlModeMsg(IControlMode2 *iMode, const yarp::os::Bottle& cmd,
+void handleControlModeMsg(IControlMode *iMode, const yarp::os::Bottle& cmd,
                           yarp::os::Bottle& response, bool *rec, bool *ok)
 {
     fprintf(stderr, "Handling IControlMode message %s\n", cmd.toString().c_str());

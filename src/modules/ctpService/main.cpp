@@ -86,7 +86,6 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 Author: Lorenzo Natale 
 */ 
 
-#include <yarp/os/ConstString.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
@@ -194,8 +193,8 @@ protected:
     bool connected;
     Property          drvOptions;
     PolyDriver       *drv;
-    IControlMode2    *mode;
-    IPositionControl2*pos;
+    IControlMode     *mode;
+    IPositionControl *pos;
     IEncoders        *enc;
     Actions actions;
     Semaphore mutex;
@@ -311,12 +310,12 @@ public:
         string local=name;
         local+=string("/local/")+string(options.find("part").asString());
    
-        drvOptions.put("remote",remote.c_str());
-        drvOptions.put("local",local.c_str());
+        drvOptions.put("remote",remote);
+        drvOptions.put("local",local);
 
         if (verbose)
         {
-            cout << "Driver options:\n" << drvOptions.toString().c_str();
+            cout << "Driver options:\n" << drvOptions.toString();
         }
 
         return ret;
@@ -446,7 +445,7 @@ private:
 
         while(cont)
         {
-            ConstString gainStr = "gain";
+            string gainStr = "gain";
             sprintf(numberId, "%d", i);
             gainStr = gainStr + numberId;
 
@@ -472,7 +471,7 @@ private:
         cont = true;
         while(cont)
         {
-            ConstString svelStr = "svel";
+            string svelStr = "svel";
             sprintf(numberId, "%d", i);
             svelStr = svelStr + numberId;
 
@@ -505,7 +504,7 @@ private:
         if (str.length()!=0)
         {
             Bottle b;
-            b.fromString(str.c_str());
+            b.fromString(str);
 
             if (b.size()>2)
             {
@@ -739,7 +738,7 @@ public:
         if (cmd.size()<2)
             return false;
 
-        string fileName=rf->findFile(cmd.get(1).asString().c_str());
+        string fileName=rf->findFile(cmd.get(1).asString());
         bool ret = velThread.go(fileName);
         if (ret)
         {
@@ -814,15 +813,15 @@ public:
         Time::turboBoost();
 
         if (rf.check("name"))
-            name=string("/")+rf.find("name").asString().c_str();
+            name=string("/")+rf.find("name").asString();
         else
             name="/ctpservice";
 
-        rpcPort.open((name+string("/")+rf.find("part").asString().c_str()+"/rpc").c_str());
+        rpcPort.open(name+string("/")+rf.find("part").asString()+"/rpc");
         attach(rpcPort);
 
         Property portProp;
-        portProp.put("name", name.c_str());
+        portProp.put("name", name);
         portProp.put("robot", rf.find("robot"));
         portProp.put("part", rf.find("part"));
 
@@ -846,8 +845,8 @@ public:
             cerr<<"Thread did not start, queue will not work"<<endl;
         }
 
-        velPort.open((name+string("/")+rf.find("part").asString().c_str()+"/vc:o").c_str());
-        velInitPort.open((name+string("/")+rf.find("part").asString().c_str()+"/vcInit:o").c_str());
+        velPort.open(name+string("/")+rf.find("part").asString()+"/vc:o");
+        velInitPort.open(name+string("/")+rf.find("part").asString()+"/vcInit:o");
         velThread.attachVelPort(&velPort);
         velThread.attachVelInitPort(&velInitPort);
         cout << "Using parameters:" << endl << rf.toString() << endl;

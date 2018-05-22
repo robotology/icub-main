@@ -75,9 +75,9 @@ private:
     IEncoders    *iencs_arm_left;
     IEncoders    *iencs_arm_right;
     IEncoders    *iencs_head;
-    IControlMode2     *iCtrlMode_arm_left;
-    IControlMode2     *iCtrlMode_arm_right;
-    IControlMode2     *iCtrlMode_torso;
+    IControlMode      *iCtrlMode_arm_left;
+    IControlMode      *iCtrlMode_arm_right;
+    IControlMode      *iCtrlMode_torso;
     IInteractionMode  *iIntMode_arm_left;
     IInteractionMode  *iIntMode_arm_right;
     IInteractionMode  *iIntMode_torso;
@@ -95,8 +95,8 @@ private:
     IEncoders    *iencs_leg_left;
     IEncoders    *iencs_leg_right;
     IEncoders    *iencs_torso;
-    IControlMode2     *iCtrlMode_leg_left;
-    IControlMode2     *iCtrlMode_leg_right;
+    IControlMode      *iCtrlMode_leg_left;
+    IControlMode      *iCtrlMode_leg_right;
     IInteractionMode  *iIntMode_leg_left;
     IInteractionMode  *iIntMode_leg_right;
     IImpedanceControl *iImp_leg_left;
@@ -176,7 +176,7 @@ public:
     bool getLowerEncodersSpeedAndAcceleration();
     bool getUpperEncodersSpeedAndAcceleration();
     bool threadInit();
-    void feedFwdGravityControl(int part_ctrlJnt, std::string s_part, IControlMode2 *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing=false);
+    void feedFwdGravityControl(int part_ctrlJnt, std::string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing=false);
     void run();
     void threadRelease();
     void closePort(Contactable *_port);

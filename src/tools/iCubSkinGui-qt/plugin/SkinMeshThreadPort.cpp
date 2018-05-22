@@ -29,7 +29,7 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
     if (config.check("name"))
     {
         part ="/";
-        part+=config.find("name").asString().c_str();
+        part+=config.find("name").asString();
         part+="/";
     }
     part.append(config.find("robotPart").asString());
@@ -38,14 +38,14 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
     part.append(":i");
     part_virtual.append(":i");
 
-    skin_port.open(part.c_str());
+    skin_port.open(part);
 
     // Ideally, we would use a --virtual flag. since this would make the skinmanager xml file unflexible,
     // let's keep the code structure without incurring in any problem whatsoever
     // if (config.check("virtual"))
     if (true)
     {
-        skin_port_virtual.open(part_virtual.c_str());
+        skin_port_virtual.open(part_virtual);
     }
 
     int width =config.find("width" ).asInt();

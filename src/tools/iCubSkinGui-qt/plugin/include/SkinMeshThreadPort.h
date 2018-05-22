@@ -38,11 +38,11 @@ using namespace yarp::dev;
 class SkinMeshThreadPort : public RateThread 
 {
 protected:
-	static const int MAX_SENSOR_NUM = 128;
+    static const int MAX_SENSOR_NUM = 128;
 
-	BufferedPort<Bottle> skin_port;
+    BufferedPort<Bottle> skin_port;
     BufferedPort<Bottle> skin_port_virtual;
-	TouchSensor *sensor[MAX_SENSOR_NUM];
+    TouchSensor *sensor[MAX_SENSOR_NUM];
 
     yarp::os::Semaphore mutex;
 
@@ -54,7 +54,7 @@ protected:
     double skinThreshold;
 
 public:
-	SkinMeshThreadPort(Searchable& config,int period);
+    SkinMeshThreadPort(Searchable& config,int period);
 
     ~SkinMeshThreadPort()
     {
@@ -64,7 +64,7 @@ public:
         }
     }
 
-	virtual bool threadInit();
+    virtual bool threadInit();
     virtual void threadRelease();
     virtual void run();
 

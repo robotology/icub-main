@@ -103,7 +103,7 @@ public:
     IPositionControl *ipos_ll;
     IPositionDirect  *iposdir_ll;
     IPidControl      *ipid_ll;
-    IControlMode2    *icmd_ll;
+    IControlMode     *icmd_ll;
     IEncoders        *ienc_ll;
     IMotorEncoders   *imotenc_ll;
     int              n_joints;

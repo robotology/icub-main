@@ -14,7 +14,6 @@
 #include <string.h>
 
 // Yarp Includes
-#include <yarp/os/ConstString.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>

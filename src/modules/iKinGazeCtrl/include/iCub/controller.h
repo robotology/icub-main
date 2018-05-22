@@ -55,9 +55,9 @@ protected:
     iCubInertialSensor *imu;
     iKinChain          *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver         *drvTorso,  *drvHead;
-    IControlMode2      *modHead;
-    IPositionControl2  *posHead;
-    IVelocityControl2  *velHead;
+    IControlMode       *modHead;
+    IPositionControl   *posHead;
+    IVelocityControl   *velHead;
     IPositionDirect    *posNeck;    
     ExchangeData       *commData;
 

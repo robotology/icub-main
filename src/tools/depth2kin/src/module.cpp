@@ -138,8 +138,8 @@ bool CalibModule::factory(Value &v)
     if (!v.check("arm") || !v.check("type")) 
         return false;
 
-    string arm=v.find("arm").asString().c_str();
-    string type=v.find("type").asString().c_str();
+    string arm=v.find("arm").asString();
+    string type=v.find("type").asString();
     if ((arm!="left") && (arm!="right"))
         return false;
 
@@ -241,7 +241,7 @@ bool CalibModule::getGazeParams(const string &eye, const string &type, Matrix &M
 
     Bottle info;
     igaze->getInfo(info);
-    if (Bottle *pB=info.find(("camera_"+type+"_"+eye).c_str()).asList())
+    if (Bottle *pB=info.find("camera_"+type+"_"+eye).asList())
     {        
         M.resize((type=="intrinsics")?3:4,4);
 
@@ -327,7 +327,7 @@ bool CalibModule::getDepthAveraged(const Vector &px, Vector &x, Vector &pxr,
 
 
 /************************************************************************/
-void CalibModule::openHand(IControlMode2 *imod, IPositionControl *ipos)
+void CalibModule::openHand(IControlMode *imod, IPositionControl *ipos)
 {
     Vector poss(9,0.0);
     Vector vels(9,0.0);
@@ -360,7 +360,7 @@ void CalibModule::openHand(IControlMode2 *imod, IPositionControl *ipos)
 void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
                                 const Matrix &targetR)
 {
-    IControlMode2     *imod;
+    IControlMode      *imod;
     IPositionControl  *ipos;
     ICartesianControl *icart;
     int ctxtL,ctxtR;
@@ -885,9 +885,9 @@ CalibModule::CalibModule() : depthInPort(this) { }
 bool CalibModule::configure(ResourceFinder &rf)
 {
     this->rf=&rf;
-    string robot=rf.check("robot",Value("icub")).asString().c_str();
-    string name=rf.check("name",Value("depth2kin")).asString().c_str();
-    string type=rf.check("type",Value("se3+scale")).asString().c_str();
+    string robot=rf.check("robot",Value("icub")).asString();
+    string name=rf.check("name",Value("depth2kin")).asString();
+    string type=rf.check("type",Value("se3+scale")).asString();
     test=rf.check("test",Value(-1)).asInt();    
     max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
     roi_side=abs(rf.check("roi_side",Value(100)).asInt());
@@ -937,44 +937,44 @@ bool CalibModule::configure(ResourceFinder &rf)
 
     // open drivers
     Property optionArmL("(device remote_controlboard)");
-    optionArmL.put("remote",("/"+robot+"/left_arm").c_str());
-    optionArmL.put("local",("/"+name+"/joint/left").c_str());
+    optionArmL.put("remote","/"+robot+"/left_arm");
+    optionArmL.put("local","/"+name+"/joint/left");
     if (!drvArmL.open(optionArmL))
         yWarning("Position left_arm controller not available!");
 
     Property optionArmR("(device remote_controlboard)");
-    optionArmR.put("remote",("/"+robot+"/right_arm").c_str());
-    optionArmR.put("local",("/"+name+"/joint/right").c_str());
+    optionArmR.put("remote","/"+robot+"/right_arm");
+    optionArmR.put("local","/"+name+"/joint/right");
     if (!drvArmR.open(optionArmR))
         yWarning("Position right_arm controller not available!");
 
     Property optionAnalogL("(device analogsensorclient)");
-    optionAnalogL.put("remote",("/"+robot+"/left_hand/analog:o").c_str());
-    optionAnalogL.put("local",("/"+name+"/analog/left").c_str());
+    optionAnalogL.put("remote","/"+robot+"/left_hand/analog:o");
+    optionAnalogL.put("local","/"+name+"/analog/left");
     if (!drvAnalogL.open(optionAnalogL))
         yWarning("Analog left_hand sensor not available!");
 
     Property optionAnalogR("(device analogsensorclient)");
-    optionAnalogR.put("remote",("/"+robot+"/right_hand/analog:o").c_str());
-    optionAnalogR.put("local",("/"+name+"/analog/right").c_str());
+    optionAnalogR.put("remote","/"+robot+"/right_hand/analog:o");
+    optionAnalogR.put("local","/"+name+"/analog/right");
     if (!drvAnalogR.open(optionAnalogR))
         yWarning("Analog right_hand sensor not available!");
 
     Property optionCartL("(device cartesiancontrollerclient)");
-    optionCartL.put("remote",("/"+robot+"/cartesianController/left_arm").c_str());
-    optionCartL.put("local",("/"+name+"/cartesian/left").c_str());
+    optionCartL.put("remote","/"+robot+"/cartesianController/left_arm");
+    optionCartL.put("local","/"+name+"/cartesian/left");
     if (!drvCartL.open(optionCartL))
         yWarning("Cartesian left_arm controller not available!");
 
     Property optionCartR("(device cartesiancontrollerclient)");
-    optionCartR.put("remote",("/"+robot+"/cartesianController/right_arm").c_str());
-    optionCartR.put("local",("/"+name+"/cartesian/right").c_str());
+    optionCartR.put("remote","/"+robot+"/cartesianController/right_arm");
+    optionCartR.put("local","/"+name+"/cartesian/right");
     if (!drvCartR.open(optionCartR))
         yWarning("Cartesian right_arm controller not available!");
 
     Property optionGaze("(device gazecontrollerclient)");
     optionGaze.put("remote","/iKinGazeCtrl");
-    optionGaze.put("local",("/"+name+"/gaze").c_str());
+    optionGaze.put("local","/"+name+"/gaze");
     if (!drvGaze.open(optionGaze))
         yWarning("Gaze controller not available!");
     
@@ -1027,11 +1027,11 @@ bool CalibModule::configure(ResourceFinder &rf)
         yWarning("blockEyes saturated at minimum allowed vergence angle %g",block_eyes);
     }
 
-    touchInPort.open(("/"+name+"/touch:i").c_str());
-    depthInPort.open(("/"+name+"/depth:i").c_str());
-    depthOutPort.open(("/"+name+"/depth:o").c_str());
-    depthRpcPort.open(("/"+name+"/depth:rpc").c_str());
-    rpcPort.open(("/"+name+"/rpc").c_str());
+    touchInPort.open("/"+name+"/touch:i");
+    depthInPort.open("/"+name+"/depth:i");
+    depthOutPort.open("/"+name+"/depth:o");
+    depthRpcPort.open("/"+name+"/depth:rpc");
+    rpcPort.open("/"+name+"/rpc");
     depthInPort.useCallback();
     attach(rpcPort);
 
@@ -1161,14 +1161,14 @@ bool CalibModule::clearExperts()
 /************************************************************************/
 bool CalibModule::load()
 {
-    string fileName=rf->findFile("calibrationFile").c_str();
+    string fileName=rf->findFile("calibrationFile");
     if (fileName.empty())
     {
         yWarning("calibration file not found");
         return false;
     }
 
-    Property data; data.fromConfigFile(fileName.c_str()); 
+    Property data; data.fromConfigFile(fileName); 
     Bottle b; b.read(data);
 
     mutex.lock();
@@ -1188,8 +1188,8 @@ bool CalibModule::save()
     if (!isSaved)
     {
         ofstream fout;
-        string contextPath=rf->getHomeContextPath().c_str();
-        string fileName=rf->find("calibrationFile").asString().c_str();
+        string contextPath=rf->getHomeContextPath();
+        string fileName=rf->find("calibrationFile").asString();
         fileName=contextPath+"/"+fileName;
         
         yInfo("saving experts into file: %s",fileName.c_str());
@@ -1204,7 +1204,7 @@ bool CalibModule::save()
                 info.put("arm","left");
                 ostringstream entry;
                 entry<<"expert_left_"<<i;
-                fout<<entry.str()<<" "<<info.toString().c_str()<<endl;
+                fout<<entry.str()<<" "<<info.toString()<<endl;
             }
 
             for (size_t i=0; i<expertsR.size(); i++)
@@ -1214,7 +1214,7 @@ bool CalibModule::save()
                 info.put("arm","right");
                 ostringstream entry;
                 entry<<"expert_right_"<<i;
-                fout<<entry.str()<<" "<<info.toString().c_str()<<endl;
+                fout<<entry.str()<<" "<<info.toString()<<endl;
             }        
 
             fout.close();
@@ -1241,7 +1241,7 @@ bool CalibModule::log(const string &type)
     calibrator->getPoints(p_depth,p_kin);
 
     ofstream fout;
-    string contextPath=rf->getHomeContextPath().c_str();
+    string contextPath=rf->getHomeContextPath();
     string fileName=contextPath+"/points_"+arm+"_"+type+".log";
 
     yInfo("logging data into file: %s",fileName.c_str());
@@ -1259,11 +1259,11 @@ bool CalibModule::log(const string &type)
                              calibrator->retrieve(p_depth[i],x)))
                 break;
 
-            fout<<p_depth[i].toString(3,3).c_str();
+            fout<<p_depth[i].toString(3,3);
             fout<<" ";
-            fout<<p_kin[i].toString(3,3).c_str();
+            fout<<p_kin[i].toString(3,3);
             fout<<" ";
-            fout<<x.toString(3,3).c_str();
+            fout<<x.toString(3,3);
             fout<<" ";
             fout<<norm(p_kin[i]-x);
             fout<<endl;

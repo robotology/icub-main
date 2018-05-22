@@ -229,7 +229,7 @@ void VisuoThread::updateLocationsMIL()
             for(int i=0; i<bCam->size(); i++)
             {
                 Bottle *b=bCam->get(i).asList();
-                locations[cam][b->get(0).asString().c_str()]=cvPoint(b->get(1).asInt(),b->get(2).asInt());
+                locations[cam][b->get(0).asString()]=cvPoint(b->get(1).asInt(),b->get(2).asInt());
             }
         }
         */
@@ -238,7 +238,7 @@ void VisuoThread::updateLocationsMIL()
         for(int i=0; i<bLocations->get(0).asList()->size(); i++)
         {
             Bottle *b=bLocations->get(0).asList()->get(i).asList();
-            locations[b->get(0).asString().c_str()]=cvPoint(b->get(1).asInt(),b->get(2).asInt());
+            locations[b->get(0).asString()]=cvPoint(b->get(1).asInt(),b->get(2).asInt());
         }
         MILMutex.post();
     }
@@ -396,7 +396,7 @@ VisuoThread::VisuoThread(ResourceFinder &_rf, Initializer *initializer)
 
 bool VisuoThread::threadInit()
 {
-    string name=rf.find("name").asString().c_str();
+    string name=rf.find("name").asString();
 
     Bottle bVision=rf.findGroup("vision");
 
@@ -416,30 +416,29 @@ bool VisuoThread::threadInit()
     objectWaitThresh=bVision.check("object_detection_wait_thresh",Value(5.0)).asDouble();
 
     // open ports
-    outPort[LEFT].open(("/"+name+"/left/img:o").c_str());
-    outPort[RIGHT].open(("/"+name+"/right/img:o").c_str());
+    outPort[LEFT].open("/"+name+"/left/img:o");
+    outPort[RIGHT].open("/"+name+"/right/img:o");
 
-    imgPort[LEFT].open(("/"+name+"/left/img:i").c_str());
-    imgPort[RIGHT].open(("/"+name+"/right/img:i").c_str());
+    imgPort[LEFT].open("/"+name+"/left/img:i");
+    imgPort[RIGHT].open("/"+name+"/right/img:i");
 
-    mCUTPort[LEFT].open(("/"+name+"/left/blobs:i").c_str());
-    mCUTPort[RIGHT].open(("/"+name+"/right/blobs:i").c_str());
+    mCUTPort[LEFT].open("/"+name+"/left/blobs:i");
+    mCUTPort[RIGHT].open("/"+name+"/right/blobs:i");
 
-    rawInPort[LEFT].open(("/"+name+"/left/raw:i").c_str());
-    rawInPort[RIGHT].open(("/"+name+"/right/raw:i").c_str());
+    rawInPort[LEFT].open("/"+name+"/left/raw:i");
+    rawInPort[RIGHT].open("/"+name+"/right/raw:i");
 
-    boundMILPort.open(("/"+name+"/MIL/window:o").c_str());
-    cmdMILPort.open(("/"+name+"/MIL/cmd:o").c_str());
-    recMILPort.open(("/"+name+"/MIL/rec:i").c_str());
+    boundMILPort.open("/"+name+"/MIL/window:o");
+    cmdMILPort.open("/"+name+"/MIL/cmd:o");
+    recMILPort.open("/"+name+"/MIL/rec:i");
 
-    cmdMSRPort.open(("/"+name+"/MSR/cmd:o").c_str());
-    recMSRPort.open(("/"+name+"/MSR/rec:i").c_str());
+    cmdMSRPort.open("/"+name+"/MSR/cmd:o");
+    recMSRPort.open("/"+name+"/MSR/rec:i");
 
+    pftInPort.open("/"+name+"/tracker:i");
+    pftOutPort.open("/"+name+"/tracker:o");
 
-    pftInPort.open(("/"+name+"/tracker:i").c_str());
-    pftOutPort.open(("/"+name+"/tracker:o").c_str());
-
-    segPort.open(("/"+name+"/seg:o").c_str());
+    segPort.open("/"+name+"/seg:o");
 
     newImage[LEFT]=false;
     newImage[RIGHT]=false;
@@ -563,9 +562,9 @@ bool VisuoThread::getTarget(Value &type, Bottle &options)
         {
             Bottle &bName=bTarget.addList();
             bName.addString("name");
-            bName.addString(type.asString().c_str());
+            bName.addString(type.asString());
 
-            getObject(type.asString().c_str(),bStereo);
+            getObject(type.asString(),bStereo);
             break;
         }
     }
@@ -796,7 +795,7 @@ Bottle VisuoThread::recogMSR(string &obj_name)
     if(bMSR!=NULL)
     {
         bDetect=*bMSR;
-        obj_name=bDetect.get(0).asString().c_str();
+        obj_name=bDetect.get(0).asString();
     }
     return bDetect;
 }
@@ -809,7 +808,7 @@ bool VisuoThread::startLearningMIL(const std::string &obj_name)
         return false;
 
     Bottle command,reply;
-    command.fromString(("learn " + obj_name + " template").c_str());
+    command.fromString("learn " + obj_name + " template");
 
     cmdMILPort.write(command,reply);
 

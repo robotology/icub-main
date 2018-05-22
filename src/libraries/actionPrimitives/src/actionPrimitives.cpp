@@ -399,9 +399,9 @@ void ActionPrimitives::printMessage(const int logtype, const char *format, ...) 
 /************************************************************************/
 bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key, const int j)
 {
-    if (opt.check(key.c_str()))
+    if (opt.check(key))
     {
-        bool sw=opt.find(key.c_str()).asString()=="on"?true:false;
+        bool sw=opt.find(key).asString()=="on"?true:false;
 
         Vector newDof(3,2.0), dummyRet;
         newDof[j]=sw?1.0:0.0;
@@ -417,8 +417,8 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key, const in
 
             cartCtrl->getLimits(j,&min,&max);
 
-            min=opt.check(minKey.c_str(),Value(min)).asDouble();
-            max=opt.check(maxKey.c_str(),Value(max)).asDouble();
+            min=opt.check(minKey,Value(min)).asDouble();
+            max=opt.check(maxKey,Value(max)).asDouble();
 
             cartCtrl->setLimits(j,min,max);
             cartCtrl->getLimits(j,&min,&max);
@@ -451,10 +451,10 @@ bool ActionPrimitives::configHandSeq(Property &opt)
 {
     if (opt.check("hand_sequences_file"))
     {
-        string handSeqFile=opt.find("hand_sequences_file").asString().c_str();        
+        string handSeqFile=opt.find("hand_sequences_file").asString();        
 
         printMessage(log::info,"Processing %s file",handSeqFile.c_str());
-        Property handSeqProp; handSeqProp.fromConfigFile(handSeqFile.c_str());
+        Property handSeqProp; handSeqProp.fromConfigFile(handSeqFile);
     
         // GENERAL group
         Bottle &bGeneral=handSeqProp.findGroup("GENERAL");
@@ -478,7 +478,7 @@ bool ActionPrimitives::configHandSeq(Property &opt)
             ostringstream seq;
             seq<<"SEQ_"<<i;
 
-            Bottle &bSeq=handSeqProp.findGroup(seq.str().c_str());
+            Bottle &bSeq=handSeqProp.findGroup(seq.str());
             if (bSeq.isNull())
             {
                 printMessage(log::warning,"\"%s\" group is missing",seq.str().c_str());
@@ -491,7 +491,7 @@ bool ActionPrimitives::configHandSeq(Property &opt)
                 return false;
             }
 
-            string key=bSeq.find("key").asString().c_str();
+            string key=bSeq.find("key").asString();
 
             if (isValidHandSeq(key))
             {
@@ -516,7 +516,7 @@ bool ActionPrimitives::configGraspModel(Property &opt)
     bool ret=false;
     if (opt.check("grasp_model_type"))
     {
-        string modelType=opt.find("grasp_model_type").asString().c_str();
+        string modelType=opt.find("grasp_model_type").asString();
         if (modelType!="none")
         {
             if (opt.check("grasp_model_file"))
@@ -531,14 +531,14 @@ bool ActionPrimitives::configGraspModel(Property &opt)
                     return false;
                 }
 
-                string modelFile=opt.find("grasp_model_file").asString().c_str();                
+                string modelFile=opt.find("grasp_model_file").asString();                
                 printMessage(log::info,"Retrieving grasp model data from %s file",modelFile.c_str());
-                Property modelProp; modelProp.fromConfigFile(modelFile.c_str());
+                Property modelProp; modelProp.fromConfigFile(modelFile);
 
                 // consistency check between the model and the part
                 if (modelProp.check("type"))
                 {
-                    string type=modelProp.find("type").asString().c_str();
+                    string type=modelProp.find("type").asString();
                     type+="_arm";
                     if (type!=part)
                     {
@@ -549,7 +549,7 @@ bool ActionPrimitives::configGraspModel(Property &opt)
                 }
 
                 // override some information
-                modelProp.put("robot",robot.c_str());
+                modelProp.put("robot",robot);
                 return graspModel->fromProperty(modelProp);
             }
             else
@@ -578,9 +578,9 @@ bool ActionPrimitives::open(Property &opt)
         return false;
     }
 
-    robot=opt.check("robot",Value("icub")).asString().c_str();
-    local=opt.find("local").asString().c_str();
-    part=opt.check("part",Value(ACTIONPRIM_DEFAULT_PART)).asString().c_str();
+    robot=opt.check("robot",Value("icub")).asString();
+    local=opt.find("local").asString();
+    part=opt.check("part",Value(ACTIONPRIM_DEFAULT_PART)).asString();
     default_exec_time=opt.check("default_exec_time",Value(ACTIONPRIM_DEFAULT_EXECTIME)).asDouble();
     tracking_mode=opt.check("tracking_mode",Value(ACTIONPRIM_DEFAULT_TRACKINGMODE)).asString()=="on"?true:false;
     verbose=opt.check("verbosity",Value(ACTIONPRIM_DEFAULT_VERBOSITY)).asString()=="on"?true:false;    
@@ -600,8 +600,8 @@ bool ActionPrimitives::open(Property &opt)
 
     // open the position client
     Property optPolyHand("(device remote_controlboard)");
-    optPolyHand.put("remote",("/"+robot+"/"+part).c_str());
-    optPolyHand.put("local",("/"+local+"/"+part+"/position").c_str());
+    optPolyHand.put("remote","/"+robot+"/"+part);
+    optPolyHand.put("local","/"+local+"/"+part+"/position");
     if (!polyHand.open(optPolyHand))
     {
         close();
@@ -610,8 +610,8 @@ bool ActionPrimitives::open(Property &opt)
 
     // open the cartesian client
     Property optPolyCart("(device cartesiancontrollerclient)");
-    optPolyCart.put("remote",("/"+robot+"/cartesianController/"+part).c_str());
-    optPolyCart.put("local",("/"+local+"/"+part+"/cartesian").c_str());
+    optPolyCart.put("remote","/"+robot+"/cartesianController/"+part);
+    optPolyCart.put("local","/"+local+"/"+part+"/cartesian");
     if (!polyCart.open(optPolyCart))
     {
         close();
@@ -1556,7 +1556,7 @@ bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &s
         ostringstream wp;
         wp<<"wp_"<<j;
 
-        Bottle &bWP=sequence.findGroup(wp.str().c_str());
+        Bottle &bWP=sequence.findGroup(wp.str());
         if (bWP.isNull())
         {
             printMessage(log::warning,"\"%s\" entry is missing",wp.str().c_str());
@@ -1690,7 +1690,7 @@ bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequenc
             wp<<"wp_"<<i;
 
             Bottle &bWP=sequence.addList();
-            bWP.addString(wp.str().c_str());
+            bWP.addString(wp.str());
 
             // poss part
             Bottle &bPoss=bWP.addList();
@@ -2238,13 +2238,13 @@ bool ActionPrimitivesLayer2::open(Property &opt)
     if (configured)
     {
         ext_force_thres=opt.check("ext_force_thres",Value(std::numeric_limits<double>::max())).asDouble();
-        string wbdynStemName=opt.check("wbdyn_stem_name",Value(ACTIONPRIM_DEFAULT_WBDYN_STEMNAME)).asString().c_str();
-        string wbdynPortName=opt.check("wbdyn_port_name",Value(ACTIONPRIM_DEFAULT_WBDYN_PORTNAME)).asString().c_str();
+        string wbdynStemName=opt.check("wbdyn_stem_name",Value(ACTIONPRIM_DEFAULT_WBDYN_STEMNAME)).asString();
+        string wbdynPortName=opt.check("wbdyn_port_name",Value(ACTIONPRIM_DEFAULT_WBDYN_PORTNAME)).asString();
 
         // connect automatically to WTBO
         string wbdynServerName="/"+wbdynStemName+"/"+part+"/"+wbdynPortName;
-        wbdynPortIn.open(("/"+local+"/"+part+"/wbdyn:i").c_str());
-        if (!Network::connect(wbdynServerName.c_str(),wbdynPortIn.getName().c_str(),"udp"))
+        wbdynPortIn.open("/"+local+"/"+part+"/wbdyn:i");
+        if (!Network::connect(wbdynServerName,wbdynPortIn.getName(),"udp"))
         {
             printMessage(log::error,"unable to connect to port %s",wbdynServerName.c_str());
 

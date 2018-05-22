@@ -68,7 +68,7 @@ public:
     #define MAX_CONTACTS 10// maximum number of contact points per body
     #define NUM 10          // max number of objects
 
-    ConstString configPath;
+    string configPath;
     ICubData();
 };
 
@@ -77,7 +77,7 @@ public:
 
     EyeLids *eyeLids;
     static const bool textured = true;
-    ConstString actElevation, actStartHomePos, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actHeadCover, actWorld, actPressure, actScreen, actLegsCovers, actLeftArmCovers, actRightArmCovers, actTorsoCovers, actSelfCol, actCoversCol, actSkinEmul;
+    string actElevation, actStartHomePos, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actHeadCover, actWorld, actPressure, actScreen, actLegsCovers, actLeftArmCovers, actRightArmCovers, actTorsoCovers, actSelfCol, actCoversCol, actSkinEmul;
     double elev;
 
     dGeomID screenGeom;
@@ -225,8 +225,8 @@ public:
     dReal    ra_torques[25];
     dReal    h_torques[25];
 
-    map <string, ConstString> model;
-    ConstString textureName[100];
+    map <string, string> model;
+    string textureName[100];
     map <string, dTriMeshDataID> model_TriData;
     map <string, dTriMeshX> model_trimesh;
 
@@ -243,10 +243,10 @@ public:
         virtual dBodyID getBody()const {return body;}
         virtual dGeomID getGeom()const {return geom;}
 
-        void reloadTexture(ConstString texture, const int &modelTexture)
+        void reloadTexture(string texture, const int &modelTexture)
         {
-            //ConstString tmptext = (char *) model_DIR.c_str();
-            //ConstString texture = ("C:/DEV/iCub/app/simConfig/models/blueCovers.bmp");
+            //string tmptext = (char *) model_DIR.c_str();
+            //string texture = ("C:/DEV/iCub/app/simConfig/models/blueCovers.bmp");
             setupTexture( (char* ) texture.c_str(), modelTexture);
         }
     };

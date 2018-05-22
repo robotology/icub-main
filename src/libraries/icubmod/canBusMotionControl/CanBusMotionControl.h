@@ -21,7 +21,6 @@
 #include <yarp/dev/PreciselyTimed.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/os/ConstString.h>
 #include <string>
 #include <list>
 
@@ -155,7 +154,7 @@ public:
     int *_broadcast_mask;
 
     int _networkN;                              /** network number */
-    yarp::os::ConstString _networkName;         /** network name */
+    std::string _networkName;                   /** network name */
     int _njoints;                               /** number of joints/axes/controlled motors */
     unsigned char *_destinations;               /** destination addresses */
     unsigned char _my_address;                  /** my address */
@@ -749,8 +748,8 @@ private:
 
     std::list<TBR_AnalogSensor *> analogSensors;
 
-    yarp::os::ConstString canDevName;
-    yarp::os::ConstString networkName;
+    std::string canDevName;
+    std::string networkName;
 
     IServerLogger *mServerLogger;
 
@@ -932,8 +931,8 @@ public:
     virtual bool setControlModesRaw(int *modes) override;
 
     //////////////////////// BEGIN RemoteVariables Interface
-    virtual bool getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val) override;
-    virtual bool setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val) override;
+    virtual bool getRemoteVariableRaw(std::string key, yarp::os::Bottle& val) override;
+    virtual bool setRemoteVariableRaw(std::string key, const yarp::os::Bottle& val) override;
     virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys) override;
     ///////////////////////// END RemoteVariables Interface
 
@@ -1018,7 +1017,7 @@ public:
     virtual bool setNominalCurrentRaw(int m, const double val) override;
 
     /// IAxisInfo
-    virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name) override;
+    virtual bool getAxisNameRaw(int axis, std::string& name) override;
     virtual bool getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type) override;
 
     ////// calibration

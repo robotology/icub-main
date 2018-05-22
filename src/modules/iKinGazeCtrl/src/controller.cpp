@@ -222,7 +222,7 @@ void Controller::notifyEvent(const string &event, const double checkPoint)
         Bottle &ev=port_event.prepare();
         ev.clear();
 
-        ev.addString(event.c_str());
+        ev.addString(event);
         ev.addDouble(q_stamp);
         if (checkPoint>=0.0)
             ev.addDouble(checkPoint);
@@ -289,7 +289,7 @@ void Controller::stopLimb(const bool execStopPosition)
                 {
                     ostringstream ss;
                     ss<<"pos_"<<neckJoints[i];
-                    info.addString(ss.str().c_str());
+                    info.addString(ss.str());
                     info.addString("stop");
                 }
             }
@@ -301,7 +301,7 @@ void Controller::stopLimb(const bool execStopPosition)
         {
             ostringstream ss;
             ss<<"vel_"<<i;
-            info.addString(ss.str().c_str());
+            info.addString(ss.str());
             info.addDouble(0.0);
         }
 
@@ -361,12 +361,12 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
 /************************************************************************/
 bool Controller::threadInit()
 {
-    port_x.open((commData->localStemName+"/x:o").c_str());
-    port_q.open((commData->localStemName+"/q:o").c_str());
-    port_event.open((commData->localStemName+"/events:o").c_str());
+    port_x.open(commData->localStemName+"/x:o");
+    port_q.open(commData->localStemName+"/q:o");
+    port_event.open(commData->localStemName+"/events:o");
 
     if (commData->debugInfoEnabled)
-        port_debug.open((commData->localStemName+"/dbg:o").c_str());        
+        port_debug.open(commData->localStemName+"/dbg:o");        
 
     yInfo("Starting Controller at %d ms",period);
     q_stamp=Time::now();
@@ -497,7 +497,7 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
         {
             ostringstream ss;
             ss<<"pos_"<<eyesJoints[i];
-            info.addString(ss.str().c_str());
+            info.addString(ss.str());
             info.addDouble(ang_[i]);
         }
 
@@ -918,7 +918,7 @@ void Controller::run()
                 {
                     ostringstream ss;
                     ss<<"pos_"<<i;
-                    info.addString(ss.str().c_str());
+                    info.addString(ss.str());
                     info.addDouble(posdeg[i]);
                 }
 
@@ -929,7 +929,7 @@ void Controller::run()
             {
                 ostringstream ss;
                 ss<<"vel_"<<i;
-                info.addString(ss.str().c_str());
+                info.addString(ss.str());
                 info.addDouble(vdeg[i]);
             }
 

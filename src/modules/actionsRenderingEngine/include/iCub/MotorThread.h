@@ -126,12 +126,12 @@ private:
     IGazeControl                        *ctrl_gaze;
         
     IPositionControl                    *pos_torso;
-    IVelocityControl2                   *vel_torso;
-    IControlMode2                       *ctrl_mode_torso;
+    IVelocityControl                    *vel_torso;
+    IControlMode                        *ctrl_mode_torso;
     IInteractionMode                    *int_mode_torso;
     IImpedanceControl                   *ctrl_impedance_torso;
 
-    IControlMode2                       *ctrl_mode_arm[2];
+    IControlMode                        *ctrl_mode_arm[2];
     IPositionControl                    *pos_arm[2];
     IInteractionMode                    *int_mode_arm[2];
     IImpedanceControl                   *ctrl_impedance_arm[2];

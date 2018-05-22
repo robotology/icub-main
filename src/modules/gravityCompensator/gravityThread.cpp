@@ -576,7 +576,7 @@ bool gravityCompensatorThread::threadInit()
 }
 
 
-void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_part, IControlMode2 *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing)
+void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing)
 {
     //check if interfaces are still up (icubinterface running)  
     if (iCtrlMode == 0) 

@@ -50,7 +50,7 @@ bool SpringyFinger::fromProperty(const Property &options)
     neighbors.clear();
     lssvm.reset();
 
-    name=options.find("name").asString().c_str();
+    name=options.find("name").asString();
 
     scaler.setLowerBoundIn(0.0);
     scaler.setUpperBoundIn(255.0);
@@ -82,13 +82,13 @@ bool SpringyFinger::fromProperty(const Property &options)
     if (options.check("scaler"))
     {
         Bottle *pB=options.find("scaler").asList();
-        scaler.fromString(pB->toString().c_str());
+        scaler.fromString(pB->toString());
     }
 
     if (options.check("lssvm"))
     {
         Bottle *pB=options.find("lssvm").asList();
-        lssvm.fromString(pB->toString().c_str());
+        lssvm.fromString(pB->toString());
     }
 
     return true;
@@ -99,12 +99,12 @@ bool SpringyFinger::fromProperty(const Property &options)
 void SpringyFinger::toProperty(Property &options) const
 {
     options.clear();
-    options.put("name",name.c_str());
+    options.put("name",name);
     options.put("calib_vel",calibratingVelocity);
     options.put("output_gain",outputGain);
     options.put("calibrated",calibrated?"true":"false");
-    options.put("scaler",("("+string(scaler.toString().c_str())+")").c_str());
-    options.put("lssvm",("("+string(lssvm.toString().c_str())+")").c_str());
+    options.put("scaler","("+scaler.toString()+")");
+    options.put("lssvm","("+lssvm.toString()+")");
 }
 
 
@@ -115,8 +115,8 @@ bool SpringyFinger::toStream(ostream &str) const
     str<<"calib_vel   "<<calibratingVelocity<<endl;
     str<<"output_gain "<<outputGain<<endl;
     str<<"calibrated  "<<(calibrated?"true":"false")<<endl;
-    str<<"scaler      "<<("("+string(scaler.toString().c_str())+")").c_str()<<endl;
-    str<<"lssvm       "<<("("+string(lssvm.toString().c_str())+")").c_str()<<endl;
+    str<<"scaler      "<<"("+scaler.toString()+")"<<endl;
+    str<<"lssvm       "<<"("+lssvm.toString()+")"<<endl;
 
     return !str.fail();
 }
@@ -277,10 +277,10 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     if (configured)
         close();
 
-    name=options.find("name").asString().c_str();
-    type=options.find("type").asString().c_str();
-    robot=options.check("robot",Value("icub")).asString().c_str();
-    carrier=options.check("carrier",Value("udp")).asString().c_str();
+    name=options.find("name").asString();
+    type=options.find("type").asString();
+    robot=options.check("robot",Value("icub")).asString();
+    carrier=options.check("carrier",Value("udp")).asString();
     verbosity=options.check("verbosity",Value(0)).asInt();
 
     string part_motor=string(type+"_arm");
@@ -288,14 +288,14 @@ bool SpringyFingersModel::fromProperty(const Property &options)
 
     Property prop;
     prop.put("device","remote_controlboard");
-    prop.put("remote",("/"+robot+"/"+part_motor).c_str());
-    prop.put("local",("/"+name+"/"+part_motor).c_str());
+    prop.put("remote","/"+robot+"/"+part_motor);
+    prop.put("local","/"+name+"/"+part_motor);
     if (!driver.open(prop))
         return false;
     
-    port->open(("/"+name+"/"+part_analog+"/analog:i").c_str());
-    string analogPortName(("/"+robot+"/"+part_analog+"/analog:o").c_str());
-    if (!Network::connect(analogPortName.c_str(),port->getName().c_str(),carrier.c_str()))
+    port->open("/"+name+"/"+part_analog+"/analog:i");
+    string analogPortName("/"+robot+"/"+part_analog+"/analog:o");
+    if (!Network::connect(analogPortName,port->getName(),carrier))
     {
         printMessage(log::error,1,"unable to connect to %s",analogPortName.c_str());
         close();
@@ -429,29 +429,29 @@ void SpringyFingersModel::toProperty(Property &options) const
         fingers[4].toProperty(prop[4]);
 
         string thumb="(thumb ";
-        thumb+=prop[0].toString().c_str();
+        thumb+=prop[0].toString();
         thumb+=")";
 
         string index="(index ";
-        index+=prop[1].toString().c_str();
+        index+=prop[1].toString();
         index+=")";
 
         string middle="(middle ";
-        middle+=prop[2].toString().c_str();
+        middle+=prop[2].toString();
         middle+=")";
 
         string ring="(ring ";
-        ring+=prop[3].toString().c_str();
+        ring+=prop[3].toString();
         ring+=")";
 
         string little="(little ";
-        little+=prop[4].toString().c_str();
+        little+=prop[4].toString();
         little+=")";
 
-        options.fromString((thumb+index+middle+ring+little).c_str());
-        options.put("name",name.c_str());
-        options.put("type",type.c_str());
-        options.put("robot",robot.c_str());
+        options.fromString(thumb+index+middle+ring+little);
+        options.put("name",name);
+        options.put("type",type);
+        options.put("robot",robot);
         options.put("verbosity",verbosity);
     }
 }
@@ -506,7 +506,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
             return false;
         }
 
-        IControlMode2    *imod; driver.view(imod);
+        IControlMode     *imod; driver.view(imod);
         IControlLimits   *ilim; driver.view(ilim);
         IEncoders        *ienc; driver.view(ienc);
         IPositionControl *ipos; driver.view(ipos);
@@ -533,7 +533,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
 
         if (fng.isString())
         {
-            string tag=options.check("finger",Value("all")).asString().c_str();
+            string tag=options.check("finger",Value("all")).asString();
             if (tag=="thumb")
             {
                 calibrateFinger(fingers[0],10,qmin[10],qmax[10]);
@@ -586,7 +586,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
             Bottle *items=fng.asList();
             for (int i=0; i<items->size(); i++)
             {
-                string tag=items->get(i).asString().c_str();
+                string tag=items->get(i).asString();
                 if (tag=="thumb")
                 {
                     if (singletons.find(tag)==singletons.end())
@@ -726,7 +726,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     double timeout=2.0*(_max-_min)/finger.getCalibVel();
 
     mutex.lock();
-    IControlMode2    *imod; driver.view(imod);
+    IControlMode     *imod; driver.view(imod);
     IEncoders        *ienc; driver.view(ienc);
     IPositionControl *ipos; driver.view(ipos);
     mutex.unlock();

@@ -300,7 +300,7 @@ bool MatrixCalibrator::toProperty(Property &info) const
             values.addDouble(H(r,c));
 
     info.clear();
-    info.put("type",type.c_str());
+    info.put("type",type);
     info.put("calibration_data",data.get(0));
     return Calibrator::toProperty(info);
 }
@@ -312,7 +312,7 @@ bool MatrixCalibrator::fromProperty(const Property &info)
     if (!info.check("type"))
         return false;
 
-    string type=info.find("type").asString().c_str();
+    string type=info.find("type").asString();
     if ((type=="se3") || (type=="se3+scale"))
     {
         delete impl;
@@ -454,10 +454,10 @@ bool LSSVMCalibrator::toProperty(Property &info) const
 {
     Bottle data;
     Bottle &values=data.addList();
-    values.addString(impl->toString().c_str());
+    values.addString(impl->toString());
 
     info.clear();
-    info.put("type",type.c_str());
+    info.put("type",type);
     info.put("calibration_data",data.get(0));
     return Calibrator::toProperty(info);
 }
@@ -469,7 +469,7 @@ bool LSSVMCalibrator::fromProperty(const Property &info)
     if (!info.check("type"))
         return false;
 
-    string type=info.find("type").asString().c_str();
+    string type=info.find("type").asString();
     if (type=="lssvm")
         clearPoints();
     else
@@ -478,7 +478,7 @@ bool LSSVMCalibrator::fromProperty(const Property &info)
     bool ret=false;
     if (Bottle *values=info.find("calibration_data").asList())
         if (values->size()>=1)
-            ret=impl->fromString(values->toString().c_str());
+            ret=impl->fromString(values->toString());
 
     ret&=Calibrator::fromProperty(info); 
     return ret;

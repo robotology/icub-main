@@ -197,9 +197,9 @@ protected:
 
     yarp::dev::PolyDriver         polyHand;
     yarp::dev::PolyDriver         polyCart;
-    yarp::dev::IControlMode2     *modCtrl;
+    yarp::dev::IControlMode      *modCtrl;
     yarp::dev::IEncoders         *encCtrl;
-    yarp::dev::IPositionControl2 *posCtrl;
+    yarp::dev::IPositionControl  *posCtrl;
     yarp::dev::ICartesianControl *cartCtrl;
 
     perception::Model            *graspModel;

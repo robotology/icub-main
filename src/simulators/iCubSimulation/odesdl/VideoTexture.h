@@ -32,7 +32,6 @@
 
 
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/ConstString.h>
 #include <yarp/os/Property.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>

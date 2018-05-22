@@ -1229,7 +1229,7 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     SDL_SetVideoMode(h,w,32,SDL_OPENGL | SDL_RESIZABLE);// | SDL_SWSURFACE| SDL_ANYFORMAT); // on init 
 
     dAllocateODEDataForThread(dAllocateMaskAll);
-    ConstString logo = robot_config->getFinder().findFile("logo");
+    string logo = robot_config->getFinder().findFile("logo");
 
     image = SDL_LoadBMP(robot_config->getFinder().findFile(logo.c_str()).c_str());
     SDL_WM_SetIcon(image,0);
@@ -1447,12 +1447,12 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
     //--------------------------------------//
 
 
-    ConstString videoconf = robot_config->getFinder().findFile("video");
+    string videoconf = robot_config->getFinder().findFile("video");
     options.fromConfigFile(videoconf.c_str());
 
     Bottle textures = *options.find("textures").asList();
     for (int i=0; i<textures.size(); i++) {
-        ConstString name = textures.get(i).asString();
+        string name = textures.get(i).asString();
         yInfo("Adding video texture %s\n", name.c_str());
         video->add(options.findGroup(name.c_str()));
     }

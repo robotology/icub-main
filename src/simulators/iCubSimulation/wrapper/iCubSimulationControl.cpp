@@ -23,9 +23,8 @@
 #endif
 /// general purpose stuff.
 #include <yarp/os/Time.h>
-#include <yarp/os/ConstString.h>
 
-#include <math.h>
+#include <cmath>
 #include <string>
 
 ///specific to this device driver.
@@ -133,7 +132,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     controlP = allocAndCheck<double>(njoints); 
 
     axisMap = allocAndCheck<int>(njoints);
-//  jointNames = new ConstString[njoints];
+//  jointNames = new string[njoints];
 
     current_jnt_pos = allocAndCheck<double>(njoints);
     current_jnt_vel = allocAndCheck<double>(njoints);
@@ -1736,7 +1735,7 @@ bool iCubSimulationControl::getLimitsRaw(int axis, double *min, double *max)
 }
 
 // IRemoteVariables
-bool iCubSimulationControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
+bool iCubSimulationControl::getRemoteVariableRaw(string key, yarp::os::Bottle& val)
 {
     val.clear();
     if (key == "kinematic_mj")
@@ -1791,7 +1790,7 @@ bool iCubSimulationControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp
     return false;
 }
 
-bool iCubSimulationControl::setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val)
+bool iCubSimulationControl::setRemoteVariableRaw(string key, const yarp::os::Bottle& val)
 {
     string s1 = val.toString();
     Bottle* bval = val.get(0).asList();
@@ -1841,7 +1840,6 @@ bool iCubSimulationControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKe
     return true;
 }
 
-// IControlLimits2
 bool iCubSimulationControl::setVelLimitsRaw(int axis, double min, double max)
 {
     if ((axis >= 0) && (axis < njoints)){
@@ -1909,7 +1907,7 @@ bool iCubSimulationControl::stopRaw(const int n_joint, const int *joints)
     return ret;
 }
 
-bool iCubSimulationControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
+bool iCubSimulationControl::getAxisNameRaw(int axis, string& name)
 {
     if ((axis >= 0) && (axis < njoints))
     {

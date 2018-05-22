@@ -161,7 +161,7 @@ public:
     /************************************************************************/
     bool threadInit()
     {
-        name=rf.check("name",Value("motionCUT")).asString().c_str();
+        name=rf.check("name",Value("motionCUT")).asString();
         coverXratio=rf.check("coverXratio",Value(0.75)).asDouble();
         coverYratio=rf.check("coverYratio",Value(0.75)).asDouble();
         nodesStep=rf.check("nodesStep",Value(6)).asInt();
@@ -199,12 +199,12 @@ public:
         featuresFound=NULL;
         featuresErrors=NULL;
         
-        inPort.open(("/"+name+"/img:i").c_str());
-        outPort.open(("/"+name+"/img:o").c_str());
-        optPort.open(("/"+name+"/opt:o").c_str());
-        nodesPort.open(("/"+name+"/nodes:o").c_str());
-        blobsPort.open(("/"+name+"/blobs:o").c_str());
-        cropPort.open(("/"+name+"/crop:o").c_str());
+        inPort.open("/"+name+"/img:i");
+        outPort.open("/"+name+"/img:o");
+        optPort.open("/"+name+"/opt:o");
+        nodesPort.open("/"+name+"/nodes:o");
+        blobsPort.open("/"+name+"/blobs:o");
+        cropPort.open("/"+name+"/crop:o");
 
         firstConsistencyCheck=true;
 
@@ -594,14 +594,14 @@ public:
     {
         if (req.size())
         {
-            string cmd=req.get(0).asString().c_str();
+            string cmd=req.get(0).asString();
 
             if (cmd=="set")
             {
                 if (req.size()<3)
                     return false;
 
-                string subcmd=req.get(1).asString().c_str();
+                string subcmd=req.get(1).asString();
 
                 if (subcmd=="winSize")
                 {
@@ -666,7 +666,7 @@ public:
                 if (req.size()<2)
                     return false;
 
-                string subcmd=req.get(1).asString().c_str();
+                string subcmd=req.get(1).asString();
 
                 if (subcmd=="winSize")
                     reply.addInt(winSize);
@@ -733,7 +733,7 @@ public:
             return false;
         }
 
-        rpcPort.open(("/"+thr->getName()+"/rpc").c_str());
+        rpcPort.open("/"+thr->getName()+"/rpc");
         attach(rpcPort);
 
         return true;

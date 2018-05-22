@@ -113,7 +113,7 @@ private:
     IPidControl *iPids;
     IEncoders *iEncoders;
     IPositionControl *iPosition;
-    IControlMode2 *iControlMode;
+    IControlMode *iControlMode;
     IAmplifierControl *iAmp;
 
     std::list<std::list<int> > joints;

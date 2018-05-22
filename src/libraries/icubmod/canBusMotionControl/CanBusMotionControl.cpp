@@ -2470,7 +2470,7 @@ bool CanBusMotionControl::open (Searchable &config)
     prop.unput("device");
     prop.unput("subdevice");
     prop.put("device", canDevName.c_str());
-    yarp::os::ConstString canPhysDevName = config.find("physDevice").asString(); //for backward compatibility
+    std::string canPhysDevName = config.find("physDevice").asString(); //for backward compatibility
     if (canPhysDevName=="") canPhysDevName = config.findGroup("CAN").find("physDevice").asString();
     prop.put("physDevice",canPhysDevName.c_str());
     prop.put("canDeviceNum", p._networkN);
@@ -2790,7 +2790,7 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
         if (analogConfig.check("PortName"))
         {
             isVirtualSensor = true;
-            ConstString virtualPortName = analogConfig.find("PortName").asString();
+            std::string virtualPortName = analogConfig.find("PortName").asString();
             bool   canEchoEnabled = analogConfig.find("CanEcho").asInt();
             analogSensor->backDoor = new TBR_CanBackDoor();
             analogSensor->backDoor->setUp(&res, &_mutex, canEchoEnabled, analogSensor);
@@ -4145,7 +4145,7 @@ bool CanBusMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     return true;
 }
 
-bool CanBusMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
+bool CanBusMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle& val)
 {
     val.clear();
     CanBusResources& res = RES(system_resources);
@@ -4163,7 +4163,7 @@ bool CanBusMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     return false;
 }
 
-bool CanBusMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val)
+bool CanBusMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::Bottle& val)
 {
     CanBusResources& r = RES(system_resources);
     size_t _njoints = r.getJoints();
@@ -4197,7 +4197,7 @@ bool CanBusMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const 
     return false;
 }
 
-bool CanBusMotionControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
+bool CanBusMotionControl::getAxisNameRaw(int axis, std::string& name)
 {
     CanBusResources& r = RES(system_resources);
     if (axis >= 0 && axis < r.getJoints())
@@ -6699,7 +6699,7 @@ bool CanBusMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 
 ///////////// END Velocity Control 2 INTERFACE  //////////////////
 
-// IControlLimits2
+// IControlLimits
 bool CanBusMotionControl::setVelLimitsRaw(int axis, double min, double max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
