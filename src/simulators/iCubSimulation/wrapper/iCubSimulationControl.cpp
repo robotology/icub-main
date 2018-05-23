@@ -1507,12 +1507,10 @@ bool iCubSimulationControl::resetMotorEncodersRaw()
 
 bool iCubSimulationControl::getMotorEncodersRaw(double *v)
 {
-   _mutex.wait();
     for(int axis = 0;axis<njoints;axis++)
     {
         getMotorEncoderRaw(axis,&v[axis]);
     }
-    _mutex.post();
     return true;
 }
 
@@ -1566,12 +1564,10 @@ bool iCubSimulationControl::getMotorEncoderTimedRaw(int axis, double *enc, doubl
 
 bool iCubSimulationControl::getMotorEncoderSpeedsRaw(double *v)
 {
-   _mutex.wait();
     for(int axis = 0; axis<njoints; axis++)
     {
         getMotorEncoderSpeedRaw(axis,&v[axis]);
     }
-    _mutex.post();
     return true;
 }
 
