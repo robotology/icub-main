@@ -4893,7 +4893,13 @@ bool CanBusMotionControl::setRefTorquesRaw (const double *ref_trqs)
 /// cmd is an array of double (LATER: to be optimized).
 bool CanBusMotionControl::getTorquesRaw (double *trqs)
 {
-    return NOT_YET_IMPLEMENTED("getTorquesRaw");
+    CanBusResources& r = RES(system_resources);
+    bool ret = true;
+    for (int j = 0; j < r.getJoints() && ret; j++)
+    {
+        ret &= getTorqueRaw(j, &trqs[j]);
+    }
+    return ret;
 }
 
 bool CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
