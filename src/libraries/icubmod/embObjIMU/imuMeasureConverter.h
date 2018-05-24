@@ -22,14 +22,16 @@ private:
     double accFactor; //raw to metric measure
     double gyrFactor; //raw to metric measure
     double magFactor; //raw to metric measure
+    double eulFactor; //raw to metric measure
 public:
     ImuMeasureConverter();
-    ImuMeasureConverter(double accFactor, double gyrFactor, double magFactor);
-    void Initialize(double accFactor, double gyrFactor, double magFactor);
+    ImuMeasureConverter(double accConvFactor, double gyrConvFactor, double magConvFactor, double eulConvFactor);
+    void Initialize(double accConvFactor, double gyrConvFactor, double magConvFactor, double eulConvFactor);
     
     double convertAcc_raw2metric(double) const;
     double convertGyr_raw2metric(double) const;
     double convertMag_raw2metric(double) const;
+    double convertEul_raw2metric(double) const;
 };
 
 #endif

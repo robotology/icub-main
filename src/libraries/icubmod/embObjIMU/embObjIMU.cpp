@@ -102,8 +102,9 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     servCfg.convFactors.accFactor = 100.0; // 1 m/sec2 = 100 binary units
     servCfg.convFactors.magFactor = 16.0;  // 1 microT = 16 binary units
     servCfg.convFactors.gyrFactor = 16.0;  // 1 degree/sec = 16 binary units
+    servCfg.convFactors.eulFactor = 16.0; //  1 degree  = 16 binary units
     //eul angles don't need a conversion.
-    GET_privData(mPriv).sens.measConverter.Initialize(servCfg.convFactors.accFactor, servCfg.convFactors.gyrFactor,  servCfg.convFactors.magFactor);
+    GET_privData(mPriv).sens.measConverter.Initialize(servCfg.convFactors.accFactor, servCfg.convFactors.gyrFactor,  servCfg.convFactors.magFactor, servCfg.convFactors.eulFactor);
     
     // configure the sensor(s)
     

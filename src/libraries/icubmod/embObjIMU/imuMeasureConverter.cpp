@@ -19,18 +19,20 @@ ImuMeasureConverter::ImuMeasureConverter()
     double accFactor = 1.0;
     double gyrFactor = 1.0;
     double magFactor = 1.0;
+    double eulFactor = 1.0;
 }
 
-ImuMeasureConverter::ImuMeasureConverter(double accConvFactor, double gyrConvFactor, double magConvFactor)
+ImuMeasureConverter::ImuMeasureConverter(double accConvFactor, double gyrConvFactor, double magConvFactor, double eulConvFactor)
 {
-    Initialize(accConvFactor, gyrConvFactor, magConvFactor);
+    Initialize(accConvFactor, gyrConvFactor, magConvFactor, eulConvFactor);
 }
 
-void ImuMeasureConverter::Initialize(double accConvFactor, double gyrConvFactor, double magConvFactor)
+void ImuMeasureConverter::Initialize(double accConvFactor, double gyrConvFactor, double magConvFactor, double eulConvFactor)
 {
     accFactor = accConvFactor;
     gyrFactor = gyrConvFactor;
     magFactor = magConvFactor;
+    eulFactor = eulConvFactor;
 }
     
 double ImuMeasureConverter::convertAcc_raw2metric(double accRaw) const
@@ -46,4 +48,8 @@ double ImuMeasureConverter::convertMag_raw2metric(double magRaw) const
     return magRaw / magFactor;
 }
 
+double ImuMeasureConverter::convertEul_raw2metric(double eulRaw) const
+{
+    return eulRaw/eulFactor;
+}
 

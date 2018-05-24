@@ -204,6 +204,12 @@ bool SensorsData::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::
                 out[i] = measConverter.convertGyr_raw2metric(out[i]);
             }break;
 
+            case eoas_imu_eul:
+            {
+                for(int i=0; i<out.size(); i++)
+                    out[i] = measConverter.convertEul_raw2metric(out[i]);
+            }
+
             default: break;
         };
     }

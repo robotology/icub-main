@@ -59,6 +59,7 @@ typedef struct
     double accFactor;
     double gyrFactor;
     double magFactor;
+    double eulFactor;
 } imuConvFactors_t;
 
 typedef struct
