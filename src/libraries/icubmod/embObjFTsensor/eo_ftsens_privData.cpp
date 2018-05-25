@@ -328,7 +328,7 @@ bool eo_ftsens_privData::fillTemperatureEthServiceInfo(eOmn_serv_parameter_t &ft
 
     tempSrv.configuration.type = eomn_serv_AS_temperatures;
 
-    EOarray* array = eo_array_New(eOas_inertials3_descriptors_maxnumber, sizeof(eOas_inertial3_descriptor_t), &(tempSrv.configuration.data.as.temperature.arrayofdescriptor));
+    EOarray* array = eo_array_New(eOas_temperature_descriptors_maxnumber, sizeof(eOas_temperature_descriptor_t), &(tempSrv.configuration.data.as.temperature.arrayofdescriptor));
     eOas_temperature_descriptor_t descr= {0};
     descr.typeofboard = ftSrv.configuration.data.as.strain.boardtype.type; //eobrd_strain2 ;
     descr.typeofsensor = eoas_temperature_t1;
