@@ -6757,7 +6757,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
     }
 }
 
-bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
+bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, const double *refs)
 {
     if (refs == 0) return false;
     if (joints == 0) return false;
