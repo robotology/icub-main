@@ -22,7 +22,7 @@ project(iCub)
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
-find_package(YARP 2.3.73.3 REQUIRED)
+find_package(YARP 2.3.73.4 REQUIRED)
 message(STATUS "YARP is version: ${YARP_VERSION}")
 
 if (YARP_HAS_MATH_LIB)
