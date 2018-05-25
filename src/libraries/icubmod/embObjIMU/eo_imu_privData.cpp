@@ -212,6 +212,7 @@ bool SensorsData::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::
 
             default: break;
         };
+        timestamp = mysens[type].at(sens_index).timestamp;
     }
     catch (const std::out_of_range& oor)
     {
