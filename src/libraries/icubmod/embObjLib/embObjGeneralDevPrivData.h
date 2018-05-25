@@ -58,7 +58,7 @@ public:
     bool prerareEthService(yarp::os::Searchable &config, eth::IethResource *interface);
     void cleanup(eth::IethResource *interface);
 
-    bool serviceSetRegilars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout = 0.500);
+    bool serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout = 0.500);
 
 
 };

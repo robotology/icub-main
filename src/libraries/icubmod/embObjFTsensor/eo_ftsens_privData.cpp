@@ -231,7 +231,7 @@ bool eo_ftsens_privData::initRegulars(servConfigFTsensor_t &serviceConfig)
 
     id32v.push_back(id32);
 
-    if(!serviceSetRegilars(eomn_serv_category_strain, id32v))
+    if(!serviceSetRegulars(eomn_serv_category_strain, id32v))
         return false;
 
     //2) set regulars for temperature service
@@ -241,7 +241,7 @@ bool eo_ftsens_privData::initRegulars(servConfigFTsensor_t &serviceConfig)
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_temperature, 0, eoprot_tag_as_temperature_status);
     id32v.push_back(id32);
 
-    if(!serviceSetRegilars(eomn_serv_category_temperatures, id32v))
+    if(!serviceSetRegulars(eomn_serv_category_temperatures, id32v))
         return false;
 
     return true;

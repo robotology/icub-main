@@ -96,6 +96,7 @@ private:
 
     void resetCounters();
     void getCounters(unsigned int &saturations, unsigned int &errors, unsigned int &timeouts);
+    bool enableTemperatureTransmission(bool enable);
 };
 
 

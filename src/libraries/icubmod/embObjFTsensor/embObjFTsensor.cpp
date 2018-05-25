@@ -63,6 +63,21 @@ bool embObjFTsensor::initialised()
     return GET_privData(mPriv).isOpen();
 }
 
+
+bool embObjFTsensor::enableTemperatureTransmission(bool enable)
+{
+    uint8_t cmd;
+    (enable) ? cmd =1: cmd=0;
+
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_temperature, 0, eoprot_tag_as_temperature_cmmnds_enable);
+    if(false == GET_privData(mPriv).res->setRemoteValue(id32, &cmd))
+    {
+        yError() << getBoardInfo() << "fails send command enableTemperatureTransmission(" << enable << ")";
+        return false;
+    }
+    return true;
+}
+
 //----------------------- DeviceDriver -------------------
 
 bool embObjFTsensor::open(yarp::os::Searchable &config)
@@ -163,22 +178,8 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
         }
     }
 
-
-    {   // start the configured sensors. so far, we must keep it in here. later on we can remove this command
-
-        uint8_t enable = 1;
-
-        eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_temperature, 0, eoprot_tag_as_temperature_cmmnds_enable);
-        if(false == GET_privData(mPriv).res->setRemoteValue(id32, &enable))
-        {
-            yError() << getBoardInfo() << "open() fails to command the start transmission of the configured temeprature";
-            cleanup();
-            return false;
-        }
-    }
-
-
-
+    // start the configured sensors. so far, we must keep it in here. later on we can remove this command
+    enableTemperatureTransmission(true);
 
     GET_privData(mPriv).setOpen(true);
     return true;
@@ -186,14 +187,16 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
 
 bool embObjFTsensor::close()
 {
-    GET_privData(mPriv).setOpen(false);
-
     cleanup();
     return true;
 }
 
 void embObjFTsensor::cleanup(void)
 {
+
+    // disable temperature
+    enableTemperatureTransmission(false);
+
     GET_privData(mPriv).cleanup(static_cast <eth::IethResource*> (this));
 }
 
@@ -467,6 +470,7 @@ bool embObjFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp:
         out[k] = GET_privData(mPriv).analogdata[k] + GET_privData(mPriv).offset[k];
     }
 
+    timestamp =  GET_privData(mPriv).timestampAnalogdata;
 
     GET_privData(mPriv).mutex.post();
 

@@ -80,19 +80,21 @@ bool yarp::dev::embObjDevPrivData::prerareEthService(Searchable& config, eth::Ie
 
 void yarp::dev::embObjDevPrivData::cleanup(eth::IethResource *interface)
 {
+
+    if(!isOpen()) return; //already closed
+
     if(ethManager == NULL) return;
 
     int ret = ethManager->releaseResource2(res, interface);
     res = NULL;
     if(ret == -1)
         ethManager->killYourself();
-    behFlags.opened = false;
 }
 
-bool yarp::dev::embObjDevPrivData::serviceSetRegilars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout)
+bool yarp::dev::embObjDevPrivData::serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout)
 {
 
-    if(false == res->serviceSetRegulars(eomn_serv_category_strain, id32vector, timeout))
+    if(false == res->serviceSetRegulars(category, id32vector, timeout))
     {
         yError() << getBoardInfo() << "initRegulars() fails to add its variables to regulars: cannot proceed any further";
         return false;
@@ -111,5 +113,6 @@ bool yarp::dev::embObjDevPrivData::serviceSetRegilars(eOmn_serv_category_t categ
             }
         }
     }
+    return true;
 }
 
