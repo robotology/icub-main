@@ -2387,7 +2387,7 @@ bool iCubSimulationControl::setPositionRaw(int axis, double ref)
     return false;
 }
 
-bool iCubSimulationControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
+bool iCubSimulationControl::setPositionsRaw(const int n_joint, const int *joints, const double *refs)
 {
     bool ret = true;
     for(int i=0; i<n_joint; i++)

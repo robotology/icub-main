@@ -3865,7 +3865,7 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
     return res->setRemoteValue(protoId, &setpoint);
 }
 
-bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
+bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, const double *refs)
 {
     bool ret = true;
     for(int i=0; i<n_joint; i++)

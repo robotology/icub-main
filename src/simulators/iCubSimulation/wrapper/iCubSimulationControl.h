@@ -350,7 +350,7 @@ class yarp::dev::iCubSimulationControl :
   /////// PositionDirect
   virtual bool setPositionDirectModeRaw();
   virtual bool setPositionRaw(int j, double ref);
-  virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
+  virtual bool setPositionsRaw(const int n_joint, const int *joints, const double *refs);
   virtual bool setPositionsRaw(const double *refs);
   virtual bool getRefPositionRaw(const int joint, double *ref);
   virtual bool getRefPositionsRaw(double *refs);
