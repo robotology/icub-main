@@ -82,7 +82,6 @@ public:
         if (!Network::connect(imuPortName,iPort.getName()))
             yWarning("Unable to connect to %s",imuPortName.c_str());
 
-        Time::turboBoost();
         return true;
     }
 

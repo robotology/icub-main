@@ -671,7 +671,6 @@ bool ActionPrimitives::open(Property &opt)
     fingers2JntsMap.insert(pair<int,int>(4,15));
 
     // start the thread with the specified period
-    Time::turboBoost();
     setRate(period);
     start();
 

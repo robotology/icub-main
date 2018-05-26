@@ -801,8 +801,6 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        Time::turboBoost();
-
         int rateThread = 10;
         if (rf.findGroup("GENERAL").check("rateThread"))
         {

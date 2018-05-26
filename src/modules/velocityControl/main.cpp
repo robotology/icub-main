@@ -257,7 +257,6 @@ public:
         Property options;
         options.fromString(rf.toString());
         char robotName[255];
-        Time::turboBoost();    
         options.put("device", "remote_controlboard");
         if(options.check("robot"))
             strncpy(robotName, options.find("robot").asString().c_str(),sizeof(robotName));

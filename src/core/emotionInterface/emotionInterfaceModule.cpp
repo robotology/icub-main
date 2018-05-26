@@ -147,7 +147,6 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     
     attach(_inputPort);
 
-    Time::turboBoost();
     return true;
 }
 

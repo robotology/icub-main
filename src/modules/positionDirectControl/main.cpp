@@ -62,7 +62,6 @@ public:
         char robotName[255];
         Bottle *jointsList=0;
         std::string moduleName = "directPositionControl";
-        Time::turboBoost();
 
         options.put("device", "remote_controlboard");
         if(options.check("robot"))

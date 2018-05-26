@@ -657,9 +657,6 @@ public:
         rpcPort.open("/"+name+"/rpc");
         attach(rpcPort);
 
-        // request high resolution scheduling
-        Time::turboBoost();
-
         return true;
     }
 

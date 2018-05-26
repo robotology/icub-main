@@ -299,9 +299,6 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     // token
     token=0.0;
     pToken=NULL;
-
-    // request high resolution scheduling
-    Time::turboBoost();
 }
 
 

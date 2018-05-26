@@ -439,8 +439,6 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        Time::turboBoost();
-
         if (rf.check("name"))
             name=string("/")+rf.find("name").asString().c_str();
         else

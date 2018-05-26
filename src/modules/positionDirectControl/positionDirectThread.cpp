@@ -128,8 +128,6 @@ void positionDirectControlThread::threadRelease()
 
 bool positionDirectControlThread::init(PolyDriver *d, std::string moduleName, std::string partName, std::string robotName, Bottle* jointsList)
 {
-    yarp::os::Time::turboBoost();
-
     ///opening port command input
     char tmp[255];
     sprintf(tmp, "/%s/%s/%s/command:i", moduleName.c_str(), robotName.c_str(), partName.c_str());

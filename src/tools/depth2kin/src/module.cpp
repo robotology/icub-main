@@ -1037,9 +1037,6 @@ bool CalibModule::configure(ResourceFinder &rf)
 
     setExplorationSpaceDelta(0.0,0.0,0.0,0.0,0.0);
 
-    // request high resolution scheduling
-    Time::turboBoost();
-
     return true;
 }
 

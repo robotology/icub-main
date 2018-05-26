@@ -81,7 +81,6 @@ int main(int argc, char *argv[])
     }
 
     Network::init();
-    Time::turboBoost();
     
     std::string name;
     Value& v = options.find("robot");

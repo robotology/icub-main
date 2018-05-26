@@ -1549,9 +1549,6 @@ public:
     /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
-        // request high resolution scheduling
-        Time::turboBoost();
-
         dataBase.configure(rf);
         stats=rf.check("stats");
 

@@ -390,8 +390,6 @@ public:
         string remote;
         string local;
 
-        Time::turboBoost();
-
         // get params from the RF
         name=rf.check("name",Value("armCtrl")).asString();
         robot=rf.check("robot",Value("icub")).asString();

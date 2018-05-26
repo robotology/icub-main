@@ -445,8 +445,6 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        Time::turboBoost();
-
         // get command line options
         if (!rf.check("robot") || !rf.check("part")) 
         {

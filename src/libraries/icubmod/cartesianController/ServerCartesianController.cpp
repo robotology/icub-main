@@ -221,9 +221,6 @@ void ServerCartesianController::init()
     syncEventEnabled=false;
 
     contextIdCnt=0;
-
-    // request high resolution scheduling
-    Time::turboBoost();
 }
 
 

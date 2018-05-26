@@ -194,8 +194,6 @@ bool velControlThread::init(PolyDriver *d, std::string partName, std::string rob
 {
     char tmp[255];
 
-    yarp::os::Time::turboBoost();
-
     nb_void_loops = 0;
 
     ///opening port for fast transfer of position command
