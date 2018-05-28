@@ -27,6 +27,11 @@ yarp::os::Bottle& operator<<(yarp::os::Bottle &out, int val) {
     return out;
 }
 
+yarp::os::Bottle& operator<<(yarp::os::Bottle &out, size_t val) {
+    out.addInt(val);
+    return out;
+}
+
 yarp::os::Bottle& operator<<(yarp::os::Bottle &out, double val) {
     out.addDouble(val);
     return out;
