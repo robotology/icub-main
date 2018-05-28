@@ -475,7 +475,7 @@ public:
                 int d2=d>>1;
 
                 CvPoint tl=cvPoint(std::max(x-d2,0),std::max(y-d2,0));
-                CvPoint br=cvPoint(std::min(x+d2,(int)(pImgBgrIn->width())-1),std::min(y+d2,(int)(pImgBgrIn->height())-1));
+                CvPoint br=cvPoint(std::min(x+d2,(int)pImgBgrIn->width()-1),std::min(y+d2,(int)pImgBgrIn->height()-1));
                 CvPoint cropSize=cvPoint(br.x-tl.x,br.y-tl.y);
 
                 ImageOf<PixelBgr> &cropImg=cropPort.prepare();
