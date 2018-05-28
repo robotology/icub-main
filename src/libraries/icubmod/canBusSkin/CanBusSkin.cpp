@@ -184,7 +184,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
 
     //if I 'm here, config is ok ==> send message to enable transmission
     //(only in case of new configuration, skin boards need of explicit message in order to enable tx.)
-    Time::delay(0.01);
+    yarp::os::Time::delay(0.01);
     if(_newCfg)
     {
         uint8_t txmode = 1;
@@ -343,7 +343,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
         }
     }
 
-        Time::delay(0.01);
+        yarp::os::Time::delay(0.01);
         /* Read special triangle configuration */
         numofcfg = SPECIAL_TRIANGLE_CFG_MAX_NUM; //set size of my vector boardCfgList;
                                     //in output the function return number of special board cfg are in file xml
@@ -437,7 +437,7 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
             return false;
     }
 
-    Time::delay(0.5);
+    yarp::os::Time::delay(0.5);
 
     /*read and send special cfg for board and triangle */
     if(!readNewSpecialConfiguration(config))
