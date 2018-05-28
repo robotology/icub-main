@@ -31,7 +31,6 @@ using std::cerr;
 using std::cout;
 
 using yarp::os::RateThread;
-using yarp::os::Time;
 
 #define SKINMANAGER_TH_DIAGREAD_DEBUG 1
 
