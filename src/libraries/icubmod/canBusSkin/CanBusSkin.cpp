@@ -29,7 +29,6 @@ using yarp::os::Bottle;
 using yarp::os::Property;
 using yarp::os::Value;
 using yarp::dev::CanMessage;
-using yarp::os::Time;
 
 
 CanBusSkin::CanBusSkin() :  RateThread(20),
