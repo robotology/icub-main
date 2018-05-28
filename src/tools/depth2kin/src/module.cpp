@@ -185,10 +185,10 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     cv::Point ct((int)c[0],(int)c[1]);
     cv::Point tl((int)(c[0]-roi_side2),(int)(c[1]-roi_side2));
     cv::Point br((int)(c[0]+roi_side2),(int)(c[1]+roi_side2));
-    tl.x=std::max(1,tl.x); tl.x=std::min(tl.x,imgIn.width()-1);
-    tl.y=std::max(1,tl.y); tl.y=std::min(tl.y,imgIn.height()-1);
-    br.x=std::max(1,br.x); br.x=std::min(br.x,imgIn.width()-1);
-    br.y=std::max(1,br.y); br.y=std::min(br.y,imgIn.height()-1);
+    tl.x=std::max(1,tl.x); tl.x=std::min(tl.x,(int)(imgIn.width())-1);
+    tl.y=std::max(1,tl.y); tl.y=std::min(tl.y,(int)(imgIn.height())-1);
+    br.x=std::max(1,br.x); br.x=std::min(br.x,(int)(imgIn.width())-1);
+    br.y=std::max(1,br.y); br.y=std::min(br.y,(int)(imgIn.height())-1);
     cv::Rect rect(tl,br);
 
     // run Otsu algorithm to segment out the finger    
