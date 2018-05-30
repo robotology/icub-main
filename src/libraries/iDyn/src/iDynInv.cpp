@@ -769,7 +769,7 @@ BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const NewEulMode _mo
     else
         if(verbose)
         {
-            fprintf(stderr,"BaseLink error, could not set H0 due to wrong dimensions: ( %d,%d) instead of (4,4). \n",_H0.rows(),_H0.cols());
+            fprintf(stderr,"BaseLink error, could not set H0 due to wrong dimensions: ( %zu,%zu) instead of (4,4). \n",_H0.rows(),_H0.cols());
 
             fprintf(stderr," Default is set. \n");
         }
@@ -791,7 +791,7 @@ BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const Vector &_w, co
     else
         if(verbose)
         {
-            fprintf(stderr,"BaseLink error, could not set H0 due to wrong dimensions: ( %d,%d) instead of (4,4). \n",_H0.rows(),_H0.cols());
+            fprintf(stderr,"BaseLink error, could not set H0 due to wrong dimensions: ( %zu,%zu) instead of (4,4). \n",_H0.rows(),_H0.cols());
 
             fprintf(stderr," Default is set. \n");
         }
@@ -1023,7 +1023,7 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const N
     else
         if(verbose)
         {
-            fprintf(stderr,"BaseLink error, could not set HN due to wrong dimensions: ( %d,%d) instead of (4,4). \n",_HN.rows(),_HN.cols());
+            fprintf(stderr,"BaseLink error, could not set HN due to wrong dimensions: ( %zu,%zu) instead of (4,4). \n",_HN.rows(),_HN.cols());
 
             fprintf(stderr," Default is set. \n");
         }
@@ -1045,7 +1045,7 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const V
     else
         if(verbose)
         {
-            fprintf(stderr,"BaseLink error, could not set H0 due to wrong dimensions: ( %d,%d) instead of (4,4). \n",_HN.rows(),_HN.cols());
+            fprintf(stderr,"BaseLink error, could not set H0 due to wrong dimensions: ( %zu,%zu) instead of (4,4). \n",_HN.rows(),_HN.cols());
 
             fprintf(stderr," Default is set. \n");
         }
@@ -1298,9 +1298,9 @@ bool SensorLinkNewtonEuler::setSensor(const Matrix &_H, const Matrix &_COM, cons
         if(verbose)
         {
             fprintf(stderr,"SensorLink error, could not set properly H,COM,I due to wrong dimensions: \n");
-            fprintf(stderr,"    H:   (%d,%d) instead of (4,4) \n",_H.rows(),_H.cols());
-            fprintf(stderr,"  COM:   (%d,%d) instead of (4,4) \n",_COM.rows(),_COM.cols()); 
-            fprintf(stderr,"    I:   (%d,%d) instead of (3,3) \n",_I.rows(),_I.cols()); 
+            fprintf(stderr,"    H:   (%zu,%zu) instead of (4,4) \n",_H.rows(),_H.cols());
+            fprintf(stderr,"  COM:   (%zu,%zu) instead of (4,4) \n",_COM.rows(),_COM.cols());
+            fprintf(stderr,"    I:   (%zu,%zu) instead of (3,3) \n",_I.rows(),_I.cols());
             fprintf(stderr,"Setting identities and zeros by default.");
         }
         return false;
