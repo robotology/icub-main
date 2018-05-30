@@ -442,6 +442,8 @@ void CalibrationWindow::setCalibration()
     int index = ui->tabWidget->currentIndex();
     QTableWidget *table = matrices.at(index);
 
+    // marco.accame: the regulation set to be sent to the board is the one in use in its inside
+    const int regset = cDownloader::strain_regset_inuse;
 
     loading();
     for (int ri=0; ri<CHANNEL_COUNT; ri++){
@@ -449,13 +451,13 @@ void CalibrationWindow::setCalibration()
             const char* temp2 = table->item(ri,ci)->text().toLatin1().data();
             sscanf (temp2,"%x",&matrix[index][ri][ci]);
             string msg;
-            core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci],index,&msg);
+            core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci], regset, &msg);
             appendLogMsg(msg.c_str());
         }
     }
 
     string msg;
-    core->getDownloader()->strain_set_matrix_gain(bus,id,calib_const[index],index,&msg);
+    core->getDownloader()->strain_set_matrix_gain(bus,id,calib_const[index], regset, &msg);
     appendLogMsg(msg.c_str());
     qDebug("Calibration matrix updated");
 
@@ -467,11 +469,14 @@ void CalibrationWindow::setCalibration()
 
 void CalibrationWindow::loadCalibrationFile(QString fileName)
 {
+    // marco.accame: the regulation set to be sent to the board is the one in use in its inside
+    const int regset = cDownloader::strain_regset_inuse;
+
     mutex.lock();
     int index = ui->tabWidget->currentIndex();
     loading();
     //load data file
-    if(!calibration_load_v3 (fileName.toLatin1().data(), bus, id,index)){
+    if(!calibration_load_v3 (fileName.toLatin1().data(), bus, id, index, regset)){
         loading(false);
         mutex.unlock();
     }
@@ -484,7 +489,7 @@ void CalibrationWindow::loadCalibrationFile(QString fileName)
     char buffer[256];
 
     drv_sleep (500);
-    core->getDownloader()->strain_get_serial_number(bus,id, buffer,&msg);
+    core->getDownloader()->strain_get_serial_number(bus,id, buffer, &msg);
 
     setText(ui->edit_serial,QString(buffer));
     serial_number_changed=false;
@@ -492,7 +497,7 @@ void CalibrationWindow::loadCalibrationFile(QString fileName)
     drv_sleep (500);
     for (ri=0;ri<CHANNEL_COUNT;ri++){
         for (ci=0;ci<CHANNEL_COUNT;ci++){
-            core->getDownloader()->strain_get_matrix_rc(bus,id, ri, ci, matrix[index][ri][ci],index,&msg);
+            core->getDownloader()->strain_get_matrix_rc(bus,id, ri, ci, matrix[index][ri][ci], regset, &msg);
             appendLogMsg(msg.c_str());
             sprintf(buffer,"%x",matrix[index - 1][ri][ci]);
             setMatrix(index);
@@ -652,6 +657,9 @@ void CalibrationWindow::onSaveCalibrationFile(bool click)
 
 void CalibrationWindow::importCalibrationFile(QString fileName)
 {
+    // marco.accame: the regulation set to be sent to the board is the one in use in its inside
+    const int regset = cDownloader::strain_regset_inuse;
+
     mutex.lock();
     loading();
     int index = ui->tabWidget->currentIndex();
@@ -684,7 +692,7 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
         filestr.getline (buffer,256);
         sscanf (buffer,"%x",&calib_matrix[index][ri][ci]);
         printf("%d %x\n", calib_matrix[index][ri][ci],calib_matrix[index][ri][ci]);
-        core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,calib_matrix[index][ri][ci],index,&msg);
+        core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,calib_matrix[index][ri][ci], regset, &msg);
         appendLogMsg(msg.c_str());
     }
 
@@ -692,13 +700,13 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
     filestr.getline (buffer,256);
     int cc=0;
     sscanf (buffer,"%d",&cc);
-    core->getDownloader()->strain_set_matrix_gain(bus,id,cc,0,&msg);
+    core->getDownloader()->strain_set_matrix_gain(bus,id,cc, regset, &msg);
     appendLogMsg(msg.c_str());
 
     for (i=0;i<CHANNEL_COUNT; i++){
         filestr.getline (buffer,256);
         sscanf (buffer,"%d",&cc);
-        core->getDownloader()->strain_set_full_scale(bus,id,i,cc,index,&msg);
+        core->getDownloader()->strain_set_full_scale(bus,id,i,cc, regset, &msg);
         appendLogMsg(msg.c_str());
     }
 
@@ -714,7 +722,7 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
     drv_sleep (1000);
     for (ri=0;ri<CHANNEL_COUNT;ri++){
         for (ci=0;ci<CHANNEL_COUNT;ci++){
-            core->getDownloader()->strain_get_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci],0,&msg);
+            core->getDownloader()->strain_get_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci], regset, &msg);
             appendLogMsg(msg.c_str());
         }
     }
@@ -947,7 +955,10 @@ void CalibrationWindow::useMatrix(int index)
     loading();
     string msg;
     if(index > 0){
-        core->getDownloader()->strain_set_matrix(bus,id,index - 1,&msg);
+        // marco.accame: use the new method strain_set_regulationset w/ strain_regset_one / strain_regset_two / strain_regset_three
+        // index = 0 means no calibration used. index = 1 means first set, etc. hence
+        // int regset = ...;
+        //core->getDownloader()->strain_set_regulationset(bus, id, regset, cDownloader::strain_regsetmode_temporary, &msg);
         appendLogMsg(msg.c_str());
     }
     currentMatrixIndex = index;
@@ -971,11 +982,14 @@ void CalibrationWindow::onOffsetSliderValue(int val)
 
 void CalibrationWindow::setOffset(int chan, int value)
 {
+    // marco.accame: the regulation set to be sent to the board is the one in use in its inside
+    const int regset = cDownloader::strain_regset_inuse;
+
     mutex.lock();
     loading();
     offset[chan] = value;
     string msg;
-    core->getDownloader()->strain_set_offset(bus,id, chan, offset[chan],&msg);
+    core->getDownloader()->strain_set_offset(bus,id, chan, offset[chan], regset, &msg);
     appendLogMsg(msg.c_str());
     loading(false);
     mutex.unlock();
@@ -1019,6 +1033,9 @@ void CalibrationWindow::onSetMatrix(int index)
 
 void CalibrationWindow::onTimeout()
 {
+    // marco.accame: the regulation set for now is the one in use inside the strain2
+    const int regset = cDownloader::strain_regset_inuse;
+
     qDebug() << "STARTING....";
     keepRunning = true;
     while(keepRunning){
@@ -1057,9 +1074,9 @@ void CalibrationWindow::onTimeout()
 
         for (int i=0;i<CHANNEL_COUNT;i++){
             if(i==0){
-                ret  = core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i],&msg);
+                ret  = core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i], regset, &msg);
             }else{
-                ret |= core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i],&msg);
+                ret |= core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i], regset, &msg);
             }
             appendLogMsg(msg.c_str());
         }
@@ -1100,16 +1117,18 @@ void CalibrationWindow::onTimeout()
 
         setSerialChanged(serial_number_changed);
 
+        // marco.accame: maybe it is better to retrieve only one matrix: the selected one, not all three of them
+
         for(int mi=0;mi<MATRIX_COUNT;mi++){
             if (matrix_changed[mi] == false){
                 for (ri=0;ri<CHANNEL_COUNT;ri++){
                     for (ci=0;ci<CHANNEL_COUNT;ci++){
-                        core->getDownloader()->strain_get_matrix_rc(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, ri, ci, matrix[mi][ri][ci],mi,&msg);
+                        core->getDownloader()->strain_get_matrix_rc(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, ri, ci, matrix[mi][ri][ci], regset, &msg);
                         appendLogMsg(msg.c_str());
                     }
                 }
                 setMatrix(mi);
-                core->getDownloader()->strain_get_matrix_gain(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, calib_const[mi],mi,&msg);
+                core->getDownloader()->strain_get_matrix_gain(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, calib_const[mi], regset, &msg);
                 appendLogMsg(msg.c_str());
                 sprintf(tempbuf,"%d",calib_const[mi]);
                 setText(matrixGain.at(mi),tempbuf);
@@ -1124,7 +1143,7 @@ void CalibrationWindow::onTimeout()
             }
 
             for (ri=0;ri<CHANNEL_COUNT;ri++){
-                core->getDownloader()->strain_get_full_scale(bus,id, ri, full_scale_const[mi][ri],mi,&msg);
+                core->getDownloader()->strain_get_full_scale(bus,id, ri, full_scale_const[mi][ri], regset, &msg);
                 appendLogMsg(msg.c_str());
                 sprintf(tempbuf,"%d",full_scale_const[mi][ri]);
                 QTableWidgetItem *item2 = fullScales.at(mi)->item(ri,COL_FULLSCALE);
@@ -1152,10 +1171,16 @@ void CalibrationWindow::onTimeout()
         bool skip_display_calib=false;
 
         if(bUseCalibration){
-            int currentMatrix;
-            core->getDownloader()->strain_get_matrix(bus,id,currentMatrix,&msg);
+            // marco.accame.todo: must use strain_get_regulationset(). attention the values returned will be 1, 2, 3
+            // previously strain_get_matrix(currmatrix) returned currmatrix = 0 to mean the first one. hence it was used setCurrentIndex(currmatrix+1)
+            int usedregulationset = 0;
+            // core->getDownloader()->strain_get_regulationset(bus, id, usedregulationset, cDownloader::strain_regsetmode_temporary, &msg);
+            // must now transform usedregulationset. 
+            // for now, until we have gui support to the three regulation sets ..
+            // it is forced to 0 to keep former behaviour of strain_get_matrix()
+            usedregulationset = 0;
             ui->comboUseMatrix->blockSignals(true);
-            ui->comboUseMatrix->setCurrentIndex(currentMatrix+1);
+            ui->comboUseMatrix->setCurrentIndex(usedregulationset+1);
             ui->comboUseMatrix->blockSignals(false);
         }else{
             ui->comboUseMatrix->blockSignals(true);
@@ -1177,8 +1202,8 @@ void CalibrationWindow::onTimeout()
 
             if(icubCanProto_boardType__strain2 == boardtype)
             {
-                core->getDownloader()->strain_get_amplifier_regs(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_registers[i], &msg);
-                core->getDownloader()->strain_get_amplifier_gain_offset(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_gains[i], amp_offsets[i], &msg);
+                core->getDownloader()->strain_get_amplifier_regs(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_registers[i], regset, &msg);
+                core->getDownloader()->strain_get_amplifier_gain_offset(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_gains[i], amp_offsets[i], regset, &msg);
                 appendLogMsg(msg.c_str());
                 sprintf(tempbuf,"%6.3f",amp_gains[i]);
                 QTableWidgetItem *item00 = ui->tableParamters->item(i,COL_GAIN);
@@ -1194,14 +1219,14 @@ void CalibrationWindow::onTimeout()
             }
 
 
-            core->getDownloader()->strain_get_calib_bias(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, calib_bias[i],&msg);
+            core->getDownloader()->strain_get_calib_bias(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, calib_bias[i], regset, &msg);
             appendLogMsg(msg.c_str());
             sprintf(tempbuf,"%d (%d)",showasQ15(calib_bias[i]), showBias(calib_bias[i]));
             QTableWidgetItem *item = ui->tableParamters->item(i,COL_CALIBBIAS);
             //item->setText(tempbuf);
             setText(item,tempbuf);
 
-            core->getDownloader()->strain_get_curr_bias(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, curr_bias[i],&msg);
+            core->getDownloader()->strain_get_curr_bias(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, curr_bias[i], &msg);
             appendLogMsg(msg.c_str());
             sprintf(tempbuf,"%d", showasQ15(curr_bias[i]));
             QTableWidgetItem *item1 = ui->tableParamters->item(i,COL_CURRBIAS);
@@ -1298,7 +1323,7 @@ void CalibrationWindow::onTimeout()
 
 }
 
-bool CalibrationWindow::calibration_load_v3 (char* filename, int selected_bus, int selected_id, int index)
+bool CalibrationWindow::calibration_load_v3 (char* filename, int selected_bus, int selected_id, int index, int regset)
 {
     if (filename==NULL){
         yError("File not found!\n");
@@ -1371,7 +1396,7 @@ bool CalibrationWindow::calibration_load_v3 (char* filename, int selected_bus, i
             sscanf  (buffer,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", &t08[0], &t08[1], &t08[2], &t08[3], &t08[4], &t08[5]);
             for(int j=0; j<6; j++) amp_registers[i].data[j] = t08[j];
 
-            core->getDownloader()->strain_set_amplifier_regs(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_registers[i]);
+            core->getDownloader()->strain_set_amplifier_regs(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_registers[i], regset);
 
             // downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, offset[i]);
             //core->getDownloader()->strain_set_offset (bus,id, i, offset[i]);
@@ -1397,7 +1422,7 @@ bool CalibrationWindow::calibration_load_v3 (char* filename, int selected_bus, i
             filestr.getline (buffer,256);
             sscanf  (buffer,"%d",&offset[i]);
             // downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, offset[i]);
-            core->getDownloader()->strain_set_offset (bus,id, i, offset[i]);
+            core->getDownloader()->strain_set_offset (bus,id, i, offset[i], regset);
             drv_sleep(200);
         }
     }
@@ -1410,7 +1435,7 @@ bool CalibrationWindow::calibration_load_v3 (char* filename, int selected_bus, i
         filestr.getline (buffer,256);
         sscanf (buffer,"%x",&calib_matrix[index][ri][ci]);
         printf("%d %x\n", calib_matrix[index][ri][ci],calib_matrix[index][ri][ci]);
-        core->getDownloader()->strain_set_matrix_rc(bus,id, ri, ci, calib_matrix[index][ri][ci]);
+        core->getDownloader()->strain_set_matrix_rc(bus,id, ri, ci, calib_matrix[index][ri][ci], regset);
     }
 
 
@@ -1420,14 +1445,14 @@ bool CalibrationWindow::calibration_load_v3 (char* filename, int selected_bus, i
     filestr.getline (buffer,256);
     int cc=0;
     sscanf (buffer,"%d",&cc);
-    core->getDownloader()->strain_set_matrix_gain(bus,id, cc);
+    core->getDownloader()->strain_set_matrix_gain(bus,id, cc, regset);
 
     //tare
     filestr.getline (buffer,256);
     for (i=0;i<CHANNEL_COUNT; i++){
         filestr.getline (buffer,256);
         sscanf  (buffer,"%d",&calib_bias[i]);
-        core->getDownloader()->strain_set_calib_bias(bus,id, i, calib_bias[i]);
+        core->getDownloader()->strain_set_calib_bias(bus,id, i, calib_bias[i], regset);
     }
 
     //full scale values
@@ -1435,7 +1460,7 @@ bool CalibrationWindow::calibration_load_v3 (char* filename, int selected_bus, i
     for (i=0;i<CHANNEL_COUNT; i++){
         filestr.getline (buffer,256);
         sscanf  (buffer,"%d",&full_scale_const[index][i]);
-        core->getDownloader()->strain_set_full_scale(bus,id, i, full_scale_const[index][i]);
+        core->getDownloader()->strain_set_full_scale(bus,id, i, full_scale_const[index][i], regset);
     }
 
 
@@ -1456,6 +1481,8 @@ bool CalibrationWindow::calibration_load_v3 (char* filename, int selected_bus, i
 #if 0
 bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, int selected_id, int index)
 {
+    const int regset = cDownloader::strain_regset_inuse;
+
     if (filename==NULL){
         yError("File not found!\n");
         appendLogMsg("File not found!");
@@ -1502,7 +1529,7 @@ bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, i
         filestr.getline (buffer,256);
         sscanf  (buffer,"%d",&offset[i]);
         // downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, offset[i]);
-        core->getDownloader()->strain_set_offset (bus,id, i, offset[i]);
+        core->getDownloader()->strain_set_offset (bus,id, i, offset[i], regset);
         drv_sleep(200);
     }
 
@@ -1514,7 +1541,7 @@ bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, i
         filestr.getline (buffer,256);
         sscanf (buffer,"%x",&calib_matrix[index][ri][ci]);
         printf("%d %x\n", calib_matrix[index][ri][ci],calib_matrix[index][ri][ci]);
-        core->getDownloader()->strain_set_matrix_rc(bus,id, ri, ci, calib_matrix[index][ri][ci]);
+        core->getDownloader()->strain_set_matrix_rc(bus,id, ri, ci, calib_matrix[index][ri][ci], regset);
     }
 
 
@@ -1524,14 +1551,14 @@ bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, i
     filestr.getline (buffer,256);
     int cc=0;
     sscanf (buffer,"%d",&cc);
-    core->getDownloader()->strain_set_matrix_gain(bus,id, cc);
+    core->getDownloader()->strain_set_matrix_gain(bus,id, cc, regset);
 
     //tare
     filestr.getline (buffer,256);
     for (i=0;i<CHANNEL_COUNT; i++){
         filestr.getline (buffer,256);
         sscanf  (buffer,"%d",&calib_bias[i]);
-        core->getDownloader()->strain_set_calib_bias(bus,id, i, calib_bias[i]);
+        core->getDownloader()->strain_set_calib_bias(bus,id, i, calib_bias[i], regset);
     }
 
     //full scale values
@@ -1539,7 +1566,7 @@ bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, i
     for (i=0;i<CHANNEL_COUNT; i++){
         filestr.getline (buffer,256);
         sscanf  (buffer,"%d",&full_scale_const[index][i]);
-        core->getDownloader()->strain_set_full_scale(bus,id, i, full_scale_const[index][i]);
+        core->getDownloader()->strain_set_full_scale(bus,id, i, full_scale_const[index][i], regset);
     }
 
 

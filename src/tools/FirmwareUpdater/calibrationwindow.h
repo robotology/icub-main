@@ -39,7 +39,7 @@ protected:
     void saveCalibrationFile(QString filePath);
     void importCalibrationFile(QString fileName);
     //bool calibration_load_v2 (char* filename, int selected_bus, int selected_id, int index);
-    bool calibration_load_v3 (char* filename, int selected_bus, int selected_id, int index);
+    bool calibration_load_v3 (char* filename, int selected_bus, int selected_id, int index, int regset);
     void useMatrix(int);
     void resetCalibration();
 
