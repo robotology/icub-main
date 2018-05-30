@@ -22,7 +22,7 @@ add_definitions(-D_WIP_CHECK_PROTOCOL_VERSION_)
 else(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
 endif(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
 
-yarp_begin_plugin_library(icubmod)
+yarp_begin_plugin_library(icubmod QUIET)
   add_subdirectory(canBusMotionControl)
   add_subdirectory(cartesianController)
   add_subdirectory(cfw2Can)
@@ -63,7 +63,7 @@ yarp_begin_plugin_library(icubmod)
 if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
   add_subdirectory(imu3DM_GX3)
 endif()
-yarp_end_plugin_library(icubmod)
+yarp_end_plugin_library(icubmod QUIET)
 
 
 if(ICUB_COMPILE_EMBOBJ_LIBRARY)
