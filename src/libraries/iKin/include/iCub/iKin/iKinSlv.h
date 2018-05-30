@@ -267,10 +267,10 @@ protected:
 
     yarp::os::Mutex mutex;
 
-    bool contMode;
-    bool isNew;
-    size_t  maxLen;
-    int  pose;
+    bool   contMode;
+    bool   isNew;
+    size_t maxLen;
+    int    pose;
 
     double  token;
     double *pToken;
