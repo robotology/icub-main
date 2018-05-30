@@ -130,8 +130,8 @@ bool InputPort::handleTarget(Bottle *b)
     if (b!=NULL)
     {
         mutex.lock();
-        int len=std::min(b->size(),maxLen);
-        for (int i=0; i<len; i++)
+        size_t len=std::min(b->size(),maxLen);
+        for (size_t i=0; i<len; i++)
             xd[i]=b->get(i).asDouble();
         mutex.unlock();
 

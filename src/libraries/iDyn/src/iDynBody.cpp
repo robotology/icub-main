@@ -73,7 +73,7 @@ bool RigidBodyTransformation::setRBT(const Matrix &_H)
     }
     else
     {
-        if(verbose) fprintf(stderr,"RigidBodyTransformation: could not set RBT due to wrong sized matrix H: %d,%d instead of (4,4). Setting identity as default. \n",_H.cols(),_H.rows());
+        if(verbose) fprintf(stderr,"RigidBodyTransformation: could not set RBT due to wrong sized matrix H: %zu,%zu instead of (4,4). Setting identity as default. \n",_H.cols(),_H.rows());
         H.resize(4,4);
         H.eye();
         return false;
@@ -677,7 +677,7 @@ bool iDynNode::setWrenchMeasure(const Matrix &FM)
         if(verbose)
         {
             fprintf(stderr,"iDynNode: could not solveWrench due to missing wrenches to initialize the computations: ");
-            fprintf(stderr," only %d f/m available instead of %d. Using default values, all zero. \n ",FM.cols(),inputNode);
+            fprintf(stderr," only %zu f/m available instead of %d. Using default values, all zero. \n ",FM.cols(),inputNode);
         }
         inputWasOk = false;
     }
@@ -686,7 +686,7 @@ bool iDynNode::setWrenchMeasure(const Matrix &FM)
         if(verbose)
         {
             fprintf(stderr,"iDynNode: could not solveWrench due to wrong sized init wrenches: ");
-            fprintf(stderr," %d instead of 6 (3+3). Using default values, all zero. \n",FM.rows());
+            fprintf(stderr," %zu instead of 6 (3+3). Using default values, all zero. \n",FM.rows());
         }
         inputWasOk = false;
     }
@@ -740,7 +740,7 @@ bool iDynNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
         if(verbose)
         {
             fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: ");
-            fprintf(stderr," only %d/%d f/m available instead of %d/%d. Using default values, all zero. \n",Fm.cols(),Mm.cols(),inputNode,inputNode);
+            fprintf(stderr," only %zu/%zu f/m available instead of %d/%d. Using default values, all zero. \n",Fm.cols(),Mm.cols(),inputNode,inputNode);
         }
         inputWasOk = false;
     }
@@ -749,7 +749,7 @@ bool iDynNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
         if(verbose)
         {
             fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init f/m: ");
-            fprintf(stderr," %d/%d instead of 3/3. Using default values, all zero. \n",Fm.rows(),Mm.rows());
+            fprintf(stderr," %zu/%zu instead of 3/3. Using default values, all zero. \n",Fm.rows(),Mm.rows());
         }
         inputWasOk = false;
     }
@@ -906,7 +906,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 
     if(JAcols+JBcols!=J.cols())
     {
-        fprintf(stderr,"iDynNode error: Jacobian should be 6x%d instead is 6x%d \n",J.cols(),(JAcols+JBcols));
+        fprintf(stderr,"iDynNode error: Jacobian should be 6x%zu instead is 6x%d \n",J.cols(),(JAcols+JBcols));
         fprintf(stderr,"Note:  limb A:  N=%d  DOF=%d  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
         fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF());
         J.resize(6,JAcols+JBcols);
@@ -978,7 +978,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
 
     if(JAcols+JBcols!=J.cols())
     {
-        fprintf(stderr,"iDynNode error: Jacobian should be 6x%d instead is 6x%d \n",J.cols(),(JAcols+JBcols));
+        fprintf(stderr,"iDynNode error: Jacobian should be 6x%zu instead is 6x%d \n",J.cols(),(JAcols+JBcols));
         fprintf(stderr,"Note:  limb A:  N=%d  DOF=%d  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
         fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  iLinkB=%d \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
         J.resize(6,JAcols+JBcols);
@@ -1260,7 +1260,7 @@ Matrix iDynNode::TESTING_computeCOMJacobian(unsigned int iChainA, JacobType dirA
 
     if(JAcols+JBcols!=J.cols())
     {
-        fprintf(stderr,"iDynNode error: Jacobian should be 6x%d instead is 6x%d \n",J.cols(),(JAcols+JBcols));
+        fprintf(stderr,"iDynNode error: Jacobian should be 6x%zu instead is 6x%d \n",J.cols(),(JAcols+JBcols));
         fprintf(stderr,"Note:  limb A:  N=%d  DOF=%d  \n",rbtList[iChainA].getNLinks(),rbtList[iChainA].getDOF());
         fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  iLinkB=%d \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
         J.resize(6,JAcols+JBcols);
@@ -1431,7 +1431,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM, bool afterAttach)
     {
         if(verbose)
         {
-            fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: only %d f/m available instead of %d. Using default values, all zero.\n",FM.cols(),inputNode);
+            fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: only %zu f/m available instead of %d. Using default values, all zero.\n",FM.cols(),inputNode);
             if(afterAttach==true)
             fprintf(stderr,"          Remember that the first limb receives wrench input during an attach from another node. \n");
         }
@@ -1440,7 +1440,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM, bool afterAttach)
     if(FM.rows()!=6)
     {
         if(verbose)
-            fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init wrenches: %d instead of 6 (3+3). Using default values, all zero.\n",FM.rows());
+            fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init wrenches: %zu instead of 6 (3+3). Using default values, all zero.\n",FM.rows());
         inputWasOk = false;
     }
 
@@ -1508,7 +1508,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm, bool a
     {
         if(verbose)
         {
-            fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: only %d/%d f/m available instead of %d/%d. Using default values, all zero.\n",Fm.cols(),Mm.cols(),inputNode,inputNode);
+            fprintf(stderr,"iDynNode: could not setWrenchMeasure due to missing wrenches to initialize the computations: only %zu/%zu f/m available instead of %d/%d. Using default values, all zero.\n",Fm.cols(),Mm.cols(),inputNode,inputNode);
             if(afterAttach==true)
             fprintf(stderr,"          Remember that the first limb receives wrench input during an attach from another node.\n");
         }
@@ -1516,7 +1516,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm, bool a
     }
     if((Fm.rows()!=3)||(Mm.rows()!=3))
     {
-        if(verbose) fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init f/m: %d/%d instead of 3/3. Using default values, all zero.\n",Fm.rows(),Mm.rows());
+        if(verbose) fprintf(stderr,"iDynNode: could not setWrenchMeasure due to wrong sized init f/m: %zu/%zu instead of 3/3. Using default values, all zero.\n",Fm.rows(),Mm.rows());
         inputWasOk = false;
     }
 
@@ -1582,13 +1582,13 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
     //first check if the input is correct
     if(FM.rows()!=6)
     {
-        if(verbose) fprintf(stderr,"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches matrix: %d rows instead of 6 (3+3). Using default values, all zero.\n",FM.rows());
+        if(verbose) fprintf(stderr,"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches matrix: %zu rows instead of 6 (3+3). Using default values, all zero.\n",FM.rows());
         inputWasOk = false;
     }
     if(FM.cols()!=inputNode)
     {
         if(verbose)
-            fprintf(stderr,"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: %d instead of %d. Using default values, all zero. \n",FM.cols(),inputNode);
+            fprintf(stderr,"iDynSensorNode: could not setWrenchMeasure due to wrong sized init wrenches: %zu instead of %d. Using default values, all zero. \n",FM.cols(),inputNode);
         if(afterAttach==true)
             fprintf(stderr,"                Remember that the first limb receives wrench input during an attach from another node.\n");
         inputWasOk = false;

@@ -238,7 +238,7 @@ bool iDynLink::setInertia(const yarp::sig::Matrix &_I)
     else
     {
         I.resize(3,3); I.zero();
-        if(verbose) yError("iDynLink: error in setting Inertia due to wrong matrix size: (%d,%d) instead of (3,3). Inertia matrix now set automatically to zero. \n",_I.rows(),_I.cols());
+        if(verbose) yError("iDynLink: error in setting Inertia due to wrong matrix size: (%zu,%zu) instead of (3,3). Inertia matrix now set automatically to zero. \n",_I.rows(),_I.cols());
         return false;
     }
 }
@@ -300,7 +300,7 @@ bool iDynLink::setCOM(const yarp::sig::Matrix &_HC)
         RC = eye(3,3);
         rc = zeros(3);
         if(verbose)
-            yError("iDynLink: error in setting COM roto-translation due to wrong matrix size: (%d,%d) instead of (4,4). HC matrix now set automatically as eye.\n",_HC.rows(),_HC.cols());
+            yError("iDynLink: error in setting COM roto-translation due to wrong matrix size: (%zu,%zu) instead of (4,4). HC matrix now set automatically as eye.\n",_HC.rows(),_HC.cols());
         return false;
     }
 }
