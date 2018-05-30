@@ -262,7 +262,7 @@ public:
     /************************************************************************/
     void run()
     {
-        int len=restPos.length();
+        size_t len=restPos.length();
         if ((cartCtrl!=NULL) && (len>=3))
         {
             Vector halves(len,0.5);
@@ -1680,7 +1680,7 @@ bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequenc
         // numWayPoints part
         Bottle &bNum=sequence.addList();
         bNum.addString("numWayPoints");
-        bNum.addInt(handWP.size());
+        bNum.addInt((int)handWP.size());
         
         // wayPoints parts
         for (unsigned int i=0; i<handWP.size(); i++)

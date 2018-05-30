@@ -209,7 +209,7 @@ void minJerkVelCtrlForNonIdealPlant::setPlantParameters(const Property &paramete
     Tw.resize(dim,0.0);
     Zeta.resize(dim,0.0);    
 
-    int len=ordering.size()==0?dim:ordering.size();
+    int len=ordering.size()==0?dim:(int)ordering.size();
     for (int i=0; i<len; i++)
     {        
         ostringstream entry;
@@ -280,7 +280,7 @@ minJerkBaseGen::minJerkBaseGen(const unsigned int _dim, const double _Ts, const 
 
 /*******************************************************************************************/
 minJerkBaseGen::minJerkBaseGen(const Vector &y0, const double _Ts, const double _T)
-    :dim(y0.size()), Ts(_Ts), T(_T)
+    :dim((unsigned int)y0.size()), Ts(_Ts), T(_T)
 {
     posFilter = velFilter = accFilter = NULL;
     lastRef = pos = y0;

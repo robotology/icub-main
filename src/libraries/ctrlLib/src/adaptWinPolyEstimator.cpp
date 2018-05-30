@@ -54,9 +54,8 @@ double AWPolyEstimator::eval(double x)
 /***************************************************************************/
 Vector AWPolyEstimator::fit(const Vector &x, const Vector &y, const unsigned int n)
 {
-    size_t i2=std::min(x.length(),y.length());
-
     unsigned int i1=0;
+    unsigned int i2=(unsigned int)std::min(x.length(),y.length());
     unsigned int M=i2;
 
     if (n>0)
@@ -113,7 +112,7 @@ Vector AWPolyEstimator::estimate()
     }    
 
     size_t L=elemList.size();
-    int delta=L-N;
+    int delta=(int)L-(int)N;
 
     if (delta<0)
         return esteem;
@@ -204,9 +203,8 @@ void AWPolyEstimator::reset()
 /***************************************************************************/
 Vector AWLinEstimator::fit(const Vector &x, const Vector &y, const unsigned int n)
 {
-    size_t i2=std::min(x.length(),y.length());
-
     unsigned int i1=0;
+    unsigned int i2=(unsigned int)std::min(x.length(),y.length());
     unsigned int M=i2;
 
     if (n>0)

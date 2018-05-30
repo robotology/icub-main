@@ -300,7 +300,7 @@ bool iKinChain::addLink(const unsigned int i, iKinLink &l)
     if (i<=N)
     {
         allList.insert(allList.begin()+i,&l);
-        N=allList.size();
+        N=(unsigned int)allList.size();
 
         build();
 
@@ -322,7 +322,7 @@ bool iKinChain::rmLink(const unsigned int i)
     if (i<N)
     {
         allList.erase(allList.begin()+i);
-        N=allList.size();
+        N=(unsigned int)allList.size();
 
         build();
 
@@ -342,7 +342,7 @@ bool iKinChain::rmLink(const unsigned int i)
 void iKinChain::pushLink(iKinLink &l)
 {
     allList.push_back(&l);
-    N=allList.size();
+    N=(unsigned int)allList.size();
 
     build();
 }
@@ -374,7 +374,7 @@ iKinChain &iKinChain::operator<<(iKinLink &l)
 void iKinChain::popLink()
 {
     allList.pop_back();
-    N=allList.size();
+    N=(unsigned int)allList.size();
 
     build();
 }
@@ -544,7 +544,7 @@ void iKinChain::build()
 
             DOF++;
             quickList.push_back(allList[i]);
-            hash_dof.push_back(quickList.size()-1);
+            hash_dof.push_back((unsigned int)quickList.size()-1);
             hash.push_back(i);
 
             H.eye();
@@ -753,7 +753,7 @@ Matrix iKinChain::getH(const unsigned int i, const bool allLink)
         c_override=false;
 
         if (i==DOF)
-            _i=quickList.size();
+            _i=(unsigned int)quickList.size();
         else
             _i=i;
 
@@ -778,7 +778,7 @@ Matrix iKinChain::getH()
 {
     // may be different from DOF since one blocked link may lie
     // at the end of the chain.
-    unsigned int n=quickList.size();
+    unsigned int n=(unsigned int)quickList.size();
     Matrix H=H0;
 
     for (unsigned int i=0; i<n; i++)
@@ -961,7 +961,7 @@ Matrix iKinChain::AnaJacobian(unsigned int col)
 
     // may be different from DOF since one blocked link may lie
     // at the end of the chain.
-    unsigned int n=quickList.size();
+    unsigned int n=(unsigned int)quickList.size();
     Matrix J(6,DOF);
     Matrix H,dH,_H;
     Vector dr;
@@ -2077,7 +2077,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     Matrix bounds=jointEncodersBounds;
     if (bounds.rows()!=jointEncoders.length())
     {
-        bounds=zeros(jointEncoders.length(),2);
+        bounds=zeros((unsigned int)jointEncoders.length(),2);
         for (size_t r=0; r<jointEncoders.length(); r++)
             bounds(r,0)=255.0;
     }

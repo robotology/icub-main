@@ -625,7 +625,7 @@ void copyJointsBounds(iKinChain *ch1, iKinChain *ch2)
 /************************************************************************/
 void updateTorsoBlockedJoints(iKinChain *chain, const Vector &fbTorso)
 {
-    for (size_t i=0; i<fbTorso.length(); i++)
+    for (unsigned int i=0; i<(unsigned int)fbTorso.length(); i++)
          chain->setBlockingValue(i,fbTorso[i]);
 }
 
@@ -644,8 +644,8 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
 {
     IEncodersTimed *encs;
 
-    int nJointsTorso=fbTorso.length();
-    int nJointsHead=fbHead.length();
+    int nJointsTorso=(int)fbTorso.length();
+    int nJointsHead=(int)fbHead.length();
 
     Vector fb(std::max(nJointsTorso,nJointsHead));
     Vector stamps(nJointsTorso+nJointsHead,0.0);

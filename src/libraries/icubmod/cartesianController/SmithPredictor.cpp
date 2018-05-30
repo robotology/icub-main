@@ -214,7 +214,7 @@ Vector SmithPredictor::computeCmd(const Vector &u)
         return out;
     }
     else
-        return zeros(u.length());
+        return zeros((int)u.length());
 }
 
 

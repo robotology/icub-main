@@ -343,7 +343,7 @@ void CalibModule::openHand(IControlMode *imod, IPositionControl *ipos)
     poss[8]=0.0;  vels[8]=100.0;
 
     yInfo("opening hand");
-    int i0=nEncs-poss.length();
+    int i0=(int)nEncs-poss.length();
     for (int i=i0; i<nEncs; i++)
         imod->setControlMode(i,VOCAB_CM_POSITION);
 
@@ -524,7 +524,7 @@ void CalibModule::prepareRobot()
     poss[8]=200.0; vels[8]=100.0;
 
     yInfo("configuring hand... ");
-    int i0=nEncs-poss.length();
+    int i0=(int)nEncs-poss.length();
     for (int i=i0; i<nEncs; i++)
         imods->setControlMode(i,VOCAB_CM_POSITION);
 
@@ -611,7 +611,7 @@ int CalibModule::removeOutliers()
                 calibrator->addPoints(p_depth[i],p_kin[i]);
     }
 
-    return idx.size();
+    return (int)idx.size();
 }
 
 

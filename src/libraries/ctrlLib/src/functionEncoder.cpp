@@ -144,7 +144,7 @@ double WaveletEncoder::interpWavelet(const double x)
 double WaveletEncoder::interpFunction(const Vector &values, const double x)
 {
     // x shall be in [0,1]
-    double L=values.size()-1;
+    double L=(double)values.size()-1.0;
 
     if (x<=0.0)
         return values[0];

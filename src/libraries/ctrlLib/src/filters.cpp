@@ -31,8 +31,8 @@ Filter::Filter(const Vector &num, const Vector &den, const Vector &y0)
     m=b.length(); n=a.length();
     yAssert((m>0)&&(n>0));
 
-    uold.insert(uold.begin(),m-1,zeros(y0.length()));
-    yold.insert(yold.begin(),n-1,zeros(y0.length()));
+    uold.insert(uold.begin(),m-1,zeros((int)y0.length()));
+    yold.insert(yold.begin(),n-1,zeros((int)y0.length()));
 
     init(y0);    
 }
@@ -46,7 +46,7 @@ void Filter::init(const Vector &y0)
     if (uold.size()>0)
         init(y0,uold[0]);
     else    // otherwise use zero
-        init(y0,zeros(y0.length()));    
+        init(y0,zeros((int)y0.length()));    
 }
 
 
@@ -107,8 +107,8 @@ void Filter::setCoeffs(const Vector &num, const Vector &den)
     m=b.length(); n=a.length();
     yAssert((m>0)&&(n>0));
 
-    uold.insert(uold.begin(),m-1,zeros(y.length()));
-    yold.insert(yold.begin(),n-1,zeros(y.length()));
+    uold.insert(uold.begin(),m-1,zeros((int)y.length()));
+    yold.insert(yold.begin(),n-1,zeros((int)y.length()));
 
     init(y);
 }

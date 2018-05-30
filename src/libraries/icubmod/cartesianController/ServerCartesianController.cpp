@@ -1227,7 +1227,7 @@ bool ServerCartesianController::getNewTarget()
         if (b1->check(Vocab::decode(IKINSLV_VOCAB_OPT_X)))
         {
             Bottle *b2=getEndEffectorPoseOption(*b1);
-            int l1=b2->size();
+            int l1=(int)b2->size();
             int l2=7;
             int len=l1<l2 ? l1 : l2;
             _xdes.resize(len);
@@ -1242,7 +1242,7 @@ bool ServerCartesianController::getNewTarget()
         if (b1->check(Vocab::decode(IKINSLV_VOCAB_OPT_Q)))
         {
             Bottle *b2=getJointsOption(*b1);
-            int l1=b2->size();
+            int l1=(int)b2->size();
             int l2=chainState->getDOF();
             int len=l1<l2 ? l1 : l2;
             _qdes.resize(len);
@@ -3140,7 +3140,7 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         {
             taskVel=J*(CTRL_DEG2RAD*velCmd);
 
-            Vector _odot=taskVel.subVector(3,taskVel.length()-1);
+            Vector _odot=taskVel.subVector(3,(unsigned int)taskVel.length()-1);
             double thetadot=norm(_odot);
             if (thetadot>0.0)
                 _odot/=thetadot;

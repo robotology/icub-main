@@ -403,7 +403,7 @@ void EyePinvRefGen::run()
 
             // compensate neck rotation at eyes level
             if ((commData->eyesBoundVer>=0.0) || !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
-                commData->set_counterv(zeros(qd.length()));
+                commData->set_counterv(zeros((int)qd.length()));
             else
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
             
@@ -422,7 +422,7 @@ void EyePinvRefGen::run()
             qd=I->integrate(v+commData->get_counterv());
         }
         else
-            commData->set_counterv(zeros(qd.length()));
+            commData->set_counterv(zeros((int)qd.length()));
 
         // set a new target position
         commData->set_xd(xd);
@@ -743,7 +743,7 @@ bool Solver::threadInit()
     commData->set_x(fp);
     commData->set_q(fbHead);
     commData->set_torso(fbTorso);
-    commData->resize_v(fbHead.length(),0.0);
+    commData->resize_v((int)fbHead.length(),0.0);
     commData->resize_counterv(3,0.0);
     commData->set_fpFrame(chainNeck->getH());    
 

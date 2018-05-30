@@ -28,7 +28,7 @@ using namespace iCub::ctrl;
 Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
 {
     yAssert(_lim.rows()==y0.length());
-    dim=y0.length();
+    dim=(unsigned int)y0.length();
     x_old.resize(dim,0.0);
     applySat=true;
 
@@ -41,7 +41,7 @@ Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
 /************************************************************************/
 Integrator::Integrator(const double _Ts, const Vector &y0)
 {
-    dim=y0.length();
+    dim=(unsigned int)y0.length();
     x_old.resize(dim,0.0);
     applySat=false;
 
@@ -153,7 +153,7 @@ bool helperPID::getVectorFromOption(const Bottle &options, const char *key,
         if (Bottle *b=options.find(key).asList())
         {
             int len=(int)val.length();
-            int bSize=b->size();
+            int bSize=(int)b->size();
 
             size=bSize<len?bSize:len;
             for (int i=0; i<size; i++)
@@ -175,7 +175,7 @@ parallelPID::parallelPID(const double _Ts,
                          Ts(_Ts), Kp(_Kp), Ki(_Ki), Kd(_Kd), Wp(_Wp), Wi(_Wi), Wd(_Wd),
                          N(_N), Tt(_Tt), satLim(_satLim)
 {
-    dim=N.length();
+    dim=(unsigned int)N.length();
     u.resize(dim,0.0);
 
     uSat.resize(dim,0.0);
@@ -241,11 +241,11 @@ const Vector& parallelPID::compute(const Vector &ref, const Vector &fb)
 /************************************************************************/
 void parallelPID::reset(const Vector &u0)
 {
-    int len=u0.length()>(int)dim?dim:u0.length();
+    size_t len=u0.length()>(size_t)dim?(size_t)dim:u0.length();
 
     Vector y=Int->get();
     Vector z1(1,0.0);
-    for (int i=0; i<len; i++)
+    for (size_t i=0; i<len; i++)
     {
         y[i]=u0[i];
         Der[i]->init(z1);
@@ -382,7 +382,7 @@ seriesPID::seriesPID(const double _Ts,
                      const Vector &_N,  const Matrix &_satLim) :
                      Ts(_Ts), Kp(_Kp), Ti(_Ti), Kd(_Kd), N(_N), satLim(_satLim)
 {
-    dim=N.length();
+    dim=(unsigned int)N.length();
     u.resize(dim,0.0);
 
     uSat.resize(dim,0.0);

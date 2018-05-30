@@ -43,7 +43,7 @@ bool iCub::optimization::minVolumeEllipsoid(const deque<Vector> &points,
         return false;
 
     // initialization
-    int d=points.front().length();
+    int d=(int)points.front().length();
     int N=(int)points.size();
     Vector u(N,1.0/N);
     Matrix U(N,N); U.diagonal(u);

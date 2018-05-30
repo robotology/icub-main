@@ -118,7 +118,7 @@ bool simFaceExp::updateModule()
     if ((bot.toString().c_str())[0]=='S')
     {
         bot.clear();
-        bot.addInt(eyeLidPos);
+        bot.addInt((int)eyeLidPos);
         eyeLidsPos.write(bot);
         yInfo("Eye lids position sent: %s\n",bot.toString().c_str());
     }

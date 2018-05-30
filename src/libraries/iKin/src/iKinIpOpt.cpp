@@ -364,7 +364,7 @@ public:
 
         qd.resize(dim);
 
-        unsigned int n=q0.length();
+        unsigned int n=(unsigned int)q0.length();
         n=n>dim ? dim : n;
 
         unsigned int i;
@@ -485,8 +485,8 @@ public:
 
         if (LIC.isActive())
         {
-            int lenLower=LIC.getlB().length();
-            int lenUpper=LIC.getuB().length();
+            int lenLower=(int)LIC.getlB().length();
+            int lenUpper=(int)LIC.getuB().length();
 
             if (lenLower && (lenLower==lenUpper) && (LIC.getC().cols()==dim))
             {

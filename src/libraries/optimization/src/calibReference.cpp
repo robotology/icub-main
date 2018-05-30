@@ -620,7 +620,7 @@ bool CalibReferenceWithMatchedPoints::setScalingInitialGuess(const Vector &s)
 {
     if (s.length()>=s0.length())
     {
-        s0=s.subVector(0,s0.length()-1);
+        s0=s.subVector(0,(unsigned int)s0.length()-1);
         return true;
     }
     else

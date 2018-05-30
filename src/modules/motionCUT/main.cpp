@@ -281,8 +281,8 @@ public:
                 int min_x=(int)(((1.0-coverXratio)/2.0)*imgMonoIn.width());
                 int min_y=(int)(((1.0-coverYratio)/2.0)*imgMonoIn.height());
 
-                nodesX=(imgMonoIn.width()-2*min_x)/nodesStep+1;
-                nodesY=(imgMonoIn.height()-2*min_y)/nodesStep+1;
+                nodesX=((int)imgMonoIn.width()-2*min_x)/nodesStep+1;
+                nodesY=((int)imgMonoIn.height()-2*min_y)/nodesStep+1;
 
                 nodesNum=nodesX*nodesY;
 

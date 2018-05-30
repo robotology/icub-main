@@ -73,7 +73,7 @@ void iKinCtrl::set_ctrlPose(unsigned int _ctrlPose)
 /************************************************************************/
 void iKinCtrl::set_q(const Vector &q0)
 {
-    unsigned int n=q0.length();
+    unsigned int n=(unsigned int)q0.length();
     n=n>dim ? dim : n;
 
     for (unsigned int i=0; i<n; i++)
@@ -506,8 +506,8 @@ void LMCtrl::setChainConstraints(bool _constrained)
 /************************************************************************/
 Matrix LMCtrl::pinv(const Matrix &A, const double tol)
 {
-    int m=A.rows();
-    int n=A.cols();
+    int m=(int)A.rows();
+    int n=(int)A.cols();
     Matrix U(m,n);
     Vector Sdiag(n);
     Matrix V(n,n);
@@ -748,7 +748,7 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, d
     else
         mjCtrlJoint=new minJerkVelCtrlForIdealPlant(Ts,dim);
 
-    mjCtrlTask=new minJerkVelCtrlForIdealPlant(Ts,e.length());
+    mjCtrlTask=new minJerkVelCtrlForIdealPlant(Ts,(int)e.length());
     I=new Integrator(Ts,q,lim);
 
     gamma=0.05;
@@ -890,7 +890,7 @@ void MultiRefMinJerkCtrl::restart(const Vector &q0)
     xdot=0.0;
 
     mjCtrlJoint->reset(qdot);
-    mjCtrlTask->reset(zeros(e.length()));
+    mjCtrlTask->reset(zeros((int)e.length()));
 }
 
 

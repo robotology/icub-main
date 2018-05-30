@@ -1151,7 +1151,7 @@ void CartesianSolver::printInfo(const string &typ, const Vector &xd,
                                 const double t)
 {
     // ensure same length of vectors
-    Vector x_=x.subVector(0,xd.length()-1);
+    Vector x_=x.subVector(0,(unsigned int)xd.length()-1);
 
     printf("   Request type       = %s\n",typ.c_str());
     printf("  Target rxPose   [m] = %s\n",xd.toString().c_str());
@@ -1179,8 +1179,8 @@ Vector &CartesianSolver::encodeDOF()
 /************************************************************************/
 bool CartesianSolver::decodeDOF(const Vector &_dof)
 {
-    size_t len=std::min((size_t)prt->chn->getN(),_dof.length());
-    for (size_t i=0; i<len; i++)
+    unsigned int len=std::min(prt->chn->getN(),(unsigned int)_dof.length());
+    for (unsigned int i=0; i<len; i++)
     {
         if (_dof[i]>1.0)
             continue;

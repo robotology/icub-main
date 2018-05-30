@@ -40,8 +40,8 @@ using namespace iCub::learningmachine;
 /************************************************************************/
 bool Calibrator::computeSpatialTransformation()
 {
-    int m=spatialCompetence.A.rows();
-    int n=spatialCompetence.A.cols();
+    int m=(int)spatialCompetence.A.rows();
+    int n=(int)spatialCompetence.A.cols();
     Matrix U(m,n),V(n,n); Vector S(n);
     SVD(spatialCompetence.A,U,S,V);
 

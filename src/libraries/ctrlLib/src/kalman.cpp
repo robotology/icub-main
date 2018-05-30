@@ -28,7 +28,7 @@ void Kalman::initialize()
 
     At=A.transposed();
     Ht=H.transposed();
-    I=eye(n,n);
+    I=eye((int)n,(int)n);
 
     x.resize(n,0.0);
     P.resize(n,n); P.zero();
