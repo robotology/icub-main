@@ -71,8 +71,8 @@ void xdPort::onRead(Bottle &b)
     if (locked)
         return;
         
-    int n=std::min(b.size(),(int)xd.length());
-    for (int i=0; i<n; i++)
+    size_t n=std::min(b.size(), xd.length());
+    for (size_t i=0; i<n; i++)
         xd[i]=b.get(i).asDouble();
 
     isNew=true;

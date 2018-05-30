@@ -269,7 +269,7 @@ protected:
 
     bool contMode;
     bool isNew;
-    int  maxLen;
+    size_t  maxLen;
     int  pose;
 
     double  token;
