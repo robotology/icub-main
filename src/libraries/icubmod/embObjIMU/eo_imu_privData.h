@@ -36,6 +36,8 @@ public:
     ~PositionMaps();
     bool init(servConfigImu_t &servCfg);
     bool getIndex(const eOas_inertial3_data_t *data, uint8_t &index, eOas_sensor_t &type);
+    bool getIndex(eOas_sensor_t type, uint8_t canbus, uint8_t canaddress, uint8_t& index);
+    static bool getCanAddress(const eOas_inertial3_data_t *data, uint8_t &canbus, uint8_t &canaddress);
 };
 
 
@@ -61,6 +63,7 @@ public:
     SensorsData();
     void init(servConfigImu_t &servCfg, string error_string);
     bool update(eOas_sensor_t type, uint8_t index, eOas_inertial3_data_t *newdata);
+    bool updateStatus(eOas_sensor_t type, uint8_t index, eOas_inertial3_sensorstatus_t &status);
     bool outOfRangeErrorHandler(const std::out_of_range& oor) const;
 
     size_t getNumOfSensors(eOas_sensor_t type) const;
@@ -86,6 +89,13 @@ public:
     bool fromConfig(yarp::os::Searchable &config, servConfigImu_t &servCfg);
     bool sendConfing2board(servConfigImu_t &servCfg);
     bool initRegulars(void);
+    yarp::dev::MAS_status sensorState_eo2yarp(eOas_sensor_t type, uint8_t eo_state);
+
+    /* This function prints state of sensor when it is not ok:
+     *  - for gyro, acc and mag: state=3 means taht the sensor is completely calibrated; if state is less than 3 than it has some calibration issues;
+     *  - for "composed measure" they are completely calibarted if all tree sensors are calibrated, so they are completely calibrated if their state is 9 (3+3+3).
+     *  For more information see IMUbosgh BNO055 data sheet page 68 */
+    void debugPrintStateNotOK(eOas_sensor_t type, uint8_t eo_state);
 
 };
 

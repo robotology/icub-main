@@ -62,30 +62,53 @@ bool PositionMaps::init(servConfigImu_t &servCfg)
 
 bool PositionMaps::getIndex(const eOas_inertial3_data_t* data, uint8_t& index, eOas_sensor_t& type)
 {
-    if(nullptr == data)
-    {
+    uint8_t canbus, canaddress;
+    if(!getCanAddress(data, canbus, canaddress))
         return false;
-    }
 
     if(data->typeofsensor >= eoas_sensors_numberof)
     {   // it is not a valid index
         return false;
     }
 
-    uint8_t canbus = data->id >> 4;
+    index = positionmap[data->typeofsensor][canbus][canaddress];
+
+    type = static_cast<eOas_sensor_t>(data->typeofsensor);
+    return (0xff == index) ? false : true;
+}
+
+bool PositionMaps::getIndex(eOas_sensor_t type, uint8_t canbus, uint8_t canaddress, uint8_t& index)
+{
+    if(canbus >= eOcanports_number)
+    {
+        return false;
+    }
+
+    if(canaddress > 0x0f)
+        return false;
+
+    index = positionmap[type][canbus][canaddress];
+    return (0xff == index) ? false : true;
+}
+
+
+bool PositionMaps::getCanAddress(const eOas_inertial3_data_t *data, uint8_t &canbus, uint8_t &canaddress)
+{
+    if(nullptr == data)
+        return false;
+
+    canbus = data->id >> 4;
 
     if(canbus >= eOcanports_number)
     {
         return false;
     }
 
-    uint8_t canaddress = data->id & 0x0f;
+    canaddress = data->id & 0x0f;
 
-    index = positionmap[data->typeofsensor][canbus][canaddress];
-
-    type = static_cast<eOas_sensor_t>(data->typeofsensor);
-    return (0xff == index) ? false : true;
+    return true;
 }
+
 
 SensorsData::SensorsData()
 {
@@ -119,7 +142,7 @@ void SensorsData::init(servConfigImu_t &servCfg, string error_string)
                     newSensor.values.resize(4);
                 else
                     newSensor.values.resize(3);
-                newSensor.state = 0; //unused
+                newSensor.state = 0;
                 mysens[des->typeofsensor].push_back(newSensor);
             }
         }
@@ -143,6 +166,8 @@ uint8_t SensorsData::getSensorStatus(size_t sens_index, eOas_sensor_t type) cons
     try
     {
         std::lock_guard<std::mutex> lck (mutex);
+//         sensorInfo_t info = mysens[type].at(sens_index);
+//         return info.state;
         return mysens[type].at(sens_index).state;
     }
     catch (const std::out_of_range& oor)
@@ -230,8 +255,42 @@ bool SensorsData::update(eOas_sensor_t type, uint8_t index, eOas_inertial3_data_
     info->values[0] = newdata->x;
     info->values[1] = newdata->y;
     info->values[2] = newdata->z;
-    info->state = newdata->status;
     info->timestamp = yarp::os::Time::now();
+
+    return true;
+
+}
+
+bool SensorsData::updateStatus(eOas_sensor_t type, uint8_t index, eOas_inertial3_sensorstatus_t &status)
+{
+    std::lock_guard<std::mutex> lck (mutex);
+
+    sensorInfo_t *info = &(mysens[type][index]);
+
+    switch(type)
+    {
+        case eoas_imu_acc:
+            info->state = status.calib.acc;
+        break;
+
+        case eoas_imu_mag:
+            info->state = status.calib.mag;
+            break;
+
+        case eoas_imu_gyr:
+            info->state = status.calib.gyr;
+            break;
+        case eoas_imu_eul:
+        case eoas_imu_qua:
+        case eoas_imu_lia:
+            info->state = status.calib.acc + status.calib.gyr + status.calib.mag;
+            break;
+        default:
+            info->state = status.general;
+            break;
+    }
+
+    //yError() << "UPDATE STATUS OF SENSOR " << index << "with type "<< eoas_sensor2string(type) <<"with value " << status.general <<"info.state= " << info->state;
     return true;
 
 }
@@ -308,4 +367,39 @@ bool eo_imu_privData::initRegulars(void)
     }
 
     return true;
+}
+
+
+
+yarp::dev::MAS_status eo_imu_privData::sensorState_eo2yarp(eOas_sensor_t type, uint8_t eo_state)
+{
+    debugPrintStateNotOK(type, eo_state);
+    //In the future I'll put here a translation of state from firmware to yarp interface.
+    //Currently I return always ok for testing porpouse
+
+
+    return yarp::dev::MAS_OK;
+}
+
+
+
+void eo_imu_privData::debugPrintStateNotOK(eOas_sensor_t type, uint8_t eo_state)
+{
+
+    switch(type)
+    {
+        case eoas_imu_acc:
+        case eoas_imu_mag:
+        case eoas_imu_gyr:
+            if(eo_state<3)
+                yError() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "has status equal to " << eo_state<< "(min=0, max=3)";
+            break;
+        case eoas_imu_eul:
+        case eoas_imu_qua:
+        case eoas_imu_lia:
+            if(eo_state<9)
+                yError() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "has status equal to " << eo_state << "(min=0, max=9)";
+            break;
+    }
+
 }

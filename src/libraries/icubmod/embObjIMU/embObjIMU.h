@@ -98,7 +98,6 @@ private:
     
     std::string getBoardInfo(void) const;
     void cleanup(void);
-    static yarp::dev::MAS_status sensorState_eo2yarp(uint8_t eo_state);
     
     //debug
     void updateDebugPrints(eOprotID32_t id32, double timestamp, void* rxdata);

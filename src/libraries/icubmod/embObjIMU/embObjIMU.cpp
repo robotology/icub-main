@@ -175,7 +175,7 @@ size_t embObjIMU::getNrOfThreeAxisGyroscopes() const
 
 yarp::dev::MAS_status embObjIMU::getThreeAxisGyroscopeStatus(size_t sens_index) const
 {
-    return sensorState_eo2yarp(GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_gyr));
+    return  GET_privData(mPriv).sensorState_eo2yarp(eoas_imu_gyr, GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_gyr));
 }
 
 bool embObjIMU::getThreeAxisGyroscopeName(size_t sens_index, std::string &name) const
@@ -200,7 +200,7 @@ size_t embObjIMU::getNrOfThreeAxisLinearAccelerometers() const
 
 yarp::dev::MAS_status embObjIMU::getThreeAxisLinearAccelerometerStatus(size_t sens_index) const
 {
-    return sensorState_eo2yarp(GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_acc));
+    return  GET_privData(mPriv).sensorState_eo2yarp(eoas_imu_acc, GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_acc));
 }
 
 bool embObjIMU::getThreeAxisLinearAccelerometerName(size_t sens_index, std::string &name) const
@@ -225,7 +225,7 @@ size_t embObjIMU::getNrOfThreeAxisMagnetometers() const
 
 yarp::dev::MAS_status embObjIMU::getThreeAxisMagnetometerStatus(size_t sens_index) const
 {
-    return sensorState_eo2yarp(GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_mag));
+    return  GET_privData(mPriv).sensorState_eo2yarp(eoas_imu_mag, GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_mag));
 }
 
 bool embObjIMU::getThreeAxisMagnetometerName(size_t sens_index, std::string &name) const
@@ -250,7 +250,7 @@ size_t embObjIMU::getNrOfOrientationSensors() const
 
 yarp::dev::MAS_status embObjIMU::getOrientationSensorStatus(size_t sens_index) const
 {
-    return sensorState_eo2yarp(GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_eul));
+    return  GET_privData(mPriv).sensorState_eo2yarp(eoas_imu_eul, GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_eul));
 }
 
 bool embObjIMU::getOrientationSensorName(size_t sens_index, std::string &name) const
@@ -281,16 +281,7 @@ eth::iethresType_t embObjIMU::type()
 }
 
 
-yarp::dev::MAS_status embObjIMU::sensorState_eo2yarp(uint8_t eo_state)
-{
-    /*Note: 9 means that gyro, acc and mag are completely calibrated
-     For more information see IMUbosgh BNO055 data sheet page 68 */
-/*    if(eo_state == 9)
-        return yarp::dev::MAS_OK;
-    else
-        return  yarp::dev::MAS_ERROR;*/
-    return yarp::dev::MAS_OK;
-}
+
 
 bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
@@ -315,18 +306,37 @@ bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
         
         if(!validdata)
         {
-            yError("NOT VALID value[%i] is: seq = %d, timestamp = %d, type = %s, id = %d, v= ((%d), %d, %d, %d), status = %d",
+            yError("NOT VALID value[%i] is: seq = %d, timestamp = %d, type = %s, id = %d, v= ((%d), %d, %d, %d), status = %x",
                     i,
                     data->seq,
                     data->timestamp,
                     eoas_sensor2string(static_cast<eOas_sensor_t>(data->typeofsensor)),
                     data->id,
                     data->w, data->x, data->y, data->z,
-                    data->status);
+                    data->status.general);
             continue;
         }
-        
-        GET_privData(mPriv).sens.update(type, index, data);
+
+        if(type == eoas_imu_status)
+        {
+            //updateAllsensorOnSameBoad(data)
+            uint8_t canbus, canaddress, i;
+            PositionMaps::getCanAddress(data, canbus, canaddress);
+            for (uint8_t t=eoas_imu_acc; t<=eoas_imu_status; t++)
+            {
+                uint8_t i;
+                if(GET_privData(mPriv).maps.getIndex(static_cast<eOas_sensor_t>(t), canbus, canaddress, i))
+                {
+                    GET_privData(mPriv).sens.updateStatus(static_cast<eOas_sensor_t>(t), i, data->status);
+                    //yError() << "UPDATE STATUS OF SENSOR " << i << "with type "<< eoas_sensor2string(static_cast<eOas_sensor_t>(t)) << "can port=" << canbus << "can addr=" << canaddress << "status=" << data->status.general;
+                }
+
+            }
+        }
+        else
+        {
+            GET_privData(mPriv).sens.update(type, index, data);
+        }
     }
     return true;
 
@@ -368,14 +378,14 @@ void embObjIMU::updateDebugPrints(eOprotID32_t id32, double timestamp, void* rxd
                     uint8_t pos = 0xff;
                     eOas_sensor_t type;
                     GET_privData(mPriv).maps.getIndex(data, pos, type);
-                    yDebug("value[%i] is: seq = %d, timestamp = %d, type = %s, id = %d, v= ((%d), %d, %d, %d), status = %d, pos = %d",
+                    yDebug("value[%i] is: seq = %d, timestamp = %d, type = %s, id = %d, v= ((%d), %d, %d, %d), status = %x, pos = %d",
                             i,
                             data->seq,
                             data->timestamp,
                             eoas_sensor2string(static_cast<eOas_sensor_t>(type)),
                             data->id,
                             data->w, data->x, data->y, data->z,
-                            data->status,
+                            data->status.general,
                             pos);
                 }
             }
