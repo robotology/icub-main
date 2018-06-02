@@ -38,7 +38,7 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     }
 
     int period=config.find("period").asInt();
-    setRate(period);
+    setPeriod((double)period/1000.0);
 
     Property prop;
 
@@ -117,7 +117,7 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     //start the sensor broadcast
     sensor_start(config);
 
-    RateThread::start();
+    PeriodicThread::start();
     return true;
 }
 
@@ -288,7 +288,7 @@ bool CanBusAnalogSensor::sensor_stop()
 bool CanBusAnalogSensor::close()
 {
     //stop the thread
-    RateThread::stop();
+    PeriodicThread::stop();
 
     //stop the sensor
     sensor_stop();

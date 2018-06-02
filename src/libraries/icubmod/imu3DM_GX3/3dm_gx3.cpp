@@ -20,7 +20,7 @@ using namespace yarp::dev;
 using namespace yarp::os;
 
 
-imu3DM_GX3::imu3DM_GX3() : RateThread(6)
+imu3DM_GX3::imu3DM_GX3() : PeriodicThread(0.006)
 {
     /* data to be transfered are:
             1  (request Euler) +

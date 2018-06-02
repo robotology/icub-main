@@ -227,7 +227,7 @@
 #include <deque>
 
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Mutex.h>
 #include <yarp/os/Event.h>
 #include <yarp/sig/Vector.h>
@@ -327,7 +327,7 @@ struct PartDescriptor
 *
 * Abstract class defining the core of on-line solvers.
 */
-class CartesianSolver : public    yarp::os::RateThread,
+class CartesianSolver : public    yarp::os::PeriodicThread,
                         protected CartesianHelper
 {
 protected:

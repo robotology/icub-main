@@ -21,7 +21,7 @@
 
 
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Semaphore.h>
@@ -59,7 +59,7 @@ struct StereoTracker
 
 
 
-class VisuoThread: public RateThread
+class VisuoThread: public PeriodicThread
 {
 private:
     ResourceFinder                          &rf;

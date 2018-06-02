@@ -66,7 +66,7 @@ void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int 
     port->open(portName);
 
     logToFile = logOnDisk;
-    this->setRate(rate);
+    this->setPeriod((double)rate/1000.0);
 }
 
 boardDumperThread::~boardDumperThread()
@@ -115,7 +115,7 @@ bool boardDumperThread::threadInit()
     return 1;
 }
 
-boardDumperThread::boardDumperThread():RateThread(500)
+boardDumperThread::boardDumperThread():PeriodicThread(0.5)
 {
     getter   = 0;
     board_dd = 0;

@@ -13,7 +13,7 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/Property.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/dev/PolyDriver.h>
 
 #include "SharedCanBus.h"
@@ -21,10 +21,10 @@
 const int CAN_DRIVER_BUFFER_SIZE = 500;
 const int DEFAULT_THREAD_PERIOD = 10;
 
-class SharedCanBus : public yarp::os::RateThread
+class SharedCanBus : public yarp::os::PeriodicThread
 {
 public:
-    SharedCanBus() : RateThread(DEFAULT_THREAD_PERIOD), writeMutex(1), configMutex(1)
+    SharedCanBus() : PeriodicThread((double)DEFAULT_THREAD_PERIOD/1000.0), writeMutex(1), configMutex(1)
     {
         mBufferSize=0;
         mCanDeviceNum=-1;
@@ -67,7 +67,7 @@ public:
         if (config.findGroup("CAN").check("sharedCanPeriod"))
         {
             int sharedCanPeriod = config.findGroup("CAN").find("sharedCanPeriod").asInt();
-            int currentCanPeriod = this->getRate();
+            int currentCanPeriod = (int)(1000.0 * this->getPeriod());
             if (currentCanPeriod != sharedCanPeriod && currentCanPeriod != DEFAULT_THREAD_PERIOD)
             {
                 yWarning("SharedCanBus: Requested a different sharedCanPeriod (%d ms) respect to previous instance (%d ms). Using: %d ms\n", sharedCanPeriod, currentCanPeriod, currentCanPeriod);
@@ -379,7 +379,7 @@ public:
         if (config.findGroup("CAN").check("sharedCanPeriod"))
         {
             int sharedCanPeriod = config.findGroup("CAN").find("sharedCanPeriod").asInt();
-            scb->setRate(sharedCanPeriod);
+            scb->setPeriod((double)sharedCanPeriod/1000.0);
             //yDebug("SharedCanBus [%d] using custom thread period = %dms\n", scb->getCanDeviceNum(), sharedCanPeriod);///TOBEREMOVED
         }
         else

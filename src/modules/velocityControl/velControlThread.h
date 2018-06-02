@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -18,7 +18,7 @@
 
 //class yarp::dev::PolyDriver;
 
-class velControlThread: public yarp::os::RateThread
+class velControlThread: public yarp::os::PeriodicThread
 {
 private:
     char robotName[255];

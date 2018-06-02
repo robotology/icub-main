@@ -28,9 +28,9 @@
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                        const double _neckTime, const double _eyesTime, const double _min_abs_vel,
                        const unsigned int _period) :
-                       RateThread(_period),       drvTorso(_drvTorso), drvHead(_drvHead),
-                       commData(_commData),       neckTime(_neckTime), eyesTime(_eyesTime),
-                       min_abs_vel(_min_abs_vel), period(_period),     Ts(_period/1000.0),
+                       PeriodicThread((double)_period/1000.0), drvTorso(_drvTorso), drvHead(_drvHead),
+                       commData(_commData),                    neckTime(_neckTime), eyesTime(_eyesTime),
+                       min_abs_vel(_min_abs_vel),              period(_period),     Ts(_period/1000.0),
                        printAccTime(0.0)
 {
     // Instantiate objects
@@ -716,7 +716,7 @@ void Controller::run()
 
     double errNeck=norm(qd.subVector(0,2)-fbNeck);
     double errEyes=norm(qd.subVector(3,(unsigned int)qd.length()-1)-fbEyes);
-    bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLESLOT*(0.001*getRate())) ? false :
+    bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLESLOT*getPeriod()) ? false :
                    (!commData->saccadeUnderway &&
                    (errNeck<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
                    (errEyes<GAZECTRL_MOTIONDONE_EYES_QTHRES*CTRL_DEG2RAD));
@@ -993,7 +993,7 @@ void Controller::run()
 void Controller::suspend()
 {
     LockGuard lg(mutexCtrl);
-    RateThread::suspend();    
+    PeriodicThread::suspend();    
     stopLimb();
     commData->saccadeUnderway=false;    
     yInfo("Controller has been suspended!");
@@ -1008,7 +1008,7 @@ void Controller::resume()
     fbNeck=fbHead.subVector(0,2);
     fbEyes=fbHead.subVector(3,5);
     
-    RateThread::resume();
+    PeriodicThread::resume();
     yInfo("Controller has been resumed!");
     notifyEvent("resumed");
 }

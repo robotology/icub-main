@@ -40,7 +40,7 @@ bool BmsBattery::open(yarp::os::Searchable& config)
     }
 
     int period=config.find("thread_period").asInt();
-    setRate(period);
+    setPeriod((double)period/1000.0);
 
     Property prop;
     std::string ps = group_serial.toString();
@@ -74,14 +74,14 @@ bool BmsBattery::open(yarp::os::Searchable& config)
     this->debugEnable = group_general.check("debug", Value(0), "enable/disable the debug mode").asBool();
     this->shutdownEnable = group_general.check("shutdown", Value(0), "enable/disable the automatic shutdown").asBool();
 
-    RateThread::start();
+    PeriodicThread::start();
     return true;
 }
 
 bool BmsBattery::close()
 {
     //stop the thread
-    RateThread::stop();
+    PeriodicThread::stop();
 
     //stop the driver
     driver.close();

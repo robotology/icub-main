@@ -24,7 +24,7 @@ This file can be edited at src/canBusSniffer/main.cpp.
 #include <yarp/os/Network.h>
 #include <yarp/os/Os.h>
 #include <yarp/os/Time.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -285,7 +285,7 @@ gboolean timer_graphic_updater (gpointer data)
         return true;
 };
 
- class SnifferThread: public RateThread
+ class SnifferThread: public PeriodicThread
 {
     PolyDriver driver;
     ICanBus *iCanBus;
@@ -302,7 +302,7 @@ gboolean timer_graphic_updater (gpointer data)
     signed short signed_gaugeData[6];
 
 public:
-    SnifferThread(int r=SNIFFER_THREAD_RATE): RateThread(r)
+    SnifferThread(int r=SNIFFER_THREAD_RATE): PeriodicThread((double)r/1000.0)
     {
         messages = localBufferSize;
         // create data directory if it does not exist

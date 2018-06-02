@@ -593,10 +593,10 @@ bool skinManager::identifyCommand(Bottle commandBot, SkinManagerCommand &com, Bo
 
 bool skinManager::updateModule() { 
     double avgTime, stdDev, period;
-    period = myThread->getRate();
-    myThread->getEstPeriod(avgTime, stdDev);
+    period = myThread->getPeriod();
+    myThread->getEstimatedPeriod(avgTime, stdDev);
     double avgTimeUsed, stdDevUsed;
-    myThread->getEstUsed(avgTimeUsed, stdDevUsed);     // real duration of run()
+    myThread->getEstimatedUsed(avgTimeUsed, stdDevUsed);     // real duration of run()
     if(avgTime > 1.3 * period){
         yWarning("Thread too slow. Real period: %3.3f+/-%3.3f. Expected period: %3.3f.\n", avgTime, stdDev, period);
         yWarning("Duration of 'run' method: %3.3f+/-%3.3f.\n", avgTimeUsed, stdDevUsed);

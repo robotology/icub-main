@@ -105,7 +105,7 @@ struct Dragger
 
 
 
-class MotorThread: public RateThread
+class MotorThread: public PeriodicThread
 {
 private:
     ResourceFinder                      &rf;
@@ -249,7 +249,7 @@ private:
 
 public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)
-        :RateThread(20),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc),
+        :PeriodicThread(0.02),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc),
          track_cartesian_target(3,0.0)
     {
         ctrl_gaze=NULL;

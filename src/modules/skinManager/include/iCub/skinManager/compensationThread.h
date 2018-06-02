@@ -27,7 +27,7 @@
 
 #include <yarp/sig/Vector.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/IAnalogSensor.h>
@@ -46,7 +46,7 @@ namespace iCub{
 
 namespace skinManager{
 
-class CompensationThread : public RateThread
+class CompensationThread : public PeriodicThread
 {
 public:
     typedef enum { calibration, compensation} CompensationThreadState;

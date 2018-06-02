@@ -31,7 +31,7 @@ using yarp::os::Value;
 using yarp::dev::CanMessage;
 
 
-CanBusSkin::CanBusSkin() :  RateThread(20),
+CanBusSkin::CanBusSkin() :  PeriodicThread(0.02),
                             mutex(1),
                             _verbose(false),
                             _isDiagnosticPresent(false)
@@ -65,7 +65,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     _cfgReader.setName(name);
 
     int period=config.find("period").asInt();
-    setRate(period);
+    setPeriod((double)period/1000.0);
 
     netID = config.find("canDeviceNum").asInt(); 
 
@@ -195,7 +195,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
         }
     }
 
-    RateThread::start();
+    PeriodicThread::start();
     return true;
 }
 
@@ -533,7 +533,7 @@ bool CanBusSkin::close()
         }
     }
 
-    RateThread::stop();
+    PeriodicThread::stop();
     if (pCanBufferFactory) 
     {
         pCanBufferFactory->destroyBuffer(inBuffer);

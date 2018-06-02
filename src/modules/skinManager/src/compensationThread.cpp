@@ -35,10 +35,10 @@ CompensationThread::CompensationThread(string name, ResourceFinder* rf, string r
                                        int addThreshold, float minBaseline, bool zeroUpRawData, 
                                        int period, bool binarization, bool smoothFilter, float smoothFactor)
                                        : 
-                                        RateThread(period), moduleName(name), compensationGain(_compensationGain), 
-                                            contactCompensationGain(_contactCompensationGain), 
-                                            ADD_THRESHOLD(addThreshold), robotName(robotName), 
-                                            binarization(binarization), smoothFilter(smoothFilter), smoothFactor(smoothFactor)
+                                       PeriodicThread((double)period/1000.0), moduleName(name), compensationGain(_compensationGain), 
+                                       contactCompensationGain(_contactCompensationGain), 
+                                       ADD_THRESHOLD(addThreshold), robotName(robotName), 
+                                       binarization(binarization), smoothFilter(smoothFilter), smoothFactor(smoothFactor)
 {
    this->rf                             = rf;
    this->minBaseline                    = minBaseline;
@@ -54,7 +54,7 @@ bool CompensationThread::threadInit()
     readErrorCounter = 0;
     state = calibration;
     calibrationCounter = 0;
-    CAL_SAMPLES = 1000*CAL_TIME/((int)getRate()); // samples needed for calibration (note that getRate() returns the thread period)
+    CAL_SAMPLES = (int)((double)CAL_TIME/getPeriod());          // samples needed for calibration
 
     // open the output ports for communicating with the gui
     string monitorPortName = "/" + moduleName + "/monitor:o";   // output streaming data
@@ -341,7 +341,7 @@ void CompensationThread::sendMonitorData(){
         Vector &b = monitorPort.prepare();
         b.clear();        
         b.resize(1+ 2*originalSkinDim);
-        b[0] = 1000.0/getEstPeriod(); // thread frequency
+        b[0] = 1.0/getEstimatedPeriod(); // thread frequency
         
         stateSem.wait();
         if(state==compensation){    // during calibration don't send this data

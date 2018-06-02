@@ -102,7 +102,7 @@ public:
 class ServerCartesianController : public    yarp::dev::DeviceDriver,
                                   public    yarp::dev::IMultipleWrapper,
                                   public    yarp::dev::ICartesianControl,
-                                  public    yarp::os::RateThread,
+                                  public    yarp::os::PeriodicThread,
                                   protected iCub::iKin::CartesianHelper
 {
 protected:

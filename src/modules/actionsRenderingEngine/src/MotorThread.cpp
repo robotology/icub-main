@@ -936,7 +936,7 @@ bool MotorThread::threadInit()
     string name=rf.find("name").asString();
     string robot=bMotor.check("robot",Value("icub")).asString();
     string partUsed=bMotor.check("part_used",Value("both_arms")).asString();
-    setRate(bMotor.check("thread_period",Value(100)).asInt());
+    setPeriod((double)bMotor.check("thread_period",Value(100)).asInt()/1000.0);
 
     actions_path=bMotor.check("actions",Value("actions")).asString();
 
@@ -1313,7 +1313,7 @@ bool MotorThread::threadInit()
     setStereoToCartesianMode(starting_modeS2C);
 
     // initializer dragger
-    dragger.init(rf.findGroup("dragger"),this->getRate());
+    dragger.init(rf.findGroup("dragger"),(int)(1000.0*this->getPeriod()));
 
     this->avoidTable(false);
 

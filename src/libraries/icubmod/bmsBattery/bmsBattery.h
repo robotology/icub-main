@@ -7,7 +7,7 @@
 #ifndef __BMSBATTERY_H__
 #define __BMSBATTERY_H__
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/IBattery.h>
 #include <yarp/dev/PolyDriver.h>
@@ -18,7 +18,7 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class BmsBattery : public RateThread, public yarp::dev::IBattery, public DeviceDriver
+class BmsBattery : public PeriodicThread, public yarp::dev::IBattery, public DeviceDriver
 {
 protected:
     yarp::os::Semaphore mutex;
@@ -50,7 +50,7 @@ protected:
     std::string         localName;
 
 public:
-    BmsBattery(int period = 20) : RateThread(period), mutex(1)
+    BmsBattery(int period = 20) : PeriodicThread((double)period/1000.0), mutex(1)
     {}
 
 

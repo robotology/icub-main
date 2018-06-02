@@ -23,7 +23,7 @@ const double MAX_GAIN = 10.0;
 const int VELOCITY_INDEX_OFFSET=1000;
 
 velControlThread::velControlThread(int rate):
-                yarp::os::RateThread(rate)
+                yarp::os::PeriodicThread((double)rate/1000.0)
 {
     control_rate = rate;
     suspended = true;
@@ -40,8 +40,8 @@ void velControlThread::run()
     {
         yDebug("Thread ran %d times, est period %lf[ms], used %lf[ms]\n",
                 getIterations(),
-                getEstPeriod(),
-                getEstUsed());
+                1000.0*getEstimatedPeriod(),
+                1000.0*getEstimatedUsed());
         resetStat();
     }
     _mutex.wait();

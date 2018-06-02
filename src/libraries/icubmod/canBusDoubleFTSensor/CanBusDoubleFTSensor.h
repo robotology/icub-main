@@ -7,7 +7,7 @@
 #ifndef CANBUSDOUBLEFTSENSOR_H
 #define CANBUSDOUBLEFTSENSOR_H
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
@@ -60,7 +60,7 @@ using namespace yarp::dev;
 * | backSingleDistance | double | m | - | Yes | Distance between the back and the single emulated sensor, along the x axis of the second sensor. | - |
 *
 */
-class CanBusDoubleFTSensor : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver
+class CanBusDoubleFTSensor : public PeriodicThread, public yarp::dev::IAnalogSensor, public DeviceDriver
 {
     enum AnalogDataFormat
     {
@@ -113,7 +113,7 @@ protected:
     double frontSingleDistance;
 
 public:
-    CanBusDoubleFTSensor(int period=20) : RateThread(period),mutex(1),overallStatus(IAnalogSensor::AS_OK)
+    CanBusDoubleFTSensor(int period=20) : PeriodicThread((double)period/1000.0),mutex(1),overallStatus(IAnalogSensor::AS_OK)
     {
         status[0] = IAnalogSensor::AS_OK;
         status[1] = IAnalogSensor::AS_OK;

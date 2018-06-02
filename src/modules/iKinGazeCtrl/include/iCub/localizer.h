@@ -40,7 +40,7 @@ using namespace iCub::iKin;
 // The thread launched by the application which is
 // in charge of localizing target 3D position from
 // image coordinates.
-class Localizer : public GazeComponent, public RateThread
+class Localizer : public GazeComponent, public PeriodicThread
 {
 protected:
     Mutex                 mutex;

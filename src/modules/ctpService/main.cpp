@@ -96,7 +96,7 @@ Author: Lorenzo Natale
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Semaphore.h>
 
@@ -371,12 +371,12 @@ public:
     }
 };
 
-class WorkingThread: public RateThread
+class WorkingThread: public PeriodicThread
 {
 private:
     scriptPosPort *posPort;
 public:
-    WorkingThread(int period=100): RateThread(period)
+    WorkingThread(int period=100): PeriodicThread((double)period/1000.0)
     {}
 
     void attachPosPort(scriptPosPort *p)

@@ -377,7 +377,7 @@ void VisuoThread::updatePFTracker()
 
 
 VisuoThread::VisuoThread(ResourceFinder &_rf, Initializer *initializer)
-    :RateThread(20),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc)
+    :PeriodicThread(0.02),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc)
 {
     buffer[LEFT].clear();
     buffer[RIGHT].clear();
@@ -400,7 +400,7 @@ bool VisuoThread::threadInit()
 
     Bottle bVision=rf.findGroup("vision");
 
-    setRate(bVision.check("period",Value(20)).asInt());
+    setPeriod((double)bVision.check("period",Value(20)).asInt()/1000.0);
 
     minMotionBufSize=bVision.check("minMotionBufSize",Value(10)).asInt();
     minTrackBufSize=bVision.check("minTrackBufSize",Value(1)).asInt();

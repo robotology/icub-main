@@ -39,7 +39,7 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     }
 
     int period=config.find("period").asInt();
-    setRate(period);
+    setPeriod((double)period/1000.0);
 
     Property prop;
 
@@ -111,7 +111,7 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     //start the sensor broadcast
     sensor_start(config);
 
-    RateThread::start();
+    PeriodicThread::start();
     return true;
 }
 
@@ -350,7 +350,7 @@ bool CanBusVirtualAnalogSensor::sensor_stop()
 bool CanBusVirtualAnalogSensor::close()
 {
     //stop the thread
-    RateThread::stop();
+    PeriodicThread::stop();
 
     //stop the sensor
     sensor_stop();

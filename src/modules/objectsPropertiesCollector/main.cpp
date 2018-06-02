@@ -395,7 +395,7 @@ bool notEqual(Value &a, Value &b)
 
 
 /************************************************************************/
-class DataBase : public RateThread
+class DataBase : public PeriodicThread
 {
 protected:
     /************************************************************************/
@@ -510,7 +510,7 @@ protected:
 
 public:
     /************************************************************************/
-    DataBase() : RateThread(1000)
+    DataBase() : PeriodicThread(1.0)
     {
         pBroadcastPort=NULL;
         asyncBroadcast=false;
@@ -550,7 +550,7 @@ public:
 
         if (rf.check("sync-bc"))
         {
-            setRate((int)(1000.0*rf.check("sync-bc",Value(1.0)).asDouble()));
+            setPeriod(rf.check("sync-bc",Value(1.0)).asDouble());
             start();
         }
 
@@ -1316,7 +1316,7 @@ public:
                 if (opt==Vocab::encode("start"))
                 {
                     if (command.size()>=3)
-                        setRate((int)(1000.0*command.get(2).asDouble()));
+                        setPeriod(command.get(2).asDouble());
 
                     if (!isRunning())
                         start();

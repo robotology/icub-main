@@ -48,7 +48,7 @@ using namespace iCub::iKin;
 
 // The thread launched by the application which is
 // in charge of computing the control commands.
-class Controller : public GazeComponent, public RateThread
+class Controller : public GazeComponent, public PeriodicThread
 {
 protected:
     iCubHeadCenter     *neck;

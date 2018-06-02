@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Log.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -35,7 +35,7 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class SkinMeshThreadPort : public RateThread 
+class SkinMeshThreadPort : public PeriodicThread 
 {
 protected:
     static const int MAX_SENSOR_NUM = 128;

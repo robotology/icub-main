@@ -53,7 +53,7 @@ static inline bool DEPRECATED(const char *txt)
 //////////////////////////////////
 
 iCubSimulationControl::iCubSimulationControl() : 
-    //RateThread(10),
+    //PeriodicThread(0.01),
     ImplementPositionControl2(this),
     ImplementVelocityControl2(this),
     ImplementPidControl(this),
@@ -338,7 +338,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     odeinit.mutex.wait();
     odeinit.setSimulationControl(this, partSelec);
     odeinit.mutex.post();
-    //RateThread::start();
+    //PeriodicThread::start();
     //_done.wait ();
     _mutex.post();
     _opened = true;
@@ -351,11 +351,11 @@ bool iCubSimulationControl::close (void)
 {
     if (_opened) {
 
-        //if (RateThread::isRunning())
+        //if (PeriodicThread::isRunning())
         //    {
         //    }
         
-        //RateThread::stop();/// stops the thread first (joins too).
+        //PeriodicThread::stop();/// stops the thread first (joins too).
         
         ImplementPositionControl2::uninitialize();
         ImplementVelocityControl2::uninitialize();

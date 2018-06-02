@@ -20,7 +20,7 @@
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/dev/PreciselyTimed.h>
 #include <yarp/os/Semaphore.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <string>
 #include <list>
 
@@ -658,7 +658,7 @@ class axisTorqueHelper
  *
  */
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
-            public os::RateThread, 
+            public os::PeriodicThread, 
             public IPidControlRaw, 
             public IPositionControl2Raw,
             public IPositionDirectRaw,

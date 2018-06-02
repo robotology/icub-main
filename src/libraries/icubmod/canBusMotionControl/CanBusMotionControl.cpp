@@ -2384,7 +2384,7 @@ bool CanBusResources::dumpBuffers (void)
 
 
 CanBusMotionControl::CanBusMotionControl() :
-RateThread(10),
+PeriodicThread(0.01),
 //ImplementPositionControl<CanBusMotionControl, IPositionControl>(this),
 ImplementPositionControl2(this),
 //ImplementVelocityControl<CanBusMotionControl, IVelocityControl>(this),
@@ -2679,8 +2679,8 @@ bool CanBusMotionControl::open (Searchable &config)
 
     threadPool = new ThreadPool2(res.iBufferFactory);
 
-    RateThread::setRate(p._polling_interval);
-    RateThread::start();
+    PeriodicThread::setPeriod((double)p._polling_interval/1000.0);
+    PeriodicThread::start();
 
     //get firmware versions
     firmware_info* info = new firmware_info[p._njoints];
@@ -2700,7 +2700,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ////////////////////////////
     if (!_firmwareVersionHelper->checkFirmwareVersions())
     {
-        RateThread::stop();
+        PeriodicThread::stop();
         _opened = false;
         yError() << "checkFirmwareVersions() failed. CanBusMotionControl::open returning false,";
         return false;
@@ -2992,7 +2992,7 @@ bool CanBusMotionControl::close (void)
                 setBCastMessages(i, 0x00);
         }
 
-        RateThread::stop ();/// stops the thread first (joins too).
+        PeriodicThread::stop ();/// stops the thread first (joins too).
 
         ImplementPositionControl2::uninitialize();
         ImplementVelocityControl2::uninitialize();
@@ -3535,8 +3535,8 @@ void CanBusMotionControl:: run()
     // report error LOOP
     if ((currentRun-lastReportTime)>REPORT_PERIOD)
         {
-            double avPeriod=getEstPeriod();
-            double avThTime=getEstUsed();//averageThreadTime/myCount;
+            double avPeriod=1000.0*getEstimatedPeriod();
+            double avThTime=1000.0*getEstimatedUsed();//averageThreadTime/myCount;
             unsigned int it=getIterations();
             resetStat();
             yDebug("%s [%d] thread ran %d times, req.dT:%d[ms], av.dT:%.2lf[ms] av.loopT :%.2lf[ms]\n", 

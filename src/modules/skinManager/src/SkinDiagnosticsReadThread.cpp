@@ -30,7 +30,7 @@ using iCub::skinManager::SkinDiagnosticsReadThread;
 using std::cerr;
 using std::cout;
 
-using yarp::os::RateThread;
+using yarp::os::PeriodicThread;
 
 #define SKINMANAGER_TH_DIAGREAD_DEBUG 1
 
@@ -38,7 +38,7 @@ using yarp::os::RateThread;
 /* *********************************************************************************************************************** */
 /* ******* Constructor                                                      ********************************************** */
 SkinDiagnosticsReadThread::SkinDiagnosticsReadThread(const int aPeriod, const yarp::os::ResourceFinder &aRf)
-    : RateThread(aPeriod) {
+    : PeriodicThread((double)aPeriod/1000.0) {
     period = aPeriod;
     rf = aRf;
 

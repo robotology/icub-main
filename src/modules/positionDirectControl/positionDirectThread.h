@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -16,7 +16,7 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Time.h>
 
-class positionDirectControlThread: public yarp::os::RateThread
+class positionDirectControlThread: public yarp::os::PeriodicThread
 {
 private:
     char robotName[255];

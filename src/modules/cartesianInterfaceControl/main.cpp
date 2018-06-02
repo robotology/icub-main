@@ -117,7 +117,7 @@ Windows, Linux
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
@@ -140,7 +140,7 @@ using namespace yarp::math;
 
 
 /************************************************************************/
-class CtrlThread: public RateThread
+class CtrlThread: public PeriodicThread
 {
 protected:
     ResourceFinder      &rf;
@@ -166,7 +166,7 @@ public:
     /************************************************************************/
     CtrlThread(unsigned int _period, ResourceFinder &_rf,
                string _remote, string _local) :
-               RateThread(_period), rf(_rf),
+               PeriodicThread((double)_period/1000.0), rf(_rf),
                remote(_remote), local(_local) { }
 
     /************************************************************************/
