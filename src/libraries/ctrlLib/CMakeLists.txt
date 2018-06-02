@@ -30,7 +30,7 @@ set(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/neuralNetworks.h
                   include/iCub/ctrl/outliersDetection.h)
 
-include_directories(${PROJECT_SOURCE_DIR}/include ${YARP_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 if(ICUB_USE_GSL)
   set(folder_source ${folder_source} src/functionEncoder.cpp)

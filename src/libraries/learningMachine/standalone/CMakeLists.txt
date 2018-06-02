@@ -67,9 +67,6 @@ set(LM_SUPPORT_SRC
 source_group("Source Files" FILES ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC} ${LM_SUPPORT_SRC})
 source_group("Header Files" FILES ${LM_HEADER})
 
-# add YARP include directories
-include_directories(${YARP_INCLUDE_DIRS})
-
 # add our include files into our compiler's search path.
 include_directories(${PROJECT_SOURCE_DIR} ../include)
 

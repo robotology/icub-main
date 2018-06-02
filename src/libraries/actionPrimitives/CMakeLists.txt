@@ -12,8 +12,7 @@ source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${perceptiveModels_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+                    ${perceptiveModels_INCLUDE_DIRS})
 
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})
 target_link_libraries(${PROJECT_NAME} perceptiveModels ${YARP_LIBRARIES})

@@ -27,7 +27,7 @@ if(ICUB_HAS_icub_firmware_shared)
 
    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} 
                        ../motionControlLib/
-                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS}
+                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS}
                        ${FIRMWARE_SHARED_INC})
 
    SET(folder_source CanBusMotionControl.cpp ThreadTable2.cpp ThreadPool2.cpp)

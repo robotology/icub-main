@@ -13,8 +13,6 @@ if(NOT SKIP_gazecontrollerclient)
    set(client_source ClientGazeController.cpp)
    set(client_header ClientGazeController.h)
   
-   include_directories(${YARP_INCLUDE_DIRS})
-
    yarp_add_plugin(gazecontrollerclient ${client_source} ${client_header})
 
    target_link_libraries(gazecontrollerclient ${YARP_LIBRARIES})

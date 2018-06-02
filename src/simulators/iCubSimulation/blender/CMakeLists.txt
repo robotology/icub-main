@@ -20,8 +20,7 @@ add_definitions(-DOMIT_LOGPOLAR)
 
 find_package(YARP REQUIRED)
 
-include_directories(${YARP_INCLUDE_DIRS}
-                    ${BASE}/wrapper)
+include_directories(${BASE}/wrapper)
                     ${CMAKE_CURRENT_SOURCE_DIR})
 
 file(GLOB_RECURSE wrapper_source ${BASE}/wrapper/*.cpp)

@@ -8,7 +8,6 @@ if (NOT SKIP_canBusSkin)
 if(ICUB_HAS_icub_firmware_shared)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ${YARP_INCLUDE_DIRS} 
                        ../skinLib/
                        ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 

@@ -33,8 +33,7 @@ source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
 
 include_directories(${PROJECT_SOURCE_DIR}/include                    
-                    ${ctrlLib_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+                    ${ctrlLib_INCLUDE_DIRS})
 
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})
 

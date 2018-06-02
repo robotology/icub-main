@@ -8,7 +8,6 @@ file(GLOB folder_header *.h)
 file(GLOB folder_source *.cpp)
 
 
-include_directories(${YARP_INCLUDE_DIRS})
 include_directories(${ACE_INCLUDE_DIRS})
 include_directories(${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

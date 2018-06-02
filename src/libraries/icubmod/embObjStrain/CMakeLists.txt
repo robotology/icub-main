@@ -14,7 +14,7 @@ IF (NOT SKIP_embObjStrain)
   INCLUDE(../embObjLib/embObjLib.cmake)
 
 #   message(INFO " embObjStrain - embObj_includes: ${embObj_includes}, ${CMAKE_CURRENT_SOURCE_DIR}/")
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} )
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${iCubDev_INCLUDE_DIRS} )
 
   yarp_add_plugin(embObjStrain embObjStrain.cpp embObjStrain.h)
   TARGET_LINK_LIBRARIES(embObjStrain ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})

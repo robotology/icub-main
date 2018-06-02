@@ -13,7 +13,6 @@ source_group("Header Files" FILES ${folder_header})
 add_definitions(${GTK2_DEFINITIONS})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${YARP_INCLUDE_DIRS}
                     ${ICUB_INCLUDE_DIRS}
                     ${GTK2_INCLUDE_DIRS}
                     ${skinDynLib_INCLUDE_DIRS})

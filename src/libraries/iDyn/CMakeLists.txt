@@ -21,8 +21,7 @@ source_group("Header Files" FILES ${folder_header})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${iKin_INCLUDE_DIRS}
-                    ${skinDynLib_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+                    ${skinDynLib_INCLUDE_DIRS})
 
 # import math symbols from standard cmath
 add_definitions(-D_USE_MATH_DEFINES)

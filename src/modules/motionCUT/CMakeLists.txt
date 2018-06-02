@@ -11,7 +11,7 @@ set(doc_files ${PROJECTNAME}.xml)
 source_group("Source Files" FILES ${source_files})
 source_group("DOC Files"    FILES ${doc_files})
 
-include_directories(${OpenCV_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+include_directories(${OpenCV_INCLUDE_DIRS})
 add_executable(${PROJECTNAME} ${source_files} ${doc_files})
 target_link_libraries(${PROJECTNAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
 install(TARGETS ${PROJECTNAME} DESTINATION bin)

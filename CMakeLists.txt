@@ -41,9 +41,6 @@ set_property(GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS) # this is populated iCubFi
 # Important: all these have to come before all calls to add_subdirectory()
 # otherwise code inside these directory will not be aware of the options.
 #
-# add yarp definitions
-add_definitions(${YARP_DEFINES})   #this contains also -D_REENTRANT
-
 # pick up yarp's cmake scripts
 list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
 

@@ -12,7 +12,7 @@ source_group("Source Files" FILES ${folder_source})
 
 add_definitions(${GTK2_DEFINITIONS})
 
-include_directories(${GTK2_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/include)
+include_directories(${GTK2_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/include)
 
 # libsigc++ 2.5.1 or later requires c++11. This is automatically
 # enabled with CMake 3.1 or later (using FindGTK2.cmake from CMake

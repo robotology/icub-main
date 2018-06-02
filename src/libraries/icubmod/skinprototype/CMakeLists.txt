@@ -6,7 +6,7 @@ yarp_prepare_plugin(skinprototype CATEGORY device TYPE SkinPrototype INCLUDE ski
 
 if (NOT SKIP_skinprototype)
 
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
     yarp_add_plugin(skinprototype skinprototype.h skinprototype.cpp)
     target_link_libraries(skinprototype ${YARP_LIBRARIES})

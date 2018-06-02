@@ -31,8 +31,7 @@ source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${ctrlLib_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+                    ${ctrlLib_INCLUDE_DIRS})
 
 if(ICUB_USE_IPOPT)
    include_directories(${IPOPT_INCLUDE_DIRS})

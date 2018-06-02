@@ -16,7 +16,6 @@ include_directories(${PROJECT_SOURCE_DIR}/src
                     ${ctrlLib_INCLUDE_DIRS}
                     ${GTK2_INCLUDE_DIRS}
                     ${GSL_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS}
 )
 
 # libsigc++ 2.5.1 or later requires c++11. This is automatically

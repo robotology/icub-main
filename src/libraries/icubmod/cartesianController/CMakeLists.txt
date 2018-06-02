@@ -16,7 +16,7 @@ if(NOT SKIP_cartesiancontrollerserver)
                      ServerCartesianController.h
                      SmithPredictor.h)
 
-   include_directories(${iKin_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+   include_directories(${iKin_INCLUDE_DIRS})
    yarp_add_plugin(cartesiancontrollerserver ${server_source} ${server_header})
    target_link_libraries(cartesiancontrollerserver iKin ${YARP_LIBRARIES})
    icub_export_plugin(cartesiancontrollerserver)
@@ -34,7 +34,7 @@ if(NOT SKIP_cartesiancontrollerclient)
    set(client_header CommonCartesianController.h
                      ClientCartesianController.h)
 
-   include_directories(${iKin_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+   include_directories(${iKin_INCLUDE_DIRS})
    yarp_add_plugin(cartesiancontrollerclient ${client_source} ${client_header})
    target_link_libraries(cartesiancontrollerclient iKin ${YARP_LIBRARIES})
 

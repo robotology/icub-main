@@ -8,7 +8,7 @@ if (NOT SKIP_canBusVirtualAnalogSensor)
 
 if(ICUB_HAS_icub_firmware_shared)
 
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
     yarp_add_plugin(canBusVirtualAnalogSensor CanBusVirtualAnalogSensor.h CanBusVirtualAnalogSensor.cpp)
     target_link_libraries(canBusVirtualAnalogSensor ${YARP_LIBRARIES})

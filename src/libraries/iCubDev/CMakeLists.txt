@@ -15,7 +15,7 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 # Add our include files into our compiler's search path.
-include_directories(${PROJECT_SOURCE_DIR}/include ${YARP_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Create everything needed to build our executable.
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})

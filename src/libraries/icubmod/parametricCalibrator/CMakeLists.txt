@@ -7,7 +7,6 @@ yarp_prepare_plugin(parametricCalibrator CATEGORY device TYPE yarp::dev::paramet
 
 if(ENABLE_parametricCalibrator)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ${YARP_INCLUDE_DIRS}
                        ${iCubDev_INCLUDE_DIRS})
 
     yarp_add_plugin(parametricCalibrator parametricCalibrator.h parametricCalibrator.cpp)

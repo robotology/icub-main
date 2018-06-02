@@ -4,18 +4,17 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 #
 
-SET(PROJECTNAME ctpService)
-PROJECT(${PROJECTNAME})
+set(PROJECTNAME ctpService)
+project(${PROJECTNAME})
 
-SET(folder_source main.cpp)
+set(folder_source main.cpp)
 
-SOURCE_GROUP("Source Files" FILES ${folder_source})
+source_group("Source Files" FILES ${folder_source})
 
-include_directories(${ctrlLib_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
-
-ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
+include_directories(${ctrlLib_INCLUDE_DIRS})
+add_executable(${PROJECTNAME} ${folder_source})
 target_link_libraries(${PROJECTNAME} ctrlLib ${YARP_LIBRARIES})
-INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
+install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 
 

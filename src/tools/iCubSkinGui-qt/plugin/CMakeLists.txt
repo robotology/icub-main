@@ -5,8 +5,7 @@
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-include_directories(${YARP_INCLUDE_DIRS}
-                    ${GSL_INCLUDE_DIRS})
+include_directories(${GSL_INCLUDE_DIRS})
 
 set(QtICubSkinGuiPlugin_SRCS Fingertip2Left.cpp
                              Fingertip2Right.cpp

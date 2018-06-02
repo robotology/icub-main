@@ -16,7 +16,6 @@ endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${iKin_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS})
 
 add_executable(${PROJECTNAME} ${source} ${header})

@@ -6,8 +6,6 @@ include(iCubUseQt5)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-include_directories(${YARP_INCLUDE_DIRS})
-
 set(frameGrabberGui2_qt_SRCS dc1394slider.cpp
                               dc1394sliderwb.cpp
                               dc1394thread.cpp

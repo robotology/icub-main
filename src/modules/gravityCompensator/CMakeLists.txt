@@ -12,8 +12,7 @@ SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 INCLUDE_DIRECTORIES(${skinDynLib_INCLUDE_DIRS}
-                    ${iDyn_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+                    ${iDyn_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} skinDynLib iDyn ${YARP_LIBRARIES})

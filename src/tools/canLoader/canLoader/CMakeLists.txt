@@ -12,7 +12,6 @@ source_group("Header Files" FILES ${folder_header})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../canLoaderLib)
 include_directories(${GTK2_INCLUDE_DIRS})
-include_directories(${YARP_INCLUDE_DIRS})
 include_directories(${ACE_INCLUDE_DIRS})
 include_directories(${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 

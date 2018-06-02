@@ -20,8 +20,7 @@ source_group("Header Files" FILES ${folder_header})
 
 include_directories(${PROJECT_SOURCE_DIR}/include                    
                     ${ctrlLib_INCLUDE_DIRS}
-                    ${IPOPT_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+                    ${IPOPT_INCLUDE_DIRS})
 
 # import math symbols from standard cmath
 add_definitions(${IPOPT_DEFINITIONS} -D_USE_MATH_DEFINES)
