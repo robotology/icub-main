@@ -36,7 +36,7 @@
 #include "utils.h"
 
 // ******************** THE THREAD
-class BroadcastingThread: public RateThread
+class BroadcastingThread: public PeriodicThread
 {
 private:
     action_class          *actions;
@@ -44,7 +44,7 @@ private:
     BufferedPort<Bottle>  port_data_out;
 
 public:
-    BroadcastingThread(int period=1): RateThread(period)
+    BroadcastingThread(int period=1): PeriodicThread((double)period/1000.0)
     {
         port_data_out.open("/trajectoryPlayer/data_out:o");
     }
@@ -159,7 +159,7 @@ public:
     }
 };
 
-class WorkingThread: public RateThread
+class WorkingThread: public PeriodicThread
 {
 private:
 
@@ -172,7 +172,7 @@ public:
     bool                  enable_execute_joint_command;
     double                start_time;
 
-    WorkingThread(int period=5): RateThread(period)
+    WorkingThread(int period=5): PeriodicThread((double)period/1000.0)
     {
         enable_execute_joint_command = true;
         //*** open the output port
@@ -491,7 +491,7 @@ public:
         {
             int period = rf.find("period").asInt();
             yInfo() << "Thread period set to " << period << "ms";
-            w_thread.setRate(period);
+            w_thread.setPeriod((double)period/1000.0);
         }
         yInfo() << "Using parameters:"  << rf.toString();
 

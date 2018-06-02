@@ -26,11 +26,11 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 
 #include "genericControlBoardDumper.h"
 
-class boardDumperThread: public RateThread
+class boardDumperThread: public PeriodicThread
 {
 public:
   void setDevice(PolyDriver *board_d, PolyDriver *debug_d, int rate, std::string portPrefix, std::string dataToDump, bool logOnDisk);

@@ -188,7 +188,7 @@ struct ActionPrimitivesWayPoint
 * (in joint-space) primitive actions and to combine them in the 
 * actions queue. 
 */
-class ActionPrimitives : protected yarp::os::RateThread
+class ActionPrimitives : protected yarp::os::PeriodicThread
 {
 protected:
     std::string robot;
@@ -204,7 +204,7 @@ protected:
 
     perception::Model            *graspModel;
                                  
-    yarp::os::RateThread         *armWaver;
+    yarp::os::PeriodicThread     *armWaver;
     yarp::os::Mutex               mutex;
     yarp::os::Event               motionStartEvent;
     yarp::os::Event               motionDoneEvent;
@@ -279,13 +279,13 @@ protected:
         bool handSeqTerminator;
         // reach way points action
         bool execWayPoints;
-        yarp::os::RateThread *wayPointsThr;
+        yarp::os::PeriodicThread *wayPointsThr;
         // action callback
         ActionPrimitivesCallback *clb;
     };
 
     ActionPrimitivesCallback *actionClb;
-    yarp::os::RateThread     *actionWP;
+    yarp::os::PeriodicThread *actionWP;
     class ActionsQueue : public std::deque<Action>
     {
     public:

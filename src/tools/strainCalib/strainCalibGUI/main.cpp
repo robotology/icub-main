@@ -24,7 +24,7 @@ This file can be edited at src/canBusSniffer/main.cpp.
 #include <yarp/os/Network.h>
 #include <yarp/os/Os.h>
 #include <yarp/os/Time.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>

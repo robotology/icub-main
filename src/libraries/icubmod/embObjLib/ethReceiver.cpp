@@ -61,10 +61,10 @@ using namespace eth;
 
 
 
-EthReceiver::EthReceiver(int raterx): RateThread(raterx)
+EthReceiver::EthReceiver(int raterx): PeriodicThread((double)raterx/1000.0)
 {
     rateofthread = raterx;
-    yDebug() << "EthReceiver is a RateThread with rxrate =" << rateofthread << "ms";
+    yDebug() << "EthReceiver is a PeriodicThread with rxrate =" << rateofthread << "ms";
     // ok, and now i get it from xml file ... if i find it.
 
 //    std::string tmp = NetworkBase::getEnvironment("ETHSTAT_PRINT_INTERVAL");

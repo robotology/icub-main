@@ -31,13 +31,13 @@
 #include <iCub/iKin/iKinVocabs.h>
 
 #define CARTCTRL_SERVER_VER                 1.1
-#define CARTCTRL_DEFAULT_PER                10      // [ms]
+#define CARTCTRL_DEFAULT_PER                0.01    // [s]
 #define CARTCTRL_DEFAULT_TASKVEL_PERFACTOR  4
 #define CARTCTRL_DEFAULT_TOL                1e-2
 #define CARTCTRL_DEFAULT_TRAJTIME           2.0     // [s]
 #define CARTCTRL_DEFAULT_POSCTRL            "on"
 #define CARTCTRL_DEFAULT_MULJNTCTRL         "on"
-#define CARTCTRL_CONNECT_SOLVER_PING        1e3     // [ms]
+#define CARTCTRL_CONNECT_SOLVER_PING        1.0     // [s]
 
 using namespace std;
 using namespace yarp::os;
@@ -170,7 +170,7 @@ TaskRefVelTargetGenerator::~TaskRefVelTargetGenerator()
 
 /************************************************************************/
 ServerCartesianController::ServerCartesianController() :
-                           RateThread(CARTCTRL_DEFAULT_PER)
+                           PeriodicThread(CARTCTRL_DEFAULT_PER)
 {
     init();
 }
@@ -178,7 +178,7 @@ ServerCartesianController::ServerCartesianController() :
 
 /************************************************************************/
 ServerCartesianController::ServerCartesianController(Searchable &config) :
-                           RateThread(CARTCTRL_DEFAULT_PER)
+                           PeriodicThread(CARTCTRL_DEFAULT_PER)
 {
     init();
     open(config);
@@ -1169,14 +1169,14 @@ void ServerCartesianController::createController()
 
     // instantiate new controller
     if (posDirectEnabled)
-        ctrl=new MultiRefMinJerkCtrl(*chainPlan,ctrlPose,getRate()/1000.0);
+        ctrl=new MultiRefMinJerkCtrl(*chainPlan,ctrlPose,getPeriod());
     else if (plantModelProperties.check("plant_compensator",Value("off")).asString()=="on")
     {
-        ctrl=new MultiRefMinJerkCtrl(*chainState,ctrlPose,getRate()/1000.0,true);
+        ctrl=new MultiRefMinJerkCtrl(*chainState,ctrlPose,getPeriod(),true);
         ctrl->setPlantParameters(plantModelProperties,"joint");
     }
     else
-        ctrl=new MultiRefMinJerkCtrl(*chainState,ctrlPose,getRate()/1000.0);
+        ctrl=new MultiRefMinJerkCtrl(*chainState,ctrlPose,getPeriod());
 
     // set tolerance
     ctrl->setInTargetTol(targetTol);
@@ -1592,7 +1592,7 @@ void ServerCartesianController::stopLimb(const bool execStopPosition)
 /************************************************************************/
 bool ServerCartesianController::threadInit()
 {
-    yInfo("Starting %s at %d ms",ctrlName.c_str(),(int)getRate());
+    yInfo("Starting %s at %d ms",ctrlName.c_str(),(int)(1000.0*getPeriod()));
     return true;
 }
 
@@ -1736,7 +1736,7 @@ void ServerCartesianController::run()
             notifyEvent(event);
         }
     }
-    else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_SOLVER_PING)
+    else if ((++connectCnt)*getPeriod()>CARTCTRL_CONNECT_SOLVER_PING)
     {
         if (connectToSolver())
         {
@@ -1858,7 +1858,7 @@ bool ServerCartesianController::open(Searchable &config)
     }
 
     if (optGeneral.check("ControllerPeriod"))
-        setRate(optGeneral.find("ControllerPeriod").asInt());
+        setPeriod((double)optGeneral.find("ControllerPeriod").asInt()/1000.0);
 
     taskRefVelPeriodFactor=optGeneral.check("TaskRefVelPeriodFactor",
                                             Value(CARTCTRL_DEFAULT_TASKVEL_PERFACTOR)).asInt();
@@ -1956,7 +1956,7 @@ bool ServerCartesianController::open(Searchable &config)
         // append information about the predictor's period,
         // that must match the controller's period
         plantModelProperties.unput("Ts");
-        plantModelProperties.put("Ts",getRate()/1000.0);
+        plantModelProperties.put("Ts",getPeriod());
     }
     else
         plantModelProperties.clear();
@@ -2202,7 +2202,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
     // create the target generator for
     // task-space reference velocity
-    taskRefVelTargetGen=new TaskRefVelTargetGenerator(taskRefVelPeriodFactor*(getRate()/1000.0),ctrl->get_x());
+    taskRefVelTargetGen=new TaskRefVelTargetGenerator(taskRefVelPeriodFactor*getPeriod(),ctrl->get_x());
     taskRefVelPeriodCnt=0;
 
     start();

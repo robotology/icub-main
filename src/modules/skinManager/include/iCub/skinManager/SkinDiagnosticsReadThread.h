@@ -25,7 +25,7 @@
 #include <vector>
 #include <deque>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Bottle.h>
@@ -33,7 +33,7 @@
 
 namespace iCub {
     namespace skinManager {
-        class SkinDiagnosticsReadThread : public yarp::os::RateThread {
+        class SkinDiagnosticsReadThread : public yarp::os::PeriodicThread {
             private:
                 /* ****** Module attributes                             ****** */
                 /** The thread period. */

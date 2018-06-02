@@ -19,7 +19,7 @@ using namespace yarp::dev;
 using namespace yarp::os;
 
 
-imuST_M1::imuST_M1() : RateThread(6)
+imuST_M1::imuST_M1() : PeriodicThread(0.006)
 {
     verbose = false;
     nchannels = 12;

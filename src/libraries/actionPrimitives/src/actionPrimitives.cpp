@@ -68,7 +68,7 @@ namespace action
 
 // This class handles the arm way points
 /************************************************************************/
-class ArmWayPoints : public RateThread
+class ArmWayPoints : public PeriodicThread
 {
     deque<ActionPrimitivesWayPoint> wayPoints;
     ActionPrimitives  *action;
@@ -117,7 +117,7 @@ class ArmWayPoints : public RateThread
 public:
     /************************************************************************/
     ArmWayPoints(ActionPrimitives *_action, const deque<ActionPrimitivesWayPoint> &_wayPoints) :
-                 RateThread(ACTIONPRIM_DEFAULT_PER)
+                 PeriodicThread((double)ACTIONPRIM_DEFAULT_PER/1000.0)
     {
         action=_action;
         action->getCartesianIF(cartCtrl);
@@ -139,7 +139,7 @@ public:
         {
             Vector o;
             cartCtrl->getPose(x0,o);
-            setRate((int)(1000.0*checkTime(wayPoints[0].granularity)));
+            setPeriod(checkTime(wayPoints[0].granularity));
             i=0;
 
             return true;
@@ -177,7 +177,7 @@ public:
                 x0=wayPoints[i].x;
                 i++;
                 printWayPoint();
-                setRate((int)(1000.0*checkTime(wayPoints[i].granularity)));
+                setPeriod(checkTime(wayPoints[i].granularity));
                 t0=Time::now();
             }
             else
@@ -196,7 +196,7 @@ public:
 
 // This class handles the automatic arm-waving
 /************************************************************************/
-class ArmWavingMonitor : public RateThread
+class ArmWavingMonitor : public PeriodicThread
 {
     ICartesianControl *cartCtrl;
     Vector restPos, restOrien;
@@ -205,7 +205,7 @@ class ArmWavingMonitor : public RateThread
 public:
     /************************************************************************/
     ArmWavingMonitor(ICartesianControl *_cartCtrl) :
-                     RateThread((int)(1000.0*ACTIONPRIM_BALANCEARM_PERIOD))
+                     PeriodicThread(ACTIONPRIM_BALANCEARM_PERIOD)
     {
         cartCtrl=_cartCtrl;
         Rand::init();
@@ -294,7 +294,7 @@ ActionPrimitivesWayPoint::ActionPrimitivesWayPoint()
     oEnabled=false;
     duration=ACTIONPRIM_DISABLE_EXECTIME;
     trajTime=ACTIONPRIM_DISABLE_EXECTIME;
-    granularity=ACTIONPRIM_DEFAULT_PER/1000.0;
+    granularity=(double)ACTIONPRIM_DEFAULT_PER/1000.0;
     callback=NULL;
 }
 
@@ -315,7 +315,7 @@ void ActionPrimitives::ActionsQueue::clear()
 
 /************************************************************************/
 ActionPrimitives::ActionPrimitives() :
-                  RateThread(ACTIONPRIM_DEFAULT_PER)
+                  PeriodicThread((double)ACTIONPRIM_DEFAULT_PER/1000.0)
 {
     init();
 }
@@ -323,7 +323,7 @@ ActionPrimitives::ActionPrimitives() :
 
 /************************************************************************/
 ActionPrimitives::ActionPrimitives(Property &opt) :
-                  RateThread(ACTIONPRIM_DEFAULT_PER)
+                  PeriodicThread((double)ACTIONPRIM_DEFAULT_PER/1000.0)
 {
     init();
     open(opt);
@@ -671,7 +671,7 @@ bool ActionPrimitives::open(Property &opt)
     fingers2JntsMap.insert(pair<int,int>(4,15));
 
     // start the thread with the specified period
-    setRate(period);
+    setPeriod((double)period/1000.0);
     start();
 
     // start the balancer thread

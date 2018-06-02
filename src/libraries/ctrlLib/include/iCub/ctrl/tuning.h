@@ -149,7 +149,7 @@ public:
 * track a time varying reference position. The stiction values 
 * are estimated during the rising and falling edge transitions. 
 */
-class OnlineStictionEstimator : public yarp::os::RateThread
+class OnlineStictionEstimator : public yarp::os::PeriodicThread
 {
 protected:
     yarp::dev::IControlMode    *imod;
@@ -271,7 +271,7 @@ public:
      *  
      * @return true iff started successfully.
      */
-    virtual bool startEstimation() { return RateThread::start(); }
+    virtual bool startEstimation() { return PeriodicThread::start(); }
 
     /**
      * Check the current estimation status.
@@ -291,7 +291,7 @@ public:
     /**
      * Stop the estimation procedure.
      */
-    virtual void stopEstimation() { RateThread::stop(); }
+    virtual void stopEstimation() { PeriodicThread::stop(); }
 
     /**
      * Retrieve the estimation. 
@@ -340,7 +340,7 @@ public:
 * estimation, one for the plant validation, one for the stiction
 * estimation and one for validating the controller's design.
 */
-class OnlineCompensatorDesign : public yarp::os::RateThread
+class OnlineCompensatorDesign : public yarp::os::PeriodicThread
 {
 protected:
     OnlineDCMotorEstimator  plant;
@@ -640,7 +640,7 @@ public:
     /**
      * Stop any ongoing operation.
      */
-    virtual void stopOperation() { RateThread::stop(); }
+    virtual void stopOperation() { PeriodicThread::stop(); }
 
     /**
      * Retrieve the results of the current ongoing operation.

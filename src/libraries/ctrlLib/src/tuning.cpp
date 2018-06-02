@@ -133,7 +133,7 @@ Vector OnlineDCMotorEstimator::estimate(const double u, const double y)
 
 /**********************************************************************/
 OnlineStictionEstimator::OnlineStictionEstimator() :
-                         RateThread(1000),   velEst(32,4.0), accEst(32,4.0),
+                         PeriodicThread(1.0),   velEst(32,4.0), accEst(32,4.0),
                          trajGen(1,1.0,1.0), intErr(1.0,Vector(2,0.0)), done(2)
 {
     imod=NULL;
@@ -163,7 +163,7 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
             return false;
 
         joint=options.find("joint").asInt();
-        setRate((int)(1000.0*options.check("Ts",Value(0.01)).asDouble()));
+        setPeriod(options.check("Ts",Value(0.01)).asDouble());
 
         T=options.check("T",Value(2.0)).asDouble();
         Kp=options.check("Kp",Value(10.0)).asDouble();
@@ -204,7 +204,7 @@ bool OnlineStictionEstimator::reconfigure(const Property &options)
             joint=options.find("joint").asInt();
 
         if (options.check("Ts"))
-            setRate((int)(1000.0*options.find("Ts").asDouble()));
+            setPeriod(options.find("Ts").asDouble());
 
         if (options.check("T"))
             T=options.find("T").asDouble();
@@ -280,7 +280,7 @@ bool OnlineStictionEstimator::threadInit()
     state=(tg-x_pos>0.0)?rising:falling;
     adapt=adaptOld=false;
 
-    trajGen.setTs(0.001*getRate());
+    trajGen.setTs(getPeriod());
     trajGen.setT(T);
     trajGen.init(Vector(1,x_pos));
 
@@ -298,10 +298,10 @@ bool OnlineStictionEstimator::threadInit()
     stiction_limit=pidInfo.max_output;
     applyStictionLimit();
 
-    pid=new parallelPID(0.001*getRate(),_Kp,_Ki,_Kd,_Wp,_Wi,_Wd,_N,_Tt,_satLim);
+    pid=new parallelPID(getPeriod(),_Kp,_Ki,_Kd,_Wp,_Wi,_Wd,_N,_Tt,_satLim);
     pid->reset(Vector(1,0.0));
 
-    intErr.setTs(0.001*getRate());
+    intErr.setTs(getPeriod());
     intErr.reset(stiction);
 
     done=0.0;
@@ -444,7 +444,7 @@ bool OnlineStictionEstimator::getInfo(Property &info)
 
 
 /**********************************************************************/
-OnlineCompensatorDesign::OnlineCompensatorDesign() : RateThread(1000),
+OnlineCompensatorDesign::OnlineCompensatorDesign() : PeriodicThread(1.0),
                          predictor(Matrix(2,2),Matrix(2,1),Matrix(1,2),
                                    Matrix(2,2),Matrix(1,1))
 {
@@ -523,7 +523,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     P0=optPlant.check("P0",Value(1e5)).asDouble();
     max_pwm=optPlant.check("max_pwm",Value(800)).asDouble();
 
-    setRate((int)(1000.0*Ts));
+    setPeriod(Ts);
 
     if (!plant.init(Ts,Q,R,P0,x0))
         return false;
@@ -904,7 +904,7 @@ bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
     switch_timeout=options.check("switch_timeout",Value(0.0)).asDouble();
 
     mode=plant_estimation;
-    return RateThread::start();
+    return PeriodicThread::start();
 }
 
 
@@ -920,7 +920,7 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
 
     double tau=options.find("tau").asDouble();
     double K=options.find("K").asDouble();
-    double Ts=0.001*getRate();
+    double Ts=getPeriod();
     double a=1.0/tau;
     double b=K/tau;
 
@@ -952,7 +952,7 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
     predictor.init(Vector(2,0.0),P0*eye(2,2));
 
     mode=plant_validation;
-    return RateThread::start();
+    return PeriodicThread::start();
 }
 
 
@@ -970,7 +970,7 @@ bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
         return false;
 
     mode=stiction_estimation;
-    return RateThread::start();
+    return PeriodicThread::start();
 }
 
 
@@ -1024,7 +1024,7 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     }
 
     mode=controller_validation;
-    return RateThread::start();
+    return PeriodicThread::start();
 }
 
 

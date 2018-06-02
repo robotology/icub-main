@@ -192,7 +192,7 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     {
         int period=10;
         period=config.find("period").asInt();
-        setRate(period);
+        setPeriod((double)period/1000.0);
     }
 
     Property prop;
@@ -248,14 +248,14 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     sharedStatus.resize(this->nrOfTotalChannels,IAnalogSensor::AS_OK);
     privateStatus.resize(this->nrOfTotalChannels,IAnalogSensor::AS_OK);
 
-    RateThread::start();
+    PeriodicThread::start();
     return true;
 }
 
 bool CanBusInertialMTB::close()
 {
     //stop the thread
-    RateThread::stop();
+    PeriodicThread::stop();
 
     //stop the driver
     if (pCanBufferFactory)

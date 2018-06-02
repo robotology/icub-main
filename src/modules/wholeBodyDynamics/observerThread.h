@@ -126,7 +126,7 @@ class iCubStatus
 };
 
 // class inverseDynamics: class for reading from Vrow and providing FT on an output port
-class inverseDynamics: public RateThread
+class inverseDynamics: public PeriodicThread
 {
 public:
     bool       com_enabled;

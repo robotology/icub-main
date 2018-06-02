@@ -23,7 +23,7 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/dev/PolyDriver.h>
@@ -45,7 +45,7 @@ enum{GRAVITY_COMPENSATION_OFF = 0, GRAVITY_COMPENSATION_ON = 1};
 enum{EXTERNAL_TRQ_OFF = 0, EXTERNAL_TRQ_ON = 1};
 enum{TORQUE_INTERFACE = 0, IMPEDANCE_POSITION = 1, IMPEDANCE_VELOCITY = 2};
 
-class gravityCompensatorThread: public yarp::os::RateThread
+class gravityCompensatorThread: public yarp::os::PeriodicThread
 {
 private:
 

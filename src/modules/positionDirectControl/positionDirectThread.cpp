@@ -17,7 +17,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 positionDirectControlThread::positionDirectControlThread(int period):
-                yarp::os::RateThread(period)
+                yarp::os::PeriodicThread((double)period/1000.0)
 {
     control_period = period;
     suspended = true;
@@ -36,8 +36,8 @@ void positionDirectControlThread::run()
     {
         yDebug("Thread ran %d times, est period %lf[ms], used %lf[ms]\n",
                 getIterations(),
-                getEstPeriod(),
-                getEstUsed());
+                1000.0*getEstimatedPeriod(),
+                1000.0*getEstimatedUsed());
         resetStat();
     }
     _mutex.wait();

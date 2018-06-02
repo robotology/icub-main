@@ -59,10 +59,10 @@ using yarp::os::Log;
 
 using namespace eth;
 
-EthSender::EthSender(int txrate) : RateThread(txrate)
+EthSender::EthSender(int txrate) : PeriodicThread((double)txrate/1000.0)
 {
     rateofthread = txrate;
-    yDebug() << "EthSender is a RateThread with txrate =" << rateofthread << "ms";
+    yDebug() << "EthSender is a PeriodicThread with txrate =" << rateofthread << "ms";
     yTrace();
 }
 

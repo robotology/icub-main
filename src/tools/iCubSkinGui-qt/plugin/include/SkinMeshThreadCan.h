@@ -13,7 +13,7 @@
 //#include <stdio.h>
 #include <string>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -32,15 +32,15 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class SkinMeshThreadCan : public RateThread 
+class SkinMeshThreadCan : public PeriodicThread 
 {
 protected:
-	PolyDriver driver;
+    PolyDriver driver;
     ICanBus *pCanBus;
     ICanBufferFactory *pCanBufferFactory;
     CanBuffer canBuffer;
-	std::string deviceName;
-	int netId;
+    std::string deviceName;
+    int netId;
     
     TouchSensor *sensor[16];
 
@@ -51,7 +51,7 @@ protected:
     bool mbSimpleDraw;
 
 public:
-	SkinMeshThreadCan(Searchable& config,int period) : RateThread(period),mutex(1)
+    SkinMeshThreadCan(Searchable& config,int period) : PeriodicThread((double)period/1000.0),mutex(1)
     {
         mbSimpleDraw=config.check("light");
 
@@ -61,26 +61,26 @@ public:
         {
             sensor[t]=NULL;
         }
-		netId=7;
-		deviceName="cfw2can";
+        netId=7;
+        deviceName="cfw2can";
         cardId=0x300 | (config.find("cardid").asInt() << 4);
-		netId=config.find("CanDeviceNum").asInt();
-		deviceName=config.find("CanDeviceName").asString();
-		std::string part="/skinGui/";
-		part.append(config.find("robotPart").asString());
-		part.append(":i");
+        netId=config.find("CanDeviceNum").asInt();
+        deviceName=config.find("CanDeviceName").asString();
+        std::string part="/skinGui/";
+        part.append(config.find("robotPart").asString());
+        part.append(":i");
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
-		bool useCalibration = config.check("useCalibration");
-		if (useCalibration==true) 
-		{
-			printf("Reading datadirectly from CAN! Calibration unsupported\n");
-			useCalibration = false;
-		}
-		else
-		{
-			printf("Using raw skin values (255-0)\n");
-		}
+        bool useCalibration = config.check("useCalibration");
+        if (useCalibration==true) 
+        {
+            printf("Reading datadirectly from CAN! Calibration unsupported\n");
+            useCalibration = false;
+        }
+        else
+        {
+            printf("Using raw skin values (255-0)\n");
+        }
 
         yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
 
@@ -96,8 +96,8 @@ public:
                 double yc=sensorConfig.get(3).asDouble();
                 double th=sensorConfig.get(4).asDouble();
                 double gain=sensorConfig.get(5).asDouble();
-				int    lrMirror=sensorConfig.get(6).asInt();
-				int    layoutNum=sensorConfig.get(7).asInt();
+                int    lrMirror=sensorConfig.get(6).asInt();
+                int    layoutNum=sensorConfig.get(7).asInt();
 
                 printf("%d %f\n",id,gain);
 
@@ -121,7 +121,7 @@ public:
                         {
                             sensor[id]=new Fingertip(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-						if (type=="fingertip2L")
+                        if (type=="fingertip2L")
                         {
                             sensor[id]=new Fingertip2L(xc,yc,th,gain,layoutNum,lrMirror);
                         }
@@ -129,7 +129,7 @@ public:
                         {
                             sensor[id] = new CER_SH_PDL(xc, yc, th, gain, layoutNum, lrMirror);
                         }
-						if (type=="fingertip2R")
+                        if (type=="fingertip2R")
                         {
                             sensor[id]=new Fingertip2R(xc,yc,th,gain,layoutNum,lrMirror);
                         }
@@ -170,7 +170,7 @@ public:
         }
     }
 
-	virtual bool threadInit();
+    virtual bool threadInit();
     virtual void threadRelease();
     virtual void run();
 

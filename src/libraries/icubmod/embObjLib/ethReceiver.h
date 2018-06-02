@@ -31,14 +31,14 @@
 
 #include <ace/SOCK_Dgram.h>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 
 
 namespace eth {
 
     class TheEthManager;
 
-    class EthReceiver : public yarp::os::RateThread
+    class EthReceiver : public yarp::os::PeriodicThread
     {
     private:
         int rateofthread;

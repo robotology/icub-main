@@ -26,7 +26,8 @@
 
 /************************************************************************/
 Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
-                     RateThread(_period), commData(_commData), period(_period)
+                     PeriodicThread((double)_period/1000.0), commData(_commData),
+                     period(_period)
 {
     iCubHeadCenter eyeC("right_"+commData->headVersion2String());
     eyeL=new iCubEye("left_"+commData->headVersion2String());

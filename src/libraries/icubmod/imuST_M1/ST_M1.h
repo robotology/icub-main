@@ -27,7 +27,7 @@
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/PreciselyTimed.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 
 #include <ST_M1_dataType.h>
 
@@ -54,10 +54,10 @@ namespace yarp{
  * |:-----------------:|
  * | `imuST_M1` |
  */
-class yarp::dev::imuST_M1 :     public yarp::dev::IGenericSensor,
-                                public yarp::dev::IPreciselyTimed,
-                                public yarp::dev::DeviceDriver,
-                                public yarp::os::RateThread
+class yarp::dev::imuST_M1 : public yarp::dev::IGenericSensor,
+                            public yarp::dev::IPreciselyTimed,
+                            public yarp::dev::DeviceDriver,
+                            public yarp::os::PeriodicThread
 {
 private:
 

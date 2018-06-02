@@ -748,7 +748,7 @@ TemplateStruct PARTICLEThread::getBestTemplate()
     return best;
 }
 /**********************************************************/
-PARTICLEManager::PARTICLEManager() : RateThread(20) 
+PARTICLEManager::PARTICLEManager() : PeriodicThread(0.02) 
 {
     tpl = NULL;
 }

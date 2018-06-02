@@ -54,7 +54,7 @@ using namespace iCub::iKin;
 // The thread launched by the application which computes
 // the eyes target position relying on the pseudoinverse
 // method.
-class EyePinvRefGen : public GazeComponent, public RateThread
+class EyePinvRefGen : public GazeComponent, public PeriodicThread
 {
 protected:
     iCubHeadCenter       *neck;
@@ -115,7 +115,7 @@ public:
 // The thread launched by the application which is
 // in charge of inverting the head kinematic relying
 // on IPOPT computation.
-class Solver : public GazeComponent, public RateThread
+class Solver : public GazeComponent, public PeriodicThread
 {
 protected:    
     iCubHeadCenter     *neck;

@@ -7,7 +7,7 @@
 #ifndef __CANBUSINERTIALMTB_H__
 #define __CANBUSINERTIALMTB_H__
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
@@ -57,7 +57,7 @@ struct MTBInertialBoardInfo
 * | sensorType     | int |       | - | Yes | Type of sensor to read from MTBs.  | Possible values: acc for the internal LIS331DLH accelerometer of the MTB, extAccAndGyro for the external LIS331DLH accelerometer and L3G4200D gyroscope. |
 * | sensorPeriod   | int    | milliseconds | 5 | No | Every sensorPeriod milliseconds the MTB publishes the sensor measurements on the CAN Bus | Possible values: from 1 to 255 |
 */
-class CanBusInertialMTB : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver
+class CanBusInertialMTB : public PeriodicThread, public yarp::dev::IAnalogSensor, public DeviceDriver
 {
 private:
     /**
@@ -94,7 +94,7 @@ protected:
     bool              initted;
     int               count;
 public:
-    CanBusInertialMTB(int period=20) : RateThread(period),
+    CanBusInertialMTB(int period=20) : PeriodicThread((double)period/1000.0),
                                        mutex(1),
                                        initted(false),
                                        count(0)

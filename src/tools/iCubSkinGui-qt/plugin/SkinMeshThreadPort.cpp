@@ -13,9 +13,9 @@
 
 #define SKIN_THRESHOLD 15.0
 
-SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThread(period),mutex(1)
+SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : PeriodicThread((double)period/1000.0),mutex(1)
 {
-    yDebug("SkinMeshThreadPort running at %g ms.",getRate());
+    yDebug("SkinMeshThreadPort running at %d ms.",(int)(1000.0*getPeriod()));
     mbSimpleDraw=config.check("light");
 
     sensorsNum=0;

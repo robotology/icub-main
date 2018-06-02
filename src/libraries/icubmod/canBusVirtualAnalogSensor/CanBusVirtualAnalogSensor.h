@@ -10,7 +10,7 @@
 //#include <stdio.h>
 #include <string>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/IVirtualAnalogSensor.h>
@@ -22,7 +22,7 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class CanBusVirtualAnalogSensor : public RateThread, public yarp::dev::IVirtualAnalogSensor, public DeviceDriver 
+class CanBusVirtualAnalogSensor : public PeriodicThread, public yarp::dev::IVirtualAnalogSensor, public DeviceDriver 
 {
     enum AnalogDataFormat
     {
@@ -61,7 +61,7 @@ protected:
     bool               useCalibration;
 
 public:
-    CanBusVirtualAnalogSensor(int period=20) : RateThread(period),mutex(1)
+    CanBusVirtualAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0),mutex(1)
     {}
     
 

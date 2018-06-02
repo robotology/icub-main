@@ -27,9 +27,9 @@
 EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              ExchangeData *_commData, Controller *_ctrl,
                              const Vector &_counterRotGain, const unsigned int _period) :
-                             RateThread(_period), drvTorso(_drvTorso), drvHead(_drvHead),
-                             commData(_commData), ctrl(_ctrl),         period(_period),
-                             Ts(_period/1000.0),  counterRotGain(_counterRotGain)
+                             PeriodicThread((double)_period/1000.0), drvTorso(_drvTorso), drvHead(_drvHead),
+                             commData(_commData),                    ctrl(_ctrl),         period(_period),
+                             Ts(_period/1000.0),                     counterRotGain(_counterRotGain)
 {
     // Instantiate objects
     neck=new iCubHeadCenter("right_"+commData->headVersion2String());
@@ -445,7 +445,7 @@ void EyePinvRefGen::run()
 /************************************************************************/
 void EyePinvRefGen::suspend()
 {    
-    RateThread::suspend();
+    PeriodicThread::suspend();
     yInfo("Pseudoinverse Reference Generator has been suspended!");
 }
 
@@ -453,7 +453,7 @@ void EyePinvRefGen::suspend()
 /************************************************************************/
 void EyePinvRefGen::resume()
 {    
-    RateThread::resume();
+    PeriodicThread::resume();
     yInfo("Pseudoinverse Reference Generator has been resumed!");
 }
 
@@ -462,9 +462,9 @@ void EyePinvRefGen::resume()
 Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
                const unsigned int _period) :
-               RateThread(_period), drvTorso(_drvTorso),     drvHead(_drvHead),
-               commData(_commData), eyesRefGen(_eyesRefGen), loc(_loc),
-               ctrl(_ctrl),         period(_period),         Ts(_period/1000.0)
+               PeriodicThread((double)_period/1000.0), drvTorso(_drvTorso),     drvHead(_drvHead),
+               commData(_commData),                    eyesRefGen(_eyesRefGen), loc(_loc),
+               ctrl(_ctrl),                            period(_period),         Ts(_period/1000.0)
 {
     // Instantiate objects
     neck=new iCubHeadCenter("right_"+commData->headVersion2String());
@@ -874,7 +874,7 @@ void Solver::run()
 void Solver::suspend()
 {
     commData->port_xd->lock();
-    RateThread::suspend();
+    PeriodicThread::suspend();
     yInfo("Solver has been suspended!");
 }
 
@@ -901,7 +901,7 @@ void Solver::resume()
     torsoVel->reset();       
     commData->port_xd->unlock();
 
-    RateThread::resume();
+    PeriodicThread::resume();
     yInfo("Solver has been resumed!");
 }
 

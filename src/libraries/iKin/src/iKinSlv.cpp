@@ -270,7 +270,8 @@ void SolverCallback::exec(const Vector &xd, const Vector &q)
 
 
 /************************************************************************/
-CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DEFAULT_PER)
+CartesianSolver::CartesianSolver(const string &_slvName) :
+                                PeriodicThread((double)CARTSLV_DEFAULT_PER/1000.0)
 {          
     // initialization
     slvName=_slvName;
@@ -438,7 +439,7 @@ void CartesianSolver::getFeedback(const bool wait)
         while (wait && !closing && !ok)
         {
             ok=enc[i]->getEncoders(fbTmp.data());
-            Time::delay(0.00025*getRate()); // wait for 1/4 of thread period
+            Time::yield();
         }
 
         if (ok)
@@ -1379,7 +1380,8 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     // parse configuration options
-    setRate(period=options.check("period",Value(CARTSLV_DEFAULT_PER)).asInt());
+    period=options.check("period",Value(CARTSLV_DEFAULT_PER)).asInt();
+    setPeriod((double)period/1000.0);
 
     ctrlPose=IKINCTRL_POSE_FULL;
     if (options.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
@@ -1624,7 +1626,7 @@ void CartesianSolver::suspend()
         yWarning("%s is already suspended",slvName.c_str());
     else
     {
-        RateThread::suspend();
+        PeriodicThread::suspend();
         yInfo("%s suspended",slvName.c_str());        
     }
 }
@@ -1636,7 +1638,7 @@ void CartesianSolver::resume()
     if (isSuspended())
     {        
         initPos();
-        RateThread::resume();
+        PeriodicThread::resume();
         yInfo("%s resumed",slvName.c_str());
     }
     else

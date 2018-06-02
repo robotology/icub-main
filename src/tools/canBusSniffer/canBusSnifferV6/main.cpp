@@ -20,7 +20,7 @@ This file can be edited at src/canBusSniffer/main.cpp.
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/os/Time.h>
 #include <yarp/sig/Vector.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -40,7 +40,7 @@ bool done=false;
 
 
 bool log_start=true;
-class SnifferThread: public RateThread
+class SnifferThread: public PeriodicThread
 {
     PolyDriver driver;
     ICanBus *iCanBus;
@@ -68,7 +68,7 @@ class SnifferThread: public RateThread
     signed short dataBuffer[6];
 
 public:
-    SnifferThread(int r=SNIFFER_THREAD_RATE): RateThread(r)
+    SnifferThread(int r=SNIFFER_THREAD_RATE): PeriodicThread((double)r/1000.0)
     {
         messages = localBufferSize;
 

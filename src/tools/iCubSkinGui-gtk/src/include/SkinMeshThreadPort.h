@@ -13,7 +13,7 @@
 //#include <stdio.h>
 #include <string>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -32,13 +32,13 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class SkinMeshThreadPort : public RateThread 
+class SkinMeshThreadPort : public PeriodicThread 
 {
 protected:
-	static const int MAX_SENSOR_NUM = 128;
+    static const int MAX_SENSOR_NUM = 128;
 
-	BufferedPort<Bottle> skin_port;							
-	TouchSensor *sensor[MAX_SENSOR_NUM];
+    BufferedPort<Bottle> skin_port;                         
+    TouchSensor *sensor[MAX_SENSOR_NUM];
 
     yarp::os::Semaphore mutex;
 
@@ -46,7 +46,7 @@ protected:
     bool mbSimpleDraw;
 
 public:
-	SkinMeshThreadPort(Searchable& config,int period) : RateThread(period),mutex(1)
+    SkinMeshThreadPort(Searchable& config,int period) : PeriodicThread((double)period/1000.0),mutex(1)
     {
         mbSimpleDraw=config.check("light");
 
@@ -56,8 +56,8 @@ public:
         {
             sensor[t]=NULL;
         }
-	
-		std::string part="/skinGui/";
+    
+        std::string part="/skinGui/";
         
         if (config.check("name"))
         {
@@ -65,20 +65,20 @@ public:
             part+="/";
         }
 
-		part.append(config.find("robotPart").asString());
-		part.append(":i");
-		skin_port.open(part.c_str());
+        part.append(config.find("robotPart").asString());
+        part.append(":i");
+        skin_port.open(part.c_str());
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
-		bool useCalibration = config.check("useCalibration");
-		if (useCalibration==true) 
-		{
-			printf("Using calibrated skin values (0-255)\n");
-		}
-		else
-		{
-			printf("Using raw skin values (255-0)\n");
-		}
+        bool useCalibration = config.check("useCalibration");
+        if (useCalibration==true) 
+        {
+            printf("Using calibrated skin values (0-255)\n");
+        }
+        else
+        {
+            printf("Using raw skin values (255-0)\n");
+        }
         
         Bottle *color = config.find("color").asList();
         unsigned char r=255, g=0, b=0;
@@ -115,8 +115,8 @@ public:
                 double yc=sensorConfig.get(3).asDouble();
                 double th=sensorConfig.get(4).asDouble();
                 double gain=sensorConfig.get(5).asDouble();
-				int    lrMirror=sensorConfig.get(6).asInt();
-				int    layoutNum=sensorConfig.get(7).asInt();
+                int    lrMirror=sensorConfig.get(6).asInt();
+                int    layoutNum=sensorConfig.get(7).asInt();
 
                 printf("%s %d %f\n",type.c_str(),id,gain);
 
@@ -143,16 +143,16 @@ public:
                             sensor[id]=new Fingertip(xc,yc,th,gain,layoutNum,lrMirror);
                             sensor[id]->setCalibrationFlag(useCalibration);
                         }
-						if (type=="fingertip2L")
+                        if (type=="fingertip2L")
                         {
                             sensor[id]=new Fingertip2L(xc,yc,th,gain,layoutNum,lrMirror);
-							sensor[id]->setCalibrationFlag(useCalibration);
+                            sensor[id]->setCalibrationFlag(useCalibration);
                         }
-						if (type=="fingertip2R")
+                        if (type=="fingertip2R")
                         {
                             sensor[id]=new Fingertip2R(xc,yc,th,gain,layoutNum,lrMirror);
-                        	sensor[id]->setCalibrationFlag(useCalibration);
-						}
+                            sensor[id]->setCalibrationFlag(useCalibration);
+                        }
                         if (type=="quad16")
                         {
                             printf("Quad16");
@@ -214,7 +214,7 @@ public:
         }
     }
 
-	virtual bool threadInit();
+    virtual bool threadInit();
     virtual void threadRelease();
     virtual void run();
 

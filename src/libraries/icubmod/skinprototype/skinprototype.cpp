@@ -35,22 +35,22 @@ bool SkinPrototype::open(yarp::os::Searchable& config)
     }
 
     int period=config.find("Period").asInt();
-    setRate(period);
+    setPeriod((double)period/1000.0);
 
     Bottle ids=config.findGroup("SkinCanIds").tail();
 
     if (ids.size()>1)
     {
-		cerr<<"Warning: SkinPrototype id list contains more than one entry -> devices will be merged. "<<endl;
+        cerr<<"Warning: SkinPrototype id list contains more than one entry -> devices will be merged. "<<endl;
     }
-	for (int i=0; i<ids.size(); i++)
-	{
-		int id = ids.get(i).asInt();
-		cardId.push_back (id);
-		#if SKIN_DEBUG
-			fprintf(stderr, "Id reading from %d\n", id);
-		#endif
-	}
+    for (int i=0; i<ids.size(); i++)
+    {
+        int id = ids.get(i).asInt();
+        cardId.push_back (id);
+        #if SKIN_DEBUG
+            fprintf(stderr, "Id reading from %d\n", id);
+        #endif
+    }
 
     Property prop;
 
@@ -96,13 +96,13 @@ bool SkinPrototype::open(yarp::os::Searchable& config)
     sensorsNum=16*12*cardId.size();
     data.resize(sensorsNum);
 
-    RateThread::start();
+    PeriodicThread::start();
     return true;
 }
 
 bool SkinPrototype::close()
 {
-    RateThread::stop();
+    PeriodicThread::stop();
     if (pCanBufferFactory) 
     {
         pCanBufferFactory->destroyBuffer(inBuffer);
@@ -162,8 +162,8 @@ int SkinPrototype::calibrateSensor()
 
 int SkinPrototype::calibrateChannel(int ch, double v)
 {
-	//NOT YET IMPLEMENTED
-	return calibrateSensor();
+    //NOT YET IMPLEMENTED
+    return calibrateSensor();
 }
 
 int SkinPrototype::calibrateSensor(const yarp::sig::Vector& v)
@@ -206,7 +206,7 @@ bool SkinPrototype::threadInit()
 }
 
 void SkinPrototype::run()
-{	
+{   
     mutex.wait();
 
     unsigned int canMessages=0;
@@ -230,9 +230,9 @@ void SkinPrototype::run()
         unsigned int type=msg.getData()[0]&0x80;
         int len=msg.getLen();
 
-		for (int i=0; i<cardId.size(); i++)
-		{
-			if (id==cardId[i])
+        for (int i=0; i<cardId.size(); i++)
+        {
+            if (id==cardId[i])
             {
                 int index=16*12*i + sensorId*12;
                 
@@ -251,7 +251,7 @@ void SkinPrototype::run()
           //            std::cerr<<"Error: skin received malformed message\n";
           //        }
             }
-		}
+        }
     }
 
     mutex.post();
@@ -260,7 +260,7 @@ void SkinPrototype::run()
 void SkinPrototype::threadRelease()
 {
 #if SKIN_DEBUG
-	printf("SkinPrototype Thread releasing...\n");	
+    printf("SkinPrototype Thread releasing...\n");  
     printf("... done.\n");
 #endif
 }

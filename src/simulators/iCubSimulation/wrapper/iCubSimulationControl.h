@@ -32,7 +32,7 @@
 
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
-//#include <yarp/os/RateThread.h>
+//#include <yarp/os/PeriodicThread.h>
 #include <yarp/sig/Image.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/dev/DeviceDriver.h>
@@ -80,7 +80,7 @@ namespace yarp{
 }
 class yarp::dev::iCubSimulationControl :
     public DeviceDriver,
-    //public yarp::os::RateThread, 
+    //public yarp::os::PeriodicThread, 
     public IPositionControl2Raw,
     public ImplementPositionControl2,
     public IVelocityControl2Raw,

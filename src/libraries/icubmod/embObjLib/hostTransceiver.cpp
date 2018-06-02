@@ -90,7 +90,7 @@ HostTransceiver::HostTransceiver():delayAfterROPloadingFailure(0.001) // 1ms
 {
     yTrace();
 
-//    delayAfterROPloadingFailure = 0.001 * TheEthManager::instance()->getEthSender()->getRate();
+//    delayAfterROPloadingFailure = TheEthManager::instance()->getEthSender()->getPeriod();
 
     ipport              = 0;
     localipaddr         = 0;
