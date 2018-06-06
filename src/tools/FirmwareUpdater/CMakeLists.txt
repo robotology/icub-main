@@ -60,7 +60,6 @@ add_executable(FirmwareUpdater-qt WIN32 ${FirmwareUpdater_qt_SRCS}
                                     ${FirmwareUpdater_qt_QRC_GEN_SRCS}
                                     ${FirmwareUpdater_qt_UI_GEN_SRCS})
 target_link_libraries(FirmwareUpdater-qt    YARP::YARP_OS
-                                            YARP::YARP_name
                                             YARP::YARP_init
                                             YARP::YARP_math
                                             YARP::YARP_sig
