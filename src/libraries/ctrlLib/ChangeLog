@@ -1,3 +1,6 @@
+2018-06-07 Ugo Pattacini <ugo.pattacini@iit.it>
+      * ctrlLib/parallelPID: enforce zero output of a disabled integrator
+
 2018-02-19 Ugo Pattacini <ugo.pattacini@iit.it>
       * re-licesing to BSD3
 

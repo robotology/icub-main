@@ -218,6 +218,11 @@ const Vector& parallelPID::compute(const Vector &ref, const Vector &fb)
     // integral part
     I=Int->integrate(Ki*(Wi*ref-fb)+(uSat-u)/Tt);
 
+    // enforce zero ouput of a disabled integrator
+    for (unsigned int i=0; i<dim; i++)
+        if (Ki[i]==0.0)
+            I[i]=0.0;
+
     // derivative part
     Vector inputD=Kd*(Wd*ref-fb);
     for (unsigned int i=0; i<dim; i++)
