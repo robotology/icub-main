@@ -83,7 +83,7 @@ public:
     * Write skinContactList to a connection.
     * return true iff a skinContactList was written correctly
     */
-    virtual bool write(yarp::os::ConnectionWriter& connection);
+    virtual bool write(yarp::os::ConnectionWriter& connection) const;
 
     /**
      * Convert this skinContactList to a dynContactList casting all its elements

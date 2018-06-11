@@ -237,7 +237,7 @@ public:
     * @param connection connection to read from
     * @return true iff a skinContact was read correctly
     */
-    virtual bool read(yarp::os::ConnectionReader& connection);
+    virtual bool read(yarp::os::ConnectionReader& connection) override;
 
     /**
     * Write this skinContact to a connection.
@@ -253,7 +253,7 @@ public:
     * @param connection connection to write to
     * @return true iff a skinContact was written correctly
     */
-    virtual bool write(yarp::os::ConnectionWriter& connection);
+    virtual bool write(yarp::os::ConnectionWriter& connection) const override;
 
     /**
     * Convert this skinContact to a vector. The size of the vector is 21 plus
@@ -299,7 +299,7 @@ public:
      * @param precision number of decimal digits to use in the string representation
      * @return a string representation of this contact
      */
-    virtual std::string toString(int precision=-1) const;
+    virtual std::string toString(int precision=-1) const override;
    
 };
 

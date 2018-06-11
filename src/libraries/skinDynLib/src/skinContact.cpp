@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include  <yarp/os/ConnectionWriter.h>
 #include <yarp/math/Math.h>
 #include "iCub/skinDynLib/skinContact.h"
 
@@ -94,7 +95,8 @@ void skinContact::setTaxelList(const vector<unsigned int> &list){
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //   SERIALIZATION methods
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool skinContact::write(ConnectionWriter& connection){
+bool skinContact::write(ConnectionWriter& connection) const
+{
     // represent a skinContact as a list of 8 elements that are:
     // - a list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
     // - a list of 3 double, i.e. the CoP
