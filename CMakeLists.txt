@@ -5,7 +5,7 @@
 # New build system. Exploit new cmake 2.6 features (export).
 
 #reduce warning level with cmake 2.6
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 3.5)
 
 #cmake policies
 # CMake Policy CMP0020 (Automatically link Qt executables to qtmain
