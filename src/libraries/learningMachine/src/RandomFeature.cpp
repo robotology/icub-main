@@ -79,7 +79,7 @@ void RandomFeature::reset() {
     this->b = TWOPI * random(this->getCoDomainSize(), prng_uniform);
 }
 
-void RandomFeature::writeBottle(yarp::os::Bottle& bot) {
+void RandomFeature::writeBottle(yarp::os::Bottle& bot) const {
     bot << this->getGamma() << b << W;
     // make sure to call the superclass's method
     this->IFixedSizeTransformer::writeBottle(bot);

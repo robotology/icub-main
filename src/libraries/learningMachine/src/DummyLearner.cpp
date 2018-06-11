@@ -80,7 +80,7 @@ std::string DummyLearner::getInfo() {
     return buffer.str();
 }
 
-void DummyLearner::writeBottle(yarp::os::Bottle& bot) {
+void DummyLearner::writeBottle(yarp::os::Bottle& bot) const {
     bot << this->sampleCount << this->trainCount;
     // make sure to call the superclass's method
     this->IFixedSizeLearner::writeBottle(bot);

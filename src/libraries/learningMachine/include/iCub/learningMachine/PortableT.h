@@ -100,7 +100,7 @@ public:
      * @param connection the connection
      * @return true on success
      */
-    bool write(yarp::os::ConnectionWriter& connection) {
+    bool write(yarp::os::ConnectionWriter& connection) const {
         // return false directly if there is no machine. If not, we end up
         // up writing things on the port, after which an exception will be
         // thrown when accessing the machine.
@@ -202,7 +202,7 @@ public:
      *
      * @return true iff there is a wrapped machine
      */
-    bool hasWrapped() {
+    bool hasWrapped() const {
         return (this->wrapped != (T*) 0);
     }
 
@@ -212,7 +212,7 @@ public:
      * @return a reference to the wrapped object
      * @throw runtime error if no wrapped object exists
      */
-    T& getWrapped() {
+    T& getWrapped() const {
         if(!this->hasWrapped()) {
             throw std::runtime_error("Attempt to retrieve inexistent wrapped object!");
         }
