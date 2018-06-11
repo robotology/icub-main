@@ -29,7 +29,7 @@
 #include <yarp/os/LogStream.h>
 
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/dev/ControlBoardInterfacesImpl.inl>
+#include <yarp/dev/ControlBoardHelper.h>
 
 #include "EoProtocol.h"
 #include "EoMotionControl.h"

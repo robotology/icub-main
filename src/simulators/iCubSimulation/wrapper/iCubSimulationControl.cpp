@@ -30,7 +30,9 @@
 ///specific to this device driver.
 #include "iCubSimulationControl.h"
 #include "OdeInit.h"
-#include <yarp/dev/ControlBoardInterfacesImpl.inl>
+#include <yarp/dev/ControlBoardHelper.h>
+#include <yarp/dev/ControlBoardInterfacesImpl.h>
+#include <yarp/dev/ControlBoardInterfacesImpl-inl.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 

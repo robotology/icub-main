@@ -35,7 +35,6 @@
 
 #include <yarp/dev/PidEnums.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include "EoMotionControl.h"
 #include <yarp/os/LogStream.h>

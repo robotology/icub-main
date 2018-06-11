@@ -42,7 +42,7 @@
 #include "messages.h"
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
-#include <yarp/dev/ControlBoardInterfacesImpl.inl>
+#include <yarp/dev/ControlBoardInterfacesImpl.h>
 
 #include "canControlConstants.h"
 #include "canControlUtils.h"
