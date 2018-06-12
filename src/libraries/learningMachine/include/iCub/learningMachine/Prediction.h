@@ -22,6 +22,7 @@
 #include <string>
 #include <cassert>
 
+#include <yarp/os/ConnectionWriter.h>
 #include <yarp/os/Portable.h>
 #include <yarp/sig/Vector.h>
 
@@ -161,7 +162,7 @@ public:
     /*
      * Inherited from Portable.
      */
-    bool write(yarp::os::ConnectionWriter& connection) {
+    bool write(yarp::os::ConnectionWriter& connection) const {
         // follows PortablePair implementation
         connection.appendInt(BOTTLE_TAG_LIST);
         connection.appendInt(2);

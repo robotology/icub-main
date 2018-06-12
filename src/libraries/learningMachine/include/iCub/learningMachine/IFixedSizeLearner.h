@@ -81,7 +81,7 @@ protected:
     /*
      * Inherited from IMachineLearner.
      */
-    virtual void writeBottle(yarp::os::Bottle& bot);
+    virtual void writeBottle(yarp::os::Bottle& bot) const;
 
     /*
      * Inherited from IMachineLearner.
@@ -112,14 +112,14 @@ public:
      *
      * @return the size of the input domain
      */
-    unsigned int getDomainSize() { return this->domainSize; }
+    unsigned int getDomainSize() const { return this->domainSize; }
 
     /**
      * Returns the size (dimensionality) of the output domain (codomain).
      *
      * @return the size of the codomain
      */
-    unsigned int getCoDomainSize() { return this->coDomainSize; }
+    unsigned int getCoDomainSize() const { return this->coDomainSize; }
 
     /**
      * Mutator for the domain size.

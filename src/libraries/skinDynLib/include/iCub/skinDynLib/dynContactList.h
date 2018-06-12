@@ -64,7 +64,7 @@ public:
     * Write dynContactList to a connection.
     * return true iff a dynContactList was written correctly
     */
-    virtual bool write(yarp::os::ConnectionWriter& connection);
+    virtual bool write(yarp::os::ConnectionWriter& connection) const;
 
     
     /**

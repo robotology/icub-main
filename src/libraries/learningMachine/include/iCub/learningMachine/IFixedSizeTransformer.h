@@ -80,7 +80,7 @@ protected:
     /*
      * Inherited from ITransformer.
      */
-    virtual void writeBottle(yarp::os::Bottle& bot);
+    virtual void writeBottle(yarp::os::Bottle& bot) const;
 
     /*
      * Inherited from ITransformer.
@@ -106,7 +106,7 @@ public:
      *
      * @return the size of the input domain
      */
-    unsigned int getDomainSize() {
+    unsigned int getDomainSize() const {
         return this->domainSize;
     }
 
@@ -115,7 +115,7 @@ public:
      *
      * @return the size of the codomain
      */
-    unsigned int getCoDomainSize() {
+    unsigned int getCoDomainSize() const {
         return this->coDomainSize;
     }
 

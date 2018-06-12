@@ -100,7 +100,7 @@ protected:
      *
      * @param bot the bottle containing the machine serialization
      */
-    virtual void writeBottle(yarp::os::Bottle& bot) = 0;
+    virtual void writeBottle(yarp::os::Bottle& bot) const = 0;
 
     /**
      * Unserializes a machine from a bottle. This method is internally
@@ -161,11 +161,10 @@ public:
     /*
      * Inherited from Portable.
      */
-    bool write(yarp::os::ConnectionWriter& connection) {
+    bool write(yarp::os::ConnectionWriter& connection) const {
         yarp::os::Bottle model;
         this->writeBottle(model);
-        model.write(connection);
-        return true;
+        return model.write(connection);
     }
 
     /*

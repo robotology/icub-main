@@ -10,6 +10,8 @@
 #include <iomanip>
 #include <string>
 
+#include <yarp/os/ConnectionWriter.h>
+
 #include "iCub/skinDynLib/skinContactList.h"
 #include <iCub/ctrl/math.h>
 
@@ -74,14 +76,14 @@ bool skinContactList::read(ConnectionReader& connection)
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool skinContactList::write(ConnectionWriter& connection)
+bool skinContactList::write(ConnectionWriter& connection) const
 {
     // A skinContactList is represented as a list of list
     // where each list is a skinContact
     connection.appendInt(BOTTLE_TAG_LIST);
     connection.appendInt(size());
 
-    for(iterator it=begin(); it!=end(); it++)
+    for(auto it=begin(); it!=end(); it++)
         if(!it->write(connection))
             return false;
 

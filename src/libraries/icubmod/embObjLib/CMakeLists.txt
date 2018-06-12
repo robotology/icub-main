@@ -187,7 +187,6 @@ set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
 set(DEBUG_SOURCE            ${DEBUG_FOLDER}/eODeb_eoProtoParser.c
                             ${DEBUG_FOLDER}/eOtheEthLowLevelParser.c)
 
-set_source_files_properties(${EXTRA_SOURCE} PROPERTIES COMPILE_FLAGS ${CXX11_FLAGS})
 
 
 set(embobj_source
