@@ -1766,7 +1766,7 @@ void iDynLimb::pushLink(iDynLink *pl)
     pushLink(*pl);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynLimb::fromLinksProperties(const Property &opt)
+bool iDynLimb::fromLinksProperties(const Property &option)
 {
     dispose();   
     int i,j;
@@ -1774,7 +1774,7 @@ bool iDynLimb::fromLinksProperties(const Property &opt)
     Matrix HC(4,4);
 
     // type: left/right
-    type=opt.check("type",Value("right")).asString().c_str();
+    type=option.check("type",Value("right")).asString().c_str();
     if(type!="right" && type!="left")
     {
         yError("Error: invalid handedness type specified! \n");
@@ -1782,7 +1782,7 @@ bool iDynLimb::fromLinksProperties(const Property &opt)
     }
 
     // H0 matrix
-    if(Bottle *bH0=opt.find("H0").asList())
+    if(Bottle *bH0=option.find("H0").asList())
     {
         i=0;
         j=0;
@@ -1799,7 +1799,7 @@ bool iDynLimb::fromLinksProperties(const Property &opt)
     }
 
     //number of links
-    int numLinks=opt.check("numLinks",Value(0)).asInt();
+    int numLinks=option.check("numLinks",Value(0)).asInt();
     if(numLinks==0)
     {
         yError("Error: invalid number of links (0) specified! \n");
@@ -1813,7 +1813,7 @@ bool iDynLimb::fromLinksProperties(const Property &opt)
         char link[255];
         sprintf(link,"link_%d",iLink);
         //look for link_i into the property parameters
-        Bottle &bLink=opt.findGroup(link);
+        Bottle &bLink=option.findGroup(link);
         if(bLink.isNull())
         {
             yError("Error: link %d is missing! \n",iLink);
@@ -1835,7 +1835,7 @@ bool iDynLimb::fromLinksProperties(const Property &opt)
         //mass
         double mass=bLink.check("mass",Value(0.0)).asDouble();
         //inertia
-        if(Bottle *bI=opt.find("Inertia").asList())
+        if(Bottle *bI=option.find("Inertia").asList())
         {
             i=0; j=0;
             I.zero(); 
@@ -1850,7 +1850,7 @@ bool iDynLimb::fromLinksProperties(const Property &opt)
             }
         }
         //HC
-        if(Bottle *bHC=opt.find("H_COM").asList())
+        if(Bottle *bHC=option.find("H_COM").asList())
         {
             i=0; j=0;
             HC.zero(); 
