@@ -788,7 +788,7 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos,
     Bottle command, reply;
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
-    command.addList().read(const_cast<Vector&>(newRestPos));
+    command.addList().read(newRestPos);
 
     if (!portRpc.write(command,reply))
     {
@@ -854,7 +854,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
     Bottle command, reply;
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
-    command.addList().read(const_cast<Vector&>(newRestWeights));
+    command.addList().read(newRestWeights);
 
     if (!portRpc.write(command,reply))
     {

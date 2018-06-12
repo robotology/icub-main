@@ -1766,9 +1766,8 @@ void iDynLimb::pushLink(iDynLink *pl)
     pushLink(*pl);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynLimb::fromLinksProperties(const Property &option)
+bool iDynLimb::fromLinksProperties(const Property &opt)
 {
-    Property &opt=const_cast<Property&>(option);
     dispose();   
     int i,j;
     Matrix I(3,3);

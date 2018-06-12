@@ -273,7 +273,7 @@ protected:
         pos->setRefSpeeds(disp.length(), joints.data(), speeds.data());
         pos->positionMove(disp.length(), joints.data(), positions.data());
 
-        cout << "Script port: " << const_cast<Vector &>(x->getCmd()).toString() << endl;
+        cout << "Script port: " << x->getCmd().toString() << endl;
     }
 
 public:
@@ -292,11 +292,9 @@ public:
         mutex.post();
     }
 
-    bool configure(const Property &copt)
+    bool configure(const Property &options)
     {
         bool ret=true;
-        Property &options=const_cast<Property &> (copt);
-
         if (options.check("device"))
             drvOptions.put("device", options.find("device").asString());
         else

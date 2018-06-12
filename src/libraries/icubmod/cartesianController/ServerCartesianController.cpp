@@ -2870,7 +2870,7 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos,
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_REST_POS);
-        command.addList().read(const_cast<Vector&>(newRestPos));
+        command.addList().read(newRestPos);
     
         // send command to solver and wait for reply
         bool ret=false;
@@ -2936,7 +2936,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_REST_WEIGHTS);
-        command.addList().read(const_cast<Vector&>(newRestWeights));
+        command.addList().read(newRestWeights);
     
         // send command to solver and wait for reply
         bool ret=false;

@@ -1227,7 +1227,7 @@ public:
     /**
     * Initializes the Limb from a list of properties wherein links 
     * parameters are specified. 
-    * @param option is the list of links properties. 
+    * @param opt is the list of links properties. 
     *  
     * @note Available options are: 
     *  
@@ -1270,7 +1270,7 @@ public:
     * ... 
     * @endcode 
     */
-    bool fromLinksProperties(const yarp::os::Property &option);
+    bool fromLinksProperties(const yarp::os::Property &opt);
 
     /**
     * Checks if the limb has been properly configured.
