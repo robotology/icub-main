@@ -305,7 +305,7 @@ bool embObjFTsensor::updateTemperatureValues(eOprotID32_t id32, double timestamp
         {
             //yDebug() << "embObjFTStrain" << getBoardInfo() << ": val "<< i<< "/" << numofIntem2update << ": value=" << data->value << ", time=" << data->timestamp;
             GET_privData(mPriv).mutex.wait();
-            GET_privData(mPriv).lastTemperature = data->value;
+            GET_privData(mPriv).lastTemperature = static_cast<float>(data->value);
             GET_privData(mPriv).timestampTemperature = yarp::os::Time::now();
             GET_privData(mPriv).mutex.post();
         }
@@ -415,7 +415,7 @@ bool embObjFTsensor::getTemperatureSensorFrameName(size_t sens_index, std::strin
 bool embObjFTsensor::getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const
 {
     GET_privData(mPriv).mutex.wait();
-    out = GET_privData(mPriv).lastTemperature/10; //I need to convert from tenths of degree centigrade to degree centigrade
+    out = GET_privData(mPriv).lastTemperature/10.0; //I need to convert from tenths of degree centigrade to degree centigrade
     timestamp =  GET_privData(mPriv).timestampTemperature;
     GET_privData(mPriv).mutex.post();
     return true;
@@ -425,7 +425,7 @@ bool embObjFTsensor::getTemperatureSensorMeasure(size_t sens_index, yarp::sig::V
 {
     GET_privData(mPriv).mutex.wait();
     out.resize(1);
-    out[0] = GET_privData(mPriv).lastTemperature/10; //I need to convert from tenths of degree centigrade to degree centigrade
+    out[0] = GET_privData(mPriv).lastTemperature/10.0; //I need to convert from tenths of degree centigrade to degree centigrade
     timestamp =  GET_privData(mPriv).timestampTemperature;
     GET_privData(mPriv).mutex.post();
     return true;

@@ -37,7 +37,7 @@ public:
     double timestampAnalogdata;
     
     bool useTemperature;
-    int lastTemperature;
+    float lastTemperature;
     double timestampTemperature;
     
     
