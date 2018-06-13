@@ -71,6 +71,9 @@ typedef struct
     imuConvFactors_t                    convFactors;
 } servConfigImu_t;
 
+
+
+
 #if defined(SERVICE_PARSER_USE_MC)
 typedef struct
 {
@@ -84,7 +87,8 @@ struct servCanBoard_t
     eObrd_cantype_t             type;
     eObrd_protocolversion_t     protocol;
     eObrd_firmwareversion_t     firmware;
-    servCanBoard_t() { type = eobrd_cantype_none; protocol.major = 0; protocol.minor = 0; firmware.major = 0; firmware.minor = 0; firmware.build = 0; }
+    servCanBoard_t() { clear(); }
+    void clear() { type = eobrd_cantype_none; protocol.major = 0; protocol.minor = 0; firmware.major = 0; firmware.minor = 0; firmware.build = 0; }
 };
 
 struct servBoard_t
@@ -95,10 +99,18 @@ struct servBoard_t
     servBoard_t() { type = eobrd_none; protocol.major = 0; protocol.minor = 0; firmware.major = 0; firmware.minor = 0; firmware.build = 0; }
 };
 
+struct servConfigSkin_t
+{
+   servCanBoard_t    canboard;
+   servConfigSkin_t() { clear(); }
+   void clear() { canboard.clear(); canboard.type = eobrd_cantype_mtb; }
+};
+
+
 
 typedef struct
 {
-    std::string                      id;
+    std::string                 id;
     eOas_sensor_t               type;
     eObrd_location_t            location;
     eObrd_type_t                boardtype;
@@ -132,6 +144,20 @@ typedef struct
     bool                        useCalibration;
 } servASstrainSettings_t;
 
+
+
+typedef struct
+{
+    servCanBoard_t              canboard;
+} servSKproperties_t;
+
+
+typedef struct
+{
+    eOmn_serv_type_t            type;
+    servSKproperties_t          properties;
+    //servSKsettings_t            settings;
+} servSKcollector_t;
 
 
 #if defined(SERVICE_PARSER_USE_MC)
@@ -222,6 +248,7 @@ public:
     bool parseService(yarp::os::Searchable &config, servConfigFTsensor_t &ftconfig);
     bool parseService(yarp::os::Searchable &config, servConfigInertials_t &inertialsconfig);
     bool parseService(yarp::os::Searchable &config, servConfigImu_t &imuconfig);
+    bool parseService(yarp::os::Searchable &config, servConfigSkin_t &skinconfig);
 
 #if defined(SERVICE_PARSER_USE_MC)
     bool parseService(yarp::os::Searchable &config, servConfigMC_t &mcconfig);
@@ -272,6 +299,8 @@ public:
     servAScollector_t           as_service;
     servASstrainSettings_t      as_strain_settings;
 
+    servSKcollector_t           sk_service;
+
 #if defined(SERVICE_PARSER_USE_MC)
     servMCcollector_t           mc_service;
 #endif
@@ -279,6 +308,8 @@ public:
 private:
 
     bool check_analog(yarp::os::Searchable &config, eOmn_serv_type_t type);
+
+    bool check_skin(yarp::os::Searchable &config);
 
     bool check_motion(yarp::os::Searchable &config);
 
