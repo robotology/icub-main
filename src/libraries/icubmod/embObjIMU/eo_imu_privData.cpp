@@ -385,6 +385,11 @@ yarp::dev::MAS_status eo_imu_privData::sensorState_eo2yarp(eOas_sensor_t type, u
 
 void eo_imu_privData::debugPrintStateNotOK(eOas_sensor_t type, uint8_t eo_state)
 {
+    static int count[eoas_sensors_numberof]={0};
+
+    count[type]++;
+    if(count[type]< 100) //the print there is about every 1 second
+        return;
 
     switch(type)
     {
@@ -401,5 +406,6 @@ void eo_imu_privData::debugPrintStateNotOK(eOas_sensor_t type, uint8_t eo_state)
                 yError() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "has status equal to " << eo_state << "(min=0, max=9)";
             break;
     }
+    count[type]=0;
 
 }
