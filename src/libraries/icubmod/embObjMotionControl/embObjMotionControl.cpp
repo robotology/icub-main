@@ -30,6 +30,7 @@
 
 #include <yarp/os/NetType.h>
 #include <yarp/dev/ControlBoardHelper.h>
+#include <yarp/dev/ControlBoardInterfacesImpl-inl.h>
 
 
 #include "eomcUtils.h"

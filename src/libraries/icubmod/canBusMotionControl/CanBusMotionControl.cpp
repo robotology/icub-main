@@ -43,6 +43,7 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
+#include <yarp/dev/ControlBoardInterfacesImpl-inl.h>
 
 #include "canControlConstants.h"
 #include "canControlUtils.h"
