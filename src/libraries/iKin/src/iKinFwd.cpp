@@ -1558,17 +1558,39 @@ iCubTorso::iCubTorso(const string &_type) : iKinLimb(string(""))
 /************************************************************************/
 void iCubTorso::allocate(const string &_type)
 {
+    double version;
+    size_t underscore=getType().find('_');
+    if (underscore!=string::npos)
+        version=strtod(getType().substr(underscore + 2).c_str(),NULL);
+    else
+        version=1.0;
+
     Matrix H0(4,4);
     H0.zero();
-    H0(0,1)=-1.0;
-    H0(1,2)=-1.0;
-    H0(2,0)=1.0;
     H0(3,3)=1.0;
-    setH0(H0);
 
-    pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
-    pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
-    pushLink(new iKinLink(0.00231, -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
+    if (version<3.0)
+    {
+        H0(0,1)=-1.0;
+        H0(1,2)=-1.0;
+        H0(2,0)=1.0;
+        setH0(H0);
+
+        pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(0.00231, -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
+    }
+    else // version >= 3.0
+    {
+        H0(0,2)=1.0;
+        H0(1,1)=-1.0;
+        H0(2,0)=1.0;
+        setH0(H0);
+
+        pushLink(new iKinLink(     0.0725,      0.0, -M_PI/2.0,       0.0, -20.0*CTRL_DEG2RAD, 20.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(        0.0,      0.0,  M_PI/2.0, -M_PI/2.0, -40.0*CTRL_DEG2RAD, 40.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(-0.00486151, -0.26377, -M_PI/2.0,      M_PI, -20.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
+    }
 }
 
 
@@ -1613,14 +1635,6 @@ iCubArm::iCubArm(const string &_type) : iKinLimb(_type)
 /************************************************************************/
 void iCubArm::allocate(const string &_type)
 {
-    Matrix H0(4,4);
-    H0.zero();
-    H0(0,1)=-1.0;
-    H0(1,2)=-1.0;
-    H0(2,0)=1.0;
-    H0(3,3)=1.0;
-    setH0(H0);
-
     string arm;
     double version;
     size_t underscore=getType().find('_');
@@ -1635,46 +1649,97 @@ void iCubArm::allocate(const string &_type)
         version=1.0;
     }
 
+    Matrix H0(4,4);
+    H0.zero();
+
+    if (version<3.0)
+    {
+        H0(0,1)=-1.0;
+        H0(1,2)=-1.0;
+        H0(2,0)=1.0;
+    }
+    else
+    {
+        H0(0,2)=1.0;
+        H0(1,1)=-1.0;
+        H0(2,0)=1.0;
+    }
+
+    H0(3,3)=1.0;
+    setH0(H0);
+
     if (arm=="right")
     {
-        pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(       0.0,  -0.0055,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(-0.0233647,  -0.1433,  M_PI/2.0, -105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(       0.0, -0.10774,  M_PI/2.0,           -M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(       0.0,      0.0, -M_PI/2.0,           -M_PI/2.0,   0.0*CTRL_DEG2RAD, 160.8*CTRL_DEG2RAD));
-        pushLink(new iKinLink(    -0.015, -0.15228, -M_PI/2.0, -105.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(     0.015,      0.0,  M_PI/2.0,                 0.0,   5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD));
-    if (version<1.7)
-        pushLink(new iKinLink(       0.0,  -0.1373,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
-    else
-        pushLink(new iKinLink(       0.0,  -0.1413,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,            M_PI/2.0, -65.0*CTRL_DEG2RAD,  10.0*CTRL_DEG2RAD));
-    if (version<2.0)
-        pushLink(new iKinLink(    0.0625,    0.016,       0.0,                M_PI, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
-    else
-        pushLink(new iKinLink(    0.0625,  0.02598,       0.0,                M_PI, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
+        if (version<3.0)
+        {
+            pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,  -0.0055,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(-0.0233647,  -0.1433,  M_PI/2.0, -105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0, -0.10774,  M_PI/2.0,           -M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,      0.0, -M_PI/2.0,           -M_PI/2.0,   0.0*CTRL_DEG2RAD, 160.8*CTRL_DEG2RAD));
+            pushLink(new iKinLink(    -0.015, -0.15228, -M_PI/2.0, -105.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(     0.015,      0.0,  M_PI/2.0,                 0.0,   5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD));
+        if (version<1.7)
+            pushLink(new iKinLink(       0.0,  -0.1373,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
+        else
+            pushLink(new iKinLink(       0.0,  -0.1413,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,            M_PI/2.0, -65.0*CTRL_DEG2RAD,  10.0*CTRL_DEG2RAD));
+        if (version<2.0)
+            pushLink(new iKinLink(    0.0625,    0.016,       0.0,                M_PI, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
+        else
+            pushLink(new iKinLink(    0.0625,  0.02598,       0.0,                M_PI, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
+        }
+        else // version>=3.0 right
+        {
+            pushLink(new iKinLink(    0.0725,        0.0,              -M_PI/2.0,                 0.0, -20.0*CTRL_DEG2RAD, 20.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,        0.0,               M_PI/2.0,           -M_PI/2.0, -40.0*CTRL_DEG2RAD, 40.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(-0.0304112,  -0.161133, 75.489181*CTRL_DEG2RAD,  165.0*CTRL_DEG2RAD, -20.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,  -0.163978,               M_PI/2.0,           -M_PI/2.0, -90.0*CTRL_DEG2RAD,   2.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,        0.0,              -M_PI/2.0, -104.5*CTRL_DEG2RAD,  -5.0*CTRL_DEG2RAD, 140.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(  -0.01065,    -0.2005,              -M_PI/2.0,   -105*CTRL_DEG2RAD, -45.0*CTRL_DEG2RAD,  80.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink( 0.0146593, 0.00308819,               M_PI/2.0,                 0.0,  -5.0*CTRL_DEG2RAD, 110.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(-0.0020075,    -0.1628,               M_PI/2.0,           -M_PI/2.0, -60.0*CTRL_DEG2RAD,  60.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,        0.0,               M_PI/2.0,            M_PI/2.0, -70.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(    0.0625,      0.016,                    0.0,                M_PI, -15.0*CTRL_DEG2RAD,  35.0*CTRL_DEG2RAD));
+        }
     }
     else
     {
         if (arm!="left")
             type.replace(0,underscore,"left");
 
-        pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD)); 
-        pushLink(new iKinLink(       0.0,  -0.0055,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink( 0.0233647,  -0.1433, -M_PI/2.0,  105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(       0.0,  0.10774, -M_PI/2.0,            M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,           -M_PI/2.0,   0.0*CTRL_DEG2RAD, 160.8*CTRL_DEG2RAD));
-        pushLink(new iKinLink(     0.015,  0.15228, -M_PI/2.0,   75.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(    -0.015,      0.0,  M_PI/2.0,                 0.0,   5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD));
-    if (version<1.7)
-        pushLink(new iKinLink(       0.0,   0.1373,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
-    else
-        pushLink(new iKinLink(       0.0,   0.1413,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,            M_PI/2.0, -65.0*CTRL_DEG2RAD,  10.0*CTRL_DEG2RAD));
-    if (version<2.0)
-        pushLink(new iKinLink(    0.0625,   -0.016,       0.0,                 0.0, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
-    else
-        pushLink(new iKinLink(    0.0625, -0.02598,       0.0,                 0.0, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
+        if (version<3.0)
+        {
+            pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD)); 
+            pushLink(new iKinLink(       0.0,  -0.0055,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink( 0.0233647,  -0.1433, -M_PI/2.0,  105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,  0.10774, -M_PI/2.0,            M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,           -M_PI/2.0,   0.0*CTRL_DEG2RAD, 160.8*CTRL_DEG2RAD));
+            pushLink(new iKinLink(     0.015,  0.15228, -M_PI/2.0,   75.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(    -0.015,      0.0,  M_PI/2.0,                 0.0,   5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD));
+        if (version<1.7)
+            pushLink(new iKinLink(       0.0,   0.1373,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
+        else
+            pushLink(new iKinLink(       0.0,   0.1413,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,            M_PI/2.0, -65.0*CTRL_DEG2RAD,  10.0*CTRL_DEG2RAD));
+        if (version<2.0)
+            pushLink(new iKinLink(    0.0625,   -0.016,       0.0,                 0.0, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
+        else
+            pushLink(new iKinLink(    0.0625, -0.02598,       0.0,                 0.0, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
+        }
+        else // version>=3.0 left
+        {
+            pushLink(new iKinLink(    0.0725,         0.0,                -M_PI/2.0,               0.0, -20.0*CTRL_DEG2RAD,  20.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,         0.0,                 M_PI/2.0,         -M_PI/2.0, -40.0*CTRL_DEG2RAD,  40.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink( 0.0304112,   -0.161133, -104.510819*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD, -20.0*CTRL_DEG2RAD,  60.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,    0.163978,                 M_PI/2.0,         -M_PI/2.0, -90.0*CTRL_DEG2RAD,   2.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,         0.0,                 M_PI/2.0, 75.5*CTRL_DEG2RAD,  -5.0*CTRL_DEG2RAD, 140.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(   0.01065,      0.2005,                -M_PI/2.0, 75.0*CTRL_DEG2RAD, -45.0*CTRL_DEG2RAD,  80.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(-0.0146593, -0.00308819,                 M_PI/2.0,               0.0,  -5.0*CTRL_DEG2RAD, 110.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink( 0.0020075,      0.1628,                 M_PI/2.0,         -M_PI/2.0, -60.0*CTRL_DEG2RAD,  60.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,         0.0,                 M_PI/2.0,          M_PI/2.0, -70.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(    0.0625,      -0.016,                      0.0,               0.0, -15.0*CTRL_DEG2RAD,  35.0*CTRL_DEG2RAD));
+        }
     }
 
     blockLink(0,0.0);
@@ -2221,6 +2286,42 @@ void iCubLeg::allocate(const string &_type)
         pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(  -0.06805,   0.0035,      M_PI,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD));
     }
+    else if (getType()=="right_v3")
+    {
+        H0.zero();
+        H0(0,0)=1.0;
+        H0(1,2)=1.0;
+        H0(2,1)=-1.0;
+        H0(0,3)=-0.0216;
+        H0(1,3)=0.07365;
+        H0(2,3)=-0.0605;
+        H0(3,3)=1.0;
+
+        pushLink(new iKinLink(    0.009,    0.0,  M_PI/2.0,  M_PI/2.0,  -40.0*CTRL_DEG2RAD, 125.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(   -0.015, 0.0106,  M_PI/2.0,  M_PI/2.0,    5.0*CTRL_DEG2RAD, 111.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.015, 0.2668, -M_PI/2.0, -M_PI/2.0,  -62.5*CTRL_DEG2RAD,  62.5*CTRL_DEG2RAD));
+        pushLink(new iKinLink(-0.255988, 0.0062,      M_PI,  M_PI/2.0, -100.0*CTRL_DEG2RAD,   0.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(   -0.035,    0.0,  M_PI/2.0,       0.0,  -40.0*CTRL_DEG2RAD,  40.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(  -0.0532,    0.0,      M_PI,       0.0,  -20.0*CTRL_DEG2RAD,  20.0*CTRL_DEG2RAD));
+    }
+    else if (getType()=="left_v3")
+    {
+        H0.zero();
+        H0(0,0)=1.0;
+        H0(1,2)=1.0;
+        H0(2,1)=-1.0;
+        H0(0,3)=-0.0216;
+        H0(1,3)=-0.07365;
+        H0(2,3)=-0.0605;
+        H0(3,3)=1.0;
+
+        pushLink(new iKinLink(    0.009,     0.0, -M_PI/2.0,  M_PI/2.0,  -40.0*CTRL_DEG2RAD, 125.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(   -0.015, -0.0106, -M_PI/2.0,  M_PI/2.0,    5.0*CTRL_DEG2RAD, 111.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    0.015, -0.2668,  M_PI/2.0, -M_PI/2.0,  -62.5*CTRL_DEG2RAD,  62.5*CTRL_DEG2RAD));
+        pushLink(new iKinLink(-0.255988,  0.0062,      M_PI,  M_PI/2.0, -100.0*CTRL_DEG2RAD,   0.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(   -0.035,     0.0, -M_PI/2.0,       0.0,  -40.0*CTRL_DEG2RAD,  40.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(  -0.0532,     0.0,       0.0,       0.0,  -20.0*CTRL_DEG2RAD,  20.0*CTRL_DEG2RAD));
+    }
     else
     {
         type="left_v2.5";
@@ -2319,6 +2420,31 @@ void iCubEye::allocate(const string &_type)
         pushLink(new iKinLink(-0.0509, 0.08205, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0,   0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0,     0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
+    }
+    else if ((getType()=="left_v3") || (getType()=="right_v3"))
+    {
+        H0(0,2)=1.0;
+        H0(1,1)= -1.0;
+        H0(2,0)=1.0;
+        setH0(H0);
+
+        pushLink(new iKinLink(     0.0725,      0.0, -M_PI/2.0,       0.0, -20.0*CTRL_DEG2RAD, 20.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(        0.0,      0.0,  M_PI/2.0, -M_PI/2.0, -40.0*CTRL_DEG2RAD, 40.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(-0.00486151, -0.26377, -M_PI/2.0,      M_PI, -20.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(     0.0095,      0.0,  M_PI/2.0,  M_PI/2.0, -30.0*CTRL_DEG2RAD, 22.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(        0.0,      0.0, -M_PI/2.0, -M_PI/2.0, -20.0*CTRL_DEG2RAD, 20.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(    -0.0509,  0.08205, -M_PI/2.0,  M_PI/2.0, -45.0*CTRL_DEG2RAD, 45.0*CTRL_DEG2RAD));
+
+        if (getType()=="left_v3")
+        {
+            pushLink(new iKinLink(0.0,  0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
+        }
+        else
+        {
+            pushLink(new iKinLink(0.0, -0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(0.0,    0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
+        }
     }
     else
     {
@@ -2450,14 +2576,14 @@ void iCubInertialSensor::allocate(const string &_type)
 {
     Matrix H0(4,4);
     H0.zero();
-    H0(0,1)=-1.0;
-    H0(1,2)=-1.0;
-    H0(2,0)=1.0;
     H0(3,3)=1.0;
-    setH0(H0);
 
     if ((getType()=="v2") || (getType()=="v2.5"))
     {
+        H0(0,1)=-1.0;
+        H0(1,2)=-1.0;
+        H0(2,0)=1.0;
+
         pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0, -0.2233, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
@@ -2465,8 +2591,25 @@ void iCubInertialSensor::allocate(const string &_type)
         pushLink(new iKinLink(    0.0,     0.0, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
         pushLink(new iKinLink( 0.0185,  0.1108, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));    
     }
+    else if (getType()=="v3")
+    {
+        H0(0,2)=1.0;
+        H0(1,1)=-1.0;
+        H0(2,0)=1.0;
+
+        pushLink(new iKinLink(     0.0725,      0.0, -M_PI/2.0,       0.0, -20.0*CTRL_DEG2RAD, 20.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(        0.0,      0.0,  M_PI/2.0, -M_PI/2.0, -40.0*CTRL_DEG2RAD, 40.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(-0.00486151, -0.26377, -M_PI/2.0,      M_PI, -20.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(     0.0095,      0.0,  M_PI/2.0,  M_PI/2.0, -30.0*CTRL_DEG2RAD, 22.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(        0.0,      0.0, -M_PI/2.0, -M_PI/2.0, -20.0*CTRL_DEG2RAD, 20.0*CTRL_DEG2RAD));
+        pushLink(new iKinLink(     0.0185,   0.1108, -M_PI/2.0,  M_PI/2.0, -45.0*CTRL_DEG2RAD, 45.0*CTRL_DEG2RAD));
+    }
     else
     {
+        H0(0,1)=-1.0;
+        H0(1,2)=-1.0;
+        H0(2,0)=1.0;
+
         type="v1";
         pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
@@ -2475,6 +2618,8 @@ void iCubInertialSensor::allocate(const string &_type)
         pushLink(new iKinLink(    0.0,   0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
         pushLink(new iKinLink( 0.0225,  0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
     }
+
+    setH0(H0);
 
     // T_nls (see http://wiki.icub.org/wiki/ICubInertiaSensorKinematics )
     Matrix HN(4,4);
@@ -2486,7 +2631,7 @@ void iCubInertialSensor::allocate(const string &_type)
     HN(3,3)=1.0;
     setHN(HN);
 
-    if (getType()=="v2.5")
+    if ((getType()=="v2.5") || (getType()=="v3"))
     {
         Matrix HN=eye(4,4);
         HN(0,3)=0.0087;
