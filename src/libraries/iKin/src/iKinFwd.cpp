@@ -1561,7 +1561,7 @@ void iCubTorso::allocate(const string &_type)
     double version;
     size_t underscore=getType().find('_');
     if (underscore!=string::npos)
-        version=strtod(getType().substr(underscore + 2).c_str(),NULL);
+        version=strtod(getType().substr(underscore+2).c_str(),NULL);
     else
         version=1.0;
 
@@ -1580,7 +1580,7 @@ void iCubTorso::allocate(const string &_type)
         pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(0.00231, -0.1933, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
     }
-    else // version >= 3.0
+    else
     {
         H0(0,2)=1.0;
         H0(1,1)=-1.0;
@@ -1689,11 +1689,11 @@ void iCubArm::allocate(const string &_type)
         else
             pushLink(new iKinLink(    0.0625,  0.02598,       0.0,                M_PI, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
         }
-        else // version>=3.0 right
+        else
         {
-            pushLink(new iKinLink(    0.0725,        0.0,              -M_PI/2.0,                 0.0, -20.0*CTRL_DEG2RAD, 20.0*CTRL_DEG2RAD));
-            pushLink(new iKinLink(       0.0,        0.0,               M_PI/2.0,           -M_PI/2.0, -40.0*CTRL_DEG2RAD, 40.0*CTRL_DEG2RAD));
-            pushLink(new iKinLink(-0.0304112,  -0.161133, 75.489181*CTRL_DEG2RAD,  165.0*CTRL_DEG2RAD, -20.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(    0.0725,        0.0,              -M_PI/2.0,                 0.0, -20.0*CTRL_DEG2RAD,  20.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(       0.0,        0.0,               M_PI/2.0,           -M_PI/2.0, -40.0*CTRL_DEG2RAD,  40.0*CTRL_DEG2RAD));
+            pushLink(new iKinLink(-0.0304112,  -0.161133, 75.489181*CTRL_DEG2RAD,  165.0*CTRL_DEG2RAD, -20.0*CTRL_DEG2RAD,  60.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(       0.0,  -0.163978,               M_PI/2.0,           -M_PI/2.0, -90.0*CTRL_DEG2RAD,   2.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(       0.0,        0.0,              -M_PI/2.0, -104.5*CTRL_DEG2RAD,  -5.0*CTRL_DEG2RAD, 140.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(  -0.01065,    -0.2005,              -M_PI/2.0,   -105*CTRL_DEG2RAD, -45.0*CTRL_DEG2RAD,  80.0*CTRL_DEG2RAD));
@@ -1727,7 +1727,7 @@ void iCubArm::allocate(const string &_type)
         else
             pushLink(new iKinLink(    0.0625, -0.02598,       0.0,                 0.0, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
         }
-        else // version>=3.0 left
+        else
         {
             pushLink(new iKinLink(    0.0725,         0.0,                -M_PI/2.0,               0.0, -20.0*CTRL_DEG2RAD,  20.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(       0.0,         0.0,                 M_PI/2.0,         -M_PI/2.0, -40.0*CTRL_DEG2RAD,  40.0*CTRL_DEG2RAD));
