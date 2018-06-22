@@ -34,13 +34,10 @@ endif()
 add_definitions(-D_USE_MATH_DEFINES)
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
 
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+                                                  "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 if(ICUB_USE_IPOPT)
-  target_include_directories(${PROJECT_NAME} PUBLIC  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-                                                     "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
-                                             PRIVATE ${IPOPT_INCLUDE_DIRS})
-else()
-  target_include_directories(${PROJECT_NAME} PUBLIC  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-                                                     "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
+  target_include_directories(${PROJECT_NAME} PRIVATE ${IPOPT_INCLUDE_DIRS})
 endif()
 
 target_link_libraries(${PROJECT_NAME} ctrlLib ${YARP_LIBRARIES})
