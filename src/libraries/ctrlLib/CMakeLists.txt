@@ -30,19 +30,18 @@ set(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/neuralNetworks.h
                   include/iCub/ctrl/outliersDetection.h)
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
 if(ICUB_USE_GSL)
   set(folder_source ${folder_source} src/functionEncoder.cpp)
   set(folder_header ${folder_header} include/iCub/ctrl/functionEncoder.h)
   include_directories(${GSL_INCLUDE_DIRS})
 endif()
 
-source_group("Source Files" FILES ${folder_source})
-source_group("Header Files" FILES ${folder_header})
-
 add_definitions(-D_USE_MATH_DEFINES)
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+                                                  "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
+
 target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES})
 
 if(ICUB_USE_GSL)
