@@ -7,13 +7,10 @@ project(${PROJECTNAME})
 
 file(GLOB_RECURSE folder_header src/include/*.h)
 file(GLOB_RECURSE folder_source src/*.cpp)
-source_group("Header Files" FILES ${folder_header})
-source_group("Source Files" FILES ${folder_source})
 
 add_definitions(${GTK2_DEFINITIONS})
 
 include_directories(${PROJECT_SOURCE_DIR}/src
-                    ${ctrlLib_INCLUDE_DIRS}
                     ${GTK2_INCLUDE_DIRS}
                     ${GSL_INCLUDE_DIRS}
 )

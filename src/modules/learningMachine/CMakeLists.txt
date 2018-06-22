@@ -50,8 +50,6 @@ SOURCE_GROUP("Source Files" FILES ${LM_MODULE_SRC}
 SOURCE_GROUP("Header Files" FILES ${LM_HEADER})
 
 
-# add learningMachine library include directories
-INCLUDE_DIRECTORIES(${learningMachine_INCLUDE_DIRS})
 # add our include files into our compiler's search path.
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 

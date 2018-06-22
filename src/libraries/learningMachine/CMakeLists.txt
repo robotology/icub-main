@@ -4,10 +4,9 @@
 
 find_package(YARP COMPONENTS OS sig dev math gsl)
 if(YARP_gsl_FOUND)
-  set(PROJECTNAME learningMachine)
-  project(${PROJECTNAME})
+  project(learningMachine)
 
-  set(LM_LIB ${PROJECTNAME})
+  set(LM_LIB ${PROJECT_NAME})
 
   set(LM_HEADER
       include/iCub/learningMachine/DatasetRecorder.h
@@ -61,17 +60,11 @@ if(YARP_gsl_FOUND)
       src/Math.cpp 
       src/Serialization.cpp )
   
-  # declare groups of source and header files -- makes things pretty in MSVC.
-  source_group("Source Files" FILES ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC} ${LM_SUPPORT_SRC})
-  source_group("Header Files" FILES ${LM_HEADER})
-  
-  # add YARP include directories
-  include_directories(${GSL_INCLUDE_DIRS})
-  
-  # add our include files into our compiler's search path.
-  include_directories(${PROJECT_SOURCE_DIR}/include)
-  
   add_library(${LM_LIB} ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC} ${LM_SUPPORT_SRC} ${LM_HEADER})
+
+  target_include_directories(${LM_LIB} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+                                              "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
+                                              ${GSL_INCLUDE_DIRS})
   
   target_link_libraries(${LM_LIB} PUBLIC  YARP::YARP_OS YARP::YARP_sig YARP::YARP_math
                                   PRIVATE YARP::YARP_gsl ${GSL_LIBRARIES})

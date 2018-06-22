@@ -2,8 +2,7 @@
 # Authors: Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-set(PROJECTNAME optimization)
-project(${PROJECTNAME})
+project(optimization)
 
 set(folder_source src/algorithms.cpp
                   src/calibReference.cpp
@@ -15,25 +14,22 @@ set(folder_header include/iCub/optimization/algorithms.h
                   include/iCub/optimization/affinity.h
                   include/iCub/optimization/neuralNetworks.h)
 
-source_group("Source Files" FILES ${folder_source})
-source_group("Header Files" FILES ${folder_header})
-
-include_directories(${PROJECT_SOURCE_DIR}/include                    
-                    ${ctrlLib_INCLUDE_DIRS}
-                    ${IPOPT_INCLUDE_DIRS})
-
 # import math symbols from standard cmath
 add_definitions(${IPOPT_DEFINITIONS} -D_USE_MATH_DEFINES)
-add_library(${PROJECTNAME} ${folder_source} ${folder_header})
+add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
 
-set_property(TARGET ${PROJECTNAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
-target_link_libraries(${PROJECTNAME} ctrlLib
-                                     ${IPOPT_LIBRARIES}
-                                     ${YARP_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+                                                   "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
+                                           PRIVATE ${IPOPT_INCLUDE_DIRS})
+
+set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
+target_link_libraries(${PROJECT_NAME} ctrlLib
+                                      ${IPOPT_LIBRARIES}
+                                      ${YARP_LIBRARIES})
                  
-icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                   DEPENDS ctrlLib
-                                   DESTINATION include/iCub/optimization
-                                   FILES ${folder_header})
+icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
+                                    DEPENDS ctrlLib
+                                    DESTINATION include/iCub/optimization
+                                    FILES ${folder_header})
 
 

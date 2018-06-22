@@ -8,12 +8,6 @@ project(wholeBodyDynamics)
 file(GLOB folder_source main.cpp observerThread.cpp)
 file(GLOB folder_header observerThread.h)
 
-source_group("Source Files" FILES ${folder_source})
-source_group("Header Files" FILES ${folder_header})
-
-include_directories(${iDyn_INCLUDE_DIRS}
-                    ${skinDynLib_INCLUDE_DIRS})
-
 # import math symbols from standard cmath
 add_definitions(-D_USE_MATH_DEFINES)
 add_executable(${PROJECT_NAME} ${folder_source} ${folder_header})
