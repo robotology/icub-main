@@ -4,7 +4,6 @@
 
 project(fingersTuner)
 
-include(YarpIDL)
 set(idl_files ${PROJECT_NAME}.thrift)
 yarp_add_idl(IDL_GEN_FILES ${idl_files})
 source_group("IDL Files" FILES ${idl_files})

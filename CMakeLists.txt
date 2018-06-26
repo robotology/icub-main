@@ -24,7 +24,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
 find_package(YARP 3.0.0 REQUIRED)
 message(STATUS "YARP is version: ${YARP_VERSION}")
 
@@ -98,7 +97,6 @@ mark_as_advanced(ICUB_APPLICATIONS_PREFIX)
 # yarp_configure_external_installation to ensure that iCub.ini is
 # generated correctly
 set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "iCub is always built with dynamic plugins")
-include(YarpInstallationHelpers)
 yarp_configure_external_installation(iCub WITH_PLUGINS)
 # Hide YARP_FORCE_DYNAMIC_PLUGINS from gui
 # (yarp_configure_external_installation changes TYPE to BOOL)

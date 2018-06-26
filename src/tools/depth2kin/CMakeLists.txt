@@ -4,8 +4,6 @@
 
 project(depth2kin)
 
-include(YarpIDL)
-
 file(GLOB header_files include/*.h)
 file(GLOB source_files src/*.cpp)
 set(idl_files ${PROJECT_NAME}.thrift)

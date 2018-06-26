@@ -5,14 +5,10 @@
 # Prepare a device library called "icubmod".
 # A test executable called "icubmoddev" will also be produced.
 
-include(YarpPlugin)
-
-
 #unset(ICUB_COMPILE_EMBOBJ_LIBRARY\)
 set(ICUB_COMPILE_EMBOBJ_LIBRARY OFF CACHE INTERNAL "use the embObjLib lib" FORCE)
 
 project(icubmod)
-
 
 option (WIP_FEATURE_CHECK_PROTOCOL_VERSION "use OFF until this feature is tested well enough" OFF)
 mark_as_advanced (WIP_FEATURE_CHECK_PROTOCOL_VERSION)
@@ -64,7 +60,6 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
   add_subdirectory(imu3DM_GX3)
 endif()
 yarp_end_plugin_library(icubmod QUIET)
-
 
 if(ICUB_COMPILE_EMBOBJ_LIBRARY)
 # adding subdirectory for embObj library used by EMS devices, if anyone of them is selected
