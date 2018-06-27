@@ -182,56 +182,56 @@ void consumeKind(ManagerState& state) {
     bool static_obj = false;
     //bool mustCollide = state.command.get(2).asVocab()
     switch (kind) {
-    case VOCAB4('s','b','o','x'):
+    case yarp::os::createVocab('s','b','o','x'):
         static_obj = true;
-    case VOCAB3('b','o','x'):
+    case yarp::os::createVocab('b','o','x'):
         state.op.kind = "box";
         state.op.dynamic = WorldOpFlag(!static_obj);
         state.needIndex = true;
         break;
-    case VOCAB4('s','c','y','l'):
+    case yarp::os::createVocab('s','c','y','l'):
         static_obj = true;
-    case VOCAB3('c','y','l'):
+    case yarp::os::createVocab('c','y','l'):
         state.op.kind = "cyl";
         state.op.dynamic = WorldOpFlag(!static_obj);
         state.needIndex = true;
         break;
-    case VOCAB4('s','s','p','h'):
+    case yarp::os::createVocab('s','s','p','h'):
         static_obj = true;
-    case VOCAB3('s','p','h'):
+    case yarp::os::createVocab('s','p','h'):
         state.op.kind = "sph";
         state.op.dynamic = WorldOpFlag(!static_obj);
         state.needIndex = true;
         break;
-    case VOCAB4('s','m','o','d'):
+    case yarp::os::createVocab('s','m','o','d'):
         static_obj = true;
-    case VOCAB4('m','o','d','e'):
+    case yarp::os::createVocab('m','o','d','e'):
         state.op.kind = "model";
         state.op.dynamic = WorldOpFlag(!static_obj);
         state.needIndex = true;
         break;
-    case VOCAB4('l','h','a','n'):
+    case yarp::os::createVocab('l','h','a','n'):
         state.op.kind = WorldOpName("hand");
         //state.op.name = WorldOpName("icub_left_hand");
         state.op.index = WorldOpIndex(1);
         state.op.dynamic = WorldOpFlag(true);
         state.op.rightHanded = WorldOpFlag(false);
         break;
-    case VOCAB4('r','h','a','n'):
+    case yarp::os::createVocab('r','h','a','n'):
         state.op.kind = WorldOpName("hand");
         //state.op.name = WorldOpName("icub_right_hand");
         state.op.index = WorldOpIndex(2);
         state.op.dynamic = WorldOpFlag(true);
         state.op.rightHanded = WorldOpFlag(true);
         break;
-    case VOCAB4('m','d','i','r'):
+    case yarp::os::createVocab('m','d','i','r'):
         state.op.parameter = WorldOpFlag(true);
         break;
-    case VOCAB4('t','a','b','l'):
-    case VOCAB4('c','u','b','e'):
-    case VOCAB4('b','a','l','l'):
-    case VOCAB4('s','c','r','e'):
-    case VOCAB3('a','l','l'):
+    case yarp::os::createVocab('t','a','b','l'):
+    case yarp::os::createVocab('c','u','b','e'):
+    case yarp::os::createVocab('b','a','l','l'):
+    case yarp::os::createVocab('s','c','r','e'):
+    case yarp::os::createVocab('a','l','l'):
         break;
     default:
         state.failed = true;
@@ -413,7 +413,7 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
     state.debug();
     if (!result.success) {
         if (reply.size()==0) {
-            reply.addVocab(VOCAB4('f','a','i','l'));
+            reply.addVocab(yarp::os::createVocab('f','a','i','l'));
         }
         if (state.failed) {
             reply.addString(state.why.c_str());
@@ -443,7 +443,7 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
             } else if (result.path.isValid()) {
                 reply.addString(result.path.get().c_str());
             } else {
-                reply.addVocab(VOCAB2('o','k'));
+                reply.addVocab(yarp::os::createVocab('o','k'));
             }
         }
     }

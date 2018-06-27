@@ -148,20 +148,20 @@ public:
             {
                 switch(command.get(index).asVocab())
                 {
-                    case  VOCAB4('s','u','s','p'):
+                    case yarp::os::createVocab('s','u','s','p'):
                         reply.addVocab(Vocab::encode("ack"));
                         vc->halt();
                         cmdSize--;
                         index++;
                     break;
-                    case VOCAB3('r','u','n'):
+                    case yarp::os::createVocab('r','u','n'):
                         reply.addVocab(Vocab::encode("ack"));
                         vc->go();
                         cmdSize--;
                         index++;
                     break;
                     //this set current position reference
-                    case VOCAB3('s','e','t'):
+                    case yarp::os::createVocab('s','e','t'):
                         if (command.size()>=3)
                             {
                                 int i=command.get(index+1).asInt();
@@ -179,7 +179,7 @@ public:
                         reply.addVocab(Vocab::encode("ack"));
                     break;
                     //this set maximum velocity (limiter)
-                    case VOCAB4('s','v','e','l'):
+                    case yarp::os::createVocab('s','v','e','l'):
                         if(command.size()>=3)
                             {
                                 int i=command.get(index+1).asInt();
@@ -197,7 +197,7 @@ public:
                                 reply.addVocab(Vocab::encode("fail"));
                             }
                     break;
-                    case VOCAB4('g','a','i','n'):
+                    case yarp::os::createVocab('g','a','i','n'):
                         if(command.size()>=3)
                             {
                                 int i=command.get(index+1).asInt();
@@ -215,7 +215,7 @@ public:
                                 reply.addVocab(Vocab::encode("fail"));
                             }
                     break;
-                    case VOCAB4('h','e','l','p'):
+                    case yarp::os::createVocab('h','e','l','p'):
                         fprintf(stdout,"VelocityControl module, valid commands are:\n");
                         fprintf(stdout,"-   [susp]         suspend the controller (command zero velocity)\n");
                         fprintf(stdout,"-   [run]          start (and resume after being suspended) the controller\n");

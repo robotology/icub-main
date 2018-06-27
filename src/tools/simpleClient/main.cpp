@@ -46,9 +46,9 @@
 using namespace yarp::dev;
 using namespace yarp::os;
 
-#define VOCAB_HELP VOCAB4('h','e','l','p')
-#define VOCAB_QUIT VOCAB4('q','u','i','t')
-#define VOCAB_ICONTROLMODE_DEBUG VOCAB4('i','c','d','d')
+#define VOCAB_HELP                  yarp::os::createVocab('h','e','l','p')
+#define VOCAB_QUIT                  yarp::os::createVocab('q','u','i','t')
+#define VOCAB_ICONTROLMODE_DEBUG    yarp::os::createVocab('i','c','d','d')
 
 void handleTorqueMsg(ITorqueControl *itq, IPidControl *ipid, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
 void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
@@ -325,11 +325,11 @@ int main(int argc, char *argv[])
 
             if (options.check("debug"))
             {
-                //#define VOCAB_CM_HW_FAULT           VOCAB4('h','w','f','a')
-                //#define VOCAB_CM_CALIBRATING        VOCAB3('c','a','l')     // the joint is calibrating
-                //#define VOCAB_CM_CALIB_DONE         VOCAB4('c','a','l','d') // calibration succesfully completed
-                //#define VOCAB_CM_NOT_CONFIGURED     VOCAB4('c','f','g','n') // missing initial configuration (default value at start-up)
-                //#define VOCAB_CM_CONFIGURED         VOCAB4('c','f','g','y') // initial configuration completed, if any
+                //#define VOCAB_CM_HW_FAULT           yarp::os::createVocab('h','w','f','a')
+                //#define VOCAB_CM_CALIBRATING        yarp::os::createVocab('c','a','l')     // the joint is calibrating
+                //#define VOCAB_CM_CALIB_DONE         yarp::os::createVocab('c','a','l','d') // calibration succesfully completed
+                //#define VOCAB_CM_NOT_CONFIGURED     yarp::os::createVocab('c','f','g','n') // missing initial configuration (default value at start-up)
+                //#define VOCAB_CM_CONFIGURED         yarp::os::createVocab('c','f','g','y') // initial configuration completed, if any
                 printf("DEBUG NOTES: (hidden debug commands wich may break the robot! do not use!\n");
                 printf("- icdd set hwfa 1 : will try to force joint 1 in hw fault\n");
                 printf("- icdd set cal  1 : \n");

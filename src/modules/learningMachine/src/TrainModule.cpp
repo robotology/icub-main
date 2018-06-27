@@ -178,7 +178,7 @@ bool TrainModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& reply) 
 
     try {
         switch(cmd.get(0).asVocab()) {
-            case VOCAB4('h','e','l','p'): // print help information
+            case yarp::os::createVocab('h','e','l','p'): // print help information
                 reply.add(yarp::os::Value::makeVocab("help"));
 
                 reply.addString("Training module configuration options");
@@ -198,41 +198,41 @@ bool TrainModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& reply) 
                 success = true;
                 break;
 
-            case VOCAB4('t','r','a','i'): // train the machine, implies sending model
+            case yarp::os::createVocab('t','r','a','i'): // train the machine, implies sending model
                 this->getMachine().train();
                 reply.addString("Training completed.");
 
-            case VOCAB4('m','o','d','e'): // send model
+            case yarp::os::createVocab('m','o','d','e'): // send model
                 this->model_out.write(this->machinePortable);
                 reply.addString("The model has been written to the port.");
                 success = true;
                 break;
 
-            case VOCAB4('c','l','e','a'): // clear machine
-            case VOCAB3('c','l','r'):
-            case VOCAB4('r','e','s','e'): // reset
-            case VOCAB3('r','s','t'):
+            case yarp::os::createVocab('c','l','e','a'): // clear machine
+            case yarp::os::createVocab('c','l','r'):
+            case yarp::os::createVocab('r','e','s','e'): // reset
+            case yarp::os::createVocab('r','s','t'):
                 this->getMachine().reset();
                 reply.addString("Machine cleared.");
                 success = true;
                 break;
 
-            case VOCAB4('p','a','u','s'): // pause sample stream
-            case VOCAB4('d','i','s','a'): // disable
+            case yarp::os::createVocab('p','a','u','s'): // pause sample stream
+            case yarp::os::createVocab('d','i','s','a'): // disable
                 this->trainProcessor.setEnabled(false);
                 reply.addString("Sample stream to machine disabled.");
                 success = true;
                 break;
 
-            case VOCAB4('c','o','n','t'): // continue sample stream
-            case VOCAB4('e','n','a','b'): // enable
+            case yarp::os::createVocab('c','o','n','t'): // continue sample stream
+            case yarp::os::createVocab('e','n','a','b'): // enable
                 this->trainProcessor.setEnabled(true);
                 reply.addString("Sample stream to machine enabled.");
                 success = true;
                 break;
 
-            case VOCAB4('i','n','f','o'): // information
-            case VOCAB4('s','t','a','t'): // statistics
+            case yarp::os::createVocab('i','n','f','o'): // information
+            case yarp::os::createVocab('s','t','a','t'): // statistics
                 { // prevent identifier initialization to cross borders of case
                 reply.add(yarp::os::Value::makeVocab("help"));
                 reply.addString("Machine Information: ");
@@ -241,7 +241,7 @@ bool TrainModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& reply) 
                 break;
                 }
 
-            case VOCAB4('l','o','a','d'): // load
+            case yarp::os::createVocab('l','o','a','d'): // load
                 { // prevent identifier initialization to cross borders of case
                 reply.add(yarp::os::Value::makeVocab("help"));
                 std::string replymsg = std::string("Loading machine from '") +
@@ -257,7 +257,7 @@ bool TrainModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& reply) 
                 break;
                 }
 
-            case VOCAB4('s','a','v','e'): // save
+            case yarp::os::createVocab('s','a','v','e'): // save
                 { // prevent identifier initialization to cross borders of case
                 reply.add(yarp::os::Value::makeVocab("help"));
                 std::string replymsg = std::string("Saving machine to '") +
@@ -273,7 +273,7 @@ bool TrainModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& reply) 
                 break;
                 }
 
-            case VOCAB3('s','e','t'): // set a configuration option for the machine
+            case yarp::os::createVocab('s','e','t'): // set a configuration option for the machine
                 { // prevent identifier initialization to cross borders of case
                 yarp::os::Bottle property;
                 /*
@@ -292,14 +292,14 @@ bool TrainModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& reply) 
                 break;
                 }
 
-            case VOCAB4('e','v','e','n'): // event
+            case yarp::os::createVocab('e','v','e','n'): // event
                 { // prevent identifier initialization to cross borders of case
                 success = this->dmanager.respond(cmd.tail(), reply);
                 break;
                 }
 
-            case VOCAB3('c','m','d'): // cmd
-            case VOCAB4('c','o','m','m'): // command
+            case yarp::os::createVocab('c','m','d'): // cmd
+            case yarp::os::createVocab('c','o','m','m'): // command
                 { // prevent identifier initialization to cross borders of case
                 reply.add(yarp::os::Value::makeVocab("help"));
                 std::string replymsg;

@@ -54,9 +54,9 @@
 #define ARM_HOMING_PERIOD           1.5     //[s]
 
 
-#define S2C_HOMOGRAPHY              VOCAB4('h','o','m','o')
-#define S2C_DISPARITY               VOCAB4('d','i','s','p')
-#define S2C_NETWORK                 VOCAB4('n','e','t','w')
+#define S2C_HOMOGRAPHY              yarp::os::createVocab('h','o','m','o')
+#define S2C_DISPARITY               yarp::os::createVocab('d','i','s','p')
+#define S2C_NETWORK                 yarp::os::createVocab('n','e','t','w')
 
 
 using namespace std;

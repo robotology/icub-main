@@ -409,7 +409,7 @@ public:
 
         try {
             switch(cmd.get(0).asVocab()) {
-                case VOCAB4('h','e','l','p'): // print help information
+                case yarp::os::createVocab('h','e','l','p'): // print help information
                     success = true;
                     reply.add(Value::makeVocab("help"));
 
@@ -424,14 +424,14 @@ public:
                     reply.addString("  open fname            Opens a datafile");
                     reply.addString("  freq f                Sampling frequency in Hertz (0 for disabled)");
                     break;
-                case VOCAB4('c','o','n','f'): // print the configuration
+                case yarp::os::createVocab('c','o','n','f'): // print the configuration
                     {
                     success = true;
                     this->printConfig();
                     break;
                     }
 
-                case VOCAB4('s','k','i','p'): // skip some training sample(s)
+                case yarp::os::createVocab('s','k','i','p'): // skip some training sample(s)
                     {
                     success = true;
                     int noSamples = 1;
@@ -448,7 +448,7 @@ public:
                     break;
                     }
 
-                case VOCAB4('t','r','a','i'): // send training sample(s)
+                case yarp::os::createVocab('t','r','a','i'): // send training sample(s)
                     {
                     reply.add(Value::makeVocab("help"));
                     success = true;
@@ -475,7 +475,7 @@ public:
                     break;
                     }
 
-                case VOCAB4('p','r','e','d'): // send prediction sample(s)
+                case yarp::os::createVocab('p','r','e','d'): // send prediction sample(s)
                     {
                     reply.add(Value::makeVocab("help"));
                     success = true;
@@ -544,7 +544,7 @@ public:
                     break;
                     }
 
-                case VOCAB4('s','h','o','o'):
+                case yarp::os::createVocab('s','h','o','o'):
                     {
                     success = true;
                     Vector input;
@@ -560,23 +560,23 @@ public:
                     break;
                     }
 
-                case VOCAB4('o','p','e','n'):
+                case yarp::os::createVocab('o','p','e','n'):
                     success = true;
                     if(cmd.get(1).isString()) {
-                    	std::cout << "Open..." << std::endl;
+                        std::cout << "Open..." << std::endl;
                         this->dataset.open(cmd.get(1).asString().c_str());
                     }
                     reply.addString((std::string("Opened dataset: ") + cmd.get(1).asString().c_str()).c_str());
                     break;
 
-                case VOCAB4('r','e','s','e'):
-                case VOCAB3('r','s','t'):
+                case yarp::os::createVocab('r','e','s','e'):
+                case yarp::os::createVocab('r','s','t'):
                     success = true;
                     this->dataset.reset();
                     reply.addString("Dataset reset to beginning");
                     break;
 
-                case VOCAB4('f','r','e','q'): // set sampling frequency
+                case yarp::os::createVocab('f','r','e','q'): // set sampling frequency
                     {
                     if(cmd.size() > 1 && cmd.get(1).isInt()) {
                         success = true;
@@ -586,7 +586,7 @@ public:
                     break;
                     }
 
-                case VOCAB3('s','e','t'): // set some configuration options
+                case yarp::os::createVocab('s','e','t'): // set some configuration options
                     // implement some options
                     break;
 

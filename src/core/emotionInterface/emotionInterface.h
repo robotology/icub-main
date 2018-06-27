@@ -37,18 +37,18 @@ public:
 
 };
 
-#define EMOTION_VOCAB_SET VOCAB3('s','e','t')
-#define EMOTION_VOCAB_GET VOCAB3('g','e','t')
-#define EMOTION_VOCAB_IS VOCAB2('i','s')
-#define EMOTION_VOCAB_FAILED VOCAB4('f','a','i','l')
-#define EMOTION_VOCAB_OK VOCAB2('o','k')
+#define EMOTION_VOCAB_SET           yarp::os::createVocab('s','e','t')
+#define EMOTION_VOCAB_GET           yarp::os::createVocab('g','e','t')
+#define EMOTION_VOCAB_IS            yarp::os::createVocab('i','s')
+#define EMOTION_VOCAB_FAILED        yarp::os::createVocab('f','a','i','l')
+#define EMOTION_VOCAB_OK            yarp::os::createVocab('o','k')
 
-#define EMOTION_VOCAB_MOUTH VOCAB3('m','o','u')
-#define EMOTION_VOCAB_EYELIDS VOCAB3('e','l','i') 
-#define EMOTION_VOCAB_LEFTEYEBROW VOCAB3('l','e','b')
-#define EMOTION_VOCAB_RIGHTEYEBROW VOCAB3('r','e','b')
-#define EMOTION_VOCAB_ALL VOCAB3('a','l','l')
-#define EMOTION_VOCAB_RAW VOCAB3('r','a','w')
+#define EMOTION_VOCAB_MOUTH         yarp::os::createVocab('m','o','u')
+#define EMOTION_VOCAB_EYELIDS       yarp::os::createVocab('e','l','i') 
+#define EMOTION_VOCAB_LEFTEYEBROW   yarp::os::createVocab('l','e','b')
+#define EMOTION_VOCAB_RIGHTEYEBROW  yarp::os::createVocab('r','e','b')
+#define EMOTION_VOCAB_ALL           yarp::os::createVocab('a','l','l')
+#define EMOTION_VOCAB_RAW           yarp::os::createVocab('r','a','w')
 
 
 inline bool EMOTION_CHECK_FAIL(bool ok, yarp::os::Bottle& response) {

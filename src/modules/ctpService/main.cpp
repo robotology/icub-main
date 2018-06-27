@@ -115,13 +115,13 @@ using namespace yarp::dev;
 using namespace yarp::math;
 using namespace iCub::ctrl;
 
-#define VCTP_TIME VOCAB4('t','i','m','e')
-#define VCTP_OFFSET VOCAB3('o','f','f')
-#define VCTP_CMD_NOW VOCAB4('c','t','p','n')
-#define VCTP_CMD_QUEUE VOCAB4('c','t','p','q')
-#define VCTP_CMD_FILE VOCAB4('c','t','p','f')
-#define VCTP_POSITION VOCAB3('p','o','s')
-#define VCTP_WAIT VOCAB4('w','a','i','t')
+#define VCTP_TIME       yarp::os::createVocab('t','i','m','e')
+#define VCTP_OFFSET     yarp::os::createVocab('o','f','f')
+#define VCTP_CMD_NOW    yarp::os::createVocab('c','t','p','n')
+#define VCTP_CMD_QUEUE  yarp::os::createVocab('c','t','p','q')
+#define VCTP_CMD_FILE   yarp::os::createVocab('c','t','p','f')
+#define VCTP_POSITION   yarp::os::createVocab('p','o','s')
+#define VCTP_WAIT       yarp::os::createVocab('w','a','i','t')
 
 #define VEL_FILT_SIZE   10
 #define VEL_FILT_THRES  1.0
@@ -861,7 +861,7 @@ public:
         {
             switch (command.get(0).asVocab())
             {
-                case VOCAB4('h','e','l','p'):
+                case yarp::os::createVocab('h','e','l','p'):
                 {                    
                     cout << "Available commands:"          << endl;
                     cout<<"Queue command:\n";
