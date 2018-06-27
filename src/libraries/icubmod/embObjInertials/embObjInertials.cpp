@@ -359,6 +359,8 @@ embObjInertials::embObjInertials()
 
     parser = NULL;
     res = NULL;
+    gyrSensors.resize(0);
+    accSensors.resize(0);
 }
 
 
@@ -443,7 +445,32 @@ bool embObjInertials::open(yarp::os::Searchable &config)
 
 
     // configure the sensor(s)
+    for(int i=0; i<serviceConfig.inertials.size(); i++)
+    {
+        switch(serviceConfig.inertials[i].type)
+        {
+            case eoas_inertial_accel_mtb_int:
+            case eoas_inertial_accel_mtb_ext:
+            case eoas_inertial_accel_ems_st_lis3x:
+            {
+                accSensors.push_back(i);
+            }break;
 
+
+            case eoas_inertial_gyros_mtb_ext:
+            case eoas_inertial_gyros_ems_st_l3g4200d:
+            {
+                gyrSensors.push_back(i);
+//                yDebug() << "-------- I-" << res->getProperties().boardnameString << "num " << i << " is a GYRO";
+            }break;
+
+            default:
+            //eoas_inertial_unknown
+            //eoas_inertial_none
+                break;
+
+        };
+    }
     if(false == sendConfig2MTBboards(config))
     {
         cleanup();
@@ -781,6 +808,113 @@ void embObjInertials::printServiceConfig(void)
         yInfo() << "  - id =" << id << "type =" << strtype << "on MTB w/ loc =" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
     }
 }
+
+size_t embObjInertials::getNrOfThreeAxisGyroscopes() const
+{
+    return gyrSensors.size();
+}
+
+yarp::dev::MAS_status embObjInertials::getThreeAxisGyroscopeStatus(size_t sens_index) const
+{
+    return yarp::dev::MAS_OK;
+}
+bool embObjInertials::getThreeAxisGyroscopeName(size_t sens_index, std::string &name) const
+{
+    if(sens_index>= gyrSensors.size())
+    {
+        return false;
+    }
+
+
+    name = serviceConfig.id[gyrSensors[sens_index]];
+    return true;
+
+}
+bool embObjInertials::getThreeAxisGyroscopeFrameName(size_t sens_index, std::string &frameName) const
+{
+    return getThreeAxisGyroscopeName(sens_index, frameName);
+}
+bool embObjInertials::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+{
+    if(false == opened)
+    {
+        return false;
+    }
+
+    if(sens_index>= gyrSensors.size())
+    {
+        return false;
+    }
+
+    mutex.wait();
+
+    int firstpos = 2 + inertials_Channels*(gyrSensors[sens_index]);
+    timestamp = analogdata[firstpos+2];
+    out.resize(3);
+    out[0] = analogdata[firstpos+3];
+    out[1] = analogdata[firstpos+4];
+    out[2] = analogdata[firstpos+5];
+
+    mutex.post();
+
+    return true;
+}
+
+/* IThreeAxisLinearAccelerometers methods */
+size_t embObjInertials::getNrOfThreeAxisLinearAccelerometers() const
+{
+    return accSensors.size();
+}
+yarp::dev::MAS_status embObjInertials::getThreeAxisLinearAccelerometerStatus(size_t sens_index) const
+{
+    return yarp::dev::MAS_OK;
+}
+bool embObjInertials::getThreeAxisLinearAccelerometerName(size_t sens_index, std::string &name) const
+{
+    if(sens_index>= accSensors.size())
+    {
+        return false;
+    }
+
+    name = serviceConfig.id[accSensors[sens_index]];
+    return true;
+
+}
+
+bool embObjInertials::getThreeAxisLinearAccelerometerFrameName(size_t sens_index, std::string &frameName) const
+{
+    return getThreeAxisLinearAccelerometerName(sens_index, frameName);
+
+}
+bool embObjInertials::getThreeAxisLinearAccelerometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+{
+    if(false == opened)
+    {
+        return false;
+    }
+
+    if(sens_index>= accSensors.size())
+    {
+        return false;
+    }
+
+    mutex.wait();
+
+    int firstpos = 2 + inertials_Channels*(accSensors[sens_index]);
+    timestamp = analogdata[firstpos+2];
+    out.resize(3);
+    out[0] = analogdata[firstpos+3];
+    out[1] = analogdata[firstpos+4];
+    out[2] = analogdata[firstpos+5];
+
+    mutex.post();
+
+    return true;
+
+}
+
+
+
 
 // eof
 
