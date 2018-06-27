@@ -445,7 +445,6 @@ bool embObjInertials::open(yarp::os::Searchable &config)
 
 
     // configure the sensor(s)
-    yDebug() << "INERTIAL DEBUG OF " << res->getProperties().boardnameString << "HAS " << serviceConfig.inertials.size() <<" INERTIAL CONFIGURED";
     for(int i=0; i<serviceConfig.inertials.size(); i++)
     {
         switch(serviceConfig.inertials[i].type)
@@ -455,7 +454,6 @@ bool embObjInertials::open(yarp::os::Searchable &config)
             case eoas_inertial_accel_ems_st_lis3x:
             {
                 accSensors.push_back(i);
-                yDebug() << "-------- I-" << res->getProperties().boardnameString << "num " << i << " is a ACC";
             }break;
 
 
@@ -463,11 +461,10 @@ bool embObjInertials::open(yarp::os::Searchable &config)
             case eoas_inertial_gyros_ems_st_l3g4200d:
             {
                 gyrSensors.push_back(i);
-                yDebug() << "-------- I-" << res->getProperties().boardnameString << "num " << i << " is a GYRO";
+//                yDebug() << "-------- I-" << res->getProperties().boardnameString << "num " << i << " is a GYRO";
             }break;
 
             default:
-            {yDebug() << "-------- I-" << res->getProperties().boardnameString << "num " << i << " is a UNKNOWN";}
             //eoas_inertial_unknown
             //eoas_inertial_none
                 break;
@@ -830,8 +827,6 @@ bool embObjInertials::getThreeAxisGyroscopeName(size_t sens_index, std::string &
 
 
     name = serviceConfig.id[gyrSensors[sens_index]];
-
-    yDebug() << "***** GYRO id " << sens_index << " internal_id " << gyrSensors[sens_index] << "has name " << name;
     return true;
 
 }
@@ -882,7 +877,6 @@ bool embObjInertials::getThreeAxisLinearAccelerometerName(size_t sens_index, std
     }
 
     name = serviceConfig.id[accSensors[sens_index]];
-    yDebug() << "***** ACC id " << sens_index << " internal_id " << accSensors[sens_index] << "has name " << name;
     return true;
 
 }
