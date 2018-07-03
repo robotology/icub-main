@@ -50,7 +50,7 @@ public:
         const string& get_networkstring() const {
             static const string nets[] = {"ETH", "socketcan", "ecan"}; return nets[static_cast<unsigned char>(network)];
         }
-        void load_default() { network = Network::ETH; canbus = CanBus::all; canaddress = CanAddress::thirteen; txrate = 2; }
+        void load_default() { network = Network::ETH; canbus = CanBus::two; canaddress = CanAddress::two; txrate = 2; }
         int get_canaddress() const { return static_cast<int>(canaddress); }
         int get_canbus() const { return static_cast<int>(canbus); }
         int get_txrate() const { return txrate; }
