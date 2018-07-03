@@ -1288,6 +1288,8 @@ int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemill
 
     int ret = 0;
 
+    yDebug() << "cDownloader::strain_acquire_start() from" << bus << target_id;
+
     // Send transmission rate to strain board
     txBuffer[0].setId((2 << 8) + target_id);
     txBuffer[0].setLen(2);
@@ -1377,6 +1379,11 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
 
     const double TOUT = 3.0;
 
+    // purge from possible acks of strain1...
+
+    m_idriver->receive_message(rxBuffer, 2, TOUT);
+    m_idriver->receive_message(rxBuffer, 2, TOUT);
+
     for(unsigned int s=0; s<howmany; s++)
     {
 
@@ -1395,8 +1402,15 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
 
                 if((0xA != type) && (0xB != type))
                 {
-                    yError() << "cDownloader::strain_acquire_get() has detected strange can frames.... operation aborted";
-                    return -1;
+                    yError() << "cDownloader::strain_acquire_get() has detected strange can frames of type = " << type << ".... operation aborted";
+                    char rxframe[128] = {0};
+                    snprintf(rxframe, sizeof(rxframe), "l = %d, id = 0x%x, d = 0x[%x %x %x %x %x %x %x %x]", rxBuffer[i].getLen(), rxBuffer[i].getId(),
+                                        rxBuffer[i].getData()[0], rxBuffer[i].getData()[1], rxBuffer[i].getData()[2], rxBuffer[i].getData()[3],
+                                        rxBuffer[i].getData()[4], rxBuffer[i].getData()[5], rxBuffer[i].getData()[6], rxBuffer[i].getData()[7]);
+
+                    yError() << "frame -> " << rxframe;
+                    continue;
+                    //return -1;
                 }
 
                 // values in little endian
@@ -1411,6 +1425,8 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
 
                 if(0xA == type)
                 {
+                    //yDebug() << "RX 0xA";
+
                     sv.channel[0] = x;
                     sv.channel[1] = y;
                     sv.channel[2] = z;
@@ -1428,6 +1444,8 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
                 }
                 else if(0xB == type)
                 {
+                    //yDebug() << "RX 0xB";
+
                     sv.channel[3] = x;
                     sv.channel[4] = y;
                     sv.channel[5] = z;
@@ -1443,6 +1461,10 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
                         }
                     }
                 }
+                else
+                {
+                    //yDebug() << "RX ??";
+                }
 
             }
 
@@ -1454,6 +1476,10 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
             {
                 values.push_back(sv);
             }
+        }
+        else
+        {
+            yDebug() << "did not received two messages but " << read_messages;
         }
 
     }
