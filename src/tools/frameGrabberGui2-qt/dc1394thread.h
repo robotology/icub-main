@@ -79,9 +79,8 @@ public:
 
 private:
     yarp::dev::PolyDriver *grabberControl;
-    yarp::dev::IFrameGrabberControls        *fgControl;
-    yarp::dev::IFrameGrabberControls2       *fgControl2;
-    yarp::dev::IFrameGrabberControlsDC1394  *DC1394Control;
+    yarp::dev::IFrameGrabberControls       *fgControl;
+    yarp::dev::IFrameGrabberControlsDC1394 *DC1394Control;
 
     QMutex semaphore;
 
