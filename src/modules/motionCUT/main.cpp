@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Carlo Ciliberto, Ugo Pattacini
  * email:   carlo.ciliberto@iit.it, ugo.pattacini@iit.it
@@ -87,7 +87,7 @@ protected:
     bool inhibition;
     int nodesNum;
     int nodesX;
-    int nodesY;    
+    int nodesY;
 
 #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
     int numThreads;
@@ -169,7 +169,7 @@ public:
         recogThres=rf.check("recogThres",Value(0.01)).asDouble();
         adjNodesThres=rf.check("adjNodesThres",Value(4)).asInt();
         blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
-        framesPersistence=rf.check("framesPersistence",Value(3)).asInt();        
+        framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
         verbosity=rf.check("verbosity");
 
         cropSize=0;
@@ -198,7 +198,7 @@ public:
         nodesPersistence=NULL;
         featuresFound=NULL;
         featuresErrors=NULL;
-        
+
         inPort.open("/"+name+"/img:i");
         outPort.open("/"+name+"/img:o");
         optPort.open("/"+name+"/opt:o");
@@ -232,14 +232,14 @@ public:
                 yInfo("cropSize          = %d",cropSize);
             else
                 yInfo("cropSize          = auto");
-            
+
         #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
             yInfo("numThreads        = %d",numThreads);
         #else
             yInfo("numThreads        = OpenCV version does not support OpenMP multi-threading");
         #endif
-            
-            yInfo("verbosity         = %s",verbosity?"on":"off");            
+
+            yInfo("verbosity         = %s",verbosity?"on":"off");
         }
         else
             yError("Process did not start");
@@ -262,7 +262,7 @@ public:
             inPort.getEnvelope(stamp);
 
             double t0=Time::now();
-             
+
             // consistency check
             if (firstConsistencyCheck || (pImgBgrIn->width()!=imgMonoIn.width()) ||
                 (pImgBgrIn->height()!=imgMonoIn.height()))
@@ -277,7 +277,7 @@ public:
 
                 // dispose previously allocated memory
                 disposeMem();
-                
+
                 int min_x=(int)(((1.0-coverXratio)/2.0)*imgMonoIn.width());
                 int min_y=(int)(((1.0-coverYratio)/2.0)*imgMonoIn.height());
 
@@ -294,7 +294,7 @@ public:
                 featuresErrors=new float[nodesNum];
 
                 memset(nodesPersistence,0,nodesNum*sizeof(int));
-                
+
                 // populate grid
                 int cnt=0;
                 for (int y=min_y; y<=(imgMonoIn.height()-min_y); y+=nodesStep)
@@ -307,7 +307,7 @@ public:
                 if (verbosity)
                 {
                     // log message
-                    yInfo("Detected image of size %dx%d; using %dx%d=%d nodes; populated %d nodes",
+                    yInfo("Detected image of size %zdx%zd; using %dx%d=%d nodes; populated %d nodes",
                           imgMonoIn.width(),imgMonoIn.height(),nodesX,nodesY,nodesNum,cnt);
                 }
 
@@ -354,7 +354,7 @@ public:
                 bool persistentNode=false;
 
                 CvPoint node=cvPoint((int)nodesPrev[i].x,(int)nodesPrev[i].y);
-                
+
                 // handle the node persistence
                 if (!inhibition && (nodesPersistence[i]!=0))
                 {
@@ -465,7 +465,7 @@ public:
                 blobsPort.setEnvelope(stamp);
                 blobsPort.write();
             }
-            
+
             if ((cropPort.getOutputCount()>0) && (blobsBottle.size()>0))
             {
                 Bottle &blob=*blobsBottle.get(0).asList();
@@ -480,18 +480,18 @@ public:
 
                 ImageOf<PixelBgr> &cropImg=cropPort.prepare();
                 cropImg.resize(cropSize.x,cropSize.y);
-                
+
                 cvSetImageROI((IplImage*)pImgBgrIn->getIplImage(),cvRect(tl.x,tl.y,cropSize.x,cropSize.y));
                 cvCopy((IplImage*)pImgBgrIn->getIplImage(),(IplImage*)cropImg.getIplImage());
                 cvResetImageROI((IplImage*)pImgBgrIn->getIplImage());
-                            
+
                 cropPort.setEnvelope(stamp);
                 cropPort.write();
             }
 
             // save data for next cycle
             imgMonoPrev=imgMonoIn;
-            
+
             double t1=Time::now();
             if (verbosity)
             {
@@ -536,7 +536,7 @@ public:
             Blob blob;
 
             // the nodes connected to the current one
-            // will be removed from the list            
+            // will be removed from the list
             floodFill(*(activeNodesIndexSet.begin()),&blob);
 
             // update centroid
@@ -560,7 +560,7 @@ public:
             pBlob->centroid.y+=(int)nodesPrev[i].y;
             pBlob->size++;
 
-            // remove element from the set            
+            // remove element from the set
             activeNodesIndexSet.erase(el);
 
             // perform recursive exploration
@@ -584,7 +584,7 @@ public:
             }
         }
 
-        // reaching this point means that 
+        // reaching this point means that
         // we have to append the blob
         blobSortedList.push_back(blob);
     }
@@ -726,7 +726,7 @@ public:
         thr=new ProcessThread(rf);
         if (!thr->start())
         {
-            delete thr;    
+            delete thr;
             return false;
         }
 
@@ -789,7 +789,7 @@ int main(int argc, char *argv[])
         printf("This module has been compiled with OpenCV %d.%d\n",CV_MAJOR_VERSION,CV_MINOR_VERSION);
     #else
         printf("This module has been compiled with an unknown version of OpenCV (probably < 1.0)\n");
-    #endif        
+    #endif
         printf("Available options:\n");
         printf("\t--name              <string>\n");
         printf("\t--coverXratio       <double>\n");
@@ -819,5 +819,3 @@ int main(int argc, char *argv[])
     ProcessModule mod;
     return mod.runModule(rf);
 }
-
-
