@@ -6,13 +6,6 @@
 include(GNUInstallDirs)
 
 
-macro(QTICUB_DEPRECATE_WITH_CMAKE_VERSION _version)
-  if(NOT ${CMAKE_MINIMUM_REQUIRED_VERSION} VERSION_LESS ${_version})
-    message(AUTHOR_WARNING "CMAKE_MINIMUM_REQUIRED_VERSION = ${CMAKE_MINIMUM_REQUIRED_VERSION}. You can remove this.")
-  endif()
-endmacro()
-
-
 macro(qticub_qml_plugin _target _path)
   set_property(TARGET ${_target} APPEND PROPERTY COMPILE_DEFINITIONS QT_PLUGIN)
 
@@ -70,7 +63,6 @@ endmacro()
 # target using Qt5.
 # NOTE: when CMake minimum required version is 2.8.12 or later, this
 #       will no longer be required.
-qticub_deprecate_with_cmake_version(2.8.12)
 macro(qticub_use_modules _target)
   if(NOT ${CMAKE_VERSION} VERSION_LESS 2.8.11)
     foreach(_qt5lib ${ARGN})

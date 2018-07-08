@@ -80,7 +80,6 @@ target_link_libraries(iCubGui ${GLUT_LIBRARIES}
 qticub_use_modules(iCubGui Widgets
                            OpenGL)
 
-qticub_deprecate_with_cmake_version(2.8.11)
 if(WIN32 AND CMAKE_VERSION VERSION_LESS 2.8.11)
     target_link_libraries(iCubGui Qt5::WinMain)
 endif()

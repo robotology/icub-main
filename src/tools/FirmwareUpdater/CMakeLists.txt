@@ -71,7 +71,6 @@ target_link_libraries(FirmwareUpdater-qt    YARP::YARP_OS
 qticub_use_modules(FirmwareUpdater-qt   Core 
                                         Gui 
                                         Widgets)
-qticub_deprecate_with_cmake_version(2.8.11)
 if(WIN32 AND CMAKE_VERSION VERSION_LESS 2.8.11)
   target_link_libraries(FirmwareUpdater-qt Qt5::WinMain)
 endif()
