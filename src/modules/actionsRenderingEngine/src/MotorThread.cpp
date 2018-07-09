@@ -1707,26 +1707,14 @@ bool MotorThread::powerGrasp(Bottle &options)
 
     wbdRecalibration();
     action[arm]->enableContactDetection();
+    action[arm]->enableReachingTimeout(0.6*reachingTimeout);
     action[arm]->pushAction(approach_x,approach_o,"pregrasp_hand");
 
     bool f;
-    action[arm]->checkActionsDone(f,true);
-
-    // increase reaching precision
-    ICartesianControl *ctrl; double tol;
-    action[arm]->getCartesianIF(ctrl);
-    ctrl->getInTargetTol(&tol);
-    ctrl->setInTargetTol(0.002);
-
-    // give time for precise reaching
-    action[arm]->enableReachingTimeout(2.0*reachingTimeout);
-
     action[arm]->pushAction(x,o);
     action[arm]->checkActionsDone(f,true);
-    action[arm]->disableContactDetection();
-
-    ctrl->setInTargetTol(tol);
     action[arm]->enableReachingTimeout(reachingTimeout);
+    action[arm]->disableContactDetection();
 
     return grasp(options);
 }
