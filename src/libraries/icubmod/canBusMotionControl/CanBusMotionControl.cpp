@@ -2392,7 +2392,7 @@ ImplementPositionControl2(this),
 ImplementVelocityControl2(this),
 ImplementPidControl(this),
 ImplementEncodersTimed(this),
-ImplementControlCalibration<CanBusMotionControl, IControlCalibration>(this),
+ImplementControlCalibration(this),
 ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
 ImplementControlLimits2(this),
 ImplementTorqueControl(this),
@@ -2487,7 +2487,7 @@ bool CanBusMotionControl::open (Searchable &config)
     if (!ret)
     {
         _mutex.post();
-        yError() << "Unable to unitialize CAN driver";
+        yError() << "Unable to uninitialize CAN driver";
         return false;
     }
 
@@ -2521,8 +2521,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementMotor::initialize(p._njoints, p._axisMap);
 
-    ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementControlCalibration::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -3004,7 +3003,7 @@ bool CanBusMotionControl::close (void)
         ImplementPidControl::uninitialize();
         ImplementEncodersTimed::uninitialize();
         ImplementMotorEncoders::uninitialize();
-        ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::uninitialize();
+        ImplementControlCalibration::uninitialize();
         ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
         ImplementControlLimits2::uninitialize();
 

@@ -180,7 +180,7 @@ bool embObjMotionControl::dealloc()
 }
 
 embObjMotionControl::embObjMotionControl() :
-    ImplementControlCalibration<embObjMotionControl, IControlCalibration>(this),
+    ImplementControlCalibration(this),
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>(this),
     ImplementPidControl(this),
     ImplementEncodersTimed(this),
@@ -296,7 +296,7 @@ bool embObjMotionControl::initialised()
 bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
 {
 
-    ImplementControlCalibration<embObjMotionControl, IControlCalibration>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementControlCalibration::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL,f.ampsToSensor);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotorEncoders::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
@@ -1266,7 +1266,7 @@ bool embObjMotionControl::close()
     ImplementPositionControl2::uninitialize();
     ImplementVelocityControl::uninitialize();
     ImplementPidControl::uninitialize();
-    ImplementControlCalibration<embObjMotionControl, IControlCalibration>::uninitialize();
+    ImplementControlCalibration::uninitialize();
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::uninitialize();
     ImplementImpedanceControl::uninitialize();
     ImplementControlLimits2::uninitialize();

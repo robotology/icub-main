@@ -81,20 +81,20 @@ namespace yarp{
 class yarp::dev::iCubSimulationControl :
     public DeviceDriver,
     //public yarp::os::PeriodicThread, 
-    public IPositionControl2Raw,
-    public ImplementPositionControl2,
-    public IVelocityControl2Raw,
-    public ImplementVelocityControl2,
+    public IPositionControlRaw,
+    public ImplementPositionControl,
+    public IVelocityControlRaw,
+    public ImplementVelocityControl,
     public ITorqueControlRaw,
     public ImplementTorqueControl,
     public IAmplifierControlRaw,
     public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
     public IControlCalibrationRaw,
-    public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
-    public IControlLimits2Raw,
-    public ImplementControlLimits2,
-    public IControlMode2Raw,
-    public ImplementControlMode2,
+    public ImplementControlCalibration,
+    public IControlLimitsRaw,
+    public ImplementControlLimits,
+    public IControlModeRaw,
+    public ImplementControlMode,
     public IInteractionModeRaw,
     public ImplementInteractionMode,
     public IPidControlRaw,
@@ -280,9 +280,8 @@ class yarp::dev::iCubSimulationControl :
   /////////////// END AMPLIFIER INTERFACE
 
   ////// calibration
-  virtual bool calibrateRaw(int j, double p);
-  virtual bool calibrateRaw(int axis, unsigned int type, double p1, double p2, double p3);
-  virtual bool doneRaw(int j);
+   virtual bool calibrateAxisWithParamsRaw(int axis, unsigned int type, double p1, double p2, double p3) override;
+  virtual bool calibrationDoneRaw(int j) override;
 
   /////// Limits
   virtual bool setLimitsRaw(int axis, double min, double max);
