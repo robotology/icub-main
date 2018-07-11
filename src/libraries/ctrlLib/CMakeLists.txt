@@ -17,7 +17,8 @@ set(folder_source src/math.cpp
                   src/minJerkCtrl.cpp
                   src/optimalControl.cpp
                   src/neuralNetworks.cpp
-                  src/outliersDetection.cpp)
+                  src/outliersDetection.cpp
+                  src/clustering.cpp)
 
 set(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/filters.h
@@ -28,7 +29,8 @@ set(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/minJerkCtrl.h
                   include/iCub/ctrl/optimalControl.h
                   include/iCub/ctrl/neuralNetworks.h
-                  include/iCub/ctrl/outliersDetection.h)
+                  include/iCub/ctrl/outliersDetection.h
+                  include/iCub/ctrl/clustering.h)
 
 if(ICUB_USE_GSL)
   set(folder_source ${folder_source} src/functionEncoder.cpp)

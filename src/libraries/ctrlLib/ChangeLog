@@ -1,5 +1,8 @@
+2018-07-11 Ugo Pattacini <ugo.pattacini@iit.it>
+      * clustering: added DBSCAN algorithm
+
 2018-06-07 Ugo Pattacini <ugo.pattacini@iit.it>
-      * ctrlLib/parallelPID: enforce zero output of a disabled integrator
+      * parallelPID: enforce zero output of a disabled integrator
 
 2018-02-19 Ugo Pattacini <ugo.pattacini@iit.it>
       * re-licesing to BSD3
