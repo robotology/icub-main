@@ -180,7 +180,7 @@ bool embObjMotionControl::dealloc()
 }
 
 embObjMotionControl::embObjMotionControl() :
-    ImplementControlCalibration<embObjMotionControl, IControlCalibration2>(this),
+    ImplementControlCalibration<embObjMotionControl, IControlCalibration>(this),
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>(this),
     ImplementPidControl(this),
     ImplementEncodersTimed(this),
@@ -296,7 +296,7 @@ bool embObjMotionControl::initialised()
 bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
 {
 
-    ImplementControlCalibration<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementControlCalibration<embObjMotionControl, IControlCalibration>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL,f.ampsToSensor);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotorEncoders::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
@@ -1266,7 +1266,7 @@ bool embObjMotionControl::close()
     ImplementPositionControl2::uninitialize();
     ImplementVelocityControl::uninitialize();
     ImplementPidControl::uninitialize();
-    ImplementControlCalibration<embObjMotionControl, IControlCalibration2>::uninitialize();
+    ImplementControlCalibration<embObjMotionControl, IControlCalibration>::uninitialize();
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::uninitialize();
     ImplementImpedanceControl::uninitialize();
     ImplementControlLimits2::uninitialize();
@@ -1833,7 +1833,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
     return true;
 }
 
-bool embObjMotionControl::calibrateRaw(int j, unsigned int type, double p1, double p2, double p3)
+bool embObjMotionControl::calibrateAxisWithParamsRaw(int j, unsigned int type, double p1, double p2, double p3)
 {
     yTrace() << "calibrateRaw for" << getBoardInfo() << "joint" << j;
 
@@ -1910,7 +1910,7 @@ bool embObjMotionControl::calibrateRaw(int j, unsigned int type, double p1, doub
 }
 
 
-bool embObjMotionControl::doneRaw(int axis)
+bool embObjMotionControl::calibrationDoneRaw(int axis)
 {
     bool result = false;
     eOenum08_t temp = 0;

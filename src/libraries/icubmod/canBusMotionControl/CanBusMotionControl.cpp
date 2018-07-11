@@ -5633,7 +5633,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
     return true;
 }
 
-bool CanBusMotionControl::calibrateRaw(int axis, unsigned int type, double p1, double p2, double p3)
+bool CanBusMotionControl::calibrateAxisWithParamsRaw(int axis, unsigned int type, double p1, double p2, double p3)
 {
     bool b = _writeByteWords16(ICUBCANPROTO_POL_MC_CMD__CALIBRATE_ENCODER, axis, type, S_16(p1), S_16(p2), S_16(p3));
     return b;
@@ -5641,7 +5641,7 @@ bool CanBusMotionControl::calibrateRaw(int axis, unsigned int type, double p1, d
 
 bool CanBusMotionControl::setCalibrationParametersRaw(int j, const CalibrationParameters& params)
 {
-    return calibrate2Raw(j, params.type, params.param1, params.param2, params.param3);
+    return calibrateAxisWithParamsRaw(j, params.type, params.param1, params.param2, params.param3);
 }
 
 bool CanBusMotionControl::setRefSpeedRaw(int axis, double sp)
@@ -6485,13 +6485,7 @@ bool CanBusMotionControl::setVelocityTimeoutRaw(int axis, double timeout)
     return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_VEL_TIMEOUT, axis, S_16(timeout));
 }
 
-
-bool CanBusMotionControl::calibrateRaw(int axis, double p)
-{
-    return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__CALIBRATE_ENCODER, axis, S_16(p));
-}
-
-bool CanBusMotionControl::doneRaw(int axis)
+bool CanBusMotionControl::calibrationDoneRaw(int axis)
 {
     short value = 0;
     DEBUG_FUNC("Calling doneRaw for joint %d\n", axis);
