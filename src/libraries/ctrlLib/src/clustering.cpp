@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <vector>
+#include <cmath>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/clustering.h>
 
@@ -84,7 +85,12 @@ namespace iCub {
                 shared_ptr<Epsilon_neighbours_t> en(new Epsilon_neighbours_t());
                 for (size_t i=0; i<augData.points.size(); i++)
                 {
-                    if ((i!=index) && (norm(augData.points[index]-augData.points[i])<=augData.epsilon))
+                    double d=0.0;
+                    for (size_t j=0; j<augData.points[index].length(); j++)
+                    {
+                        d+=pow(augData.points[index][j]-augData.points[i][j],2.0);
+                    }
+                    if ((i!=index) && (sqrt(d)<=augData.epsilon))
                     {
                         append(i,en);
                     }
