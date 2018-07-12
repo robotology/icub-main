@@ -731,7 +731,7 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
             yWarning() << deviceName << ": calibration aborted\n";
         }
 
-        if (iCalibrate->done(*lit))
+        if (iCalibrate->calibrationDone(*lit))
         {
             yDebug() << deviceName << ": calib joint " << (*lit) << "ended";
             lit++;

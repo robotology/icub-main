@@ -57,7 +57,7 @@ public:
      * the position control interfaces of the standard control board devices.
      * @return true if calibration was successful, false otherwise.
      */
-    bool calibrate(DeviceDriver *dd);
+    bool calibrate(DeviceDriver *dd)  override;
 
     /**
      * Open the device driver.
@@ -65,35 +65,35 @@ public:
      * parameters.
      * @return true/false on success/failure.
      */
-    virtual bool open (yarp::os::Searchable& config);
+    virtual bool open (yarp::os::Searchable& config)  override;
 
     /**
      * Close the device driver.
      * @return true/false on success/failure.
      */
-    virtual bool close ();
+    virtual bool close ()  override;
 
-    virtual bool park(DeviceDriver *dd, bool wait=true);
+    virtual bool park(DeviceDriver *dd, bool wait=true)  override;
 
-    virtual bool quitPark();
+    virtual bool quitPark()  override;
 
-    virtual bool quitCalibrate();
+    virtual bool quitCalibrate()  override;
 
     // IRemoteCalibrator
 
-    yarp::dev::IRemoteCalibrator *getCalibratorDevice();
+    virtual yarp::dev::IRemoteCalibrator *getCalibratorDevice();
 
-    bool calibrateSingleJoint(int j);
+    virtual bool calibrateSingleJoint(int j)  override;
 
-    bool calibrateWholePart();
+    virtual bool calibrateWholePart()  override;
 
-    bool homingSingleJoint(int j);
+    virtual bool homingSingleJoint(int j)  override;
 
-    bool homingWholePart();
+    virtual bool homingWholePart()  override;
 
-    bool parkSingleJoint(int j, bool _wait=true);
+    virtual bool parkSingleJoint(int j, bool _wait=true)  override;
 
-    bool parkWholePart();
+    virtual bool parkWholePart()  override;
 
 private:
     yarp::os::Semaphore calibMutex;
@@ -102,12 +102,11 @@ private:
     bool calibrateJoint(int j);
     bool goToZero(int j);
     bool checkCalibrateJointEnded(std::list<int> set);
-    bool checkGoneToZero(int j);
     bool checkGoneToZeroThreshold(int j);
     bool checkHwFault(int j);
 
     yarp::dev::PolyDriver *dev2calibrate;
-    IControlCalibration2 *iCalibrate;
+    IControlCalibration *iCalibrate;
     IPidControl *iPids;
     IEncoders *iEncoders;
     IPositionControl *iPosition;

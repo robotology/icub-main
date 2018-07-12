@@ -680,7 +680,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementMotorEncoders,
             public IMotorRaw,
             public ImplementMotor,
-            public ImplementControlCalibration<CanBusMotionControl, IControlCalibration>,    
+            public ImplementControlCalibration,    
             public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
             public ImplementControlLimits2,
             public ImplementTorqueControl,
@@ -1021,9 +1021,8 @@ public:
     virtual bool getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type) override;
 
     ////// calibration
-    virtual bool calibrateRaw(int j, double p) override;
-    virtual bool doneRaw(int j) override;
-    virtual bool calibrateRaw(int axis, unsigned int type, double p1, double p2, double p3) override;
+    virtual bool calibrationDoneRaw(int j) override;
+    virtual bool calibrateAxisWithParamsRaw(int axis, unsigned int type, double p1, double p2, double p3) override;
     virtual bool setCalibrationParametersRaw(int j, const CalibrationParameters& params) override;
 
     /// IControlDebug Interface

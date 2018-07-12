@@ -62,7 +62,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementEncodersTimed(this),
     ImplementTorqueControl(this),
     ImplementControlMode2(this),
-    ImplementControlCalibration<iCubSimulationControl, IControlCalibration>(this),
+    ImplementControlCalibration(this),
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>(this),
     ImplementControlLimits2(this),
     ImplementInteractionMode(this),
@@ -306,8 +306,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementPidControl::initialize(njoints, axisMap, angleToEncoder, zeros,newtonsToSensor,ampsToSensor, dutycycleToPwm);
     ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementMotorEncoders::initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::
-        initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementControlCalibration::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlLimits2::initialize(njoints, axisMap, angleToEncoder, zeros);
@@ -365,7 +364,7 @@ bool iCubSimulationControl::close (void)
         ImplementPidControl::uninitialize();
         ImplementEncodersTimed::uninitialize();
         ImplementMotorEncoders::uninitialize();
-        ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::uninitialize();
+        ImplementControlCalibration::uninitialize();
         ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::uninitialize();
         ImplementControlLimits2::uninitialize();
         ImplementControlMode2::uninitialize();
@@ -1666,17 +1665,12 @@ bool iCubSimulationControl::getMaxCurrentRaw(int axis, double* v)
     return true;
 }
 
-bool iCubSimulationControl::calibrateRaw(int axis, double p)
+bool iCubSimulationControl::calibrateAxisWithParamsRaw(int axis, unsigned int type, double p1, double p2, double p3)
 {
     return NOT_YET_IMPLEMENTED("calibrateRaw");
 }
 
-bool iCubSimulationControl::calibrateRaw(int axis, unsigned int type, double p1, double p2, double p3)
-{
-    return NOT_YET_IMPLEMENTED("calibrateRaw");
-}
-
-bool iCubSimulationControl::doneRaw(int axis)
+bool iCubSimulationControl::calibrationDoneRaw(int axis)
 {
     return NOT_YET_IMPLEMENTED("doneRaw");
 }

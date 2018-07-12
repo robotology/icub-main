@@ -2392,7 +2392,7 @@ ImplementPositionControl2(this),
 ImplementVelocityControl2(this),
 ImplementPidControl(this),
 ImplementEncodersTimed(this),
-ImplementControlCalibration<CanBusMotionControl, IControlCalibration>(this),
+ImplementControlCalibration(this),
 ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
 ImplementControlLimits2(this),
 ImplementTorqueControl(this),
@@ -2487,7 +2487,7 @@ bool CanBusMotionControl::open (Searchable &config)
     if (!ret)
     {
         _mutex.post();
-        yError() << "Unable to unitialize CAN driver";
+        yError() << "Unable to uninitialize CAN driver";
         return false;
     }
 
@@ -2521,8 +2521,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementMotor::initialize(p._njoints, p._axisMap);
 
-    ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementControlCalibration::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -3004,7 +3003,7 @@ bool CanBusMotionControl::close (void)
         ImplementPidControl::uninitialize();
         ImplementEncodersTimed::uninitialize();
         ImplementMotorEncoders::uninitialize();
-        ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::uninitialize();
+        ImplementControlCalibration::uninitialize();
         ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
         ImplementControlLimits2::uninitialize();
 
@@ -5633,7 +5632,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
     return true;
 }
 
-bool CanBusMotionControl::calibrateRaw(int axis, unsigned int type, double p1, double p2, double p3)
+bool CanBusMotionControl::calibrateAxisWithParamsRaw(int axis, unsigned int type, double p1, double p2, double p3)
 {
     bool b = _writeByteWords16(ICUBCANPROTO_POL_MC_CMD__CALIBRATE_ENCODER, axis, type, S_16(p1), S_16(p2), S_16(p3));
     return b;
@@ -5641,7 +5640,7 @@ bool CanBusMotionControl::calibrateRaw(int axis, unsigned int type, double p1, d
 
 bool CanBusMotionControl::setCalibrationParametersRaw(int j, const CalibrationParameters& params)
 {
-    return calibrate2Raw(j, params.type, params.param1, params.param2, params.param3);
+    return calibrateAxisWithParamsRaw(j, params.type, params.param1, params.param2, params.param3);
 }
 
 bool CanBusMotionControl::setRefSpeedRaw(int axis, double sp)
@@ -6485,13 +6484,7 @@ bool CanBusMotionControl::setVelocityTimeoutRaw(int axis, double timeout)
     return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_VEL_TIMEOUT, axis, S_16(timeout));
 }
 
-
-bool CanBusMotionControl::calibrateRaw(int axis, double p)
-{
-    return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__CALIBRATE_ENCODER, axis, S_16(p));
-}
-
-bool CanBusMotionControl::doneRaw(int axis)
+bool CanBusMotionControl::calibrationDoneRaw(int axis)
 {
     short value = 0;
     DEBUG_FUNC("Calling doneRaw for joint %d\n", axis);

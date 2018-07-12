@@ -609,7 +609,7 @@ bool parametricCalibrator::calibrateJoint(int j)
         return false;
     }
     yInfo() <<  deviceName  << ": Calling calibrateJoint on joint "<< j << " with params: " << type[j] << param1[j] << param2[j] << param3[j];
-    return iCalibrate->calibrate2(j, type[j], param1[j], param2[j], param3[j]);
+    return iCalibrate->calibrateAxisWithParams(j, type[j], param1[j], param2[j], param3[j]);
 }
 
 bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
@@ -635,7 +635,7 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
 
             // Joint with absolute sensor doesn't need to move, so they are ok with just the calibration message,
             // but I'll check anyway, in order to have everything the same
-            if( !(calibration_ok &=  iCalibrate->done((*lit))) )  // the assignement inside the if is INTENTIONAL
+            if( !(calibration_ok &=  iCalibrate->calibrationDone((*lit))) )  // the assignement inside the if is INTENTIONAL
                 break;
             lit++;
         }
