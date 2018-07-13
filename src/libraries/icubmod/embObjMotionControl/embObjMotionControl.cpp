@@ -30,7 +30,6 @@
 
 #include <yarp/os/NetType.h>
 #include <yarp/dev/ControlBoardHelper.h>
-#include <yarp/dev/ControlBoardInterfacesImpl-inl.h>
 
 
 #include "eomcUtils.h"
@@ -181,7 +180,7 @@ bool embObjMotionControl::dealloc()
 
 embObjMotionControl::embObjMotionControl() :
     ImplementControlCalibration(this),
-    ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>(this),
+    ImplementAmplifierControl(this),
     ImplementPidControl(this),
     ImplementEncodersTimed(this),
     ImplementPositionControl2(this),
@@ -297,7 +296,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
 {
 
     ImplementControlCalibration::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL,f.ampsToSensor);
+    ImplementAmplifierControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL,f.ampsToSensor);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotorEncoders::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementPositionControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
@@ -1267,7 +1266,7 @@ bool embObjMotionControl::close()
     ImplementVelocityControl::uninitialize();
     ImplementPidControl::uninitialize();
     ImplementControlCalibration::uninitialize();
-    ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::uninitialize();
+    ImplementAmplifierControl::uninitialize();
     ImplementImpedanceControl::uninitialize();
     ImplementControlLimits2::uninitialize();
     ImplementTorqueControl::uninitialize();

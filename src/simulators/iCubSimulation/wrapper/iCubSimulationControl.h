@@ -88,7 +88,7 @@ class yarp::dev::iCubSimulationControl :
     public ITorqueControlRaw,
     public ImplementTorqueControl,
     public IAmplifierControlRaw,
-    public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
+    public ImplementAmplifierControl,
     public IControlCalibrationRaw,
     public ImplementControlCalibration,
     public IControlLimitsRaw,

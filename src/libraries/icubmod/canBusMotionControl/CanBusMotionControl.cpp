@@ -43,7 +43,6 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/dev/ControlBoardInterfacesImpl-inl.h>
 
 #include "canControlConstants.h"
 #include "canControlUtils.h"
@@ -2393,7 +2392,7 @@ ImplementVelocityControl2(this),
 ImplementPidControl(this),
 ImplementEncodersTimed(this),
 ImplementControlCalibration(this),
-ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
+ImplementAmplifierControl(this),
 ImplementControlLimits2(this),
 ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
@@ -2523,8 +2522,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementControlCalibration::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementAmplifierControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementControlLimits2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
@@ -3004,7 +3002,7 @@ bool CanBusMotionControl::close (void)
         ImplementEncodersTimed::uninitialize();
         ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration::uninitialize();
-        ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
+        ImplementAmplifierControl::uninitialize();
         ImplementControlLimits2::uninitialize();
 
         ImplementControlMode2::uninitialize();

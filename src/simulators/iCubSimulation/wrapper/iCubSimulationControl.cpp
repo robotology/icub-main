@@ -63,7 +63,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementTorqueControl(this),
     ImplementControlMode2(this),
     ImplementControlCalibration(this),
-    ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>(this),
+    ImplementAmplifierControl(this),
     ImplementControlLimits2(this),
     ImplementInteractionMode(this),
     ImplementPositionDirect(this),
@@ -307,8 +307,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementMotorEncoders::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlCalibration::initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::
-        initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementAmplifierControl::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlLimits2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor, ampsToSensor, dutycycleToPwm,nullptr,nullptr);
     ImplementControlMode2::initialize(njoints, axisMap);
@@ -365,7 +364,7 @@ bool iCubSimulationControl::close (void)
         ImplementEncodersTimed::uninitialize();
         ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration::uninitialize();
-        ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::uninitialize();
+        ImplementAmplifierControl::uninitialize();
         ImplementControlLimits2::uninitialize();
         ImplementControlMode2::uninitialize();
         ImplementInteractionMode::uninitialize();
