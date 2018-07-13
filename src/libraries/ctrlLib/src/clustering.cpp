@@ -62,7 +62,7 @@ namespace iCub {
             }
 
             /**********************************************************************/
-            void append(const size_t index, shared_ptr<Epsilon_neighbours_t> &en)
+            void append(const size_t index, shared_ptr<Epsilon_neighbours_t> en)
             {
                 shared_ptr<Node_t> node=create_node(index);
                 if (en->head==nullptr)
@@ -80,17 +80,17 @@ namespace iCub {
 
             /**********************************************************************/
             shared_ptr<Epsilon_neighbours_t> get_epsilon_neighbours(const size_t index,
-                                                                    Data_t &augData)
+                                                                    shared_ptr<Data_t> augData)
             {
                 shared_ptr<Epsilon_neighbours_t> en(new Epsilon_neighbours_t());
-                for (size_t i=0; i<augData.points.size(); i++)
+                for (size_t i=0; i<augData->points.size(); i++)
                 {
                     double d=0.0;
-                    for (size_t j=0; j<augData.points[index].length(); j++)
+                    for (size_t j=0; j<augData->points[index].length(); j++)
                     {
-                        d+=pow(augData.points[index][j]-augData.points[i][j],2.0);
+                        d+=pow(augData->points[index][j]-augData->points[i][j],2.0);
                     }
-                    if ((i!=index) && (sqrt(d)<=augData.epsilon))
+                    if ((i!=index) && (sqrt(d)<=augData->epsilon))
                     {
                         append(i,en);
                     }
@@ -99,42 +99,42 @@ namespace iCub {
             }
 
             /**********************************************************************/
-            void spread(const size_t index, shared_ptr<Epsilon_neighbours_t> &seeds,
-                        const size_t id, Data_t &augData)
+            void spread(const size_t index, shared_ptr<Epsilon_neighbours_t> seeds,
+                        const size_t id, shared_ptr<Data_t> augData)
             {
                 shared_ptr<Epsilon_neighbours_t> spread=get_epsilon_neighbours(index,augData);
-                if (spread->num_members>=augData.minpts)
+                if (spread->num_members>=augData->minpts)
                 {
                     for (shared_ptr<Node_t> node=spread->head; node!=nullptr; node=node->next)
                     {
-                        if ((augData.ids[node->index]==(int)PointType::noise) ||
-                            (augData.ids[node->index]==(int)PointType::unclassified))
+                        if ((augData->ids[node->index]==(int)PointType::noise) ||
+                            (augData->ids[node->index]==(int)PointType::unclassified))
                         {
-                            if (augData.ids[node->index]==(int)PointType::unclassified)
+                            if (augData->ids[node->index]==(int)PointType::unclassified)
                             {
                                 append(node->index,seeds);
                             }
-                            augData.ids[node->index]=(int)id;
+                            augData->ids[node->index]=(int)id;
                         }
                     }
                 }
             }
 
             /**********************************************************************/
-            bool expand(const size_t index, const size_t id, Data_t &augData)
+            bool expand(const size_t index, const size_t id, shared_ptr<Data_t> augData)
             {
                 shared_ptr<Epsilon_neighbours_t> seeds=get_epsilon_neighbours(index,augData);
-                if (seeds->num_members<augData.minpts)
+                if (seeds->num_members<augData->minpts)
                 {
-                    augData.ids[index]=(int)PointType::noise;
+                    augData->ids[index]=(int)PointType::noise;
                     return false;
                 }
                 else
                 {
-                    augData.ids[index]=(int)id;
+                    augData->ids[index]=(int)id;
                     for (shared_ptr<Node_t> h=seeds->head; h!=nullptr; h=h->next)
                     {
-                        augData.ids[h->index]=(int)id;
+                        augData->ids[h->index]=(int)id;
                     }
                     for (shared_ptr<Node_t> h=seeds->head; h!=nullptr; h=h->next)
                     {
@@ -154,12 +154,12 @@ map<size_t,set<size_t>> DBSCAN::cluster(const vector<Vector> &data,
 {
     double epsilon=options.check("epsilon",Value(1.0)).asDouble();
     size_t minpts=(size_t)options.check("minpts",Value(2)).asInt();
-    dbscan::Data_t augData(data,epsilon,minpts);
+    shared_ptr<dbscan::Data_t> augData(new dbscan::Data_t(data,epsilon,minpts));
 
     size_t id=0;
-    for (size_t i=0; i<augData.points.size(); i++)
+    for (size_t i=0; i<augData->points.size(); i++)
     {
-        if (augData.ids[i]==(int)dbscan::PointType::unclassified)
+        if (augData->ids[i]==(int)dbscan::PointType::unclassified)
         {
             if (dbscan::expand(i,id,augData))
             {
@@ -169,11 +169,11 @@ map<size_t,set<size_t>> DBSCAN::cluster(const vector<Vector> &data,
     }
 
     map<size_t,set<size_t>> clusters;
-    for (size_t i=0; i<augData.points.size(); i++)
+    for (size_t i=0; i<augData->points.size(); i++)
     {
-        if (augData.ids[i]!=(int)dbscan::PointType::noise)
+        if (augData->ids[i]!=(int)dbscan::PointType::noise)
         {
-            clusters[augData.ids[i]].insert(i);
+            clusters[augData->ids[i]].insert(i);
         }
     }
     return clusters;
