@@ -55,12 +55,12 @@ static inline bool DEPRECATED(const char *txt)
 
 iCubSimulationControl::iCubSimulationControl() : 
     //PeriodicThread(0.01),
-    ImplementPositionControl2(this),
-    ImplementVelocityControl2(this),
+    ImplementPositionControl(this),
+    ImplementVelocityControl(this),
     ImplementPidControl(this),
     ImplementEncodersTimed(this),
     ImplementTorqueControl(this),
-    ImplementControlMode2(this),
+    ImplementControlMode(this),
     ImplementControlCalibration(this),
     ImplementAmplifierControl(this),
     ImplementControlLimits(this),

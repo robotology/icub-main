@@ -183,9 +183,9 @@ embObjMotionControl::embObjMotionControl() :
     ImplementAmplifierControl(this),
     ImplementPidControl(this),
     ImplementEncodersTimed(this),
-    ImplementPositionControl2(this),
+    ImplementPositionControl(this),
     ImplementVelocityControl(this),
-    ImplementControlMode2(this),
+    ImplementControlMode(this),
     ImplementImpedanceControl(this),
     ImplementMotorEncoders(this),
 #ifdef IMPLEMENT_DEBUG_INTERFACE
@@ -299,9 +299,9 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementAmplifierControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL,f.ampsToSensor);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotorEncoders::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementPositionControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementPositionControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementPidControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM);
-    ImplementControlMode2::initialize(_njoints, _axisMap);
+    ImplementControlMode::initialize(_njoints, _axisMap);
     ImplementVelocityControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementControlLimits::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
