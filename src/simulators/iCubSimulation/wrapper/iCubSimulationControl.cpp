@@ -32,7 +32,6 @@
 #include "OdeInit.h"
 #include <yarp/dev/ControlBoardHelper.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/dev/ControlBoardInterfacesImpl-inl.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
@@ -64,7 +63,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementControlMode2(this),
     ImplementControlCalibration(this),
     ImplementAmplifierControl(this),
-    ImplementControlLimits2(this),
+    ImplementControlLimits(this),
     ImplementInteractionMode(this),
     ImplementPositionDirect(this),
     ImplementMotorEncoders(this),
@@ -308,7 +307,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementMotorEncoders::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlCalibration::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementAmplifierControl::initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementControlLimits2::initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementControlLimits::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor, ampsToSensor, dutycycleToPwm,nullptr,nullptr);
     ImplementControlMode2::initialize(njoints, axisMap);
     ImplementInteractionMode::initialize(njoints, axisMap);
@@ -365,7 +364,7 @@ bool iCubSimulationControl::close (void)
         ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration::uninitialize();
         ImplementAmplifierControl::uninitialize();
-        ImplementControlLimits2::uninitialize();
+        ImplementControlLimits::uninitialize();
         ImplementControlMode2::uninitialize();
         ImplementInteractionMode::uninitialize();
         ImplementPositionDirect::uninitialize();

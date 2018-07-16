@@ -28,11 +28,6 @@
 #include <iCub/LoggerInterfaces.h>
 #include <messages.h>
 
-#ifndef YARP_NO_DEPRECATED //since 3.0.0
-#include <yarp/dev/IControlLimits2.h>
-#include <yarp/dev/IControlLimits2Impl.h>
-#endif
-
 namespace yarp{
     namespace dev{
         class CanBusMotionControl;
@@ -665,7 +660,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IVelocityControl2Raw,
             public IAmplifierControlRaw,
             public IControlCalibrationRaw,
-            public IControlLimits2Raw,
+            public IControlLimitsRaw,
             public ITorqueControlRaw,
             public IImpedanceControlRaw,
             public IControlMode2Raw,
@@ -682,7 +677,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementMotor,
             public ImplementControlCalibration,    
             public ImplementAmplifierControl,
-            public ImplementControlLimits2,
+            public ImplementControlLimits,
             public ImplementTorqueControl,
             public ImplementImpedanceControl,
             public ImplementControlMode2,

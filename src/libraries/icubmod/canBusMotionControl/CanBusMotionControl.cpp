@@ -2393,7 +2393,7 @@ ImplementPidControl(this),
 ImplementEncodersTimed(this),
 ImplementControlCalibration(this),
 ImplementAmplifierControl(this),
-ImplementControlLimits2(this),
+ImplementControlLimits(this),
 ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
 ImplementControlMode2(this),
@@ -2524,7 +2524,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementAmplifierControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementControlLimits2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementControlLimits::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementControlMode2::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor, p._ampsToSensor, nullptr,nullptr,nullptr);
@@ -3003,7 +3003,7 @@ bool CanBusMotionControl::close (void)
         ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration::uninitialize();
         ImplementAmplifierControl::uninitialize();
-        ImplementControlLimits2::uninitialize();
+        ImplementControlLimits::uninitialize();
 
         ImplementControlMode2::uninitialize();
         ImplementTorqueControl::uninitialize();

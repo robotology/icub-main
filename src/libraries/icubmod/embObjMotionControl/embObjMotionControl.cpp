@@ -192,7 +192,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementDebugInterface(this),
 #endif
     ImplementTorqueControl(this),
-    ImplementControlLimits2(this),
+    ImplementControlLimits(this),
     ImplementPositionDirect(this),
     ImplementInteractionMode(this),
     ImplementMotor(this),
@@ -303,7 +303,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementPidControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM);
     ImplementControlMode2::initialize(_njoints, _axisMap);
     ImplementVelocityControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementControlLimits2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementControlLimits::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM, f.bemf2raw, f.ktau2raw);
     ImplementPositionDirect::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
@@ -1268,7 +1268,7 @@ bool embObjMotionControl::close()
     ImplementControlCalibration::uninitialize();
     ImplementAmplifierControl::uninitialize();
     ImplementImpedanceControl::uninitialize();
-    ImplementControlLimits2::uninitialize();
+    ImplementControlLimits::uninitialize();
     ImplementTorqueControl::uninitialize();
     ImplementPositionDirect::uninitialize();
     ImplementInteractionMode::uninitialize();

@@ -51,11 +51,6 @@ using namespace std;
 #include "eomcParser.h"
 #include "measuresConverter.h"
 
-#ifndef YARP_NO_DEPRECATED //since 3.0.0
-#include <yarp/dev/IControlLimits2.h>
-#include <yarp/dev/IControlLimits2Impl.h>
-#endif
-
 // - public #define  --------------------------------------------------------------------------------------------------
 
 #undef  VERIFY_ROP_SETIMPEDANCE     // this macro let you send setimpedence rop with signature.
@@ -147,10 +142,10 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IVelocityControl2Raw,
     public IControlMode2Raw,
     public ImplementControlMode2,
-    public IControlLimits2Raw,
+    public IControlLimitsRaw,
     public IImpedanceControlRaw,
     public ImplementImpedanceControl,
-    public ImplementControlLimits2,
+    public ImplementControlLimits,
     public ImplementAmplifierControl,
     public ImplementPositionControl2,
     public ImplementControlCalibration,
