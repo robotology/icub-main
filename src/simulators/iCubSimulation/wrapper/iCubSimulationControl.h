@@ -39,6 +39,7 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
+#include <iCub/ctrl/adaptWinPolyEstimator.h>
 
 #include "LogicalJoints.h"
 
@@ -378,8 +379,9 @@ class yarp::dev::iCubSimulationControl :
   int verbosity;
 
 private:
-    void compute_mot_pos(double *mot, double *jnt);
-    void compute_mot_vel(double *mot, double *jnt);
+    void compute_mot_pos_from_jnt_pos(double *mot_pos, const double *jnt_pos, int size_joints);
+    void compute_mot_vel_and_acc     (double *mot_vel, double *mot_acc, const double *mot_pos, int size_joints);
+    void compute_jnt_vel_and_acc     (double *jnt_vel, double *jnt_acc, const double *jnt_pos, int size_joints);
 
 protected:
     yarp::dev::PolyDriver joints;
@@ -411,7 +413,19 @@ protected:
     //current velocity of the joints
     double *current_jnt_vel;
     double *current_mot_vel;
+    double *estimated_jnt_vel;
+    double *estimated_mot_vel;
     
+    //current acceleration of the joints
+    double *current_jnt_acc;
+    double *current_mot_acc;
+    double *estimated_jnt_acc;
+    double *estimated_mot_acc;
+    iCub::ctrl::AWLinEstimator       *linEstJnt;
+    iCub::ctrl::AWQuadEstimator      *quadEstJnt;
+    iCub::ctrl::AWLinEstimator       *linEstMot;
+    iCub::ctrl::AWQuadEstimator      *quadEstMot;
+
     //next position of the joints
     double *next_pos;
     double *ref_command_positions;

@@ -137,9 +137,15 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     current_jnt_pos = allocAndCheck<double>(njoints);
     current_jnt_vel = allocAndCheck<double>(njoints);
+    current_jnt_acc = allocAndCheck<double>(njoints);
+    estimated_jnt_vel = allocAndCheck<double>(njoints);
+    estimated_jnt_acc = allocAndCheck<double>(njoints);
     current_jnt_torques = allocAndCheck<double>(njoints);
     current_mot_pos = allocAndCheck<double>(njoints);
     current_mot_vel = allocAndCheck<double>(njoints);
+    current_mot_acc = allocAndCheck<double>(njoints);
+    estimated_mot_vel = allocAndCheck<double>(njoints);
+    estimated_mot_acc = allocAndCheck<double>(njoints);
     current_mot_torques = allocAndCheck<double>(njoints);
     pwm = allocAndCheck<double>(njoints);
     pwm_ref = allocAndCheck<double>(njoints);
@@ -169,6 +175,10 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     hasRotorEncoder = allocAndCheck<bool>(njoints);
     rotorIndexOffset = allocAndCheck<int>(njoints);
     motorPoles = allocAndCheck<int>(njoints);
+    linEstJnt = new iCub::ctrl::AWLinEstimator(25, 2.0);
+    quadEstJnt = new iCub::ctrl::AWQuadEstimator(50, 2.0);
+    linEstMot = new iCub::ctrl::AWLinEstimator(25, 2.0);
+    quadEstMot = new iCub::ctrl::AWQuadEstimator(50, 2.0);
 
 //  joint_dev = new DeviceTag[njoints];
 
@@ -356,8 +366,8 @@ bool iCubSimulationControl::close (void)
         
         //PeriodicThread::stop();/// stops the thread first (joins too).
         
-        ImplementPositionControl2::uninitialize();
-        ImplementVelocityControl2::uninitialize();
+        ImplementPositionControl::uninitialize();
+        ImplementVelocityControl::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementPidControl::uninitialize();
         ImplementEncodersTimed::uninitialize();
@@ -365,7 +375,7 @@ bool iCubSimulationControl::close (void)
         ImplementControlCalibration::uninitialize();
         ImplementAmplifierControl::uninitialize();
         ImplementControlLimits::uninitialize();
-        ImplementControlMode2::uninitialize();
+        ImplementControlMode::uninitialize();
         ImplementInteractionMode::uninitialize();
         ImplementPositionDirect::uninitialize();
         ImplementRemoteVariables::uninitialize();
@@ -385,6 +395,12 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<double>(current_ampere_ref);
     checkAndDestroy<double>(current_jnt_vel);
     checkAndDestroy<double>(current_mot_vel);
+    checkAndDestroy<double>(current_jnt_acc);
+    checkAndDestroy<double>(current_mot_acc);
+    checkAndDestroy<double>(estimated_jnt_vel);
+    checkAndDestroy<double>(estimated_mot_vel);
+    checkAndDestroy<double>(estimated_jnt_acc);
+    checkAndDestroy<double>(estimated_mot_acc);
     checkAndDestroy<double>(next_pos);
     checkAndDestroy<double>(next_vel);
     checkAndDestroy<double>(next_torques);
@@ -430,17 +446,39 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<double>(dutycycleToPwm);
     //  delete[] jointNames;
 
+    delete linEstJnt;
+    delete quadEstJnt;
+    delete linEstMot;
+    delete quadEstMot;
+
     _opened = false;
     return true;
 }
 
-void iCubSimulationControl::compute_mot_vel(double *mot, double *jnt)
+void iCubSimulationControl::compute_mot_pos_from_jnt_pos(double *mot_pos, const double *jnt_pos, int size_joints)
 {
-    compute_mot_pos(mot,jnt);
+    for (int i = 0; i < size_joints; i++)
+    {
+        mot_pos[i] = jnt_pos[i]; //use coupling matrix here
+    }
 }
-void iCubSimulationControl::compute_mot_pos(double *mot, double *jnt)
-{
 
+void iCubSimulationControl::compute_mot_vel_and_acc(double *mot_vel, double *mot_acc, const double *mot_pos, int size_joints)
+{
+    iCub::ctrl::AWPolyElement el(yarp::sig::Vector(size_joints, mot_pos), Time::now());
+    yarp::sig::Vector speeds = linEstMot->estimate(el);
+    yarp::sig::Vector accs = quadEstMot->estimate(el);
+    for (int i = 0; i < size_joints; i++) mot_vel[i] = speeds[i];
+    for (int i = 0; i < size_joints; i++) mot_acc[i] = accs[i];
+}
+
+void iCubSimulationControl::compute_jnt_vel_and_acc(double *jnt_vel, double *jnt_acc, const double *jnt_pos, int size_joints)
+{
+    iCub::ctrl::AWPolyElement el(yarp::sig::Vector(size_joints, jnt_pos), Time::now());
+    yarp::sig::Vector speeds = linEstJnt->estimate(el);
+    yarp::sig::Vector accs = quadEstJnt->estimate(el);
+    for (int i = 0; i < size_joints; i++) jnt_vel[i] = speeds[i];
+    for (int i = 0; i < size_joints; i++) jnt_acc[i] = accs[i];
 }
 
 void iCubSimulationControl::jointStep() {
@@ -542,8 +580,14 @@ void iCubSimulationControl::jointStep() {
                 }
             }
         }
-        compute_mot_pos     (current_mot_pos,current_jnt_pos);
-        compute_mot_vel     (current_mot_vel,current_jnt_vel);
+        compute_mot_pos_from_jnt_pos(current_mot_pos, current_jnt_pos, njoints);
+        compute_mot_vel_and_acc(estimated_mot_vel, estimated_mot_acc, current_mot_pos, njoints);
+        compute_jnt_vel_and_acc(estimated_jnt_vel, estimated_jnt_acc, current_jnt_pos, njoints);
+        for (int axis = 0; axis < njoints; axis++)
+        {
+            current_mot_acc[axis] = estimated_mot_acc[axis];
+            current_jnt_acc[axis] = estimated_jnt_acc[axis];
+        }
     }
     _mutex.post();
 }
@@ -1475,13 +1519,24 @@ bool iCubSimulationControl::getEncoderSpeedRaw(int axis, double *v)
 
 bool iCubSimulationControl::getEncoderAccelerationsRaw(double *v)
 {
-  	return NOT_YET_IMPLEMENTED("getEncoderAccelerationsRaw");
+    _mutex.wait();
+    for (int axis = 0; axis<njoints; axis++)
+        v[axis] = current_jnt_acc[axis];//* 10;
+    _mutex.post();
+    return true;
 }
 
 bool iCubSimulationControl::getEncoderAccelerationRaw(int axis, double *v)
 {
-    *v=0.0;
-    return false; //NOT_YET_IMPLEMENTED("getEncoderAcc");
+    if ((axis >= 0) && (axis<njoints)) {
+        _mutex.wait();
+        *v = current_jnt_acc[axis];// * 10;
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        yError("getEncoderSpeedRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    return false;
 }
 
 bool iCubSimulationControl::setMotorEncoderRaw(int axis, const double val)
@@ -1585,13 +1640,24 @@ bool iCubSimulationControl::getMotorEncoderSpeedRaw(int axis, double *v)
 
 bool iCubSimulationControl::getMotorEncoderAccelerationsRaw(double *v)
 {
-  	return NOT_YET_IMPLEMENTED("getMotorEncoderAccelerationsRaw");
+    for (int axis = 0; axis<njoints; axis++)
+    {
+        getMotorEncoderAccelerationRaw(axis, &v[axis]);
+    }
+    return true;
 }
 
 bool iCubSimulationControl::getMotorEncoderAccelerationRaw(int axis, double *v)
 {
-    *v=0.0;
-    return false; //NOT_YET_IMPLEMENTED("getEncoderAcc");
+    if ((axis >= 0) && (axis<njoints)) {
+        _mutex.wait();
+        *v = current_mot_acc[axis];
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        yError("getEncoderSpeedRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    return false;
 }
 
 bool iCubSimulationControl::disableAmpRaw(int axis)
