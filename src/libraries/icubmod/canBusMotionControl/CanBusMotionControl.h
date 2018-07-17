@@ -28,11 +28,6 @@
 #include <iCub/LoggerInterfaces.h>
 #include <messages.h>
 
-#ifndef YARP_NO_DEPRECATED //since 3.0.0
-#include <yarp/dev/IControlLimits2.h>
-#include <yarp/dev/IControlLimits2Impl.h>
-#endif
-
 namespace yarp{
     namespace dev{
         class CanBusMotionControl;
@@ -660,19 +655,19 @@ class axisTorqueHelper
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public os::PeriodicThread, 
             public IPidControlRaw, 
-            public IPositionControl2Raw,
+            public IPositionControlRaw,
             public IPositionDirectRaw,
-            public IVelocityControl2Raw,
+            public IVelocityControlRaw,
             public IAmplifierControlRaw,
             public IControlCalibrationRaw,
-            public IControlLimits2Raw,
+            public IControlLimitsRaw,
             public ITorqueControlRaw,
             public IImpedanceControlRaw,
-            public IControlMode2Raw,
+            public IControlModeRaw,
             public IPreciselyTimed,
-            public ImplementPositionControl2,
+            public ImplementPositionControl,
             public ImplementPositionDirect,
-            public ImplementVelocityControl2,
+            public ImplementVelocityControl,
             public ImplementPidControl,
             public IEncodersTimedRaw,
             public ImplementEncodersTimed,
@@ -681,11 +676,11 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IMotorRaw,
             public ImplementMotor,
             public ImplementControlCalibration,    
-            public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
-            public ImplementControlLimits2,
+            public ImplementAmplifierControl,
+            public ImplementControlLimits,
             public ImplementTorqueControl,
             public ImplementImpedanceControl,
-            public ImplementControlMode2,
+            public ImplementControlMode,
             public IInteractionModeRaw,
             public ImplementInteractionMode,
             public IRemoteVariablesRaw,

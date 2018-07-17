@@ -43,7 +43,6 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/dev/ControlBoardInterfacesImpl-inl.h>
 
 #include "canControlConstants.h"
 #include "canControlUtils.h"
@@ -2386,18 +2385,16 @@ bool CanBusResources::dumpBuffers (void)
 
 CanBusMotionControl::CanBusMotionControl() :
 PeriodicThread(0.01),
-//ImplementPositionControl<CanBusMotionControl, IPositionControl>(this),
-ImplementPositionControl2(this),
-//ImplementVelocityControl<CanBusMotionControl, IVelocityControl>(this),
-ImplementVelocityControl2(this),
+ImplementPositionControl(this),
+ImplementVelocityControl(this),
 ImplementPidControl(this),
 ImplementEncodersTimed(this),
 ImplementControlCalibration(this),
-ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
-ImplementControlLimits2(this),
+ImplementAmplifierControl(this),
+ImplementControlLimits(this),
 ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
-ImplementControlMode2(this),
+ImplementControlMode(this),
 ImplementPositionDirect(this),
 ImplementInteractionMode(this),
 ImplementMotorEncoders(this),
@@ -2504,8 +2501,8 @@ bool CanBusMotionControl::open (Searchable &config)
         tmpOnes[i]=1.0;
     }
 
-    ImplementPositionControl2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
-    ImplementVelocityControl2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementPositionControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementVelocityControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
 //    ImplementPositionControl<CanBusMotionControl, IPositionControl>::
 //        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -2523,12 +2520,11 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementControlCalibration::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementAmplifierControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementControlLimits2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementControlLimits::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementControlMode2::initialize(p._njoints, p._axisMap);
+    ImplementControlMode::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor, p._ampsToSensor, nullptr,nullptr,nullptr);
     _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
     
@@ -3004,8 +3000,8 @@ bool CanBusMotionControl::close (void)
         ImplementEncodersTimed::uninitialize();
         ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration::uninitialize();
-        ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
-        ImplementControlLimits2::uninitialize();
+        ImplementAmplifierControl::uninitialize();
+        ImplementControlLimits::uninitialize();
 
         ImplementControlMode2::uninitialize();
         ImplementTorqueControl::uninitialize();
