@@ -880,16 +880,6 @@ bool iCubSimulationControl::setTemperatureLimitRaw(int m, const double temp)
     return NOT_YET_IMPLEMENTED("setTemperatureLimitRaw");
 }
 
-bool iCubSimulationControl::getMotorOutputLimitRaw(int m, double *limit)
-{
-    return NOT_YET_IMPLEMENTED("getMotorOutputLimitRaw");
-}
-
-bool iCubSimulationControl::setMotorOutputLimitRaw(int m, const double limit)
-{
-    return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
-}
-
 bool iCubSimulationControl::getPeakCurrentRaw(int m, double *val)
 {
     return NOT_YET_IMPLEMENTED("getPeakCurrentRaw");
@@ -1007,16 +997,6 @@ bool iCubSimulationControl::setPidOffsetRaw(const PidControlTypeEnum& pidtype, i
 bool iCubSimulationControl::disablePidRaw(const PidControlTypeEnum& pidtype, int axis)
 {
     return DEPRECATED("disablePidRaw");
-}
-
-bool iCubSimulationControl::setPositionModeRaw()
-{
-    return DEPRECATED("setPositionModeRaw");
-}
-
-bool iCubSimulationControl::setVelocityModeRaw()
-{
-    return DEPRECATED("setVelocityModeRaw");
 }
 
 bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
@@ -1991,10 +1971,6 @@ bool iCubSimulationControl::getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& 
     return false;
 }
 
-bool iCubSimulationControl::setTorqueModeRaw( )
-{
-    return NOT_YET_IMPLEMENTED("setTorqueModeRaw");
-}
 bool iCubSimulationControl::getTorqueRaw(int axis, double *sp)
 {
     if( (axis >=0) && (axis < njoints)) {
@@ -2077,14 +2053,6 @@ bool iCubSimulationControl::getRefTorqueRaw(int axis,double *ref)
         yError("getRefTorqueRaw: joint with index %d does not exist, valis joints indices are between 0 and %d \n",axis,njoints);
     return false;
 }
-bool iCubSimulationControl::getBemfParamRaw(int axis,double *bemf)
-{
-    return NOT_YET_IMPLEMENTED("getBemfParamRaw");
-}
-bool iCubSimulationControl::setBemfParamRaw(int axis,double bemf)
-{
-    return NOT_YET_IMPLEMENTED("setBemfParamRaw");
-}
 
 bool iCubSimulationControl::getMotorTorqueParamsRaw(int axis, MotorTorqueParameters *params)
 {
@@ -2110,27 +2078,6 @@ bool iCubSimulationControl::setMotorTorqueParamsRaw(int axis, const MotorTorqueP
     }
     NOT_YET_IMPLEMENTED("setMotorTorqueParamsRaw");
     return true; //fake
-}
-
-bool iCubSimulationControl::setPositionModeRaw(int j)
-{
-    return DEPRECATED("setPositionModeRaw");
-}
-bool iCubSimulationControl::setVelocityModeRaw(int j)
-{
-    return DEPRECATED("setVelocityModeRaw");
-}
-bool iCubSimulationControl::setTorqueModeRaw(int j)
-{
-    return DEPRECATED("setTorqueModeRaw");
-}
-bool iCubSimulationControl::setImpedancePositionModeRaw(int j)
-{    
-    return DEPRECATED("setImpedancePositionModeRaw");
-}
-bool iCubSimulationControl::setImpedanceVelocityModeRaw(int j)
-{
-    return DEPRECATED("setImpedanceVelocityModeRaw");
 }
 
 int iCubSimulationControl::ControlModes_yarp2iCubSIM(int yarpMode)
@@ -2366,16 +2313,6 @@ bool iCubSimulationControl::setInteractionModesRaw(yarp::dev::InteractionModeEnu
 }
 
 // Position direct interface
-bool iCubSimulationControl::setPositionDirectModeRaw()
-{
-    bool ret = true;
-    for(int j=0; j<njoints; j++)
-    {
-        ret = ret && setControlModeRaw(j, VOCAB_POSITION_DIRECT);
-    }
-    return ret;
-}
-
 bool iCubSimulationControl::setPositionRaw(int axis, double ref)
 {
     // This function has been copy pasted from positionMoveRaw
