@@ -13,9 +13,16 @@
 
 /// general purpose stuff.
 
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+
+#include <string>
+#include <iostream>
+#include <algorithm>
+
 #include <yarp/os/Time.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <yarp/dev/PolyDriver.h>
 #include <ace/config.h>
 #include <ace/Log_Msg.h>
@@ -28,11 +35,6 @@
 
 #include "ThreadTable2.h"
 #include "ThreadPool2.h"
-
-#include <string>
-#include <iostream>
-#include <algorithm>
-#include <string.h>
 
 /// specific to this device driver.
 #include "CanBusMotionControl.h"
@@ -54,7 +56,7 @@
 const int REPORT_PERIOD=6; //seconds
 const double BCAST_STATUS_TIMEOUT=6; //seconds
 
-
+using namespace std;
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
