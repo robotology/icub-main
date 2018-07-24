@@ -342,7 +342,7 @@ public:
 * Generator of approximately minimum jerk trajectories.
 * The min jerk trajectory is approximated using a 3rd order LTI 
 * dynamical system (for more details see <a 
-* href="http://pasa.liralab.it/pasapdf/699_Pattacini_etal2010.pdf">Pattacini2010</a>). 
+* href="https://doi.org/10.1109/IROS.2010.5650851">Pattacini2010</a>). 
 * Position, velocity and acceleration trajectories are computed.
 * The main advantage with respect to the standard polynomial form
 * is that if the reference value yd changes there is no need to 
