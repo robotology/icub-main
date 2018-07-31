@@ -5,8 +5,8 @@
 # Jan 2011. It is time to add versioning information to the iCub builds.
 
 set(ICUB_VERSION_MAJOR "1")
-set(ICUB_VERSION_MINOR "10")
-set(ICUB_VERSION_PATCH "1")
+set(ICUB_VERSION_MINOR "12")
+set(ICUB_VERSION_PATCH "0")
 set(ICUB_VERSION "${ICUB_VERSION_MAJOR}.${ICUB_VERSION_MINOR}.${ICUB_VERSION_PATCH}")
 
 set(ICUB_VERSION_MODIFIER "")
