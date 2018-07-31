@@ -1,11 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_calibrators 
- * \defgroup parametricCalibratorEth
- *
- * Implement calibration routines for the iCub arm(s) (version 1.2).
- *
+/*
  * Copyright (C) 20014 iCub Facility, Istituto Italiano di Tecnologia
  *
  * Authors: Alberto Cardellino, Marco Randazzo, Valentina Gaggero
@@ -38,7 +33,8 @@ namespace yarp {
  */
 
 /**
- * @ingroup dev_impl
+ * @ingroup icub_calibrators
+ * @brief `parametricCalibrator`: implement calibration routines for the iCub arm(s) (version 1.2).
  * 
  * A calibrator interface implementation for the Arm of the robot iCub.
  */
@@ -61,7 +57,7 @@ public:
      * the position control interfaces of the standard control board devices.
      * @return true if calibration was successful, false otherwise.
      */
-    bool calibrate(DeviceDriver *device);
+    bool calibrate(DeviceDriver *device) override;
 
     /**
      * Open the device driver.
@@ -69,35 +65,35 @@ public:
      * parameters.
      * @return true/false on success/failure.
      */
-    virtual bool open (yarp::os::Searchable& config);
+    virtual bool open (yarp::os::Searchable& config) override;
 
     /**
      * Close the device driver.
      * @return true/false on success/failure.
      */
-    virtual bool close ();
+    virtual bool close ()  override;
 
-    virtual bool park(DeviceDriver *dd, bool wait=true);
+    virtual bool park(DeviceDriver *dd, bool wait=true)  override;
 
-    virtual bool quitPark();
+    virtual bool quitPark()  override;
 
-    virtual bool quitCalibrate();
+    virtual bool quitCalibrate()  override;
 
     // IRemoteCalibrator
 
-    yarp::dev::IRemoteCalibrator *getCalibratorDevice();
+    virtual  yarp::dev::IRemoteCalibrator *getCalibratorDevice()  override;
 
-    bool calibrateSingleJoint(int j);
+    virtual bool calibrateSingleJoint(int j)  override;
 
-    bool calibrateWholePart();
+    virtual bool calibrateWholePart()  override;
 
-    bool homingSingleJoint(int j);
+    virtual bool homingSingleJoint(int j)  override;
 
-    bool homingWholePart();
+    virtual bool homingWholePart()  override;
 
-    bool parkSingleJoint(int j, bool _wait=true);
+    virtual bool parkSingleJoint(int j, bool _wait=true)  override;
 
-    bool parkWholePart();
+    virtual bool parkWholePart()  override;
 
 private:
 
@@ -108,16 +104,15 @@ private:
     bool calibrateJoint(int j);
     bool goToZero(int j);
     bool checkCalibrateJointEnded(std::list<int> set);
-    bool checkGoneToZero(int j);
     bool checkGoneToZeroThreshold(int j);
     bool checkHwFault(int j);
 
     yarp::dev::PolyDriver *dev2calibrate;
-    IControlCalibration2 *iCalibrate;
+    IControlCalibration *iCalibrate;
     IPidControl *iPids;
     IEncoders *iEncoders;
     IPositionControl *iPosition;
-    IControlMode2 *iControlMode;
+    IControlMode *iControlMode;
     IAmplifierControl *iAmp;
 
     std::list<std::list<int> > joints;

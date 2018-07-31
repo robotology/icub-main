@@ -29,10 +29,9 @@ using yarp::os::Bottle;
 using yarp::os::Property;
 using yarp::os::Value;
 using yarp::dev::CanMessage;
-using yarp::os::Time;
 
 
-CanBusSkin::CanBusSkin() :  RateThread(20),
+CanBusSkin::CanBusSkin() :  PeriodicThread(0.02),
                             mutex(1),
                             _verbose(false),
                             _isDiagnosticPresent(false)
@@ -66,7 +65,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     _cfgReader.setName(name);
 
     int period=config.find("period").asInt();
-    setRate(period);
+    setPeriod((double)period/1000.0);
 
     netID = config.find("canDeviceNum").asInt(); 
 
@@ -185,7 +184,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
 
     //if I 'm here, config is ok ==> send message to enable transmission
     //(only in case of new configuration, skin boards need of explicit message in order to enable tx.)
-    Time::delay(0.01);
+    yarp::os::Time::delay(0.01);
     if(_newCfg)
     {
         uint8_t txmode = 1;
@@ -196,7 +195,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
         }
     }
 
-    RateThread::start();
+    PeriodicThread::start();
     return true;
 }
 
@@ -344,7 +343,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
         }
     }
 
-        Time::delay(0.01);
+        yarp::os::Time::delay(0.01);
         /* Read special triangle configuration */
         numofcfg = SPECIAL_TRIANGLE_CFG_MAX_NUM; //set size of my vector boardCfgList;
                                     //in output the function return number of special board cfg are in file xml
@@ -438,7 +437,7 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
             return false;
     }
 
-    Time::delay(0.5);
+    yarp::os::Time::delay(0.5);
 
     /*read and send special cfg for board and triangle */
     if(!readNewSpecialConfiguration(config))
@@ -473,18 +472,18 @@ bool CanBusSkin::readOldConfiguration(yarp::os::Searchable& config)
     int numofcards = cardId.size();
     // Check parameter list length
     // 4C Message
-    checkParameterListLength("4C_Timer", msg4C_Timer, numofcards, 0x01);
-    checkParameterListLength("4C_CDCOffsetL", msg4C_CDCOffsetL, numofcards, 0x00);
-    checkParameterListLength("4C_CDCOffsetH", msg4C_CDCOffsetH, numofcards, 0x20);
-    checkParameterListLength("4C_TimeL", msg4C_TimeL, numofcards, 0x00);
-    checkParameterListLength("4C_TimeH", msg4C_TimeH, numofcards, 0x00);
+    checkParameterListLength("4C_Timer", msg4C_Timer, numofcards, Value(0x01));
+    checkParameterListLength("4C_CDCOffsetL", msg4C_CDCOffsetL, numofcards, Value(0x00));
+    checkParameterListLength("4C_CDCOffsetH", msg4C_CDCOffsetH, numofcards, Value(0x20));
+    checkParameterListLength("4C_TimeL", msg4C_TimeL, numofcards, Value(0x00));
+    checkParameterListLength("4C_TimeH", msg4C_TimeH, numofcards, Value(0x00));
     // 4C Message
-    checkParameterListLength("4E_Shift", msg4E_Shift, numofcards, 0x02);
-    checkParameterListLength("4E_Shift3_1", msg4E_Shift3_1, numofcards, 0x22);
-    checkParameterListLength("4E_NoLoad", msg4E_NoLoad, numofcards, 0xF0);
-    checkParameterListLength("4E_Param", msg4E_Param, numofcards, 0x00);
-    checkParameterListLength("4E_EnaL", msg4E_EnaL, numofcards, 0xFF);
-    checkParameterListLength("4E_EnaH", msg4E_EnaH, numofcards, 0xFF);
+    checkParameterListLength("4E_Shift", msg4E_Shift, numofcards, Value(0x02));
+    checkParameterListLength("4E_Shift3_1", msg4E_Shift3_1, numofcards, Value(0x22));
+    checkParameterListLength("4E_NoLoad", msg4E_NoLoad, numofcards, Value(0xF0));
+    checkParameterListLength("4E_Param", msg4E_Param, numofcards, Value(0x00));
+    checkParameterListLength("4E_EnaL", msg4E_EnaL, numofcards, Value(0xFF));
+    checkParameterListLength("4E_EnaH", msg4E_EnaH, numofcards, Value(0xFF));
     /* ********************************************** */
 
 //    yDebug() << "msg4E_NoLoad size is " << msg4E_NoLoad.size();
@@ -534,7 +533,7 @@ bool CanBusSkin::close()
         }
     }
 
-    RateThread::stop();
+    PeriodicThread::stop();
     if (pCanBufferFactory) 
     {
         pCanBufferFactory->destroyBuffer(inBuffer);

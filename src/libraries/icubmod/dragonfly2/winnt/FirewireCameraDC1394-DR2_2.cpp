@@ -217,15 +217,15 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     FlyCapture2::PGRGuid Guid;
     
     /*
-	if (config.check("guid"))
-	{
-		yarp::os::ConstString sguid=config.find("guid").asString();
+    if (config.check("guid"))
+    {
+        std::string sguid=config.find("guid").asString();
 
         Guid.value[0]=strtoul(sguid.substr(0,8).c_str(),NULL,16);
         Guid.value[1]=strtoul(sguid.substr(8,8).c_str(),NULL,16);
         Guid.value[2]=0;
         Guid.value[3]=0;
-	}
+    }
     else
     */
     {
@@ -242,7 +242,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         }
 
         error=m_pBusManager->GetCameraFromIndex(idCamera,&Guid);
-        if (manage(error)) return false;	
+        if (manage(error)) return false;    
     }
 
     if (!(m_pCamera=new FlyCapture2::Camera()))
@@ -481,16 +481,16 @@ bool CFWCamera_DR2_2::SetVideoMode(FlyCapture2::VideoMode video_mode)
     case FlyCapture2::VIDEOMODE_640x480YUV422:  xdim=640; ydim=480; buff_dim= xdim*ydim*2;    break;
     case FlyCapture2::VIDEOMODE_640x480RGB:     xdim=640; ydim=480; buff_dim= xdim*ydim*3;    break;
     case FlyCapture2::VIDEOMODE_640x480Y8:      xdim=640; ydim=480; buff_dim= xdim*ydim;      break;
-    case FlyCapture2::VIDEOMODE_640x480Y16:	    xdim=640; ydim=480; buff_dim= xdim*ydim*2;    break;
+    case FlyCapture2::VIDEOMODE_640x480Y16:     xdim=640; ydim=480; buff_dim= xdim*ydim*2;    break;
 
     case FlyCapture2::VIDEOMODE_800x600YUV422:  xdim=800; ydim=600; buff_dim= xdim*ydim*2;    break;
     case FlyCapture2::VIDEOMODE_800x600RGB:     xdim=800; ydim=600; buff_dim= xdim*ydim*3;    break;
-    case FlyCapture2::VIDEOMODE_800x600Y8:      xdim=800; ydim=600; buff_dim= xdim*ydim;	  break;
+    case FlyCapture2::VIDEOMODE_800x600Y8:      xdim=800; ydim=600; buff_dim= xdim*ydim;      break;
     case FlyCapture2::VIDEOMODE_800x600Y16:     xdim=800; ydim=600; buff_dim= xdim*ydim*2;    break;
     
     case FlyCapture2::VIDEOMODE_1024x768YUV422: xdim=1024; ydim=768; buff_dim= xdim*ydim*2;   break;
     case FlyCapture2::VIDEOMODE_1024x768RGB:    xdim=1024; ydim=768; buff_dim= xdim*ydim*3;   break;
-    case FlyCapture2::VIDEOMODE_1024x768Y8:     xdim=1024; ydim=768; buff_dim= xdim*ydim;	  break;
+    case FlyCapture2::VIDEOMODE_1024x768Y8:     xdim=1024; ydim=768; buff_dim= xdim*ydim;     break;
     case FlyCapture2::VIDEOMODE_1024x768Y16:    xdim=1024; ydim=768; buff_dim= xdim*ydim*2;   break;
 
     default: return false;
@@ -663,7 +663,7 @@ bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int spee
     if (pixel_format!=SKIP) m_F7ImageSettings.pixelFormat=(FlyCapture2::PixelFormat)pixel_format;
     m_F7ImageSettings.width=(unsigned)xdim;
     m_F7ImageSettings.offsetX=xoff;
-    m_F7ImageSettings.height=(unsigned)ydim;		
+    m_F7ImageSettings.height=(unsigned)ydim;        
     m_F7ImageSettings.offsetY=yoff;
 
     // validate image settings
@@ -930,7 +930,7 @@ bool CFWCamera_DR2_2::hasAutoDC1394(int feature)
     error=m_pCamera->GetPropertyInfo(&info);
     if (manage(error)) return false;
     return info.autoSupported;
-}	
+}   
 // 08
 bool CFWCamera_DR2_2::hasOnePushDC1394(int feature)
 {
@@ -1264,7 +1264,7 @@ unsigned int CFWCamera_DR2_2::getISOSpeedDC1394()
 }
 // 19
 bool CFWCamera_DR2_2::setISOSpeedDC1394(int speed)
-{ 	
+{   
     m_AcqMutex.wait();
 
     if (!m_pCamera)
@@ -1447,7 +1447,7 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 
     m_AcqMutex.post();
     return true;
-}	
+}   
 
 // 25
 bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep)
@@ -1546,7 +1546,7 @@ bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &yd
     y0=m_F7ImageSettings.offsetY-(m_F7Info.maxHeight-ydim)/2;
 
     return true;
-}	
+}   
 
 // 28
 bool CFWCamera_DR2_2::setOperationModeDC1394(bool b1394b)
@@ -1791,7 +1791,7 @@ double CFWCamera_DR2_2::getBrightness()
 double CFWCamera_DR2_2::getExposure()
 { 
     return getFeatureDC1394(YARP_FEATURE_EXPOSURE);
-}	
+}   
 double CFWCamera_DR2_2::getSharpness()
 { 
     return getFeatureDC1394(YARP_FEATURE_SHARPNESS);
@@ -1799,11 +1799,11 @@ double CFWCamera_DR2_2::getSharpness()
 bool CFWCamera_DR2_2::getWhiteBalance(double &blue, double &red)
 { 
     return getWhiteBalance(blue,red); 
-}	
+}   
 double CFWCamera_DR2_2::getHue()
 { 
     return getFeatureDC1394(YARP_FEATURE_HUE);
-}	
+}   
 double CFWCamera_DR2_2::getSaturation()
 { 
     return CFWCamera_DR2_2::getFeatureDC1394(YARP_FEATURE_SATURATION);

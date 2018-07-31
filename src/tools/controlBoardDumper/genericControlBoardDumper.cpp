@@ -74,7 +74,7 @@ bool GetPidRefs::getData(double *e)
   //fprintf(stderr, "Entering getPosErrs\n");
   if (ipid)
     {
-	  ipid->getReferences(e);
+      ipid->getPidReferences(VOCAB_PIDTYPE_POSITION, e);
       return 1;
     }
   else
@@ -125,7 +125,7 @@ bool GetPosErrs::getData(double *e)
   //fprintf(stderr, "Entering getPosErrs\n");
   if (ipid)
     {
-      ipid->getErrors(e);
+      ipid->getPidErrors(VOCAB_PIDTYPE_POSITION,e);
       return 1;
     }
   else
@@ -142,7 +142,7 @@ bool GetOuts::getData(double *e)
   //fprintf(stderr, "Entering getOuts\n");
   if (ipid)
     {
-      ipid->getOutputs(e);
+      ipid->getPidOutputs(VOCAB_PIDTYPE_POSITION,e);
       return 1;
     }
   else
@@ -183,7 +183,7 @@ bool GetTrqs::getData(double *e)
     return 0;
 }
 
-void GetControlModes::setInterface(IControlMode2 *i, int n_joints)
+void GetControlModes::setInterface(IControlMode *i, int n_joints)
 {
     icmd = i;
     nj=n_joints;
@@ -238,17 +238,17 @@ bool GetInteractionModes::getData(double *e)
     return 0;
 }
 
-void GetTrqErrs::setInterface(ITorqueControl *i)
+void GetTrqErrs::setInterface(IPidControl *i)
 {
-    itrq = i;
+    ipid = i;
 }
 
 bool GetTrqErrs::getData(double *e)
 {
   //fprintf(stderr, "Entering getTrqErrs\n");
-  if (itrq)
+  if (ipid)
     {
-      itrq->getTorqueErrors(e);
+      ipid->getPidErrors(VOCAB_PIDTYPE_TORQUE,e);
       return 1;
     }
   else

@@ -8,10 +8,10 @@
 #ifndef __FAKEBOARD__
 #define __FAKEBOARD__
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include "msgList.h"
 
-class FakeBoard: public yarp::os::RateThread
+class FakeBoard: public yarp::os::PeriodicThread
 {
     int canId;
     MsgList inMessages;

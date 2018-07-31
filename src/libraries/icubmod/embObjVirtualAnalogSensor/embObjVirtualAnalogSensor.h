@@ -1,13 +1,5 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup analogSensorEth
- *
- * To Do: add description
- *
- */
-
 #ifndef __analogVirtualSensorEth_h__
 #define __analogVirtualSensorEth_h__
 
@@ -78,7 +70,7 @@ public:
     virtual eth::iethresType_t type();
 
     // IvirtualAnalogSensor interface
-    virtual IVirtualAnalogSensor::VAS_status getVirtualAnalogSensorStatus(int ch);
+    virtual yarp::dev::VAS_status getVirtualAnalogSensorStatus(int ch);
     virtual int getVirtualAnalogSensorChannels();
     virtual bool updateVirtualAnalogSensorMeasure(yarp::sig::Vector &measure);
     virtual bool updateVirtualAnalogSensorMeasure(int ch, double &measure);

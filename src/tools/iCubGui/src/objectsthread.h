@@ -18,6 +18,7 @@
 #ifndef OBJECTSTHREAD_H
 #define OBJECTSTHREAD_H
 
+#include <string>
 #include <qstring.h>
 #include <qthread.h>
 #include <vector>
@@ -191,7 +192,7 @@ protected:
 
 void ObjectsManager::manage(yarp::os::Bottle *msg)
 {
-    yarp::os::ConstString cmd=msg->get(0).asString();
+    std::string cmd=msg->get(0).asString();
 
     if (cmd=="reset")
     {

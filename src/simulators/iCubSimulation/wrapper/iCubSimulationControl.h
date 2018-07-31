@@ -28,15 +28,18 @@
 #ifndef __iCubSimulationControlh__
 #define __iCubSimulationControlh__
 
+#include <string>
+
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
-//#include <yarp/os/RateThread.h>
+//#include <yarp/os/PeriodicThread.h>
 #include <yarp/sig/Image.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
+#include <iCub/ctrl/adaptWinPolyEstimator.h>
 
 #include "LogicalJoints.h"
 
@@ -73,21 +76,21 @@ namespace yarp{
 }
 class yarp::dev::iCubSimulationControl :
     public DeviceDriver,
-    //public yarp::os::RateThread, 
-    public IPositionControl2Raw,
-    public ImplementPositionControl2,
-    public IVelocityControl2Raw,
-    public ImplementVelocityControl2,
+    //public yarp::os::PeriodicThread, 
+    public IPositionControlRaw,
+    public ImplementPositionControl,
+    public IVelocityControlRaw,
+    public ImplementVelocityControl,
     public ITorqueControlRaw,
     public ImplementTorqueControl,
     public IAmplifierControlRaw,
-    public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
+    public ImplementAmplifierControl,
     public IControlCalibrationRaw,
-    public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
-    public IControlLimits2Raw,
-    public ImplementControlLimits2,
-    public IControlMode2Raw,
-    public ImplementControlMode2,
+    public ImplementControlCalibration,
+    public IControlLimitsRaw,
+    public ImplementControlLimits,
+    public IControlModeRaw,
+    public ImplementControlMode,
     public IInteractionModeRaw,
     public ImplementInteractionMode,
     public IPidControlRaw,
@@ -144,229 +147,216 @@ class yarp::dev::iCubSimulationControl :
 
   ///////////// PID INTERFACE
   //
-  virtual bool setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid);
-  virtual bool setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids);
-  virtual bool setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref);
-  virtual bool setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs);
-  virtual bool setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit);
-  virtual bool setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits);
-  virtual bool getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err);
-  virtual bool getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs);
-  virtual bool getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out);
-  virtual bool getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs);
-  virtual bool getPidRaw(const PidControlTypeEnum& pidtype, int j, Pid *pid);
-  virtual bool getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids);
-  virtual bool getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref);
-  virtual bool getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs);
-  virtual bool getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit);
-  virtual bool getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits);
-  virtual bool resetPidRaw(const PidControlTypeEnum& pidtype, int j);
-  virtual bool disablePidRaw(const PidControlTypeEnum& pidtype, int j);
-  virtual bool enablePidRaw(const PidControlTypeEnum& pidtype, int j);
-  virtual bool setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v);
-  virtual bool isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled);
+  virtual bool setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid) override;
+  virtual bool setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids) override;
+  virtual bool setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref) override;
+  virtual bool setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs) override;
+  virtual bool setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit) override;
+  virtual bool setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits) override;
+  virtual bool getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err) override;
+  virtual bool getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs) override;
+  virtual bool getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out) override;
+  virtual bool getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs) override;
+  virtual bool getPidRaw(const PidControlTypeEnum& pidtype, int j, Pid *pid) override;
+  virtual bool getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids) override;
+  virtual bool getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref) override;
+  virtual bool getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs) override;
+  virtual bool getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit) override;
+  virtual bool getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits) override;
+  virtual bool resetPidRaw(const PidControlTypeEnum& pidtype, int j) override;
+  virtual bool disablePidRaw(const PidControlTypeEnum& pidtype, int j) override;
+  virtual bool enablePidRaw(const PidControlTypeEnum& pidtype, int j) override;
+  virtual bool setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v) override;
+  virtual bool isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled) override;
   //
   /////////////////////////////// END PID INTERFACE
 
   /// POSITION CONTROL INTERFACE RAW
-  virtual bool getAxes(int *ax);
-  virtual bool setPositionModeRaw();
-  virtual bool positionMoveRaw(int j, double ref);
-  virtual bool positionMoveRaw(const double *refs);
-  virtual bool relativeMoveRaw(int j, double delta);
-  virtual bool relativeMoveRaw(const double *deltas);
-  virtual bool checkMotionDoneRaw(bool *flag);
-  virtual bool checkMotionDoneRaw(int j, bool *flag);
-  virtual bool setRefSpeedRaw(int j, double sp);
-  virtual bool setRefSpeedsRaw(const double *spds);
-  virtual bool setRefAccelerationRaw(int j, double acc);
-  virtual bool setRefAccelerationsRaw(const double *accs);
-  virtual bool getRefSpeedRaw(int j, double *ref);
-  virtual bool getRefSpeedsRaw(double *spds);
-  virtual bool getRefAccelerationRaw(int j, double *acc);
-  virtual bool getRefAccelerationsRaw(double *accs);
-  virtual bool stopRaw(int j);
-  virtual bool stopRaw();
+  virtual bool getAxes(int *ax) override;
+  virtual bool positionMoveRaw(int j, double ref) override;
+  virtual bool positionMoveRaw(const double *refs) override;
+  virtual bool relativeMoveRaw(int j, double delta) override;
+  virtual bool relativeMoveRaw(const double *deltas) override;
+  virtual bool checkMotionDoneRaw(bool *flag) override;
+  virtual bool checkMotionDoneRaw(int j, bool *flag) override;
+  virtual bool setRefSpeedRaw(int j, double sp) override;
+  virtual bool setRefSpeedsRaw(const double *spds) override;
+  virtual bool setRefAccelerationRaw(int j, double acc) override;
+  virtual bool setRefAccelerationsRaw(const double *accs) override;
+  virtual bool getRefSpeedRaw(int j, double *ref) override;
+  virtual bool getRefSpeedsRaw(double *spds) override;
+  virtual bool getRefAccelerationRaw(int j, double *acc) override;
+  virtual bool getRefAccelerationsRaw(double *accs) override;
+  virtual bool stopRaw(int j) override;
+  virtual bool stopRaw() override;
 
   // Position Control2 Interface
-  virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs);
-  virtual bool relativeMoveRaw(const int n_joint, const int *joints, const double *deltas);
-  virtual bool checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags);
-  virtual bool setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds);
-  virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs);
-  virtual bool getRefSpeedsRaw(const int n_joint, const int *joints, double *spds);
-  virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
-  virtual bool stopRaw(const int n_joint, const int *joints);
-  virtual bool getTargetPositionRaw(const int joint, double *ref);
-  virtual bool getTargetPositionsRaw(double *refs);
-  virtual bool getTargetPositionsRaw(const int n_joint, const int *joints, double *refs);
+  virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs) override;
+  virtual bool relativeMoveRaw(const int n_joint, const int *joints, const double *deltas) override;
+  virtual bool checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags) override;
+  virtual bool setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds) override;
+  virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs) override;
+  virtual bool getRefSpeedsRaw(const int n_joint, const int *joints, double *spds) override;
+  virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs) override;
+  virtual bool stopRaw(const int n_joint, const int *joints) override;
+  virtual bool getTargetPositionRaw(const int joint, double *ref) override;
+  virtual bool getTargetPositionsRaw(double *refs) override;
+  virtual bool getTargetPositionsRaw(const int n_joint, const int *joints, double *refs) override;
 
   // Velocity Control
-  virtual bool setVelocityModeRaw();
-  virtual bool velocityMoveRaw(int j, double sp);
-  virtual bool velocityMoveRaw(const double *sp);
+  virtual bool velocityMoveRaw(int j, double sp) override;
+  virtual bool velocityMoveRaw(const double *sp) override;
   
   // Velocity Control2 Interface
-  virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
-  virtual bool getRefVelocityRaw(const int joint, double *ref);
-  virtual bool getRefVelocitiesRaw(double *refs);
-  virtual bool getRefVelocitiesRaw(const int n_joint, const int *joints, double *refs);
+  virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds) override;
+  virtual bool getRefVelocityRaw(const int joint, double *ref) override;
+  virtual bool getRefVelocitiesRaw(double *refs) override;
+  virtual bool getRefVelocitiesRaw(const int n_joint, const int *joints, double *refs) override;
 
 
   //////////////////////// BEGIN Encoder Interface
   //
-  virtual bool resetEncoderRaw(int j);
-  virtual bool resetEncodersRaw();
-  virtual bool setEncoderRaw(int j, double val);
-  virtual bool setEncodersRaw(const double *vals);
-  virtual bool getEncoderRaw(int j, double *v);
-  virtual bool getEncodersRaw(double *encs);
-  virtual bool getEncoderSpeedRaw(int j, double *sp);
-  virtual bool getEncoderSpeedsRaw(double *spds);
-  virtual bool getEncoderAccelerationRaw(int j, double *spds);
-  virtual bool getEncoderAccelerationsRaw(double *accs);
+  virtual bool resetEncoderRaw(int j) override;
+  virtual bool resetEncodersRaw() override;
+  virtual bool setEncoderRaw(int j, double val) override;
+  virtual bool setEncodersRaw(const double *vals) override;
+  virtual bool getEncoderRaw(int j, double *v) override;
+  virtual bool getEncodersRaw(double *encs) override;
+  virtual bool getEncoderSpeedRaw(int j, double *sp) override;
+  virtual bool getEncoderSpeedsRaw(double *spds) override;
+  virtual bool getEncoderAccelerationRaw(int j, double *spds) override;
+  virtual bool getEncoderAccelerationsRaw(double *accs) override;
 
   ///////////////////////// END Encoder Interface
 
   //////////////////////// BEGIN RemoteVariables Interface
   //
-  virtual bool getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val);
-  virtual bool setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val);
-  virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys);
+  virtual bool getRemoteVariableRaw(std::string key, yarp::os::Bottle& val) override;
+  virtual bool setRemoteVariableRaw(std::string key, const yarp::os::Bottle& val) override;
+  virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys) override;
 
   ///////////////////////// END RemoteVariables Interface
 
   //////////////////////// BEGIN MotorEncoderInterface
   //
-  virtual bool getNumberOfMotorEncodersRaw(int* num);
-  virtual bool resetMotorEncoderRaw(int m);
-  virtual bool resetMotorEncodersRaw();
-  virtual bool setMotorEncoderRaw(int m, const double val);
-  virtual bool setMotorEncodersRaw(const double *vals);
-  virtual bool getMotorEncoderRaw(int m, double *v);
-  virtual bool setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr);
-  virtual bool getMotorEncoderCountsPerRevolutionRaw(int m, double *cpr);
-  virtual bool getMotorEncodersRaw(double *encs);
-  virtual bool getMotorEncoderSpeedRaw(int m, double *sp);
-  virtual bool getMotorEncoderSpeedsRaw(double *spds);
-  virtual bool getMotorEncoderAccelerationRaw(int m, double *spds);
-  virtual bool getMotorEncoderAccelerationsRaw(double *accs);
-  virtual bool getMotorEncodersTimedRaw(double *encs, double *stamps);
-  virtual bool getMotorEncoderTimedRaw(int m, double *encs, double *stamp);
+  virtual bool getNumberOfMotorEncodersRaw(int* num) override;
+  virtual bool resetMotorEncoderRaw(int m) override;
+  virtual bool resetMotorEncodersRaw() override;
+  virtual bool setMotorEncoderRaw(int m, const double val) override;
+  virtual bool setMotorEncodersRaw(const double *vals) override;
+  virtual bool getMotorEncoderRaw(int m, double *v) override;
+  virtual bool setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr) override;
+  virtual bool getMotorEncoderCountsPerRevolutionRaw(int m, double *cpr) override;
+  virtual bool getMotorEncodersRaw(double *encs) override;
+  virtual bool getMotorEncoderSpeedRaw(int m, double *sp) override;
+  virtual bool getMotorEncoderSpeedsRaw(double *spds) override;
+  virtual bool getMotorEncoderAccelerationRaw(int m, double *spds) override;
+  virtual bool getMotorEncoderAccelerationsRaw(double *accs) override;
+  virtual bool getMotorEncodersTimedRaw(double *encs, double *stamps) override;
+  virtual bool getMotorEncoderTimedRaw(int m, double *encs, double *stamp) override;
 
   ///////////////////////// END Encoder Interface
   ////// Amplifier interface
   //
-  virtual bool enableAmpRaw(int j);
-  virtual bool disableAmpRaw(int j);
-  virtual bool getCurrentsRaw(double *vals);
-  virtual bool getCurrentRaw(int j, double *val);
-  virtual bool setMaxCurrentRaw(int j, double val);
-  virtual bool getMaxCurrentRaw(int j, double* val);
-  virtual bool getAmpStatusRaw(int *st);
-  virtual bool getAmpStatusRaw(int k, int *st);
-  virtual bool getPWMRaw(int j, double* val);
-  virtual bool getPWMLimitRaw(int j, double* val);
-  virtual bool setPWMLimitRaw(int j, const double val);
-  virtual bool getPowerSupplyVoltageRaw(int j, double* val);
+  virtual bool enableAmpRaw(int j) override;
+  virtual bool disableAmpRaw(int j) override;
+  virtual bool getCurrentsRaw(double *vals) override;
+  virtual bool getCurrentRaw(int j, double *val) override;
+  virtual bool setMaxCurrentRaw(int j, double val) override;
+  virtual bool getMaxCurrentRaw(int j, double* val) override;
+  virtual bool getAmpStatusRaw(int *st) override;
+  virtual bool getAmpStatusRaw(int k, int *st) override;
+  virtual bool getPWMRaw(int j, double* val) override;
+  virtual bool getPWMLimitRaw(int j, double* val) override;
+  virtual bool setPWMLimitRaw(int j, const double val) override;
+  virtual bool getPowerSupplyVoltageRaw(int j, double* val) override;
   //
   /////////////// END AMPLIFIER INTERFACE
 
   ////// calibration
-  virtual bool calibrateRaw(int j, double p);
-  virtual bool doneRaw(int j);
+   virtual bool calibrateAxisWithParamsRaw(int axis, unsigned int type, double p1, double p2, double p3) override;
+  virtual bool calibrationDoneRaw(int j) override;
 
   /////// Limits
-  virtual bool setLimitsRaw(int axis, double min, double max);
-  virtual bool getLimitsRaw(int axis, double *min, double *max);
-  virtual bool setVelLimitsRaw(int axis, double min, double max);
-  virtual bool getVelLimitsRaw(int axis, double *min, double *max);
+  virtual bool setLimitsRaw(int axis, double min, double max) override;
+  virtual bool getLimitsRaw(int axis, double *min, double *max) override;
+  virtual bool setVelLimitsRaw(int axis, double min, double max) override;
+  virtual bool getVelLimitsRaw(int axis, double *min, double *max) override;
 
   /////// Axis Info
-  virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name);
-  virtual bool getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type);
+  virtual bool getAxisNameRaw(int axis, std::string& name) override;
+  virtual bool getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type) override;
 
   /// IMotor
-  virtual bool getNumberOfMotorsRaw(int* m);
-  virtual bool getTemperatureRaw(int m, double* val);
-  virtual bool getTemperaturesRaw(double *vals);
-  virtual bool getTemperatureLimitRaw(int m, double *temp);
-  virtual bool setTemperatureLimitRaw(int m, const double temp);
-  virtual bool getMotorOutputLimitRaw(int m, double *limit);
-  virtual bool setMotorOutputLimitRaw(int m, const double limit);
-  virtual bool getPeakCurrentRaw(int m, double *val);
-  virtual bool setPeakCurrentRaw(int m, const double val);
-  virtual bool getNominalCurrentRaw(int m, double *val);
-  virtual bool setNominalCurrentRaw(int m, const double val);
+  virtual bool getNumberOfMotorsRaw(int* m) override;
+  virtual bool getTemperatureRaw(int m, double* val) override;
+  virtual bool getTemperaturesRaw(double *vals) override;
+  virtual bool getTemperatureLimitRaw(int m, double *temp) override;
+  virtual bool setTemperatureLimitRaw(int m, const double temp) override;
+  virtual bool getPeakCurrentRaw(int m, double *val) override;
+  virtual bool setPeakCurrentRaw(int m, const double val) override;
+  virtual bool getNominalCurrentRaw(int m, double *val) override;
+  virtual bool setNominalCurrentRaw(int m, const double val) override;
 
    /////// Torque Control
-  virtual bool setTorqueModeRaw(void);
-  virtual bool getTorqueRaw(int, double *);
-  virtual bool getTorquesRaw(double *);
-  virtual bool getTorqueRangeRaw(int,double *,double *);
-  virtual bool getTorqueRangesRaw(double *,double *);
-  virtual bool setRefTorquesRaw(const double *);
-  virtual bool setRefTorqueRaw(int,double);
-  virtual bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t);
-  virtual bool getRefTorquesRaw(double *);
-  virtual bool getRefTorqueRaw(int,double *);
-  virtual bool getBemfParamRaw(int,double *);
-  virtual bool setBemfParamRaw(int,double );
-  virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
-  virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
+  virtual bool getTorqueRaw(int, double *) override;
+  virtual bool getTorquesRaw(double *) override;
+  virtual bool getTorqueRangeRaw(int,double *,double *) override;
+  virtual bool getTorqueRangesRaw(double *,double *) override;
+  virtual bool setRefTorquesRaw(const double *) override;
+  virtual bool setRefTorqueRaw(int,double) override;
+  virtual bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t) override;
+  virtual bool getRefTorquesRaw(double *) override;
+  virtual bool getRefTorqueRaw(int,double *) override;
+  virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params) override;
+  virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params) override;
 
   /////// Control Mode Interface
-  virtual bool setPositionModeRaw(int j);
-  virtual bool setVelocityModeRaw(int j);
-  virtual bool setTorqueModeRaw(int j);
-  virtual bool setImpedancePositionModeRaw(int j);
-  virtual bool setImpedanceVelocityModeRaw(int j);
-  virtual bool getControlModeRaw(int j, int *mode);
-  virtual bool getControlModesRaw(int* modes);
+  virtual bool getControlModeRaw(int j, int *mode) override;
+  virtual bool getControlModesRaw(int* modes) override;
 
   /////// Control Mode2 Interface
-  virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
-  virtual bool setControlModeRaw(const int j, const int mode);
-  virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
-  virtual bool setControlModesRaw(int *modes);
+  virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes) override;
+  virtual bool setControlModeRaw(const int j, const int mode) override;
+  virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes) override;
+  virtual bool setControlModesRaw(int *modes) override;
 
 
   /////// InteractionMode
-  virtual bool getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode);
-  virtual bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
-  virtual bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
-  virtual bool setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode);
-  virtual bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
-  virtual bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+  virtual bool getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode) override;
+  virtual bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes) override;
+  virtual bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes) override;
+  virtual bool setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode) override;
+  virtual bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes) override;
+  virtual bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes) override;
 
   /////// PositionDirect
-  virtual bool setPositionDirectModeRaw();
-  virtual bool setPositionRaw(int j, double ref);
-  virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
-  virtual bool setPositionsRaw(const double *refs);
-  virtual bool getRefPositionRaw(const int joint, double *ref);
-  virtual bool getRefPositionsRaw(double *refs);
-  virtual bool getRefPositionsRaw(const int n_joint, const int *joints, double *refs);
+  virtual bool setPositionRaw(int j, double ref) override;
+  virtual bool setPositionsRaw(const int n_joint, const int *joints, const double *refs) override;
+  virtual bool setPositionsRaw(const double *refs) override;
+  virtual bool getRefPositionRaw(const int joint, double *ref) override;
+  virtual bool getRefPositionsRaw(double *refs) override;
+  virtual bool getRefPositionsRaw(const int n_joint, const int *joints, double *refs) override;
 
   /////// PWMControl
-  virtual bool setRefDutyCycleRaw(int j, double v);
-  virtual bool setRefDutyCyclesRaw(const double *v);
-  virtual bool getRefDutyCycleRaw(int j, double *v);
-  virtual bool getRefDutyCyclesRaw(double *v);
-  virtual bool getDutyCycleRaw(int j, double *v);
-  virtual bool getDutyCyclesRaw(double *v);
+  virtual bool setRefDutyCycleRaw(int j, double v) override;
+  virtual bool setRefDutyCyclesRaw(const double *v) override;
+  virtual bool getRefDutyCycleRaw(int j, double *v) override;
+  virtual bool getRefDutyCyclesRaw(double *v) override;
+  virtual bool getDutyCycleRaw(int j, double *v) override;
+  virtual bool getDutyCyclesRaw(double *v) override;
 
   /////// CurrentControl
-  // virtual bool getAxes(int *ax);
-  //virtual bool getCurrentRaw(int j, double *t);
-  //virtual bool getCurrentsRaw(double *t);
-  virtual bool getCurrentRangeRaw(int j, double *min, double *max);
-  virtual bool getCurrentRangesRaw(double *min, double *max);
-  virtual bool setRefCurrentsRaw(const double *t);
-  virtual bool setRefCurrentRaw(int j, double t);
-  virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t);
-  virtual bool getRefCurrentsRaw(double *t);
-  virtual bool getRefCurrentRaw(int j, double *t);
+  // virtual bool getAxes(int *ax) override;
+  //virtual bool getCurrentRaw(int j, double *t) override;
+  //virtual bool getCurrentsRaw(double *t) override;
+  virtual bool getCurrentRangeRaw(int j, double *min, double *max) override;
+  virtual bool getCurrentRangesRaw(double *min, double *max) override;
+  virtual bool setRefCurrentsRaw(const double *t) override;
+  virtual bool setRefCurrentRaw(int j, double t) override;
+  virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t) override;
+  virtual bool getRefCurrentsRaw(double *t) override;
+  virtual bool getRefCurrentRaw(int j, double *t) override;
 
 //void run(void);
 
@@ -376,8 +366,9 @@ class yarp::dev::iCubSimulationControl :
   int verbosity;
 
 private:
-    void compute_mot_pos(double *mot, double *jnt);
-    void compute_mot_vel(double *mot, double *jnt);
+    void compute_mot_pos_from_jnt_pos(double *mot_pos, const double *jnt_pos, int size_joints);
+    void compute_mot_vel_and_acc     (double *mot_vel, double *mot_acc, const double *mot_pos, int size_joints);
+    void compute_jnt_vel_and_acc     (double *jnt_vel, double *jnt_acc, const double *jnt_pos, int size_joints);
 
 protected:
     yarp::dev::PolyDriver joints;
@@ -409,7 +400,19 @@ protected:
     //current velocity of the joints
     double *current_jnt_vel;
     double *current_mot_vel;
+    double *estimated_jnt_vel;
+    double *estimated_mot_vel;
     
+    //current acceleration of the joints
+    double *current_jnt_acc;
+    double *current_mot_acc;
+    double *estimated_jnt_acc;
+    double *estimated_mot_acc;
+    iCub::ctrl::AWLinEstimator       *linEstJnt;
+    iCub::ctrl::AWQuadEstimator      *quadEstJnt;
+    iCub::ctrl::AWLinEstimator       *linEstMot;
+    iCub::ctrl::AWQuadEstimator      *quadEstMot;
+
     //next position of the joints
     double *next_pos;
     double *ref_command_positions;

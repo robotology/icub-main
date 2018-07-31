@@ -20,6 +20,7 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <vector>
 #include <algorithm>
 #include <iomanip>
 
@@ -43,7 +44,7 @@ bool MotorThread::checkOptions(const Bottle &options, const string &parameter)
     bool found=false;
     for (int i=0; i<options.size(); i++)
     {
-        if(options.get(i).asString()==parameter.c_str())
+        if(options.get(i).asString()==parameter)
         {
             found=true;
             break;
@@ -257,19 +258,19 @@ int MotorThread::setStereoToCartesianMode(const int mode, Bottle &reply)
     {
         case S2C_DISPARITY:
         {
-            if (Network::isConnected(disparityPort.getName().c_str(),"/stereoDisparity/rpc"))
+            if (Network::isConnected(disparityPort.getName(),"/stereoDisparity/rpc"))
             {
                 modeS2C=S2C_DISPARITY;
                 string tmp="[Stereo -> Cartesian]: Disparity";
                 yInfo("%s",tmp.c_str());
-                reply.addString(tmp.c_str());
+                reply.addString(tmp);
             }
             else
             {
                 modeS2C=S2C_HOMOGRAPHY;
                 string tmp="[Stereo -> Cartesian]: Homography";
                 yInfo("%s",tmp.c_str());
-                reply.addString(tmp.c_str());
+                reply.addString(tmp);
             }
             break;
         }
@@ -281,14 +282,14 @@ int MotorThread::setStereoToCartesianMode(const int mode, Bottle &reply)
                 modeS2C=S2C_NETWORK;
                 string tmp="[Stereo -> Cartesian]: Neural Net";
                 yInfo("%s",tmp.c_str());
-                reply.addString(tmp.c_str());
+                reply.addString(tmp);
             }
             else
             {
                 modeS2C=S2C_HOMOGRAPHY;
                 string tmp="[Stereo -> Cartesian]: Homography";
                 yInfo("%s",tmp.c_str());
-                reply.addString(tmp.c_str());
+                reply.addString(tmp);
             }
             break;
         }
@@ -298,36 +299,36 @@ int MotorThread::setStereoToCartesianMode(const int mode, Bottle &reply)
             modeS2C=S2C_HOMOGRAPHY;
             string tmp="[Stereo -> Cartesian]: Homography";
             yInfo("%s",tmp.c_str());
-            reply.addString(tmp.c_str());
+            reply.addString(tmp);
             break;
         }
     }
     
     //get left offsets
-    if(!bKinOffsets.find("left").asList()->check(Vocab::decode(modeS2C).c_str()))
+    if(!bKinOffsets.find("left").asList()->check(Vocab::decode(modeS2C)))
     {
         Bottle &bKinMode=bKinOffsets.find("left").asList()->addList();
-        bKinMode.addString(Vocab::decode(modeS2C).c_str());
+        bKinMode.addString(Vocab::decode(modeS2C));
         Bottle &bKinVec=bKinMode.addList();
         for(int i=0; i<3; i++)
             bKinVec.addDouble(0.0);
     }
 
-    Bottle *bKinLeft=bKinOffsets.find("left").asList()->find(Vocab::decode(modeS2C).c_str()).asList();
+    Bottle *bKinLeft=bKinOffsets.find("left").asList()->find(Vocab::decode(modeS2C)).asList();
     for(int i=0; i<3; i++)
         defaultKinematicOffset[LEFT][i]=bKinLeft->get(i).asDouble();
 
     //get left offsets
-    if(!bKinOffsets.find("right").asList()->check(Vocab::decode(modeS2C).c_str()))
+    if(!bKinOffsets.find("right").asList()->check(Vocab::decode(modeS2C)))
     {
         Bottle &bKinMode=bKinOffsets.find("right").asList()->addList();
-        bKinMode.addString(Vocab::decode(modeS2C).c_str());
+        bKinMode.addString(Vocab::decode(modeS2C));
         Bottle &bKinVec=bKinMode.addList();
         for(int i=0; i<3; i++)
             bKinVec.addDouble(0.0);
     }
 
-    Bottle *bKinRight=bKinOffsets.find("right").asList()->find(Vocab::decode(modeS2C).c_str()).asList();
+    Bottle *bKinRight=bKinOffsets.find("right").asList()->find(Vocab::decode(modeS2C)).asList();
     for(int i=0; i<3; i++)
         defaultKinematicOffset[RIGHT][i]=bKinRight->get(i).asDouble();
 
@@ -355,7 +356,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
 
     // if an object was specified check for its 3D position associated to the object
     if(!found && bTarget!=NULL && bTarget->check("name"))
-        if(opcPort.getCartesianPosition(bTarget->find("name").asString().c_str(),xd))
+        if(opcPort.getCartesianPosition(bTarget->find("name").asString(),xd))
             found=true;
 
     if(!found && bTarget!=NULL && bTarget->check("stereo"))
@@ -373,7 +374,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
     }
 
     if(found && bTarget!=NULL && bTarget->check("name"))
-        opcPort.getKinematicOffsets(bTarget->find("name").asString().c_str(),currentKinematicOffset);
+        opcPort.getKinematicOffsets(bTarget->find("name").asString(),currentKinematicOffset);
 
     return found;
 }
@@ -420,7 +421,7 @@ bool MotorThread::stereoToCartesian(const Vector &stereo, Vector &xd)
 bool MotorThread::loadExplorationPoses(const string &file_name)
 {
     Property optExpl;
-    optExpl.fromConfigFile(rf.findFile(file_name.c_str()));
+    optExpl.fromConfigFile(rf.findFile(file_name));
 
     if(!optExpl.check("torso") ||!optExpl.check("hand") ||!optExpl.check("head"))
         return false;
@@ -584,7 +585,7 @@ Vector MotorThread::randomDeployOffset()
 
 bool MotorThread::loadKinematicOffsets()
 {
-    ifstream kin_fin(rf.findFile(kinematics_file.c_str()).c_str());
+    ifstream kin_fin(rf.findFile(kinematics_file).c_str());
     if (!kin_fin.is_open())
     {
         yError("Kinematics file not found!");
@@ -594,7 +595,7 @@ bool MotorThread::loadKinematicOffsets()
     stringstream strstr;
     strstr<<kin_fin.rdbuf();
 
-    bKinOffsets.fromString(strstr.str().c_str());
+    bKinOffsets.fromString(strstr.str());
 
     if (!bKinOffsets.check("table_height"))
     {
@@ -638,7 +639,7 @@ bool MotorThread::loadKinematicOffsets()
 
 bool MotorThread::saveKinematicOffsets()
 {
-    string fileName=rf.getHomeContextPath().c_str();
+    string fileName=rf.getHomeContextPath();
     fileName+="/"+kinematics_file;
     ofstream kin_fout(fileName.c_str());
     if (!kin_fout.is_open())
@@ -648,7 +649,7 @@ bool MotorThread::saveKinematicOffsets()
     }
     else
     {
-        kin_fout<<bKinOffsets.toString().c_str()<<endl;
+        kin_fout<<bKinOffsets.toString()<<endl;
         kin_fout.close();
         return true;
     }
@@ -932,12 +933,12 @@ bool MotorThread::threadInit()
         return false;
     }
 
-    string name=rf.find("name").asString().c_str();
-    string robot=bMotor.check("robot",Value("icub")).asString().c_str();
-    string partUsed=bMotor.check("part_used",Value("both_arms")).asString().c_str();
-    setRate(bMotor.check("thread_period",Value(100)).asInt());
+    string name=rf.find("name").asString();
+    string robot=bMotor.check("robot",Value("icub")).asString();
+    string partUsed=bMotor.check("part_used",Value("both_arms")).asString();
+    setPeriod((double)bMotor.check("thread_period",Value(100)).asInt()/1000.0);
 
-    actions_path=bMotor.check("actions",Value("actions")).asString().c_str();
+    actions_path=bMotor.check("actions",Value("actions")).asString();
 
     double eyesTrajTime=bMotor.check("eyes_traj_time",Value(1.0)).asDouble();
     double neckTrajTime=bMotor.check("neck_traj_time",Value(2.0)).asDouble();
@@ -953,10 +954,10 @@ bool MotorThread::threadInit()
     Bottle *neckRollRange=bMotor.find("neck_roll_range").asList();
 
     // open ports
-    disparityPort.open(("/"+name+"/disparity:io").c_str());
-    wbdPort.open(("/"+name+"/wbd:rpc").c_str());
-    wrenchPort[LEFT].open(("/"+name+"/left/wrench:o").c_str());
-    wrenchPort[RIGHT].open(("/"+name+"/right/wrench:o").c_str());
+    disparityPort.open("/"+name+"/disparity:io");
+    wbdPort.open("/"+name+"/wbd:rpc");
+    wrenchPort[LEFT].open("/"+name+"/left/wrench:o");
+    wrenchPort[RIGHT].open("/"+name+"/right/wrench:o");
 
     // open controllers
     Property optHead("(device remote_controlboard)");
@@ -965,20 +966,20 @@ bool MotorThread::threadInit()
     Property optTorso("(device remote_controlboard)");
     Property optctrl_gaze("(device gazecontrollerclient)");
 
-    optHead.put("remote",("/"+robot+"/head").c_str());
-    optHead.put("local",("/"+name+"/head").c_str());
+    optHead.put("remote","/"+robot+"/head");
+    optHead.put("local","/"+name+"/head");
 
-    optLeftArm.put("remote",("/"+robot+"/left_arm").c_str());
-    optLeftArm.put("local",("/"+name+"/left_arm").c_str());
+    optLeftArm.put("remote","/"+robot+"/left_arm");
+    optLeftArm.put("local","/"+name+"/left_arm");
 
-    optRightArm.put("remote",("/"+robot+"/right_arm").c_str());
-    optRightArm.put("local",("/"+name+"/right_arm").c_str());
+    optRightArm.put("remote","/"+robot+"/right_arm");
+    optRightArm.put("local","/"+name+"/right_arm");
 
-    optTorso.put("remote",("/"+robot+"/torso").c_str());
-    optTorso.put("local",("/"+name+"/torso").c_str());
+    optTorso.put("remote","/"+robot+"/torso");
+    optTorso.put("local","/"+name+"/torso");
 
     optctrl_gaze.put("remote","/iKinGazeCtrl");
-    optctrl_gaze.put("local",("/"+name+"/gaze").c_str());
+    optctrl_gaze.put("local","/"+name+"/gaze");
 
     drv_head=new PolyDriver;
     drv_torso=new PolyDriver;
@@ -1125,7 +1126,7 @@ bool MotorThread::threadInit()
     //-------------------------------
 
     // extract the exploration poses from a .ini
-    string exploration_name=bMotor.find("exploration_poses").asString().c_str();
+    string exploration_name=bMotor.find("exploration_poses").asString();
     if(!loadExplorationPoses(exploration_name))
     {
         yError("Error while loading exploration poses!");
@@ -1135,8 +1136,8 @@ bool MotorThread::threadInit()
 
     // init the NN
     Property netOptions;
-    string net_name=bMotor.find("net").asString().c_str();
-    netOptions.fromConfigFile(rf.findFile(net_name.c_str()).c_str());
+    string net_name=bMotor.find("net").asString();
+    netOptions.fromConfigFile(rf.findFile(net_name));
     if(net.configure(netOptions))
     {
         yInfo("Neural network configured successfully");
@@ -1169,11 +1170,11 @@ bool MotorThread::threadInit()
         {
             if(pB->get(0).asString()=="hand_sequences_file")
             {
-                string hand_seq_name=bMotor.find("hand_sequences_file").asString().c_str();
-                option.put("hand_sequences_file",rf.findFile(hand_seq_name.c_str()).c_str());
+                string hand_seq_name=bMotor.find("hand_sequences_file").asString();
+                option.put("hand_sequences_file",rf.findFile(hand_seq_name));
             }
             else
-                option.put(pB->get(0).asString().c_str(),pB->get(1));
+                option.put(pB->get(0).asString(),pB->get(1));
         }
         else
         {
@@ -1208,7 +1209,7 @@ bool MotorThread::threadInit()
         arm_damping.push_back(bImpedanceArmDamp->get(i).asDouble());
     }
 
-    option.put("local",name.c_str());
+    option.put("local",name);
 
     default_exec_time=option.check("default_exec_time",Value("3.0")).asDouble();
     reachingTimeout=std::max(2.0*default_exec_time,4.0);
@@ -1234,10 +1235,10 @@ bool MotorThread::threadInit()
             }
 
             Property option_tmp(option);
-            option_tmp.put("part",arm_name[arm].c_str());
+            option_tmp.put("part",arm_name[arm]);
 
-            string tmpGraspFile=rf.findFile(bArm[arm].find("grasp_model_file").asString().c_str());
-            option_tmp.put("grasp_model_file",tmpGraspFile.c_str());
+            string tmpGraspFile=rf.findFile(bArm[arm].find("grasp_model_file").asString());
+            option_tmp.put("grasp_model_file",tmpGraspFile);
 
             yInfo("***** Instantiating primitives for %s",arm_name[arm].c_str());
             action[arm]=new ActionPrimitivesLayer2(option_tmp);
@@ -1300,7 +1301,7 @@ bool MotorThread::threadInit()
     yInfo("Impedance set to %s",(status_impedance_on?"on":"off"));
 
     //init the kinematics offsets and table height
-    kinematics_file=bMotor.find("kinematics_file").asString().c_str();
+    kinematics_file=bMotor.find("kinematics_file").asString();
     if(!loadKinematicOffsets())
     {
         close();
@@ -1312,7 +1313,7 @@ bool MotorThread::threadInit()
     setStereoToCartesianMode(starting_modeS2C);
 
     // initializer dragger
-    dragger.init(rf.findGroup("dragger"),this->getRate());
+    dragger.init(rf.findGroup("dragger"),(int)(1000.0*this->getPeriod()));
 
     this->avoidTable(false);
 
@@ -1706,26 +1707,14 @@ bool MotorThread::powerGrasp(Bottle &options)
 
     wbdRecalibration();
     action[arm]->enableContactDetection();
+    action[arm]->enableReachingTimeout(0.6*reachingTimeout);
     action[arm]->pushAction(approach_x,approach_o,"pregrasp_hand");
 
     bool f;
-    action[arm]->checkActionsDone(f,true);
-
-    // increase reaching precision
-    ICartesianControl *ctrl; double tol;
-    action[arm]->getCartesianIF(ctrl);
-    ctrl->getInTargetTol(&tol);
-    ctrl->setInTargetTol(0.002);
-
-    // give time for precise reaching
-    action[arm]->enableReachingTimeout(2.0*reachingTimeout);
-
     action[arm]->pushAction(x,o);
     action[arm]->checkActionsDone(f,true);
-    action[arm]->disableContactDetection();
-
-    ctrl->setInTargetTol(tol);
     action[arm]->enableReachingTimeout(reachingTimeout);
+    action[arm]->disableContactDetection();
 
     return grasp(options);
 }
@@ -2702,9 +2691,8 @@ bool MotorThread::exploreTorso(Bottle &options)
     double step_time=2.0;
     double kp_pos_torso=0.6;
 
-    VectorOf<int> modes(3);
-    modes[0]=modes[1]=modes[2]=VOCAB_CM_VELOCITY;
-    ctrl_mode_torso->setControlModes(modes.getFirst());
+    vector<int> modes(3,VOCAB_CM_VELOCITY);
+    ctrl_mode_torso->setControlModes(modes.data());
 
     double init_walking_time=Time::now();
 
@@ -2762,17 +2750,17 @@ bool MotorThread::exploreTorso(Bottle &options)
                 q_dot=(q_dot_saturation/q_dot_mag)*q_dot;
 
             // account for specific order
-            VectorOf<int> jnts(2);
+            vector<int> jnts(2);
             jnts[0]=2;
             jnts[1]=1;
-            vel_torso->velocityMove(jnts.size(),jnts.getFirst(),q_dot.data());
+            vel_torso->velocityMove((int)jnts.size(),jnts.data(),q_dot.data());
             Time::delay(0.01);
         }
     }
 
     //go back to torso initial position
     modes[0]=modes[1]=modes[2]=VOCAB_CM_POSITION;
-    ctrl_mode_torso->setControlModes(modes.getFirst());
+    ctrl_mode_torso->setControlModes(modes.data());
     pos_torso->positionMove(torso_init_joints.data());
     bool done=false;
     while (isRunning() && !done)
@@ -2838,10 +2826,8 @@ bool MotorThread::exploreHand(Bottle &options)
     int nJnts;
     enc_arm[arm]->getAxes(&nJnts);
 
-    VectorOf<int> modes(nJnts);
-    for (int i=0; i<nJnts; i++)
-        modes[i]=VOCAB_CM_POSITION; 
-    ctrl_mode_arm[arm]->setControlModes(modes.getFirst());
+    vector<int> modes(nJnts,VOCAB_CM_POSITION);
+    ctrl_mode_arm[arm]->setControlModes(modes.data());
 
     //start exploration
     Vector destination(nJnts);
@@ -2899,7 +2885,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
         return false;
     }
 
-    string action_name=options.find("action_name").asString().c_str();
+    string action_name=options.find("action_name").asString();
 
     if(action_name=="")
     {
@@ -2915,7 +2901,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     string arm_name=(arm==LEFT?"left":"right");
 
-    string fileName=rf.findFile((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
+    string fileName=rf.findFile(actions_path+"/"+arm_name+"/"+action_name+".action");
     if(!fileName.empty())
     {
         yWarning("Action '%s' already learned... stopping",action_name.c_str());
@@ -2968,7 +2954,7 @@ bool MotorThread::suspendLearningModeAction(Bottle &options)
     {
         if (!actions_path.empty())
         {
-            string fileName=rf.getHomeContextPath().c_str();
+            string fileName=rf.getHomeContextPath();
             fileName+="/"+actions_path+"/"+arm_name+"/"+dragger.actionName+".action";
             ofstream action_fout(fileName.c_str());
             if(!action_fout.is_open())
@@ -3004,10 +2990,10 @@ bool MotorThread::imitateAction(Bottle &options)
     arm=checkArm(arm);
 
     string arm_name=arm==LEFT?"left":"right";
-    string action_name=options.find("action_name").asString().c_str();
+    string action_name=options.find("action_name").asString();
 
     Bottle actions;
-    string fileName=rf.findFile((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
+    string fileName=rf.findFile(actions_path+"/"+arm_name+"/"+action_name+".action");
     if (!fileName.empty())
     {
         ifstream action_fin(fileName.c_str());
@@ -3016,7 +3002,7 @@ bool MotorThread::imitateAction(Bottle &options)
 
         stringstream strstr;
         strstr << action_fin.rdbuf();
-        actions.fromString(strstr.str().c_str());
+        actions.fromString(strstr.str());
     }
     else if (!opcPort.getAction(action_name, &actions))
         return false;
@@ -3134,11 +3120,11 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
         dragger.ctrl->getPose(x,o);
 
         if (options.size()>=4)
-            opcPort.getKinematicOffsets(options.get(3).asString().c_str(),currentKinematicOffset);
+            opcPort.getKinematicOffsets(options.get(3).asString(),currentKinematicOffset);
         currentKinematicOffset[dragger.arm]=x-(dragger.x0-currentKinematicOffset[dragger.arm]);
 
         //if no object with specified name is present in the database, then update the default kinematic offsets
-        if(options.size()<4 || !opcPort.setKinematicOffsets(options.get(3).asString().c_str(),currentKinematicOffset))
+        if(options.size()<4 || !opcPort.setKinematicOffsets(options.get(3).asString(),currentKinematicOffset))
         {
             defaultKinematicOffset[dragger.arm]=currentKinematicOffset[dragger.arm];
 
@@ -3148,7 +3134,7 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
                 bOffset.addDouble(defaultKinematicOffset[dragger.arm][i]);
 
             string arm_name=(dragger.arm==LEFT?"left":"right");
-            *bKinOffsets.find(arm_name.c_str()).asList()->find(Vocab::decode(modeS2C).c_str()).asList()=bOffset;
+            *bKinOffsets.find(arm_name).asList()->find(Vocab::decode(modeS2C)).asList()=bOffset;
 
             saveKinematicOffsets();
         }

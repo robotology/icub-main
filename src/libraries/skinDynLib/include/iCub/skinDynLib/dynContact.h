@@ -296,7 +296,7 @@ public:
     * @param connection the connection to read from
     * @return true iff a dynContact was read correctly
     */
-    virtual bool read(yarp::os::ConnectionReader& connection);
+    virtual bool read(yarp::os::ConnectionReader& connection) override;
     /**
     * Write dynContact to a connection as a list of 4 elements, that are:
     * - a list of 3 int, containing contactId, bodyPart, linkNumber
@@ -306,7 +306,7 @@ public:
     * @param connection the connection to write to
     * @return true iff the dynContact was written correctly
     */
-    virtual bool write(yarp::os::ConnectionWriter& connection);
+    virtual bool write(yarp::os::ConnectionWriter& connection) const override;
 
     
     /**

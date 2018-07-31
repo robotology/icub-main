@@ -19,7 +19,7 @@ if (ENABLE_${PROJECTNAME})
   endif()
 
 
-    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
+    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
     yarp_add_plugin(${PROJECTNAME} ST_M1.cpp ST_M1.h ST_M1_dataType.h)
     target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
     icub_export_plugin(${PROJECTNAME})

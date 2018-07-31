@@ -349,69 +349,69 @@ Windows, Linux
 #include <iCub/VisuoThread.h>
 
 
-#define ACK                         VOCAB3('a','c','k')
-#define NACK                        VOCAB4('n','a','c','k')
+#define ACK                         yarp::os::createVocab('a','c','k')
+#define NACK                        yarp::os::createVocab('n','a','c','k')
 
-#define RPC_HELP                    VOCAB4('h','e','l','p')
-#define RPC_GET                     VOCAB3('g','e','t')
-#define RPC_GET_STATUS              VOCAB4('s','t','a','t')
-#define RPC_IMPEDANCE               VOCAB4('i','m','p','e')
-#define RPC_S2C_MODE                VOCAB4('m','o','d','e')
-#define RPC_INTERRUPT               VOCAB4('i','n','t','e')
-#define RPC_REINSTATE               VOCAB4('r','e','i','n')
-#define RPC_WAVEING                 VOCAB4('w','a','v','e')
-#define RPC_ELBOW                   VOCAB4('e','l','b','o')
-#define RPC_EXECTIME                VOCAB4('t','i','m','e')
+#define RPC_HELP                    yarp::os::createVocab('h','e','l','p')
+#define RPC_GET                     yarp::os::createVocab('g','e','t')
+#define RPC_GET_STATUS              yarp::os::createVocab('s','t','a','t')
+#define RPC_IMPEDANCE               yarp::os::createVocab('i','m','p','e')
+#define RPC_S2C_MODE                yarp::os::createVocab('m','o','d','e')
+#define RPC_INTERRUPT               yarp::os::createVocab('i','n','t','e')
+#define RPC_REINSTATE               yarp::os::createVocab('r','e','i','n')
+#define RPC_WAVEING                 yarp::os::createVocab('w','a','v','e')
+#define RPC_ELBOW                   yarp::os::createVocab('e','l','b','o')
+#define RPC_EXECTIME                yarp::os::createVocab('t','i','m','e')
 
-#define CMD_IDLE                    VOCAB4('i','d','l','e')
-#define CMD_HOME                    VOCAB4('h','o','m','e')
-#define CMD_CALIBRATE               VOCAB4('c','a','l','i')
-#define CMD_EXPLORE                 VOCAB4('e','x','p','l')
+#define CMD_IDLE                    yarp::os::createVocab('i','d','l','e')
+#define CMD_HOME                    yarp::os::createVocab('h','o','m','e')
+#define CMD_CALIBRATE               yarp::os::createVocab('c','a','l','i')
+#define CMD_EXPLORE                 yarp::os::createVocab('e','x','p','l')
 
-#define CMD_OBSERVE                 VOCAB4('o','b','s','e')
-#define CMD_DROP                    VOCAB4('d','r','o','p')
+#define CMD_OBSERVE                 yarp::os::createVocab('o','b','s','e')
+#define CMD_DROP                    yarp::os::createVocab('d','r','o','p')
 
-#define CMD_HOLD                    VOCAB4('h','o','l','d')
+#define CMD_HOLD                    yarp::os::createVocab('h','o','l','d')
 
-#define CMD_LEARN_MIL               VOCAB4('l','e','a','r')
+#define CMD_LEARN_MIL               yarp::os::createVocab('l','e','a','r')
 
-#define CMD_GET                     VOCAB3('g','e','t')
-#define CMD_TAKE                    VOCAB4('t','a','k','e')
-#define CMD_GRASP                   VOCAB4('g','r','a','s')
-#define CMD_TOUCH                   VOCAB4('t','o','u','c')
-#define CMD_PICK                    VOCAB4('p','i','c','k')
-#define CMD_PUSH                    VOCAB4('p','u','s','h')
-#define CMD_POINT                   VOCAB4('p','o','i','n')
-#define CMD_POINT_FAR               VOCAB4('p','f','a','r')
-#define CMD_LOOK                    VOCAB4('l','o','o','k')
-#define CMD_TRACK                   VOCAB4('t','r','a','c')
-#define CMD_EXPECT                  VOCAB4('e','x','p','e')
-#define CMD_GIVE                    VOCAB4('g','i','v','e')
-#define CMD_HAND                    VOCAB4('h','a','n','d')
-#define CMD_GAZE                    VOCAB4('r','e','l','e')
+#define CMD_GET                     yarp::os::createVocab('g','e','t')
+#define CMD_TAKE                    yarp::os::createVocab('t','a','k','e')
+#define CMD_GRASP                   yarp::os::createVocab('g','r','a','s')
+#define CMD_TOUCH                   yarp::os::createVocab('t','o','u','c')
+#define CMD_PICK                    yarp::os::createVocab('p','i','c','k')
+#define CMD_PUSH                    yarp::os::createVocab('p','u','s','h')
+#define CMD_POINT                   yarp::os::createVocab('p','o','i','n')
+#define CMD_POINT_FAR               yarp::os::createVocab('p','f','a','r')
+#define CMD_LOOK                    yarp::os::createVocab('l','o','o','k')
+#define CMD_TRACK                   yarp::os::createVocab('t','r','a','c')
+#define CMD_EXPECT                  yarp::os::createVocab('e','x','p','e')
+#define CMD_GIVE                    yarp::os::createVocab('g','i','v','e')
+#define CMD_HAND                    yarp::os::createVocab('h','a','n','d')
+#define CMD_GAZE                    yarp::os::createVocab('r','e','l','e')
 
 //commands for tool
-#define CMD_TAKE_TOOL               VOCAB4('t','a','t','o')
+#define CMD_TAKE_TOOL               yarp::os::createVocab('t','a','t','o')
 
-#define CMD_ACTION_TEACH            VOCAB4('t','e','a','c')
-#define CMD_ACTION_IMITATE          VOCAB4('i','m','i','t')
+#define CMD_ACTION_TEACH            yarp::os::createVocab('t','e','a','c')
+#define CMD_ACTION_IMITATE          yarp::os::createVocab('i','m','i','t')
 
 //sub commands: get
-#define GET_S2C                     VOCAB3('s','2','c')
-#define GET_TABLE                   VOCAB4('t','a','b','l')
-#define GET_HOLDING                 VOCAB4('h','o','l','d')
-#define GET_HAND                    VOCAB4('h','a','n','d')
-#define GET_IMAGE                   VOCAB4('i','m','a','g')
-#define GET_IDLE                    VOCAB4('i','d','l','e')
+#define GET_S2C                     yarp::os::createVocab('s','2','c')
+#define GET_TABLE                   yarp::os::createVocab('t','a','b','l')
+#define GET_HOLDING                 yarp::os::createVocab('h','o','l','d')
+#define GET_HAND                    yarp::os::createVocab('h','a','n','d')
+#define GET_IMAGE                   yarp::os::createVocab('i','m','a','g')
+#define GET_IDLE                    yarp::os::createVocab('i','d','l','e')
 
 //sub commands: calib
-#define CALIB_TABLE                 VOCAB4('t','a','b','l')
-#define CALIB_FINGERS               VOCAB4('f','i','n','g')
-#define CALIB_KIN_OFFSET            VOCAB4('k','i','n','e')
+#define CALIB_TABLE                 yarp::os::createVocab('t','a','b','l')
+#define CALIB_FINGERS               yarp::os::createVocab('f','i','n','g')
+#define CALIB_KIN_OFFSET            yarp::os::createVocab('k','i','n','e')
 
 //sub commands: explore
-#define EXPLORE_TORSO               VOCAB4('t','o','r','s')
-#define EXPLORE_HAND                VOCAB4('h','a','n','d')
+#define EXPLORE_TORSO               yarp::os::createVocab('t','o','r','s')
+#define EXPLORE_HAND                yarp::os::createVocab('h','a','n','d')
 
 
 
@@ -450,7 +450,7 @@ protected:
         bool found=false;
         for(int i=0; i<bot.size(); i++)
         {
-            if(bot.get(i).asString()==name.c_str())
+            if(bot.get(i).asString()==name)
             {
                 found=true;
                 break;
@@ -468,7 +468,7 @@ public:
 
     bool initialize(ResourceFinder &rf)
     {
-        string name=rf.check("name",Value("actionsRenderingEngine")).asString().c_str();
+        string name=rf.check("name",Value("actionsRenderingEngine")).asString();
 
         initializer=new Initializer(rf);
 
@@ -545,7 +545,7 @@ public:
                 rep+="\"impedance on/off\"\\off\t\t\tset the impedance control on or off\n";
                 rep+="\"mode homography\"\\disparity\\network\t\t\tset the 'stereo to cartesian' mode";
                 rep+="\"status\"\t\t\tget the module current status\n";
-                reply.addString(rep.c_str());
+                reply.addString(rep);
                 break;
             }
 
@@ -635,7 +635,7 @@ public:
             {
                 if (command.size()>=4)
                 {
-                    string arm=command.get(1).asString().c_str();
+                    string arm=command.get(1).asString();
                     double height=command.get(2).asDouble();
                     double weight=command.get(3).asDouble();
 
@@ -898,9 +898,9 @@ public:
 
                                 default:
                                 {
-                                    string rep=command.get(1).asString().c_str();
+                                    string rep=command.get(1).asString();
                                     reply.addVocab(NACK);
-                                    reply.addString(("parameter '"+rep+"' not supported by 'explore' command.").c_str());
+                                    reply.addString("parameter '"+rep+"' not supported by 'explore' command.");
                                     break;
                                 }
                             }
@@ -976,16 +976,16 @@ public:
                     {
                         if(check(command,"start"))
                         {
-                            string action_name=command.get(1).asString().c_str();
+                            string action_name=command.get(1).asString();
 
                             Bottle &action=command.addList();
                             action.addString("action_name");
-                            action.addString(action_name.c_str());
+                            action.addString(action_name);
 
                             if(!motorThr->startLearningModeAction(command))
                             {
                                 reply.addVocab(NACK);
-                                reply.addString(("action "+action_name+" already known").c_str());
+                                reply.addString("action "+action_name+" already known");
                             }
                             else
                             {
@@ -1013,23 +1013,23 @@ public:
 
                     case CMD_ACTION_IMITATE:
                     {
-                        string action_name=command.get(1).asString().c_str();
+                        string action_name=command.get(1).asString();
 
                         Bottle &action=command.addList();
                         action.addString("action_name");
-                        action.addString(action_name.c_str());
+                        action.addString(action_name);
 
                         motorThr->lookAtHand(command);
 
                         if(!motorThr->imitateAction(command))
                         {
                             reply.addVocab(NACK);
-                            reply.addString(("action "+action_name+" unknown").c_str());
+                            reply.addString("action "+action_name+" unknown");
                         }
                         else
                         {
                             reply.addVocab(ACK);
-                            reply.addString(("action "+action_name+" done").c_str());
+                            reply.addString("action "+action_name+" done");
                         }
                         motorThr->setGazeIdle();
 
@@ -1040,7 +1040,7 @@ public:
 
                     case CMD_LEARN_MIL:
                     {
-                        string obj_name=command.get(1).asString().c_str();
+                        string obj_name=command.get(1).asString();
                         if(motorThr->isHolding(command)) //
                             motorThr->deploy(command);
 
@@ -1052,11 +1052,11 @@ public:
                             visuoThr->getTarget(v,command);
                         }
 
-                        visuoThr->startLearningMIL(obj_name.c_str());
+                        visuoThr->startLearningMIL(obj_name);
                         motorThr->exploreTorso(command);
                         visuoThr->trainMIL();
 
-                        reply.addString((obj_name + " learned").c_str());
+                        reply.addString(obj_name + " learned");
                         break;
                     }
 
@@ -1485,7 +1485,7 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        string name=rf.check("name",Value("actionsRenderingEngine")).asString().c_str();
+        string name=rf.check("name",Value("actionsRenderingEngine")).asString();
         setName(name.c_str());
 
         are=new ActionsRenderingEngine();
@@ -1502,9 +1502,9 @@ public:
         port_cmd.setReader(*port_reader_cmd);
         port_get.setReader(*port_reader_get);
 
-        port_cmd.open(("/"+name+"/cmd:io").c_str());
-        port_get.open(("/"+name+"/get:io").c_str());
-        port_rpc.open(("/"+name+"/rpc").c_str());
+        port_cmd.open("/"+name+"/cmd:io");
+        port_get.open("/"+name+"/get:io");
+        port_rpc.open("/"+name+"/rpc");
 
         attach(port_rpc);
 

@@ -34,7 +34,7 @@
 #include <sstream>
 #include <yarp/sig/Vector.h>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/Wrapper.h>

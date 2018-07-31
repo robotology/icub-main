@@ -7,7 +7,7 @@
 #ifndef __BCBBATTERY_H__
 #define __BCBBATTERY_H__
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/IBattery.h>
 #include <yarp/dev/PolyDriver.h>
@@ -18,7 +18,7 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class BcbBattery : public RateThread, public yarp::dev::IBattery, public DeviceDriver
+class BcbBattery : public PeriodicThread, public yarp::dev::IBattery, public DeviceDriver
 {
 protected:
     yarp::os::Semaphore mutex;
@@ -50,9 +50,8 @@ protected:
     std::string         localName;
 
 public:
-    BcbBattery(int period = 20) : RateThread(period), mutex(1)
+    BcbBattery(int period = 20) : PeriodicThread((double)period/1000.0), mutex(1)
     {}
-
 
     ~BcbBattery()
     {
@@ -65,7 +64,7 @@ public:
     virtual bool getBatteryCurrent     (double &current);
     virtual bool getBatteryCharge      (double &charge);
     virtual bool getBatteryStatus      (int &status);
-    virtual bool getBatteryInfo        (yarp::os::ConstString &info);
+    virtual bool getBatteryInfo        (std::string &info);
     virtual bool getBatteryTemperature (double &temperature);
 
     virtual bool threadInit();

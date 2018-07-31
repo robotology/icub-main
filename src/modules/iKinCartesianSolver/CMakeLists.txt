@@ -7,7 +7,6 @@ project(iKinCartesianSolver)
 
 set(folder_source main.cpp)
 
-include_directories(${iKin_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} ${folder_source})
 target_link_libraries(${PROJECT_NAME} iKin ${YARP_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)

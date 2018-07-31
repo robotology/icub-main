@@ -80,6 +80,7 @@
 #define __AFFACTIONPRIMITIVES_H__
 
 #include <string>
+#include <vector>
 #include <deque>
 #include <set>
 #include <map>
@@ -187,7 +188,7 @@ struct ActionPrimitivesWayPoint
 * (in joint-space) primitive actions and to combine them in the 
 * actions queue. 
 */
-class ActionPrimitives : protected yarp::os::RateThread
+class ActionPrimitives : protected yarp::os::PeriodicThread
 {
 protected:
     std::string robot;
@@ -196,14 +197,14 @@ protected:
 
     yarp::dev::PolyDriver         polyHand;
     yarp::dev::PolyDriver         polyCart;
-    yarp::dev::IControlMode2     *modCtrl;
+    yarp::dev::IControlMode      *modCtrl;
     yarp::dev::IEncoders         *encCtrl;
-    yarp::dev::IPositionControl2 *posCtrl;
+    yarp::dev::IPositionControl  *posCtrl;
     yarp::dev::ICartesianControl *cartCtrl;
 
     perception::Model            *graspModel;
                                  
-    yarp::os::RateThread         *armWaver;
+    yarp::os::PeriodicThread     *armWaver;
     yarp::os::Mutex               mutex;
     yarp::os::Event               motionStartEvent;
     yarp::os::Event               motionDoneEvent;
@@ -244,10 +245,10 @@ protected:
     double            curHandTmo;
     double            latchTimerHand;
 
-    yarp::sig::VectorOf<int> fingersJnts;
-    std::set<int>            fingersJntsSet;
-    std::set<int>            fingersMovingJntsSet;
-    std::multimap<int,int>   fingers2JntsMap;
+    std::vector<int>       fingersJnts;
+    std::set<int>          fingersJntsSet;
+    std::set<int>          fingersMovingJntsSet;
+    std::multimap<int,int> fingers2JntsMap;
 
     friend class ArmWayPoints;
 
@@ -278,13 +279,13 @@ protected:
         bool handSeqTerminator;
         // reach way points action
         bool execWayPoints;
-        yarp::os::RateThread *wayPointsThr;
+        yarp::os::PeriodicThread *wayPointsThr;
         // action callback
         ActionPrimitivesCallback *clb;
     };
 
     ActionPrimitivesCallback *actionClb;
-    yarp::os::RateThread     *actionWP;
+    yarp::os::PeriodicThread *actionWP;
     class ActionsQueue : public std::deque<Action>
     {
     public:

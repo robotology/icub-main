@@ -62,7 +62,7 @@ protected:
     /*
      * Inherited from ITransformer.
      */
-    virtual void writeBottle(yarp::os::Bottle& bot);
+    virtual void writeBottle(yarp::os::Bottle& bot) const;
 
     /*
      * Inherited from ITransformer.
@@ -131,7 +131,7 @@ public:
      *
      * @return gamma.
      */
-    virtual double getGamma() {
+    virtual double getGamma() const {
         return this->gamma;
     }
 

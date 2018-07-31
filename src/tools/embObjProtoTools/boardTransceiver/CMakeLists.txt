@@ -62,7 +62,6 @@ include_directories(
                             ${CMAKE_CURRENT_SOURCE_DIR}
                             ${embObj_includes}
                             ${iCubDev_INCLUDE_DIRS}
-                            ${YARP_INCLUDE_DIRS}
                             ${icub_firmware_shared_embobj_INCLUDE_DIR}
                             )
   

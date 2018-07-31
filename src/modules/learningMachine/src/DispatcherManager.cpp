@@ -40,7 +40,7 @@ bool DispatcherManager::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& r
 
     try {
         switch(cmd.get(0).asVocab()) {
-            case VOCAB4('h','e','l','p'): // print help information
+            case yarp::os::createVocab('h','e','l','p'): // print help information
                 reply.add(yarp::os::Value::makeVocab("help"));
 
                 reply.addString("Event Manager configuration options");
@@ -53,7 +53,7 @@ bool DispatcherManager::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& r
                 success = true;
                 break;
 
-            case VOCAB4('l','i','s','t'): // print list of available event listeners
+            case yarp::os::createVocab('l','i','s','t'): // print list of available event listeners
                 {
                 reply.add(yarp::os::Value::makeVocab("help"));
                 std::vector<std::string> keys = FactoryT<std::string, IEventListener>::instance().getKeys();
@@ -64,7 +64,7 @@ bool DispatcherManager::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& r
                 break;
                 }
 
-            case VOCAB3('a','d','d'): // add
+            case yarp::os::createVocab('a','d','d'): // add
                 { // prevent identifier initialization to cross borders of case
                 yarp::os::Bottle list = cmd.tail();
                 for(int i = 0; i < list.size(); i++) {
@@ -77,8 +77,8 @@ bool DispatcherManager::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& r
                 break;
                 }
 
-            case VOCAB4('r','e','m','o'): // remove
-            case VOCAB3('d','e','l'): // del(ete)
+            case yarp::os::createVocab('r','e','m','o'): // remove
+            case yarp::os::createVocab('d','e','l'): // del(ete)
                 { // prevent identifier initialization to cross borders of case
                 if(cmd.get(1).isInt() && cmd.get(1).asInt() >= 1 && cmd.get(1).asInt() <= this->dispatcher->countListeners()) {
                     this->dispatcher->removeListener(cmd.get(1).asInt()-1);
@@ -94,7 +94,7 @@ bool DispatcherManager::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& r
                 break;
                 }
 
-            case VOCAB3('s','e','t'): // set
+            case yarp::os::createVocab('s','e','t'): // set
                 { // prevent identifier initialization to cross borders of case
                 yarp::os::Bottle property;
                 property.addList() = cmd.tail().tail(); // see comment in TrainModule
@@ -126,8 +126,8 @@ bool DispatcherManager::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& r
                 break;
                 }
 
-            case VOCAB4('i','n','f','o'): // information
-            case VOCAB4('s','t','a','t'): // statistics
+            case yarp::os::createVocab('i','n','f','o'): // information
+            case yarp::os::createVocab('s','t','a','t'): // statistics
                 { // prevent identifier initialization to cross borders of case
                 reply.add(yarp::os::Value::makeVocab("help"));
                 std::ostringstream buffer;

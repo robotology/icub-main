@@ -872,7 +872,7 @@ public:
 
         try {
             switch (cmd.get(0).asVocab()) {
-            case VOCAB4('h','e','l','p'): // print help information
+            case yarp::os::createVocab('h','e','l','p'): // print help information
                             success = true;
                 reply.add(Value::makeVocab("help"));
 
@@ -882,7 +882,7 @@ public:
                 reply.addString("  freq f                Sampling frequency in Hertz (0 for disabled)");
                 break;
 
-            case VOCAB4('i','n','f','o'): // print information
+            case yarp::os::createVocab('i','n','f','o'): // print information
             {
                 reply.add(Value::makeVocab("help"));
                 success = true;
@@ -890,7 +890,7 @@ public:
                 break;
             }
 
-            case VOCAB4('f','r','e','q'): // set sampling frequency
+            case yarp::os::createVocab('f','r','e','q'): // set sampling frequency
             {
                 if (cmd.size() > 1 && (cmd.get(1).isInt() || cmd.get(1).isDouble())) {
                     success = true;

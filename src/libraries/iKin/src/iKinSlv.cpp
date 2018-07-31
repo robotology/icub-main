@@ -1,19 +1,11 @@
-/* 
- * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
+/*
+ * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+ * Copyright (C) 2006-2010 RobotCub Consortium
+ * All rights reserved.
  *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license. See the accompanying LICENSE file for
+ * details.
 */
 
 #include <cmath>
@@ -138,8 +130,8 @@ bool InputPort::handleTarget(Bottle *b)
     if (b!=NULL)
     {
         mutex.lock();
-        int len=std::min(b->size(),maxLen);
-        for (int i=0; i<len; i++)
+        size_t len=std::min(b->size(),maxLen);
+        for (size_t i=0; i<len; i++)
             xd[i]=b->get(i).asDouble();
         mutex.unlock();
 
@@ -278,7 +270,8 @@ void SolverCallback::exec(const Vector &xd, const Vector &q)
 
 
 /************************************************************************/
-CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DEFAULT_PER)
+CartesianSolver::CartesianSolver(const string &_slvName) :
+                                PeriodicThread((double)CARTSLV_DEFAULT_PER/1000.0)
 {          
     // initialization
     slvName=_slvName;
@@ -302,21 +295,18 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
     rpcPort=new Port;
     cmdProcessor=new RpcProcessor(this);
     rpcPort->setReader(*cmdProcessor);
-    rpcPort->open(("/"+slvName+"/rpc").c_str());
+    rpcPort->open("/"+slvName+"/rpc");
 
     // token
     token=0.0;
     pToken=NULL;
-
-    // request high resolution scheduling
-    Time::turboBoost();
 }
 
 
 /************************************************************************/
 PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
 {    
-    string partName=partOpt.find("part").asString().c_str();
+    string partName=partOpt.find("part").asString();
     PolyDriver *pDrv=NULL;
 
     double t0=Time::now();
@@ -449,7 +439,7 @@ void CartesianSolver::getFeedback(const bool wait)
         while (wait && !closing && !ok)
         {
             ok=enc[i]->getEncoders(fbTmp.data());
-            Time::delay(0.00025*getRate()); // wait for 1/4 of thread period
+            Time::yield();
         }
 
         if (ok)
@@ -1162,7 +1152,7 @@ void CartesianSolver::printInfo(const string &typ, const Vector &xd,
                                 const double t)
 {
     // ensure same length of vectors
-    Vector x_=x.subVector(0,xd.length()-1);
+    Vector x_=x.subVector(0,(unsigned int)xd.length()-1);
 
     printf("   Request type       = %s\n",typ.c_str());
     printf("  Target rxPose   [m] = %s\n",xd.toString().c_str());
@@ -1190,8 +1180,8 @@ Vector &CartesianSolver::encodeDOF()
 /************************************************************************/
 bool CartesianSolver::decodeDOF(const Vector &_dof)
 {
-    size_t len=std::min((size_t)prt->chn->getN(),_dof.length());
-    for (size_t i=0; i<len; i++)
+    unsigned int len=std::min(prt->chn->getN(),(unsigned int)_dof.length());
+    for (unsigned int i=0; i<len; i++)
     {
         if (_dof[i]>1.0)
             continue;
@@ -1299,7 +1289,7 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     Property DHTable; prt->lmb->toLinksProperties(DHTable);
-    yInfo()<<"DH Table: "<<DHTable.toString().c_str();  // stream version to prevent long strings truncation
+    yInfo()<<"DH Table: "<<DHTable.toString();  // stream version to prevent long strings truncation
     
     if (options.check("ping_robot_tmo"))
         ping_robot_tmo=options.find("ping_robot_tmo").asDouble();
@@ -1390,7 +1380,8 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     // parse configuration options
-    setRate(period=options.check("period",Value(CARTSLV_DEFAULT_PER)).asInt());
+    period=options.check("period",Value(CARTSLV_DEFAULT_PER)).asInt();
+    setPeriod((double)period/1000.0);
 
     ctrlPose=IKINCTRL_POSE_FULL;
     if (options.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
@@ -1462,8 +1453,8 @@ bool CartesianSolver::open(Searchable &options)
     // open ports as very last thing, so that
     // the solver is completely operative
     // when it becomes yarp-visible
-    inPort->open(("/"+slvName+"/in").c_str());
-    outPort->open(("/"+slvName+"/out").c_str());
+    inPort->open("/"+slvName+"/in");
+    outPort->open("/"+slvName+"/out");
 
     return true;
 }
@@ -1635,7 +1626,7 @@ void CartesianSolver::suspend()
         yWarning("%s is already suspended",slvName.c_str());
     else
     {
-        RateThread::suspend();
+        PeriodicThread::suspend();
         yInfo("%s suspended",slvName.c_str());        
     }
 }
@@ -1647,7 +1638,7 @@ void CartesianSolver::resume()
     if (isSuspended())
     {        
         initPos();
-        RateThread::resume();
+        PeriodicThread::resume();
         yInfo("%s resumed",slvName.c_str());
     }
     else
@@ -1779,31 +1770,31 @@ PartDescriptor *iCubArmCartesianSolver::getPartDesc(Searchable &options)
     string part_type=type;
     if (options.check("type"))
     {
-        type=options.find("type").asString().c_str();
+        type=options.find("type").asString();
         part_type=type.substr(0,type.find("_"));
         if ((part_type!="left") && (part_type!="right"))
             type=part_type="right";
     }
 
-    string robot=options.check("robot",Value("icub")).asString().c_str();
+    string robot=options.check("robot",Value("icub")).asString();
     Property optTorso("(device remote_controlboard)");
     Property optArm("(device remote_controlboard)");
 
     string partTorso  ="torso";
     string remoteTorso="/"+robot+"/"+partTorso;
     string localTorso ="/"+slvName+"/"+partTorso;
-    optTorso.put("remote",remoteTorso.c_str());
-    optTorso.put("local",localTorso.c_str());
-    optTorso.put("robot",robot.c_str());
-    optTorso.put("part",partTorso.c_str());
+    optTorso.put("remote",remoteTorso);
+    optTorso.put("local",localTorso);
+    optTorso.put("robot",robot);
+    optTorso.put("part",partTorso);
 
     string partArm  =part_type=="left"?"left_arm":"right_arm";
     string remoteArm="/"+robot+"/"+partArm;
     string localArm ="/"+slvName+"/"+partArm;
-    optArm.put("remote",remoteArm.c_str());
-    optArm.put("local",localArm.c_str());
-    optArm.put("robot",robot.c_str());
-    optArm.put("part",partArm.c_str());
+    optArm.put("remote",remoteArm);
+    optArm.put("local",localArm);
+    optArm.put("robot",robot);
+    optArm.put("part",partArm);
 
     PartDescriptor *p=new PartDescriptor;
     p->lmb=new iCubArm(type);
@@ -1870,23 +1861,23 @@ PartDescriptor *iCubLegCartesianSolver::getPartDesc(Searchable &options)
     string part_type=type;
     if (options.check("type"))
     {
-        type=options.find("type").asString().c_str();
+        type=options.find("type").asString();
         part_type=type.substr(0,type.find("_"));
         if ((part_type!="left") && (part_type!="right"))
             type=part_type="right";
     }
 
-    string robot=options.check("robot",Value("icub")).asString().c_str();
+    string robot=options.check("robot",Value("icub")).asString();
     Property optLeg("(device remote_controlboard)");
 
     string partLeg  =part_type=="left"?"left_leg":"right_leg";
     string remoteLeg="/"+robot+"/"+partLeg;
     string localLeg ="/"+slvName+"/"+partLeg;
 
-    optLeg.put("remote",remoteLeg.c_str());
-    optLeg.put("local",localLeg.c_str());
-    optLeg.put("robot",robot.c_str());
-    optLeg.put("part",partLeg.c_str());
+    optLeg.put("remote",remoteLeg);
+    optLeg.put("local",localLeg);
+    optLeg.put("robot",robot);
+    optLeg.put("part",partLeg);
 
     PartDescriptor *p=new PartDescriptor;
     p->lmb=new iCubLeg(type);

@@ -278,7 +278,7 @@ void PARTICLEThread::runAll(IplImage *img)
     averageMutex.post();
 
     //display most likely particle ------------------
-    color = CV_RGB(255,0,0);
+    color = cvScalar(255,0,0);
     targetMutex.wait();
     targetTemp.clear();
     //if (imageOut.getOutputCount()>0)
@@ -623,9 +623,9 @@ void PARTICLEThread::display_particle( IplImage* img, const PARTICLEThread::part
 
     cvRectangle( img, cvPoint( x0, y0 ), cvPoint( x1, y1 ), color, 1, 8, 0 );
     
-    cvCircle (img, cvPoint((x0+x1)/2, (y0+y1)/2), 3, CV_RGB(255,0 ,0),1);
-    cvCircle (img, cvPoint( x0, y0), 3, CV_RGB(0, 255 ,0),1);
-    cvCircle (img, cvPoint( x1, y1), 3, CV_RGB(0, 255 ,0),1);
+    cvCircle (img, cvPoint((x0+x1)/2, (y0+y1)/2), 3, cvScalar(255,0 ,0),1);
+    cvCircle (img, cvPoint( x0, y0), 3, cvScalar(0, 255 ,0),1);
+    cvCircle (img, cvPoint( x1, y1), 3, cvScalar(0, 255 ,0),1);
 
     target.push_back((x0+x1)/2);
     target.push_back((y0+y1)/2);
@@ -748,7 +748,7 @@ TemplateStruct PARTICLEThread::getBestTemplate()
     return best;
 }
 /**********************************************************/
-PARTICLEManager::PARTICLEManager() : RateThread(20) 
+PARTICLEManager::PARTICLEManager() : PeriodicThread(0.02) 
 {
     tpl = NULL;
 }

@@ -29,6 +29,7 @@
 #include "motionControlDefaultValues.h"
 
 #include <yarp/os/NetType.h>
+#include <yarp/dev/ControlBoardHelper.h>
 
 
 #include "eomcUtils.h"
@@ -45,7 +46,7 @@ using namespace yarp::dev::eomc;
 // macros
 #define ASK_REFERENCE_TO_FIRMWARE 1
 
-#define PARSER_MOTION_CONTROL_VERSION   4
+#define PARSER_MOTION_CONTROL_VERSION   5
 
 
 
@@ -178,21 +179,20 @@ bool embObjMotionControl::dealloc()
 }
 
 embObjMotionControl::embObjMotionControl() :
-    ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>(this),
-    ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>(this),
+    ImplementControlCalibration(this),
+    ImplementAmplifierControl(this),
     ImplementPidControl(this),
     ImplementEncodersTimed(this),
-    ImplementPositionControl2(this),
-    ImplementVelocityControl<embObjMotionControl, IVelocityControl>(this),
-    ImplementVelocityControl2(this),
-    ImplementControlMode2(this),
+    ImplementPositionControl(this),
+    ImplementVelocityControl(this),
+    ImplementControlMode(this),
     ImplementImpedanceControl(this),
     ImplementMotorEncoders(this),
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     ImplementDebugInterface(this),
 #endif
     ImplementTorqueControl(this),
-    ImplementControlLimits2(this),
+    ImplementControlLimits(this),
     ImplementPositionDirect(this),
     ImplementInteractionMode(this),
     ImplementMotor(this),
@@ -251,7 +251,7 @@ embObjMotionControl::embObjMotionControl() :
     behFlags.useRawEncoderData = false;
     behFlags.pwmIsLimited     = false;
 
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         behFlags.verbosewhenok = (bool)NetType::toInt(tmp);
@@ -295,18 +295,17 @@ bool embObjMotionControl::initialised()
 bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
 {
 
-    ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementControlCalibration::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementAmplifierControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL,f.ampsToSensor);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotorEncoders::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementPositionControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementPidControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor);
-    ImplementControlMode2::initialize(_njoints, _axisMap);
-    ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementVelocityControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
-    ImplementControlLimits2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementPositionControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementPidControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM);
+    ImplementControlMode::initialize(_njoints, _axisMap);
+    ImplementVelocityControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementControlLimits::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
-    ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
+    ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM, f.bemf2raw, f.ktau2raw);
     ImplementPositionDirect::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementInteractionMode::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotor::initialize(_njoints, _axisMap);
@@ -423,49 +422,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     opened = true;
     return true;
 }
-
-
-
-
-bool embObjMotionControl::convertPosPid(eomc::PidInfo myPidInfo[])
-{
-
-    //conversion from metric to machine units (if applicable)
-    for (int j=0; j<_njoints; j++)
-    {
-        if(myPidInfo[j].ctrlUnitsType ==  controlUnits_metric)
-        {
-            _measureConverter->convertPosPid_A2E(j, myPidInfo[j].pid);
-        }
-
-        else
-        {
-            //do nothing
-        }
-    }
-     return true;
-}
-
-
-
-
-bool embObjMotionControl::convertTrqPid(eomc::TrqPidInfo myPidInfo[])
-{
-    //conversion from metric to machine units (if applicable)
-    for (int j=0; j<_njoints; j++)
-    {
-        if(!myPidInfo[j].enabled)
-            continue;
-
-        if(myPidInfo[j].ctrlUnitsType ==  controlUnits_metric)
-        {
-            _measureConverter->convertTrqPid_N2S(j, myPidInfo[j].pid);
-        }
-    }
-
-    return true;
-}
-
 
 
 int embObjMotionControl::fromConfig_NumOfJoints(yarp::os::Searchable &config)
@@ -681,7 +637,6 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     int i,j;
 
     measureConvFactors measConvFactors (_njoints);
-    torqueControlConvFactors trqCtrlConvFactors(_njoints);
 
     if(iNeedCouplingsInfo())
     {
@@ -726,14 +681,6 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if (!_mcparser->parseAmpsToSensor(config, measConvFactors.ampsToSensor))
             return false;
 
-
-        //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
-        for (i = 0; i < _njoints; i++)
-        {
-            measConvFactors.newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
-        }
-
-
         //VALE: i have to parse GeneralMecGroup after parsing jointsetcfg, because inside generalmec group there is useMotorSpeedFbk that needs jointset info.
 
         if(!_mcparser->parseGearboxValues(config, _gearbox_M2J, _gearbox_E2J))
@@ -750,7 +697,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
                 return false;
             }
             //Note: currently in eth protocol this parameter belongs to jointset configuration. So
-            // i need to check that every joint belog to same set has the same value
+            // i need to check that every joint belong to same set has the same value
             if (!verifyUseMotorSpeedFbkInJointSet(useMotorSpeedFbk))
             {
                 delete[] useMotorSpeedFbk;
@@ -761,7 +708,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         bool deadzoneIsAvailable;
         if(!_mcparser->parseDeadzoneValue(config, _deadzone, &deadzoneIsAvailable))
             return false;
-        if(!deadzoneIsAvailable) // if parametr is not writte in configuration files then use default values
+        if(!deadzoneIsAvailable) // if parameter is not written in configuration files then use default values
         {
             updateDeadZoneWithDefaultValues();
         }
@@ -777,21 +724,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
        if(!_mcparser->parsePids(config, _ppids, _vpids, _tpids, _cpids, currentPidisMandatory))
             return false;
 
-       for(int logico=0; logico< _njoints; logico++)
-       {
-           MotorTorqueParameters params;
-           params.bemf = _tpids[logico].kbemf;
-           params.bemf_scale = 0;
-           params.ktau = _tpids[logico].ktau;
-           params.ktau_scale = 0;
-           //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
-           //printf("after file has been read : j%d, bemf=%f, ktau=%f \n", logico, params.bemf, params.ktau);
-
-       }
-
-
-
-        // 1) verify joint beloning to same set has same control law
+        // 1) verify joint belonging to same set has same control law
         if(!verifyUserControlLawConsistencyInJointSet(_ppids))
             return false;
         if(!verifyUserControlLawConsistencyInJointSet(_vpids))
@@ -799,60 +732,48 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if(!verifyUserControlLawConsistencyInJointSet(_tpids))
             return false;
 
-        eomc::GenericControlUnitsType_t trqunittype;
-        if(!verifyTorquePidshasSameUnitTypes(trqunittype))
+        yarp::dev::PidFeedbackUnitsEnum fbk_TrqPidUnits;
+        yarp::dev::PidOutputUnitsEnum   out_TrqPidUnits;
+        if(!verifyTorquePidshasSameUnitTypes(fbk_TrqPidUnits, out_TrqPidUnits))
             return false;
 
+        //2) since some joint sets configuration info is in control and ids group, get that info and save them in jointset data struct.
+        updatedJointsetsCfgWithControlInfo();
+    }
 
-        // Due to historical reasons, the joint number used at user level, should be different from the number joint at device level (embObjMotioncontrol).
-        // Infact in configuration files there is the AxisMap parameter, that lets us to "translate" joint number from user level to device level.
-        // The configuration data written in xml files are given using "user" joint number, so when embObjMotioncontrol needs to send the configuration to fw or
-        // to save in its memory, it have to remaped the information using "device" joint number.
-        // For this reason,  in the following the _measureConverter uses the ramapped conversion factor and embObjMotionControl::init() discriminates between
-        // joint "fisico" from "logico".
-        // It is important to notice that functions ...*Raw are called with the joint numer at device level, so in those functions it is not necessary to perform any
-        // joint number translation.
-        // NOTE: (TODO) translate "fisico" and "logico" variables name in English.
+    for (i = 0; i < _njoints; i++)
+    {
+        measConvFactors.newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
 
-        measureConvFactors measConvFactors_remaped (_njoints);
-        int fakeAxisMap[_njoints];
-        for(int i=0; i<_njoints; i++)
+        measConvFactors.bemf2raw[i] = measConvFactors.newtonsToSensor[i] / measConvFactors.angleToEncoder[i];
+        if (_tpids->out_PidUnits == yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT)
         {
-            measConvFactors_remaped.angleToEncoder[_axisMap[i]]  = measConvFactors.angleToEncoder[i];
-            measConvFactors_remaped.dutycycleToPWM[_axisMap[i]]  = measConvFactors.dutycycleToPWM[i];
-            measConvFactors_remaped.ampsToSensor[_axisMap[i]]    = measConvFactors.ampsToSensor[i];
-            measConvFactors_remaped.newtonsToSensor[_axisMap[i]] = measConvFactors.newtonsToSensor[i];
-
-            fakeAxisMap[i]=i;
+            measConvFactors.ktau2raw[i] = measConvFactors.dutycycleToPWM[i] / measConvFactors.newtonsToSensor[i];
         }
-
-
-        if (trqunittype==controlUnits_metric)
+        else if (_tpids->out_PidUnits == yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS)
         {
-
-            trqCtrlConvFactors.init(measConvFactors_remaped.angleToEncoder, measConvFactors_remaped.newtonsToSensor);
+            measConvFactors.ktau2raw[i] = 1.0 / measConvFactors.newtonsToSensor[i];
         }
         else
         {
-             yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0);
-             trqCtrlConvFactors.init(tmpOnes.data(), tmpOnes.data());
+            yError() << "Invalid ktau units"; return false;
         }
-
-        _measureConverter = new measuresConverter(_njoints,  fakeAxisMap, trqCtrlConvFactors, measConvFactors_remaped);
-
-
-        // 2) convert pid values from metrics units to fw units(i.e. icubDegrees)
-        convertPosPid(_ppids);
-        convertPosPid(_vpids);
-        convertTrqPid(_tpids);
-
-        //3) since some joint sets configuration info is in control and ids group, get that info and save them in jointset data struct.
-        updatedJointsetsCfgWithControlInfo();
-
     }
 
     ///////////////INIT INTERFACES
+    _measureConverter = new ControlBoardHelper(_njoints, _axisMap, measConvFactors.angleToEncoder, NULL, measConvFactors.newtonsToSensor, measConvFactors.ampsToSensor, nullptr, measConvFactors.dutycycleToPWM , measConvFactors.bemf2raw, measConvFactors.ktau2raw);
+    _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, _ppids->fbk_PidUnits, _ppids->out_PidUnits);
+    _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, _vpids->fbk_PidUnits, _vpids->out_PidUnits);
+    _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE, _tpids->fbk_PidUnits, _tpids->out_PidUnits);
+    _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, _cpids->fbk_PidUnits, _cpids->out_PidUnits);
+
+
     initializeInterfaces(measConvFactors);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, _ppids->fbk_PidUnits, _ppids->out_PidUnits);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, _vpids->fbk_PidUnits, _vpids->out_PidUnits);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE,   _tpids->fbk_PidUnits, _tpids->out_PidUnits);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT,  _cpids->fbk_PidUnits, _cpids->out_PidUnits);
+
 
     //Now save in data in structures EmbObj protocol compatible
     if(!saveCouplingsData())
@@ -941,9 +862,10 @@ bool embObjMotionControl::verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk 
 
 }
 
-bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(eomc::GenericControlUnitsType_t &unittype)
+bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits)
 {
-    unittype = controlUnits_unknown;
+    fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
+    out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
     //get first joint with enabled torque
     int firstjoint = -1;
     for(int i=0; i<_njoints; i++)
@@ -962,7 +884,8 @@ bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(eomc::GenericControlU
     {
         if(_tpids[i].enabled)
         {
-            if(_tpids[firstjoint].ctrlUnitsType != _tpids[i].ctrlUnitsType)
+            if(_tpids[firstjoint].fbk_PidUnits != _tpids[i].fbk_PidUnits ||
+               _tpids[firstjoint].out_PidUnits != _tpids[i].out_PidUnits)
             {
                 yError() << "embObjMC " << getBoardInfo() << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
                 return false;
@@ -970,7 +893,8 @@ bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(eomc::GenericControlU
         }
     }
 
-    unittype = _tpids[firstjoint].ctrlUnitsType;
+    fbk_pidunits = _tpids[firstjoint].fbk_PidUnits;
+    out_pidunits = _tpids[firstjoint].out_PidUnits;
     return true;
 }
 
@@ -1100,7 +1024,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (currentMCversion != PARSER_MOTION_CONTROL_VERSION)
     {
-        yError() << "embObjMC" << getBoardInfo() << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please try to update configuration files of robot and if the problem persists contact icub-support@iit.it";
+        yError() << "embObjMC" << getBoardInfo() << "------ ATTENTION!!!! Wrong value of <MotioncontrolVersion> parameter !!!! ---------------------------------------------------------------------------------------";
+        yError() << "embObjMC" << getBoardInfo() << "------ This means that the configuration files of this device are not compatible with my parser, so I cannot start. ";
+        yError() << "embObjMC" << getBoardInfo() << "------ I need version " << PARSER_MOTION_CONTROL_VERSION << ", but in configuration files have version " << currentMCversion << ".";
+        yError() << "embObjMC" << getBoardInfo() << "------ Please update configuration files in robots-configuration repository. (see http://wiki.icub.org/wiki/Robot_configuration for more information). ";
+        yError() << "embObjMC" << getBoardInfo() << "------ If the problem persists contact icub-support@iit.it .";
+        yError() << "embObjMC" << getBoardInfo() << "----------------------------------------------------------------------------------------------------------------------------------------------------------------";
         return false;
     }
 
@@ -1208,14 +1137,18 @@ bool embObjMotionControl::init()
 
         eOmc_joint_config_t jconfig = {0};
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
-        copyPid_iCub2eo(&(_ppids[logico].pid),  &jconfig.pidposition);
-        copyPid_iCub2eo(&(_vpids[logico].pid), &jconfig.pidvelocity);
-        copyPid_iCub2eo(&(_tpids[logico].pid), &jconfig.pidtorque);
+        yarp::dev::Pid tmp; 
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_POSITION,_ppids[logico].pid, fisico);
+        copyPid_iCub2eo(&tmp,  &jconfig.pidposition);
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_VELOCITY, _vpids[logico].pid, fisico);
+        copyPid_iCub2eo(&tmp, &jconfig.pidvelocity);
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_TORQUE, _tpids[logico].pid, fisico);
+        copyPid_iCub2eo(&tmp, &jconfig.pidtorque);
 
         //stiffness and damping read in xml file are in Nm/deg and Nm/(Deg/sec), so we need to convert before send to fw.
         jconfig.impedance.damping   = (eOmeas_damping_t) _measureConverter->impN2S(_impedance_params[logico].damping, fisico);
         jconfig.impedance.stiffness = (eOmeas_stiffness_t) _measureConverter->impN2S(_impedance_params[logico].stiffness, fisico);
-        jconfig.impedance.offset    = 0; //impedance_params[j];
+        jconfig.impedance.offset    = 0;
 
         _cacheImpedance[logico].stiffness = jconfig.impedance.stiffness;
         _cacheImpedance[logico].damping   = jconfig.impedance.damping;
@@ -1235,10 +1168,9 @@ bool embObjMotionControl::init()
         jconfig.jntEncoderType = _jointEncs[logico].type;
         jconfig.jntEncTolerance = _jointEncs[logico].tolerance;
 
-        //printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, _tpids[logico].kbemf, _tpids[logico].ktau);
-        jconfig.motor_params.bemf_value = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(fisico,  _tpids[logico].kbemf);
+        jconfig.motor_params.bemf_value = _measureConverter->bemf_user2raw(_tpids[logico].kbemf, fisico);
         jconfig.motor_params.bemf_scale = 0;
-        jconfig.motor_params.ktau_value = (float) _measureConverter->convertTrqMotorKtaufParam_MetricToMachineUnits(fisico, _tpids[logico].ktau);
+        jconfig.motor_params.ktau_value = _measureConverter->ktau_user2raw(_tpids[logico].ktau, fisico);
         jconfig.motor_params.ktau_scale = 0;
 
         jconfig.gearbox_E2J = _gearbox_E2J[logico];
@@ -1261,21 +1193,6 @@ bool embObjMotionControl::init()
             }
         }
     }
-
-//     /////////////////////////////////////////////////////////
-//     // invia la configurazione dei parametri di stiction   //
-//     /////////////////////////////////////////////////////////
-//     for(int logico=0; logico< _njoints; logico++)
-//     {
-//         MotorTorqueParameters params;
-//         params.bemf = _tpids[logico].kbemf;
-//         params.bemf_scale = 0;
-//         params.ktau = _tpids[logico].ktau;
-//         params.ktau_scale = 0;
-//         //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
-//         printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, params.bemf, params.ktau);
-//         setMotorTorqueParams(logico,params);
-//     }
 
     //////////////////////////////////////////
     // invia la configurazione dei MOTORI   //
@@ -1307,18 +1224,11 @@ bool embObjMotionControl::init()
         motor_cfg.pwmLimit =_rotorsLimits[logico].pwmMax;
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMin, fisico ));
-
-        if(_cpids[logico].enabled)
-        {
-            copyPid_iCub2eo(&(_cpids[logico].pid),  &motor_cfg.pidcurrent);
-        }
-        else
-        {
-            motor_cfg.pidcurrent.kp = 8;
-            motor_cfg.pidcurrent.ki = 2;
-            motor_cfg.pidcurrent.scale = 10;
-        }
         
+        yarp::dev::Pid tmp;
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_CURRENT, _cpids[logico].pid, fisico);
+        copyPid_iCub2eo(&tmp, &motor_cfg.pidcurrent);
+                
         if (false == res->setcheckRemoteValue(protid, &motor_cfg, 10, 0.010, 0.050))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for motor config fisico #" << fisico << "in "<< getBoardInfo(); 
@@ -1331,8 +1241,6 @@ bool embObjMotionControl::init()
                 yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in "<< getBoardInfo();
             }
         }
-
-
     }
 
     /////////////////////////////////////////////
@@ -1355,13 +1263,12 @@ bool embObjMotionControl::close()
     ImplementEncodersTimed::uninitialize();
     ImplementMotorEncoders::uninitialize();
     ImplementPositionControl2::uninitialize();
-    ImplementVelocityControl<embObjMotionControl, IVelocityControl>::uninitialize();
-    ImplementVelocityControl2::uninitialize();
+    ImplementVelocityControl::uninitialize();
     ImplementPidControl::uninitialize();
-    ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::uninitialize();
-    ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::uninitialize();
+    ImplementControlCalibration::uninitialize();
+    ImplementAmplifierControl::uninitialize();
     ImplementImpedanceControl::uninitialize();
-    ImplementControlLimits2::uninitialize();
+    ImplementControlLimits::uninitialize();
     ImplementTorqueControl::uninitialize();
     ImplementPositionDirect::uninitialize();
     ImplementInteractionMode::uninitialize();
@@ -1482,20 +1389,6 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
 
-    if(_ppids[j].ctrlUnitsType == controlUnits_metric)
-    {
-        _measureConverter->convertPosPid_A2E(j, hwPid);
-    }
-    if(_ppids[j].ctrlUnitsType == controlUnits_machine)
-    {
-        hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
-        hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
-        hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
-    }
-    else
-    {
-        yError() << "Unknown _positionControlUnits";
-    }
     //printf("helper_setPosPid: kp=%f ki=%f kd=%f\n", hwPid.kp, hwPid.ki, hwPid.kd);
     copyPid_iCub2eo(&hwPid, &outPid);
 
@@ -1624,35 +1517,50 @@ bool embObjMotionControl::helper_getPosPidRaw(int j, Pid *pid)
     
     //printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
     
-    if(_ppids[j].ctrlUnitsType == controlUnits_metric)
-    {
-        _measureConverter->convertPosPid_E2A(j, *pid);
-    }
-    else if(_ppids[j].ctrlUnitsType == controlUnits_machine)
-    {
-        pid->kp = pid->kp;  //[PWM/icubdegrees]
-        pid->ki = pid->ki;  //[PWM/icubdegrees]
-        pid->kd = pid->kd;  //[PWM/icubdegrees]
-    }
-    else
-    {
-        yError() << "Unknown _positionControlUnits";
-    }
-
     return true;
 }
 
+bool embObjMotionControl::helper_getPosPidsRaw(Pid *pid)
+{
+    std::vector<eOmc_PID_t> eoPIDList(_njoints);
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_config_pidposition, eoPIDList);
+    if(!ret)
+    {
+        yError() << "failed helper_getPosPidsRaw for" << getBoardInfo();
+        return false;
+    }
+    
+    for(int j=0; j<_njoints; j++)
+    {
+        copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
+        
+        //printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
+    }
+    return true;
+}
+
+
 bool embObjMotionControl::getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids)
 {
-    bool ret = true;
-
-    // just one joint at time, wait answer before getting to the next.
-    // This is because otherwise too many msg will be placed into can queue
-    for(int j=0, index=0; j<_njoints; j++, index++)
+    switch (pidtype)
     {
-        ret &=getPidRaw(pidtype, j, &pids[j]);
+        case VOCAB_PIDTYPE_POSITION:
+            helper_getPosPidsRaw(pids);
+            break;
+        case VOCAB_PIDTYPE_VELOCITY:
+            helper_getVelPidsRaw(pids);
+            break;
+        case VOCAB_PIDTYPE_CURRENT:
+            helper_getCurPidsRaw(pids);
+            break;
+        case VOCAB_PIDTYPE_TORQUE:
+            helper_getTrqPidsRaw(pids);
+            break;
+        default:
+            yError()<<"Invalid pidtype:"<<pidtype;
+            break;
     }
-    return ret;
+    return true;
 }
 
 bool embObjMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref)
@@ -1924,9 +1832,9 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
     return true;
 }
 
-bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, double p2, double p3)
+bool embObjMotionControl::calibrateAxisWithParamsRaw(int j, unsigned int type, double p1, double p2, double p3)
 {
-    yTrace() << "calibrate2Raw for" << getBoardInfo() << "joint" << j;
+    yTrace() << "calibrateRaw for" << getBoardInfo() << "joint" << j;
 
     // Tenere il check o forzare questi sottostati?
 //    if(!_enabledAmp[j ] )
@@ -2001,7 +1909,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 }
 
 
-bool embObjMotionControl::doneRaw(int axis)
+bool embObjMotionControl::calibrationDoneRaw(int axis)
 {
     bool result = false;
     eOenum08_t temp = 0;
@@ -2136,16 +2044,19 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 
 bool embObjMotionControl::checkMotionDoneRaw(bool *flag)
 {
-    bool ret = true;
-    bool val, tot_res = true;
-
-    for(int j=0, index=0; j< _njoints; j++, index++)
+    std::vector <eObool_t> ismotiondoneList(_njoints);
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_core_modes_ismotiondone, ismotiondoneList);
+    if(false == ret)
     {
-        ret &= checkMotionDoneRaw(j, &val);
-        tot_res &= val;
+        yError () << "Failure of askRemoteValues() inside embObjMotionControl::checkMotionDoneRaw for all joints of" << getBoardInfo();
+        return false;
     }
-    *flag = tot_res;
-    return ret;
+    
+    for(int j=0; j<_njoints; j++)
+    {
+        flag[j] = ismotiondoneList[j]; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
+    }
+    return true;
 }
 
 bool embObjMotionControl::setRefSpeedRaw(int j, double sp)
@@ -2287,17 +2198,30 @@ bool embObjMotionControl::relativeMoveRaw(const int n_joint, const int *joints, 
 
 bool embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
 {
-    bool ret = true;
-    bool val = true;
     bool tot_val = true;
+   
+    //std::vector <bool> isDoneList(_njoints); //this cannot be used here because .data() is not implemented for std::vector <bool>
+    bool* isDoneList = new bool[_njoints];
+   
+    *flag = false;
+    
+    if(! checkMotionDoneRaw(isDoneList))
+        return false;
 
     for(int j=0; j<n_joint; j++)
     {
-        ret = ret && checkMotionDoneRaw(joints[j], &val);
-        tot_val &= val;
+        if(joints[j] >= _njoints)
+        {
+            yError() << getBoardInfo() << ":checkMotionDoneRaw required for not existing joint ( " << joints[j] << ")";
+            delete [] isDoneList;
+            return false;
+        }
+        tot_val &= isDoneList[joints[j]];
     }
+    
     *flag = tot_val;
-    return ret;
+    delete[] isDoneList;
+    return true;
 }
 
 bool embObjMotionControl::setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds)
@@ -2353,32 +2277,7 @@ bool embObjMotionControl::stopRaw(const int n_joint, const int *joints)
 ///////////// END Position Control INTERFACE  //////////////////
 
 // ControlMode
-bool embObjMotionControl::setPositionModeRaw(int j)
-{
-    return DEPRECATED("setPositionModeRaw");
-}
 
-bool embObjMotionControl::setVelocityModeRaw(int j)
-{
-    return DEPRECATED("setVelocityModeRaw");
-}
-
-bool embObjMotionControl::setTorqueModeRaw(int j)
-{
-    return DEPRECATED("setTorqueModeRaw");
-}
-
-bool embObjMotionControl::setImpedancePositionModeRaw(int j)
-{
-    return DEPRECATED("setImpedancePositionModeRaw");
-}
-
-bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
-{
-    return DEPRECATED("setImpedanceVelocityModeRaw");
-}
-
-// puo' essere richiesto con get
 bool embObjMotionControl::getControlModeRaw(int j, int *v)
 {
     eOmc_joint_status_core_t jcore = {0};
@@ -3122,7 +3021,7 @@ bool embObjMotionControl::getRotorIndexOffsetRaw(int j, double& rotorOffset)
     return true;
 }
 
-bool embObjMotionControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
+bool embObjMotionControl::getAxisNameRaw(int axis, std::string& name)
 {
     if (axis >= 0 && axis < _njoints)
     {
@@ -3164,7 +3063,7 @@ bool embObjMotionControl::getJointDeadZoneRaw(int j, double &jntDeadZone)
 }
 
 // IRemoteVariables
-bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
+bool embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle& val)
 {
     val.clear();
     if (key == "kinematic_mj")
@@ -3193,7 +3092,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     }
     else if (key == "encoders")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { r.addDouble(_measureConverter->getAngleToEncoder(i)); }
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { r.addDouble(_measureConverter->posA2E(1.0, i)); }
         return true;
     }
     else if (key == "rotorEncoderResolution")
@@ -3248,22 +3147,22 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     }
     else if (key == "pidCurrentKp")
     {
-        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { Pid p; helper_getCurPidRaw(i, &p); r.addDouble(p.kp); }
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.kp); }
         return true;
     }
     else if (key == "pidCurrentKi")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { Pid p; helper_getCurPidRaw(i, &p); r.addDouble(p.ki); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.ki); }
         return true;
     }
     else if (key == "pidCurrentShift")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; helper_getCurPidRaw(i, &p); r.addDouble(p.scale); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.scale); }
         return true;
     }
     else if (key == "pidCurrentOutput")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; helper_getCurPidRaw(i, &p); r.addDouble(p.max_output); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.max_output); }
         return true;
     }
     else if (key == "jointEncoderType")
@@ -3381,11 +3280,69 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointDeadZoneRaw(i, tmp1);  r.addDouble(tmp1); }
         return true;
     }
+    else if (key == "readonly_position_PIDraw")
+    {
+        Bottle& r = val.addList();
+        for (int i = 0; i < _njoints; i++)
+        { Pid p;
+          getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, i, &p);
+          char buff[1000];
+          snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+          r.addString(buff);
+        }
+        return true;
+    }
+    else if (key == "readonly_velocity_PIDraw")
+    {
+        Bottle& r = val.addList();
+        for (int i = 0; i < _njoints; i++)
+        { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, i, &p);
+          char buff[1000];
+          snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+          r.addString(buff);
+        }
+        return true;
+    }
+    else if (key == "readonly_torque_PIDraw")
+    {
+        Bottle& r = val.addList();
+        for (int i = 0; i < _njoints; i++)
+        { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE, i, &p);
+         char buff[1000];
+         snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+         r.addString(buff);
+        }
+        return true;
+    }
+    else if (key == "readonly_current_PIDraw")
+    {
+        Bottle& r = val.addList();
+        for (int i = 0; i < _njoints; i++)
+        { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p);
+         char buff[1000];
+         snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+         r.addString(buff);
+        }
+        return true;
+    }
+    else if (key == "readonly_motor_torque_params_raw")
+    {
+        Bottle& r = val.addList();
+        for (int i = 0; i < _njoints; i++)
+        {
+            MotorTorqueParameters params;
+            getMotorTorqueParamsRaw(i, &params);
+            char buff[1000];
+            snprintf(buff, 1000, "J %d : bemf %+3.3f bemf_scale %+3.3f ktau %+3.3f ktau_scale %+3.3f ", i, params.bemf, params.bemf_scale, params.ktau, params.ktau_scale);
+            r.addString(buff);
+        }
+        return true;
+    }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
 
-bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val)
+bool embObjMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::Bottle& val)
 {
     string s1 = val.toString();
     if (val.size() != _njoints)
@@ -3475,6 +3432,11 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("jointEncTolerance");
     listOfKeys->addString("motorEncTolerance");
     listOfKeys->addString("jointDeadZone");
+    listOfKeys->addString("readonly_position_PIDraw");
+    listOfKeys->addString("readonly_velocity_PIDraw");
+    listOfKeys->addString("readonly_current_PIDraw");
+    listOfKeys->addString("readonly_torque_PIDraw");
+    listOfKeys->addString("readonly_motor_torque_params_raw");
     return true;
 }
 
@@ -3506,9 +3468,9 @@ bool embObjMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
  *
  */
 
-IVirtualAnalogSensor::VAS_status embObjMotionControl::getVirtualAnalogSensorStatus(int ch)
+yarp::dev::VAS_status embObjMotionControl::getVirtualAnalogSensorStatus(int ch)
 {
-    return VAS_OK;
+    return VAS_status::VAS_OK;
 };
 
 int embObjMotionControl::getVirtualAnalogSensorChannels()
@@ -3553,7 +3515,6 @@ bool embObjMotionControl::updateVirtualAnalogSensorMeasure(int userLevel_jointNu
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
     eOmc_joint_status_core_t jstatus;
-    uint16_t size;
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     bool ret = res->getLocalValue(protoid, &jstatus);
     *t = (double) _measureConverter->trqS2N(jstatus.measures.meas_torque, j);
@@ -3646,7 +3607,6 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
 
-    _measureConverter->convertTrqPid_N2S(j, hwPid);
     //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
 
     copyPid_iCub2eo(&hwPid, &outPid);
@@ -3667,9 +3627,23 @@ bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
     copyPid_eo2iCub(&eoPID, pid);
     //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
 
-    _measureConverter->convertTrqPid_S2N(j, *pid);
     return true;
 }
+
+bool embObjMotionControl::helper_getTrqPidsRaw(Pid *pid)
+{
+    std::vector<eOmc_PID_t> eoPIDList (_njoints);
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_config_pidtorque, eoPIDList);
+    if(! ret)
+        return false;
+    for(int j=0; j< _njoints; j++)
+    {    
+        copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
+        //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
+    }
+    return true;
+}
+
 
 bool embObjMotionControl::getImpedanceRaw(int j, double *stiffness, double *damping)
 {
@@ -3694,9 +3668,9 @@ bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
         return false;
 
     // refresh cached value when reading data from the EMS
-    _cacheImpedance->damping   = (double) imped.damping;
-    _cacheImpedance->stiffness = (double) imped.stiffness;
-    _cacheImpedance->offset    = (double) imped.offset;
+    _cacheImpedance->damping   =  imped.damping;
+    _cacheImpedance->stiffness =  imped.stiffness;
+    _cacheImpedance->offset    =  imped.offset;
     return true;
 }
 
@@ -3767,16 +3741,6 @@ bool embObjMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
     return true;
 }
 
-bool embObjMotionControl::getBemfParamRaw(int j, double *bemf)
-{
-    return DEPRECATED("getBemfParamRaw");
-}
-
-bool embObjMotionControl::setBemfParamRaw(int j, double bemf)
-{
-    return DEPRECATED("setBemfParamRaw");
-}
-
 bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
@@ -3786,9 +3750,9 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     if(! askRemoteValue(protoid, &eo_params, size))
         return false;
 
-    params->bemf       = _measureConverter->convertTrqMotorBemfParam_MachineUnitsToMetric(j, eo_params.bemf_value);
+    params->bemf =       eo_params.bemf_value;
     params->bemf_scale = eo_params.bemf_scale;
-    params->ktau       = _measureConverter->convertTrqMotorKtaufParam_MachineUnitsToMetric(j, eo_params.ktau_value);   //eo_params.ktau_value * _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+    params->ktau       = eo_params.ktau_value;
     params->ktau_scale = eo_params.ktau_scale;
     //printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
 
@@ -3802,11 +3766,10 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
 
     //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f\n",j, params.bemf, params.ktau);
 
-    eo_params.bemf_value    = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(j, params.bemf); //(float) params.bemf * _torqueControlHelper->getNewtonsToSensor(j) /  _torqueControlHelper->getAngleToEncoders(j); //[Nm/deg/s]
-    eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
-    eo_params.ktau_value    = (float) _measureConverter->convertTrqMotorKtaufParam_MetricToMachineUnits(j, params.ktau); //[PWM/Nm]
-    eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
-    //printf("setMotorTorqueParamsRaw(AFTER CONV): benf=%f %f ktau=%f %f\n",  params.bemf, params.bemf_scale, params.ktau,params.ktau_scale);
+    eo_params.bemf_value  = (float)   params.bemf;
+    eo_params.bemf_scale  = (uint8_t) params.bemf_scale;
+    eo_params.ktau_value  = (float)   params.ktau;
+    eo_params.ktau_scale  = (uint8_t) params.ktau_scale;
 
     if(false == res->setRemoteValue(id32, &eo_params))
     {
@@ -3840,20 +3803,6 @@ bool embObjMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
         yError() << "eoMc " << getBoardInfo() << ": it is not possible set velocity pid for joint " << j <<", because velocity pid is enabled in xml files";
         return false;
     }
-    if(_vpids[j].ctrlUnitsType == controlUnits_metric)
-    {
-        _measureConverter->convertPosPid_A2E(j, hwPid); //the conversion of velocity pid and position pid are equal
-    }
-    else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
-    {
-        hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
-        hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
-        hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
-    }
-    else
-    {
-        yError() << "eoMc " << getBoardInfo() << ": Unknown _positionControlUnits, needed by setVelPidRaw()";
-    }
 
     copyPid_iCub2eo(&hwPid, &outPid);
 
@@ -3876,22 +3825,20 @@ bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 
     copyPid_eo2iCub(&eoPID, pid);
 
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
 
-    if(_vpids[j].ctrlUnitsType == controlUnits_metric)
+bool embObjMotionControl::helper_getVelPidsRaw(Pid *pid)
+{
+    std::vector <eOmc_PID_t> eoPIDList (_njoints);
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_config_pidvelocity, eoPIDList);
+    if(!ret)
+        return false;
+    
+    for(int j=0; j<_njoints; j++)
     {
-        _measureConverter->convertPosPid_E2A(j, *pid);//the conversion of velocity pid and position pid are equal
+        copyPid_eo2iCub(&eoPIDList[j], &pid[j]);
     }
-    else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
-    {
-        pid->kp = pid->kp;  //[PWM/icubdegrees]
-        pid->ki = pid->ki;  //[PWM/icubdegrees]
-        pid->kd = pid->kd;  //[PWM/icubdegrees]
-    }
-    else
-    {
-        yError() << "eoMc " << getBoardInfo() << ":Unknown _positionControlUnits needed by getVelPid()";
-    }
-
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
@@ -3918,7 +3865,7 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
     return res->setRemoteValue(protoId, &setpoint);
 }
 
-bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
+bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, const double *refs)
 {
     bool ret = true;
     for(int i=0; i<n_joint; i++)
@@ -4009,22 +3956,45 @@ bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
 
 bool embObjMotionControl::getRefVelocitiesRaw(double *refs)
 {
-    bool ret = true;
-    for (int i = 0; i<_njoints; i++)
+    #if ASK_REFERENCE_TO_FIRMWARE
+    std::vector <eOmc_joint_status_target_t> targetList(_njoints);
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_target, targetList);
+    if(!ret)
     {
-        ret &= getRefVelocityRaw(i, &refs[i]);
+        yError() << "embObjMotionControl::getRefVelocitiesRaw() could not read reference vel for " << getBoardInfo() ;
+        return false;
     }
-    return ret;
+    // Get the value
+    for(int j=0; j<_njoints; j++)
+    {
+        refs[j] = (double) targetList[j].trgt_velocity;
+    }
+    return true;
+    #else
+    for(int j=0; j<_njoints; j++)
+    {
+        refs[j] = _ref_command_speeds[j];
+    }
+    return true;
+    #endif
 }
 
 bool embObjMotionControl::getRefVelocitiesRaw(int nj, const int * jnts, double *refs)
 {
-    bool ret = true;
+    std::vector <double> refsList(_njoints);
+    if(!getRefVelocitiesRaw(refsList.data()))
+        return false;
+    
     for (int i = 0; i<nj; i++)
     {
-        ret &= getRefVelocityRaw(jnts[i], &refs[i]);
+        if(jnts[i]>= _njoints)
+        {
+            yError() << getBoardInfo() << "getRefVelocitiesRaw: joint " << jnts[i] << "doesn't exist";
+            return false;
+        }
+        refs[i] = refsList[jnts[i]];
     }
-    return ret;
+    return true;
 }
 
 bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
@@ -4052,12 +4022,23 @@ bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
 
 bool embObjMotionControl::getRefPositionsRaw(double *refs)
 {
-    bool ret = true;
-    for (int i = 0; i<_njoints; i++)
+    #if ASK_REFERENCE_TO_FIRMWARE
+    std::vector <eOmc_joint_status_target_t> targetList(_njoints);
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_target, targetList);
+    if(!ret)
     {
-        ret &= getRefPositionRaw(i, &refs[i]);
+        yError() << "embObjMotionControl::getRefPositionRaw() could not read reference pos for " << getBoardInfo();
+        return false;
     }
-    return ret;
+    // Get the value
+    for(int j=0; j< _njoints; j++)
+        refs[j] = (double) targetList[j].trgt_positionraw;
+    return true;
+    #else
+    for(int j=0; j< _njoints; j++)
+        refs[j] = _ref_positions[j];
+    return true;
+    #endif
 }
 
 bool embObjMotionControl::getRefPositionsRaw(int nj, const int * jnts, double *refs)
@@ -4537,6 +4518,30 @@ bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_
 }
 
 
+template <class T> 
+bool embObjMotionControl::askRemoteValues(eOprotEndpoint_t ep, eOprotEntity_t entity, eOprotTag_t tag, std::vector<T>& values)
+{
+    std::vector<eOprotID32_t> idList;
+    std::vector<void*> valueList;
+    idList.clear();
+    valueList.clear();
+    for(int j=0; j<_njoints; j++)
+    {
+        eOprotID32_t protoId = eoprot_ID_get(ep, entity, j, tag);
+        idList.push_back(protoId);
+        valueList.push_back((void*)&values[j]);
+    }
+    
+    bool ret = res->getRemoteValues(idList, valueList);
+    if(!ret)
+    {
+        yError() << "embObjMotionControl::askRemoteValues failed for all joints of" << getBoardInfo();
+    }
+    
+    return ret;
+}
+
+
 
 
 bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mode)
@@ -4668,10 +4673,16 @@ bool embObjMotionControl::getRefDutyCycleRaw(int j, double *v)
 
 bool embObjMotionControl::getRefDutyCyclesRaw(double *v)
 {
-    bool ret = true;
+    std::vector <eOmc_joint_status_target_t> targetList(_njoints);
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_target, targetList);
+    if(!ret)
+    {
+        yError() << "embObjMotionControl::getDutyCyclesRaw failed for all joints of" << getBoardInfo();
+    }
+    
     for (int j = 0; j<_njoints; j++)
     {
-        ret = ret && getRefDutyCycleRaw(j, &v[j]);
+        v[j]= targetList[j].trgt_openloop;
     }
     return ret;
 }
@@ -4706,25 +4717,25 @@ bool embObjMotionControl::getDutyCyclesRaw(double *v)
 }
 
 // Current interface
-/*bool embObjMotionControl::getCurrentRaw(int j, double *t)
-{
-return NOT_YET_IMPLEMENTED("getCurrentRaw");
-}
-
-bool embObjMotionControl::getCurrentsRaw(double *t)
-{
-return NOT_YET_IMPLEMENTED("getCurrentsRaw");
-}
-*/
 
 bool embObjMotionControl::getCurrentRangeRaw(int j, double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getCurrentRangeRaw");
+    //this should be completed with numbers obtained from configuration files.
+    //some caveats: currently current limits are expressed in robot configuration files in milliAmperes. Amperes should be used instead.
+    //yarp does not perform any conversion on these numbers. Should it?
+    *min = -10.0;
+    *max = 10.0;
+    return true;
 }
 
 bool embObjMotionControl::getCurrentRangesRaw(double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getCurrentRangesRaw");
+    bool ret = true;
+    for (int j = 0; j< _njoints; j++)
+    {
+        ret &= getCurrentRangeRaw(j, &min[j], &max[j]);
+    }
+    return ret;
 }
 
 bool embObjMotionControl::setRefCurrentsRaw(const double *t)
@@ -4770,6 +4781,21 @@ bool embObjMotionControl::helper_getCurPidRaw(int j, Pid *pid)
     eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg.pidcurrent;
     copyPid_eo2iCub(&tmp, pid);
 
+    return true;
+}
+
+bool embObjMotionControl::helper_getCurPidsRaw(Pid *pid)
+{
+    std::vector <eOmc_motor_config_t> motor_cfg_list(_njoints);
+    bool ret = askRemoteValues<eOmc_motor_config_t>(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, eoprot_tag_mc_motor_config, motor_cfg_list);
+    if(! ret)
+        return false;
+    
+    for(int j=0; j<_njoints; j++)
+    {
+        eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg_list[j].pidcurrent;
+        copyPid_eo2iCub(&tmp, &pid[j]);
+    }
     return true;
 }
 

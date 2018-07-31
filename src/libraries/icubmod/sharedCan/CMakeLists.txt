@@ -10,7 +10,7 @@ yarp_prepare_plugin(sharedcan
 
 IF (NOT SKIP_sharedcan)
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
-    include_directories(${YARP_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/)
     yarp_add_plugin(shcan SharedCanBus.h SharedCanBus.cpp)
     target_link_libraries(shcan ${YARP_LIBRARIES})
     

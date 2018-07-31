@@ -71,8 +71,8 @@ void xdPort::onRead(Bottle &b)
     if (locked)
         return;
         
-    int n=std::min(b.size(),(int)xd.length());
-    for (int i=0; i<n; i++)
+    size_t n=std::min(b.size(),xd.length());
+    for (size_t i=0; i<n; i++)
         xd[i]=b.get(i).asDouble();
 
     isNew=true;
@@ -438,11 +438,11 @@ bool getCamParams(const ResourceFinder &rf, const string &type,
     if (!_rf.isConfigured())
         return false;
 
-    string message=_rf.findFile("from").c_str();
+    string message=_rf.findFile("from");
     if (!message.empty())
     {
         message+=": intrinsic parameters for "+type;
-        Bottle &parType=_rf.findGroup(type.c_str());
+        Bottle &parType=_rf.findGroup(type);
         if (parType.check("w")  && parType.check("h") &&
             parType.check("fx") && parType.check("fy") &&
             parType.check("cx") && parType.check("cy"))
@@ -476,7 +476,7 @@ bool getCamParams(const ResourceFinder &rf, const string &type,
     }
     else
     {
-        message=_rf.find("from").asString().c_str();
+        message=_rf.find("from").asString();
         message+=": intrinsic parameters for "+type;
     }
 
@@ -494,11 +494,11 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
     ResourceFinder &_rf=const_cast<ResourceFinder&>(rf);
     if ((chain!=NULL) && _rf.isConfigured())
     {
-        string message=_rf.findFile("from").c_str();
+        string message=_rf.findFile("from");
         if (!message.empty())
         {
             message+=": aligning matrix for "+type;
-            Bottle &parType=_rf.findGroup(type.c_str());
+            Bottle &parType=_rf.findGroup(type);
             if (Bottle *bH=parType.find("HN").asList())
             {
                 int i=0;
@@ -532,7 +532,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
         }
         else
         {
-            message=_rf.find("from").asString().c_str();
+            message=_rf.find("from").asString();
             message+=": aligning matrix for "+type;
         }
 
@@ -625,7 +625,7 @@ void copyJointsBounds(iKinChain *ch1, iKinChain *ch2)
 /************************************************************************/
 void updateTorsoBlockedJoints(iKinChain *chain, const Vector &fbTorso)
 {
-    for (size_t i=0; i<fbTorso.length(); i++)
+    for (unsigned int i=0; i<(unsigned int)fbTorso.length(); i++)
          chain->setBlockingValue(i,fbTorso[i]);
 }
 
@@ -644,8 +644,8 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
 {
     IEncodersTimed *encs;
 
-    int nJointsTorso=fbTorso.length();
-    int nJointsHead=fbHead.length();
+    int nJointsTorso=(int)fbTorso.length();
+    int nJointsHead=(int)fbHead.length();
 
     Vector fb(std::max(nJointsTorso,nJointsHead));
     Vector stamps(nJointsTorso+nJointsHead,0.0);

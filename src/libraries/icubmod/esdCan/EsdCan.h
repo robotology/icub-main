@@ -1,12 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup ecan ecan
- *
- * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a esd can bus board.
- * This is the ecan device.
- *
+/*
  * Copyright (C) 2008 RobotCub Consortium.
  *
  * Author: Lorenzo Natale
@@ -97,6 +91,14 @@ public:
     }
 };
 
+/**
+ * @ingroup icub_hardware_modules
+ * @brief `ecan` : implements yarp::dev::ICanBus for a esd can bus board.
+ *
+ * | YARP device name |
+ * |:-----------------:|
+ * | `ecan` |
+ */
 class yarp::dev::EsdCan: public ImplementCanBufferFactory<EsdCanMessage, CMSG>,
     public ICanBus, 
     public DeviceDriver

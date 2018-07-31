@@ -1,20 +1,12 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup analogSensorEth
- *
- * To Do: add description
- *
- */
-
 #ifndef __embObjInertials_h__
 #define __embObjInertials_h__
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/os/Semaphore.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <string>
 #include <list>
 
@@ -32,6 +24,7 @@
 
 #include <yarp/os/LogStream.h>
 
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 
 namespace yarp {
     namespace dev {
@@ -48,6 +41,8 @@ namespace yarp {
 // -- class embObjInertials
 class yarp::dev::embObjInertials:       public yarp::dev::IAnalogSensor,
                                         public yarp::dev::DeviceDriver,
+                                        public yarp::dev::IThreeAxisGyroscopes,
+                                        public yarp::dev::IThreeAxisLinearAccelerometers,
                                         public eth::IethResource
 {
 
@@ -85,6 +80,22 @@ public:
     virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 
+
+    /* IThreeAxisGyroscopes methods */
+    virtual size_t getNrOfThreeAxisGyroscopes() const override;
+    virtual yarp::dev::MAS_status getThreeAxisGyroscopeStatus(size_t sens_index) const override;
+    virtual bool getThreeAxisGyroscopeName(size_t sens_index, std::string &name) const override;
+    virtual bool getThreeAxisGyroscopeFrameName(size_t sens_index, std::string &frameName) const override;
+    virtual bool getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+
+    /* IThreeAxisLinearAccelerometers methods */
+    virtual size_t getNrOfThreeAxisLinearAccelerometers() const override;
+    virtual yarp::dev::MAS_status getThreeAxisLinearAccelerometerStatus(size_t sens_index) const override;
+    virtual bool getThreeAxisLinearAccelerometerName(size_t sens_index, std::string &name) const override;
+    virtual bool getThreeAxisLinearAccelerometerFrameName(size_t sens_index, std::string &frameName) const override;
+    virtual bool getThreeAxisLinearAccelerometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+
+
 private:
 
     string boardIPstring;
@@ -106,9 +117,12 @@ private:
     // parameters
     servConfigInertials_t serviceConfig;
 
-    yarp::os::Semaphore mutex;
+    mutable yarp::os::Semaphore mutex;
 
     vector<double> analogdata;
+    vector<uint16_t> gyrSensors;
+    vector<uint16_t> accSensors;
+
 
     short status;
     double timeStamp;

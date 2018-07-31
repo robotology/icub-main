@@ -1,19 +1,11 @@
-/* 
- * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
+/*
+ * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+ * Copyright (C) 2006-2010 RobotCub Consortium
+ * All rights reserved.
  *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license. See the accompanying LICENSE file for
+ * details.
 */
 
 #include <sstream>
@@ -58,14 +50,14 @@ void ff2LayNN::setItem(Property &options, const string &tag, const Vector &item)
     for (size_t i=0; i<item.length(); i++)
         v.addDouble(item[i]);
 
-    options.put(tag.c_str(),b.get(0));
+    options.put(tag,b.get(0));
 }
 
 
 /***************************************************************************/
 bool ff2LayNN::getItem(const Property &options, const string &tag, Vector &item) const
 {
-    if (Bottle *b=options.find(tag.c_str()).asList())
+    if (Bottle *b=options.find(tag).asList())
     {
         item.resize(b->size());
         for (size_t i=0; i<item.length(); i++)
@@ -343,17 +335,17 @@ bool ff2LayNN::printStructure(ostream &stream) const
 
     stream<<"***** Hidden Layer Weights *****"<<endl;
     for (size_t i=0; i<IW.size(); i++)
-        stream<<"IW_"<<i<<": ["<<IW[i].toString(16,1).c_str()<<"]"<<endl;
+        stream<<"IW_"<<i<<": ["<<IW[i].toString(16,1)<<"]"<<endl;
 
     stream<<"***** Hidden Layer Bias *****"<<endl;
-    stream<<"b1: ["<<b1.toString(16,1).c_str()<<"]"<<endl;
+    stream<<"b1: ["<<b1.toString(16,1)<<"]"<<endl;
 
     stream<<"***** Output Layer Weights *****"<<endl;
     for (size_t i=0; i<LW.size(); i++)
-        stream<<"LW_"<<i<<": ["<<LW[i].toString(16,1).c_str()<<"]"<<endl;
+        stream<<"LW_"<<i<<": ["<<LW[i].toString(16,1)<<"]"<<endl;
 
     stream<<"***** Output Layer Bias *****"<<endl;
-    stream<<"b2: ["<<b2.toString(16,1).c_str()<<"]"<<endl;
+    stream<<"b2: ["<<b2.toString(16,1)<<"]"<<endl;
 
     stream<<"***** Output Layer Range *****"<<endl;
     for (size_t i=0; i<outMinMaxX.size(); i++)

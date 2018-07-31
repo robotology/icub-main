@@ -12,7 +12,7 @@ compiler:
 
 env:
   global:
-   - YARP_BRANCH="master"
+   - YARP_BRANCH="devel"
 
 before_script:
   #ubuntu dependencies

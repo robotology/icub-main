@@ -96,7 +96,7 @@ Author: Lorenzo Natale
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Semaphore.h>
 
@@ -115,13 +115,13 @@ using namespace yarp::dev;
 using namespace yarp::math;
 using namespace iCub::ctrl;
 
-#define VCTP_TIME VOCAB4('t','i','m','e')
-#define VCTP_OFFSET VOCAB3('o','f','f')
-#define VCTP_CMD_NOW VOCAB4('c','t','p','n')
-#define VCTP_CMD_QUEUE VOCAB4('c','t','p','q')
-#define VCTP_CMD_FILE VOCAB4('c','t','p','f')
-#define VCTP_POSITION VOCAB3('p','o','s')
-#define VCTP_WAIT VOCAB4('w','a','i','t')
+#define VCTP_TIME       yarp::os::createVocab('t','i','m','e')
+#define VCTP_OFFSET     yarp::os::createVocab('o','f','f')
+#define VCTP_CMD_NOW    yarp::os::createVocab('c','t','p','n')
+#define VCTP_CMD_QUEUE  yarp::os::createVocab('c','t','p','q')
+#define VCTP_CMD_FILE   yarp::os::createVocab('c','t','p','f')
+#define VCTP_POSITION   yarp::os::createVocab('p','o','s')
+#define VCTP_WAIT       yarp::os::createVocab('w','a','i','t')
 
 #define VEL_FILT_SIZE   10
 #define VEL_FILT_THRES  1.0
@@ -193,8 +193,8 @@ protected:
     bool connected;
     Property          drvOptions;
     PolyDriver       *drv;
-    IControlMode2    *mode;
-    IPositionControl2*pos;
+    IControlMode     *mode;
+    IPositionControl *pos;
     IEncoders        *enc;
     Actions actions;
     Semaphore mutex;
@@ -273,7 +273,7 @@ protected:
         pos->setRefSpeeds(disp.length(), joints.data(), speeds.data());
         pos->positionMove(disp.length(), joints.data(), positions.data());
 
-        cout << "Script port: " << const_cast<Vector &>(x->getCmd()).toString() << endl;
+        cout << "Script port: " << x->getCmd().toString() << endl;
     }
 
 public:
@@ -292,11 +292,9 @@ public:
         mutex.post();
     }
 
-    bool configure(const Property &copt)
+    bool configure(const Property &options)
     {
         bool ret=true;
-        Property &options=const_cast<Property &> (copt);
-
         if (options.check("device"))
             drvOptions.put("device", options.find("device").asString());
         else
@@ -310,12 +308,12 @@ public:
         string local=name;
         local+=string("/local/")+string(options.find("part").asString());
    
-        drvOptions.put("remote",remote.c_str());
-        drvOptions.put("local",local.c_str());
+        drvOptions.put("remote",remote);
+        drvOptions.put("local",local);
 
         if (verbose)
         {
-            cout << "Driver options:\n" << drvOptions.toString().c_str();
+            cout << "Driver options:\n" << drvOptions.toString();
         }
 
         return ret;
@@ -371,12 +369,12 @@ public:
     }
 };
 
-class WorkingThread: public RateThread
+class WorkingThread: public PeriodicThread
 {
 private:
     scriptPosPort *posPort;
 public:
-    WorkingThread(int period=100): RateThread(period)
+    WorkingThread(int period=100): PeriodicThread((double)period/1000.0)
     {}
 
     void attachPosPort(scriptPosPort *p)
@@ -445,7 +443,7 @@ private:
 
         while(cont)
         {
-            ConstString gainStr = "gain";
+            string gainStr = "gain";
             sprintf(numberId, "%d", i);
             gainStr = gainStr + numberId;
 
@@ -471,7 +469,7 @@ private:
         cont = true;
         while(cont)
         {
-            ConstString svelStr = "svel";
+            string svelStr = "svel";
             sprintf(numberId, "%d", i);
             svelStr = svelStr + numberId;
 
@@ -504,7 +502,7 @@ private:
         if (str.length()!=0)
         {
             Bottle b;
-            b.fromString(str.c_str());
+            b.fromString(str);
 
             if (b.size()>2)
             {
@@ -738,7 +736,7 @@ public:
         if (cmd.size()<2)
             return false;
 
-        string fileName=rf->findFile(cmd.get(1).asString().c_str());
+        string fileName=rf->findFile(cmd.get(1).asString());
         bool ret = velThread.go(fileName);
         if (ret)
         {
@@ -810,18 +808,17 @@ public:
     virtual bool configure(ResourceFinder &rf)
     {
         this->rf=&rf;
-        Time::turboBoost();
 
         if (rf.check("name"))
-            name=string("/")+rf.find("name").asString().c_str();
+            name=string("/")+rf.find("name").asString();
         else
             name="/ctpservice";
 
-        rpcPort.open((name+string("/")+rf.find("part").asString().c_str()+"/rpc").c_str());
+        rpcPort.open(name+string("/")+rf.find("part").asString()+"/rpc");
         attach(rpcPort);
 
         Property portProp;
-        portProp.put("name", name.c_str());
+        portProp.put("name", name);
         portProp.put("robot", rf.find("robot"));
         portProp.put("part", rf.find("part"));
 
@@ -845,8 +842,8 @@ public:
             cerr<<"Thread did not start, queue will not work"<<endl;
         }
 
-        velPort.open((name+string("/")+rf.find("part").asString().c_str()+"/vc:o").c_str());
-        velInitPort.open((name+string("/")+rf.find("part").asString().c_str()+"/vcInit:o").c_str());
+        velPort.open(name+string("/")+rf.find("part").asString()+"/vc:o");
+        velInitPort.open(name+string("/")+rf.find("part").asString()+"/vcInit:o");
         velThread.attachVelPort(&velPort);
         velThread.attachVelInitPort(&velInitPort);
         cout << "Using parameters:" << endl << rf.toString() << endl;
@@ -864,7 +861,7 @@ public:
         {
             switch (command.get(0).asVocab())
             {
-                case VOCAB4('h','e','l','p'):
+                case yarp::os::createVocab('h','e','l','p'):
                 {                    
                     cout << "Available commands:"          << endl;
                     cout<<"Queue command:\n";

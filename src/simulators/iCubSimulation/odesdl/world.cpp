@@ -26,8 +26,7 @@
  * \note Released under GNU GPL v2.0
  **/
 #include "world.h"
-#include <stdio.h>
-#include <yarp/os/ConstString.h>
+#include <cstdio>
 #include <yarp/os/Log.h>
 #include <iostream>
 #include "OdeInit.h"
@@ -170,10 +169,10 @@ void worldSim::draw(){
     }
 }
 
-void worldSim::loadTexture(ConstString texture, int numTexture){
+void worldSim::loadTexture(string texture, int numTexture){
 
    // yInfo() << " NUMBER TEXTURE " << numTexture;
-    ConstString tmptext = (char *) model_DIR.c_str();
+    string tmptext = (char *) model_DIR.c_str();
     texture = tmptext + "/"+ texture;
     setupTexture( (char* ) texture.c_str(), numTexture );
 }
@@ -199,7 +198,7 @@ void worldSim::activateWorld(RobotConfig& config) {
 
     Property options;
     //start left arm device driver
-    ConstString parts = finder.findFile("parts");
+    string parts = finder.findFile("parts");
     options.fromConfigFile(parts.c_str());
 
     actWorld = options.findGroup("RENDER").check("objects",Value(1),"What did the user select?").asString();
@@ -424,7 +423,7 @@ bool worldSim::MyObject2::create(const WorldOp& op, WorldResult& result, int idx
     int *modelTexture = dynamic?odeinit._wrld->modelTexture:odeinit._wrld->s_modelTexture;
                     
     tridata[idx] = dGeomTriMeshDataCreate();
-    ConstString tmp = (char *) odeinit._wrld->model_DIR.c_str();
+    string tmp = (char *) odeinit._wrld->model_DIR.c_str();
     model = string(tmp.c_str()) + "/" + model.c_str();
     trimesh[idx] = dLoadMeshFromX(model.c_str());
     if (!trimesh[idx]){

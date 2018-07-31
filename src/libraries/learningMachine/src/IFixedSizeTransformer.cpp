@@ -56,7 +56,7 @@ bool IFixedSizeTransformer::configure(yarp::os::Searchable& config) {
     return success;
 }
 
-void IFixedSizeTransformer::writeBottle(yarp::os::Bottle& bot) {
+void IFixedSizeTransformer::writeBottle(yarp::os::Bottle& bot) const {
     bot.addInt(this->getDomainSize());
     bot.addInt(this->getCoDomainSize());
 }

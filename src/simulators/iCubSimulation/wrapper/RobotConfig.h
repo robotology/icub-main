@@ -22,12 +22,13 @@
 #ifndef ICUBSIMULATION_ROBOTCONFIG_INC
 #define ICUBSIMULATION_ROBOTCONFIG_INC
 
+#include <string>
 #include <yarp/os/ResourceFinder.h>
 
 class RobotFlags {
 public:
     bool valid;
-    bool actElevation, actStartHomePos , actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actHeadCover, actWorld, actPressure, actScreen, actLegsCovers, actLeftArmCovers, actRightArmCovers, actTorsoCovers, actSelfCol, actCoversCol, actSkinEmul;
+    bool actElevation, actStartHomePos , actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actHeadCover, actWorld, actPressure, actScreen, actLegsCovers, actLeftArmCovers, actRightArmCovers, actTorsoCovers, actSelfCol, actCoversCol,	actSkinEmul;
     RobotFlags() {
         valid = false;
     }
@@ -53,14 +54,14 @@ public:
 
 class RobotConfig {
 public:
-    virtual yarp::os::ConstString getModuleName() = 0;
+    virtual std::string getModuleName() = 0;
     virtual int getVerbosity() = 0;
     virtual yarp::os::ResourceFinder& getFinder() = 0;
     virtual RobotFlags& getFlags() = 0;
 
     void setFlags();
-	//bool stopConfig(yarp::os::ConstString error, bool proceed);
-	void stopConfig(yarp::os::ConstString error);
+    //bool stopConfig(std::string error, bool proceed);
+    void stopConfig(std::string error);
 
     virtual int getWorldTimestep() = 0;
     virtual double getWorldCFM() = 0;

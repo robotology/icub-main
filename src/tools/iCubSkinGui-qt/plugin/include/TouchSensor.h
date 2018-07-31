@@ -15,11 +15,21 @@
 #ifndef __ALE_TOUCHSENSOR_H__
 #define __ALE_TOUCHSENSOR_H__
 
-#define MAX_TAXELS 128
+#define MAX_TAXELS 192
 
 class TouchSensor
 {
+protected:
+
     bool calibrated_skin;
+
+    TouchSensor()
+    {
+        for (int n = 0; n < MAX_TAXELS; ++n)
+        {
+            connected[n] = true;
+        }
+    }
 
 public:
 
@@ -67,7 +77,7 @@ public:
 
         double sigma=0.5*5.55*scale;
         int maxRange=int(2.5*sigma);
-        
+
         if (maxRange!=m_maxRange)
         {
             m_maxRange=maxRange;
@@ -109,8 +119,8 @@ public:
     {
         return x>=0?x:-x;
     }
-    
-    int get_nTaxels () 
+
+    int get_nTaxels ()
     {
         return nTaxels;
     }
@@ -122,7 +132,6 @@ public:
         int Y0,Y1;
         int dya,dyb,dxa,dxb;
 
-        double remapped_activation[MAX_TAXELS];
         switch (ilayoutNum)
         {
             case 0:
@@ -139,7 +148,7 @@ public:
 
         int maxRange2=m_maxRangeLight*m_maxRangeLight;
 
-        for (int i=0; i<nTaxels; ++i) if (remapped_activation[i]>0.0)
+        for (int i=0; i<nTaxels; ++i) if (connected[i] && remapped_activation[i]>0.0)
         {
             act=int(dGain*remapped_activation[i]);
             Y0=(m_Height-y[i]-1)*m_Width+x[i];
@@ -173,7 +182,7 @@ public:
         int index;
         double k0,k1;
         int dya,dyb,dxa,dxb;
-        double remapped_activation[MAX_TAXELS];
+
         switch (ilayoutNum)
         {
             case 0:
@@ -188,7 +197,7 @@ public:
                 break;
         }
 
-        for (int i=0; i<nTaxels; ++i) if (remapped_activation[i]>0.0)
+        for (int i=0; i<nTaxels; ++i) if (connected[i] && remapped_activation[i]>0.0)
         {
             k0=dGain*remapped_activation[i];
             Y0=(m_Height-y[i]-1)*m_Width+x[i];
@@ -269,7 +278,7 @@ public:
         {
             drawLine(image,xv[i],yv[i],xv[(i+1)%nVerts],yv[(i+1)%nVerts]);
         }
-        
+
         for (int i=0; i<nTaxels; ++i)
         {
             drawCircle(image,x[i],y[i],m_Radius);
@@ -327,7 +336,7 @@ protected:
         if (image[bytePos+4]<G4) image[bytePos+4]=G4;
         //if (image[bytePos+5]<B4) image[bytePos+5]=B4;
     }
-    
+
     void drawLine(unsigned char *image,int x0,int y0,int x1,int y1)
     {
         if (x1==x0 && y1==y0) return;
@@ -380,13 +389,15 @@ protected:
 
     double m_Radius,m_RadiusOrig;
     double activation[MAX_TAXELS];
+    double remapped_activation[MAX_TAXELS];
+    bool connected[MAX_TAXELS];
 
     unsigned char R_MAX, G_MAX, B_MAX;
 
     int m_maxRangeLight;
     static int m_maxRange;
     static double *Exponential;
-    
+
     // scaled
     int x[MAX_TAXELS],y[MAX_TAXELS];
     int xv[8],yv[8];

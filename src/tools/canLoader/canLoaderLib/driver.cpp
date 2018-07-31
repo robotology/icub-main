@@ -22,7 +22,6 @@ using namespace yarp::dev;
 
 cDriver2::cDriver2()
 {
-    yarp::os::Time::turboBoost();
     _verbose = true;
 }
 
@@ -485,7 +484,6 @@ int eDriver2::send_message(vector<CanPacket> &canpackets, int n)
 
 cDriver::cDriver ()
 {
-	yarp::os::Time::turboBoost();
 }
 
 

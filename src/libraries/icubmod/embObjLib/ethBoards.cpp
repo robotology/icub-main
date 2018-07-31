@@ -367,6 +367,10 @@ eth::IethResource* eth::EthBoards::get_interface(eOipv4addr_t ipv4, eOprotID32_t
                 type = iethres_analogmais;
             else if(eoprot_entity_as_inertial == en)
                 type = iethres_analoginertial;
+            else if(eoprot_entity_as_inertial3 == en)
+                type = iethres_analoginertial3;
+            else if(eoprot_entity_as_temperature == en)
+                type = iethres_analogstrain; //TODO temperature!!!
             else
                 type = iethres_none;
         } break;

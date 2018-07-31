@@ -54,10 +54,8 @@
 */
 
 
-
-
+#include <string>
 #include <gtkmm.h>
-#include <yarp/os/ConstString.h>
 #include <yarp/os/Network.h>
 
 #include "iCubFocusGui.h"
@@ -72,7 +70,7 @@ int main(int argc, char *argv[])
     
     Glib::thread_init();
     Gtk::Main kit(argc,argv);
-	yarp::os::Network yarp;
+    yarp::os::Network yarp;
 
     yarp::os::Property config;
     config.put("local",argv[1]);

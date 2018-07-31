@@ -135,7 +135,7 @@ public:
     /*
      * Inherited from IMachineLearner.
      */
-    virtual void writeBottle(yarp::os::Bottle& bot);
+    virtual void writeBottle(yarp::os::Bottle& bot) const;
 
     /*
      * Inherited from IMachineLearner.

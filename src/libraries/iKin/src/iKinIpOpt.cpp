@@ -1,19 +1,11 @@
-/* 
- * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
+/*
+ * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+ * Copyright (C) 2006-2010 RobotCub Consortium
+ * All rights reserved.
  *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license. See the accompanying LICENSE file for
+ * details.
 */
 
 #include <limits>
@@ -372,7 +364,7 @@ public:
 
         qd.resize(dim);
 
-        unsigned int n=q0.length();
+        unsigned int n=(unsigned int)q0.length();
         n=n>dim ? dim : n;
 
         unsigned int i;
@@ -493,8 +485,8 @@ public:
 
         if (LIC.isActive())
         {
-            int lenLower=LIC.getlB().length();
-            int lenUpper=LIC.getuB().length();
+            int lenLower=(int)LIC.getlB().length();
+            int lenUpper=(int)LIC.getuB().length();
 
             if (lenLower && (lenLower==lenUpper) && (LIC.getC().cols()==dim))
             {

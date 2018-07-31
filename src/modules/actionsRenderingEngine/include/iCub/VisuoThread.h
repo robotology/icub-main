@@ -21,7 +21,7 @@
 
 
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Semaphore.h>
@@ -37,10 +37,10 @@
 
 #include <iCub/utils.h>
 
-#define PARAM_FIXATION              VOCAB4('f','i','x','a')
-#define PARAM_MOTION                VOCAB4('m','o','t','i')
-#define PARAM_TRACK                 VOCAB4('t','r','a','c')
-#define PARAM_RAW                   VOCAB3('r','a','w')
+#define PARAM_FIXATION              yarp::os::createVocab('f','i','x','a')
+#define PARAM_MOTION                yarp::os::createVocab('m','o','t','i')
+#define PARAM_TRACK                 yarp::os::createVocab('t','r','a','c')
+#define PARAM_RAW                   yarp::os::createVocab('r','a','w')
 
 #define MODE_TRACK_TEMPLATE 0
 #define MODE_TRACK_MOTION   1
@@ -59,7 +59,7 @@ struct StereoTracker
 
 
 
-class VisuoThread: public RateThread
+class VisuoThread: public PeriodicThread
 {
 private:
     ResourceFinder                          &rf;

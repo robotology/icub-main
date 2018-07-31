@@ -45,13 +45,13 @@ The dragonfly2 framegrabber device driver can acquire RGB color images in 320x24
 The dragonfly2raw framegrabber device driver can acquire raw format images in 640x480 resolution.
 
 \section intro_sec Description
-The dragonfly framegrabber device driver is based on libdc1394-2. 
+The dragonfly framegrabber device driver is based on libdc1394-2.
 
-It can acquire RGB color images in 320x240 or 640x480 resolutions. 
-In 640x480 there are two options: Bayer decoding performed on board by the camera or Bayer pattern decoding performed by the driver. In the second mode the bandwidth required to the Firewire bus is lower, and thus the framerate can be up to 60 fps. In the first mode the framerate is limited to 15 fps with two cameras on the same channel. Moreover, once the resolution is chosen, 
+It can acquire RGB color images in 320x240 or 640x480 resolutions.
+In 640x480 there are two options: Bayer decoding performed on board by the camera or Bayer pattern decoding performed by the driver. In the second mode the bandwidth required to the Firewire bus is lower, and thus the framerate can be up to 60 fps. In the first mode the framerate is limited to 15 fps with two cameras on the same channel. Moreover, once the resolution is chosen,
 the image can be cropped on board by the camera before the transfer on the Firewire bus.
 
-These functionalities are made availabe thought two YARP devices: dragonfly2 (for RGB images) and dragondly2raw (for raw images with Bayer encoding).
+These functionalities are made available thought two YARP devices: dragonfly2 (for RGB images) and dragondly2raw (for raw images with Bayer encoding).
 
 Runtime parameters can be changed using the graphical interface: \ref icub_framegrabbergui2.
 
@@ -63,7 +63,7 @@ PGRFlyCapture (Windows)
 
 --name             // image output port
 
---video_type       // 1: RGB 320x240, 2: RGB 640x480, 3: RGB 640x480 (default) software Bayer decoding (higher fps) 
+--video_type       // 1: RGB 320x240, 2: RGB 640x480, 3: RGB 640x480 (default) software Bayer decoding (higher fps)
 
 --width|size_x     // width image cropping (limited to image size)
 
@@ -71,11 +71,11 @@ PGRFlyCapture (Windows)
 
 --port_number      // Firewire channel (need to specify only if you have more than one firewire card)
 
---guid             // camera global unique 64 bit identifier <B>WARNING: replaces --d</B> 
+--guid             // camera global unique 64 bit identifier <B>WARNING: replaces --d</B>
 
 --d                // camera unit number <B>DEPRECATED</B>
 
---white_balance    // red and blue balance, values are normalized betwen 0.0 and 1.0 
+--white_balance    // red and blue balance, values are normalized betwen 0.0 and 1.0
 
 --feature          // camera feature setting, normalized between 0.0 and 1.0 (features listed below)
 
@@ -92,14 +92,14 @@ The video_type parameter determines how images are acquired by the dragonfly chi
 
 \subsection port_units Port, Unit number and 64 bit Global Unique Identifier
 
-Many cameras can coexist on the same Firewire bus (port), sharing the available bandwidth. Each camera connected to the same Firewire bus is associated to a unit number. Port numbers, as well as unit numbers, are assigned increasingly starting from 0. 
+Many cameras can coexist on the same Firewire bus (port), sharing the available bandwidth. Each camera connected to the same Firewire bus is associated to a unit number. Port numbers, as well as unit numbers, are assigned increasingly starting from 0.
 The iCub robot has one only Firewire card, and thus its port number is always 0 (can be omitted). The two left and right cameras will be unit 0 and 1, but unfortunately this association is not deterministic, and thus the Global Unique Identifier (guid) must be used in order to univokely identify a camera.
-The icubmoddev device driver supports configuration files, thus the most convenient way to deal with GUIDs is putting them in .ini files that will be passed to icubmoddev together with all the other parameters as follows:
+The yarpdev device driver supports configuration files, thus the most convenient way to deal with GUIDs is putting them in .ini files that will be passed to yarpdev together with all the other parameters as follows:
 
-icubmoddev --from camera/dragonfly2_config_left.ini
-icubmoddev --from camera/dragonfly2_config_right.ini 
+yarpdev --from camera/dragonfly2_config_left.ini
+yarpdev --from camera/dragonfly2_config_right.ini
 
-In the latest iCub software releases the .ini files are already supplied in <B>app/robots/iCubXXXnn/camera</B> folders. The --d option must be replaced in them by assigning the guid of the corresponding camera to the guid parameter. 
+In the latest iCub software releases the .ini files are already supplied in <B>app/robots/iCubXXXnn/camera</B> folders. The --d option must be replaced in them by assigning the guid of the corresponding camera to the guid parameter.
 The following configuration file dragonfly2_config_left.ini
 
 device grabber \n
@@ -107,7 +107,7 @@ subdevice dragonfly2 \n
 width 320 \n
 height 240 \n
 video_type 1 \n
-white_balance 0.506 0.494 \n 
+white_balance 0.506 0.494 \n
 gain 0.312 \n
 shutter 0.913 \n
 name /icub/cam/left \n
@@ -129,7 +129,7 @@ subdevice dragonfly2 \n
 width 320 \n
 height 240 \n
 video_type 1 \n
-white_balance 0.506 0.494 \n 
+white_balance 0.506 0.494 \n
 gain 0.312 \n
 shutter 0.913 \n
 name /icub/cam/left \n
@@ -156,7 +156,7 @@ dragonfly_config_right_bayer_640_480.ini \n
 
 Execute from terminal:
 
-icubmoddev --device grabber --subdevice dragonfly 2 --name /foocam0 --d 0 
+yarpdev --device grabber --subdevice dragonfly 2 --name /foocam0 --d 0
 
 The driver will answer something like:
 
@@ -187,11 +187,11 @@ yarp connect /foocam0 /fooview0 \n
 and check in the viewer if the camera is the left or right iCub eye. Supposing that it is the left one, write the guid parameter in the dragonfly2_config_left*.ini files as shown in the former section.
 Do the same for the other camera, using unit number 1:
 
-icubmoddev --device grabber --subdevice dragonfly 2 --name /foocam1 --d 1 \n 
+yarpdev --device grabber --subdevice dragonfly 2 --name /foocam1 --d 1 \n
 yarpview --name /fooview1 \n
 yarp connect /foocam1 /fooview1 \n
 
-and set the corresponding guid in the other camera's .ini files, <B>without leading 0x</B>. 
+and set the corresponding guid in the other camera's .ini files, <B>without leading 0x</B>.
 
 
 \subsection features Features
@@ -213,7 +213,7 @@ None.
 
 \section portsc_sec Ports Created
 
-The dragonfly device driver is usually executed combined with a network wrapper grabber (called \a grabber, see examples below) which reads images from the driver and streams them on the network. The grabber opens the followig ports: 
+The dragonfly device driver is usually executed combined with a network wrapper grabber (called \a grabber, see examples below) which reads images from the driver and streams them on the network. The grabber opens the followig ports:
 
 Output ports:
 - <as specified by --name> streams out a yarp::sig::ImageOf<yarp::sig::PixelRgb> which contains the image grabbed by the Dragonfly camera.
@@ -236,36 +236,36 @@ Linux and Windows.
 \section example_sec Example Instantiation of the Module
 Usage syntax:
 
-icubmoddev --device grabber --subdevice dragonfly2 --name <yarp port name> 
-[--video_type <type>] [--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
+yarpdev --device grabber --subdevice dragonfly2 --name <yarp port name>
+[--video_type <type>] [--width|size_x <W> --height|size_y <H>] [--port_number <pn>]
 [--guid <64_bit_camera_unique_identifier>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
 
-icubmoddev --device grabber --subdevice dragonfly2raw --name <yarp port name> 
-[--width|size_x <W> --height|size_y <H>] [--port_number <pn>] 
+yarpdev --device grabber --subdevice dragonfly2raw --name <yarp port name>
+[--width|size_x <W> --height|size_y <H>] [--port_number <pn>]
 [--guid <64_bit_global_unique_identifier>] [--white_balance <red_value> <blue_value>] [--feature <parameter>] [...]
 
 <B>WARNING: the old --d <unit_number> parameter is still working but deprecated, please use --guid <64_bit_global_unique_identifier> instead,
-because --d <unit_number> camera has become non deterministic in left/right assignment in latest linux releases.</B> 
+because --d <unit_number> camera has become non deterministic in left/right assignment in latest linux releases.</B>
 
 Example:
 
-icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --guid AB10980D6656E455 [...]
+yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --guid AB10980D6656E455 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --guid 98FF0666E478A001 [...]
+yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/right --guid 98FF0666E478A001 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --guid AB10980D6656E455 [...]
+yarpdev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --guid AB10980D6656E455 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --guid 98FF0666E478A001 [...]
+yarpdev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --guid 98FF0666E478A001 [...]
 
 <B>DEPRECATED:</B>
 
-icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/right --d 1|0 [...]
+yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/right --d 1|0 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --d 0|1 [...]
+yarpdev --device grabber --subdevice dragonfly2 --name /icub/cam/left  --d 0|1 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --d 0|1 [...]
+yarpdev --device grabber --subdevice dragonfly2raw --name /icub/cam/left  --d 0|1 [...]
 
-icubmoddev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --d 1|0 [...]
+yarpdev --device grabber --subdevice dragonfly2raw --name /icub/cam/right --d 1|0 [...]
 
 
 
@@ -903,6 +903,16 @@ protected:
     bool TRANSL_MODE(FeatureMode mode) { return (mode == MODE_AUTO? 1 : 0); }
 };
 
+/**
+* @ingroup icub_hardware_modules
+* @brief `dragonfly2` : framegrabber device driver that can acquire RGB color images in 320x240 or 640x480 resolutions.
+*
+* See \ref dragonfly2 for for more details.
+*
+* | YARP device name |
+* |:-----------------:|
+* | `dragonfly2` |
+*/
 class yarp::dev::DragonflyDeviceDriver2Rgb : 
     public yarp::dev::DragonflyDeviceDriver2,
     public IFrameGrabberImage,
@@ -953,6 +963,16 @@ public:
     virtual int width() const;
 };
 
+/**
+* @ingroup icub_hardware_modules
+* @brief `dragonfly2raw` : framegrabber device driver that can acquire raw format images in 640x480 resolution.
+*
+* See \ref dragonfly2 for for more details.
+*
+* | YARP device name |
+* |:-----------------:|
+* | `dragonfly2raw` |
+*/
 class yarp::dev::DragonflyDeviceDriver2Raw :
     public yarp::dev::DragonflyDeviceDriver2,
     public IFrameGrabberImageRaw

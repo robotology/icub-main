@@ -14,8 +14,8 @@ DC1394Thread::DC1394Thread(char *loc, char *rem,QObject *parent) :
 
 bool DC1394Thread::getCameraDescription(CameraDescriptor *camera)
 {
-    if(fgControl2)
-        return fgControl2->getCameraDescription(camera);
+    if(fgControl)
+        return fgControl->getCameraDescription(camera);
 
     return false;
 }
@@ -23,7 +23,6 @@ bool DC1394Thread::getCameraDescription(CameraDescriptor *camera)
 void DC1394Thread::run()
 {
     // create firewire thread
-    //DC1394Control = new yarp::dev::RemoteFrameGrabberControlsDC1394();
 
     grabberControl = new yarp::dev::PolyDriver;
     // create usb thread
@@ -41,18 +40,12 @@ void DC1394Thread::run()
     }
 
     grabberControl->view(fgControl);
-    grabberControl->view(fgControl2);
     grabberControl->view(DC1394Control);
 
     if(!fgControl)
     {
         yError() << "RemoteGrabber does not have IFrameGrabberControl interface. Cannot proceed.";
         // TODO: What to do here??
-    }
-
-    if(!fgControl2)
-    {
-        yWarning() << "RemoteGrabber does not have IFrameGrabberControl2 interface, please update yarp.";
     }
 
     if(!DC1394Control)
@@ -491,14 +484,14 @@ void DC1394Thread::sliderRefresh(QVariantList arg)
 
     FeatureMode mode;
     bool bON, bAuto, bHasAuto, bHasManual, bHasOnePush, bHasOnOff;
-    fgControl2->getActive(feature, &bON);
-    fgControl2->getMode(feature, &mode);
-    fgControl2->hasOnOff(feature, &bHasOnOff);
-    fgControl2->hasAuto(feature, &bHasAuto);
-    fgControl2->hasManual(feature, &bHasManual);
-    fgControl2->hasOnePush(feature, &bHasOnePush);
+    fgControl->getActive(feature, &bON);
+    fgControl->getMode(feature, &mode);
+    fgControl->hasOnOff(feature, &bHasOnOff);
+    fgControl->hasAuto(feature, &bHasAuto);
+    fgControl->hasManual(feature, &bHasManual);
+    fgControl->hasOnePush(feature, &bHasOnePush);
     double val;
-    fgControl2->getFeature(feature, &val);
+    fgControl->getFeature(feature, &val);
     mode == MODE_AUTO ? bAuto = true : bAuto = false;
 
 //    bool bON=true;   //DC1394Control->getActiveDC1394(feature);
@@ -509,7 +502,7 @@ void DC1394Thread::sliderRefresh(QVariantList arg)
 //    bool bHasOnePush=true; //DC1394Control->hasOnePushDC1394(feature);
 //    double val=0.5; //DC1394Control->getFeatureDC1394(feature);
 
-//     fgControl2->setActive(feature,bON); refresh should not send commands right?
+//     fgControl->setActive(feature,bON); refresh should not send commands right?
 
     sliderRefreshDone(ptr,bON,bAuto,bHasOnOff,bHasAuto,bHasManual,bHasOnePush,val);
 
@@ -536,17 +529,17 @@ void DC1394Thread::sliderWBRefresh(QVariantList arg)
 
     FeatureMode mode;
     bool bON, bAuto, bHasAuto, bHasManual, bHasOnePush, bHasOnOff;
-    fgControl2->getActive(feature, &bON);
-    fgControl2->getMode(feature, &mode);
-    fgControl2->hasOnOff(feature, &bHasOnOff);
-    fgControl2->hasAuto(feature, &bHasAuto);
-    fgControl2->hasManual(feature, &bHasManual);
-    fgControl2->hasOnePush(feature, &bHasOnePush);
+    fgControl->getActive(feature, &bON);
+    fgControl->getMode(feature, &mode);
+    fgControl->hasOnOff(feature, &bHasOnOff);
+    fgControl->hasAuto(feature, &bHasAuto);
+    fgControl->hasManual(feature, &bHasManual);
+    fgControl->hasOnePush(feature, &bHasOnePush);
     mode == MODE_AUTO ? bAuto = true : bAuto = false;
 
     double redVal;
     double blueVal;
-    fgControl2->getFeature(feature, &blueVal, &redVal);
+    fgControl->getFeature(feature, &blueVal, &redVal);
 
     sliderWBRefreshDone(ptr,bON,bAuto,bHasOnOff,bHasAuto,bHasManual,bHasOnePush,redVal,blueVal);
 
@@ -569,9 +562,9 @@ void DC1394Thread::sliderPropagate(QVariantList arg)
 
     FeatureMode mode = bRBa ? MODE_AUTO : MODE_MANUAL;
 
-    fgControl2->setFeature(feature,val);
-    fgControl2->setMode(feature,mode);
-    fgControl2->setActive(feature,bPwr);
+    fgControl->setFeature(feature,val);
+    fgControl->setMode(feature,mode);
+    fgControl->setActive(feature,bPwr);
 
     sliderPropagateDone();
 
@@ -593,12 +586,12 @@ void DC1394Thread::sliderWBPropagate(QVariantList arg)
     bool bRBa = arg.at(3).toBool();
     bool bPwr = arg.at(4).toBool();
 
-    fgControl2->setFeature(feature, blueVal, redVal);
+    fgControl->setFeature(feature, blueVal, redVal);
     FeatureMode mode;
     bRBa ? mode = MODE_AUTO : mode = MODE_MANUAL;
 
-    fgControl2->setMode(feature,mode);
-    fgControl2->setActive(feature,bPwr);
+    fgControl->setMode(feature,mode);
+    fgControl->setActive(feature,bPwr);
 
     sliderWBPropagateDone();
 
@@ -618,7 +611,7 @@ void DC1394Thread::sliderSetFeatureDC1394(QVariantList arg)
 
     double val = arg.at(2).toDouble();
 
-    fgControl2->setFeature(feature,val);
+    fgControl->setFeature(feature,val);
 
     sliderSetFeatureDC1394Done(ptr,val);
 
@@ -638,7 +631,7 @@ void DC1394Thread::sliderWBSetFeatureDC1394(QVariantList arg)
     double redVal = arg.at(2).toDouble();
     double blueVal = arg.at(3).toDouble();
 
-    fgControl2->setFeature(feature, blueVal,redVal);
+    fgControl->setFeature(feature, blueVal,redVal);
 
     sliderWBSetFeatureDC1394Done(ptr,redVal,blueVal);
 
@@ -655,10 +648,10 @@ void DC1394Thread::sliderOnePush(QVariantList arg)
     int value = arg.at(1).toInt();
     feature = (cameraFeature_id_t)value;
 
-    fgControl2->setOnePush(feature);
+    fgControl->setOnePush(feature);
 
     double val;
-    fgControl2->getFeature(feature, &val);
+    fgControl->getFeature(feature, &val);
 
     sliderOnePushDone(ptr,val);
 
@@ -678,8 +671,8 @@ void DC1394Thread::sliderWBOnePush(QVariantList arg)
     double redVal;
     double blueVal;
 
-    fgControl2->setOnePush(feature);
-    fgControl2->getFeature(feature, &blueVal, &redVal);
+    fgControl->setOnePush(feature);
+    fgControl->getFeature(feature, &blueVal, &redVal);
 
     sliderWBOnePushDone(ptr,redVal,blueVal);
 
@@ -700,8 +693,8 @@ void DC1394Thread::sliderRadioAuto(QVariantList arg)
     FeatureMode mode = bVal ? MODE_AUTO : MODE_MANUAL;
 
     bool bON;
-    fgControl2->getActive(feature, &bON);
-    fgControl2->setMode(feature, mode);
+    fgControl->getActive(feature, &bON);
+    fgControl->setMode(feature, mode);
 
     sliderRadioAutoDone(ptr,true, bVal);
 
@@ -721,12 +714,12 @@ void DC1394Thread::sliderPower(QVariantList arg)
     bool bON = arg.at(2).toBool();
     feature = (cameraFeature_id_t)value;
 
-    fgControl2->setActive(feature, bON);
+    fgControl->setActive(feature, bON);
 
     bool hasAuto, hasManual, hasOnePush;
-    fgControl2->hasAuto(feature, &hasAuto);
-    fgControl2->hasManual(feature, &hasManual);
-    fgControl2->hasOnePush(feature, &hasOnePush);
+    fgControl->hasAuto(feature, &hasAuto);
+    fgControl->hasManual(feature, &hasManual);
+    fgControl->hasOnePush(feature, &hasOnePush);
     sliderPowerDone(ptr,bON,hasAuto,hasManual,hasOnePush);
 
     opCounter--;
@@ -744,7 +737,7 @@ void DC1394Thread::sliderHasFeature(QVariantList arg)
     feature = (cameraFeature_id_t)value;
 
     bool hasFeature;
-    fgControl2->hasFeature(feature, &hasFeature);
+    fgControl->hasFeature(feature, &hasFeature);
 
     opCounter--;
     if(opCounter == 0){

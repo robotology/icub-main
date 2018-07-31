@@ -3,7 +3,6 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 add_subdirectory(ctpService)
-add_subdirectory(learningMachine)
 add_subdirectory(cartesianInterfaceControl)
 add_subdirectory(positionDirectControl)
 add_subdirectory(velocityControl)
@@ -12,6 +11,12 @@ add_subdirectory(wholeBodyDynamics)
 add_subdirectory(gravityCompensator)
 add_subdirectory(skinManager)
 add_subdirectory(objectsPropertiesCollector)
+
+if(TARGET learningMachine)
+  add_subdirectory(learningMachine)
+else()
+  message(STATUS "learningMachine not compiled, skipping modules dependant binaries")
+endif()
 
 if(ICUB_USE_OpenCV)
     add_subdirectory(camCalib)
@@ -46,8 +51,8 @@ else()
     message(STATUS "IPOPT not found/selected, skipping iKinCartesianSolver")
 endif()
 
-if(ICUB_USE_IPOPT AND ICUB_USE_OpenCV)
+if(ICUB_USE_IPOPT AND ICUB_USE_OpenCV AND (TARGET actionPrimitives))
     add_subdirectory(actionsRenderingEngine)
 else()
-    message(STATUS "Dependencies not met, skipping actionsRenderingEngine")
+    message(STATUS "Unmet dependencies, skipping actionsRenderingEngine")
 endif()

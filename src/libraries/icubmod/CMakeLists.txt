@@ -5,14 +5,10 @@
 # Prepare a device library called "icubmod".
 # A test executable called "icubmoddev" will also be produced.
 
-include(YarpPlugin)
-
-
 #unset(ICUB_COMPILE_EMBOBJ_LIBRARY\)
 set(ICUB_COMPILE_EMBOBJ_LIBRARY OFF CACHE INTERNAL "use the embObjLib lib" FORCE)
 
 project(icubmod)
-
 
 option (WIP_FEATURE_CHECK_PROTOCOL_VERSION "use OFF until this feature is tested well enough" OFF)
 mark_as_advanced (WIP_FEATURE_CHECK_PROTOCOL_VERSION)
@@ -22,7 +18,7 @@ add_definitions(-D_WIP_CHECK_PROTOCOL_VERSION_)
 else(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
 endif(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
 
-yarp_begin_plugin_library(icubmod)
+yarp_begin_plugin_library(icubmod QUIET)
   add_subdirectory(canBusMotionControl)
   add_subdirectory(cartesianController)
   add_subdirectory(cfw2Can)
@@ -52,17 +48,18 @@ yarp_begin_plugin_library(icubmod)
   add_subdirectory(embObjSkin)
   add_subdirectory(embObjAnalog)
   add_subdirectory(embObjStrain)
+  add_subdirectory(embObjFTsensor)
   add_subdirectory(embObjMais)
   add_subdirectory(embObjMultiEnc)
   add_subdirectory(embObjInertials)
+  add_subdirectory(embObjIMU)
   add_subdirectory(embObjVirtualAnalogSensor)
   add_subdirectory(usbCamera)
   add_subdirectory(imuST_M1)
 if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
   add_subdirectory(imu3DM_GX3)
 endif()
-yarp_end_plugin_library(icubmod)
-
+yarp_end_plugin_library(icubmod QUIET)
 
 if(ICUB_COMPILE_EMBOBJ_LIBRARY)
 # adding subdirectory for embObj library used by EMS devices, if anyone of them is selected

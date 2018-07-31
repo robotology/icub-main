@@ -5,9 +5,9 @@
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 #include "positionDirectThread.h"
-#include <string.h>
+#include <cstring>
 #include <string>
-#include <math.h>
+#include <cmath>
 
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
@@ -17,7 +17,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 positionDirectControlThread::positionDirectControlThread(int period):
-                yarp::os::RateThread(period)
+                yarp::os::PeriodicThread((double)period/1000.0)
 {
     control_period = period;
     suspended = true;
@@ -36,8 +36,8 @@ void positionDirectControlThread::run()
     {
         yDebug("Thread ran %d times, est period %lf[ms], used %lf[ms]\n",
                 getIterations(),
-                getEstPeriod(),
-                getEstUsed());
+                1000.0*getEstimatedPeriod(),
+                1000.0*getEstimatedUsed());
         resetStat();
     }
     _mutex.wait();
@@ -126,10 +126,8 @@ void positionDirectControlThread::threadRelease()
     command_port.close();
 }
 
-bool positionDirectControlThread::init(PolyDriver *d, ConstString moduleName, ConstString partName, ConstString robotName, Bottle* jointsList)
+bool positionDirectControlThread::init(PolyDriver *d, std::string moduleName, std::string partName, std::string robotName, Bottle* jointsList)
 {
-    yarp::os::Time::turboBoost();
-
     ///opening port command input
     char tmp[255];
     sprintf(tmp, "/%s/%s/%s/command:i", moduleName.c_str(), robotName.c_str(), partName.c_str());

@@ -16,27 +16,6 @@
  * Public License for more details
 */
 
-/**
- * \defgroup clientgazecontroller clientgazecontroller
- * @ingroup icub_hardware_modules 
- *  
- * Implements the client part of the <a 
- * href="http://wiki.icub.org/yarpdoc/d2/df5/classyarp_1_1dev_1_1IGazeControl.html">Gaze
- * Control Interface</a>. 
- *  
- * @note Please read carefully the \ref icub_gaze_interface
- *       "Gaze Interface" documentation.
- *  
- * Copyright (C) 2010 RobotCub Consortium.
- *
- * Author: Ugo Pattacini
- *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * This file can be edited at 
- * src/modules/gazeController/ClientGazeController.h 
- */
-
 #ifndef __CLIENTGAZECONTROLLER_H__
 #define __CLIENTGAZECONTROLLER_H__
 
@@ -66,7 +45,20 @@ public:
 };
 
 
-/************************************************************************/
+/**
+*  @ingroup icub_hardware_modules
+*
+* @brief `clientgazecontroller` : implements the client part of the the <a
+* href="http://www.yarp.it/classyarp_1_1dev_1_1IGazeControl.html">Gaze
+* Control Interface</a>. .
+*
+* @note Please read carefully the  \ref icub_gaze_interface
+*       "Gaze Interface" documentation.
+*
+* | YARP device name |
+* |:-----------------:|
+* | `clientgazecontroller` |
+*/
 class ClientGazeController : public yarp::dev::DeviceDriver,
                              public yarp::dev::IGazeControl
 {

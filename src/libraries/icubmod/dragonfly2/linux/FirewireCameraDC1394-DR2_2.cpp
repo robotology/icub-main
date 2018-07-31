@@ -14,6 +14,7 @@
 //  LLLLL  I  N   N   UUU   X   X
 
 #include <stdlib.h>
+#include <string>
 #include "linux/FirewireCameraDC1394-DR2_2.h"
 #include <arpa/inet.h>
 #include <yarp/os/Log.h>
@@ -266,12 +267,12 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     if(config.check("cpu_affinity")) {
         cpu_set_t set;
         CPU_ZERO(&set);
-        int affinity = 	config.find("cpu_affinity").asInt();
+        int affinity =  config.find("cpu_affinity").asInt();
         CPU_SET(affinity, &set);
         if (sched_setaffinity(getpid(), sizeof(set), &set) == -1) {
             yWarning("failed to set the CPU affinity\n");
         }
-	}
+    }
 
     // check for real-time priority
     if(config.check("rt_priority")) {
@@ -303,8 +304,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     
     yDebug("Format = %d\n",format);
 
-	m_XDim=m_YDim=0;
-	m_RawBufferSize=0;
+    m_XDim=m_YDim=0;
+    m_RawBufferSize=0;
    
     m_bCameraOn=false;
     m_pCamera=NULL;
@@ -336,27 +337,27 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         return false;
     }
 
-	if (config.check("guid"))
-	{
-		yarp::os::ConstString sguid=config.find("guid").asString();
+    if (config.check("guid"))
+    {
+        std::string sguid=config.find("guid").asString();
 
-		uint64_t guid=strtoull(sguid.c_str(),NULL,16);
+        uint64_t guid=strtoull(sguid.c_str(),NULL,16);
 
-		for (idCamera=0; idCamera<m_nNumCameras; ++idCamera)
-		{
-			if (guid==m_pCameraList->ids[idCamera].guid)
-			{
-				break;
-			}
-		}
+        for (idCamera=0; idCamera<m_nNumCameras; ++idCamera)
+        {
+            if (guid==m_pCameraList->ids[idCamera].guid)
+            {
+                break;
+            }
+        }
 
-		if (idCamera==m_nNumCameras)
-		{
-			yError("GUID=%s camera not found\n",sguid.c_str());
-			yError("LINE: %d\n",__LINE__);
+        if (idCamera==m_nNumCameras)
+        {
+            yError("GUID=%s camera not found\n",sguid.c_str());
+            yError("LINE: %d\n",__LINE__);
             return false;  
-		}
-	}
+        }
+    }
     else if (config.check("d"))
     {
         yWarning("--d <unit_number> parameter is deprecated, use --guid <64_bit_global_unique_identifier> instead\n");
@@ -371,13 +372,13 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     }
 
     if (!(m_pCamera=dc1394_camera_new(m_dc1394_handle,m_pCameraList->ids[idCamera].guid)))
-	{
-		yError("can't create camera\n");
+    {
+        yError("can't create camera\n");
         yError("LINE: %d\n",__LINE__); 
-		return false;
-	}
+        return false;
+    }
 
-	error=dc1394_camera_reset(m_pCamera);
+    error=dc1394_camera_reset(m_pCamera);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     uint32_t channel_in_use=0;
@@ -391,7 +392,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         const uint64_t ISO_CHANNEL_MASK=idCamera;
         int allocated_channel;        
         dc1394_iso_allocate_channel(m_pCamera,ISO_CHANNEL_MASK,&allocated_channel);
-        dc1394_video_set_iso_channel(m_pCamera,idCamera);		 
+        dc1394_video_set_iso_channel(m_pCamera,idCamera);        
         dc1394_iso_release_channel(m_pCamera,channel_in_use);
     }
     */
@@ -408,15 +409,15 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 #endif
 
-	dc1394speed_t isoSpeed;
-	error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
+    dc1394speed_t isoSpeed;
+    error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     dc1394_video_set_operation_mode(m_pCamera,DC1394_OPERATION_MODE_1394B);       
     //if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     error=dc1394_video_set_iso_speed(m_pCamera,DC1394_ISO_SPEED_400);
-	if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     error=dc1394_camera_print_info(m_pCamera,stdout); 
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
@@ -554,28 +555,28 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         }
     }
 
-	for (int f=DC1394_FEATURE_MIN; f<=DC1394_FEATURE_MAX; ++f)
-	{	
-		dc1394bool_t bPresent;
-		error=dc1394_feature_is_present(m_pCamera,(dc1394feature_t)f,&bPresent);
+    for (int f=DC1394_FEATURE_MIN; f<=DC1394_FEATURE_MAX; ++f)
+    {   
+        dc1394bool_t bPresent;
+        error=dc1394_feature_is_present(m_pCamera,(dc1394feature_t)f,&bPresent);
 
         if (error==DC1394_SUCCESS)
         {
-		    if (bPresent)
-		    {
-			    dc1394_feature_get_boundaries(m_pCamera,(dc1394feature_t)f,&m_iMin[f-DC1394_FEATURE_MIN],&m_iMax[f-DC1394_FEATURE_MIN]);
+            if (bPresent)
+            {
+                dc1394_feature_get_boundaries(m_pCamera,(dc1394feature_t)f,&m_iMin[f-DC1394_FEATURE_MIN],&m_iMax[f-DC1394_FEATURE_MIN]);
 
-			    dc1394bool_t bSwitch;
-			    dc1394_feature_is_switchable(m_pCamera,(dc1394feature_t)f,&bSwitch);
+                dc1394bool_t bSwitch;
+                dc1394_feature_is_switchable(m_pCamera,(dc1394feature_t)f,&bSwitch);
 
-			    if (bSwitch)
-			    {
+                if (bSwitch)
+                {
                     dc1394switch_t turnOn=(dc1394switch_t)(f!=DC1394_FEATURE_EXPOSURE && f!=DC1394_FEATURE_IRIS && f<DC1394_FEATURE_TEMPERATURE);
-			        dc1394_feature_set_power(m_pCamera,(dc1394feature_t)f,turnOn);
+                    dc1394_feature_set_power(m_pCamera,(dc1394feature_t)f,turnOn);
                 }
                 dc1394_feature_set_mode(m_pCamera,(dc1394feature_t)f,DC1394_FEATURE_MODE_MANUAL);
-			    dc1394_feature_set_absolute_control(m_pCamera,(dc1394feature_t)f,DC1394_OFF);
-		    }
+                dc1394_feature_set_absolute_control(m_pCamera,(dc1394feature_t)f,DC1394_OFF);
+            }
             else
             {
                 yInfo("Feature %d not supported by this camera model.\n", f);
@@ -585,27 +586,27 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         {
             yError("Feature %d error %d\n",f,error);
         }
-	}
+    }
 
     error=dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT);
-	if (error!=DC1394_SUCCESS)
-	{
+    if (error!=DC1394_SUCCESS)
+    {
         yError("%d can't setup capture\n",error);
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		return false;
-	}
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        return false;
+    }
 
     error=dc1394_video_set_transmission(m_pCamera,DC1394_ON);
-	if (error!=DC1394_SUCCESS)
+    if (error!=DC1394_SUCCESS)
     {
         yError("%d can't start transmission\n",error);
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		return false;
-	}
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        return false;
+    }
 
-	setBroadcastDC1394(false);
+    setBroadcastDC1394(false);
 
     m_bCameraOn=true;
 
@@ -641,23 +642,23 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
 void CFWCamera_DR2_2::Close()
 {
-	if (m_pCamera)
-	{
-		dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
-		dc1394_capture_stop(m_pCamera);
+    if (m_pCamera)
+    {
+        dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
+        dc1394_capture_stop(m_pCamera);
         dc1394_iso_release_all(m_pCamera);
-		dc1394_camera_free(m_pCamera);
-	}
-	m_pCamera=NULL;
+        dc1394_camera_free(m_pCamera);
+    }
+    m_pCamera=NULL;
 
-	if (m_pCameraList) dc1394_camera_free_list(m_pCameraList);
-	m_pCameraList=NULL;
+    if (m_pCameraList) dc1394_camera_free_list(m_pCameraList);
+    m_pCameraList=NULL;
 
-	if (m_dc1394_handle) dc1394_free(m_dc1394_handle);
-	m_dc1394_handle=NULL;
+    if (m_dc1394_handle) dc1394_free(m_dc1394_handle);
+    m_dc1394_handle=NULL;
 
-	if (m_ConvFrame.image) delete [] m_ConvFrame.image;
-	m_ConvFrame.image=NULL;
+    if (m_ConvFrame.image) delete [] m_ConvFrame.image;
+    m_ConvFrame.image=NULL;
 }
 
 bool CFWCamera_DR2_2::CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image)
@@ -866,9 +867,9 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
         }
     }
 
-	dc1394speed_t isoSpeed;
-	dc1394error_t error;
-	error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
+    dc1394speed_t isoSpeed;
+    dc1394error_t error;
+    error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     // get ISO bandwidth
@@ -966,11 +967,11 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
         newVideoMode=actVideoMode;
     }
     dc1394video_modes_t modes;
-	dc1394_video_get_supported_modes(m_pCamera,&modes);
+    dc1394_video_get_supported_modes(m_pCamera,&modes);
     bool bSupported=false;
-	for (unsigned int m=0; m<modes.num; ++m)
+    for (unsigned int m=0; m<modes.num; ++m)
     {
-		if (modes.modes[m]==(dc1394video_mode_t)newVideoMode)
+        if (modes.modes[m]==(dc1394video_mode_t)newVideoMode)
         {
             bSupported=true;
             break;
@@ -991,12 +992,12 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
     {
         newColorCoding=actColorCoding;
     }
-	dc1394color_codings_t codings;
-	dc1394_format7_get_color_codings(m_pCamera,(dc1394video_mode_t)newVideoMode,&codings);
-	bSupported=false;
-	for (unsigned int m=0; m<codings.num; ++m)
+    dc1394color_codings_t codings;
+    dc1394_format7_get_color_codings(m_pCamera,(dc1394video_mode_t)newVideoMode,&codings);
+    bSupported=false;
+    for (unsigned int m=0; m<codings.num; ++m)
     {
-		if (codings.codings[m]==(dc1394color_coding_t)newColorCoding)
+        if (codings.codings[m]==(dc1394color_coding_t)newColorCoding)
         {
             bSupported=true;
             break;
@@ -1141,18 +1142,18 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
 
 bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,unsigned char *pBuffer,bool bRaw)
 {
-	m_AcqMutex.wait();
+    m_AcqMutex.wait();
 
-	if (!m_bCameraOn)
-	{
-		m_AcqMutex.post();
-		return false;
-	}
+    if (!m_bCameraOn)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
 
     dc1394error_t ret=dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_WAIT,&m_pFrame); 
 
-	if (ret!=DC1394_SUCCESS)
-	{
+    if (ret!=DC1394_SUCCESS)
+    {
         if (ret<0)
         {
             yWarning("dc1394_capture_dequeue returned %d\n\n",ret);
@@ -1161,26 +1162,26 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
         {
             yError("dc1394_capture_dequeue returned %d\n\n",ret);
         }
-		
+        
         m_AcqMutex.post();
-		return false;
-	}
-	
-	m_pFramePoll=0;	
-	while (dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_POLL,&m_pFramePoll)==DC1394_SUCCESS && m_pFramePoll)
-	{
-	    dc1394_capture_enqueue(m_pCamera,m_pFrame);
-	    m_pFrame=m_pFramePoll;
-	    m_pFramePoll=0; 
-	}
+        return false;
+    }
+    
+    m_pFramePoll=0; 
+    while (dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_POLL,&m_pFramePoll)==DC1394_SUCCESS && m_pFramePoll)
+    {
+        dc1394_capture_enqueue(m_pCamera,m_pFrame);
+        m_pFrame=m_pFramePoll;
+        m_pFramePoll=0; 
+    }
 
-	if (m_nInvalidFrames)
-	{
-		--m_nInvalidFrames;
-		dc1394_capture_enqueue(m_pCamera,m_pFrame);
-		m_AcqMutex.post();
-		return false;
-	}
+    if (m_nInvalidFrames)
+    {
+        --m_nInvalidFrames;
+        dc1394_capture_enqueue(m_pCamera,m_pFrame);
+        m_AcqMutex.post();
+        return false;
+    }
 
     if (mUseHardwareTimestamp) {
         uint32_t v = ntohl(*((uint32_t*)m_pFrame->image));
@@ -1200,87 +1201,87 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
         m_Stamp.update();
     }
 
-	if (pImage)
-	{
-		pImage->resize(m_pFrame->size[0],m_pFrame->size[1]);
-		pBuffer=pImage->getRawImage();
-	}
+    if (pImage)
+    {
+        pImage->resize(m_pFrame->size[0],m_pFrame->size[1]);
+        pBuffer=pImage->getRawImage();
+    }
 
-	if (m_pFrame->color_coding==DC1394_COLOR_CODING_RGB8 || bRaw)
-	{
-		memcpy(pBuffer,m_pFrame->image,m_pFrame->size[0]*m_pFrame->size[1]*(bRaw?1:3));
-	}
-	else if (m_pFrame->color_coding==DC1394_COLOR_CODING_RAW8)
-	{
-		dc1394_debayer_frames(m_pFrame,&m_ConvFrame,DC1394_BAYER_METHOD_BILINEAR);
-		memcpy(pBuffer,m_ConvFrame.image,m_ConvFrame.size[0]*m_ConvFrame.size[1]*3);
-	}
-	else if (m_pFrame->color_coding==DC1394_COLOR_CODING_RAW16)
-	{
-		dc1394_debayer_frames(m_pFrame,&m_ConvFrame,DC1394_BAYER_METHOD_BILINEAR);
-		m_ConvFrame_tmp.size[0]=m_pFrame->size[0];
-		m_ConvFrame_tmp.size[1]=m_pFrame->size[1];
-		m_ConvFrame_tmp.position[0]=0;
-		m_ConvFrame_tmp.position[1]=0;
-		m_ConvFrame_tmp.color_coding=DC1394_COLOR_CODING_RGB8;
-		m_ConvFrame_tmp.data_depth=24;
-		m_ConvFrame_tmp.image_bytes=m_ConvFrame_tmp.total_bytes=3*m_pFrame->size[0]*m_pFrame->size[1];
-		m_ConvFrame_tmp.padding_bytes=0;
-		m_ConvFrame_tmp.stride=3*m_pFrame->size[0];
-		m_ConvFrame_tmp.data_in_padding=DC1394_FALSE;
-		m_ConvFrame_tmp.little_endian=m_pFrame->little_endian;
-		dc1394_convert_frames(&m_ConvFrame,&m_ConvFrame_tmp);
-		memcpy(pBuffer,m_ConvFrame_tmp.image,m_ConvFrame_tmp.size[0]*m_ConvFrame_tmp.size[1]*3);
-	}
-	else
-	{
-		m_ConvFrame.size[0]=m_pFrame->size[0];
-		m_ConvFrame.size[1]=m_pFrame->size[1];
-		m_ConvFrame.position[0]=0;
-		m_ConvFrame.position[1]=0;
-		m_ConvFrame.color_coding=DC1394_COLOR_CODING_RGB8;
-		m_ConvFrame.data_depth=24;
-		m_ConvFrame.image_bytes=m_ConvFrame.total_bytes=3*m_pFrame->size[0]*m_pFrame->size[1];
-		m_ConvFrame.padding_bytes=0;
-		m_ConvFrame.stride=3*m_pFrame->size[0];
-		m_ConvFrame.data_in_padding=DC1394_FALSE;
-		m_ConvFrame.little_endian=m_pFrame->little_endian;
+    if (m_pFrame->color_coding==DC1394_COLOR_CODING_RGB8 || bRaw)
+    {
+        memcpy(pBuffer,m_pFrame->image,m_pFrame->size[0]*m_pFrame->size[1]*(bRaw?1:3));
+    }
+    else if (m_pFrame->color_coding==DC1394_COLOR_CODING_RAW8)
+    {
+        dc1394_debayer_frames(m_pFrame,&m_ConvFrame,DC1394_BAYER_METHOD_BILINEAR);
+        memcpy(pBuffer,m_ConvFrame.image,m_ConvFrame.size[0]*m_ConvFrame.size[1]*3);
+    }
+    else if (m_pFrame->color_coding==DC1394_COLOR_CODING_RAW16)
+    {
+        dc1394_debayer_frames(m_pFrame,&m_ConvFrame,DC1394_BAYER_METHOD_BILINEAR);
+        m_ConvFrame_tmp.size[0]=m_pFrame->size[0];
+        m_ConvFrame_tmp.size[1]=m_pFrame->size[1];
+        m_ConvFrame_tmp.position[0]=0;
+        m_ConvFrame_tmp.position[1]=0;
+        m_ConvFrame_tmp.color_coding=DC1394_COLOR_CODING_RGB8;
+        m_ConvFrame_tmp.data_depth=24;
+        m_ConvFrame_tmp.image_bytes=m_ConvFrame_tmp.total_bytes=3*m_pFrame->size[0]*m_pFrame->size[1];
+        m_ConvFrame_tmp.padding_bytes=0;
+        m_ConvFrame_tmp.stride=3*m_pFrame->size[0];
+        m_ConvFrame_tmp.data_in_padding=DC1394_FALSE;
+        m_ConvFrame_tmp.little_endian=m_pFrame->little_endian;
+        dc1394_convert_frames(&m_ConvFrame,&m_ConvFrame_tmp);
+        memcpy(pBuffer,m_ConvFrame_tmp.image,m_ConvFrame_tmp.size[0]*m_ConvFrame_tmp.size[1]*3);
+    }
+    else
+    {
+        m_ConvFrame.size[0]=m_pFrame->size[0];
+        m_ConvFrame.size[1]=m_pFrame->size[1];
+        m_ConvFrame.position[0]=0;
+        m_ConvFrame.position[1]=0;
+        m_ConvFrame.color_coding=DC1394_COLOR_CODING_RGB8;
+        m_ConvFrame.data_depth=24;
+        m_ConvFrame.image_bytes=m_ConvFrame.total_bytes=3*m_pFrame->size[0]*m_pFrame->size[1];
+        m_ConvFrame.padding_bytes=0;
+        m_ConvFrame.stride=3*m_pFrame->size[0];
+        m_ConvFrame.data_in_padding=DC1394_FALSE;
+        m_ConvFrame.little_endian=m_pFrame->little_endian;
 
-		dc1394_convert_frames(m_pFrame,&m_ConvFrame);
+        dc1394_convert_frames(m_pFrame,&m_ConvFrame);
 
-		memcpy(pBuffer,m_ConvFrame.image,m_ConvFrame.size[0]*m_ConvFrame.size[1]*3);
-	}
+        memcpy(pBuffer,m_ConvFrame.image,m_ConvFrame.size[0]*m_ConvFrame.size[1]*3);
+    }
 
-	dc1394_capture_enqueue(m_pCamera,m_pFrame);
-	m_AcqMutex.post();
-	return true;
+    dc1394_capture_enqueue(m_pCamera,m_pFrame);
+    m_AcqMutex.post();
+    return true;
 }
 
 bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelMono>* pImage)
 {
-	m_AcqMutex.wait();
+    m_AcqMutex.wait();
 
-	if (!m_bCameraOn || dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_WAIT,&m_pFrame)!=DC1394_SUCCESS)
-	{
-		m_AcqMutex.post();
-		return false;
-	}
-	
-	m_pFramePoll=0;	
-	while (dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_POLL,&m_pFramePoll)==DC1394_SUCCESS && m_pFramePoll)
-	{
-	    dc1394_capture_enqueue(m_pCamera,m_pFrame);
-	    m_pFrame=m_pFramePoll;
-	    m_pFramePoll=0; 
-	}
+    if (!m_bCameraOn || dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_WAIT,&m_pFrame)!=DC1394_SUCCESS)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
+    
+    m_pFramePoll=0; 
+    while (dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_POLL,&m_pFramePoll)==DC1394_SUCCESS && m_pFramePoll)
+    {
+        dc1394_capture_enqueue(m_pCamera,m_pFrame);
+        m_pFrame=m_pFramePoll;
+        m_pFramePoll=0; 
+    }
 
-	if (m_nInvalidFrames)
-	{
-		--m_nInvalidFrames;
-		dc1394_capture_enqueue(m_pCamera,m_pFrame);
-		m_AcqMutex.post();
-		return false;
-	}
+    if (m_nInvalidFrames)
+    {
+        --m_nInvalidFrames;
+        dc1394_capture_enqueue(m_pCamera,m_pFrame);
+        m_AcqMutex.post();
+        return false;
+    }
 
     if (mUseHardwareTimestamp) {
         uint32_t v = ntohl(*((uint32_t*)m_pFrame->image));
@@ -1300,42 +1301,42 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelMono>* pImage)
         m_Stamp.update();
     }
 
-	if (pImage)
-	{
-		pImage->resize(m_pFrame->size[0],m_pFrame->size[1]);
-	    memcpy(pImage->getRawImage(),m_pFrame->image,m_pFrame->size[0]*m_pFrame->size[1]);
+    if (pImage)
+    {
+        pImage->resize(m_pFrame->size[0],m_pFrame->size[1]);
+        memcpy(pImage->getRawImage(),m_pFrame->image,m_pFrame->size[0]*m_pFrame->size[1]);
     }
 
-	dc1394_capture_enqueue(m_pCamera,m_pFrame);
-	m_AcqMutex.post();
-	return true;
+    dc1394_capture_enqueue(m_pCamera,m_pFrame);
+    m_AcqMutex.post();
+    return true;
 }
 
 uint32_t CFWCamera_DR2_2::NormToValue(double& dVal,int feature)
 {
-	int f=feature-DC1394_FEATURE_MIN;
+    int f=feature-DC1394_FEATURE_MIN;
 
-	if (dVal<0.0) dVal=0.0;
-	if (dVal>1.0) dVal=1.0;
+    if (dVal<0.0) dVal=0.0;
+    if (dVal>1.0) dVal=1.0;
 
-	uint32_t iVal=m_iMin[f]+(uint32_t)(dVal*double(m_iMax[f]-m_iMin[f]));
+    uint32_t iVal=m_iMin[f]+(uint32_t)(dVal*double(m_iMax[f]-m_iMin[f]));
 
-	if (iVal<m_iMin[f]) iVal=m_iMin[f];
-	if (iVal>m_iMax[f]) iVal=m_iMax[f];
+    if (iVal<m_iMin[f]) iVal=m_iMin[f];
+    if (iVal>m_iMax[f]) iVal=m_iMax[f];
 
-	return iVal;
+    return iVal;
 }
 
 double CFWCamera_DR2_2::ValueToNorm(uint32_t iVal,int feature)
 { 
-	int f=feature-DC1394_FEATURE_MIN;
+    int f=feature-DC1394_FEATURE_MIN;
 
-	double dVal=double(iVal-m_iMin[f])/double(m_iMax[f]-m_iMin[f]);
+    double dVal=double(iVal-m_iMin[f])/double(m_iMax[f]-m_iMin[f]);
 
-	if (dVal<0.0) return 0.0;
-	if (dVal>1.0) return 1.0;
+    if (dVal<0.0) return 0.0;
+    if (dVal>1.0) return 1.0;
 
-	return dVal;
+    return dVal;
 }
 
 ////////////////////
@@ -1345,54 +1346,54 @@ double CFWCamera_DR2_2::ValueToNorm(uint32_t iVal,int feature)
 // 00
 bool CFWCamera_DR2_2::hasFeatureDC1394(int feature)
 {
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	dc1394bool_t value;
-	dc1394_feature_is_present(m_pCamera,(dc1394feature_t)feature,&value);
-	return value;
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    dc1394bool_t value;
+    dc1394_feature_is_present(m_pCamera,(dc1394feature_t)feature,&value);
+    return value;
 }
 
 // 01
 bool CFWCamera_DR2_2::setFeatureDC1394(int feature,double value)
 {
     if (value<0.0 || value>1.0) return false;
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	return DC1394_SUCCESS==dc1394_feature_set_value(m_pCamera,(dc1394feature_t)feature,NormToValue(value,feature));
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    return DC1394_SUCCESS==dc1394_feature_set_value(m_pCamera,(dc1394feature_t)feature,NormToValue(value,feature));
 }
 
 // 02
 double CFWCamera_DR2_2::getFeatureDC1394(int feature)
 {
-	if (!m_pCamera) return -1.0;
-	feature+=DC1394_FEATURE_MIN;
-	uint32_t iVal;
-	dc1394_feature_get_value(m_pCamera,(dc1394feature_t)feature,&iVal); 
-	return ValueToNorm(iVal,feature);
+    if (!m_pCamera) return -1.0;
+    feature+=DC1394_FEATURE_MIN;
+    uint32_t iVal;
+    dc1394_feature_get_value(m_pCamera,(dc1394feature_t)feature,&iVal); 
+    return ValueToNorm(iVal,feature);
 }
 
 // 03
 bool CFWCamera_DR2_2::hasOnOffDC1394(int feature)
 {
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	dc1394bool_t value;
-	dc1394_feature_is_switchable(m_pCamera,(dc1394feature_t)feature,&value);
-	return value;
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    dc1394bool_t value;
+    dc1394_feature_is_switchable(m_pCamera,(dc1394feature_t)feature,&value);
+    return value;
 }
 
 // 04
 bool CFWCamera_DR2_2::setActiveDC1394(int feature, bool onoff)
 {
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	
-	if (feature==DC1394_FEATURE_EXPOSURE)
-	{   
-	    if (onoff)
-	    {
-	        dc1394_feature_set_power(m_pCamera,DC1394_FEATURE_GAIN,DC1394_ON);
-	        dc1394_feature_set_power(m_pCamera,DC1394_FEATURE_SHUTTER,DC1394_ON);
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    
+    if (feature==DC1394_FEATURE_EXPOSURE)
+    {   
+        if (onoff)
+        {
+            dc1394_feature_set_power(m_pCamera,DC1394_FEATURE_GAIN,DC1394_ON);
+            dc1394_feature_set_power(m_pCamera,DC1394_FEATURE_SHUTTER,DC1394_ON);
 
             dc1394_feature_get_mode(m_pCamera,DC1394_FEATURE_GAIN,&m_GainSaveModeAuto);
             if (m_GainSaveModeAuto==DC1394_FEATURE_MODE_MANUAL)
@@ -1406,113 +1407,113 @@ bool CFWCamera_DR2_2::setActiveDC1394(int feature, bool onoff)
                 dc1394_feature_get_value(m_pCamera,DC1394_FEATURE_SHUTTER,&m_ShutterSaveValue);
             }
 
-	        dc1394_feature_set_mode(m_pCamera,DC1394_FEATURE_GAIN,DC1394_FEATURE_MODE_AUTO);
-	        dc1394_feature_set_mode(m_pCamera,DC1394_FEATURE_SHUTTER,DC1394_FEATURE_MODE_AUTO);
-	    }
-	    else
-	    {
-	    	dc1394_feature_set_mode(m_pCamera,DC1394_FEATURE_GAIN,m_GainSaveModeAuto);
-	    	if (m_GainSaveModeAuto==DC1394_FEATURE_MODE_MANUAL)
-	    	{
-	    	    dc1394_feature_set_value(m_pCamera,DC1394_FEATURE_GAIN,m_GainSaveValue);
-	    	}
-	        dc1394_feature_set_mode(m_pCamera,DC1394_FEATURE_SHUTTER,m_ShutterSaveModeAuto);
-	        if (m_ShutterSaveModeAuto==DC1394_FEATURE_MODE_MANUAL)
-	    	{
-	    	    dc1394_feature_set_value(m_pCamera,DC1394_FEATURE_SHUTTER,m_ShutterSaveValue);
-	    	}
-	    }
-	}
-	
-	return DC1394_SUCCESS==dc1394_feature_set_power(m_pCamera,(dc1394feature_t)feature,onoff?DC1394_ON:DC1394_OFF);
+            dc1394_feature_set_mode(m_pCamera,DC1394_FEATURE_GAIN,DC1394_FEATURE_MODE_AUTO);
+            dc1394_feature_set_mode(m_pCamera,DC1394_FEATURE_SHUTTER,DC1394_FEATURE_MODE_AUTO);
+        }
+        else
+        {
+            dc1394_feature_set_mode(m_pCamera,DC1394_FEATURE_GAIN,m_GainSaveModeAuto);
+            if (m_GainSaveModeAuto==DC1394_FEATURE_MODE_MANUAL)
+            {
+                dc1394_feature_set_value(m_pCamera,DC1394_FEATURE_GAIN,m_GainSaveValue);
+            }
+            dc1394_feature_set_mode(m_pCamera,DC1394_FEATURE_SHUTTER,m_ShutterSaveModeAuto);
+            if (m_ShutterSaveModeAuto==DC1394_FEATURE_MODE_MANUAL)
+            {
+                dc1394_feature_set_value(m_pCamera,DC1394_FEATURE_SHUTTER,m_ShutterSaveValue);
+            }
+        }
+    }
+    
+    return DC1394_SUCCESS==dc1394_feature_set_power(m_pCamera,(dc1394feature_t)feature,onoff?DC1394_ON:DC1394_OFF);
 }
 
 // 05
 bool CFWCamera_DR2_2::getActiveDC1394(int feature)
 {
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	dc1394switch_t pwr;
-	dc1394_feature_get_power(m_pCamera,(dc1394feature_t)feature,&pwr);
-	return pwr;
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    dc1394switch_t pwr;
+    dc1394_feature_get_power(m_pCamera,(dc1394feature_t)feature,&pwr);
+    return pwr;
 }
 
 // 06
 bool CFWCamera_DR2_2::hasManualDC1394(int feature)
 {
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	dc1394feature_modes_t modes;
-	if (DC1394_SUCCESS!=dc1394_feature_get_modes(m_pCamera,(dc1394feature_t)feature,&modes)) return false;
-	for (uint32_t num=0; num<modes.num; ++num)
-	{
-	    if (modes.modes[num]==DC1394_FEATURE_MODE_MANUAL)
-	    {
-	        return true;
-	    }
-    }	
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    dc1394feature_modes_t modes;
+    if (DC1394_SUCCESS!=dc1394_feature_get_modes(m_pCamera,(dc1394feature_t)feature,&modes)) return false;
+    for (uint32_t num=0; num<modes.num; ++num)
+    {
+        if (modes.modes[num]==DC1394_FEATURE_MODE_MANUAL)
+        {
+            return true;
+        }
+    }   
     return false;
 }
 
 // 07
 bool CFWCamera_DR2_2::hasAutoDC1394(int feature)
 {
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	dc1394feature_modes_t modes;
-	if (DC1394_SUCCESS!=dc1394_feature_get_modes(m_pCamera,(dc1394feature_t)feature,&modes)) return false;
-	for (uint32_t num=0; num<modes.num; ++num)
-	{
-		if (modes.modes[num]==DC1394_FEATURE_MODE_AUTO)
-		{
-		    return true;
-		}
-	}
-	return false;
-}	
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    dc1394feature_modes_t modes;
+    if (DC1394_SUCCESS!=dc1394_feature_get_modes(m_pCamera,(dc1394feature_t)feature,&modes)) return false;
+    for (uint32_t num=0; num<modes.num; ++num)
+    {
+        if (modes.modes[num]==DC1394_FEATURE_MODE_AUTO)
+        {
+            return true;
+        }
+    }
+    return false;
+}   
 
 // 08
 bool CFWCamera_DR2_2::hasOnePushDC1394(int feature)
 {
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	dc1394feature_modes_t modes;
-	if (DC1394_SUCCESS!=dc1394_feature_get_modes(m_pCamera,(dc1394feature_t)feature,&modes)) return false;
-	for (uint32_t num=0; num<modes.num; ++num)
-	{
-		if (modes.modes[num]==DC1394_FEATURE_MODE_ONE_PUSH_AUTO)
-		{
-		    return true;
-		}
-	}
-	return false;
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    dc1394feature_modes_t modes;
+    if (DC1394_SUCCESS!=dc1394_feature_get_modes(m_pCamera,(dc1394feature_t)feature,&modes)) return false;
+    for (uint32_t num=0; num<modes.num; ++num)
+    {
+        if (modes.modes[num]==DC1394_FEATURE_MODE_ONE_PUSH_AUTO)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 // 09
 bool CFWCamera_DR2_2::setModeDC1394(int feature, bool auto_onoff)
 {
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	
-	return DC1394_SUCCESS==dc1394_feature_set_mode(m_pCamera,(dc1394feature_t)feature,auto_onoff?DC1394_FEATURE_MODE_AUTO:DC1394_FEATURE_MODE_MANUAL);
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    
+    return DC1394_SUCCESS==dc1394_feature_set_mode(m_pCamera,(dc1394feature_t)feature,auto_onoff?DC1394_FEATURE_MODE_AUTO:DC1394_FEATURE_MODE_MANUAL);
 }
 
 // 10
 bool CFWCamera_DR2_2::getModeDC1394(int feature)
 {
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	dc1394feature_mode_t mode; 
-	dc1394_feature_get_mode(m_pCamera,(dc1394feature_t)feature,&mode);
-	return mode==DC1394_FEATURE_MODE_AUTO;
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    dc1394feature_mode_t mode; 
+    dc1394_feature_get_mode(m_pCamera,(dc1394feature_t)feature,&mode);
+    return mode==DC1394_FEATURE_MODE_AUTO;
 }
 
 // 11
 bool CFWCamera_DR2_2::setOnePushDC1394(int feature)
 {
-	if (!m_pCamera) return false;
-	feature+=DC1394_FEATURE_MIN;
-	return DC1394_SUCCESS==dc1394_feature_set_mode(m_pCamera,(dc1394feature_t)feature,DC1394_FEATURE_MODE_ONE_PUSH_AUTO);
+    if (!m_pCamera) return false;
+    feature+=DC1394_FEATURE_MIN;
+    return DC1394_SUCCESS==dc1394_feature_set_mode(m_pCamera,(dc1394feature_t)feature,DC1394_FEATURE_MODE_ONE_PUSH_AUTO);
 }
 
 // 23
@@ -1523,19 +1524,19 @@ bool CFWCamera_DR2_2::setWhiteBalanceDC1394(double b, double r)
         return false;
     }
     
-	return DC1394_SUCCESS==dc1394_feature_whitebalance_set_value(m_pCamera,
-		                                                         NormToValue(b,DC1394_FEATURE_WHITE_BALANCE),
-		                                                         NormToValue(r,DC1394_FEATURE_WHITE_BALANCE));
+    return DC1394_SUCCESS==dc1394_feature_whitebalance_set_value(m_pCamera,
+                                                                 NormToValue(b,DC1394_FEATURE_WHITE_BALANCE),
+                                                                 NormToValue(r,DC1394_FEATURE_WHITE_BALANCE));
 }
 
 // 24
 bool CFWCamera_DR2_2::getWhiteBalanceDC1394(double &b, double &r)
 {
-	unsigned int iB,iR;
-	bool ok=DC1394_SUCCESS==dc1394_feature_whitebalance_get_value(m_pCamera,&iB,&iR);
-	b=ValueToNorm(iB,DC1394_FEATURE_WHITE_BALANCE);
-	r=ValueToNorm(iR,DC1394_FEATURE_WHITE_BALANCE);
-	return ok;
+    unsigned int iB,iR;
+    bool ok=DC1394_SUCCESS==dc1394_feature_whitebalance_get_value(m_pCamera,&iB,&iR);
+    b=ValueToNorm(iB,DC1394_FEATURE_WHITE_BALANCE);
+    r=ValueToNorm(iR,DC1394_FEATURE_WHITE_BALANCE);
+    return ok;
 }
 
 ////////////////////////
@@ -1550,18 +1551,18 @@ unsigned int CFWCamera_DR2_2::getVideoModeMaskDC1394()
         return 1<<(DC1394_VIDEO_MODE_FORMAT7_0-DC1394_VIDEO_MODE_MIN);
     }
 
-	dc1394video_modes_t modes;
-	dc1394_video_get_supported_modes(m_pCamera,&modes);
+    dc1394video_modes_t modes;
+    dc1394_video_get_supported_modes(m_pCamera,&modes);
 
-	unsigned int mask=0;
-	for (unsigned int m=0; m<modes.num; ++m)
-	{
-		mask|=1<<(modes.modes[m]-DC1394_VIDEO_MODE_MIN);
+    unsigned int mask=0;
+    for (unsigned int m=0; m<modes.num; ++m)
+    {
+        mask|=1<<(modes.modes[m]-DC1394_VIDEO_MODE_MIN);
     }
-	yInfo("video mode mask: %x\n",mask);
-	fflush(stdout);
+    yInfo("video mode mask: %x\n",mask);
+    fflush(stdout);
 
-	return mask;
+    return mask;
 }
 
 // 13
@@ -1569,68 +1570,68 @@ bool CFWCamera_DR2_2::setVideoModeDC1394(int newVideoMode)
 {
     if (mRawDriver) return false;
 
-	yInfo("SET VIDEO MODE %d\n",newVideoMode);
+    yInfo("SET VIDEO MODE %d\n",newVideoMode);
 
-	m_AcqMutex.wait();
+    m_AcqMutex.wait();
 
-	if (!m_pCamera)
-	{
-		m_AcqMutex.post();
-		return false;
-	}
+    if (!m_pCamera)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
 
     m_nInvalidFrames=NUM_DMA_BUFFERS;
 
-	dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
-	dc1394_capture_stop(m_pCamera);
+    dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
+    dc1394_capture_stop(m_pCamera);
 
-	dc1394video_mode_t videoModeToSet=(dc1394video_mode_t)((int)DC1394_VIDEO_MODE_MIN+newVideoMode);
+    dc1394video_mode_t videoModeToSet=(dc1394video_mode_t)((int)DC1394_VIDEO_MODE_MIN+newVideoMode);
 
-	if (videoModeToSet<DC1394_VIDEO_MODE_FORMAT7_MIN)
-	{
-		yError("Attempting to set NON format 7\n");
-		SetVideoMode(videoModeToSet);
-	}
-	else
-	{
-		yError("Attempting to set format 7\n");
-		SetF7(videoModeToSet,SKIP,SKIP,SKIP,SKIP,SKIP,SKIP);
-	}
+    if (videoModeToSet<DC1394_VIDEO_MODE_FORMAT7_MIN)
+    {
+        yError("Attempting to set NON format 7\n");
+        SetVideoMode(videoModeToSet);
+    }
+    else
+    {
+        yError("Attempting to set format 7\n");
+        SetF7(videoModeToSet,SKIP,SKIP,SKIP,SKIP,SKIP,SKIP);
+    }
 
-	if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		m_AcqMutex.post();
-		return false;
-	}
+    if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        m_AcqMutex.post();
+        return false;
+    }
 
-	if (dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_ON\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		m_AcqMutex.post();
-		return false;
-	}
+    if (dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_ON\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        m_AcqMutex.post();
+        return false;
+    }
 
-	m_AcqMutex.post();
-	return true;
+    m_AcqMutex.post();
+    return true;
 }
 
 // 14
 unsigned int CFWCamera_DR2_2::getVideoModeDC1394()
 { 
     dc1394video_mode_t videoMode;
-	dc1394_video_get_mode(m_pCamera,&videoMode);
-	return videoMode-DC1394_VIDEO_MODE_MIN;
+    dc1394_video_get_mode(m_pCamera,&videoMode);
+    return videoMode-DC1394_VIDEO_MODE_MIN;
 }
 
 // 15
 unsigned int CFWCamera_DR2_2::getFPSMaskDC1394()
 {
-	if (!m_pCamera) return 0;
+    if (!m_pCamera) return 0;
 
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
@@ -1640,22 +1641,22 @@ unsigned int CFWCamera_DR2_2::getFPSMaskDC1394()
         return 0; 
     }
 
-	dc1394framerates_t fps;
-	dc1394_video_get_supported_framerates(m_pCamera,videoMode,&fps);
+    dc1394framerates_t fps;
+    dc1394_video_get_supported_framerates(m_pCamera,videoMode,&fps);
 
-	unsigned int mask=0;
-	for (unsigned int f=0; f<fps.num; ++f)
-	{
-		mask|=1<<(fps.framerates[f]-DC1394_FRAMERATE_MIN);
+    unsigned int mask=0;
+    for (unsigned int f=0; f<fps.num; ++f)
+    {
+        mask|=1<<(fps.framerates[f]-DC1394_FRAMERATE_MIN);
     }
     
-	return mask;
+    return mask;
 }
 
 // 16
 unsigned int CFWCamera_DR2_2::getFPSDC1394()
 {
-	if (!m_pCamera) return 0;
+    if (!m_pCamera) return 0;
 
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
@@ -1665,16 +1666,16 @@ unsigned int CFWCamera_DR2_2::getFPSDC1394()
         return 0;
     }
 
-	dc1394framerate_t fps; 
-	dc1394_video_get_framerate(m_pCamera,&fps);
+    dc1394framerate_t fps; 
+    dc1394_video_get_framerate(m_pCamera,&fps);
 
-	return fps-DC1394_FRAMERATE_MIN;
+    return fps-DC1394_FRAMERATE_MIN;
 }
 
 // 17
 bool CFWCamera_DR2_2::setFPSDC1394(int fps)
 {
-	if (!m_pCamera) return false;
+    if (!m_pCamera) return false;
 
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
@@ -1684,52 +1685,52 @@ bool CFWCamera_DR2_2::setFPSDC1394(int fps)
         return false; 
     }
 
-	return DC1394_SUCCESS==dc1394_video_set_framerate(m_pCamera,(dc1394framerate_t)((int)fps+DC1394_FRAMERATE_MIN));	
+    return DC1394_SUCCESS==dc1394_video_set_framerate(m_pCamera,(dc1394framerate_t)((int)fps+DC1394_FRAMERATE_MIN));    
 }
 
 // 18
 unsigned int CFWCamera_DR2_2::getISOSpeedDC1394()
 {
-	if (!m_pCamera) return false;
-	dc1394speed_t speed;
-	dc1394_video_get_iso_speed(m_pCamera,&speed);
-	return speed-DC1394_ISO_SPEED_MIN;
+    if (!m_pCamera) return false;
+    dc1394speed_t speed;
+    dc1394_video_get_iso_speed(m_pCamera,&speed);
+    return speed-DC1394_ISO_SPEED_MIN;
 }
 
 // 19
 bool CFWCamera_DR2_2::setISOSpeedDC1394(int speed)
-{ 	
-	if (!m_pCamera) return false;
-	return DC1394_SUCCESS==dc1394_video_set_iso_speed(m_pCamera,(dc1394speed_t)(speed+DC1394_ISO_SPEED_MIN));
+{   
+    if (!m_pCamera) return false;
+    return DC1394_SUCCESS==dc1394_video_set_iso_speed(m_pCamera,(dc1394speed_t)(speed+DC1394_ISO_SPEED_MIN));
 }
 
 // 20
 unsigned int CFWCamera_DR2_2::getColorCodingMaskDC1394(unsigned int videoMode)
 {
-	if (!m_pCamera) return 0;
+    if (!m_pCamera) return 0;
 
     if (mRawDriver) return 1<<(DC1394_COLOR_CODING_RAW8-DC1394_COLOR_CODING_MIN);
 
-	dc1394video_mode_t vm=(dc1394video_mode_t)(videoMode+DC1394_VIDEO_MODE_MIN);
+    dc1394video_mode_t vm=(dc1394video_mode_t)(videoMode+DC1394_VIDEO_MODE_MIN);
 
-	if (vm<DC1394_VIDEO_MODE_FORMAT7_MIN) return 0;
+    if (vm<DC1394_VIDEO_MODE_FORMAT7_MIN) return 0;
 
-	dc1394color_codings_t codings;
-	dc1394_format7_get_color_codings(m_pCamera,vm,&codings);
+    dc1394color_codings_t codings;
+    dc1394_format7_get_color_codings(m_pCamera,vm,&codings);
 
-	unsigned int mask=0;
-	for (unsigned int m=0; m<codings.num; ++m)
-	{
-		mask|=1<<(codings.codings[m]-DC1394_COLOR_CODING_MIN);
+    unsigned int mask=0;
+    for (unsigned int m=0; m<codings.num; ++m)
+    {
+        mask|=1<<(codings.codings[m]-DC1394_COLOR_CODING_MIN);
     }
     
-	yInfo("color coding mask for video mode %d is %x\n",videoMode,mask);
+    yInfo("color coding mask for video mode %d is %x\n",videoMode,mask);
 
-	return mask;
+    return mask;
 }
 unsigned int CFWCamera_DR2_2::getActualColorCodingMaskDC1394()
 {
-	if (!m_pCamera) return false;
+    if (!m_pCamera) return false;
 
     if (mRawDriver) return 1<<(DC1394_COLOR_CODING_RAW8-DC1394_COLOR_CODING_MIN);
 
@@ -1741,24 +1742,24 @@ unsigned int CFWCamera_DR2_2::getActualColorCodingMaskDC1394()
         return 0; 
     }
 
-	dc1394color_codings_t codings;
-	dc1394_format7_get_color_codings(m_pCamera,videoMode,&codings);
+    dc1394color_codings_t codings;
+    dc1394_format7_get_color_codings(m_pCamera,videoMode,&codings);
 
-	unsigned int mask=0;
-	for (unsigned int m=0; m<codings.num; ++m)
-	{
-		mask|=1<<(codings.codings[m]-DC1394_COLOR_CODING_MIN);
+    unsigned int mask=0;
+    for (unsigned int m=0; m<codings.num; ++m)
+    {
+        mask|=1<<(codings.codings[m]-DC1394_COLOR_CODING_MIN);
     }
     
-	yInfo("actual color coding mask %x\n",mask);
+    yInfo("actual color coding mask %x\n",mask);
 
-	return mask;
+    return mask;
 }
 
 // 21
 unsigned int CFWCamera_DR2_2::getColorCodingDC1394()
 {
-	if (!m_pCamera) return false;
+    if (!m_pCamera) return false;
 
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
@@ -1768,9 +1769,9 @@ unsigned int CFWCamera_DR2_2::getColorCodingDC1394()
         return 0; 
     }
 
-	dc1394color_coding_t coding;
-	dc1394_format7_get_color_coding(m_pCamera,videoMode,&coding);
-	return coding-DC1394_COLOR_CODING_MIN;
+    dc1394color_coding_t coding;
+    dc1394_format7_get_color_coding(m_pCamera,videoMode,&coding);
+    return coding-DC1394_COLOR_CODING_MIN;
 }
 
 // 22
@@ -1778,15 +1779,15 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 {
     if (mRawDriver) return false;
 
-	m_AcqMutex.wait();
+    m_AcqMutex.wait();
 
-	if (!m_pCamera)
-	{
-		m_AcqMutex.post();
-		return false;
-	}
-	
-	dc1394video_mode_t videoMode;
+    if (!m_pCamera)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
+    
+    dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
     {
@@ -1795,45 +1796,45 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
         return false;
     }
     
-	m_nInvalidFrames=NUM_DMA_BUFFERS;
+    m_nInvalidFrames=NUM_DMA_BUFFERS;
 
-	dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
-	dc1394_capture_stop(m_pCamera);
+    dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
+    dc1394_capture_stop(m_pCamera);
 
-	dc1394color_coding_t cc=(dc1394color_coding_t)((int)coding+DC1394_COLOR_CODING_MIN);
-	SetF7(SKIP,SKIP,SKIP,cc,SKIP,SKIP,SKIP);
+    dc1394color_coding_t cc=(dc1394color_coding_t)((int)coding+DC1394_COLOR_CODING_MIN);
+    SetF7(SKIP,SKIP,SKIP,cc,SKIP,SKIP,SKIP);
 
-	bool bRetVal=true;
+    bool bRetVal=true;
 
-	if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		bRetVal=false;
-	}
+    if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        bRetVal=false;
+    }
 
-	if (bRetVal && dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_ON\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		bRetVal=false;
-	}
+    if (bRetVal && dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_ON\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        bRetVal=false;
+    }
 
-	m_AcqMutex.post();
+    m_AcqMutex.post();
 
-	return bRetVal;
-}	
+    return bRetVal;
+}   
 
 //experimental cleanup function, Lorenzo
 
 // 25
 bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep)
 {
-	if (!m_pCamera) return false;
+    if (!m_pCamera) return false;
 
-	dc1394video_mode_t videoMode;
+    dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error))
     {
@@ -1845,174 +1846,174 @@ bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int 
     }
     
     if (videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
-	{
-		xdim=m_XDim;
-		ydim=m_YDim;
-		xoffstep=yoffstep=2;
-		return true;
-	}
+    {
+        xdim=m_XDim;
+        ydim=m_YDim;
+        xoffstep=yoffstep=2;
+        return true;
+    }
 
-	error=dc1394_format7_get_unit_size(m_pCamera,videoMode,&xstep,&ystep);
-	if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-	error=dc1394_format7_get_max_image_size(m_pCamera,videoMode,&xdim,&ydim);
-	if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-	error=dc1394_format7_get_unit_position(m_pCamera,videoMode,&xoffstep,&yoffstep);
-	if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
+    error=dc1394_format7_get_unit_size(m_pCamera,videoMode,&xstep,&ystep);
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
+    error=dc1394_format7_get_max_image_size(m_pCamera,videoMode,&xdim,&ydim);
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
+    error=dc1394_format7_get_unit_position(m_pCamera,videoMode,&xoffstep,&yoffstep);
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
-	return true;
+    return true;
 }
 
 // 26
 bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0)
 {
-	m_AcqMutex.wait();
+    m_AcqMutex.wait();
 
-	if (!m_pCamera)
-	{
-		m_AcqMutex.post();
-		return false;
-	}
-	
-	dc1394video_mode_t videoMode;
+    if (!m_pCamera)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
+    
+    dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
-	if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
+    if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
     {
         yError("LINE: %d\n",__LINE__);
-		m_AcqMutex.post();
-		return false;
-	}
+        m_AcqMutex.post();
+        return false;
+    }
 
-	m_nInvalidFrames=NUM_DMA_BUFFERS;
-	dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
-	dc1394_capture_stop(m_pCamera);
+    m_nInvalidFrames=NUM_DMA_BUFFERS;
+    dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
+    dc1394_capture_stop(m_pCamera);
 
-	SetF7(SKIP,xdim,ydim,SKIP,SKIP,x0,y0);
+    SetF7(SKIP,xdim,ydim,SKIP,SKIP,x0,y0);
 
-	bool bRetVal=true;
+    bool bRetVal=true;
 
-	if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		bRetVal=false;
-	}
+    if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        bRetVal=false;
+    }
 
-	if (bRetVal && dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_ON\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		bRetVal=false;
-	}
+    if (bRetVal && dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_ON\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        bRetVal=false;
+    }
 
-	m_AcqMutex.post();
+    m_AcqMutex.post();
 
-	return bRetVal;
+    return bRetVal;
 }
 
 // 27
 bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0)
 {
-	if (!m_pCamera) return false;
+    if (!m_pCamera) return false;
 
-	//xdim=m_XDim;
-	//ydim=m_YDim;
-	
-	dc1394video_mode_t actVideoMode;
+    //xdim=m_XDim;
+    //ydim=m_YDim;
+    
+    dc1394video_mode_t actVideoMode;
     dc1394error_t error;
     
     error=dc1394_video_get_mode(m_pCamera,&actVideoMode);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     if (actVideoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
-	{
-		xdim=m_XDim;
-		ydim=m_YDim;
-		x0=y0=0;
-		return true;
-	}
+    {
+        xdim=m_XDim;
+        ydim=m_YDim;
+        x0=y0=0;
+        return true;
+    }
     
     unsigned int xmaxdim,ymaxdim;
     error=dc1394_format7_get_max_image_size(m_pCamera,actVideoMode,&xmaxdim,&ymaxdim);
-	if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-	
-	unsigned int xoff,yoff;
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
+    
+    unsigned int xoff,yoff;
     error=dc1394_format7_get_image_position(m_pCamera,actVideoMode,&xoff,&yoff);
-	if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-	
-	error=dc1394_format7_get_image_size(m_pCamera,actVideoMode,&xdim,&ydim);
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
+    
+    error=dc1394_format7_get_image_size(m_pCamera,actVideoMode,&xdim,&ydim);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
     
     x0=(int)xoff-(xmaxdim-xdim)/2;
     y0=(int)yoff-(ymaxdim-ydim)/2;
 
-	return true;
-}	
+    return true;
+}   
 
 // 28
 bool CFWCamera_DR2_2::setOperationModeDC1394(bool b1394b)
 {
-	m_AcqMutex.wait();
+    m_AcqMutex.wait();
 
-	if (!m_pCamera)
-	{
-		m_AcqMutex.post();
-		return false;
-	}
+    if (!m_pCamera)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
 
-	m_nInvalidFrames=NUM_DMA_BUFFERS;
+    m_nInvalidFrames=NUM_DMA_BUFFERS;
 
-	dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
-	dc1394_capture_stop(m_pCamera);
-	dc1394_video_set_operation_mode(m_pCamera,b1394b?DC1394_OPERATION_MODE_1394B:DC1394_OPERATION_MODE_LEGACY);
-	dc1394_video_set_iso_speed(m_pCamera,DC1394_ISO_SPEED_400);
+    dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
+    dc1394_capture_stop(m_pCamera);
+    dc1394_video_set_operation_mode(m_pCamera,b1394b?DC1394_OPERATION_MODE_1394B:DC1394_OPERATION_MODE_LEGACY);
+    dc1394_video_set_iso_speed(m_pCamera,DC1394_ISO_SPEED_400);
 
-	if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		m_AcqMutex.post();
-		return false;
-	}
+    if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        m_AcqMutex.post();
+        return false;
+    }
 
-	if (dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_ON\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		m_AcqMutex.post();
-		return false;
-	}
+    if (dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_ON\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        m_AcqMutex.post();
+        return false;
+    }
 
-	m_AcqMutex.post();
-	return true;
+    m_AcqMutex.post();
+    return true;
 }
 
 // 29
 bool CFWCamera_DR2_2::getOperationModeDC1394()
 {
-	if (!m_pCamera) return false;
-	dc1394operation_mode_t b1394b;
-	dc1394_video_get_operation_mode(m_pCamera,&b1394b);
-	return b1394b==DC1394_OPERATION_MODE_1394B;
+    if (!m_pCamera) return false;
+    dc1394operation_mode_t b1394b;
+    dc1394_video_get_operation_mode(m_pCamera,&b1394b);
+    return b1394b==DC1394_OPERATION_MODE_1394B;
 }
 
 // 30
 bool CFWCamera_DR2_2::setTransmissionDC1394(bool bTxON)
 {
-	if (!m_pCamera) return false;
-	return DC1394_SUCCESS==dc1394_video_set_transmission(m_pCamera,(dc1394switch_t)bTxON);
+    if (!m_pCamera) return false;
+    return DC1394_SUCCESS==dc1394_video_set_transmission(m_pCamera,(dc1394switch_t)bTxON);
 }
 
 // 31
 bool CFWCamera_DR2_2::getTransmissionDC1394()
 {
-	if (!m_pCamera) return false;
-	dc1394switch_t bTxON;
-	dc1394_video_get_transmission(m_pCamera,&bTxON);
-	return bTxON;
+    if (!m_pCamera) return false;
+    dc1394switch_t bTxON;
+    dc1394_video_get_transmission(m_pCamera,&bTxON);
+    return bTxON;
 }
 
 // 32 setBayer
@@ -2021,139 +2022,139 @@ bool CFWCamera_DR2_2::getTransmissionDC1394()
 // 34
 bool CFWCamera_DR2_2::setBroadcastDC1394(bool onoff)
 {
-	if (!m_pCamera) return false;
-	return DC1394_SUCCESS==dc1394_camera_set_broadcast(m_pCamera,(dc1394bool_t)onoff);
+    if (!m_pCamera) return false;
+    return DC1394_SUCCESS==dc1394_camera_set_broadcast(m_pCamera,(dc1394bool_t)onoff);
 }
 
 // 35
 bool CFWCamera_DR2_2::setDefaultsDC1394()
 {
-	m_AcqMutex.wait();
+    m_AcqMutex.wait();
 
-	if (!m_pCamera)
-	{
-		m_AcqMutex.post();
-		return false;
-	}
+    if (!m_pCamera)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
 
-	m_nInvalidFrames=NUM_DMA_BUFFERS;
+    m_nInvalidFrames=NUM_DMA_BUFFERS;
 
-	bool bRetVal=DC1394_SUCCESS==dc1394_memory_load(m_pCamera,0);
-	
-	dc1394video_mode_t videoMode;
-	dc1394_video_get_mode(m_pCamera,&videoMode);
-	
-	SetVideoMode(videoMode);
+    bool bRetVal=DC1394_SUCCESS==dc1394_memory_load(m_pCamera,0);
+    
+    dc1394video_mode_t videoMode;
+    dc1394_video_get_mode(m_pCamera,&videoMode);
+    
+    SetVideoMode(videoMode);
 
-	m_AcqMutex.post();
+    m_AcqMutex.post();
 
-	return bRetVal;
+    return bRetVal;
 }
 
 // 36
 bool CFWCamera_DR2_2::setResetDC1394()
 {
-	m_AcqMutex.wait();
+    m_AcqMutex.wait();
 
-	if (!m_pCamera)
-	{
-		m_AcqMutex.post();
-		return false;
-	}
+    if (!m_pCamera)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
 
-	dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
-	dc1394_capture_stop(m_pCamera);
-	
-	dc1394_camera_reset(m_pCamera);
-	
-	if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		m_AcqMutex.post();
-		return false;
-	}
+    dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
+    dc1394_capture_stop(m_pCamera);
+    
+    dc1394_camera_reset(m_pCamera);
+    
+    if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        m_AcqMutex.post();
+        return false;
+    }
 
-	if (dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_ON\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		m_AcqMutex.post();
-		return false;
-	}
+    if (dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_ON\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        m_AcqMutex.post();
+        return false;
+    }
 
-	m_AcqMutex.post();
-	return true;
+    m_AcqMutex.post();
+    return true;
 }
 
 // 37
 bool CFWCamera_DR2_2::setPowerDC1394(bool onoff)
 {
-	m_AcqMutex.wait();
+    m_AcqMutex.wait();
 
-	if (!m_pCamera)
-	{
-		m_AcqMutex.post();
-		return false;
-	}
+    if (!m_pCamera)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
 
-	if (onoff)
-	{
-		dc1394_camera_set_power(m_pCamera,(dc1394switch_t)onoff);
+    if (onoff)
+    {
+        dc1394_camera_set_power(m_pCamera,(dc1394switch_t)onoff);
 
-		if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
-		{
-			yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
-			dc1394_camera_free(m_pCamera);
-			m_pCamera=NULL;
-			m_AcqMutex.post();
-			return false;
-		}
+        if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
+        {
+            yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
+            dc1394_camera_free(m_pCamera);
+            m_pCamera=NULL;
+            m_AcqMutex.post();
+            return false;
+        }
 
-		if (dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
-		{
-			yError("Can't set DC1394_ON\n");
-			dc1394_camera_free(m_pCamera);
-			m_pCamera=NULL;
-			m_AcqMutex.post();
-			return false;
-		}
+        if (dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
+        {
+            yError("Can't set DC1394_ON\n");
+            dc1394_camera_free(m_pCamera);
+            m_pCamera=NULL;
+            m_AcqMutex.post();
+            return false;
+        }
 
-		m_bCameraOn=true;
-	}
-	else
-	{
-		m_bCameraOn=false;
-		dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
-		dc1394_capture_stop(m_pCamera);
-		dc1394_camera_set_power(m_pCamera,(dc1394switch_t)onoff);
-	}
+        m_bCameraOn=true;
+    }
+    else
+    {
+        m_bCameraOn=false;
+        dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
+        dc1394_capture_stop(m_pCamera);
+        dc1394_camera_set_power(m_pCamera,(dc1394switch_t)onoff);
+    }
 
-	m_AcqMutex.post();
-	return true;
+    m_AcqMutex.post();
+    return true;
 }
 
 // 38
 bool CFWCamera_DR2_2::setCaptureDC1394(bool bON)
 {
-	if (!m_pCamera) return false;
+    if (!m_pCamera) return false;
 
-	if (bON) 
-		return DC1394_SUCCESS==dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT);
-	else
-		return DC1394_SUCCESS==dc1394_capture_stop(m_pCamera);
+    if (bON) 
+        return DC1394_SUCCESS==dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT);
+    else
+        return DC1394_SUCCESS==dc1394_capture_stop(m_pCamera);
 }
 
 // 39
 unsigned int CFWCamera_DR2_2::getBytesPerPacketDC1394()
 {
-	if (!m_pCamera) return 0;
-	
-	dc1394video_mode_t videoMode;
+    if (!m_pCamera) return 0;
+    
+    dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
-	if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
+    if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
     { 
         yError("LINE: %d\n",__LINE__); 
         return 0; 
@@ -2168,7 +2169,7 @@ unsigned int CFWCamera_DR2_2::getBytesPerPacketDC1394()
 
     dc1394color_coding_t colorCoding;
     unsigned int dummy,bytesPerPacket,xDim,yDim;
-    error=dc1394_format7_get_roi(m_pCamera,videoMode,&colorCoding,&bytesPerPacket,&dummy,&dummy,&xDim,&yDim);	
+    error=dc1394_format7_get_roi(m_pCamera,videoMode,&colorCoding,&bytesPerPacket,&dummy,&dummy,&xDim,&yDim);   
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return 0; }
 
     unsigned int maxBytesPerPacket,unitBytesPerPacket;
@@ -2189,39 +2190,39 @@ unsigned int CFWCamera_DR2_2::getBytesPerPacketDC1394()
 
 // 40
 bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
-{	
-	m_AcqMutex.wait();
+{   
+    m_AcqMutex.wait();
 
-	if (!m_pCamera)
-	{
-		m_AcqMutex.post();
-		return false;
-	}
+    if (!m_pCamera)
+    {
+        m_AcqMutex.post();
+        return false;
+    }
     
     dc1394error_t error;
 
-	error=dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
+    error=dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
     if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
     
-	error=dc1394_capture_stop(m_pCamera);	
-	if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
+    error=dc1394_capture_stop(m_pCamera);   
+    if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
     
-	//
-	
-	dc1394video_mode_t videoMode;
+    //
+    
+    dc1394video_mode_t videoMode;
     error=dc1394_video_get_mode(m_pCamera,&videoMode);
-	if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
+    if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
     {
         yError("LINE: %d\n",__LINE__);
         m_AcqMutex.post();
         return false;
     }
 
-	if (newBandPercent<0)
-	{
-	    newBandPercent=0;
-	}
-	else if (newBandPercent>100)
+    if (newBandPercent<0)
+    {
+        newBandPercent=0;
+    }
+    else if (newBandPercent>100)
     {
         newBandPercent=100;
     }
@@ -2235,7 +2236,7 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
 
     dc1394color_coding_t colorCoding;
     unsigned int dummy,xDim,yDim;
-    error=dc1394_format7_get_roi(m_pCamera,videoMode,&colorCoding,&dummy,&dummy,&dummy,&xDim,&yDim);	
+    error=dc1394_format7_get_roi(m_pCamera,videoMode,&colorCoding,&dummy,&dummy,&dummy,&xDim,&yDim);    
     if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
 
     unsigned int maxBytesPerPacket,unitBytesPerPacket;
@@ -2266,24 +2267,24 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
     if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
           
     if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		m_AcqMutex.post();
-		return false;
-	}
+    {
+        yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        m_AcqMutex.post();
+        return false;
+    }
 
-	if (dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
-	{
-		yError("Can't set DC1394_ON\n");
-		dc1394_camera_free(m_pCamera);
-		m_pCamera=NULL;
-		m_AcqMutex.post();
-		return false;
-	}
+    if (dc1394_video_set_transmission(m_pCamera,DC1394_ON)!=DC1394_SUCCESS)
+    {
+        yError("Can't set DC1394_ON\n");
+        dc1394_camera_free(m_pCamera);
+        m_pCamera=NULL;
+        m_AcqMutex.post();
+        return false;
+    }
 
-	m_AcqMutex.post();
+    m_AcqMutex.post();
     printf("bytesPerPacket %d\n",bytesPerPacket);
     
     return true;
@@ -2356,126 +2357,126 @@ double CFWCamera_DR2_2::checkDouble(yarp::os::Searchable& config,const char* key
 
 bool CFWCamera_DR2_2::setBrightness(double v)
 {
-	if (v<0.0 || v>1.0) return false;
-	int feature=YARP_FEATURE_BRIGHTNESS;
-	setActiveDC1394(feature,true);
-	setModeDC1394(feature,false);  
-	return setFeatureDC1394(feature,v); 
+    if (v<0.0 || v>1.0) return false;
+    int feature=YARP_FEATURE_BRIGHTNESS;
+    setActiveDC1394(feature,true);
+    setModeDC1394(feature,false);  
+    return setFeatureDC1394(feature,v); 
 }
 bool CFWCamera_DR2_2::setExposure(double v)
 {
-	if (v<0.0 || v>1.0) return false;
-	int feature=YARP_FEATURE_EXPOSURE;
-	setActiveDC1394(feature,true);
-	setModeDC1394(feature,false);  
-	return setFeatureDC1394(feature,v); 
+    if (v<0.0 || v>1.0) return false;
+    int feature=YARP_FEATURE_EXPOSURE;
+    setActiveDC1394(feature,true);
+    setModeDC1394(feature,false);  
+    return setFeatureDC1394(feature,v); 
 }
 bool CFWCamera_DR2_2::setSharpness(double v)
 { 
-	if (v<0.0 || v>1.0) return false;
-	int feature=YARP_FEATURE_SHARPNESS;
-	setActiveDC1394(feature,true);
-	setModeDC1394(feature,false);  
-	return setFeatureDC1394(feature,v); 
+    if (v<0.0 || v>1.0) return false;
+    int feature=YARP_FEATURE_SHARPNESS;
+    setActiveDC1394(feature,true);
+    setModeDC1394(feature,false);  
+    return setFeatureDC1394(feature,v); 
 }
 bool CFWCamera_DR2_2::setWhiteBalance(double blue, double red)
 {
-	if (blue<0.0 || blue>1.0 || red<0.0 || red>1.0) return false;
-	int feature=YARP_FEATURE_WHITE_BALANCE;
-	setActiveDC1394(feature,true);
-	setModeDC1394(feature,false);
-	return setWhiteBalanceDC1394(blue,red); 
+    if (blue<0.0 || blue>1.0 || red<0.0 || red>1.0) return false;
+    int feature=YARP_FEATURE_WHITE_BALANCE;
+    setActiveDC1394(feature,true);
+    setModeDC1394(feature,false);
+    return setWhiteBalanceDC1394(blue,red); 
 }
 bool CFWCamera_DR2_2::setHue(double v)
 {
-	if (v<0.0 || v>1.0) return false;
-	int feature=YARP_FEATURE_HUE;
-	setActiveDC1394(feature,true);
-	setModeDC1394(feature,false);  
-	return setFeatureDC1394(feature,v);  
+    if (v<0.0 || v>1.0) return false;
+    int feature=YARP_FEATURE_HUE;
+    setActiveDC1394(feature,true);
+    setModeDC1394(feature,false);  
+    return setFeatureDC1394(feature,v);  
 }
 bool CFWCamera_DR2_2::setSaturation(double v)
 {
-	if (v<0.0 || v>1.0) return false;
-	int feature=YARP_FEATURE_SATURATION;
-	setActiveDC1394(feature,true);
-	setModeDC1394(feature,false);  
-	return setFeatureDC1394(feature,v);  
+    if (v<0.0 || v>1.0) return false;
+    int feature=YARP_FEATURE_SATURATION;
+    setActiveDC1394(feature,true);
+    setModeDC1394(feature,false);  
+    return setFeatureDC1394(feature,v);  
 }
 bool CFWCamera_DR2_2::setGamma(double v)
 {
-	if (v<0.0 || v>1.0) return false;
-	int feature=YARP_FEATURE_GAMMA;
-	setActiveDC1394(feature,true);
-	setModeDC1394(feature,false);  
-	return setFeatureDC1394(feature,v);  
+    if (v<0.0 || v>1.0) return false;
+    int feature=YARP_FEATURE_GAMMA;
+    setActiveDC1394(feature,true);
+    setModeDC1394(feature,false);  
+    return setFeatureDC1394(feature,v);  
 }
 bool CFWCamera_DR2_2::setShutter(double v)
 {
-	if (v<0.0 || v>1.0) return false;
-	int feature=YARP_FEATURE_SHUTTER;
-	setActiveDC1394(feature,true);
-	setModeDC1394(feature,false);  
-	return setFeatureDC1394(feature,v);  
+    if (v<0.0 || v>1.0) return false;
+    int feature=YARP_FEATURE_SHUTTER;
+    setActiveDC1394(feature,true);
+    setModeDC1394(feature,false);  
+    return setFeatureDC1394(feature,v);  
 }
 bool CFWCamera_DR2_2::setGain(double v)
 {
-	if (v<0.0 || v>1.0) return false;
-	int feature=YARP_FEATURE_GAIN;
-	setActiveDC1394(feature,true);
-	setModeDC1394(feature,false);  
-	return setFeatureDC1394(feature,v);  
+    if (v<0.0 || v>1.0) return false;
+    int feature=YARP_FEATURE_GAIN;
+    setActiveDC1394(feature,true);
+    setModeDC1394(feature,false);  
+    return setFeatureDC1394(feature,v);  
 }
 bool CFWCamera_DR2_2::setIris(double v)
 {
-	if (v<0.0 || v>1.0) return false;
-	int feature=YARP_FEATURE_IRIS;
-	setActiveDC1394(feature,true);
-	setModeDC1394(feature,false);  
-	return setFeatureDC1394(feature,v);  
+    if (v<0.0 || v>1.0) return false;
+    int feature=YARP_FEATURE_IRIS;
+    setActiveDC1394(feature,true);
+    setModeDC1394(feature,false);  
+    return setFeatureDC1394(feature,v);  
 }
 
 // GET
 
 double CFWCamera_DR2_2::getBrightness()
 { 
-	return getFeatureDC1394(TRANSL(YARP_FEATURE_BRIGHTNESS));
+    return getFeatureDC1394(TRANSL(YARP_FEATURE_BRIGHTNESS));
 }
 double CFWCamera_DR2_2::getExposure()
 { 
-	return getFeatureDC1394(TRANSL(YARP_FEATURE_EXPOSURE));
-}	
+    return getFeatureDC1394(TRANSL(YARP_FEATURE_EXPOSURE));
+}   
 double CFWCamera_DR2_2::getSharpness()
 { 
-	return getFeatureDC1394(TRANSL(YARP_FEATURE_SHARPNESS));
+    return getFeatureDC1394(TRANSL(YARP_FEATURE_SHARPNESS));
 }
 bool CFWCamera_DR2_2::getWhiteBalance(double &blue, double &red)
 { 
-	return getWhiteBalance(blue,red); 
-}	
+    return getWhiteBalance(blue,red); 
+}   
 double CFWCamera_DR2_2::CFWCamera_DR2_2::getHue()
 { 
-	return getFeatureDC1394(TRANSL(YARP_FEATURE_HUE));
-}	
+    return getFeatureDC1394(TRANSL(YARP_FEATURE_HUE));
+}   
 double CFWCamera_DR2_2::getSaturation()
 { 
-	return CFWCamera_DR2_2::getFeatureDC1394(TRANSL(YARP_FEATURE_SATURATION));
+    return CFWCamera_DR2_2::getFeatureDC1394(TRANSL(YARP_FEATURE_SATURATION));
 }
 double CFWCamera_DR2_2::getGamma()
 { 
-	return getFeatureDC1394(TRANSL(YARP_FEATURE_GAMMA));
+    return getFeatureDC1394(TRANSL(YARP_FEATURE_GAMMA));
 }
 double CFWCamera_DR2_2::getShutter()
 { 
-	return getFeatureDC1394(TRANSL(YARP_FEATURE_SHUTTER));
+    return getFeatureDC1394(TRANSL(YARP_FEATURE_SHUTTER));
 }
 double CFWCamera_DR2_2::getGain()
 { 
-	return getFeatureDC1394(TRANSL(YARP_FEATURE_GAIN));
+    return getFeatureDC1394(TRANSL(YARP_FEATURE_GAIN));
 }
 double CFWCamera_DR2_2::getIris()
 { 
-	return getFeatureDC1394(TRANSL(YARP_FEATURE_IRIS));
+    return getFeatureDC1394(TRANSL(YARP_FEATURE_IRIS));
 }
 
 //IVisualParams

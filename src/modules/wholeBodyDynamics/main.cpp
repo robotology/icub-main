@@ -710,8 +710,8 @@ public:
     bool updateModule() 
     {
         double avgTime, stdDev, period;
-        period = inv_dyn->getRate();
-        inv_dyn->getEstPeriod(avgTime, stdDev);
+        period = inv_dyn->getPeriod();
+        inv_dyn->getEstimatedPeriod(avgTime, stdDev);
         if(avgTime > 1.3 * period){
         //   yDebug("(real period: %3.3f +/- %3.3f; expected period %3.3f)\n", avgTime, stdDev, period);
         }

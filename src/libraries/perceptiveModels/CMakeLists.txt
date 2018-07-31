@@ -2,42 +2,35 @@
 # Authors: Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-SET(PROJECTNAME perceptiveModels)
+project(perceptiveModels)
 
-PROJECT(${PROJECTNAME})
-
-SET(folder_source src/ports.cpp
+set(folder_source src/ports.cpp
                   src/sensors.cpp
                   src/nodes.cpp
                   src/models.cpp
                   src/springyFingers.cpp
                   src/tactileFingers.cpp)
 
-SET(folder_header_private include/iCub/perception/private/ports.h
+set(folder_header_private include/iCub/perception/private/ports.h
                           include/iCub/perception/private/models.h)
 
-SET(folder_header include/iCub/perception/sensors.h
+set(folder_header include/iCub/perception/sensors.h
                   include/iCub/perception/nodes.h
                   include/iCub/perception/models.h
                   include/iCub/perception/springyFingers.h
                   include/iCub/perception/tactileFingers.h)
 
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-SOURCE_GROUP("Header Files" FILES ${folder_header_private} ${folder_header})
+add_library(${PROJECT_NAME} ${folder_source} ${folder_header_private} ${folder_header})
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
-                    ${ctrlLib_INCLUDE_DIRS}
-                    ${learningMachine_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+                                                  "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 
-ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header_private} ${folder_header})
-
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ctrlLib
+target_link_libraries(${PROJECT_NAME} ctrlLib
                                       learningMachine
                                       ${YARP_LIBRARIES})
 
-icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                   DEPENDS ctrlLib learningMachine
-                                   DESTINATION include/iCub/perception
-                                   FILES ${folder_header})
+icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
+                                    DEPENDS ctrlLib learningMachine
+                                    DESTINATION include/iCub/perception
+                                    FILES ${folder_header})
 

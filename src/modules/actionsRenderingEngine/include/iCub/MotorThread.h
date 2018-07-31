@@ -54,9 +54,9 @@
 #define ARM_HOMING_PERIOD           1.5     //[s]
 
 
-#define S2C_HOMOGRAPHY              VOCAB4('h','o','m','o')
-#define S2C_DISPARITY               VOCAB4('d','i','s','p')
-#define S2C_NETWORK                 VOCAB4('n','e','t','w')
+#define S2C_HOMOGRAPHY              yarp::os::createVocab('h','o','m','o')
+#define S2C_DISPARITY               yarp::os::createVocab('d','i','s','p')
+#define S2C_NETWORK                 yarp::os::createVocab('n','e','t','w')
 
 
 using namespace std;
@@ -105,7 +105,7 @@ struct Dragger
 
 
 
-class MotorThread: public RateThread
+class MotorThread: public PeriodicThread
 {
 private:
     ResourceFinder                      &rf;
@@ -126,12 +126,12 @@ private:
     IGazeControl                        *ctrl_gaze;
         
     IPositionControl                    *pos_torso;
-    IVelocityControl2                   *vel_torso;
-    IControlMode2                       *ctrl_mode_torso;
+    IVelocityControl                    *vel_torso;
+    IControlMode                        *ctrl_mode_torso;
     IInteractionMode                    *int_mode_torso;
     IImpedanceControl                   *ctrl_impedance_torso;
 
-    IControlMode2                       *ctrl_mode_arm[2];
+    IControlMode                        *ctrl_mode_arm[2];
     IPositionControl                    *pos_arm[2];
     IInteractionMode                    *int_mode_arm[2];
     IImpedanceControl                   *ctrl_impedance_arm[2];
@@ -249,7 +249,7 @@ private:
 
 public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)
-        :RateThread(20),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc),
+        :PeriodicThread(0.02),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc),
          track_cartesian_target(3,0.0)
     {
         ctrl_gaze=NULL;

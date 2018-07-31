@@ -303,27 +303,27 @@ int getDataToDump(ResourceFinder &rf, std::string *listOfData, int n, bool *need
     int j;
 
     // standard
-    availableDataToDump[0]  = ConstString("getEncoders");
-    availableDataToDump[1]  = ConstString("getEncoderSpeeds");
-    availableDataToDump[2]  = ConstString("getEncoderAccelerations");
-    availableDataToDump[3]  = ConstString("getPositionErrors");
-    availableDataToDump[4]  = ConstString("getOutputs");
-    availableDataToDump[5]  = ConstString("getCurrents");
-    availableDataToDump[6]  = ConstString("getTorques");
-    availableDataToDump[7]  = ConstString("getTorqueErrors");
-    availableDataToDump[8]  = ConstString("getPosPidReferences");
-    availableDataToDump[9]  = ConstString("getTrqPidReferences");
-    availableDataToDump[10] = ConstString("getControlModes");
-    availableDataToDump[11] = ConstString("getInteractionModes");
-    availableDataToDump[12] = ConstString("getMotorEncoders");
-    availableDataToDump[13] = ConstString("getMotorSpeeds");
-    availableDataToDump[14] = ConstString("getMotorAccelerations");
-    availableDataToDump[15] = ConstString("getTemperatures");
-    availableDataToDump[16] = ConstString("getMotorsPwm");
+    availableDataToDump[0]  = "getEncoders";
+    availableDataToDump[1]  = "getEncoderSpeeds";
+    availableDataToDump[2]  = "getEncoderAccelerations";
+    availableDataToDump[3]  = "getPositionErrors";
+    availableDataToDump[4]  = "getOutputs";
+    availableDataToDump[5]  = "getCurrents";
+    availableDataToDump[6]  = "getTorques";
+    availableDataToDump[7]  = "getTorqueErrors";
+    availableDataToDump[8]  = "getPosPidReferences";
+    availableDataToDump[9]  = "getTrqPidReferences";
+    availableDataToDump[10] = "getControlModes";
+    availableDataToDump[11] = "getInteractionModes";
+    availableDataToDump[12] = "getMotorEncoders";
+    availableDataToDump[13] = "getMotorSpeeds";
+    availableDataToDump[14] = "getMotorAccelerations";
+    availableDataToDump[15] = "getTemperatures";
+    availableDataToDump[16] = "getMotorsPwm";
     // debug
-    availableDebugDataToDump[0] = ConstString("getRotorPositions");
-    availableDebugDataToDump[1] = ConstString("getRotorSpeeds");
-    availableDebugDataToDump[2] = ConstString("getRotorAccelerations");
+    availableDebugDataToDump[0] = "getRotorPositions";
+    availableDebugDataToDump[1] = "getRotorSpeeds";
+    availableDebugDataToDump[2] = "getRotorAccelerations";
 
     if (rf.check("dataToDumpAll"))
     {
@@ -378,9 +378,9 @@ private:
     Property fileOptions;
     Property ddBoardOptions;
     Property ddDebugOptions;
-    ConstString name;
-    ConstString configFileRobotPart;
-    ConstString portPrefix;
+    std::string name;
+    std::string configFileRobotPart;
+    std::string portPrefix;
 
     PolyDriver ddBoard;
     PolyDriver ddDebug;
@@ -425,7 +425,7 @@ private:
     GetTrqRefs myGetTrqRefs;
     GetTrqErrs myGetTrqErrs;
     //modes
-    IControlMode2       *icmod;
+    IControlMode        *icmod;
     IInteractionMode    *iimod;
     GetControlModes     myGetControlModes;
     GetInteractionModes myGetInteractionModes;
@@ -445,8 +445,6 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        Time::turboBoost();
-
         // get command line options
         if (!rf.check("robot") || !rf.check("part")) 
         {
@@ -503,25 +501,25 @@ public:
         ddBoardOptions.put("device", "remote_controlboard");
         ddDebugOptions.put("device", "debugInterfaceClient");
     
-        ConstString localPortName = name;
-        ConstString localDebugPortName = name;
-        localPortName = localPortName + dumpername.c_str();
+        std::string localPortName = name;
+        std::string localDebugPortName = name;
+        localPortName = localPortName + dumpername;
         localDebugPortName = localPortName + "debug/";
         //localPortName = localPortName + robot.asString();
         localPortName = localPortName + part.asString();
         localDebugPortName = localDebugPortName + part.asString();
-        ddBoardOptions.put("local", localPortName.c_str());
-        ddDebugOptions.put("local", localDebugPortName.c_str());
+        ddBoardOptions.put("local", localPortName);
+        ddDebugOptions.put("local", localDebugPortName);
 
-        ConstString remotePortName = "/";
-        ConstString remoteDebugPortName;
+        std::string remotePortName = "/";
+        std::string remoteDebugPortName;
         remotePortName = remotePortName + robot.asString();
         remotePortName = remotePortName + "/";
         remotePortName = remotePortName + part.asString();
-        ddBoardOptions.put("remote", remotePortName.c_str());
+        ddBoardOptions.put("remote", remotePortName);
 
         remoteDebugPortName = remotePortName + "/debug";
-        ddDebugOptions.put("remote", remoteDebugPortName.c_str());
+        ddDebugOptions.put("remote", remoteDebugPortName);
     
         // create a device 
         ddBoard.open(ddBoardOptions);
@@ -543,7 +541,7 @@ public:
 
                 std::string deviceList, myDev;
                 deviceList.clear();
-                deviceList.append(Drivers::factory().toString().c_str());
+                deviceList.append(Drivers::factory().toString());
                 myDev = "debugInterfaceClient";
                 if(deviceList.find(myDev) != std::string::npos)
                     yError("\t--> Seems OK\n");
@@ -561,7 +559,7 @@ public:
         bool logToFile = false;
         if (rf.check("logToFile")) logToFile = true;
 
-        portPrefix= dumpername.c_str() + part.asString() + "/";
+        portPrefix= dumpername + part.asString() + "/";
         //boardDumperThread *myDumper = new boardDumperThread(&dd, rate, portPrefix, dataToDump[0]);
         //myDumper->setThetaMap(thetaMap, nJoints);
 
@@ -771,12 +769,12 @@ public:
                 }
                 else if (dataToDump[i] == "getTorqueErrors")
                 {
-                    if (ddBoard.view(itrq))
+                    if (ddBoard.view(ipid))
                         {
                             yInfo("Initializing a getTorqueErrors thread\n");
                             myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
                             myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetTrqErrs.setInterface(itrq);
+                            myGetTrqErrs.setInterface(ipid);
                             if (ddBoard.view(istmp))
                             {
                                 yInfo("getTorqueErrors::The time stamp initalization interfaces was successfull! \n");

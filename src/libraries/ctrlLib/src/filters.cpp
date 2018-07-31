@@ -1,19 +1,11 @@
-/* 
- * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
+/*
+ * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+ * Copyright (C) 2006-2010 RobotCub Consortium
+ * All rights reserved.
  *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license. See the accompanying LICENSE file for
+ * details.
 */
 
 #include <cmath>
@@ -39,8 +31,8 @@ Filter::Filter(const Vector &num, const Vector &den, const Vector &y0)
     m=b.length(); n=a.length();
     yAssert((m>0)&&(n>0));
 
-    uold.insert(uold.begin(),m-1,zeros(y0.length()));
-    yold.insert(yold.begin(),n-1,zeros(y0.length()));
+    uold.insert(uold.begin(),m-1,zeros((int)y0.length()));
+    yold.insert(yold.begin(),n-1,zeros((int)y0.length()));
 
     init(y0);    
 }
@@ -54,7 +46,7 @@ void Filter::init(const Vector &y0)
     if (uold.size()>0)
         init(y0,uold[0]);
     else    // otherwise use zero
-        init(y0,zeros(y0.length()));    
+        init(y0,zeros((int)y0.length()));    
 }
 
 
@@ -115,8 +107,8 @@ void Filter::setCoeffs(const Vector &num, const Vector &den)
     m=b.length(); n=a.length();
     yAssert((m>0)&&(n>0));
 
-    uold.insert(uold.begin(),m-1,zeros(y.length()));
-    yold.insert(yold.begin(),n-1,zeros(y.length()));
+    uold.insert(uold.begin(),m-1,zeros((int)y.length()));
+    yold.insert(yold.begin(),n-1,zeros((int)y.length()));
 
     init(y);
 }

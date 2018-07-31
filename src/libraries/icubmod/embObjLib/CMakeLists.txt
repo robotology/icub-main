@@ -181,12 +181,12 @@ set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/fakeEthResource.cpp
                             ${EXTRA_FOLDER}/serviceParser.cpp
                             ${EXTRA_FOLDER}/theNVmanager.cpp
+                            ${EXTRA_FOLDER}/embObjGeneralDevPrivData.cpp
                             )
 
 set(DEBUG_SOURCE            ${DEBUG_FOLDER}/eODeb_eoProtoParser.c
                             ${DEBUG_FOLDER}/eOtheEthLowLevelParser.c)
 
-set_source_files_properties(${EXTRA_SOURCE} PROPERTIES COMPILE_FLAGS ${CXX11_FLAGS})
 
 
 set(embobj_source
@@ -216,7 +216,7 @@ set(embobj_header           ${BODY_COMMON_SOURCE}
 SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
 
-include_directories(SYSTEM ${ACE_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS} ${FIRMWARE_SHARED_INC})
+include_directories(SYSTEM ${ACE_INCLUDE_DIRS} ${FIRMWARE_SHARED_INC})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${embObj_includes}

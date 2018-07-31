@@ -29,7 +29,7 @@
 
 #include <yarp/sig/Vector.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Stamp.h>

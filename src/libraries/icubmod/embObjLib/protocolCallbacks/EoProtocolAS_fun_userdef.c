@@ -57,6 +57,9 @@ static void handle_data_analogarray(const EOnv* nv, const eOropdescriptor_t* rd)
 
 static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd);
 
+static void handle_data_inertial3(const EOnv* nv, const eOropdescriptor_t* rd);
+
+static void handle_data_temperature(const EOnv* nv, const eOropdescriptor_t* rd);
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
@@ -110,21 +113,22 @@ extern void eoprot_fun_UPDT_as_inertial_status(const EOnv* nv, const eOropdescri
     }
 }
 
-//extern void eoprot_fun_UPDT_as_inertial_status_accelerometer(const EOnv* nv, const eOropdescriptor_t* rd)
-//{
-//    if(eo_ropcode_sig == rd->ropcode)
-//    {
-//        handle_data_inertial_acc(nv, rd);
-//    }
-//}
+extern void eoprot_fun_UPDT_as_inertial3_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if(eo_ropcode_sig == rd->ropcode)
+    {
+        handle_data_inertial3(nv, rd);
+    }
+}
 
-//extern void eoprot_fun_UPDT_as_inertial_status_gyroscope(const EOnv* nv, const eOropdescriptor_t* rd)
-//{
-//    if(eo_ropcode_sig == rd->ropcode)
-//    {
-//        handle_data_inertial_gyr(nv, rd);
-//    }
-//}
+
+extern void eoprot_fun_UPDT_as_temperature_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if(eo_ropcode_sig == rd->ropcode)
+    {
+        handle_data_temperature(nv, rd);
+    }
+}
 
 
 
@@ -150,6 +154,18 @@ static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd)
 }
 
 
+static void handle_data_inertial3(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    eOas_inertial3_status_t *inertial3status  = (eOas_inertial3_status_t*)rd->data;
+    feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)inertial3status);
+}
+
+
+static void handle_data_temperature(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    eOas_temperature_status_t *tempstatus  = (eOas_temperature_status_t*)rd->data;
+    feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)tempstatus);
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)

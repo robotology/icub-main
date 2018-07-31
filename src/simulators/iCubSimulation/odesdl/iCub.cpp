@@ -25,9 +25,8 @@
  * \date 2007
  * \note Released under GNU GPL v2.0
  **/
-#include <stdio.h>
-#include <string.h>
-#include <yarp/os/ConstString.h>
+#include <cstdio>
+#include <cstring>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
@@ -1571,7 +1570,7 @@ void ICubSim::setPosition(dReal agentX, dReal agentY, dReal agentZ ) {
 
 void ICubSim::activateiCubParts(RobotConfig& config) {
 
-    ConstString parts = config.getFinder().findFile("parts");
+    string parts = config.getFinder().findFile("parts");
 
     Property options;
     options.fromConfigFile(parts.c_str());
@@ -3166,7 +3165,7 @@ void ICubSim::initCovers(ResourceFinder& finder)
     textureName[0] = finder.findFile("lowerArmTexture");//texture used for all covers
 
     yInfo() << "Creating 3D Model of the icub.......\n";
-    for (map<string,ConstString>::iterator itr=model.begin(); itr != model.end(); itr++) //iterating through all the cover names
+    for (map<string,string>::iterator itr=model.begin(); itr != model.end(); itr++) //iterating through all the cover names
     {
         model_TriData[(*itr).first] = dGeomTriMeshDataCreate();
         model_trimesh[(*itr).first] = dLoadMeshFromX(model[(*itr).first].c_str());
@@ -4170,7 +4169,7 @@ ICubSim::~ICubSim() {
         delete eyeLids;
 
     if (model_ThreeD_obj.size()){ //destroying the cover geoms
-        for (map<string,ConstString>::iterator itr=model.begin(); itr != model.end(); itr++)
+        for (map<string,string>::iterator itr=model.begin(); itr != model.end(); itr++)
         {
             dGeomDestroy(model_ThreeD_obj[(*itr).first].geom);
         }

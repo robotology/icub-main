@@ -12,8 +12,6 @@ include(iCubUseQt5)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-include_directories(${YARP_INCLUDE_DIRS})
-
 include_directories(${ACE_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -62,7 +60,6 @@ add_executable(FirmwareUpdater-qt WIN32 ${FirmwareUpdater_qt_SRCS}
                                     ${FirmwareUpdater_qt_QRC_GEN_SRCS}
                                     ${FirmwareUpdater_qt_UI_GEN_SRCS})
 target_link_libraries(FirmwareUpdater-qt    YARP::YARP_OS
-                                            YARP::YARP_name
                                             YARP::YARP_init
                                             YARP::YARP_math
                                             YARP::YARP_sig
@@ -74,7 +71,6 @@ target_link_libraries(FirmwareUpdater-qt    YARP::YARP_OS
 qticub_use_modules(FirmwareUpdater-qt   Core 
                                         Gui 
                                         Widgets)
-qticub_deprecate_with_cmake_version(2.8.11)
 if(WIN32 AND CMAKE_VERSION VERSION_LESS 2.8.11)
   target_link_libraries(FirmwareUpdater-qt Qt5::WinMain)
 endif()

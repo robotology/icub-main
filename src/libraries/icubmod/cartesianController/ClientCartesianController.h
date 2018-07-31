@@ -16,27 +16,6 @@
  * Public License for more details
 */
 
-/**
- * \defgroup clientcartesiancontroller clientcartesiancontroller
- * @ingroup icub_hardware_modules 
- *  
- * Implements the client part of the <a 
- * href="http://wiki.icub.org/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian
- * Interface</a>. 
- *  
- * @note Please read carefully the \ref icub_cartesian_interface
- *       "Cartesian Interface" documentation.
- *
- * Copyright (C) 2010 RobotCub Consortium.
- *
- * Author: Ugo Pattacini
- *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * This file can be edited at 
- * src/modules/cartesianController/ClientCartesianController.h 
- */
-
 #ifndef __CLIENTCARTESIANCONTROLLER_H__
 #define __CLIENTCARTESIANCONTROLLER_H__
 
@@ -68,7 +47,19 @@ public:
 };
 
 
-/************************************************************************/
+/**
+*  @ingroup icub_hardware_modules
+*
+* @brief `clientcartesiancontroller` : implements the client part of the
+* [Cartesian Interface](http://www.yarp.it/classyarp_1_1dev_1_1ICartesianControl.html).
+*
+* @note Please read carefully the \ref icub_cartesian_interface "Cartesian Interface" documentation.
+*
+* | YARP device name |
+* |:-----------------:|
+* | `clientcartesiancontroller` |
+*
+*/
 class ClientCartesianController : public    yarp::dev::DeviceDriver,
                                   public    yarp::dev::ICartesianControl,
                                   protected iCub::iKin::CartesianHelper
@@ -108,8 +99,8 @@ public:
     bool getTrackingMode(bool *f);
     bool setReferenceMode(const bool f);
     bool getReferenceMode(bool *f);
-    bool setPosePriority(const yarp::os::ConstString &p);
-    bool getPosePriority(yarp::os::ConstString &p);
+    bool setPosePriority(const std::string &p);
+    bool getPosePriority(std::string &p);
     bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);

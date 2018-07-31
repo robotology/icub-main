@@ -6,18 +6,19 @@
 #ifndef __VELCONTROLTHREAD__
 #define __VELCONTROLTHREAD__
 
-#include <yarp/os/RateThread.h>
+#include <string>
+
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/sig/Vector.h>
-#include <yarp/os/ConstString.h>
 #include <yarp/os/Time.h>
 
 //class yarp::dev::PolyDriver;
 
-class velControlThread: public yarp::os::RateThread
+class velControlThread: public yarp::os::PeriodicThread
 {
 private:
     char robotName[255];
@@ -65,8 +66,8 @@ public:
     velControlThread(int rate);
     ~velControlThread();
 
-    bool init(yarp::dev::PolyDriver *d, yarp::os::ConstString partName,
-              yarp::os::ConstString robotName);
+    bool init(yarp::dev::PolyDriver *d, std::string partName,
+              std::string robotName);
 
     void halt();
     void go();

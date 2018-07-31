@@ -26,7 +26,8 @@
 
 /************************************************************************/
 Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
-                     RateThread(_period), commData(_commData), period(_period)
+                     PeriodicThread((double)_period/1000.0), commData(_commData),
+                     period(_period)
 {
     iCubHeadCenter eyeC("right_"+commData->headVersion2String());
     eyeL=new iCubEye("left_"+commData->headVersion2String());
@@ -146,10 +147,10 @@ Localizer::~Localizer()
 /************************************************************************/
 bool Localizer::threadInit()
 { 
-    port_mono.open((commData->localStemName+"/mono:i").c_str());
-    port_stereo.open((commData->localStemName+"/stereo:i").c_str());
-    port_anglesIn.open((commData->localStemName+"/angles:i").c_str());
-    port_anglesOut.open((commData->localStemName+"/angles:o").c_str());
+    port_mono.open(commData->localStemName+"/mono:i");
+    port_stereo.open(commData->localStemName+"/stereo:i");
+    port_anglesIn.open(commData->localStemName+"/angles:i");
+    port_anglesOut.open(commData->localStemName+"/angles:o");
 
     yInfo("Starting Localizer at %d ms",period);
     return true;
@@ -187,7 +188,7 @@ void Localizer::getPidOptions(Bottle &options)
     pid->getOptions(options);
     Bottle &bDominantEye=options.addList();
     bDominantEye.addString("dominantEye");
-    bDominantEye.addString(dominantEye.c_str());
+    bDominantEye.addString(dominantEye);
 }
 
 
@@ -198,7 +199,7 @@ void Localizer::setPidOptions(const Bottle &options)
     pid->setOptions(options);
     if (options.check("dominantEye"))
     {
-        string domEye=options.find("dominantEye").asString().c_str();
+        string domEye=options.find("dominantEye").asString();
         if ((domEye=="left") || (domEye=="right"))
             dominantEye=domEye;
     }
@@ -525,7 +526,7 @@ void Localizer::handleMonocularInput()
     {
         if (mono->size()>=4)
         {
-            string type=mono->get(0).asString().c_str();
+            string type=mono->get(0).asString();
             double u=mono->get(1).asDouble();
             double v=mono->get(2).asDouble();
             double z;
@@ -615,7 +616,7 @@ void Localizer::handleAnglesInput()
         {
             Vector ang(3);
         
-            string type=angles->get(0).asString().c_str();
+            string type=angles->get(0).asString();
             ang[0]=CTRL_DEG2RAD*angles->get(1).asDouble();
             ang[1]=CTRL_DEG2RAD*angles->get(2).asDouble();
             ang[2]=CTRL_DEG2RAD*angles->get(3).asDouble();

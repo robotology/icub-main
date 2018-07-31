@@ -1,19 +1,11 @@
-/* 
- * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
+/*
+ * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+ * Copyright (C) 2006-2010 RobotCub Consortium
+ * All rights reserved.
  *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license. See the accompanying LICENSE file for
+ * details.
 */
 
 #include <cmath>
@@ -62,9 +54,8 @@ double AWPolyEstimator::eval(double x)
 /***************************************************************************/
 Vector AWPolyEstimator::fit(const Vector &x, const Vector &y, const unsigned int n)
 {
-    size_t i2=std::min(x.length(),y.length());
-
     unsigned int i1=0;
+    unsigned int i2=(unsigned int)std::min(x.length(),y.length());
     unsigned int M=i2;
 
     if (n>0)
@@ -121,7 +112,7 @@ Vector AWPolyEstimator::estimate()
     }    
 
     size_t L=elemList.size();
-    int delta=L-N;
+    int delta=(int)L-(int)N;
 
     if (delta<0)
         return esteem;
@@ -212,9 +203,8 @@ void AWPolyEstimator::reset()
 /***************************************************************************/
 Vector AWLinEstimator::fit(const Vector &x, const Vector &y, const unsigned int n)
 {
-    size_t i2=std::min(x.length(),y.length());
-
     unsigned int i1=0;
+    unsigned int i2=(unsigned int)std::min(x.length(),y.length());
     unsigned int M=i2;
 
     if (n>0)

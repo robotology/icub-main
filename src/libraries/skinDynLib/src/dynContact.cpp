@@ -11,6 +11,7 @@
 #include <string>
 #include "stdio.h"
 
+#include <yarp/os/ConnectionWriter.h>
 #include <yarp/math/Math.h>
 #include "iCub/skinDynLib/dynContact.h"
 #include <iCub/ctrl/math.h>
@@ -189,7 +190,7 @@ void dynContact::unfixMoment(){ muKnown=false;}
 //~~~~~~~~~~~~~~~~~~~~~~
 //   SERIALIZATION methods
 //~~~~~~~~~~~~~~~~~~~~~~
-bool dynContact::write(ConnectionWriter& connection){
+bool dynContact::write(ConnectionWriter& connection) const{
     // represent a dynContact as a list of 4 elements that are:
     // - a list of 3 int, i.e. contactId, bodyPart, linkNumber
     // - a list of 3 double, i.e. the CoP

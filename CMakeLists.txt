@@ -5,7 +5,7 @@
 # New build system. Exploit new cmake 2.6 features (export).
 
 #reduce warning level with cmake 2.6
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 3.5)
 
 #cmake policies
 # CMake Policy CMP0020 (Automatically link Qt executables to qtmain
@@ -20,30 +20,20 @@ endif()
 
 project(iCub)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#### Find YARP, require that YARP version is at least ICUB_REQYARP_VERSION
-set(ICUB_REQYARP_VERSION_MAJOR "2")
-set(ICUB_REQYARP_VERSION_MINOR "3")
-set(ICUB_REQYARP_VERSION_PATCH "72")
-set(ICUB_REQYARP_VERSION_TWEAK "")
-
-if(ICUB_REQYARP_VERSION_TWEAK)
-    set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
-else()
-    set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH})
-endif()
-
-find_package(YARP ${ICUB_REQYARP_VERSION} REQUIRED)
+find_package(YARP 3.0.102 REQUIRED)
 message(STATUS "YARP is version: ${YARP_VERSION}")
 
-if (YARP_HAS_MATH_LIB)
-     set(ICUB_HAS_YARP TRUE CACHE BOOL "" FORCE)
-     message(STATUS "found libYARP_math")
-else(YARP_HAS_MATH_LIB)
-     set(ICUB_HAS_YARP FALSE CACHE BOOL "" FORCE)
-     message(FATAL_ERROR "YARP was found, but no libYARP_math was detected, please recompile yarp")
-endif(YARP_HAS_MATH_LIB)
+if(YARP_math_FOUND)
+  set(ICUB_HAS_YARP TRUE CACHE BOOL "" FORCE)
+  message(STATUS "found libYARP_math")
+else()
+  set(ICUB_HAS_YARP FALSE CACHE BOOL "" FORCE)
+  message(FATAL_ERROR "YARP was found, but no libYARP_math was detected, please recompile yarp")
+endif()
 
 set_property(GLOBAL PROPERTY ICUB_INCLUDE_DIRS)
 set_property(GLOBAL PROPERTY ICUB_TARGETS)
@@ -53,9 +43,6 @@ set_property(GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS) # this is populated iCubFi
 # Important: all these have to come before all calls to add_subdirectory()
 # otherwise code inside these directory will not be aware of the options.
 #
-# add yarp definitions
-add_definitions(${YARP_DEFINES})   #this contains also -D_REENTRANT
-
 # pick up yarp's cmake scripts
 list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
 
@@ -76,20 +63,10 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubOptions.cmake)
 # find dependencies and set variables
 include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
-# check for libraries that are strictly required
-if (NOT ICUB_HAS_GSL)
-  message(FATAL_ERROR "Cannot find GSL")
-else (NOT ICUB_HAS_GSL)
-  if (NOT ICUB_USE_GSL)
-    message(STATUS "GSL is strictly required: GSL enabled")
-    set(ICUB_USE_GSL TRUE CACHE BOOL "Use package GSL" FORCE)
-  endif (NOT ICUB_USE_GSL)
-endif (NOT ICUB_HAS_GSL)
-
 ### enable testing
 option(ICUB_DASHBOARD_SUBMIT "Submit compile tests to cdash" FALSE)
 
-if (ICUB_DASHBOARD_SUBMIT)
+if(ICUB_DASHBOARD_SUBMIT)
     include (CTest)
 endif()
 
@@ -120,7 +97,6 @@ mark_as_advanced(ICUB_APPLICATIONS_PREFIX)
 # yarp_configure_external_installation to ensure that iCub.ini is
 # generated correctly
 set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "iCub is always built with dynamic plugins")
-include(YarpInstallationHelpers)
 yarp_configure_external_installation(iCub WITH_PLUGINS)
 # Hide YARP_FORCE_DYNAMIC_PLUGINS from gui
 # (yarp_configure_external_installation changes TYPE to BOOL)

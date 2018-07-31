@@ -20,6 +20,7 @@
 #define __CONTROLLER_H__
 
 #include <string>
+#include <vector>
 #include <set>
 
 #include <yarp/os/all.h>
@@ -47,16 +48,16 @@ using namespace iCub::iKin;
 
 // The thread launched by the application which is
 // in charge of computing the control commands.
-class Controller : public GazeComponent, public RateThread
+class Controller : public GazeComponent, public PeriodicThread
 {
 protected:
     iCubHeadCenter     *neck;
     iCubInertialSensor *imu;
     iKinChain          *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver         *drvTorso,  *drvHead;
-    IControlMode2      *modHead;
-    IPositionControl2  *posHead;
-    IVelocityControl2  *velHead;
+    IControlMode       *modHead;
+    IPositionControl   *posHead;
+    IVelocityControl   *velHead;
     IPositionDirect    *posNeck;    
     ExchangeData       *commData;
 
@@ -106,8 +107,8 @@ protected:
     Vector v,vNeck,vEyes;
     Vector q0,qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
-    VectorOf<int> neckJoints,eyesJoints;
-    VectorOf<int> jointsToSet;
+    vector<int> neckJoints,eyesJoints;
+    vector<int> jointsToSet;
 
     multiset<double> motionOngoingEvents;
     multiset<double> motionOngoingEventsCurrent;

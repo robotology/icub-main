@@ -18,22 +18,22 @@
  * Public License for more details
 */
 
-#include <math.h>
+#include <string>
+#include <cmath>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
-#include <string>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 
 #include "genericControlBoardDumper.h"
 
-class boardDumperThread: public RateThread
+class boardDumperThread: public PeriodicThread
 {
 public:
-  void setDevice(PolyDriver *board_d, PolyDriver *debug_d, int rate, ConstString portPrefix, ConstString dataToDump, bool logOnDisk);
+  void setDevice(PolyDriver *board_d, PolyDriver *debug_d, int rate, std::string portPrefix, std::string dataToDump, bool logOnDisk);
   boardDumperThread();
   ~boardDumperThread();
   bool threadInit();
@@ -61,7 +61,7 @@ private:
   IAmplifierControl *amp;
   IControlLimits *lim;
   ITorqueControl *trq;
-  IControlMode2  *cmod;
+  IControlMode   *cmod;
   IInteractionMode *imod;
   IMotor          *imot;
 

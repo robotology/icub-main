@@ -1,19 +1,11 @@
-/* 
- * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
+/*
+ * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+ * Copyright (C) 2006-2010 RobotCub Consortium
+ * All rights reserved.
  *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license. See the accompanying LICENSE file for
+ * details.
 */
 
 #include <typeinfo>
@@ -81,7 +73,7 @@ void iKinCtrl::set_ctrlPose(unsigned int _ctrlPose)
 /************************************************************************/
 void iKinCtrl::set_q(const Vector &q0)
 {
-    unsigned int n=q0.length();
+    unsigned int n=(unsigned int)q0.length();
     n=n>dim ? dim : n;
 
     for (unsigned int i=0; i<n; i++)
@@ -514,8 +506,8 @@ void LMCtrl::setChainConstraints(bool _constrained)
 /************************************************************************/
 Matrix LMCtrl::pinv(const Matrix &A, const double tol)
 {
-    int m=A.rows();
-    int n=A.cols();
+    int m=(int)A.rows();
+    int n=(int)A.cols();
     Matrix U(m,n);
     Vector Sdiag(n);
     Matrix V(n,n);
@@ -756,7 +748,7 @@ MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, d
     else
         mjCtrlJoint=new minJerkVelCtrlForIdealPlant(Ts,dim);
 
-    mjCtrlTask=new minJerkVelCtrlForIdealPlant(Ts,e.length());
+    mjCtrlTask=new minJerkVelCtrlForIdealPlant(Ts,(int)e.length());
     I=new Integrator(Ts,q,lim);
 
     gamma=0.05;
@@ -898,7 +890,7 @@ void MultiRefMinJerkCtrl::restart(const Vector &q0)
     xdot=0.0;
 
     mjCtrlJoint->reset(qdot);
-    mjCtrlTask->reset(zeros(e.length()));
+    mjCtrlTask->reset(zeros((int)e.length()));
 }
 
 

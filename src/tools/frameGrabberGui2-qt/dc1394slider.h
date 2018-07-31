@@ -33,7 +33,6 @@ protected:
     QString m_Name;
     double m_old_value,m_new_value;
     cameraFeature_id_t m_Feature;
-    yarp::dev::RemoteFrameGrabberControlsDC1394 *pFG;
 
 private:
     Ui::DC1394Slider *ui;

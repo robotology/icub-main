@@ -15,9 +15,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
 #include <yarp/os/Log.h>
 
 #include "simFaceExp.h"
@@ -32,7 +33,7 @@ bool simFaceExp::configure(yarp::os::ResourceFinder &rf)
 {    
     /* Process all parameters from both command-line and .ini file */
     Property options;
-    ConstString general = rf.findFile("general");
+    string general = rf.findFile("general");
     options.fromConfigFile(general.c_str());
 
     moduleName          = options.check("name", 
@@ -106,7 +107,7 @@ bool simFaceExp::updateModule()
 {
     bot.clear();
     expressionVals.read(bot);
-    ConstString message = bot.toString();
+    string message = bot.toString();
     yInfo("Message received: %s\n",message.c_str());
     setSubSystem(message.c_str());
     generateTexture();
@@ -117,7 +118,7 @@ bool simFaceExp::updateModule()
     if ((bot.toString().c_str())[0]=='S')
     {
         bot.clear();
-        bot.add(eyeLidPos);
+        bot.addInt((int)eyeLidPos);
         eyeLidsPos.write(bot);
         yInfo("Eye lids position sent: %s\n",bot.toString().c_str());
     }

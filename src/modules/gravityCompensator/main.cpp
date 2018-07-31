@@ -70,7 +70,7 @@ This file can be edited at \in src/gravityCompensator/main.cpp.
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Log.h>

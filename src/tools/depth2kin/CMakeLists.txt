@@ -4,8 +4,6 @@
 
 project(depth2kin)
 
-include(YarpIDL)
-
 file(GLOB header_files include/*.h)
 file(GLOB source_files src/*.cpp)
 set(idl_files ${PROJECT_NAME}.thrift)
@@ -17,11 +15,6 @@ source_group("IDL Files" FILES ${idl_files})
 source_group("DOC Files" FILES ${doc_files})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${ctrlLib_INCLUDE_DIRS}
-                    ${iKin_INCLUDE_DIRS}
-                    ${optimization_INCLUDE_DIRS}
-                    ${learningMachine_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS}
                     ${IPOPT_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS})
 

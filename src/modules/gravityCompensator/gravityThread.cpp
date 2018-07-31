@@ -22,7 +22,7 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/dev/PolyDriver.h>
@@ -202,7 +202,7 @@ void  gravityCompensatorThread::setUpperMeasure()
     icub->upperTorso->setInertialMeasure(w0,dw0,d2p0);
 }
 
-gravityCompensatorThread::gravityCompensatorThread(string _wholeBodyName, int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type, bool _inertial_enabled) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
+gravityCompensatorThread::gravityCompensatorThread(string _wholeBodyName, int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type, bool _inertial_enabled) : PeriodicThread((double)_rate/1000.0), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
 {   
     gravity_mode = GRAVITY_COMPENSATION_ON;
     external_mode = EXTERNAL_TRQ_ON;
@@ -576,7 +576,7 @@ bool gravityCompensatorThread::threadInit()
 }
 
 
-void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_part, IControlMode2 *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing)
+void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing)
 {
     //check if interfaces are still up (icubinterface running)  
     if (iCtrlMode == 0) 

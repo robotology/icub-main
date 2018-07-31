@@ -17,27 +17,6 @@
  * Public License for more details
  */
 
-// update comment hereafter
-
-/**
- * @ingroup icub_hardware_modules
- * \defgroup eth2ems eth2ems
- *
- * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a ems to can bus device.
- * This is the eth2ems module device.
- *
- * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
- *
- * Author: Valentina Gaggero
- *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * This file can be edited at src/modules/....h
- *
- */
-
-
-
 #ifndef __mcParserh__
 #define __mcParserh__
 
@@ -53,10 +32,9 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/ControlBoardPid.h>
 #include <yarp/dev/ControlBoardHelper.h>
-#include <yarp/os/ConstString.h>
 
+#include <yarp/dev/PidEnums.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include "EoMotionControl.h"
 #include <yarp/os/LogStream.h>
@@ -83,18 +61,12 @@ typedef enum
 } PidAlgorithmType_t;
 
 
-typedef enum
-{
-    controlUnits_machine = 0,
-    controlUnits_metric = 1,
-    controlUnits_unknown = 255
-} GenericControlUnitsType_t;
-
 class Pid_Algorithm
 {
 public:
     PidAlgorithmType_t type;
-    GenericControlUnitsType_t ctrlUnitsType;
+    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
+    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
     virtual ~Pid_Algorithm() {;};
 
 };
@@ -164,7 +136,8 @@ class PidInfo
 public:
 
     yarp::dev::Pid pid;
-    GenericControlUnitsType_t ctrlUnitsType;
+    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
+    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
     PidAlgorithmType_t controlLaw;
     std::string usernamePidSelected;
     bool enabled;
@@ -173,7 +146,8 @@ public:
     {
         enabled = false;
         controlLaw = PidAlgo_simple;
-        ctrlUnitsType = controlUnits_machine;
+        fbk_PidUnits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
+        out_PidUnits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
     }
     ~PidInfo()
     {
@@ -339,10 +313,10 @@ private:
     bool parsePidTrq_withInnerVelPid(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePidsGroup(yarp::os::Bottle& pidsGroup, yarp::dev::Pid myPid[], std::string prefix);
     bool getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids);
-    bool parsePidUnitsType(yarp::os::Bottle &bPid, GenericControlUnitsType_t &unitstype);
+    bool parsePidUnitsType(yarp::os::Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
 
 
-    bool convert(yarp::os::ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
+    bool convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
     bool convert(yarp::os::Bottle &bottle, std::vector<double> &matrix, bool &formaterror, int targetsize);
 
     //general utils functions

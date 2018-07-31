@@ -24,7 +24,7 @@
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/PreciselyTimed.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <string.h>
 #include <dataTypes.h>
 #include <termios.h> // terminal io (serial port) interface
@@ -44,15 +44,13 @@ struct XSensMTxParameters
 
 /**
  *
- * @ingroup dev_impl
- *
  * Driver for 3DM_GX3 IMU unit from MicroStrain
  * @author Alberto Cardellino
  */
-class yarp::dev::imu3DM_GX3 :  public yarp::dev::IGenericSensor,
-                                public yarp::dev::IPreciselyTimed,
-                                public yarp::dev::DeviceDriver,
-                                public yarp::os::RateThread
+class yarp::dev::imu3DM_GX3 : public yarp::dev::IGenericSensor,
+                              public yarp::dev::IPreciselyTimed,
+                              public yarp::dev::DeviceDriver,
+                              public yarp::os::PeriodicThread
 {
 private:
 

@@ -117,7 +117,7 @@ Windows, Linux
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
@@ -140,7 +140,7 @@ using namespace yarp::math;
 
 
 /************************************************************************/
-class CtrlThread: public RateThread
+class CtrlThread: public PeriodicThread
 {
 protected:
     ResourceFinder      &rf;
@@ -166,7 +166,7 @@ public:
     /************************************************************************/
     CtrlThread(unsigned int _period, ResourceFinder &_rf,
                string _remote, string _local) :
-               RateThread(_period), rf(_rf),
+               PeriodicThread((double)_period/1000.0), rf(_rf),
                remote(_remote), local(_local) { }
 
     /************************************************************************/
@@ -178,8 +178,8 @@ public:
 
         // open the client
         Property option("(device cartesiancontrollerclient)");
-        option.put("remote",remote.c_str());
-        option.put("local",local.c_str());
+        option.put("remote",remote);
+        option.put("local",local);
         if (!driver.open(option))
             return false;
 
@@ -252,7 +252,7 @@ public:
         }
 
         // open ports
-        port_xd.open((local+"/xd:i").c_str());
+        port_xd.open(local+"/xd:i");
 
         return true;
     }
@@ -390,12 +390,10 @@ public:
         string remote;
         string local;
 
-        Time::turboBoost();
-
         // get params from the RF
-        name=rf.check("name",Value("armCtrl")).asString().c_str();
-        robot=rf.check("robot",Value("icub")).asString().c_str();
-        part=rf.check("part",Value("right_arm")).asString().c_str();
+        name=rf.check("name",Value("armCtrl")).asString();
+        robot=rf.check("robot",Value("icub")).asString();
+        part=rf.check("part",Value("right_arm")).asString();
 
         remote=slash+robot+"/cartesianController/"+part;
         local=slash+name+slash+part;
@@ -407,7 +405,7 @@ public:
             return false;
         }
 
-        rpcPort.open((local+"/rpc").c_str());
+        rpcPort.open(local+"/rpc");
         attach(rpcPort);
 
         return true;

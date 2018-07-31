@@ -13,7 +13,7 @@
 
 using namespace std;
 
-FakeBoard::FakeBoard(int id, int p):yarp::os::RateThread(p)
+FakeBoard::FakeBoard(int id, int p):yarp::os::PeriodicThread((double)p/1000.0)
 {
     canId=id;
     outMessages=0;

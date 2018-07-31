@@ -6,8 +6,7 @@ yarp_prepare_plugin(bmsBattery CATEGORY device TYPE BmsBattery INCLUDE bmsBatter
 
 if(NOT SKIP_bmsBattery)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ${YARP_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 yarp_add_plugin(bmsBattery bmsBattery.h bmsBattery.cpp)
 target_link_libraries(bmsBattery ${YARP_LIBRARIES})

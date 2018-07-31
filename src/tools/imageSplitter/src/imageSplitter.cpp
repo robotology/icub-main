@@ -42,7 +42,7 @@ bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
     // Check input parameters
     if(rf.check("align"))
     {
-        yarp::os::ConstString align = rf.find("align").asString();
+        string align = rf.find("align").asString();
         if(align == "vertical")
         {
             horizontal = false;
@@ -57,9 +57,9 @@ bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
             return false;
         }
     }
-    yarp::os::ConstString inputPortName;
-    yarp::os::ConstString outLeftPortName;
-    yarp::os::ConstString outRightPortName;
+    string inputPortName;
+    string outLeftPortName;
+    string outRightPortName;
 
 
     if(rf.check("local"))
@@ -95,7 +95,7 @@ bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
     ret &= outLeftPort.open(outLeftPortName);
     ret &= outRightPort.open(outRightPortName);
 
-    yarp::os::ConstString remotePortName;
+    string remotePortName;
 
     if(rf.check("remote"))
     {
@@ -125,7 +125,7 @@ bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
     // choose filling method
     if(rf.check("m"))
     {
-        yarp::os::ConstString align = rf.find("m").asString();
+        string align = rf.find("m").asString();
         if(align == "pixel")
         {
             method = 0;

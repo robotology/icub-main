@@ -87,8 +87,8 @@ public:
     /****************************************************************/
     virtual void set_A0(const Matrix &A0)
     {
-        int row_max=std::min(this->A0.rows()-1,A0.rows()-1);
-        int col_max=std::min(this->A0.cols(),A0.cols());
+        int row_max=(int)std::min(this->A0.rows()-1,A0.rows()-1);
+        int col_max=(int)std::min(this->A0.cols(),A0.cols());
         this->A0.setSubmatrix(A0.submatrix(0,row_max,0,col_max),0,0);
     }
 
@@ -251,12 +251,12 @@ void AffinityWithMatchedPoints::setBounds(const Matrix &min,
 {
     int row_max,col_max;
 
-    row_max=std::min(this->min.rows()-1,min.rows()-1);
-    col_max=std::min(this->min.cols(),min.cols());
+    row_max=(int)std::min(this->min.rows()-1,min.rows()-1);
+    col_max=(int)std::min(this->min.cols(),min.cols());
     this->min.setSubmatrix(min.submatrix(0,row_max,0,col_max),0,0);
 
-    row_max=std::min(this->max.rows()-1,max.rows()-1);
-    col_max=std::min(this->max.cols(),max.cols());
+    row_max=(int)std::min(this->max.rows()-1,max.rows()-1);
+    col_max=(int)std::min(this->max.cols(),max.cols());
     this->max.setSubmatrix(max.submatrix(0,row_max,0,col_max),0,0);
 }
 
@@ -316,8 +316,8 @@ void AffinityWithMatchedPoints::clearPoints()
 /****************************************************************/
 bool AffinityWithMatchedPoints::setInitialGuess(const Matrix &A)
 {
-    int row_max=std::min(A0.rows()-1,A.rows()-1);
-    int col_max=std::min(A0.cols(),A.cols());
+    int row_max=(int)std::min(A0.rows()-1,A.rows()-1);
+    int col_max=(int)std::min(A0.cols(),A.cols());
     A0.setSubmatrix(A.submatrix(0,row_max,0,col_max),0,0);
 
     return true;

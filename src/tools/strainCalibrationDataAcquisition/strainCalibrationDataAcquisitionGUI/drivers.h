@@ -9,7 +9,8 @@
 #ifndef YARPDEV_IMPORTS
 #define YARPDEV_IMPORTS
 
-#include <yarp/os/ConstString.h>
+#include <string>
+
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
 
@@ -55,7 +56,7 @@ public:
     /**
      * Return a string listing all devices, to allow sanity-checking.
      */
-    yarp::os::ConstString status() {
+    std::string status() {
         return Drivers::factory().toString();
     }
 };

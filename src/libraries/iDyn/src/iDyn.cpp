@@ -238,7 +238,7 @@ bool iDynLink::setInertia(const yarp::sig::Matrix &_I)
     else
     {
         I.resize(3,3); I.zero();
-        if(verbose) yError("iDynLink: error in setting Inertia due to wrong matrix size: (%d,%d) instead of (3,3). Inertia matrix now set automatically to zero. \n",_I.rows(),_I.cols());
+        if(verbose) yError("iDynLink: error in setting Inertia due to wrong matrix size: (%zu,%zu) instead of (3,3). Inertia matrix now set automatically to zero. \n",_I.rows(),_I.cols());
         return false;
     }
 }
@@ -300,7 +300,7 @@ bool iDynLink::setCOM(const yarp::sig::Matrix &_HC)
         RC = eye(3,3);
         rc = zeros(3);
         if(verbose)
-            yError("iDynLink: error in setting COM roto-translation due to wrong matrix size: (%d,%d) instead of (4,4). HC matrix now set automatically as eye.\n",_HC.rows(),_HC.cols());
+            yError("iDynLink: error in setting COM roto-translation due to wrong matrix size: (%zu,%zu) instead of (4,4). HC matrix now set automatically as eye.\n",_HC.rows(),_HC.cols());
         return false;
     }
 }
@@ -1768,14 +1768,13 @@ void iDynLimb::pushLink(iDynLink *pl)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynLimb::fromLinksProperties(const Property &option)
 {
-    Property &opt=const_cast<Property&>(option);
     dispose();   
     int i,j;
     Matrix I(3,3);
     Matrix HC(4,4);
 
     // type: left/right
-    type=opt.check("type",Value("right")).asString().c_str();
+    type=option.check("type",Value("right")).asString().c_str();
     if(type!="right" && type!="left")
     {
         yError("Error: invalid handedness type specified! \n");
@@ -1783,7 +1782,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
     }
 
     // H0 matrix
-    if(Bottle *bH0=opt.find("H0").asList())
+    if(Bottle *bH0=option.find("H0").asList())
     {
         i=0;
         j=0;
@@ -1800,7 +1799,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
     }
 
     //number of links
-    int numLinks=opt.check("numLinks",Value(0)).asInt();
+    int numLinks=option.check("numLinks",Value(0)).asInt();
     if(numLinks==0)
     {
         yError("Error: invalid number of links (0) specified! \n");
@@ -1814,7 +1813,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         char link[255];
         sprintf(link,"link_%d",iLink);
         //look for link_i into the property parameters
-        Bottle &bLink=opt.findGroup(link);
+        Bottle &bLink=option.findGroup(link);
         if(bLink.isNull())
         {
             yError("Error: link %d is missing! \n",iLink);
@@ -1836,7 +1835,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         //mass
         double mass=bLink.check("mass",Value(0.0)).asDouble();
         //inertia
-        if(Bottle *bI=opt.find("Inertia").asList())
+        if(Bottle *bI=option.find("Inertia").asList())
         {
             i=0; j=0;
             I.zero(); 
@@ -1851,7 +1850,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
             }
         }
         //HC
-        if(Bottle *bHC=opt.find("H_COM").asList())
+        if(Bottle *bHC=option.find("H_COM").asList())
         {
             i=0; j=0;
             HC.zero(); 

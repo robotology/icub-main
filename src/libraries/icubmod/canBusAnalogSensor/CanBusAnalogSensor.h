@@ -7,7 +7,7 @@
 #ifndef __CANBUSANALOGSENSOR_H__
 #define __CANBUSANALOGSENSOR_H__
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
@@ -19,10 +19,12 @@ using namespace yarp::dev;
 
 /**
 *  @ingroup icub_hardware_modules
-*  \defgroup canbusanalogsensor canbusanalogsensor
 *
+* @brief `canbusanalogsensor` : driver for CAN communication with IIT's analog sensor boards, including the MAIS and STRAIN boards.
 *
-* Driver for CAN communication with analog sensors.
+* | YARP device name |
+* |:-----------------:|
+* | `canbusanalogsensor` |
 *
 * Parameters accepted in the config argument of the open method:
 * | Parameter name | Type   | Units | Default Value | Required | Description | Notes |
@@ -37,7 +39,7 @@ using namespace yarp::dev;
 * | useCalibration | int    | -     | - | No  | If useCalibration is present and set to 1 output the calibrated readings, otherwise output the raw values | - |
 * | diagnostic  | int    | -     | - | No  | If diagnostic is present and set to 1 properly return the state of the sensor, otherwise always return IAnalogSensor::AS_OK | - |
 */
-class CanBusAnalogSensor : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver
+class CanBusAnalogSensor : public PeriodicThread, public yarp::dev::IAnalogSensor, public DeviceDriver
 {
     enum AnalogDataFormat
     {
@@ -76,7 +78,7 @@ protected:
     bool               diagnostic;
 
 public:
-    CanBusAnalogSensor(int period=20) : RateThread(period),mutex(1)
+    CanBusAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0), mutex(1)
     {}
 
 

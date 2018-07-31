@@ -1,10 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_hardware_modules 
- * \defgroup socketcan socketcan
- *
- * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a linux socketcan.
  *
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo
@@ -99,6 +95,14 @@ public:
     }
 };
 
+/**
+ * @ingroup icub_hardware_modules
+ * @brief `socketcan` : implements yarp::dev::ICanBus for a linux socketcan.
+ *
+ * | YARP device name |
+ * |:-----------------:|
+ * | `socketcan` |
+ */
 class yarp::dev::SocketCan: public ImplementCanBufferFactory<SocketCanMessage, can_frame>,
     public ICanBus, 
     public DeviceDriver

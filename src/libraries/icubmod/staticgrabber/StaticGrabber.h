@@ -15,6 +15,7 @@ namespace yarp {
     }
 }
 
+#include <string>
 // yarp
 #include <yarp/sig/all.h>
 #include <yarp/os/all.h>
@@ -35,7 +36,7 @@ class yarp::dev::StaticGrabber :
                         public yarp::dev::DeviceDriver {
 private:
 
-    yarp::os::ConstString filename;
+    std::string filename;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> img;
     yarp::sig::ImageOf<yarp::sig::PixelMono> bayer;
     

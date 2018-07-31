@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <QtConcurrent>
-#include <yarp/dev/RemoteFrameGrabberDC1394.h>
 #include "loadingwidget.h"
 #include "dc1394thread.h"
 
@@ -12,7 +11,7 @@ namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow/*, virtual public yarp::dev::RemoteFrameGrabberControlsDC1394*/
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 

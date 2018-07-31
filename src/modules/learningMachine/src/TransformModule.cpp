@@ -220,7 +220,7 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
 
     try {
         switch(cmd.get(0).asVocab()) {
-            case VOCAB4('h','e','l','p'): // print help information
+            case yarp::os::createVocab('h','e','l','p'): // print help information
                 reply.add(yarp::os::Value::makeVocab("help"));
 
                 reply.addString("Transform module configuration options");
@@ -235,17 +235,17 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
                 success = true;
                 break;
 
-            case VOCAB4('c','l','e','a'): // clear the machine
-            case VOCAB3('c','l','r'):
-            case VOCAB4('r','e','s','e'):
-            case VOCAB3('r','s','t'):
+            case yarp::os::createVocab('c','l','e','a'): // clear the machine
+            case yarp::os::createVocab('c','l','r'):
+            case yarp::os::createVocab('r','e','s','e'):
+            case yarp::os::createVocab('r','s','t'):
                 this->getTransformer().reset();
                 reply.addString("Transformer reset.");
                 success = true;
                 break;
 
-            case VOCAB4('i','n','f','o'): // information
-            case VOCAB4('s','t','a','t'): // print statistics
+            case yarp::os::createVocab('i','n','f','o'): // information
+            case yarp::os::createVocab('s','t','a','t'): // print statistics
                 { // prevent identifier initialization to cross borders of case
                 reply.add(yarp::os::Value::makeVocab("help"));
                 reply.addString("Transformer Information: ");
@@ -254,7 +254,7 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
                 break;
                 }
 
-            case VOCAB3('s','e','t'): // set a configuration option for the machine
+            case yarp::os::createVocab('s','e','t'): // set a configuration option for the machine
                 { // prevent identifier initialization to cross borders of case
                 yarp::os::Bottle property;
                 /*
@@ -273,7 +273,7 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
                 break;
                 }
 
-            case VOCAB4('l','o','a','d'): // load
+            case yarp::os::createVocab('l','o','a','d'): // load
                 { // prevent identifier initialization to cross borders of case
                 reply.add(yarp::os::Value::makeVocab("help"));
                 std::string replymsg = std::string("Loading transformer from '") +
@@ -289,7 +289,7 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
                 break;
                 }
 
-            case VOCAB4('s','a','v','e'): // save
+            case yarp::os::createVocab('s','a','v','e'): // save
                 { // prevent identifier initialization to cross borders of case
                 reply.add(yarp::os::Value::makeVocab("help"));
                 std::string replymsg = std::string("Saving transformer to '") +
@@ -305,8 +305,8 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
                 break;
                 }
 
-            case VOCAB3('c','m','d'): // cmd
-            case VOCAB4('c','o','m','m'): // command
+            case yarp::os::createVocab('c','m','d'): // cmd
+            case yarp::os::createVocab('c','o','m','m'): // command
                 { // prevent identifier initialization to cross borders of case
                 reply.add(yarp::os::Value::makeVocab("help"));
                 std::string replymsg;

@@ -16,31 +16,11 @@
  * Public License for more details
 */
 
-/**
- * \defgroup servercartesiancontroller servercartesiancontroller
- * @ingroup icub_hardware_modules 
- *  
- * Implements the server part of the <a 
- * href="http://wiki.icub.org/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian
- * Interface</a>. 
- *  
- * @note Please read carefully the \ref icub_cartesian_interface
- *       "Cartesian Interface" documentation.
- *
- * Copyright (C) 2010 RobotCub Consortium.
- *
- * Author: Ugo Pattacini
- *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * This file can be edited at 
- * src/modules/cartesianController/ServerCartesianController.h 
- */
-
 #ifndef __SERVERCARTESIANCONTROLLER_H__
 #define __SERVERCARTESIANCONTROLLER_H__
 
 #include <string>
+#include <vector>
 #include <set>
 #include <deque>
 #include <map>
@@ -62,7 +42,7 @@ class ServerCartesianController;
 
 struct DriverDescriptor
 {
-    yarp::os::ConstString key;
+    std::string key;
     bool jointsDirectOrder;
 
     yarp::sig::Vector minAbsVels;
@@ -105,11 +85,24 @@ public:
     virtual ~TaskRefVelTargetGenerator();
 };
 
-
+/**
+*  @ingroup icub_hardware_modules
+*
+* @brief `servercartesiancontroller` : implements the server part of the
+* [Cartesian Interface](http://www.yarp.it/classyarp_1_1dev_1_1ICartesianControl.html).
+*
+* @note Please read carefully the \ref icub_cartesian_interface
+*       "Cartesian Interface" documentation.
+*
+* | YARP device name |
+* |:-----------------:|
+* | `servercartesiancontroller` |
+*
+*/
 class ServerCartesianController : public    yarp::dev::DeviceDriver,
                                   public    yarp::dev::IMultipleWrapper,
                                   public    yarp::dev::ICartesianControl,
-                                  public    yarp::os::RateThread,
+                                  public    yarp::os::PeriodicThread,
                                   protected iCub::iKin::CartesianHelper
 {
 protected:
@@ -127,16 +120,15 @@ protected:
     bool posDirectEnabled;
     bool posDirectAvailable;
     bool multipleJointsControlEnabled;
-    bool multipleJointsVelAvailable;
     bool pidAvailable;
     bool useReferences;
     bool jointsHealthy;
     bool debugInfoEnabled;
 
-    yarp::os::ConstString ctrlName;
-    yarp::os::ConstString slvName;
-    yarp::os::ConstString kinPart;
-    yarp::os::ConstString kinType;
+    std::string ctrlName;
+    std::string slvName;
+    std::string kinPart;
+    std::string kinType;
     int numDrv;
 
     iCub::iKin::iKinLimb            *limbState,*limbPlan;
@@ -148,7 +140,7 @@ protected:
     SmithPredictor     smithPredictor;
 
     std::deque<DriverDescriptor>             lDsc;
-    std::deque<yarp::dev::IControlMode2*>    lMod;
+    std::deque<yarp::dev::IControlMode*>     lMod;
     std::deque<yarp::dev::IEncoders*>        lEnc;
     std::deque<yarp::dev::IEncodersTimed*>   lEnt;
     std::deque<yarp::dev::IPidControl*>      lPid;
@@ -203,20 +195,20 @@ protected:
 
     struct Context
     {
-        yarp::sig::Vector     dof;
-        yarp::sig::Vector     restPos;
-        yarp::sig::Vector     restWeights;
-        yarp::sig::Vector     tip_x;
-        yarp::sig::Vector     tip_o;
-        yarp::sig::Matrix     limits;
-        double                trajTime;
-        double                tol;
-        bool                  mode;
-        bool                  useReferences;
-        double                straightness;
-        yarp::os::ConstString posePriority;
-        yarp::os::Value       task_2;
-        yarp::os::Bottle      solverConvergence;
+        yarp::sig::Vector dof;
+        yarp::sig::Vector restPos;
+        yarp::sig::Vector restWeights;
+        yarp::sig::Vector tip_x;
+        yarp::sig::Vector tip_o;
+        yarp::sig::Matrix limits;
+        double            trajTime;
+        double            tol;
+        bool              mode;
+        bool              useReferences;
+        double            straightness;
+        std::string       posePriority;
+        yarp::os::Value   task_2;
+        yarp::os::Bottle  solverConvergence;
     };
 
     int contextIdCnt;
@@ -240,8 +232,8 @@ protected:
     double getFeedback(yarp::sig::Vector &_fb);
     void   createController();
     bool   getNewTarget();
-    bool   areJointsHealthyAndSet(yarp::sig::VectorOf<int> &jointsToSet);
-    void   setJointsCtrlMode(const yarp::sig::VectorOf<int> &jointsToSet);
+    bool   areJointsHealthyAndSet(std::vector<int> &jointsToSet);
+    void   setJointsCtrlMode(const std::vector<int> &jointsToSet);
     void   stopLimb(const bool execStopPosition=true);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
@@ -288,8 +280,8 @@ public:
     bool getTrackingMode(bool *f);
     bool setReferenceMode(const bool f);
     bool getReferenceMode(bool *f);
-    bool setPosePriority(const yarp::os::ConstString &p);
-    bool getPosePriority(yarp::os::ConstString &p);
+    bool setPosePriority(const std::string &p);
+    bool getPosePriority(std::string &p);
     bool getPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool getPose(const int axis, yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool goToPose(const yarp::sig::Vector &xd, const yarp::sig::Vector &od, const double t=0.0);

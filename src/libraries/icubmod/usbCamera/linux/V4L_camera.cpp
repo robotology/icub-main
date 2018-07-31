@@ -82,7 +82,7 @@ int V4L_camera::convertYARP_to_V4L(int feature)
     return NOT_PRESENT;
 }
 
-V4L_camera::V4L_camera() : RateThread(1000/DEFAULT_FRAMERATE), doCropping(false), toEpochOffset(getEpochTimeShift())
+V4L_camera::V4L_camera() : PeriodicThread(1.0/DEFAULT_FRAMERATE), doCropping(false), toEpochOffset(getEpochTimeShift())
 {
     verbose = false;
     param.fps = DEFAULT_FRAMERATE;
@@ -415,8 +415,8 @@ bool V4L_camera::fromConfig(yarp::os::Searchable& config)
     if(param.camModel == LEOPARD_PYTHON)
     {
         yDebug() << "-------------------------------\nUsing leopard camera!!";
-        bit_shift = config.check("shift", bit_shift, "right shift of <n> bits").asInt();
-        bit_bayer = config.check("bit_bayer", bit_bayer, "uses <n> bits bayer conversion").asInt();
+        bit_shift = config.check("shift", Value(bit_shift), "right shift of <n> bits").asInt();
+        bit_bayer = config.check("bit_bayer", Value(bit_bayer), "uses <n> bits bayer conversion").asInt();
         switch(bit_bayer)
         {
             case 8:

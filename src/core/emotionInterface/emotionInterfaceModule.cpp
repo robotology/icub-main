@@ -6,10 +6,10 @@
  *
  */
 
-#include "emotionInterfaceModule.h"
-#include <string.h>
-#include <stdlib.h>
+#include <string>
+#include <cstdlib>
 #include <yarp/os/ResourceFinder.h>
+#include "emotionInterfaceModule.h"
 
 
 void EmotionInitReport::report(const PortInfo &info) {
@@ -29,7 +29,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     char name[10];
     int i;
 
-    ConstString modName = config.find("name").asString();
+    std::string modName = config.find("name").asString();
     setName(modName.c_str());
 
     _lasttime = Time::now();
@@ -40,7 +40,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
 
     _highlevelemotions = config.check("emotions", Value(0), "Number of predefined facial expressions").asInt();
     _auto = config.check("auto");
-    _period = config.check("period", 10, "Period for expression switching in auto mode").asDouble();
+    _period = config.check("period", Value(10.0), "Period for expression switching in auto mode").asDouble();
     if(_highlevelemotions == 0) 
     {
         _emotion_table = NULL;
@@ -70,7 +70,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                     return false;
                 }
                 //first field - name of the expression
-                ConstString n1 = bot.get(1).toString();
+                std::string n1 = bot.get(1).toString();
                 
                 if(n1.length()!=3) //must have length 3
                 {
@@ -84,7 +84,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 }
 
                 //second field - command to left eyebrow
-                ConstString n2 = bot.get(2).toString();
+                std::string n2 = bot.get(2).toString();
                 const char * sfd = n2.c_str();
                 if(n2.length()!=3) //must have length 3
                 {
@@ -97,7 +97,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                     strncpy(_emotion_table[i].leb, buffer, 2);
                 }
                 //third field - command to right eyebrow
-                ConstString n3 = bot.get(3).toString();
+                std::string n3 = bot.get(3).toString();
                 if(n3.length()!=3) //must have length 3
                 {
                     yError("Third field of identifier %s has invalid size (must be 3).", name);
@@ -110,7 +110,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 }
 
                 //fourth field - command to mouth
-                ConstString n4 = bot.get(4).toString();
+                std::string n4 = bot.get(4).toString();
                 if(n4.length()!=3) //must have length 3
                 {
                     yError("Fourth field of identifier %s has invalid size (must be 3).", name);
@@ -123,7 +123,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 }
 
                 //fifth field - command to eyelids
-                ConstString n5 = bot.get(5).toString();
+                std::string n5 = bot.get(5).toString();
                 if(n5.length()!=3) //must have length 3
                 {
                     yError("Fifth field of identifier %s has invalid size (must be 3).", name);
@@ -147,7 +147,6 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     
     attach(_inputPort);
 
-    Time::turboBoost();
     return true;
 }
 
@@ -186,7 +185,7 @@ bool EmotionInterfaceModule::updateModule(){
         {
            _lasttime = curtime;
            expr = rand() % _highlevelemotions;
-           ConstString cmd(_emotion_table[expr].name);
+           std::string cmd(_emotion_table[expr].name);
            setAll(cmd);
         }
     }
@@ -294,7 +293,7 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
 }   
 
 //get the index in _emotions_table of a emotion name
-int EmotionInterfaceModule::getIndex(const ConstString cmd)
+int EmotionInterfaceModule::getIndex(const std::string cmd)
 {
     if(_highlevelemotions == 0)
         return -1;
@@ -325,7 +324,7 @@ bool EmotionInterfaceModule::writePort(const char* cmd)
 
 
 // interface functions
-bool EmotionInterfaceModule::setLeftEyebrow(const ConstString cmd)
+bool EmotionInterfaceModule::setLeftEyebrow(const std::string cmd)
 {
     char cmdbuffer[] = {0,0,0,0};
     int i; 
@@ -343,7 +342,7 @@ bool EmotionInterfaceModule::setLeftEyebrow(const ConstString cmd)
     return true;
 }
 
-bool EmotionInterfaceModule::setRightEyebrow(const ConstString cmd)
+bool EmotionInterfaceModule::setRightEyebrow(const std::string cmd)
 {
     char cmdbuffer[] = {0,0,0,0};
     int i; 
@@ -361,7 +360,7 @@ bool EmotionInterfaceModule::setRightEyebrow(const ConstString cmd)
     return true;
 }
 
-bool EmotionInterfaceModule::setMouth(const ConstString cmd)
+bool EmotionInterfaceModule::setMouth(const std::string cmd)
 {
     char cmdbuffer[] = {0,0,0,0};
     int i; 
@@ -379,7 +378,7 @@ bool EmotionInterfaceModule::setMouth(const ConstString cmd)
     return true;
 }
 
-bool EmotionInterfaceModule::setEyelids(const ConstString cmd)
+bool EmotionInterfaceModule::setEyelids(const std::string cmd)
 {
     char cmdbuffer[] = {0,0,0,0};
     int i; 
@@ -397,7 +396,7 @@ bool EmotionInterfaceModule::setEyelids(const ConstString cmd)
     return true;
 }
 
-bool EmotionInterfaceModule::setAll(const ConstString cmd)
+bool EmotionInterfaceModule::setAll(const std::string cmd)
 {
     setLeftEyebrow(cmd);
     setRightEyebrow(cmd);
@@ -406,7 +405,7 @@ bool EmotionInterfaceModule::setAll(const ConstString cmd)
     return true;
 }
 
-bool EmotionInterfaceModule::setRaw(const ConstString cmd)
+bool EmotionInterfaceModule::setRaw(const std::string cmd)
 {
     writePort(cmd.c_str());
     return true;

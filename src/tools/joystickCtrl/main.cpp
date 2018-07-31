@@ -71,7 +71,7 @@ Windows, Linux
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
@@ -103,7 +103,7 @@ using namespace yarp::math;
 
 enum { JTYPE_UNDEF=-1, JTYPE_POLAR=0, JTYPE_CARTESIAN=1, JTYPE_CONSTANT=2, JTYPE_STRING=3 };
 
-class CtrlThread: public RateThread
+class CtrlThread: public PeriodicThread
 {
     struct struct_jointProperties
     {
@@ -155,7 +155,7 @@ protected:
 
 public:
     CtrlThread(unsigned int _period, ResourceFinder &_rf) :
-               RateThread(_period),     rf(_rf)
+               PeriodicThread((double)_period/1000.0), rf(_rf)
     {
         joy_id=0;
         rawButtons=0;
@@ -801,8 +801,6 @@ public:
 
     virtual bool configure(ResourceFinder &rf)
     {
-        Time::turboBoost();
-
         int rateThread = 10;
         if (rf.findGroup("GENERAL").check("rateThread"))
         {

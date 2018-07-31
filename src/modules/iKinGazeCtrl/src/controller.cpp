@@ -28,9 +28,9 @@
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                        const double _neckTime, const double _eyesTime, const double _min_abs_vel,
                        const unsigned int _period) :
-                       RateThread(_period),       drvTorso(_drvTorso), drvHead(_drvHead),
-                       commData(_commData),       neckTime(_neckTime), eyesTime(_eyesTime),
-                       min_abs_vel(_min_abs_vel), period(_period),     Ts(_period/1000.0),
+                       PeriodicThread((double)_period/1000.0), drvTorso(_drvTorso), drvHead(_drvHead),
+                       commData(_commData),                    neckTime(_neckTime), eyesTime(_eyesTime),
+                       min_abs_vel(_min_abs_vel),              period(_period),     Ts(_period/1000.0),
                        printAccTime(0.0)
 {
     // Instantiate objects
@@ -122,11 +122,11 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     setTeyes(eyesTime);
     setTneck(neckTime);
 
-    mjCtrlNeck=new minJerkVelCtrlForIdealPlant(Ts,fbNeck.length());
-    mjCtrlEyes=new minJerkVelCtrlForIdealPlant(Ts,fbEyes.length());
+    mjCtrlNeck=new minJerkVelCtrlForIdealPlant(Ts,(int)fbNeck.length());
+    mjCtrlEyes=new minJerkVelCtrlForIdealPlant(Ts,(int)fbEyes.length());
     IntState=new Integrator(Ts,fbHead,lim);
     IntPlan=new Integrator(Ts,fbNeck,lim.submatrix(0,2,0,1));
-    IntStabilizer=new Integrator(Ts,zeros(vNeck.length()));
+    IntStabilizer=new Integrator(Ts,zeros((int)vNeck.length()));
 
     neckJoints.resize(3);
     eyesJoints.resize(3);
@@ -222,7 +222,7 @@ void Controller::notifyEvent(const string &event, const double checkPoint)
         Bottle &ev=port_event.prepare();
         ev.clear();
 
-        ev.addString(event.c_str());
+        ev.addString(event);
         ev.addDouble(q_stamp);
         if (checkPoint>=0.0)
             ev.addDouble(checkPoint);
@@ -267,10 +267,10 @@ void Controller::stopLimb(const bool execStopPosition)
     if (commData->neckPosCtrlOn)
     {
         if (execStopPosition)
-            posHead->stop(neckJoints.size(),neckJoints.getFirst());
+            posHead->stop((int)neckJoints.size(),neckJoints.data());
 
         // note: vel==0.0 is always achievable
-        velHead->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),
+        velHead->velocityMove((int)eyesJoints.size(),eyesJoints.data(),
                               Vector(eyesJoints.size(),0.0).data());
     }
     else
@@ -289,7 +289,7 @@ void Controller::stopLimb(const bool execStopPosition)
                 {
                     ostringstream ss;
                     ss<<"pos_"<<neckJoints[i];
-                    info.addString(ss.str().c_str());
+                    info.addString(ss.str());
                     info.addString("stop");
                 }
             }
@@ -301,7 +301,7 @@ void Controller::stopLimb(const bool execStopPosition)
         {
             ostringstream ss;
             ss<<"vel_"<<i;
-            info.addString(ss.str().c_str());
+            info.addString(ss.str());
             info.addDouble(0.0);
         }
 
@@ -361,12 +361,12 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
 /************************************************************************/
 bool Controller::threadInit()
 {
-    port_x.open((commData->localStemName+"/x:o").c_str());
-    port_q.open((commData->localStemName+"/q:o").c_str());
-    port_event.open((commData->localStemName+"/events:o").c_str());
+    port_x.open(commData->localStemName+"/x:o");
+    port_q.open(commData->localStemName+"/q:o");
+    port_event.open(commData->localStemName+"/events:o");
 
     if (commData->debugInfoEnabled)
-        port_debug.open((commData->localStemName+"/dbg:o").c_str());        
+        port_debug.open(commData->localStemName+"/dbg:o");        
 
     yInfo("Starting Controller at %d ms",period);
     q_stamp=Time::now();
@@ -468,7 +468,7 @@ Vector Controller::computeEyesVelFromdxFP(const Vector &dfp)
         CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,eyesJ))
         return pinv(eyesJ)*dfp.subVector(0,2);
     else
-        return zeros(vEyes.length());
+        return zeros((int)vEyes.length());
 }
 
 
@@ -487,8 +487,8 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
     ang_[1]=CTRL_RAD2DEG*sat(ang[1],lim(eyesJoints[1],0),lim(eyesJoints[1],1));
     ang_[2]=CTRL_RAD2DEG*sat(ang[2],lim(eyesJoints[2],0),lim(eyesJoints[2],1));
 
-    posHead->setRefSpeeds(eyesJoints.size(),eyesJoints.getFirst(),vel.data());
-    posHead->positionMove(eyesJoints.size(),eyesJoints.getFirst(),ang_.data());
+    posHead->setRefSpeeds((int)eyesJoints.size(),eyesJoints.data(),vel.data());
+    posHead->positionMove((int)eyesJoints.size(),eyesJoints.data(),ang_.data());
 
     if (commData->debugInfoEnabled && (port_debug.getOutputCount()>0))
     {
@@ -497,7 +497,7 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
         {
             ostringstream ss;
             ss<<"pos_"<<eyesJoints[i];
-            info.addString(ss.str().c_str());
+            info.addString(ss.str());
             info.addDouble(ang_[i]);
         }
 
@@ -537,7 +537,7 @@ bool Controller::look(const Vector &x)
 void Controller::resetCtrlEyes()
 {
     LockGuard lg(mutexCtrl);
-    mjCtrlEyes->reset(zeros(fbEyes.length()));
+    mjCtrlEyes->reset(zeros((int)fbEyes.length()));
     unplugCtrlEyes=false;
 }
 
@@ -545,15 +545,15 @@ void Controller::resetCtrlEyes()
 /************************************************************************/
 bool Controller::areJointsHealthyAndSet()
 {
-    VectorOf<int> modes(nJointsHead);
-    modHead->getControlModes(modes.getFirst());
+    vector<int> modes(nJointsHead);
+    modHead->getControlModes(modes.data());
 
     jointsToSet.clear();
-    for (size_t i=0; i<modes.size(); i++)
+    for (int i=0; i<(int)modes.size(); i++)
     {
         if ((modes[i]==VOCAB_CM_HW_FAULT) || (modes[i]==VOCAB_CM_IDLE))
             return false;
-        else if (i<(size_t)eyesJoints[0])
+        else if (i<eyesJoints[0])
         {
             if (commData->neckPosCtrlOn)
             {
@@ -577,8 +577,8 @@ void Controller::setJointsCtrlMode()
     if (jointsToSet.size()==0)
         return;
 
-    VectorOf<int> modes;
-    for (size_t i=0; i<jointsToSet.size(); i++)
+    vector<int> modes;
+    for (int i=0; i<(int)jointsToSet.size(); i++)
     {
         if (jointsToSet[i]<eyesJoints[0])
         {
@@ -591,8 +591,7 @@ void Controller::setJointsCtrlMode()
             modes.push_back(VOCAB_CM_MIXED);
     }
 
-    modHead->setControlModes(jointsToSet.size(),jointsToSet.getFirst(),
-                             modes.getFirst());
+    modHead->setControlModes((int)jointsToSet.size(),jointsToSet.data(),modes.data());
 }
 
 
@@ -609,7 +608,7 @@ bool Controller::setGazeStabilization(const bool f)
                 if (!commData->ctrlActive)
                 {
                     IntPlan->reset(fbNeck); 
-                    IntStabilizer->reset(zeros(vNeck.length()));
+                    IntStabilizer->reset(zeros((int)vNeck.length()));
                 }
                 notifyEvent("stabilization-on");
             }
@@ -661,7 +660,7 @@ void Controller::run()
     if (commData->saccadeUnderway && (Time::now()-saccadeStartTime>=Ts))
     {
         bool done;
-        posHead->checkMotionDone(eyesJoints.size(),eyesJoints.getFirst(),&done);
+        posHead->checkMotionDone((int)eyesJoints.size(),eyesJoints.data(),&done);
         commData->saccadeUnderway=!done;
 
         if (!commData->saccadeUnderway)
@@ -716,8 +715,8 @@ void Controller::run()
     fbEyes=fbHead.subVector(3,5);
 
     double errNeck=norm(qd.subVector(0,2)-fbNeck);
-    double errEyes=norm(qd.subVector(3,qd.length()-1)-fbEyes);
-    bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLESLOT*(0.001*getRate())) ? false :
+    double errEyes=norm(qd.subVector(3,(unsigned int)qd.length()-1)-fbEyes);
+    bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLESLOT*getPeriod()) ? false :
                    (!commData->saccadeUnderway &&
                    (errNeck<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
                    (errEyes<GAZECTRL_MOTIONDONE_EYES_QTHRES*CTRL_DEG2RAD));
@@ -780,9 +779,9 @@ void Controller::run()
             }
             else
             {
-                mjCtrlNeck->reset(zeros(fbNeck.length())); 
-                mjCtrlEyes->reset(zeros(fbEyes.length()));
-                IntStabilizer->reset(zeros(vNeck.length()));
+                mjCtrlNeck->reset(zeros((int)fbNeck.length())); 
+                mjCtrlEyes->reset(zeros((int)fbEyes.length()));
+                IntStabilizer->reset(zeros((int)vNeck.length()));
                 IntPlan->reset(fbNeck);
             }
             
@@ -839,7 +838,7 @@ void Controller::run()
         if (commData->stabilizationOn)
         {
             Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
-            Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
+            Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros((int)fbNeck.length()),gyro,x);
             Vector imuNeck=computeNeckVelFromdxFP(x,dx);
 
             if (reliableGyro)
@@ -853,7 +852,7 @@ void Controller::run()
             // hysteresis
             else if ((norm(imuNeck)>1.5*commData->gyro_noise_threshold) || (pathPerc<0.9))
             {
-                IntStabilizer->reset(zeros(vNeck.length()));
+                IntStabilizer->reset(zeros((int)vNeck.length()));
                 reliableGyro=true;
             }
         }
@@ -863,7 +862,7 @@ void Controller::run()
     else if (stabilizeGaze)
     {
         Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
-        Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
+        Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros((int)fbNeck.length()),gyro,x);
         Vector imuNeck=computeNeckVelFromdxFP(x,dx);
 
         vNeck=commData->stabilizationGain*IntStabilizer->integrate(-1.0*imuNeck);
@@ -902,8 +901,8 @@ void Controller::run()
         if (commData->neckPosCtrlOn)
         {
             posdeg=(CTRL_RAD2DEG)*IntPlan->get();
-            posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
-            velHead->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),vdeg.subVector(3,5).data());
+            posNeck->setPositions((int)neckJoints.size(),neckJoints.data(),posdeg.data());
+            velHead->velocityMove((int)eyesJoints.size(),eyesJoints.data(),vdeg.subVector(3,5).data());
         }
         else
             velHead->velocityMove(vdeg.data());
@@ -919,7 +918,7 @@ void Controller::run()
                 {
                     ostringstream ss;
                     ss<<"pos_"<<i;
-                    info.addString(ss.str().c_str());
+                    info.addString(ss.str());
                     info.addDouble(posdeg[i]);
                 }
 
@@ -930,7 +929,7 @@ void Controller::run()
             {
                 ostringstream ss;
                 ss<<"vel_"<<i;
-                info.addString(ss.str().c_str());
+                info.addString(ss.str());
                 info.addDouble(vdeg[i]);
             }
 
@@ -994,7 +993,7 @@ void Controller::run()
 void Controller::suspend()
 {
     LockGuard lg(mutexCtrl);
-    RateThread::suspend();    
+    PeriodicThread::suspend();    
     stopLimb();
     commData->saccadeUnderway=false;    
     yInfo("Controller has been suspended!");
@@ -1009,7 +1008,7 @@ void Controller::resume()
     fbNeck=fbHead.subVector(0,2);
     fbEyes=fbHead.subVector(3,5);
     
-    RateThread::resume();
+    PeriodicThread::resume();
     yInfo("Controller has been resumed!");
     notifyEvent("resumed");
 }

@@ -65,7 +65,7 @@ void IFixedSizeLearner::validateDomainSizes(const yarp::sig::Vector& input, cons
     }
 }
 
-void IFixedSizeLearner::writeBottle(yarp::os::Bottle& bot) {
+void IFixedSizeLearner::writeBottle(yarp::os::Bottle& bot) const {
     bot.addInt(this->getDomainSize());
     bot.addInt(this->getCoDomainSize());
 }

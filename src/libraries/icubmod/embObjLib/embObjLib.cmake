@@ -65,7 +65,6 @@ set(PATH_TO_CALLBACK ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/)
                                 ${PROT_FOLDER}/prot/
                                 ${HAL_API_FOLDER}
                                 ${EXTRA_FOLDER}
-                                ${YARP_INCLUDE_DIRS}
                                 ${iCubDev_INCLUDE_DIRS}		#??
                                 ${ICUB_INTERFACE_CORE_FOLDER}
                                 ${ICUB_INTERFACE_CORE_FOLDER}/robotInterface

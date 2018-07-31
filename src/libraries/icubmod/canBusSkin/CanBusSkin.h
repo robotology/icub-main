@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/IAnalogSensor.h>
@@ -23,7 +23,7 @@
 #include <SkinDiagnostics.h>
 
 
-class CanBusSkin : public yarp::os::RateThread, public yarp::dev::IAnalogSensor, public yarp::dev::DeviceDriver 
+class CanBusSkin : public yarp::os::PeriodicThread, public yarp::dev::IAnalogSensor, public yarp::dev::DeviceDriver 
 {
 private:
 

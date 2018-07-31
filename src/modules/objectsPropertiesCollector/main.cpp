@@ -267,26 +267,26 @@ reply: [ack] (id (1))
 using namespace std;
 using namespace yarp::os;
 
-#define CMD_ADD                         VOCAB3('a','d','d')
-#define CMD_DEL                         VOCAB3('d','e','l')
-#define CMD_GET                         VOCAB3('g','e','t')
-#define CMD_SET                         VOCAB3('s','e','t')
-#define CMD_LOCK                        VOCAB4('l','o','c','k')
-#define CMD_UNLOCK                      VOCAB4('u','n','l','o')
-#define CMD_OWNER                       VOCAB4('o','w','n','e')
-#define CMD_TIME                        VOCAB4('t','i','m','e')
-#define CMD_DUMP                        VOCAB4('d','u','m','p')
-#define CMD_ASK                         VOCAB3('a','s','k')
-#define CMD_SYNC                        VOCAB4('s','y','n','c')
-#define CMD_ASYNC                       VOCAB4('a','s','y','n')
-#define CMD_QUIT                        VOCAB4('q','u','i','t')
-#define CMD_BYE                         VOCAB3('b','y','e')
+#define CMD_ADD                         createVocab('a','d','d')
+#define CMD_DEL                         createVocab('d','e','l')
+#define CMD_GET                         createVocab('g','e','t')
+#define CMD_SET                         createVocab('s','e','t')
+#define CMD_LOCK                        createVocab('l','o','c','k')
+#define CMD_UNLOCK                      createVocab('u','n','l','o')
+#define CMD_OWNER                       createVocab('o','w','n','e')
+#define CMD_TIME                        createVocab('t','i','m','e')
+#define CMD_DUMP                        createVocab('d','u','m','p')
+#define CMD_ASK                         createVocab('a','s','k')
+#define CMD_SYNC                        createVocab('s','y','n','c')
+#define CMD_ASYNC                       createVocab('a','s','y','n')
+#define CMD_QUIT                        createVocab('q','u','i','t')
+#define CMD_BYE                         createVocab('b','y','e')
                                         
-#define REP_ACK                         VOCAB3('a','c','k')
-#define REP_NACK                        VOCAB4('n','a','c','k')
-#define REP_UNKNOWN                     VOCAB4('u','n','k','n')
+#define REP_ACK                         createVocab('a','c','k')
+#define REP_NACK                        createVocab('n','a','c','k')
+#define REP_UNKNOWN                     createVocab('u','n','k','n')
                                         
-#define OPT_ALL                         VOCAB3('a','l','l')
+#define OPT_ALL                         createVocab('a','l','l')
 #define OPT_DISABLED                    (-1.0)
 #define OPT_OWNERSHIP_ALL               ("all")
                                         
@@ -365,8 +365,8 @@ bool equal(Value &a, Value &b)
         return (a.asInt()==b.asInt());
     else if (a.isString() && b.isString())
     {
-        string aStr=a.asString().c_str();
-        string bStr=b.asString().c_str();
+        string aStr=a.asString();
+        string bStr=b.asString();
         return (aStr==bStr);
     }
     else
@@ -383,8 +383,8 @@ bool notEqual(Value &a, Value &b)
         return (a.asInt()!=b.asInt());
     else if (a.isString() && b.isString())
     {
-        string aStr=a.asString().c_str();
-        string bStr=b.asString().c_str();
+        string aStr=a.asString();
+        string bStr=b.asString();
         return (aStr!=bStr);
     }
     else
@@ -395,7 +395,7 @@ bool notEqual(Value &a, Value &b)
 
 
 /************************************************************************/
-class DataBase : public RateThread
+class DataBase : public PeriodicThread
 {
 protected:
     /************************************************************************/
@@ -459,10 +459,10 @@ protected:
                         deque<string> &opList, const unsigned int i=0)
     {
         bool result;
-        if (item->check(condList[i].prop.c_str()))
+        if (item->check(condList[i].prop))
         {
             // take the current value of the item's property under test
-            Value &val=item->find(condList[i].prop.c_str());
+            Value &val=item->find(condList[i].prop);
 
             // compute the condition over the current value
             result=(*condList[i].compare)(val,condList[i].val);
@@ -481,9 +481,9 @@ protected:
             {
                 if (result)
                 {
-                    if (item->check(condList[j].prop.c_str()))
+                    if (item->check(condList[j].prop))
                     {
-                        Value &val=item->find(condList[j].prop.c_str());
+                        Value &val=item->find(condList[j].prop);
                         result=result&&(*condList[j].compare)(val,condList[j].val);
                     }
                     else
@@ -510,7 +510,7 @@ protected:
 
 public:
     /************************************************************************/
-    DataBase() : RateThread(1000)
+    DataBase() : PeriodicThread(1.0)
     {
         pBroadcastPort=NULL;
         asyncBroadcast=false;
@@ -550,7 +550,7 @@ public:
 
         if (rf.check("sync-bc"))
         {
-            setRate((int)(1000.0*rf.check("sync-bc",Value(1.0)).asDouble()));
+            setPeriod(rf.check("sync-bc",Value(1.0)).asDouble());
             start();
         }
 
@@ -566,7 +566,7 @@ public:
     /************************************************************************/
     void load()
     {
-        string dbFileName=rf->findFile("db").c_str();
+        string dbFileName=rf->findFile("db");
         if (dbFileName.empty())
         {
             yWarning("requested database to be loaded not found!");
@@ -580,14 +580,14 @@ public:
         idCnt=0;
 
         Property finProperty;
-        finProperty.fromConfigFile(dbFileName.c_str());
+        finProperty.fromConfigFile(dbFileName);
 
         Bottle finBottle; finBottle.read(finProperty);
         for (int i=0; i<finBottle.size(); i++)
         {
             ostringstream tag;
             tag<<"item_"<<i;
-            Bottle &b1=finBottle.findGroup(tag.str().c_str());
+            Bottle &b1=finBottle.findGroup(tag.str());
 
             if (b1.isNull())
                 continue;
@@ -629,9 +629,9 @@ public:
             return;
 
         LockGuard lg(mutex);
-        string dbFileName=rf->getHomeContextPath().c_str();
+        string dbFileName=rf->getHomeContextPath();
         dbFileName+="/";
-        dbFileName+=rf->find("db").asString().c_str();
+        dbFileName+=rf->find("db").asString();
         yInfo("saving database in %s ...",dbFileName.c_str());
 
         FILE *fout=fopen(dbFileName.c_str(),"w");
@@ -664,7 +664,7 @@ public:
                 Bottle &bottle=pBroadcastPort->prepare();
                 bottle.clear();
 
-                bottle.addString(type.c_str());
+                bottle.addString(type);
                 if (itemsMap.empty())
                     bottle.addString(BCTAG_EMPTY);
                 else for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
@@ -737,7 +737,7 @@ public:
             if (propSet!=NULL)
             {
                 for (int i=0; i<propSet->size(); i++)
-                    it->second.prop->unput(propSet->get(i).asString().c_str());
+                    it->second.prop->unput(propSet->get(i).asString());
 
                 it->second.lastUpdate=Time::now();
             }
@@ -777,9 +777,9 @@ public:
                 Property prop;
                 for (int i=0; i<propSet->size(); i++)
                 {
-                    string propName=propSet->get(i).asString().c_str();
-                    if (pProp->check(propName.c_str()))
-                        prop.put(propName.c_str(),pProp->find(propName.c_str()));
+                    string propName=propSet->get(i).asString();
+                    if (pProp->check(propName))
+                        prop.put(propName,pProp->find(propName));
                 }
 
                 response.read(prop);
@@ -822,14 +822,14 @@ public:
                         if (option->size()<2)
                             continue;
 
-                        string prop=option->get(0).asString().c_str();
+                        string prop=option->get(0).asString();
                         Value  val=option->get(1);
 
                         if (prop==PROP_ID)
                             continue;
 
-                        pProp->unput(prop.c_str());
-                        pProp->put(prop.c_str(),val);
+                        pProp->unput(prop);
+                        pProp->put(prop,val);
                     }
                     else
                         continue;
@@ -921,7 +921,7 @@ public:
         {
             response.clear();
             string &owner=it->second.owner;
-            response.addString(owner.c_str());
+            response.addString(owner);
             return true;
         }
 
@@ -1004,13 +1004,13 @@ public:
 
                 if (b->size()==1)
                 {
-                    condition.prop=b->get(0).asString().c_str();
+                    condition.prop=b->get(0).asString();
                     condition.compare=&relationalOperators::alwaysTrue;
                 }
                 else if (b->size()>2)
                 {
-                    condition.prop=b->get(0).asString().c_str();
-                    operation=b->get(1).asString().c_str();
+                    condition.prop=b->get(0).asString();
+                    operation=b->get(1).asString();
                     condition.val=b->get(2);
 
                     if (operation==">")
@@ -1041,7 +1041,7 @@ public:
 
                 if ((i+1)<content->size())
                 {
-                    operation=content->get(i+1).asString().c_str();
+                    operation=content->get(i+1).asString();
                     if ((operation!="||") && (operation!="&&"))
                     {
                         yWarning("unknown boolean operator '%s'!",operation.c_str());
@@ -1111,7 +1111,7 @@ public:
     /************************************************************************/
     void respond(ConnectionReader &connection, const Bottle &command, Bottle &reply)
     {
-        string agent=connection.getRemoteContact().getName().c_str();
+        string agent=connection.getRemoteContact().getName();
         if (command.size()<1)
         {
             reply.addVocab(REP_NACK);
@@ -1316,7 +1316,7 @@ public:
                 if (opt==Vocab::encode("start"))
                 {
                     if (command.size()>=3)
-                        setRate((int)(1000.0*command.get(2).asDouble()));
+                        setPeriod(command.get(2).asDouble());
 
                     if (!isRunning())
                         start();
@@ -1412,7 +1412,7 @@ public:
         if (content.size()==0)
             return false;
 
-        string type=content.get(0).asString().c_str();
+        string type=content.get(0).asString();
         if ((type!=BCTAG_EMPTY) && (type!=BCTAG_SYNC) && (type!=BCTAG_ASYNC))
             return false;
 
@@ -1549,21 +1549,18 @@ public:
     /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
-        // request high resolution scheduling
-        Time::turboBoost();
-
         dataBase.configure(rf);
         stats=rf.check("stats");
 
-        string name=rf.check("name",Value("objectsPropertiesCollector")).asString().c_str();
+        string name=rf.check("name",Value("objectsPropertiesCollector")).asString();
         dataBase.setBroadcastPort(bcPort);
         rpcProcessor.setDataBase(dataBase);
         rpcPort.setReader(rpcProcessor);
         modifyPort.setDataBase(dataBase);
         modifyPort.useCallback();
-        rpcPort.open(("/"+name+"/rpc").c_str());
-        bcPort.open(("/"+name+"/broadcast:o").c_str());
-        modifyPort.open(("/"+name+"/modify:i").c_str());
+        rpcPort.open("/"+name+"/rpc");
+        bcPort.open("/"+name+"/broadcast:o");
+        modifyPort.open("/"+name+"/modify:i");
 
         cnt=0;
         nCallsOld=0;

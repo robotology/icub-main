@@ -23,7 +23,7 @@ const double MAX_GAIN = 10.0;
 const int VELOCITY_INDEX_OFFSET=1000;
 
 velControlThread::velControlThread(int rate):
-                yarp::os::RateThread(rate)
+                yarp::os::PeriodicThread((double)rate/1000.0)
 {
     control_rate = rate;
     suspended = true;
@@ -40,8 +40,8 @@ void velControlThread::run()
     {
         yDebug("Thread ran %d times, est period %lf[ms], used %lf[ms]\n",
                 getIterations(),
-                getEstPeriod(),
-                getEstUsed());
+                1000.0*getEstimatedPeriod(),
+                1000.0*getEstimatedUsed());
         resetStat();
     }
     _mutex.wait();
@@ -134,7 +134,7 @@ void velControlThread::run()
                 if (fabs(targets(i)-encoders(i))>6.0)
                     ipos->positionMove(i,targets(i));
                 else
-                    ipid->setReference(i,targets(i));
+                    ipid->setPidReference(yarp::dev::VOCAB_PIDTYPE_POSITION,i,targets(i));
             }
         }
         else
@@ -176,8 +176,8 @@ void velControlThread::threadRelease()
     for(int k=0;k<nJoints;k++)
     {
         ivel->stop();
-        for(int k = 0; k < nJoints; k++)
-            imod->setPositionMode(k);
+        for (int k = 0; k < nJoints; k++)
+            imod->setControlMode(k, VOCAB_CM_POSITION);
         suspended = true;
     }
 
@@ -190,11 +190,9 @@ void velControlThread::threadRelease()
 #endif
 }
 
-bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString robotName)
+bool velControlThread::init(PolyDriver *d, std::string partName, std::string robotName)
 {
     char tmp[255];
-
-    yarp::os::Time::turboBoost();
 
     nb_void_loops = 0;
 
@@ -286,7 +284,7 @@ void velControlThread::go()
         imod->getControlMode(k, &mode);
         if (mode!=VOCAB_CM_MIXED && mode!=VOCAB_CM_VELOCITY)
         {
-            yarp::os::ConstString s = yarp::os::Vocab::decode(mode);
+            std::string s = yarp::os::Vocab::decode(mode);
             yWarning("Joint (%d) is in mode (%s) and does not accepts velocty commands. You have first to set either VOCAB_CM_VELOCITY or VOCAB_CM_MIXED control mode\n", k, s.c_str());
         }
     }

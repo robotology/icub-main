@@ -6,7 +6,6 @@ yarp_prepare_plugin(parametricCalibratorEth CATEGORY device TYPE yarp::dev::para
 
 if(ENABLE_parametricCalibratorEth)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ${YARP_INCLUDE_DIRS}
                        ${iCubDev_INCLUDE_DIRS})
 
     yarp_add_plugin(parametricCalibratorEth parametricCalibratorEth.h parametricCalibratorEth.cpp)

@@ -10,7 +10,7 @@
 //#include <stdio.h>
 #include <string>
 
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/IAnalogSensor.h>
@@ -21,7 +21,7 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class SkinPrototype : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver 
+class SkinPrototype : public PeriodicThread, public yarp::dev::IAnalogSensor, public DeviceDriver 
 {
 protected:
 	PolyDriver driver;
@@ -38,7 +38,7 @@ protected:
     yarp::sig::Vector data;
 
 public:
-    SkinPrototype(int period=20) : RateThread(period),mutex(1)
+    SkinPrototype(int period=20) : PeriodicThread((double)period/1000.0),mutex(1)
     {}
     
 

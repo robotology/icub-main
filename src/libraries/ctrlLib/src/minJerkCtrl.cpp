@@ -1,19 +1,11 @@
-/* 
- * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
+/*
+ * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+ * Copyright (C) 2006-2010 RobotCub Consortium
+ * All rights reserved.
  *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license. See the accompanying LICENSE file for
+ * details.
 */
 
 #include <sstream>
@@ -217,14 +209,14 @@ void minJerkVelCtrlForNonIdealPlant::setPlantParameters(const Property &paramete
     Tw.resize(dim,0.0);
     Zeta.resize(dim,0.0);    
 
-    int len=ordering.size()==0?dim:ordering.size();
+    int len=ordering.size()==0?dim:(int)ordering.size();
     for (int i=0; i<len; i++)
     {        
         ostringstream entry;
         entry<<entryTag<<"_"<<(ordering.size()==0?i:ordering.get(i).asInt());
-        if (parameters.check(entry.str().c_str()))
+        if (parameters.check(entry.str()))
         {
-            if (Bottle *options=parameters.find(entry.str().c_str()).asList())
+            if (Bottle *options=parameters.find(entry.str()).asList())
             {
                 if (options->check("Kp"))
                     Kp[i]=options->find("Kp").asDouble();
@@ -260,10 +252,10 @@ void minJerkVelCtrlForNonIdealPlant::getPlantParameters(Property &parameters,
         prop.put("Tw",Tw[i]);
         prop.put("Zeta",Zeta[i]);
 
-        entry<<prop.toString().c_str()<<")) ";
+        entry<<prop.toString()<<")) ";
     }
 
-    parameters.fromString(entry.str().c_str());
+    parameters.fromString(entry.str());
 }
 
 
@@ -288,7 +280,7 @@ minJerkBaseGen::minJerkBaseGen(const unsigned int _dim, const double _Ts, const 
 
 /*******************************************************************************************/
 minJerkBaseGen::minJerkBaseGen(const Vector &y0, const double _Ts, const double _T)
-    :dim(y0.size()), Ts(_Ts), T(_T)
+    :dim((unsigned int)y0.size()), Ts(_Ts), T(_T)
 {
     posFilter = velFilter = accFilter = NULL;
     lastRef = pos = y0;

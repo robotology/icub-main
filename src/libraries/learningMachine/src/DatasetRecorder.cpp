@@ -74,7 +74,7 @@ std::string DatasetRecorder::getInfo() {
     return buffer.str();
 }
 
-void DatasetRecorder::writeBottle(yarp::os::Bottle& bot) {
+void DatasetRecorder::writeBottle(yarp::os::Bottle& bot) const  {
     bot.addString(this->filename.c_str());
     bot.addInt(this->precision);
 }

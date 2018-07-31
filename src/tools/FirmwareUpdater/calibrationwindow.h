@@ -38,7 +38,8 @@ protected:
     void loadCalibrationFile(QString fileName);
     void saveCalibrationFile(QString filePath);
     void importCalibrationFile(QString fileName);
-    bool calibration_load_v2 (char* filename, int selected_bus, int selected_id, int index);
+    //bool calibration_load_v2 (char* filename, int selected_bus, int selected_id, int index);
+    bool calibration_load_v3 (char* filename, int selected_bus, int selected_id, int index, int regset);
     void useMatrix(int);
     void resetCalibration();
 
@@ -50,8 +51,8 @@ private:
     icubCanProto_boardType_t boardtype;
     bool sliderPressed[6];
     unsigned int adc[6];
-    unsigned int maxadc[6];
-    unsigned int minadc[6];
+    signed int maxadc[6];
+    signed int minadc[6];
     bool first_time;
     unsigned int offset[6];
     unsigned int amp_gain1[6];
@@ -59,6 +60,9 @@ private:
     int ch[6];
     int calib_bias[6];
     int curr_bias[6];
+    uint16_t amp_offsets[6];
+    float amp_gains[6];
+    strain2_ampl_regs_t amp_registers[6];
     unsigned int matrix[3][6][6];
     unsigned int calib_matrix[3][6][6];
     unsigned int calibration_value;

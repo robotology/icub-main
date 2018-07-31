@@ -1,6 +1,10 @@
-# Copyright: (C) 2010 RobotCub Consortium
-# Authors: Ugo Pattacini
-# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+# Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+# Copyright (C) 2006-2010 RobotCub Consortium
+# All rights reserved.
+#
+# This software may be modified and distributed under the terms
+# of the BSD-3-Clause license. See the accompanying LICENSE file for
+# details.
 
 project(ctrlLib)
 
@@ -13,7 +17,8 @@ set(folder_source src/math.cpp
                   src/minJerkCtrl.cpp
                   src/optimalControl.cpp
                   src/neuralNetworks.cpp
-                  src/outliersDetection.cpp)
+                  src/outliersDetection.cpp
+                  src/clustering.cpp)
 
 set(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/filters.h
@@ -24,9 +29,8 @@ set(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/minJerkCtrl.h
                   include/iCub/ctrl/optimalControl.h
                   include/iCub/ctrl/neuralNetworks.h
-                  include/iCub/ctrl/outliersDetection.h)
-
-include_directories(${PROJECT_SOURCE_DIR}/include ${YARP_INCLUDE_DIRS})
+                  include/iCub/ctrl/outliersDetection.h
+                  include/iCub/ctrl/clustering.h)
 
 if(ICUB_USE_GSL)
   set(folder_source ${folder_source} src/functionEncoder.cpp)
@@ -34,11 +38,12 @@ if(ICUB_USE_GSL)
   include_directories(${GSL_INCLUDE_DIRS})
 endif()
 
-source_group("Source Files" FILES ${folder_source})
-source_group("Header Files" FILES ${folder_header})
-
 add_definitions(-D_USE_MATH_DEFINES)
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+                                                  "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
+
 target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES})
 
 if(ICUB_USE_GSL)

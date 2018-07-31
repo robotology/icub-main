@@ -19,6 +19,7 @@
 */
 #include "dumperThread.h"
 #include <cstring>
+#include <string>
 
 /*
  * Copyright (C) 2006 Francesco Nori
@@ -27,7 +28,7 @@
  */
 
 
-void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int rate, ConstString portPrefix, ConstString dataToDump, bool logOnDisk)
+void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int rate, std::string portPrefix, std::string dataToDump, bool logOnDisk)
 {
     // open ports
     board_dd=board_d;
@@ -62,10 +63,10 @@ void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int 
     port = new Port;
 
     portName = portPrefix + dataToDump;
-    port->open(portName.c_str());
+    port->open(portName);
 
     logToFile = logOnDisk;
-    this->setRate(rate);
+    this->setPeriod((double)rate/1000.0);
 }
 
 boardDumperThread::~boardDumperThread()
@@ -114,7 +115,7 @@ bool boardDumperThread::threadInit()
     return 1;
 }
 
-boardDumperThread::boardDumperThread():RateThread(500)
+boardDumperThread::boardDumperThread():PeriodicThread(0.5)
 {
     getter   = 0;
     board_dd = 0;

@@ -39,7 +39,7 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     }
 
     int period=config.find("period").asInt();
-    setRate(period);
+    setPeriod((double)period/1000.0);
 
     Property prop;
 
@@ -111,7 +111,7 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     //start the sensor broadcast
     sensor_start(config);
 
-    RateThread::start();
+    PeriodicThread::start();
     return true;
 }
 
@@ -350,7 +350,7 @@ bool CanBusVirtualAnalogSensor::sensor_stop()
 bool CanBusVirtualAnalogSensor::close()
 {
     //stop the thread
-    RateThread::stop();
+    PeriodicThread::stop();
 
     //stop the sensor
     sensor_stop();
@@ -366,9 +366,9 @@ bool CanBusVirtualAnalogSensor::close()
     return true;
 }
 
-yarp::dev::IVirtualAnalogSensor::VAS_status CanBusVirtualAnalogSensor::getVirtualAnalogSensorStatus (int ch)
+yarp::dev::VAS_status CanBusVirtualAnalogSensor::getVirtualAnalogSensorStatus (int ch)
 {
-    return yarp::dev::IVirtualAnalogSensor::VAS_OK;
+    return yarp::dev::VAS_status::VAS_OK;
 }
 
 int CanBusVirtualAnalogSensor::getVirtualAnalogSensorChannels()
@@ -490,7 +490,7 @@ void CanBusVirtualAnalogSensor::run()
         const char   type     = ((msgid&0x700)>>8);
 
         //parse data here
-        status=IVirtualAnalogSensor::VAS_OK;
+        status=yarp::dev::VAS_status::VAS_OK;
 
         if (type==0x02) //configuration command
         {
@@ -530,29 +530,29 @@ void CanBusVirtualAnalogSensor::run()
                 {
                     case ANALOG_FORMAT_8_BIT:
                         ret=decode8(buff, msgid, data.data());
-                        status=IVirtualAnalogSensor::VAS_OK;
+                        status=yarp::dev::VAS_status::VAS_OK;
                         break;
                     case ANALOG_FORMAT_16_BIT:
                         if (len==6) 
                         {
                             ret=decode16(buff, msgid, data.data());
-                            status=IVirtualAnalogSensor::VAS_OK;
+                            status=yarp::dev::VAS_status::VAS_OK;
                         }
                         else
                         {
                             if (len==7 && buff[6] == 1)
                             {
-                                status=IVirtualAnalogSensor::VAS_OVF;
+                                status= yarp::dev::VAS_status::VAS_OVF;
                             }
                             else
                             {
-                                status=IVirtualAnalogSensor::VAS_ERROR;
+                                status= yarp::dev::VAS_status::VAS_ERROR;
                             }
                             ret=decode16(buff, msgid, data.data());
                         }
                         break;
                     default:
-                        status=IVirtualAnalogSensor::VAS_ERROR;
+                        status=yarp::dev::VAS_status::VAS_ERROR;
                         ret=false;
                 }
             }
@@ -562,7 +562,7 @@ void CanBusVirtualAnalogSensor::run()
     //if 100ms have passed since the last received message
     if (timeStamp+0.1<timeNow)
     {
-        status=IVirtualAnalogSensor::VAS_TIMEOUT;
+        status= yarp::dev::VAS_status::VAS_TIMEOUT;
     }
 
     mutex.post();

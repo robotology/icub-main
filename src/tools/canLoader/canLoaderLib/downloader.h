@@ -88,52 +88,11 @@ void drv_sleep (double time);
 #define DOWNLOADER_ETH_SUPPORTS_MULTIBUS
 #endif
 
-// marco.accame: later on add inclusion of EoBoards.[h, c] and change types eObrd_D_* with eObrd_*.
-// this change has the advantage of providing a unique definition of board types, strings associated, etc.
-// whihc is is the same alredy used in diagnostics of ETH boards.
 
-#if 0
-typedef enum
+struct strain2_ampl_regs_t
 {
-    eobrd_D_cantype_dsp               = ICUBCANPROTO_BOARDTYPE__DSP,      // 0, not used
-    eobrd_D_cantype_pic               = ICUBCANPROTO_BOARDTYPE__PIC,      // 2, not used
-    eobrd_D_cantype_2dc               = ICUBCANPROTO_BOARDTYPE__2DC,      // 2, not used
-    eobrd_D_cantype_mc4               = ICUBCANPROTO_BOARDTYPE__4DC,      // 3
-    eobrd_D_cantype_bll               = ICUBCANPROTO_BOARDTYPE__BLL,      // 4, not used
-    eobrd_D_cantype_mtb               = ICUBCANPROTO_BOARDTYPE__SKIN,     // 5
-    eobrd_D_cantype_strain            = ICUBCANPROTO_BOARDTYPE__STRAIN,   // 6
-    eobrd_D_cantype_mais              = ICUBCANPROTO_BOARDTYPE__MAIS,     // 7
-    eobrd_D_cantype_foc               = ICUBCANPROTO_BOARDTYPE__2FOC,     // 8
-    eobrd_D_cantype_6sg               = ICUBCANPROTO_BOARDTYPE__6SG,      // 9, not used
-    eobrd_D_cantype_jog               = ICUBCANPROTO_BOARDTYPE__JOG,      // 10, not used
-
-    eobrd_D_cantype_none              = 254,
-    eobrd_D_cantype_unknown           = ICUBCANPROTO_BOARDTYPE__UNKNOWN   // 255
-} eObrd_D_cantype_t;
-
-typedef struct
-{   // size is: 1+1+0 = 2
-    uint8_t                     major;
-    uint8_t                     minor;
-    uint8_t                     build;
-} eObrd_D_firmwareversion_t;
-
-
-typedef struct
-{   // size is: 1+1+0 = 2
-    uint8_t                     major;
-    uint8_t                     minor;
-} eObrd_D_protocolversion_t;
-
-
-typedef struct
-{   // size is: 1+1+2+2+0 = 6
-    uint8_t                     type;
-    eObrd_D_firmwareversion_t   firmware;
-    eObrd_D_protocolversion_t   protocol;
-} eObrd_D_info_t;
-
-#endif
+   uint8_t data[6];
+};
 
 
 class cDownloader
@@ -166,9 +125,21 @@ int get_dst_from_id (int id);
 
 int verify_ack(int command, int read_messages);
 
+enum strain_ampl_cfg_t
+{
+    ampcfg_gain48 = 0, ampcfg_gain36 = 1, ampcfg_gain24 = 2, ampcfg_gain20 = 3, ampcfg_gain16 = 4,
+    ampcfg_gain10 = 5, ampcfg_gain08 = 6, ampcfg_gain06 = 7, ampcfg_gain04 = 8
+};
+
+
+enum { ampcfg_gain_numberOf = 9 };
 
 
 public:
+
+enum { strain_regset_inuse = 0, strain_regset_one = 1, strain_regset_two = 2, strain_regset_three = 3 };
+enum { strain_regsetmode_temporary = 0, strain_regsetmode_permanent = 1 };
+
 sBoard*            board_list;
 int                board_list_size;
 int				   progress;
@@ -196,33 +167,62 @@ void set_canbus_id      (int id);
 
 int strain_start_sampling    (int bus, int target_id, string *errorstring = NULL);
 int strain_stop_sampling     (int bus, int target_id, string *errorstring = NULL);
+
+float strain_amplifier_cfg2gain(strain_ampl_cfg_t c);
+
+// the strain2 has multiple (up to 3) regulation sets. with these funtions we can get / set the regulation set in use inside the strain2.
+// allowed values for regset are only strain_regset_one/two/three. with regsetmode we choose if the value is the one currently used or teh one in eeprom.
+// attention: funtion strain_set_regulationset() does not want strain_regset_inuse but only strain_regset_one/two/three
+int strain_set_regulationset        (int bus, int target_id, int regset = strain_regset_one, int regsetmode = strain_regsetmode_temporary, string *errorstring = NULL);
+int strain_get_regulationset        (int bus, int target_id, int &regset, const int regsetmode = strain_regsetmode_temporary, string *errorstring = NULL);
+
+
+// the calibration of the offset is meaningful only for the calibration set in use
 int strain_calibrate_offset  (int bus, int target_id, icubCanProto_boardType_t boardtype, unsigned int middle_val, string *errorstring = NULL);
-int strain_get_offset		 (int bus, int target_id, char channel, unsigned int& offset, string *errorstring = NULL);
-int strain_set_offset		 (int bus, int target_id, char channel, unsigned int  offset, string *errorstring = NULL);
+
+// they are not dependent on the regulation set or we cannot specify one
 int strain_get_adc			 (int bus, int target_id, char channel, unsigned int& adc, int type, string *errorstring = NULL);
+int strain_get_eeprom_saved  (int bus, int target_id, bool* status, string *errorstring = NULL);
 int strain_save_to_eeprom    (int bus, int target_id, string *errorstring = NULL);
-int strain_get_matrix_rc	 (int bus, int target_id, char r, char c, unsigned int& elem, int matrix = 0, string *errorstring = NULL);
-int strain_set_matrix_rc	 (int bus, int target_id, char r, char c, unsigned int  elem, int matrix = 0, string *errorstring = NULL);
-int strain_get_matrix_gain	 (int bus, int target_id, unsigned int& gain, int matrix = 0, string *errorstring = NULL);
-int strain_set_matrix_gain	 (int bus, int target_id, unsigned int  gain, int matrix = 0, string *errorstring = NULL);
-int strain_get_calib_bias	 (int bus, int target_id, char channel, signed int& bias, string *errorstring = NULL);
-int strain_set_calib_bias	 (int bus, int target_id, string *errorstring = NULL);
-int strain_set_calib_bias	 (int bus, int target_id, char channel, signed int bias, string *errorstring = NULL);
-int strain_reset_calib_bias	 (int bus, int target_id, string *errorstring = NULL);
+// funtions *curr_bias() apply only to strain_regset_inuse because the curr bias is not part of the regulation set. it is a volatile regulation.
 int strain_get_curr_bias	 (int bus, int target_id, char channel, signed int& bias, string *errorstring = NULL);
-int strain_set_curr_bias	 (int bus, int target_id, string *errorstring = NULL);
-int strain_set_curr_bias	 (int bus, int target_id, char channel, signed int bias, string *errorstring = NULL);
-int strain_reset_curr_bias	 (int bus, int target_id, string *errorstring = NULL);
-int strain_set_full_scale	 (int bus, int target_id, unsigned char channel, unsigned int   full_scale, int matrix = 0, string *errorstring = NULL);
-int strain_get_full_scale	 (int bus, int target_id, unsigned char channel, unsigned int&  full_scale, int matrix = 0, string *errorstring = NULL);
+int strain_set_curr_bias	 (int bus, int target_id, string *errorstring = NULL); // only for strain_regset_inuse because the curr bias is not saved in eeprom in the regulation set
+int strain_set_curr_bias	 (int bus, int target_id, char channel, signed int bias, string *errorstring = NULL); // only for strain_regset_inuse because the curr bias is not saved in eeprom in the regulation set
+int strain_reset_curr_bias	 (int bus, int target_id, string *errorstring = NULL); // only for strain_regset_inuse because the curr bias is not saved in eeprom in the regulation set
+// serial number is unique and does not depend on regulation set
 int strain_get_serial_number (int bus, int target_id, char* serial_number, string *errorstring = NULL);
 int strain_set_serial_number (int bus, int target_id, const char* serial_number, string *errorstring = NULL);
-int strain_get_eeprom_saved  (int bus, int target_id, bool* status, string *errorstring = NULL);
-int strain_set_matrix        (int bus, int target_id, int matrix = 0, string *errorstring = NULL);
-int strain_get_matrix        (int bus, int target_id, int &matrix, string *errorstring = NULL);
 
-int sg6_obsolete_get_amp_gain      (int bus, int target_id, char channel, unsigned int& gain1, unsigned int& gain2 );
-int sg6_obsolete_set_amp_gain      (int bus, int target_id, char channel, unsigned int  gain1, unsigned int  gain2 );
+
+// all of the following can be related to any calibration set: the one in use or one of set 1, 2, 3. default is the one in use (old strain have only one regulation set)
+int strain_get_offset		 (int bus, int target_id, char channel, unsigned int& offset, int regset = strain_regset_inuse, string *errorstring = NULL);
+int strain_set_offset		 (int bus, int target_id, char channel, unsigned int  offset, int regset = strain_regset_inuse, string *errorstring = NULL);
+
+int strain_get_matrix_rc	 (int bus, int target_id, char r, char c, unsigned int& elem, int regset = strain_regset_inuse, string *errorstring = NULL);
+int strain_set_matrix_rc	 (int bus, int target_id, char r, char c, unsigned int  elem, int regset = strain_regset_inuse, string *errorstring = NULL);
+
+int strain_get_matrix_gain	 (int bus, int target_id, unsigned int& gain, int regset = strain_regset_inuse, string *errorstring = NULL);
+int strain_set_matrix_gain	 (int bus, int target_id, unsigned int  gain, int regset = strain_regset_inuse, string *errorstring = NULL);
+
+int strain_set_amplifier_regs(int bus, int target_id, unsigned char channel, const strain2_ampl_regs_t &ampregs, int regset = strain_regset_inuse, string *errorstring = NULL);
+int strain_get_amplifier_regs(int bus, int target_id, unsigned char channel, strain2_ampl_regs_t &ampregs, int regset = strain_regset_inuse, string *errorstring = NULL);
+
+int strain_set_amplifier_cfg(int bus, int target_id, unsigned char channel, strain_ampl_cfg_t ampset, int regset = strain_regset_inuse, string *errorstring = NULL);
+
+int strain_get_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float &gain, uint16_t &offset, int regset = strain_regset_inuse, string *errorstring = NULL);
+int strain_set_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float gain, uint16_t offset, int regset = strain_regset_inuse, string *errorstring = NULL);
+
+int strain_get_calib_bias	 (int bus, int target_id, char channel, signed int& bias, int regset = strain_regset_inuse, string *errorstring = NULL);
+int strain_set_calib_bias	 (int bus, int target_id, string *errorstring = NULL);  // used only for strain_regset_inuse
+int strain_set_calib_bias	 (int bus, int target_id, char channel, signed int bias, int regset = strain_regset_inuse, string *errorstring = NULL);
+int strain_reset_calib_bias	 (int bus, int target_id, string *errorstring = NULL);  // used only for strain_regset_inuse
+
+int strain_set_full_scale	 (int bus, int target_id, unsigned char channel, unsigned int   full_scale, int regset = strain_regset_inuse, string *errorstring = NULL);
+int strain_get_full_scale	 (int bus, int target_id, unsigned char channel, unsigned int&  full_scale, int regset = strain_regset_inuse, string *errorstring = NULL);
+
+
+
+
 
 
 // for use by the future strain calibration data acquisition gui

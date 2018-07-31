@@ -13,8 +13,7 @@ if (NOT SKIP_pcan)
   IF (NOT PLXCANAPI_FOUND)
     MESSAGE("pcan: cannot find plxcanapi, turn off device")
   ELSE (NOT PLXCANAPI_FOUND)
-        INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS} 
-                            ${CMAKE_CURRENT_SOURCE_DIR}
+        INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}
                             ${PLXCANAPI_INC_DIRS})
 
         #plx-api related define

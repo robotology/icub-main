@@ -7,8 +7,7 @@
 yarp_prepare_plugin(xsensmtx CATEGORY device TYPE yarp::dev::XSensMTx INCLUDE XSensMTx.h EXTRA_CONFIG WRAPPER=inertial)
 
 if (NOT SKIP_xsensmtx)
-    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}
-                        ${YARP_INCLUDE_DIRS})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
     yarp_add_plugin(xsensmtx MTComm.cpp  MTComm.h  XSensMTx.cpp  XSensMTx.h)
     target_link_libraries(xsensmtx ${YARP_LIBRARIES})
     icub_export_plugin(xsensmtx)

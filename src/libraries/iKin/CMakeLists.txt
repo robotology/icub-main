@@ -1,6 +1,10 @@
-# Copyright: (C) 2010 RobotCub Consortium
-# Authors: Ugo Pattacini
-# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+# Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+# Copyright (C) 2006-2010 RobotCub Consortium
+# All rights reserved.
+#
+# This software may be modified and distributed under the terms
+# of the BSD-3-Clause license. See the accompanying LICENSE file for
+# details.
 
 project(iKin)
 
@@ -23,20 +27,19 @@ if(ICUB_USE_IPOPT)
                      include/iCub/iKin/iKinSlv.h)   
 endif()
 
-source_group("Source Files" FILES ${folder_source})
-source_group("Header Files" FILES ${folder_header})
-
-include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${ctrlLib_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
-
 if(ICUB_USE_IPOPT)
-   include_directories(${IPOPT_INCLUDE_DIRS})
    add_definitions(${IPOPT_DEFINITIONS})
 endif()
 
 add_definitions(-D_USE_MATH_DEFINES)
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+                                                  "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
+if(ICUB_USE_IPOPT)
+  target_include_directories(${PROJECT_NAME} PRIVATE ${IPOPT_INCLUDE_DIRS})
+endif()
+
 target_link_libraries(${PROJECT_NAME} ctrlLib ${YARP_LIBRARIES})
 
 if(ICUB_USE_IPOPT)

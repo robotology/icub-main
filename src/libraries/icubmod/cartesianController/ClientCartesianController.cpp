@@ -89,7 +89,7 @@ void ClientCartesianController::init()
 /************************************************************************/
 bool ClientCartesianController::open(Searchable &config)
 {
-    ConstString remote, local, carrier;
+    string remote, local, carrier;
 
     if (config.check("remote"))
         remote=config.find("remote").asString();
@@ -107,13 +107,13 @@ bool ClientCartesianController::open(Searchable &config)
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
     
-    portCmd.open((local+"/command:o").c_str());
-    portState.open((local+"/state:i").c_str());
-    portEvents.open((local+"/events:i").c_str());
-    portRpc.open((local+"/rpc:o").c_str());    
+    portCmd.open(local+"/command:o");
+    portState.open(local+"/state:i");
+    portEvents.open(local+"/events:i");
+    portRpc.open(local+"/rpc:o");    
 
     bool ok=true;
-    ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc:i").c_str());
+    ok&=Network::connect(portRpc.getName(),remote+"/rpc:i");
     if (ok)
     {
         Bottle info;
@@ -139,9 +139,9 @@ bool ClientCartesianController::open(Searchable &config)
         return false;
     }
 
-    ok&=Network::connect(portCmd.getName().c_str(),(remote+"/command:i").c_str(),carrier.c_str());
-    ok&=Network::connect((remote+"/state:o").c_str(),portState.getName().c_str(),carrier.c_str());
-    ok&=Network::connect((remote+"/events:o").c_str(),portEvents.getName().c_str(),carrier.c_str());    
+    ok&=Network::connect(portCmd.getName(),remote+"/command:i",carrier);
+    ok&=Network::connect(remote+"/state:o",portState.getName(),carrier);
+    ok&=Network::connect(remote+"/events:o",portEvents.getName(),carrier);    
 
     // check whether the solver is alive and connected
     if (ok)
@@ -315,7 +315,7 @@ bool ClientCartesianController::getReferenceMode(bool *f)
 
 
 /************************************************************************/
-bool ClientCartesianController::setPosePriority(const ConstString &p)
+bool ClientCartesianController::setPosePriority(const string &p)
 {
     if (!connected)
         return false;
@@ -336,7 +336,7 @@ bool ClientCartesianController::setPosePriority(const ConstString &p)
 
 
 /************************************************************************/
-bool ClientCartesianController::getPosePriority(ConstString &p)
+bool ClientCartesianController::getPosePriority(string &p)
 {
     if (!connected)
         return false;
@@ -788,7 +788,7 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos,
     Bottle command, reply;
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
-    command.addList().read(const_cast<Vector&>(newRestPos));
+    command.addList().read(newRestPos);
 
     if (!portRpc.write(command,reply))
     {
@@ -854,7 +854,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
     Bottle command, reply;
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
-    command.addList().read(const_cast<Vector&>(newRestWeights));
+    command.addList().read(newRestWeights);
 
     if (!portRpc.write(command,reply))
     {
@@ -1424,7 +1424,7 @@ bool ClientCartesianController::getInfo(Bottle &info)
 /************************************************************************/
 void ClientCartesianController::eventHandling(Bottle &event)
 {
-    string type=event.get(0).asString().c_str();
+    string type=event.get(0).asString();
     double time=event.get(1).asDouble();
     double checkPoint=(type=="motion-ongoing")?event.get(2).asDouble():-1.0;
     map<string,CartesianEvent*>::iterator itr;
@@ -1436,7 +1436,7 @@ void ClientCartesianController::eventHandling(Bottle &event)
         if (itr->second!=NULL)
         {
             CartesianEvent &Event=*itr->second;
-            Event.cartesianEventVariables.type=ConstString(type.c_str());
+            Event.cartesianEventVariables.type=type;
             Event.cartesianEventVariables.time=time;
 
             if (checkPoint>=0.0)
@@ -1461,7 +1461,7 @@ void ClientCartesianController::eventHandling(Bottle &event)
         if (itr->second!=NULL)
         {
             CartesianEvent &Event=*itr->second;
-            Event.cartesianEventVariables.type=ConstString(type.c_str());
+            Event.cartesianEventVariables.type=type;
             Event.cartesianEventVariables.time=time;
 
             if (checkPoint>=0.0)
@@ -1479,7 +1479,7 @@ bool ClientCartesianController::registerEvent(CartesianEvent &event)
     if (!connected)
         return false;
 
-    string type=event.cartesianEventParameters.type.c_str();
+    string type=event.cartesianEventParameters.type;
     if (type=="motion-ongoing")
     {
         double checkPoint=event.cartesianEventParameters.motionOngoingCheckPoint;
@@ -1515,7 +1515,7 @@ bool ClientCartesianController::unregisterEvent(CartesianEvent &event)
     if (!connected)
         return false;
 
-    string type=event.cartesianEventParameters.type.c_str();
+    string type=event.cartesianEventParameters.type;
     if (type=="motion-ongoing")
     {
         double checkPoint=event.cartesianEventParameters.motionOngoingCheckPoint;

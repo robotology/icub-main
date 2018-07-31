@@ -1,7 +1,6 @@
 
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-
 /* Copyright (C) 2014  iCub Facility, Istituto Italiano di Tecnologia
  * Author: Marco Accame
  * email: marco.accame@iit.it
@@ -69,9 +68,11 @@ namespace eth {
         iethres_analogvirtual   = 5,
         iethres_analoginertial  = 6,
         iethres_analogmultienc  = 7,
+        iethres_analoginertial3 = 8,
+        iethres_temperature     = 9
     } iethresType_t;
 
-    enum { iethresType_numberof = 8 };
+    enum { iethresType_numberof = 10 };
 
 
     class IethResource

@@ -42,7 +42,7 @@ bool CanBusDoubleFTSensor::open(yarp::os::Searchable& config)
     }
 
     int period=config.find("period").asInt();
-    setRate(period);
+    setPeriod((double)period/1000.0);
 
     Property prop;
 
@@ -124,7 +124,7 @@ bool CanBusDoubleFTSensor::open(yarp::os::Searchable& config)
     sensor_start(config,0);
     sensor_start(config,1);
 
-    RateThread::start();
+    PeriodicThread::start();
     return true;
 }
 
@@ -279,7 +279,7 @@ bool CanBusDoubleFTSensor::sensor_stop(int sensor_number)
 bool CanBusDoubleFTSensor::close()
 {
     //stop the thread
-    RateThread::stop();
+    PeriodicThread::stop();
 
     //stop the sensors
     sensor_stop(0);

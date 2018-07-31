@@ -56,8 +56,6 @@ source_group("Source Files" FILES ${LM_MODULE_SRC}
 source_group("Header Files" FILES ${LM_HEADER})
 
 
-# add YARP include directories
-include_directories(${YARP_INCLUDE_DIRS})
 # add ACE dependence (temporary workaround)
 include_directories(${ACE_INCLUDE_DIRS})
 # add learningMachine library include directories

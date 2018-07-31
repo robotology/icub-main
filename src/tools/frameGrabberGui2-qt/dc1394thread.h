@@ -2,8 +2,8 @@
 #define DC1394THREAD_H
 
 #include <QThread>
+#include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/RemoteFrameGrabberDC1394.h>
 #include <QMutex>
 #include <QWaitCondition>
 #include <QSize>
@@ -79,9 +79,8 @@ public:
 
 private:
     yarp::dev::PolyDriver *grabberControl;
-    yarp::dev::IFrameGrabberControls        *fgControl;
-    yarp::dev::IFrameGrabberControls2       *fgControl2;
-    yarp::dev::IFrameGrabberControlsDC1394  *DC1394Control;
+    yarp::dev::IFrameGrabberControls       *fgControl;
+    yarp::dev::IFrameGrabberControlsDC1394 *DC1394Control;
 
     QMutex semaphore;
 

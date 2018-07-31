@@ -126,7 +126,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     if(config.check("Type") )
     {
         yDebug() << "Using new syntax";
-        yarp::os::ConstString type = config.find("Type").asString();
+        std::string type = config.find("Type").asString();
         if(type == "inertial")
         {
             _as_type=AS_Type_INERTIAL_MTB;
@@ -251,7 +251,7 @@ embObjAnalogSensor::embObjAnalogSensor(): analogdata(0)
 
     opened = false;
 
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         verbosewhenok = (bool)NetType::toInt(tmp);
@@ -660,7 +660,7 @@ bool embObjAnalogSensor::configServiceInertials(Searchable& globalConfig)
     {
         eOas_inertial_position_t pos = eoas_inertial_pos_none;
 
-        yarp::os::ConstString strpos = canmap.get(i+1).asString();
+        std::string strpos = canmap.get(i+1).asString();
 
         pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
         inertialServiceConfig.canmapofsupportedsensors[0][i] = pos;
@@ -674,7 +674,7 @@ bool embObjAnalogSensor::configServiceInertials(Searchable& globalConfig)
     {
         eOas_inertial_position_t pos = eoas_inertial_pos_none;
 
-        yarp::os::ConstString strpos = canmap.get(i+1).asString();
+        std::string strpos = canmap.get(i+1).asString();
 
         pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
         inertialServiceConfig.canmapofsupportedsensors[1][i] = pos;
@@ -737,7 +737,7 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
     {
         eOas_inertial_position_t pos = eoas_inertial_pos_none;
 
-        yarp::os::ConstString strpos = sensors.get(i+1).asString();
+        std::string strpos = sensors.get(i+1).asString();
 
         pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
 
@@ -756,7 +756,7 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
     {
         eOas_inertial_position_t pos = eoas_inertial_pos_none;
 
-        yarp::os::ConstString strpos = sensors.get(i+1).asString();
+        std::string strpos = sensors.get(i+1).asString();
 
         pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
 
@@ -802,7 +802,7 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 
 
 #if 0
-eOas_inertial1_position_t embObjAnalogSensor::getLocationOfInertialSensor(yarp::os::ConstString &strpos)
+eOas_inertial1_position_t embObjAnalogSensor::getLocationOfInertialSensor(std::string &strpos)
 {
     eOas_inertial1_position_t ret = eoas_inertial1_pos_none;
 

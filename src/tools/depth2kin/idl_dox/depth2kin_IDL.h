@@ -24,7 +24,7 @@ public:
    * Return the number of available experts.
    * @return the number of available experts.
    */
-  virtual int32_t getNumExperts();
+  virtual std::int32_t getNumExperts();
   /**
    * Clear the list of currently available experts.
    * @return true/false on success/failure.
@@ -85,13 +85,13 @@ public:
    * @param side the length of the window side.
    * @return true/false on success/failure.
    */
-  virtual bool setRoi(const int32_t side);
+  virtual bool setRoi(const std::int32_t side);
   /**
    * Return the side of the squared window used to filter data
    * collection in the image plane.
    * @return the window side.
    */
-  virtual int32_t getRoi();
+  virtual std::int32_t getRoi();
   /**
    * Set the vergence angle used to keep the gaze fixed.
    * @param block_eyes the value in degrees of the vergence. It must
@@ -173,7 +173,7 @@ public:
    * @param v the v-coordinate of the depth point in the image plane.
    * @return true/false on success/failure.
    */
-  virtual bool touch(const int32_t u, const int32_t v);
+  virtual bool touch(const std::int32_t u, const std::int32_t v);
   /**
    * Retrieve the compensated kinematic point corresponding to the input
    * depth point.
@@ -311,7 +311,7 @@ public:
    * @return true/false on success/failure.
    */
   virtual bool quit();
-  virtual bool read(yarp::os::ConnectionReader& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection) override;
   virtual std::vector<std::string> help(const std::string& functionName="--all");
 };
 

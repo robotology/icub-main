@@ -1,19 +1,11 @@
-/* 
- * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
+/*
+ * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+ * Copyright (C) 2006-2010 RobotCub Consortium
+ * All rights reserved.
  *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license. See the accompanying LICENSE file for
+ * details.
 */
 
 #include <cmath>
@@ -36,7 +28,7 @@ using namespace iCub::ctrl;
 Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
 {
     yAssert(_lim.rows()==y0.length());
-    dim=y0.length();
+    dim=(unsigned int)y0.length();
     x_old.resize(dim,0.0);
     applySat=true;
 
@@ -49,7 +41,7 @@ Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
 /************************************************************************/
 Integrator::Integrator(const double _Ts, const Vector &y0)
 {
-    dim=y0.length();
+    dim=(unsigned int)y0.length();
     x_old.resize(dim,0.0);
     applySat=false;
 
@@ -161,7 +153,7 @@ bool helperPID::getVectorFromOption(const Bottle &options, const char *key,
         if (Bottle *b=options.find(key).asList())
         {
             int len=(int)val.length();
-            int bSize=b->size();
+            int bSize=(int)b->size();
 
             size=bSize<len?bSize:len;
             for (int i=0; i<size; i++)
@@ -183,7 +175,7 @@ parallelPID::parallelPID(const double _Ts,
                          Ts(_Ts), Kp(_Kp), Ki(_Ki), Kd(_Kd), Wp(_Wp), Wi(_Wi), Wd(_Wd),
                          N(_N), Tt(_Tt), satLim(_satLim)
 {
-    dim=N.length();
+    dim=(unsigned int)N.length();
     u.resize(dim,0.0);
 
     uSat.resize(dim,0.0);
@@ -226,6 +218,11 @@ const Vector& parallelPID::compute(const Vector &ref, const Vector &fb)
     // integral part
     I=Int->integrate(Ki*(Wi*ref-fb)+(uSat-u)/Tt);
 
+    // enforce zero ouput of a disabled integrator
+    for (unsigned int i=0; i<dim; i++)
+        if (Ki[i]==0.0)
+            I[i]=0.0;
+
     // derivative part
     Vector inputD=Kd*(Wd*ref-fb);
     for (unsigned int i=0; i<dim; i++)
@@ -249,11 +246,11 @@ const Vector& parallelPID::compute(const Vector &ref, const Vector &fb)
 /************************************************************************/
 void parallelPID::reset(const Vector &u0)
 {
-    int len=u0.length()>(int)dim?dim:u0.length();
+    size_t len=u0.length()>(size_t)dim?(size_t)dim:u0.length();
 
     Vector y=Int->get();
     Vector z1(1,0.0);
-    for (int i=0; i<len; i++)
+    for (size_t i=0; i<len; i++)
     {
         y[i]=u0[i];
         Der[i]->init(z1);
@@ -390,7 +387,7 @@ seriesPID::seriesPID(const double _Ts,
                      const Vector &_N,  const Matrix &_satLim) :
                      Ts(_Ts), Kp(_Kp), Ti(_Ti), Kd(_Kd), N(_N), satLim(_satLim)
 {
-    dim=N.length();
+    dim=(unsigned int)N.length();
     u.resize(dim,0.0);
 
     uSat.resize(dim,0.0);

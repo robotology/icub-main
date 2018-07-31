@@ -1,18 +1,11 @@
-/* 
- * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
+/*
+ * Copyright (C) 2006-2018 Istituto Italiano di Tecnologia (IIT)
+ * Copyright (C) 2006-2010 RobotCub Consortium
+ * All rights reserved.
  *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+ * This software may be modified and distributed under the terms
+ * of the BSD-3-Clause license. See the accompanying LICENSE file for
+ * details.
 */
 
 /**
@@ -156,10 +149,10 @@ public:
 * track a time varying reference position. The stiction values 
 * are estimated during the rising and falling edge transitions. 
 */
-class OnlineStictionEstimator : public yarp::os::RateThread
+class OnlineStictionEstimator : public yarp::os::PeriodicThread
 {
 protected:
-    yarp::dev::IControlMode2   *imod;
+    yarp::dev::IControlMode    *imod;
     yarp::dev::IControlLimits  *ilim;
     yarp::dev::IEncoders       *ienc;
     yarp::dev::IPidControl     *ipid;
@@ -278,7 +271,7 @@ public:
      *  
      * @return true iff started successfully.
      */
-    virtual bool startEstimation() { return RateThread::start(); }
+    virtual bool startEstimation() { return PeriodicThread::start(); }
 
     /**
      * Check the current estimation status.
@@ -298,7 +291,7 @@ public:
     /**
      * Stop the estimation procedure.
      */
-    virtual void stopEstimation() { RateThread::stop(); }
+    virtual void stopEstimation() { PeriodicThread::stop(); }
 
     /**
      * Retrieve the estimation. 
@@ -347,14 +340,14 @@ public:
 * estimation, one for the plant validation, one for the stiction
 * estimation and one for validating the controller's design.
 */
-class OnlineCompensatorDesign : public yarp::os::RateThread
+class OnlineCompensatorDesign : public yarp::os::PeriodicThread
 {
 protected:
     OnlineDCMotorEstimator  plant;
     OnlineStictionEstimator stiction;
     Kalman                  predictor;
 
-    yarp::dev::IControlMode2    *imod;
+    yarp::dev::IControlMode     *imod;
     yarp::dev::IControlLimits   *ilim;
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IPositionControl *ipos;
@@ -647,7 +640,7 @@ public:
     /**
      * Stop any ongoing operation.
      */
-    virtual void stopOperation() { RateThread::stop(); }
+    virtual void stopOperation() { PeriodicThread::stop(); }
 
     /**
      * Retrieve the results of the current ongoing operation.

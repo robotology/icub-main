@@ -6,8 +6,6 @@ include(iCubUseQt5)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-include_directories(${YARP_INCLUDE_DIRS})
-
 set(frameGrabberGui2_qt_SRCS dc1394slider.cpp
                               dc1394sliderwb.cpp
                               dc1394thread.cpp
@@ -46,7 +44,6 @@ target_link_libraries(frameGrabberGui2-qt YARP::YARP_OS
                                           YARP::YARP_dev)
 qticub_use_modules(frameGrabberGui2-qt Widgets
                                        Concurrent)
-qticub_deprecate_with_cmake_version(2.8.11)
 if(WIN32 AND CMAKE_VERSION VERSION_LESS 2.8.11)
   target_link_libraries(frameGrabberGui2-qt Qt5::WinMain)
 endif()

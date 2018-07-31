@@ -632,7 +632,7 @@ protected:
     /************************************************************************/
     PolyDriver *waitPart(const Property &partOpt, const double ping_robot_tmo)
     {
-        string partName=partOpt.find("part").asString().c_str();
+        string partName=partOpt.find("part").asString();
         PolyDriver *pDrv=NULL;
 
         double t0=Time::now();
@@ -1010,7 +1010,7 @@ protected:
         loc->getExtrinsicsMatrix("right",HNR);
 
         ofstream fout;
-        string tweakFile=rf->getHomeContextPath().c_str();
+        string tweakFile=rf->getHomeContextPath();
         tweakFile+="/"+commData.tweakFile;
         fout.open(tweakFile.c_str());
         if (fout.is_open())
@@ -1103,9 +1103,6 @@ public:
         double ping_robot_tmo;
         Vector counterRotGain(2);
 
-        // request high resolution scheduling
-        Time::turboBoost();
-
         // save pointer to rf
         this->rf=&rf;
 
@@ -1117,15 +1114,15 @@ public:
         Bottle &tweakGroup=rf.findGroup("tweak");
 
         // get params from the command-line
-        ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString().c_str();
-        headName=rf.check("head",Value("head")).asString().c_str();
-        torsoName=rf.check("torso",Value("torso")).asString().c_str();
+        ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString();
+        headName=rf.check("head",Value("head")).asString();
+        torsoName=rf.check("torso",Value("torso")).asString();
         neckTime=trajTimeGroup.check("neck",Value(0.75)).asDouble();
         eyesTime=trajTimeGroup.check("eyes",Value(0.25)).asDouble();
         min_abs_vel=CTRL_DEG2RAD*fabs(rf.check("min_abs_vel",Value(0.0)).asDouble());
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();
 
-        commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
+        commData.robotName=rf.check("robot",Value("icub")).asString();
         commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-12.0)).asDouble();
         commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asDouble();
         commData.head_version=constrainHeadVersion(rf.check("head_version",Value(1.0)).asDouble());
@@ -1152,15 +1149,15 @@ public:
         {
             commData.rf_cameras.setQuiet();
             camerasGroup.check("context")?
-            commData.rf_cameras.setDefaultContext(camerasGroup.find("context").asString().c_str()):
-            commData.rf_cameras.setDefaultContext(rf.getContext().c_str());
+            commData.rf_cameras.setDefaultContext(camerasGroup.find("context").asString()):
+            commData.rf_cameras.setDefaultContext(rf.getContext());
             commData.rf_cameras.setDefaultConfigFile(camerasGroup.find("file").asString().c_str());
             commData.rf_cameras.configure(0,NULL);
         }
 
         commData.rf_tweak.setQuiet();
-        commData.rf_tweak.setDefaultContext(rf.getContext().c_str());
-        commData.tweakFile=tweakGroup.check("file",Value("tweak.ini")).asString().c_str();
+        commData.rf_tweak.setDefaultContext(rf.getContext());
+        commData.tweakFile=tweakGroup.check("file",Value("tweak.ini")).asString();
         commData.tweakOverwrite=(tweakGroup.check("overwrite",Value("on")).asString()=="on");
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,NULL);
@@ -1176,17 +1173,17 @@ public:
 
         // check if we have to retrieve IMU data from a different port
         if (imuGroup.check("source_port_name"))
-            remoteInertialName=imuGroup.find("source_port_name").asString().c_str();
+            remoteInertialName=imuGroup.find("source_port_name").asString();
 
         Property optTorso("(device remote_controlboard)");
-        optTorso.put("remote",remoteTorsoName.c_str());
-        optTorso.put("local",localTorsoName.c_str());
-        optTorso.put("part",torsoName.c_str());
+        optTorso.put("remote",remoteTorsoName);
+        optTorso.put("local",localTorsoName);
+        optTorso.put("part",torsoName);
 
         Property optHead("(device remote_controlboard)");
-        optHead.put("remote",remoteHeadName.c_str());
-        optHead.put("local",localHeadName.c_str());
-        optHead.put("part",headName.c_str());
+        optHead.put("remote",remoteHeadName);
+        optHead.put("local",localHeadName);
+        optHead.put("part",headName);
         // mixed position/velocity control entails
         // to send two packets per control slot
         optHead.put("writeStrict","on");
@@ -1226,8 +1223,8 @@ public:
         imuPort.setExchangeData(&commData);
         if (commData.stabilizationOn)
         {
-            imuPort.open((commData.localStemName+"/inertial:i").c_str());
-            if (Network::connect(remoteInertialName.c_str(),imuPort.getName().c_str()))
+            imuPort.open(commData.localStemName+"/inertial:i");
+            if (Network::connect(remoteInertialName,imuPort.getName()))
                 yInfo("Receiving IMU data from %s",remoteInertialName.c_str());
             else
             {
@@ -1250,7 +1247,7 @@ public:
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,20);
 
         commData.port_xd=new xdPort(slv);
-        commData.port_xd->open((commData.localStemName+"/xd:i").c_str());
+        commData.port_xd->open(commData.localStemName+"/xd:i");
 
         // this switch-on order does matter !!
         eyesRefGen->start();
@@ -1258,7 +1255,7 @@ public:
         ctrl->start();
         loc->start();
 
-        rpcPort.open((commData.localStemName+"/rpc").c_str());
+        rpcPort.open(commData.localStemName+"/rpc");
         attach(rpcPort);
 
         contextIdCnt=0;
@@ -1281,81 +1278,81 @@ public:
             switch (command.get(0).asVocab())
             {
                 //-----------------
-                case VOCAB3('g','e','t'):
+                case createVocab('g','e','t'):
                 {
                     if (command.size()>1)
                     {
                         int type=command.get(1).asVocab();
 
-                        if (type==VOCAB4('T','n','e','c'))
+                        if (type==createVocab('T','n','e','c'))
                         {
                             reply.addVocab(ack);
                             reply.addDouble(ctrl->getTneck());
                             return true;
                         }
-                        else if (type==VOCAB4('T','e','y','e'))
+                        else if (type==createVocab('T','e','y','e'))
                         {
                             reply.addVocab(ack);
                             reply.addDouble(ctrl->getTeyes());
                             return true;
                         }
-                        else if (type==VOCAB3('v','o','r'))
+                        else if (type==createVocab('v','o','r'))
                         {
                             Vector gain=eyesRefGen->getCounterRotGain();
                             reply.addVocab(ack);
                             reply.addDouble(gain[0]);
                             return true;
                         }
-                        else if (type==VOCAB3('o','c','r'))
+                        else if (type==createVocab('o','c','r'))
                         {
                             Vector gain=eyesRefGen->getCounterRotGain();
                             reply.addVocab(ack);
                             reply.addDouble(gain[1]);
                             return true;
                         }
-                        else if (type==VOCAB4('s','a','c','c'))
+                        else if (type==createVocab('s','a','c','c'))
                         {
                             reply.addVocab(ack);
                             reply.addInt((int)commData.saccadesOn);
                             return true;
                         }
-                        else if (type==VOCAB4('s','i','n','h'))
+                        else if (type==createVocab('s','i','n','h'))
                         {
                             reply.addVocab(ack);
                             reply.addDouble(commData.saccadesInhibitionPeriod);
                             return true;
                         }
-                        else if (type==VOCAB4('s','a','c','t'))
+                        else if (type==createVocab('s','a','c','t'))
                         {
                             reply.addVocab(ack);
                             reply.addDouble(commData.saccadesActivationAngle);
                             return true;
                         }
-                        else if (type==VOCAB4('t','r','a','c'))
+                        else if (type==createVocab('t','r','a','c'))
                         {
                             reply.addVocab(ack);
                             reply.addInt((int)ctrl->getTrackingMode());
                             return true;
                         }
-                        else if (type==VOCAB4('s','t','a','b'))
+                        else if (type==createVocab('s','t','a','b'))
                         {
                             reply.addVocab(ack);
                             reply.addInt((int)ctrl->getGazeStabilization());
                             return true;
                         }
-                        else if (type==VOCAB4('d','o','n','e'))
+                        else if (type==createVocab('d','o','n','e'))
                         {
                             reply.addVocab(ack);
                             reply.addInt((int)ctrl->isMotionDone());
                             return true;
                         }
-                        else if (type==VOCAB4('s','d','o','n'))
+                        else if (type==createVocab('s','d','o','n'))
                         {
                             reply.addVocab(ack);
                             reply.addInt((int)!commData.saccadeUnderway);
                             return true;
                         }
-                        else if (type==VOCAB4('p','i','t','c'))
+                        else if (type==createVocab('p','i','t','c'))
                         {
                             double min_deg,max_deg;
                             slv->getCurNeckPitchRange(min_deg,max_deg);
@@ -1365,7 +1362,7 @@ public:
                             reply.addDouble(max_deg);
                             return true;
                         }
-                        else if (type==VOCAB4('r','o','l','l'))
+                        else if (type==createVocab('r','o','l','l'))
                         {
                             double min_deg,max_deg;
                             slv->getCurNeckRollRange(min_deg,max_deg);
@@ -1375,7 +1372,7 @@ public:
                             reply.addDouble(max_deg);
                             return true;
                         }
-                        else if (type==VOCAB3('y','a','w'))
+                        else if (type==createVocab('y','a','w'))
                         {
                             double min_deg,max_deg;
                             slv->getCurNeckYawRange(min_deg,max_deg);
@@ -1385,13 +1382,13 @@ public:
                             reply.addDouble(max_deg);
                             return true;
                         }
-                        else if (type==VOCAB4('e','y','e','s'))
+                        else if (type==createVocab('e','y','e','s'))
                         {
                             reply.addVocab(ack);
                             reply.addDouble(commData.eyesBoundVer);
                             return true;
                         }
-                        else if (type==VOCAB4('n','t','o','l'))
+                        else if (type==createVocab('n','t','o','l'))
                         {
                             double angle=slv->getNeckAngleUserTolerance();
 
@@ -1399,7 +1396,7 @@ public:
                             reply.addDouble(angle);
                             return true;
                         }
-                        else if (type==VOCAB3('d','e','s'))
+                        else if (type==createVocab('d','e','s'))
                         {
                             Vector des;
                             if (ctrl->getDesired(des))
@@ -1409,7 +1406,7 @@ public:
                                 return true;
                             }
                         }
-                        else if (type==VOCAB3('v','e','l'))
+                        else if (type==createVocab('v','e','l'))
                         {
                             Vector vel;
                             if (ctrl->getVelocity(vel))
@@ -1419,9 +1416,9 @@ public:
                                 return true;
                             }
                         }
-                        else if ((type==VOCAB4('p','o','s','e')) && (command.size()>2))
+                        else if ((type==createVocab('p','o','s','e')) && (command.size()>2))
                         {
-                            string poseSel=command.get(2).asString().c_str();
+                            string poseSel=command.get(2).asString();
                             Vector x;
                             Stamp  stamp;
 
@@ -1437,14 +1434,14 @@ public:
                                 return true;
                             }
                         }
-                        else if ((type==VOCAB2('2','D')) && (command.size()>2))
+                        else if ((type==createVocab('2','D')) && (command.size()>2))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
                                 if (bOpt->size()>3)
                                 {
                                     Vector x(3);
-                                    string eye=bOpt->get(0).asString().c_str();
+                                    string eye=bOpt->get(0).asString();
                                     x[0]=bOpt->get(1).asDouble();
                                     x[1]=bOpt->get(2).asDouble();
                                     x[2]=bOpt->get(3).asDouble();
@@ -1459,16 +1456,16 @@ public:
                                 }
                             }
                         }
-                        else if ((type==VOCAB2('3','D')) && (command.size()>3))
+                        else if ((type==createVocab('3','D')) && (command.size()>3))
                         {
                             int subType=command.get(2).asVocab();
-                            if (subType==VOCAB4('m','o','n','o'))
+                            if (subType==createVocab('m','o','n','o'))
                             {
                                 if (Bottle *bOpt=command.get(3).asList())
                                 {
                                     if (bOpt->size()>3)
                                     {
-                                        string eye=bOpt->get(0).asString().c_str();
+                                        string eye=bOpt->get(0).asString();
                                         double u=bOpt->get(1).asDouble();
                                         double v=bOpt->get(2).asDouble();
                                         double z=bOpt->get(3).asDouble();
@@ -1483,7 +1480,7 @@ public:
                                     }
                                 }
                             }
-                            else if (subType==VOCAB4('s','t','e','r'))
+                            else if (subType==createVocab('s','t','e','r'))
                             {
                                 if (Bottle *bOpt=command.get(3).asList())
                                 {
@@ -1505,14 +1502,14 @@ public:
                                     }
                                 }
                             }
-                            else if (subType==VOCAB4('p','r','o','j'))
+                            else if (subType==createVocab('p','r','o','j'))
                             {
                                 if (Bottle *bOpt=command.get(3).asList())
                                 {
                                     if (bOpt->size()>6)
                                     {
                                         Vector plane(4);
-                                        string eye=bOpt->get(0).asString().c_str();
+                                        string eye=bOpt->get(0).asString();
                                         double u=bOpt->get(1).asDouble();
                                         double v=bOpt->get(2).asDouble();
                                         plane[0]=bOpt->get(3).asDouble();
@@ -1530,14 +1527,14 @@ public:
                                     }
                                 }
                             }
-                            else if (subType==VOCAB3('a','n','g'))
+                            else if (subType==createVocab('a','n','g'))
                             {
                                 if (Bottle *bOpt=command.get(3).asList())
                                 {
                                     if (bOpt->size()>3)
                                     {
                                         Vector ang(3);
-                                        string type=bOpt->get(0).asString().c_str();
+                                        string type=bOpt->get(0).asString();
                                         ang[0]=CTRL_DEG2RAD*bOpt->get(1).asDouble();
                                         ang[1]=CTRL_DEG2RAD*bOpt->get(2).asDouble();
                                         ang[2]=CTRL_DEG2RAD*bOpt->get(3).asDouble();
@@ -1550,7 +1547,7 @@ public:
                                 }
                             }
                         }
-                        else if ((type==VOCAB3('a','n','g')) && (command.size()>2))
+                        else if ((type==createVocab('a','n','g')) && (command.size()>2))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
@@ -1568,7 +1565,7 @@ public:
                                 }
                             }
                         }
-                        else if (type==VOCAB3('p','i','d'))
+                        else if (type==createVocab('p','i','d'))
                         {
                             Bottle options;
                             loc->getPidOptions(options);
@@ -1577,7 +1574,7 @@ public:
                             reply.addList()=options;
                             return true;
                         }
-                        else if (type==VOCAB4('i','n','f','o'))
+                        else if (type==createVocab('i','n','f','o'))
                         {
                             Bottle info;
                             if (getInfo(info))
@@ -1587,7 +1584,7 @@ public:
                                 return true;
                             }
                         }
-                        else if (type==VOCAB4('t','w','e','a'))
+                        else if (type==createVocab('t','w','e','a'))
                         {
                             Bottle options;
                             if (tweakGet(options))
@@ -1603,26 +1600,26 @@ public:
                 }
 
                 //-----------------
-                case VOCAB3('s','e','t'):
+                case createVocab('s','e','t'):
                 {
                     if (command.size()>2)
                     {
                         int type=command.get(1).asVocab();
-                        if (type==VOCAB4('T','n','e','c'))
+                        if (type==createVocab('T','n','e','c'))
                         {
                             double execTime=command.get(2).asDouble();
                             ctrl->setTneck(execTime);
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (type==VOCAB4('T','e','y','e'))
+                        else if (type==createVocab('T','e','y','e'))
                         {
                             double execTime=command.get(2).asDouble();
                             ctrl->setTeyes(execTime);
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (type==VOCAB3('v','o','r'))
+                        else if (type==createVocab('v','o','r'))
                         {
                             Vector gain=eyesRefGen->getCounterRotGain();
                             gain[0]=command.get(2).asDouble();
@@ -1630,7 +1627,7 @@ public:
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (type==VOCAB3('o','c','r'))
+                        else if (type==createVocab('o','c','r'))
                         {
                             Vector gain=eyesRefGen->getCounterRotGain();
                             gain[1]=command.get(2).asDouble();
@@ -1638,47 +1635,47 @@ public:
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (type==VOCAB4('s','a','c','c'))
+                        else if (type==createVocab('s','a','c','c'))
                         {
                             commData.saccadesOn=(command.get(2).asInt()>0);
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (type==VOCAB4('s','i','n','h'))
+                        else if (type==createVocab('s','i','n','h'))
                         {
                             double period=command.get(2).asDouble();
                             commData.saccadesInhibitionPeriod=period;
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (type==VOCAB4('s','a','c','t'))
+                        else if (type==createVocab('s','a','c','t'))
                         {
                             double angle=command.get(2).asDouble();
                             commData.saccadesActivationAngle=angle;
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (type==VOCAB4('n','t','o','l'))
+                        else if (type==createVocab('n','t','o','l'))
                         {
                             double angle=command.get(2).asDouble();
                             slv->setNeckAngleUserTolerance(angle);
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (type==VOCAB4('t','r','a','c'))
+                        else if (type==createVocab('t','r','a','c'))
                         {
                             bool mode=(command.get(2).asInt()>0);
                             ctrl->setTrackingMode(mode);
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (type==VOCAB4('s','t','a','b'))
+                        else if (type==createVocab('s','t','a','b'))
                         {
                             bool mode=(command.get(2).asInt()>0);
                             reply.addVocab(ctrl->setGazeStabilization(mode)?ack:nack);
                             return true;
                         }
-                        else if (type==VOCAB3('p','i','d'))
+                        else if (type==createVocab('p','i','d'))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
@@ -1687,7 +1684,7 @@ public:
                                 return true;
                             }
                         }
-                        else if (type==VOCAB4('t','w','e','a'))
+                        else if (type==createVocab('t','w','e','a'))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
@@ -1701,12 +1698,12 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('l','o','o','k'):
+                case createVocab('l','o','o','k'):
                 {
                     if (command.size()>2)
                     {
                         int type=command.get(1).asVocab();
-                        if (type==VOCAB2('3','D'))
+                        if (type==createVocab('3','D'))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
@@ -1725,13 +1722,13 @@ public:
                                 }
                             }
                         }
-                        else if (type==VOCAB4('m','o','n','o'))
+                        else if (type==createVocab('m','o','n','o'))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
                                 if (bOpt->size()>3)
                                 {
-                                    string eye=bOpt->get(0).asString().c_str();
+                                    string eye=bOpt->get(0).asString();
                                     double u=bOpt->get(1).asDouble();
                                     double v=bOpt->get(2).asDouble();
                                     double z;
@@ -1764,7 +1761,7 @@ public:
                                 }
                             }
                         }
-                        else if (type==VOCAB4('s','t','e','r'))
+                        else if (type==createVocab('s','t','e','r'))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
@@ -1788,14 +1785,14 @@ public:
                                 }
                             }
                         }
-                        else if (type==VOCAB3('a','n','g'))
+                        else if (type==createVocab('a','n','g'))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
                                 if (bOpt->size()>3)
                                 {
                                     Vector ang(3);
-                                    string type=bOpt->get(0).asString().c_str();
+                                    string type=bOpt->get(0).asString();
                                     ang[0]=CTRL_DEG2RAD*bOpt->get(1).asDouble();
                                     ang[1]=CTRL_DEG2RAD*bOpt->get(2).asDouble();
                                     ang[2]=CTRL_DEG2RAD*bOpt->get(3).asDouble();
@@ -1815,7 +1812,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('s','t','o','p'):
+                case createVocab('s','t','o','p'):
                 {
                     ctrl->stopControl();
                     reply.addVocab(ack);
@@ -1823,7 +1820,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('s','t','o','r'):
+                case createVocab('s','t','o','r'):
                 {
                     int id;
                     storeContext(&id);
@@ -1833,7 +1830,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('r','e','s','t'):
+                case createVocab('r','e','s','t'):
                 {
                     if (command.size()>1)
                     {
@@ -1849,7 +1846,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB3('d','e','l'):
+                case createVocab('d','e','l'):
                 {
                     if (command.size()>1)
                     {
@@ -1865,12 +1862,12 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('b','i','n','d'):
+                case createVocab('b','i','n','d'):
                 {
                     if (command.size()>2)
                     {
                         int joint=command.get(1).asVocab();
-                        if (joint==VOCAB4('p','i','t','c'))
+                        if (joint==createVocab('p','i','t','c'))
                         {
                             double min=command.get(2).asDouble();
                             double max=command.get(3).asDouble();
@@ -1878,7 +1875,7 @@ public:
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (joint==VOCAB4('r','o','l','l'))
+                        else if (joint==createVocab('r','o','l','l'))
                         {
                             double min=command.get(2).asDouble();
                             double max=command.get(3).asDouble();
@@ -1886,7 +1883,7 @@ public:
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (joint==VOCAB3('y','a','w'))
+                        else if (joint==createVocab('y','a','w'))
                         {
                             double min=command.get(2).asDouble();
                             double max=command.get(3).asDouble();
@@ -1894,7 +1891,7 @@ public:
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (joint==VOCAB4('e','y','e','s'))
+                        else if (joint==createVocab('e','y','e','s'))
                         {
                             double ver=command.get(2).asDouble();
                             eyesRefGen->bindEyes(ver);
@@ -1907,30 +1904,30 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('c','l','e','a'):
+                case createVocab('c','l','e','a'):
                 {
                     if (command.size()>1)
                     {
                         int joint=command.get(1).asVocab();
-                        if (joint==VOCAB4('p','i','t','c'))
+                        if (joint==createVocab('p','i','t','c'))
                         {
                             slv->clearNeckPitch();
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (joint==VOCAB4('r','o','l','l'))
+                        else if (joint==createVocab('r','o','l','l'))
                         {
                             slv->clearNeckRoll();
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (joint==VOCAB3('y','a','w'))
+                        else if (joint==createVocab('y','a','w'))
                         {
                             slv->clearNeckYaw();
                             reply.addVocab(ack);
                             return true;
                         }
-                        else if (joint==VOCAB4('e','y','e','s'))
+                        else if (joint==createVocab('e','y','e','s'))
                         {
                             eyesRefGen->clearEyes();
                             reply.addVocab(ack);
@@ -1942,12 +1939,12 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('r','e','g','i'):
+                case createVocab('r','e','g','i'):
                 {
                     if (command.size()>1)
                     {
                         int type=command.get(1).asVocab();
-                        if (type==VOCAB4('o','n','g','o'))
+                        if (type==createVocab('o','n','g','o'))
                         {
                             if (command.size()>2)
                             {
@@ -1965,12 +1962,12 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('u','n','r','e'):
+                case createVocab('u','n','r','e'):
                 {
                     if (command.size()>1)
                     {
                         int type=command.get(1).asVocab();
-                        if (type==VOCAB4('o','n','g','o'))
+                        if (type==createVocab('o','n','g','o'))
                         {
                             if (command.size()>2)
                             {
@@ -1988,12 +1985,12 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('l','i','s','t'):
+                case createVocab('l','i','s','t'):
                 {
                     if (command.size()>1)
                     {
                         int type=command.get(1).asVocab();
-                        if (type==VOCAB4('o','n','g','o'))
+                        if (type==createVocab('o','n','g','o'))
                         {
                             reply.addVocab(ack);
                             reply.addList()=ctrl->listMotionOngoingEvents();
@@ -2005,7 +2002,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('s','u','s','p'):
+                case createVocab('s','u','s','p'):
                 {
                     ctrl->suspend();
                     eyesRefGen->suspend();
@@ -2015,7 +2012,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB3('r','u','n'):
+                case createVocab('r','u','n'):
                 {
                     slv->resume();
                     eyesRefGen->resume();
@@ -2025,7 +2022,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('s','t','a','t'):
+                case createVocab('s','t','a','t'):
                 {
                     reply.addVocab(ack);
                     if (ctrl->isSuspended())

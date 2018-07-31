@@ -27,7 +27,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Thread.h>
 
 #include <fstream>
@@ -43,13 +43,13 @@ using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
 
-#define VCTP_TIME VOCAB4('t','i','m','e')
-#define VCTP_OFFSET VOCAB3('o','f','f')
-#define VCTP_CMD_NOW VOCAB4('c','t','p','n')
-#define VCTP_CMD_QUEUE VOCAB4('c','t','p','q')
-#define VCTP_CMD_FILE VOCAB4('c','t','p','f')
-#define VCTP_POSITION VOCAB3('p','o','s')
-#define VCTP_WAIT VOCAB4('w','a','i','t')
+#define VCTP_TIME       yarp::os::createVocab('t','i','m','e')
+#define VCTP_OFFSET     yarp::os::createVocab('o','f','f')
+#define VCTP_CMD_NOW    yarp::os::createVocab('c','t','p','n')
+#define VCTP_CMD_QUEUE  yarp::os::createVocab('c','t','p','q')
+#define VCTP_CMD_FILE   yarp::os::createVocab('c','t','p','f')
+#define VCTP_POSITION   yarp::os::createVocab('p','o','s')
+#define VCTP_WAIT       yarp::os::createVocab('w','a','i','t')
 
 #define ACTION_IDLE    0
 #define ACTION_START   1
@@ -103,7 +103,7 @@ public:
     IPositionControl *ipos_ll;
     IPositionDirect  *iposdir_ll;
     IPidControl      *ipid_ll;
-    IControlMode2    *icmd_ll;
+    IControlMode     *icmd_ll;
     IEncoders        *ienc_ll;
     IMotorEncoders   *imotenc_ll;
     int              n_joints;

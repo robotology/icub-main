@@ -148,10 +148,10 @@ public:
 class GetControlModes : public GetData
 {
 public:
-  void setInterface (IControlMode2 *, int joints);
+  void setInterface (IControlMode *, int joints);
   virtual bool getData(double *);
 
-  IControlMode2 *icmd;
+  IControlMode *icmd;
   int nj;
 };
 
@@ -168,10 +168,10 @@ public:
 class GetTrqErrs : public GetData
 {
 public:
-  void setInterface (ITorqueControl *);
+  void setInterface (IPidControl *);
   virtual bool getData(double *);
 
-  ITorqueControl *itrq;
+  IPidControl *ipid;
 };
 
 class GetTrqRefs : public GetData

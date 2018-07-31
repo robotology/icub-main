@@ -13,7 +13,7 @@ IF (NOT SKIP_embObjInertials)
   INCLUDE(../embObjLib/embObjLib.cmake)
 
 #   message(INFO " embObjInertials - embObj_includes: ${embObj_includes}, ${CMAKE_CURRENT_SOURCE_DIR}/")
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} )
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${iCubDev_INCLUDE_DIRS} )
 
   yarp_add_plugin(embObjInertials embObjInertials.cpp embObjInertials.h)
   TARGET_LINK_LIBRARIES(embObjInertials ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})

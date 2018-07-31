@@ -13,7 +13,7 @@
 
 
  // std
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 #include <iostream>
 
@@ -94,7 +94,7 @@ private:
     double _period;
     int    _initEmotionTrigger;
 
-    int getIndex(const ConstString cmd);
+    int getIndex(const std::string cmd);
     bool writePort(const char* cmd);
 
 public:
@@ -111,12 +111,12 @@ public:
     void initEmotion();
 
     // interface functions
-    virtual bool setLeftEyebrow(const ConstString cmd);
-    virtual bool setRightEyebrow(const ConstString cmd);
-    virtual bool setEyelids(const ConstString cmd);
-    virtual bool setMouth(const ConstString cmd);
-    virtual bool setAll(const ConstString cmd);
-    virtual bool setRaw(const ConstString cmd);
+    virtual bool setLeftEyebrow(const std::string cmd);
+    virtual bool setRightEyebrow(const std::string cmd);
+    virtual bool setEyelids(const std::string cmd);
+    virtual bool setMouth(const std::string cmd);
+    virtual bool setAll(const std::string cmd);
+    virtual bool setRaw(const std::string cmd);
 };
 
 

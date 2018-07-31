@@ -8,8 +8,7 @@ if(NOT SKIP_canBusDoubleFTSensor)
 
 if(ICUB_HAS_icub_firmware_shared)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ${YARP_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 yarp_add_plugin(canBusDoubleFTSensor CanBusDoubleFTSensor.h CanBusDoubleFTSensor.cpp)
 target_link_libraries(canBusDoubleFTSensor ${YARP_LIBRARIES})

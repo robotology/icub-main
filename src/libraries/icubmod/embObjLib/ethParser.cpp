@@ -244,7 +244,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
 
     // Type:
     Bottle b_ETH_BOARD_PROPERTIES_Type = groupEthBoardProps.findGroup("Type");
-    ConstString Type = b_ETH_BOARD_PROPERTIES_Type.get(1).asString();
+    std::string Type = b_ETH_BOARD_PROPERTIES_Type.get(1).asString();
     const char *strType = Type.c_str();
     // 1. compare with the exceptions which may be in some old xml files ("EMS4", "MC4PLUS", "MC2PLUS"), and then then call proper functions
     if(0 == strcmp(strType, "EMS4"))
@@ -438,7 +438,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
         if(!groupEthBoardActions_Monitor.isNull())
         {
             Bottle groupEthBoardActions_Monitor_enabled = groupEthBoardActions_Monitor.findGroup("enabled");
-            ConstString Ena = groupEthBoardActions_Monitor_enabled.get(1).asString();
+            std::string Ena = groupEthBoardActions_Monitor_enabled.get(1).asString();
             const char *strEna = Ena.c_str();
 
             if(0 == strcmp(strEna, "true"))

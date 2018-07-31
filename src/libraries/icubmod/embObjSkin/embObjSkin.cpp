@@ -56,7 +56,7 @@ EmbObjSkin::EmbObjSkin() :  mutex(1), _isDiagnosticPresent(false)
     _skCfg.numOfPatches = 0;
     _skCfg.totalCardsNum = 0;
 
-    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         verbosewhenok = (bool)NetType::toInt(tmp);
@@ -250,6 +250,9 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     _skCfg.totalCardsNum = 0;
 
 
+    servConfigSkin_t skinconfig;
+    parser->parseService(config, skinconfig);
+
     bPatches = config.findGroup("patches", "skin patches connected to this device");
     if(bPatches.isNull())
     {
@@ -325,28 +328,18 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     // fill the ethservice ...
 
     ethservice.configuration.type = eomn_serv_SK_skin;
-#if 0
-    // it is verified and it works
-    parser->parseGlobalBoardVersions(config);
 
-    servBoard_t mtb;
-    parser->getGlobalBoardVersion(eobrd_mtb, mtb);
 
-    ethservice.configuration.data.sk.skin.version.protocol.major = mtb.protocol.major;
-    ethservice.configuration.data.sk.skin.version.protocol.minor = mtb.protocol.minor;
+    ethservice.configuration.data.sk.skin.boardinfo.type = skinconfig.canboard.type;
 
-    ethservice.configuration.data.sk.skin.version.firmware.major = mtb.firmware.major;
-    ethservice.configuration.data.sk.skin.version.firmware.minor = mtb.firmware.minor;
-    ethservice.configuration.data.sk.skin.version.firmware.build = mtb.firmware.build;
-#else
-    // so far we dont verify presence of mtb and we use (0, 0), (0, 0, 0)
-    ethservice.configuration.data.sk.skin.version.protocol.major = 0;
-    ethservice.configuration.data.sk.skin.version.protocol.minor = 0;
+    ethservice.configuration.data.sk.skin.boardinfo.protocol.major = skinconfig.canboard.protocol.major;
+    ethservice.configuration.data.sk.skin.boardinfo.protocol.minor = skinconfig.canboard.protocol.minor;
 
-    ethservice.configuration.data.sk.skin.version.firmware.major = 0;
-    ethservice.configuration.data.sk.skin.version.firmware.minor = 0;
-    ethservice.configuration.data.sk.skin.version.firmware.build = 0;
-#endif
+    ethservice.configuration.data.sk.skin.boardinfo.firmware.major = skinconfig.canboard.firmware.major;
+    ethservice.configuration.data.sk.skin.boardinfo.firmware.minor = skinconfig.canboard.firmware.minor;
+    ethservice.configuration.data.sk.skin.boardinfo.firmware.build = skinconfig.canboard.firmware.build;
+
+
     ethservice.configuration.data.sk.skin.numofpatches = _skCfg.numOfPatches;
     if(ethservice.configuration.data.sk.skin.numofpatches > eomn_serv_skin_maxpatches)
     {
@@ -374,17 +367,6 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         }
     }
 
-
-
-//    //uncomment for debug only
-//    yError() << "totalCardsNum=" << _skCfg.totalCardsNum;
-//    for(int i=0; i<_skCfg.patchInfoList.size(); i++)
-//    {
-//        for(int j=0; j<_skCfg.patchInfoList[i].cardAddrList.size(); j++)
-//        {
-//            yError() << " elem num " << j << "of patch " <<_skCfg.patchInfoList[i].idPatch << "is " << _skCfg.patchInfoList[i].cardAddrList[j];
-//        }
-//    }
 
     if( _cfgReader.isDefaultBoardCfgPresent(config) && _cfgReader.isDefaultTriangleCfgPresent(config))
     {

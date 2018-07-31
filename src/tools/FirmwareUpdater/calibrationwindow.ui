@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1169</width>
+    <width>1424</width>
     <height>787</height>
    </rect>
   </property>
@@ -112,6 +112,9 @@
               <height>231</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When no calibration matrix &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; is used, this column displays the raw &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;values . &lt;/p&gt;&lt;p&gt;They are the analog values of the strain gauges compensated by the front-end amplifier and then acquired by the ADC peripheral. Their range is [-32K, +32K). &lt;/p&gt;&lt;p&gt;Else if a matrix &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; is selected, this colums displays the &lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; values.&lt;/p&gt;&lt;p&gt;They are the compensated force torque values in range [-32K, +32K) computed through the following formula:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;calibrationBias&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;currentBias&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <attribute name="horizontalHeaderDefaultSectionSize">
              <number>80</number>
             </attribute>
@@ -156,7 +159,7 @@
             </row>
             <column>
              <property name="text">
-              <string>S.G.</string>
+              <string>ADC-FT</string>
              </property>
             </column>
            </widget>
@@ -272,6 +275,9 @@
                 <height>231</height>
                </size>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In case no calibration matrix is used here are displayed statistics (max, min, variation) of the six ADC values in range [-32K, +32K); &lt;/p&gt;&lt;p&gt;else are displayed the calibrated values of force and torque rescaled to their physical limits: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt; = ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; / 32768 ) &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;/&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;fullscale&lt;/span&gt;&lt;/p&gt;&lt;p&gt;where &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; is element-wise multiplication between two vectors and&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;calibrationBias&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;currentBias&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <attribute name="horizontalHeaderStretchLastSection">
                <bool>true</bool>
               </attribute>
@@ -313,22 +319,22 @@
               </row>
               <column>
                <property name="text">
-                <string>Max Meaure</string>
+                <string>Max ADC</string>
                </property>
               </column>
               <column>
                <property name="text">
-                <string>Min Measure</string>
+                <string>Min ADC</string>
                </property>
               </column>
               <column>
                <property name="text">
-                <string>Diff Measure</string>
+                <string>Variation</string>
                </property>
               </column>
               <column>
                <property name="text">
-                <string>Calib Measure</string>
+                <string>Calibrated Values of Force and Torque</string>
                </property>
               </column>
              </widget>
@@ -385,6 +391,9 @@
                    <pointsize>8</pointsize>
                   </font>
                  </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The fullscale values have range [0, +64K) and transform the values of FT from their [-32K, +32K) digital range into their physical range of force and torque with the transformation: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt; = ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; / 32768 ) &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙ &lt;/span&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;fullscale&lt;/span&gt;, where &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; is the element-wise vector product.&lt;/p&gt;&lt;p&gt;The fullscale values are not used by the STRAIN but are stored in its EEPROM and used by external programs.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <attribute name="horizontalHeaderDefaultSectionSize">
                   <number>70</number>
                  </attribute>
@@ -429,7 +438,7 @@
                  </row>
                  <column>
                   <property name="text">
-                   <string>Full Scale</string>
+                   <string>Fullscale</string>
                   </property>
                  </column>
                 </widget>
@@ -445,6 +454,9 @@
                  <layout class="QHBoxLayout" name="horizontalLayout_3">
                   <item>
                    <widget class="QLabel" name="label">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The matrix gain which so far is always 1.0&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string>Matrix Gain:</string>
                     </property>
@@ -484,6 +496,9 @@
                   <font>
                    <pointsize>8</pointsize>
                   </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Here are the calibration matrices represented in 1Q15 format. &lt;/p&gt;&lt;p&gt;Some values: +1.0 - 2&lt;span style=&quot; vertical-align:super;&quot;&gt;-15&lt;/span&gt; -&amp;gt; 0x7FFF; -1.0 -&amp;gt; 0x8000; +0.5 -&amp;gt; 0x4000; -0.5 -&amp;gt; 0xC000. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <attribute name="horizontalHeaderVisible">
                   <bool>false</bool>
@@ -986,6 +1001,9 @@
                </item>
                <item>
                 <widget class="QPushButton" name="btnSetCalibration">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It send the selected matrix to the STRAIN.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string>Send Matrix</string>
                  </property>
@@ -993,6 +1011,9 @@
                </item>
                <item>
                 <widget class="QPushButton" name="btnResetCalib">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It loads an identity matrix where diagonal = 0x7FFF, or +1-2&lt;span style=&quot; vertical-align:super;&quot;&gt;-15&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string>Load Identity Matrix</string>
                  </property>
@@ -1000,6 +1021,9 @@
                </item>
                <item>
                 <widget class="QPushButton" name="btnLoadCalibFile">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It loads a calibration .dat file in the GUI&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string>Load Calibration File</string>
                  </property>
@@ -1007,6 +1031,9 @@
                </item>
                <item>
                 <widget class="QPushButton" name="btnSaveCalibFile">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Used in calibration procedure to save the final .dat file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string>Save Calibration File</string>
                  </property>
@@ -1014,6 +1041,9 @@
                </item>
                <item>
                 <widget class="QPushButton" name="btnImportCalibMatrix">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Used in calibration procedure to import the matrix file computed from acquisition values by means of matlab optimisation procedure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
                   <string>Import Calib Matrix</string>
                  </property>
@@ -1072,6 +1102,9 @@
               <height>231</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Here are some parameters. They all are stored inside the EEPROM of STRAIN apart from Curr Bias. &lt;/p&gt;&lt;p&gt;The amplifier gain and offset are applied to the SG values in the analog frontend before ADC acquisition. The gain is in floating point and the offset is in range [0, +64K). The used formula is:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt; = &lt;span style=&quot; text-decoration: overline;&quot;&gt;gain &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;straingauge&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;offset&lt;/span&gt;, where &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; is the element-wise vector multiplication&lt;/p&gt;&lt;p&gt;The calibration bias and the current bias are terms applied in the digital domain to transform the acquired ADC value according to the formula:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;calibrationBias&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;currentBias&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Note&lt;/span&gt;. The Calib Bias as stored inside the calibration file is shown inside ()&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <attribute name="horizontalHeaderDefaultSectionSize">
              <number>120</number>
             </attribute>
@@ -1116,7 +1149,12 @@
             </row>
             <column>
              <property name="text">
-              <string>Offset</string>
+              <string>Amplifier Gain</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Amplifier Offset</string>
              </property>
             </column>
             <column>
@@ -1136,13 +1174,16 @@
             <item>
              <widget class="QGroupBox" name="groupBox_3">
               <property name="title">
-               <string>Automatic Offset Adjustment</string>
+               <string>Regulations</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_2">
                <item>
                 <widget class="QPushButton" name="btnAutoAdjust">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This regulation operates on the amplifiers in teh analog front-end.&lt;/p&gt;&lt;p&gt;It sets the gain of the amplifiers to pre-defined values and then it sets the offsets so that ADC readings are equal to the target value in the slider below. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                  <property name="text">
-                  <string>Adjust</string>
+                  <string>Tune Amplifier</string>
                  </property>
                 </widget>
                </item>
@@ -1150,6 +1191,9 @@
                 <layout class="QHBoxLayout" name="horizontalLayout_9">
                  <item>
                   <widget class="QSlider" name="slider_zero">
+                   <property name="toolTip">
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Target value of ADC reading. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Beware&lt;/span&gt;: it is in range [0, +64K)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -1169,6 +1213,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="btnSetCalibBias">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This regulation operates in the digital domain after ADC acquisition.&lt;/p&gt;&lt;p&gt;It sets the &lt;span style=&quot; text-decoration: overline;&quot;&gt;calibrationBias&lt;/span&gt; value equal to negative of &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt;, so that the value multiplied with the matrix &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; is zero. &lt;/p&gt;&lt;p&gt;Here is the formula: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;calibrationBias&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;currentBias&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Set Calibration Bias</string>
               </property>
@@ -1176,6 +1223,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="btnResetCalibBias">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This regulation operates in the digital domain after ADC acquisition.&lt;/p&gt;&lt;p&gt;It forces the &lt;span style=&quot; text-decoration: overline;&quot;&gt;calibrationBias&lt;/span&gt; value equal to zero. &lt;/p&gt;&lt;p&gt;Here is the formula: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;calibrationBias&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;currentBias&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Reset Calibration Bias</string>
               </property>
@@ -1183,6 +1233,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="btnSetCurrBias">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This regulation operates in the digital domain after ADC acquisition.&lt;/p&gt;&lt;p&gt;It sets the &lt;span style=&quot; text-decoration: overline;&quot;&gt;currentBias&lt;/span&gt; so that &lt;span style=&quot; text-decoration: overline;&quot;&gt;valueFT&lt;/span&gt; is all zero.  &lt;/p&gt;&lt;p&gt;Here is the formula: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;calibrationBias&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;currentBias&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Important&lt;/span&gt;: these values are not stored in EEPROM&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Set Current Bias</string>
               </property>
@@ -1190,6 +1243,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="btnResetCurrBias">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This regulation operates in the digital domain after ADC acquisition.&lt;/p&gt;&lt;p&gt;It forces the &lt;span style=&quot; text-decoration: overline;&quot;&gt;currentBias&lt;/span&gt; value equal to zero. &lt;/p&gt;&lt;p&gt;Here is the formula: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;calibrationBias&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;currentBias&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Important&lt;/span&gt;: these values are not stored in EEPROM&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Reset Current Bias</string>
               </property>
@@ -1270,7 +1326,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1169</width>
+     <width>1424</width>
      <height>25</height>
     </rect>
    </property>

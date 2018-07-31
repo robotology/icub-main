@@ -38,7 +38,7 @@ bool ObjectPropertiesCollectorPort::getStereoPosition(const string &obj_name, Ve
     Bottle &bTempAsk=bAsk.addList().addList();
     bTempAsk.addString("name");
     bTempAsk.addString("==");
-    bTempAsk.addString(obj_name.c_str());
+    bTempAsk.addString(obj_name);
 
     this->write(bAsk,bReply);
 
@@ -96,7 +96,7 @@ bool ObjectPropertiesCollectorPort::getCartesianPosition(const string &obj_name,
     Bottle &bTempAsk=bAsk.addList().addList();
     bTempAsk.addString("name");
     bTempAsk.addString("==");
-    bTempAsk.addString(obj_name.c_str());
+    bTempAsk.addString(obj_name);
 
     this->write(bAsk,bReply);
 
@@ -148,7 +148,7 @@ bool ObjectPropertiesCollectorPort::getKinematicOffsets(const string &obj_name, 
     Bottle &bTempAsk=bAsk.addList().addList();
     bTempAsk.addString("name");
     bTempAsk.addString("==");
-    bTempAsk.addString(obj_name.c_str());
+    bTempAsk.addString(obj_name);
 
     this->write(bAsk,bReply);
 
@@ -202,7 +202,7 @@ bool ObjectPropertiesCollectorPort::setKinematicOffsets(const string &obj_name, 
     Bottle &bTempAsk=bAsk.addList().addList();
     bTempAsk.addString("name");
     bTempAsk.addString("==");
-    bTempAsk.addString(obj_name.c_str());
+    bTempAsk.addString(obj_name);
 
     this->write(bAsk,bReply);
 
@@ -352,7 +352,7 @@ bool ObjectPropertiesCollectorPort::setAction(const string &act_name, const Bott
     bEntity.addString("entity"); bEntity.addString("action");
 
     Bottle &bName=bTempAdd.addList();
-    bName.addString("name"); bName.addString(act_name.c_str());
+    bName.addString("name"); bName.addString(act_name);
     Bottle &bTraj= bTempAdd.addList();
     bTraj.addString("trajectory"); bTraj.addList()=*trajectory;
 
@@ -369,7 +369,7 @@ bool ObjectPropertiesCollectorPort::getAction(const string &act_name, Bottle *tr
     Bottle &bTempAsk=bAsk.addList().addList();
     bTempAsk.addString("name");
     bTempAsk.addString("==");
-    bTempAsk.addString(act_name.c_str());
+    bTempAsk.addString(act_name);
 
     this->write(bAsk,bReply);
 
