@@ -24,6 +24,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(ICUB_COMPILE_BINDINGS "Compile optional language bindings"  FALSE)
+
 find_package(YARP 3.1.0 REQUIRED)
 message(STATUS "YARP is version: ${YARP_VERSION}")
 
@@ -169,5 +171,9 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubPackage.cmake)
 
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake")
+
+if(ICUB_COMPILE_BINDINGS)
+  add_subdirectory(bindings)
+endif()
 
 #############

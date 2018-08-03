@@ -6,10 +6,12 @@ cmake_minimum_required(VERSION 2.6.4)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 
-find_package(YARP REQUIRED)
-include_directories(${YARP_INCLUDE_DIRS})
-link_directories(${YARP_LIBRARY_DIRS})
-link_libraries(${YARP_LIBRARIES})
+# Find YARP for bindings-only builds
+find_package(YARP COMPONENTS conf OS sig dev math gsl REQUIRED)
+foreach(_component conf OS sig dev)
+  get_property(YARP_${_component}_INCLUDE_DIRS TARGET YARP::YARP_${_component} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  include_directories(${YARP_${_component}_INCLUDE_DIRS})
+endforeach()
 
 find_package(ICUB REQUIRED)
 include_directories(${ICUB_INCLUDE_DIRS})
@@ -67,24 +69,38 @@ if(CREATE_PYTHON)
     # message("-->${PYTHON_LIBRARY} ${PYTHON_DIR}")
 
     include_directories(${PYTHON_INCLUDE_PATH})
-    swig_add_module(icub python icub.i)
+    swig_add_library(icub_python
+                     LANGUAGE python
+                     SOURCES icub.i)
+    target_include_directories(${SWIG_MODULE_icub_python_REAL_NAME} SYSTEM PRIVATE ${PYTHON_INCLUDE_PATH})
 endif(CREATE_PYTHON)
 
 if(CREATE_RUBY)
     find_package(Ruby REQUIRED)
     set(CMAKE_SWIG_FLAGS "-Wall;-module;icub")
     include_directories(${RUBY_INCLUDE_PATH})
-    swig_add_module(icub ruby icub.i)
-    swig_link_libraries(icub ${RUBY_LIBRARY})
-    set_target_properties(icub PROPERTIES PREFIX "")
+    swig_add_library(icub_ruby
+                     LANGUAGE ruby
+                     SOURCES icub.i)
+    swig_link_libraries(icub_ruby ${RUBY_LIBRARY})
+    target_include_directories(${SWIG_MODULE_icub_ruby_REAL_NAME} SYSTEM PRIVATE ${RUBY_INCLUDE_PATH})
+
+    set_target_properties(${SWIG_MODULE_icub_ruby_REAL_NAME} PROPERTIES PREFIX ""
+                                                                        OUTPUT_NAME "icub")
 endif(CREATE_RUBY)
 
 if(CREATE_JAVA)
     set(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/yarp")
     set(CMAKE_SWIG_FLAGS "-package;yarp;-Wall;-module;icub")
+    find_package(Java REQUIRED)
     find_package(JNI REQUIRED)
-    include_directories(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
-    swig_add_module(icub java icub.i)
+    include_directories(SYSTEM ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
+
+    swig_add_library(icub_java
+                     LANGUAGE java
+                     SOURCES icub.i)
+
+    swig_link_libraries(icub_java ${SWIG_YARP_LIBRARIES})
     #option (CREATE_JAVA_CLASS_FILES "Compile java code with javac" ON)
     #if(CREATE_JAVA_CLASS_FILES)
     #  ADD_CUSTOM_COMMAND(TARGET icub
@@ -98,17 +114,22 @@ if(CREATE_JAVA)
 endif(CREATE_JAVA)
 
 if(CREATE_CSHARP)
-    set(target_name icub)
-    set(CMAKE_SWIG_FLAGS "-Wall;-module;icub")
-    SWIG_ADD_MODULE(icub csharp icub.i)
+  swig_add_library(icub_csharp
+                     LANGUAGE csharp
+                     SOURCES icub.i)
+
+  swig_link_libraries(icub_csharp ${SWIG_YARP_LIBRARIES})
+  set_target_properties(${SWIG_MODULE_icub_csharp_REAL_NAME} PROPERTIES OUTPUT_NAME "icub")
 endif(CREATE_CSHARP)
 
 IF (CREATE_LUA)
   SET(CMAKE_SWIG_FLAGS "-Wall;-module;icub")
-  find_package(Lua51 REQUIRED) 
-  INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR})
-  SWIG_ADD_MODULE(icub lua icub.i)
-  SWIG_LINK_LIBRARIES(icub ${LUA_LIBRARY})
+  find_package(Lua REQUIRED)
+  include_directories(SYSTEM ${LUA_INCLUDE_DIR})
+  swig_add_library(icub_lua
+                   LANGUAGE lua
+                   SOURCES icub.i)
+  swig_link_libraries(icub_lua ${LUA_LIBRARY})
   IF (UNIX)
     ADD_CUSTOM_COMMAND(TARGET icub
     POST_BUILD
