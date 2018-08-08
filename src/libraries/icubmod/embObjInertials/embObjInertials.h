@@ -112,6 +112,8 @@ private:
     unsigned int    counterSat;
     unsigned int    counterError;
     unsigned int    counterTimeout;
+    const double    gyrFactor = 250.0/32768;
+    const double    accFactor = (2*9.81)/32768;
 
     ////////////////////
     // parameters
