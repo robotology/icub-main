@@ -166,12 +166,21 @@ bool CamCalibPort::selectBottleFromMap(double time,
     std::map<double, yarp::os::Bottle>::iterator it_prev, it_next;
 
     m.lock();
-    it_next = datamap->lower_bound(time);
+
+	it_next = datamap->lower_bound(time);
 
     // wait until we receive a sample with a time greater than image time
-    while(it_next->first < time) {
+	int count = 0;
+	while(it_next == datamap->end() || it_next->first < time)
+	{
+		count++;
         m.unlock();
         yarp::os::Time::delay(0.001);
+		if (count >= 1000)
+		{
+			yWarning() << "Clock out of sync, check your NTPD settings";
+			return false;
+		}
         m.lock();
         it_next = datamap->lower_bound(time);
     }
@@ -548,8 +557,8 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
     _prtImgIn.setLeftEye((strGroup == "CAMERA_CALIBRATION_LEFT") ? true : false);
     _prtImgIn.setMaxDelay(maxDelay);
     _prtImgIn.setUseIMU(rf.check("useIMU"));
-    _prtImgIn.setUseIMU(rf.check("useTorso"));
-    _prtImgIn.setUseIMU(rf.check("useEyes"));
+    _prtImgIn.setUseTorso(rf.check("useTorso"));
+    _prtImgIn.setUseEyes(rf.check("useEyes"));
     _prtImgIn.useCallback();
     _prtImgOut.open(getName("/out"));
     _configPort.open(getName("/conf"));
