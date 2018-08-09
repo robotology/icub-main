@@ -46,7 +46,7 @@ private:
 public:
     BroadcastingThread(int period=1): PeriodicThread((double)period/1000.0)
     {
-        port_data_out.open("/trajectoryPlayer/data_out:o");
+        port_data_out.open("/trajectoryPlayer/all_joints_data_out:o");
     }
 
     ~BroadcastingThread()
@@ -172,7 +172,7 @@ public:
     bool                  enable_execute_joint_command;
     double                start_time;
 
-    WorkingThread(int period=5): PeriodicThread((double)period/1000.0)
+    WorkingThread(double period=5): PeriodicThread((double)period/1000.0)
     {
         enable_execute_joint_command = true;
         //*** open the output port
@@ -210,7 +210,7 @@ public:
 
         for (int j = 0; j < nj; j++)
         {
-            driver->iposdir_ll->setPosition(j, ll[j]);
+            driver->setPosition(j, ll[j]);
         }
         return true;
     }
@@ -234,13 +234,12 @@ public:
 
         //quick reads the current position
         double encs[50];
-        if (driver && driver->ienc_ll)
+        if (driver)
         {
-            //driver->ienc_ll->getEncoders(encs);
-            int nj; driver->ienc_ll->getAxes(&nj);
+            int nj= actions.action_vector[action_id].get_n_joints();
             for (int j = 0; j < nj; j++)
             {
-                driver->ienc_ll->getEncoder(j, &encs[j]);
+                driver->getEncoder(j, &encs[j]);
             }
         }
         else
@@ -287,7 +286,7 @@ public:
             int nj = actions.action_vector[0].get_n_joints();
             for (int j = 0; j < nj; j++)
             {
-                driver->icmd_ll->setControlMode(j, VOCAB_CM_POSITION);
+                driver->setControlMode(j, VOCAB_CM_POSITION);
             }
             actions.current_status = ACTION_IDLE;
         }
@@ -326,12 +325,12 @@ public:
             {
                 if (actions.forever==false)
                 {
-                    yInfo("sequence complete");
+                    yInfo("sequence completed in: %f s",yarp::os::Time::now()-start_time);
                     actions.current_status=ACTION_RESET;
                 }
                 else
                 {
-                    yInfo("sequence complete, restarting");
+                    yInfo("sequence completed in: %f s, restarting", yarp::os::Time::now() - start_time);
                     actions.current_action=0;
                     start_time = yarp::os::Time::now();
                 }
@@ -345,15 +344,15 @@ public:
                 int nj = actions.action_vector[0].get_n_joints();
                 for (int j = 0; j < nj; j++)
                 {
-                    driver->icmd_ll->setControlMode(j, VOCAB_CM_POSITION);
+                    driver->setControlMode(j, VOCAB_CM_POSITION);
                 }
                 yarp::os::Time::delay(0.1);
                 for (int j = 0; j < nj; j++)
                 {
-                    driver->ipos_ll->positionMove(j, ll[j]);
+                    driver->positionMove(j, ll[j]);
                 }
                 
-                yInfo() << "going to to home position";
+                yInfo() << "going to home position";
                 double enc[50];
                 int loops = 100;
                 bool check = true;
@@ -362,7 +361,7 @@ public:
                     check = true;
                     for (int j = 0; j < nj; j++)
                     {
-                        driver->ienc_ll->getEncoder(j, &enc[j]);
+                        driver->getEncoder(j, &enc[j]);
                         double err = fabs(enc[j] - ll[j]);
                         check &= (err < 2.0);
                     }
@@ -376,7 +375,7 @@ public:
 
                     for (int j = 0; j <nj; j++)
                     {
-                        driver->icmd_ll->setControlMode(j, VOCAB_CM_POSITION_DIRECT);
+                        driver->setControlMode(j, VOCAB_CM_POSITION_DIRECT);
                     }
                     yarp::os::Time::delay(0.1);
                     compute_and_send_command(0);
@@ -396,7 +395,7 @@ public:
                     {
                         for (int j = 0; j <nj; j++)
                         {
-                            driver->icmd_ll->setControlMode(j, VOCAB_CM_POSITION_DIRECT);
+                            driver->setControlMode(j, VOCAB_CM_POSITION_DIRECT);
                         }
                         yarp::os::Time::delay(0.1);
                         compute_and_send_command(0);
@@ -478,7 +477,7 @@ public:
 
         if (rf.check("execute")==true)
         {
-            yInfo() << "Enablig iPid->setReference() controller";
+            yInfo() << "Enabling iPid->setReference() controller";
             w_thread.enable_execute_joint_command = true;
         }
         else
@@ -510,15 +509,35 @@ public:
                 return false;
             }
 
-            if (req_joints < robot.n_joints) 
-            {
-                yWarning () << "changing n joints from" << robot.n_joints << "to" << req_joints;
-                robot.n_joints = req_joints;
-            }
-            else if (req_joints > robot.n_joints)
+            if (req_joints > robot.n_joints)
             {
                 yError() << "Requested number of joints exceeds the number of available joints on the robot!";
                 return false;
+            }
+
+            if (req_joints < robot.n_joints)
+            {
+                yWarning() << "changing n joints from" << robot.n_joints << "to" << req_joints;
+                robot.n_joints = req_joints;
+            }
+
+            if (rf.check("jointsMap"))
+            {
+                Bottle* b = rf.find("jointsMap").asList();
+                if (!b) { yError() << "Error parsing parameter jointsMap";  return false; }
+                if (b->size() != req_joints) { yError() << "invalid size of jointsMap parameter"; return false; }
+                for (int i = 0; i < b->size(); i++)
+                {
+                    robot.joints_map[i] = b->get(i).asInt();
+                }
+            }
+            else
+            {
+                //create a default joint map
+                for (int i = 0; i < req_joints; i++)
+                {
+                    robot.joints_map[i] = i;
+                }
             }
 
             if (!w_thread.actions.openFile(filename,robot.n_joints))
@@ -532,7 +551,7 @@ public:
             yWarning() << "no sequence files load.";
         }
 
-        yInfo() << "module succesffully configured. ready.";
+        yInfo() << "module successfully configured. ready.";
         return true;
     }
 
@@ -684,6 +703,7 @@ int main(int argc, char *argv[])
     {
         yInfo() << "Options:";
         yInfo() << "\t--joints       <n>:          number of joints, default 6";
+        yInfo() << "\t--jointsMap    (1 2 3...)    map of the joints to be controller. Size must be equal to --joints";
         yInfo() << "\t--name         <moduleName>: set new module name";
         yInfo() << "\t--robot        <robotname>:  robot name";
         yInfo() << "\t--part         <robotname>:  part name";
