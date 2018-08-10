@@ -48,7 +48,6 @@ _armDriver = yarp.PolyDriver(props)
 
 # query motor control interfaces
 _iPos = _armDriver.viewIPositionControl()
-iVel = _armDriver.viewIVelocityControl()
 _iEnc_arm = _armDriver.viewIEncoders()
 
 # retrieve number of joints
