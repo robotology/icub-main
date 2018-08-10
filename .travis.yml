@@ -22,10 +22,10 @@ before_script:
   # macOS dependencies
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew upgrade python; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/formulae; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/cask; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies yarp; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install gsl goocanvas sdl sdl_gfx sdl_image; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install opencv; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies icub-main --with-ipopt --with-opencv; fi
   # add QT5 to path so that it can be found by CMake
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="$PATH:/usr/local/opt/qt/bin"; fi
   #use the same set of cmake options used in the dashboard build
