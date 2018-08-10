@@ -25,10 +25,13 @@ if connected:
 
     scl = icub.skinContactList()
 
-    scl = skinEventsPortIn.read( True)
+    scl = skinEventsPortIn.read(True)
 
     if scl is not None:
-        print scl.toString(3)
+        print scl.toString()
+
+    dcl = scl.toDynContactList()
+    print dcl.toString()
 
 else:
     log.error('no connection')

@@ -14,3 +14,6 @@ endmacro()
 file(GLOB icub_python_test_files "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 
 add_python_unit_test(test_load.py)
+add_python_unit_test(test_ctrLib.py)
+add_python_unit_test(test_iKin.py)
+add_python_unit_test(test_skinDynLib.py)

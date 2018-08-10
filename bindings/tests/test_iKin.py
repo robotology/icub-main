@@ -15,9 +15,17 @@ import icub
 def rad_to_deg(V):
     V_deg = yarp.Vector(V.size(), 0.0)
     for i in range(V.size()):
-        V_deg[i] = V[i]*180./pi
+        V_deg[i] = V[i]*icub.CTRL_RAD2DEG
 
     return V_deg
+
+
+def deg_to_rad(V):
+    V_rad = yarp.Vector(V.size(), 0.0)
+    for i in range(V.size()):
+        V_rad[i] = V[i]*icub.CTRL_DEG2RAD
+
+    return V_rad
 
 
 yarp.Network.init()
@@ -25,7 +33,7 @@ icub.init()
 
 name = 'test'
 robot = 'icubSim'
-arm_name = 'right_arm'
+arm_name = 'left_arm'
 
 # To use yarp log function
 log = yarp.Log()
@@ -80,6 +88,6 @@ joint_angles = yarp.Vector(_iArm.getAng())
 log.debug('[{:s}] joint angles (rad) obtained with iKin: {:s}'.format(name, rad_to_deg(joint_angles).toString(3, 3)))
 
 # End-effector: estimated with iKin
-arm_real = _iArm.EndEffPose(False)
+arm_real = _iArm.EndEffPose(deg_to_rad(encs),False)
 log.debug('[{:s}] End-effector pose obtained with iKin : {:s}'.format(name, arm_real.toString(3,3)))
 
