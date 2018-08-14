@@ -8,7 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 
 # Find YARP for bindings-only builds
 find_package(YARP COMPONENTS conf OS sig dev math gsl REQUIRED)
-foreach(_component conf OS sig dev)
+foreach(_component conf OS sig dev math gsl)
   get_property(YARP_${_component}_INCLUDE_DIRS TARGET YARP::YARP_${_component} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
   include_directories(${YARP_${_component}_INCLUDE_DIRS})
 endforeach()
@@ -73,6 +73,9 @@ if(CREATE_PYTHON)
                      LANGUAGE python
                      SOURCES icub.i)
     target_include_directories(${SWIG_MODULE_icub_python_REAL_NAME} SYSTEM PRIVATE ${PYTHON_INCLUDE_PATH})
+    set_target_properties(${SWIG_MODULE_icub_python_REAL_NAME} PROPERTIES OUTPUT_NAME "_icub"
+                                                                      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/python")
+
 endif(CREATE_PYTHON)
 
 if(CREATE_RUBY)
@@ -84,9 +87,8 @@ if(CREATE_RUBY)
                      SOURCES icub.i)
     swig_link_libraries(icub_ruby ${RUBY_LIBRARY})
     target_include_directories(${SWIG_MODULE_icub_ruby_REAL_NAME} SYSTEM PRIVATE ${RUBY_INCLUDE_PATH})
-
-    set_target_properties(${SWIG_MODULE_icub_ruby_REAL_NAME} PROPERTIES PREFIX ""
-                                                                        OUTPUT_NAME "icub")
+    set_target_properties(${SWIG_MODULE_icub_ruby_REAL_NAME} PROPERTIES OUTPUT_NAME "icub"
+                                                                      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/ruby")
 endif(CREATE_RUBY)
 
 if(CREATE_JAVA)
@@ -119,7 +121,7 @@ if(CREATE_CSHARP)
                      SOURCES icub.i)
 
   swig_link_libraries(icub_csharp ${SWIG_YARP_LIBRARIES})
-  set_target_properties(${SWIG_MODULE_icub_csharp_REAL_NAME} PROPERTIES OUTPUT_NAME "icub")
+  set_target_properties(${SWIG_MODULE_icub_csharp_REAL_NAME} PROPERTIES OUTPUT_NAME "icub" LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/csharp")
 endif(CREATE_CSHARP)
 
 IF (CREATE_LUA)
@@ -130,10 +132,5 @@ IF (CREATE_LUA)
                    LANGUAGE lua
                    SOURCES icub.i)
   swig_link_libraries(icub_lua ${LUA_LIBRARY})
-  IF (UNIX)
-    ADD_CUSTOM_COMMAND(TARGET icub
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E create_symlink libicub.so icub.so 
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-  ENDIF (UNIX)
+  set_target_properties(${SWIG_MODULE_icub_lua_REAL_NAME} PROPERTIES OUTPUT_NAME "icub" LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/lua")
 ENDIF (CREATE_LUA)
