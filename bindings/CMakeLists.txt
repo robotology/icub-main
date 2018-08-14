@@ -118,6 +118,7 @@ if(CREATE_JAVA)
 endif(CREATE_JAVA)
 
 if(CREATE_CSHARP)
+  SET(CMAKE_SWIG_FLAGS "-Wall;-module;icub")
   swig_add_library(icub_csharp
                      LANGUAGE csharp
                      SOURCES icub.i)
