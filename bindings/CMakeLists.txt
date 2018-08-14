@@ -24,8 +24,10 @@ if(OpenCV_FOUND)
     link_directories(${OpenCV_LINK_DIRECTORIES} ${OPENCV_LINK_DIRECTORIES})
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR}/..)
-include_directories(${CMAKE_SOURCE_DIR}/../src/libraries/icubmod)
+include_directories(${CMAKE_SOURCE_DIR}/src/libraries/iDyn/include)
+include_directories(${CMAKE_SOURCE_DIR}/src/libraries/iKin/include)
+include_directories(${CMAKE_SOURCE_DIR}/src/libraries/ctrlLib/include)
+include_directories(${CMAKE_SOURCE_DIR}/src/libraries/skinDynLib/include)
 
 # for yarp.i
 include_directories(${YARP_BINDINGS})
