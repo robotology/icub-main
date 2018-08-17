@@ -47,7 +47,7 @@ public:
     * @param data contains points to be clustered. 
     * @param options contains clustering options. 
     * @return clusters as a mapping between classes and the sets of
-    *         elements indexes wrt the original data;
+    *         elements indexes wrt the original data.
     */
     virtual std::map<size_t,std::set<size_t>> cluster(const std::vector<yarp::sig::Vector> &data,
                                                       const yarp::os::Property &options) = 0;
@@ -78,7 +78,7 @@ public:
     *                proximity sensitivity; "minpts" representing
     *                the minimum number of neighbours.
     * @return clusters as a mapping between classes and the sets of
-    *         elements indexes wrt the original data;
+    *         elements indexes wrt the original data.
     */
     std::map<size_t,std::set<size_t>> cluster(const std::vector<yarp::sig::Vector> &data,
                                               const yarp::os::Property &options) override;
