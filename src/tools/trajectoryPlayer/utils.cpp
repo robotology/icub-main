@@ -301,7 +301,7 @@ bool robotDriver::init()
     //get the number of the joints
     ienc_ll->getAxes(&n_joints);
 
-    //set the intial reference speeds
+    //set the initial reference speeds
     double* speeds = new double [n_joints];
     for (int i=0; i<n_joints; i++) speeds[i] = 20.0;
     ipos_ll->setRefSpeeds(speeds);
@@ -317,4 +317,28 @@ robotDriver::~robotDriver()
         delete drv_ll;
         drv_ll=0;
     }
+}
+
+bool robotDriver::setControlMode(const int j, const int mode)
+{
+    if (!icmd_ll) return false;
+    return icmd_ll->setControlMode(joints_map[j], mode);
+}
+
+bool robotDriver::setPosition(int j, double ref)
+{
+    if (!iposdir_ll) return false;
+    return iposdir_ll->setPosition(joints_map[j], ref);
+}
+
+bool robotDriver::getEncoder(int j, double *v)
+{
+    if (!ienc_ll) return false;
+    return ienc_ll->getEncoder(joints_map[j], v);
+}
+
+bool robotDriver::positionMove(int j, double v)
+{
+    if (!ipos_ll) return false;
+    return ipos_ll->positionMove(joints_map[j], v);
 }
