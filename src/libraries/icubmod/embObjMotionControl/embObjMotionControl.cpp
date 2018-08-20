@@ -4079,7 +4079,6 @@ bool embObjMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp
     for(int idx=0; idx<n_joints; idx++)
     {
         ret =  getInteractionModeRaw(joints[idx], &modes[idx]);
-        std::cout << " joint " <<  joints[idx] << " says " << yarp::os::Vocab::decode(modes[idx]) << std::endl;
     }
     return ret;
 }
