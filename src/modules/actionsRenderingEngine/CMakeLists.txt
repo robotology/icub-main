@@ -19,7 +19,7 @@ set(folder_header include/iCub/utils.h
                   include/iCub/MotorThread.h)
                   
 include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${OpenCV_INCLUDE_DIRS} ${IPOPT_INCLUDE_DIRS})
+                    ${IPOPT_INCLUDE_DIRS})
 
 add_definitions(${IPOPT_DEFINITIONS} -D_USE_MATH_DEFINES)
 add_executable(${PROJECT_NAME} ${folder_header} ${folder_source})

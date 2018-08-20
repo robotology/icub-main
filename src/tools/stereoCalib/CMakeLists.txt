@@ -12,8 +12,7 @@ if(OpenCV_VERSION_MAJOR GREATER 2)
   add_definitions(-DOPENCV_GREATER_2)
 endif()
 
-include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${OpenCV_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_executable(${PROJECTNAME} ${source} ${header})
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ${OpenCV_LIBRARIES} iKin)

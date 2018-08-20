@@ -15,8 +15,7 @@ source_group("IDL Files" FILES ${idl_files})
 source_group("DOC Files" FILES ${doc_files})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${IPOPT_INCLUDE_DIRS}
-                    ${OpenCV_INCLUDE_DIRS})
+                    ${IPOPT_INCLUDE_DIRS})
 
 # import math symbols from standard cmath
 add_definitions(${IPOPT_DEFINITIONS} -D_USE_MATH_DEFINES)

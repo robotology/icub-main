@@ -23,8 +23,7 @@ SET(folder_header include/iCub/spherical_projection.h
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
-                    ${OpenCV_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})

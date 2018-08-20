@@ -21,8 +21,7 @@ set(folder_header include/iCub/spherical_projection.h
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
 
-include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${OpenCV_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # import math symbols from standard cmath
 add_definitions(-D_USE_MATH_DEFINES)
