@@ -17,3 +17,5 @@ add_python_unit_test(test_load.py)
 add_python_unit_test(test_ctrLib.py)
 add_python_unit_test(test_iKin.py)
 add_python_unit_test(test_skinDynLib.py)
+add_python_unit_test(test_optimization.py)
+
