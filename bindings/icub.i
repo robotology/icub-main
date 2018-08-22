@@ -48,6 +48,12 @@ using namespace yarp::sig;
 #include <iCub/skinDynLib/skinContact.h>
 #include <iCub/skinDynLib/skinContactList.h>
 
+// optimization
+#include <iCub/optimization/affinity.h>
+#include <iCub/optimization/algorithms.h>
+#include <iCub/optimization/calibReference.h>
+#include <iCub/optimization/matrixTransformation.h>
+#include <iCub/optimization/neuralNetworks.h>
 
 // iDyn
 //#include <iCub/iDyn/iDynInv.h>
@@ -91,6 +97,14 @@ using namespace yarp::sig;
 %include <iCub/skinDynLib/rpcSkinManager.h>
 %include <iCub/skinDynLib/skinContact.h>
 %include <iCub/skinDynLib/skinContactList.h>
+
+
+// optimization
+%include <iCub/optimization/matrixTransformation.h>
+%include <iCub/optimization/affinity.h>
+%include <iCub/optimization/algorithms.h>
+%include <iCub/optimization/calibReference.h>
+%include <iCub/optimization/neuralNetworks.h>
 
 
 // iDyn
