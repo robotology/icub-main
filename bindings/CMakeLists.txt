@@ -28,6 +28,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/libraries/iDyn/include)
 include_directories(${CMAKE_SOURCE_DIR}/src/libraries/iKin/include)
 include_directories(${CMAKE_SOURCE_DIR}/src/libraries/ctrlLib/include)
 include_directories(${CMAKE_SOURCE_DIR}/src/libraries/skinDynLib/include)
+include_directories(${CMAKE_SOURCE_DIR}/src/libraries/optimization/include)
 
 # for yarp.i
 include_directories(${YARP_BINDINGS})
