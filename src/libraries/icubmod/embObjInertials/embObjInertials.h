@@ -26,6 +26,8 @@
 
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 
+#include "yarp/conf/numeric.h"
+
 namespace yarp {
     namespace dev {
         class embObjInertials;
@@ -122,6 +124,13 @@ private:
     vector<double> analogdata;
     vector<uint16_t> gyrSensors;
     vector<uint16_t> accSensors;
+    vector<yarp::conf::float32_t> conversionFactors;
+
+
+    const float sensorsResolution = 32768.0; //this is established by the chip. It cannot be changed.
+    // Currently all our sensors use 16 bits to express their measures, so the resolutioon is 32768 and it cannot be changed.
+    // In some case we can change the full scales, therefore it is a parameter of configuration file.
+    // If a day This yarp device need to read a sensor with different resolution, than we'll need to change sensorsResolution field..
 
 
     short status;

@@ -1474,6 +1474,27 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
 
     inertialsconfig.inertials.resize(0);
 
+    Bottle b_SERVICE(config.findGroup("SERVICE")); //b_SERVICE and b_SETTINGS could not be null, otherwise parseService function would have returned false
+    Bottle b_settings = Bottle(b_SERVICE.findGroup("SETTINGS"));
+    Bottle b_SETTINGS_scales = Bottle(b_settings.findGroup("fullscale"));
+    bool useDefaultValeus = false;
+    if(b_SETTINGS_scales.isNull())
+    {
+        yWarning() << "ServiceParser::parseService() for embObjInertials device cannot find SETTINGS.fullscales. Default values are used";
+        useDefaultValeus = true;
+    }
+    else
+    {
+        if((b_SETTINGS_scales.size()-1) != as_service.settings.enabledsensors.size())
+        {
+            yError() << "ServiceParser::parseService(): SETTINGS.fullscale has inconsistent length " << b_SETTINGS_scales.size() << as_service.properties.sensors.size();
+            return false;
+        }
+    }
+
+
+    inertialsconfig.fullscales.resize(as_service.properties.sensors.size(), -1.0);
+
     EOarray* array = eo_array_New(eOas_inertials_maxnumber, sizeof(eOas_inertial_descriptor_t), &inertialsconfig.ethservice.configuration.data.as.inertial.arrayofsensors);
     for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
     {
@@ -1491,13 +1512,122 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
         des.type = type;
         memcpy(&des.on, &sensor.location, sizeof(eObrd_location_t));
 
+        if(useDefaultValeus)
+        {
+            inertialsconfig.fullscales[i] = servConfigInertials_t::GetDefaultFullScale(type);
+        }
+        else
+        {
+            if(!servConfigInertials_t::FullScaleIsValid(b_SETTINGS_scales.get(1+i).asFloat32(), type))
+            {
+                return false;
+            }
+            else
+            {
+                inertialsconfig.fullscales[i] = b_SETTINGS_scales.get(1+i).asFloat32();
+
+                //the only configurable full scale currently is for  eoas_gyros_st_l3g4200d: we need to send the choosen value to fw
+                if(type == eoas_gyros_st_l3g4200d)
+                    des.on.eth.id = servConfigInertials_t::ConvertEmsGyroFullScales2FirmwareId(inertialsconfig.fullscales[i]);
+            }
+        }
+
         eo_array_PushBack(array, &des);
         inertialsconfig.inertials.push_back(des);
         inertialsconfig.id.push_back(sensor.id);
+
     }
 
 
     return true;
+}
+
+yarp::conf::float32_t servConfigInertials_t::GetDefaultFullScale(eOas_sensor_t type)
+{
+    switch(type)
+    {
+        case eoas_gyros_st_l3g4200d:
+        {
+            return (static_cast<yarp::conf::float32_t>(servConfigInertials_t::ems_gyroscope_scale_500dps));
+        }break;
+        case eoas_accel_mtb_int:
+        {
+            return (servConfigInertials_t::GetValueOf_mtb_acc_internal_scale(servConfigInertials_t::mtb_acc_internal_scale_2g));
+        }break;
+        default:
+        {//I should be never here because the function FullScaleIsValid has already checked the type of sensor;
+            return 1.0;
+        }
+    }
+}
+
+
+bool servConfigInertials_t::FullScaleIsValid(yarp::conf::float32_t scale, eOas_sensor_t type)
+{
+
+    if(scale <0)
+    {
+        yError() << "servConfigInertials_t::FullScaleIsValid has detected a negative fullscale";
+        return false;
+    }
+
+    switch(type)
+    {
+        case eoas_gyros_st_l3g4200d:
+        {
+            uint32_t scale_int = static_cast<uint32_t>(scale);
+            switch(scale_int)
+            {
+                case servConfigInertials_t::ems_gyroscope_scale_250dps:
+                    return true;
+
+                case servConfigInertials_t::ems_gyroscope_scale_500dps:
+                    return true;
+
+                case servConfigInertials_t::ems_gyroscope_scale_2000dps:
+                    return true;
+                default:
+                    yError() << "servConfigInertials_t::FullScaleIsValid has detected a wrong fullscale for eoas_gyros_st_l3g4200d. Yuou used" << scale << ", but you need to use: " << servConfigInertials_t::ems_gyroscope_scale_250dps << "or" << servConfigInertials_t::ems_gyroscope_scale_500dps << "or" << servConfigInertials_t::ems_gyroscope_scale_2000dps;
+                    return false;
+            };
+        }break;
+        case eoas_accel_mtb_int:
+        {
+            if(scale == servConfigInertials_t::GetValueOf_mtb_acc_internal_scale(servConfigInertials_t::mtb_acc_internal_scale_2g))
+                return true;
+            else
+            {
+                yError() << "servConfigInertials_t::FullScaleIsValid has detected a wrong fullscale for eoas_accel_mtb_int. Yuou used " << scale << ", but you need to use: " << servConfigInertials_t::GetValueOf_mtb_acc_internal_scale(servConfigInertials_t::mtb_acc_internal_scale_2g);
+                return false;
+            }
+        }break;
+        default:
+        {
+            yError() << "servConfigInertials_t::FullScaleIsValid no full scale is defined.";
+            return false;
+        };
+    }
+}
+
+
+servConfigInertials_t::ems_gyroscope_scale_fwId_t servConfigInertials_t::ConvertEmsGyroFullScales2FirmwareId(yarp::conf::float32_t scale)
+{
+    uint32_t scale_int = static_cast<uint32_t>(scale);
+
+    switch(scale_int)
+    {
+        case servConfigInertials_t::ems_gyroscope_scale_250dps:
+            return servConfigInertials_t::ems_gyroscope_scale_250dps_fwId;
+
+        case servConfigInertials_t::ems_gyroscope_scale_500dps:
+            return servConfigInertials_t::ems_gyroscope_scale_500dps_fwId;
+
+        case servConfigInertials_t::ems_gyroscope_scale_2000dps:
+            return servConfigInertials_t::ems_gyroscope_scale_2000dps_fwId;
+        default://I should be never here because the function FullScaleIsValid has already checked the type of sensor;
+            yWarning() << "ServiceParser::parseService() has detected a wrong fullscale: " << scale << ", so the default is used(" <<servConfigInertials_t::ems_gyroscope_scale_500dps << "). You need to use: " << servConfigInertials_t::ems_gyroscope_scale_250dps << "or" << servConfigInertials_t::ems_gyroscope_scale_500dps << "or" << servConfigInertials_t::ems_gyroscope_scale_2000dps;
+            return servConfigInertials_t::ems_gyroscope_scale_default_fwId;
+    };
 }
 
 

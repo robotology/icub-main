@@ -318,6 +318,16 @@ bool embObjInertials::fromConfig(yarp::os::Searchable &_config)
 
     }
 
+    //prepare convertion fanctors
+    conversionFactors.resize(serviceConfig.inertials.size(), 1.0);
+    for(int i=0; i<serviceConfig.inertials.size(); i++)
+    {
+        if(serviceConfig.fullscales[i] > 0 )
+            conversionFactors[i] = serviceConfig.fullscales[i]/sensorsResolution;
+        yError() << "---- " << boardIPstring<< "SENS NUM " << i << ": FULL SCALE IS " << serviceConfig.fullscales[i]<< "CONVERSTION IS" <<conversionFactors[i];
+    }
+
+
 #else
 
     // prepare analogdata
@@ -805,7 +815,7 @@ void embObjInertials::printServiceConfig(void)
         parser->convert(serviceConfig.ethservice.configuration.data.as.inertial.mtbversion.firmware, fir, sizeof(fir));
         parser->convert(serviceConfig.ethservice.configuration.data.as.inertial.mtbversion.protocol, pro, sizeof(pro));
 
-        yInfo() << "  - id =" << id << "type =" << strtype << "on MTB w/ loc =" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
+        yInfo() << "  - id =" << id << "type =" << strtype << "on MTB w/ loc =" << loc << "scale=" << serviceConfig.fullscales[i] <<  "with required protocol version =" << pro << "and required firmware version =" << fir;
     }
 }
 
@@ -847,13 +857,14 @@ bool embObjInertials::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig:
     }
 
     mutex.wait();
+    int internal_index= gyrSensors[sens_index];
 
-    int firstpos = 2 + inertials_Channels*(gyrSensors[sens_index]);
-    timestamp = analogdata[firstpos+2];
+    int firstpos = 2 + inertials_Channels*(internal_index);
+    timestamp = analogdata[firstpos+2]*1e-6; //conver to from millisec to sec
     out.resize(3);
-    out[0] = analogdata[firstpos+3];
-    out[1] = analogdata[firstpos+4];
-    out[2] = analogdata[firstpos+5];
+    out[0] = analogdata[firstpos+3]*conversionFactors[internal_index];
+    out[1] = analogdata[firstpos+4]*conversionFactors[internal_index];
+    out[2] = analogdata[firstpos+5]*conversionFactors[internal_index];
 
     mutex.post();
 
@@ -899,13 +910,14 @@ bool embObjInertials::getThreeAxisLinearAccelerometerMeasure(size_t sens_index, 
     }
 
     mutex.wait();
+    int internal_index= accSensors[sens_index];
 
     int firstpos = 2 + inertials_Channels*(accSensors[sens_index]);
-    timestamp = analogdata[firstpos+2];
+    timestamp = analogdata[firstpos+2]*1e-6; //conver to from millisec to sec
     out.resize(3);
-    out[0] = analogdata[firstpos+3];
-    out[1] = analogdata[firstpos+4];
-    out[2] = analogdata[firstpos+5];
+    out[0] = analogdata[firstpos+3]*conversionFactors[internal_index];
+    out[1] = analogdata[firstpos+4]*conversionFactors[internal_index];
+    out[2] = analogdata[firstpos+5]*conversionFactors[internal_index];
 
     mutex.post();
 

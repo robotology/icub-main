@@ -13,6 +13,7 @@
 #include "EoManagement.h"
 #include "EoAnalogSensors.h"
 #include "EoMotionControl.h"
+#include "yarp/conf/numeric.h"
 
 
 
@@ -46,13 +47,72 @@ typedef struct
     int                     temperatureAcquisitionrate;
 } servConfigFTsensor_t;
 
-typedef struct
+typedef struct servConfigInertials_struct
 {
-    eOmn_serv_parameter_t               ethservice;
-    int                                 acquisitionrate;
+    eOmn_serv_parameter_t                    ethservice;
+    int                                      acquisitionrate;
     std::vector<eOas_inertial_descriptor_t>  inertials;
-    std::vector<std::string>                      id;
+    std::vector<std::string>                 id;
+
+    /******* NOTE: The full scale stuff has been added to avoid to configure the full scale using the location parameter ETH::X ******/
+    std::vector<yarp::conf::float32_t>       fullscales;
+    enum ems_gyroscope_scale_t
+    {
+        ems_gyroscope_scale_NOTVALID   = -1,
+        ems_gyroscope_scale_250dps     = 250,
+        ems_gyroscope_scale_500dps     = 500,
+        ems_gyroscope_scale_2000dps    = 2000
+    } ;
+
+    enum ems_gyroscope_scale_fwId_t
+    {
+        ems_gyroscope_scale_default_fwId    = 0, //In the firmware the default value is 500 dps (see EOTheInertial2.c)
+        ems_gyroscope_scale_250dps_fwId     = 1,
+        ems_gyroscope_scale_500dps_fwId     = 2,
+        ems_gyroscope_scale_2000dps_fwId    = 3
+    } ; //this enum contains the id used by fw to identifies the full scale to configure in gyro.
+
+
+    enum mtb_acc_internal_scale_t
+    {
+        mtb_acc_internal_scale_NOTVALID, //   = 1.0f, see GetValueOf_mtb_acc_internal_scale function
+        mtb_acc_internal_scale_2g        //   = 19.62f see GetValueOf_mtb_acc_internal_scale function
+    };
+
+    static servConfigInertials_struct::ems_gyroscope_scale_fwId_t ConvertEmsGyroFullScales2FirmwareId(yarp::conf::float32_t scale);
+
+    static bool FullScaleIsValid(yarp::conf::float32_t scale, eOas_sensor_t type);
+
+    static yarp::conf::float32_t GetDefaultFullScale(eOas_sensor_t type);
+
+    static inline yarp::conf::float32_t GetValueOf_mtb_acc_internal_scale(mtb_acc_internal_scale_t scale)
+    {
+        switch(scale)
+        {
+            case mtb_acc_internal_scale_NOTVALID: return 1.0;break;
+            case mtb_acc_internal_scale_2g: return 19.62; break;
+        };
+    };
+
 } servConfigInertials_t;
+
+// typedef enum
+// {
+//     inertial_gyroscope_range_NOTVALID   = -1,
+//     inertial_gyroscope_range_250dps     = 250,
+//     inertial_gyroscope_range_500dps     = 500,
+//     inertial_gyroscope_range_2000dps    = 2000
+// } inertial_gyroscope_range_t;
+//
+//
+// typedef enum
+// {
+//     inertial_gyroscope_range_250dps_fwId     = 1,
+//     inertial_gyroscope_range_500dps_fwId     = 2,
+//     inertial_gyroscope_range_2000dps_fwId    = 3
+// } inertial_gyroscope_range_t;
+
+
 
 typedef struct
 {
