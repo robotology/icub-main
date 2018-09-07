@@ -110,6 +110,7 @@ using namespace yarp::sig;
     $3= &t3;
 }
 
+#ifdef SWIGPYTHON
 %typemap(argout) (yarp::sig::Matrix &H, yarp::sig::Vector &s, double &error) {
     yarp::sig::Matrix* t_out1 = new yarp::sig::Matrix(*$1);
     yarp::sig::Vector* t_out2 = new yarp::sig::Vector(*$2);
@@ -118,6 +119,7 @@ using namespace yarp::sig;
     $result= SWIG_Python_AppendOutput ($result, SWIG_NewPointerObj(t_out2, SWIGTYPE_p_yarp__sig__VectorOfT_double_t, 0 |  0 ));
     $result= SWIG_Python_AppendOutput ($result, PyFloat_FromDouble(*$3));
 }
+#endif
 
 
 // optimization
