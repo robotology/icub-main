@@ -4,21 +4,32 @@
 
 if (NOT ICUB_FOUND)
 
-message(STATUS "Using iCub from build tree")
+  message(STATUS "Using iCub from build tree")
 
-set(ICUB_VERSION @ICUB_VERSION@)
+  set(ICUB_VERSION @ICUB_VERSION@)
+  # If YARP_LIBRARIES has been valorized by a previous call of find_package(YARP)
+  # in user CMakelists.txt save it in temporary variable to restore it later.
+  if(DEFINED YARP_LIBRARIES)
+    set(_temp_yarp_libs ${YARP_LIBRARIES})
+  endif()
 
-include("@CMAKE_BINARY_DIR@/@EXPORT_INCLUDE_FILE@")
-include("@CMAKE_BINARY_DIR@/@EXPORT_CONFIG_FILE@")
+  find_package(YARP 3.0 REQUIRED
+                        COMPONENTS OS conf sig dev math gsl)
 
-set(ICUB_LIBRARIES "@ICUB_TARGETS@" CACHE INTERNAL "List of iCub libraries")
-set(ICUB_MODULE_PATH "@ICUB_MODULE_PATH@" CACHE INTERNAL "iCub cmake scripts directory")
-set(ICUB_LINK_FLAGS "@ICUB_LINK_FLAGS@" CACHE INTERNAL "List of iCub linker options")
-set(ICUB_LINK_DIRECTORIES "@ICUB_LINK_DIRECTORIES@")
+  include("@CMAKE_BINARY_DIR@/@EXPORT_INCLUDE_FILE@")
+  include("@CMAKE_BINARY_DIR@/@EXPORT_CONFIG_FILE@")
 
-# This is not ideal and should be removed. At the moment
-# only needed by OpenCV
-link_directories(${ICUB_LINK_DIRECTORIES})
+  set(ICUB_LIBRARIES "@ICUB_TARGETS@" CACHE INTERNAL "List of iCub libraries")
+  set(ICUB_MODULE_PATH "@ICUB_MODULE_PATH@" CACHE INTERNAL "iCub cmake scripts directory")
+  set(ICUB_LINK_FLAGS "@ICUB_LINK_FLAGS@" CACHE INTERNAL "List of iCub linker options")
+  set(ICUB_LINK_DIRECTORIES "@ICUB_LINK_DIRECTORIES@")
 
-set (ICUB_FOUND TRUE)
+  # This is not ideal and should be removed. At the moment
+  # only needed by OpenCV
+  link_directories(${ICUB_LINK_DIRECTORIES})
+  set (ICUB_FOUND TRUE)
+  if(DEFINED _temp_yarp_libs)
+    list(APPEND YARP_LIBRARIES ${_temp_yarp_libs})
+    list(REMOVE_DUPLICATES YARP_LIBRARIES)
+  endif()
 endif (NOT ICUB_FOUND)
