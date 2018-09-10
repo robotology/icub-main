@@ -17,6 +17,8 @@
 #include <canProtocolLib/iCubCanProtocol.h>
 #include <canProtocolLib/iCubCanProto_types.h>
 
+#include "strain.h"
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace std;
@@ -964,9 +966,9 @@ int cDownloader::strain_get_amplifier_regs(int bus, int target_id, unsigned char
     return 0;
 }
 
-float cDownloader::strain_amplifier_cfg2gain(strain_ampl_cfg_t c)
+float cDownloader::strain_amplifier_discretegain2float(strain2_ampl_discretegain_t c)
 {
-    static const float mapofgains[ampcfg_gain_numberOf] =
+    static const float mapofgains[ampl_gain_numberOf] =
     {
         48, 36, 24, 20, 16, 10, 8, 6, 4
     };
@@ -974,7 +976,7 @@ float cDownloader::strain_amplifier_cfg2gain(strain_ampl_cfg_t c)
     return mapofgains[static_cast<unsigned int>(c)];
 }
 
-int cDownloader::strain_set_amplifier_cfg(int bus, int target_id, unsigned char channel, strain_ampl_cfg_t ampcfg, int regset, string *errorstring)
+int cDownloader::strain_set_amplifier_discretegain(int bus, int target_id, unsigned char channel, strain2_ampl_discretegain_t ampcfg, int regset, string *errorstring)
 {
     // check if driver is running
     if (m_idriver == NULL)
@@ -989,7 +991,7 @@ int cDownloader::strain_set_amplifier_cfg(int bus, int target_id, unsigned char 
 
 
         // constant value of offset registers
-//        const uint8_t _cfg1map[amp_gain_numberOf][_NUMofREGS] =
+//        const uint8_t _cfg1map[ampl_gain_numberOf][_NUMofREGS] =
 //        {
 //            {0x00, 0x40, 0x46, 0x25, 0x00, 0x80},   // gain = 48
 //            {0x00, 0x10, 0x46, 0x25, 0x00, 0x80},   // gain = 36
@@ -1003,7 +1005,7 @@ int cDownloader::strain_set_amplifier_cfg(int bus, int target_id, unsigned char 
 //        };
 
     // offset all equal to 32k-1
-    static const uint8_t _cfg1map[ampcfg_gain_numberOf][_NUMofREGS] =
+    static const uint8_t _cfg1map[ampl_gain_numberOf][_NUMofREGS] =
     {
         {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 48
         {0x00, 0x10, 0x46, 0x2a, 0x80, 0x80},   // gain = 36
@@ -1031,7 +1033,7 @@ int cDownloader::strain_set_amplifier_cfg(int bus, int target_id, unsigned char 
     txBuffer[0].getData()[6]= _cfg1map[index][4];
     txBuffer[0].getData()[7]= _cfg1map[index][5];
     set_bus(txBuffer[0], bus);
-    yDebug("strain_set_amplifier_cfg() is sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+    yDebug("strain_set_amplifier_discretegain() is sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
 
     m_idriver->send_message(txBuffer, 1);
 
@@ -1090,7 +1092,7 @@ int cDownloader::strain_set_amplifier_gain_offset(int bus, int target_id, unsign
             return -1;
         }
 
-
+#if 0
      txBuffer[0].setId((2 << 8) + target_id);
      txBuffer[0].setLen(7);
      txBuffer[0].getData()[0]= 0x21;
@@ -1107,6 +1109,33 @@ int cDownloader::strain_set_amplifier_gain_offset(int bus, int target_id, unsign
      drv_sleep(5);
 
      return 0;
+
+#else
+
+     strain::amplifier::PGA308 pga;
+
+     strain::amplifier::DiscreteParams dp;
+     strain::amplifier::PGA308::Registers regs;
+
+     strain::amplifier::WideParams wp;
+
+     wp.load(gain, offset);
+     if(false == convert(wp, dp))
+     {
+        if(_verbose) yError ("cannot load this pair gain-offset into the strain2\n");
+        return -1;
+     }
+
+     // load dp and ...
+     pga.import(dp, &regs);
+     strain2_ampl_regs_t reg2tx;
+     size_t s;
+     regs.fill(reg2tx.memory(), s);
+     // now in reg2tx we have what we want to tx.
+
+     return strain_set_amplifier_regs(bus, target_id, channel, reg2tx, regset, errorstring);
+
+#endif
 }
 
 
@@ -1542,6 +1571,39 @@ int cDownloader::strain_stop_sampling    (int bus, int target_id, string *errors
     return 0;
 }
 
+// usage:
+// strain:      get the single value guiTarget as a [-32k, +32k) from the widget. put it inside a vector.
+//              use an empty gains vector
+//              std::vector<int16_t> targets;
+//              targets.push_back(guiTarget);
+//              std::vector<strain2_ampl_discretegain_t> gains(0);
+//              strain_calibrate_offset2(bus, id, icubCanProto_boardType__strain, gains, targets);
+// strain2:     get the guiTargets as [-32k, +32k) values from the widget. put them all inside a vector which must become of size 6.
+//              std::vector<int16_t> targets;
+//              targets.push_back(guiTargets[0]); targets.push_back(guiTargets[1]); etc....
+//              get the 6 gains and put them into a vector
+//              std::vector<strain2_ampl_discretegain_t> gains;
+//              gains.push_back(g0); etc....
+//              strain_calibrate_offset2(bus, id, icubCanProto_boardType__strain, gains, targets);
+
+int cDownloader::strain_calibrate_offset2  (int bus, int target_id, icubCanProto_boardType_t boardtype, const std::vector<strain2_ampl_discretegain_t> &gains, const std::vector<int16_t> &targets, string *errorstring)
+{
+
+    if(icubCanProto_boardType__strain == boardtype)
+    {
+        int16_t i16 = (targets.empty()) ? (0) : (targets[0]);
+
+        return strain_calibrate_offset2_strain1(bus, target_id, i16, errorstring);
+    }
+    else if(icubCanProto_boardType__strain2 == boardtype)
+    {
+        return strain_calibrate_offset2_strain2(bus, target_id, gains, targets, errorstring);
+    }
+
+    return -1;
+}
+
+
 //*****************************************************************/
 int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_boardType_t boardtype, unsigned int middle_val, string *errorstring)
 {
@@ -1667,19 +1729,19 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
 
         // the chosen gains:
-        const strain_ampl_cfg_t ampsets[NUMofCHANNELS] =
+        const strain2_ampl_discretegain_t ampsets[NUMofCHANNELS] =
         {
-            ampcfg_gain08, ampcfg_gain24, ampcfg_gain24,
-            ampcfg_gain10, ampcfg_gain10, ampcfg_gain24
+            ampl_gain08, ampl_gain24, ampl_gain24,
+            ampl_gain10, ampl_gain10, ampl_gain24
         };
 
         yDebug() << "strain2-amplifier-tuning: STEP-1. imposing gains which are different of each channel";
 
         for(int channel=0; channel<NUMofCHANNELS; channel++)
         {
-            yDebug() << "strain2-amplifier-tuning: STEP-1. on channel" << channel << "we impose gain =" << strain_amplifier_cfg2gain(ampsets[channel]);
+            yDebug() << "strain2-amplifier-tuning: STEP-1. on channel" << channel << "we impose gain =" << strain_amplifier_discretegain2float(ampsets[channel]);
 
-            strain_set_amplifier_cfg(bus, target_id, channel, ampsets[channel], regset, errorstring);
+            strain_set_amplifier_discretegain(bus, target_id, channel, ampsets[channel], regset, errorstring);
 
             // i wait some time
             yarp::os::Time::delay(1.0);
@@ -3345,6 +3407,425 @@ int cDownloader::get_bus(yarp::dev::CanMessage &msg)
 }
 
 #endif
+
+
+
+int cDownloader::strain_calibrate_offset2_strain1 (int bus, int target_id, int16_t t, string *errorstring)
+{
+    // check if driver is running
+    if (m_idriver == NULL)
+    {
+       if(_verbose) yError ("Driver not ready\n");
+       return -1;
+    }
+
+    // marco.accame: transform [-32K, +32K) into [0, +64K)
+    unsigned int middle_val = 32768 + t;
+
+    // in strain1 we dont have the concept of regulationset. however, if we use strain_regset_inuse which is = 0 we are ok.
+    const int regset = 0; // strain_regset_inuse;
+
+    int daclimit = 0x3ff;
+    int dacstep = 1;
+    long tolerance = 256;
+
+    int channel=0;
+    int i=0;
+    int ret =0;
+    long error = 0;
+    unsigned int measure = 0;
+    unsigned int dac = 0;
+    int cycle =0;
+    int read_messages;
+
+    for (channel=0; channel<6; channel++)
+    {
+        // yDebug() << "starting OFFSET of channel" << channel;
+        // Send read channel command to strain board
+        txBuffer[0].setId((2 << 8) + target_id);
+        txBuffer[0].setLen(3);
+        txBuffer[0].getData()[0]= 0x0C;
+        txBuffer[0].getData()[1]= channel;
+        txBuffer[0].getData()[2]= 0;
+        set_bus(txBuffer[0], bus);
+        ret = m_idriver->send_message(txBuffer, 1);
+        // check if send_message was successful
+        if (ret==0)
+            {
+                if(_verbose) yError ("Unable to send message\n");
+                return -1;
+            }
+        //read adc
+        read_messages = m_idriver->receive_message(rxBuffer,1);
+        for (i=0; i<read_messages; i++)
+        {
+            if (rxBuffer[i].getData()[0]==0x0C)
+                {
+                    measure = rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4];
+                    break;
+                }
+        }
+
+
+        //read dac
+        txBuffer[0].setId((2 << 8) + target_id);
+        txBuffer[0].setLen(2);
+        txBuffer[0].getData()[0]= 0x0B;
+        txBuffer[0].getData()[1]= ((regset << 4) & 0xf0) | (channel & 0x0f);
+        txBuffer[0].getData()[1]=  (channel & 0x0f);
+        set_bus(txBuffer[0], bus);
+        ret = m_idriver->send_message(txBuffer, 1);
+
+        read_messages = m_idriver->receive_message(rxBuffer,1);
+        for (i=0; i<read_messages; i++)
+        {
+            if (rxBuffer[i].getData()[0]==0x0B)
+                {
+                    dac = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
+                    break;
+                }
+        }
+
+        error = long(measure) - long(middle_val);
+        cycle=0;
+
+        while (abs(error)>tolerance && cycle<daclimit)
+        {
+            if (error>0) dac -= dacstep;
+            else         dac += dacstep;
+
+            if (dac>daclimit)       dac = daclimit;
+            if (dac<0)              dac = 0;
+
+            //yDebug() << "iter" << cycle << "err = " << error << "next dac =" << dac;
+
+            // Send transmission command to strain board
+            txBuffer[0].setId((2 << 8) + target_id);
+            txBuffer[0].setLen(4);
+            txBuffer[0].getData()[0]= 0x04;
+            txBuffer[0].getData()[1]= ((regset << 4) & 0xf0) | (channel & 0x0f);
+            txBuffer[0].getData()[2]= dac >> 8;
+            txBuffer[0].getData()[3]= dac & 0xFF;
+            set_bus(txBuffer[0], bus);
+            int ret = m_idriver->send_message(txBuffer, 1);
+
+            //wait
+            drv_sleep(3);
+
+            // Send read channel command to strain board
+            txBuffer[0].setId((2 << 8) + target_id);
+            txBuffer[0].setLen(3);
+            txBuffer[0].getData()[0]= 0x0C;
+            txBuffer[0].getData()[1]= channel;
+            txBuffer[0].getData()[2]= 0;
+            set_bus(txBuffer[0], bus);
+            ret = m_idriver->send_message(txBuffer, 1);
+            // check if send_message was successful
+            if (ret==0)
+            {
+                if(_verbose) yError ("Unable to send message\n");
+                return -1;
+            }
+            //read adc
+            read_messages = m_idriver->receive_message(rxBuffer, 1);
+            for (i=0; i<read_messages; i++)
+            {
+                if (rxBuffer[i].getData()[0]==0x0C)
+                    {
+                        measure = rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4];
+                        break;
+                    }
+            }
+
+            error = long(measure) - long(middle_val);
+            cycle++;
+        }
+
+    }
+
+    return 0;
+}
+
+
+int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const std::vector<strain2_ampl_discretegain_t> &gains, const std::vector<int16_t> &targets, string *errorstring)
+{
+    // the calibration of the offset is meaningful only for the calibration set in use.
+    const int regset = strain_regset_inuse;
+    const unsigned int NUMofCHANNELS = 6;
+
+    // check if driver is running
+    if (m_idriver == NULL)
+    {
+       if(_verbose) yError ("Driver not ready\n");
+       return -1;
+    }
+
+    yDebug() << "strain2-amplifier-tuning: see the various STEP-x";
+
+    // step 1: apply the gains. the initial offset will be meaning less. however strain_set_amplifier_discretegain() assign offsets all equal to 32k-1
+    for(int channel=0; channel<NUMofCHANNELS; channel++)
+    {
+        yDebug() << "strain2-amplifier-tuning: STEP-1. on channel" << channel << "we impose gain =" << strain_amplifier_discretegain2float(gains[channel]);
+
+        if(0 != strain_set_amplifier_discretegain(bus, target_id, channel, gains[channel], regset, errorstring))
+        {
+            if(_verbose) yError ("strain_calibrate_offset2_strain2(): failure of strain_set_amplifier_discretegain()\n");
+            return -1;
+        }
+        // i wait some time
+        yarp::os::Time::delay(1.0);
+    }
+
+
+    // step 2: i read back gains just to be sure ..
+
+    yDebug() << "strain2-amplifier-tuning: STEP-2. reading (gain, offset) of front end amplifiers";
+
+    for(int channel=0; channel<NUMofCHANNELS; channel++)
+    {
+        float gaain = 0;
+        uint16_t ooffset = 0;
+        strain_get_amplifier_gain_offset(bus, target_id, channel, gaain, ooffset, regset, errorstring);
+        yDebug("strain2-amplifier-tuning: STEP-2. channel %d: gain = %f, offset = %d", channel, gaain, ooffset);
+    }
+
+    yarp::os::Time::delay(2.0);
+
+
+    // step 3: eval if the targets are equal or not. if they are all equal we send a single command.
+    //         if not we must send one command per channel.
+
+    int16_t singletargetVALUE = targets[0];
+    bool singletargetTHEREIS = true;
+    for(int channel=1; channel<NUMofCHANNELS; channel++)
+    {
+        if(singletargetVALUE != targets[channel])
+        {
+            singletargetTHEREIS = false;
+            break;
+        }
+    }
+
+
+    long tolerance = 256;
+
+
+
+
+    tolerance = 256;
+    uint8_t samples2average = 8; // if zero, the board uses its default (= 4)
+
+
+
+    // step3: autocalib
+    const uint8_t everychannel = 0x0f;
+
+    uint8_t channel2autocalib = everychannel;       // the channel(s) ...
+    unsigned int middle_val = 32768;                // transform [-32K, +32K) into [0, +64K)
+    uint8_t okmask = 0x3f; // all six channel
+
+    if(true == singletargetTHEREIS)
+    {
+
+        channel2autocalib = everychannel;
+        middle_val = 32768 + singletargetVALUE;
+        okmask = 0x3f; // all six channel
+
+
+        yDebug() << "strain2-amplifier-tuning: STEP-3. regularisation of ADC to a single value = " << singletargetVALUE << "[uint16 = " << middle_val << "]";
+        yDebug() << "strain2-amplifier-tuning: STEP-3. other params: mae tolerence is" << tolerance << "and samples2average =" << samples2average;
+
+
+        // sending an autocalib message
+        txBuffer[0].setId((2 << 8) + target_id);
+        txBuffer[0].setLen(8);
+        txBuffer[0].getData()[0]= 0x22;
+        txBuffer[0].getData()[1]= ((regset << 4) & 0xf0) | (channel2autocalib & 0x0f);
+        txBuffer[0].getData()[2]= 0; // mode oneshot, the only possible so far
+        txBuffer[0].getData()[3]= middle_val & 0x00ff;          // little endian
+        txBuffer[0].getData()[4]= (middle_val >> 8) & 0x00ff;   // little endian
+        txBuffer[0].getData()[5]= tolerance & 0x00ff;          // little endian
+        txBuffer[0].getData()[6]= (tolerance >> 8) & 0x00ff;   // little endian
+        txBuffer[0].getData()[7]= samples2average;
+        set_bus(txBuffer[0], bus);
+        yDebug("strain2-amplifier-tuning: STEP-3. sent message = [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+        int ret = m_idriver->send_message(txBuffer, 1);
+        // check if send_message was successful
+        if (ret==0)
+        {
+            if(_verbose) yError ("Unable to send message\n");
+            return -1;
+        }
+
+        // now wait for a reply for most 3 seconds
+        double TOUT = 3.0;
+
+
+
+        yDebug() << "strain2-amplifier-tuning: STEP-3. results ...";
+
+        int read_messages = m_idriver->receive_message(rxBuffer, 1, TOUT);
+        for(int i=0; i<read_messages; i++)
+        {
+            if (rxBuffer[i].getData()[0]==0x22)
+            {
+                yDebug("strain2-amplifier-tuning: STEP-3. received message = [%x, %x, %x, %x, %x, %x, %x, %x]", rxBuffer[0].getData()[0], rxBuffer[0].getData()[1], rxBuffer[0].getData()[2], rxBuffer[0].getData()[3], rxBuffer[0].getData()[4], rxBuffer[0].getData()[5], rxBuffer[0].getData()[6], rxBuffer[0].getData()[7]);
+
+                //dac = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
+                uint8_t noisychannelmask = rxBuffer[i].getData()[2];
+                uint8_t algorithmOKmask = rxBuffer[i].getData()[3];
+                uint8_t finalmeasureOKmask = rxBuffer[i].getData()[4];
+                uint16_t mae =  (static_cast<uint32_t>(rxBuffer[i].getData()[6]))       |
+                                (static_cast<uint32_t>(rxBuffer[i].getData()[7]) << 8);
+
+                if((okmask == algorithmOKmask) && (okmask == finalmeasureOKmask))
+                {
+                    yDebug() << "strain2-amplifier-tuning: STEP-3. OK. regularisation to value" << middle_val << "is done and MAE = " << mae;
+                    if(0 != noisychannelmask)
+                    {
+                        yDebug() << "however we found some noisy channels";
+                        yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+
+                    }
+
+                }
+                else
+                {
+                    if(okmask != algorithmOKmask)
+                    {
+                        yDebug() << "strain2-amplifier-tuning: STEP-3. KO. regularisation to value" << middle_val << "has sadly failed because algorithm found required values out of range of registers CFG0.OS or ZDAC.";
+                    }
+                    else
+                    {
+                        yDebug() << "strain2-amplifier-tuning: STEP-3. KO. regularisation to value" << middle_val << "has failed because MAE error is high on some channels.";
+                    }
+
+                    yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+                    for(uint8_t i=0; i<NUMofCHANNELS; i++)
+                    {
+                        if((algorithmOKmask & (0x01<<i)) == 0)
+                        {
+                            yDebug() << "calibration fails in channel" << i;
+                        }
+                        if((finalmeasureOKmask & (0x01<<i)) == 0)
+                        {
+                            yDebug() << "mae is high in channel" << i;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+    else
+    {
+        // for all six channels
+
+        yDebug() << "strain2-amplifier-tuning: STEP-3. regularisation of ADC to different values: there will be 6 regualtizations one for each channel";
+        yDebug() << "strain2-amplifier-tuning: STEP-3. other params: mae tolerence is" << tolerance << "and samples2average =" << samples2average;
+
+
+        for(int channel=0; channel<NUMofCHANNELS; channel++)
+        {
+            channel2autocalib = channel;
+            middle_val = 32768 + targets[channel];
+            okmask = 0x01 << channel;
+
+            // send message, check results ...
+
+            // sending an autocalib message
+            txBuffer[0].setId((2 << 8) + target_id);
+            txBuffer[0].setLen(8);
+            txBuffer[0].getData()[0]= 0x22;
+            txBuffer[0].getData()[1]= ((regset << 4) & 0xf0) | (channel2autocalib & 0x0f);
+            txBuffer[0].getData()[2]= 0; // mode oneshot, the only possible so far
+            txBuffer[0].getData()[3]= middle_val & 0x00ff;          // little endian
+            txBuffer[0].getData()[4]= (middle_val >> 8) & 0x00ff;   // little endian
+            txBuffer[0].getData()[5]= tolerance & 0x00ff;          // little endian
+            txBuffer[0].getData()[6]= (tolerance >> 8) & 0x00ff;   // little endian
+            txBuffer[0].getData()[7]= samples2average;
+            set_bus(txBuffer[0], bus);
+            yDebug("strain2-amplifier-tuning: STEP-3. sent message to channel %d= [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7], channel2autocalib);
+            int ret = m_idriver->send_message(txBuffer, 1);
+            // check if send_message was successful
+            if (ret==0)
+            {
+                if(_verbose) yError ("Unable to send message\n");
+                return -1;
+            }
+
+            // now wait for a reply for most 3 seconds
+            double TOUT = 3.0;
+
+            yDebug() << "strain2-amplifier-tuning: STEP-3. results ...";
+
+            int read_messages = m_idriver->receive_message(rxBuffer, 1, TOUT);
+            for(int i=0; i<read_messages; i++)
+            {
+                if (rxBuffer[i].getData()[0]==0x22)
+                {
+                    yDebug("strain2-amplifier-tuning: STEP-3. received message = [%x, %x, %x, %x, %x, %x, %x, %x]", rxBuffer[0].getData()[0], rxBuffer[0].getData()[1], rxBuffer[0].getData()[2], rxBuffer[0].getData()[3], rxBuffer[0].getData()[4], rxBuffer[0].getData()[5], rxBuffer[0].getData()[6], rxBuffer[0].getData()[7]);
+
+                    //dac = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
+                    uint8_t noisychannelmask = rxBuffer[i].getData()[2];
+                    uint8_t algorithmOKmask = rxBuffer[i].getData()[3];
+                    uint8_t finalmeasureOKmask = rxBuffer[i].getData()[4];
+                    uint16_t mae =  (static_cast<uint32_t>(rxBuffer[i].getData()[6]))       |
+                                    (static_cast<uint32_t>(rxBuffer[i].getData()[7]) << 8);
+
+                    if((okmask == algorithmOKmask) && (okmask == finalmeasureOKmask))
+                    {
+                        yDebug() << "strain2-amplifier-tuning: STEP-3. OK. regularisation to value" << middle_val << "is done and MAE = " << mae;
+                        if(0 != noisychannelmask)
+                        {
+                            yDebug() << "however we found some noisy channels";
+                            yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+                        }
+
+                    }
+                    else
+                    {
+                        if(okmask != algorithmOKmask)
+                        {
+                            yDebug() << "strain2-amplifier-tuning: STEP-3. KO. regularisation to value" << middle_val << "has sadly failed because algorithm found required values out of range of registers CFG0.OS or ZDAC.";
+                        }
+                        else
+                        {
+                            yDebug() << "strain2-amplifier-tuning: STEP-3. KO. regularisation to value" << middle_val << "has failed because MAE error is high on some channels.";
+                        }
+
+                        yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+                        for(uint8_t i=0; i<NUMofCHANNELS; i++)
+                        {
+                            if((algorithmOKmask & (0x01<<i)) == 0)
+                            {
+                                yDebug() << "calibration fails in channel" << i;
+                            }
+                            if((finalmeasureOKmask & (0x01<<i)) == 0)
+                            {
+                                yDebug() << "mae is high in channel" << i;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+
+
+        }
+
+
+
+    }
+
+
+    return 0;
+
+
+}
+
+
+// eof
 
 
 

@@ -27,6 +27,9 @@
 
 #define     MATRIX_COUNT        3
 
+#include "strain.h"
+
+
 int convert_to_signed32k(unsigned int v)
 {
     return static_cast<int>(v)-32768; // it is the 0x8000 used in q15 transformation
@@ -379,9 +382,30 @@ void CalibrationWindow::autoAdjust()
     mutex.lock();
     loading();
     string msg;
+
+    int imid = ui->slider_zero->value();
     // marco.accame: transform [-32K, +32K) into [0, +64K) as required by strain_calibrate_offset()
-    unsigned int middlevalue = 32768 + ui->slider_zero->value();
-    core->getDownloader()->strain_calibrate_offset(bus,id, boardtype, middlevalue, &msg);
+    //unsigned int middlevalue = 32768 + imid;
+    // acemor
+    // core->getDownloader()->strain_calibrate_offset(bus,id, boardtype, middlevalue, &msg);
+    std::vector<strain2_ampl_discretegain_t> gains(0);
+    std::vector<int16_t> targets(0);
+    if(icubCanProto_boardType__strain == boardtype)
+    {
+        gains.resize(0);
+        targets.push_back(imid);
+    }
+    else
+    {
+        gains.push_back(ampl_gain08); gains.push_back(ampl_gain24); gains.push_back(ampl_gain24);
+        gains.push_back(ampl_gain10); gains.push_back(ampl_gain10); gains.push_back(ampl_gain24);
+
+        targets.push_back(imid); targets.push_back(imid); targets.push_back(imid);
+        targets.push_back(imid); targets.push_back(imid); targets.push_back(imid);
+        //targets.push_back(imid); targets.push_back(imid+500); targets.push_back(imid-500);
+        //targets.push_back(imid+1000); targets.push_back(imid-1000); targets.push_back(imid+5000);
+    }
+    core->getDownloader()->strain_calibrate_offset2(bus,id, boardtype, gains, targets, &msg);
     loading(false);
     mutex.unlock();
 }
@@ -883,9 +907,59 @@ void CalibrationWindow::onSetSerialChanged(bool changed)
     }
 }
 
+#undef STRAINAMPLIFIER_TEST
+#if defined(STRAINAMPLIFIER_TEST)
+struct seq_t
+{
+    uint8_t channel;
+    float gain;
+    uint16_t offset;
+};
+#endif
+
 void CalibrationWindow::onClearLog()
 {
     ui->logText->clear();
+
+#if defined(STRAINAMPLIFIER_TEST)
+    QString msg("ciao");
+    //acemor
+//    std::string output;
+//    strain::amplifier::test(output);
+
+//    QString msg = QString::fromStdString(output);
+
+    static int i = 0;
+    const int seq_len = 6;
+    static const seq_t thesequence[seq_len] =
+    {
+        {
+            0, 48, 32*1024
+        },
+        {
+            1, 36, 32*1024
+        },
+        {
+            2, 24, 32*1024
+        },
+        {
+            3, 20, 16000
+        },
+        {
+            4, 48, 16000
+        },
+        {
+            5, 36, 16000
+        }
+    };
+
+    core->getDownloader()->strain_set_amplifier_gain_offset(bus, id, thesequence[i].channel, thesequence[i].gain, thesequence[i].offset);
+
+    i++;
+    i = i%seq_len;
+
+    ui->logText->appendPlainText(msg);
+#endif
 }
 
 void CalibrationWindow::onAppendLogMsg(QString msg)
