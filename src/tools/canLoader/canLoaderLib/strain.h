@@ -37,7 +37,7 @@ namespace strain { namespace dsp {
 
 namespace strain { namespace dsp { namespace fsc {
 
-    const FSC max = 32*1024-1;
+    const FSC max = 64*1024-1;
     const FSC min = 0;
 
     FSC convert(const double v, bool &saturated);
