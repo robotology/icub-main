@@ -269,15 +269,15 @@ void CanTreeWidgetItem::erasEeprom(bool erase)
 
 void CanTreeWidgetItem::refresh()
 {
-    char board_type        [50]; memset (board_type,0,50);
-    char board_process     [50]; memset (board_process,0,50);
-    char board_status      [50]; memset (board_status,0,50);
-    char board_add_info    [50]; memset (board_add_info,0,50);
-    char board_firmware_version  [10]; memset (board_firmware_version,0,10);
-    char board_appl_minor  [10]; memset (board_appl_minor,0,10);
-    char board_appl_build  [10]; memset (board_appl_build,0,10);
-    char board_serial      [10]; memset (board_serial,0,10);
-    char board_protocol    [10]; memset (board_protocol,0,10);
+    char board_type        [50];        memset (board_type, 0, sizeof(board_type));
+    char board_process     [50];        memset (board_process, 0, sizeof(board_process));
+    char board_status      [50];        memset (board_status, 0, sizeof(board_status));
+    char board_add_info    [50];        memset (board_add_info, 0, sizeof(board_add_info));
+    char board_firmware_version  [32];  memset (board_firmware_version, 0, sizeof(board_firmware_version));
+    char board_appl_minor  [10];        memset (board_appl_minor, 0, sizeof(board_appl_minor));
+    char board_appl_build  [10];        memset (board_appl_build, 0, sizeof(board_appl_build));
+    char board_serial      [50];        memset (board_serial, 0, sizeof(board_serial));
+    char board_protocol    [10];        memset (board_protocol, 0, sizeof(board_protocol));
 
     sBoard board = getBoard();
 
@@ -316,14 +316,14 @@ void CanTreeWidgetItem::refresh()
     strncpy  (board_add_info, board.add_info,32);
 
     if(-1 == board.appl_vers_build){
-        sprintf (board_firmware_version, "%d.%d", board.appl_vers_major, board.appl_vers_minor);
+        snprintf (board_firmware_version, sizeof(board_firmware_version), "%d.%d", board.appl_vers_major, board.appl_vers_minor);
     } else {
-        sprintf (board_firmware_version, "%d.%d.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
+        snprintf (board_firmware_version, sizeof(board_firmware_version), "%d.%d.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
     }
 
-    sprintf (board_appl_minor,"%d",board.appl_vers_minor);
-    sprintf (board_appl_build,"%d",board.appl_vers_build);
-    sprintf (board_serial,"%s",board.serial);
+    snprintf (board_appl_minor, sizeof(board_appl_minor), "%d",board.appl_vers_minor);
+    snprintf (board_appl_build, sizeof(board_appl_build), "%d",board.appl_vers_build);
+    snprintf (board_serial, sizeof(board_serial), "%s",board.serial);
 
     if((0 == board.prot_vers_major) && (0 == board.prot_vers_minor))
     {
