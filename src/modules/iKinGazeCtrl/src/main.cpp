@@ -298,7 +298,7 @@ following ports:
 
 - \e /<ctrlName>/q:o returns the actual joints configuration
   during movement (Vector of 9 double). The order for torso
-  angles is the one defined by kinematic chain (reversed order).
+  angles is the one defined by kinematic chain.
   Useful in conjunction with the \ref iKinGazeView "viewer".
   Units in degrees.
 
