@@ -46,7 +46,7 @@ private:
     void terminate_section();
     void close_files();
     int remap_trials();
-    bool get(const unsigned int number, vector<cDownloader::strain_value_t> &values);
+    bool get(const unsigned int number, vector<cDownloader::strain_value_t> &values, bool debugprint = true);
     bool print(const vector<cDownloader::strain_value_t> &values, FILE *fp, QList<float> = QList<float>());
 #ifdef ATI_SENS
     void acquire_1000_samples();
@@ -75,6 +75,10 @@ private:
     signed_elem_class           last_value;
     QTimer timer;
     int current_trial;
+
+    bool isSamplesAcquisitionActive;
+    QMutex mutex;
+    bool tick_acquisition(int samples);
 
 private slots:
     void onButtonClick(bool b);

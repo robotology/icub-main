@@ -8,9 +8,10 @@
 #define NSAMPLES 1000
 
 StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdaterCore *core, QWidget *parent) :
-    QDialog(parent),
+    QDialog(parent), mutex(QMutex::Recursive),
     ui(new Ui::StrainCalibGui)
 {
+    isSamplesAcquisitionActive = false;
     ui->setupUi(this);
     this->core = core;
     fp = NULL;
@@ -70,10 +71,11 @@ StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdater
     connect(ui->freeAcqModeGroup,SIGNAL(toggled(bool)),this,SLOT(onFreeAcqMode(bool)));
     connect(ui->buttonBox,SIGNAL(accepted()),this,SLOT(close()));
 
-    bool b = expected_values_handler.init("good_vals.txt");
+    std::string filenameOfexpectedValues = std::string("good_vals.txt");
+    bool b = expected_values_handler.init(filenameOfexpectedValues.c_str());
     if(!b){
-        qDebug() << "ERROR";
-        return;
+        yError() << "ERROR in opening file" << filenameOfexpectedValues << ".... using default values for expected value handler";
+        expected_values_handler.init();
     }
 
     connect(&watcher, SIGNAL(finished()), this, SLOT(onFutureFinished()));
@@ -116,6 +118,7 @@ StrainCalibGui::~StrainCalibGui()
 void StrainCalibGui::onFreeAcqMode(bool b)
 {
     if(b){
+        ui->spinSamples->setEnabled(true);
         ui->btnContainer1->setEnabled(false);
         ui->btnContainer2->setEnabled(false);
         ui->btnAcquireData->setEnabled(true);
@@ -218,12 +221,15 @@ void acquire_1000_samples()
 
 #else
 
-bool StrainCalibGui::get(const unsigned int number, vector<cDownloader::strain_value_t> &values)
+bool StrainCalibGui::get(const unsigned int number, vector<cDownloader::strain_value_t> &values, bool debugprint)
 {
 
     double t0 = yarp::os::SystemClock::nowSystem();
 
-    yDebug() << "strainInterface::get(): is acquiring" << number << "from the 6 channels. Please wait ...";
+    if(debugprint)
+    {
+        yDebug() << "strainInterface::get(): is acquiring" << number << "from the 6 channels. Please wait ...";
+    }
 
 
     const bool calibmode = false;
@@ -231,16 +237,19 @@ bool StrainCalibGui::get(const unsigned int number, vector<cDownloader::strain_v
     core->getDownloader()->strain_acquire_get(config.get_canbus(), config.get_canaddress(), values, number);
     //yarp::os::SystemClock::delaySystem(0.100); i used it to test the flush operation of strain_acquire_stop()....
     core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress());
+    core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress());
 
     double t1 = yarp::os::SystemClock::nowSystem();
 
-
-    yDebug() << "strainInterface::get() has succesfully acquired" << values.size() << "values of the 6 channels in" << (t1-t0) << "seconds";
-    yDebug() << "the values are:";
-    for(int i=0; i<values.size(); i++)
+    if(debugprint)
     {
-        yDebug() << "#" << i+1 << "=" << values[i].channel[0] << values[i].channel[1] << values[i].channel[2] << values[i].channel[3] <<
-                                         values[i].channel[4] << values[i].channel[5] << values[i].valid;
+        yDebug() << "strainInterface::get() has succesfully acquired" << values.size() << "values of the 6 channels in" << (t1-t0) << "seconds";
+        yDebug() << "the values are:";
+        for(int i=0; i<values.size(); i++)
+        {
+            yDebug() << "#" << i+1 << "=" << values[i].channel[0] << values[i].channel[1] << values[i].channel[2] << values[i].channel[3] <<
+                                             values[i].channel[4] << values[i].channel[5] << values[i].valid;
+        }
     }
 
     return true;
@@ -285,11 +294,17 @@ bool StrainCalibGui::acquire_samples(int samples)
 {
     // marco.accame: now we acquire with the strainInterface class in one shot
 
+    mutex.lock();
+    isSamplesAcquisitionActive = true;
+
+    ui->btnAcquireData->setEnabled(false);
+    ui->btnAcquireData->setText("Acquiring Samples Now");
+
     vector<cDownloader::strain_value_t> values;
-    get(samples, values);
+    get(samples, values, true);
     yDebug() << "acquired" << values.size() << "strain samples";
 
-    if(NSAMPLES != values.size())
+    if(samples != values.size())
     {
         yError() << "cannot acquire enough samples. Only:" << values.size() << "instead of" << NSAMPLES;
     }
@@ -316,11 +331,24 @@ bool StrainCalibGui::acquire_samples(int samples)
 
     lastvalue.extract(last_value.dat);
 
+    isSamplesAcquisitionActive = false;
+
+    if(ui->freeAcqModeGroup->isChecked())
+    {
+        //ui->spinSamples->setEnabled(true);
+        ui->btnAcquireData->setEnabled(true);
+        ui->btnAcquireData->setText("Acquire sample");
+        close_files();
+    }
+
+    mutex.unlock();
+
     return true;
 
 }
 
 #endif
+
 void StrainCalibGui::showMenu()
 {
     switch (trial) {
@@ -454,7 +482,7 @@ void StrainCalibGui::showMenu()
 
     case 8020:
         fp = fopen("./data/output82.dat","w");
-        ui->groupBox->setTitle("(1)     z+ pointing DOWNwards      25kg traction ");
+        ui->groupBox->setTitle("(1)     z+ pointing DOWNwards      25kg traction file: output82.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 nut\n"
                                        "2. screw the M10 ring on the top of the assembly\n"
                                        "3. orient the assembly with the z+ axis pointing downwards\n\n"
@@ -708,8 +736,25 @@ void StrainCalibGui::onTimerTimeout()
                 errValues.at(i)->setStyleSheet("");
 
             }
-        ui->btnAcquireData->setText("Acquire data");
+
+            if(true == isSamplesAcquisitionActive)
+            {
+                ui->btnAcquireData->setEnabled(false);
+                ui->btnAcquireData->setText("Acquiring Data Now");
+            }
+            else
+            {
+                 ui->btnAcquireData->setText("Start Acquiring Data");
+            }
+
     } else {
+
+        if(false == isSamplesAcquisitionActive)
+        {   // only one is enough to show status
+            tick_acquisition(1);
+        }
+
+
         expected_values_handler.get_current_expected_values(exp_vals, current_trial);
         for (i=0; i<6;i++){
             expValues.at(i)->setText(QString("%1").arg(exp_vals.dat[i]));
@@ -734,10 +779,47 @@ void StrainCalibGui::onTimerTimeout()
             }
         }
 
-        if (in_boundary==false){
+        if(true == isSamplesAcquisitionActive)
+        {
+            ui->btnAcquireData->setEnabled(false);
+            ui->btnAcquireData->setText("Acquiring Data Now");
+        }
+        else
+        {
+
+            ui->btnAcquireData->setEnabled(true);
+
+            if (in_boundary==false){
              ui->btnAcquireData->setText("Strange values detected.\n            Acquire? ");
-        } else {
-             ui->btnAcquireData->setText("Acquire data");
+            } else {
+             ui->btnAcquireData->setText("Acquire Data");
+            }
         }
     }
 }
+
+
+bool StrainCalibGui::tick_acquisition(int samples)
+{
+    // marco.accame: now we acquire with the strainInterface class in one shot
+
+    mutex.lock();
+
+    vector<cDownloader::strain_value_t> values;
+    get(samples, values, false);
+    yDebug() << "simple acquisition of " << values.size() << "strain samples";
+
+
+
+    // now i need to retrieve the most recent value from values but in a particular format and fill variable last_value
+
+    cDownloader::strain_value_t lastvalue = values.at(values.size()-1);
+
+    lastvalue.extract(last_value.dat);
+
+    mutex.unlock();
+
+    return true;
+
+}
+
