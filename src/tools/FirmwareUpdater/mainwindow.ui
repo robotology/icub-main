@@ -152,6 +152,19 @@
              </property>
             </widget>
            </item>
+           <item row="2" column="3">
+            <widget class="QPushButton" name="btnStrainCalib">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="toolTip">
+              <string>It uploads the application FW on the selected boards. They must be of the same type. The ETH boards must be in maintenance mode. </string>
+             </property>
+             <property name="text">
+              <string>Acquire from Strain</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -338,7 +351,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

@@ -22,7 +22,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(FirmwareUpdaterCore *core,bool adminMode,QWidget *parent = 0);
+    explicit MainWindow(FirmwareUpdaterCore *core,bool adminMode,bool strainCalibMode = false,QWidget *parent = 0);
     ~MainWindow();
 
      void refreshDevices();
@@ -65,6 +65,7 @@ private:
     int loadCounter;
     QFutureWatcher<bool> watcher;
     icubCanProto_boardType_t sgboardtype;
+    QString device;
 
 signals:
     void appendInfo(boardInfo2_t,eOipv4addr_t);
@@ -93,6 +94,7 @@ private slots:
     void onGoToMaintenance(bool click);
     void onGoToApplication(bool click);
     void onEraseEprom(bool click);
+    void onStrainCalib(bool click);
     void onBootApplication(bool);
     void onCalibrate(bool);
     void populateEthBoardsNode(QTreeWidgetItem*, bool refreshSingleNode = false, bool refreshAll = false);

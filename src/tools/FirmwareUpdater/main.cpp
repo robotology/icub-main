@@ -62,6 +62,9 @@ int main(int argc, char *argv[])
     Network yarp;
     QApplication a(argc, argv);
 
+    QApplication::setStyle("motif");
+
+
     FirmwareUpdaterCore core;
 
 #ifdef UPDATER_RELEASE
@@ -78,6 +81,7 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
 
     QCommandLineOption noGuiOption(QStringList() << "g" << "nogui", "The application starts in console mode");
+    QCommandLineOption strainCalibOption(QStringList() << "k" << "strainCalib", "The application starts in admin mode");
     QCommandLineOption adminOption(QStringList() << "a" << "admin", "The application starts in admin mode");
     QCommandLineOption iniFileOption(QStringList() << "f" << "from", "Override the default ini file","config","firmwareupdater.ini");
     QCommandLineOption addressOption(QStringList() << "s" << "address", "Override the default address","address",MY_ADDR);
@@ -100,6 +104,7 @@ int main(int argc, char *argv[])
 
 
     parser.addOption(noGuiOption);
+    parser.addOption(strainCalibOption);
     parser.addOption(adminOption);
     parser.addOption(iniFileOption);
     parser.addOption(addressOption);
@@ -123,6 +128,7 @@ int main(int argc, char *argv[])
 
     bool noGui = parser.isSet(noGuiOption);
     bool adminMode = parser.isSet(adminOption);
+    bool strainCalibMode = parser.isSet(strainCalibOption);
     QString iniFile = parser.value(iniFileOption);
     QString address = MY_ADDR;
     bool bPrintUsage=false;
@@ -175,7 +181,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     int ret = 1;
-    MainWindow w(&core,adminMode);
+    MainWindow w(&core,adminMode,strainCalibMode);
     if(!noGui){
         w.show();
         ret = a.exec();

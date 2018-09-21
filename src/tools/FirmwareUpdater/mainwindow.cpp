@@ -8,14 +8,14 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QToolButton>
+#include "straincalibgui.h"
 
-
-MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *parent) :
+MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, bool strainCalibMode, QWidget *parent) :
     QMainWindow(parent), /*mutex(QMutex::Recursive)*/
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    core->strainCalibMode = strainCalibMode;
     qRegisterMetaType <QList<sBoard> > ("QList<sBoard>");
     qRegisterMetaType <QVector<int> > ("QVector<int>");
     qRegisterMetaType <boardInfo2_t> ("boardInfo2_t");
@@ -96,8 +96,15 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
         item->setTextColor(DEVICEID,QColor(Qt::red));
     }
 
-    if(!adminMode){
+    if(!strainCalibMode){
+        if(!adminMode){
+            ui->advancedGroup->setVisible(false);
+        }
+        ui->btnStrainCalib->setVisible(false);
+    }else{
         ui->advancedGroup->setVisible(false);
+        ui->btnCahngeInfo->setVisible(false);
+        ui->btnUploadApp->setVisible(false);
     }
 
     connect(core,SIGNAL(updateProgress(float)),
@@ -159,6 +166,7 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
     connect(ui->btnGoToMaintenance,SIGNAL(clicked(bool)),this,SLOT(onGoToMaintenance(bool)));
     connect(ui->btnGoToApplication,SIGNAL(clicked(bool)),this,SLOT(onGoToApplication(bool)));
     connect(ui->btnEraseEeprom,SIGNAL(clicked(bool)),this,SLOT(onEraseEprom(bool)));
+    connect(ui->btnStrainCalib,SIGNAL(clicked(bool)),this,SLOT(onStrainCalib(bool)));
     connect(&watcher, SIGNAL(finished()), this, SLOT(onFutureFinished()));
 
     ui->devicesTree->sortItems(ADDRESS,Qt::AscendingOrder);
@@ -552,6 +560,20 @@ void MainWindow::onFutureFinished()
     onDeviceSelectionChanged();
 }
 
+void MainWindow::onStrainCalib(bool click)
+{
+    if(selectedNodes.isEmpty()){
+        return;
+    }
+    CanTreeWidgetItem *it = (CanTreeWidgetItem*)selectedNodes.first();
+
+    sBoard board = it->getBoard();
+    qDebug() << device;
+    qDebug() << board.bus;
+    qDebug() <<board.pid;
+    StrainCalibGui strainCalibGui(device,board.bus,board.pid,core);
+    strainCalibGui.exec();
+}
 
 void MainWindow::onBlinkPressed(bool click)
 {
@@ -1218,7 +1240,7 @@ void MainWindow::onConnect()
                  it->setData(0,CONNECTED,false);
                  it->setTextColor(DEVICEID,QColor(Qt::red));
              }
-             QString device;
+             //QString device;
              QString deviceIdstr;
              getDeviceID(it, deviceIdstr, device);
 
@@ -1309,6 +1331,7 @@ void MainWindow::checkEnableButtons()
     }
 
     if(selectedNodes.isEmpty()){
+        ui->btnStrainCalib->setEnabled(false);
         ui->btnBlink->setEnabled(false);
         ui->btnBootApp->setEnabled(false);
         ui->btnBootUpdater->setEnabled(false);
@@ -1416,6 +1439,11 @@ void MainWindow::checkEnableButtons()
             ui->btnCahngeInfo->setEnabled(true);
 
             sBoard canBoard = ((EthTreeWidgetItem*)selectedNodes.first()->getParentNode())->getCanBoard(selectedNodes.first()->getIndexOfBoard());
+            if(core->strainCalibMode && (canBoard.type == icubCanProto_boardType__strain) || (canBoard.type == icubCanProto_boardType__strain2)){
+                ui->btnStrainCalib->setEnabled(true);
+            }else{
+                ui->btnStrainCalib->setEnabled(false);
+            }
             if(((canBoard.type == icubCanProto_boardType__strain) || (canBoard.type == icubCanProto_boardType__strain2) || (canBoard.type == icubCanProto_boardType__6sg)) && (canBoard.status == BOARD_RUNNING) ){
                 sgboardtype = static_cast<icubCanProto_boardType_t>(canBoard.type);
                 ui->btnCalibrate->setEnabled(true);
@@ -1436,6 +1464,7 @@ void MainWindow::checkEnableButtons()
             ui->btnEraseEeprom->setEnabled(false);
             ui->checkBoxEE->setCheckState(Qt::Unchecked);
             ui->checkBoxEE->setEnabled(false);
+            ui->btnStrainCalib->setEnabled(false);
         }
         ui->btnChangeIp->setEnabled(false);
 
@@ -1605,6 +1634,7 @@ void MainWindow::onCanBoardsRetrieved(QTreeWidgetItem *it, bool refresh)
         for(int i=0;i<node->getCanBoards().count();i++){
 
             CanTreeWidgetItem *canNode = new CanTreeWidgetItem(node,core,i);
+
 
             connect(canNode,SIGNAL(selectedChanged(bool)),
                     this,SLOT(onSelectionChanged(bool)),Qt::QueuedConnection);

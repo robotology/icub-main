@@ -382,10 +382,16 @@ void CanTreeWidgetItem::refresh()
 //        setIcon(ERASE_EEPROM,QIcon());
 //    }
 
-    if(isCheckSelected() != board.selected){
+    if(core->strainCalibMode ){
+        if((getBoard().type != eobrd_strain2 && getBoard().type != eobrd_strain)){
+            setDisabled(true);
+            check->setEnabled(false);
+        }
+    } else if(isCheckSelected() != board.selected){
         setCheckSelected(board.selected);
         selectedChanged(board.selected);
     }
+
 
 
 

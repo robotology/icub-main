@@ -6,6 +6,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <strain.h>
 
 #define CHANNEL_COUNT   6
 #define HEX_VALC 0x8000
@@ -15,8 +16,11 @@
 
 #define     COL_GAIN            0
 #define     COL_OFFSET          1
-#define     COL_CALIBBIAS       2
-#define     COL_CURRBIAS        3
+#define     COL_TARGET          2
+#define     COL_REGISTERS       3
+
+#define     COL_CALIBBIAS       0
+//#define     COL_CURRBIAS        3
 
 #define     COL_FULLSCALE       0
 
@@ -25,10 +29,10 @@
 #define     COL_DIFFMEASURE     2
 #define     COL_NEWTONMEASURE   3
 
-#define     MATRIX_COUNT        3
+#define     MATRIX_COUNT        1
 
-#include "strain.h"
 
+using namespace strain::dsp;
 
 int convert_to_signed32k(unsigned int v)
 {
@@ -70,7 +74,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     bus = ((CustomTreeWidgetItem*)item->getParentNode())->getCanBoard(selected).bus;
     id  = ((CustomTreeWidgetItem*)item->getParentNode())->getCanBoard(selected).pid;
     currentMatrixIndex = 0;
-
+    regsetInUse = cDownloader::strain_regset_inuse;
     calibration_value = 32767;
     calib_const[0] = 0;
     calib_const[1] = 0;
@@ -79,6 +83,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     matrix_changed[0] = false;
     matrix_changed[1] = false;
     matrix_changed[2] = false;
+    fullScaleChanged = false;
 
     boardtype = b; // we can have either a icubCanProto_boardType__strain or a icubCanProto_boardType__strain2 ...
     eeprom_saved_status=true;
@@ -92,7 +97,10 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
         maxadc[i]           = -32768;
         minadc[i]           = +32767;
 
-        sliderPressed[i]    = false;
+        maxft[i]           = -32768;
+        minft[i]           = +32767;
+
+        offsetSliderPressed[i]    = false;
         amp_gain1[i]        = 0;
         amp_gain2[i]        = 0;
     }
@@ -104,46 +112,49 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
         }
     }
 
+    if(icubCanProto_boardType__strain == boardtype){
+        ui->tableParamters->hideColumn(COL_GAIN);
+    }
 
 
 
     for (int i=0;i <CHANNEL_COUNT;i++) {
         QWidget *container = new QWidget(ui->tableParamters);
-        QSlider *slider = new QSlider(container);
-        slider->setMinimum(0);
-        if(icubCanProto_boardType__strain2 == boardtype)
-        {
-            slider->setMaximum(0xFFFF);
+        /*****************************************************/
+        CustomSpinBox *spinner = new CustomSpinBox(boardtype,container);
+        slider_offset.append(spinner);
+
+        ui->tableParamters->setCellWidget(i,COL_OFFSET,spinner);
+        ui->tableParamters->cellWidget(i,COL_OFFSET)->setEnabled(false);
+
+        CustomComboBox *gainCombo = new CustomComboBox(container);
+
+        ui->tableParamters->setCellWidget(i,COL_GAIN,gainCombo);
+        ui->tableParamters->cellWidget(i,COL_GAIN)->setEnabled(false);
+
+        /*****************************************************/
+
+        QSpinBox *spinnerTarget = new QSpinBox(container);
+        spinnerTarget->setMinimum(0);
+        spinnerTarget->setMaximum(32767);
+        spinnerTarget->setMinimum(-32768);
+        spinnerTarget->setValue(0);
+        ui->tableParamters->setCellWidget(i,COL_TARGET,spinnerTarget);
+
+        if(icubCanProto_boardType__strain == boardtype && i > 0){
+            spinnerTarget->setEnabled(false);
+        } else if(icubCanProto_boardType__strain == boardtype && i == 0){
+            connect(spinnerTarget,SIGNAL(valueChanged(int)),this,SLOT(onTargetValueChanged(int)));
         }
-        else
-        {
-            slider->setMaximum(0x3FF);
-        }
-        slider_gain.append(slider);
-        slider->setOrientation(Qt::Horizontal);
-
-        QLabel *lbl = new QLabel(container);
-        lbl->setText("--");
-
-        QHBoxLayout *l = new QHBoxLayout(container);
-        l->addWidget(slider);
-        l->addWidget(lbl);
-        container->setLayout(l);
-        ui->tableParamters->setCellWidget(i,COL_OFFSET,container);
 
 
-        connect(slider,SIGNAL(valueChanged(int)),this,SLOT(onOffsetSliderValue(int)),Qt::DirectConnection);
-        connect(slider,SIGNAL(sliderPressed()),this,SLOT(onSliderPressed()));
-        connect(slider,SIGNAL(sliderReleased()),this,SLOT(onSliderReleased()));
 
+        /*****************************************************/
 
         QTableWidgetItem *item = new QTableWidgetItem("-");
         item->setFlags(item->flags() ^ Qt::ItemIsEditable);
         ui->tableCurr->setItem(i,COL_CURRMEASURE,item);
 
-        //QTableWidgetItem *header2 = new QTableWidgetItem();
-        //header2->setText("CIAO");
-        //tableWidget->setHorizontalHeaderItem(1,header2);
         ui->tableCurr->setHorizontalHeaderItem(0, new QTableWidgetItem("ADC"));
 
 
@@ -168,13 +179,15 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
 
         for(int j=0;j<CHANNEL_COUNT;j++){
             QTableWidgetItem *item = new QTableWidgetItem("-");
+            item->setFlags(item->flags() ^ Qt::ItemIsEditable);
             ui->matrixA->setItem(i,j,item);
 
-            QTableWidgetItem *item1 = new QTableWidgetItem("-");
-            ui->matrixB->setItem(i,j,item1);
 
-            QTableWidgetItem *item2 = new QTableWidgetItem("-");
-            ui->matrixC->setItem(i,j,item2);
+//            QTableWidgetItem *item1 = new QTableWidgetItem("-");
+//            ui->matrixB->setItem(i,j,item1);
+
+//            QTableWidgetItem *item2 = new QTableWidgetItem("-");
+//            ui->matrixC->setItem(i,j,item2);
         }
 
 
@@ -185,45 +198,39 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
 
         QTableWidgetItem *item5 = new QTableWidgetItem("-");
         item5->setFlags(item5->flags() ^ Qt::ItemIsEditable);
-        ui->tableParamters->setItem(i,COL_CALIBBIAS,item5);
+        ui->tableParamters->setItem(i,COL_TARGET,item5);
 
+
+//        QTableWidgetItem *item6 = new QTableWidgetItem("-");
+//        item6->setFlags(item6->flags() ^ Qt::ItemIsEditable);
+//        ui->tableParamters->setItem(i,COL_CURRBIAS,item6);
 
         QTableWidgetItem *item6 = new QTableWidgetItem("-");
         item6->setFlags(item6->flags() ^ Qt::ItemIsEditable);
-        ui->tableParamters->setItem(i,COL_CURRBIAS,item6);
+        ui->tableBias->setItem(i,COL_CALIBBIAS,item6);
 
         QTableWidgetItem *item7 = new QTableWidgetItem("-");
         item7->setFlags(item7->flags() ^ Qt::ItemIsEditable);
         ui->tableFullScaleA->setItem(i,COL_FULLSCALE,item7);
 
-        QTableWidgetItem *item8 = new QTableWidgetItem("-");
-        item8->setFlags(item8->flags() ^ Qt::ItemIsEditable);
-        ui->tableFullScaleB->setItem(i,COL_FULLSCALE,item8);
+//        QTableWidgetItem *item8 = new QTableWidgetItem("-");
+//        item8->setFlags(item8->flags() ^ Qt::ItemIsEditable);
+//        ui->tableFullScaleB->setItem(i,COL_FULLSCALE,item8);
 
-        QTableWidgetItem *item9 = new QTableWidgetItem("-");
-        item9->setFlags(item9->flags() ^ Qt::ItemIsEditable);
-        ui->tableFullScaleC->setItem(i,COL_FULLSCALE,item9);
+//        QTableWidgetItem *item9 = new QTableWidgetItem("-");
+//        item9->setFlags(item9->flags() ^ Qt::ItemIsEditable);
+//        ui->tableFullScaleC->setItem(i,COL_FULLSCALE,item9);
 
         fullScales.append(ui->tableFullScaleA);
-        fullScales.append(ui->tableFullScaleB);
-        fullScales.append(ui->tableFullScaleC);
+//        fullScales.append(ui->tableFullScaleB);
+//        fullScales.append(ui->tableFullScaleC);
 
     }
 
     ui->tableParamters->setColumnWidth(COL_OFFSET,150);
-    ui->tableUseMatrix->hideColumn(COL_NEWTONMEASURE);
+    //ui->tableUseMatrix->hideColumn(COL_NEWTONMEASURE);
 
 
-
-// marco.accame: it was...
-//    ui->slider_zero->setMinimum(0);
-//    ui->slider_zero->setMaximum(65535);
-//    ui->slider_zero->setValue(32767);
-     //marco.accame: is ...
-    ui->slider_zero->setMinimum(-32768);
-    ui->slider_zero->setMaximum(32767);
-    ui->slider_zero->setValue(0);
-    ui->zeroLbl->setText(QString("%1").arg(ui->slider_zero->value()));
 
     progress = new QProgressBar(this);
     progress->setFixedWidth(100);
@@ -232,29 +239,37 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     progress->setVisible(false);
     ui->statusbar->addWidget(progress);
 
-    matrixGain.append(ui->editMatrixGainA);
-    matrixGain.append(ui->editMatrixGainB);
-    matrixGain.append(ui->editMatrixGainC);
+//    matrixGain.append(ui->editMatrixGainA);
+//    matrixGain.append(ui->editMatrixGainB);
+//    matrixGain.append(ui->editMatrixGainC);
 
     matrices.append(ui->matrixA);
-    matrices.append(ui->matrixB);
-    matrices.append(ui->matrixC);
+//    matrices.append(ui->matrixB);
+//    matrices.append(ui->matrixC);
+
+    if(boardtype == icubCanProto_boardType__strain){
+        ui->comboRegSet->setEnabled(false);
+        ui->comboRegSetBoot->setEnabled(false);
+    }
 
 
-    connect(ui->comboUseMatrix,SIGNAL(currentIndexChanged(int)),this,SLOT(onUseMatrixChanged(int)),Qt::QueuedConnection);
-
+    //connect(ui->comboUseMatrix,SIGNAL(currentIndexChanged(int)),this,SLOT(onUseMatrixChanged(int)),Qt::QueuedConnection);
+    connect(ui->comboRegSet,SIGNAL(currentIndexChanged(int)),this,SLOT(onChangeRegSet(int)));
+    connect(ui->comboRegSetBoot,SIGNAL(currentIndexChanged(int)),this,SLOT(onChangeRegSetBoot(int)));
+    connect(this,SIGNAL(applyDone()),this,SLOT(onApplyDone()));
     connect(ui->btnClose,SIGNAL(clicked(bool)),this,SLOT(close()));
     connect(ui->edit_serial,SIGNAL(textEdited(QString)),this,SLOT(onSerialChanged(QString)));
     connect(this,SIGNAL(loading(bool)),this,SLOT(onLoading(bool)),Qt::QueuedConnection);
     connect(this,SIGNAL(setText(QLineEdit*,QString)),this,SLOT(onSetText(QLineEdit*,QString)),Qt::QueuedConnection);
     connect(this,SIGNAL(setText(QTableWidgetItem*,QString)),this,SLOT(onSetText(QTableWidgetItem*,QString)),Qt::QueuedConnection);
-    connect(this,SIGNAL(setSliderValue(QSlider*,int)),this,SLOT(onSliderValue(QSlider*,int)),Qt::BlockingQueuedConnection);
+    connect(this,SIGNAL(setOffsetSliderValue(CustomSpinBox*,int)),this,SLOT(onOffsetSpinnerValue(CustomSpinBox*,int)),Qt::BlockingQueuedConnection);
+
+    connect(ui->btnParametersClear,SIGNAL(clicked(bool)),this,SLOT(onParametersClear(bool)));
+    connect(ui->btnParametersApply,SIGNAL(clicked(bool)),this,SLOT(onParametersApply(bool)));
+    connect(ui->checkAutoTune,SIGNAL(toggled(bool)),this,SLOT(onCheckAutoTune(bool)));
     connect(ui->btnSetCalibBias,SIGNAL(clicked(bool)),this,SLOT(onSetCalibBias(bool)));
     connect(ui->btnResetCalibBias,SIGNAL(clicked(bool)),this,SLOT(onResetCalibBias(bool)));
-    connect(ui->btnSetCurrBias,SIGNAL(clicked(bool)),this,SLOT(onSetCurrBias(bool)));
-    connect(ui->btnResetCurrBias,SIGNAL(clicked(bool)),this,SLOT(onResetCurrBias(bool)));
-    connect(ui->btnAutoAdjust,SIGNAL(clicked(bool)),this,SLOT(onAutoAdjust(bool)));
-    connect(ui->slider_zero,SIGNAL(valueChanged(int)),this,SLOT(onSliderZeroChanged(int)));
+
     connect(ui->btnSetSerial,SIGNAL(clicked(bool)),this,SLOT(onSetSerial(bool)),Qt::QueuedConnection);
     connect(this,SIGNAL(setSerialChanged(bool)),this,SLOT(onSetSerialChanged(bool)));
     connect(ui->btnResetCalib,SIGNAL(clicked(bool)),this,SLOT(onResetCalibMatrix(bool)),Qt::QueuedConnection);
@@ -265,10 +280,10 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     connect(this,SIGNAL(updateTitle()),this,SLOT(onUpdateTitle()),Qt::QueuedConnection);
     connect(this,SIGNAL(appendLogMsg(QString)),this,SLOT(onAppendLogMsg(QString)),Qt::QueuedConnection);
     connect(ui->btnClearLog,SIGNAL(clicked(bool)),this,SLOT(onClearLog()));
-    connect(ui->tabWidget,SIGNAL(currentChanged(int)),this,SLOT(onTabMatrixCahnged(int)));
     connect(ui->btnLoadCalibFile,SIGNAL(clicked(bool)),this,SLOT(onLoadCalibrationFile(bool)));
     connect(ui->btnSaveCalibFile,SIGNAL(clicked(bool)),this,SLOT(onSaveCalibrationFile(bool)));
     connect(ui->btnImportCalibMatrix,SIGNAL(clicked(bool)),this,SLOT(onImportCalibrationFile(bool)));
+    connect(ui->checkDigital,SIGNAL(toggled(bool)),this,SLOT(onDigitalRegulation(bool)));
 
 
     ui->actionImport_Calib_Matrix->setEnabled(false);
@@ -295,6 +310,89 @@ CalibrationWindow::~CalibrationWindow()
     mutex.unlock();
 }
 
+void CalibrationWindow::onTargetValueChanged(int v)
+{
+
+
+    if(boardtype == icubCanProto_boardType__strain){
+        for(int i=1;i<CHANNEL_COUNT;i++){
+            QSpinBox *spinnerTarget = (QSpinBox*)ui->tableParamters->cellWidget(i,COL_TARGET);
+            spinnerTarget->setValue(v);
+        }
+
+    }
+}
+
+void CalibrationWindow::onChangeRegSet(int regSet)
+{
+    QtConcurrent::run(this,&CalibrationWindow::useMatrix,regSet,false);
+}
+
+void CalibrationWindow::onChangeRegSetBoot(int regSet)
+{
+    QtConcurrent::run(this,&CalibrationWindow::useMatrix,regSet,true);
+}
+
+
+void CalibrationWindow::onDigitalRegulation(bool checked)
+{
+    ui->digitalContainer->setEnabled(checked);
+    if(checked){
+        ui->tableUseMatrix->showColumn(COL_NEWTONMEASURE);
+        ui->tableUseMatrix->setColumnWidth(0,60);
+        ui->tableUseMatrix->setColumnWidth(1,60);
+        ui->tableUseMatrix->setColumnWidth(2,60);
+    }else{
+        ui->tableUseMatrix->hideColumn(COL_NEWTONMEASURE);
+
+    }
+
+}
+void CalibrationWindow::onCheckAutoTune(bool checked)
+{
+    if(checked){
+        for(int i=0; i<CHANNEL_COUNT;i++){
+            if(icubCanProto_boardType__strain == boardtype){
+                if(i == 0){
+                    ui->tableParamters->cellWidget(i,COL_TARGET)->setEnabled(true);
+                }
+            } else {
+                ui->tableParamters->cellWidget(i,COL_TARGET)->setEnabled(true);
+            }
+            ui->tableParamters->cellWidget(i,COL_OFFSET)->setEnabled(false);
+            ui->tableParamters->cellWidget(i,COL_GAIN)->setEnabled(false);
+        }
+    } else {
+        for(int i=0; i<CHANNEL_COUNT;i++){
+            ui->tableParamters->cellWidget(i,COL_TARGET)->setEnabled(false);
+            ui->tableParamters->cellWidget(i,COL_OFFSET)->setEnabled(true);
+            ui->tableParamters->cellWidget(i,COL_GAIN)->setEnabled(true);
+        }
+    }
+}
+
+void CalibrationWindow::onParametersClear(bool click)
+{
+    for(int i=0; i<CHANNEL_COUNT;i++){
+        ((CustomComboBox*)ui->tableParamters->cellWidget(i,COL_GAIN))->clear();
+        ((CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET))->clear();
+    }
+}
+
+void CalibrationWindow::onParametersApply(bool click)
+{
+    if(ui->checkAutoTune->isChecked()){
+        QtConcurrent::run(this,&CalibrationWindow::autoAdjust);
+    } else {
+        QtConcurrent::run(this,&CalibrationWindow::applyParameters);
+    }
+}
+
+void CalibrationWindow::onOffsetEditingFinished()
+{
+    qDebug() << "EDIT FINISH FOR " << sender();
+}
+
 void CalibrationWindow::onTabMatrixCahnged(int index)
 {
     // This will be removed in the future
@@ -317,19 +415,19 @@ void CalibrationWindow::onTabMatrixCahnged(int index)
 
 }
 
-void CalibrationWindow::onSliderPressed()
+void CalibrationWindow::onOffsetSliderPressed()
 {
-    int index = slider_gain.indexOf((QSlider*)sender());
-    sliderPressed[index] = true;
+    int index = slider_offset.indexOf((CustomSpinBox*)sender());
+    offsetSliderPressed[index] = true;
 }
 
-void CalibrationWindow::onSliderReleased()
+void CalibrationWindow::onOffsetSliderReleased()
 {
-    int index = slider_gain.indexOf((QSlider*)sender());
+    int index = slider_offset.indexOf((CustomSpinBox*)sender());
 
-    QtConcurrent::run(this,&CalibrationWindow::setOffset,index,((QSlider*)sender())->value());
+    QtConcurrent::run(this,&CalibrationWindow::setOffset,index,((CustomSpinBox*)sender())->value());
 
-    sliderPressed[index] = false;
+    offsetSliderPressed[index] = false;
 
 }
 
@@ -383,37 +481,71 @@ void CalibrationWindow::autoAdjust()
     loading();
     string msg;
 
-    int imid = ui->slider_zero->value();
-    // marco.accame: transform [-32K, +32K) into [0, +64K) as required by strain_calibrate_offset()
-    //unsigned int middlevalue = 32768 + imid;
-    // acemor
-    // core->getDownloader()->strain_calibrate_offset(bus,id, boardtype, middlevalue, &msg);
+
     std::vector<strain2_ampl_discretegain_t> gains(0);
     std::vector<int16_t> targets(0);
     if(icubCanProto_boardType__strain == boardtype)
     {
+        CustomSpinBox *spin = (CustomSpinBox*)ui->tableParamters->cellWidget(0,COL_TARGET);
+        std::int16_t target = spin->value();
         gains.resize(0);
-        targets.push_back(imid);
+        targets.push_back(target);
     }
     else
     {
-        gains.push_back(ampl_gain08); gains.push_back(ampl_gain24); gains.push_back(ampl_gain24);
-        gains.push_back(ampl_gain10); gains.push_back(ampl_gain10); gains.push_back(ampl_gain24);
+        for(int i=0;i<CHANNEL_COUNT;i++)
+        {
+            QComboBox *combo = (QComboBox*)ui->tableParamters->cellWidget(i,COL_GAIN);
+            CustomSpinBox *spin = (CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_TARGET);
+            gains.push_back(static_cast<strain2_ampl_discretegain_t>(combo->itemData(combo->currentIndex(),GAINAMPROLE).toInt()));
+            targets.push_back(spin->value());
+        }
 
-        targets.push_back(imid); targets.push_back(imid); targets.push_back(imid);
-        targets.push_back(imid); targets.push_back(imid); targets.push_back(imid);
-        //targets.push_back(imid); targets.push_back(imid+500); targets.push_back(imid-500);
-        //targets.push_back(imid+1000); targets.push_back(imid-1000); targets.push_back(imid+5000);
     }
-    core->getDownloader()->strain_calibrate_offset2(bus,id, boardtype, gains, targets, &msg);
+    core->getDownloader()->strain_calibrate_offset2(bus, id, boardtype, gains, targets, &msg);
+
+
     loading(false);
+    applyDone();
     mutex.unlock();
 }
+
+void CalibrationWindow::applyParameters()
+{
+    mutex.lock();
+    loading();
+    string msg;
+
+    for(int i=0;i<CHANNEL_COUNT;i++){
+        QComboBox *combo = (QComboBox*)ui->tableParamters->cellWidget(i,COL_GAIN);
+        CustomSpinBox *spin = (CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET);
+        int lastOffset = spin->value();
+//#warning PER-DAVIDE-TODO: la nuova funzione strain_set_amplifier_gain_offset() usa come gain in float e offset in [0, 64*1024) ... pls controlla i valorei presi dalla gui. non vorrei fare errori
+//#warning PER-DAVIDE-TODO: controlalre il posto dove i valori del gain ed offset vengono letti dalla strain e stampati nella gui. attenzione che i gain potrebbe con essere un valore discreto di strain2_ampl_discretegain_t. in tal caso stampare error ed il valore.
+        uint16_t offset = lastOffset; // 32*1024 - 1;
+        int g = combo->itemData(combo->currentIndex(),GAINAMPROLE).toInt();
+        strain2_ampl_discretegain_t dg = static_cast<strain2_ampl_discretegain_t>(g);
+        float gain = core->getDownloader()->strain_amplifier_discretegain2float(dg);
+        if(0 != gain){
+            core->getDownloader()->strain_set_amplifier_gain_offset(bus, id, i, gain, offset, regsetInUse, &msg);
+        }
+
+
+    }
+    //connect(this,SIGNAL(setOffsetSliderValue(CustomSpinBox*,int)),this,SLOT(onOffsetSliderValue(CustomSpinBox*,int)),Qt::BlockingQueuedConnection);
+    loading(false);
+    applyDone();
+    mutex.unlock();
+}
+
+
 void CalibrationWindow::setSerial()
 {
     mutex.lock();
     loading();
     string msg;
+
+
     core->getDownloader()->strain_set_serial_number(bus,id,ui->edit_serial->text().toLatin1().data(),&msg);
     appendLogMsg(msg.c_str());
     serial_number_changed = false;
@@ -430,7 +562,7 @@ void CalibrationWindow::saveToEeprom()
     core->getDownloader()->strain_save_to_eeprom(bus,id,&msg);
     appendLogMsg(msg.c_str());
     drv_sleep (1000);
-    resetMatrices();
+    //resetMatrices();
     loading(false);
     mutex.unlock();
 }
@@ -447,46 +579,95 @@ void CalibrationWindow::resetMatricesState(int index)
             }
         }
         QTableWidget *table = matrices.at(i);
-        QLineEdit *gain = matrixGain.at(i);
+        //QLineEdit *gain = matrixGain.at(i);
 
-        disconnect(table,SIGNAL(itemChanged(QTableWidgetItem*)), this,SLOT( onMatrixChanged(QTableWidgetItem*)));
+        //disconnect(table,SIGNAL(itemChanged(QTableWidgetItem*)), this,SLOT( onMatrixChanged(QTableWidgetItem*)));
         for(int r=0;r<CHANNEL_COUNT;r++){
             for(int c=0;c<CHANNEL_COUNT;c++){
-                table->item(r,c)->setBackgroundColor("white");
+                table->item(r,c)->setTextColor("");
             }
         }
-        connect(table,SIGNAL(itemChanged(QTableWidgetItem*)), this,SLOT( onMatrixChanged(QTableWidgetItem*)),Qt::UniqueConnection);
-        gain->setStyleSheet("");
+        //connect(table,SIGNAL(itemChanged(QTableWidgetItem*)), this,SLOT( onMatrixChanged(QTableWidgetItem*)),Qt::UniqueConnection);
+        //gain->setStyleSheet("");
     }
 }
 
 void CalibrationWindow::setCalibration()
 {
     mutex.lock();
-    int index = ui->tabWidget->currentIndex();
-    QTableWidget *table = matrices.at(index);
+    loading();
+
+    int index = 0;
+    //QTableWidget *table = matrices.at(index);
 
     // marco.accame: the regulation set to be sent to the board is the one in use in its inside
-    const int regset = cDownloader::strain_regset_inuse;
 
-    loading();
-    for (int ri=0; ri<CHANNEL_COUNT; ri++){
-        for (int ci=0; ci<CHANNEL_COUNT; ci++){
-            const char* temp2 = table->item(ri,ci)->text().toLatin1().data();
-            sscanf (temp2,"%x",&matrix[index][ri][ci]);
+
+    if(matrix_changed[0]){
+        for (int ri=0; ri<CHANNEL_COUNT; ri++){
+            for (int ci=0; ci<CHANNEL_COUNT; ci++){
+                string msg;
+                core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,calib_matrix[index][ri][ci], regsetInUse, &msg);
+                appendLogMsg(msg.c_str());
+            }
+        }
+    }
+
+
+    if(fullScaleChanged){
+        for (int i=0;i<CHANNEL_COUNT; i++){
             string msg;
-            core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci], regset, &msg);
+            core->getDownloader()->strain_set_full_scale(bus,id,i,full_scale_calib[index][i], regsetInUse, &msg);
             appendLogMsg(msg.c_str());
         }
     }
 
-    string msg;
-    core->getDownloader()->strain_set_matrix_gain(bus,id,calib_const[index], regset, &msg);
-    appendLogMsg(msg.c_str());
-    qDebug("Calibration matrix updated");
+//    string msg;
+//    core->getDownloader()->strain_set_matrix_gain(bus,id,calib_const[index], regset, &msg);
+//    appendLogMsg(msg.c_str());
 
-    resetMatrices(index);
 
+
+    int ri=0;
+    int ci=0;
+
+    drv_sleep (1000);
+    for (ri=0;ri<CHANNEL_COUNT;ri++){
+        for (ci=0;ci<CHANNEL_COUNT;ci++){
+            string msg;
+            core->getDownloader()->strain_get_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci], regsetInUse, &msg);
+            appendLogMsg(msg.c_str());
+        }
+    }
+    setMatrix(index);
+    setFullScale();
+    //resetMatrices(index);
+
+//    int count_ok=0;
+//    for (int i=0;i<36; i++){
+//        ri=i/6;
+//        ci=i%6;
+//        if (calib_matrix[index][ri][ci]==matrix[index][ri][ci]) {
+//            count_ok++;
+//        } else {
+//            printf ("Found 1 error on element %d,%d !!\n",ri, ci);
+//            appendLogMsg("Found 1 error on element %d,%d !!");
+//        }
+//    }
+
+//    if (count_ok==36){
+//        printf ("Calibration file applied with no errors\n");
+//        appendLogMsg(QString("Calibration file applied with no errors"));
+//        matrix_changed[0]=false;
+//    } else {
+//        printf ("Found %d errors applying the calibration file!!\n",36-count_ok);
+//        appendLogMsg(QString("Found %1 errors applying the calibration file!!").arg(36-count_ok));
+//    }
+
+    printf ("Calibration file applied with no errors\n");
+    appendLogMsg(QString("Calibration file applied with no errors"));
+    matrix_changed[0]=false;
+    fullScaleChanged = false;
     loading(false);
     mutex.unlock();
 }
@@ -494,13 +675,12 @@ void CalibrationWindow::setCalibration()
 void CalibrationWindow::loadCalibrationFile(QString fileName)
 {
     // marco.accame: the regulation set to be sent to the board is the one in use in its inside
-    const int regset = cDownloader::strain_regset_inuse;
 
     mutex.lock();
-    int index = ui->tabWidget->currentIndex();
+    int index = 0;//ui->tabWidget->currentIndex();
     loading();
     //load data file
-    if(!calibration_load_v3 (fileName.toLatin1().data(), bus, id, index, regset)){
+    if(!calibration_load_v3 (fileName.toLatin1().data(), bus, id, index, regsetInUse)){
         loading(false);
         mutex.unlock();
     }
@@ -521,11 +701,11 @@ void CalibrationWindow::loadCalibrationFile(QString fileName)
     drv_sleep (500);
     for (ri=0;ri<CHANNEL_COUNT;ri++){
         for (ci=0;ci<CHANNEL_COUNT;ci++){
-            core->getDownloader()->strain_get_matrix_rc(bus,id, ri, ci, matrix[index][ri][ci], regset, &msg);
+            core->getDownloader()->strain_get_matrix_rc(bus,id, ri, ci, matrix[index][ri][ci], regsetInUse, &msg);
             appendLogMsg(msg.c_str());
             sprintf(buffer,"%x",matrix[index - 1][ri][ci]);
             setMatrix(index);
-            resetMatrices(index);
+            //resetMatrices(index);
         }
     }
 
@@ -556,7 +736,7 @@ void CalibrationWindow::loadCalibrationFile(QString fileName)
 
 
 
-
+    fullScaleChanged = false;
     loading(false);
     mutex.unlock();
 
@@ -577,7 +757,7 @@ void CalibrationWindow::saveCalibrationFile(QString filePath)
 {
     mutex.lock();
     loading();
-    int index = ui->tabWidget->currentIndex();
+    int index = 0;//ui->tabWidget->currentIndex();
     char *c = filePath.toLatin1().data();
     std::string filename = c;
     filename += "/calibrationData";
@@ -682,13 +862,11 @@ void CalibrationWindow::onSaveCalibrationFile(bool click)
 void CalibrationWindow::importCalibrationFile(QString fileName)
 {
     // marco.accame: the regulation set to be sent to the board is the one in use in its inside
-    const int regset = cDownloader::strain_regset_inuse;
 
     mutex.lock();
     loading();
-    int index = ui->tabWidget->currentIndex();
+    int index = 0;//ui->tabWidget->currentIndex();
     char* buff = fileName.toLatin1().data();
-    string msg;
 
     if (buff==NULL){
         yError("File not found!\n");
@@ -698,9 +876,10 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
         return;
     }
 
-    fstream filestr;
-    filestr.open (buff, fstream::in);
-    if (!filestr.is_open()){
+    //fstream filestr;
+    QFile filestr(fileName);
+
+    if (!filestr.open (QIODevice::ReadOnly)){
         yError("Error opening calibration file!\n");
         appendLogMsg("Error opening calibration file!");
         loading(false);
@@ -709,70 +888,132 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
     }
 
     int i=0;
-    char buffer[256];
-    for (i=0;i<36; i++){
-        int ri=i/6;
-        int ci=i%6;
-        filestr.getline (buffer,256);
-        sscanf (buffer,"%x",&calib_matrix[index][ri][ci]);
-        printf("%d %x\n", calib_matrix[index][ri][ci],calib_matrix[index][ri][ci]);
-        core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,calib_matrix[index][ri][ci], regset, &msg);
-        appendLogMsg(msg.c_str());
+
+    QByteArray line = filestr.readLine();
+    while(!line.isEmpty() && line.at(0) == '#' && !filestr.atEnd()){
+        line = filestr.readLine();
+        continue;
+    }
+
+    if(filestr.atEnd()){
+        filestr.close();
+
+        printf ("No calib file loaded!\n");
+        appendLogMsg("No calib file loaded!");
+        loading(false);
+        mutex.unlock();
+        return;
+
+    }
+
+    QString s = QString(line);
+
+    //for (i=0;i<36; i++){
+    for (i=0;i<CHANNEL_COUNT; i++){
+
+        QTextStream t(&s);
+        float val[6];//1,val2,val3,val4,val5,val6;
+        t >> val[0] >> val[1] >> val[2] >> val[3] >> val[4] >> val[5];
+
+        bool saturated;
+        //sscanf (line.data(),"%f",&val);
+        for (int j=0;j<CHANNEL_COUNT; j++){
+            Q15 value = q15::convert(val[j],saturated);
+            calib_matrix[index][i][j] = value;
+            matrix[index][i][j] = value;
+        }
+
+        line = filestr.readLine();
+        s = QString(line);
+
     }
 
 
-    filestr.getline (buffer,256);
-    int cc=0;
-    sscanf (buffer,"%d",&cc);
-    core->getDownloader()->strain_set_matrix_gain(bus,id,cc, regset, &msg);
-    appendLogMsg(msg.c_str());
+    matrix_changed[index]=true;
+    setMatrix(index);
+
+    while(!line.isEmpty() && line.at(0) == '#' && !filestr.atEnd()){
+        line = filestr.readLine();
+        continue;
+    }
+
+    s = QString(line);
+
+    if(filestr.atEnd()){
+        filestr.close();
+
+        something_changed=true;
+        matrix_changed[index]=true;
+        setMatrix(index);
+        printf ("Calibration Matrix loaded! - No Fullscale found\n");
+        appendLogMsg("Calibration Matrix loaded! - No Fullscale found!");
+        loading(false);
+        mutex.unlock();
+        return;
+
+    }
+
+
+    QTextStream t(&s);
+
+    float val[6];//1,val2,val3,val4,val5,val6;
+    t >> val[0] >> val[1] >> val[2] >> val[3] >> val[4] >> val[5];
+
+    bool saturated;
 
     for (i=0;i<CHANNEL_COUNT; i++){
-        filestr.getline (buffer,256);
-        sscanf (buffer,"%d",&cc);
-        core->getDownloader()->strain_set_full_scale(bus,id,i,cc, regset, &msg);
-        appendLogMsg(msg.c_str());
+        FSC value = fsc::convert(val[i],saturated);
+        full_scale_calib[index][i] = value;
+//        core->getDownloader()->strain_set_full_scale(bus,id,i,value, regset, &msg);
+//        appendLogMsg(msg.c_str());
+
     }
 
+    fullScaleChanged = true;
     filestr.close();
 
     something_changed=true;
+
+    setFullScale();
     printf ("Calibration file loaded!\n");
     appendLogMsg("Calibration file loaded!");
 
-    int ri=0;
-    int ci=0;
 
-    drv_sleep (1000);
-    for (ri=0;ri<CHANNEL_COUNT;ri++){
-        for (ci=0;ci<CHANNEL_COUNT;ci++){
-            core->getDownloader()->strain_get_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci], regset, &msg);
-            appendLogMsg(msg.c_str());
-        }
-    }
-    setMatrix(index);
-    resetMatrices(index);
+    /***********************************/
 
-    int count_ok=0;
-    for (i=0;i<36; i++){
-        ri=i/6;
-        ci=i%6;
-        if (calib_matrix[index][ri][ci]==matrix[index][ri][ci]) {
-            count_ok++;
-        } else {
-            printf ("Found 1 error on element %d,%d !!\n",ri, ci);
-            appendLogMsg("Found 1 error on element %d,%d !!");
-        }
-    }
+//    int ri=0;
+//    int ci=0;
 
-    if (count_ok==36){
-        printf ("Calibration file %s applied with no errors\n", buff);
-        appendLogMsg(QString("Calibration file %1 applied with no errors").arg(buff));
-        matrix_changed[0]=false;
-    } else {
-        printf ("Found %d errors applying the calibration file!!\n",36-count_ok);
-        appendLogMsg(QString("Found %1 errors applying the calibration file!!").arg(36-count_ok));
-    }
+//    drv_sleep (1000);
+//    for (ri=0;ri<CHANNEL_COUNT;ri++){
+//        for (ci=0;ci<CHANNEL_COUNT;ci++){
+//            core->getDownloader()->strain_get_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci], regset, &msg);
+//            appendLogMsg(msg.c_str());
+//        }
+//    }
+//    setMatrix(index);
+//    resetMatrices(index);
+
+//    int count_ok=0;
+//    for (i=0;i<36; i++){
+//        ri=i/6;
+//        ci=i%6;
+//        if (calib_matrix[index][ri][ci]==matrix[index][ri][ci]) {
+//            count_ok++;
+//        } else {
+//            printf ("Found 1 error on element %d,%d !!\n",ri, ci);
+//            appendLogMsg("Found 1 error on element %d,%d !!");
+//        }
+//    }
+
+//    if (count_ok==36){
+//        printf ("Calibration file %s applied with no errors\n", buff);
+//        appendLogMsg(QString("Calibration file %1 applied with no errors").arg(buff));
+//        matrix_changed[0]=false;
+//    } else {
+//        printf ("Found %d errors applying the calibration file!!\n",36-count_ok);
+//        appendLogMsg(QString("Found %1 errors applying the calibration file!!").arg(36-count_ok));
+//    }
 
 
 
@@ -825,10 +1066,6 @@ void CalibrationWindow::onResetCurrBias(bool click)
     QtConcurrent::run(this,&CalibrationWindow::resetCurrBias);
 }
 
-void CalibrationWindow::onAutoAdjust(bool click)
-{
-    QtConcurrent::run(this,&CalibrationWindow::autoAdjust);
-}
 
 void CalibrationWindow::onSetSerial(bool)
 {
@@ -884,7 +1121,7 @@ void CalibrationWindow::onMatrixChanged(QTableWidgetItem *item)
     matrix_changed[matrices.indexOf(table)] = true;
     for(int i=0;i<CHANNEL_COUNT;i++){
         for(int j=0;j<CHANNEL_COUNT;j++){
-            table->item(i,j)->setBackgroundColor("red");
+            table->item(i,j)->setTextColor("red");
         }
     }
 }
@@ -907,59 +1144,9 @@ void CalibrationWindow::onSetSerialChanged(bool changed)
     }
 }
 
-#undef STRAINAMPLIFIER_TEST
-#if defined(STRAINAMPLIFIER_TEST)
-struct seq_t
-{
-    uint8_t channel;
-    float gain;
-    uint16_t offset;
-};
-#endif
-
 void CalibrationWindow::onClearLog()
 {
     ui->logText->clear();
-
-#if defined(STRAINAMPLIFIER_TEST)
-    QString msg("ciao");
-    //acemor
-//    std::string output;
-//    strain::amplifier::test(output);
-
-//    QString msg = QString::fromStdString(output);
-
-    static int i = 0;
-    const int seq_len = 6;
-    static const seq_t thesequence[seq_len] =
-    {
-        {
-            0, 48, 32*1024
-        },
-        {
-            1, 36, 32*1024
-        },
-        {
-            2, 24, 32*1024
-        },
-        {
-            3, 20, 16000
-        },
-        {
-            4, 48, 16000
-        },
-        {
-            5, 36, 16000
-        }
-    };
-
-    core->getDownloader()->strain_set_amplifier_gain_offset(bus, id, thesequence[i].channel, thesequence[i].gain, thesequence[i].offset);
-
-    i++;
-    i = i%seq_len;
-
-    ui->logText->appendPlainText(msg);
-#endif
 }
 
 void CalibrationWindow::onAppendLogMsg(QString msg)
@@ -978,92 +1165,86 @@ void CalibrationWindow::onResetCalibMatrix(bool click)
 void CalibrationWindow::resetCalibration()
 {
     mutex.lock();
-    int index = ui->tabWidget->currentIndex();
-    QLineEdit *editGain = matrixGain.at(index);
+    int index = 0;//ui->tabWidget->currentIndex();
+    //QLineEdit *editGain = matrixGain.at(index);
 
     for (int ri=0; ri<6; ri++){
         for (int ci=0; ci<6; ci++){
             if (ri==ci){
                 matrix[index][ri][ci] = 32767;
+                calib_matrix[index][ri][ci] = 32767;
             } else {
                 matrix[index][ri][ci] = 0;
+                calib_matrix[index][ri][ci] = 0;
             }
         }
     }
     calib_const[index]=1;
-    setText(editGain,QString("%1").arg(calib_const[index]));
+    //setText(editGain,QString("%1").arg(calib_const[index]));
     setMatrix(index);
     matrix_changed[index] = true;
     mutex.unlock();
 }
 
 
-void CalibrationWindow::onUseMatrixChanged(int value)
-{
-    if(value != 0){
-        ui->tableUseMatrix->hideColumn(COL_MAXMEASURE);
-        ui->tableUseMatrix->hideColumn(COL_MINMEASURE);
-        ui->tableUseMatrix->hideColumn(COL_DIFFMEASURE);
-        ui->tableUseMatrix->showColumn(COL_NEWTONMEASURE);
-        ui->actionImport_Calib_Matrix->setEnabled(true);
-        ui->actionLoad_Calibration_File->setEnabled(true);
-        ui->actionSave_Calibration_File->setEnabled(true);
-    }else{
-        ui->tableUseMatrix->showColumn(COL_MAXMEASURE);
-        ui->tableUseMatrix->showColumn(COL_MINMEASURE);
-        ui->tableUseMatrix->showColumn(COL_DIFFMEASURE);
-        ui->tableUseMatrix->hideColumn(COL_NEWTONMEASURE);
-        ui->actionImport_Calib_Matrix->setEnabled(false);
-        ui->actionLoad_Calibration_File->setEnabled(false);
-        ui->actionSave_Calibration_File->setEnabled(false);
-    }
+//void CalibrationWindow::onUseMatrixChanged(int value)
+//{
+//    if(value != 0){
+////        ui->tableUseMatrix->hideColumn(COL_MAXMEASURE);
+////        ui->tableUseMatrix->hideColumn(COL_MINMEASURE);
+////        ui->tableUseMatrix->hideColumn(COL_DIFFMEASURE);
+//        ui->tableUseMatrix->showColumn(COL_NEWTONMEASURE);
+//        ui->actionImport_Calib_Matrix->setEnabled(true);
+//        ui->actionLoad_Calibration_File->setEnabled(true);
+//        ui->actionSave_Calibration_File->setEnabled(true);
+//    }else{
+////        ui->tableUseMatrix->showColumn(COL_MAXMEASURE);
+////        ui->tableUseMatrix->showColumn(COL_MINMEASURE);
+////        ui->tableUseMatrix->showColumn(COL_DIFFMEASURE);
+//        ui->tableUseMatrix->hideColumn(COL_NEWTONMEASURE);
+//        ui->actionImport_Calib_Matrix->setEnabled(false);
+//        ui->actionLoad_Calibration_File->setEnabled(false);
+//        ui->actionSave_Calibration_File->setEnabled(false);
+//    }
 
 
-    QtConcurrent::run(this,&CalibrationWindow::useMatrix,value);
+//    QtConcurrent::run(this,&CalibrationWindow::useMatrix,value);
 
-}
+//}
 
-void CalibrationWindow::useMatrix(int index)
+void CalibrationWindow::useMatrix(int index, bool boot)
 {
     mutex.lock();
     loading();
     string msg;
-    if(index > 0){
+    if(index >= 0){
         // marco.accame: use the new method strain_set_regulationset w/ strain_regset_one / strain_regset_two / strain_regset_three
         // index = 0 means no calibration used. index = 1 means first set, etc. hence
-        // int regset = ...;
-        //core->getDownloader()->strain_set_regulationset(bus, id, regset, cDownloader::strain_regsetmode_temporary, &msg);
+        regsetInUse = index + 1;
+        if(!boot){
+            core->getDownloader()->strain_set_regulationset(bus, id, regsetInUse, cDownloader::strain_regsetmode_temporary, &msg);
+        } else {
+            core->getDownloader()->strain_set_regulationset(bus, id, regsetInUse, cDownloader::strain_regsetmode_permanent, &msg);
+        }
         appendLogMsg(msg.c_str());
     }
-    currentMatrixIndex = index;
+    //currentMatrixIndex = index;
     loading(false);
     mutex.unlock();
 }
 
-void CalibrationWindow::onSliderZeroChanged(int val)
-{
-    ui->zeroLbl->setText(QString("%1").arg(val));
-}
-
-void CalibrationWindow::onOffsetSliderValue(int val)
-{
-    QSlider *slider = (QSlider*)sender();
-    QLabel *lbl = (QLabel*)((QHBoxLayout*)((QWidget*)slider->parent())->layout())->itemAt(1)->widget();
-    lbl->setText(QString("%1").arg(val));
 
 
-}
 
 void CalibrationWindow::setOffset(int chan, int value)
 {
     // marco.accame: the regulation set to be sent to the board is the one in use in its inside
-    const int regset = cDownloader::strain_regset_inuse;
 
     mutex.lock();
     loading();
     offset[chan] = value;
     string msg;
-    core->getDownloader()->strain_set_offset(bus,id, chan, offset[chan], regset, &msg);
+    core->getDownloader()->strain_set_offset(bus,id, chan, offset[chan], regsetInUse, &msg);
     appendLogMsg(msg.c_str());
     loading(false);
     mutex.unlock();
@@ -1079,42 +1260,101 @@ void CalibrationWindow::onSetText(QTableWidgetItem *item ,QString text)
     item->setText(text);
 }
 
-void CalibrationWindow::onSliderValue(QSlider *slider, int value)
+void CalibrationWindow::onApplyDone()
 {
-    int chan = slider_gain.indexOf(slider);
-
-    if(sliderPressed[chan] || slider->value() == value){
-        return;
+    for(int i=0; i<CHANNEL_COUNT;i++){
+        ((CustomComboBox*)ui->tableParamters->cellWidget(i,COL_GAIN))->clear();
+        ((CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET))->clear();
     }
-    slider->setValue(value);
-
 }
 
+void CalibrationWindow::onOffsetSpinnerValue(CustomSpinBox *spinner, int value)
+{
+    spinner->setCurrentValue(value);
+}
+
+void CalibrationWindow::onSetFullScale()
+{
+    QTableWidget *table = fullScales.first();
+    //disconnect(table,SIGNAL(itemChanged(QTableWidgetItem*)), this,SLOT( onMatrixChanged(QTableWidgetItem*)));
+
+    char tempbuf [250];
+    for(int ri=0;ri<CHANNEL_COUNT;ri++){
+        double v = fsc::convert(full_scale_calib[0][ri]);
+        //qDebug() << v;
+        sprintf(tempbuf,"%f",v);
+        QTableWidgetItem *item = table->item(ri,0);
+        item->setText(tempbuf);
+    }
+
+
+
+
+    //connect(table,SIGNAL(itemChanged(QTableWidgetItem*)), this,SLOT( onMatrixChanged(QTableWidgetItem*)),Qt::UniqueConnection);
+}
 void CalibrationWindow::onSetMatrix(int index)
 {
     QTableWidget *table = matrices.at(index);
 
+    //disconnect(table,SIGNAL(itemChanged(QTableWidgetItem*)), this,SLOT( onMatrixChanged(QTableWidgetItem*)));
     char tempbuf [250];
     for(int ri=0;ri<CHANNEL_COUNT;ri++){
         for(int ci=0;ci<CHANNEL_COUNT;ci++){
-            sprintf(tempbuf,"%x",matrix[index][ri][ci]);
+            double v = q15::convert(matrix[index][ri][ci]);
+            //qDebug() << v;
+            sprintf(tempbuf,"%f",v);
             QTableWidgetItem *item = table->item(ri,ci);
             item->setText(tempbuf);
         }
+
+
     }
-    connect(table,SIGNAL(itemChanged(QTableWidgetItem*)), this,SLOT( onMatrixChanged(QTableWidgetItem*)),Qt::UniqueConnection);
+
+    //connect(table,SIGNAL(itemChanged(QTableWidgetItem*)), this,SLOT( onMatrixChanged(QTableWidgetItem*)),Qt::UniqueConnection);
 }
 
 void CalibrationWindow::onTimeout()
 {
     // marco.accame: the regulation set for now is the one in use inside the strain2
-    const int regset = cDownloader::strain_regset_inuse;
+
 
     qDebug() << "STARTING....";
     keepRunning = true;
     while(keepRunning){
         mutex.lock();
+
+        int bUseCalibration = ui->checkDigital->isChecked();
         string msg;
+        bool skip_display_calib=false;
+
+        if(bUseCalibration){
+            // marco.accame.todo: must use strain_get_regulationset(). attention the values returned will be 1, 2, 3
+            // previously strain_get_matrix(currmatrix) returned currmatrix = 0 to mean the first one. hence it was used setCurrentIndex(currmatrix+1)
+            core->getDownloader()->strain_get_regulationset(bus, id, regsetInUse, cDownloader::strain_regsetmode_temporary, &msg);
+
+            int bootRegset = cDownloader::strain_regset_inuse;
+            core->getDownloader()->strain_get_regulationset(bus, id, bootRegset, cDownloader::strain_regsetmode_permanent, &msg);
+            // must now transform usedregulationset.
+            // for now, until we have gui support to the three regulation sets ..
+            // it is forced to 0 to keep former behaviour of strain_get_matrix()
+            //usedregulationset = 0;
+
+
+            ui->comboRegSet->blockSignals(true);
+            ui->comboRegSet->setCurrentIndex(regsetInUse - 1);
+            ui->comboRegSet->blockSignals(false);
+
+            ui->comboRegSetBoot->blockSignals(true);
+            ui->comboRegSetBoot->setCurrentIndex(bootRegset - 1);
+            ui->comboRegSetBoot->blockSignals(false);
+        }else{
+//            ui->comboUseMatrix->blockSignals(true);
+//            ui->comboUseMatrix->setCurrentIndex(0);
+//            ui->comboUseMatrix->blockSignals(false);
+            currentMatrixIndex = 0;
+        }
+
+
 
         if(first_time){
             loading();
@@ -1148,9 +1388,9 @@ void CalibrationWindow::onTimeout()
 
         for (int i=0;i<CHANNEL_COUNT;i++){
             if(i==0){
-                ret  = core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i], regset, &msg);
+                ret  = core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i], regsetInUse, &msg);
             }else{
-                ret |= core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i], regset, &msg);
+                ret |= core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i], regsetInUse, &msg);
             }
             appendLogMsg(msg.c_str());
         }
@@ -1158,7 +1398,7 @@ void CalibrationWindow::onTimeout()
             qDebug() <<"debug: message 'strain_get_offset' lost.";
         }
 
-        int bUseCalibration = currentMatrixIndex != 0 ? 1 : 0;
+
         for (int i=0;i<CHANNEL_COUNT;i++){
             if(i==0){
                 ret  = core->getDownloader()->strain_get_adc (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, adc[i], bUseCalibration,&msg);
@@ -1174,6 +1414,7 @@ void CalibrationWindow::onTimeout()
 
         int ri,ci=0;
         char tempbuf [250];
+
 
 
 
@@ -1197,32 +1438,59 @@ void CalibrationWindow::onTimeout()
             if (matrix_changed[mi] == false){
                 for (ri=0;ri<CHANNEL_COUNT;ri++){
                     for (ci=0;ci<CHANNEL_COUNT;ci++){
-                        core->getDownloader()->strain_get_matrix_rc(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, ri, ci, matrix[mi][ri][ci], regset, &msg);
+                        core->getDownloader()->strain_get_matrix_rc(core->getDownloader()->board_list[selected].bus,
+                                                                    core->getDownloader()->board_list[selected].pid,
+                                                                    ri, ci, matrix[mi][ri][ci], regsetInUse, &msg);
                         appendLogMsg(msg.c_str());
                     }
                 }
                 setMatrix(mi);
-                core->getDownloader()->strain_get_matrix_gain(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, calib_const[mi], regset, &msg);
-                appendLogMsg(msg.c_str());
-                sprintf(tempbuf,"%d",calib_const[mi]);
-                setText(matrixGain.at(mi),tempbuf);
+//                core->getDownloader()->strain_get_matrix_gain(core->getDownloader()->board_list[selected].bus,
+//                                                              core->getDownloader()->board_list[selected].pid,
+//                                                              calib_const[mi], regset, &msg);
+//                appendLogMsg(msg.c_str());
+//                sprintf(tempbuf,"%d",calib_const[mi]);
+//                setText(matrixGain.at(mi),tempbuf);
 
-                //                for (ri=0;ri<CHANNEL_COUNT;ri++){
-                //                    core->getDownloader()->strain_get_full_scale(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, ri, full_scale_const[ri],&msg);
-                //                    appendLogMsg(msg.c_str());
-                //                    sprintf(tempbuf,"%d",full_scale_const[ri]);
-                //                    QTableWidgetItem *item2 = ui->tableParamters->item(ri,COL_FULLSCALE);
-                //                    setText(item2,tempbuf);
-                //                }
+//                for (ri=0;ri<CHANNEL_COUNT;ri++){
+//                    core->getDownloader()->strain_get_full_scale(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, ri, full_scale_const[ri],&msg);
+//                    appendLogMsg(msg.c_str());
+//                    sprintf(tempbuf,"%d",full_scale_const[ri]);
+//                    QTableWidgetItem *item2 = ui->tableParamters->item(ri,COL_FULLSCALE);
+//                    setText(item2,tempbuf);
+//                }
+
+                QTableWidget *table = matrices.at(mi);
+                for(int i=0;i<CHANNEL_COUNT;i++){
+                    for(int j=0;j<CHANNEL_COUNT;j++){
+                        table->item(i,j)->setTextColor("");
+                    }
+                }
+            }else{
+                QTableWidget *table = matrices.first();
+                for(int i=0;i<CHANNEL_COUNT;i++){
+                    for(int j=0;j<CHANNEL_COUNT;j++){
+                        table->item(i,j)->setTextColor("red");
+                    }
+                }
+            }
+            if(!fullScaleChanged){
+                for (ri=0;ri<CHANNEL_COUNT;ri++){
+                    fullScales.at(mi)->item(ri,0)->setTextColor("");
+                    core->getDownloader()->strain_get_full_scale(bus,id, ri, full_scale_const[mi][ri], regsetInUse, &msg);
+                    appendLogMsg(msg.c_str());
+                    sprintf(tempbuf,"%d",full_scale_const[mi][ri]);
+                    QTableWidgetItem *item2 = fullScales.at(mi)->item(ri,COL_FULLSCALE);
+                    setText(item2,tempbuf);
+
+
+                }
+            } else {
+                for(int i=0;i<CHANNEL_COUNT;i++){
+                    fullScales.first()->item(i,0)->setTextColor("red");
+                }
             }
 
-            for (ri=0;ri<CHANNEL_COUNT;ri++){
-                core->getDownloader()->strain_get_full_scale(bus,id, ri, full_scale_const[mi][ri], regset, &msg);
-                appendLogMsg(msg.c_str());
-                sprintf(tempbuf,"%d",full_scale_const[mi][ri]);
-                QTableWidgetItem *item2 = fullScales.at(mi)->item(ri,COL_FULLSCALE);
-                setText(item2,tempbuf);
-            }
         }
 
 
@@ -1236,105 +1504,118 @@ void CalibrationWindow::onTimeout()
                 if (convert_to_signed32k(adc[i])<minadc[i]){
                     minadc[i]=convert_to_signed32k(adc[i]);
                 }
+                maxft[i]=-32768;
+                minft[i]=+32767;
             } else {
+                if(convert_to_signed32k(adc[i])>maxft[i]){
+                    maxft[i]=convert_to_signed32k(adc[i]);
+                }
+                if (convert_to_signed32k(adc[i])<minft[i]){
+                    minft[i]=convert_to_signed32k(adc[i]);
+                }
+
                 maxadc[i]=-32768;
                 minadc[i]=+32767;
             }
         }
 
-        bool skip_display_calib=false;
-
-        if(bUseCalibration){
-            // marco.accame.todo: must use strain_get_regulationset(). attention the values returned will be 1, 2, 3
-            // previously strain_get_matrix(currmatrix) returned currmatrix = 0 to mean the first one. hence it was used setCurrentIndex(currmatrix+1)
-            int usedregulationset = 0;
-            // core->getDownloader()->strain_get_regulationset(bus, id, usedregulationset, cDownloader::strain_regsetmode_temporary, &msg);
-            // must now transform usedregulationset. 
-            // for now, until we have gui support to the three regulation sets ..
-            // it is forced to 0 to keep former behaviour of strain_get_matrix()
-            usedregulationset = 0;
-            ui->comboUseMatrix->blockSignals(true);
-            ui->comboUseMatrix->setCurrentIndex(usedregulationset+1);
-            ui->comboUseMatrix->blockSignals(false);
-        }else{
-            ui->comboUseMatrix->blockSignals(true);
-            ui->comboUseMatrix->setCurrentIndex(0);
-            currentMatrixIndex = 0;
-            ui->comboUseMatrix->blockSignals(false);
-        }
 
         if(bUseCalibration)
         {
             ui->tableCurr->horizontalHeaderItem(0)->setText("FT");
+            ui->tableUseMatrix->horizontalHeaderItem(COL_MAXMEASURE)->setText("Max FT");
+            ui->tableUseMatrix->horizontalHeaderItem(COL_MINMEASURE)->setText("Min FT");
         }
         else
         {
             ui->tableCurr->horizontalHeaderItem(0)->setText("ADC");
+            ui->tableUseMatrix->horizontalHeaderItem(COL_MAXMEASURE)->setText("Max ADC");
+            ui->tableUseMatrix->horizontalHeaderItem(COL_MINMEASURE)->setText("Min ADC");
         }
 
         for (int i=0;i<CHANNEL_COUNT;i++){
 
             if(icubCanProto_boardType__strain2 == boardtype)
             {
-                core->getDownloader()->strain_get_amplifier_regs(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_registers[i], regset, &msg);
-                core->getDownloader()->strain_get_amplifier_gain_offset(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_gains[i], amp_offsets[i], regset, &msg);
+                core->getDownloader()->strain_get_amplifier_regs(core->getDownloader()->board_list[selected].bus,
+                                                                 core->getDownloader()->board_list[selected].pid, i,
+                                                                 amp_registers[i], regsetInUse, &msg);
+                core->getDownloader()->strain_get_amplifier_gain_offset(core->getDownloader()->board_list[selected].bus,
+                                                                        core->getDownloader()->board_list[selected].pid, i,
+                                                                        amp_gains[i], amp_offsets[i], regsetInUse, &msg);
+                amp_gains[0] = 37.3f;
+//#warning TEST di ricezione di un valore di gain inconsueto... dove viene cambiato il valore del combo sull base del valore ricevuto dall strain?
                 appendLogMsg(msg.c_str());
-                sprintf(tempbuf,"%6.3f",amp_gains[i]);
-                QTableWidgetItem *item00 = ui->tableParamters->item(i,COL_GAIN);
-                setText(item00,tempbuf);
+
+
+                CustomComboBox *combo = (CustomComboBox *)ui->tableParamters->cellWidget(i,COL_GAIN);
+                bool found = false;
+                for(int k=0;k<combo->count();k++){
+                    if(combo->itemData(k).toInt() == amp_gains[i]){
+
+                        combo->setCurrIndex(k);
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found){
+                    combo->addCustomValue(amp_gains[i]);
+                }
+
             }
             else
             {
                 amp_gains[i] = 1.0f;
                 amp_offsets[i] = 0;
-                sprintf(tempbuf,"%s", "N/A");
-                QTableWidgetItem *item00 = ui->tableParamters->item(i,COL_GAIN);
-                setText(item00, tempbuf);
+
             }
 
 
-            core->getDownloader()->strain_get_calib_bias(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, calib_bias[i], regset, &msg);
+            core->getDownloader()->strain_get_calib_bias(core->getDownloader()->board_list[selected].bus,
+                                                         core->getDownloader()->board_list[selected].pid, i,
+                                                         calib_bias[i], regsetInUse, &msg);
             appendLogMsg(msg.c_str());
             sprintf(tempbuf,"%d (%d)",showasQ15(calib_bias[i]), showBias(calib_bias[i]));
-            QTableWidgetItem *item = ui->tableParamters->item(i,COL_CALIBBIAS);
-            //item->setText(tempbuf);
+
+            QTableWidgetItem *item = ui->tableBias->item(i,COL_CALIBBIAS);
             setText(item,tempbuf);
 
-            core->getDownloader()->strain_get_curr_bias(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, curr_bias[i], &msg);
-            appendLogMsg(msg.c_str());
-            sprintf(tempbuf,"%d", showasQ15(curr_bias[i]));
-            QTableWidgetItem *item1 = ui->tableParamters->item(i,COL_CURRBIAS);
-            //item1->setText(tempbuf);
-            setText(item1,tempbuf);
+
+//            core->getDownloader()->strain_get_curr_bias(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, curr_bias[i], &msg);
+//            appendLogMsg(msg.c_str());
+//            sprintf(tempbuf,"%d", showasQ15(curr_bias[i]));
+//            QTableWidgetItem *item1 = ui->tableParamters->item(i,COL_CURRBIAS);
+//            setText(item1,tempbuf);
 
 //            sprintf (tempbuf,"%d",full_scale_const[i]);
 //            QTableWidgetItem *item2 = ui->tableParamters->item(i,COL_FULLSCALE);
 //            //item2->setText(tempbuf);
 //            setText(item2,tempbuf);
 
-            QSlider *slider = slider_gain.at(i);
-            //slider->setValue(offset[i]);
-            setSliderValue(slider,offset[i]);
+            CustomSpinBox *slider = slider_offset.at(i);
+            setOffsetSliderValue(slider,offset[i]);
 
             // marco.accame: we always show the received value in range [-32k, +32k).
             // in case of 0 == bUseCalibration: it is the adc value
             // in case of 1 == bUseCalibration: it is = M * (adc+calibtare) + currtare
             sprintf(tempbuf,"%d",convert_to_signed32k(adc[i]));
             QTableWidgetItem *item3 = ui->tableCurr->item(i,COL_CURRMEASURE);
-            //item3->setText(tempbuf);
             setText(item3,tempbuf);
 
             if(bUseCalibration){
+                sprintf(tempbuf,"%d",maxft[i]);
                 QTableWidgetItem *item = ui->tableUseMatrix->item(i,COL_MAXMEASURE);
-                setText(item,"---");
+                setText(item,tempbuf);
 
+                sprintf(tempbuf,"%d",minft[i]);
                 QTableWidgetItem *item1 = ui->tableUseMatrix->item(i,COL_MINMEASURE);
-                setText(item1,"---");
+                setText(item1,tempbuf);
 
+                sprintf(tempbuf,"%d",maxft[i]-minft[i]);
                 QTableWidgetItem *item2 = ui->tableUseMatrix->item(i,COL_DIFFMEASURE);
-                setText(item2,"---");
+                setText(item2,tempbuf);
 
-                if (full_scale_const[currentMatrixIndex - 1][i]==0){
+                if (full_scale_const[currentMatrixIndex][i]==0){
                     qDebug() << "Error getting the full scale "<< i << " from the sensor";
                     skip_display_calib=true;
                 }
@@ -1343,15 +1624,14 @@ void CalibrationWindow::onTimeout()
 
                 if (skip_display_calib==false){
                     if(i<=2){
-                        sprintf(tempbuf,"%+.3f N",(convert_to_signed32k(adc[i]))/float(RANGE32K)*full_scale_const[currentMatrixIndex - 1][i]);
+                        sprintf(tempbuf,"%+.3f N",(convert_to_signed32k(adc[i]))/float(RANGE32K)*full_scale_const[currentMatrixIndex][i]);
                     }else{
-                        sprintf(tempbuf,"%+.3f Nm",(convert_to_signed32k(adc[i]))/float(RANGE32K)*full_scale_const[currentMatrixIndex - 1][i]);
+                        sprintf(tempbuf,"%+.3f Nm",(convert_to_signed32k(adc[i]))/float(RANGE32K)*full_scale_const[currentMatrixIndex][i]);
                     }
                     QTableWidgetItem *item3 = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
                     setText(item3,tempbuf);
                 }else{
                     QTableWidgetItem *item = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
-                    //item->setText("ERROR");
                     setText(item,"ERROR");
                 }
             } else {
