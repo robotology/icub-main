@@ -27,6 +27,14 @@
 #include <string>
 #include <vector>
 
+namespace strain {
+
+    enum class Board { strain1 = 1, strain2 = 2 };
+
+    const std::uint8_t numberofchannels = 6;
+
+}   // namespace strain {
+
 namespace strain { namespace dsp {
 
     using FSC = std::uint16_t;
@@ -161,6 +169,7 @@ namespace strain { namespace amplifier {
         virtual ~IFregs() {}
         virtual bool load(const void *data, const size_t size) = 0;     // import from a stream (e.g., a can frame)
         virtual bool fill(void *data, size_t &size) = 0;                 // export to a stream (e.g., a can frame)
+        virtual std::uint8_t size() = 0;
     };
 
     // and now we have a class which manages a particular amplifier: the PGA308.
@@ -180,12 +189,15 @@ namespace strain { namespace amplifier {
             std::uint8_t        Voffsetcoarse;      // it is an offset register
             std::uint16_t       Vzerodac;           // it is an offset register
 
-            const std:: uint8_t sizeofregisters = 6;
+            static const std:: uint8_t sizeofregisters = 6;
+
+            static const std::uint8_t defval[sizeofregisters];// = {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f}; // gain = 48, offset = midrangeOffset
 
             Registers() : GD(0), GI(0), S(0), GO(0), Voffsetcoarse(0), Vzerodac(0) {}
             Registers(void *data, size_t size) { load(data, size); }
             virtual bool load(const void *data, const size_t size);
             virtual bool fill(void *data, size_t &size);
+            virtual std::uint8_t size() { return sizeofregisters; }
         };
 
 
@@ -238,7 +250,93 @@ namespace strain { namespace amplifier {
 
 
 
+class cDownloader;
     
+namespace strain { namespace regulation {
+
+
+    const std::uint8_t maxSets = 3;
+
+    enum class Version { two = 2, three = 3, four = 4 };
+
+    struct Analog1
+    {   // for strain1
+        std::uint8_t offset[strain::numberofchannels];
+        Analog1() { clear(); }
+        void clear() { std::memset(offset, 0, sizeof(offset)); }
+    };
+
+    struct Analog
+    {   // for strain2
+        std::uint8_t amplregs[strain::numberofchannels][strain::amplifier::PGA308::Registers::sizeofregisters];
+        Analog() { clear(); }
+        void clear() {
+            for(int i=0; i<strain::numberofchannels; i++)
+            {
+                std::memmove(amplregs[i], strain::amplifier::PGA308::Registers::defval, sizeof(strain::amplifier::PGA308::Registers::sizeofregisters));
+            }
+        }
+    };
+
+
+
+    struct Digital
+    {
+        std::uint16_t tare[strain::numberofchannels];
+        strain::dsp::Q15 matrix[strain::numberofchannels*strain::numberofchannels];
+        strain::dsp::FSC fullscale[strain::numberofchannels];
+        Digital() { clear(); }
+        void clear() {
+            std::memset(tare, 0, sizeof(tare));
+            std::memset(fullscale, strain::dsp::fsc::max, sizeof(fullscale));
+            strain::dsp::q15::matrix mat(strain::numberofchannels, strain::numberofchannels, matrix);
+            mat.diagonal(strain::dsp::q15::posOneNearly);
+        }
+    };
+
+    struct Set1
+    {   // for strain1
+       Analog1  analog1;
+       Digital  digital;
+    };
+
+    struct Set
+    {   // for strain2
+        Analog   analog;
+        Digital  digital;
+        Set() { clear(); }
+        void clear() { analog.clear(); digital.clear(); }
+    };
+
+
+
+    struct FullRegulation1
+    {
+        Version             version;
+        strain::Board       board;
+        std::string         serial;
+        Set1                set1;
+    };
+
+    struct FullRegulation
+    {
+        Version             version;
+        strain::Board       board;
+        std::string         serial;
+        std::uint8_t        set2useatbootstrap; // 1, 2 or 3
+        std::vector<Set>    sets;
+        FullRegulation() { clear(); }
+        void clear() { version = Version::four; board = Board::strain2; serial = "SN666"; set2useatbootstrap = 1; sets.resize(0); }
+    };
+
+    // it just reads from file and fills FullRegulation for use outside of this module
+    bool read(const std::string filename, FullRegulation &reg);
+
+    // it just reads from file and fills FullRegulation for use outside of this module
+    bool write(const std::string filename, const FullRegulation &reg);
+    bool apply(cDownloader *down, const FullRegulation &reg);
+
+} }   // namespace strain { namespace regulation {
  
 
     

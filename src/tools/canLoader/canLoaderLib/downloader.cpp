@@ -973,7 +973,13 @@ float cDownloader::strain_amplifier_discretegain2float(strain2_ampl_discretegain
         48, 36, 24, 20, 16, 10, 8, 6, 4
     };
 
-    return mapofgains[static_cast<unsigned int>(c)];
+    unsigned int index = static_cast<unsigned int>(c);
+    if(index >= ampl_gain_numberOf)
+    {
+        if(_verbose) yError ("strain_amplifier_discretegain2float(): cannot convert to a valid value\n");
+        return 0.0f;
+    }
+    return mapofgains[index];
 }
 
 int cDownloader::strain_set_amplifier_discretegain(int bus, int target_id, unsigned char channel, strain2_ampl_discretegain_t ampcfg, int regset, string *errorstring)
@@ -1020,6 +1026,12 @@ int cDownloader::strain_set_amplifier_discretegain(int bus, int target_id, unsig
 
 
     unsigned int index = static_cast<unsigned int>(ampcfg);
+
+    if(index >= ampl_gain_numberOf)
+    {
+        if(_verbose) yError ("strain_set_amplifier_discretegain(): cannot convert to a valid index\n");
+        return -1;
+    }
 
 
     txBuffer[0].setId((2 << 8) + target_id);

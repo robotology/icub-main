@@ -31,6 +31,7 @@
 
 #include <cstring>
 #include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -701,6 +702,8 @@ namespace strain { namespace amplifier {
     }
 
 
+    const std::uint8_t PGA308::Registers::defval[PGA308::Registers::sizeofregisters] = {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f}; // gain = 48, offset = midrangeOffset
+
     bool PGA308::Registers::load(const void *data, const size_t size)
     {
         if((nullptr == data) || (size != sizeofregisters))
@@ -1346,6 +1349,165 @@ namespace strain { namespace dsp { namespace q15 {
     }
 
 } } } // namespace strain { namespace dsp { namespace q15 {
+
+namespace strain { namespace regulation {
+
+    bool read(const std::string fname, FullRegulation &reg)
+    {
+        bool ret = false;
+#if 0
+        // to be done later on
+
+        reg.clear();
+
+        if(fname.empty())
+        {
+//            yError("File not found!\n");
+//            appendLogMsg("File not found!");
+            return false;
+        }
+
+//        if (selected_id <1 || selected_id >= 15){
+//            yError("Invalid board address!\n");
+//            appendLogMsg("Invalid board address!");
+//            return false;
+//        }
+
+        const char * filename = fname.c_str();
+        int file_version=0;
+        std::fstream filestr;
+        filestr.open (filename, fstream::in);
+        if (!filestr.is_open()){
+//            yError("Error opening calibration file!\n");
+//            appendLogMsg("Error opening calibration file!");
+            return false;
+        }
+
+        int i=0;
+        char buffer[256];
+
+        //file version
+        filestr.getline (buffer,256);
+        filestr.getline (buffer,256);
+        sscanf (buffer,"%d",&file_version);
+
+
+        if((4 != file_version) && (3 != file_version))
+        {
+//            yError("Wrong file. Calibration version not supported for strain2: %d\n", file_version);
+//            appendLogMsg("Wrong file. Calibration version not supported for strain2");
+            return false;
+        }
+
+        reg.version = static_cast<Version>(file_version);
+
+        if(Version::three == reg.version)
+        {
+            // Board type:
+            filestr.getline (buffer,256);
+            filestr.getline (buffer,256);
+            if(0 != strcmp(buffer, "strain2"))
+            {
+//                yError("Wrong file. Board type not supported: %s\n", buffer);
+//                appendLogMsg("Wrong file. Board type not supported");
+                return false;
+            }
+
+            reg.board = Board::strain2;
+
+            // Serial number:
+            char serial_no[256] = {0};
+            filestr.getline (buffer,256);
+            filestr.getline (buffer,256);
+            snprintf(serial_no, sizeof(serial_no), "%s", buffer);
+            //core->getDownloader()->strain_set_serial_number(bus,id, serial_no);
+
+            reg.serial = std::string(serial_no);
+
+            // there is only one regulation set
+
+            Set set;
+            set.clear();
+
+            // Amplifier registers:
+            filestr.getline (buffer,256);
+            for (i=0;i<6; i++)
+            {
+                filestr.getline (buffer,256);
+//                yDebug() << buffer;
+                unsigned int t08[6] = {0};
+                sscanf  (buffer,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", &t08[0], &t08[1], &t08[2], &t08[3], &t08[4], &t08[5]);
+                for(int j=0; j<6; j++)
+                {
+                    set.analog.amplregs[i][j] = t08[j];
+                }
+
+//                core->getDownloader()->strain_set_amplifier_regs(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, amp_registers[i], regset);
+
+                // downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, offset[i]);
+                //core->getDownloader()->strain_set_offset (bus,id, i, offset[i]);
+                //printf("0X%02x, 0X%02x, 0X%02x, 0X%02x, 0X%02x,0X%02x", amp_registers[i].data[0], amp_registers[i].data[1], amp_registers[i].data[2], amp_registers[i].data[3], amp_registers[i].data[4], amp_registers[i].data[5]);
+                //fflush(stdout);
+//                drv_sleep(10);
+            }
+
+
+
+            //calibration matrix
+            filestr.getline (buffer,256);
+            for (i=0;i<36; i++){
+                unsigned int tmp = 0;
+                filestr.getline (buffer,256);
+                sscanf (buffer,"%x", &tmp);
+                set.digital.matrix[i] = static_cast<strain::dsp::Q15>(tmp);
+//                core->getDownloader()->strain_set_matrix_rc(bus,id, ri, ci, calib_matrix[index][ri][ci], regset);
+            }
+
+
+
+            //matrix gain
+            filestr.getline (buffer,256);
+            filestr.getline (buffer,256);
+            int cc=0;
+            sscanf (buffer,"%d",&cc);
+//            core->getDownloader()->strain_set_matrix_gain(bus,id, cc, regset);
+
+            //tare
+            filestr.getline (buffer,256);
+            for (i=0;i<6; i++){
+                filestr.getline (buffer,256);
+                int tt = 0;
+                sscanf  (buffer,"%d", &tt);
+                set.digital.tare[i] = static_cast<std::uint16_t>(tt);
+//                core->getDownloader()->strain_set_calib_bias(bus,id, i, calib_bias[i], regset);
+            }
+
+            //full scale values
+            filestr.getline (buffer,256);
+            for (i=0;i<6; i++){
+                filestr.getline (buffer,256);
+                int fs = 0;
+                sscanf  (buffer,"%d", &fs);
+                set.digital.fullscale[i] = static_cast<strain::dsp::FSC>(fs);
+//                core->getDownloader()->strain_set_full_scale(bus,id, i, full_scale_const[index][i], regset);
+            }
+
+            reg.sets.push_back(set);
+
+        }
+
+        reg.set2useatbootstrap = 1;
+
+
+        filestr.close();
+        filestr.clear();
+
+#endif
+
+        return ret;
+    }
+
+} } // namespace strain { namespace regulation
 
 
 // - end-of-file (leave a blank line after)----------------------------------------------------------------------------
