@@ -13,6 +13,8 @@
 #include "customspinbox.h"
 #include "customcombobox.h"
 
+#define MARCO_ACCAME_19SEP2018
+
 namespace Ui {
 class CalibrationWindow;
 }
@@ -45,6 +47,10 @@ protected:
     bool calibration_load_v3 (char* filename, int selected_bus, int selected_id, int index, int regset);
     void useMatrix(int, bool boot);
     void resetCalibration();
+
+#if defined(MARCO_ACCAME_19SEP2018)
+    void importCalibrationFileHEX(QString fileName);
+#endif
 
 private:
     int currentMatrixIndex;

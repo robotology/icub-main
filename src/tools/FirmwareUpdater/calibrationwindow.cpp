@@ -76,9 +76,15 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     currentMatrixIndex = 0;
     regsetInUse = cDownloader::strain_regset_inuse;
     calibration_value = 32767;
+#if defined(MARCO_ACCAME_19SEP2018)
+    calib_const[0] = 1;
+    calib_const[1] = 1;
+    calib_const[2] = 1;
+#else
     calib_const[0] = 0;
     calib_const[1] = 0;
     calib_const[2] = 0;
+#endif
     serial_number_changed = false;
     matrix_changed[0] = false;
     matrix_changed[1] = false;
@@ -273,6 +279,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     connect(ui->btnSetSerial,SIGNAL(clicked(bool)),this,SLOT(onSetSerial(bool)),Qt::QueuedConnection);
     connect(this,SIGNAL(setSerialChanged(bool)),this,SLOT(onSetSerialChanged(bool)));
     connect(ui->btnResetCalib,SIGNAL(clicked(bool)),this,SLOT(onResetCalibMatrix(bool)),Qt::QueuedConnection);
+    connect(this,SIGNAL(setFullScale()),this,SLOT(onSetFullScale()),Qt::QueuedConnection);
     connect(this,SIGNAL(setMatrix(int)),this,SLOT(onSetMatrix(int)),Qt::QueuedConnection);
     connect(ui->actionSave_To_Eproom,SIGNAL(triggered(bool)),this,SLOT(onSaveToEeprom(bool)),Qt::QueuedConnection);
     connect(ui->btnSetCalibration,SIGNAL(clicked(bool)),this,SLOT(onSetCalibration(bool)),Qt::QueuedConnection);
@@ -890,6 +897,17 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
     int i=0;
 
     QByteArray line = filestr.readLine();
+#if defined(MARCO_ACCAME_19SEP2018)    
+    if(line.at(0) != '#')
+    {
+        // it must be a hex file: close it and call importCalibrationFileHEX()
+        filestr.close();
+        loading(false);
+        mutex.unlock();
+        importCalibrationFileHEX(fileName);
+        return;
+    }
+#endif
     while(!line.isEmpty() && line.at(0) == '#' && !filestr.atEnd()){
         line = filestr.readLine();
         continue;
@@ -1543,7 +1561,6 @@ void CalibrationWindow::onTimeout()
                 core->getDownloader()->strain_get_amplifier_gain_offset(core->getDownloader()->board_list[selected].bus,
                                                                         core->getDownloader()->board_list[selected].pid, i,
                                                                         amp_gains[i], amp_offsets[i], regsetInUse, &msg);
-                amp_gains[0] = 37.3f;
 //#warning TEST di ricezione di un valore di gain inconsueto... dove viene cambiato il valore del combo sull base del valore ricevuto dall strain?
                 appendLogMsg(msg.c_str());
 
@@ -1939,3 +1956,117 @@ bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, i
 }
 #endif
 
+
+#if defined(MARCO_ACCAME_19SEP2018)
+void CalibrationWindow::importCalibrationFileHEX(QString fileName)
+{
+    // marco.accame: the regulation set to be sent to the board is the one in use in its inside
+    const int regset = cDownloader::strain_regset_inuse;
+    const int index = 0;
+
+    mutex.lock();
+    loading();
+    char* buff = fileName.toLatin1().data();
+    string msg;
+
+    if (buff==NULL){
+        yError("File not found!\n");
+        appendLogMsg("File not found!");
+        loading(false);
+        mutex.unlock();
+        return;
+    }
+
+    fstream filestr;
+    filestr.open (buff, fstream::in);
+    if (!filestr.is_open()){
+        yError("Error opening MATLAB matrix-fullscale file!\n");
+        appendLogMsg("Error opening MATLAB matrix-fullscale file!");
+        loading(false);
+        mutex.unlock();
+        return;
+    }
+
+    printf("Importing MATLAB matrix-fullscale file.\n");
+
+    printf("matrix[6][6] = \n");
+    unsigned int mat0[6][6] = {0};
+    int i=0;
+    char buffer[256];
+    for (i=0;i<36; i++){
+        int ri=i/6;
+        int ci=i%6;
+        filestr.getline (buffer,256);
+        sscanf (buffer,"%x",&mat0[ri][ci]);
+        printf("%f (0x%x)\n", strain::dsp::q15::convert(mat0[ri][ci]), mat0[ri][ci]);
+        core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,mat0[ri][ci], regset, &msg);
+        appendLogMsg(msg.c_str());
+    }
+
+
+    filestr.getline (buffer,256);
+    int cc=0;
+    sscanf (buffer,"%d",&cc);
+    core->getDownloader()->strain_set_matrix_gain(bus,id,cc, regset, &msg);
+    appendLogMsg(msg.c_str());
+
+    printf("gain = %d [BUT IT IS UNUSED]\n", cc);
+
+    printf("fullscales[6] = \n");
+    for (i=0;i<CHANNEL_COUNT; i++){
+        filestr.getline (buffer,256);
+        sscanf (buffer,"%d",&cc);
+        printf("%d\n", cc);
+        core->getDownloader()->strain_set_full_scale(bus,id,i,cc, regset, &msg);
+        appendLogMsg(msg.c_str());
+    }
+
+    filestr.close();
+
+//    something_changed=true;
+    printf ("MATLAB matrix-fullscale file loaded!\n");
+    appendLogMsg("MATLAB matrix-fullscale file loaded!");
+
+    int ri=0;
+    int ci=0;
+
+    unsigned int mat1[6][6] = {0};
+    drv_sleep (1000);
+    for (ri=0;ri<CHANNEL_COUNT;ri++){
+        for (ci=0;ci<CHANNEL_COUNT;ci++){
+            core->getDownloader()->strain_get_matrix_rc(bus,id,ri,ci,mat1[ri][ci], regset, &msg);
+            appendLogMsg(msg.c_str());
+        }
+    }
+//    setMatrix(index);
+//    resetMatrices(index);
+
+    int count_ok=0;
+    for (i=0;i<36; i++){
+        ri=i/6;
+        ci=i%6;
+        if (mat0[ri][ci]==mat1[ri][ci]) {
+            count_ok++;
+        } else {
+            printf ("Found 1 error on element %d,%d !!\n",ri, ci);
+            appendLogMsg("Found 1 error on element %d,%d !!");
+        }
+    }
+
+    if (count_ok==36){
+        printf ("MATLAB matrix-fullscale file %s applied with no errors\n", buff);
+        appendLogMsg(QString("MATLAB matrix-fullscale file %1 applied with no errors").arg(buff));
+//        matrix_changed[0]=false;
+    } else {
+        printf ("Found %d errors applying the MATLAB matrix-fullscale file!!\n",36-count_ok);
+        appendLogMsg(QString("Found %1 errors applying the MATLAB matrix-fullscale file!!").arg(36-count_ok));
+    }
+
+    matrix_changed[index] = false;
+    fullScaleChanged = false;
+    something_changed = false;
+
+    loading(false);
+    mutex.unlock();
+}
+#endif // (MARCO_ACCAME_19SEP2018)
