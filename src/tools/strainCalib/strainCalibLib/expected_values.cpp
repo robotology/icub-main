@@ -95,6 +95,12 @@ const int expected_values_handler_class::def_expected_values[24][6] =
     { 3143, 5366, -6349, 3156, -6222, -691 }
 };
 
+const int expected_values_handler_class::def_expected_values_thresholds[2] =
+{
+    2000,
+    4000
+};
+
 bool expected_values_handler_class::init()
 {
     for(int iy=0; iy<24; iy++)
@@ -104,6 +110,9 @@ bool expected_values_handler_class::init()
             expected_values[ix][iy] = def_expected_values[iy][ix];
         }
     }
+
+    threshold1 = def_expected_values_thresholds[0];
+    threshold2 = def_expected_values_thresholds[1];
 
     return true;
 }

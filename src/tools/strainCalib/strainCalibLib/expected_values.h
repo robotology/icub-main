@@ -25,6 +25,7 @@ class expected_values_handler_class
 		int threshold1;
 		int threshold2;
         static const int def_expected_values[24][6]; // yes: [24][6] !
+        static const int def_expected_values_thresholds[2];
 
 	public:
 		expected_values_handler_class();
