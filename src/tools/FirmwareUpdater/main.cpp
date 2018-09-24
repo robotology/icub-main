@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
 
     QCommandLineOption noGuiOption(QStringList() << "g" << "nogui", "The application starts in console mode");
-    QCommandLineOption strainCalibOption(QStringList() << "k" << "strainCalib", "The application starts in admin mode");
+    QCommandLineOption strainCalibOption(QStringList() << "k" << "strain-acquisition", "The application starts the STRAIN acquisition mode");
     QCommandLineOption adminOption(QStringList() << "a" << "admin", "The application starts in admin mode");
     QCommandLineOption iniFileOption(QStringList() << "f" << "from", "Override the default ini file","config","firmwareupdater.ini");
     QCommandLineOption addressOption(QStringList() << "s" << "address", "Override the default address","address",MY_ADDR);
