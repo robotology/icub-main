@@ -80,6 +80,8 @@ private:
     QMutex mutex;
     bool tick_acquisition(int samples);
 
+    bool enabledebugprints;
+
 private slots:
     void onButtonClick(bool b);
     void onAcquireData(bool b);

@@ -5,7 +5,7 @@
 #include <QFileDialog>
 
 
-#define NSAMPLES 1000
+//#define NSAMPLES 1000
 
 StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdaterCore *core, QWidget *parent) :
     QDialog(parent), mutex(QMutex::Recursive),
@@ -105,6 +105,8 @@ StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdater
     timer.setInterval(500);
     timer.setSingleShot(false);
     timer.start();
+
+    enabledebugprints = false;
 
 }
 
@@ -258,10 +260,11 @@ bool StrainCalibGui::get(const unsigned int number, vector<cDownloader::strain_v
 bool StrainCalibGui::print(const vector<cDownloader::strain_value_t> &values, FILE *fp, QList<float> ft)
 {
 
-
-    // if fp is NULL, i dont print to file. the format is the one accepted for calib of strain
-
-    // printf("Acquired %d samples. Ready!	\n", static_cast<int>(values.size()));
+    if(nullptr == fp)
+    {
+        yError("the file pointer is invalid: I cannot print my %lu values", values.size());
+        return false;
+    }
 
     if(!ft.isEmpty() && ft.count() == 6){
         fprintf(fp,"- %f %f %f %f %f %f\n\n",ft.at(0),ft.at(1),ft.at(2),ft.at(3),ft.at(4),ft.at(5));
@@ -294,6 +297,8 @@ bool StrainCalibGui::acquire_samples(int samples)
 {
     // marco.accame: now we acquire with the strainInterface class in one shot
 
+    const bool enabledebugprints = false;
+
     mutex.lock();
     isSamplesAcquisitionActive = true;
 
@@ -301,15 +306,19 @@ bool StrainCalibGui::acquire_samples(int samples)
     ui->btnAcquireData->setText("Acquiring Samples Now");
 
     vector<cDownloader::strain_value_t> values;
-    get(samples, values, true);
-    yDebug() << "acquired" << values.size() << "strain samples";
+    get(samples, values, enabledebugprints);
 
     if(samples != values.size())
     {
-        yError() << "cannot acquire enough samples. Only:" << values.size() << "instead of" << NSAMPLES;
+        yError() << "cannot acquire enough strain samples. Only:" << values.size() << "instead of" << samples;
     }
-
-    yDebug("Acquired %d samples. Ready! \n", static_cast<int>(values.size()));
+    else
+    {
+        if(enabledebugprints)
+        {
+            yDebug("Acquired %lu strain samples. Ready! \n", values.size());
+        }
+    }
 
     if(ui->freeAcqModeGroup->isChecked()){
         QList <float> v;
@@ -319,7 +328,7 @@ bool StrainCalibGui::acquire_samples(int samples)
         v.append(ui->freeEdit4->text().toFloat());
         v.append(ui->freeEdit5->text().toFloat());
         v.append(ui->freeEdit6->text().toFloat());
-        print(values, fp,v);
+        print(values, fp, v);
     } else {
         print(values, fp);
     }
@@ -806,8 +815,8 @@ bool StrainCalibGui::tick_acquisition(int samples)
     mutex.lock();
 
     vector<cDownloader::strain_value_t> values;
-    get(samples, values, false);
-    yDebug() << "simple acquisition of " << values.size() << "strain samples";
+    get(samples, values, enabledebugprints);
+    // yDebug() << "simple acquisition of " << values.size() << "strain samples";
 
 
 
