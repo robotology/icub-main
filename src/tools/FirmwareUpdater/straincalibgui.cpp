@@ -286,8 +286,11 @@ bool StrainCalibGui::print(const vector<cDownloader::strain_value_t> &values, FI
             fprintf(fp,"%d %d %d %d %d %d %d\n",static_cast<int>(n),signed_gaugeData[0],signed_gaugeData[1],signed_gaugeData[2],
                     signed_gaugeData[3],signed_gaugeData[4],signed_gaugeData[5]);
         }
-        yDebug("samples:%3d [0]:%+6d [1]:%+6d [2]:%+6d [3]:%+6d [4]:%+6d [5]:%+6d\r\n",static_cast<int>(n),signed_gaugeData[0],signed_gaugeData[1],signed_gaugeData[2],signed_gaugeData[3],signed_gaugeData[4],signed_gaugeData[5]);
 
+        if(enabledebugprints)
+        {
+            yDebug("samples:%3d [0]:%+6d [1]:%+6d [2]:%+6d [3]:%+6d [4]:%+6d [5]:%+6d\r\n",static_cast<int>(n),signed_gaugeData[0],signed_gaugeData[1],signed_gaugeData[2],signed_gaugeData[3],signed_gaugeData[4],signed_gaugeData[5]);
+        }
     }
 
     return true;
@@ -822,9 +825,11 @@ bool StrainCalibGui::tick_acquisition(int samples)
 
     // now i need to retrieve the most recent value from values but in a particular format and fill variable last_value
 
-    cDownloader::strain_value_t lastvalue = values.at(values.size()-1);
-
-    lastvalue.extract(last_value.dat);
+    if(values.size() > 0)
+    {
+        cDownloader::strain_value_t lastvalue = values.at(values.size()-1);
+        lastvalue.extract(last_value.dat);
+    }
 
     mutex.unlock();
 
