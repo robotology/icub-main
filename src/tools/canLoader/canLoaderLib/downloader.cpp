@@ -1329,7 +1329,7 @@ int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemill
 
     int ret = 0;
 
-    yDebug() << "cDownloader::strain_acquire_start() from" << bus << target_id;
+    //yDebug() << "cDownloader::strain_acquire_start() from" << bus << target_id;
 
     // Send transmission rate to strain board
     txBuffer[0].setId((2 << 8) + target_id);
@@ -1396,7 +1396,7 @@ int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring
    for(size_t n=0; n<10; n++)
    {
         int read_messages = m_idriver->receive_message(rxBuffer, maxframes, TOUT);
-        yDebug() << "cDownloader::strain_acquire_stop() has removed" << read_messages << "can frames from rxbuffer";
+        //yDebug() << "cDownloader::strain_acquire_stop() has removed" << read_messages << "can frames from rxbuffer";
         if(0 == read_messages)
         {
             break;
