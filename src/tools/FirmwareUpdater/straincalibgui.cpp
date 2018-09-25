@@ -8,10 +8,12 @@
 //#define NSAMPLES 1000
 
 StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdaterCore *core, QWidget *parent) :
-    QDialog(parent), mutex(QMutex::Recursive),
+    QDialog(parent), mutexacquisitionofdata(QMutex::Recursive), mutexdriver(QMutex::Recursive),
     ui(new Ui::StrainCalibGui)
 {
-    isSamplesAcquisitionActive = false;
+    progressvalue = 0;
+    acquiringdata = false;
+    enableacquisitions = true;
     ui->setupUi(this);
     this->core = core;
     fp = NULL;
@@ -69,7 +71,9 @@ StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdater
     }
 
     connect(ui->freeAcqModeGroup,SIGNAL(toggled(bool)),this,SLOT(onFreeAcqMode(bool)));
-    connect(ui->buttonBox,SIGNAL(accepted()),this,SLOT(close()));
+    //connect(ui->buttonBox,SIGNAL(accepted()),this,SLOT(close()));
+    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(onClose()));
+
 
     std::string filenameOfexpectedValues = std::string("good_vals.txt");
     bool b = expected_values_handler.init(filenameOfexpectedValues.c_str());
@@ -113,8 +117,49 @@ StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdater
 StrainCalibGui::~StrainCalibGui()
 {
     //sI.close();
-    timer.stop();
+
+
+    stopacquisitions();
+
     delete ui;
+}
+
+void StrainCalibGui::stopacquisitions(bool forcestop)
+{
+    // wait all acquisitions to be over:
+    // - stop timer so that tick_acquisition() is not called anymore
+    // - wait pending acquisitions to be over by calling two lockdriver() true / false
+
+    static bool alreadystopped = false;
+    if((false == alreadystopped) || (true == forcestop))
+    {
+        // we must be sure that no tick_acquisition() is executed: we stop the timer so that no future
+        // callback onTimerTimeout() is called. but it may be executing rigth now.
+        // hence we first set enableacquisitions = false for furthe security
+        enableacquisitions = false;
+        timer.stop();
+
+        // we now wait until any acquisition is over and we force stop of strain tx. twice!
+        while(false == mutexdriver.tryLock(250))
+        {
+            ui->progress->setValue(progressvalue);
+            ui->labelInstructions->setText("Received the QUIT command: waiting for the acquisition to terminate");
+        }
+        //lockdriver(true);
+        core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress());
+        core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress());
+        lockdriver(false);
+
+        alreadystopped = true;
+    }
+}
+
+void StrainCalibGui::onClose()
+{
+    stopacquisitions(true);
+    stopacquisitions(true);
+
+    close();
 }
 
 void StrainCalibGui::onFreeAcqMode(bool b)
@@ -135,34 +180,58 @@ void StrainCalibGui::onFreeAcqMode(bool b)
 
 void StrainCalibGui::onFutureFinished()
 {
-    int rtrial=remap_trials();
+    ui->progress->setMaximum(100);
 
     if(!watcher.result()){
         ui->labelInstructions->setText("Not enough data acquired. Repeat acquisition.");
+        close_files();
         return;
     }
 
-    if (rtrial==-1){
-        trial_bias=last_value;
-    }
 
-    trial++;
-    qDebug("%d\n",trial); //debug only
-    showMenu();
-    ui->progress->setMaximum(100);
+    if(ui->freeAcqModeGroup->isChecked())
+    {
+        close_files();
+        return;
+    }
+    else
+    {
+        int rtrial=remap_trials();
+
+        if (rtrial==-1){
+            trial_bias=last_value;
+        }
+
+        trial++;
+        qDebug("%d\n",trial); //debug only
+        showMenu();
+    }
 
 }
 
 void StrainCalibGui::onAcquireData(bool b)
 {
 
-    if(ui->freeAcqModeGroup->isChecked()){
+    if(ui->freeAcqModeGroup->isChecked())
+    {
         QString fileName = QFileDialog::getSaveFileName(NULL,"Choose a file");
+        if(fileName.isEmpty())
+        {
+            yWarning() << "choose another file";
+            return;
+        }
         fp = fopen(fileName.toLatin1().data(),"w");
+        if(nullptr == fp)
+        {
+            yWarning() << "cannot open file" << fileName.toLatin1().data() << "hence i will not perform acquisition";
+            ui->labelInstructions->setText("Cannot open file. Try once more.");
+            return;
+        }
     }
+
     QFuture<bool> future = QtConcurrent::run(this,&StrainCalibGui::acquire_samples,ui->spinSamples->value());
     watcher.setFuture(future);
-    ui->progress->setMaximum(0);
+    ui->progress->setMaximum(100);
 
 }
 
@@ -223,7 +292,26 @@ void acquire_1000_samples()
 
 #else
 
-bool StrainCalibGui::get(const unsigned int number, vector<cDownloader::strain_value_t> &values, bool debugprint)
+void StrainCalibGui::progressbar(void *owner, float percent)
+{
+    if(nullptr == owner)
+    {
+        return;
+    }
+
+    int value = static_cast<int>(percent * 100.0);
+//    value /= 10;
+//    value *= 10;
+
+    StrainCalibGui *thegui = reinterpret_cast<StrainCalibGui*>(owner);
+
+    if(value != thegui->progressvalue)
+    {
+        thegui->progressvalue = value;
+    }
+}
+
+bool StrainCalibGui::get(const unsigned int number, vector<cDownloader::strain_value_t> &values, bool debugprint, bool updateprogress)
 {
 
     double t0 = yarp::os::SystemClock::nowSystem();
@@ -233,10 +321,18 @@ bool StrainCalibGui::get(const unsigned int number, vector<cDownloader::strain_v
         yDebug() << "strainInterface::get(): is acquiring" << number << "from the 6 channels. Please wait ...";
     }
 
+    void * param = nullptr;
+    void (*updateProgressBar)(void*, float) = nullptr;
+
+    if(true == updateprogress)
+    {
+        updateProgressBar = progressbar;
+        param = reinterpret_cast<void*>(this);
+    }
 
     const bool calibmode = false;
     core->getDownloader()->strain_acquire_start(config.get_canbus(), config.get_canaddress(), config.get_txrate(), calibmode);
-    core->getDownloader()->strain_acquire_get(config.get_canbus(), config.get_canaddress(), values, number);
+    core->getDownloader()->strain_acquire_get(config.get_canbus(), config.get_canaddress(), values, number, updateProgressBar, param);
     //yarp::os::SystemClock::delaySystem(0.100); i used it to test the flush operation of strain_acquire_stop()....
     core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress());
     core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress());
@@ -302,14 +398,18 @@ bool StrainCalibGui::acquire_samples(int samples)
 
     const bool enabledebugprints = false;
 
-    mutex.lock();
-    isSamplesAcquisitionActive = true;
+    if(false == enableacquisitions)
+    {
+        return false;
+    }
 
-    ui->btnAcquireData->setEnabled(false);
-    ui->btnAcquireData->setText("Acquiring Samples Now");
+
+    lockdriver(true);
+    setAcquisitionOfDataActive(true);
 
     vector<cDownloader::strain_value_t> values;
-    get(samples, values, enabledebugprints);
+    get(samples, values, enabledebugprints, true);
+
 
     if(samples != values.size())
     {
@@ -343,20 +443,10 @@ bool StrainCalibGui::acquire_samples(int samples)
 
     lastvalue.extract(last_value.dat);
 
-    isSamplesAcquisitionActive = false;
-
-    if(ui->freeAcqModeGroup->isChecked())
-    {
-        //ui->spinSamples->setEnabled(true);
-        ui->btnAcquireData->setEnabled(true);
-        ui->btnAcquireData->setText("Acquire sample");
-        close_files();
-    }
-
-    mutex.unlock();
+    setAcquisitionOfDataActive(false);
+    lockdriver(false);
 
     return true;
-
 }
 
 #endif
@@ -375,7 +465,7 @@ void StrainCalibGui::showMenu()
         break;
     case  1001:
         fp = fopen("./data/output1.dat","w");
-        ui->groupBox->setTitle("(2)     z+ pointing DOWNwards    5kg torques      file: output1.dat");
+        ui->groupBox->setTitle("(2)     z+ pointing DOWNwards    5kg torques        file: output1.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 nut\n"
                                        "2. orient the assembly with the z+ axis pointing downwards\n\n"
                                        "3. remove loads");
@@ -397,7 +487,7 @@ void StrainCalibGui::showMenu()
         break;
     case 3001:
         fp = fopen("./data/output3.dat","w");
-        ui->groupBox->setTitle("(10)     x+ axis pointing UPwards     5kg laterals      file: output3.dat");
+        ui->groupBox->setTitle("(10)     x+ axis pointing UPwards     5kg laterals  file: output3.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the structure with the x+ axis pointing upwards\n"
                                        "3. remove loads\n");
@@ -416,7 +506,7 @@ void StrainCalibGui::showMenu()
         break;
     case 4001:
         fp = fopen("./data/output4.dat","w");
-        ui->groupBox->setTitle("(11)     y+ axis pointing UPwards     5kg laterals      file: output4.dat");
+        ui->groupBox->setTitle("(11)     y+ axis pointing UPwards     5kg laterals  file: output4.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the structure with the y+ axis pointing upwards\n"
                                        "3. remove loads\n");
@@ -436,7 +526,7 @@ void StrainCalibGui::showMenu()
 
     case 5001:
         fp = fopen("./data/output5.dat","w");
-        ui->groupBox->setTitle("(12)     x- axis pointing UPwards     5kg laterals      file: output5.dat \n");
+        ui->groupBox->setTitle("(12)     x- axis pointing UPwards     5kg laterals  file: output5.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the structure with the x- axis pointing upwards\n"
                                        "3. remove loads\n");
@@ -457,7 +547,7 @@ void StrainCalibGui::showMenu()
 
     case 6001:
         fp = fopen("./data/output6.dat","w");
-        ui->groupBox->setTitle("(13)     y- axis pointing UPwards     5kg laterals      file: output6.dat\n");
+        ui->groupBox->setTitle("(13)     y- axis pointing UPwards     5kg laterals  file: output6.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the structure with the y- axis pointing upwards\n"
                                        "3. remove loads\n");
@@ -478,7 +568,7 @@ void StrainCalibGui::showMenu()
 
     case 8010:
         fp = fopen("./data/output81.dat","w");
-        ui->groupBox->setTitle("(3)     z+ pointing UPwards      25kg compression      file: output81.dat\n");
+        ui->groupBox->setTitle("(3)     z+ pointing UPwards      25kg compression   file: output81.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 nut\n"
                                        "2. orient the assembly with the z+ axis pointing upwards\n\n"
                                        "3. remove loads\n");
@@ -494,7 +584,7 @@ void StrainCalibGui::showMenu()
 
     case 8020:
         fp = fopen("./data/output82.dat","w");
-        ui->groupBox->setTitle("(1)     z+ pointing DOWNwards      25kg traction file: output82.dat");
+        ui->groupBox->setTitle("(1)     z+ pointing DOWNwards      25kg traction    file: output82.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 nut\n"
                                        "2. screw the M10 ring on the top of the assembly\n"
                                        "3. orient the assembly with the z+ axis pointing downwards\n\n"
@@ -510,7 +600,7 @@ void StrainCalibGui::showMenu()
 
     case 8030:
         fp = fopen("./data/output83.dat","w");
-        ui->groupBox->setTitle("(4)     x+ pointing UPwards       25kg      file: output83.dat");
+        ui->groupBox->setTitle("(4)     x+ pointing UPwards       25kg              file: output83.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the plate with the x+ axis pointing upwards\n"
                                        "3. remove loads\n");
@@ -525,7 +615,7 @@ void StrainCalibGui::showMenu()
 
     case 8040:
         fp = fopen("./data/output84.dat","w");
-        ui->groupBox->setTitle("(5)     x- pointing UPwards     25kg      file: output84.dat");
+        ui->groupBox->setTitle("(5)     x- pointing UPwards     25kg                file: output84.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the plate with the x- axis pointing upwards\n\n"
                                        "3. remove loads\n");
@@ -539,7 +629,7 @@ void StrainCalibGui::showMenu()
 
     case 8050:
         fp = fopen("./data/output85.dat","w");
-        ui->groupBox->setTitle("(6)     label 1 pointing DOWNwards       25kg      file: output85.dat");
+        ui->groupBox->setTitle("(6)     label 1 pointing DOWNwards       25kg       file: output85.dat");
         ui->labelInstructions->setText("1. assemble the assembly with label 1 pointing DOWN\n\n"
                                        "3. remove loads\n");
         break;
@@ -553,7 +643,7 @@ void StrainCalibGui::showMenu()
 
     case 8060:
         fp = fopen("./data/output86.dat","w");
-        ui->groupBox->setTitle("(7)     label 2 pointing DOWNwards       25kg      file: output86.dat");
+        ui->groupBox->setTitle("(7)     label 2 pointing DOWNwards       25kg       file: output86.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the plate with label 2 pointing DOWN\n\n"
                                        "3. remove loads\n");
@@ -566,7 +656,7 @@ void StrainCalibGui::showMenu()
         break;
     case 8070:
         fp = fopen("./data/output87.dat","w");
-        ui->groupBox->setTitle("(8)     label 3 pointing DOWNwards       25kg      file: output87.dat");
+        ui->groupBox->setTitle("(8)     label 3 pointing DOWNwards       25kg       file: output87.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the plate with label 3 pointing DOWN\n\n"
                                        "3. remove loads\n");
@@ -580,7 +670,7 @@ void StrainCalibGui::showMenu()
 
     case 8080:
         fp = fopen("./data/output88.dat","w");
-        ui->groupBox->setTitle("(9)     label 4 pointing DOWNwards       25kg      file: output88.dat");
+        ui->groupBox->setTitle("(9)     label 4 pointing DOWNwards       25kg       file: output88.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the plate with label 4 pointing DOWN\n\n"
                                        "3. remove loads\n");
@@ -612,6 +702,7 @@ void StrainCalibGui::close_files()
 void StrainCalibGui::terminate_section()
 {
     trial=-1;
+
     close_files();
     turnOnButtons();
     if(!ui->freeAcqModeGroup->isChecked()){
@@ -629,6 +720,7 @@ void StrainCalibGui::turnOffButtons()
         }
 
         ui->btnAcquireData->setEnabled(true);
+        ui->btnAcquireData->setText("Start Acquisition");
         ui->freeAcqModeGroup->setEnabled(false);
     }
     ui->spinSamples->setEnabled(true);
@@ -749,62 +841,79 @@ void StrainCalibGui::onTimerTimeout()
 
             }
 
-            if(true == isSamplesAcquisitionActive)
+            if(true == isAcquisitionOfDataActive())
             {
                 ui->btnAcquireData->setEnabled(false);
                 ui->btnAcquireData->setText("Acquiring Data Now");
+                ui->spinSamples->setEnabled(false);
+                ui->progress->setValue(progressvalue);
             }
             else
             {
-                 ui->btnAcquireData->setText("Start Acquiring Data");
+                if(ui->freeAcqModeGroup->isChecked())
+                {
+                    ui->btnAcquireData->setEnabled(true);
+                    ui->btnAcquireData->setText("Start Acquiring Data");
+                    ui->spinSamples->setEnabled(true);
+                }
+                else
+                {
+                    if(!ui->btnAcquireData->isEnabled())
+                    {
+                        ui->btnAcquireData->setText("Choose an Acquisition Mode");
+                    }
+                }
+
+                ui->progress->setValue(0);
             }
 
     } else {
 
-        if(false == isSamplesAcquisitionActive)
-        {   // only one is enough to show status
-            tick_acquisition(1);
-        }
-
-
-        expected_values_handler.get_current_expected_values(exp_vals, current_trial);
-        for (i=0; i<6;i++){
-            expValues.at(i)->setText(QString("%1").arg(exp_vals.dat[i]));
-        }
-
-        signed_elem_class last;
-        last=last_value;
-        last.remove_bias(trial_bias);
-        for (i=0; i<6;i++){
-            readValues.at(i)->setText(QString("%1").arg(last.dat[i]));
-        }
-        bool in_boundary = expected_values_handler.check_vals(last,current_trial,err_vals,in_bound);
-        for (i=0; i<6; i++){
-            errValues.at(i)->setText(QString("%1").arg(err_vals.dat[i]));
-
-            if (in_bound.dat[i]==0){
-                errValues.at(i)->setStyleSheet("color: rgb(255, 0, 0);");
-            } else if (in_bound.dat[i]==1) {
-                errValues.at(i)->setStyleSheet("color: rgb(0, 255, 0);");
-            } else if (in_bound.dat[i]==2) {
-                errValues.at(i)->setStyleSheet("color: orange;");
-            }
-        }
-
-        if(true == isSamplesAcquisitionActive)
+        if(true == isAcquisitionOfDataActive())
         {
             ui->btnAcquireData->setEnabled(false);
             ui->btnAcquireData->setText("Acquiring Data Now");
+            ui->progress->setValue(progressvalue);
         }
         else
         {
 
+            ui->progress->setValue(0);
+
+            tick_acquisition(1);
+
+            expected_values_handler.get_current_expected_values(exp_vals, current_trial);
+            for (i=0; i<6;i++){
+                expValues.at(i)->setText(QString("%1").arg(exp_vals.dat[i]));
+            }
+
+            signed_elem_class last;
+            last = last_value;
+            last.remove_bias(trial_bias);
+            for (i=0; i<6;i++){
+                readValues.at(i)->setText(QString("%1").arg(last.dat[i]));
+            }
+            bool in_boundary = expected_values_handler.check_vals(last,current_trial,err_vals,in_bound);
+            for (i=0; i<6; i++){
+                errValues.at(i)->setText(QString("%1").arg(err_vals.dat[i]));
+
+                if (in_bound.dat[i]==0){
+                    errValues.at(i)->setStyleSheet("color: rgb(255, 0, 0);");
+                } else if (in_bound.dat[i]==1) {
+                    errValues.at(i)->setStyleSheet("color: rgb(0, 255, 0);");
+                } else if (in_bound.dat[i]==2) {
+                    errValues.at(i)->setStyleSheet("color: orange;");
+                }
+            }
+
+
             ui->btnAcquireData->setEnabled(true);
+            ui->spinSamples->setEnabled(false);
 
             if (in_boundary==false){
-             ui->btnAcquireData->setText("Strange values detected.\n            Acquire? ");
+             ui->btnAcquireData->setText("Strange values detected.\n Acquire anyway? ");
             } else {
-             ui->btnAcquireData->setText("Acquire Data");
+             ui->btnAcquireData->setText("Regular Values: Acquire Data");
             }
         }
     }
@@ -815,13 +924,16 @@ bool StrainCalibGui::tick_acquisition(int samples)
 {
     // marco.accame: now we acquire with the strainInterface class in one shot
 
-    mutex.lock();
+    if(false == enableacquisitions)
+    {
+        return false;
+    }
+
+    lockdriver(true);
 
     vector<cDownloader::strain_value_t> values;
-    get(samples, values, enabledebugprints);
+    get(samples, values, enabledebugprints, false);
     // yDebug() << "simple acquisition of " << values.size() << "strain samples";
-
-
 
     // now i need to retrieve the most recent value from values but in a particular format and fill variable last_value
 
@@ -831,9 +943,37 @@ bool StrainCalibGui::tick_acquisition(int samples)
         lastvalue.extract(last_value.dat);
     }
 
-    mutex.unlock();
+    lockdriver(false);
 
     return true;
 
+}
+
+void StrainCalibGui::setAcquisitionOfDataActive(const bool active)
+{
+    mutexacquisitionofdata.lock();
+    acquiringdata = active;
+    mutexacquisitionofdata.unlock();
+}
+
+bool StrainCalibGui::isAcquisitionOfDataActive()
+{
+    bool active = false;
+    mutexacquisitionofdata.lock();
+    active = acquiringdata;
+    mutexacquisitionofdata.unlock();
+    return active;
+}
+
+void StrainCalibGui::lockdriver(const bool on)
+{
+    if(on)
+    {
+        mutexdriver.lock();
+    }
+    else
+    {
+        mutexdriver.unlock();
+    }
 }
 

@@ -46,7 +46,7 @@ private:
     void terminate_section();
     void close_files();
     int remap_trials();
-    bool get(const unsigned int number, vector<cDownloader::strain_value_t> &values, bool debugprint = true);
+    bool get(const unsigned int number, vector<cDownloader::strain_value_t> &values, bool debugprint = true, bool updateprogress = true);
     bool print(const vector<cDownloader::strain_value_t> &values, FILE *fp, QList<float> = QList<float>());
 #ifdef ATI_SENS
     void acquire_1000_samples();
@@ -76,11 +76,23 @@ private:
     QTimer timer;
     int current_trial;
 
-    bool isSamplesAcquisitionActive;
-    QMutex mutex;
+    volatile bool acquiringdata;
+    QMutex mutexacquisitionofdata;
+    QMutex mutexdriver;
+    void setAcquisitionOfDataActive(const bool active);
+    bool isAcquisitionOfDataActive();
+    void lockdriver(const bool on);
+
     bool tick_acquisition(int samples);
 
     bool enabledebugprints;
+    volatile bool enableacquisitions;
+
+    void stopacquisitions(bool forcestop = true);
+
+    static void progressbar(void *owner, float percent);
+
+    volatile int progressvalue;
 
 private slots:
     void onButtonClick(bool b);
@@ -88,6 +100,7 @@ private slots:
     void onTimerTimeout();
     void onFutureFinished();
     void onFreeAcqMode(bool);
+    void onClose();
 };
 
 #endif // STRAINCALIBGUI_H
