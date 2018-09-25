@@ -1406,7 +1406,7 @@ int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring
    return 0;
 }
 
-int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany, string *errorstring)
+int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany, void (*updateProgressBar)(void*, float), void *arg, string *errorstring)
 {
     // i must read howmany pairs of can frames of type 0xA and 0xB. to simplify i assume that they will arrive in pairs.
 
@@ -1427,6 +1427,11 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
 
     for(unsigned int s=0; s<howmany; s++)
     {
+        if(NULL != updateProgressBar)
+        {
+            float perc = (0 != howmany) ? (static_cast<float>(s+1)/static_cast<float>(howmany)) : (100.0);
+            updateProgressBar(arg, perc);
+        }
 
         int read_messages = m_idriver->receive_message(rxBuffer, 2, TOUT);
         strain_value_t sv;

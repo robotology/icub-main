@@ -251,7 +251,7 @@ struct strain_value_t
 };
 
 int strain_acquire_start(int bus, int target_id, uint8_t txratemilli = 20, bool calibmode = true, string *errorstring = NULL);
-int strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany = 10, string *errorstring = NULL);
+int strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany = 10, void (*updateProgressBar)(void*, float) = NULL, void *arg = NULL, string *errorstring = NULL);
 int strain_acquire_stop(int bus, int target_id, string *errorstring = NULL);
 
 cDownloader(bool verbose = true);
