@@ -94,6 +94,8 @@ private:
 
     volatile int progressvalue;
 
+    bool checkDirectory();
+
 private slots:
     void onButtonClick(bool b);
     void onAcquireData(bool b);

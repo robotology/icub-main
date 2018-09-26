@@ -112,6 +112,19 @@ StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdater
 
     enabledebugprints = false;
 
+
+    if(false == checkDirectory())
+    {
+        yError() << "CANNOT find the data folder. Please create it!";
+        ui->labelInstructions->setText("You can select an acquisition from the menu ... but:"
+                                       "\nCANNOT find the data folder."
+                                       "\nIf you want your acquisition data saved, please create it!");
+    }
+//    else
+//    {
+//         ui->labelInstructions->setText("Select an acquisition from the menu");
+//    }
+
 }
 
 StrainCalibGui::~StrainCalibGui()
@@ -174,7 +187,18 @@ void StrainCalibGui::onFreeAcqMode(bool b)
         ui->btnContainer1->setEnabled(true);
         ui->btnContainer2->setEnabled(true);
         ui->btnAcquireData->setEnabled(false);
-        ui->labelInstructions->setText("Select an acquisition from the menu");
+
+        if(false == checkDirectory())
+        {
+            yError() << "CANNOT find the data folder. Please create it!";
+            ui->labelInstructions->setText("You can select an acquisition from the menu ... but:"
+                                           "\nCANNOT find the data folder."
+                                           "\nIf you want your acquisition data saved, please create it!");
+        }
+        else
+        {
+             ui->labelInstructions->setText("Select an acquisition from the menu");
+        }
     }
 }
 
@@ -736,8 +760,18 @@ void StrainCalibGui::turnOnButtons()
             btn->setEnabled(true);
         }
         ui->btnAcquireData->setEnabled(false);
-        ui->labelInstructions->setText("Select an acquisition from the menu");
         ui->freeAcqModeGroup->setEnabled(true);
+        if(false == checkDirectory())
+        {
+            yError() << "CANNOT find the data folder. Please create it!";
+            ui->labelInstructions->setText("You can select an acquisition from the menu ... but:"
+                                           "\nCANNOT find the data folder."
+                                           "\nIf you want your acquisition data saved, please create it!");
+        }
+        else
+        {
+             ui->labelInstructions->setText("Select an acquisition from the menu");
+        }
     }else{
         ui->labelInstructions->setText("Free Acquisiton Mode");
     }
@@ -975,5 +1009,11 @@ void StrainCalibGui::lockdriver(const bool on)
     {
         mutexdriver.unlock();
     }
+}
+
+bool StrainCalibGui::checkDirectory()
+{
+    QFileInfo dir =  QFileInfo("./data");
+    return dir.isDir();
 }
 
