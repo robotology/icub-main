@@ -53,7 +53,7 @@ protected:
 #endif
 
 private:
-    int currentMatrixIndex;
+    const int currentMatrixIndex = 0;
     Ui::CalibrationWindow *ui;
     CustomTreeWidgetItem *item;
     FirmwareUpdaterCore *core;
@@ -99,7 +99,6 @@ private:
     QMutex sliderMutex;
     QProgressBar *progress;
     bool keepRunning;
-    int regsetInUse;
 private slots:
     void onTargetValueChanged(int);
     void onTabMatrixCahnged(int);

@@ -72,8 +72,6 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     this->item = item;
     bus = ((CustomTreeWidgetItem*)item->getParentNode())->getCanBoard(selected).bus;
     id  = ((CustomTreeWidgetItem*)item->getParentNode())->getCanBoard(selected).pid;
-    currentMatrixIndex = 0;
-    regsetInUse = cDownloader::strain_regset_inuse;
     calibration_value = 32767;
 #if defined(MARCO_ACCAME_19SEP2018)
     calib_const[0] = 1;
@@ -558,7 +556,7 @@ void CalibrationWindow::applyParameters()
         strain2_ampl_discretegain_t dg = static_cast<strain2_ampl_discretegain_t>(g);
         float gain = core->getDownloader()->strain_amplifier_discretegain2float(dg);
         if(0 != gain){
-            core->getDownloader()->strain_set_amplifier_gain_offset(bus, id, i, gain, offset, regsetInUse, &msg);
+            core->getDownloader()->strain_set_amplifier_gain_offset(bus, id, i, gain, offset, cDownloader::strain_regset_inuse, &msg);
         }
 
 
@@ -638,7 +636,7 @@ void CalibrationWindow::setCalibration()
         for (int ri=0; ri<CHANNEL_COUNT; ri++){
             for (int ci=0; ci<CHANNEL_COUNT; ci++){
                 string msg;
-                core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,calib_matrix[index][ri][ci], regsetInUse, &msg);
+                core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,calib_matrix[index][ri][ci], cDownloader::strain_regset_inuse, &msg);
                 appendLogMsg(msg.c_str());
             }
         }
@@ -648,7 +646,7 @@ void CalibrationWindow::setCalibration()
     if(fullScaleChanged){
         for (int i=0;i<CHANNEL_COUNT; i++){
             string msg;
-            core->getDownloader()->strain_set_full_scale(bus,id,i,full_scale_calib[index][i], regsetInUse, &msg);
+            core->getDownloader()->strain_set_full_scale(bus,id,i,full_scale_calib[index][i], cDownloader::strain_regset_inuse, &msg);
             appendLogMsg(msg.c_str());
         }
     }
@@ -666,7 +664,7 @@ void CalibrationWindow::setCalibration()
     for (ri=0;ri<CHANNEL_COUNT;ri++){
         for (ci=0;ci<CHANNEL_COUNT;ci++){
             string msg;
-            core->getDownloader()->strain_get_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci], regsetInUse, &msg);
+            core->getDownloader()->strain_get_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci], cDownloader::strain_regset_inuse, &msg);
             appendLogMsg(msg.c_str());
         }
     }
@@ -711,7 +709,7 @@ void CalibrationWindow::loadCalibrationFile(QString fileName)
     int index = 0;//ui->tabWidget->currentIndex();
     loading();
     //load data file
-    if(!calibration_load_v3 (fileName.toLatin1().data(), bus, id, index, regsetInUse)){
+    if(!calibration_load_v3 (fileName.toLatin1().data(), bus, id, index, cDownloader::strain_regset_inuse)){
         loading(false);
         mutex.unlock();
     }
@@ -732,7 +730,7 @@ void CalibrationWindow::loadCalibrationFile(QString fileName)
     drv_sleep (500);
     for (ri=0;ri<CHANNEL_COUNT;ri++){
         for (ci=0;ci<CHANNEL_COUNT;ci++){
-            core->getDownloader()->strain_get_matrix_rc(bus,id, ri, ci, matrix[index][ri][ci], regsetInUse, &msg);
+            core->getDownloader()->strain_get_matrix_rc(bus,id, ri, ci, matrix[index][ri][ci], cDownloader::strain_regset_inuse, &msg);
             appendLogMsg(msg.c_str());
             sprintf(buffer,"%x",matrix[index - 1][ri][ci]);
             setMatrix(index);
@@ -1262,11 +1260,11 @@ void CalibrationWindow::useMatrix(int index, bool boot)
     if(index >= 0){
         // marco.accame: use the new method strain_set_regulationset w/ strain_regset_one / strain_regset_two / strain_regset_three
         // index = 0 means no calibration used. index = 1 means first set, etc. hence
-        regsetInUse = index + 1;
+        int regsetInUseTMP = index + 1;
         if(!boot){
-            core->getDownloader()->strain_set_regulationset(bus, id, regsetInUse, cDownloader::strain_regsetmode_temporary, &msg);
+            core->getDownloader()->strain_set_regulationset(bus, id, regsetInUseTMP, cDownloader::strain_regsetmode_temporary, &msg);
         } else {
-            core->getDownloader()->strain_set_regulationset(bus, id, regsetInUse, cDownloader::strain_regsetmode_permanent, &msg);
+            core->getDownloader()->strain_set_regulationset(bus, id, regsetInUseTMP, cDownloader::strain_regsetmode_permanent, &msg);
         }
         appendLogMsg(msg.c_str());
     }
@@ -1286,7 +1284,7 @@ void CalibrationWindow::setOffset(int chan, int value)
     loading();
     offset[chan] = value;
     string msg;
-    core->getDownloader()->strain_set_offset(bus,id, chan, offset[chan], regsetInUse, &msg);
+    core->getDownloader()->strain_set_offset(bus,id, chan, offset[chan], cDownloader::strain_regset_inuse, &msg);
     appendLogMsg(msg.c_str());
     loading(false);
     mutex.unlock();
@@ -1369,7 +1367,9 @@ void CalibrationWindow::onTimeout()
         string msg;
         bool skip_display_calib=false;
 
-        if(bUseCalibration){
+#if 0
+        // non va bene discriminare sulla base di busecalibration. lo si deve fare su strain1 / strain2
+        if(bUseCalibration) {
             // marco.accame.todo: must use strain_get_regulationset(). attention the values returned will be 1, 2, 3
             // previously strain_get_matrix(currmatrix) returned currmatrix = 0 to mean the first one. hence it was used setCurrentIndex(currmatrix+1)
             core->getDownloader()->strain_get_regulationset(bus, id, regsetInUse, cDownloader::strain_regsetmode_temporary, &msg);
@@ -1393,9 +1393,37 @@ void CalibrationWindow::onTimeout()
 //            ui->comboUseMatrix->blockSignals(true);
 //            ui->comboUseMatrix->setCurrentIndex(0);
 //            ui->comboUseMatrix->blockSignals(false);
-            currentMatrixIndex = 0;
+//            currentMatrixIndex = 0;
         }
 
+#else
+
+        if(icubCanProto_boardType__strain2 == boardtype)
+        {
+            int regsetInUseTMP = cDownloader::strain_regset_one;
+
+            // marco.accame.todo: must use strain_get_regulationset(). attention the values returned will be 1, 2, 3
+            // previously strain_get_matrix(currmatrix) returned currmatrix = 0 to mean the first one. hence it was used setCurrentIndex(currmatrix+1)
+            core->getDownloader()->strain_get_regulationset(bus, id, regsetInUseTMP, cDownloader::strain_regsetmode_temporary, &msg);
+
+            int bootRegsetTMP = cDownloader::strain_regset_one;
+            core->getDownloader()->strain_get_regulationset(bus, id, bootRegsetTMP, cDownloader::strain_regsetmode_permanent, &msg);
+            // must now transform usedregulationset.
+            // for now, until we have gui support to the three regulation sets ..
+            // it is forced to 0 to keep former behaviour of strain_get_matrix()
+            //usedregulationset = 0;
+
+
+            ui->comboRegSet->blockSignals(true);
+            ui->comboRegSet->setCurrentIndex(regsetInUseTMP - 1);
+            ui->comboRegSet->blockSignals(false);
+
+            ui->comboRegSetBoot->blockSignals(true);
+            ui->comboRegSetBoot->setCurrentIndex(bootRegsetTMP - 1);
+            ui->comboRegSetBoot->blockSignals(false);
+        }
+
+#endif
 
 
         if(first_time){
@@ -1430,9 +1458,9 @@ void CalibrationWindow::onTimeout()
 
         for (int i=0;i<CHANNEL_COUNT;i++){
             if(i==0){
-                ret  = core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i], regsetInUse, &msg);
+                ret  = core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i], cDownloader::strain_regset_inuse, &msg);
             }else{
-                ret |= core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i], regsetInUse, &msg);
+                ret |= core->getDownloader()->strain_get_offset (core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, offset[i], cDownloader::strain_regset_inuse, &msg);
             }
             appendLogMsg(msg.c_str());
         }
@@ -1482,7 +1510,7 @@ void CalibrationWindow::onTimeout()
                     for (ci=0;ci<CHANNEL_COUNT;ci++){
                         core->getDownloader()->strain_get_matrix_rc(core->getDownloader()->board_list[selected].bus,
                                                                     core->getDownloader()->board_list[selected].pid,
-                                                                    ri, ci, matrix[mi][ri][ci], regsetInUse, &msg);
+                                                                    ri, ci, matrix[mi][ri][ci], cDownloader::strain_regset_inuse, &msg);
                         appendLogMsg(msg.c_str());
                     }
                 }
@@ -1519,7 +1547,7 @@ void CalibrationWindow::onTimeout()
             if(!fullScaleChanged){
                 for (ri=0;ri<CHANNEL_COUNT;ri++){
                     fullScales.at(mi)->item(ri,0)->setTextColor("");
-                    core->getDownloader()->strain_get_full_scale(bus,id, ri, full_scale_const[mi][ri], regsetInUse, &msg);
+                    core->getDownloader()->strain_get_full_scale(bus,id, ri, full_scale_const[mi][ri], cDownloader::strain_regset_inuse, &msg);
                     appendLogMsg(msg.c_str());
                     sprintf(tempbuf,"%d",full_scale_const[mi][ri]);
                     QTableWidgetItem *item2 = fullScales.at(mi)->item(ri,COL_FULLSCALE);
@@ -1624,10 +1652,10 @@ void CalibrationWindow::onTimeout()
             {
                 core->getDownloader()->strain_get_amplifier_regs(core->getDownloader()->board_list[selected].bus,
                                                                  core->getDownloader()->board_list[selected].pid, i,
-                                                                 amp_registers[i], regsetInUse, &msg);
+                                                                 amp_registers[i], cDownloader::strain_regset_inuse, &msg);
                 core->getDownloader()->strain_get_amplifier_gain_offset(core->getDownloader()->board_list[selected].bus,
                                                                         core->getDownloader()->board_list[selected].pid, i,
-                                                                        amp_gains[i], amp_offsets[i], regsetInUse, &msg);
+                                                                        amp_gains[i], amp_offsets[i], cDownloader::strain_regset_inuse, &msg);
 //#warning TEST di ricezione di un valore di gain inconsueto... dove viene cambiato il valore del combo sull base del valore ricevuto dall strain?
                 appendLogMsg(msg.c_str());
 
@@ -1651,13 +1679,12 @@ void CalibrationWindow::onTimeout()
             {
                 amp_gains[i] = 1.0f;
                 amp_offsets[i] = 0;
-
             }
 
 
             core->getDownloader()->strain_get_calib_bias(core->getDownloader()->board_list[selected].bus,
                                                          core->getDownloader()->board_list[selected].pid, i,
-                                                         calib_bias[i], regsetInUse, &msg);
+                                                         calib_bias[i], cDownloader::strain_regset_inuse, &msg);
             appendLogMsg(msg.c_str());
             sprintf(tempbuf,"%d (%d)",showasQ15(calib_bias[i]), showBias(calib_bias[i]));
 
