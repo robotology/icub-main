@@ -489,7 +489,7 @@ void StrainCalibGui::showMenu()
         break;
     case  1001:
         fp = fopen("./data/output1.dat","w");
-        ui->groupBox->setTitle("(2)     z+ pointing DOWNwards    5kg torques        file: output1.dat");
+        ui->groupBox->setTitle("(2) z+ pointing DOWNwards 5kg torques - file: output1.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 nut\n"
                                        "2. orient the assembly with the z+ axis pointing downwards\n\n"
                                        "3. remove loads");
@@ -511,7 +511,7 @@ void StrainCalibGui::showMenu()
         break;
     case 3001:
         fp = fopen("./data/output3.dat","w");
-        ui->groupBox->setTitle("(10)     x+ axis pointing UPwards     5kg laterals  file: output3.dat");
+        ui->groupBox->setTitle("(10) x+ axis pointing UPwards 5kg laterals - file: output3.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the structure with the x+ axis pointing upwards\n"
                                        "3. remove loads\n");
@@ -530,7 +530,7 @@ void StrainCalibGui::showMenu()
         break;
     case 4001:
         fp = fopen("./data/output4.dat","w");
-        ui->groupBox->setTitle("(11)     y+ axis pointing UPwards     5kg laterals  file: output4.dat");
+        ui->groupBox->setTitle("(11) y+ axis pointing UPwards 5kg laterals - file: output4.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the structure with the y+ axis pointing upwards\n"
                                        "3. remove loads\n");
@@ -550,7 +550,7 @@ void StrainCalibGui::showMenu()
 
     case 5001:
         fp = fopen("./data/output5.dat","w");
-        ui->groupBox->setTitle("(12)     x- axis pointing UPwards     5kg laterals  file: output5.dat");
+        ui->groupBox->setTitle("(12) x- axis pointing UPwards 5kg laterals - file: output5.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the structure with the x- axis pointing upwards\n"
                                        "3. remove loads\n");
@@ -571,7 +571,7 @@ void StrainCalibGui::showMenu()
 
     case 6001:
         fp = fopen("./data/output6.dat","w");
-        ui->groupBox->setTitle("(13)     y- axis pointing UPwards     5kg laterals  file: output6.dat");
+        ui->groupBox->setTitle("(13) y- axis pointing UPwards 5kg laterals - file: output6.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the structure with the y- axis pointing upwards\n"
                                        "3. remove loads\n");
@@ -592,7 +592,7 @@ void StrainCalibGui::showMenu()
 
     case 8010:
         fp = fopen("./data/output81.dat","w");
-        ui->groupBox->setTitle("(3)     z+ pointing UPwards      25kg compression   file: output81.dat");
+        ui->groupBox->setTitle("(3) z+ pointing UPwards 25kg compression - file: output81.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 nut\n"
                                        "2. orient the assembly with the z+ axis pointing upwards\n\n"
                                        "3. remove loads\n");
@@ -608,7 +608,7 @@ void StrainCalibGui::showMenu()
 
     case 8020:
         fp = fopen("./data/output82.dat","w");
-        ui->groupBox->setTitle("(1)     z+ pointing DOWNwards      25kg traction    file: output82.dat");
+        ui->groupBox->setTitle("(1) z+ pointing DOWNwards 25kg traction - file: output82.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 nut\n"
                                        "2. screw the M10 ring on the top of the assembly\n"
                                        "3. orient the assembly with the z+ axis pointing downwards\n\n"
@@ -624,7 +624,7 @@ void StrainCalibGui::showMenu()
 
     case 8030:
         fp = fopen("./data/output83.dat","w");
-        ui->groupBox->setTitle("(4)     x+ pointing UPwards       25kg              file: output83.dat");
+        ui->groupBox->setTitle("(4) x+ pointing UPwards 25kg - file: output83.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the plate with the x+ axis pointing upwards\n"
                                        "3. remove loads\n");
@@ -639,7 +639,7 @@ void StrainCalibGui::showMenu()
 
     case 8040:
         fp = fopen("./data/output84.dat","w");
-        ui->groupBox->setTitle("(5)     x- pointing UPwards     25kg                file: output84.dat");
+        ui->groupBox->setTitle("(5) x- pointing UPwards 25kg - file: output84.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the plate with the x- axis pointing upwards\n\n"
                                        "3. remove loads\n");
@@ -653,7 +653,7 @@ void StrainCalibGui::showMenu()
 
     case 8050:
         fp = fopen("./data/output85.dat","w");
-        ui->groupBox->setTitle("(6)     label 1 pointing DOWNwards       25kg       file: output85.dat");
+        ui->groupBox->setTitle("(6) label 1 pointing DOWNwards 25kg - file: output85.dat");
         ui->labelInstructions->setText("1. assemble the assembly with label 1 pointing DOWN\n\n"
                                        "3. remove loads\n");
         break;
@@ -667,7 +667,7 @@ void StrainCalibGui::showMenu()
 
     case 8060:
         fp = fopen("./data/output86.dat","w");
-        ui->groupBox->setTitle("(7)     label 2 pointing DOWNwards       25kg       file: output86.dat");
+        ui->groupBox->setTitle("(7) label 2 pointing DOWNwards 25kg - file: output86.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the plate with label 2 pointing DOWN\n\n"
                                        "3. remove loads\n");
@@ -680,7 +680,7 @@ void StrainCalibGui::showMenu()
         break;
     case 8070:
         fp = fopen("./data/output87.dat","w");
-        ui->groupBox->setTitle("(8)     label 3 pointing DOWNwards       25kg       file: output87.dat");
+        ui->groupBox->setTitle("(8) label 3 pointing DOWNwards 25kg - file: output87.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the plate with label 3 pointing DOWN\n\n"
                                        "3. remove loads\n");
@@ -694,7 +694,7 @@ void StrainCalibGui::showMenu()
 
     case 8080:
         fp = fopen("./data/output88.dat","w");
-        ui->groupBox->setTitle("(9)     label 4 pointing DOWNwards       25kg       file: output88.dat");
+        ui->groupBox->setTitle("(9) label 4 pointing DOWNwards 25kg - file: output88.dat");
         ui->labelInstructions->setText("1. assemble the assembly with a M10 knob\n"
                                        "2. orient the plate with label 4 pointing DOWN\n\n"
                                        "3. remove loads\n");

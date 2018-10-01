@@ -22,7 +22,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(FirmwareUpdaterCore *core,bool adminMode,bool strainCalibMode = false,QWidget *parent = 0);
+    explicit MainWindow(FirmwareUpdaterCore *core,bool adminMode/*,bool strainCalibMode = false*/,QWidget *parent = 0);
     ~MainWindow();
 
      void refreshDevices();

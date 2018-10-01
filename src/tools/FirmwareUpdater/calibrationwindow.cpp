@@ -20,7 +20,6 @@
 #define     COL_REGISTERS       3
 
 #define     COL_CALIBBIAS       0
-//#define     COL_CURRBIAS        3
 
 #define     COL_FULLSCALE       0
 
@@ -278,7 +277,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
 
     connect(ui->btnSetSerial,SIGNAL(clicked(bool)),this,SLOT(onSetSerial(bool)),Qt::QueuedConnection);
     connect(this,SIGNAL(setSerialChanged(bool)),this,SLOT(onSetSerialChanged(bool)));
-    connect(ui->btnResetCalib,SIGNAL(clicked(bool)),this,SLOT(onResetCalibMatrix(bool)),Qt::QueuedConnection);
+    //connect(ui->btnResetCalib,SIGNAL(clicked(bool)),this,SLOT(onResetCalibMatrix(bool)),Qt::QueuedConnection);
     connect(this,SIGNAL(setFullScale()),this,SLOT(onSetFullScale()),Qt::QueuedConnection);
     connect(this,SIGNAL(setMatrix(int)),this,SLOT(onSetMatrix(int)),Qt::QueuedConnection);
     connect(ui->actionSave_To_Eproom,SIGNAL(triggered(bool)),this,SLOT(onSaveToEeprom(bool)),Qt::QueuedConnection);
@@ -290,7 +289,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     connect(ui->btnLoadCalibFile,SIGNAL(clicked(bool)),this,SLOT(onLoadCalibrationFile(bool)));
     connect(ui->btnSaveCalibFile,SIGNAL(clicked(bool)),this,SLOT(onSaveCalibrationFile(bool)));
     connect(ui->btnImportCalibMatrix,SIGNAL(clicked(bool)),this,SLOT(onImportCalibrationFile(bool)));
-    connect(ui->checkDigital,SIGNAL(toggled(bool)),this,SLOT(onDigitalRegulation(bool)));
+    //connect(ui->checkDigital,SIGNAL(toggled(bool)),this,SLOT(onDigitalRegulation(bool)));
 
 
     ui->actionImport_Calib_Matrix->setEnabled(false);
@@ -345,12 +344,14 @@ void CalibrationWindow::onDigitalRegulation(bool checked)
 {
     ui->digitalContainer->setEnabled(checked);
     if(checked){
-        ui->tableUseMatrix->showColumn(COL_NEWTONMEASURE);
-        ui->tableUseMatrix->setColumnWidth(0,60);
-        ui->tableUseMatrix->setColumnWidth(1,60);
-        ui->tableUseMatrix->setColumnWidth(2,60);
+        ui->tableUseMatrix->horizontalHeaderItem(COL_NEWTONMEASURE)->setText("FT");
+//        ui->tableUseMatrix->showColumn(COL_NEWTONMEASURE);
+//        ui->tableUseMatrix->setColumnWidth(0,60);
+//        ui->tableUseMatrix->setColumnWidth(1,60);
+//        ui->tableUseMatrix->setColumnWidth(2,60);
     }else{
-        ui->tableUseMatrix->hideColumn(COL_NEWTONMEASURE);
+        //ui->tableUseMatrix->hideColumn(COL_NEWTONMEASURE);
+        ui->tableUseMatrix->horizontalHeaderItem(COL_NEWTONMEASURE)->setText("Empty");
 
     }
 
@@ -380,9 +381,32 @@ void CalibrationWindow::onCheckAutoTune(bool checked)
 
 void CalibrationWindow::onParametersClear(bool click)
 {
+
     for(int i=0; i<CHANNEL_COUNT;i++){
-        ((CustomComboBox*)ui->tableParamters->cellWidget(i,COL_GAIN))->clear();
-        ((CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET))->clear();
+        CustomComboBox *combo = ((CustomComboBox*)ui->tableParamters->cellWidget(i,COL_GAIN));
+        switch (i) {
+        case 0:
+            combo->setIndexFromAmpGain(ampl_gain08);
+            break;
+        case 1:
+            combo->setIndexFromAmpGain(ampl_gain24);
+            break;
+        case 2:
+            combo->setIndexFromAmpGain(ampl_gain24);
+            break;
+        case 3:
+            combo->setIndexFromAmpGain(ampl_gain10);
+            break;
+        case 4:
+            combo->setIndexFromAmpGain(ampl_gain10);
+            break;
+        case 5:
+            combo->setIndexFromAmpGain(ampl_gain24);
+            break;
+
+        }
+
+        ((CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET))->setValue(32*1024 - 1);
     }
 }
 
@@ -408,14 +432,14 @@ void CalibrationWindow::onTabMatrixCahnged(int index)
         ui->btnLoadCalibFile->setEnabled(true);
         ui->btnSaveCalibFile->setEnabled(true);
         ui->btnImportCalibMatrix->setEnabled(true);
-        ui->btnResetCalib->setEnabled(true);
+        //ui->btnResetCalib->setEnabled(true);
         ui->btnSetCalibration->setEnabled(true);
         break;
     default:
         ui->btnLoadCalibFile->setEnabled(false);
         ui->btnSaveCalibFile->setEnabled(false);
         ui->btnImportCalibMatrix->setEnabled(false);
-        ui->btnResetCalib->setEnabled(false);
+        //ui->btnResetCalib->setEnabled(false);
         ui->btnSetCalibration->setEnabled(false);
         break;
     }
@@ -1436,16 +1460,16 @@ void CalibrationWindow::onTimeout()
 
 
 
-        if (eeprom_saved_status==false) {
-            /*gtk_widget_modify_bg (save_button, GTK_STATE_NORMAL,      &r_color);
-                gtk_widget_modify_bg (save_button, GTK_STATE_ACTIVE,      &r_color);
-                gtk_widget_modify_bg (save_button, GTK_STATE_PRELIGHT,    &r_color);
-                gtk_widget_modify_bg (save_button, GTK_STATE_SELECTED,    &r_color);
-                gtk_widget_modify_bg (save_button, GTK_STATE_INSENSITIVE, &r_color);
-                gtk_button_set_label     (GTK_BUTTON(save_button), "Not saved.\nSave to eeprom?"); */
-        } else {
-            //gtk_button_set_label     (GTK_BUTTON(save_button), "Save to eeprom");
-        }
+//        if (eeprom_saved_status==false) {
+//            /*gtk_widget_modify_bg (save_button, GTK_STATE_NORMAL,      &r_color);
+//                gtk_widget_modify_bg (save_button, GTK_STATE_ACTIVE,      &r_color);
+//                gtk_widget_modify_bg (save_button, GTK_STATE_PRELIGHT,    &r_color);
+//                gtk_widget_modify_bg (save_button, GTK_STATE_SELECTED,    &r_color);
+//                gtk_widget_modify_bg (save_button, GTK_STATE_INSENSITIVE, &r_color);
+//                gtk_button_set_label     (GTK_BUTTON(save_button), "Not saved.\nSave to eeprom?"); */
+//        } else {
+//            //gtk_button_set_label     (GTK_BUTTON(save_button), "Save to eeprom");
+//        }
 
 
         setSerialChanged(serial_number_changed);
@@ -1540,16 +1564,59 @@ void CalibrationWindow::onTimeout()
 
         if(bUseCalibration)
         {
-            ui->tableCurr->horizontalHeaderItem(0)->setText("FT");
-            ui->tableUseMatrix->horizontalHeaderItem(COL_MAXMEASURE)->setText("Max FT");
-            ui->tableUseMatrix->horizontalHeaderItem(COL_MINMEASURE)->setText("Min FT");
+            if(ui->tableCurr->horizontalHeaderItem(0)->text() != "ForceTorque"){
+                ui->tableCurr->horizontalHeaderItem(0)->setText("ForceTorque");
+                ui->tableUseMatrix->horizontalHeaderItem(COL_MAXMEASURE)->setText("Max FT");
+                ui->tableUseMatrix->horizontalHeaderItem(COL_MINMEASURE)->setText("Min FT");
+                ui->tableUseMatrix->horizontalHeaderItem(COL_DIFFMEASURE)->setText("Delta FT");
+                ui->tableUseMatrix->horizontalHeaderItem(COL_NEWTONMEASURE)->setText("FT");
+
+
+
+
+
+                for (int i=0;i<CHANNEL_COUNT;i++){
+                    ui->tableUseMatrix->verticalHeaderItem(i)->setText(QString("%1").arg(i==0 ?"Fx"
+                                                                                             : i==1 ? "Fy"
+                                                                                             : i==2 ? "Fz"
+                                                                                             : i==3 ? "Mx"
+                                                                                             : i==4 ? "My"
+                                                                                             : "Mz" ));
+                    ui->tableCurr->verticalHeaderItem(i)->setText(QString("%1").arg(i==0 ?"Fx"
+                                                                                             : i==1 ? "Fy"
+                                                                                             : i==2 ? "Fz"
+                                                                                             : i==3 ? "Mx"
+                                                                                             : i==4 ? "My"
+                                                                                             : "Mz" ));
+                }
+
+                ui->tableCurr->setVisible(false);
+                ui->tableCurr->setVisible(true);
+                ui->tableUseMatrix->setVisible(false);
+                ui->tableUseMatrix->setVisible(true);
+            }
         }
         else
         {
-            ui->tableCurr->horizontalHeaderItem(0)->setText("ADC");
-            ui->tableUseMatrix->horizontalHeaderItem(COL_MAXMEASURE)->setText("Max ADC");
-            ui->tableUseMatrix->horizontalHeaderItem(COL_MINMEASURE)->setText("Min ADC");
+            if(ui->tableCurr->horizontalHeaderItem(0)->text() != "ADC"){
+                ui->tableCurr->horizontalHeaderItem(0)->setText("ADC");
+                ui->tableUseMatrix->horizontalHeaderItem(COL_MAXMEASURE)->setText("Max ADC");
+                ui->tableUseMatrix->horizontalHeaderItem(COL_MINMEASURE)->setText("Min ADC");
+                ui->tableUseMatrix->horizontalHeaderItem(COL_DIFFMEASURE)->setText("Delta ADC");
+                ui->tableUseMatrix->horizontalHeaderItem(COL_NEWTONMEASURE)->setText("Empty");
+
+                for (int i=0;i<CHANNEL_COUNT;i++){
+                    ui->tableUseMatrix->verticalHeaderItem(i)->setText(QString("Ch:%1").arg(i));
+                    ui->tableCurr->verticalHeaderItem(i)->setText(QString("Ch:%1").arg(i));
+                }
+
+                ui->tableCurr->setVisible(false);
+                ui->tableCurr->setVisible(true);
+                ui->tableUseMatrix->setVisible(false);
+                ui->tableUseMatrix->setVisible(true);
+            }
         }
+
 
         for (int i=0;i<CHANNEL_COUNT;i++){
 
@@ -1616,10 +1683,20 @@ void CalibrationWindow::onTimeout()
             // in case of 0 == bUseCalibration: it is the adc value
             // in case of 1 == bUseCalibration: it is = M * (adc+calibtare) + currtare
             sprintf(tempbuf,"%d",convert_to_signed32k(adc[i]));
-            QTableWidgetItem *item3 = ui->tableCurr->item(i,COL_CURRMEASURE);
+
+            QTableWidgetItem *item3 = NULL;
+            if(bUseCalibration){
+                item3 = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
+            }else{
+                item3 = ui->tableCurr->item(i,COL_CURRMEASURE);
+            }
             setText(item3,tempbuf);
 
+
+
+
             if(bUseCalibration){
+                /******************************  Use digital ***************************/
                 sprintf(tempbuf,"%d",maxft[i]);
                 QTableWidgetItem *item = ui->tableUseMatrix->item(i,COL_MAXMEASURE);
                 setText(item,tempbuf);
@@ -1645,13 +1722,16 @@ void CalibrationWindow::onTimeout()
                     }else{
                         sprintf(tempbuf,"%+.3f Nm",(convert_to_signed32k(adc[i]))/float(RANGE32K)*full_scale_const[currentMatrixIndex][i]);
                     }
-                    QTableWidgetItem *item3 = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
+                    //QTableWidgetItem *item3 = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
+                    QTableWidgetItem *item3 = ui->tableCurr->item(i,COL_CURRMEASURE);
                     setText(item3,tempbuf);
                 }else{
-                    QTableWidgetItem *item = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
-                    setText(item,"ERROR");
+                    //QTableWidgetItem *item = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
+                    QTableWidgetItem *item3 = ui->tableCurr->item(i,COL_CURRMEASURE);
+                    setText(item3,"ERROR");
                 }
             } else {
+                /****************************** Don't Use digital ***************************/
                 sprintf(tempbuf,"%d",maxadc[i]);
                 QTableWidgetItem *item = ui->tableUseMatrix->item(i,COL_MAXMEASURE);
                 setText(item,tempbuf);
@@ -1666,14 +1746,16 @@ void CalibrationWindow::onTimeout()
                 QTableWidgetItem *item2 = ui->tableUseMatrix->item(i,COL_DIFFMEASURE);
                 setText(item2,tempbuf);
 
+                QTableWidgetItem *item3 = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
+                setText(item3,"");
 
-                if(i<=2){
-                    QTableWidgetItem *item = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
-                    setText(item,"--- N");
-                }else{
-                    QTableWidgetItem *item = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
-                    setText(item,"--- Nm");
-                }
+//                if(i<=2){
+//                    QTableWidgetItem *item = ui->tableCurr->item(i,COL_CURRMEASURE);
+//                    setText(item,"--- N");
+//                }else{
+//                    QTableWidgetItem *item = ui->tableCurr->item(i,COL_CURRMEASURE);
+//                    setText(item,"--- Nm");
+//                }
             }
         }
 
@@ -1684,6 +1766,7 @@ void CalibrationWindow::onTimeout()
             loading(false);
 
         }
+
         mutex.unlock();
 
 

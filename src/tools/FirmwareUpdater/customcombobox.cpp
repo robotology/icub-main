@@ -33,9 +33,11 @@ void CustomComboBox::clear()
 void CustomComboBox::setCurrIndex(int v)
 {
     mutex.lock();
-    if(modified || v == currentIndex()){
-        mutex.unlock();
-        return;
+    if(previousIndex >= 0){
+        if(modified || v == currentIndex()){
+            mutex.unlock();
+            return;
+        }
     }
     disconnect(this,SIGNAL(currentIndexChanged(int)),this,SLOT(onCurrentIndexChanged(int)));
     setCurrentIndex(v);
@@ -107,14 +109,66 @@ void CustomComboBox::initItems()
     mutex.unlock();
 }
 
+void CustomComboBox::setIndexFromAmpGain(int g)
+{
+
+
+    mutex.lock();
+    int index;
+    disconnect(this,SIGNAL(currentIndexChanged(int)),this,SLOT(onCurrentIndexChanged(int)));
+
+
+    switch (g) {
+    case ampl_gain48:
+        index = 0;
+        break;
+    case ampl_gain36:
+        index = 1;
+        break;
+    case ampl_gain24:
+        index = 2;
+        break;
+    case ampl_gain20:
+        index = 3;
+        break;
+    case ampl_gain16:
+        index = 4;
+        break;
+    case ampl_gain10:
+        index = 5;
+        break;
+    case ampl_gain08:
+        index = 6;
+        break;
+    case ampl_gain06:
+        index = 7;
+        break;
+    case ampl_gain04:
+        index = 8;
+        break;
+    default:
+        index = 0;
+        break;
+    }
+    setStyleSheet("color: rgb(239, 41, 41);"
+                  "font: bold 9pt");
+    modified = true;
+    setCurrentIndex(index);
+    previousIndex = index;
+    connect(this,SIGNAL(currentIndexChanged(int)),this,SLOT(onCurrentIndexChanged(int)));
+    mutex.unlock();
+}
+
 void CustomComboBox::addCustomValue(float val)
 {
+    mutex.lock();
     int c = count();
     QString s = QString("%1").arg(val);
     QString s1 = itemText(c - 1);
 
 
     if(modified || s1 == s){
+        mutex.unlock();
         return;
     }
     if(itemData(c - 1,GAINAMPROLE ).toInt() < 0){
@@ -126,5 +180,6 @@ void CustomComboBox::addCustomValue(float val)
     setCurrentIndex(c);
     connect(this,SIGNAL(currentIndexChanged(int)),this,SLOT(onCurrentIndexChanged(int)));
     previousIndex = c;
+    mutex.unlock();
 }
 

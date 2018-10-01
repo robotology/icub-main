@@ -18,6 +18,7 @@ public:
     void initItems();
     void clearItems();
     void addCustomValue(float val);
+    void setIndexFromAmpGain(int g);
 
 private:
     int previousIndex;

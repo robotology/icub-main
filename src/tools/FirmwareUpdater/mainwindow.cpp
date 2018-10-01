@@ -10,12 +10,12 @@
 #include <QToolButton>
 #include "straincalibgui.h"
 
-MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, bool strainCalibMode, QWidget *parent) :
+MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *parent) :
     QMainWindow(parent), /*mutex(QMutex::Recursive)*/
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    core->strainCalibMode = strainCalibMode;
+    //core->strainCalibMode = strainCalibMode;
     qRegisterMetaType <QList<sBoard> > ("QList<sBoard>");
     qRegisterMetaType <QVector<int> > ("QVector<int>");
     qRegisterMetaType <boardInfo2_t> ("boardInfo2_t");
@@ -49,8 +49,8 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, bool strainCal
 
     ui->statusBar->addWidget(container,100);
     //ui->statusBar->layout()->addWidget(container);
-    ui->splitter->setStretchFactor(0,80);
-    ui->splitter->setStretchFactor(0,20);
+//    ui->splitter->setStretchFactor(0,80);
+//    ui->splitter->setStretchFactor(0,20);
 
     infoTreeWidget = new QTreeWidget(ui->groupBox_2);
     infoTreeWidget->setVisible(false);
@@ -95,17 +95,20 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, bool strainCal
 
         item->setTextColor(DEVICEID,QColor(Qt::red));
     }
-
-    if(!strainCalibMode){
-        if(!adminMode){
-            ui->advancedGroup->setVisible(false);
-        }
-        ui->btnStrainCalib->setVisible(false);
-    }else{
+    if(!adminMode){
         ui->advancedGroup->setVisible(false);
-        ui->btnCahngeInfo->setVisible(false);
-        ui->btnUploadApp->setVisible(false);
+        ui->strainGroup->setVisible(false);
     }
+
+//    if(!strainCalibMode){
+
+//        ui->btnStrainCalib->setVisible(false);
+//    }else{
+//        ui->strainGroup->setVisible(false);
+//        ui->advancedGroup->setVisible(false);
+//        ui->btnCahngeInfo->setVisible(false);
+//        ui->btnUploadApp->setVisible(false);
+//    }
 
     connect(core,SIGNAL(updateProgress(float)),
             this,SLOT(onUpdateProgressBar(float)),Qt::QueuedConnection);
@@ -1439,7 +1442,7 @@ void MainWindow::checkEnableButtons()
             ui->btnCahngeInfo->setEnabled(true);
 
             sBoard canBoard = ((EthTreeWidgetItem*)selectedNodes.first()->getParentNode())->getCanBoard(selectedNodes.first()->getIndexOfBoard());
-            if(core->strainCalibMode && (canBoard.type == icubCanProto_boardType__strain) || (canBoard.type == icubCanProto_boardType__strain2)){
+            if(/*core->strainCalibMode && */(canBoard.type == icubCanProto_boardType__strain) || (canBoard.type == icubCanProto_boardType__strain2)){
                 ui->btnStrainCalib->setEnabled(true);
             }else{
                 ui->btnStrainCalib->setEnabled(false);
@@ -1757,6 +1760,7 @@ void MainWindow::loading(bool load, bool disableAll,QString msg,bool infiniteLoa
             progress->setEnabled(true);
         }
 
+        ui->strainGroup->setEnabled(false);
         ui->advancedGroup->setEnabled(false);
         ui->controlsGroup->setEnabled(false);
         infoResult->setVisible(true);
@@ -1771,7 +1775,7 @@ void MainWindow::loading(bool load, bool disableAll,QString msg,bool infiniteLoa
                 progress->setMaximum(100);
                 progress->setEnabled(false);
             }
-
+            ui->strainGroup->setEnabled(true);
             ui->advancedGroup->setEnabled(true);
             ui->controlsGroup->setEnabled(true);
             if(!ui->devicesTree->isEnabled()){
