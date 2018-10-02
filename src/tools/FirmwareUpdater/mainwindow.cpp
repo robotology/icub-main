@@ -1215,7 +1215,7 @@ void MainWindow::onAppendInfo(sBoard canboard)
     QTreeWidgetItem *inf = new QTreeWidgetItem(boardNode, QStringList() << "Info" << str);
     boardNode->addChild(inf);
 
-    if(eobrd_strain == canboard.type)
+    if((eobrd_strain == canboard.type) || (eobrd_strain2 == canboard.type))
     {
         QTreeWidgetItem *sn = new QTreeWidgetItem(boardNode, QStringList() << "Serial Number" << canboard.serial);
         boardNode->addChild(sn);
