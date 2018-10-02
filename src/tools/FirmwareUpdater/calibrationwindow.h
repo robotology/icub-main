@@ -53,6 +53,11 @@ protected:
 #endif
 
 private:
+
+    static const strain2_ampl_discretegain_t defaultStrain2AmplGains[6];
+    static const uint16_t defaultStrain2AmplOffsets[6];
+    static const uint16_t defaultStrain1DACoffsets[6];
+
     const int currentMatrixIndex = 0;
     Ui::CalibrationWindow *ui;
     CustomTreeWidgetItem *item;

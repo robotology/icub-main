@@ -59,6 +59,21 @@ unsigned int q15_from(int v)
     return v+0x8000;
 }
 
+const strain2_ampl_discretegain_t CalibrationWindow::defaultStrain2AmplGains[6] =
+{
+    ampl_gain08, ampl_gain24, ampl_gain24, ampl_gain10, ampl_gain10, ampl_gain24
+};
+
+const uint16_t CalibrationWindow::defaultStrain2AmplOffsets[6] =
+{
+    32767, 32767, 32767, 32767, 32767, 32767 
+};
+
+const uint16_t CalibrationWindow::defaultStrain1DACoffsets[6] =
+{
+    511, 511, 511, 511, 511, 511 
+}; 
+
 
 CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boardType_t b, CustomTreeWidgetItem *item, QWidget *parent) :
     QMainWindow(parent),mutex(QMutex::Recursive),
@@ -382,29 +397,17 @@ void CalibrationWindow::onParametersClear(bool click)
 
     for(int i=0; i<CHANNEL_COUNT;i++){
         CustomComboBox *combo = ((CustomComboBox*)ui->tableParamters->cellWidget(i,COL_GAIN));
-        switch (i) {
-        case 0:
-            combo->setIndexFromAmpGain(ampl_gain08);
-            break;
-        case 1:
-            combo->setIndexFromAmpGain(ampl_gain24);
-            break;
-        case 2:
-            combo->setIndexFromAmpGain(ampl_gain24);
-            break;
-        case 3:
-            combo->setIndexFromAmpGain(ampl_gain10);
-            break;
-        case 4:
-            combo->setIndexFromAmpGain(ampl_gain10);
-            break;
-        case 5:
-            combo->setIndexFromAmpGain(ampl_gain24);
-            break;
 
+        if(icubCanProto_boardType__strain2 == boardtype)
+        {
+            combo->setIndexFromAmpGain(defaultStrain2AmplGains[i]);
+            ((CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET))->setValue(defaultStrain2AmplOffsets[i]);
+        }
+        else
+        {
+            ((CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET))->setValue(defaultStrain1DACoffsets[i]);
         }
 
-        ((CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET))->setValue(32*1024 - 1);
     }
 }
 
@@ -545,21 +548,28 @@ void CalibrationWindow::applyParameters()
     loading();
     string msg;
 
-    for(int i=0;i<CHANNEL_COUNT;i++){
+    for(int i=0;i<CHANNEL_COUNT;i++)
+    {
         QComboBox *combo = (QComboBox*)ui->tableParamters->cellWidget(i,COL_GAIN);
         CustomSpinBox *spin = (CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET);
-        int lastOffset = spin->value();
-//#warning PER-DAVIDE-TODO: la nuova funzione strain_set_amplifier_gain_offset() usa come gain in float e offset in [0, 64*1024) ... pls controlla i valorei presi dalla gui. non vorrei fare errori
-//#warning PER-DAVIDE-TODO: controlalre il posto dove i valori del gain ed offset vengono letti dalla strain e stampati nella gui. attenzione che i gain potrebbe con essere un valore discreto di strain2_ampl_discretegain_t. in tal caso stampare error ed il valore.
-        uint16_t offset = lastOffset; // 32*1024 - 1;
-        int g = combo->itemData(combo->currentIndex(),GAINAMPROLE).toInt();
-        strain2_ampl_discretegain_t dg = static_cast<strain2_ampl_discretegain_t>(g);
-        float gain = core->getDownloader()->strain_amplifier_discretegain2float(dg);
-        if(0 != gain){
-            core->getDownloader()->strain_set_amplifier_gain_offset(bus, id, i, gain, offset, cDownloader::strain_regset_inuse, &msg);
+
+        if(icubCanProto_boardType__strain2 == boardtype)
+        {
+            int lastOffset = spin->value();
+            uint16_t offset = lastOffset; // 32*1024 - 1;
+            int g = combo->itemData(combo->currentIndex(),GAINAMPROLE).toInt();
+            strain2_ampl_discretegain_t dg = static_cast<strain2_ampl_discretegain_t>(g);
+            float gain = core->getDownloader()->strain_amplifier_discretegain2float(dg);
+            if(0 != gain){
+                core->getDownloader()->strain_set_amplifier_gain_offset(bus, id, i, gain, offset, cDownloader::strain_regset_inuse, &msg);
+            }
         }
-
-
+        else
+        {
+            int lastOffset = spin->value();
+            uint16_t offset = lastOffset;
+            core->getDownloader()->strain_set_offset(bus,id, i, offset, cDownloader::strain_regset_inuse, &msg);
+        }
     }
     //connect(this,SIGNAL(setOffsetSliderValue(CustomSpinBox*,int)),this,SLOT(onOffsetSliderValue(CustomSpinBox*,int)),Qt::BlockingQueuedConnection);
     loading(false);
