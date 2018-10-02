@@ -849,11 +849,11 @@ bool embObjInertials::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig:
     mutex.wait();
 
     int firstpos = 2 + inertials_Channels*(gyrSensors[sens_index]);
-    timestamp = analogdata[firstpos+2];
+    timestamp = analogdata[firstpos+2]*1e-6;
     out.resize(3);
-    out[0] = analogdata[firstpos+3];
-    out[1] = analogdata[firstpos+4];
-    out[2] = analogdata[firstpos+5];
+    out[0] = analogdata[firstpos+3]*gyrFactor;
+    out[1] = analogdata[firstpos+4]*gyrFactor;
+    out[2] = analogdata[firstpos+5]*gyrFactor;
 
     mutex.post();
 
@@ -901,11 +901,11 @@ bool embObjInertials::getThreeAxisLinearAccelerometerMeasure(size_t sens_index, 
     mutex.wait();
 
     int firstpos = 2 + inertials_Channels*(accSensors[sens_index]);
-    timestamp = analogdata[firstpos+2];
+    timestamp = analogdata[firstpos+2]*1e-6;
     out.resize(3);
-    out[0] = analogdata[firstpos+3];
-    out[1] = analogdata[firstpos+4];
-    out[2] = analogdata[firstpos+5];
+    out[0] = analogdata[firstpos+3]*accFactor;
+    out[1] = analogdata[firstpos+4]*accFactor;
+    out[2] = analogdata[firstpos+5]*accFactor;
 
     mutex.post();
 
