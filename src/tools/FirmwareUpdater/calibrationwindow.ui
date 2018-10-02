@@ -24,7 +24,12 @@
     <item row="0" column="1">
      <layout class="QVBoxLayout" name="verticalLayout_7">
       <item>
-       <widget class="QGroupBox" name="groupBox">
+       <widget class="QGroupBox" name="groupBox1">
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="title">
          <string>Commands</string>
         </property>
@@ -186,7 +191,7 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="groupBox2">
          <property name="minimumSize">
           <size>
            <width>140</width>
@@ -480,7 +485,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="groupBox3">
          <property name="title">
           <string>Regulation Set</string>
          </property>
@@ -990,7 +995,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox">
+             <widget class="QGroupBox" name="groupBox4">
               <property name="font">
                <font>
                 <pointsize>9</pointsize>
@@ -1283,7 +1288,7 @@
      <x>0</x>
      <y>0</y>
      <width>1150</width>
-     <height>18</height>
+     <height>20</height>
     </rect>
    </property>
    <property name="font">
