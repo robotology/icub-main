@@ -274,8 +274,10 @@ private:
     
     
     int strain_calibrate_offset2_strain1(int bus, int target_id, int16_t t, string *errorstring);
+    int strain_calibrate_offset2_strain1safer(int bus, int target_id, int16_t t, uint8_t nmeasures, bool fullsearch, string *errorstring);
     int strain_calibrate_offset2_strain2(int bus, int target_id, const std::vector<strain2_ampl_discretegain_t> &gains, const std::vector<int16_t> &targets, string *errorstring = NULL);
     
+    int readADC(int bus, int target_id, int channel, int nmeasures = 2);
     
 };
 

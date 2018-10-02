@@ -3429,6 +3429,9 @@ int cDownloader::get_bus(yarp::dev::CanMessage &msg)
 
 int cDownloader::strain_calibrate_offset2_strain1 (int bus, int target_id, int16_t t, string *errorstring)
 {
+#if 1
+    return strain_calibrate_offset2_strain1safer(bus, target_id, t, 2, false, errorstring);
+#else
     // check if driver is running
     if (m_idriver == NULL)
     {
@@ -3561,6 +3564,7 @@ int cDownloader::strain_calibrate_offset2_strain1 (int bus, int target_id, int16
     }
 
     return 0;
+#endif
 }
 
 
@@ -3840,6 +3844,198 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
 
 
 }
+
+int cDownloader::readADC(int bus, int target_id, int channel, int nmeasures)
+{
+    const int type = 0; // raw
+
+    txBuffer[0].setId((2 << 8) + target_id);
+    txBuffer[0].setLen(3);
+    txBuffer[0].getData()[0]= 0x0C;
+    txBuffer[0].getData()[1]= channel;
+    txBuffer[0].getData()[2]= type;
+
+    int measure = 0;
+
+    for(int n=0; n<nmeasures; n++)
+    {
+        int tmp = 0;
+        set_bus(txBuffer[0], bus);
+        int ret = m_idriver->send_message(txBuffer, 1);
+        // check if send_message was successful
+        if (ret==0)
+        {
+            yError ("Unable to send message\n");
+            return 0;
+        }
+        //read adc
+        int read_messages = m_idriver->receive_message(rxBuffer,1);
+        for (int i=0; i<read_messages; i++)
+        {
+            if (rxBuffer[i].getData()[0]==0x0C)
+            {
+                tmp = (rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4]);
+                break;
+            }
+            else
+            {
+                printf("cDownloader::strain_calibrate_offset2_strain1(): fails in reading reply for a measure\n");
+            }
+        }
+
+        measure += tmp;
+    }
+
+    measure /= nmeasures;
+
+    return measure;
+}
+
+int cDownloader::strain_calibrate_offset2_strain1safer (int bus, int target_id, int16_t t, uint8_t nmeasures, bool fullsearch, string *errorstring)
+{
+    // check if driver is running
+    if (m_idriver == NULL)
+    {
+       if(_verbose) yError ("Driver not ready\n");
+       return -1;
+    }
+
+    // marco.accame: transform [-32K, +32K) into [0, +64K)
+    unsigned int middle_val = 32768 + t;
+
+
+    if(fullsearch)
+    {
+        yDebug() << "performing full search in dac space to find best value to match adc ="<< t << " using" << nmeasures << "adc acquisions for better averaging";
+
+        for(int channel=0; channel<6; channel++)
+        {
+
+            long minABSerror = 128*1024;
+            unsigned int minDAC = 0;
+
+            // loop over all possible dac values
+            for(unsigned int testdac=0; testdac<1024; testdac++)
+            {
+                 // send new dac
+                strain_set_offset(bus, target_id, channel, testdac);
+                //wait
+                drv_sleep(3);
+                // verify it
+                unsigned int tmp = 0;
+                strain_get_offset(bus, target_id, channel, tmp);
+                if(tmp != testdac)
+                {
+                    yError() << "failed to impose DAC = " << testdac << "read:" << tmp;
+                }
+
+                // read value
+                int measure = readADC(bus, target_id, channel, nmeasures);
+                // compute error vs target
+                long error = long(measure) - long(middle_val);
+
+                if(fabs(error) < fabs(minABSerror))
+                {
+                    minABSerror = fabs(error);
+                    minDAC = testdac;
+                    //yDebug() << "PROGESS: channel =" << channel << "minerror = " << minABSerror << "mindac =" << minDAC;
+                }
+            }
+
+            // apply the best dac
+            strain_set_offset(bus, target_id, channel, minDAC);
+            // wait
+            drv_sleep(3);
+            // verify it
+            unsigned int tmp = 0;
+            strain_get_offset(bus, target_id, channel, tmp);
+            if(tmp != minDAC)
+            {
+                yError() << "failed to impose DAC = " << minDAC << "read:" << tmp;
+            }
+
+            yDebug() << "RESULT of FULL SEARCH w/ nsamples average =" << nmeasures << "-> channel =" << channel << "minerror = " << minABSerror << "mindac =" << minDAC;
+
+        } // channel
+
+    }
+    else
+    {
+        const int daclimit = 0x3ff;
+        const int dacstep = 1;
+        const long tolerance = 128;
+        const int maxiterations = 1024;
+
+        yDebug() << "performing gradient descend in dac space to find best value to match adc ="<< t << " using" << nmeasures << "adc acquisions for better averaging";
+        yDebug() << "exit conditions: max number of iterations =" << maxiterations << "error tolerance =" << tolerance;
+
+        for(int channel=0; channel<6; channel++)
+        {
+
+            long minABSerror = 128*1024;
+            unsigned int minDAC = 0;
+            unsigned int dac = 0;
+
+
+            int measure = readADC(bus, target_id, channel, nmeasures);
+
+            // read dac
+            strain_get_offset(bus, target_id, channel, dac);
+
+            long error = long(measure) - long(middle_val);
+            int cycle =0;
+
+            minABSerror = fabs(error);
+            minDAC = dac;
+
+            // now i perform a sort of gradient descend
+            while ((abs(error)>tolerance) && (cycle<daclimit) && (cycle<maxiterations))
+            {
+                if (error>0) dac -= dacstep;
+                else         dac += dacstep;
+
+                if (dac>daclimit)       dac = daclimit;
+                if (dac<0)              dac = 0;
+
+                //yDebug() << "channel =" << channel << "iter =" << cycle << "err = " << error << "next dac =" << dac << "minerror = " << minABSerror << "mindac =" << minDAC;
+
+                // send new dac
+                strain_set_offset(bus, target_id, channel, dac);
+                //wait
+                drv_sleep(3);
+                // verify it
+                unsigned int tmp = 0;
+                strain_get_offset(bus, target_id, channel, tmp);
+                if(tmp != dac)
+                {
+                    yError() << "failed to impose DAC = " << dac << "read:" << tmp;
+                }
+
+                // read value
+                measure = readADC(bus, target_id, channel, nmeasures);
+
+                error = long(measure) - long(middle_val);
+                cycle++;
+
+                if(fabs(error) < fabs(minABSerror))
+                {
+                    minABSerror = fabs(error);
+                    minDAC = dac;
+                }
+            }
+
+            yDebug() << "RESULT of gradient descend  w/ nsamples average =" << nmeasures << "-> channel =" << channel << "num iters =" << cycle << "err = " << error << "applied dac =" << dac << "minerror = " << minABSerror << "mindac =" << minDAC;
+
+        }   // channel
+
+    }
+
+
+    return 0;
+}
+
+
+
 
 
 // eof
