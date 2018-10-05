@@ -1318,7 +1318,7 @@ int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigne
 }
 
 
-int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemilli, bool calibmode, string *errorstring)
+int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemilli, bool calibmode, strain_acquisition_mode_t acqmode, string *errorstring)
 {
     // check if driver is running
     if (m_idriver == NULL)
@@ -1328,6 +1328,12 @@ int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemill
        }
 
     int ret = 0;
+
+
+    if (strain_acquisition_mode_polling == acqmode)
+    {
+        return 0;
+    }
 
     //yDebug() << "cDownloader::strain_acquire_start() from" << bus << target_id;
 
@@ -1365,7 +1371,7 @@ int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemill
 
 }
 
-int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring)
+int cDownloader::strain_acquire_stop(int bus, int target_id, strain_acquisition_mode_t acqmode, string *errorstring)
 {
     // check if driver is running
     if (m_idriver == NULL)
@@ -1373,6 +1379,11 @@ int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring
            if(_verbose) yError ("Driver not ready\n");
            return -1;
        }
+
+    if (strain_acquisition_mode_polling == acqmode)
+    {
+        return 0;
+    }
 
    // Send transmission command to strain board
    txBuffer[0].setId((2 << 8) + target_id);
@@ -1406,7 +1417,7 @@ int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring
    return 0;
 }
 
-int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany, void (*updateProgressBar)(void*, float), void *arg, string *errorstring)
+int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany, void (*updateProgressBar)(void*, float), void *arg, strain_acquisition_mode_t acqmode, const unsigned int maxerrors, string *errorstring)
 {
     // i must read howmany pairs of can frames of type 0xA and 0xB. to simplify i assume that they will arrive in pairs.
 
@@ -1418,6 +1429,46 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
         return -1;
     }
 
+    unsigned int errorcount = 0;
+    
+
+    if (strain_acquisition_mode_polling == acqmode)
+    {
+        yDebug() << "cDownloader::strain_acquire_get() is using polling";
+        for (unsigned int s = 0; s < howmany; s++)
+        {
+            cDownloader::strain_value_t sv;
+            sv.valid = true;
+
+            for (int c = 0; c < 6; c++)
+            {
+                //drv_sleep(3);
+                unsigned int adc = 0;
+                int rr = strain_get_adc(bus, target_id, c, adc, 0);
+                if (-1 == rr)
+                {
+                    errorcount++;
+                    yDebug() << "error in acquisition of an adc channel " << c << "incrementing error counter to" << errorcount;
+                    if (errorcount >= maxerrors)
+                    {
+                        yError() << "reached" << maxerrors << "reception errors in adc acquisition: must quit";
+                        return -1;
+                    }
+                }
+                sv.channel[c] = adc;
+            }
+            values.push_back(sv);
+
+            if (NULL != updateProgressBar)
+            {
+                float perc = (0 != howmany) ? (static_cast<float>(s + 1) / static_cast<float>(howmany)) : (100.0);
+                updateProgressBar(arg, perc);
+            }
+        }
+
+        return 0;
+    }
+
     const double TOUT = 3.0;
 
     // purge from possible acks of strain1...
@@ -1425,8 +1476,10 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
     m_idriver->receive_message(rxBuffer, 2, TOUT);
     m_idriver->receive_message(rxBuffer, 2, TOUT);
 
+
     for(unsigned int s=0; s<howmany; s++)
     {
+
         if(NULL != updateProgressBar)
         {
             float perc = (0 != howmany) ? (static_cast<float>(s+1)/static_cast<float>(howmany)) : (100.0);
@@ -1525,7 +1578,13 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
         }
         else
         {
-            yDebug() << "did not received two messages but " << read_messages;
+            errorcount ++;
+            yDebug() << "in streaming mode did not received two messages but " << read_messages << "incrementing error counter to" << errorcount;
+            if(errorcount >= maxerrors)
+            {
+                yError() << "reached" << maxerrors << "reception errors: must quit";
+                return -1;
+            }
         }
 
     }
