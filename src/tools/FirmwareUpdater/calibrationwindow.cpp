@@ -280,6 +280,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     connect(this,SIGNAL(loading(bool)),this,SLOT(onLoading(bool)),Qt::QueuedConnection);
     connect(this,SIGNAL(setText(QLineEdit*,QString)),this,SLOT(onSetText(QLineEdit*,QString)),Qt::QueuedConnection);
     connect(this,SIGNAL(setText(QTableWidgetItem*,QString)),this,SLOT(onSetText(QTableWidgetItem*,QString)),Qt::QueuedConnection);
+    connect(this,SIGNAL(setTableVisible(QTableWidget*,bool)),this,SLOT(onSetTableVisible(QTableWidget*,bool)),Qt::QueuedConnection);
     connect(this,SIGNAL(setOffsetSliderValue(CustomSpinBox*,int)),this,SLOT(onOffsetSpinnerValue(CustomSpinBox*,int)),Qt::BlockingQueuedConnection);
 
     connect(ui->btnParametersClear,SIGNAL(clicked(bool)),this,SLOT(onParametersClear(bool)));
@@ -796,9 +797,12 @@ void CalibrationWindow::saveCalibrationFile(QString filePath)
 {
     mutex.lock();
     loading();
-    int index = 0;//ui->tabWidget->currentIndex();
-    char *c = filePath.toLatin1().data();
-    std::string filename = c;
+    int index = 0;
+
+    char path[256] = { 0 };
+    snprintf(path, sizeof(path), "%s", filePath.toLatin1().data());
+    std::string filename = std::string(path);
+
     filename += "/calibrationData";
     filename += serial_no;
     filename += ".dat";
@@ -1310,6 +1314,11 @@ void CalibrationWindow::onSetText(QTableWidgetItem *item ,QString text)
     item->setText(text);
 }
 
+void CalibrationWindow::onSetTableVisible(QTableWidget *item,bool visible)
+{
+    item->setVisible(visible);
+}
+
 void CalibrationWindow::onApplyDone()
 {
     for(int i=0; i<CHANNEL_COUNT;i++){
@@ -1603,24 +1612,23 @@ void CalibrationWindow::onTimeout()
         if(bUseCalibration)
         {
             if(ui->tableCurr->horizontalHeaderItem(0)->text() != "ForceTorque"){
-                ui->tableCurr->horizontalHeaderItem(0)->setText("ForceTorque");
-                ui->tableUseMatrix->horizontalHeaderItem(COL_MAXMEASURE)->setText("Max FT");
-                ui->tableUseMatrix->horizontalHeaderItem(COL_MINMEASURE)->setText("Min FT");
-                ui->tableUseMatrix->horizontalHeaderItem(COL_DIFFMEASURE)->setText("Delta FT");
-                ui->tableUseMatrix->horizontalHeaderItem(COL_NEWTONMEASURE)->setText("FT");
+                setText(ui->tableCurr->horizontalHeaderItem(0),"ForceTorque");
 
-
+                setText(ui->tableUseMatrix->horizontalHeaderItem(COL_MAXMEASURE),"Max FT");
+                setText(ui->tableUseMatrix->horizontalHeaderItem(COL_MINMEASURE),"Min FT");
+                setText(ui->tableUseMatrix->horizontalHeaderItem(COL_DIFFMEASURE),"Delta FT");
+                setText(ui->tableUseMatrix->horizontalHeaderItem(COL_NEWTONMEASURE),"FT");
 
 
 
                 for (int i=0;i<CHANNEL_COUNT;i++){
-                    ui->tableUseMatrix->verticalHeaderItem(i)->setText(QString("%1").arg(i==0 ?"Fx"
+                    setText(ui->tableUseMatrix->verticalHeaderItem(i),QString("%1").arg(i==0 ?"Fx"
                                                                                              : i==1 ? "Fy"
                                                                                              : i==2 ? "Fz"
                                                                                              : i==3 ? "Mx"
                                                                                              : i==4 ? "My"
                                                                                              : "Mz" ));
-                    ui->tableCurr->verticalHeaderItem(i)->setText(QString("%1").arg(i==0 ?"Fx"
+                    setText(ui->tableCurr->verticalHeaderItem(i),QString("%1").arg(i==0 ?"Fx"
                                                                                              : i==1 ? "Fy"
                                                                                              : i==2 ? "Fz"
                                                                                              : i==3 ? "Mx"
@@ -1628,30 +1636,30 @@ void CalibrationWindow::onTimeout()
                                                                                              : "Mz" ));
                 }
 
-                ui->tableCurr->setVisible(false);
-                ui->tableCurr->setVisible(true);
-                ui->tableUseMatrix->setVisible(false);
-                ui->tableUseMatrix->setVisible(true);
+                setTableVisible(ui->tableCurr,false);
+                setTableVisible(ui->tableCurr,true);
+                setTableVisible(ui->tableUseMatrix,false);
+                setTableVisible(ui->tableUseMatrix,true);
             }
         }
         else
         {
             if(ui->tableCurr->horizontalHeaderItem(0)->text() != "ADC"){
-                ui->tableCurr->horizontalHeaderItem(0)->setText("ADC");
-                ui->tableUseMatrix->horizontalHeaderItem(COL_MAXMEASURE)->setText("Max ADC");
-                ui->tableUseMatrix->horizontalHeaderItem(COL_MINMEASURE)->setText("Min ADC");
-                ui->tableUseMatrix->horizontalHeaderItem(COL_DIFFMEASURE)->setText("Delta ADC");
-                ui->tableUseMatrix->horizontalHeaderItem(COL_NEWTONMEASURE)->setText("Empty");
+                setText(ui->tableCurr->horizontalHeaderItem(0),"ADC");
+                setText(ui->tableUseMatrix->horizontalHeaderItem(COL_MAXMEASURE),"Max ADC");
+                setText(ui->tableUseMatrix->horizontalHeaderItem(COL_MINMEASURE),"Min ADC");
+                setText(ui->tableUseMatrix->horizontalHeaderItem(COL_DIFFMEASURE),"Delta ADC");
+                setText(ui->tableUseMatrix->horizontalHeaderItem(COL_NEWTONMEASURE),"Empty");
 
                 for (int i=0;i<CHANNEL_COUNT;i++){
-                    ui->tableUseMatrix->verticalHeaderItem(i)->setText(QString("Ch:%1").arg(i));
-                    ui->tableCurr->verticalHeaderItem(i)->setText(QString("Ch:%1").arg(i));
+                    setText(ui->tableUseMatrix->verticalHeaderItem(i),QString("Ch:%1").arg(i));
+                    setText(ui->tableCurr->verticalHeaderItem(i),QString("Ch:%1").arg(i));
                 }
 
-                ui->tableCurr->setVisible(false);
-                ui->tableCurr->setVisible(true);
-                ui->tableUseMatrix->setVisible(false);
-                ui->tableUseMatrix->setVisible(true);
+                setTableVisible(ui->tableCurr,false);
+                setTableVisible(ui->tableCurr,true);
+                setTableVisible(ui->tableUseMatrix,false);
+                setTableVisible(ui->tableUseMatrix,true);
             }
         }
 

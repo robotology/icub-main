@@ -143,10 +143,12 @@ private slots:
     void onDigitalRegulation(bool);
     void onChangeRegSet(int regSet);
     void onChangeRegSetBoot(int regset);
+    void onSetTableVisible(QTableWidget*,bool);
 signals:
     void loading(bool = true);
     void setText(QLineEdit*,QString text);
     void setText(QTableWidgetItem*,QString text);
+    void setTableVisible(QTableWidget*,bool);
     void setOffsetSliderValue(CustomSpinBox*, int value);
     void setSerialChanged(bool);
     void setMatrix(int index);
