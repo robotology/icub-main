@@ -571,9 +571,9 @@ void MainWindow::onStrainCalib(bool click)
     CanTreeWidgetItem *it = (CanTreeWidgetItem*)selectedNodes.first();
 
     sBoard board = it->getBoard();
-    qDebug() << device;
-    qDebug() << board.bus;
-    qDebug() <<board.pid;
+    yDebug() << "onStrainCalib() has device = " << device.toStdString();
+    yDebug() << "onStrainCalib() has bus = " << board.bus;
+    yDebug() << "onStrainCalib() has id = " << board.pid;
     StrainCalibGui strainCalibGui(device,board.bus,board.pid,core);
     strainCalibGui.exec();
 }
