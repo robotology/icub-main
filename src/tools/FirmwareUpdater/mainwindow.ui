@@ -306,7 +306,7 @@
             <bool>false</bool>
            </property>
            <property name="toolTip">
-            <string>It uploads the application FW on the selected boards. They must be of the same type. The ETH boards must be in maintenance mode. </string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It opens the acquisition window for the selected strain or strain2 selected board.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Acquire</string>
@@ -319,7 +319,7 @@
             <bool>false</bool>
            </property>
            <property name="toolTip">
-            <string>It opens the STRAIN calibration window for the selected STRAIN board.</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It opens the calibration window for the selected strain or strain2 selected board.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Calibrate</string>
@@ -332,7 +332,7 @@
             <bool>false</bool>
            </property>
            <property name="toolTip">
-            <string>It forces the EEPROM erase of the single selected CAN board during the upload of the application firmware (so far only if the board is a STRAIN).</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It forces the EEPROM erase of the single selected CAN board during the upload of the application firmware (so far only if the board is a strain or strain2).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Erase EEPROM</string>

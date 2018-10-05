@@ -142,6 +142,9 @@
              <property name="enabled">
               <bool>false</bool>
              </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It tells what to do or what teh GUI is doing.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="text">
               <string>Acquire data</string>
              </property>
@@ -149,6 +152,9 @@
            </item>
            <item>
             <widget class="QGroupBox" name="freeAcqModeGroup">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If unticked, it performs the usual guided acquisition procedure. The name of the files with the saved samples is hardcoded and is displayed in the panel named &lt;span style=&quot; font-style:italic;&quot;&gt;Instructions&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Hey... you must have the ./data folder, unless no file is saved.&lt;/p&gt;&lt;p&gt;If ticked it performs free acquisitions. In such a case one can specify the conditions of the experiments with the applied Torques and Forces which will be printed in the chosen file before the acquisition samples.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="title">
               <string>Free Acquisition Mode</string>
              </property>
@@ -250,6 +256,9 @@
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
               <widget class="QLabel" name="label_17">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It specifies how many samples to acquire for each channel. This value is used both in guided and free acquisition modes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
                <property name="text">
                 <string>Samples:</string>
                </property>
@@ -285,6 +294,9 @@
            </item>
            <item>
             <widget class="QProgressBar" name="progress">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Yes, I am a progress bar.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="maximum">
               <number>100</number>
              </property>
@@ -437,6 +449,9 @@
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
                <widget class="QLabel" name="label_14">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In here are printed the ADC values acquired in the guided acquisition mode.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Current Values:</string>
                 </property>
@@ -542,6 +557,9 @@
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <item>
                <widget class="QLabel" name="label_15">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In here are printed the expected values as loaded from file named &lt;span style=&quot; font-weight:600;&quot;&gt;firmwareupdater.strain.expectedvalues.txt&lt;/span&gt;. If this file is not found, default values are used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Expected Values:</string>
                 </property>
@@ -644,8 +662,11 @@
              <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
                <widget class="QLabel" name="label_16">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In here are printed the errors between the lines &lt;span style=&quot; font-style:italic;&quot;&gt;Current Values&lt;/span&gt; and &lt;span style=&quot; font-style:italic;&quot;&gt;Expected Values&lt;/span&gt;. The values appear in green if error is below the first threshold, in orange if in bewteen the first and second threshold, and in red if beyond the second threshold.  The values of the thersholds are specified by file &lt;span style=&quot; font-weight:600;&quot;&gt;firmwareupdater.strain.expectedvalues.txt&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
-                 <string>Current error (&lt;2000):</string>
+                 <string>Current Error:</string>
                 </property>
                </widget>
               </item>
@@ -755,6 +776,9 @@
          <layout class="QGridLayout" name="gridLayout_5">
           <item row="0" column="0">
            <widget class="QLabel" name="labelInstructions">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;I am the instruction panel&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="text">
              <string>Select an acquisition from the menu</string>
             </property>
@@ -784,6 +808,9 @@
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It quits the window, but ... it waits the end of any ongoing acquisition.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="standardButtons">
         <set>QDialogButtonBox::Ok</set>
        </property>
