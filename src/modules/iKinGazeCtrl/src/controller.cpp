@@ -90,7 +90,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
         yInfo("### neck control - requested VELOCITY mode => VELOCITY mode selected");
 
     // joints bounds alignment
-    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltLim);
+    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData);
 
     // read starting position
     fbTorso.resize(nJointsTorso,0.0);

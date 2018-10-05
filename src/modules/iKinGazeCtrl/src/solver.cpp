@@ -83,7 +83,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     encHead->getAxes(&nJointsHead);
 
     // joints bounds alignment
-    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltLim);
+    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData);
     copyJointsBounds(chainNeck,chainEyeL);
     copyJointsBounds(chainEyeL,chainEyeR);
 
@@ -512,7 +512,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
     encHead->getAxes(&nJointsHead);
 
     // joints bounds alignment
-    alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltLim);
+    alignJointsBounds(chainNeck,drvTorso,drvHead,commData);
 
     // read starting position
     fbTorso.resize(nJointsTorso,0.0);

@@ -207,7 +207,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type, iKinChain *chain, 
 // Aligns head joints bounds with current onboard bounds.
 // Returns a matrix containing the actual limits.
 Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drvHead,
-                         const Vector &eyeTiltLim);
+                         const ExchangeData *commData);
 
 
 // Copies joints bounds from first chain to second chain.
@@ -225,7 +225,8 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck);
 // Reads encoders values.
 // Returns true if communication with robot is stable, false otherwise.
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
-                 PolyDriver *drvHead, ExchangeData *commData, double *timeStamp=NULL);
+                 PolyDriver *drvHead, const ExchangeData *commData,
+                 double *timeStamp=NULL);
 
 #endif
 
