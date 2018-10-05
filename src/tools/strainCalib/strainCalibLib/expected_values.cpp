@@ -43,7 +43,19 @@ unsigned_elem_class& unsigned_elem_class::operator=(const unsigned_elem_class &r
 		}
     }
     return *this;
- }
+}
+
+std::string expected_values_handler_class::get_serialnumber()
+{
+    return serialnumber;
+}
+
+bool expected_values_handler_class::get_thresholds(int &low, int &high)
+{
+    low = threshold1;
+    high = threshold2;
+    return true;
+}
 
 bool expected_values_handler_class::init  (const char* filename)
 {
@@ -56,6 +68,7 @@ bool expected_values_handler_class::init  (const char* filename)
         }
     string dummy;
     getline(filestr,dummy);
+    filestr >> serialnumber;
 	for (int iy=0; iy<24; iy++)
 		for (int ix=0; ix<6; ix++)
 		{
@@ -103,6 +116,8 @@ const int expected_values_handler_class::def_expected_values_thresholds[2] =
 
 bool expected_values_handler_class::init()
 {
+    serialnumber = std::string("default");
+
     for(int iy=0; iy<24; iy++)
     {
         for(int ix=0; ix<6; ix++)

@@ -75,12 +75,24 @@ StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdater
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(onClose()));
 
 
-    std::string filenameOfexpectedValues = std::string("good_vals.txt");
+    std::string filenameOfexpectedValues = std::string("firmwareupdater.strain.expectedvalues.txt");
     bool b = expected_values_handler.init(filenameOfexpectedValues.c_str());
     if(!b){
         yError() << "ERROR in opening file" << filenameOfexpectedValues << ".... using default values for expected value handler";
         expected_values_handler.init();
     }
+    else
+    {
+        yDebug() << "loaded file of expected values =" << filenameOfexpectedValues;
+    }
+
+    int low = 0;
+    int high = 0;
+    expected_values_handler.get_thresholds(low, high);
+    yDebug() << "expected values for" << expected_values_handler.get_serialnumber() << "with thresholds = " << low << high;
+
+//    QString tt = QString("Current Error [%1,  %2]").arg(low, high);
+//    ui->label_16->setText(tt);
 
     connect(&watcher, SIGNAL(finished()), this, SLOT(onFutureFinished()));
 
