@@ -37,7 +37,7 @@ class strainInterface
 public:
 
     enum class Network { ETH = 0, socketcan = 1, ecan = 2 };
-    enum class CanBus { one = 1, two = 2, all = CanPacket::everyCANbus };
+    enum class CanBus { zero = 0,  one = 1, two = 2, all = CanPacket::everyCANbus };
     enum class CanAddress { one = 1, two = 2, three = 3, four = 4, five = 5, six = 6, seven = 7, eigth = 8,
                             nine = 9, ten = 10, eleven = 11, twelve = 12, thirteen = 13, fourteen = 14 };
     struct Config
