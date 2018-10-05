@@ -89,13 +89,27 @@ StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdater
 #endif
 
 
-    if(device == "ETH"){
+    if((device == "ETH") || (device == "eth"))
+    {
         config.network = strainInterface::Network::ETH;
-    } if(device == "socketcan"){
+        yDebug() << "strainInterface::Network::ETH";
+    } 
+    else if ((device == "SOCKETCAN") || (device == "socketcan"))
+    {
+        yDebug() << "strainInterface::Network::socketcan";
         config.network = strainInterface::Network::socketcan;
-    } if(device == "ecan"){
+    } 
+    else if((device == "ECAN") || (device == "ecan"))
+    {
+        yDebug() << "strainInterface::Network::ecan";
         config.network = strainInterface::Network::ecan;
     }
+    else
+    {
+        config.network = strainInterface::Network::unknown;
+        yDebug() << "unknown strainInterface::Network =" << device.toStdString();
+    }
+
     config.canbus = (strainInterface::CanBus)bus;
     config.canaddress = (strainInterface::CanAddress)pid;
     config.txrate = 2;
@@ -159,8 +173,10 @@ void StrainCalibGui::stopacquisitions(bool forcestop)
             ui->labelInstructions->setText("Received the QUIT command: waiting for the acquisition to terminate");
         }
         //lockdriver(true);
-        core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress());
-        core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress());
+        // marco.accame: on windows, esdcan driver cannot manage streaming mode in reception.... sic
+        cDownloader::strain_acquisition_mode_t acqmode = (strainInterface::Network::ETH == config.network) ? (cDownloader::strain_acquisition_mode_streaming) : (cDownloader::strain_acquisition_mode_polling);
+        core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress(), acqmode);
+        core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress(), acqmode);
         lockdriver(false);
 
         alreadystopped = true;
@@ -355,26 +371,35 @@ bool StrainCalibGui::get(const unsigned int number, vector<cDownloader::strain_v
     }
 
     const bool calibmode = false;
-    core->getDownloader()->strain_acquire_start(config.get_canbus(), config.get_canaddress(), config.get_txrate(), calibmode);
-    core->getDownloader()->strain_acquire_get(config.get_canbus(), config.get_canaddress(), values, number, updateProgressBar, param);
+    // marco.accame: on windows, esdcan driver cannot manage streaming mode in reception....sic
+    cDownloader::strain_acquisition_mode_t acqmode = (strainInterface::Network::ETH == config.network) ? (cDownloader::strain_acquisition_mode_streaming) : (cDownloader::strain_acquisition_mode_polling);
+    core->getDownloader()->strain_acquire_start(config.get_canbus(), config.get_canaddress(), config.get_txrate(), calibmode, acqmode);
+    int ret = core->getDownloader()->strain_acquire_get(config.get_canbus(), config.get_canaddress(), values, number, updateProgressBar, param, acqmode);
     //yarp::os::SystemClock::delaySystem(0.100); i used it to test the flush operation of strain_acquire_stop()....
-    core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress());
-    core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress());
+    core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress(), acqmode);
+    core->getDownloader()->strain_acquire_stop(config.get_canbus(), config.get_canaddress(), acqmode);
 
     double t1 = yarp::os::SystemClock::nowSystem();
 
     if(debugprint)
     {
-        yDebug() << "strainInterface::get() has succesfully acquired" << values.size() << "values of the 6 channels in" << (t1-t0) << "seconds";
-        yDebug() << "the values are:";
-        for(int i=0; i<values.size(); i++)
+        if (0 == ret)
         {
-            yDebug() << "#" << i+1 << "=" << values[i].channel[0] << values[i].channel[1] << values[i].channel[2] << values[i].channel[3] <<
-                                             values[i].channel[4] << values[i].channel[5] << values[i].valid;
+            yDebug() << "strainInterface::get() has succesfully acquired" << values.size() << "values of the 6 channels in" << (t1 - t0) << "seconds";
+            yDebug() << "the values are:";
+            for (int i = 0; i < values.size(); i++)
+            {
+                yDebug() << "#" << i + 1 << "=" << values[i].channel[0] << values[i].channel[1] << values[i].channel[2] << values[i].channel[3] <<
+                    values[i].channel[4] << values[i].channel[5] << values[i].valid;
+            }
+        }
+        else
+        {
+            yDebug() << "strainInterface::get() has failed acquisitions";
         }
     }
 
-    return true;
+    return (0 == ret) ? true : false;
 }
 
 bool StrainCalibGui::print(const vector<cDownloader::strain_value_t> &values, FILE *fp, QList<float> ft)
@@ -432,40 +457,49 @@ bool StrainCalibGui::acquire_samples(int samples)
     setAcquisitionOfDataActive(true);
 
     vector<cDownloader::strain_value_t> values;
-    get(samples, values, enabledebugprints, true);
+    bool ret = get(samples, values, enabledebugprints, true);
 
-
-    if(samples != values.size())
+    if (ret)
     {
-        yError() << "cannot acquire enough strain samples. Only:" << values.size() << "instead of" << samples;
+
+        if (samples != values.size())
+        {
+            yError() << "cannot acquire enough strain samples. Only:" << values.size() << "instead of" << samples;
+        }
+        else
+        {
+            if (enabledebugprints)
+            {
+                yDebug("Acquired %lu strain samples. Ready! \n", values.size());
+            }
+        }
+
+        if (ui->freeAcqModeGroup->isChecked()) {
+            QList <float> v;
+            v.append(ui->freeEdit1->text().toFloat());
+            v.append(ui->freeEdit2->text().toFloat());
+            v.append(ui->freeEdit3->text().toFloat());
+            v.append(ui->freeEdit4->text().toFloat());
+            v.append(ui->freeEdit5->text().toFloat());
+            v.append(ui->freeEdit6->text().toFloat());
+            print(values, fp, v);
+        }
+        else {
+            print(values, fp);
+        }
+
+
+        // now i need to retrieve the most recent value from values but in a particular format and fill variable last_value
+
+        cDownloader::strain_value_t lastvalue = values.at(values.size() - 1);
+
+        lastvalue.extract(last_value.dat);
+
     }
     else
     {
-        if(enabledebugprints)
-        {
-            yDebug("Acquired %lu strain samples. Ready! \n", values.size());
-        }
+        fprintf(fp, "acquisition error. please check log on terminal.\n");
     }
-
-    if(ui->freeAcqModeGroup->isChecked()){
-        QList <float> v;
-        v.append(ui->freeEdit1->text().toFloat());
-        v.append(ui->freeEdit2->text().toFloat());
-        v.append(ui->freeEdit3->text().toFloat());
-        v.append(ui->freeEdit4->text().toFloat());
-        v.append(ui->freeEdit5->text().toFloat());
-        v.append(ui->freeEdit6->text().toFloat());
-        print(values, fp, v);
-    } else {
-        print(values, fp);
-    }
-
-
-    // now i need to retrieve the most recent value from values but in a particular format and fill variable last_value
-
-    cDownloader::strain_value_t lastvalue = values.at(values.size()-1);
-
-    lastvalue.extract(last_value.dat);
 
     setAcquisitionOfDataActive(false);
     lockdriver(false);
