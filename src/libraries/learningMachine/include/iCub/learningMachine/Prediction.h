@@ -22,6 +22,7 @@
 #include <string>
 #include <cassert>
 
+#include <yarp/os/ConnectionReader.h>
 #include <yarp/os/ConnectionWriter.h>
 #include <yarp/os/Portable.h>
 #include <yarp/sig/Vector.h>

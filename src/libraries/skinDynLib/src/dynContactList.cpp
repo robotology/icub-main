@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <string>
 
+#include <yarp/os/ConnectionReader.h>
 #include <yarp/os/ConnectionWriter.h>
 #include "iCub/skinDynLib/dynContactList.h"
 #include <iCub/ctrl/math.h>

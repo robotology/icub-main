@@ -8,7 +8,8 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include  <yarp/os/ConnectionWriter.h>
+#include <yarp/os/ConnectionReader.h>
+#include <yarp/os/ConnectionWriter.h>
 #include <yarp/math/Math.h>
 #include "iCub/skinDynLib/skinContact.h"
 

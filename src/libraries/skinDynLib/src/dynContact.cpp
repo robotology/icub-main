@@ -11,6 +11,7 @@
 #include <string>
 #include "stdio.h"
 
+#include <yarp/os/ConnectionReader.h>
 #include <yarp/os/ConnectionWriter.h>
 #include <yarp/math/Math.h>
 #include "iCub/skinDynLib/dynContact.h"
