@@ -2623,6 +2623,22 @@ int cDownloader::initschede()
         drv_sleep(10);
     }
 
+    for (i=0; i<board_list_size; i++)
+    {
+        board_list[i].strainregsetinuse = board_list[i].strainregsetatboot = 0;
+        if(board_list[i].type==icubCanProto_boardType__strain)
+        {
+            board_list[i].strainregsetinuse = board_list[i].strainregsetatboot = 1;
+        }
+        else if(board_list[i].type==icubCanProto_boardType__strain2)
+        {
+            this->strain_get_regulationset(board_list[i].bus, board_list[i].pid, board_list[i].strainregsetinuse, strain_regsetmode_temporary);
+            this->strain_get_regulationset(board_list[i].bus, board_list[i].pid, board_list[i].strainregsetatboot, strain_regsetmode_permanent);
+        }
+        //pause
+        drv_sleep(10);
+    }
+
 #define TEST_GET_FW_VERSION
 
 #if defined(TEST_GET_FW_VERSION)

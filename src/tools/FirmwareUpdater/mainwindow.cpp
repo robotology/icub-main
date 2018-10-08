@@ -1219,6 +1219,13 @@ void MainWindow::onAppendInfo(sBoard canboard)
     {
         QTreeWidgetItem *sn = new QTreeWidgetItem(boardNode, QStringList() << "Serial Number" << canboard.serial);
         boardNode->addChild(sn);
+
+        snprintf(str, sizeof(str), "at boot = %d, in use = %d", canboard.strainregsetatboot, canboard.strainregsetinuse);
+        QTreeWidgetItem *rs = new QTreeWidgetItem(boardNode, QStringList() << "Regulations Set" << str);
+        boardNode->addChild(rs);
+
+//        QTreeWidgetItem *rsu = new QTreeWidgetItem(boardNode, QStringList() << "Regulations Set in use" << canboard.strainregsetinuse);
+//        boardNode->addChild(rsu);
     }
 
 //    QTreeWidgetItem *basic = new QTreeWidgetItem(boardNode, QStringList() << "Details" << "See left panel");
