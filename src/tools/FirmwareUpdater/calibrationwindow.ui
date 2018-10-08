@@ -21,14 +21,17 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_4">
-    <item row="0" column="1">
+    <item row="0" column="2">
      <layout class="QVBoxLayout" name="verticalLayout_7">
       <item>
        <widget class="QGroupBox" name="groupBox1">
         <property name="font">
          <font>
-          <pointsize>9</pointsize>
+          <pointsize>11</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains general commands &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="title">
          <string>Commands</string>
@@ -56,7 +59,7 @@
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It contains the serial number of the board. &lt;/p&gt;&lt;p&gt;It is possible to change it (at first in RAM and then in EEPROM).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It contains the serial number of the board. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
@@ -66,6 +69,9 @@
               <font>
                <pointsize>9</pointsize>
               </font>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It sends a new serial number to the board.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Change</string>
@@ -82,7 +88,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It loads a calibration .dat file and sends it the the board which writes all data in RAM for the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;Any successive save to EEPROM command will also permanently save all data in EEPROM.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It reads a calibration set from a .dat file and sends it to the strain/strain2 board which loads it in RAM in the partition of the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Load Calibration File</string>
@@ -97,7 +103,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It saves to a file named &lt;span style=&quot; font-weight:600;&quot;&gt;calibrationDataSNxxxx.dat&lt;/span&gt; all the calibration data of the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It asks the board the full regulation which is currently in RAM in the partition of the  the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt; and it saves it to a file named &lt;span style=&quot; font-weight:600;&quot;&gt;calibrationDataSNxxxx.dat&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Save Calibration File</string>
@@ -124,8 +130,11 @@
        <widget class="QGroupBox" name="groupBox_5">
         <property name="font">
          <font>
-          <pointsize>9</pointsize>
+          <pointsize>11</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains log operations&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="title">
          <string>Log</string>
@@ -186,8 +195,11 @@
      <widget class="QGroupBox" name="groupBox_7">
       <property name="font">
        <font>
-        <pointsize>9</pointsize>
+        <pointsize>11</pointsize>
        </font>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains acquisition values either in original form or compensated by the digital stage.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="styleSheet">
        <string notr="true"/>
@@ -215,8 +227,11 @@
            <pointsize>9</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contain the values from the board.&lt;/p&gt;&lt;p&gt;When the tick box&lt;span style=&quot; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt; is &lt;span style=&quot; font-weight:600;&quot;&gt;OFF&lt;/span&gt;, this column displays the raw &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;values . They are the analog values of the strain gauges compensated by the front-end amplifier and then acquired by the ADC peripheral. Their range is [-32K, +32K). &lt;/p&gt;&lt;p&gt;Else, when the tick box&lt;span style=&quot; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt; is &lt;span style=&quot; font-weight:600;&quot;&gt;ON&lt;/span&gt;, this colums displays the &lt;span style=&quot; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt; values. They are the compensated force torque values in metric units calculated as follows:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; ) &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt; = ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; / 32768 ) &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙ &lt;/span&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;fullscale&lt;/span&gt;&lt;/p&gt;&lt;p&gt;where &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; is element-wise multiplication between two vectors.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="title">
-          <string>Current Values</string>
+          <string>Values</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
@@ -242,7 +257,7 @@
              <enum>Qt::NoFocus</enum>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the tick box&lt;span style=&quot; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt; is OFF, this column displays the raw &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;values . &lt;/p&gt;&lt;p&gt;They are the analog values of the strain gauges compensated by the front-end amplifier and then acquired by the ADC peripheral. Their range is [-32K, +32K). &lt;/p&gt;&lt;p&gt;Else if the tick box&lt;span style=&quot; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt; is ON, this colums displays the &lt;span style=&quot; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt; values.&lt;/p&gt;&lt;p&gt;They are the compensated force torque values in metric units calculated as follows:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; ) &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt; = ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; / 32768 ) &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙ &lt;/span&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;fullscale&lt;/span&gt;&lt;/p&gt;&lt;p&gt;where &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; is element-wise multiplication between two vectors.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string/>
             </property>
             <property name="selectionMode">
              <enum>QAbstractItemView::NoSelection</enum>
@@ -341,6 +356,9 @@
            <pointsize>9</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains statistics related to the acquisition values.&lt;/p&gt;&lt;p&gt;In case no digital regulation is used, in here are displayed statistics (max, min, variation) of the six ADC values; else are displayed the calibrated values of force and torque in digital range &lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; and their statistics (max, min, delta). &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; )&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="title">
           <string>Statistics</string>
          </property>
@@ -368,7 +386,7 @@
              <enum>Qt::NoFocus</enum>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In here are reported statistics of the values displayed in the window named &lt;span style=&quot; font-style:italic;&quot;&gt;Current Values&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;In case no digital regulation is used, in here are displayed statistics (max, min, variation) of the six ADC values; &lt;/p&gt;&lt;p&gt;else are displayed the calibrated values of force and torque in digital range &lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; and their statistics (max, min, delta). &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; )&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string/>
             </property>
             <property name="selectionMode">
              <enum>QAbstractItemView::NoSelection</enum>
@@ -490,148 +508,10 @@
          </layout>
         </widget>
        </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox3">
-         <property name="title">
-          <string>Regulation Set</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
-          <item>
-           <layout class="QGridLayout" name="gridLayout_3">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="font">
-               <font>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It reports the regulation set in use. &lt;/p&gt;&lt;p&gt;For STRAIN there is only one regulation set and the value is read-only and always 1 .&lt;/p&gt;&lt;p&gt;For STRAIN2 there are three possible regulation sets and one can switch one another. This value will not be saved on EEPROM. The only effect of changing it is that any operation on the regulation set (analog or digital) will be done on the regulation set in use. &lt;/p&gt;&lt;p&gt;And if anything is changed, that can be saved on EEPROM.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Regulation Set:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QComboBox" name="comboRegSet">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>27</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>27</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
-              <item>
-               <property name="text">
-                <string>1</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>2</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>3</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_6">
-              <property name="font">
-               <font>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It reports the regulation set used by the board at boot.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;For STRAIN1 there is only one regulation set, hence the value is read-only and always 1.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;For STRAIN2 there are three possible regulation sets. One can also change it and if he/she saves the value on EEPROM, the board will bootstrap with this value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Boot Regulation Set:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="comboRegSetBoot">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>27</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>27</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>9</pointsize>
-               </font>
-              </property>
-              <item>
-               <property name="text">
-                <string>1</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>2</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>3</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="checkDigital">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It switches digital regulation ON and OFF.&lt;/p&gt;&lt;p&gt;If ON: the board sends up values which are compensated with bias correction and matrix multiplication. At reception, the GUI also applies the fullscales and show them in the window named &lt;span style=&quot; font-style:italic;&quot;&gt;Current Values&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;If OFF: the board sends up the raw ADC values. The GUI does not apply any transformation and shows them in the window named &lt;span style=&quot; font-style:italic;&quot;&gt;Current Values&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Apply digital regulation</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
-       </item>
       </layout>
      </widget>
     </item>
-    <item row="2" column="1">
+    <item row="2" column="2">
      <layout class="QHBoxLayout" name="horizontalLayout_10">
       <item>
        <spacer name="horizontalSpacer_4">
@@ -668,17 +548,20 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="0" colspan="2">
+    <item row="1" column="0" colspan="3">
      <layout class="QHBoxLayout" name="horizontalLayout_5">
       <item>
        <widget class="QGroupBox" name="groupBox_2">
         <property name="font">
          <font>
-          <pointsize>9</pointsize>
+          <pointsize>11</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group keeps the analog regulation of the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;For strain2 it is the gain and offset of an amplifier applied to each strain gauge before ADC. For teh strain just the offset.&lt;/p&gt;&lt;p&gt;The amplifier gain and offset are applied to the SG values in the analog frontend before ADC acquisition. The gain is in floating point and the offset is in range [0, +64K). The used formula is:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt; = &lt;span style=&quot; text-decoration: overline;&quot;&gt;gain &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;straingauge&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;offset&lt;/span&gt;, where &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; is the element-wise vector multiplication&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="title">
-         <string>Analog Regulations</string>
+         <string>Analog Regulation</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
@@ -704,7 +587,7 @@
             <enum>Qt::NoFocus</enum>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Here are some parameters. They all are stored inside the EEPROM of the board. &lt;/p&gt;&lt;p&gt;The amplifier gain and offset are applied to the SG values in the analog frontend before ADC acquisition. The gain is in floating point and the offset is in range [0, +64K). The used formula is:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt; = &lt;span style=&quot; text-decoration: overline;&quot;&gt;gain &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;straingauge&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;offset&lt;/span&gt;, where &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; is the element-wise vector multiplication&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;REMOVE IT:&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;The bias is a term applied in the digital domain to transform the acquired ADC value according to the formula:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;calibrationBias&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;currentBias&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Note&lt;/span&gt;. The Calib Bias as stored inside the calibration file is shown inside ()&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Here are some parameters. Amp Gain and Offset are stored inside the EEPROM of the board. The target ADC is used by the auto tune procedure. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="selectionMode">
             <enum>QAbstractItemView::NoSelection</enum>
@@ -778,8 +661,13 @@
           <layout class="QHBoxLayout" name="horizontalLayout_3">
            <item>
             <widget class="QPushButton" name="btnParametersApply">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If &lt;span style=&quot; font-style:italic;&quot;&gt;Auto Tune&lt;/span&gt; is ticked, the board will be force to find the best values of offset in the analog fron-end which can match the values of column &lt;span style=&quot; font-style:italic;&quot;&gt;Target ADC&lt;/span&gt;. In case of STRAIN2, before this operation the gains of the front-end amplifier are set as in column &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Gain&lt;/span&gt;. &lt;/p&gt;&lt;p&gt;Else, the GUI just sends to the board the values in &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Gain&lt;/span&gt; and &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt; columns.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If &lt;span style=&quot; font-style:italic;&quot;&gt;Auto Tune&lt;/span&gt; is ticked, the button &lt;span style=&quot; font-style:italic;&quot;&gt;Apply&lt;/span&gt; activates the auto-tune precedure, else it will just send the values of offset (and gain for the strain2) which are in the columns above.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Apply</string>
@@ -788,6 +676,11 @@
            </item>
            <item>
             <widget class="QPushButton" name="btnParametersClear">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It fills the &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Gain &lt;/span&gt;and &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt; columns above with their default values. Then one must apply them with the &lt;span style=&quot; font-style:italic;&quot;&gt;Apply&lt;/span&gt; button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -798,8 +691,13 @@
            </item>
            <item>
             <widget class="QCheckBox" name="checkAutoTune">
+             <property name="font">
+              <font>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If &lt;span style=&quot; font-style:italic;&quot;&gt;Auto Tune&lt;/span&gt; is ticked, the button &lt;span style=&quot; font-style:italic;&quot;&gt;Apply&lt;/span&gt; will force the board to find a suitable set of offset values for the analog front-end so that the acquired ADC values matches what is in column &lt;span style=&quot; font-style:italic;&quot;&gt;Target ADC&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;If unticked, the button &lt;span style=&quot; font-style:italic;&quot;&gt;Apply&lt;/span&gt; will just send the values of offset (and gain for the STRAIN2) which are in the columns above.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This check box enables / disables the auto-tune procedure for the offset of the analog front end. The procedure is activated by the &lt;span style=&quot; font-style:italic;&quot;&gt;Apply&lt;/span&gt; button.&lt;/p&gt;&lt;p&gt;This procedure finds the values of &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt; which produce ADC acquisitions equal to the values in the column called&lt;span style=&quot; font-style:italic;&quot;&gt; Target ADC&lt;/span&gt;. In case of strain2, it will also force the amplifiers to have the gains specified in column &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Gain&lt;/span&gt;. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Auto Tune</string>
@@ -837,8 +735,11 @@
         </property>
         <property name="font">
          <font>
-          <pointsize>9</pointsize>
+          <pointsize>11</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains the digital regulation of the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set in use.&lt;/span&gt;&lt;/p&gt;&lt;p/&gt;&lt;p&gt;The board  transforms the acquired ADC as in the following formula and then sends them up:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;[M]&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; ) &lt;/p&gt;&lt;p&gt;The fullscale is used in the GUI to transform the received FT values and show force torque in metric units.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="title">
          <string>Digital Regulation</string>
@@ -896,7 +797,7 @@
                  <enum>Qt::NoFocus</enum>
                 </property>
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This column displays the correction factor &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; in range [-32K, +32K) used in digital regulation as in the following formula:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; ) &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This column displays the correction factor &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; in range [-32K, +32K) used in digital regulation as in the following formula:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;[M]&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; ) &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="selectionMode">
                  <enum>QAbstractItemView::NoSelection</enum>
@@ -1060,7 +961,7 @@
                     <enum>Qt::NoFocus</enum>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Here are the calibration matrices represented in 1Q15 format. &lt;/p&gt;&lt;p&gt;Some values: +1.0 - 2&lt;span style=&quot; vertical-align:super;&quot;&gt;-15&lt;/span&gt; -&amp;gt; 0x7FFF; -1.0 -&amp;gt; 0x8000; +0.5 -&amp;gt; 0x4000; -0.5 -&amp;gt; 0xC000. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Here is the calibration matrix &lt;span style=&quot; font-weight:600;&quot;&gt;[M]&lt;/span&gt; with associated fullscale.&lt;/p&gt;&lt;p&gt;The matrix is represented with [-1, +1) values internally represented as 1Q15 fixed point values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="selectionMode">
                     <enum>QAbstractItemView::NoSelection</enum>
@@ -1275,7 +1176,7 @@
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It imports matrix-fullscales values.&lt;/p&gt;&lt;p&gt;In calibration procedure it allows to load matlab's originated data from file matrix_SNxxxx.txt and sends it directly to the board.&lt;/p&gt;&lt;p&gt;But one can also load a file with floating point values for matrix and fullscales. In this case, the values are loaded in the GUI and sent with button `Send`.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It imports matrix-fullscales values.&lt;/p&gt;&lt;p&gt;In calibration procedure it allows to load matlab's originated data from file &lt;span style=&quot; font-weight:600;&quot;&gt;matrix_SNxxxx.txt&lt;/span&gt; and sends it directly to the board.&lt;/p&gt;&lt;p&gt;But one can also load a file with floating point values for matrix and fullscales. In this case, the values are loaded in the GUI and sent with button &lt;span style=&quot; font-style:italic;&quot;&gt;Send&lt;/span&gt;`&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string>Import</string>
@@ -1309,6 +1210,152 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="0" column="1">
+     <widget class="QGroupBox" name="groupBox3">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains commands related to a regulation set. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="title">
+       <string>Regulation Set</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It tells/sets the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set currently used by the board&lt;/span&gt;. The initial value of the set in use is equal to the set at boot. One can later change it with this widget. &lt;/p&gt;&lt;p&gt;Any operation performed on the analog or digital regulation set or with buttons &lt;span style=&quot; font-style:italic;&quot;&gt;Load/Save Calibration File &lt;/span&gt;will be done on the set in use. &lt;/p&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;strain&lt;/span&gt; has only one regulation set, hence its value is always 1 and cannot be modified.&lt;/p&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;strain2&lt;/span&gt; instead has three possible regulation sets. The user can thus operate on this widget to specify the set (1, 2 or 3) to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Set in use:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="comboRegSet">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>27</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>27</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <item>
+            <property name="text">
+             <string>1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>3</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It tells/sets &lt;span style=&quot; font-weight:600;&quot;&gt;the regulation set used by the board at bootstrap&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;strain&lt;/span&gt; has only one regulation set, hence its value is always 1 and cannot be modified.&lt;/p&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;strain2&lt;/span&gt; instead has three possible regulation sets. The user can thus operate on this widget to specify the set (1, 2 or 3) that the board will use at next restart.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Set at boot:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="comboRegSetBoot">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>27</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>27</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <item>
+            <property name="text">
+             <string>1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>3</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkDigital">
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It turs ON / OFF the &lt;span style=&quot; font-weight:600;&quot;&gt;digital regulation&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;When &lt;span style=&quot; font-weight:600;&quot;&gt;OFF&lt;/span&gt;, the GUI shows the originally acquired ADC values.&lt;/p&gt;&lt;p&gt;When &lt;span style=&quot; font-weight:600;&quot;&gt;ON&lt;/span&gt;, the GUI shows the result of the digital regulation applied by the board to the original ADC values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Apply Digital Regulation</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
     </item>
    </layout>
   </widget>
