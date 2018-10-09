@@ -52,6 +52,8 @@ protected:
     void importCalibrationFileHEX(QString fileName);
 #endif
 
+    static void logger(void *caller, const std::string &msg);
+
 private:
 
     static const strain2_ampl_discretegain_t defaultStrain2AmplGains[6];

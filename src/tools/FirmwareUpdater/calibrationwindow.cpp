@@ -535,8 +535,9 @@ void CalibrationWindow::autoAdjust()
         }
 
     }
+    core->getDownloader()->set_external_logger(this, logger);
     core->getDownloader()->strain_calibrate_offset2(bus, id, boardtype, gains, targets, &msg);
-
+    core->getDownloader()->set_external_logger(NULL, NULL);
 
     loading(false);
     applyDone();
@@ -2198,3 +2199,13 @@ void CalibrationWindow::importCalibrationFileHEX(QString fileName)
     mutex.unlock();
 }
 #endif // (MARCO_ACCAME_19SEP2018)
+
+void CalibrationWindow::logger(void *caller, const std::string &msg)
+{
+    if(NULL != caller)
+    {
+        CalibrationWindow *cw = reinterpret_cast<CalibrationWindow*>(caller);
+        cw->appendLogMsg(QString::fromStdString(msg));
+    }
+
+}

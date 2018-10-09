@@ -266,6 +266,8 @@ cDownloader(bool verbose = true);
 
 void set_verbose(bool verbose);
 
+void set_external_logger(void *caller = NULL, void (*logger)(void *, const std::string &) = NULL);
+
 
 private:
     void clean_rx(void);
@@ -286,6 +288,11 @@ private:
     int strain_calibrate_offset2_strain2(int bus, int target_id, const std::vector<strain2_ampl_discretegain_t> &gains, const std::vector<int16_t> &targets, string *errorstring = NULL);
     
     int readADC(int bus, int target_id, int channel, int nmeasures = 2);
+
+    void (*_externalLoggerFptr)(void *caller, const std::string &output);
+    void * _externalLoggerCaller;
+
+    void Log(const std::string &msg);
     
 };
 
