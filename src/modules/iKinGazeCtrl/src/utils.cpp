@@ -546,7 +546,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
 
 /************************************************************************/
 Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
-                         PolyDriver *drvHead, const Vector &eyeTiltLim)
+                         PolyDriver *drvHead, const ExchangeData *commData)
 {
     IEncoders      *encs;
     IControlLimits *lims;
@@ -564,8 +564,16 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
         {   
             if (lims->getLimits(i,&min,&max))
             {
-                (*chain)[nJointsTorso-1-i].setMin(CTRL_DEG2RAD*min); // reversed order
-                (*chain)[nJointsTorso-1-i].setMax(CTRL_DEG2RAD*max);
+                if (commData->head_version<3.0)
+                {
+                    (*chain)[nJointsTorso-1-i].setMin(CTRL_DEG2RAD*min);
+                    (*chain)[nJointsTorso-1-i].setMax(CTRL_DEG2RAD*max);
+                }
+                else
+                {
+                    (*chain)[i].setMin(CTRL_DEG2RAD*min);
+                    (*chain)[i].setMax(CTRL_DEG2RAD*max);
+                }
             }
             else
                 yError("unable to retrieve limits for torso joint #%d",i);
@@ -585,8 +593,8 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
             // limit eye's tilt due to eyelids
             if (i==3)
             {
-                min=std::max(min,eyeTiltLim[0]);
-                max=std::min(max,eyeTiltLim[1]);
+                min=std::max(min,commData->eyeTiltLim[0]);
+                max=std::min(max,commData->eyeTiltLim[1]);
             }
 
             lim(i,0)=CTRL_DEG2RAD*min;
@@ -640,7 +648,8 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck)
 
 /************************************************************************/
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
-                 PolyDriver *drvHead, ExchangeData *commData, double *timeStamp)
+                 PolyDriver *drvHead, const ExchangeData *commData,
+                 double *timeStamp)
 {
     IEncodersTimed *encs;
 
@@ -657,7 +666,7 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
         if (encs->getEncodersTimed(fb.data(),stamps.data()))
         {
             for (int i=0; i<nJointsTorso; i++)
-                fbTorso[i]=CTRL_DEG2RAD*fb[nJointsTorso-1-i];    // reversed order
+                fbTorso[i]=CTRL_DEG2RAD*((commData->head_version<3.0)?fb[nJointsTorso-1-i]:fb[i]);
         }
         else
             ret=false;

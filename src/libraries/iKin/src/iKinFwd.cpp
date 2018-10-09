@@ -1558,7 +1558,6 @@ iCubTorso::iCubTorso(const string &_type) : iKinLimb(string(""))
 /************************************************************************/
 void iCubTorso::allocate(const string &_type)
 {
-    double version;
     size_t underscore=getType().find('_');
     if (underscore!=string::npos)
         version=strtod(getType().substr(underscore+2).c_str(),NULL);
@@ -1610,8 +1609,16 @@ bool iCubTorso::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
-        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
-        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+        if (version<3.0)
+        {
+            (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
+            (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+        }
+        else
+        {
+            (*this)[iTorso].setMin(CTRL_DEG2RAD*min);
+            (*this)[iTorso].setMax(CTRL_DEG2RAD*max);
+        }
     }
 
     return true;
@@ -1636,7 +1643,6 @@ iCubArm::iCubArm(const string &_type) : iKinLimb(_type)
 void iCubArm::allocate(const string &_type)
 {
     string arm;
-    double version;
     size_t underscore=getType().find('_');
     if (underscore!=string::npos)
     {
@@ -1766,8 +1772,16 @@ bool iCubArm::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
-        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
-        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+        if (version<3.0)
+        {
+            (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
+            (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+        }
+        else
+        {
+            (*this)[iTorso].setMin(CTRL_DEG2RAD*min);
+            (*this)[iTorso].setMax(CTRL_DEG2RAD*max);
+        }
     }
 
     for (iArm=0; iArm<getN()-iTorso; iArm++)
@@ -2336,6 +2350,12 @@ void iCubLeg::allocate(const string &_type)
     }
 
     setH0(H0);
+
+    size_t underscore=getType().find('_');
+    if (underscore!=string::npos)
+        version=strtod(getType().substr(underscore+2).c_str(),NULL);
+    else
+        version=1.0;
 }
 
 
@@ -2464,6 +2484,12 @@ void iCubEye::allocate(const string &_type)
     blockLink(0,0.0);
     blockLink(1,0.0);
     blockLink(2,0.0);
+
+    size_t underscore=getType().find('_');
+    if (underscore!=string::npos)
+        version=strtod(getType().substr(underscore+2).c_str(),NULL);
+    else
+        version=1.0;
 }
 
 
@@ -2485,8 +2511,16 @@ bool iCubEye::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
-        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
-        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+        if (version<3.0)
+        {
+            (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
+            (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+        }
+        else
+        {
+            (*this)[iTorso].setMin(CTRL_DEG2RAD*min);
+            (*this)[iTorso].setMax(CTRL_DEG2RAD*max);
+        }
     }
 
     for (iHead=0; iHead<getN()-iTorso; iHead++)
@@ -2639,6 +2673,12 @@ void iCubInertialSensor::allocate(const string &_type)
         HN(2,3)=-0.0105;
         setHN(getHN()*HN);
     }
+
+    size_t underscore=getType().find('_');
+    if (underscore!=string::npos)
+        version=strtod(getType().substr(underscore+2).c_str(),NULL);
+    else
+        version=1.0;
 }
 
 
@@ -2660,8 +2700,16 @@ bool iCubInertialSensor::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
-        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
-        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+        if (version<3.0)
+        {
+            (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
+            (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+        }
+        else
+        {
+            (*this)[iTorso].setMin(CTRL_DEG2RAD*min);
+            (*this)[iTorso].setMax(CTRL_DEG2RAD*max);
+        }
     }
 
     // only the neck
