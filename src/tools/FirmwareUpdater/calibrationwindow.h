@@ -38,6 +38,7 @@ protected:
     void autoAdjust();
     void setSerial();
     void saveToEeprom();
+    void Clear_Statistics();
     void setOffset(int chan, int value);
     void setCalibration();
     void loadCalibrationFile(QString fileName);
@@ -47,6 +48,9 @@ protected:
     bool calibration_load_v3 (char* filename, int selected_bus, int selected_id, int index, int regset);
     void useMatrix(int, bool boot);
     void resetCalibration();
+
+    bool SetDefaultRegulationSet(int regset, bool alsoserialnumber = false);
+    void Clear_AllRegulations();
 
 #if defined(MARCO_ACCAME_19SEP2018)
     void importCalibrationFileHEX(QString fileName);
@@ -72,6 +76,7 @@ private:
     signed int maxft[6];
     signed int minft[6];
     bool first_time;
+    bool refresh_serialnumber;
     unsigned int offset[6];
     unsigned int amp_gain1[6];
     unsigned int amp_gain2[6];
@@ -106,6 +111,7 @@ private:
     QMutex sliderMutex;
     QProgressBar *progress;
     bool keepRunning;
+    volatile bool clearStats;
 private slots:
     void onTargetValueChanged(int);
     void onTabMatrixCahnged(int);
@@ -127,6 +133,8 @@ private slots:
     void onSetMatrix(int index);
     void onSetFullScale();
     void onSaveToEeprom(bool click);
+    void onClear_Statistics(bool click);
+    void onClear_FullRegulation(bool click);
     void onSetCalibration(bool click);
     void onLoadCalibrationFile(bool click);
     void onSaveCalibrationFile(bool click);

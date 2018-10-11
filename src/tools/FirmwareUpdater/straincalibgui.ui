@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Calibrator V4.0</string>
+   <string>Acquisition Panel</string>
   </property>
   <property name="modal">
    <bool>true</bool>

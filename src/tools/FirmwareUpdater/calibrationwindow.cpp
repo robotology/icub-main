@@ -106,6 +106,8 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     boardtype = b; // we can have either a icubCanProto_boardType__strain or a icubCanProto_boardType__strain2 ...
     eeprom_saved_status=true;
     first_time = true;
+    refresh_serialnumber = true;
+    clearStats = false;
     for(int i=0;i<CHANNEL_COUNT;i++){
         ch[i]               = i;
         adc[i]              = 0;
@@ -295,6 +297,8 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     connect(this,SIGNAL(setFullScale()),this,SLOT(onSetFullScale()),Qt::QueuedConnection);
     connect(this,SIGNAL(setMatrix(int)),this,SLOT(onSetMatrix(int)),Qt::QueuedConnection);
     connect(ui->actionSave_To_Eproom,SIGNAL(triggered(bool)),this,SLOT(onSaveToEeprom(bool)),Qt::QueuedConnection);
+    connect(ui->actionClear_Statistics,SIGNAL(triggered(bool)),this,SLOT(onClear_Statistics(bool)),Qt::QueuedConnection);
+    connect(ui->actionClear_the_full_regulation,SIGNAL(triggered(bool)),this,SLOT(onClear_FullRegulation(bool)),Qt::QueuedConnection);
     connect(ui->btnSetCalibration,SIGNAL(clicked(bool)),this,SLOT(onSetCalibration(bool)),Qt::QueuedConnection);
     connect(this,SIGNAL(resetMatrices(int)),this,SLOT(resetMatricesState(int)),Qt::QueuedConnection);
     connect(this,SIGNAL(updateTitle()),this,SLOT(onUpdateTitle()),Qt::QueuedConnection);
@@ -605,6 +609,36 @@ void CalibrationWindow::saveToEeprom()
     drv_sleep (1000);
     //resetMatrices();
     loading(false);
+    mutex.unlock();
+}
+
+void CalibrationWindow::Clear_Statistics()
+{
+    mutex.lock();
+    clearStats = true;
+    mutex.unlock();
+}
+
+void CalibrationWindow::Clear_AllRegulations()
+{
+    mutex.lock();
+
+    bool alsoserialnumber = false;
+    if((icubCanProto_boardType__strain2 == boardtype))
+    {
+        SetDefaultRegulationSet(cDownloader::strain_regset_one, alsoserialnumber);
+        SetDefaultRegulationSet(cDownloader::strain_regset_two);
+        SetDefaultRegulationSet(cDownloader::strain_regset_three);
+        useMatrix(0, true);
+        useMatrix(0, false);
+    }
+    else
+    {
+        SetDefaultRegulationSet(cDownloader::strain_regset_inuse, alsoserialnumber);
+    }
+
+    refresh_serialnumber = alsoserialnumber;
+
     mutex.unlock();
 }
 
@@ -1101,6 +1135,16 @@ void CalibrationWindow::onSaveToEeprom(bool click)
     QtConcurrent::run(this,&CalibrationWindow::saveToEeprom);
 }
 
+void CalibrationWindow::onClear_Statistics(bool click)
+{
+    QtConcurrent::run(this,&CalibrationWindow::Clear_Statistics);
+}
+
+void CalibrationWindow::onClear_FullRegulation(bool click)
+{
+    QtConcurrent::run(this,&CalibrationWindow::Clear_AllRegulations);
+}
+
 void CalibrationWindow::onSetCalibBias(bool click)
 {
     QtConcurrent::run(this,&CalibrationWindow::setCalibBias);
@@ -1153,7 +1197,7 @@ void CalibrationWindow::closeEvent(QCloseEvent *e)
 {
     //timer->stop();
     if(!eeprom_saved_status){
-        if(QMessageBox::warning(this,"The Calibration has not been saved","Do you want to save this calibration to eeprom?",QMessageBox::Yes,QMessageBox::No) == QMessageBox::Yes){
+        if(QMessageBox::warning(this, "The regulation set changed on the RAM of the board  ", "Do you want to save the values to EEPROM?", QMessageBox::Yes,QMessageBox::No) == QMessageBox::Yes){
             onSaveToEeprom(true);
             e->ignore();
             return;
@@ -1446,7 +1490,7 @@ void CalibrationWindow::onTimeout()
 #endif
 
 
-        if(first_time){
+        if(first_time) {
             loading();
             ((CustomTreeWidgetItem*)item->getParentNode())->retrieveCanBoards(false);
             for (int i=0;i<((CustomTreeWidgetItem*)item->getParentNode())->getCanBoards().count();i++ ) {
@@ -1457,13 +1501,17 @@ void CalibrationWindow::onTimeout()
                 }
             }
 
+        }
+
+        if(refresh_serialnumber)
+        {
+            refresh_serialnumber = false;
+
             core->getDownloader()->strain_get_serial_number(core->getDownloader()->board_list[selected].bus,
                                                             core->getDownloader()->board_list[selected].pid, serial_no,&msg);
-
-
-
             appendLogMsg(msg.c_str());
             setText(ui->edit_serial,serial_no);
+
         }
 
         int ret=0;
@@ -1584,7 +1632,17 @@ void CalibrationWindow::onTimeout()
         }
 
 
-
+        if(clearStats)
+        {
+            clearStats = false;
+            for(int i=0;i<CHANNEL_COUNT;i++)
+            {
+                maxadc[i]           = -32768;
+                minadc[i]           = +32767;
+                maxft[i]            = -32768;
+                minft[i]            = +32767;
+            }
+        }
 
         for (int i=0;i<CHANNEL_COUNT;i++){
             if (!bUseCalibration){
@@ -1705,7 +1763,8 @@ void CalibrationWindow::onTimeout()
                                                          core->getDownloader()->board_list[selected].pid, i,
                                                          calib_bias[i], cDownloader::strain_regset_inuse, &msg);
             appendLogMsg(msg.c_str());
-            sprintf(tempbuf,"%d (%d)",showasQ15(calib_bias[i]), showBias(calib_bias[i]));
+            //sprintf(tempbuf,"%d (%d)",showasQ15(calib_bias[i]), showBias(calib_bias[i]));
+            sprintf(tempbuf,"%d", showasQ15(calib_bias[i]));
 
             QTableWidgetItem *item = ui->tableBias->item(i,COL_CALIBBIAS);
             setText(item,tempbuf);
@@ -2208,4 +2267,69 @@ void CalibrationWindow::logger(void *caller, const std::string &msg)
         cw->appendLogMsg(QString::fromStdString(msg));
     }
 
+}
+
+bool CalibrationWindow::SetDefaultRegulationSet(int regset, bool alsoserialnumber)
+{
+    int i=0;
+
+    if(alsoserialnumber)
+    {
+        // serial number
+        char my_serial_no[8] = "SN0000";
+        core->getDownloader()->strain_set_serial_number(bus,id, my_serial_no);
+    }
+
+    if((icubCanProto_boardType__strain2 == boardtype))
+    {
+        // amplifier registers:
+        for (i=0;i<CHANNEL_COUNT; i++)
+        {
+            core->getDownloader()->strain_set_amplifier_gain_offset(core->getDownloader()->board_list[selected].bus, core->getDownloader()->board_list[selected].pid, i, core->getDownloader()->strain_amplifier_discretegain2float(defaultStrain2AmplGains[i]), defaultStrain2AmplOffsets[i], regset);
+            drv_sleep(10);
+        }
+
+    }
+    else
+    {
+        // offsets
+        for (i=0;i<CHANNEL_COUNT; i++)
+        {
+            core->getDownloader()->strain_set_offset (bus,id, i, defaultStrain1DACoffsets[i], regset);
+            drv_sleep(200);
+        }
+    }
+
+    // calibration matrix
+    for (i=0;i<36; i++)
+    {
+        int ri=i/6;
+        int ci=i%6;
+        unsigned int value = 0;
+        if(ri == ci)
+        {
+            value = 32767;
+        }
+        core->getDownloader()->strain_set_matrix_rc(bus,id, ri, ci, value, regset);
+    }
+
+
+
+    // matrix gain
+    core->getDownloader()->strain_set_matrix_gain(bus,id, 1, regset);
+
+    // tare
+    for (i=0;i<CHANNEL_COUNT; i++)
+    {
+        core->getDownloader()->strain_set_calib_bias(bus,id, i, 0, regset);
+    }
+
+    // full scale values
+    for (i=0;i<CHANNEL_COUNT; i++)
+    {
+        unsigned int fs =
+        core->getDownloader()->strain_set_full_scale(bus,id, i, 32767, regset);
+    }
+
+    return true;
 }

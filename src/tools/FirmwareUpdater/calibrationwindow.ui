@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Calibration</string>
+   <string>Calibration Panel</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_4">
@@ -27,11 +27,13 @@
        <widget class="QGroupBox" name="groupBox1">
         <property name="font">
          <font>
-          <pointsize>11</pointsize>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains general commands &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains general commands &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="title">
          <string>Commands</string>
@@ -43,7 +45,9 @@
             <widget class="QLabel" name="label_4">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="text">
@@ -55,11 +59,13 @@
             <widget class="QLineEdit" name="edit_serial">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It contains the serial number of the board. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It contains the serial number of the board. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
@@ -67,11 +73,13 @@
             <widget class="QPushButton" name="btnSetSerial">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It sends a new serial number to the board.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It sends a new serial number to the board.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Change</string>
@@ -84,11 +92,13 @@
           <widget class="QPushButton" name="btnLoadCalibFile">
            <property name="font">
             <font>
-             <pointsize>9</pointsize>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It reads a calibration set from a .dat file and sends it to the strain/strain2 board which loads it in RAM in the partition of the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It reads a calibration set from a .dat file and sends it to the strain/strain2 board which loads it in RAM in the partition of the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Load Calibration File</string>
@@ -99,11 +109,13 @@
           <widget class="QPushButton" name="btnSaveCalibFile">
            <property name="font">
             <font>
-             <pointsize>9</pointsize>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It asks the board the full regulation which is currently in RAM in the partition of the  the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt; and it saves it to a file named &lt;span style=&quot; font-weight:600;&quot;&gt;calibrationDataSNxxxx.dat&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It asks the board the full regulation which is currently in RAM in the partition of the the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; and it saves it to a file named &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;calibrationDataSNxxxx.dat&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Save Calibration File</string>
@@ -130,11 +142,13 @@
        <widget class="QGroupBox" name="groupBox_5">
         <property name="font">
          <font>
-          <pointsize>11</pointsize>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains log operations&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains log operations&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="title">
          <string>Log</string>
@@ -144,7 +158,9 @@
           <widget class="QPlainTextEdit" name="logText">
            <property name="font">
             <font>
-             <pointsize>9</pointsize>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
           </widget>
@@ -155,7 +171,7 @@
             <spacer name="horizontalSpacer_5">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
              <property name="orientation">
@@ -173,11 +189,13 @@
             <widget class="QPushButton" name="btnClearLog">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It clears the log&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It clears the log&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Clear</string>
@@ -195,11 +213,13 @@
      <widget class="QGroupBox" name="groupBox_7">
       <property name="font">
        <font>
-        <pointsize>11</pointsize>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains acquisition values either in original form or compensated by the digital stage.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains acquisition values either in original form or compensated by the digital stage.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="styleSheet">
        <string notr="true"/>
@@ -224,11 +244,13 @@
          </property>
          <property name="font">
           <font>
-           <pointsize>9</pointsize>
+           <pointsize>10</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contain the values from the board.&lt;/p&gt;&lt;p&gt;When the tick box&lt;span style=&quot; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt; is &lt;span style=&quot; font-weight:600;&quot;&gt;OFF&lt;/span&gt;, this column displays the raw &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;values . They are the analog values of the strain gauges compensated by the front-end amplifier and then acquired by the ADC peripheral. Their range is [-32K, +32K). &lt;/p&gt;&lt;p&gt;Else, when the tick box&lt;span style=&quot; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt; is &lt;span style=&quot; font-weight:600;&quot;&gt;ON&lt;/span&gt;, this colums displays the &lt;span style=&quot; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt; values. They are the compensated force torque values in metric units calculated as follows:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; ) &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt; = ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; / 32768 ) &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙ &lt;/span&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;fullscale&lt;/span&gt;&lt;/p&gt;&lt;p&gt;where &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; is element-wise multiplication between two vectors.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contain the values from the board.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;When the tick box&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;OFF&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, this column displays the raw &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;values . They are the analog values of the strain gauges compensated by the front-end amplifier and then acquired by the ADC peripheral. Their range is [-32K, +32K). &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Else, when the tick box&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;ON&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, this colums displays the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; values. They are the compensated force torque values in metric units calculated as follows:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; / 32768 ) &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;fullscale&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;where &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is element-wise multiplication between two vectors.&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="title">
           <string>Values</string>
@@ -250,7 +272,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>9</pointsize>
+              <pointsize>10</pointsize>
              </font>
             </property>
             <property name="focusPolicy">
@@ -280,7 +302,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -290,7 +312,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -300,7 +322,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -310,7 +332,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -320,7 +342,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -330,7 +352,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -340,10 +362,52 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </column>
+            <item row="0" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="1" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="2" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="3" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="4" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="5" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
@@ -353,11 +417,13 @@
         <widget class="QGroupBox" name="groupBox_4">
          <property name="font">
           <font>
-           <pointsize>9</pointsize>
+           <pointsize>10</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains statistics related to the acquisition values.&lt;/p&gt;&lt;p&gt;In case no digital regulation is used, in here are displayed statistics (max, min, variation) of the six ADC values; else are displayed the calibrated values of force and torque in digital range &lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; and their statistics (max, min, delta). &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; )&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains statistics related to the acquisition values.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;In case no digital regulation is used, in here are displayed statistics (max, min, variation) of the six ADC values; else are displayed the calibrated values of force and torque in digital range &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; and their statistics (max, min, delta). &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; )&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="title">
           <string>Statistics</string>
@@ -379,7 +445,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>9</pointsize>
+              <pointsize>10</pointsize>
              </font>
             </property>
             <property name="focusPolicy">
@@ -409,7 +475,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -419,7 +485,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -429,7 +495,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -439,7 +505,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -449,7 +515,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -459,7 +525,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </row>
@@ -469,7 +535,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </column>
@@ -479,7 +545,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </column>
@@ -489,7 +555,7 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </column>
@@ -499,10 +565,178 @@
              </property>
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
               </font>
              </property>
             </column>
+            <item row="0" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="0" column="1">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="0" column="2">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="0" column="3">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="1" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="1" column="1">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="1" column="2">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="1" column="3">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="2" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="2" column="1">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="2" column="2">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="2" column="3">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="3" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="3" column="1">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="3" column="2">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="3" column="3">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="4" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="4" column="1">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="4" column="2">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="4" column="3">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="5" column="0">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="5" column="1">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="5" column="2">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
+            <item row="5" column="3">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
@@ -517,7 +751,7 @@
        <spacer name="horizontalSpacer_4">
         <property name="font">
          <font>
-          <pointsize>9</pointsize>
+          <pointsize>10</pointsize>
          </font>
         </property>
         <property name="orientation">
@@ -535,11 +769,11 @@
        <widget class="QPushButton" name="btnClose">
         <property name="font">
          <font>
-          <pointsize>9</pointsize>
+          <pointsize>10</pointsize>
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It ... well you may guess.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It ... well you may guess.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Close</string>
@@ -554,11 +788,13 @@
        <widget class="QGroupBox" name="groupBox_2">
         <property name="font">
          <font>
-          <pointsize>11</pointsize>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group keeps the analog regulation of the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;For strain2 it is the gain and offset of an amplifier applied to each strain gauge before ADC. For teh strain just the offset.&lt;/p&gt;&lt;p&gt;The amplifier gain and offset are applied to the SG values in the analog frontend before ADC acquisition. The gain is in floating point and the offset is in range [0, +64K). The used formula is:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt; = &lt;span style=&quot; text-decoration: overline;&quot;&gt;gain &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;straingauge&lt;/span&gt; ) + &lt;span style=&quot; text-decoration: overline;&quot;&gt;offset&lt;/span&gt;, where &lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral';&quot;&gt;⊙&lt;/span&gt; is the element-wise vector multiplication&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group keeps the analog regulation of the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;For strain2 it is the gain and offset of an amplifier applied to each strain gauge before ADC. For teh strain just the offset.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The amplifier gain and offset are applied to the SG values in the analog frontend before ADC acquisition. The gain is in floating point and the offset is in range [0, +64K). The used formula is:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;gain &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;straingauge&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) + &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;offset&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, where &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is the element-wise vector multiplication&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="title">
          <string>Analog Regulation</string>
@@ -580,14 +816,16 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>9</pointsize>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="focusPolicy">
             <enum>Qt::NoFocus</enum>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Here are some parameters. Amp Gain and Offset are stored inside the EEPROM of the board. The target ADC is used by the auto tune procedure. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Here are some parameters. Amp Gain and Offset are stored inside the EEPROM of the board. The target ADC is used by the auto tune procedure. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="selectionMode">
             <enum>QAbstractItemView::NoSelection</enum>
@@ -614,47 +852,221 @@
             <property name="text">
              <string>Ch: 0</string>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
            </row>
            <row>
             <property name="text">
              <string>Ch: 1</string>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
             </property>
            </row>
            <row>
             <property name="text">
              <string>Ch: 2</string>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
            </row>
            <row>
             <property name="text">
              <string>Ch: 3</string>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
             </property>
            </row>
            <row>
             <property name="text">
              <string>Ch: 4</string>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
            </row>
            <row>
             <property name="text">
              <string>Ch: 5</string>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
             </property>
            </row>
            <column>
             <property name="text">
              <string>Amp Gain</string>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
            </column>
            <column>
             <property name="text">
              <string>Amp Offset</string>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
             </property>
            </column>
            <column>
             <property name="text">
              <string>Target ADC</string>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
            </column>
+           <item row="0" column="0">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="0" column="1">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="0" column="2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="1" column="0">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="1" column="1">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="1" column="2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="2" column="0">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="2" column="1">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="2" column="2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="3" column="0">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="3" column="1">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="3" column="2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="4" column="0">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="4" column="1">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="4" column="2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="5" column="0">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="5" column="1">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
+           <item row="5" column="2">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </item>
           </widget>
          </item>
          <item>
@@ -663,11 +1075,13 @@
             <widget class="QPushButton" name="btnParametersApply">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If &lt;span style=&quot; font-style:italic;&quot;&gt;Auto Tune&lt;/span&gt; is ticked, the button &lt;span style=&quot; font-style:italic;&quot;&gt;Apply&lt;/span&gt; activates the auto-tune precedure, else it will just send the values of offset (and gain for the strain2) which are in the columns above.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;If &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Auto Tune&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is ticked, the button &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Apply&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; activates the auto-tune precedure, else it will just send the values of offset (and gain for the strain2) which are in the columns above.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Apply</string>
@@ -678,11 +1092,13 @@
             <widget class="QPushButton" name="btnParametersClear">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It fills the &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Gain &lt;/span&gt;and &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt; columns above with their default values. Then one must apply them with the &lt;span style=&quot; font-style:italic;&quot;&gt;Apply&lt;/span&gt; button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It fills the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Gain &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;and &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; columns above with their default values. Then one must apply them with the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Apply&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; button.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Clear</string>
@@ -693,11 +1109,13 @@
             <widget class="QCheckBox" name="checkAutoTune">
              <property name="font">
               <font>
-               <pointsize>9</pointsize>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This check box enables / disables the auto-tune procedure for the offset of the analog front end. The procedure is activated by the &lt;span style=&quot; font-style:italic;&quot;&gt;Apply&lt;/span&gt; button.&lt;/p&gt;&lt;p&gt;This procedure finds the values of &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt; which produce ADC acquisitions equal to the values in the column called&lt;span style=&quot; font-style:italic;&quot;&gt; Target ADC&lt;/span&gt;. In case of strain2, it will also force the amplifiers to have the gains specified in column &lt;span style=&quot; font-style:italic;&quot;&gt;Amp Gain&lt;/span&gt;. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This check box enables / disables the auto-tune procedure for the offset of the analog front end. The procedure is activated by the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Apply&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; button.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This procedure finds the values of &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; which produce ADC acquisitions equal to the values in the column called&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt; Target ADC&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;. In case of strain2, it will also force the amplifiers to have the gains specified in column &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Gain&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Auto Tune</string>
@@ -735,11 +1153,13 @@
         </property>
         <property name="font">
          <font>
-          <pointsize>11</pointsize>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains the digital regulation of the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set in use.&lt;/span&gt;&lt;/p&gt;&lt;p/&gt;&lt;p&gt;The board  transforms the acquired ADC as in the following formula and then sends them up:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;[M]&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; ) &lt;/p&gt;&lt;p&gt;The fullscale is used in the GUI to transform the received FT values and show force torque in metric units.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains the digital regulation of the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set in use.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The board transforms the acquired ADC as in the following formula and then sends them up:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;[M]&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The fullscale is used in the GUI to transform the received FT values and show force torque in metric units.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="title">
          <string>Digital Regulation</string>
@@ -790,14 +1210,16 @@
                 </property>
                 <property name="font">
                  <font>
-                  <pointsize>9</pointsize>
+                  <pointsize>10</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
                  </font>
                 </property>
                 <property name="focusPolicy">
                  <enum>Qt::NoFocus</enum>
                 </property>
                 <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This column displays the correction factor &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; in range [-32K, +32K) used in digital regulation as in the following formula:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;[M]&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; ) &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This column displays the correction factor &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; in range [-32K, +32K) used in digital regulation as in the following formula:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;P.S. The .dat file stores this value with range [0, 64K). If positive it stays unchanged, but if negative it adds 64K to it. &lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="selectionMode">
                  <enum>QAbstractItemView::NoSelection</enum>
@@ -820,7 +1242,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>10</pointsize>
                   </font>
                  </property>
                 </row>
@@ -830,7 +1252,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>10</pointsize>
                   </font>
                  </property>
                 </row>
@@ -840,7 +1262,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>10</pointsize>
                   </font>
                  </property>
                 </row>
@@ -850,7 +1272,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>10</pointsize>
                   </font>
                  </property>
                 </row>
@@ -860,7 +1282,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>10</pointsize>
                   </font>
                  </property>
                 </row>
@@ -870,7 +1292,7 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>10</pointsize>
                   </font>
                  </property>
                 </row>
@@ -880,10 +1302,55 @@
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>9</pointsize>
+                   <pointsize>10</pointsize>
                   </font>
                  </property>
                 </column>
+                <item row="0" column="0">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                </item>
+                <item row="1" column="0">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                </item>
+                <item row="2" column="0">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                </item>
+                <item row="3" column="0">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                </item>
+                <item row="4" column="0">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                </item>
+                <item row="5" column="0">
+                 <property name="font">
+                  <font>
+                   <pointsize>10</pointsize>
+                  </font>
+                 </property>
+                </item>
                </widget>
               </item>
               <item>
@@ -892,11 +1359,13 @@
                  <widget class="QPushButton" name="btnSetCalibBias">
                   <property name="font">
                    <font>
-                    <pointsize>9</pointsize>
+                    <pointsize>10</pointsize>
+                    <weight>50</weight>
+                    <bold>false</bold>
                    </font>
                   </property>
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It sets the &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; value equal to negative of &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt;, so that the value multiplied with the matrix &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; (which is &lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;) is zero. &lt;/p&gt;&lt;p&gt;Here is the formula: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; )&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It sets the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; value equal to negative of &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, so that the value multiplied with the matrix &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; (which is &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;) is zero. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Here is the formula: &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; )&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Tune</string>
@@ -907,11 +1376,13 @@
                  <widget class="QPushButton" name="btnResetCalibBias">
                   <property name="font">
                    <font>
-                    <pointsize>9</pointsize>
+                    <pointsize>10</pointsize>
+                    <weight>50</weight>
+                    <bold>false</bold>
                    </font>
                   </property>
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It forces the &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; value equal to zero. &lt;/p&gt;&lt;p&gt;Here is the formula: &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; ) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It forces the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; value equal to zero. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Here is the formula: &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Reset</string>
@@ -926,11 +1397,13 @@
              <widget class="QGroupBox" name="groupBox4">
               <property name="font">
                <font>
-                <pointsize>9</pointsize>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
                </font>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Here are displayed the matrix and the associated fullscales which are used in digital regulation as in the following formula:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: overline;&quot;&gt;FT&lt;/span&gt; = &lt;span style=&quot; font-weight:600;&quot;&gt;M&lt;/span&gt; * ( &lt;span style=&quot; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;+ &lt;span style=&quot; text-decoration: overline;&quot;&gt;bias&lt;/span&gt; ) &lt;/p&gt;&lt;p&gt;The fullscale is used in the GUI to show values of force torque in metric units.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Here are displayed the matrix and the associated fullscales which are used in digital regulation as in the following formula:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The fullscale is used in the GUI to show values of force torque in metric units.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="title">
                <string>Matrix and Fullscales</string>
@@ -954,7 +1427,7 @@
                    </property>
                    <property name="font">
                     <font>
-                     <pointsize>9</pointsize>
+                     <pointsize>10</pointsize>
                     </font>
                    </property>
                    <property name="focusPolicy">
@@ -988,62 +1461,407 @@
                     <property name="text">
                      <string>New Row</string>
                     </property>
-                   </row>
-                   <row>
-                    <property name="text">
-                     <string>New Row</string>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
                     </property>
                    </row>
                    <row>
                     <property name="text">
                      <string>New Row</string>
                     </property>
-                   </row>
-                   <row>
-                    <property name="text">
-                     <string>New Row</string>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
                     </property>
                    </row>
                    <row>
                     <property name="text">
                      <string>New Row</string>
                     </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
                    </row>
                    <row>
                     <property name="text">
                      <string>New Row</string>
                     </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </row>
+                   <row>
+                    <property name="text">
+                     <string>New Row</string>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </row>
+                   <row>
+                    <property name="text">
+                     <string>New Row</string>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
                    </row>
                    <column>
                     <property name="text">
                      <string>New Column</string>
                     </property>
-                   </column>
-                   <column>
-                    <property name="text">
-                     <string>New Column</string>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
                     </property>
                    </column>
                    <column>
                     <property name="text">
                      <string>New Column</string>
                     </property>
-                   </column>
-                   <column>
-                    <property name="text">
-                     <string>New Column</string>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
                     </property>
                    </column>
                    <column>
                     <property name="text">
                      <string>New Column</string>
                     </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
                    </column>
                    <column>
                     <property name="text">
                      <string>New Column</string>
                     </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
                    </column>
+                   <column>
+                    <property name="text">
+                     <string>New Column</string>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </column>
+                   <column>
+                    <property name="text">
+                     <string>New Column</string>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </column>
+                   <item row="0" column="0">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="0" column="1">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="0" column="2">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="0" column="3">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="0" column="4">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="0" column="5">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="1" column="0">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="1" column="1">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="1" column="2">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="1" column="3">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="1" column="4">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="1" column="5">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="2" column="0">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="2" column="1">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="2" column="2">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="2" column="3">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="2" column="4">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="2" column="5">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="3" column="0">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="3" column="1">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="3" column="2">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="3" column="3">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="3" column="4">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="3" column="5">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="4" column="0">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="4" column="1">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="4" column="2">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="4" column="3">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="4" column="4">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="4" column="5">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="5" column="0">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="5" column="1">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="5" column="2">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="5" column="3">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="5" column="4">
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
+                   <item row="5" column="5">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <pointsize>10</pointsize>
+                     </font>
+                    </property>
+                   </item>
                   </widget>
                  </item>
                  <item>
@@ -1062,7 +1880,7 @@
                    </property>
                    <property name="font">
                     <font>
-                     <pointsize>9</pointsize>
+                     <pointsize>10</pointsize>
                     </font>
                    </property>
                    <property name="focusPolicy">
@@ -1098,7 +1916,7 @@
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>9</pointsize>
+                      <pointsize>10</pointsize>
                      </font>
                     </property>
                    </row>
@@ -1108,7 +1926,7 @@
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>9</pointsize>
+                      <pointsize>10</pointsize>
                      </font>
                     </property>
                    </row>
@@ -1118,7 +1936,7 @@
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>9</pointsize>
+                      <pointsize>10</pointsize>
                      </font>
                     </property>
                    </row>
@@ -1128,7 +1946,7 @@
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>9</pointsize>
+                      <pointsize>10</pointsize>
                      </font>
                     </property>
                    </row>
@@ -1138,7 +1956,7 @@
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>9</pointsize>
+                      <pointsize>10</pointsize>
                      </font>
                     </property>
                    </row>
@@ -1148,7 +1966,7 @@
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>9</pointsize>
+                      <pointsize>10</pointsize>
                      </font>
                     </property>
                    </row>
@@ -1158,7 +1976,7 @@
                     </property>
                     <property name="font">
                      <font>
-                      <pointsize>9</pointsize>
+                      <pointsize>10</pointsize>
                      </font>
                     </property>
                    </column>
@@ -1172,11 +1990,11 @@
                   <widget class="QPushButton" name="btnImportCalibMatrix">
                    <property name="font">
                     <font>
-                     <pointsize>9</pointsize>
+                     <pointsize>10</pointsize>
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It imports matrix-fullscales values.&lt;/p&gt;&lt;p&gt;In calibration procedure it allows to load matlab's originated data from file &lt;span style=&quot; font-weight:600;&quot;&gt;matrix_SNxxxx.txt&lt;/span&gt; and sends it directly to the board.&lt;/p&gt;&lt;p&gt;But one can also load a file with floating point values for matrix and fullscales. In this case, the values are loaded in the GUI and sent with button &lt;span style=&quot; font-style:italic;&quot;&gt;Send&lt;/span&gt;`&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It imports matrix-fullscales values.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;In calibration procedure it allows to load matlab's originated data from file &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;matrix_SNxxxx.txt&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; and sends it directly to the board.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;But one can also load a file with floating point values for matrix and fullscales. In this case, the values are loaded in the GUI and sent with button &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Send&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;`&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string>Import</string>
@@ -1187,11 +2005,11 @@
                   <widget class="QPushButton" name="btnSetCalibration">
                    <property name="font">
                     <font>
-                     <pointsize>9</pointsize>
+                     <pointsize>10</pointsize>
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It sends to the board the values of matrix and fullscales loaded from a file with floating point values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It sends to the board the values of matrix and fullscales loaded from a file with floating point values.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string>Send</string>
@@ -1213,8 +2031,15 @@
     </item>
     <item row="0" column="1">
      <widget class="QGroupBox" name="groupBox3">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
       <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This group contains commands related to a regulation set. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains commands related to a regulation set. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="title">
        <string>Regulation Set</string>
@@ -1226,11 +2051,13 @@
           <widget class="QLabel" name="label_5">
            <property name="font">
             <font>
-             <pointsize>9</pointsize>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It tells/sets the &lt;span style=&quot; font-weight:600;&quot;&gt;regulation set currently used by the board&lt;/span&gt;. The initial value of the set in use is equal to the set at boot. One can later change it with this widget. &lt;/p&gt;&lt;p&gt;Any operation performed on the analog or digital regulation set or with buttons &lt;span style=&quot; font-style:italic;&quot;&gt;Load/Save Calibration File &lt;/span&gt;will be done on the set in use. &lt;/p&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;strain&lt;/span&gt; has only one regulation set, hence its value is always 1 and cannot be modified.&lt;/p&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;strain2&lt;/span&gt; instead has three possible regulation sets. The user can thus operate on this widget to specify the set (1, 2 or 3) to use.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It tells/sets the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set currently used by the board&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;. The initial value of the set in use is equal to the set at boot. One can later change it with this widget. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Any operation performed on the analog or digital regulation set or with buttons &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Load/Save Calibration File &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;will be done on the set in use. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;strain&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; has only one regulation set, hence its value is always 1 and cannot be modified.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;strain2&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; instead has three possible regulation sets. The user can thus operate on this widget to specify the set (1, 2 or 3) to use.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Set in use:</string>
@@ -1253,7 +2080,9 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>9</pointsize>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <item>
@@ -1277,11 +2106,13 @@
           <widget class="QLabel" name="label_6">
            <property name="font">
             <font>
-             <pointsize>9</pointsize>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It tells/sets &lt;span style=&quot; font-weight:600;&quot;&gt;the regulation set used by the board at bootstrap&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;strain&lt;/span&gt; has only one regulation set, hence its value is always 1 and cannot be modified.&lt;/p&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;strain2&lt;/span&gt; instead has three possible regulation sets. The user can thus operate on this widget to specify the set (1, 2 or 3) that the board will use at next restart.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It tells/sets &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;the regulation set used by the board at bootstrap&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;strain&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; has only one regulation set, hence its value is always 1 and cannot be modified.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;strain2&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; instead has three possible regulation sets. The user can thus operate on this widget to specify the set (1, 2 or 3) that the board will use at next restart.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Set at boot:</string>
@@ -1304,7 +2135,9 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>9</pointsize>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
             </font>
            </property>
            <item>
@@ -1330,11 +2163,13 @@
         <widget class="QCheckBox" name="checkDigital">
          <property name="font">
           <font>
-           <pointsize>9</pointsize>
+           <pointsize>10</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It turs ON / OFF the &lt;span style=&quot; font-weight:600;&quot;&gt;digital regulation&lt;/span&gt;.&lt;/p&gt;&lt;p&gt;When &lt;span style=&quot; font-weight:600;&quot;&gt;OFF&lt;/span&gt;, the GUI shows the originally acquired ADC values.&lt;/p&gt;&lt;p&gt;When &lt;span style=&quot; font-weight:600;&quot;&gt;ON&lt;/span&gt;, the GUI shows the result of the digital regulation applied by the board to the original ADC values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It turs ON / OFF the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;digital regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;When &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;OFF&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, the GUI shows the originally acquired ADC values.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;When &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;ON&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, the GUI shows the result of the digital regulation applied by the board to the original ADC values.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Apply Digital Regulation</string>
@@ -1365,26 +2200,40 @@
      <x>0</x>
      <y>0</y>
      <width>1150</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <pointsize>9</pointsize>
+     <pointsize>10</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
+     <underline>false</underline>
     </font>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="font">
      <font>
-      <pointsize>9</pointsize>
+      <pointsize>10</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+      <underline>false</underline>
      </font>
     </property>
     <property name="title">
-     <string>File</string>
+     <string>EEPROM</string>
     </property>
     <addaction name="actionSave_To_Eproom"/>
    </widget>
+   <widget class="QMenu" name="menuOperations">
+    <property name="title">
+     <string>Operations</string>
+    </property>
+    <addaction name="actionClear_Statistics"/>
+    <addaction name="actionClear_the_full_regulation"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuOperations"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoad_Calibration_File">
@@ -1399,12 +2248,47 @@
   </action>
   <action name="actionSave_To_Eproom">
    <property name="text">
-    <string>Save To Eeprom</string>
+    <string>Save to EEPROM</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
    </property>
   </action>
   <action name="actionImport_Calib_Matrix">
    <property name="text">
     <string>Import Calib Matrix</string>
+   </property>
+  </action>
+  <action name="actionClear_Statistics">
+   <property name="text">
+    <string>Clear Statistics</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionClear_Statistics_2">
+   <property name="text">
+    <string>Clear Statistics</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionClear_the_full_regulation">
+   <property name="text">
+    <string>Clear every regulation set</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
    </property>
   </action>
  </widget>
