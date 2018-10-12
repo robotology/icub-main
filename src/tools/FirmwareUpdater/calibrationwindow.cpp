@@ -299,6 +299,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boa
     connect(ui->actionSave_To_Eproom,SIGNAL(triggered(bool)),this,SLOT(onSaveToEeprom(bool)),Qt::QueuedConnection);
     connect(ui->actionClear_Statistics,SIGNAL(triggered(bool)),this,SLOT(onClear_Statistics(bool)),Qt::QueuedConnection);
     connect(ui->actionClear_the_full_regulation,SIGNAL(triggered(bool)),this,SLOT(onClear_FullRegulation(bool)),Qt::QueuedConnection);
+    connect(ui->actionClear_the_regulation_set_in_use,SIGNAL(triggered(bool)),this,SLOT(onClear_Regulation(bool)),Qt::QueuedConnection);
     connect(ui->btnSetCalibration,SIGNAL(clicked(bool)),this,SLOT(onSetCalibration(bool)),Qt::QueuedConnection);
     connect(this,SIGNAL(resetMatrices(int)),this,SLOT(resetMatricesState(int)),Qt::QueuedConnection);
     connect(this,SIGNAL(updateTitle()),this,SLOT(onUpdateTitle()),Qt::QueuedConnection);
@@ -623,7 +624,7 @@ void CalibrationWindow::Clear_AllRegulations()
 {
     mutex.lock();
 
-    bool alsoserialnumber = false;
+    const bool alsoserialnumber = true;
     if((icubCanProto_boardType__strain2 == boardtype))
     {
         SetDefaultRegulationSet(cDownloader::strain_regset_one, alsoserialnumber);
@@ -637,6 +638,17 @@ void CalibrationWindow::Clear_AllRegulations()
         SetDefaultRegulationSet(cDownloader::strain_regset_inuse, alsoserialnumber);
     }
 
+    refresh_serialnumber = alsoserialnumber;
+
+    mutex.unlock();
+}
+
+void CalibrationWindow::Clear_Regulation()
+{
+    mutex.lock();
+
+    const bool alsoserialnumber = false;
+    SetDefaultRegulationSet(cDownloader::strain_regset_inuse, alsoserialnumber);
     refresh_serialnumber = alsoserialnumber;
 
     mutex.unlock();
@@ -1143,6 +1155,11 @@ void CalibrationWindow::onClear_Statistics(bool click)
 void CalibrationWindow::onClear_FullRegulation(bool click)
 {
     QtConcurrent::run(this,&CalibrationWindow::Clear_AllRegulations);
+}
+
+void CalibrationWindow::onClear_Regulation(bool click)
+{
+    QtConcurrent::run(this,&CalibrationWindow::Clear_Regulation);
 }
 
 void CalibrationWindow::onSetCalibBias(bool click)

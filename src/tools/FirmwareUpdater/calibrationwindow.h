@@ -51,6 +51,7 @@ protected:
 
     bool SetDefaultRegulationSet(int regset, bool alsoserialnumber = false);
     void Clear_AllRegulations();
+    void Clear_Regulation();
 
 #if defined(MARCO_ACCAME_19SEP2018)
     void importCalibrationFileHEX(QString fileName);
@@ -135,6 +136,7 @@ private slots:
     void onSaveToEeprom(bool click);
     void onClear_Statistics(bool click);
     void onClear_FullRegulation(bool click);
+    void onClear_Regulation(bool click);
     void onSetCalibration(bool click);
     void onLoadCalibrationFile(bool click);
     void onSaveCalibrationFile(bool click);

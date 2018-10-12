@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1150</width>
+    <width>1160</width>
     <height>762</height>
    </rect>
   </property>
@@ -21,768 +21,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_4">
-    <item row="0" column="2">
-     <layout class="QVBoxLayout" name="verticalLayout_7">
-      <item>
-       <widget class="QGroupBox" name="groupBox1">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains general commands &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="title">
-         <string>Commands</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_8">
-           <item>
-            <widget class="QLabel" name="label_4">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>SN:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="edit_serial">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It contains the serial number of the board. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnSetSerial">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It sends a new serial number to the board.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string>Change</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnLoadCalibFile">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It reads a calibration set from a .dat file and sends it to the strain/strain2 board which loads it in RAM in the partition of the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Load Calibration File</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnSaveCalibFile">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It asks the board the full regulation which is currently in RAM in the partition of the the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; and it saves it to a file named &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;calibrationDataSNxxxx.dat&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Save Calibration File</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_5">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains log operations&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="title">
-         <string>Log</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QPlainTextEdit" name="logText">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_7">
-           <item>
-            <spacer name="horizontalSpacer_5">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnClearLog">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It clears the log&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string>Clear</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="0" column="0">
-     <widget class="QGroupBox" name="groupBox_7">
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains acquisition values either in original form or compensated by the digital stage.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
-      <property name="title">
-       <string>Acquisition Values</string>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QGroupBox" name="groupBox2">
-         <property name="minimumSize">
-          <size>
-           <width>140</width>
-           <height>273</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>160</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contain the values from the board.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;When the tick box&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;OFF&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, this column displays the raw &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;values . They are the analog values of the strain gauges compensated by the front-end amplifier and then acquired by the ADC peripheral. Their range is [-32K, +32K). &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Else, when the tick box&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;ON&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, this colums displays the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; values. They are the compensated force torque values in metric units calculated as follows:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; / 32768 ) &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;fullscale&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;where &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is element-wise multiplication between two vectors.&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="title">
-          <string>Values</string>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QTableWidget" name="tableCurr">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>238</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>231</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="focusPolicy">
-             <enum>Qt::NoFocus</enum>
-            </property>
-            <property name="toolTip">
-             <string/>
-            </property>
-            <property name="selectionMode">
-             <enum>QAbstractItemView::NoSelection</enum>
-            </property>
-            <attribute name="horizontalHeaderDefaultSectionSize">
-             <number>80</number>
-            </attribute>
-            <attribute name="horizontalHeaderStretchLastSection">
-             <bool>true</bool>
-            </attribute>
-            <attribute name="verticalHeaderDefaultSectionSize">
-             <number>35</number>
-            </attribute>
-            <attribute name="verticalHeaderMinimumSectionSize">
-             <number>35</number>
-            </attribute>
-            <row>
-             <property name="text">
-              <string>Ch: 0</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Ch: 1</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Ch: 2</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Ch: 3</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Ch: 4</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Ch: 5</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <column>
-             <property name="text">
-              <string>ADC-FT</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </column>
-            <item row="0" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="1" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="2" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="3" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="4" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="5" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_4">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains statistics related to the acquisition values.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;In case no digital regulation is used, in here are displayed statistics (max, min, variation) of the six ADC values; else are displayed the calibrated values of force and torque in digital range &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; and their statistics (max, min, delta). &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; )&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="title">
-          <string>Statistics</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
-          <item>
-           <widget class="QTableWidget" name="tableUseMatrix">
-            <property name="minimumSize">
-             <size>
-              <width>361</width>
-              <height>238</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>231</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="focusPolicy">
-             <enum>Qt::NoFocus</enum>
-            </property>
-            <property name="toolTip">
-             <string/>
-            </property>
-            <property name="selectionMode">
-             <enum>QAbstractItemView::NoSelection</enum>
-            </property>
-            <attribute name="horizontalHeaderDefaultSectionSize">
-             <number>80</number>
-            </attribute>
-            <attribute name="horizontalHeaderStretchLastSection">
-             <bool>true</bool>
-            </attribute>
-            <attribute name="verticalHeaderDefaultSectionSize">
-             <number>35</number>
-            </attribute>
-            <attribute name="verticalHeaderMinimumSectionSize">
-             <number>35</number>
-            </attribute>
-            <row>
-             <property name="text">
-              <string>Ch: 0</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Ch: 1</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Ch: 2</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Ch: 3</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Ch: 4</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <row>
-             <property name="text">
-              <string>Ch: 5</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </row>
-            <column>
-             <property name="text">
-              <string>Max ADC</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Min ADC</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Variation</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>FT</string>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </column>
-            <item row="0" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="0" column="1">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="0" column="2">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="0" column="3">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="1" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="1" column="1">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="1" column="2">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="1" column="3">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="2" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="2" column="1">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="2" column="2">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="2" column="3">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="3" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="3" column="1">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="3" column="2">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="3" column="3">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="4" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="4" column="1">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="4" column="2">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="4" column="3">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="5" column="0">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="5" column="1">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="5" column="2">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-            <item row="5" column="3">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <layout class="QHBoxLayout" name="horizontalLayout_10">
-      <item>
-       <spacer name="horizontalSpacer_4">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btnClose">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It ... well you may guess.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Close</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="1" column="0" colspan="3">
+    <item row="4" column="0" colspan="3">
      <layout class="QHBoxLayout" name="horizontalLayout_5">
       <item>
        <widget class="QGroupBox" name="groupBox_2">
@@ -794,7 +33,7 @@
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group keeps the analog regulation of the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;For strain2 it is the gain and offset of an amplifier applied to each strain gauge before ADC. For teh strain just the offset.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The amplifier gain and offset are applied to the SG values in the analog frontend before ADC acquisition. The gain is in floating point and the offset is in range [0, +64K). The used formula is:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;gain &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;straingauge&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) + &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;offset&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, where &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is the element-wise vector multiplication&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group keeps the analog regulation of the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set in use&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;For strain2 it is the gain and offset of an amplifier applied to each strain gauge before ADC. For the strain just the DAC offset.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The amplifier gain and offset are applied to the SG values in the analog frontend before ADC acquisition. The gain is in floating point and the offset is in range [0, +64K). The used formula is:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;gain &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;straingauge&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) + &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;offset&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, where &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is the element-wise vector multiplication&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="title">
          <string>Analog Regulation</string>
@@ -855,6 +94,8 @@
             <property name="font">
              <font>
               <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
              </font>
             </property>
            </row>
@@ -915,6 +156,8 @@
             <property name="font">
              <font>
               <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
              </font>
             </property>
            </column>
@@ -925,6 +168,8 @@
             <property name="font">
              <font>
               <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
              </font>
             </property>
            </column>
@@ -935,6 +180,8 @@
             <property name="font">
              <font>
               <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
              </font>
             </property>
            </column>
@@ -949,6 +196,9 @@
             </property>
            </item>
            <item row="0" column="1">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -956,6 +206,9 @@
             </property>
            </item>
            <item row="0" column="2">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -963,6 +216,9 @@
             </property>
            </item>
            <item row="1" column="0">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -970,6 +226,9 @@
             </property>
            </item>
            <item row="1" column="1">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -977,6 +236,9 @@
             </property>
            </item>
            <item row="1" column="2">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -984,6 +246,9 @@
             </property>
            </item>
            <item row="2" column="0">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -991,6 +256,9 @@
             </property>
            </item>
            <item row="2" column="1">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -998,6 +266,9 @@
             </property>
            </item>
            <item row="2" column="2">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -1005,6 +276,9 @@
             </property>
            </item>
            <item row="3" column="0">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -1012,6 +286,9 @@
             </property>
            </item>
            <item row="3" column="1">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -1019,6 +296,9 @@
             </property>
            </item>
            <item row="3" column="2">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -1026,6 +306,9 @@
             </property>
            </item>
            <item row="4" column="0">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -1033,6 +316,9 @@
             </property>
            </item>
            <item row="4" column="1">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -1040,6 +326,9 @@
             </property>
            </item>
            <item row="4" column="2">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -1047,6 +336,9 @@
             </property>
            </item>
            <item row="5" column="0">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -1054,6 +346,9 @@
             </property>
            </item>
            <item row="5" column="1">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -1061,6 +356,9 @@
             </property>
            </item>
            <item row="5" column="2">
+            <property name="text">
+             <string/>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -1098,7 +396,7 @@
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It fills the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Gain &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;and &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; columns above with their default values. Then one must apply them with the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Apply&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; button.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It fills the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Gain &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;and &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; columns above with their default values. They are sent to the board with the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Apply&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; button.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Clear</string>
@@ -1115,7 +413,7 @@
               </font>
              </property>
              <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This check box enables / disables the auto-tune procedure for the offset of the analog front end. The procedure is activated by the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Apply&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; button.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This procedure finds the values of &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; which produce ADC acquisitions equal to the values in the column called&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt; Target ADC&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;. In case of strain2, it will also force the amplifiers to have the gains specified in column &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Gain&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This check box enables / disables the auto-tune procedure for the offset of the analog front end. The procedure is activated by the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Apply&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; button.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This procedure finds the values of &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Offset&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; which produce ADC acquisitions equal to the values in the column called&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt; Target ADC&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;. In case of strain2, it will force beforehand the amplifiers to have the gains specified in column &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Amp Gain&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
               <string>Auto Tune</string>
@@ -1365,7 +663,7 @@
                    </font>
                   </property>
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It sets the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; value equal to negative of &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, so that the value multiplied with the matrix &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; (which is &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;) is zero. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Here is the formula: &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; )&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It sets the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; value equal to negative of &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, so that the value multiplied with the matrix &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; becomes zero. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Here is the formula: &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; )&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Tune</string>
@@ -1382,10 +680,10 @@
                    </font>
                   </property>
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It forces the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; value equal to zero. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Here is the formula: &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It sets the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; value to zero. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Here is the formula: &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
-                   <string>Reset</string>
+                   <string>Clear</string>
                   </property>
                  </widget>
                 </item>
@@ -1994,7 +1292,7 @@
                     </font>
                    </property>
                    <property name="toolTip">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It imports matrix-fullscales values.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;In calibration procedure it allows to load matlab's originated data from file &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;matrix_SNxxxx.txt&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; and sends it directly to the board.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;But one can also load a file with floating point values for matrix and fullscales. In this case, the values are loaded in the GUI and sent with button &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Send&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;`&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It imports matrix-fullscales values from a file.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;In calibration procedure it allows to load matlab's originated data from file &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;matrix_SNxxxx.txt&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; and sends its values directly to the board.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;But one can also load a file with floating point values for matrix and fullscales. In this case, the values are loaded in the GUI and sent with button &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Send&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string>Import</string>
@@ -2029,26 +1327,388 @@
       </item>
      </layout>
     </item>
-    <item row="0" column="1">
-     <widget class="QGroupBox" name="groupBox3">
+    <item row="5" column="2">
+     <layout class="QHBoxLayout" name="horizontalLayout_10">
+      <item>
+       <spacer name="horizontalSpacer_4">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnClose">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It ... well you may guess.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Close</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="3" column="2">
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="0" column="0">
+       <widget class="QGroupBox" name="groupBox3">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains commands related to the regulation set. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="title">
+         <string>Regulation Set</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It tells/set&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;s the regulation set &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;currently&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; used by the board. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This value is &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;not&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; stored in EEPROM.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Any operation performed on the panels &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Analog Regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; or &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Digital Regulation &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; or with buttons &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Load/Save Calibration File &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;will be done on the set in use.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Set currently in use:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_6">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It tell&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;s/sets the regulation set used by the board at &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;bootstrap&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This value is stored in &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;EEPROM&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;strain&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; has only one regulation set, hence its value is always 1 and cannot be modified.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;strain2&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; instead has three possible regulation sets. The user can thus operate on this widget to specify the set that the board will use at next restart.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Set loaded at bootstrap:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="comboRegSetBoot">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>27</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>27</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <item>
+              <property name="text">
+               <string>1</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>3</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QComboBox" name="comboRegSet">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>27</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>27</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <item>
+              <property name="text">
+               <string>1</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>2</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>3</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QGroupBox" name="groupBox1">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains general commands &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="title">
+         <string>Commands</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Serial Number:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="edit_serial">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It contains the serial number of the board. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This value is stored in &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;EEPROM&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnSetSerial">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It sends a new serial number to the board.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Change</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnLoadCalibFile">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It reads a .dat file with the full calibration (serial number, analog and digital regulation) and sends it to the strain/strain2 board which loads it in RAM in the partition of the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set currently in use&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Load Calibration File</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnSaveCalibFile">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It asks the board the full regulation which is in RAM in the partition of the the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set currently in use&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; plus the serial number and it saves all into a file named &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;calibrationDataSNxxxx.dat&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Save Calibration File</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QGroupBox" name="groupBox_5">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains log operations&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="title">
+         <string>Log</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QPlainTextEdit" name="logText">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <item>
+            <spacer name="horizontalSpacer_5">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnClearLog">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It clears the log&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Clear</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="3" column="0">
+     <widget class="QGroupBox" name="groupBox_7">
       <property name="font">
        <font>
         <pointsize>10</pointsize>
         <weight>75</weight>
         <bold>true</bold>
+        <underline>false</underline>
        </font>
       </property>
       <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains commands related to a regulation set. &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains acquisition values either in original form or compensated by the digital stage.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
       </property>
       <property name="title">
-       <string>Regulation Set</string>
+       <string>Acquisition</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <layout class="QGridLayout" name="gridLayout_3">
+        <layout class="QFormLayout" name="formLayout">
          <item row="0" column="0">
-          <widget class="QLabel" name="label_5">
+          <widget class="QCheckBox" name="checkDigital">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -2057,53 +1717,27 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It tells/sets the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;regulation set currently used by the board&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;. The initial value of the set in use is equal to the set at boot. One can later change it with this widget. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Any operation performed on the analog or digital regulation set or with buttons &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Load/Save Calibration File &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;will be done on the set in use. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;strain&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; has only one regulation set, hence its value is always 1 and cannot be modified.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;strain2&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; instead has three possible regulation sets. The user can thus operate on this widget to specify the set (1, 2 or 3) to use.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It turns ON / OFF the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;digital regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; as shown in the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt;Digital Regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; group. The analog regulation is instead always applied.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;When &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;ON&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, the GUI asks to the board the values &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; which are the result of the digital regulation applied by the board to the ADC values.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;When &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;OFF&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, the GUI asks to the board the acquired &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;ADC&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; values.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Set in use:</string>
+            <string>Apply Digital Regulation</string>
            </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="comboRegSet">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>27</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>27</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-           <item>
-            <property name="text">
-             <string>1</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>2</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>3</string>
-            </property>
-           </item>
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QLabel" name="label_6">
+          <widget class="QGroupBox" name="groupBox2">
+           <property name="minimumSize">
+            <size>
+             <width>140</width>
+             <height>273</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>160</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -2112,27 +1746,171 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It tells/sets &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;the regulation set used by the board at bootstrap&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;strain&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; has only one regulation set, hence its value is always 1 and cannot be modified.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;strain2&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; instead has three possible regulation sets. The user can thus operate on this widget to specify the set (1, 2 or 3) that the board will use at next restart.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contain the values from the board.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;When the tick box&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;OFF&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, this column displays the raw &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;values . They are the analog values of the strain gauges compensated by the front-end analog stage and then acquired by the ADC peripheral. Their range is [-32K, +32K). &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Else, when the tick box&lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-style:italic;&quot;&gt; Apply digital regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;ON&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, this colums displays the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; values. They are the compensated force torque values in metric units calculated as follows:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; ) &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;forcetorque&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; / 32768 ) &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;fullscale&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;where &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'STIXGeneral'; font-size:10pt;&quot;&gt;⊙&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; is element-wise multiplication between two vectors.&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
-           <property name="text">
-            <string>Set at boot:</string>
+           <property name="title">
+            <string>Values</string>
            </property>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QTableWidget" name="tableCurr">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>238</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>231</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::NoFocus</enum>
+              </property>
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::NoSelection</enum>
+              </property>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>80</number>
+              </attribute>
+              <attribute name="horizontalHeaderStretchLastSection">
+               <bool>true</bool>
+              </attribute>
+              <attribute name="verticalHeaderDefaultSectionSize">
+               <number>35</number>
+              </attribute>
+              <attribute name="verticalHeaderMinimumSectionSize">
+               <number>35</number>
+              </attribute>
+              <row>
+               <property name="text">
+                <string>Ch: 0</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 1</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 2</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 3</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 4</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 5</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <column>
+               <property name="text">
+                <string>ADC-FT</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </column>
+              <item row="0" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="1" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="2" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="3" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="4" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="5" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QComboBox" name="comboRegSetBoot">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>27</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>27</height>
-            </size>
-           </property>
+          <widget class="QGroupBox" name="groupBox_4">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
@@ -2140,54 +1918,327 @@
              <bold>false</bold>
             </font>
            </property>
-           <item>
-            <property name="text">
-             <string>1</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>2</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>3</string>
-            </property>
-           </item>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This group contains statistics related to the acquisition values.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;In case no digital regulation is used, in here are displayed statistics (max, min, variation) of the six ADC values; else are displayed the calibrated values of force and torque in digital range &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; and their statistics (max, min, delta). &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;FT&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; = &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; * ( &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;ADC &lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;+ &lt;/span&gt;&lt;span style=&quot; font-size:10pt; text-decoration: overline;&quot;&gt;bias&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt; )&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="title">
+            <string>Statistics</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QTableWidget" name="tableUseMatrix">
+              <property name="minimumSize">
+               <size>
+                <width>361</width>
+                <height>238</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>231</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::NoFocus</enum>
+              </property>
+              <property name="toolTip">
+               <string/>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::NoSelection</enum>
+              </property>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>80</number>
+              </attribute>
+              <attribute name="horizontalHeaderStretchLastSection">
+               <bool>true</bool>
+              </attribute>
+              <attribute name="verticalHeaderDefaultSectionSize">
+               <number>35</number>
+              </attribute>
+              <attribute name="verticalHeaderMinimumSectionSize">
+               <number>35</number>
+              </attribute>
+              <row>
+               <property name="text">
+                <string>Ch: 0</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 1</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 2</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 3</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 4</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 5</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </row>
+              <column>
+               <property name="text">
+                <string>Max ADC</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Min ADC</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Variation</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>FT</string>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </column>
+              <item row="0" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="0" column="1">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="0" column="2">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="0" column="3">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="1" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="1" column="1">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="1" column="2">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="1" column="3">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="2" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="2" column="1">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="2" column="2">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="2" column="3">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="3" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="3" column="1">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="3" column="2">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="3" column="3">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="4" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="4" column="1">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="4" column="2">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="4" column="3">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="5" column="0">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="5" column="1">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="5" column="2">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+              <item row="5" column="3">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkDigital">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It turs ON / OFF the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;digital regulation&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;When &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;OFF&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, the GUI shows the originally acquired ADC values.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;When &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;&gt;ON&lt;/span&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, the GUI shows the result of the digital regulation applied by the board to the original ADC values.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Apply Digital Regulation</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
@@ -2199,7 +2250,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1150</width>
+     <width>1160</width>
      <height>21</height>
     </rect>
    </property>
@@ -2230,6 +2281,7 @@
      <string>Operations</string>
     </property>
     <addaction name="actionClear_Statistics"/>
+    <addaction name="actionClear_the_regulation_set_in_use"/>
     <addaction name="actionClear_the_full_regulation"/>
    </widget>
    <addaction name="menuFile"/>
@@ -2284,6 +2336,19 @@
   <action name="actionClear_the_full_regulation">
    <property name="text">
     <string>Clear every regulation set</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;It forces every regulation set to have the default values. It also forces the set at boot and set in use to be 1. It does not change the serial number.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionClear_the_regulation_set_in_use">
+   <property name="text">
+    <string>Clear the regulation set currently in use</string>
    </property>
    <property name="font">
     <font>
