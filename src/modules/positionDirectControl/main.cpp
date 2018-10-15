@@ -63,6 +63,19 @@ public:
         Bottle *jointsList=0;
         std::string moduleName = "directPositionControl";
 
+        if (options.check("help"))
+        {
+            yInfo() << "Available options:";
+            yInfo() << "--robot <robot name>";
+            yInfo() << "--name <local_module_name>";
+            yInfo() << "--part <part_name>";
+            yInfo() << "--joints ""(x x x)"" ";
+            yInfo() << "--joints_limiter <deg>";
+            yInfo() << "--target_limiter <deg>";
+            yInfo() << "--period <s>";
+            return false;
+        }
+
         options.put("device", "remote_controlboard");
         if(options.check("robot"))
             strncpy(robotName, options.find("robot").asString().c_str(),sizeof(robotName));
@@ -109,6 +122,21 @@ public:
             return false;
         }
 
+
+        double joints_limiter = 2.0; //deg
+        double target_limiter = 1.0; //deg
+        if (options.check("joints_limiter"))
+        {
+            joints_limiter = options.find("joints_limiter").asDouble();
+        }
+        if (options.check("target_limiter"))
+        {
+            target_limiter = options.find("target_limiter").asDouble();
+        }
+
+        yDebug() << "joints_limiter:" << joints_limiter;
+        yDebug() << "target_limiter" << target_limiter;
+
         //opening the device driver
         if (!driver.open(options))
         {
@@ -125,6 +153,8 @@ public:
 
         pThread=new positionDirectControlThread(period);
         pThread->init(&driver, moduleName, partName, robotName, jointsList);
+        pThread->joints_limiter = joints_limiter;
+        pThread->target_limiter = target_limiter;
         pThread->start();
 
         return true;
