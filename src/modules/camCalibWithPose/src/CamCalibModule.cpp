@@ -548,8 +548,8 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
     _prtImgIn.setLeftEye((strGroup == "CAMERA_CALIBRATION_LEFT") ? true : false);
     _prtImgIn.setMaxDelay(maxDelay);
     _prtImgIn.setUseIMU(rf.check("useIMU"));
-    _prtImgIn.setUseIMU(rf.check("useTorso"));
-    _prtImgIn.setUseIMU(rf.check("useEyes"));
+    _prtImgIn.setUseTorso(rf.check("useTorso"));
+    _prtImgIn.setUseEyes(rf.check("useEyes"));
     _prtImgIn.useCallback();
     _prtImgOut.open(getName("/out"));
     _configPort.open(getName("/conf"));
