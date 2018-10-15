@@ -47,15 +47,19 @@ private:
     bool leftEye; // true for left eye, false for right eye
     double maxDelay;
 
-    std::map<double, yarp::os::Bottle> h_encs_map;
-    std::map<double, yarp::os::Bottle> t_encs_map;
-    std::map<double, yarp::os::Bottle> imu_map;
-    yarp::os::Bottle h_encs;
-    yarp::os::Bottle t_encs;
-    yarp::os::Bottle imu;
+    std::map<double, yarp::os::Bottle> m_h_encs_map;
+    std::map<double, yarp::os::Bottle> m_t_encs_map;
+    std::map<double, yarp::os::Bottle> m_imu_map;
+    yarp::os::Bottle m_last_h_encs;
+    yarp::os::Bottle m_last_t_encs;
+    yarp::os::Bottle m_last_imu;
+    yarp::os::Bottle m_curr_h_encs;
+    yarp::os::Bottle m_curr_t_encs;
+    yarp::os::Bottle m_curr_imu;
     bool useIMU;
     bool useTorso;
     bool useEyes;
+    bool useLast;
 
     bool updatePose(double time);
     bool selectBottleFromMap(double time,
@@ -83,12 +87,13 @@ public:
     void setLeftEye(bool eye) { leftEye = eye; }
     void setMaxDelay(double delay) { maxDelay = delay; }
 
-    void setTorsoEncoders(double time, const yarp::os::Bottle &t_encs) { m.lock(); t_encs_map[time] = t_encs; m.unlock(); }
-    void setHeadEncoders(double time, const yarp::os::Bottle &h_encs) { m.lock(); h_encs_map[time] = h_encs; m.unlock(); }
-    void setImuData(double time, const yarp::os::Bottle &imu) { m.lock(); imu_map[time] = imu; m.unlock(); }
+    void setTorsoEncoders(double time, const yarp::os::Bottle &t_encs) { m.lock();  m_last_t_encs = t_encs; m_t_encs_map[time] = t_encs; m.unlock(); }
+    void setHeadEncoders(double time, const yarp::os::Bottle &h_encs) { m.lock(); m_last_h_encs = h_encs;  m_h_encs_map[time] = h_encs; m.unlock(); }
+    void setImuData(double time, const yarp::os::Bottle &imu) { m.lock(); m_last_imu = imu; m_imu_map[time] = imu; m.unlock(); }
     void setUseIMU(bool useIMU) { this->useIMU = useIMU; }
     void setUseTorso(bool useTorso) { this->useTorso = useTorso; }
     void setUseEyes(bool useEyes) { this->useEyes = useEyes; }
+    void setUseLast(bool useLast) { this->useLast = useLast; }
 
     yarp::os::BufferedPort<yarp::os::Bottle> rpyPort;
 };
