@@ -56,10 +56,12 @@ public:
     QString getProcessFromUint(uint8_t id);
     cDownloader *getDownloader();
 
+    bool strainCalibMode;
 
 private:
     bool compile_ip_addresses(const char* addr,unsigned int *remoteAddr,unsigned int *localAddr);
 private:
+
     QList < QPair<QString,QVariant> > devices;
     //EthUpdater  gUpdater;
     EthMaintainer gMNT;

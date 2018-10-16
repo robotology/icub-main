@@ -102,6 +102,22 @@ void cDownloader::set_verbose(bool verbose)
     _verbose = verbose;
 }
 
+void cDownloader::set_external_logger(void *caller, void (*logger)(void *, const std::string &))
+{
+    _externalLoggerFptr = logger;
+    _externalLoggerCaller = caller;
+}
+
+void cDownloader::Log(const std::string &msg)
+{
+    yDebug() << "$" << msg;
+
+    if(NULL != _externalLoggerFptr)
+    {
+        _externalLoggerFptr(_externalLoggerCaller, "$ " + msg);
+    }
+}
+
 
 //*****************************************************************/
 
@@ -128,6 +144,8 @@ int cDownloader::stopdriver()
 int cDownloader::initdriver(Searchable &config, bool verbose)
 {
     _verbose = verbose;
+
+    set_external_logger(NULL, NULL);
 
     int ret = 0; // 0 is ok, -1 is failure, -2 is retry ...
     if (m_idriver !=NULL)
@@ -973,7 +991,13 @@ float cDownloader::strain_amplifier_discretegain2float(strain2_ampl_discretegain
         48, 36, 24, 20, 16, 10, 8, 6, 4
     };
 
-    return mapofgains[static_cast<unsigned int>(c)];
+    unsigned int index = static_cast<unsigned int>(c);
+    if(index >= ampl_gain_numberOf)
+    {
+        if(_verbose) yError ("strain_amplifier_discretegain2float(): cannot convert to a valid value\n");
+        return 0.0f;
+    }
+    return mapofgains[index];
 }
 
 int cDownloader::strain_set_amplifier_discretegain(int bus, int target_id, unsigned char channel, strain2_ampl_discretegain_t ampcfg, int regset, string *errorstring)
@@ -1021,6 +1045,12 @@ int cDownloader::strain_set_amplifier_discretegain(int bus, int target_id, unsig
 
     unsigned int index = static_cast<unsigned int>(ampcfg);
 
+    if(index >= ampl_gain_numberOf)
+    {
+        if(_verbose) yError ("strain_set_amplifier_discretegain(): cannot convert to a valid index\n");
+        return -1;
+    }
+
 
     txBuffer[0].setId((2 << 8) + target_id);
     txBuffer[0].setLen(8);
@@ -1033,7 +1063,7 @@ int cDownloader::strain_set_amplifier_discretegain(int bus, int target_id, unsig
     txBuffer[0].getData()[6]= _cfg1map[index][4];
     txBuffer[0].getData()[7]= _cfg1map[index][5];
     set_bus(txBuffer[0], bus);
-    yDebug("strain_set_amplifier_discretegain() is sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+    if(_verbose) yDebug("strain_set_amplifier_discretegain() is sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
 
     m_idriver->send_message(txBuffer, 1);
 
@@ -1306,7 +1336,7 @@ int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigne
 }
 
 
-int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemilli, bool calibmode, string *errorstring)
+int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemilli, bool calibmode, strain_acquisition_mode_t acqmode, string *errorstring)
 {
     // check if driver is running
     if (m_idriver == NULL)
@@ -1317,7 +1347,13 @@ int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemill
 
     int ret = 0;
 
-    yDebug() << "cDownloader::strain_acquire_start() from" << bus << target_id;
+
+    if (strain_acquisition_mode_polling == acqmode)
+    {
+        return 0;
+    }
+
+    //yDebug() << "cDownloader::strain_acquire_start() from" << bus << target_id;
 
     // Send transmission rate to strain board
     txBuffer[0].setId((2 << 8) + target_id);
@@ -1353,7 +1389,7 @@ int cDownloader::strain_acquire_start(int bus, int target_id, uint8_t txratemill
 
 }
 
-int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring)
+int cDownloader::strain_acquire_stop(int bus, int target_id, strain_acquisition_mode_t acqmode, string *errorstring)
 {
     // check if driver is running
     if (m_idriver == NULL)
@@ -1361,6 +1397,11 @@ int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring
            if(_verbose) yError ("Driver not ready\n");
            return -1;
        }
+
+    if (strain_acquisition_mode_polling == acqmode)
+    {
+        return 0;
+    }
 
    // Send transmission command to strain board
    txBuffer[0].setId((2 << 8) + target_id);
@@ -1384,7 +1425,7 @@ int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring
    for(size_t n=0; n<10; n++)
    {
         int read_messages = m_idriver->receive_message(rxBuffer, maxframes, TOUT);
-        yDebug() << "cDownloader::strain_acquire_stop() has removed" << read_messages << "can frames from rxbuffer";
+        //yDebug() << "cDownloader::strain_acquire_stop() has removed" << read_messages << "can frames from rxbuffer";
         if(0 == read_messages)
         {
             break;
@@ -1394,7 +1435,7 @@ int cDownloader::strain_acquire_stop(int bus, int target_id, string *errorstring
    return 0;
 }
 
-int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany, string *errorstring)
+int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany, void (*updateProgressBar)(void*, float), void *arg, strain_acquisition_mode_t acqmode, const unsigned int maxerrors, string *errorstring)
 {
     // i must read howmany pairs of can frames of type 0xA and 0xB. to simplify i assume that they will arrive in pairs.
 
@@ -1406,6 +1447,50 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
         return -1;
     }
 
+    unsigned int errorcount = 0;
+    
+
+    if (strain_acquisition_mode_polling == acqmode)
+    {
+        if(_verbose)
+        {
+            yDebug() << "cDownloader::strain_acquire_get() is using polling";
+        }
+
+        for (unsigned int s = 0; s < howmany; s++)
+        {
+            cDownloader::strain_value_t sv;
+            sv.valid = true;
+
+            for (int c = 0; c < 6; c++)
+            {
+                //drv_sleep(3);
+                unsigned int adc = 0;
+                int rr = strain_get_adc(bus, target_id, c, adc, 0);
+                if (-1 == rr)
+                {
+                    errorcount++;
+                    yDebug() << "error in acquisition of an adc channel " << c << "incrementing error counter to" << errorcount;
+                    if (errorcount >= maxerrors)
+                    {
+                        yError() << "reached" << maxerrors << "reception errors in adc acquisition: must quit";
+                        return -1;
+                    }
+                }
+                sv.channel[c] = adc;
+            }
+            values.push_back(sv);
+
+            if (NULL != updateProgressBar)
+            {
+                float perc = (0 != howmany) ? (static_cast<float>(s + 1) / static_cast<float>(howmany)) : (100.0);
+                updateProgressBar(arg, perc);
+            }
+        }
+
+        return 0;
+    }
+
     const double TOUT = 3.0;
 
     // purge from possible acks of strain1...
@@ -1413,8 +1498,15 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
     m_idriver->receive_message(rxBuffer, 2, TOUT);
     m_idriver->receive_message(rxBuffer, 2, TOUT);
 
+
     for(unsigned int s=0; s<howmany; s++)
     {
+
+        if(NULL != updateProgressBar)
+        {
+            float perc = (0 != howmany) ? (static_cast<float>(s+1)/static_cast<float>(howmany)) : (100.0);
+            updateProgressBar(arg, perc);
+        }
 
         int read_messages = m_idriver->receive_message(rxBuffer, 2, TOUT);
         strain_value_t sv;
@@ -1508,7 +1600,13 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
         }
         else
         {
-            yDebug() << "did not received two messages but " << read_messages;
+            errorcount ++;
+            yDebug() << "in streaming mode did not received two messages but " << read_messages << "incrementing error counter to" << errorcount;
+            if(errorcount >= maxerrors)
+            {
+                yError() << "reached" << maxerrors << "reception errors: must quit";
+                return -1;
+            }
         }
 
     }
@@ -2547,6 +2645,22 @@ int cDownloader::initschede()
         drv_sleep(10);
     }
 
+    for (i=0; i<board_list_size; i++)
+    {
+        board_list[i].strainregsetinuse = board_list[i].strainregsetatboot = 0;
+        if(board_list[i].type==icubCanProto_boardType__strain)
+        {
+            board_list[i].strainregsetinuse = board_list[i].strainregsetatboot = 1;
+        }
+        else if(board_list[i].type==icubCanProto_boardType__strain2)
+        {
+            this->strain_get_regulationset(board_list[i].bus, board_list[i].pid, board_list[i].strainregsetinuse, strain_regsetmode_temporary);
+            this->strain_get_regulationset(board_list[i].bus, board_list[i].pid, board_list[i].strainregsetatboot, strain_regsetmode_permanent);
+        }
+        //pause
+        drv_sleep(10);
+    }
+
 #define TEST_GET_FW_VERSION
 
 #if defined(TEST_GET_FW_VERSION)
@@ -3412,6 +3526,9 @@ int cDownloader::get_bus(yarp::dev::CanMessage &msg)
 
 int cDownloader::strain_calibrate_offset2_strain1 (int bus, int target_id, int16_t t, string *errorstring)
 {
+#if 1
+    return strain_calibrate_offset2_strain1safer(bus, target_id, t, 2, false, errorstring);
+#else
     // check if driver is running
     if (m_idriver == NULL)
     {
@@ -3544,6 +3661,7 @@ int cDownloader::strain_calibrate_offset2_strain1 (int bus, int target_id, int16
     }
 
     return 0;
+#endif
 }
 
 
@@ -3553,41 +3671,50 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
     const int regset = strain_regset_inuse;
     const unsigned int NUMofCHANNELS = 6;
 
+    std::ostringstream ss;
+
     // check if driver is running
     if (m_idriver == NULL)
     {
        if(_verbose) yError ("Driver not ready\n");
+       Log(std::string("strain_calibrate_offset2_strain2(): failure. driver no ready"));
        return -1;
     }
 
-    yDebug() << "strain2-amplifier-tuning: see the various STEP-x";
+
+    ss.str("");
+    ss.clear();
+    ss << "performing offset autotuning for strain2";
+    Log(ss.str());
 
     // step 1: apply the gains. the initial offset will be meaning less. however strain_set_amplifier_discretegain() assign offsets all equal to 32k-1
     for(int channel=0; channel<NUMofCHANNELS; channel++)
     {
-        yDebug() << "strain2-amplifier-tuning: STEP-1. on channel" << channel << "we impose gain =" << strain_amplifier_discretegain2float(gains[channel]);
+        ss.str("");
+        ss.clear();
+        ss << "- on ch " << std::to_string(channel) << ": we impose g = " << std::to_string(static_cast<int>(strain_amplifier_discretegain2float(gains[channel])));
 
         if(0 != strain_set_amplifier_discretegain(bus, target_id, channel, gains[channel], regset, errorstring))
         {
-            if(_verbose) yError ("strain_calibrate_offset2_strain2(): failure of strain_set_amplifier_discretegain()\n");
+            if(_verbose)
+            {
+                Log(ss.str());
+                Log("strain_calibrate_offset2_strain2(): failure of strain_set_amplifier_discretegain()");
+            }
             return -1;
         }
         // i wait some time
         yarp::os::Time::delay(1.0);
-    }
 
-
-    // step 2: i read back gains just to be sure ..
-
-    yDebug() << "strain2-amplifier-tuning: STEP-2. reading (gain, offset) of front end amplifiers";
-
-    for(int channel=0; channel<NUMofCHANNELS; channel++)
-    {
         float gaain = 0;
         uint16_t ooffset = 0;
         strain_get_amplifier_gain_offset(bus, target_id, channel, gaain, ooffset, regset, errorstring);
-        yDebug("strain2-amplifier-tuning: STEP-2. channel %d: gain = %f, offset = %d", channel, gaain, ooffset);
+
+        ss << " and read (g, o) = (" << std::to_string(static_cast<int>(gaain)) << ", " << std::to_string(ooffset) << ")";
+        Log(ss.str());
     }
+
+
 
     yarp::os::Time::delay(2.0);
 
@@ -3611,7 +3738,6 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
 
 
 
-
     tolerance = 256;
     uint8_t samples2average = 8; // if zero, the board uses its default (= 4)
 
@@ -3632,9 +3758,14 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
         okmask = 0x3f; // all six channel
 
 
-        yDebug() << "strain2-amplifier-tuning: STEP-3. regularisation of ADC to a single value = " << singletargetVALUE << "[uint16 = " << middle_val << "]";
-        yDebug() << "strain2-amplifier-tuning: STEP-3. other params: mae tolerence is" << tolerance << "and samples2average =" << samples2average;
+        ss.str("");
+        ss.clear();
+        ss << "STEP-2. there is a single ADC target: performing parallel regularization";
+        Log(ss.str());
 
+        ss.str("");
+        ss.clear();
+        ss << " params: target = " << std::to_string(singletargetVALUE) << " tolerance = " << std::to_string(tolerance) << " samples2average = " << std::to_string(samples2average);
 
         // sending an autocalib message
         txBuffer[0].setId((2 << 8) + target_id);
@@ -3648,7 +3779,7 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
         txBuffer[0].getData()[6]= (tolerance >> 8) & 0x00ff;   // little endian
         txBuffer[0].getData()[7]= samples2average;
         set_bus(txBuffer[0], bus);
-        yDebug("strain2-amplifier-tuning: STEP-3. sent message = [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+       // yDebug("strain2-amplifier-tuning: STEP-3. sent message = [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
         int ret = m_idriver->send_message(txBuffer, 1);
         // check if send_message was successful
         if (ret==0)
@@ -3660,16 +3791,17 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
         // now wait for a reply for most 3 seconds
         double TOUT = 3.0;
 
-
-
-        yDebug() << "strain2-amplifier-tuning: STEP-3. results ...";
+        ss.str("");
+        ss.clear();
+        ss << "STEP-3. results ...";
+        Log(ss.str());
 
         int read_messages = m_idriver->receive_message(rxBuffer, 1, TOUT);
         for(int i=0; i<read_messages; i++)
         {
             if (rxBuffer[i].getData()[0]==0x22)
             {
-                yDebug("strain2-amplifier-tuning: STEP-3. received message = [%x, %x, %x, %x, %x, %x, %x, %x]", rxBuffer[0].getData()[0], rxBuffer[0].getData()[1], rxBuffer[0].getData()[2], rxBuffer[0].getData()[3], rxBuffer[0].getData()[4], rxBuffer[0].getData()[5], rxBuffer[0].getData()[6], rxBuffer[0].getData()[7]);
+                //yDebug("strain2-amplifier-tuning: STEP-3. received message = [%x, %x, %x, %x, %x, %x, %x, %x]", rxBuffer[0].getData()[0], rxBuffer[0].getData()[1], rxBuffer[0].getData()[2], rxBuffer[0].getData()[3], rxBuffer[0].getData()[4], rxBuffer[0].getData()[5], rxBuffer[0].getData()[6], rxBuffer[0].getData()[7]);
 
                 //dac = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
                 uint8_t noisychannelmask = rxBuffer[i].getData()[2];
@@ -3680,37 +3812,87 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
 
                 if((okmask == algorithmOKmask) && (okmask == finalmeasureOKmask))
                 {
-                    yDebug() << "strain2-amplifier-tuning: STEP-3. OK. regularisation to value" << middle_val << "is done and MAE = " << mae;
+                    ss.str("");
+                    ss.clear();
+                    ss << " OK w/ MAE = " << std::to_string(mae);
+                    Log(ss.str());
+
                     if(0 != noisychannelmask)
                     {
-                        yDebug() << "however we found some noisy channels";
-                        yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+                        ss.str("");
+                        ss.clear();
+                        ss << " BUT noisy acquisition of samples: ";
+                        if((0x40 & noisychannelmask) == 0x40)
+                        {
+                            ss << " in computing average ADC before algorithm ";
+                        }
+                        if((0x80 & noisychannelmask) == 0x80)
+                        {
+                            ss << "after algorithm in computing MAE";
+                        }
+                        Log(ss.str());
 
+                        ss.str("");
+                        ss.clear();
+                        char tmp[256] = {0};
+                        snprintf(tmp, sizeof(tmp), "noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+                        ss <<  "COMPLETE RES: " << tmp;
+                        Log(ss.str());
                     }
 
                 }
                 else
                 {
-                    if(okmask != algorithmOKmask)
+                    ss.str("");
+                    ss.clear();
+                    ss << " KO: ";
+                    char tmp[256] = {0};
+                    snprintf(tmp, sizeof(tmp), "noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+                    ss << tmp;
+                    Log(ss.str());
+
+                    if(0 != noisychannelmask)
                     {
-                        yDebug() << "strain2-amplifier-tuning: STEP-3. KO. regularisation to value" << middle_val << "has sadly failed because algorithm found required values out of range of registers CFG0.OS or ZDAC.";
-                    }
-                    else
-                    {
-                        yDebug() << "strain2-amplifier-tuning: STEP-3. KO. regularisation to value" << middle_val << "has failed because MAE error is high on some channels.";
+                        ss.str("");
+                        ss.clear();
+                        ss << " WITH noisy acquisition of samples: ";
+                        if((0x40 & noisychannelmask) == 0x40)
+                        {
+                            ss << " in computing average ADC before algorithm ";
+                        }
+                        if((0x80 & noisychannelmask) == 0x80)
+                        {
+                            ss << "after algorithm in computing MAE";
+                        }
+                        Log(ss.str());
                     }
 
-                    yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
-                    for(uint8_t i=0; i<NUMofCHANNELS; i++)
+                    for(uint8_t channel=0; channel<NUMofCHANNELS; channel++)
                     {
-                        if((algorithmOKmask & (0x01<<i)) == 0)
+                        ss.str("");
+                        ss.clear();
+                        bool problems = false;
+                        ss << "- on ch " << std::to_string(channel) << ":";
+                        if((algorithmOKmask & (0x01<<channel)) == 0)
                         {
-                            yDebug() << "calibration fails in channel" << i;
+                            problems =  true;
+                            ss << " [algorithm fails]";
                         }
-                        if((finalmeasureOKmask & (0x01<<i)) == 0)
+                        if((finalmeasureOKmask & (0x01<<channel)) == 0)
                         {
-                            yDebug() << "mae is high in channel" << i;
+                            problems =  true;
+                            ss << " [mae is high (does ADC work?)]";
                         }
+                        if(((noisychannelmask) & (0x01<<channel)) == (0x01<<channel))
+                        {
+                            problems =  true;
+                            ss << " [noisy acquition]";
+                        }
+                        if(!problems)
+                        {
+                            ss << " [no detected problem]";
+                        }
+                        Log(ss.str());
                     }
                 }
                 break;
@@ -3720,9 +3902,15 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
     else
     {
         // for all six channels
+        ss.str("");
+        ss.clear();
+        ss << "STEP-2. there are multiple ADC targets: performing regularization channel by channel";
+        Log(ss.str());
 
-        yDebug() << "strain2-amplifier-tuning: STEP-3. regularisation of ADC to different values: there will be 6 regualtizations one for each channel";
-        yDebug() << "strain2-amplifier-tuning: STEP-3. other params: mae tolerence is" << tolerance << "and samples2average =" << samples2average;
+        ss.str("");
+        ss.clear();
+        ss << " common params: tolerance = " << std::to_string(tolerance) << " samples2average = " << std::to_string(samples2average);
+        Log(ss.str());
 
 
         for(int channel=0; channel<NUMofCHANNELS; channel++)
@@ -3730,6 +3918,12 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
             channel2autocalib = channel;
             middle_val = 32768 + targets[channel];
             okmask = 0x01 << channel;
+
+            ss.str("");
+            ss.clear();
+            ss << "- on ch " << std::to_string(channel) << ": ADC target = " << std::to_string(targets[channel]);
+            Log(ss.str());
+
 
             // send message, check results ...
 
@@ -3745,7 +3939,6 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
             txBuffer[0].getData()[6]= (tolerance >> 8) & 0x00ff;   // little endian
             txBuffer[0].getData()[7]= samples2average;
             set_bus(txBuffer[0], bus);
-            yDebug("strain2-amplifier-tuning: STEP-3. sent message to channel %d= [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7], channel2autocalib);
             int ret = m_idriver->send_message(txBuffer, 1);
             // check if send_message was successful
             if (ret==0)
@@ -3757,14 +3950,13 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
             // now wait for a reply for most 3 seconds
             double TOUT = 3.0;
 
-            yDebug() << "strain2-amplifier-tuning: STEP-3. results ...";
 
             int read_messages = m_idriver->receive_message(rxBuffer, 1, TOUT);
             for(int i=0; i<read_messages; i++)
             {
                 if (rxBuffer[i].getData()[0]==0x22)
                 {
-                    yDebug("strain2-amplifier-tuning: STEP-3. received message = [%x, %x, %x, %x, %x, %x, %x, %x]", rxBuffer[0].getData()[0], rxBuffer[0].getData()[1], rxBuffer[0].getData()[2], rxBuffer[0].getData()[3], rxBuffer[0].getData()[4], rxBuffer[0].getData()[5], rxBuffer[0].getData()[6], rxBuffer[0].getData()[7]);
+                    //yDebug("strain2-amplifier-tuning: STEP-3. received message = [%x, %x, %x, %x, %x, %x, %x, %x]", rxBuffer[0].getData()[0], rxBuffer[0].getData()[1], rxBuffer[0].getData()[2], rxBuffer[0].getData()[3], rxBuffer[0].getData()[4], rxBuffer[0].getData()[5], rxBuffer[0].getData()[6], rxBuffer[0].getData()[7]);
 
                     //dac = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
                     uint8_t noisychannelmask = rxBuffer[i].getData()[2];
@@ -3775,54 +3967,310 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
 
                     if((okmask == algorithmOKmask) && (okmask == finalmeasureOKmask))
                     {
-                        yDebug() << "strain2-amplifier-tuning: STEP-3. OK. regularisation to value" << middle_val << "is done and MAE = " << mae;
-                        if(0 != noisychannelmask)
+                        ss.str("");
+                        ss.clear();
+                        ss << "  OK w/ MAE = " << std::to_string(mae);
+                        Log(ss.str());
+
+                        if(0 != (noisychannelmask & okmask))
                         {
-                            yDebug() << "however we found some noisy channels";
-                            yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+                            ss.str("");
+                            ss.clear();
+                            ss << "  BUT noisy acquisition of samples: ";
+                            Log(ss.str());
+
+                            if((0x40 & noisychannelmask) == 0x40)
+                            {
+                                ss.str("");
+                                ss.clear();
+                                ss << "  - in computing average ADC before algorithm ";
+                                Log(ss.str());
+                            }
+                            if((0x80 & noisychannelmask) == 0x80)
+                            {
+                                ss.str("");
+                                ss.clear();
+                                ss << "  - after algorithm in computing MAE";
+                                Log(ss.str());
+                            }
+
+                            ss.str("");
+                            ss.clear();
+                            char tmp[256] = {0};
+                            snprintf(tmp, sizeof(tmp), "noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+                            ss <<  "COMPLETE RES: " << tmp;
+                            Log(ss.str());
                         }
 
                     }
                     else
                     {
-                        if(okmask != algorithmOKmask)
+
+                        ss.str("");
+                        ss.clear();
+                        ss << "  KO /w MAE = " << std::to_string(mae) << " because: ";
+                        Log(ss.str());
+
+                        ss.str("");
+                        ss.clear();
+                        char tmp[256] = {0};
+                        snprintf(tmp, sizeof(tmp), "  KO details: noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+                        ss << tmp;
+                        Log(ss.str());
+
+                        bool problems = false;
+                        if((algorithmOKmask & okmask) == 0)
                         {
-                            yDebug() << "strain2-amplifier-tuning: STEP-3. KO. regularisation to value" << middle_val << "has sadly failed because algorithm found required values out of range of registers CFG0.OS or ZDAC.";
+                            problems =  true;
+                            ss.str("");
+                            ss.clear();
+                            ss << "  - algorithm fails";
+                            Log(ss.str());
                         }
-                        else
+                        if((finalmeasureOKmask & okmask) == 0)
                         {
-                            yDebug() << "strain2-amplifier-tuning: STEP-3. KO. regularisation to value" << middle_val << "has failed because MAE error is high on some channels.";
+                            problems =  true;
+                            ss.str("");
+                            ss.clear();
+                            ss << "  - mae is high (does ADC work?)";
+                            Log(ss.str());
+                        }
+                        if(!problems)
+                        {
+                            ss.str("");
+                            ss.clear();
+                            ss << " .. strange: no detected problem";
+                            Log(ss.str());
                         }
 
-                        yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
-                        for(uint8_t i=0; i<NUMofCHANNELS; i++)
-                        {
-                            if((algorithmOKmask & (0x01<<i)) == 0)
-                            {
-                                yDebug() << "calibration fails in channel" << i;
-                            }
-                            if((finalmeasureOKmask & (0x01<<i)) == 0)
-                            {
-                                yDebug() << "mae is high in channel" << i;
-                            }
-                        }
                     }
                     break;
                 }
             }
+        }
+    }
 
+    return 0;
+}
 
+int cDownloader::readADC(int bus, int target_id, int channel, int nmeasures)
+{
+    const int type = 0; // raw
+
+    txBuffer[0].setId((2 << 8) + target_id);
+    txBuffer[0].setLen(3);
+    txBuffer[0].getData()[0]= 0x0C;
+    txBuffer[0].getData()[1]= channel;
+    txBuffer[0].getData()[2]= type;
+
+    int measure = 0;
+
+    for(int n=0; n<nmeasures; n++)
+    {
+        int tmp = 0;
+        set_bus(txBuffer[0], bus);
+        int ret = m_idriver->send_message(txBuffer, 1);
+        // check if send_message was successful
+        if (ret==0)
+        {
+            yError ("Unable to send message\n");
+            return 0;
+        }
+        //read adc
+        int read_messages = m_idriver->receive_message(rxBuffer,1);
+        for (int i=0; i<read_messages; i++)
+        {
+            if (rxBuffer[i].getData()[0]==0x0C)
+            {
+                tmp = (rxBuffer[i].getData()[3]<<8 | rxBuffer[i].getData()[4]);
+                break;
+            }
+            else
+            {
+                printf("cDownloader::strain_calibrate_offset2_strain1(): fails in reading reply for a measure\n");
+            }
         }
 
+        measure += tmp;
+    }
 
+    measure /= nmeasures;
+
+    return measure;
+}
+
+int cDownloader::strain_calibrate_offset2_strain1safer (int bus, int target_id, int16_t t, uint8_t nmeasures, bool fullsearch, string *errorstring)
+{
+    // check if driver is running
+    if (m_idriver == NULL)
+    {
+       if(_verbose) yError ("Driver not ready\n");
+       return -1;
+    }
+
+    std::ostringstream ss;
+
+    // marco.accame: transform [-32K, +32K) into [0, +64K)
+    unsigned int middle_val = 32768 + t;
+
+
+    if(fullsearch)
+    {
+        //yDebug() << "performing full search in dac space to find best value to match adc ="<< t << " using" << nmeasures << "adc acquisions for better averaging";
+
+        ss.str("");
+        ss.clear();
+        ss << "performing offset autotuning for strain1 in full search mode";
+        Log(ss.str());
+
+        ss.str("");
+        ss.clear();
+        ss << "params: " << "adc target =" << std::to_string(t) << " using" << std::to_string(nmeasures) << "adc acquisions for better averaging";
+        Log(ss.str());
+
+        for(int channel=0; channel<6; channel++)
+        {
+
+            long minABSerror = 128*1024;
+            unsigned int minDAC = 0;
+
+            // loop over all possible dac values
+            for(unsigned int testdac=0; testdac<1024; testdac++)
+            {
+                 // send new dac
+                strain_set_offset(bus, target_id, channel, testdac);
+                //wait
+                drv_sleep(3);
+                // verify it
+                unsigned int tmp = 0;
+                strain_get_offset(bus, target_id, channel, tmp);
+                if(tmp != testdac)
+                {
+                    yError() << "failed to impose DAC = " << testdac << "read:" << tmp;
+                }
+
+                // read value
+                int measure = readADC(bus, target_id, channel, nmeasures);
+                // compute error vs target
+                long error = long(measure) - long(middle_val);
+
+                if(fabs(error) < fabs(minABSerror))
+                {
+                    minABSerror = fabs(error);
+                    minDAC = testdac;
+                    //yDebug() << "PROGESS: channel =" << channel << "minerror = " << minABSerror << "mindac =" << minDAC;
+                }
+            }
+
+            // apply the best dac
+            strain_set_offset(bus, target_id, channel, minDAC);
+            // wait
+            drv_sleep(3);
+            // verify it
+            unsigned int tmp = 0;
+            strain_get_offset(bus, target_id, channel, tmp);
+            if(tmp != minDAC)
+            {
+                yError() << "failed to impose DAC = " << minDAC << "read:" << tmp;
+            }
+
+            ss.str("");
+            ss.clear();
+            ss << "RESULT of FULL SEARCH w/ nsamples average =" << std::to_string(nmeasures) << "-> channel =" << std::to_string(channel) << "minerror = " << std::to_string(minABSerror) << "mindac =" << std::to_string(minDAC);
+            Log(ss.str());
+
+            //yDebug() << "RESULT of FULL SEARCH w/ nsamples average =" << nmeasures << "-> channel =" << channel << "minerror = " << minABSerror << "mindac =" << minDAC;
+
+        } // channel
+
+    }
+    else
+    {
+        const int daclimit = 0x3ff;
+        const int dacstep = 1;
+        const long tolerance = 128;
+        const int maxiterations = 1024;
+
+        ss.str("");
+        ss.clear();
+        ss << "performing gradient descend in dac space to find best value to match adc ="<< std::to_string(t) << " using" << std::to_string(nmeasures) << "adc acquisions for better averaging";
+        Log(ss.str());
+
+        ss.str("");
+        ss.clear();
+        ss << "exit conditions: max number of iterations =" << std::to_string(maxiterations) << "error tolerance =" << std::to_string(tolerance);
+        Log(ss.str());
+
+        for(int channel=0; channel<6; channel++)
+        {
+
+            long minABSerror = 128*1024;
+            unsigned int minDAC = 0;
+            unsigned int dac = 0;
+
+
+            int measure = readADC(bus, target_id, channel, nmeasures);
+
+            // read dac
+            strain_get_offset(bus, target_id, channel, dac);
+
+            long error = long(measure) - long(middle_val);
+            int cycle =0;
+
+            minABSerror = fabs(error);
+            minDAC = dac;
+
+            // now i perform a sort of gradient descend
+            while ((abs(error)>tolerance) && (cycle<daclimit) && (cycle<maxiterations))
+            {
+                if (error>0) dac -= dacstep;
+                else         dac += dacstep;
+
+                if (dac>daclimit)       dac = daclimit;
+                if (dac<0)              dac = 0;
+
+                //yDebug() << "channel =" << channel << "iter =" << cycle << "err = " << error << "next dac =" << dac << "minerror = " << minABSerror << "mindac =" << minDAC;
+
+                // send new dac
+                strain_set_offset(bus, target_id, channel, dac);
+                //wait
+                drv_sleep(3);
+                // verify it
+                unsigned int tmp = 0;
+                strain_get_offset(bus, target_id, channel, tmp);
+                if(tmp != dac)
+                {
+                    yError() << "failed to impose DAC = " << dac << "read:" << tmp;
+                }
+
+                // read value
+                measure = readADC(bus, target_id, channel, nmeasures);
+
+                error = long(measure) - long(middle_val);
+                cycle++;
+
+                if(fabs(error) < fabs(minABSerror))
+                {
+                    minABSerror = fabs(error);
+                    minDAC = dac;
+                }
+            }
+
+            ss.str("");
+            ss.clear();
+            ss << "RESULT of gradient descend  w/ nsamples average =" << std::to_string(nmeasures) << " -> channel =" << std::to_string(channel) << " num iters =" << std::to_string(cycle) << " err = " << std::to_string(error) << " applied dac =" << std::to_string(dac) << " minerror = " << std::to_string(minABSerror) << " mindac =" << std::to_string(minDAC);
+            Log(ss.str());
+
+        }   // channel
 
     }
 
 
     return 0;
-
-
 }
+
+
+
 
 
 // eof

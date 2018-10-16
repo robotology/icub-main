@@ -17,6 +17,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../ethLoader/ethLoaderLib)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../canLoader/canLoaderLib)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../strainCalib/strainCalibLib)
 
 include_directories(${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 include_directories(${icub_firmware_shared_canProtocolLib_INCLUDE_DIR}/canProtocolLib)
@@ -31,19 +32,26 @@ set(FirmwareUpdater_qt_SRCS changeaddressdialog.cpp
                             mainwindow.cpp
                             calibrationwindow.cpp
                             customtreewidgetitem.cpp
-                            selectioncheckbox.cpp)
+                            customspinbox.cpp
+                            customcombobox.cpp
+                            selectioncheckbox.cpp
+                            straincalibgui.cpp)
 set(FirmwareUpdater_qt_HDRS changeaddressdialog.h
                             changeinfodialog.h
                             firmwareupdatercore.h
                             mainwindow.h
                             calibrationwindow.h
                             customtreewidgetitem.h
-                            selectioncheckbox.h)
+                            customspinbox.h
+                            customcombobox.h
+                            selectioncheckbox.h
+                            straincalibgui.h)
 set(FirmwareUpdater_qt_QRC_FILES res.qrc)
 set(FirmwareUpdater_qt_UI_FILES changeaddressdialog.ui
                             changeinfodialog.ui
                             calibrationwindow.ui
-                            mainwindow.ui)
+                            mainwindow.ui
+                            straincalibgui.ui)
 
 qt5_add_resources(FirmwareUpdater_qt_QRC_GEN_SRCS ${FirmwareUpdater_qt_QRC_FILES})
 qt5_wrap_ui(FirmwareUpdater_qt_UI_GEN_SRCS ${FirmwareUpdater_qt_UI_FILES})
@@ -67,6 +75,7 @@ target_link_libraries(FirmwareUpdater-qt    YARP::YARP_OS
                                             ${ACE_LIBRARIES}
                                             ethLoaderLib
                                             canLoaderLib
+                                            strainCalibLib
                                             )
 qticub_use_modules(FirmwareUpdater-qt   Core 
                                         Gui 

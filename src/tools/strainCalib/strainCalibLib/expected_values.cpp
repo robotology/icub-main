@@ -43,7 +43,19 @@ unsigned_elem_class& unsigned_elem_class::operator=(const unsigned_elem_class &r
 		}
     }
     return *this;
- }
+}
+
+std::string expected_values_handler_class::get_serialnumber()
+{
+    return serialnumber;
+}
+
+bool expected_values_handler_class::get_thresholds(int &low, int &high)
+{
+    low = threshold1;
+    high = threshold2;
+    return true;
+}
 
 bool expected_values_handler_class::init  (const char* filename)
 {
@@ -56,6 +68,7 @@ bool expected_values_handler_class::init  (const char* filename)
         }
     string dummy;
     getline(filestr,dummy);
+    filestr >> serialnumber;
 	for (int iy=0; iy<24; iy++)
 		for (int ix=0; ix<6; ix++)
 		{
@@ -65,6 +78,58 @@ bool expected_values_handler_class::init  (const char* filename)
     filestr >> threshold2;
 	filestr.close();
 	return true;
+}
+
+const int expected_values_handler_class::def_expected_values[24][6] =
+{
+    { 931, -507, -307, 14885, -12784, -343},
+    { 16631, 230, 136, -7092, -6761, 411},
+    { 993, 498, 306, -12746, 14284, 305},
+    { -14751, -192, -157, 8300, 9075, -318},
+    { 1878, -11736, -12750, -1082, -1094, -10751},
+    { 21743, 34, -1466, -10741, -11008, 1930},
+    { 2412, 11706, 10117, -1084, -1100, 13498 },
+    { 165, -13228, -10733, -1710, 1244, -11357 },
+    { 317, 104, 2290, -19036, 18501, 2058 },
+    { -197, 10213, 12250, -1024, 1475, 12757 },
+    { -1667, -11801, -10300, 529, 861, -13321 },
+    { -21130, -548, 715, 10458, 10580, -1909 },
+    { -1823, 11652, 12624, 1238, 850, 10776 },
+    { -126, -10361, -12255, 1081, -1241, -12982 },
+    { -248, 1125, -770, 19444, -18813, -1028 },
+    { -40, 13101, 10689, 1579, -1282, 11221 },
+    { -4547, -67, 127, -4147, -3907, -58 },
+    { 3606, 9, -113, 5524, 3660, -4 },
+    { 5998, -175, -6057, -3030, -2944, 5825 },
+    { -6024, -671, 5128, 3146, 3065, -6575 },
+    { -3555, 5211, -781, 6951, -3239, -6910 },
+    { 3410, -5896, 75, -6527, 3191, 6047 },
+    { -3013, -6115, 5825, -3059, 6219, -53 },
+    { 3143, 5366, -6349, 3156, -6222, -691 }
+};
+
+const int expected_values_handler_class::def_expected_values_thresholds[2] =
+{
+    2000,
+    4000
+};
+
+bool expected_values_handler_class::init()
+{
+    serialnumber = std::string("default");
+
+    for(int iy=0; iy<24; iy++)
+    {
+        for(int ix=0; ix<6; ix++)
+        {
+            expected_values[ix][iy] = def_expected_values[iy][ix];
+        }
+    }
+
+    threshold1 = def_expected_values_thresholds[0];
+    threshold2 = def_expected_values_thresholds[1];
+
+    return true;
 }
 
 expected_values_handler_class::expected_values_handler_class()

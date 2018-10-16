@@ -30,8 +30,10 @@ public:
  int  appl_vers_minor;      // the minor number of the version of the sw it is running (former ...)
  int  appl_vers_build;      // the build number of the version of the sw it is running (former ...). not meaningful for bootloader
  int  prot_vers_major;      // the major number of the can protocol of the application. not meaningful for bootloader
- int  prot_vers_minor;      // the mimnor number of the can protocol of the application. not meaningful for bootloader
- char serial [50];
+ int  prot_vers_minor;      // the minor number of the can protocol of the application. not meaningful for bootloader
+ char serial [50];          // only for strain
+ int  strainregsetinuse;    // only for strain
+ int  strainregsetatboot;   // only for strain
  int  status;
  bool selected;
  bool eeprom;
@@ -250,13 +252,21 @@ struct strain_value_t
     }
 };
 
-int strain_acquire_start(int bus, int target_id, uint8_t txratemilli = 20, bool calibmode = true, string *errorstring = NULL);
-int strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany = 10, string *errorstring = NULL);
-int strain_acquire_stop(int bus, int target_id, string *errorstring = NULL);
+typedef enum 
+{
+    strain_acquisition_mode_streaming   = 0,
+    strain_acquisition_mode_polling    = 1
+} strain_acquisition_mode_t;
+
+int strain_acquire_start(int bus, int target_id, uint8_t txratemilli = 20, bool calibmode = true, strain_acquisition_mode_t acqmode = strain_acquisition_mode_streaming, string *errorstring = NULL);
+int strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany = 10, void (*updateProgressBar)(void*, float) = NULL, void *arg = NULL, strain_acquisition_mode_t acqmode = strain_acquisition_mode_streaming, const unsigned int maxerrors = 1, string *errorstring = NULL);
+int strain_acquire_stop(int bus, int target_id, strain_acquisition_mode_t acqmode = strain_acquisition_mode_streaming, string *errorstring = NULL);
 
 cDownloader(bool verbose = true);
 
 void set_verbose(bool verbose);
+
+void set_external_logger(void *caller = NULL, void (*logger)(void *, const std::string &) = NULL);
 
 
 private:
@@ -274,8 +284,15 @@ private:
     
     
     int strain_calibrate_offset2_strain1(int bus, int target_id, int16_t t, string *errorstring);
+    int strain_calibrate_offset2_strain1safer(int bus, int target_id, int16_t t, uint8_t nmeasures, bool fullsearch, string *errorstring);
     int strain_calibrate_offset2_strain2(int bus, int target_id, const std::vector<strain2_ampl_discretegain_t> &gains, const std::vector<int16_t> &targets, string *errorstring = NULL);
     
+    int readADC(int bus, int target_id, int channel, int nmeasures = 2);
+
+    void (*_externalLoggerFptr)(void *caller, const std::string &output);
+    void * _externalLoggerCaller;
+
+    void Log(const std::string &msg);
     
 };
 
