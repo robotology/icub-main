@@ -23,7 +23,6 @@
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
 #include <GLUT/glut.h>
-#include <QApplication.h>
 #else
 #if defined(WIN32) || defined(WIN64)
 #include <windows.h>
