@@ -382,19 +382,10 @@ void CanTreeWidgetItem::refresh()
 //        setIcon(ERASE_EEPROM,QIcon());
 //    }
 
-    if(core->strainCalibMode ){
-        if((getBoard().type != eobrd_strain2 && getBoard().type != eobrd_strain)){
-            setDisabled(true);
-            check->setEnabled(false);
-        }
-    } else if(isCheckSelected() != board.selected){
+    if(isCheckSelected() != board.selected) {
         setCheckSelected(board.selected);
         selectedChanged(board.selected);
     }
-
-
-
-
 }
 
 bool CustomTreeWidgetItem::getDeviceID(QString devicefullstring, QString &idstr, QString &devicestr)
