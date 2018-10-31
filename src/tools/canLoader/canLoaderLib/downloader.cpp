@@ -2191,6 +2191,7 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
         case eobrd_cantype_6sg:
         case eobrd_cantype_mtb4:
         case eobrd_cantype_strain2:
+        case eobrd_cantype_rfe:
         {
             boardisMC = false;
             txBuffer[0].setId(EOCANPROT_D_CREATE_CANID(ICUBCANPROTO_CLASS_POLLING_ANALOGSENSOR, 0, target_id));
