@@ -2411,6 +2411,7 @@ int cDownloader::change_card_address(int bus, int target_id, int new_id, int boa
         case icubCanProto_boardType__6sg:
         case icubCanProto_boardType__mtb4:
         case icubCanProto_boardType__strain2:
+        case icubCanProto_boardType__rfe:
             txBuffer[0].setId((0x02 << 8) + (ID_MASTER << 4) + target_id);
             txBuffer[0].setLen(2);
             txBuffer[0].getData()[0]= ICUBCANPROTO_POL_MC_CMD__SET_BOARD_ID;
@@ -2751,6 +2752,7 @@ int cDownloader::startscheda(int bus, int board_pid, bool board_eeprom, int boar
     case icubCanProto_boardType__jog:
     case icubCanProto_boardType__mtb4:
     case icubCanProto_boardType__strain2:
+    case icubCanProto_boardType__rfe:
     case icubCanProto_boardType__unknown:
     {
         // Send command
@@ -3225,8 +3227,8 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
                 // FT sensor + disassembly + re-programming + recalibration), some sort of protection is mandatory.
                 // instead, strain2/mtb4 are safe if any attempt is done to program them with old strain.hex/skin.hex code
                 if(sprsPage >= 0x0800)
-                {   // only mtb4 and strain2 are allowed to use such a code space.
-                    if((icubCanProto_boardType__mtb4 == board_type) || (icubCanProto_boardType__strain2 == board_type))
+                {   // only mtb4 and strain2 and rfe are allowed to use such a code space.
+                    if((icubCanProto_boardType__mtb4 == board_type) || (icubCanProto_boardType__strain2 == board_type) || (icubCanProto_boardType__rfe == board_type))
                     {   // it is ok
                     }
                     else
@@ -3462,6 +3464,7 @@ int cDownloader::download_file(int bus, int board_pid, int download_type, bool b
                         case icubCanProto_boardType__6sg:
                         case icubCanProto_boardType__mtb4:
                         case icubCanProto_boardType__strain2:
+                        case icubCanProto_boardType__rfe:
                              ret = download_hexintel_line(buffer, strlen(buffer), bus, board_pid, board_eeprom, download_type);
 
                         break;
