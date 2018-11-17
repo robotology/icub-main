@@ -29,17 +29,9 @@ if(ICUB_USE_OpenCV)
     else()
         message(STATUS "GSL not found/selected, skipping templatePFTracker")
     endif()
-
-    if(ICUB_OpenCV_LEGACY)
-        message(STATUS "OpenCV legacy detected, skipping lumaChroma")
-        # put hereafter modules that rely on old versions of OpenCV declared as legacy
-    else()
-        add_subdirectory(lumaChroma)
-    endif()
 else()
     message(STATUS "OpenCV not found/selected, skipping camCalib")
     message(STATUS "OpenCV not found/selected, skipping motionCUT")
-    message(STATUS "OpenCV not found/selected, skipping lumaChroma")
     message(STATUS "OpenCV not found/selected, skipping templatePFTracker")
 endif(ICUB_USE_OpenCV)
 
