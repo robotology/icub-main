@@ -441,7 +441,7 @@ Vector Controller::computeNeckVelFromdxFP(const Vector &fp, const Vector &dfp)
 
     // compute the Jacobian of the head joints alone 
     // (by adding the new fixation point beforehand)
-    Matrix HN=eye(4);
+    Matrix HN=eye(4,4);
     HN(0,3)=fpE[0];
     HN(1,3)=fpE[1];
     HN(2,3)=fpE[2];

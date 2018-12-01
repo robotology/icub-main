@@ -238,7 +238,6 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
 {
     // ********** implement VOR
     Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)));
-
     H(0,3)=fp[0]-H(0,3);
     H(1,3)=fp[1]-H(1,3);
     H(2,3)=fp[2]-H(2,3);
@@ -250,16 +249,15 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
     if (norm(gyro)<commData->gyro_noise_threshold)
         gyro=0.0;
 
-    Vector vor_fprelv=(gyro[0]*cross(H,0,H,3)+
-                       gyro[1]*cross(H,1,H,3)+
-                       gyro[2]*cross(H,2,H,3));
+    Vector vor_fprelv=(gyro[0]*cross(H,0,H,3)+gyro[1]*cross(H,1,H,3)+gyro[2]*cross(H,2,H,3));
 
     // ********** implement OCR
     H=chainNeck->getH();
+    Vector fph=fp;
+    fph.push_back(1.0);
+    fph=SE3inv(H)*fph;
     Matrix HN=eye(4,4);
-    HN(0,3)=fp[0]-H(0,3);
-    HN(1,3)=fp[1]-H(1,3);
-    HN(2,3)=fp[2]-H(2,3);
+    HN.setSubcol(fph,0,3);
 
     chainNeck->setHN(HN);
     Vector ocr_fprelv=chainNeck->GeoJacobian()*commData->get_v().subVector(0,2);
