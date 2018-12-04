@@ -2,7 +2,7 @@
 # FindOpenGL
 # ----------
 #
-# Wrap kitware's original FindOpenGL. Standardize varibles.
+# Wrap kitware's original FindOpenGL. Standardize variables.
 #
 # In windows require you set ``OpenGL_DIR``
 #
