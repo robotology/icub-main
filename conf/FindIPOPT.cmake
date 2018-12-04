@@ -5,11 +5,11 @@
 # Try to locate the IPOPT library
 #
 # On non Windows systems, use pkg-config to try to locate the library,
-# if this fails then try to locate the library in the directory pointed by
-# the IPOPT_DIR enviromental variable.
+# if this fails then try to locate the library in the directory pointed
+# by the IPOPT_DIR environment variable.
 #
 # On Windows systems,  just try to find the library using the IPOPT_DIR
-# enviromental variable.
+# environment variable.
 #
 # Create the following variables::
 #
@@ -21,7 +21,7 @@
 
 #=============================================================================
 # Copyright (C) 2008-2010 RobotCub Consortium
-# Copyright (C) 2016 iCub Facility - Istituto Italiano di Tecnologia
+# Copyright (C) 2016 Istituto Italiano di Tecnologia (IIT)
 #   Authors: Ugo Pattacini <ugo.pattacini@iit.it>
 #   Authors: Daniele E. Domenichelli <daniele.domenichelli@iit.it>
 #
@@ -60,7 +60,7 @@ if(NOT WIN32)
         find_library(${_LIBRARY}_PATH
                      NAMES ${_LIBRARY}
                      PATHS ${_PC_IPOPT_LIBRARY_DIRS})
-        # Workaround for https://github.com/robotology/icub-main/issues/418 
+        # Workaround for https://github.com/robotology/icub-main/issues/418
         if(${_LIBRARY}_PATH)
           list(APPEND IPOPT_LIBRARIES ${${_LIBRARY}_PATH})
         endif()

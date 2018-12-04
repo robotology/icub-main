@@ -16,7 +16,7 @@
 #  Libv4lconvert_TWEAK_VERSION - libv4lconvert tweak version
 
 #=============================================================================
-# Copyright 2015 iCub Facility, Istituto Italiano di Tecnologia
+# Copyright 2015 Istituto Italiano di Tecnologia (IIT)
 #   Authors: Alberto Cardellino <alberto.cardellino@iit.it>
 #
 # Distributed under the OSI-approved BSD License (the "License");

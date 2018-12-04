@@ -2,7 +2,7 @@
 # FindQt3
 # -------
 #
-# Wrap kitware's original FindQt3 script. Standardize varibles.
+# Wrap kitware's original FindQt3 script. Standardize variables.
 #
 # In windows require you set QTDIR
 #

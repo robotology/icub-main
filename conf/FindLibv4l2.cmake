@@ -16,7 +16,7 @@
 #  Libv4l2_TWEAK_VERSION - libv4l2 tweak version
 
 #=============================================================================
-# Copyright 2015 iCub Facility, Istituto Italiano di Tecnologia
+# Copyright 2015 Istituto Italiano di Tecnologia (IIT)
 #   Authors: Alberto Cardellino <alberto.cardellino@iit.it>
 #
 # Distributed under the OSI-approved BSD License (the "License");
