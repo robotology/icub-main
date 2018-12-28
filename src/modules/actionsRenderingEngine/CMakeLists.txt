@@ -5,6 +5,7 @@
 
 project(actionsRenderingEngine)
 
+find_package(YARP COMPONENTS OS sig dev math cv)
 find_package(IPOPT REQUIRED)
 
 set(folder_source src/main.cpp

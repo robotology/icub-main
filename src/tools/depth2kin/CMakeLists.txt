@@ -4,6 +4,8 @@
 
 project(depth2kin)
 
+find_package(YARP COMPONENTS OS sig dev math cv)
+
 file(GLOB header_files include/*.h)
 file(GLOB source_files src/*.cpp)
 set(idl_files ${PROJECT_NAME}.thrift)

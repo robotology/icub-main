@@ -1,3 +1,5 @@
+#include <utility>
+#include <yarp/cv/Cv.h>
 #include "stereoCalibThread.h"
 
 
@@ -172,13 +174,11 @@ void stereoCalibThread::stereoCalibRun()
             if(startCalibration>0) {
 
                 string pathImg=imageDir;
-                preparePath(pathImg.c_str(), pathL,pathR,count);
+                preparePath(pathImg.c_str(),pathL,pathR,count);
                 string iml(pathL);
                 string imr(pathR);
-                imgL= (IplImage*) imageL->getIplImage();
-                imgR= (IplImage*) imageR->getIplImage();
-                Mat Left=cvarrToMat(imgL);
-                Mat Right=cvarrToMat(imgR);
+                Left=yarp::cv::toCvMat(std::move(*imageL));
+                Right=yarp::cv::toCvMat(std::move(*imageR));
 
                 std::vector<Point2f> pointbufL;
                 std::vector<Point2f> pointbufR;
@@ -189,14 +189,14 @@ void stereoCalibThread::stereoCalibRun()
                     foundL = findCirclesGrid(Left, boardSize, pointbufL, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                     foundR = findCirclesGrid(Right, boardSize, pointbufR, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                 } else {
-                    foundL = findChessboardCorners( Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-                    foundR = findChessboardCorners( Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    foundR = findChessboardCorners(Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
                 }
 
                 if(foundL && foundR) {
-                        cvCvtColor(imgL,imgL,CV_RGB2BGR);
-                        cvCvtColor(imgR,imgR, CV_RGB2BGR);
-                        saveStereoImage(pathImg.c_str(),imgL,imgR,count);
+                        cvtColor(Left,Left,CV_RGB2BGR);
+                        cvtColor(Right,Right,CV_RGB2BGR);
+                        saveStereoImage(pathImg.c_str(),Left,Right,count);
 
                         imageListR.push_back(imr);
                         imageListL.push_back(iml);
@@ -219,8 +219,8 @@ void stereoCalibThread::stereoCalibRun()
                     stereoCalibration(imageListLR, this->boardWidth,this->boardHeight,this->squareSize);
 
                     yInfo(" Saving Calibration Results... \n");
-                    updateIntrinsics(imgL->width,imgL->height,Kright.at<double>(0,0),Kright.at<double>(1,1),Kright.at<double>(0,2),Kright.at<double>(1,2),DistR.at<double>(0,0),DistR.at<double>(0,1),DistR.at<double>(0,2),DistR.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
-                    updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_LEFT");
+                    updateIntrinsics(Left.cols,Left.rows,Kright.at<double>(0,0),Kright.at<double>(1,1),Kright.at<double>(0,2),Kright.at<double>(1,2),DistR.at<double>(0,0),DistR.at<double>(0,1),DistR.at<double>(0,2),DistR.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
+                    updateIntrinsics(Left.cols,Left.rows,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_LEFT");
 
                     Mat Rot=Mat::eye(3,3,CV_64FC1);
                     Mat Tr=Mat::zeros(3,1,CV_64FC1);
@@ -301,10 +301,9 @@ void stereoCalibThread::monoCalibRun()
             if(startCalibration>0) {
 
                 string pathImg=imageDir;
-                preparePath(pathImg.c_str(), pathL,pathR,count);
+                preparePath(pathImg.c_str(),pathL,pathR,count);
                 string iml(pathL);
-                imgL= (IplImage*) imageL->getIplImage();
-                Mat Left=cvarrToMat(imgL);
+                Left=yarp::cv::toCvMat(std::move(*imageL));
                 std::vector<Point2f> pointbufL;
 
                 if(boardType == "CIRCLES_GRID") {
@@ -316,8 +315,8 @@ void stereoCalibThread::monoCalibRun()
                 }
 
                 if(foundL) {
-                        cvCvtColor(imgL,imgL,CV_RGB2BGR);
-                        saveImage(pathImg.c_str(),imgL,count);
+                        cvtColor(Left,Left,CV_RGB2BGR);
+                        saveImage(pathImg.c_str(),Left,count);
                         imageListL.push_back(iml);
                         Mat cL(pointbufL);
                         drawChessboardCorners(Left, boardSize, cL, foundL);
@@ -329,19 +328,15 @@ void stereoCalibThread::monoCalibRun()
                     monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL);
 
                     yInfo(" Saving Calibration Results... \n");
-                    if(left)
-                        updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_LEFT");
-                    else
-                        updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
-
+                    updateIntrinsics(Left.cols,Left.rows,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),
+                                     Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),
+                                     DistL.at<double>(0,3),left?"CAMERA_CALIBRATION_LEFT":"CAMERA_CALIBRATION_RIGHT");
                     yInfo("Calibration Results Saved in %s \n", camCalibFile.c_str());
 
                     startCalibration=0;
                     count=1;
                     imageListL.clear();
                 }
-
-
             }
             mutex->post();
             ImageOf<PixelRgb>& outimL=outPortLeft.prepare();
@@ -441,26 +436,26 @@ void stereoCalibThread::preparePath(const char * imageDir, char* pathL, char* pa
 }
 
 
-void stereoCalibThread::saveStereoImage(const char * imageDir, IplImage* left, IplImage * right, int num) {
+void stereoCalibThread::saveStereoImage(const char * imageDir, const Mat& left, const Mat& right, int num) {
     char pathL[256];
     char pathR[256];
     preparePath(imageDir, pathL,pathR,num);
 
     yInfo("Saving images number %d \n",num);
 
-    cvSaveImage(pathL,left);
-    cvSaveImage(pathR,right);
+    imwrite(pathL,left);
+    imwrite(pathR,right);
 }
 
-void stereoCalibThread::saveImage(const char * imageDir, IplImage* left, int num) {
+void stereoCalibThread::saveImage(const char * imageDir, const Mat& left, int num) {
     char pathL[256];
     preparePath(imageDir, pathL,pathR,num);
 
     yInfo("Saving images number %d \n",num);
 
-    cvSaveImage(pathL,left);
-
+    imwrite(pathL,left);
 }
+
 bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, const string& groupname){
 
     std::vector<string> lines;

@@ -2,8 +2,9 @@
 # Authors: Sean Ryan Fanello
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-set(PROJECTNAME stereoCalib)
-project(${PROJECTNAME})
+project(stereoCalib)
+
+find_package(YARP COMPONENTS OS sig dev math cv)
 
 file(GLOB source src/*.cpp)
 file(GLOB header include/*.h)
@@ -14,7 +15,7 @@ endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-add_executable(${PROJECTNAME} ${source} ${header})
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ${OpenCV_LIBRARIES} iKin)
-install(TARGETS ${PROJECTNAME} DESTINATION bin)
+add_executable(${PROJECT_NAME} ${source} ${header})
+target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ${OpenCV_LIBRARIES} iKin)
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 

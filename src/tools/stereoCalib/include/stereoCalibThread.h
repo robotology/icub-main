@@ -29,8 +29,8 @@ private:
 
     ImageOf<PixelRgb> *imageL;
     ImageOf<PixelRgb> *imageR;
-    IplImage * imgL;
-    IplImage * imgR;
+    Mat Left;
+    Mat Right;
 
     string moduleName;
     string robotName;
@@ -86,14 +86,14 @@ private:
     void printMatrix(Mat &matrix);
     bool checkTS(double TSLeft, double TSRight, double th=0.08);
     void preparePath(const char * imageDir, char* pathL, char* pathR, int num);
-    void saveStereoImage(const char * imageDir, IplImage* left, IplImage * right, int num);
+    void saveStereoImage(const char * imageDir, const Mat& left, const Mat& right, int num);
     void monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat &K, Mat &Dist);
     void stereoCalibration(const vector<string>& imagelist, int boardWidth, int boardHeight,float sqsizee);
     void saveCalibration(const string& extrinsicFilePath, const string& intrinsicFilePath);
     void calcChessboardCorners(Size boardSize, float squareSize, vector<Point3f>& corners);
     bool updateIntrinsics( int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, const string& groupname);
     bool updateExtrinsics(Mat Rot, Mat Tr, const string& groupname);
-    void saveImage(const char * imageDir, IplImage* left, int num);
+    void saveImage(const char * imageDir, const Mat& left, int num);
     void stereoCalibRun();
     void monoCalibRun();
 
