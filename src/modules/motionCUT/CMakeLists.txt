@@ -5,10 +5,11 @@
 
 project(motionCUT)
 
+find_package(YARP COMPONENTS OS sig cv)
+
 set(source_files main.cpp)
 set(doc_files ${PROJECT_NAME}.xml)
-source_group("Source Files" FILES ${source_files})
-source_group("DOC Files"    FILES ${doc_files})
+source_group("DOC Files" FILES ${doc_files})
 
 add_executable(${PROJECT_NAME} ${source_files} ${doc_files})
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
