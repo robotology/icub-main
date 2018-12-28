@@ -4,6 +4,8 @@
 
 project(camCalibWithPose)
 
+find_package(YARP COMPONENTS OS sig math cv)
+
 set(folder_source src/main.cpp
                   src/spherical_projection.cpp
                   src/CamCalibModule.cpp
@@ -18,13 +20,8 @@ set(folder_header include/iCub/spherical_projection.h
                   include/iCub/PinholeCalibTool.h
                   include/iCub/SphericalCalibTool.h)
 
-source_group("Source Files" FILES ${folder_source})
-source_group("Header Files" FILES ${folder_header})
-
-include_directories(${PROJECT_SOURCE_DIR}/include)
-
-# import math symbols from standard cmath
 add_definitions(-D_USE_MATH_DEFINES)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 add_executable(${PROJECT_NAME} ${folder_source} ${folder_header})
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)

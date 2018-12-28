@@ -6,12 +6,15 @@
  *
  */
 
+#include <utility>
+#include <yarp/cv/Cv.h>
 #include <iCub/SphericalCalibTool.h>
 #include <stdio.h>
 
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
+using namespace yarp::cv;
 
 SphericalCalibTool::SphericalCalibTool(){
     _mapX = NULL;
@@ -147,14 +150,14 @@ void SphericalCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> &
 
     out.resize(inSize.width, inSize.height);
 
-    cvRemap( in.getIplImage(), out.getIplImage(),
-           _mapX, _mapY,
-           CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS, cvScalarAll(0));
+    cv::remap( toCvMat(std::move(const_cast<ImageOf<PixelRgb>&>(in))), toCvMat(std::move(out)),
+               cv::cvarrToMat(_mapX), cv::cvarrToMat(_mapY),
+               CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS );
 
     // painting crosshair at calibration center
     if (_drawCenterCross){
-	    yarp::sig::PixelRgb pix = yarp::sig::PixelRgb(255,255,255);
-		yarp::sig::draw::addCrossHair(out, pix, (int)_cx_scaled, (int)_cy_scaled, 10);
+        yarp::sig::PixelRgb pix = yarp::sig::PixelRgb(255,255,255);
+        yarp::sig::draw::addCrossHair(out, pix, (int)_cx_scaled, (int)_cy_scaled, 10);
     }
 
     // buffering old image size

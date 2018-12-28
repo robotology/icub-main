@@ -3,12 +3,15 @@
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */
- 
+
+#include <utility>
+#include <yarp/cv/Cv.h>
 #include <iCub/PinholeCalibTool.h>
 
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
+using namespace yarp::cv;
 
 PinholeCalibTool::PinholeCalibTool(){
     _mapUndistortX = NULL;
@@ -195,15 +198,16 @@ void PinholeCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & o
 
     out.resize(inSize.width, inSize.height);
 
-    cvRemap( in.getIplImage(), out.getIplImage(),
-           _mapUndistortX, _mapUndistortY);
+    cv::remap( toCvMat(std::move(const_cast<ImageOf<PixelRgb>&>(in))), toCvMat(std::move(out)),
+             cv::cvarrToMat(_mapUndistortX), cv::cvarrToMat(_mapUndistortY),
+             CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS );
 
-	// painting crosshair at calibration center
+    // painting crosshair at calibration center
     if (_drawCenterCross){
-	    yarp::sig::PixelRgb pix = yarp::sig::PixelRgb(255,255,255);
+        yarp::sig::PixelRgb pix = yarp::sig::PixelRgb(255,255,255);
         yarp::sig::draw::addCrossHair(out, pix, (int)CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 2),
-		                                    (int)CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 2),
-											10);
+                                            (int)CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 2),
+                                            10);
     }
 
     // buffering old image size
