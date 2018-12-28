@@ -122,8 +122,8 @@ private:
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelBgr> >  imageOut;
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelMono> > imageOutBlob;
 
-    CvPoint	minloc, maxloc;
-	double	minval, maxval;
+    CvPoint minloc, maxloc;
+    double  minval, maxval;
 
     bool init;
     bool getImage, getTemplate, gotTemplate, sendTarget;
@@ -135,15 +135,15 @@ private:
     IplImage* frame, *frame_blob;
     int width, height, tpl_width, tpl_height, res_width, res_height;
     double scale;
-	IplImage* img_hsv;
-	gsl_rng* rng;
-	bool firstFrame;
-  	CvScalar color;
-  	CvRect** regions;
-  	int num_objects;
-  	float s;
-  	int i, j, k, w, h, x, y;
-	int num_particles;
+    IplImage* img_hsv;
+    gsl_rng* rng;
+    bool firstFrame;
+    CvScalar color;
+    CvRect** regions;
+    int num_objects;
+    float s;
+    int i, j, k, w, h, x, y;
+    int num_particles;
     yarp::sig::Vector targetTemp;
     //string containing module name
     std::string moduleName;
@@ -158,38 +158,38 @@ private:
 
     typedef struct params 
     {
-  		CvPoint loc1[MAX_OBJECTS];
-  		CvPoint loc2[MAX_OBJECTS];
-  		IplImage* objects[MAX_OBJECTS];
-  		char* win_name;
-  		IplImage* orig_img;
-  		IplImage* cur_img;
-  		int n;
-	} params;
-	
+        CvPoint loc1[MAX_OBJECTS];
+        CvPoint loc2[MAX_OBJECTS];
+        IplImage* objects[MAX_OBJECTS];
+        char* win_name;
+        IplImage* orig_img;
+        IplImage* cur_img;
+        int n;
+    } params;
+    
     int total;
 
-	histogram** ref_histos;
-	particle* particles, * new_particles;    
+    histogram** ref_histos;
+    particle* particles, * new_particles;    
 
     void free_histos( histogram** histo, int n );
     void free_regions( CvRect** regions, int n);
 
     histogram** compute_ref_histos( IplImage* img, CvRect* rect, int n );
-	histogram* calc_histogram( IplImage** imgs, int n );
-	particle transition( const particle &p, int w, int h, gsl_rng* rng );
-	particle* init_distribution( CvRect* regions, histogram** histos, int n, int p);
-	IplImage* bgr2hsv( IplImage* bgr );
-	float likelihood( IplImage* img, int r, int c, int w, int h, histogram* ref_histo );
-	void normalize_weights( particle* particles, int n );
-	float histo_dist_sq( histogram* h1, histogram* h2 );
-	int histo_bin( float h, float s, float v );
-	float pixval32f(IplImage* img, int r, int c);
-	void setpix32f(IplImage* img, int r, int c, float val);
-	int get_regions( IplImage* frame, CvRect** regions );
+    histogram* calc_histogram( IplImage** imgs, int n );
+    particle transition( const particle &p, int w, int h, gsl_rng* rng );
+    particle* init_distribution( CvRect* regions, histogram** histos, int n, int p);
+    IplImage* bgr2hsv( IplImage* bgr );
+    float likelihood( IplImage* img, int r, int c, int w, int h, histogram* ref_histo );
+    void normalize_weights( particle* particles, int n );
+    float histo_dist_sq( histogram* h1, histogram* h2 );
+    int histo_bin( float h, float s, float v );
+    float pixval32f(IplImage* img, int r, int c);
+    void setpix32f(IplImage* img, int r, int c, float val);
+    int get_regions( IplImage* frame, CvRect** regions );
     int get_regionsImage( IplImage* frame, CvRect** regions );
-	particle* resample( particle* particles, int n );
-	void display_particle( IplImage* img, const particle &p, CvScalar color, yarp::sig::Vector& target );
+    particle* resample( particle* particles, int n );
+    void display_particle( IplImage* img, const particle &p, CvScalar color, yarp::sig::Vector& target );
     void display_particleBlob( IplImage* img, const particle &p, yarp::sig::Vector& target );
     void trace_template( IplImage* img, const particle &p );
     void normalize_histogram( histogram* histo );

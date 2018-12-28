@@ -19,11 +19,14 @@
  * Public License for more details
  */
 
+#include <utility>
+#include <yarp/cv/Cv.h>
 #include <iCub/particleFilter.h>
 
 using namespace std;
-using namespace yarp::os; 
+using namespace yarp::os;
 using namespace yarp::sig;
+using namespace yarp::cv;
 
 /**********************************************************/
 int particle_cmp( const void* p1, const void* p2 ) 
@@ -131,19 +134,19 @@ void PARTICLEThread::run()
             }
  
             frame = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 3 );           
-            cvCvtColor((IplImage*)iCubImage->getIplImage(), frame, CV_RGB2BGR);
+            cv::cvtColor(toCvMat(std::move(*iCubImage)), cv::cvarrToMat(frame), CV_RGB2BGR);
             frame_blob = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 1 );
 
             if ( tpl != NULL )
             {
-                IplImage *ipl_tpl=(IplImage *) tpl->getIplImage();
+                cv::Mat tplMat=toCvMat(std::move(*tpl));
                 tpl_width  = tpl->width();
                 tpl_height = tpl->height();
                 res_width  = width - tpl_width + 1;
                 res_height = height - tpl_height + 1;
                 cvReleaseImage(&temp);
-                temp = cvCreateImage(cvGetSize(ipl_tpl), ipl_tpl->depth, ipl_tpl->nChannels );
-                cvCvtColor(ipl_tpl, temp, CV_RGB2BGR);
+                temp = cvCreateImage(cvSize(tplMat.size().width,tplMat.size().height),tplMat.depth(),tplMat.channels() );
+                cv::cvtColor(tplMat, cv::cvarrToMat(temp), CV_RGB2BGR);
                 gotTemplate = true;
                 firstFrame = true;
                 if (num_objects>0)
@@ -151,7 +154,6 @@ void PARTICLEThread::run()
                 num_objects = 0;
                 delete tpl;
                 tpl = NULL;
-                //delete ipl_tpl;
                 
                 templateMutex.wait();
                 while(tempList.size())
@@ -176,14 +178,14 @@ void PARTICLEThread::run()
             {
                 ImageOf<PixelBgr> &img = imageOut.prepare();
                 img.resize(width,height);
-                cvCopy( frame, (IplImage *) img.getIplImage());
+                cv::cvarrToMat(frame).copyTo(toCvMat(std::move(img)));
                 imageOut.write();
             }
             if (imageOutBlob.getOutputCount()>0)
             {
                 ImageOf<PixelMono> &imgBlob = imageOutBlob.prepare();
                 imgBlob.resize(width,height);
-                cvCopy( frame_blob, (IplImage *) imgBlob.getIplImage());
+                cv::cvarrToMat(frame_blob).copyTo(toCvMat(std::move(imgBlob)));
                 imageOutBlob.write();
             }
             cvReleaseImage(&frame);
@@ -666,12 +668,12 @@ void PARTICLEThread::trace_template( IplImage* img, const particle &p )
         t.templ=new ImageOf<PixelRgb>;
         t.templ->resize(cvRound(p.s*p.width),cvRound(p.s*p.height));
 
-        cvSetImageROI(img,cvRect(cvRound(p.x-0.5*p.s*p.width),
-                                 cvRound(p.y-0.5*p.s*p.height),
-                                 cvRound(p.s*p.width),
-                                 cvRound(p.s*p.height)));
+        cv::Mat imgMat(cv::cvarrToMat(img),cv::Rect(cvRound(p.x-0.5*p.s*p.width),
+                                                    cvRound(p.y-0.5*p.s*p.height),
+                                                    cvRound(p.s*p.width),
+                                                    cvRound(p.s*p.height)));
 
-        cvCvtColor(img,t.templ->getIplImage(),CV_BGR2RGB);
+        cv::cvtColor(imgMat,toCvMat(std::move(*t.templ)),CV_BGR2RGB);
 
         cvResetImageROI(img);
 

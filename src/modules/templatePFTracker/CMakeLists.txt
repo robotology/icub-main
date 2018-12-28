@@ -3,16 +3,15 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-SET(PROJECTNAME templatePFTracker)
-PROJECT(${PROJECTNAME})
+project(templatePFTracker)
 
-FILE(GLOB folder_header include/iCub/*.h)
-FILE(GLOB folder_source src/*.cpp src/*.cc src/*.c)
+find_package(YARP COMPONENTS OS sig cv)
 
-SOURCE_GROUP("Header Files" FILES ${folder_header})
-SOURCE_GROUP("Source Files" FILES ${folder_source})
+file(GLOB folder_header include/iCub/*.h)
+file(GLOB folder_source src/*.cpp src/*.cc src/*.c)
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include ${GSL_INCLUDE_DIRS})
-ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
-TARGET_LINK_LIBRARIES(${PROJECTNAME} ${OpenCV_LIBRARIES} ${GSL_LIBRARIES} ${YARP_LIBRARIES})
-INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
+include_directories(${PROJECT_SOURCE_DIR}/include ${GSL_INCLUDE_DIRS})
+add_executable(${PROJECT_NAME} ${folder_header} ${folder_source})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${GSL_LIBRARIES} ${YARP_LIBRARIES})
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+
