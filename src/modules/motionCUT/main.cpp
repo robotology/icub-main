@@ -222,7 +222,7 @@ public:
                         nodesPrev[cnt++]=Point2f((float)x,(float)y);
 
                 // convert to gray-scale
-                cvtColor(toCvMat(std::move(*pImgBgrIn)),toCvMat(std::move(imgMonoPrev)),CV_BGR2GRAY);
+                cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoPrev),CV_BGR2GRAY);
 
                 if (verbosity)
                 {
@@ -236,7 +236,7 @@ public:
             }
 
             // convert the input image to gray-scale
-            cvtColor(toCvMat(std::move(*pImgBgrIn)),toCvMat(std::move(imgMonoIn)),CV_BGR2GRAY);
+            cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoIn),CV_BGR2GRAY);
 
             // copy input image into output image
             ImageOf<PixelBgr> imgBgrOut=*pImgBgrIn;
@@ -262,8 +262,8 @@ public:
             latch_t=Time::now();
             constexpr int maxLevel=5;
             Size ws(winSize,winSize);
-            buildOpticalFlowPyramid(toCvMat(std::move(imgMonoPrev)),pyrPrev,ws,maxLevel);
-            buildOpticalFlowPyramid(toCvMat(std::move(imgMonoIn)),pyrCurr,ws,maxLevel);
+            buildOpticalFlowPyramid(toCvMat(imgMonoPrev),pyrPrev,ws,maxLevel);
+            buildOpticalFlowPyramid(toCvMat(imgMonoIn),pyrCurr,ws,maxLevel);
             calcOpticalFlowPyrLK(pyrPrev,pyrCurr,nodesPrev,nodesCurr,
                                  featuresFound,featuresErrors,ws,maxLevel,
                                  TermCriteria(TermCriteria::COUNT+TermCriteria::EPS,30,0.3));
@@ -279,8 +279,8 @@ public:
                 // handle the node persistence
                 if (!inhibition && (nodesPersistence[i]!=0))
                 {
-                    circle(toCvMat(std::move(imgBgrOut)),node,1,NODE_ON,2);
-                    circle(toCvMat(std::move(imgMonoOpt)),node,1,Scalar(255),2);
+                    circle(toCvMat(imgBgrOut),node,1,NODE_ON,2);
+                    circle(toCvMat(imgMonoOpt),node,1,Scalar(255),2);
 
                     Bottle &nodeBottle=nodesBottle.addList();
                     nodeBottle.addInt((int)nodesPrev[i].x);
@@ -293,7 +293,7 @@ public:
                     persistentNode=true;
                 }
                 else
-                    circle(toCvMat(std::move(imgBgrOut)),node,1,NODE_OFF,1);
+                    circle(toCvMat(imgBgrOut),node,1,NODE_OFF,1);
 
                 // do not consider the border nodes and skip if inhibition is on
                 int row=i%nodesX;
@@ -319,8 +319,8 @@ public:
                         // update only if the node was not persistent
                         if (!persistentNode)
                         {
-                            circle(toCvMat(std::move(imgBgrOut)),node,1,NODE_ON,2);
-                            circle(toCvMat(std::move(imgMonoOpt)),node,1,Scalar(255),2);
+                            circle(toCvMat(imgBgrOut),node,1,NODE_ON,2);
+                            circle(toCvMat(imgMonoOpt),node,1,Scalar(255),2);
 
                             Bottle &nodeBottle=nodesBottle.addList();
                             nodeBottle.addInt((int)nodesPrev[i].x);
@@ -352,7 +352,7 @@ public:
                 blobBottle.addInt(centroid.y);
                 blobBottle.addInt(blob.size);
 
-                circle(toCvMat(std::move(imgBgrOut)),centroid,4,Scalar(blueLev,0,redLev),3);
+                circle(toCvMat(imgBgrOut),centroid,4,Scalar(blueLev,0,redLev),3);
             }
             dt2=Time::now()-latch_t;
 
@@ -400,7 +400,7 @@ public:
 
                 ImageOf<PixelBgr> &cropImg=cropPort.prepare();
                 cropImg.resize(cropSize.x,cropSize.y);
-                toCvMat(std::move(*pImgBgrIn))(Rect(tl.x,tl.y,cropSize.x,cropSize.y)).copyTo(toCvMat(std::move(cropImg)));
+                toCvMat(*pImgBgrIn)(Rect(tl.x,tl.y,cropSize.x,cropSize.y)).copyTo(toCvMat(cropImg));
 
                 cropPort.setEnvelope(stamp);
                 cropPort.write();

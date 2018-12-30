@@ -139,13 +139,13 @@ void VisuoThread::startTracker(const Vector &stereo, const int &side)
     cv::Mat imgMat;
     imgMutex.wait();
     if (img[eye_in_use]!=nullptr)
-        imgMat=yarp::cv::toCvMat(std::move(*img[eye_in_use])).clone();
+        imgMat=yarp::cv::toCvMat(*img[eye_in_use]).clone();
     imgMutex.post();
 
     if (!imgMat.empty())
     {
         tpl.resize(side,side);
-        cv::Mat tplMat=yarp::cv::toCvMat(std::move(tpl));
+        cv::Mat tplMat=yarp::cv::toCvMat(tpl);
 
         int x=stereo[2*eye_in_use]-0.5*side<0?0:cvRound(stereo[2*eye_in_use]-0.5*side);
         int y=stereo[2*eye_in_use+1]-0.5*side<0?0:cvRound(stereo[2*eye_in_use+1]-0.5*side);
@@ -325,12 +325,12 @@ void VisuoThread::updatePFTracker()
 
         if(stereoTracker.vec.size()==12)
         {
-            cv::circle(yarp::cv::toCvMat(std::move(drawImg[LEFT])),cv::Point(cvRound(stereoTracker.vec[0]),cvRound(stereoTracker.vec[1])),3,cv::Scalar(0,255),3);
-            cv::rectangle(yarp::cv::toCvMat(std::move(drawImg[LEFT])),cv::Point(cvRound(stereoTracker.vec[2]),cvRound(stereoTracker.vec[3])),
+            cv::circle(yarp::cv::toCvMat(drawImg[LEFT]),cv::Point(cvRound(stereoTracker.vec[0]),cvRound(stereoTracker.vec[1])),3,cv::Scalar(0,255),3);
+            cv::rectangle(yarp::cv::toCvMat(drawImg[LEFT]),cv::Point(cvRound(stereoTracker.vec[2]),cvRound(stereoTracker.vec[3])),
                           cv::Point(cvRound(stereoTracker.vec[4]),cvRound(stereoTracker.vec[5])),cv::Scalar(0,255),3);
 
-            cv::circle(yarp::cv::toCvMat(std::move(drawImg[RIGHT])),cv::Point(cvRound(stereoTracker.vec[6]),cvRound(stereoTracker.vec[7])),3,cv::Scalar(0,255),3);
-            cv::rectangle(yarp::cv::toCvMat(std::move(drawImg[RIGHT])),cv::Point(cvRound(stereoTracker.vec[8]),cvRound(stereoTracker.vec[9])),
+            cv::circle(yarp::cv::toCvMat(drawImg[RIGHT]),cv::Point(cvRound(stereoTracker.vec[6]),cvRound(stereoTracker.vec[7])),3,cv::Scalar(0,255),3);
+            cv::rectangle(yarp::cv::toCvMat(drawImg[RIGHT]),cv::Point(cvRound(stereoTracker.vec[8]),cvRound(stereoTracker.vec[9])),
                           cv::Point(cvRound(stereoTracker.vec[10]),cvRound(stereoTracker.vec[11])),cv::Scalar(0,255),3);
 
             Bottle v;

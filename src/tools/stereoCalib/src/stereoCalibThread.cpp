@@ -177,8 +177,8 @@ void stereoCalibThread::stereoCalibRun()
                 preparePath(pathImg.c_str(),pathL,pathR,count);
                 string iml(pathL);
                 string imr(pathR);
-                Left=yarp::cv::toCvMat(std::move(*imageL));
-                Right=yarp::cv::toCvMat(std::move(*imageR));
+                Left=yarp::cv::toCvMat(*imageL);
+                Right=yarp::cv::toCvMat(*imageR);
 
                 std::vector<Point2f> pointbufL;
                 std::vector<Point2f> pointbufR;
@@ -303,7 +303,7 @@ void stereoCalibThread::monoCalibRun()
                 string pathImg=imageDir;
                 preparePath(pathImg.c_str(),pathL,pathR,count);
                 string iml(pathL);
-                Left=yarp::cv::toCvMat(std::move(*imageL));
+                Left=yarp::cv::toCvMat(*imageL);
                 std::vector<Point2f> pointbufL;
 
                 if(boardType == "CIRCLES_GRID") {

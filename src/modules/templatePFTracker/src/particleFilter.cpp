@@ -134,12 +134,12 @@ void PARTICLEThread::run()
             }
  
             frame = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 3 );           
-            cv::cvtColor(toCvMat(std::move(*iCubImage)), cv::cvarrToMat(frame), CV_RGB2BGR);
+            cv::cvtColor(toCvMat(*iCubImage), cv::cvarrToMat(frame), CV_RGB2BGR);
             frame_blob = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 1 );
 
             if ( tpl != NULL )
             {
-                cv::Mat tplMat=toCvMat(std::move(*tpl));
+                cv::Mat tplMat=toCvMat(*tpl);
                 tpl_width  = tpl->width();
                 tpl_height = tpl->height();
                 res_width  = width - tpl_width + 1;
@@ -178,14 +178,14 @@ void PARTICLEThread::run()
             {
                 ImageOf<PixelBgr> &img = imageOut.prepare();
                 img.resize(width,height);
-                cv::cvarrToMat(frame).copyTo(toCvMat(std::move(img)));
+                cv::cvarrToMat(frame).copyTo(toCvMat(img));
                 imageOut.write();
             }
             if (imageOutBlob.getOutputCount()>0)
             {
                 ImageOf<PixelMono> &imgBlob = imageOutBlob.prepare();
                 imgBlob.resize(width,height);
-                cv::cvarrToMat(frame_blob).copyTo(toCvMat(std::move(imgBlob)));
+                cv::cvarrToMat(frame_blob).copyTo(toCvMat(imgBlob));
                 imageOutBlob.write();
             }
             cvReleaseImage(&frame);
@@ -673,7 +673,7 @@ void PARTICLEThread::trace_template( IplImage* img, const particle &p )
                                                     cvRound(p.s*p.width),
                                                     cvRound(p.s*p.height)));
 
-        cv::cvtColor(imgMat,toCvMat(std::move(*t.templ)),CV_BGR2RGB);
+        cv::cvtColor(imgMat,toCvMat(*t.templ),CV_BGR2RGB);
 
         cvResetImageROI(img);
 
