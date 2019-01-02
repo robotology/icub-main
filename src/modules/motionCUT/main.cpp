@@ -240,11 +240,13 @@ public:
 
             // copy input image into output image
             ImageOf<PixelBgr> imgBgrOut=*pImgBgrIn;
+            Mat imgBgrOutMat=toCvMat(imgBgrOut);
 
             // get optFlow image
             ImageOf<PixelMono> imgMonoOpt;
             imgMonoOpt.resize(imgBgrOut);
             imgMonoOpt.zero();
+            Mat imgMonoOptMat=toCvMat(imgMonoOpt);
 
             // declare output bottles
             Bottle nodesBottle;
@@ -279,8 +281,8 @@ public:
                 // handle the node persistence
                 if (!inhibition && (nodesPersistence[i]!=0))
                 {
-                    circle(toCvMat(imgBgrOut),node,1,NODE_ON,2);
-                    circle(toCvMat(imgMonoOpt),node,1,Scalar(255),2);
+                    circle(imgBgrOutMat,node,1,NODE_ON,2);
+                    circle(imgMonoOptMat,node,1,Scalar(255),2);
 
                     Bottle &nodeBottle=nodesBottle.addList();
                     nodeBottle.addInt((int)nodesPrev[i].x);
@@ -293,7 +295,7 @@ public:
                     persistentNode=true;
                 }
                 else
-                    circle(toCvMat(imgBgrOut),node,1,NODE_OFF,1);
+                    circle(imgBgrOutMat,node,1,NODE_OFF,1);
 
                 // do not consider the border nodes and skip if inhibition is on
                 int row=i%nodesX;
@@ -319,8 +321,8 @@ public:
                         // update only if the node was not persistent
                         if (!persistentNode)
                         {
-                            circle(toCvMat(imgBgrOut),node,1,NODE_ON,2);
-                            circle(toCvMat(imgMonoOpt),node,1,Scalar(255),2);
+                            circle(imgBgrOutMat,node,1,NODE_ON,2);
+                            circle(imgMonoOptMat,node,1,Scalar(255),2);
 
                             Bottle &nodeBottle=nodesBottle.addList();
                             nodeBottle.addInt((int)nodesPrev[i].x);
@@ -352,7 +354,7 @@ public:
                 blobBottle.addInt(centroid.y);
                 blobBottle.addInt(blob.size);
 
-                circle(toCvMat(imgBgrOut),centroid,4,Scalar(blueLev,0,redLev),3);
+                circle(imgBgrOutMat,centroid,4,Scalar(blueLev,0,redLev),3);
             }
             dt2=Time::now()-latch_t;
 

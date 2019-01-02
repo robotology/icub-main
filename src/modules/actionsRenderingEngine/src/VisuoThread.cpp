@@ -325,12 +325,14 @@ void VisuoThread::updatePFTracker()
 
         if(stereoTracker.vec.size()==12)
         {
-            cv::circle(yarp::cv::toCvMat(drawImg[LEFT]),cv::Point(cvRound(stereoTracker.vec[0]),cvRound(stereoTracker.vec[1])),3,cv::Scalar(0,255),3);
-            cv::rectangle(yarp::cv::toCvMat(drawImg[LEFT]),cv::Point(cvRound(stereoTracker.vec[2]),cvRound(stereoTracker.vec[3])),
+            cv::Mat tmpL=yarp::cv::toCvMat(drawImg[LEFT]);
+            cv::circle(tmpL,cv::Point(cvRound(stereoTracker.vec[0]),cvRound(stereoTracker.vec[1])),3,cv::Scalar(0,255),3);
+            cv::rectangle(tmpL,cv::Point(cvRound(stereoTracker.vec[2]),cvRound(stereoTracker.vec[3])),
                           cv::Point(cvRound(stereoTracker.vec[4]),cvRound(stereoTracker.vec[5])),cv::Scalar(0,255),3);
 
-            cv::circle(yarp::cv::toCvMat(drawImg[RIGHT]),cv::Point(cvRound(stereoTracker.vec[6]),cvRound(stereoTracker.vec[7])),3,cv::Scalar(0,255),3);
-            cv::rectangle(yarp::cv::toCvMat(drawImg[RIGHT]),cv::Point(cvRound(stereoTracker.vec[8]),cvRound(stereoTracker.vec[9])),
+            cv::Mat tmpR=yarp::cv::toCvMat(drawImg[RIGHT]);
+            cv::circle(tmpR,cv::Point(cvRound(stereoTracker.vec[6]),cvRound(stereoTracker.vec[7])),3,cv::Scalar(0,255),3);
+            cv::rectangle(tmpR,cv::Point(cvRound(stereoTracker.vec[8]),cvRound(stereoTracker.vec[9])),
                           cv::Point(cvRound(stereoTracker.vec[10]),cvRound(stereoTracker.vec[11])),cv::Scalar(0,255),3);
 
             Bottle v;
