@@ -1118,7 +1118,7 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
         }
 
         cv::Mat img=toCvMat(imgOut);
-        cv::putText(img,tag.c_str(),cv::Point(rect.x+5,rect.y+15),CV_FONT_HERSHEY_SIMPLEX,0.5,color);
+        cv::putText(img,tag,cv::Point(rect.x+5,rect.y+15),CV_FONT_HERSHEY_SIMPLEX,0.5,color);
 
         motorExplorationState=motorExplorationStateTrigger;
         holdImg=true;
