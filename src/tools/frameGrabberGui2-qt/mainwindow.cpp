@@ -236,7 +236,7 @@ void MainWindow::initFormatTab(unsigned int videoModeMaskDC1394,
     unsigned int mask=videoModeMaskDC1394;
 
     for (int i=0,e=0; i<32; ++i){
-        if ((1<<i) & mask){
+        if (((1<<i) & mask) && (i<video_mode_labels.length())){
             m_VideoModeLut[e]=i;
             ui->m_MenuMode->insertItem(e++,video_mode_labels.at(i));
         }
@@ -244,7 +244,7 @@ void MainWindow::initFormatTab(unsigned int videoModeMaskDC1394,
 
     mask=fPSMaskDC1394;
     for (int i=0,e=0; i<8; ++i){
-        if ((1<<i) & mask){
+        if (((1<<i) & mask) && (i<video_rate_labels.length())){
             m_FPSLut[e]=i;
             ui->m_MenuFPS->insertItem(e++,video_rate_labels.at(i));
         }
@@ -257,7 +257,7 @@ void MainWindow::initFormatTab(unsigned int videoModeMaskDC1394,
 
     mask=colorCodingMaskDC1394;
     for (int i=0,e=0; i<32; ++i){
-        if ((1<<i) & mask){
+        if (((1<<i) & mask) && (i<color_coding_labels.length())){
             m_ColorCodingLut[e]=i;
             ui->m_MenuColorCoding->insertItem(e++,color_coding_labels.at(i));
         }
@@ -390,7 +390,7 @@ void MainWindow::Reload(uint videoModeDC1394, uint colorCodingMaskDC1394,
     unsigned int mask=colorCodingMaskDC1394;
 
     for (int i=0,e=0; i<32; ++i){
-        if ((1<<i) & mask){
+        if (((1<<i) & mask) && i<color_coding_labels.length()){
             m_ColorCodingLut[e]=i;
             ui->m_MenuColorCoding->insertItem(e++,color_coding_labels.at(i));
         }
@@ -463,7 +463,7 @@ void MainWindow::Reload(uint videoModeDC1394, uint colorCodingMaskDC1394,
         mask=fPSMaskDC1394;
 
         for (int i=0,e=0; i<8; ++i){
-            if ((1<<i) & mask){
+            if (((1<<i) & mask) && i<video_rate_labels.length()){
                 m_FPSLut[e]=i;
                 ui->m_MenuFPS->insertItem(e++,video_rate_labels.at(i));
             }
