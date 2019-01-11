@@ -27,12 +27,11 @@ if(ICUB_USE_IPOPT)
                      include/iCub/iKin/iKinSlv.h)   
 endif()
 
-if(ICUB_USE_IPOPT)
-   add_definitions(${IPOPT_DEFINITIONS})
-endif()
-
-add_definitions(-D_USE_MATH_DEFINES)
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+if(ICUB_USE_IPOPT)
+   target_compile_definitions(${PROJECT_NAME} PRIVATE ${IPOPT_DEFINITIONS})
+endif()
+target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")

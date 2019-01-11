@@ -59,18 +59,14 @@ include_directories(${GLUT_INCLUDE_DIRS}
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-# qt definitions
-add_definitions(${QT_DEFINITIONS})
-# import math symbols from standard cmath
-add_definitions(-D_USE_MATH_DEFINES)
-# disable linking pragmas from glut.h
-add_definitions(-DGLUT_NO_LIB_PRAGMA)
-
-# Compile and link
 add_executable(iCubGui WIN32 ${iCubGui_HDRS}
                              ${iCubGui_SRCS}
                              ${iCubGui_QRC_GEN_SRCS}
                              ${iCubGui_UI_GEN_SRCS})
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE ${QT_DEFINITIONS}
+                                                   _USE_MATH_DEFINES
+                                                   GLUT_NO_LIB_PRAGMA)
 
 target_link_libraries(iCubGui ${GLUT_LIBRARIES}
                               ${OpenGL_LIBRARIES}

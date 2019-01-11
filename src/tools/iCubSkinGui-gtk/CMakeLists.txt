@@ -8,8 +8,6 @@ project(${PROJECTNAME})
 file(GLOB_RECURSE folder_header src/include/*.h)
 file(GLOB_RECURSE folder_source src/*.cpp)
 
-add_definitions(${GTK2_DEFINITIONS})
-
 include_directories(${PROJECT_SOURCE_DIR}/src
                     ${GTK2_INCLUDE_DIRS}
                     ${GSL_INCLUDE_DIRS}
@@ -21,13 +19,14 @@ include_directories(${PROJECT_SOURCE_DIR}/src
 if(NOT ${CMAKE_MINIMUM_REQUIRED_VERSION} VERSION_LESS 3.1)
   message(AUTHOR_WARNING "CMAKE_MINIMUM_REQUIRED_VERSION is now ${CMAKE_MINIMUM_REQUIRED_VERSION}. This check can be removed.")
 endif()
-if(CMAKE_VERSION VERSION_LESS 3.1)
-  if(NOT ${GTK2_SIGC++_VERSION_MAJOR}.${GTK2_SIGC++_VERSION_MINOR}.${GTK2_SIGC++_VERSION_MICRO} VERSION_LESS 2.5.1)
-    add_definitions(${CXX11_FLAGS})
-  endif()
-endif()
 
 add_executable(${PROJECTNAME} ${folder_header} ${folder_source})
+target_compile_definitions(${PROJECTNAME} PRIVATE ${GTK2_DEFINITIONS})
+if(CMAKE_VERSION VERSION_LESS 3.1)
+  if(NOT ${GTK2_SIGC++_VERSION_MAJOR}.${GTK2_SIGC++_VERSION_MINOR}.${GTK2_SIGC++_VERSION_MICRO} VERSION_LESS 2.5.1)
+    target_compile_definitions(${PROJECTNAME} PRIVATE ${CXX11_FLAGS})
+  endif()
+endif()
 
 target_link_libraries(${PROJECTNAME} ctrlLib
                                      ${GTK2_LIBRARIES}

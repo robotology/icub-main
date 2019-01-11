@@ -14,9 +14,8 @@ set(folder_header include/iCub/optimization/algorithms.h
                   include/iCub/optimization/affinity.h
                   include/iCub/optimization/neuralNetworks.h)
 
-# import math symbols from standard cmath
-add_definitions(${IPOPT_DEFINITIONS} -D_USE_MATH_DEFINES)
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+target_compile_definitions(${PROJECT_NAME} PRIVATE ${IPOPT_DEFINITIONS} _USE_MATH_DEFINES)
 
 target_include_directories(${PROJECT_NAME} PUBLIC  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                                                    "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
