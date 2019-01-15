@@ -471,6 +471,7 @@ int cDownloader::strain_set_calib_bias     (int bus, int target_id, string *erro
      txBuffer[0].getData()[1]= 1;
      set_bus(txBuffer[0], bus);
      int ret = m_idriver->send_message(txBuffer, 1);
+     drv_sleep(5);
 
      return 0;
 }
@@ -495,6 +496,7 @@ int cDownloader::strain_set_calib_bias     (int bus, int target_id, char channel
 
      set_bus(txBuffer[0], bus);
      int ret = m_idriver->send_message(txBuffer, 1);
+     drv_sleep(5);
 
      return 0;
 }
@@ -517,6 +519,7 @@ int cDownloader::strain_reset_calib_bias (int bus, int target_id, string *errors
      txBuffer[0].getData()[1]= 0;
      set_bus(txBuffer[0], bus);
      int ret = m_idriver->send_message(txBuffer, 1);
+     drv_sleep(5);
 
      return 0;
 }
@@ -567,6 +570,7 @@ int cDownloader::strain_set_curr_bias     (int bus, int target_id, string *error
      txBuffer[0].getData()[1]= 1;
      set_bus(txBuffer[0], bus);
      int ret = m_idriver->send_message(txBuffer, 1);
+     drv_sleep(5);
 
       return 0;
 }
@@ -592,6 +596,7 @@ int cDownloader::strain_set_curr_bias     (int bus, int target_id, char channel,
 
      set_bus(txBuffer[0], bus);
      int ret = m_idriver->send_message(txBuffer, 1);
+     drv_sleep(5);
 
      return 0;
 }
@@ -612,6 +617,7 @@ int cDownloader::strain_reset_curr_bias     (int bus, int target_id, string *err
      txBuffer[0].getData()[1]= 0;
      set_bus(txBuffer[0], bus);
      int ret = m_idriver->send_message(txBuffer, 1);
+     drv_sleep(5);
 
       return 0;
 }
@@ -639,6 +645,7 @@ int cDownloader::strain_set_serial_number (int bus, int target_id, const char* s
     txBuffer[0].getData()[7]= serial_number[6];
     set_bus(txBuffer[0], bus);
     int ret = m_idriver->send_message(txBuffer, 1);
+    drv_sleep(5);
 
     return 0;
 }
@@ -1261,6 +1268,7 @@ int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigne
     txBuffer[0].getData()[3]= offset & 0xFF;
     set_bus(txBuffer[0], bus);
     int ret = m_idriver->send_message(txBuffer, 1);
+    drv_sleep(5);
 /*
     int read_messages = m_idriver->receive_message(rxBuffer);
     for (int i=0; i<read_messages; i++)
