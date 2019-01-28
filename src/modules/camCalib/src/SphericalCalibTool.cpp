@@ -150,9 +150,11 @@ void SphericalCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> &
 
     out.resize(inSize.width, inSize.height);
 
-    cv::remap( toCvMat(const_cast<ImageOf<PixelRgb>&>(in)), toCvMat(out),
+    cv::Mat outMat=toCvMat(out);
+    cv::remap( toCvMat(const_cast<ImageOf<PixelRgb>&>(in)), outMat,
                cv::cvarrToMat(_mapX), cv::cvarrToMat(_mapY),
-               CV_INTER_LINEAR+CV_WARP_FILL_OUTLIERS );
+               cv::INTER_LINEAR );
+    out=fromCvMat<PixelRgb>(outMat);
 
     // painting crosshair at calibration center
     if (_drawCenterCross){
