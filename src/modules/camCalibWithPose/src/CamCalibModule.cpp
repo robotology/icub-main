@@ -141,9 +141,9 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         //portImgOut->setEnvelope(stamp);
 
         Bottle pose;
-        pose.addDouble(roll);
-        pose.addDouble(pitch);
-        pose.addDouble(yaw);
+        char buf[512];
+        std::snprintf(buf, 512, "%d %.*g %.*g %.*g %.*g", s.getCount(), DBL_DIG, s.getTime(), DBL_DIG, roll, DBL_DIG, pitch, DBL_DIG, yaw);
+        pose.fromString(buf);
         portImgOut->setEnvelope(pose);
 
         portImgOut->writeStrict();
