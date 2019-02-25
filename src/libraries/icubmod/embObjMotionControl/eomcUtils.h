@@ -337,7 +337,7 @@ namespace yarp {
         return 0;
     
     }
-    
+    /*
     eOmc_pidoutputtype_t pidOutputTypeConver_eomc2fw(PidAlgorithmType_t controlLaw)
     {
         switch(controlLaw)
@@ -357,6 +357,7 @@ namespace yarp {
             }
         }
     }
+    */
     
     bool interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut)
     {
