@@ -2,7 +2,7 @@
 iCub
 ====
 
-<a href="https://zenhub.com"><img src="https://raw.githubusercontent.com/ZenHubIO/support/master/zenhub-badge.png"></a>
+[![ZenHub](https://img.shields.io/badge/Shipping_faster_with-ZenHub-435198.svg)](https://zenhub.com)
 
 See COPYING and AUTHORS for licensing info, authors and copyright holders.
 
