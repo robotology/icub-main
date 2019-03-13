@@ -382,6 +382,8 @@ yarp::dev::MAS_status eo_imu_privData::sensorState_eo2yarp(eOas_sensor_t type, u
 }
 
 
+#undef DEBUG_PRINT_STATE
+#undef DEBUG_PRINT_STATE_FULL
 
 void eo_imu_privData::debugPrintStateNotOK(eOas_sensor_t type, uint8_t eo_state)
 {
@@ -391,21 +393,48 @@ void eo_imu_privData::debugPrintStateNotOK(eOas_sensor_t type, uint8_t eo_state)
     if(count[type]< 100) //the print there is about every 1 second
         return;
 
+#if defined(DEBUG_PRINT_STATE)
     switch(type)
     {
         case eoas_imu_acc:
         case eoas_imu_mag:
         case eoas_imu_gyr:
-            if(eo_state<3)
-                yError() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "has status equal to " << eo_state<< "(min=0, max=3)";
+            if(0 == eo_state)
+            {
+                yError() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "is not calibrated because its calib status reg is =" << eo_state<< "(reg: 0 = not calib, 3 = fully calib)";
+            }
+#if defined(DEBUG_PRINT_STATE_FULL)
+            else if(1 == eo_state)
+            {
+                yWarning() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "is poorly calibrated because its calib status reg is =" << eo_state<< "(reg: 0 = not calib, 3 = fully calib)";
+            }
+            else
+            {
+                yInfo() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "is calibrated because its calib status reg is =" << eo_state<< "(reg: 0 = not calib, 3 = fully calib)";
+            }
+#endif
             break;
         case eoas_imu_eul:
         case eoas_imu_qua:
         case eoas_imu_lia:
-            if(eo_state<9)
-                yError() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "has status equal to " << eo_state << "(min=0, max=9)";
+            if(eo_state < 3)
+            {
+                yError() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "is not calibrated because sum of the 3 calib status regs is =" << eo_state<< "(reg: 0 = not calib, 3=fully calib)";
+            }
+#if defined(DEBUG_PRINT_STATE_FULL)
+            else if(eo_state < 6)
+            {
+                yWarning() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "is poorly calibrated because sum of the 3 calib status regs is =" << eo_state<< "(reg: 0 = not calib, 3 = fully calib)";
+            }
+            else
+            {
+                yInfo() << getBoardInfo() << "sensor " << eoas_sensor2string(type) << "is calibrated because sum of the 3 calib status regs is =" << eo_state<< "(reg: 0 = not calib, 3 = fully calib)";
+            }
+#endif
             break;
     }
+#endif //defined(DEBUG_PRINT_STATE)
+
     count[type]=0;
 
 }
