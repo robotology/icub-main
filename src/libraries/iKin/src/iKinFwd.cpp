@@ -2165,7 +2165,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     {
         chainJoints.resize(4);
         chainJoints[0]=motorEncoders[offs+1];
-        for (size_t i=1; i<chainJoints.length(); i++)
+        for (unsigned int i=1; i<chainJoints.length(); i++)
         {
             double c=0.0;
             double span=bounds(i-1,1)-bounds(i-1,0);
@@ -2173,14 +2173,14 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
                 c=std::min(1.0,std::max(0.0,(jointEncoders[i-1]-bounds(i-1,0))/span));
             else if (span<0.0)
                 c=1.0-std::min(1.0,std::max(0.0,(bounds(i-1,1)-jointEncoders[i-1])/span));
-            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
+            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)(i).getMax()-(*this)(i).getMin())+(*this)(i).getMin());
         }
     }
     else if (finger=="index")
     {
         chainJoints.resize(4);
         chainJoints[0]=motorEncoders[offs+0]/3.0;
-        for (size_t i=1; i<chainJoints.length(); i++)
+        for (unsigned int i=1; i<chainJoints.length(); i++)
         {
             double c=0.0;
             double span=bounds(i+2,1)-bounds(i+2,0);
@@ -2188,13 +2188,13 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
                 c=std::min(1.0,std::max(0.0,(jointEncoders[i+2]-bounds(i+2,0))/span));
             else if (span<0.0)
                 c=1.0-std::min(1.0,std::max(0.0,(bounds(i+2,1)-jointEncoders[i+2])/span));
-            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
+            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)(i).getMax()-(*this)(i).getMin())+(*this)(i).getMin());
         }
     }
     else if (finger=="middle")
     {
         chainJoints.resize(3);
-        for (size_t i=0; i<chainJoints.length(); i++)
+        for (unsigned int i=0; i<chainJoints.length(); i++)
         {
             double c=0.0;
             double span=bounds(i+6,1)-bounds(i+6,0);
@@ -2202,14 +2202,14 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
                 c=std::min(1.0,std::max(0.0,(jointEncoders[i+6]-bounds(i+6,0))/span));
             else if (span<0.0)
                 c=1.0-std::min(1.0,std::max(0.0,(bounds(i+6,1)-jointEncoders[i+6])/span));
-            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
+            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)(i).getMax()-(*this)(i).getMin())+(*this)(i).getMin());
         }
     }
     else if (finger=="ring")
     {
         chainJoints.resize(4);
         chainJoints[0]=motorEncoders[offs+0]/3.0;
-        for (size_t i=1; i<chainJoints.length(); i++)
+        for (unsigned int i=1; i<chainJoints.length(); i++)
         {
             double c=0.0;
             double span=bounds(i+8,1)-bounds(i+8,0);
@@ -2217,14 +2217,14 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
                 c=std::min(1.0,std::max(0.0,(jointEncoders[i+8]-bounds(i+8,0))/span));
             else if (span<0.0)
                 c=1.0-std::min(1.0,std::max(0.0,(bounds(i+8,1)-jointEncoders[i+8])/span));
-            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
+            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)(i).getMax()-(*this)(i).getMin())+(*this)(i).getMin());
         }
     }
     else if (finger=="little")
     {
         chainJoints.resize(4);
         chainJoints[0]=motorEncoders[offs+0]/3.0;
-        for (size_t i=1; i<chainJoints.length(); i++)
+        for (unsigned int i=1; i<chainJoints.length(); i++)
         {
             double c=0.0;
             double span=bounds(i+11,1)-bounds(i+11,0);
@@ -2232,7 +2232,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
                 c=std::min(1.0,std::max(0.0,(jointEncoders[i+11]-bounds(i+11,0))/span));
             else if (span<0.0)
                 c=1.0-std::min(1.0,std::max(0.0,(bounds(i+11,1)-jointEncoders[i+11])/span));
-            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
+            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)(i).getMax()-(*this)(i).getMin())+(*this)(i).getMin());
         }
     }
     else
