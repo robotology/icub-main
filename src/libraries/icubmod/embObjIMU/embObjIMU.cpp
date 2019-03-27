@@ -154,7 +154,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     }
     
     GET_privData(mPriv).sens.init(servCfg, getBoardInfo());
-    GET_privData(mPriv).behFlags.opened = true;
+    GET_privData(mPriv).setOpen(true);
     return true;
 }
 
