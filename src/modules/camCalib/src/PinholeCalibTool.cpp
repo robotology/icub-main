@@ -196,9 +196,7 @@ void PinholeCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & o
         _needInit)
         init(inSize,_calibImgSize);
 
-    out.resize(inSize.width, inSize.height);
-
-    cv::Mat outMat=toCvMat(out);
+    cv::Mat outMat;
     cv::remap( toCvMat(const_cast<ImageOf<PixelRgb>&>(in)), outMat,
                cv::cvarrToMat(_mapUndistortX), cv::cvarrToMat(_mapUndistortY),
                cv::INTER_LINEAR );
