@@ -362,8 +362,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         yError() << getBoardInfo() << "Missing motion control parameters in config file";
         return false;
     }
-    
-
 
     if(!res->verifyEPprotocol(eoprot_endpoint_motioncontrol))
     {
@@ -565,6 +563,11 @@ bool embObjMotionControl::saveCouplingsData(void)
         case eomn_serv_MC_mc4plusmais:
         {
            jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc4plusmais_based.jomocoupling);
+
+        } break;
+        case eomn_serv_MC_mc2pluspsc:
+        {
+            jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc2pluspsc.jomocoupling);
 
         } break;
          case eomn_serv_MC_mc4:
@@ -4613,7 +4616,8 @@ bool embObjMotionControl::iNeedCouplingsInfo(void)
     eOmn_serv_type_t mc_serv_type = (eOmn_serv_type_t)serviceConfig.ethservice.configuration.type;
     if( (mc_serv_type == eomn_serv_MC_foc) ||
         (mc_serv_type == eomn_serv_MC_mc4plus) ||
-        (mc_serv_type == eomn_serv_MC_mc4plusmais)
+        (mc_serv_type == eomn_serv_MC_mc4plusmais) ||
+        (mc_serv_type == eomn_serv_MC_mc2pluspsc)
       )
         return true;
     else
