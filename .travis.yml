@@ -25,7 +25,9 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/cask; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies yarp; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install gsl goocanvas sdl sdl_gfx sdl_image; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install opencv; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install opencv@3; fi
+  # Install opencv@3 (keg-only)
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew link --force opencv@3; fi
   # add QT5 to path so that it can be found by CMake
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="$PATH:/usr/local/opt/qt/bin"; fi
   #use the same set of cmake options used in the dashboard build
