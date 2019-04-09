@@ -539,7 +539,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 {
     bool formaterror = false;
     // so far we check for eomn_serv_AS_mais / strain / inertial only
-    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) && (eomn_serv_AS_inertials3 != type))
+    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) && (eomn_serv_AS_inertials3 != type) && (eomn_serv_AS_psc != type))
     {
         yError() << "ServiceParser::check() is called with wrong type";
         return false;
@@ -1635,6 +1635,69 @@ bool ServiceParser::parseService(Searchable &config, servConfigSkin_t &skinconfi
     skinconfig.canboard.firmware.build = sk_service.properties.canboard.firmware.build;
     skinconfig.canboard.protocol.major = sk_service.properties.canboard.protocol.major;
     skinconfig.canboard.protocol.minor = sk_service.properties.canboard.protocol.minor;
+
+    return true;
+}
+
+
+bool ServiceParser::parseService(Searchable &config, servConfigPSC_t &pscconfig)
+{
+    if(false == check_analog(config, eomn_serv_AS_psc))
+    {
+        yError() << "ServiceParser::parseService(PSC) has received an invalid SERVICE group for PSC";
+        return false;
+    }
+
+
+    //check the num of type of boards. At max we have 1 board type
+
+    if(as_service.properties.canboards.size() > 1)
+    {
+        yError() << "ServiceParser::parseService(PSC): too many type board info are configured. The max num is " << 1;
+        return false;
+    }
+
+    if(as_service.settings.enabledsensors.size() > eOas_psc_boards_maxnumber)
+    {
+        yError() << "ServiceParser::parseService(PSC): too many enabled sensors are configured. The max num is " << eOas_psc_boards_maxnumber;
+        return false;
+    }
+
+    //reset configuration service
+    memset(&pscconfig.ethservice.configuration, 0, sizeof(pscconfig.ethservice.configuration));
+
+    //set type of service
+    pscconfig.ethservice.configuration.type = eomn_serv_AS_psc;
+
+
+    //get acquisition rate
+    pscconfig.acquisitionrate = as_service.settings.acquisitionrate;
+
+    servCanBoard_t *asServBoardInfo_ptr = &as_service.properties.canboards[0];
+    eOmn_serv_config_data_as_psc_t *pscBoardConfig_ptr = &pscconfig.ethservice.configuration.data.as.psc;
+
+    //get firmware and protocol info
+    pscBoardConfig_ptr->version.firmware.major = asServBoardInfo_ptr->firmware.major;
+    pscBoardConfig_ptr->version.firmware.minor = asServBoardInfo_ptr->firmware.minor;
+    pscBoardConfig_ptr->version.firmware.build = asServBoardInfo_ptr->firmware.build;
+    pscBoardConfig_ptr->version.protocol.major = asServBoardInfo_ptr->protocol.major;
+    pscBoardConfig_ptr->version.protocol.minor = asServBoardInfo_ptr->protocol.minor;
+
+    for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
+    {
+        servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
+
+        if(eoas_psc_angle != sensor.type)
+        {
+            yWarning() << "ServiceParser::parseService() has detected a wrong psc sensor:" << eoas_sensor2string(sensor.type) << " ...  we drop it";
+            continue;
+        }
+
+        // if ok, i copy it inside ...
+        pscBoardConfig_ptr->boardInfo.canloc[i].addr= sensor.location.can.addr;
+        pscBoardConfig_ptr->boardInfo.canloc[i].port= sensor.location.can.port;
+
+    }
 
     return true;
 }
@@ -2828,7 +2891,7 @@ bool ServiceParser::check_motion(Searchable &config)
         int numboards = tmp - 1;    // first position of bottle contains the tag "location"
 
         // check if numboards is 3.
-        if(3 != numboards)
+        if(eOas_psc_boards_maxnumber != numboards)
         {
             yError() << "ServiceParser::check_motion() in PROPERTIES.PSC.location must contain three items and it has:" << numboards;
             return false;
@@ -3514,9 +3577,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             for(int i=0; i<mc_service.properties.psclocations.size(); i++)
             {
-                psc->canloc[i].port=mc_service.properties.psclocations[i].port;
-                psc->canloc[i].addr=mc_service.properties.psclocations[i].addr;
-                psc->canloc[i].insideindex=mc_service.properties.psclocations[i].insideindex;
+                psc->boardInfo.canloc[i].port=mc_service.properties.psclocations[i].port;
+                psc->boardInfo.canloc[i].addr=mc_service.properties.psclocations[i].addr;
+                psc->boardInfo.canloc[i].insideindex=mc_service.properties.psclocations[i].insideindex;
             }
 
 

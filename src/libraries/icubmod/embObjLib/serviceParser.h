@@ -66,12 +66,18 @@ typedef struct
 {
     eOmn_serv_parameter_t               ethservice;
     int                                 acquisitionrate;
-    std::vector<eOas_inertial3_descriptor_t> inertials; //TODO vale e' da rimuovere e' doppio!!!
+    std::vector<eOas_inertial3_descriptor_t> inertials; //TODO to remove because information is already stored!
     std::vector<std::string>                      id;
     imuConvFactors_t                    convFactors;
 } servConfigImu_t;
 
 
+typedef struct
+{
+    eOmn_serv_parameter_t     ethservice;
+    int                       acquisitionrate;
+    std::vector<std::string>  idList;
+} servConfigPSC_t;
 
 
 #if defined(SERVICE_PARSER_USE_MC)
@@ -250,7 +256,7 @@ public:
     bool parseService(yarp::os::Searchable &config, servConfigInertials_t &inertialsconfig);
     bool parseService(yarp::os::Searchable &config, servConfigImu_t &imuconfig);
     bool parseService(yarp::os::Searchable &config, servConfigSkin_t &skinconfig);
-
+    bool parseService(yarp::os::Searchable &config, servConfigPSC_t &pscconfig);
 #if defined(SERVICE_PARSER_USE_MC)
     bool parseService(yarp::os::Searchable &config, servConfigMC_t &mcconfig);
     bool parseService2(yarp::os::Searchable &config, servConfigMC_t &mcconfig); // the fixed one.

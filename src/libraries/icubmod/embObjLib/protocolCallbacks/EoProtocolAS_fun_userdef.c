@@ -60,6 +60,8 @@ static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd);
 static void handle_data_inertial3(const EOnv* nv, const eOropdescriptor_t* rd);
 
 static void handle_data_temperature(const EOnv* nv, const eOropdescriptor_t* rd);
+
+static void handle_data_psc(const EOnv* nv, const eOropdescriptor_t* rd);
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
@@ -130,6 +132,13 @@ extern void eoprot_fun_UPDT_as_temperature_status(const EOnv* nv, const eOropdes
     }
 }
 
+extern void eoprot_fun_UPDT_as_psc_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if(eo_ropcode_sig == rd->ropcode)
+    {
+        handle_data_psc(nv, rd);
+    }
+}
 
 
 
@@ -166,6 +175,13 @@ static void handle_data_temperature(const EOnv* nv, const eOropdescriptor_t* rd)
     eOas_temperature_status_t *tempstatus  = (eOas_temperature_status_t*)rd->data;
     feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)tempstatus);
 }
+
+static void handle_data_psc(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    eOas_psc_status_t *pscstatus  = (eOas_psc_status_t*)rd->data;
+    feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)pscstatus);
+}
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)
