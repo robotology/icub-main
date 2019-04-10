@@ -39,7 +39,7 @@ before_script:
   - cd yarp
   - mkdir build
   - cd build
-  - cmake ../ -DCREATE_GUIS:BOOL=ON -DCREATE_LIB_MATH:BOOL=ON -DCREATE_OPTIONAL_CARRIERS:BOOL=ON -DENABLE_yarpcar_bayer_carrier:BOOL=ON -DENABLE_icubmod_usbCamera:BOOL=ON -DENABLE_icubmod_usbCameraRaw:BOOL=ON
+  - cmake ../ -DCREATE_GUIS:BOOL=ON -DCREATE_LIB_MATH:BOOL=ON -DCREATE_OPTIONAL_CARRIERS:BOOL=ON -DENABLE_yarpcar_bayer_carrier:BOOL=ON
   - make
   - sudo make install
   - cd ../..
