@@ -99,6 +99,7 @@ Author: Lorenzo Natale
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/LogStream.h>
 
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 
@@ -107,6 +108,7 @@ Author: Lorenzo Natale
 #include <iomanip>
 #include <string>
 #include <deque>
+#include <vector>
 
 using namespace std;
 using namespace yarp::os;
