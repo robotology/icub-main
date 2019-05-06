@@ -1818,6 +1818,13 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type12.calibrationDelta = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
+    case eomc_calibration_type13_cer_hands_2:
+        calib.params.type13.rawValueAtZeroPos0     = (int32_t)S_32(params.param1);
+        calib.params.type13.rawValueAtZeroPos1     = (int32_t)S_32(params.param2);
+        calib.params.type13.rawValueAtZeroPos2     = (int32_t)S_32(params.param3);
+        calib.params.type13.rawValueAtZeroPos3     = (int32_t)S_32(params.param4);
+        break;
+
     default:
         yError() << "Calibration type unknown!! (embObjMotionControl)\n";
         return false;
