@@ -66,12 +66,18 @@ typedef struct
 {
     eOmn_serv_parameter_t               ethservice;
     int                                 acquisitionrate;
-    std::vector<eOas_inertial3_descriptor_t> inertials; //TODO vale e' da rimuovere e' doppio!!!
+    std::vector<eOas_inertial3_descriptor_t> inertials; //TODO to remove because information is already stored!
     std::vector<std::string>                      id;
     imuConvFactors_t                    convFactors;
 } servConfigImu_t;
 
 
+typedef struct
+{
+    eOmn_serv_parameter_t     ethservice;
+    int                       acquisitionrate;
+    std::vector<std::string>  idList;
+} servConfigPSC_t;
 
 
 #if defined(SERVICE_PARSER_USE_MC)
@@ -195,6 +201,7 @@ typedef struct
     std::vector<servCanBoard_t>              canboards;
 
     eObrd_canlocation_t                 maislocation;
+    std::vector<eObrd_canlocation_t>    psclocations;
 
     eOmc_mc4shifts_t                    mc4shifts;
     std::vector<eOmc_mc4broadcast_t>         mc4broadcasts;
@@ -249,11 +256,11 @@ public:
     bool parseService(yarp::os::Searchable &config, servConfigInertials_t &inertialsconfig);
     bool parseService(yarp::os::Searchable &config, servConfigImu_t &imuconfig);
     bool parseService(yarp::os::Searchable &config, servConfigSkin_t &skinconfig);
-
+    bool parseService(yarp::os::Searchable &config, servConfigPSC_t &pscconfig);
 #if defined(SERVICE_PARSER_USE_MC)
     bool parseService(yarp::os::Searchable &config, servConfigMC_t &mcconfig);
     bool parseService2(yarp::os::Searchable &config, servConfigMC_t &mcconfig); // the fixed one.
-    bool convert(std::string const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror);
+    //bool convert(std::string const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror);
     //bool convert(Bottle &bottle, std::vector<double> &matrix, bool &formaterror, int targetsize);
     bool convert(std::string const &fromstring, eOmc_actuator_t &toactuatortype, bool &formaterror);
     bool convert(std::string const &fromstring, eOmc_position_t &toposition, bool &formaterror);
@@ -267,6 +274,9 @@ public:
 
     bool parse_actuator_port(std::string const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror);
     bool parse_encoder_port(std::string const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror);
+
+    bool parse_psc(std::string const &fromstring, eObrd_portpsc_t &ppsc, bool &formaterror);
+    bool parse_port_psc(std::string const &fromstring, uint8_t &toport, bool &formaterror);
 
 #endif
 

@@ -36,6 +36,11 @@
 using namespace std;
 using namespace iCub::skin::diagnostics;
 
+bool isCANaddressValid(int adr)
+{
+    return ((adr>0) && (adr<15));
+}
+
 
 int SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
 {
@@ -123,6 +128,8 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
         //now p is the index of patch.
 
+        eOcanport_t canport = _skCfg.patchInfoList[p].canport;
+
         //check if card address are in patch
         int boardIdx = -1;
         for(int a=boardCfgList[j].boardAddrStart; a<=boardCfgList[j].boardAddrEnd; a++)
@@ -135,10 +142,18 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             }
         }
 
-        //prepare data to send to ems
+        // prepare data to send to ems
         eOsk_cmd_boardsCfg_t bcfg;
-        bcfg.addrstart = boardCfgList[j].boardAddrStart;
-        bcfg.addrend = boardCfgList[j].boardAddrEnd;
+        // this message is for some addresses only
+        bcfg.candestination[0] = bcfg.candestination[1] = 0;
+        for(int adr=boardCfgList[j].boardAddrStart; adr<=boardCfgList[j].boardAddrEnd; adr++)
+        {
+            if(isCANaddressValid(adr))
+            {
+                eo_common_hlfword_bitset(&bcfg.candestination[canport], adr);
+            }
+        }
+
         bcfg.cfg.skintype = boardCfgList[j].cfg.skinType;
         bcfg.cfg.period = boardCfgList[j].cfg.period;
         bcfg.cfg.noload = boardCfgList[j].cfg.noLoad;
@@ -168,7 +183,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
         if(false == res->setRemoteValue(protoid, &bcfg))
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send special board config for mtb with addr from"<<  bcfg.addrstart << " to addr " << bcfg.addrend;
+            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send special board config for mtb with addr from"<< boardCfgList[j].boardAddrStart << " to addr " << boardCfgList[j].boardAddrEnd;
             return false;
         }
 
@@ -200,6 +215,8 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
         //now p is index patch
 
+        eOcanport_t canport = _skCfg.patchInfoList[p].canport;
+
         //check if bcfg.boardAddr is in my patches list
         if(-1 == _skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
         {
@@ -212,7 +229,15 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
 
         eOsk_cmd_trianglesCfg_t tcfg = {0};
-        tcfg.boardaddr = triangleCfg[j].boardAddr;
+
+        // this message is for one address only
+        tcfg.candestination[0] = tcfg.candestination[1] = 0;
+        int adr = triangleCfg[j].boardAddr;
+        if(isCANaddressValid(adr))
+        {
+            eo_common_hlfword_bitset(&tcfg.candestination[canport], adr);
+        }
+
         tcfg.idstart = triangleCfg[j].triangleStart;
         tcfg.idend = triangleCfg[j].triangleEnd;
         tcfg.cfg.CDCoffset = triangleCfg[j].cfg.cdcOffset;
@@ -232,7 +257,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
         if(false == res->setRemoteValue(protoid, &tcfg))
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send default triangle config for mtb "<<  tcfg.boardaddr;
+            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send special triangle config for board CAN" << canport+1 << ":" << triangleCfg[j].boardAddr;
             return false;
         }
     }
@@ -284,6 +309,8 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         }
         _skCfg.patchInfoList[j-1].idPatch = id;
         _skCfg.patchInfoList[j-1].indexNv = convertIdPatch2IndexNv(id);
+        _skCfg.patchInfoList[j-1].canport = (1 == id) ? eOcanport1 : eOcanport2;
+        //yDebug("fromConfig: found CAN%d", _skCfg.patchInfoList[j-1].canport+1);
     }
 
 
@@ -356,14 +383,18 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         // patch np-th, can2 ... for each address put a bit using
         ethservice.configuration.data.sk.skin.canmapskin[np][1] = 0;
   
-        int canport = _skCfg.patchInfoList[np].idPatch-1;
+        eOcanport_t canport = _skCfg.patchInfoList[np].canport;
         
         int max = _skCfg.patchInfoList[np].cardAddrList.size();
         for(int n=0; n<max; n++)
         {
             int adr = _skCfg.patchInfoList[np].cardAddrList.at(n);
             adr = adr;
-            eo_common_hlfword_bitset(&ethservice.configuration.data.sk.skin.canmapskin[np][canport], adr);
+            if(isCANaddressValid(adr))
+            {
+                eo_common_hlfword_bitset(&ethservice.configuration.data.sk.skin.canmapskin[np][canport], adr);
+                //yDebug("config of service: initting mask for bdr @ CAN%d:%d", canport+1, adr);
+            }
         }
     }
 
@@ -693,19 +724,26 @@ bool EmbObjSkin::init()
 
         for(k=0; k<_skCfg.patchInfoList[i].cardAddrList.size(); k++)
         {
-            if(_skCfg.patchInfoList[i].cardAddrList[k] <  minAddr)
-                minAddr = _skCfg.patchInfoList[i].cardAddrList[k];
+            int adr = _skCfg.patchInfoList[i].cardAddrList[k];
 
-            if(_skCfg.patchInfoList[i].cardAddrList[k] >  maxAddr)
-                maxAddr = _skCfg.patchInfoList[i].cardAddrList[k];
+            if(isCANaddressValid(adr))
+            {
+                if(_skCfg.patchInfoList[i].cardAddrList[k] <  minAddr)
+                    minAddr = _skCfg.patchInfoList[i].cardAddrList[k];
+
+                if(_skCfg.patchInfoList[i].cardAddrList[k] >  maxAddr)
+                    maxAddr = _skCfg.patchInfoList[i].cardAddrList[k];
+            }
         }
 
-        defBoardCfg.addrstart = minAddr;
-        defBoardCfg.addrend = maxAddr;
+
+
+        // we send the config to the whole patch, hence 0xffff
+        defBoardCfg.candestination[0] = defBoardCfg.candestination[1] = 0xffff;
 
         if(false == res->setRemoteValue(protoid, &defBoardCfg))
         {
-            yError() << "EmbObjSkin::init(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send default board config for mtb with addr from "<<  defBoardCfg.addrstart << "to " << defBoardCfg.addrend;
+            yError() << "EmbObjSkin::init(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send default board config for patch #"<<  i;
             return false;
         }
 
@@ -716,15 +754,16 @@ bool EmbObjSkin::init()
     {
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_cmmnds_trianglescfg);
 
-        for(k=0; k<_skCfg.patchInfoList[i].cardAddrList.size(); k++)
+
+        // we send the config to the whole patch, hence 0xffff
+        defTriangleCfg.candestination[0] = defTriangleCfg.candestination[1] = 0xffff;
+
+        if(false == res->setRemoteValue(protoid, &defTriangleCfg))
         {
-            defTriangleCfg.boardaddr = _skCfg.patchInfoList[i].cardAddrList[k];
-            if(false == res->setRemoteValue(protoid, &defTriangleCfg))
-            {
-                yError() << "EmbObjSkin::init(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send default triangle config for mtb "<<  defTriangleCfg.boardaddr;
-                return false;
-            }
+            yError() << "EmbObjSkin::init(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send default triangle config for patch # "<<  i;
+            return false;
         }
+
     }
 
     opened = true;
@@ -741,6 +780,12 @@ eth::iethresType_t EmbObjSkin::type()
 {
     return eth::iethres_skin;
 }
+
+#undef DEBUG_PRINT_RX_STATS
+#if defined(DEBUG_PRINT_RX_STATS)
+static uint32_t receivedpatches[2][16] = {0};
+static uint32_t counterpa = 0;
+#endif
 
 bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 {
@@ -827,6 +872,10 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 
             if (msgtype == 0x40)
             {
+#if defined(DEBUG_PRINT_RX_STATS)
+                receivedpatches[p][cardAddr]++;
+                counterpa ++;
+#endif
                 // Message head
                 for(int k = 0; k < 7; k++)
                 {
@@ -893,6 +942,21 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                 error = 0;
         }
     }
+
+#if defined(DEBUG_PRINT_RX_STATS)
+    if(counterpa >= 10000)
+    {
+        counterpa = 0;
+        yDebug("pa = {{%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d} {%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d}}",
+                receivedpatches[0][0], receivedpatches[0][1], receivedpatches[0][2], receivedpatches[0][3], receivedpatches[0][4], receivedpatches[0][5], receivedpatches[0][6], receivedpatches[0][7],
+                receivedpatches[0][8], receivedpatches[0][9], receivedpatches[0][10], receivedpatches[0][11], receivedpatches[0][12], receivedpatches[0][13], receivedpatches[0][14], receivedpatches[0][15],
+                receivedpatches[1][0], receivedpatches[1][1], receivedpatches[1][2], receivedpatches[1][3], receivedpatches[1][4], receivedpatches[1][5], receivedpatches[1][6], receivedpatches[1][7],
+                receivedpatches[1][8], receivedpatches[1][9], receivedpatches[1][10], receivedpatches[1][11], receivedpatches[1][12], receivedpatches[1][13], receivedpatches[1][14], receivedpatches[1][15]
+                );
+
+    }
+#endif
+
     return true;
 }
 
