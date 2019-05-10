@@ -463,11 +463,16 @@ bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config) // OK
 {
     for (int i = 0; i<_njoints; i++)
     {
-        // 1) verify that selected control law is defined in file
+        if(_mixedControlLaw[i] == "none")
+        {
+            continue;
+        }
+
+  	// 1) verify that selected control law is defined in file
         Bottle botControlLaw = config.findGroup(_mixedControlLaw[i]);
         if (botControlLaw.isNull())
         {
-            yError() << "embObjMC BOARD " << _boardname << "Missing " << _positionControlLaw[i].c_str();
+            yError() << "embObjMC BOARD " << _boardname << "Missing " << _mixedControlLaw[i].c_str();
             return false;
         }
 
