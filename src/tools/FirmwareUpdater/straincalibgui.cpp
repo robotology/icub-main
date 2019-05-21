@@ -423,8 +423,9 @@ bool StrainCalibGui::print(const vector<cDownloader::strain_value_t> &values, FI
         return false;
     }
 
-    if(!ft.isEmpty() && ft.count() == 6){
+    if(!ft.isEmpty() && (ft.count() == 6)){
         fprintf(fp,"- %f %f %f %f %f %f\n\n",ft.at(0),ft.at(1),ft.at(2),ft.at(3),ft.at(4),ft.at(5));
+        fflush(fp);
     }
 
     for(size_t n=0; n<values.size(); n++)
@@ -442,6 +443,7 @@ bool StrainCalibGui::print(const vector<cDownloader::strain_value_t> &values, FI
         {
             fprintf(fp,"%d %d %d %d %d %d %d\n",static_cast<int>(n),signed_gaugeData[0],signed_gaugeData[1],signed_gaugeData[2],
                     signed_gaugeData[3],signed_gaugeData[4],signed_gaugeData[5]);
+            fflush(fp);
         }
 
         if(enabledebugprints)
@@ -511,6 +513,7 @@ bool StrainCalibGui::acquire_samples(int samples)
     else
     {
         fprintf(fp, "acquisition error. please check log on terminal.\n");
+        fflush(fp);
     }
 
     setAcquisitionOfDataActive(false);
