@@ -1621,9 +1621,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigSkin_t &skinconfi
 
     //check the type of board. it must be mtb or mtb4
 
-    if((eobrd_cantype_mtb != sk_service.properties.canboard.type) && (eobrd_cantype_mtb4 != sk_service.properties.canboard.type))
+    if((eobrd_cantype_mtb != sk_service.properties.canboard.type) && (eobrd_cantype_mtb4 != sk_service.properties.canboard.type) && (eobrd_cantype_psc != sk_service.properties.canboard.type))
     {
-        yError() << "ServiceParser::parseService(SK): only mtb or mtb4 boards are allowed: using defaults";
+        yError() << "ServiceParser::parseService(SK): only mtb / mtb4 / psc boards are allowed: using defaults";
         return false;
     }
 
