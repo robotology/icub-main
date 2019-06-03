@@ -2061,10 +2061,10 @@ bool embObjMotionControl::checkMotionDoneRaw(bool *flag)
         yError () << "Failure of askRemoteValues() inside embObjMotionControl::checkMotionDoneRaw for all joints of" << getBoardInfo();
         return false;
     }
-    
+    *flag=true;
     for(int j=0; j<_njoints; j++)
     {
-        flag[j] = ismotiondoneList[j]; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
+        *flag &= ismotiondoneList[j]; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
     }
     return true;
 }
@@ -2208,30 +2208,36 @@ bool embObjMotionControl::relativeMoveRaw(const int n_joint, const int *joints, 
 
 bool embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
 {
-    bool tot_val = true;
-   
-    //std::vector <bool> isDoneList(_njoints); //this cannot be used here because .data() is not implemented for std::vector <bool>
-    bool* isDoneList = new bool[_njoints];
-   
-    *flag = false;
-    
-    if(! checkMotionDoneRaw(isDoneList))
-        return false;
 
+    //1) first of all, check if all joints number are ok
     for(int j=0; j<n_joint; j++)
     {
         if(joints[j] >= _njoints)
         {
             yError() << getBoardInfo() << ":checkMotionDoneRaw required for not existing joint ( " << joints[j] << ")";
-            delete [] isDoneList;
             return false;
         }
-        tot_val &= isDoneList[joints[j]];
     }
-    
+
+    //2) ask check motion done for all my joints
+    std::vector <eObool_t> ismotiondoneList(_njoints);
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_core_modes_ismotiondone, ismotiondoneList);
+    if(false == ret)
+    {
+        yError () << getBoardInfo() << "Failure of askRemoteValues() inside embObjMotionControl::checkMotionDoneRaw for a group of joint"; getBoardInfo();
+        return false;
+    }
+
+    //3) verify only the given joints
+    bool tot_val = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        tot_val &= ismotiondoneList[joints[j]];
+    }
+
     *flag = tot_val;
-    delete[] isDoneList;
     return true;
+
 }
 
 bool embObjMotionControl::setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds)
