@@ -2061,10 +2061,10 @@ bool embObjMotionControl::checkMotionDoneRaw(bool *flag)
         yError () << "Failure of askRemoteValues() inside embObjMotionControl::checkMotionDoneRaw for all joints of" << getBoardInfo();
         return false;
     }
-    
+    *flag=true;
     for(int j=0; j<_njoints; j++)
     {
-        flag[j] = ismotiondoneList[j]; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
+        *flag &= ismotiondoneList[j]; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
     }
     return true;
 }
