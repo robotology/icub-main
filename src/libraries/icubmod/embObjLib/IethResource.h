@@ -73,7 +73,7 @@ namespace eth {
         iethres_analogpsc       = 10
     } iethresType_t;
 
-    enum { iethresType_numberof = 10 };
+    enum { iethresType_numberof = 11 };
 
 
     class IethResource
