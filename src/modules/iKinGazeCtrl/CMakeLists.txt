@@ -21,9 +21,8 @@ set(folder_source src/gazeNlp.cpp
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${IPOPT_INCLUDE_DIRS})
 
-# import math symbols from standard cmath
-add_definitions(${IPOPT_DEFINITIONS} -D_USE_MATH_DEFINES)
 add_executable(${PROJECT_NAME} ${folder_header} ${folder_source})
+target_compile_definitions(${PROJECT_NAME} PRIVATE ${IPOPT_DEFINITIONS} _USE_MATH_DEFINES)
 target_link_libraries(${PROJECT_NAME} ctrlLib iKin ${IPOPT_LIBRARIES} ${YARP_LIBRARIES})
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)

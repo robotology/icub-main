@@ -16,9 +16,8 @@ set(folder_header include/iCub/iDyn/iDyn.h
                   include/iCub/iDyn/iDynTransform.h
                   include/iCub/iDyn/iDynContact.h)
 
-# import math symbols from standard cmath
-add_definitions(-D_USE_MATH_DEFINES)
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")

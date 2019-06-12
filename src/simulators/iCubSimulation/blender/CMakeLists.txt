@@ -16,7 +16,6 @@ cmake_minimum_required(VERSION 2.6.4)
 project(blysim)
 
 set(BASE ${CMAKE_CURRENT_SOURCE_DIR}/..)
-add_definitions(-DOMIT_LOGPOLAR)
 
 find_package(YARP REQUIRED)
 
@@ -32,8 +31,8 @@ add_library(blysim ${wrapper_source}
                    BlenderSimulationBundle.cpp
                    BlenderLogicalJoints.h
                    BlenderSimulationBundle.h
-                   BlenderSimulation.h
-  )
+                   BlenderSimulation.h)
+target_compile_definitions(blysim PUBLIC OMIT_LOGPOLAR)
 target_link_libraries(blysim ${YARP_LIBRARIES})
 
 add_executable(blysim_sanity_check test.cpp)

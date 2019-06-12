@@ -298,7 +298,7 @@ following ports:
 
 - \e /<ctrlName>/q:o returns the actual joints configuration
   during movement (Vector of 9 double). The order for torso
-  angles is the one defined by kinematic chain (reversed order).
+  angles is the one defined by kinematic chain.
   Useful in conjunction with the \ref iKinGazeView "viewer".
   Units in degrees.
 
@@ -1063,10 +1063,12 @@ protected:
     /************************************************************************/
     double constrainHeadVersion(const double ver_in)
     {
+        // std::map<k,v> is ordered based on std::less<k>
         map<double,double> d;
         d[fabs(1.0-ver_in)]=1.0;
         d[fabs(2.0-ver_in)]=2.0;
         d[fabs(2.5-ver_in)]=2.5;
+        d[fabs(3.0-ver_in)]=3.0;
 
         double ver_out=d.begin()->second;
         if (ver_out!=ver_in)

@@ -15,8 +15,9 @@
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 * Public License for more details
 */
+#include <utility>
 #include <yarp/os/Time.h>
-
+#include <yarp/cv/Cv.h>
 #include <iCub/VisuoThread.h>
 
 
@@ -112,10 +113,7 @@ bool VisuoThread::checkTracker(Vector *vec)
             track=false;
         }
         // check that both images are tracking similar things
-
-
     }
-        
     
     while(trackBuffer.size()>maxTrackBufSize)
         trackBuffer.pop_front();
@@ -126,8 +124,6 @@ bool VisuoThread::checkTracker(Vector *vec)
 
 void VisuoThread::startTracker(const Vector &stereo, const int &side)
 {
-    IplImage *ipl_img, *ipl_tpl;
-
     int eye_in_use;
 
     if(stereo[2*dominant_eye]==0.0 && stereo[2*dominant_eye+1]==0.0)
@@ -140,32 +136,26 @@ void VisuoThread::startTracker(const Vector &stereo, const int &side)
     else
         eye_in_use=dominant_eye;
 
+    cv::Mat imgMat;
     imgMutex.wait();
-    ipl_img=img[eye_in_use]!=NULL? cvCloneImage((IplImage *) img[eye_in_use]->getIplImage()):NULL;
+    if (img[eye_in_use]!=nullptr)
+        imgMat=yarp::cv::toCvMat(*img[eye_in_use]).clone();
     imgMutex.post();
 
-    if(ipl_img!=NULL)
+    if (!imgMat.empty())
     {
+        tpl.resize(side,side);
+        cv::Mat tplMat=yarp::cv::toCvMat(tpl);
+
         int x=stereo[2*eye_in_use]-0.5*side<0?0:cvRound(stereo[2*eye_in_use]-0.5*side);
         int y=stereo[2*eye_in_use+1]-0.5*side<0?0:cvRound(stereo[2*eye_in_use+1]-0.5*side);
-        int width=stereo[2*eye_in_use]+0.5*side>=ipl_img->width?ipl_img->width-x:side;
-        int height=stereo[2*eye_in_use+1]+0.5*side>=ipl_img->height?ipl_img->height-y:side;
+        int width=stereo[2*eye_in_use]+0.5*side>=imgMat.cols?imgMat.cols-x:side;
+        int height=stereo[2*eye_in_use+1]+0.5*side>=imgMat.rows?imgMat.rows-y:side;
+        
+        imgMat(cv::Rect(x,y,width,height)).copyTo(tplMat);
+        cv::cvtColor(tplMat,tplMat,CV_BGR2RGB);
 
-        ipl_tpl=cvCreateImage(cvSize(side,side),ipl_img->depth,ipl_img->nChannels);
-        cvSetImageROI(ipl_img,cvRect(x,y,width,height));
-        cvCopy(ipl_img,ipl_tpl);
-        cvCvtColor(ipl_tpl,ipl_tpl,CV_BGR2RGB);
-        //ImageOf<PixelBgr> tpl;
-        if(tpl.width()>0)
-        {
-            IplImage *tmp_ipl=(IplImage*) tpl.getIplImage();
-            //cvReleaseImage(&tmp_ipl);
-        }        
-        tpl.wrapIplImage(ipl_tpl);
         pftOutPort.write(tpl);
-
-        cvReleaseImage(&ipl_img);
-        cvReleaseImage(&ipl_tpl);
     }
 
     trackMutex.wait();
@@ -326,25 +316,24 @@ void VisuoThread::updatePFTracker()
         }
     }
 
-
-
     imgMutex.wait();
     if(img[LEFT]!=NULL && img[RIGHT]!=NULL)
     {
-        Image drawImg[2];
+        ImageOf<PixelRgb> drawImg[2];
         drawImg[LEFT]=*img[LEFT];
         drawImg[RIGHT]=*img[RIGHT];
 
         if(stereoTracker.vec.size()==12)
         {
+            cv::Mat tmpL=yarp::cv::toCvMat(drawImg[LEFT]);
+            cv::circle(tmpL,cv::Point(cvRound(stereoTracker.vec[0]),cvRound(stereoTracker.vec[1])),3,cv::Scalar(0,255),3);
+            cv::rectangle(tmpL,cv::Point(cvRound(stereoTracker.vec[2]),cvRound(stereoTracker.vec[3])),
+                          cv::Point(cvRound(stereoTracker.vec[4]),cvRound(stereoTracker.vec[5])),cv::Scalar(0,255),3);
 
-            cvCircle(drawImg[LEFT].getIplImage(),cvPoint(cvRound(stereoTracker.vec[0]),cvRound(stereoTracker.vec[1])),3,cvScalar(0,255),3);
-            cvRectangle(drawImg[LEFT].getIplImage(),cvPoint(cvRound(stereoTracker.vec[2]),cvRound(stereoTracker.vec[3])),
-                                                 cvPoint(cvRound(stereoTracker.vec[4]),cvRound(stereoTracker.vec[5])),cvScalar(0,255),3);
-
-            cvCircle(drawImg[RIGHT].getIplImage(),cvPoint(cvRound(stereoTracker.vec[6]),cvRound(stereoTracker.vec[7])),3,cvScalar(0,255),3);
-            cvRectangle(drawImg[RIGHT].getIplImage(),cvPoint(cvRound(stereoTracker.vec[8]),cvRound(stereoTracker.vec[9])),
-                                                 cvPoint(cvRound(stereoTracker.vec[10]),cvRound(stereoTracker.vec[11])),cvScalar(0,255),3);
+            cv::Mat tmpR=yarp::cv::toCvMat(drawImg[RIGHT]);
+            cv::circle(tmpR,cv::Point(cvRound(stereoTracker.vec[6]),cvRound(stereoTracker.vec[7])),3,cv::Scalar(0,255),3);
+            cv::rectangle(tmpR,cv::Point(cvRound(stereoTracker.vec[8]),cvRound(stereoTracker.vec[9])),
+                          cv::Point(cvRound(stereoTracker.vec[10]),cvRound(stereoTracker.vec[11])),cv::Scalar(0,255),3);
 
             Bottle v;
             v.clear();
@@ -359,7 +348,6 @@ void VisuoThread::updatePFTracker()
 
             boundMILPort.write(v);
         }
-
 
         if(newImage[LEFT])
             outPort[LEFT].write(drawImg[LEFT]);

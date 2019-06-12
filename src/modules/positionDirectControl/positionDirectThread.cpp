@@ -22,6 +22,8 @@ positionDirectControlThread::positionDirectControlThread(int period):
     control_period = period;
     suspended = true;
     control_joints_list = 0;
+    joints_limiter = 2;
+    target_limiter = 1;
 }
 
 positionDirectControlThread::~positionDirectControlThread()
@@ -30,7 +32,7 @@ positionDirectControlThread::~positionDirectControlThread()
 
 void positionDirectControlThread::run()
 {
-    double t_start = yarp::os::Time::now();
+    double curr_time = yarp::os::Time::now()-t_start;
 
     if (getIterations()>100)
     {
@@ -82,29 +84,31 @@ void positionDirectControlThread::run()
     }
 
     //apply a limit on the difference between prev target and current target
-    double cmd_step = 1.0;
     for (unsigned int i=0; i< control_joints; i++)
     {
         double diff = (targets[i]-prev_targets[i]);
-        if      (diff > +cmd_step) targets[i]=prev_targets[i]+cmd_step;
-        else if (diff < -cmd_step) targets[i]=prev_targets[i]-cmd_step;
+        if      (diff > +target_limiter) targets[i]=prev_targets[i]+ target_limiter;
+        else if (diff < -target_limiter) targets[i]=prev_targets[i]- target_limiter;
     }
 
     //slew rate limiter
-    double pos_step = 2.0;
     for(unsigned int i = 0; i<control_joints; i++)
     {
         double diff = (targets[i]-encoders[i]);
-        if      (diff > +pos_step) targets[i]=encoders[i]+pos_step;
-        else if (diff < -pos_step) targets[i]=encoders[i]-pos_step;
+        if      (diff > +joints_limiter) targets[i]=encoders[i]+ joints_limiter;
+        else if (diff < -joints_limiter) targets[i]=encoders[i]- joints_limiter;
     }
 
     //appy the command
+#if 0
     for(unsigned int i = 0; i<control_joints; i++)
     {
         idir->setPosition(control_joints_list[i],targets[i]);
     }
+#endif
+    idir->setPositions(control_joints, control_joints_list, targets.data());
 
+    yDebug() << curr_time << targets[0] << targets[1] << targets[2];
     _mutex.post();
 
 }
@@ -112,6 +116,7 @@ void positionDirectControlThread::run()
 bool positionDirectControlThread::threadInit()
 {
     suspended=true;
+    t_start = yarp::os::Time::now();
     return true;
 }
 

@@ -23,7 +23,9 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
+#include <utility>
 
+#include <yarp/cv/Cv.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h>
 #include <yarp/math/NormRand.h>
@@ -34,6 +36,7 @@
 #include "module.h"
 
 using namespace std;
+using namespace yarp::cv;
 using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::iKin;
@@ -166,11 +169,11 @@ bool CalibModule::factory(Value &v)
 cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelBgr> &imgOut,
                                        const Vector &c, Vector &px)
 {
-    cv::Mat imgInMat=cv::cvarrToMat((IplImage*)imgIn.getIplImage());
+    cv::Mat imgInMat=toCvMat(imgIn);
 
     // produce a colored image
     imgOut.resize(imgIn);
-    cv::Mat imgOutMat=cv::cvarrToMat((IplImage*)imgOut.getIplImage());
+    cv::Mat imgOutMat=toCvMat(imgOut);
     
     // proceed iff the center is within the image plane
     if ((c[0]<10.0) || (c[0]>imgIn.width()-10) ||
@@ -343,7 +346,7 @@ void CalibModule::openHand(IControlMode *imod, IPositionControl *ipos)
     poss[8]=0.0;  vels[8]=100.0;
 
     yInfo("opening hand");
-    int i0=(int)nEncs-poss.length();
+    int i0=nEncs-(int)poss.length();
     for (int i=i0; i<nEncs; i++)
         imod->setControlMode(i,VOCAB_CM_POSITION);
 
@@ -524,7 +527,7 @@ void CalibModule::prepareRobot()
     poss[8]=200.0; vels[8]=100.0;
 
     yInfo("configuring hand... ");
-    int i0=(int)nEncs-poss.length();
+    int i0=nEncs-(int)poss.length();
     for (int i=i0; i<nEncs; i++)
         imods->setControlMode(i,VOCAB_CM_POSITION);
 
@@ -1114,8 +1117,8 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
             }
         }
 
-        cv::Mat img=cv::cvarrToMat((IplImage*)imgOut.getIplImage());
-        cv::putText(img,tag.c_str(),cv::Point(rect.x+5,rect.y+15),CV_FONT_HERSHEY_SIMPLEX,0.5,color);
+        cv::Mat img=toCvMat(imgOut);
+        cv::putText(img,tag,cv::Point(rect.x+5,rect.y+15),CV_FONT_HERSHEY_SIMPLEX,0.5,color);
 
         motorExplorationState=motorExplorationStateTrigger;
         holdImg=true;

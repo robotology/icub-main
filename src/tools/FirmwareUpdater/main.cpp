@@ -62,6 +62,9 @@ int main(int argc, char *argv[])
     Network yarp;
     QApplication a(argc, argv);
 
+    QApplication::setStyle("motif");
+
+
     FirmwareUpdaterCore core;
 
 #ifdef UPDATER_RELEASE
@@ -78,6 +81,7 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
 
     QCommandLineOption noGuiOption(QStringList() << "g" << "nogui", "The application starts in console mode");
+    //QCommandLineOption strainCalibOption(QStringList() << "k" << "strain-acquisition", "The application starts the STRAIN acquisition mode");
     QCommandLineOption adminOption(QStringList() << "a" << "admin", "The application starts in admin mode");
     QCommandLineOption iniFileOption(QStringList() << "f" << "from", "Override the default ini file","config","firmwareupdater.ini");
     QCommandLineOption addressOption(QStringList() << "s" << "address", "Override the default address","address",MY_ADDR);
@@ -100,6 +104,7 @@ int main(int argc, char *argv[])
 
 
     parser.addOption(noGuiOption);
+    //parser.addOption(strainCalibOption);
     parser.addOption(adminOption);
     parser.addOption(iniFileOption);
     parser.addOption(addressOption);
@@ -123,6 +128,7 @@ int main(int argc, char *argv[])
 
     bool noGui = parser.isSet(noGuiOption);
     bool adminMode = parser.isSet(adminOption);
+    //bool strainCalibMode = parser.isSet(strainCalibOption);
     QString iniFile = parser.value(iniFileOption);
     QString address = MY_ADDR;
     bool bPrintUsage=false;
@@ -175,7 +181,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     int ret = 1;
-    MainWindow w(&core,adminMode);
+    MainWindow w(&core,adminMode/*,strainCalibMode*/);
     if(!noGui){
         w.show();
         ret = a.exec();
@@ -857,15 +863,15 @@ void printCanDevices(QList<sBoard> canBoards, QString onIPboard, bool slimprint)
     for(int i=0;i<canBoards.count();i++){
         sBoard board = canBoards.at(i);
 
-        char board_type        [50]; memset (board_type,0,50);
-        char board_process     [50]; memset (board_process,0,50);
-        char board_status      [50]; memset (board_status,0,50);
-        char board_add_info    [50]; memset (board_add_info,0,50);
-        char board_firmware_version  [32]; memset (board_firmware_version,0,32);
-        char board_appl_minor  [10]; memset (board_appl_minor,0,10);
-        char board_appl_build  [10]; memset (board_appl_build,0,10);
-        char board_serial      [10]; memset (board_serial,0,10);
-        char board_protocol    [10]; memset (board_protocol,0,10);
+        char board_type        [50];        memset (board_type, 0, sizeof(board_type));
+        char board_process     [50];        memset (board_process, 0, sizeof(board_process));
+        char board_status      [50];        memset (board_status, 0, sizeof(board_status));
+        char board_add_info    [50];        memset (board_add_info, 0, sizeof(board_add_info));
+        char board_firmware_version  [32];  memset (board_firmware_version, 0, sizeof(board_firmware_version));
+        char board_appl_minor  [10];        memset (board_appl_minor, 0, sizeof(board_appl_minor));
+        char board_appl_build  [10];        memset (board_appl_build, 0, sizeof(board_appl_build));
+        char board_serial      [50];        memset (board_serial, 0, sizeof(board_serial));
+        char board_protocol    [10];        memset (board_protocol, 0, sizeof(board_protocol));
 
         snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string2((eObrd_type_t)board.type, eobool_true));
 
@@ -908,9 +914,9 @@ void printCanDevices(QList<sBoard> canBoards, QString onIPboard, bool slimprint)
             snprintf (board_firmware_version, sizeof(board_firmware_version), "%d.%d.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
         }
 
-        sprintf (board_appl_minor,"%d",board.appl_vers_minor);
-        sprintf (board_appl_build,"%d",board.appl_vers_build);
-        sprintf (board_serial,"%s",board.serial);
+        snprintf (board_appl_minor, sizeof(board_appl_minor), "%d",board.appl_vers_minor);
+        snprintf (board_appl_build, sizeof(board_appl_build), "%d",board.appl_vers_build);
+        snprintf (board_serial, sizeof(board_serial), "%s", board.serial);
 
         if((0 == board.prot_vers_major) && (0 == board.prot_vers_minor))
         {

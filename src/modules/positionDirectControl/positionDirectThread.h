@@ -45,10 +45,13 @@ private:
     bool suspended;
 
     int control_period;
+    double t_start;
 
     yarp::os::BufferedPort<yarp::os::Bottle> command_port;
 
 public:
+    double joints_limiter;
+    double target_limiter;
     positionDirectControlThread(int rate);
     ~positionDirectControlThread();
 

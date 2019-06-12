@@ -49,6 +49,7 @@ embObjFTsensor::embObjFTsensor()
 
 embObjFTsensor::~embObjFTsensor()
 {
+    close();
     delete &GET_privData(mPriv);
 }
 

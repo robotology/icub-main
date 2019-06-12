@@ -27,9 +27,9 @@
       please quote it within any resulting publication</b>.
 
       \note We warmly suggest to use OpenCV in conjunction with
-      multi-threading layers such as OpenMP and TBB in order to
-      achieve high performances for motion detection. Refer to
-      the OpenCV documentation for the details.
+      multi-threading layers such as TBB in order to achieve high
+      performances for motion detection. Refer to the OpenCV
+      documentation for the details.
 
       \note A video on iCub employing \e motionCUT can be seen <a
       href="http://www.youtube.com/watch?v=Ql8Qe0oxHaY">here</a>.
@@ -57,16 +57,6 @@
                      Its value specifies the number of consecutive frames for which if a node gets active it is kept on." default=""> framesPersistence </param>
         <param desc="This parameter allows changing the the side of a squared cropping window placed on the center of the largest
                      blob detected. Default value is \e auto, meaning that the cropping window will adapt to the size of the blob." default="auto"> cropSize </param>
-        <param desc="This parameter allows controlling the maximum number of
-                     threads allocated by parallelized OpenCV functions. This
-                     option is available only if the OpenMP layer is supported. By
-                     contrast, the TBB layer automatically determines the number of
-                     threads. \n
-                     \e # positive integer: assign # threads to OpenCV; \n
-                     \e # equal to 0: assign all threads to OpenCV; \n
-                     \e # negative integer: assign all threads but # to OpenCV; \n
-                     The default value is -1 meaning that all threads equal to the
-                     number of available cores BUT ONE will be used." default=""> numThreads </param>
         <switch>verbosity</switch>
     </arguments>
 
@@ -134,7 +124,7 @@
         <port carrier="tcp">/motionCUT/rpc</port>
         <description>
             The parameters winSize, recogThres, adjNodesThres, blobMinSizeThres, framesPersistence, cropSize,
-            numThreads, verbosity can be changed/retrieved through the commands set/get. Moreover, the further
+            verbosity can be changed/retrieved through the commands set/get. Moreover, the further
             switch inhibition can be accessed in order to enable/disable the motion detection at run-time.
         </description>
       </server>

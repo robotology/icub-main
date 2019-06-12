@@ -89,6 +89,7 @@ void yarp::dev::embObjDevPrivData::cleanup(eth::IethResource *interface)
     res = NULL;
     if(ret == -1)
         ethManager->killYourself();
+    setOpen(false);
 }
 
 bool yarp::dev::embObjDevPrivData::serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout)

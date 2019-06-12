@@ -69,10 +69,11 @@ namespace eth {
         iethres_analoginertial  = 6,
         iethres_analogmultienc  = 7,
         iethres_analoginertial3 = 8,
-        iethres_temperature     = 9
+        iethres_temperature     = 9,
+        iethres_analogpsc       = 10
     } iethresType_t;
 
-    enum { iethresType_numberof = 10 };
+    enum { iethresType_numberof = 11 };
 
 
     class IethResource

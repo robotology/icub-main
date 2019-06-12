@@ -3,16 +3,15 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-set(PROJECTNAME motionCUT)
-project(${PROJECTNAME})
+project(motionCUT)
+
+find_package(YARP COMPONENTS OS sig cv)
 
 set(source_files main.cpp)
-set(doc_files ${PROJECTNAME}.xml)
-source_group("Source Files" FILES ${source_files})
-source_group("DOC Files"    FILES ${doc_files})
+set(doc_files ${PROJECT_NAME}.xml)
+source_group("DOC Files" FILES ${doc_files})
 
-include_directories(${OpenCV_INCLUDE_DIRS})
-add_executable(${PROJECTNAME} ${source_files} ${doc_files})
-target_link_libraries(${PROJECTNAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
-install(TARGETS ${PROJECTNAME} DESTINATION bin)
+add_executable(${PROJECT_NAME} ${source_files} ${doc_files})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 yarp_install(FILES ${doc_files} DESTINATION ${ICUB_MODULES_INSTALL_DIR})

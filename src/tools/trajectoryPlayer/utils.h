@@ -36,6 +36,7 @@
 #include <string>
 #include <vector>
 #include <deque>
+#include <map>
 
 using namespace std;
 using namespace yarp::os;
@@ -95,7 +96,8 @@ public:
 // ******************** ROBOT DRIVER CLASS
 class robotDriver
 {
-public:
+    friend class BroadcastingThread;
+private:
     bool verbose;
     bool drv_connected;
     Property          drvOptions_ll;
@@ -106,11 +108,18 @@ public:
     IControlMode     *icmd_ll;
     IEncoders        *ienc_ll;
     IMotorEncoders   *imotenc_ll;
+
+public:
     int              n_joints;
+    std::map<int, int> joints_map;
 
 public:
     robotDriver();
     bool configure(const Property &copt);
     bool init();
     ~robotDriver();
+    bool setControlMode(const int j, const int mode);
+    bool setPosition(int j, double ref);
+    bool getEncoder(int j, double *v);
+    bool positionMove(int j, double ref);
 };

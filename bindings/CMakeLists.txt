@@ -28,6 +28,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/libraries/iDyn/include)
 include_directories(${CMAKE_SOURCE_DIR}/src/libraries/iKin/include)
 include_directories(${CMAKE_SOURCE_DIR}/src/libraries/ctrlLib/include)
 include_directories(${CMAKE_SOURCE_DIR}/src/libraries/skinDynLib/include)
+include_directories(${CMAKE_SOURCE_DIR}/src/libraries/optimization/include)
 
 # for yarp.i
 include_directories(${YARP_BINDINGS})
@@ -60,24 +61,43 @@ if(CREATE_PYTHON)
     endif()
     find_package(PythonLibs ${ICUB_USE_PYTHON_VERSION} EXACT)
 
-    get_filename_component(PYTHON_DIR ${PYTHON_LIBRARY} PATH)
-    link_directories(${PYTHON_DIR})
-
-    if(WIN32)
-        get_filename_component(PYTHON_DIR ${PYTHON_LIBRARY} PATH)
-        link_directories(${PYTHON_DIR})
-    endif()
-
-    # message("-->${PYTHON_LIBRARY} ${PYTHON_DIR}")
-
-    include_directories(${PYTHON_INCLUDE_PATH})
+    include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
     swig_add_library(icub_python
                      LANGUAGE python
                      SOURCES icub.i)
-    target_include_directories(${SWIG_MODULE_icub_python_REAL_NAME} SYSTEM PRIVATE ${PYTHON_INCLUDE_PATH})
-    set_target_properties(${SWIG_MODULE_icub_python_REAL_NAME} PROPERTIES OUTPUT_NAME "_icub"
-                                                                      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/python")
+    target_include_directories(${SWIG_MODULE_icub_python_REAL_NAME} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIRS})
+    target_link_libraries(${SWIG_MODULE_icub_python_REAL_NAME} ${PYTHON_LIBRARIES})
+    set_target_properties(${SWIG_MODULE_icub_python_REAL_NAME} PROPERTIES OUTPUT_NAME "_icub")
 
+    # installation path is determined reliably on most platforms using distutils
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils import sysconfig; print(sysconfig.get_python_lib(1,0,prefix=''))"
+                    OUTPUT_VARIABLE PYTHON_INSTDIR
+                    OUTPUT_STRIP_TRAILING_WHITESPACE )
+
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/icub.py DESTINATION ${PYTHON_INSTDIR})
+
+    set(_CMAKE_INSTALL_PYTHONDIR "${PYTHON_INSTDIR}")
+    set(CMAKE_INSTALL_PYTHONDIR ${_CMAKE_INSTALL_PYTHONDIR} CACHE PATH "python bindings (${_CMAKE_INSTALL_PYTHONDIR})")
+    mark_as_advanced(CMAKE_INSTALL_PYTHONDIR)
+    if(NOT IS_ABSOLUTE ${CMAKE_INSTALL_PYTHONDIR})
+      set(CMAKE_INSTALL_FULL_PYTHONDIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_PYTHONDIR}")
+    else()
+      set(CMAKE_INSTALL_FULL_PYTHONDIR "${CMAKE_INSTALL_PYTHONDIR}")
+    endif()
+
+    # Update RPATH
+    if(NOT CMAKE_SKIP_RPATH AND NOT CMAKE_SKIP_INSTALL_RPATH)
+      file(RELATIVE_PATH _rel_path "${CMAKE_INSTALL_FULL_PYTHONDIR}" "${CMAKE_INSTALL_FULL_LIBDIR}")
+      get_target_property(_current_rpath ${SWIG_MODULE_icub_python_REAL_NAME} INSTALL_RPATH)
+      if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        list(APPEND _current_rpath "@loader_path/${_rel_path}")
+      else()
+        list(APPEND _current_rpath "\$ORIGIN/${_rel_path}")
+      endif()
+      set_target_properties("${SWIG_MODULE_icub_python_REAL_NAME}" PROPERTIES INSTALL_RPATH "${_current_rpath}")
+    endif()
+
+    install(TARGETS ${SWIG_MODULE_icub_python_REAL_NAME} DESTINATION ${PYTHON_INSTDIR})
 endif(CREATE_PYTHON)
 
 if(CREATE_RUBY)

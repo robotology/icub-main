@@ -1045,6 +1045,8 @@ public:
 class iCubTorso : public iKinLimb
 {
 protected:
+    double version;
+
     virtual void allocate(const std::string &_type);
 
 public:
@@ -1079,6 +1081,8 @@ public:
 class iCubArm : public iKinLimb
 {
 protected:
+    double version;
+
     virtual void allocate(const std::string &_type);
 
 public:
@@ -1231,6 +1235,8 @@ public:
 class iCubLeg : public iKinLimb
 {
 protected:
+    double version;
+
     virtual void allocate(const std::string &_type);
 
 public:
@@ -1266,6 +1272,8 @@ public:
 class iCubEye : public iKinLimb
 {
 protected:
+    double version;
+
     virtual void allocate(const std::string &_type);
 
 public:
@@ -1356,6 +1364,8 @@ public:
 class iCubInertialSensor : public iKinLimb
 {
 protected:
+    double version;
+
     virtual void allocate(const std::string &_type);
 
 public:

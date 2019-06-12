@@ -154,7 +154,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     }
     
     GET_privData(mPriv).sens.init(servCfg, getBoardInfo());
-    GET_privData(mPriv).behFlags.opened = true;
+    GET_privData(mPriv).setOpen(true);
     return true;
 }
 
@@ -282,7 +282,7 @@ eth::iethresType_t embObjIMU::type()
 
 
 
-
+#undef DEBUG_PRINT_NONVALIDDATA
 bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
     eOas_inertial3_status_t *i3s  = (eOas_inertial3_status_t*)rxdata;
@@ -306,6 +306,8 @@ bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
         
         if(!validdata)
         {
+
+#if defined(DEBUG_PRINT_NONVALIDDATA)
             yError("NOT VALID value[%i] is: seq = %d, timestamp = %d, type = %s, id = %d, v= ((%d), %d, %d, %d), status = %x",
                     i,
                     data->seq,
@@ -314,6 +316,7 @@ bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
                     data->id,
                     data->w, data->x, data->y, data->z,
                     data->status.general);
+#endif
             continue;
         }
 

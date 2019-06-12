@@ -1,6 +1,8 @@
 #ifndef EXPECTED_VALUES_H
 #define EXPECTED_VALUES_H
 
+#include <string>
+
 struct signed_elem_class
 {
 	signed   short dat[6];
@@ -24,12 +26,18 @@ class expected_values_handler_class
 		int expected_values [6][24];
 		int threshold1;
 		int threshold2;
+        std::string serialnumber;
+        static const int def_expected_values[24][6]; // yes: [24][6] !
+        static const int def_expected_values_thresholds[2];
 
 	public:
 		expected_values_handler_class();
-        bool init (const char* filename);
+        bool init(const char* filename);
+        bool init();
 	    bool check_vals(signed_elem_class values, int trial, signed_elem_class& diff, signed_elem_class& in_bound);
 		void get_current_expected_values (signed_elem_class& values, int trial);
+        std::string get_serialnumber();
+        bool get_thresholds(int &low, int &high);
 };
 
 #endif

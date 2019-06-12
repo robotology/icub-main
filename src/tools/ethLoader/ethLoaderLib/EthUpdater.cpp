@@ -46,7 +46,7 @@ int EthUpdater::cmdDiscover()
         eOuprot_cmd_DISCOVER_REPLY_t * disc = (eOuprot_cmd_DISCOVER_REPLY_t*) mRxBuffer;
         eOuprot_cmd_LEGACY_SCAN_REPLY_t * scan = (eOuprot_cmd_LEGACY_SCAN_REPLY_t*) mRxBuffer;
         char ipaddr[20];
-        sprintf(ipaddr,"%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
+        snprintf(ipaddr, sizeof(ipaddr), "%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
 
         if(uprot_OPC_DISCOVER == disc->reply.opc)
         {
@@ -190,7 +190,7 @@ std::string EthUpdater::cmdGetMoreInfo(bool refreshInfo, ACE_UINT32 address)
         eOuprot_cmd_LEGACY_PROCS_REPLY_t *procs = (eOuprot_cmd_LEGACY_PROCS_REPLY_t*) mRxBuffer;
 
         char ipaddr[20];
-        sprintf(ipaddr,"%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
+        snprintf(ipaddr, sizeof(ipaddr), "%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
 
         if(uprot_OPC_LEGACY_PROCS == procs->opc)
         {
@@ -484,7 +484,7 @@ bool EthUpdater::cmdSetDEF2RUN(eOuprot_process_t process, ACE_UINT32 address)
 
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
         char ipaddr[20];
-        sprintf(ipaddr,"%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
+        snprintf(ipaddr, sizeof(ipaddr), "%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
         printf("send command uprot_OPC_DEF2RUN w/ process = %s to %s\n", eouprot_process2string(process), ipaddr);
 #endif
 
@@ -500,7 +500,7 @@ bool EthUpdater::cmdSetDEF2RUN(eOuprot_process_t process, ACE_UINT32 address)
 
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
                 char ipaddr[20];
-                sprintf(ipaddr,"%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
+                snprintf(ipaddr, sizeof(ipaddr), "%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
                 printf("send command uprot_OPC_DEF2RUN w/ process = %s to %s\n", eouprot_process2string(process), ipaddr);
 #endif
 
@@ -636,7 +636,7 @@ bool EthUpdater::cmdReadEEPROM(uint16_t from, uint16_t size, ACE_UINT32 address,
         eOuprot_cmd_EEPROM_READ_REPLY_t * eepromread = (eOuprot_cmd_EEPROM_READ_REPLY_t*) mRxBuffer;
 
         char ipaddr[20];
-        sprintf(ipaddr,"%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
+        snprintf(ipaddr, sizeof(ipaddr), "%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
 
         if(uprot_OPC_EEPROM_READ == eepromread->reply.opc)
         {
@@ -673,9 +673,9 @@ bool EthUpdater::cmdChangeAddress(ACE_UINT32 newaddress, ACE_UINT32 address)
 
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
     char ipaddr[20];
-    sprintf(ipaddr,"%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
+    snprintf(ipaddr, sizeof(ipaddr), "%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
     char newipaddr[20];
-    sprintf(newipaddr,"%d.%d.%d.%d",(newaddress>>24)&0xFF, (newaddress>>16)&0xFF, (newaddress>>8)&0xFF, newaddress&0xFF);
+    snprintf(newipaddr, sizeof(ipaddr),"%d.%d.%d.%d",(newaddress>>24)&0xFF, (newaddress>>16)&0xFF, (newaddress>>8)&0xFF, newaddress&0xFF);
 #endif
 
     bool stopit = false;
@@ -888,7 +888,7 @@ std::string EthUpdater::cmdProgram(FILE *programFile, int partition, void (*upda
     if(0 == numberOfOKreplies)
     {
         std::string earlyexit;
-        char addr[16];
+        char addr[20];
 
         for (int i=0; i<mN2Prog; ++i)
         {
@@ -1017,12 +1017,12 @@ std::string EthUpdater::cmdProgram(FILE *programFile, int partition, void (*upda
     updateProgressBar(1.0f);
 
     std::string sOutput;
-    char addr[16];
+    char addr[20];
 
     for (int i=0; i<mN2Prog; ++i)
     {
         ACE_UINT32 ip=mBoard2Prog[i]->mAddress;
-        sprintf(addr,"%d.%d.%d.%d: ",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
+        snprintf(addr, sizeof(addr), "%d.%d.%d.%d: ",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
         sOutput+=addr;
         sOutput+=partname;
         sOutput+=(mBoard2Prog[i]->mSuccess==mNProgSteps)?" OK\r\n":" NOK\r\n";
@@ -1117,9 +1117,9 @@ bool EthUpdater::cmdChangeMask(ACE_UINT32 newMask, ACE_UINT32 address)
 
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
     char ipaddr[20];
-    sprintf(ipaddr,"%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
+    snprintf(ipaddr, sizeof(ipaddr), "%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
     char newm[20];
-    sprintf(newm,"%d.%d.%d.%d",(newMask>>24)&0xFF, (newMask>>16)&0xFF, (newMask>>8)&0xFF, newMask&0xFF);
+    snprintf(newm, sizeof(newm), "%d.%d.%d.%d",(newMask>>24)&0xFF, (newMask>>16)&0xFF, (newMask>>8)&0xFF, newMask&0xFF);
 #endif
 
     bool stopit = false;
@@ -1165,9 +1165,9 @@ bool EthUpdater::cmdChangeMAC(uint64_t newMAC48, ACE_UINT32 address)
 
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
     char ipaddr[20];
-    sprintf(ipaddr,"%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
+    snprintf(ipaddr, sizeof(ipaddr), "%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
     char newmac[32];
-    sprintf(newmac,"%x:%x:%x:%x:%x:%x", command.mac48[0], command.mac48[1], command.mac48[2], command.mac48[3], command.mac48[4], command.mac48[5]);
+    snprintf(newmac, sizeof(newmac), "%x:%x:%x:%x:%x:%x", command.mac48[0], command.mac48[1], command.mac48[2], command.mac48[3], command.mac48[4], command.mac48[5]);
 #endif
 
     bool stopit = false;

@@ -30,8 +30,10 @@ public:
  int  appl_vers_minor;      // the minor number of the version of the sw it is running (former ...)
  int  appl_vers_build;      // the build number of the version of the sw it is running (former ...). not meaningful for bootloader
  int  prot_vers_major;      // the major number of the can protocol of the application. not meaningful for bootloader
- int  prot_vers_minor;      // the mimnor number of the can protocol of the application. not meaningful for bootloader
- char serial [50];
+ int  prot_vers_minor;      // the minor number of the can protocol of the application. not meaningful for bootloader
+ char serial [50];          // only for strain
+ int  strainregsetinuse;    // only for strain
+ int  strainregsetatboot;   // only for strain
  int  status;
  bool selected;
  bool eeprom;
@@ -92,6 +94,16 @@ void drv_sleep (double time);
 struct strain2_ampl_regs_t
 {
    uint8_t data[6];
+   strain2_ampl_regs_t() { data[0] = data[1] = data[2] = data[3] = data[4] = data[5] = 0; }
+   void load(void *mem, size_t s) { memmove(data, mem, sizeof(data)); }
+   void * memory() { return data; }
+   size_t size() { return 6; }
+};
+
+enum strain2_ampl_discretegain_t
+{
+    ampl_gain48 = 0, ampl_gain36 = 1, ampl_gain24 = 2, ampl_gain20 = 3, ampl_gain16 = 4,
+    ampl_gain10 = 5, ampl_gain08 = 6, ampl_gain06 = 7, ampl_gain04 = 8
 };
 
 
@@ -125,14 +137,8 @@ int get_dst_from_id (int id);
 
 int verify_ack(int command, int read_messages);
 
-enum strain_ampl_cfg_t
-{
-    ampcfg_gain48 = 0, ampcfg_gain36 = 1, ampcfg_gain24 = 2, ampcfg_gain20 = 3, ampcfg_gain16 = 4,
-    ampcfg_gain10 = 5, ampcfg_gain08 = 6, ampcfg_gain06 = 7, ampcfg_gain04 = 8
-};
 
-
-enum { ampcfg_gain_numberOf = 9 };
+enum { ampl_gain_numberOf = 9 };
 
 
 public:
@@ -168,10 +174,10 @@ void set_canbus_id      (int id);
 int strain_start_sampling    (int bus, int target_id, string *errorstring = NULL);
 int strain_stop_sampling     (int bus, int target_id, string *errorstring = NULL);
 
-float strain_amplifier_cfg2gain(strain_ampl_cfg_t c);
+float strain_amplifier_discretegain2float(strain2_ampl_discretegain_t c);
 
-// the strain2 has multiple (up to 3) regulation sets. with these funtions we can get / set the regulation set in use inside the strain2.
-// allowed values for regset are only strain_regset_one/two/three. with regsetmode we choose if the value is the one currently used or teh one in eeprom.
+// the strain2 has multiple (up to 3) regulation sets. with these functions we can get / set the regulation set in use inside the strain2.
+// allowed values for regset are only strain_regset_one/two/three. with regsetmode we choose if the value is the one currently used or the one in eeprom.
 // attention: funtion strain_set_regulationset() does not want strain_regset_inuse but only strain_regset_one/two/three
 int strain_set_regulationset        (int bus, int target_id, int regset = strain_regset_one, int regsetmode = strain_regsetmode_temporary, string *errorstring = NULL);
 int strain_get_regulationset        (int bus, int target_id, int &regset, const int regsetmode = strain_regsetmode_temporary, string *errorstring = NULL);
@@ -179,6 +185,8 @@ int strain_get_regulationset        (int bus, int target_id, int &regset, const 
 
 // the calibration of the offset is meaningful only for the calibration set in use
 int strain_calibrate_offset  (int bus, int target_id, icubCanProto_boardType_t boardtype, unsigned int middle_val, string *errorstring = NULL);
+
+int strain_calibrate_offset2 (int bus, int target_id, icubCanProto_boardType_t boardtype, const std::vector<strain2_ampl_discretegain_t> &gains, const std::vector<int16_t> &targets, string *errorstring = NULL);
 
 // they are not dependent on the regulation set or we cannot specify one
 int strain_get_adc			 (int bus, int target_id, char channel, unsigned int& adc, int type, string *errorstring = NULL);
@@ -207,7 +215,7 @@ int strain_set_matrix_gain	 (int bus, int target_id, unsigned int  gain, int reg
 int strain_set_amplifier_regs(int bus, int target_id, unsigned char channel, const strain2_ampl_regs_t &ampregs, int regset = strain_regset_inuse, string *errorstring = NULL);
 int strain_get_amplifier_regs(int bus, int target_id, unsigned char channel, strain2_ampl_regs_t &ampregs, int regset = strain_regset_inuse, string *errorstring = NULL);
 
-int strain_set_amplifier_cfg(int bus, int target_id, unsigned char channel, strain_ampl_cfg_t ampset, int regset = strain_regset_inuse, string *errorstring = NULL);
+int strain_set_amplifier_discretegain(int bus, int target_id, unsigned char channel, strain2_ampl_discretegain_t ampset, int regset = strain_regset_inuse, string *errorstring = NULL);
 
 int strain_get_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float &gain, uint16_t &offset, int regset = strain_regset_inuse, string *errorstring = NULL);
 int strain_set_amplifier_gain_offset(int bus, int target_id, unsigned char channel, float gain, uint16_t offset, int regset = strain_regset_inuse, string *errorstring = NULL);
@@ -244,13 +252,21 @@ struct strain_value_t
     }
 };
 
-int strain_acquire_start(int bus, int target_id, uint8_t txratemilli = 20, bool calibmode = true, string *errorstring = NULL);
-int strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany = 10, string *errorstring = NULL);
-int strain_acquire_stop(int bus, int target_id, string *errorstring = NULL);
+typedef enum 
+{
+    strain_acquisition_mode_streaming   = 0,
+    strain_acquisition_mode_polling    = 1
+} strain_acquisition_mode_t;
+
+int strain_acquire_start(int bus, int target_id, uint8_t txratemilli = 20, bool calibmode = true, strain_acquisition_mode_t acqmode = strain_acquisition_mode_streaming, string *errorstring = NULL);
+int strain_acquire_get(int bus, int target_id, vector<strain_value_t> &values, const unsigned int howmany = 10, void (*updateProgressBar)(void*, float) = NULL, void *arg = NULL, strain_acquisition_mode_t acqmode = strain_acquisition_mode_streaming, const unsigned int maxerrors = 1, string *errorstring = NULL);
+int strain_acquire_stop(int bus, int target_id, strain_acquisition_mode_t acqmode = strain_acquisition_mode_streaming, string *errorstring = NULL);
 
 cDownloader(bool verbose = true);
 
 void set_verbose(bool verbose);
+
+void set_external_logger(void *caller = NULL, void (*logger)(void *, const std::string &) = NULL);
 
 
 private:
@@ -265,6 +281,19 @@ private:
 #endif
 
     bool _verbose;
+    
+    
+    int strain_calibrate_offset2_strain1(int bus, int target_id, int16_t t, string *errorstring);
+    int strain_calibrate_offset2_strain1safer(int bus, int target_id, int16_t t, uint8_t nmeasures, bool fullsearch, string *errorstring);
+    int strain_calibrate_offset2_strain2(int bus, int target_id, const std::vector<strain2_ampl_discretegain_t> &gains, const std::vector<int16_t> &targets, string *errorstring = NULL);
+    
+    int readADC(int bus, int target_id, int channel, int nmeasures = 2);
+
+    void (*_externalLoggerFptr)(void *caller, const std::string &output);
+    void * _externalLoggerCaller;
+
+    void Log(const std::string &msg);
+    
 };
 
 #endif

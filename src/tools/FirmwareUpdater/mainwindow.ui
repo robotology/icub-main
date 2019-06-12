@@ -16,319 +16,333 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
-     <widget class="QSplitter" name="splitter">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+     <widget class="QTreeWidget" name="devicesTree">
+      <property name="sortingEnabled">
+       <bool>true</bool>
       </property>
-      <widget class="QTreeWidget" name="devicesTree">
-       <property name="sortingEnabled">
-        <bool>true</bool>
+      <column>
+       <property name="text">
+        <string>Selected</string>
        </property>
-       <column>
-        <property name="text">
-         <string>Selected</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Device</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Board</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Address</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Process</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Version</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Info</string>
-        </property>
-       </column>
-      </widget>
-      <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QGroupBox" name="groupBox_2">
-          <property name="title">
-           <string>Board Properties</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <item>
-            <widget class="QPlainTextEdit" name="detailsText">
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout"/>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="controlsGroup">
-          <property name="title">
-           <string>Controls</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout">
-           <item row="2" column="0">
-            <widget class="QPushButton" name="btnCahngeInfo">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It sets the info of the selected board. Caveat: foc boards do not support this feature yet.</string>
-             </property>
-             <property name="text">
-              <string>Change Info</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="3">
-            <widget class="QPushButton" name="btnGoToApplication">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It forces the selected ETH boards to run the application.</string>
-             </property>
-             <property name="text">
-              <string>Force ETH Application</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QPushButton" name="connectButton">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It launches a discovery beneath the highligthed device or ETH board. The ETH boards allow discovery only if they are in maintenance. </string>
-             </property>
-             <property name="text">
-              <string>Discover</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="2">
-            <widget class="QPushButton" name="btnUploadApp">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It uploads the application FW on the selected boards. They must be of the same type. The ETH boards must be in maintenance mode. </string>
-             </property>
-             <property name="text">
-              <string>Upload Application</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QPushButton" name="btnGoToMaintenance">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It forces the selected ETH boards to enter the maintenance mode.</string>
-             </property>
-             <property name="text">
-              <string>Force ETH Maintenance</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="advancedGroup">
-          <property name="toolTip">
-           <string>It contains advanced commands for both ETH boards and CAN boards. Use this section only if you know how to handle commands.</string>
-          </property>
-          <property name="toolTipDuration">
-           <number>-1</number>
-          </property>
-          <property name="title">
-           <string>Advanced Controls</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <item row="1" column="0">
-            <widget class="QPushButton" name="btnChangeIp">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It changes the IP address of a single selected ETH board. This operation is followed by a board restart and discovery.</string>
-             </property>
-             <property name="text">
-              <string>Change IP Address</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QPushButton" name="btnBootApp">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It sets the eApplication of the selected boards as the default boostrap process. It is the normal case for running teh robot.</string>
-             </property>
-             <property name="text">
-              <string>Set Def Boot eApplication</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QPushButton" name="btnRestart">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It forces a restart of the selected ETH boards.</string>
-             </property>
-             <property name="text">
-              <string>Restart ETH Board(s)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QPushButton" name="btnUploadLoader">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It uploads the eLoader to the single selected ETH board, which must be in maintenance mode.</string>
-             </property>
-             <property name="text">
-              <string>Upload eLoader</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="3">
-            <widget class="QPushButton" name="btnJumpUpdater">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It forces a direct jump to the eUpdater for the single selected ETH board. It is active only if it is running the eApplPROGupdater.</string>
-             </property>
-             <property name="text">
-              <string>Jump to eUpdater</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="2">
-            <widget class="QPushButton" name="btnUploadUpdater">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It uploads the eUpdater to the single selected ETH board. It is active only if it is running the eApplPROGupdater.</string>
-             </property>
-             <property name="text">
-              <string>Upload eUpdater</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="2">
-            <widget class="QPushButton" name="btnBootUpdater">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It sets the eUpdater of the selected boards as the default boostrap process. Caveat: with such property the ETH board will never jump to the application. </string>
-             </property>
-             <property name="text">
-              <string>Set Def Boot eUpdater</string>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="3">
-            <widget class="QCheckBox" name="checkBoxEE">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It forces the EEPROM erase of the single selected CAN board during the upload of the application firmware (so far only if the board is a STRAIN).</string>
-             </property>
-             <property name="text">
-              <string>Erase STRAIN EEPROM</string>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="2">
-            <widget class="QPushButton" name="btnCalibrate">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It opens the STRAIN calibration window for the selected STRAIN board.</string>
-             </property>
-             <property name="text">
-              <string>Calibrate STRAIN</string>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="0">
-            <widget class="QPushButton" name="btnChangeCanAddr">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It changes the address of the single selected CAN board.</string>
-             </property>
-             <property name="text">
-              <string>Change CAN address</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="3">
-            <widget class="QPushButton" name="btnBlink">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It causes a blink of some LEDs on the selected ETH board. It can be used for visual detection. </string>
-             </property>
-             <property name="text">
-              <string>Blink ETH Board</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="3">
-            <widget class="QPushButton" name="btnEraseEeprom">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>It erases the EEPROM of the single selected ETH board. Do not do it unless you really know what you are doing.</string>
-             </property>
-             <property name="text">
-              <string>Erase ETH EEPROM</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+      </column>
+      <column>
+       <property name="text">
+        <string>Device</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Board</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Address</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Process</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Version</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Info</string>
+       </property>
+      </column>
      </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="title">
+         <string>Board Properties</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QPlainTextEdit" name="detailsText">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="controlsGroup">
+        <property name="title">
+         <string>Controls</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="2" column="0">
+          <widget class="QPushButton" name="btnCahngeInfo">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It sets the info of the selected board. Caveat: foc boards do not support this feature yet.</string>
+           </property>
+           <property name="text">
+            <string>Change Info</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QPushButton" name="btnGoToApplication">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It forces the selected ETH boards to run the application.</string>
+           </property>
+           <property name="text">
+            <string>Force ETH Application</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QPushButton" name="connectButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It launches a discovery beneath the highligthed device or ETH board. The ETH boards allow discovery only if they are in maintenance. </string>
+           </property>
+           <property name="text">
+            <string>Discover</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QPushButton" name="btnUploadApp">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It uploads the application FW on the selected boards. They must be of the same type. The ETH boards must be in maintenance mode. </string>
+           </property>
+           <property name="text">
+            <string>Upload Application</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="btnGoToMaintenance">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It forces the selected ETH boards to enter the maintenance mode.</string>
+           </property>
+           <property name="text">
+            <string>Force ETH Maintenance</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="advancedGroup">
+        <property name="toolTip">
+         <string>It contains advanced commands for both ETH boards and CAN boards. Use this section only if you know how to handle commands.</string>
+        </property>
+        <property name="toolTipDuration">
+         <number>-1</number>
+        </property>
+        <property name="title">
+         <string>Advanced Controls</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="1" column="0">
+          <widget class="QPushButton" name="btnChangeIp">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It changes the IP address of a single selected ETH board. This operation is followed by a board restart and discovery.</string>
+           </property>
+           <property name="text">
+            <string>Change IP Address</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QPushButton" name="btnBootApp">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It sets the eApplication of the selected boards as the default boostrap process. It is the normal case for running teh robot.</string>
+           </property>
+           <property name="text">
+            <string>Set Def Boot eApplication</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QPushButton" name="btnRestart">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It forces a restart of the selected ETH boards.</string>
+           </property>
+           <property name="text">
+            <string>Restart ETH Board(s)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QPushButton" name="btnUploadLoader">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It uploads the eLoader to the single selected ETH board, which must be in maintenance mode.</string>
+           </property>
+           <property name="text">
+            <string>Upload eLoader</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3">
+          <widget class="QPushButton" name="btnJumpUpdater">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It forces a direct jump to the eUpdater for the single selected ETH board. It is active only if it is running the eApplPROGupdater.</string>
+           </property>
+           <property name="text">
+            <string>Jump to eUpdater</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QPushButton" name="btnUploadUpdater">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It uploads the eUpdater to the single selected ETH board. It is active only if it is running the eApplPROGupdater.</string>
+           </property>
+           <property name="text">
+            <string>Upload eUpdater</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="2">
+          <widget class="QPushButton" name="btnBootUpdater">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It sets the eUpdater of the selected boards as the default boostrap process. Caveat: with such property the ETH board will never jump to the application. </string>
+           </property>
+           <property name="text">
+            <string>Set Def Boot eUpdater</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QPushButton" name="btnChangeCanAddr">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It changes the address of the single selected CAN board.</string>
+           </property>
+           <property name="text">
+            <string>Change CAN address</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="3">
+          <widget class="QPushButton" name="btnBlink">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It causes a blink of some LEDs on the selected ETH board. It can be used for visual detection. </string>
+           </property>
+           <property name="text">
+            <string>Blink ETH Board</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="3">
+          <widget class="QPushButton" name="btnEraseEeprom">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>It erases the EEPROM of the single selected ETH board. Do not do it unless you really know what you are doing.</string>
+           </property>
+           <property name="text">
+            <string>Erase ETH EEPROM</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="strainGroup">
+        <property name="title">
+         <string>Strain Operations</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QPushButton" name="btnStrainCalib">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It opens the acquisition window for the selected strain or strain2 selected board.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Acquire</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnCalibrate">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It opens the calibration window for the selected strain or strain2 selected board.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Calibrate</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBoxEE">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;It forces the EEPROM erase of the single selected CAN board during the upload of the application firmware (so far only if the board is a strain or strain2).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Erase EEPROM</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -338,7 +352,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>

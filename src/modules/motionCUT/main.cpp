@@ -16,44 +16,38 @@
  * Public License for more details
 */
 
-#include <cstdio>
 #include <cmath>
 #include <string>
 #include <set>
 #include <vector>
 #include <deque>
 #include <algorithm>
+#include <utility>
+#include <iostream>
 
-#include <cv.h>
+#include <opencv2/opencv.hpp>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
-
-#ifdef CV_MAJOR_VERSION
-    // check if OpenCV supports OpenMP multi-threading
-    #if (CV_MAJOR_VERSION>0) && (CV_MAJOR_VERSION<3)
-        #define _MOTIONCUT_MULTITHREADING_OPENMP
-    #endif
-    #if (CV_MAJOR_VERSION==2) && (CV_MINOR_VERSION>0)
-        #undef _MOTIONCUT_MULTITHREADING_OPENMP
-    #endif
-#endif
+#include <yarp/cv/Cv.h>
 
 // in BGR format
-#define NODE_OFF    cvScalar(0,0,255)
-#define NODE_ON     cvScalar(0,255,0)
+#define NODE_OFF    Scalar(0,0,255)
+#define NODE_ON     Scalar(0,255,0)
 
 using namespace std;
+using namespace cv;
 using namespace yarp::os;
 using namespace yarp::sig;
+using namespace yarp::cv;
 
 
 /************************************************************************/
 class Blob
 {
 public:
-    CvPoint centroid;
-    int     size;
+    Point centroid;
+    int   size;
 
     /************************************************************************/
     Blob()
@@ -85,74 +79,29 @@ protected:
     int cropSize;
     bool verbosity;
     bool inhibition;
-    int nodesNum;
     int nodesX;
     int nodesY;
 
-#ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-    int numThreads;
-#endif
+    ImageOf<PixelMono> imgMonoIn;
+    ImageOf<PixelMono> imgMonoPrev;
+    vector<Mat>        pyrPrev;
+    vector<Mat>        pyrCurr;
 
-    ImageOf<PixelMono>  imgMonoIn;
-    ImageOf<PixelMono>  imgMonoPrev;
-    ImageOf<PixelFloat> imgPyrPrev;
-    ImageOf<PixelFloat> imgPyrCurr;
+    vector<Point2f>    nodesPrev;
+    vector<Point2f>    nodesCurr;
+    vector<uchar>      featuresFound;
+    vector<float>      featuresErrors;
+    vector<int>        nodesPersistence;
 
-    CvPoint2D32f        *nodesPrev;
-    CvPoint2D32f        *nodesCurr;
-    int                 *nodesPersistence;
-    char                *featuresFound;
-    float               *featuresErrors;
+    set<int>           activeNodesIndexSet;
+    deque<Blob>        blobSortedList;
 
-    set<int>             activeNodesIndexSet;
-    deque<Blob>          blobSortedList;
-
-    BufferedPort<ImageOf<PixelBgr> >  inPort;
-    BufferedPort<ImageOf<PixelBgr> >  outPort;
-    BufferedPort<ImageOf<PixelMono> > optPort;
-    BufferedPort<ImageOf<PixelBgr> >  cropPort;
-    BufferedPort<Bottle>              nodesPort;
-    BufferedPort<Bottle>              blobsPort;
-
-    /************************************************************************/
-    void disposeMem()
-    {
-        delete nodesPrev;
-        delete nodesCurr;
-        delete nodesPersistence;
-        delete featuresFound;
-        delete featuresErrors;
-
-        nodesPrev=NULL;
-        nodesCurr=NULL;
-        nodesPersistence=NULL;
-        featuresFound=NULL;
-        featuresErrors=NULL;
-    }
-
-#ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-    /************************************************************************/
-    int setNumThreads(const int n)
-    {
-        if (n>=0)
-        {
-            cvSetNumThreads(n);
-            return cvGetNumThreads();
-        }
-        else
-        {
-            cvSetNumThreads(0);
-            int m=cvGetNumThreads()+n;
-
-            if (m>0)
-                cvSetNumThreads(m);
-            else
-                cvSetNumThreads(1);
-
-            return cvGetNumThreads();
-        }
-    }
-#endif
+    BufferedPort<ImageOf<PixelBgr>>  inPort;
+    BufferedPort<ImageOf<PixelBgr>>  outPort;
+    BufferedPort<ImageOf<PixelMono>> optPort;
+    BufferedPort<ImageOf<PixelBgr>>  cropPort;
+    BufferedPort<Bottle>             nodesPort;
+    BufferedPort<Bottle>             blobsPort;
 
 public:
     /************************************************************************/
@@ -187,18 +136,6 @@ public:
         coverXratio=std::min(coverXratio,1.0);
         coverYratio=std::min(coverYratio,1.0);
 
-        // if the OpenCV version supports OpenMP multi-threading,
-        // set the maximum number of threads available to OpenCV
-    #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-        numThreads=setNumThreads(rf.check("numThreads",Value(-1)).asInt());
-    #endif
-
-        nodesPrev=NULL;
-        nodesCurr=NULL;
-        nodesPersistence=NULL;
-        featuresFound=NULL;
-        featuresErrors=NULL;
-
         inPort.open("/"+name+"/img:i");
         outPort.open("/"+name+"/img:o");
         optPort.open("/"+name+"/opt:o");
@@ -232,13 +169,6 @@ public:
                 yInfo("cropSize          = %d",cropSize);
             else
                 yInfo("cropSize          = auto");
-
-        #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-            yInfo("numThreads        = %d",numThreads);
-        #else
-            yInfo("numThreads        = OpenCV version does not support OpenMP multi-threading");
-        #endif
-
             yInfo("verbosity         = %s",verbosity?"on":"off");
         }
         else
@@ -272,42 +202,32 @@ public:
                 imgMonoIn.resize(*pImgBgrIn);
                 imgMonoPrev.resize(*pImgBgrIn);
 
-                imgPyrPrev.resize(pImgBgrIn->width()+8,pImgBgrIn->height()/3);
-                imgPyrCurr.resize(pImgBgrIn->width()+8,pImgBgrIn->height()/3);
-
-                // dispose previously allocated memory
-                disposeMem();
-
                 int min_x=(int)(((1.0-coverXratio)/2.0)*imgMonoIn.width());
                 int min_y=(int)(((1.0-coverYratio)/2.0)*imgMonoIn.height());
 
                 nodesX=((int)imgMonoIn.width()-2*min_x)/nodesStep+1;
                 nodesY=((int)imgMonoIn.height()-2*min_y)/nodesStep+1;
 
-                nodesNum=nodesX*nodesY;
-
-                nodesPrev=new CvPoint2D32f[nodesNum];
-                nodesCurr=new CvPoint2D32f[nodesNum];
-                nodesPersistence=new int[nodesNum];
-
-                featuresFound=new char[nodesNum];
-                featuresErrors=new float[nodesNum];
-
-                memset(nodesPersistence,0,nodesNum*sizeof(int));
+                int nodesNum=nodesX*nodesY;
+                nodesPrev.assign(nodesNum,Point2f(0.0f,0.0f));
+                nodesCurr.assign(nodesNum,Point2f(0.0f,0.0f));
+                featuresFound.assign(nodesNum,0);
+                featuresErrors.assign(nodesNum,0.0f);
+                nodesPersistence.assign(nodesNum,0);
 
                 // populate grid
-                int cnt=0;
+                size_t cnt=0;
                 for (int y=min_y; y<=(imgMonoIn.height()-min_y); y+=nodesStep)
                     for (int x=min_x; x<=(imgMonoIn.width()-min_x); x+=nodesStep)
-                        nodesPrev[cnt++]=cvPoint2D32f(x,y);
+                        nodesPrev[cnt++]=Point2f((float)x,(float)y);
 
                 // convert to gray-scale
-                cvCvtColor(pImgBgrIn->getIplImage(),imgMonoPrev.getIplImage(),CV_BGR2GRAY);
+                cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoPrev),CV_BGR2GRAY);
 
                 if (verbosity)
                 {
                     // log message
-                    yInfo("Detected image of size %zdx%zd; using %dx%d=%d nodes; populated %d nodes",
+                    yInfo("Detected image of size %zdx%zd; using %dx%d=%d nodes; populated %zd nodes",
                           imgMonoIn.width(),imgMonoIn.height(),nodesX,nodesY,nodesNum,cnt);
                 }
 
@@ -316,15 +236,17 @@ public:
             }
 
             // convert the input image to gray-scale
-            cvCvtColor(pImgBgrIn->getIplImage(),imgMonoIn.getIplImage(),CV_BGR2GRAY);
+            cvtColor(toCvMat(*pImgBgrIn),toCvMat(imgMonoIn),CV_BGR2GRAY);
 
             // copy input image into output image
             ImageOf<PixelBgr> imgBgrOut=*pImgBgrIn;
+            Mat imgBgrOutMat=toCvMat(imgBgrOut);
 
             // get optFlow image
             ImageOf<PixelMono> imgMonoOpt;
             imgMonoOpt.resize(imgBgrOut);
             imgMonoOpt.zero();
+            Mat imgMonoOptMat=toCvMat(imgMonoOpt);
 
             // declare output bottles
             Bottle nodesBottle;
@@ -340,44 +262,44 @@ public:
 
             // compute optical flow
             latch_t=Time::now();
-            cvCalcOpticalFlowPyrLK(imgMonoPrev.getIplImage(),imgMonoIn.getIplImage(),
-                                   imgPyrPrev.getIplImage(),imgPyrCurr.getIplImage(),
-                                   nodesPrev,nodesCurr,nodesNum,
-                                   cvSize(winSize,winSize),5,featuresFound,featuresErrors,
-                                   cvTermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.3),0);
+            constexpr int maxLevel=5;
+            Size ws(winSize,winSize);
+            buildOpticalFlowPyramid(toCvMat(imgMonoPrev),pyrPrev,ws,maxLevel);
+            buildOpticalFlowPyramid(toCvMat(imgMonoIn),pyrCurr,ws,maxLevel);
+            calcOpticalFlowPyrLK(pyrPrev,pyrCurr,nodesPrev,nodesCurr,
+                                 featuresFound,featuresErrors,ws,maxLevel,
+                                 TermCriteria(TermCriteria::COUNT+TermCriteria::EPS,30,0.3));
             dt0=Time::now()-latch_t;
 
             // assign status to the grid nodes
             latch_t=Time::now();
-            for (int i=0; i<nodesNum; i++)
+            for (size_t i=0; i<nodesPrev.size(); i++)
             {
                 bool persistentNode=false;
-
-                CvPoint node=cvPoint((int)nodesPrev[i].x,(int)nodesPrev[i].y);
+                Point node=Point((int)nodesPrev[i].x,(int)nodesPrev[i].y);
 
                 // handle the node persistence
                 if (!inhibition && (nodesPersistence[i]!=0))
                 {
-                    cvCircle(imgBgrOut.getIplImage(),node,1,NODE_ON,2);
-                    cvCircle(imgMonoOpt.getIplImage(),node,1,cvScalar(255),2);
+                    circle(imgBgrOutMat,node,1,NODE_ON,2);
+                    circle(imgMonoOptMat,node,1,Scalar(255),2);
 
                     Bottle &nodeBottle=nodesBottle.addList();
                     nodeBottle.addInt((int)nodesPrev[i].x);
                     nodeBottle.addInt((int)nodesPrev[i].y);
 
                     // update the active nodes set
-                    activeNodesIndexSet.insert(i);
+                    activeNodesIndexSet.insert((int)i);
 
                     nodesPersistence[i]--;
-
                     persistentNode=true;
                 }
                 else
-                    cvCircle(imgBgrOut.getIplImage(),node,1,NODE_OFF,1);
+                    circle(imgBgrOutMat,node,1,NODE_OFF,1);
 
                 // do not consider the border nodes and skip if inhibition is on
                 int row=i%nodesX;
-                bool skip=inhibition || (i<nodesX) || (i>=(nodesNum-nodesX)) || (row==0) || (row==(nodesX-1));
+                bool skip=inhibition || (i<nodesX) || (i>=(nodesPrev.size()-nodesX)) || (row==0) || (row==(nodesX-1));
 
                 if (!skip && (featuresFound[i]!=0) && (featuresErrors[i]>recogThresAbs))
                 {
@@ -399,15 +321,15 @@ public:
                         // update only if the node was not persistent
                         if (!persistentNode)
                         {
-                            cvCircle(imgBgrOut.getIplImage(),node,1,NODE_ON,2);
-                            cvCircle(imgMonoOpt.getIplImage(),node,1,cvScalar(255),2);
+                            circle(imgBgrOutMat,node,1,NODE_ON,2);
+                            circle(imgMonoOptMat,node,1,Scalar(255),2);
 
                             Bottle &nodeBottle=nodesBottle.addList();
                             nodeBottle.addInt((int)nodesPrev[i].x);
                             nodeBottle.addInt((int)nodesPrev[i].y);
 
                             // update the active nodes set
-                            activeNodesIndexSet.insert(i);
+                            activeNodesIndexSet.insert((int)i);
                         }
                     }
                 }
@@ -425,14 +347,14 @@ public:
                 int blueLev=255-((100*i)%255);
                 int redLev=(100*i)%255;
 
-                CvPoint centroid=cvPoint(blob.centroid.x,blob.centroid.y);
+                Point centroid=Point(blob.centroid.x,blob.centroid.y);
 
                 Bottle &blobBottle=blobsBottle.addList();
                 blobBottle.addInt(centroid.x);
                 blobBottle.addInt(centroid.y);
                 blobBottle.addInt(blob.size);
 
-                cvCircle(imgBgrOut.getIplImage(),centroid,4,cvScalar(blueLev,0,redLev),3);
+                circle(imgBgrOutMat,centroid,4,Scalar(blueLev,0,redLev),3);
             }
             dt2=Time::now()-latch_t;
 
@@ -474,16 +396,13 @@ public:
                 int d=(cropSize>0)?cropSize:(int)(nodesStep*sqrt((double)blob.get(2).asInt()));
                 int d2=d>>1;
 
-                CvPoint tl=cvPoint(std::max(x-d2,0),std::max(y-d2,0));
-                CvPoint br=cvPoint(std::min(x+d2,(int)pImgBgrIn->width()-1),std::min(y+d2,(int)pImgBgrIn->height()-1));
-                CvPoint cropSize=cvPoint(br.x-tl.x,br.y-tl.y);
+                Point tl=Point(std::max(x-d2,0),std::max(y-d2,0));
+                Point br=Point(std::min(x+d2,(int)pImgBgrIn->width()-1),std::min(y+d2,(int)pImgBgrIn->height()-1));
+                Point cropSize=Point(br.x-tl.x,br.y-tl.y);
 
                 ImageOf<PixelBgr> &cropImg=cropPort.prepare();
                 cropImg.resize(cropSize.x,cropSize.y);
-
-                cvSetImageROI((IplImage*)pImgBgrIn->getIplImage(),cvRect(tl.x,tl.y,cropSize.x,cropSize.y));
-                cvCopy((IplImage*)pImgBgrIn->getIplImage(),(IplImage*)cropImg.getIplImage());
-                cvResetImageROI((IplImage*)pImgBgrIn->getIplImage());
+                toCvMat(*pImgBgrIn)(Rect(tl.x,tl.y,cropSize.x,cropSize.y)).copyTo(toCvMat(cropImg));
 
                 cropPort.setEnvelope(stamp);
                 cropPort.write();
@@ -511,8 +430,6 @@ public:
     /************************************************************************/
     void threadRelease()
     {
-        disposeMem();
-
         inPort.close();
         outPort.close();
         optPort.close();
@@ -552,7 +469,7 @@ public:
     /************************************************************************/
     void floodFill(const int i, Blob *pBlob)
     {
-        set<int>::iterator el=activeNodesIndexSet.find(i);
+        auto el=activeNodesIndexSet.find(i);
         if ((el!=activeNodesIndexSet.end()) && (pBlob!=NULL))
         {
             // update blob
@@ -639,15 +556,6 @@ public:
 
                     reply.addString("ack");
                 }
-                else if (subcmd=="numThreads")
-                {
-                #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-                    numThreads=setNumThreads(req.get(2).asInt());
-                    reply.addString("ack");
-                #else
-                    reply.addString("OpenMP multi-threading not supported");
-                #endif
-                }
                 else if (subcmd=="verbosity")
                 {
                     verbosity=req.get(2).asString()=="on";
@@ -685,12 +593,6 @@ public:
                     else
                         reply.addString("auto");
                 }
-                else if (subcmd=="numThreads")
-                #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-                    reply.addInt(numThreads);
-                #else
-                    reply.addString("OpenMP multi-threading not supported");
-                #endif
                 else if (subcmd=="verbosity")
                     reply.addString(verbosity?"on":"off");
                 else if (subcmd=="inhibition")
@@ -785,28 +687,19 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-    #ifdef CV_MAJOR_VERSION
-        printf("This module has been compiled with OpenCV %d.%d\n",CV_MAJOR_VERSION,CV_MINOR_VERSION);
-    #else
-        printf("This module has been compiled with an unknown version of OpenCV (probably < 1.0)\n");
-    #endif
-        printf("Available options:\n");
-        printf("\t--name              <string>\n");
-        printf("\t--coverXratio       <double>\n");
-        printf("\t--coverYratio       <double>\n");
-        printf("\t--nodesStep         <int>\n");
-        printf("\t--winSize           <int>\n");
-        printf("\t--recogThres        <double>\n");
-        printf("\t--adjNodesThres     <int>\n");
-        printf("\t--blobMinSizeThres  <int>\n");
-        printf("\t--framesPersistence <int>\n");
-        printf("\t--cropSize          \"auto\" or <int>\n");
-    #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-        printf("\t--numThreads        <int>\n");
-    #endif
-        printf("\t--verbosity           -\n");
-        printf("\n");
-
+        cout<<"Available options:"<<endl;
+        cout<<"\t--name              <string>"<<endl;
+        cout<<"\t--coverXratio       <double>"<<endl;
+        cout<<"\t--coverYratio       <double>"<<endl;
+        cout<<"\t--nodesStep         <int>"<<endl;
+        cout<<"\t--winSize           <int>"<<endl;
+        cout<<"\t--recogThres        <double>"<<endl;
+        cout<<"\t--adjNodesThres     <int>"<<endl;
+        cout<<"\t--blobMinSizeThres  <int>"<<endl;
+        cout<<"\t--framesPersistence <int>"<<endl;
+        cout<<"\t--cropSize          \"auto\" or <int>"<<endl;
+        cout<<"\t--verbosity"<<endl;
+        cout<<endl;
         return 0;
     }
 

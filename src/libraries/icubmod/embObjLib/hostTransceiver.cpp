@@ -938,7 +938,15 @@ void HostTransceiver::eoprot_override_as(void)
             EO_INIT(.tag)           eoprot_tag_as_temperature_status,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_temperature_status
+        },
+        {   // eoprot_tag_as_psc_status: ...
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_psc,
+            EO_INIT(.tag)           eoprot_tag_as_psc_status,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_psc_status
         }
+
 #if 0   // marco.accame: i keep the code just for the debug phase.       
         ,{   // eoprot_tag_as_inertial_status_accelerometer
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,

@@ -8,9 +8,8 @@ project(wholeBodyDynamics)
 file(GLOB folder_source main.cpp observerThread.cpp)
 file(GLOB folder_header observerThread.h)
 
-# import math symbols from standard cmath
-add_definitions(-D_USE_MATH_DEFINES)
 add_executable(${PROJECT_NAME} ${folder_source} ${folder_header})
+target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 target_link_libraries(${PROJECT_NAME} iDyn
                                       ${YARP_LIBRARIES}
                                       skinDynLib)

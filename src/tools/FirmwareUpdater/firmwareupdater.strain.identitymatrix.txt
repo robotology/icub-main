@@ -1,0 +1,10 @@
+# matrix organised in 6 x 6. Dated 21 jun 1983 and prepared by Paulo Roberto Falcao
+1.0         0.0         0.0         0.0         0.0         0.0
+0.0         1.0	        0.0         0.0		    0.0		    0.0	            
+0.0         0.0         1.0	        0.0         0.0		    0.0		    
+0.0         0.0         0.0         1.0	        0.0         0.0         
+0.0         0.0		    0.0         0.0         1.0	        0.0         
+0.0		    0.0         0.0		    0.0         0.0         1.0
+# fullscales: .see above
+32767	    32767	    32767	    32767	    32767       32767
+# end of file

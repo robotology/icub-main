@@ -5,6 +5,7 @@
 
 project(actionsRenderingEngine)
 
+find_package(YARP COMPONENTS OS sig dev math cv)
 find_package(IPOPT REQUIRED)
 
 set(folder_source src/main.cpp
@@ -19,10 +20,10 @@ set(folder_header include/iCub/utils.h
                   include/iCub/MotorThread.h)
                   
 include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${OpenCV_INCLUDE_DIRS} ${IPOPT_INCLUDE_DIRS})
+                    ${IPOPT_INCLUDE_DIRS})
 
-add_definitions(${IPOPT_DEFINITIONS} -D_USE_MATH_DEFINES)
 add_executable(${PROJECT_NAME} ${folder_header} ${folder_source})
+target_compile_definitions(${PROJECT_NAME} PRIVATE ${IPOPT_DEFINITIONS} _USE_MATH_DEFINES)
 
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
 target_link_libraries(${PROJECT_NAME} iKin actionPrimitives ${YARP_LIBRARIES}

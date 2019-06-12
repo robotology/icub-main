@@ -50,6 +50,7 @@ class SkinPatchInfo
 {
 public:
     int                     idPatch;
+    eOcanport_t             canport; // so far a patch contains addresses of a unique canport
     eOprotIndex_t           indexNv;
     std::vector <int>       cardAddrList;
     int checkCardAddrIsInList(int cardAddr);

@@ -362,8 +362,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         yError() << getBoardInfo() << "Missing motion control parameters in config file";
         return false;
     }
-    
-
 
     if(!res->verifyEPprotocol(eoprot_endpoint_motioncontrol))
     {
@@ -565,6 +563,11 @@ bool embObjMotionControl::saveCouplingsData(void)
         case eomn_serv_MC_mc4plusmais:
         {
            jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc4plusmais_based.jomocoupling);
+
+        } break;
+        case eomn_serv_MC_mc2pluspsc:
+        {
+            jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc2pluspsc.jomocoupling);
 
         } break;
          case eomn_serv_MC_mc4:
@@ -1815,6 +1818,13 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type12.calibrationDelta = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
+    case eomc_calibration_type13_cer_hands_2:
+        calib.params.type13.rawValueAtZeroPos0     = (int32_t)S_32(params.param1);
+        calib.params.type13.rawValueAtZeroPos1     = (int32_t)S_32(params.param2);
+        calib.params.type13.rawValueAtZeroPos2     = (int32_t)S_32(params.param3);
+        calib.params.type13.rawValueAtZeroPos3     = (int32_t)S_32(params.param4);
+        break;
+
     default:
         yError() << "Calibration type unknown!! (embObjMotionControl)\n";
         return false;
@@ -2051,10 +2061,10 @@ bool embObjMotionControl::checkMotionDoneRaw(bool *flag)
         yError () << "Failure of askRemoteValues() inside embObjMotionControl::checkMotionDoneRaw for all joints of" << getBoardInfo();
         return false;
     }
-    
+    *flag=true;
     for(int j=0; j<_njoints; j++)
     {
-        flag[j] = ismotiondoneList[j]; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
+        *flag &= ismotiondoneList[j]; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
     }
     return true;
 }
@@ -2198,30 +2208,36 @@ bool embObjMotionControl::relativeMoveRaw(const int n_joint, const int *joints, 
 
 bool embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
 {
-    bool tot_val = true;
-   
-    //std::vector <bool> isDoneList(_njoints); //this cannot be used here because .data() is not implemented for std::vector <bool>
-    bool* isDoneList = new bool[_njoints];
-   
-    *flag = false;
-    
-    if(! checkMotionDoneRaw(isDoneList))
-        return false;
 
+    //1) first of all, check if all joints number are ok
     for(int j=0; j<n_joint; j++)
     {
         if(joints[j] >= _njoints)
         {
             yError() << getBoardInfo() << ":checkMotionDoneRaw required for not existing joint ( " << joints[j] << ")";
-            delete [] isDoneList;
             return false;
         }
-        tot_val &= isDoneList[joints[j]];
     }
-    
+
+    //2) ask check motion done for all my joints
+    std::vector <eObool_t> ismotiondoneList(_njoints);
+    bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_core_modes_ismotiondone, ismotiondoneList);
+    if(false == ret)
+    {
+        yError () << getBoardInfo() << "Failure of askRemoteValues() inside embObjMotionControl::checkMotionDoneRaw for a group of joint"; getBoardInfo();
+        return false;
+    }
+
+    //3) verify only the given joints
+    bool tot_val = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        tot_val &= ismotiondoneList[joints[j]];
+    }
+
     *flag = tot_val;
-    delete[] isDoneList;
     return true;
+
 }
 
 bool embObjMotionControl::setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds)
@@ -4613,7 +4629,8 @@ bool embObjMotionControl::iNeedCouplingsInfo(void)
     eOmn_serv_type_t mc_serv_type = (eOmn_serv_type_t)serviceConfig.ethservice.configuration.type;
     if( (mc_serv_type == eomn_serv_MC_foc) ||
         (mc_serv_type == eomn_serv_MC_mc4plus) ||
-        (mc_serv_type == eomn_serv_MC_mc4plusmais)
+        (mc_serv_type == eomn_serv_MC_mc4plusmais) ||
+        (mc_serv_type == eomn_serv_MC_mc2pluspsc)
       )
         return true;
     else

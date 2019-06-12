@@ -8,6 +8,7 @@
  * details.
 */
 
+#include <cstdlib>
 #include <cmath>
 #include <algorithm>
 
@@ -1768,12 +1769,17 @@ PartDescriptor *iCubArmCartesianSolver::getPartDesc(Searchable &options)
 {
     type="right";
     string part_type=type;
+    double version=1.0;
     if (options.check("type"))
     {
         type=options.find("type").asString();
         part_type=type.substr(0,type.find("_"));
         if ((part_type!="left") && (part_type!="right"))
             type=part_type="right";
+
+        size_t underscore=type.find('_');
+        if (underscore!=string::npos)
+            version=strtod(type.substr(underscore+2).c_str(),NULL);
     }
 
     string robot=options.check("robot",Value("icub")).asString();
@@ -1802,9 +1808,9 @@ PartDescriptor *iCubArmCartesianSolver::getPartDesc(Searchable &options)
     p->cns=new iCubShoulderConstr(*static_cast<iCubArm*>(p->lmb));
     p->prp.push_back(optTorso);
     p->prp.push_back(optArm);
-    p->rvs.push_back(true);     // torso
-    p->rvs.push_back(false);    // arm
-    p->num=2;                   // number of parts
+    p->rvs.push_back(version<3.0);  // torso
+    p->rvs.push_back(false);        // arm
+    p->num=2;                       // number of parts
 
     return p;
 }
@@ -1859,12 +1865,17 @@ PartDescriptor *iCubLegCartesianSolver::getPartDesc(Searchable &options)
 {
     type="right";
     string part_type=type;
+    double version=1.0;
     if (options.check("type"))
     {
         type=options.find("type").asString();
         part_type=type.substr(0,type.find("_"));
         if ((part_type!="left") && (part_type!="right"))
             type=part_type="right";
+
+        size_t underscore=type.find('_');
+        if (underscore!=string::npos)
+            version=strtod(type.substr(underscore+2).c_str(),NULL);
     }
 
     string robot=options.check("robot",Value("icub")).asString();

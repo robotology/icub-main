@@ -90,7 +90,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
         yInfo("### neck control - requested VELOCITY mode => VELOCITY mode selected");
 
     // joints bounds alignment
-    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltLim);
+    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData);
 
     // read starting position
     fbTorso.resize(nJointsTorso,0.0);
@@ -441,7 +441,7 @@ Vector Controller::computeNeckVelFromdxFP(const Vector &fp, const Vector &dfp)
 
     // compute the Jacobian of the head joints alone 
     // (by adding the new fixation point beforehand)
-    Matrix HN=eye(4);
+    Matrix HN=eye(4,4);
     HN(0,3)=fpE[0];
     HN(1,3)=fpE[1];
     HN(2,3)=fpE[2];

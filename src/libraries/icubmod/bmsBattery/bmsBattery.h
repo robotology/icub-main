@@ -34,18 +34,14 @@ protected:
     std::string        battery_info;
     unsigned char      backpack_status;
 
-    bool logEnable;
     bool verboseEnable;
     bool screenEnable;
     bool debugEnable;
-    bool shutdownEnable;
 
-    FILE                *logFile;
     ResourceFinder      rf;
     PolyDriver          driver;
     ISerialDevice       *pSerial;
     char                serial_buff[255];
-    char                log_buffer[255];
     std::string         remoteName;
     std::string         localName;
 
@@ -64,17 +60,13 @@ public:
     virtual bool getBatteryVoltage     (double &voltage);
     virtual bool getBatteryCurrent     (double &current);
     virtual bool getBatteryCharge      (double &charge);
-    virtual bool getBatteryStatus      (int &status);
+    virtual bool getBatteryStatus      (Battery_status &status);
     virtual bool getBatteryInfo        (std::string &info);
     virtual bool getBatteryTemperature (double &temperature);
 
     virtual bool threadInit();
     virtual void threadRelease();
     virtual void run();
-
-    void check_battery_status();
-    void notify_message(std::string msg);
-    void stop_robot(std::string quit_port);
 
 private:
     virtual bool verify_checksum(int& raw_battery_current, int&  raw_battery_voltage, int&  raw_battery_charge, int&  raw_battery_checksum);

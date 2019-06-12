@@ -68,11 +68,9 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     }
 
     // Other options
-    this->logEnable = group_general.check("logToFile", Value(0), "enable / disable the log to file").asBool();
     this->verboseEnable = group_general.check("verbose", Value(0), "enable/disable the verbose mode").asBool();
     this->screenEnable = group_general.check("screen", Value(0), "enable/disable the screen output").asBool();
     this->debugEnable = group_general.check("debug", Value(0), "enable/disable the debug mode").asBool();
-    this->shutdownEnable = group_general.check("shutdown", Value(0), "enable/disable the automatic shutdown").asBool();
 
     PeriodicThread::start();
     return true;
@@ -97,12 +95,6 @@ bool BcbBattery::threadInit()
     battery_charge      = 0.0;
     battery_temperature = 0.0;
     timeStamp = yarp::os::Time::now();
-
-    if (logEnable)
-    {
-        yInfo("writing to log file batteryLog.txt");
-        logFile = fopen("batteryLog.txt", "w");
-    }
 
     //start the transmission
     char c = 0x01;
@@ -136,7 +128,6 @@ void BcbBattery::run()
     //if nothing is received, rec=0, the while exits immediately. The string will be not valid, so the parser will skip it and it will leave unchanged the battery status (voltage/current/charge)
     //if a text line is received, then try to receive more text to empty the buffer. If nothing else is received, serial_buff will be left unchanged from the previous value. The loop will exit and the sting will be parsed.
     serial_buff[0] = 0;
-    log_buffer[0] = 0;
 
     if (pSerial)
     {
@@ -160,7 +151,7 @@ void BcbBattery::run()
         pSerial->receiveChar(serial_buff[6]); //charge
         pSerial->receiveChar(serial_buff[7]); //status
 
-        serial_buff[10] = NULL;
+        serial_buff[10] = 0;
     }
     else
     {
@@ -183,26 +174,17 @@ void BcbBattery::run()
     //add checksum verification
     //...
 
-    time_t rawtime;
-    struct tm * timeinfo;
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    char* battery_timestamp = asctime(timeinfo);
-    sprintf(log_buffer, "battery status: %+6.1fA   % 6.1fV   charge:% 6.1f%%    time: %s", battery_current, battery_voltage, battery_charge, battery_timestamp);
-
-    // if the battery is not charging, checks its status of charge
-    if (battery_current>0.4) check_battery_status();
-
     // print data to screen
     if (screenEnable)
     {
-        yDebug("BcbBattery::run() log_buffer is: %s", log_buffer);
-    }
-
-    // save data to file
-    if (logEnable)
-    {
-        fprintf(logFile, "%s", log_buffer);
+        time_t rawtime;
+        struct tm * timeinfo;
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
+        char* battery_timestamp = asctime(timeinfo);
+        char buff[1024];
+        sprintf(buff, "battery status: %+6.1fA   % 6.1fV   charge:% 6.1f%%    time: %s", battery_current, battery_voltage, battery_charge, battery_timestamp);
+        yDebug("BcbBattery::run() log_buffer is: %s", buff);
     }
 
     mutex.post();
@@ -232,7 +214,7 @@ bool BcbBattery::getBatteryCharge(double &charge)
     return true;
 }
 
-bool BcbBattery::getBatteryStatus(int &status)
+bool BcbBattery::getBatteryStatus(Battery_status &status)
 {
     //yError("Not yet implemented");
     return false;
@@ -255,101 +237,4 @@ bool BcbBattery::getBatteryInfo(string &info)
 void BcbBattery::threadRelease()
 {
     yTrace("BcbBattery Thread released\n");
-}
-
-void BcbBattery::notify_message(string msg)
-{
-#ifdef WIN32
-    yWarning("%s", msg.c_str());
-#else
-    yWarning("%s", msg.c_str());
-    string cmd = "echo " + msg + " | wall";
-    system(cmd.c_str());
-#endif
-}
-
-void emergency_shutdown(string msg)
-{
-#ifdef WIN32
-    string cmd;
-    cmd = "shutdown /s /t 120 /c " + msg;
-    yWarning("%s", msg.c_str());
-    system(cmd.c_str());
-#else
-    string cmd;
-    yWarning("%s", msg.c_str());
-    cmd = "echo " + msg + " | wall";
-    system(cmd.c_str());
-
-    cmd = "sudo shutdown -h 2 " + msg;
-    system(cmd.c_str());
-
-    cmd = "ssh icub@pc104 sudo shutdown -h 2";
-    system(cmd.c_str());
-#endif
-}
-
-void BcbBattery::check_battery_status()
-{
-    static bool notify_15 = true;
-    static bool notify_12 = true;
-    static bool notify_10 = true;
-    static bool notify_0 = true;
-
-    if (battery_charge > 20)
-    {
-        notify_15 = true;
-        notify_12 = true;
-        notify_10 = true;
-        notify_0 = true;
-    }
-
-    if (battery_charge < 15)
-    {
-        if (notify_15) { notify_message("WARNING: battery charge below 15%"); notify_15 = false; }
-    }
-    if (battery_charge < 12)
-    {
-        if (notify_12) { notify_message("WARNING: battery charge below 12%"); notify_12 = false; }
-    }
-    if (battery_charge < 10)
-    {
-        if (notify_10) { notify_message("WARNING: battery charge below 10%"); notify_10 = false; }
-    }
-    if (battery_charge < 5)
-    {
-        if (notify_0)
-        {
-            if (shutdownEnable)
-            {
-                emergency_shutdown("CRITICAL WARNING: battery charge below critical level 5%. The robot will be stopped and the system will shutdown in 2mins.");
-                stop_robot("/icub/quit");
-                stop_robot("/ikart/quit");
-                notify_0 = false;
-            }
-            else
-            {
-                notify_message("CRITICAL WARNING: battery charge reached critical level 5%, but the emergency shutodown is currently disabled!");
-                notify_0 = false;
-            }
-        }
-    }
-}
-
-void BcbBattery::stop_robot(string quit_port)
-{
-    //typical quit_port:
-    // "/icub/quit"
-    // "/ikart/quit"
-    //if (yarp_found)
-    {
-        Port port_shutdown;
-        port_shutdown.open((localName + "/shutdown").c_str());
-        yarp::os::Network::connect((localName + "/shutdown").c_str(), quit_port.c_str());
-        Bottle bot;
-        bot.addString("quit");
-        port_shutdown.write(bot);
-        port_shutdown.interrupt();
-        port_shutdown.close();
-    }
 }

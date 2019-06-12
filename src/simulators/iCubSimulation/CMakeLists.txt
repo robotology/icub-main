@@ -84,9 +84,8 @@ ELSE ()
    ADD_DEFINITIONS(-DOMIT_LOGPOLAR)
 ENDIF ()
 
-# import math symbols from standard cmath
-add_definitions(-D_USE_MATH_DEFINES)
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
+target_compile_definitions(${PROJECTNAME} PRIVATE _USE_MATH_DEFINES)
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} iKin)
 IF (ICUB_SIM_ENABLE_ODESDL)
