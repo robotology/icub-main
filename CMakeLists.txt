@@ -26,7 +26,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(ICUB_COMPILE_BINDINGS "Compile optional language bindings"  FALSE)
 
-find_package(YARP 3.1.100 REQUIRED)
+find_package(YARP 3.2.0 REQUIRED)
 message(STATUS "YARP is version: ${YARP_VERSION}")
 
 if(YARP_math_FOUND)
