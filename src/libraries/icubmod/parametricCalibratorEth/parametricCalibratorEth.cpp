@@ -52,7 +52,7 @@ bool parametricCalibratorEth::parseSequenceGroup(yarp::os::Searchable &config, s
     Bottle parkSeq_group = config.findGroup(sequence);
     if (parkSeq_group.isNull())
     {
-        yError() << "parametricCalibrator " << deviceName << "Missing <" << sequence << "> group";
+        yWarning() << "parametricCalibrator " << deviceName << "Missing <" << sequence << "> group";
         return false;
     }
 
@@ -68,7 +68,7 @@ bool parametricCalibratorEth::parseSequenceGroup(yarp::os::Searchable &config, s
     // create space in vector of sequences
     seqList.resize(numOfSeq);
 
-    if(numOfSeq <= 0)
+    if(numOfSeq < 0)
     {
         yError() << "ParametricCalibratorEth " << deviceName << "<numberOfSequences> must be a positive integer";
         return false;
@@ -363,7 +363,6 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
         else
         {
             yWarning() << "<HOME> group is deprecated in favour of <PARKING_SEQUENCE>";
-            return false;
         }
 
         xtmp = homeGroup.findGroup("positionHome");
@@ -1073,8 +1072,12 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     else
     {
         // call one step of parking sequence for each 'park' call
-        bool stepDone = moveAndCheck(parkingSequence.at(currentParkingSeq_step));
-
+ 
+	bool stepDone = true;
+	if(parkingSequence.size() > 0)
+	{
+	    stepDone = moveAndCheck(parkingSequence.at(currentParkingSeq_step));
+        }
         if(stepDone)
         {
             yDebug() << "ParametricCalibratorEth: park sequence step num " << currentParkingSeq_step << " ended with  " << \
