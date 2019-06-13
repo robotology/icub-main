@@ -13,10 +13,12 @@
 #ifndef __ICUB_PARAMETRIC_CALIBRATOR__
 #define __ICUB_PARAMETRIC_CALIBRATOR__
 
-#include <string>
 #include <list>
-#include <yarp/dev/DeviceDriver.h>
+#include <string>
+#include <atomic>
+#include <vector>
 #include <yarp/os/Semaphore.h>
+#include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CalibratorInterfaces.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
@@ -99,26 +101,26 @@ private:
 
     bool calibrate();
 
-    yarp::os::Semaphore calibMutex;
 
     bool calibrateJoint(int j);
-    bool goToZero(int j);
+    bool goToStartupPosition(int j);
     bool checkCalibrateJointEnded(std::list<int> set);
     bool checkGoneToZeroThreshold(int j);
     bool checkHwFault(int j);
 
     yarp::dev::PolyDriver *dev2calibrate;
-    IControlCalibration *iCalibrate;
-    IPidControl *iPids;
-    IEncoders *iEncoders;
-    IPositionControl *iPosition;
-    IControlMode *iControlMode;
-    IAmplifierControl *iAmp;
+    yarp::dev::IControlCalibration *iCalibrate;
+    yarp::dev::IPidControl *iPids;
+    yarp::dev::IEncoders *iEncoders;
+    yarp::dev::IPositionControl *iPosition;
+    yarp::dev::IControlMode *iControlMode;
+    yarp::dev::IAmplifierControl *iAmp;
 
     std::list<std::list<int> > joints;
 
     int n_joints;
-    CalibrationParameters* calibParams;
+
+    yarp::dev::CalibrationParameters* calibParams;
     int    *startupMaxPWM;
     double *currPos;
     double *currVel;
@@ -131,13 +133,12 @@ private:
     double *startupPosThreshold;
     bool    abortCalib;
     bool    abortParking;
-    bool    isCalibrated;
+    std::atomic<bool>    isCalibrated;
     bool    skipCalibration;
     int    *disableHomeAndPark;
     int    *disableStartupPosCheck;
     bool    clearHwFault;
 
-    int    *timeout_park;
     int    *timeout_goToZero;
     int    *timeout_calibration;
 

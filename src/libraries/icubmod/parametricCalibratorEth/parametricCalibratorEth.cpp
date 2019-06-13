@@ -20,9 +20,10 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-const double    POSITION_THRESHOLD      = 2.0;
+const int       PARK_TIMEOUT            = 30;
+const double    GO_TO_ZERO_TIMEOUT      = 10;
+const int       CALIBRATE_JOINT_TIMEOUT = 20;
 
-// TODO use it!!
 //#warning "Use extractGroup to verify size of parameters matches with number of joints, this will avoid crashes"
 static bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
 {
@@ -45,12 +46,12 @@ static bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, co
 }
 
 parametricCalibratorEth::parametricCalibratorEth() :
-    calibParams(NULL),
-    original_max_pwm(NULL),
-    limited_max_pwm(NULL),
-    startupMaxPWM(NULL),
-    currPos(NULL),
-    currVel(NULL),
+    calibParams(nullptr),
+    original_max_pwm(nullptr),
+    limited_max_pwm(nullptr),
+    startupMaxPWM(nullptr),
+    currPos(nullptr),
+    currVel(nullptr),
     startupPos(NULL),
     startupVel(NULL),
     homeVel(0),
@@ -58,16 +59,13 @@ parametricCalibratorEth::parametricCalibratorEth() :
     startupPosThreshold(0),
     abortCalib(false),
     isCalibrated(false),
-    calibMutex(1),
     skipCalibration(false),
     clearHwFault(false),
     n_joints(0),
-    timeout_park(NULL),
-    timeout_goToZero(NULL),
-    timeout_calibration(NULL),
-    disableHomeAndPark(NULL),
-    disableStartupPosCheck(NULL),
-    totJointsToCalibrate(0)
+    timeout_goToZero(nullptr),
+    timeout_calibration(nullptr),
+    disableHomeAndPark(nullptr),
+    disableStartupPosCheck(nullptr),
 {
 }
 
@@ -184,15 +182,14 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
         }
     }
 
-    int nj = 0;
     if(p.findGroup("GENERAL").check("joints"))
     {
-        nj = p.findGroup("GENERAL").find("joints").asInt();
+        n_joints = p.findGroup("GENERAL").find("joints").asInt();
     }
     else if(p.findGroup("GENERAL").check("Joints"))
     {
         // This is needed to be backward compatibile with old iCubInterface
-        nj = p.findGroup("GENERAL").find("Joints").asInt();
+        n_joints = p.findGroup("GENERAL").find("Joints").asInt();
     }
     else
     {
@@ -200,101 +197,104 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
         return false;
     }
 
-    calibParams = new CalibrationParameters[nj];
-    startupMaxPWM = new int[nj];
+    calibParams = new CalibrationParameters[n_joints];
+    startupMaxPWM = new int[n_joints];
 
     startupPos = new double[nj];
     startupVel = new double[nj];
-    currPos = new double[nj];
-    currVel = new double[nj];
-    homePos = new double[nj];
-    homeVel = new double[nj];
-    startupPosThreshold = new double[nj];
-    
-    timeout_park = new int[nj];
-    timeout_goToZero = new int[nj];
-    timeout_calibration = new int[nj];
-    disableHomeAndPark = new int[nj];
-    disableStartupPosCheck = new int[nj];
+    legacyStartupPosition.seq_num = 0;
+    legacyStartupPosition.positions.resize(n_joints);
+    legacyStartupPosition.velocities.resize(n_joints);
+    currPos = new double[n_joints];
+    currVel = new double[n_joints];
+    legacyParkingPosition.seq_num = 0;
+    legacyParkingPosition.positions.resize(n_joints);
+    legacyParkingPosition.velocities.resize(n_joints);
 
-    for (int i = 0; i < nj; i++) timeout_park[i] = 30;
-    for (int i = 0; i < nj; i++) timeout_goToZero[i] = 10;
-    for (int i = 0; i < nj; i++) timeout_calibration[i] = 20;
-    for (int i = 0; i < nj; i++) disableHomeAndPark[i] = false;
-    for (int i = 0; i < nj; i++) disableStartupPosCheck[i] = false;
+
+    timeout_goToZero = new int[n_joints];
+    timeout_calibration = new int[n_joints];
+    startupPosThreshold = new double[n_joints];
+    disableHomeAndPark = new int[n_joints];
+    disableStartupPosCheck = new int[n_joints];
+
+    for (int i = 0; i < n_joints; i++) timeout_goToZero[i] = 10;
+    for (int i = 0; i < n_joints; i++) timeout_calibration[i] = 20;
+    for (int i = 0; i < n_joints; i++) disableHomeAndPark[i] = false;
+    for (int i = 0; i < n_joints; i++) disableStartupPosCheck[i] = false;
 
     int i=0;
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("calibration1");
-    if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration1 params " << xtmp.size()<< " " << nj; return false;}
+    if (xtmp.size()-1!=n_joints) {yError() << deviceName << ": invalid number of Calibration1 params " << xtmp.size()<< " " << n_joints; return false;}
     for (i = 1; i < xtmp.size(); i++) calibParams[i-1].param1 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration2");
-    if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration2 params"; return false;}
+    if (xtmp.size()-1!=n_joints) {yError() << deviceName << ": invalid number of Calibration2 params"; return false;}
     for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param2 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration3");
-    if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration3 params"; return false;}
+    if (xtmp.size()-1!=n_joints) {yError() << deviceName << ": invalid number of Calibration3 params"; return false;}
     for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param3 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration4");
-    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration4 params"; return false; }
+    if (xtmp.size() - 1 != n_joints) { yError() << deviceName << ": invalid number of Calibration4 params"; return false; }
     for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param4 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration5");
-    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration5 params"; return false; }
+    if (xtmp.size() - 1 != n_joints) { yError() << deviceName << ": invalid number of Calibration5 params"; return false; }
     for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param5 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationType");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of Calibration3 params"; return false;}
+    if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of Calibration3 params"; return false;}
     for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].type = (unsigned char)xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationZero");
-    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of calibrationZero params"; return false; }
+    if (xtmp.size() - 1 != n_joints) { yError() << deviceName << ": invalid number of calibrationZero params"; return false; }
     for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].paramZero = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationDelta");
-    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of calibrationDelta params"; return false; }
+    if (xtmp.size() - 1 != n_joints) { yError() << deviceName << ": invalid number of calibrationDelta params"; return false; }
     for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].paramZero += xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationTimeout");
-    if (xtmp.size() - 1 != nj) { } //this parameter is optional
+    if (xtmp.size() - 1 != n_joints) { } //this parameter is optional
     else { for (i = 1; i < xtmp.size(); i++) timeout_calibration[i - 1] = (int)xtmp.get(i).asDouble(); }
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupPosition");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupPosition params"; return false;}
+    if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of startupPosition params"; return false;}
     for (i = 1; i < xtmp.size(); i++) startupPos[i-1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupVelocity");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupVelocity params"; return false;}
+    if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of startupVelocity params"; return false;}
     for (i = 1; i < xtmp.size(); i++) startupVel[i - 1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("HOME").findGroup("positionHome");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of PositionHome params"; return false;}
     for (i = 1; i < xtmp.size(); i++) homePos[i-1] = xtmp.get(i).asDouble();
+        if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of PositionHome params"; return false;}
 
     xtmp = p.findGroup("HOME").findGroup("velocityHome");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of VelocityHome params"; return false;}
     for (i = 1; i < xtmp.size(); i++) homeVel[i-1] = xtmp.get(i).asDouble();
+        if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of VelocityHome params"; return false;}
 
     xtmp = p.findGroup("HOME").findGroup("disableHomeAndPark");
-    if (xtmp.size() - 1 != nj) { } //this parameter is optional
+    if (xtmp.size() - 1 != n_joints) { } //this parameter is optional
     else { for (i = 1; i < xtmp.size(); i++) disableHomeAndPark[i - 1] = xtmp.get(i).asInt(); }
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupMaxPwm");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupMaxPwm params"; return false;}
+    if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of startupMaxPwm params"; return false;}
     for (i = 1; i < xtmp.size(); i++) startupMaxPWM[i-1] =  xtmp.get(i).asInt();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupPosThreshold");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupPosThreshold params"; return false;}
+    if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of startupPosThreshold params"; return false;}
     for (i = 1; i < xtmp.size(); i++) startupPosThreshold[i-1] =  xtmp.get(i).asDouble();
  
     xtmp = p.findGroup("CALIBRATION").findGroup("startupDisablePosCheck");
-    if (xtmp.size() - 1 != nj) { } //this parameter is optional
+    if (xtmp.size() - 1 != n_joints) { } //this parameter is optional
     else { for (i = 1; i < xtmp.size(); i++) disableStartupPosCheck[i - 1] = xtmp.get(i).asInt(); }
    
     xtmp = p.findGroup("CALIBRATION").findGroup("startupTimeout");
-    if (xtmp.size() - 1 != nj) {} //this parameter is optional
+    if (xtmp.size() - 1 != n_joints) {} //this parameter is optional
     else { for (i = 1; i < xtmp.size(); i++) timeout_goToZero[i - 1] = xtmp.get(i).asDouble(); }
 
     xtmp = p.findGroup("CALIB_ORDER");
@@ -339,10 +339,6 @@ bool parametricCalibratorEth::close ()
         limited_max_pwm = NULL;
     }
 
-    if (timeout_park != NULL) {
-        delete[] timeout_park;
-        timeout_park = NULL;
-    }
     if (timeout_goToZero != NULL) {
         delete[] timeout_goToZero;
         timeout_goToZero = NULL;
@@ -451,9 +447,16 @@ bool parametricCalibratorEth::calibrate()
         return false;
     }
 
-    if ( !iEncoders->getAxes(&n_joints))
+    int n_joints_board{0};
+    if ( !iEncoders->getAxes(&n_joints_board))
     {
         yError() << deviceName << ": error getting number of axes" ;
+        return false;
+    }
+    if(n_joints_board != n_joints)
+    {
+        yError() << "ParametricCalibratorEth: " << deviceName << ": number of joints of device to calibrate (" << n_joints_board << \
+                                                                 ") does not match the number of joints in calibrator config file ("<< n_joints << ")";
         return false;
     }
 
@@ -461,7 +464,7 @@ bool parametricCalibratorEth::calibrate()
     std::list<std::list<int> >::iterator Bit=joints.begin();
     std::list<std::list<int> >::iterator Bend=joints.end();
 
-    // count how many joints are there in the list of things to be calibrated
+    // count how many joints there are in the list of things to be calibrated
     while(Bit != Bend)
     {
         currentSetList.clear();
@@ -470,7 +473,6 @@ bool parametricCalibratorEth::calibrate()
         std::list<int>::iterator lend = currentSetList.end();
         totJointsToCalibrate += currentSetList.size();
 
-        char joints_buff [10];
         while(lit != lend)
         {
             calibJoints.push_back(*lit);
@@ -642,7 +644,7 @@ bool parametricCalibratorEth::calibrate()
         for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
             // Manda in Zero
-            goToZero((*lit));
+            goToStartupPosition((*lit));
         }
         
         if(abortCalib)
@@ -695,9 +697,7 @@ bool parametricCalibratorEth::calibrate()
         }
         return false;
     }
-    calibMutex.wait();
     isCalibrated = true;
-    calibMutex.post();
     return isCalibrated;
 }
 
@@ -798,7 +798,8 @@ bool parametricCalibratorEth::checkHwFault(int j)
     return true;
 }
 
-bool parametricCalibratorEth::goToZero(int j)
+// this function may be updated in the future to use a startup sequence, like parking
+bool parametricCalibratorEth::goToStartupPosition(int j)
 {
     if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
     {
@@ -910,14 +911,11 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     bool ret=false;
     abortParking=false;
 
-    calibMutex.wait();
     if(!isCalibrated)
     {
         yWarning() << deviceName << ": Calling park without calibration... skipping";
-        calibMutex.post();
         return true;
     }
-    calibMutex.post();
 
     if(skipCalibration)
     {
@@ -933,41 +931,41 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
         yError() << deviceName << ": error getting control mode during parking";
     }
 
-    for(lit  = calibJoints.begin(); lit != calibJoints.end() && !abortCalib; lit++) //for each joint of set
+    for(joint  = calibJoints.begin(); joint != calibJoints.end() && !abortCalib; joint++) //for each joint of set
     {
-        switch(currentControlModes[(*lit)])
+        switch(currentControlModes[(*joint)])
         {
             case VOCAB_CM_IDLE:
             {
-                yError() << deviceName << ": joint " << (*lit) << " is idle, skipping park";
-                cannotPark[(*lit)] = true;
+                yError() << deviceName << ": joint " << (*joint) << " is idle, skipping park";
+                cannotPark[(*joint)] = true;
             }
             break;
 
             case VOCAB_CM_HW_FAULT:
             {
-                yError() << deviceName << ": joint " << (*lit) << " has an hardware fault, skipping park";
-                cannotPark[(*lit)] = true;
+                yError() << deviceName << ": joint " << (*joint) << " has an hardware fault, skipping park";
+                cannotPark[(*joint)] = true;
             }
             break;
 
             case VOCAB_CM_NOT_CONFIGURED:
             {
-                yError() << deviceName << ": joint " << (*lit) << " is not configured, skipping park";
-                cannotPark[(*lit)] = true;
+                yError() << deviceName << ": joint " << (*joint) << " is not configured, skipping park";
+                cannotPark[(*joint)] = true;
             }
             break;
 
             case VOCAB_CM_UNKNOWN:
             {
-                yError() << deviceName << ": joint " << (*lit) << " is in unknown state, skipping park";
-                cannotPark[(*lit)] = true;
+                yError() << deviceName << ": joint " << (*joint) << " is in unknown state, skipping park";
+                cannotPark[(*joint)] = true;
             }
 
             default:
             {
-                iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
-                cannotPark[(*lit)] = false;
+                iControlMode->setControlMode((*joint), VOCAB_CM_POSITION);
+                cannotPark[(*joint)] = false;
             }
         }
     }
@@ -1069,7 +1067,7 @@ bool parametricCalibratorEth::homingSingleJoint(int j)
         yWarning() << deviceName << ": homingSingleJoint, joint " << j << " is disabled on user request";
         return true;
     }
-    return goToZero(j);
+    return goToStartupPosition(j);
 }
 
 bool parametricCalibratorEth::homingWholePart()
@@ -1100,14 +1098,11 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
     int nj=0;
     abortParking=false;
 
-    calibMutex.wait();
     if(!isCalibrated)
     {
         yWarning() << deviceName << ": Calling park without calibration... skipping";
-        calibMutex.post();
         return true;
     }
-    calibMutex.post();
 
     if(skipCalibration)
     {
@@ -1152,7 +1147,7 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
             yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << j;
             bool done=false;
             iPosition->checkMotionDone(j, &done);
-            while ((!done) && (timeout<timeout_park[j]) && (!abortParking))
+            while ((!done) && (timeout < PARK_TIMEOUT) && (!abortParking))
             {
                 Time::delay(1);
                 timeout++;
@@ -1160,7 +1155,7 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
             }
             if(!done)
             {
-                yError() << deviceName << ": joint " << j << " not in position after a timeout of" << timeout_park[j] << " seconds";
+                yError() << deviceName << ": joint " << j << " not in position after a timeout of" << PARK_TIMEOUT << " seconds";
             }
         }
     }
