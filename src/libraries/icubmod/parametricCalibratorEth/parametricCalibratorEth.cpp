@@ -45,6 +45,88 @@ static bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, co
     return true;
 }
 
+
+// helper for parsing config file
+bool parametricCalibratorEth::parseSequenceGroup(yarp::os::Searchable &config, std::string sequence, std::vector<PositionSequence> &seqList)
+{
+    Bottle parkSeq_group = config.findGroup(sequence);
+    if (parkSeq_group.isNull())
+    {
+        yError() << "parametricCalibrator " << deviceName << "Missing <" << sequence << "> group";
+        return false;
+    }
+
+    Bottle xtmp;
+    int numOfSeq = 0;
+
+    if(!extractGroup(parkSeq_group, xtmp, "numberOfSequences", "number of sequences listed ", 1))
+    {
+        return  false;
+    }
+
+    numOfSeq = xtmp.get(1).asInt();
+    // create space in vector of sequences
+    seqList.resize(numOfSeq);
+
+    if(numOfSeq <= 0)
+    {
+        yError() << "ParametricCalibratorEth " << deviceName << "<numberOfSequences> must be a positive integer";
+        return false;
+    }
+
+    // read all sequences
+    for(int seq_idx=0; seq_idx<numOfSeq; seq_idx++)
+    {
+        char sequence_name[80];
+        snprintf(sequence_name, 80, "SEQUENCE_%d", seq_idx);
+
+        Bottle &seq_i = parkSeq_group.findGroup(sequence_name);
+        if(seq_i.isNull())
+        {
+            yError() << "ParametricCalibratorEth " << deviceName << "cannot find " << sequence_name;
+            return false;
+        }
+
+        // 1) Seq number
+        seqList.at(seq_idx).seq_num = seq_idx;
+
+        // 2) Read positions fromn config file
+        Bottle & poss = seq_i.findGroup("position", "desired parking position");
+        if (poss.isNull())
+        {
+            yError() << "ParametricCalibratorEth " << deviceName << ": <position> parameter not found for sequence " << sequence_name;
+            return false;
+        }
+
+        // 3) Read velocities fromn config file
+        Bottle &vels = seq_i.findGroup("velocity", "desired parking velocities");
+        if (vels.isNull())
+        {
+            yError() << "ParametricCalibratorEth " << deviceName << ": <velocity> parameter not found for sequence " << sequence_name;
+            return false;
+        }
+
+        if(( poss.size() -1 != n_joints) || (vels.size() -1 != n_joints))
+        {
+            yError() << "ParametricCalibratorEth " << deviceName << ": <position> or <velocity> parameter size for sequence " << sequence_name << " doesn not match the number of joint being calibrated.\n" << \
+                        "Part joint number is " << n_joints << " while <position> size is " << poss.size()-1 << " and <velocity> size is " << vels.size()-1 << "; joint number is " << n_joints;
+            return false;
+        }
+
+        // Store data in memory
+        seqList[seq_idx].seq_num = seq_idx;
+        seqList[seq_idx].positions.reserve(n_joints);
+        seqList[seq_idx].velocities.reserve(n_joints);
+
+        for (int j = 1; j <n_joints+1; j++)
+        {
+            seqList[seq_idx].positions .push_back(poss.get(j).asDouble());
+            seqList[seq_idx].velocities.push_back(vels.get(j).asDouble());
+        }
+    }
+    return true;
+}
+
 parametricCalibratorEth::parametricCalibratorEth() :
     calibParams(nullptr),
     original_max_pwm(nullptr),
@@ -52,10 +134,7 @@ parametricCalibratorEth::parametricCalibratorEth() :
     startupMaxPWM(nullptr),
     currPos(nullptr),
     currVel(nullptr),
-    startupPos(NULL),
-    startupVel(NULL),
-    homeVel(0),
-    homePos(0),
+//    legacyParkingPosition(0),
     startupPosThreshold(0),
     abortCalib(false),
     isCalibrated(false),
@@ -66,6 +145,9 @@ parametricCalibratorEth::parametricCalibratorEth() :
     timeout_calibration(nullptr),
     disableHomeAndPark(nullptr),
     disableStartupPosCheck(nullptr),
+    totJointsToCalibrate(0),
+    useLegacyParking(true),
+    currentParkingSeq_step(0)
 {
 }
 
@@ -83,7 +165,7 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
 
     if (p.check("GENERAL")==false)
     {
-      yError() << "Parametric calibrator: missing [GENERAL] section"; 
+      yError() << "Parametric calibrator: missing [GENERAL] section";
       return false;
     }
 
@@ -200,8 +282,6 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     calibParams = new CalibrationParameters[n_joints];
     startupMaxPWM = new int[n_joints];
 
-    startupPos = new double[nj];
-    startupVel = new double[nj];
     legacyStartupPosition.seq_num = 0;
     legacyStartupPosition.positions.resize(n_joints);
     legacyStartupPosition.velocities.resize(n_joints);
@@ -263,21 +343,44 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupPosition");
     if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of startupPosition params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) startupPos[i-1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) legacyStartupPosition.positions[i-1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupVelocity");
     if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of startupVelocity params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) startupVel[i - 1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) legacyStartupPosition.velocities[i - 1] = xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("HOME").findGroup("positionHome");
-    for (i = 1; i < xtmp.size(); i++) homePos[i-1] = xtmp.get(i).asDouble();
+    // First find new version of parking sequence. Optional right now for back compatibility
+    useLegacyParking = ! parseSequenceGroup(p, "PARKING_SEQUENCE", parkingSequence);
+
+    Bottle homeGroup = p.findGroup("HOME");
+    if(useLegacyParking)
+    {
+        if( homeGroup.isNull())
+        {
+            yError() << "Parking position not found. Either <HOME> or <PARKING_SEQUENCE> must be specified in config file";
+            return false;
+        }
+        else
+        {
+            yWarning() << "<HOME> group is deprecated in favour of <PARKING_SEQUENCE>";
+            return false;
+        }
+
+        xtmp = homeGroup.findGroup("positionHome");
         if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of PositionHome params"; return false;}
+        legacyStartupPosition.positions.resize(n_joints);
+        for (i = 1; i < xtmp.size(); i++)
+            legacyStartupPosition.positions[i-1] = xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("HOME").findGroup("velocityHome");
-    for (i = 1; i < xtmp.size(); i++) homeVel[i-1] = xtmp.get(i).asDouble();
+        xtmp = homeGroup.findGroup("velocityHome");
         if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of VelocityHome params"; return false;}
+        legacyStartupPosition.velocities.resize(n_joints);
+        for (i = 1; i < xtmp.size(); i++)
+            legacyStartupPosition.velocities[i-1] = xtmp.get(i).asDouble();
+    }
 
-    xtmp = p.findGroup("HOME").findGroup("disableHomeAndPark");
+    // this parameter may be superseded by new park sequence mechanism, probably also for startup.
+    xtmp = homeGroup.findGroup("disableHomeAndPark");
     if (xtmp.size() - 1 != n_joints) { } //this parameter is optional
     else { for (i = 1; i < xtmp.size(); i++) disableHomeAndPark[i - 1] = xtmp.get(i).asInt(); }
 
@@ -343,6 +446,7 @@ bool parametricCalibratorEth::close ()
         delete[] timeout_goToZero;
         timeout_goToZero = NULL;
     }
+
     if (timeout_calibration != NULL) {
         delete[] timeout_calibration;
         timeout_calibration = NULL;
@@ -355,24 +459,6 @@ bool parametricCalibratorEth::close ()
     if (currVel != NULL) {
         delete[] currVel;
         currVel = NULL;
-    }
-
-    if (startupPos != NULL) {
-        delete[] startupPos;
-        startupPos = NULL;
-    }
-    if (startupVel != NULL) {
-        delete[] startupVel;
-        startupVel = NULL;
-    }
-
-    if (homePos != NULL) {
-        delete[] homePos;
-        homePos = NULL;
-    }
-    if (homeVel != NULL) {
-        delete[] homeVel;
-        homeVel = NULL;
     }
 
     if (disableHomeAndPark != NULL) {
@@ -393,7 +479,6 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *device)
     yInfo() << deviceName << ": starting calibration";
     yTrace();
     abortCalib  = false; //set true in quitCalibrate function  (called on ctrl +c signal )
-
 
     if (device==0)
     {
@@ -815,9 +900,10 @@ bool parametricCalibratorEth::goToStartupPosition(int j)
     }
 
     if (abortCalib) return true;
-    yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << startupPos[j] << "desired speed: " << startupVel[j] <<" )";
-    ret = iPosition->setRefSpeed(j, startupVel[j]);
-    ret &= iPosition->positionMove(j, startupPos[j]);
+    yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << legacyStartupPosition.positions[j] << \
+                                "desired speed: " << legacyStartupPosition.velocities[j] <<" )";
+    ret = iPosition->setRefSpeed(j, legacyStartupPosition.velocities[j]);
+    ret &= iPosition->positionMove(j, legacyStartupPosition.positions[j]);
     return ret;
 }
 
@@ -853,8 +939,9 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
         iControlMode->getControlMode(j, &mode);
         iPids->getPidOutput(VOCAB_PIDTYPE_POSITION,j, &output);
         
-        delta = fabs(angj-startupPos[j]);
-        yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" ,deviceName.c_str(),j,angj, startupPos[j],delta, startupPosThreshold[j], output, yarp::os::Vocab::decode(mode).c_str());
+        delta = fabs(angj-legacyStartupPosition.positions[j]);
+        yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" , \
+               deviceName.c_str(), j, angj, legacyStartupPosition.positions[j], delta, startupPosThreshold[j], output, yarp::os::Vocab::decode(mode).c_str());
 
         if (delta < startupPosThreshold[j] && done)
         {
@@ -887,28 +974,34 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
     return finished;
 }
 
+// called by robotinterface (during interrupt action??)  // done
 bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 {
+    // parameter device driver is not used, because we already stored and got interfaces view
+    // when function 'calibration' was called.
     yTrace();
-    std::list<int>::iterator lit;  
+    std::list<int>::iterator joint;
  
-    bool allJointsCanParkSimultaneously = true;
-    for (int i = 0; i < n_joints; i++)
+    // legacy version: can be removed when legacy will not be supported anymore
+    if (useLegacyParking)
     {
-        if (disableHomeAndPark[i]) allJointsCanParkSimultaneously = false;
-    }
-    if (allJointsCanParkSimultaneously == false)
-    {
-        yWarning() << deviceName << "Joints will be parked separately, since some of them have the disableHomeAndPark flag set";
-        bool ret = true;
-        for(lit  = calibJoints.begin(); lit != calibJoints.end() && !abortCalib; lit++) //for each joint of set
-        { 
-            ret &= this->parkSingleJoint(*lit);
+        bool allJointsCanParkSimultaneously = true;
+        for (int i = 0; i < n_joints; i++)
+        {
+            if (disableHomeAndPark[i]) allJointsCanParkSimultaneously = false;
         }
-        return ret;
-    }
 
-    bool ret=false;
+        if(allJointsCanParkSimultaneously == false)
+        {
+            yWarning() << deviceName << "Joints will be parked separately, since some of them have the disableHomeAndPark flag set";
+            bool ret = true;
+            for(joint  = calibJoints.begin(); joint != calibJoints.end() && !abortCalib; joint++) //for each joint of set
+            {
+                ret &= this->parkSingleJoint(*joint);
+            }
+            return ret;
+        }
+    }
     abortParking=false;
 
     if(!isCalibrated)
@@ -924,7 +1017,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     }
 
     int * currentControlModes = new int[n_joints];
-    bool* cannotPark          = new bool [n_joints];
+    std::vector<bool> cannotPark(n_joints);
     bool res = iControlMode->getControlModes(currentControlModes);
     if(!res)
     {
@@ -970,52 +1063,118 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
         }
     }
 
-    iPosition->setRefSpeeds(homeVel);
-    iPosition->positionMove(homePos);
-    Time::delay(0.01);
-    
-    if (wait)
+    bool parkSequenceDone{false};
+    if(useLegacyParking)
     {
-        for(lit  = calibJoints.begin(); lit != calibJoints.end() && !abortCalib; lit++) //for each joint of set
+        moveAndCheck_legacy(legacyParkingPosition, cannotPark, wait);
+        // for legacy version, parkSequenceDone is always true, because there is no sequence
+        parkSequenceDone = true;
+    }
+    else
+    {
+        // call one step of parking sequence for each 'park' call
+        bool stepDone = moveAndCheck(parkingSequence.at(currentParkingSeq_step));
+
+        if(stepDone)
         {
-            int timeout = 0;
-            if (cannotPark[(*lit)] ==false)
-            {
-                yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << (*lit);
-                bool done=false;
-                iPosition->checkMotionDone((*lit), &done);
-                while ((!done) && (timeout<timeout_park[(*lit)]) && (!abortParking))
-                {
-                    Time::delay(1);
-                    timeout++;
-                    iPosition->checkMotionDone((*lit), &done);
-                }
-                if(!done)
-                {
-                    yError() << deviceName << ": joint " << (*lit) << " not in position after a timeout of" << timeout_park[(*lit)] << " seconds";
-                }
-            }
+            yDebug() << "ParametricCalibratorEth: park sequence step num " << currentParkingSeq_step << " ended with  " << \
+                                                                              (abortParking ? "failure" : "success");
         }
+        else
+            abortParking = true;
+
+        currentParkingSeq_step++;
+        // parking sequence is completed if all steps are completed, or aborted if any one goes bad.
+        // It is not safe to continue, if one parking step fails
+        if( (currentParkingSeq_step >= parkingSequence.size()) || stepDone == false)
+            parkSequenceDone = true;
     }
 
-    yDebug() << deviceName.c_str() << ": Park " << (abortParking ? "aborted" : "completed");
-    for(lit  = calibJoints.begin(); lit != calibJoints.end() && !abortCalib; lit++) //for each joint of set
+    // when parking is done (all steps of sequence where is the case), set all joints in idle
+    if(parkSequenceDone)
     {
-        switch(currentControlModes[(*lit)])
+        yDebug() << deviceName.c_str() << ": Park " << (abortParking ? "aborted" : "completed");
+        for(joint  = calibJoints.begin(); joint != calibJoints.end() && !abortCalib; joint++) //for each joint of set
         {
-            case VOCAB_CM_IDLE:
-            case VOCAB_CM_HW_FAULT:
-            case VOCAB_CM_NOT_CONFIGURED:
-            case VOCAB_CM_UNKNOWN:
-                // Do nothing.
-                break;
-            default:
+            switch(currentControlModes[(*joint)])
             {
-                iControlMode->setControlMode((*lit), VOCAB_CM_IDLE);
+                case VOCAB_CM_IDLE:
+                case VOCAB_CM_HW_FAULT:
+                case VOCAB_CM_NOT_CONFIGURED:
+                case VOCAB_CM_UNKNOWN:
+                    // Do nothing.
+                    break;
+                default:
+                {
+                    iControlMode->setControlMode((*joint), VOCAB_CM_IDLE);
+                }
             }
         }
     }
     return true;
+}
+
+bool parametricCalibratorEth::moveAndCheck(PositionSequence &data)
+{
+    iPosition->setRefSpeeds(data.velocities.data());
+    iPosition->positionMove(data.positions.data());
+
+    bool done    = false;
+    int  timeout = 0;
+    do
+    {
+        Time::delay(1);
+        timeout++;
+        iPosition->checkMotionDone(&done);
+    }
+    while((!done) && (timeout < PARK_TIMEOUT) && (!abortParking));
+
+    if(!done)
+    {
+        yError() << "ParametricCalibratorEth: parking " << deviceName << " not in position after a timeout of" << PARK_TIMEOUT << " seconds";
+    }
+
+    return done;
+}
+
+bool parametricCalibratorEth::moveAndCheck_legacy(PositionSequence &data, std::vector<bool> &cannotPark, bool wait)
+{
+    bool done=false;
+    // send references to joints that need to be parked
+    for(auto joint  = calibJoints.begin(); joint != calibJoints.end() && !abortCalib; joint++) //for each joint of set
+    {
+        if (cannotPark[(*joint)] ==false)
+        {
+            iPosition->setRefSpeed((*joint), data.velocities[(*joint)]);
+            iPosition->positionMove((*joint), data.positions[(*joint)]);
+        }
+    }
+
+    // wait for the parking to be completed
+    if (wait)
+    {
+        for(auto joint  = calibJoints.begin(); joint != calibJoints.end() && !abortCalib; joint++) //for each joint of set
+        {
+            int timeout = 0;
+            if (cannotPark[(*joint)] ==false)
+            {
+                yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << (*joint);
+                done=false;
+                iPosition->checkMotionDone((*joint), &done);
+                while ((!done) && (timeout < PARK_TIMEOUT) && (!abortParking))
+                {
+                    Time::delay(1);
+                    timeout++;
+                    iPosition->checkMotionDone((*joint), &done);
+                }
+                if(!done)
+                {
+                    yError() << deviceName << ": joint " << (*joint) << " not in position after a timeout of" << PARK_TIMEOUT << " seconds";
+                }
+            }
+        }
+    }
+    return done;
 }
 
 bool parametricCalibratorEth::quitCalibrate()
@@ -1084,18 +1243,22 @@ bool parametricCalibratorEth::homingWholePart()
 
 bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
 {
+    // check input joint number is valid
     if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
     {
         yError("%s cannot perform 'park' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
         return false;
     }
 
-    if (disableHomeAndPark[j])
+    if(useLegacyParking) // legacy version: can be removed when legacy will not be supported anymore
     {
-        yWarning() << deviceName << ": parkSingleJoint, joint " << j << " is disabled on user request";
-        return true;
+        if (disableHomeAndPark[j])
+        {
+            yWarning() << deviceName << ": parkSingleJoint, joint " << j << " is disabled on user request";
+            return true;
+        }
     }
-    int nj=0;
+
     abortParking=false;
 
     if(!isCalibrated)
@@ -1135,9 +1298,17 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
         cannotPark = true;
     }
 
-    iPosition->setRefSpeed(j, homeVel[j]);
-    iPosition->positionMove(j, homePos[j]);
-    Time::delay(0.01);
+    if(useLegacyParking) // legacy version: can be removed when legacy will not be supported anymore
+    {
+        iPosition->setRefSpeed (j, legacyStartupPosition.velocities[j]);
+        iPosition->positionMove(j, legacyStartupPosition.positions[j]);
+    }
+    else
+    {
+        // Send the position and velocities of the last sequence step
+        iPosition->setRefSpeed (j, parkingSequence.rbegin()->velocities[j]);
+        iPosition->positionMove(j, parkingSequence.rbegin()->positions[j]);
+    }
 
     if (_wait)
     {
@@ -1165,6 +1336,7 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
     return true;
 }
 
+// called from motorgui or remote devices
 bool parametricCalibratorEth::parkWholePart()
 {
     yTrace();

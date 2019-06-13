@@ -99,9 +99,15 @@ public:
 
 private:
 
+    // helper struct
+    struct PositionSequence
+    {
+        int                 seq_num{0};         // progressive number indicating sequence ID
+        std::vector<double> positions;          // vector of positions,  one for each joint
+        std::vector<double> velocities;         // vector of velocities, one for each joint
+    };
+
     bool calibrate();
-
-
     bool calibrateJoint(int j);
     bool goToStartupPosition(int j);
     bool checkCalibrateJointEnded(std::list<int> set);
@@ -126,11 +132,11 @@ private:
     double *currVel;
     double *original_max_pwm;
     double *limited_max_pwm;
-    double *startupVel;
-    double *startupPos;
-    double *homeVel;
-    double *homePos;
+
     double *startupPosThreshold;
+    PositionSequence legacyStartupPosition;     // upgraded old array to new struct; to be removed when old method will be deprecated
+    PositionSequence legacyParkingPosition;     // upgraded old array to new struct; to be removed when old method will be deprecated
+
     bool    abortCalib;
     bool    abortParking;
     std::atomic<bool>    isCalibrated;
@@ -147,5 +153,14 @@ private:
     yarp::os::Bottle    calibJointsString;      // joints handled by this caibrator as a string for error messages
     std::list<int>      calibJoints;            // joints handled by this caibrator as a list
 
+    // store the positions for a custom parking sequence
+    int  currentParkingSeq_step;
+    std::vector<PositionSequence> parkingSequence;
+    bool useLegacyParking;                    // calibrator is using new parking sequence
+    bool parseSequenceGroup(yarp::os::Searchable &config, std::string sequence, std::vector<PositionSequence> &seqList);
+    bool moveAndCheck(PositionSequence &data);
+
+    // to be removed
+    bool moveAndCheck_legacy(PositionSequence &data, std::vector<bool> &cannotPark, bool wait);
 };
 #endif
