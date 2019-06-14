@@ -52,7 +52,7 @@ bool parametricCalibratorEth::parseSequenceGroup(yarp::os::Searchable &config, s
     Bottle parkSeq_group = config.findGroup(sequence);
     if (parkSeq_group.isNull())
     {
-        yWarning() << "parametricCalibrator " << deviceName << "Missing <" << sequence << "> group";
+        // yWarning() << "parametricCalibrator " << deviceName << "Missing <" << sequence << "> group";
         return false;
     }
 
@@ -360,11 +360,12 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
             yError() << "Parking position not found. Either <HOME> or <PARKING_SEQUENCE> must be specified in config file";
             return false;
         }
-        else
+        /*
+	else
         {
             yWarning() << "<HOME> group is deprecated in favour of <PARKING_SEQUENCE>";
         }
-
+        */
         xtmp = homeGroup.findGroup("positionHome");
         if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of PositionHome params"; return false;}
         legacyStartupPosition.positions.resize(n_joints);
