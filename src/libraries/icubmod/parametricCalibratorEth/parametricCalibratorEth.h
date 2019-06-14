@@ -13,10 +13,12 @@
 #ifndef __ICUB_PARAMETRIC_CALIBRATOR__
 #define __ICUB_PARAMETRIC_CALIBRATOR__
 
-#include <string>
 #include <list>
-#include <yarp/dev/DeviceDriver.h>
+#include <string>
+#include <atomic>
+#include <vector>
 #include <yarp/os/Semaphore.h>
+#include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CalibratorInterfaces.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
@@ -97,47 +99,52 @@ public:
 
 private:
 
+    // helper struct
+    struct PositionSequence
+    {
+        int                 seq_num{0};         // progressive number indicating sequence ID
+        std::vector<double> positions;          // vector of positions,  one for each joint
+        std::vector<double> velocities;         // vector of velocities, one for each joint
+    };
+
     bool calibrate();
-
-    yarp::os::Semaphore calibMutex;
-
     bool calibrateJoint(int j);
-    bool goToZero(int j);
+    bool goToStartupPosition(int j);
     bool checkCalibrateJointEnded(std::list<int> set);
     bool checkGoneToZeroThreshold(int j);
     bool checkHwFault(int j);
 
     yarp::dev::PolyDriver *dev2calibrate;
-    IControlCalibration *iCalibrate;
-    IPidControl *iPids;
-    IEncoders *iEncoders;
-    IPositionControl *iPosition;
-    IControlMode *iControlMode;
-    IAmplifierControl *iAmp;
+    yarp::dev::IControlCalibration *iCalibrate;
+    yarp::dev::IPidControl *iPids;
+    yarp::dev::IEncoders *iEncoders;
+    yarp::dev::IPositionControl *iPosition;
+    yarp::dev::IControlMode *iControlMode;
+    yarp::dev::IAmplifierControl *iAmp;
 
     std::list<std::list<int> > joints;
 
     int n_joints;
-    CalibrationParameters* calibParams;
+
+    yarp::dev::CalibrationParameters* calibParams;
     int    *startupMaxPWM;
     double *currPos;
     double *currVel;
     double *original_max_pwm;
     double *limited_max_pwm;
-    double *startupVel;
-    double *startupPos;
-    double *homeVel;
-    double *homePos;
+
     double *startupPosThreshold;
+    PositionSequence legacyStartupPosition;     // upgraded old array to new struct; to be removed when old method will be deprecated
+    PositionSequence legacyParkingPosition;     // upgraded old array to new struct; to be removed when old method will be deprecated
+
     bool    abortCalib;
     bool    abortParking;
-    bool    isCalibrated;
+    std::atomic<bool>    isCalibrated;
     bool    skipCalibration;
     int    *disableHomeAndPark;
     int    *disableStartupPosCheck;
     bool    clearHwFault;
 
-    int    *timeout_park;
     int    *timeout_goToZero;
     int    *timeout_calibration;
 
@@ -146,5 +153,14 @@ private:
     yarp::os::Bottle    calibJointsString;      // joints handled by this caibrator as a string for error messages
     std::list<int>      calibJoints;            // joints handled by this caibrator as a list
 
+    // store the positions for a custom parking sequence
+    int  currentParkingSeq_step;
+    std::vector<PositionSequence> parkingSequence;
+    bool useLegacyParking;                    // calibrator is using new parking sequence
+    bool parseSequenceGroup(yarp::os::Searchable &config, std::string sequence, std::vector<PositionSequence> &seqList);
+    bool moveAndCheck(PositionSequence &data);
+
+    // to be removed
+    bool moveAndCheck_legacy(PositionSequence &data, std::vector<bool> &cannotPark, bool wait);
 };
 #endif
