@@ -20,7 +20,13 @@ IF (NOT SKIP_cfw2can)
     yarp_add_plugin(cfw2can Cfw2Can.cpp Cfw2Can.h)
     TARGET_LINK_LIBRARIES(cfw2can ${CFW2CANAPI_LIB} pthread ${YARP_LIBRARIES})
     icub_export_plugin(cfw2can)
-    yarp_install(FILES cfw2can.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
+          yarp_install(TARGETS cfw2can
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
   ENDIF (NOT CFW2CANAPI_FOUND)
 ENDIF (NOT SKIP_cfw2can)
 

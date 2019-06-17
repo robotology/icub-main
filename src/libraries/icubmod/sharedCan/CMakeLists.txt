@@ -15,5 +15,11 @@ IF (NOT SKIP_sharedcan)
     target_link_libraries(shcan ${YARP_LIBRARIES})
     
     icub_export_plugin(shcan)
-    yarp_install(FILES sharedcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
+  yarp_install(TARGETS shcan
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
 ENDIF (NOT SKIP_sharedcan)

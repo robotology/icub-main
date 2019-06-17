@@ -13,5 +13,11 @@ IF (NOT SKIP_fakecan)
     target_link_libraries(fcan ${YARP_LIBRARIES})
     
     icub_export_plugin(fcan)
-    yarp_install(FILES fakecan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
+  yarp_install(TARGETS fcan
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
 ENDIF (NOT SKIP_fakecan)

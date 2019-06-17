@@ -11,5 +11,11 @@ if (NOT SKIP_xsensmtx)
     yarp_add_plugin(xsensmtx MTComm.cpp  MTComm.h  XSensMTx.cpp  XSensMTx.h)
     target_link_libraries(xsensmtx ${YARP_LIBRARIES})
     icub_export_plugin(xsensmtx)
-    yarp_install(FILES xsensmtx.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
+  yarp_install(TARGETS xsensmtx
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
 endif (NOT SKIP_xsensmtx)

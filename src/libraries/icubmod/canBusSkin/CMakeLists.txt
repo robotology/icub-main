@@ -14,8 +14,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 yarp_add_plugin(canBusSkin CanBusSkin.h CanBusSkin.cpp ../skinLib/SkinConfigReader.cpp ../skinLib/SkinDiagnostics.h)
 target_link_libraries(canBusSkin ${YARP_LIBRARIES} ${ICUB_LIBRARIES})
 
-icub_export_plugin(canBusSkin)
-yarp_install(FILES canBusSkin.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+  yarp_install(TARGETS canBusSkin
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 else(ICUB_HAS_icub_firmware_shared)
   message(ERROR " canBusSkin: cannot find icub_firmware_shared library, turn off device

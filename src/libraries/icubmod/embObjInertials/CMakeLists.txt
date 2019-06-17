@@ -19,7 +19,11 @@ IF (NOT SKIP_embObjInertials)
   TARGET_LINK_LIBRARIES(embObjInertials ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
   icub_export_plugin(embObjInertials)
 
-  yarp_install(FILES embObjInertials.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+        yarp_install(TARGETS embObjInertials
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 ENDIF (NOT SKIP_embObjInertials)
 

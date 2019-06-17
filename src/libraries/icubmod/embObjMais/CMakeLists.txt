@@ -20,7 +20,11 @@ IF (NOT SKIP_embObjMais)
   TARGET_LINK_LIBRARIES(embObjMais ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
   icub_export_plugin(embObjMais)
 
-  yarp_install(FILES embObjMais.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+       yarp_install(TARGETS embObjMais
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 ENDIF (NOT SKIP_embObjMais)
 

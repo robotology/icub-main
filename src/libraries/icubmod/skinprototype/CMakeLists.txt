@@ -12,6 +12,11 @@ if (NOT SKIP_skinprototype)
     target_link_libraries(skinprototype ${YARP_LIBRARIES})
 
     icub_export_plugin(skinprototype)
-    yarp_install(FILES skinprototype.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
+  yarp_install(TARGETS skinprototype
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 endif (NOT SKIP_skinprototype)
