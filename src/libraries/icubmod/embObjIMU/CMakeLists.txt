@@ -5,7 +5,7 @@
 yarp_prepare_plugin(embObjIMU    CATEGORY device
                                  TYPE yarp::dev::embObjIMU
                                  INCLUDE embObjIMU.h
-                                 EXTRA_CONFIG WRAPPER=multipleanalogsensorsserver)
+                                 EXTRA_CONFIG WRAPPER=inertial)
 
 IF (NOT SKIP_embObjIMU)
 

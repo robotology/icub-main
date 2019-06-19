@@ -5,8 +5,7 @@
 yarp_prepare_plugin(socketcan
     CATEGORY device
     TYPE yarp::dev::SocketCan
-    INCLUDE SocketCan.h 
-    EXTRA_CONFIG WRAPPER=controlboard)
+    INCLUDE SocketCan.h )
 
 IF (NOT SKIP_socketcan)
  

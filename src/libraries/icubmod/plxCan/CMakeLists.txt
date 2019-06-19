@@ -4,8 +4,7 @@
 
 yarp_prepare_plugin(pcan TYPE yarp::dev::PlxCan
     CATEGORY device
-    INCLUDE PlxCan.h 
-    EXTRA_CONFIG WRAPPER="")
+    INCLUDE PlxCan.h )
 
 if (NOT SKIP_pcan)
   FIND_PACKAGE(PLXCANAPI)

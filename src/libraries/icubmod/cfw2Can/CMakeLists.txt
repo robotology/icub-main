@@ -5,8 +5,7 @@
 yarp_prepare_plugin(cfw2can
     CATEGORY device
     TYPE yarp::dev::Cfw2Can
-    INCLUDE Cfw2Can.h 
-    EXTRA_CONFIG WRAPPER="")
+    INCLUDE Cfw2Can.h )
 
 IF (NOT SKIP_cfw2can)
   FIND_PACKAGE(CFW2CANAPI)

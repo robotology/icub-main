@@ -5,8 +5,7 @@
 yarp_prepare_plugin(ecan
     CATEGORY device
     TYPE yarp::dev::EsdCan
-    INCLUDE EsdCan.h 
-    EXTRA_CONFIG WRAPPER=controlboard)
+    INCLUDE EsdCan.h )
 
 IF (NOT SKIP_ecan)
   FIND_PACKAGE(ESDCANAPI)

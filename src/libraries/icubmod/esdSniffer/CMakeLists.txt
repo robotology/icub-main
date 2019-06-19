@@ -5,8 +5,7 @@
 yarp_prepare_plugin(esdsniffer
     CATEGORY device
     TYPE yarp::dev::EsdMessageSniffer
-    INCLUDE EsdMessageSniffer.h 
-    EXTRA_CONFIG WRAPPER="")
+    INCLUDE EsdMessageSniffer.h )
 
 IF(NOT SKIP_esdsniffer)
 
