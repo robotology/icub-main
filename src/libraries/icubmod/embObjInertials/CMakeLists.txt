@@ -5,7 +5,7 @@
 yarp_prepare_plugin(embObjInertials CATEGORY device
                                     TYPE yarp::dev::embObjInertials
                                     INCLUDE embObjInertials.h
-                                    EXTRA_CONFIG WRAPPER=AnalogServer)
+                                    EXTRA_CONFIG WRAPPER=analogServer)
 
 IF (NOT SKIP_embObjInertials)
 

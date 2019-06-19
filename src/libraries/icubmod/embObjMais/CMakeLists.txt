@@ -5,7 +5,7 @@
 yarp_prepare_plugin(embObjMais CATEGORY device
                                TYPE yarp::dev::embObjMais
                                INCLUDE embObjMais.h
-                               EXTRA_CONFIG WRAPPER=AnalogServer)
+                               EXTRA_CONFIG WRAPPER=analogServer)
 
 IF (NOT SKIP_embObjMais)
 

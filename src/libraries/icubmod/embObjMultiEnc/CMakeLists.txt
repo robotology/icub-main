@@ -5,7 +5,7 @@
 yarp_prepare_plugin(embObjMultiEnc CATEGORY device
                                    TYPE yarp::dev::embObjMultiEnc
                                    INCLUDE embObjMultiEnc.h
-                                   EXTRA_CONFIG WRAPPER=AnalogServer)
+                                   EXTRA_CONFIG WRAPPER=analogServer)
 
 IF (NOT SKIP_embObjMultiEnc)
 

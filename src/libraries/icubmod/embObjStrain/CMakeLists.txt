@@ -5,7 +5,7 @@
 yarp_prepare_plugin(embObjStrain CATEGORY device
                                  TYPE yarp::dev::embObjStrain
                                  INCLUDE embObjStrain.h
-                                 EXTRA_CONFIG WRAPPER=AnalogServer)
+                                 EXTRA_CONFIG WRAPPER=analogServer)
 
 IF (NOT SKIP_embObjStrain)
 

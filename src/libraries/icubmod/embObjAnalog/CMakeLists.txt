@@ -5,7 +5,7 @@
 yarp_prepare_plugin(embObjAnalogSensor CATEGORY device
                                        TYPE yarp::dev::embObjAnalogSensor
                                        INCLUDE embObjAnalogSensor.h
-                                       EXTRA_CONFIG WRAPPER=AnalogServer)
+                                       EXTRA_CONFIG WRAPPER=analogServer)
 
 IF (NOT SKIP_embObjAnalogSensor)
 

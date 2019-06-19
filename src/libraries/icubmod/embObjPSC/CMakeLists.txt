@@ -5,7 +5,7 @@
 yarp_prepare_plugin(embObjPSC CATEGORY device
                                TYPE yarp::dev::embObjPSC
                                INCLUDE embObjPSC.h
-                               EXTRA_CONFIG WRAPPER=AnalogServer)
+                               EXTRA_CONFIG WRAPPER=analogServer)
 
 IF (NOT SKIP_embObjPSC)
 
