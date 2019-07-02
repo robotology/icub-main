@@ -1149,7 +1149,7 @@ public:
 
                         motorThr->deploy(command);
                         motorThr->keepFixation(command);
-                        motorThr->goUp(command,0.1);
+                        motorThr->goUp(command);
 
                         motorThr->goHome(command);
                         motorThr->setGazeIdle();
@@ -1186,7 +1186,7 @@ public:
                                 motorThr->drawNear(command);
                             else
                             {
-                                motorThr->goUp(command,0.1);
+                                motorThr->goUp(command);
                                 motorThr->setGazeIdle();
 
                                 if (!check(command,"still"))
@@ -1207,7 +1207,7 @@ public:
 
                            if (!check(command,"still"))
                            {
-                               motorThr->goUp(command,0.1);
+                               motorThr->goUp(command);
                                motorThr->goHome(command);
                            }
 
@@ -1230,7 +1230,7 @@ public:
                         visuoThr->getTarget(command.get(1),command);
                         if (motorThr->powerGrasp(command))
                         {
-                            motorThr->goUp(command,0.1);
+                            motorThr->goUp(command);
                             motorThr->setGazeIdle();
 
                             if (!check(command,"still"))
@@ -1277,7 +1277,7 @@ public:
                         if(!check(command,"still"))
                         {
                             Time::delay(2.0);
-                            motorThr->goUp(command,0.1);
+                            motorThr->goUp(command);
                             motorThr->goHome(command);
                         }
 
@@ -1304,7 +1304,7 @@ public:
                         if (!check(command,"still"))
                         {
                             motorThr->setGazeIdle();
-                            motorThr->goUp(command,0.1);
+                            motorThr->goUp(command);
                             motorThr->goHome(command);
                         }
 
