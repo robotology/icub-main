@@ -707,8 +707,7 @@ bool MotorThread::getGeneralOptions(Bottle &b)
     else
         return false;
 
-    targetInRangeThresh=b.find("target_in_range_thresh").asDouble();
-
+    go_up_distance=b.check("go_up",Value(0.1)).asDouble();
     table_height_tolerance=b.find("table_height_tolerance").asDouble();
 
     return true;
@@ -1555,7 +1554,7 @@ bool MotorThread::goUp(Bottle &options, const double h)
 
     Vector x,o;
     action[arm]->getPose(x,o);
-    x[2]+=h;
+    x[2]+=(isnan(h)?go_up_distance:h);
 
     // no need to restore context (it's done in other methods)
 

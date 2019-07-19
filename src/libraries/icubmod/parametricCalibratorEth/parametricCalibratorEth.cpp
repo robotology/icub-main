@@ -368,15 +368,15 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
         */
         xtmp = homeGroup.findGroup("positionHome");
         if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of PositionHome params"; return false;}
-        legacyStartupPosition.positions.resize(n_joints);
+        legacyParkingPosition.positions.resize(n_joints);
         for (i = 1; i < xtmp.size(); i++)
-            legacyStartupPosition.positions[i-1] = xtmp.get(i).asDouble();
+            legacyParkingPosition.positions[i-1] = xtmp.get(i).asDouble();
 
         xtmp = homeGroup.findGroup("velocityHome");
         if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of VelocityHome params"; return false;}
-        legacyStartupPosition.velocities.resize(n_joints);
+        legacyParkingPosition.velocities.resize(n_joints);
         for (i = 1; i < xtmp.size(); i++)
-            legacyStartupPosition.velocities[i-1] = xtmp.get(i).asDouble();
+            legacyParkingPosition.velocities[i-1] = xtmp.get(i).asDouble();
     }
 
     // this parameter may be superseded by new park sequence mechanism, probably also for startup.

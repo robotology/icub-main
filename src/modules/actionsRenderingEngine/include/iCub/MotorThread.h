@@ -32,6 +32,7 @@
 
 
 #include <vector>
+#include <limits>
 
 #include <iCub/utils.h>
 
@@ -154,7 +155,6 @@ private:
     Vector                              reachAboveDisp;
     Vector                              graspAboveRelief;
     Vector                              pushAboveRelief;
-    double                              targetInRangeThresh;
     double                              extForceThresh[2];
     double                              default_exec_time;
     double                              reachingTimeout;
@@ -195,6 +195,7 @@ private:
     Vector                              defaultKinematicOffset[2];
     Vector                              currentKinematicOffset[2];
     Vector                              table;
+    double                              go_up_distance;
     double                              table_height;
     double                              table_height_tolerance;
 
@@ -381,7 +382,7 @@ public:
     bool targetToCartesian(Bottle *target, Vector &xd);
 
     // basic commands
-    bool goUp(Bottle &options, const double h);
+    bool goUp(Bottle &options, const double h=std::numeric_limits<double>::quiet_NaN());
     bool goHome(Bottle &options);
     bool reach(Bottle &options);
     bool powerGrasp(Bottle &options);
@@ -406,7 +407,6 @@ public:
 
     //tool functions
     bool takeTool(Bottle &options);
-
 
     bool getHandImagePosition(Bottle &hand_image_pos);
     bool isHolding(const Bottle &options);

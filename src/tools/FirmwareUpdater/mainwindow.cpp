@@ -936,11 +936,12 @@ void MainWindow::onDeviceSelectionChanged()
                     if(ui->devicesTree->currentItem()->parent()->child(i)->isSelected() &&
                             ui->devicesTree->currentItem()->parent()->child(i)->data(0,EMPTY_NODE).toBool() == false){
                         //int boardNum = 0;
+                         int boardNum =  ui->devicesTree->currentItem()->parent()->child(i)->data(0,INDEX_OF_BOARD).toInt();
 
                         sBoard canBoard;
                         if(3 == level)
                         {
-                            canBoard = ((EthTreeWidgetItem*)ui->devicesTree->currentItem()->parent())->getCanBoard(i);
+                            canBoard = ((EthTreeWidgetItem*)ui->devicesTree->currentItem()->parent())->getCanBoard(boardNum);
                         }
                         else
                         {   // on cfw2 or others
