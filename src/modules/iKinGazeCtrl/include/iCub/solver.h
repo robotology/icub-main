@@ -33,14 +33,14 @@
 #include <iCub/localizer.h>
 #include <iCub/controller.h>
 
-#define EYEPINVREFGEN_GAIN                  12.5    // [-]
-#define SACCADES_VEL                        1000.0  // [deg/s]
-#define SACCADES_INHIBITION_PERIOD          0.2     // [s]
-#define SACCADES_ACTIVATION_ANGLE           10.0    // [deg]
-#define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
-#define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.5     // [deg/s]
-#define NECKSOLVER_ACTIVATIONANGLE          2.5     // [deg]
-#define NECKSOLVER_RESTORINGANGLE           5.0     // [deg]
+constexpr double EYEPINVREFGEN_GAIN                 = 12.5;    // [-]
+constexpr double SACCADES_VEL                       = 1000.0;  // [deg/s]
+constexpr double SACCADES_INHIBITION_PERIOD         = 0.2;     // [s]
+constexpr double SACCADES_ACTIVATION_ANGLE          = 10.0;    // [deg]
+constexpr double NECKSOLVER_ACTIVATIONDELAY         = 0.25;    // [s]
+constexpr double NECKSOLVER_ACTIVATIONANGLE_JOINTS  = 0.5;     // [deg/s]
+constexpr double NECKSOLVER_ACTIVATIONANGLE         = 2.5;     // [deg]
+constexpr double NECKSOLVER_RESTORINGANGLE          = 5.0;     // [deg]
 
 using namespace std;
 using namespace yarp::os;
