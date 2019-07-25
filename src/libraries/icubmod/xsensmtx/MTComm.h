@@ -90,6 +90,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #ifdef WIN32
 #include <windows.h>
 #include <conio.h>
@@ -99,7 +100,6 @@
 #include <unistd.h>		/* Read function */
 #include <sys/time.h>	/* gettimeofday function */
 #include <sys/stat.h>   /* fstat function */
-#include <time.h>
 #endif
 
 #ifndef	INVALID_SET_FILE_POINTER
