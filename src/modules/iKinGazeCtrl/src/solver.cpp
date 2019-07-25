@@ -71,7 +71,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     eyesHalfBaseline=0.5*norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
     
     // read number of joints
-    if (drvTorso!=NULL)
+    if (drvTorso!=nullptr)
     {
         IEncoders *encTorso; drvTorso->view(encTorso);
         encTorso->getAxes(&nJointsTorso);
@@ -498,7 +498,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
     }
 
     // read number of joints
-    if (drvTorso!=NULL)
+    if (drvTorso!=nullptr)
     {
         IEncoders *encTorso; drvTorso->view(encTorso);
         encTorso->getAxes(&nJointsTorso);

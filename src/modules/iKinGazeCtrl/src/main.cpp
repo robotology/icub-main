@@ -633,12 +633,12 @@ protected:
     PolyDriver *waitPart(const Property &partOpt, const double ping_robot_tmo)
     {
         string partName=partOpt.find("part").asString();
-        PolyDriver *pDrv=NULL;
+        PolyDriver *pDrv=nullptr;
 
         double t0=Time::now();
         while (Time::now()-t0<ping_robot_tmo)
         {
-            if (pDrv!=NULL)
+            if (pDrv!=nullptr)
                 delete pDrv;
 
             pDrv=new PolyDriver(const_cast<Property&>(partOpt));
@@ -693,7 +693,7 @@ protected:
         // localizer part
         loc->getPidOptions(context.pidOptions);
 
-        if (id!=NULL)
+        if (id!=nullptr)
             *id=contextIdCnt++;
     }
 
@@ -735,7 +735,7 @@ protected:
     /************************************************************************/
     bool deleteContexts(Bottle *contextIdList)
     {
-        if (contextIdList!=NULL)
+        if (contextIdList!=nullptr)
         {
             LockGuard lg(mutexContext);
             for (int i=0; i<contextIdList->size(); i++)
@@ -1085,12 +1085,12 @@ public:
     /************************************************************************/
     GazeModule()
     {
-        loc=NULL;
-        eyesRefGen=NULL;
-        slv=NULL;
-        ctrl=NULL;
-        drvTorso=NULL;
-        drvHead=NULL;
+        loc=nullptr;
+        eyesRefGen=nullptr;
+        slv=nullptr;
+        ctrl=nullptr;
+        drvTorso=nullptr;
+        drvHead=nullptr;
 
         interrupting=false;
         doSaveTweakFile=false;
@@ -1157,7 +1157,7 @@ public:
             commData.rf_cameras.setDefaultContext(camerasGroup.find("context").asString()):
             commData.rf_cameras.setDefaultContext(rf.getContext());
             commData.rf_cameras.setDefaultConfigFile(camerasGroup.find("file").asString().c_str());
-            commData.rf_cameras.configure(0,NULL);
+            commData.rf_cameras.configure(0,nullptr);
         }
 
         commData.rf_tweak.setQuiet();
@@ -1165,7 +1165,7 @@ public:
         commData.tweakFile=tweakGroup.check("file",Value("tweak.ini")).asString();
         commData.tweakOverwrite=(tweakGroup.check("overwrite",Value("on")).asString()=="on");
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
-        commData.rf_tweak.configure(0,NULL);
+        commData.rf_tweak.configure(0,nullptr);
 
         yInfo("Controller configured for head version %g",commData.head_version);
 
@@ -1205,13 +1205,13 @@ public:
                 yWarning("Perhaps only the head is running; trying to continue ...");
 
                 delete drvTorso;
-                drvTorso=NULL;
+                drvTorso=nullptr;
             }
         }
         else
         {
             yWarning("Torso device is off!");
-            drvTorso=NULL;
+            drvTorso=nullptr;
         }
 
         drvHead=(ping_robot_tmo>0.0)?
@@ -2050,25 +2050,25 @@ public:
     /************************************************************************/
     void dispose()
     {
-        if (loc!=NULL)
+        if (loc!=nullptr)
             loc->stop();
 
-        if (eyesRefGen!=NULL)
+        if (eyesRefGen!=nullptr)
             eyesRefGen->stop();
 
-        if (slv!=NULL)
+        if (slv!=nullptr)
             slv->stop();
 
-        if (ctrl!=NULL)
+        if (ctrl!=nullptr)
             ctrl->stop();
 
-        if (drvTorso!=NULL)
+        if (drvTorso!=nullptr)
             drvTorso->close();
 
-        if (drvHead!=NULL)
+        if (drvHead!=nullptr)
             drvHead->close();
 
-        if (commData.port_xd!=NULL)
+        if (commData.port_xd!=nullptr)
             if (!commData.port_xd->isClosed())
                 commData.port_xd->close();
 
@@ -2095,7 +2095,7 @@ public:
     {
         interrupting=true;
 
-        if (commData.port_xd!=NULL)
+        if (commData.port_xd!=nullptr)
             commData.port_xd->interrupt();
 
         imuPort.interrupt();

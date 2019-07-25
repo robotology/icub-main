@@ -64,7 +64,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     }
 
     // read number of joints
-    if (drvTorso!=NULL)
+    if (drvTorso!=nullptr)
     {
         IEncoders *encTorso; drvTorso->view(encTorso);
         encTorso->getAxes(&nJointsTorso);

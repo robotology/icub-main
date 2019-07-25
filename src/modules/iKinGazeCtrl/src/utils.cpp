@@ -141,7 +141,7 @@ void xdPort::run()
 ExchangeData::ExchangeData()
 {
     imu.resize(12,0.0);
-    port_xd=NULL;
+    port_xd=nullptr;
 
     ctrlActive=false;
     trackingModeOn=false;
@@ -371,7 +371,7 @@ string ExchangeData::headVersion2String()
 
 
 /************************************************************************/
-IMUPort::IMUPort() : commData(NULL)
+IMUPort::IMUPort() : commData(nullptr)
 {
     useCallback();
 }
@@ -387,7 +387,7 @@ void IMUPort::setExchangeData(ExchangeData *commData)
 /************************************************************************/
 void IMUPort::onRead(Vector &imu)
 {
-    if (commData!=NULL)
+    if (commData!=nullptr)
         commData->set_imu(imu);
 }
 
@@ -433,7 +433,7 @@ bool getCamParams(const ResourceFinder &rf, const string &type,
                   Matrix **Prj, int &w, int &h, const bool verbose)
 {
     ResourceFinder &_rf=const_cast<ResourceFinder&>(rf);
-    *Prj=NULL;
+    *Prj=nullptr;
 
     if (!_rf.isConfigured())
         return false;
@@ -492,7 +492,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
                 iKinChain *chain, const bool verbose)
 {
     ResourceFinder &_rf=const_cast<ResourceFinder&>(rf);
-    if ((chain!=NULL) && _rf.isConfigured())
+    if ((chain!=nullptr) && _rf.isConfigured())
     {
         string message=_rf.findFile("from");
         if (!message.empty())
@@ -554,7 +554,7 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
     double min, max;
     int nJointsTorso=3;    
 
-    if (drvTorso!=NULL)
+    if (drvTorso!=nullptr)
     {
         drvTorso->view(encs);
         drvTorso->view(lims);        
@@ -660,7 +660,7 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
     Vector stamps(nJointsTorso+nJointsHead,0.0);
     bool ret=true;
     
-    if (drvTorso!=NULL)
+    if (drvTorso!=nullptr)
     {
         drvTorso->view(encs);
         if (encs->getEncodersTimed(fb.data(),stamps.data()))
@@ -684,11 +684,11 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
         ret=false;
     
     // impose vergence != 0.0
-    if (commData!=NULL)
+    if (commData!=nullptr)
         fbHead[nJointsHead-1]=std::max(fbHead[nJointsHead-1],commData->minAllowedVergence);
     
     // retrieve the highest encoders time stamp
-    if (timeStamp!=NULL)
+    if (timeStamp!=nullptr)
         *timeStamp=findMax(stamps);
 
     return ret;
