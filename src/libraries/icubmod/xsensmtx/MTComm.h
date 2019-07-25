@@ -90,10 +90,10 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #ifdef WIN32
 #include <windows.h>
 #include <conio.h>
-#include <time.h>
 #else
 #include <fcntl.h>     	/* POSIX Standard: 6.5 File Control Operations     */
 #include <termios.h>   	/* terminal i/o system, talks to /dev/tty* ports  */
