@@ -24,15 +24,15 @@
 #include <iCub/utils.h>
 #include <iCub/solver.h>
 
-#define MUTEX_XD            0
-#define MUTEX_QD            1
-#define MUTEX_X             2
-#define MUTEX_Q             3
-#define MUTEX_TORSO         4
-#define MUTEX_V             5
-#define MUTEX_COUNTERV      6
-#define MUTEX_FPFRAME       7
-#define MUTEX_IMU           8
+constexpr int32_t MUTEX_XD       = 0;
+constexpr int32_t MUTEX_QD       = 1;
+constexpr int32_t MUTEX_X        = 2;
+constexpr int32_t MUTEX_Q        = 3;
+constexpr int32_t MUTEX_TORSO    = 4;
+constexpr int32_t MUTEX_V        = 5;
+constexpr int32_t MUTEX_COUNTERV = 6;
+constexpr int32_t MUTEX_FPFRAME  = 7;
+constexpr int32_t MUTEX_IMU      = 8;
 
 
 /************************************************************************/
