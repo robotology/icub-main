@@ -84,7 +84,7 @@ Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
         invPrjL=new Matrix(pinv(PrjL->transposed()).transposed());
     }
     else
-        PrjL=invPrjL=NULL;
+        PrjL=invPrjL=nullptr;
 
     // get camera projection matrix
     ret=getCamParams(commData->rf_cameras,"CAMERA_CALIBRATION_RIGHT",&PrjR,widthR,heightR,true);
@@ -105,7 +105,7 @@ Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
         invPrjR=new Matrix(pinv(PrjR->transposed()).transposed());
     }
     else
-        PrjR=invPrjR=NULL;
+        PrjR=invPrjR=nullptr;
 
     Vector Kp(1,0.001), Ki(1,0.001), Kd(1,0.0);
     Vector Wp(1,1.0),   Wi(1,1.0),   Wd(1,1.0);
@@ -130,13 +130,13 @@ Localizer::~Localizer()
     delete eyeR;
     delete pid;
 
-    if (PrjL!=NULL)
+    if (PrjL!=nullptr)
     {
         delete PrjL;
         delete invPrjL;
     }
 
-    if (PrjR!=NULL)
+    if (PrjR!=nullptr)
     {
         delete PrjR;
         delete invPrjR;
@@ -307,7 +307,7 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
     Matrix  *Prj=(isLeft?PrjL:PrjR);
     iCubEye *eye=(isLeft?eyeL:eyeR);
 
-    if (Prj!=NULL)
+    if (Prj!=nullptr)
     {
         Vector torso=commData->get_torso();
         Vector head=commData->get_q();
@@ -359,7 +359,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
     Matrix  *invPrj=(isLeft?invPrjL:invPrjR);
     iCubEye *eye=(isLeft?eyeL:eyeR);
 
-    if (invPrj!=NULL)
+    if (invPrj!=nullptr)
     {
         Vector torso=commData->get_torso();
         Vector head=commData->get_q();
@@ -563,7 +563,7 @@ void Localizer::handleStereoInput()
 {
     if (Bottle *stereo=port_stereo.read(false))
     {
-        if ((PrjL!=NULL) || (PrjR!=NULL))
+        if ((PrjL!=nullptr) || (PrjR!=nullptr))
         {
             if (stereo->size()>=4)
             {
@@ -652,7 +652,7 @@ bool Localizer::getIntrinsicsMatrix(const string &type, Matrix &M,
 {
     if (type=="left")
     {
-        if (PrjL!=NULL)
+        if (PrjL!=nullptr)
         {
             M=*PrjL;
             w=widthL;
@@ -664,7 +664,7 @@ bool Localizer::getIntrinsicsMatrix(const string &type, Matrix &M,
     }
     else if (type=="right")
     {
-        if (PrjR!=NULL)
+        if (PrjR!=nullptr)
         {
             M=*PrjR;
             w=widthR;
@@ -685,7 +685,7 @@ bool Localizer::setIntrinsicsMatrix(const string &type, const Matrix &M,
 {
     if (type=="left")
     {
-        if (PrjL!=NULL)
+        if (PrjL!=nullptr)
         {
             *PrjL=M;
             *invPrjL=pinv(M.transposed()).transposed();
@@ -703,7 +703,7 @@ bool Localizer::setIntrinsicsMatrix(const string &type, const Matrix &M,
     }
     else if (type=="right")
     {
-        if (PrjR!=NULL)
+        if (PrjR!=nullptr)
         {
             *PrjR=M;
             *invPrjR=pinv(M.transposed()).transposed();

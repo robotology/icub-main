@@ -175,8 +175,8 @@ public:
 class GazeComponent
 {
 protected:
-    iCubEye *eyeL;
-    iCubEye *eyeR;
+    iCubEye *eyeL{nullptr};
+    iCubEye *eyeR{nullptr};
 
 public:
     virtual bool getExtrinsicsMatrix(const string &type, Matrix &M);
@@ -226,7 +226,7 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck);
 // Returns true if communication with robot is stable, false otherwise.
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
                  PolyDriver *drvHead, const ExchangeData *commData,
-                 double *timeStamp=NULL);
+                 double *timeStamp = nullptr);
 
 #endif
 
