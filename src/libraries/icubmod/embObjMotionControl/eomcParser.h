@@ -40,11 +40,6 @@
 #include <yarp/os/LogStream.h>
 
 
-
-
-
-
-
 // - public #define  --------------------------------------------------------------------------------------------------
 
 
@@ -53,22 +48,34 @@ namespace yarp {
         namespace eomc {
 
 
-typedef enum
-{
-    PidAlgo_simple = 0,
-    PIdAlgo_velocityInnerLoop = 1,
-    PidAlgo_currentInnerLoop =2
-} PidAlgorithmType_t;
+//typedef enum
+//{
+//    PidAlgo_simple = 0,
+//    PIdAlgo_velocityInnerLoop = 1,
+//    PidAlgo_currentInnerLoop =2
+//} PidAlgorithmType_t;
 
 
 class Pid_Algorithm
 {
 public:
-    PidAlgorithmType_t type;
+    //PidAlgorithmType_t type;
+
     yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
     yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    virtual ~Pid_Algorithm() {;};
+    eOmc_ctrl_out_type_t out_type;
 
+    virtual ~Pid_Algorithm(){}
+
+    eOmc_ctrl_out_type_t getOutputType() { return out_type; }
+
+    void setUnits(yarp::dev::PidFeedbackUnitsEnum fu, yarp::dev::PidOutputUnitsEnum ou)
+    {
+        fbk_PidUnits = fu;
+        out_PidUnits = ou;
+    }
+
+    virtual yarp::dev::Pid getPID(int joint) = 0;
 };
 
 
@@ -76,29 +83,35 @@ class Pid_Algorithm_simple: public Pid_Algorithm
 {
 public:
     yarp::dev::Pid *pid;
-    Pid_Algorithm_simple(int nj)
+    
+    Pid_Algorithm_simple(int nj, eOmc_ctrl_out_type_t ot)
     {
+        out_type = ot;
+
         pid = new yarp::dev::Pid[nj];
     };
+
     ~Pid_Algorithm_simple()
     {
-        if(pid)
-        {
-            delete[]pid;
-        }
+        if (pid) delete[] pid;
     };
 
+    yarp::dev::Pid getPID(int joint) override
+    {
+        return pid[joint];
+    }
 };
 
+/*
 class PidAlgorithm_VelocityInnerLoop: public Pid_Algorithm
 {
 public:
     yarp::dev::Pid *extPid; //pos, trq, velocity
-    yarp::dev::Pid *innerVelPid;
+    //yarp::dev::Pid *innerVelPid;
     PidAlgorithm_VelocityInnerLoop(int nj)
     {
         extPid = new yarp::dev::Pid[nj];
-        innerVelPid = new yarp::dev::Pid[nj];
+        //innerVelPid = new yarp::dev::Pid[nj];
     };
     ~PidAlgorithm_VelocityInnerLoop()
     {
@@ -106,30 +119,41 @@ public:
         {
             delete[]extPid;
         }
-         if(innerVelPid)
-        {
-            delete[]innerVelPid;
-        }
+        //if(innerVelPid)
+        //{
+        //    delete[]innerVelPid;
+        //}
+    }
+
+    eOmc_ctrl_out_type_t getOutputType() override
+    {
+        return eomc_ctrl_out_type_vel;
     }
 };
 
 
-// class PidAlgorithm_CurrentInnerLoop: public Pid_Algorithm
-// {
-// public:
-//     yarp::dev::Pid *extPid;
-//     yarp::dev::Pid *innerCurrLoop;
-//     PidAlgorithm_CurrentInnerLoop(int nj)
-//     {
-//         extPid = allocAndCheck<yarp::dev::Pid>(nj);
-//         innerCurrLoop = allocAndCheck<yarp::dev::Pid>(nj);
-//     };
-//     ~PidAlgorithm_CurrentInnerLoop()
-//     {
-//         checkAndDestroy(extPid);
-//         checkAndDestroy(innerCurrLoop);
-//     }
-// };
+class PidAlgorithm_CurrentInnerLoop: public Pid_Algorithm
+{
+    public:
+    yarp::dev::Pid *extPid;
+    yarp::dev::Pid *innerCurrLoop;
+    PidAlgorithm_CurrentInnerLoop(int nj)
+    {
+        extPid = allocAndCheck<yarp::dev::Pid>(nj);
+        innerCurrLoop = allocAndCheck<yarp::dev::Pid>(nj);
+    };
+    ~PidAlgorithm_CurrentInnerLoop()
+    {
+        checkAndDestroy(extPid);
+        checkAndDestroy(innerCurrLoop);
+    }
+
+    eOmc_ctrl_out_type_t getOutputType() override
+    {
+        return eomc_ctrl_out_type_cur;
+    }
+};
+*/
 
 class PidInfo
 {
@@ -138,14 +162,19 @@ public:
     yarp::dev::Pid pid;
     yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
     yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    PidAlgorithmType_t controlLaw;
+    eOmc_ctrl_out_type_t            out_type;
+
+    //PidAlgorithmType_t controlLaw;
+
     std::string usernamePidSelected;
     bool enabled;
 
     PidInfo()//:usernamePidSelected("none")
     {
         enabled = false;
-        controlLaw = PidAlgo_simple;
+        //controlLaw = PidAlgo_simple;
+        
+        out_type = eomc_ctrl_out_type_n_a;
         fbk_PidUnits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
         out_PidUnits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
     }
@@ -154,7 +183,7 @@ public:
         //delete (usernamePidSelected);
     }
 
-    void dumpdata(void);
+    //void dumpdata(void);
 
 };
 
@@ -283,14 +312,21 @@ private:
     std::string _boardname;
     bool _verbosewhenok;
 
-    std::map<std::string, Pid_Algorithm*> posAlgoMap;
-    std::map<std::string, Pid_Algorithm*> velAlgoMap;
-    std::map<std::string, Pid_Algorithm*> trqAlgoMap;
+    std::map<std::string, Pid_Algorithm*> minjerkAlgoMap;
+    //std::map<std::string, Pid_Algorithm*> directAlgoMap;
+    std::map<std::string, Pid_Algorithm*> torqueAlgoMap;
 
-    std::vector<std::string> _posistionControlLaw;
+    //std::map<std::string, Pid_Algorithm*> currentAlgoMap;
+    //std::map<std::string, Pid_Algorithm*> speedAlgoMap;
+
+    std::vector<std::string> _positionControlLaw;
     std::vector<std::string> _velocityControlLaw;
+    std::vector<std::string> _mixedControlLaw;
+    //std::vector<std::string> _posDirectControlLaw;
+    //std::vector<std::string> _velDirectControlLaw;
     std::vector<std::string> _torqueControlLaw;
     std::vector<std::string> _currentControlLaw;
+    std::vector<std::string> _speedControlLaw;
 
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
@@ -302,17 +338,36 @@ private:
 
     //PID parsing functions
     bool parseControlsGroup(yarp::os::Searchable &config);
+
     bool parseSelectedPositionControl(yarp::os::Searchable &config);
     bool parseSelectedVelocityControl(yarp::os::Searchable &config);
+    bool parseSelectedMixedControl(yarp::os::Searchable &config);
+    //bool parseSelectedPosDirectControl(yarp::os::Searchable &config);
+    //bool parseSelectedVelDirectControl(yarp::os::Searchable &config);
     bool parseSelectedTorqueControl(yarp::os::Searchable &config);
-    bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentPidisMandatory, PidInfo *cpids);
-    bool parsePid_inPos_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
-    bool parsePid_inVel_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
-    bool parsePid_inTrq_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
-    bool parsePidPos_withInnerVelPid(yarp::os::Bottle &b_pid, std::string controlLaw);
-    bool parsePidTrq_withInnerVelPid(yarp::os::Bottle &b_pid, std::string controlLaw);
+    
+    bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids);
+    bool parseSelectedSpeedPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids);
+
+    bool parsePid_minJerk_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePid_minJerk_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePid_minJerk_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
+
+    //bool parsePid_direct_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
+    //bool parsePid_direct_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
+    //bool parsePid_direct_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
+
+    bool parsePid_torque_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePid_torque_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePid_torque_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
+
+    bool parsePidsGroup2FOC(yarp::os::Bottle& pidsGroup, Pid myPid[]);
+    bool parsePidsGroupSimple(yarp::os::Bottle& pidsGroup, Pid myPid[]);
+    bool parsePidsGroupExtended(yarp::os::Bottle& pidsGroup, Pid myPid[]);
+    bool parsePidsGroupDeluxe(yarp::os::Bottle& pidsGroup, Pid myPid[]);
+
     bool parsePidsGroup(yarp::os::Bottle& pidsGroup, yarp::dev::Pid myPid[], std::string prefix);
-    bool getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids);
+    bool getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids);
     bool parsePidUnitsType(yarp::os::Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
 
 
@@ -324,7 +379,7 @@ private:
     template <class T>
     bool checkAndSetVectorSize(std::vector<T> &vec, int size, const std::string &funcName)
     {
-         if(size > vec.capacity())
+        if(size > (int)vec.capacity())
         {
             yError() << "embObjMC BOARD " << _boardname << " in " <<  funcName.c_str() << ": try to insert " << size << "element in vector with " << vec.capacity() << " elements";
             return false;
@@ -342,7 +397,7 @@ public:
     Parser(int numofjoints, std::string boardname);
     ~Parser();
 
-    bool parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids, PidInfo *cpids, bool currentPidisMandatory);
+    bool parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory);
     bool parse2FocGroup(yarp::os::Searchable &config, twofocSpecificInfo_t *twofocinfo);
     //bool parseCurrentPid(yarp::os::Searchable &config, PidInfo *cpids);//deprecated
     bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &jointtoset);

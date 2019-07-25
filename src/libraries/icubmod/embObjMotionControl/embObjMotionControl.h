@@ -176,7 +176,7 @@ private:
     eth::AbstractEthResource*  res;
     ServiceParser*             parser;
     eomc::Parser *             _mcparser;
-    ControlBoardHelper*       _measureConverter;
+    ControlBoardHelper*        _measureConverter;
     yarp::os::Semaphore        _mutex;
     
     bool opened; //internal state
@@ -207,10 +207,11 @@ private:
     eomc::impedanceLimits_t *               _impedance_limits;  /** impedancel imits */
 
 
-    eomc::PidInfo    *                      _ppids;
-    eomc::PidInfo    *                      _vpids;
-    eomc::TrqPidInfo *                      _tpids;
-    eomc::PidInfo    *                      _cpids;
+    eomc::PidInfo    *                      _trj_pids;
+    //eomc::PidInfo    *                      _dir_pids;
+    eomc::TrqPidInfo *                      _trq_pids;
+    eomc::PidInfo    *                      _cur_pids;
+    eomc::PidInfo    *                      _spd_pids;
 
     int *                                   _axisMap;   /** axies map*/
     std::vector<eomc::axisInfo_t>           _axesInfo;
@@ -316,6 +317,10 @@ private:
     bool helper_getCurPidRaw(int j, Pid *pid);
     bool helper_getCurPidsRaw(Pid *pid);
     
+    //used in low level speed control interface
+    bool helper_setSpdPidRaw(int j, const Pid &pid);
+    bool helper_getSpdPidRaw(int j, Pid *pid);
+    bool helper_getSpdPidsRaw(Pid *pid);
     
 public:
 
