@@ -93,13 +93,13 @@
 #ifdef WIN32
 #include <windows.h>
 #include <conio.h>
-#include <time.h>
 #else
 #include <fcntl.h>     	/* POSIX Standard: 6.5 File Control Operations     */
 #include <termios.h>   	/* terminal i/o system, talks to /dev/tty* ports  */
 #include <unistd.h>		/* Read function */
 #include <sys/time.h>	/* gettimeofday function */
 #include <sys/stat.h>   /* fstat function */
+#include <time.h>
 #endif
 
 #ifndef	INVALID_SET_FILE_POINTER
