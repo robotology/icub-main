@@ -820,12 +820,12 @@ void Controller::run()
     double dist=norm(qd-q0);
     pathPerc=(dist>IKIN_ALMOST_ZERO)?norm(fbHead-q0)/dist:1.0;
     pathPerc=sat(pathPerc,0.0,1.0);
-    
+
     if (commData->ctrlActive)
     {
         // control
         vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
-        
+
         if (unplugCtrlEyes)
         {
             if (Time::now()-saccadeStartTime>=Ts)
@@ -837,23 +837,27 @@ void Controller::run()
         // stabilization
         if (commData->stabilizationOn)
         {
-            Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
-            Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros((int)fbNeck.length()),gyro,x);
-            Vector imuNeck=computeNeckVelFromdxFP(x,dx);
+            auto resGyro =commData->get_gyro();
+            Vector gyro{resGyro.first};
+            bool statusGyro = resGyro.second;
 
-            if (reliableGyro)
-            {
-                vNeck=commData->stabilizationGain*IntStabilizer->integrate(vNeck-imuNeck);
+            if (statusGyro) {
+                Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros((int)fbNeck.length()),gyro,x);
+                Vector imuNeck=computeNeckVelFromdxFP(x,dx);
+                if (reliableGyro)
+                {
+                    vNeck=commData->stabilizationGain*IntStabilizer->integrate(vNeck-imuNeck);
 
-                // only if the speed is low and we are close to the target
-                if ((norm(vNeck)<commData->gyro_noise_threshold) && (pathPerc>0.9))
-                    reliableGyro=false;
-            }
-            // hysteresis
-            else if ((norm(imuNeck)>1.5*commData->gyro_noise_threshold) || (pathPerc<0.9))
-            {
-                IntStabilizer->reset(zeros((int)vNeck.length()));
-                reliableGyro=true;
+                    // only if the speed is low and we are close to the target
+                    if ((norm(vNeck)<commData->gyro_noise_threshold) && (pathPerc>0.9))
+                        reliableGyro=false;
+                }
+                // hysteresis
+                else if ((norm(imuNeck)>1.5*commData->gyro_noise_threshold) || (pathPerc<0.9))
+                {
+                    IntStabilizer->reset(zeros((int)vNeck.length()));
+                    reliableGyro=true;
+                }
             }
         }
 
@@ -861,13 +865,16 @@ void Controller::run()
     }
     else if (stabilizeGaze)
     {
-        Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
-        Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros((int)fbNeck.length()),gyro,x);
-        Vector imuNeck=computeNeckVelFromdxFP(x,dx);
+        auto resGyro =commData->get_gyro();
+        Vector gyro{resGyro.first};
+        bool statusGyro  = resGyro.second;
+        if (statusGyro) {
+            Vector dx = computedxFP(imu->getH(cat(fbTorso, fbNeck)), zeros((int) fbNeck.length()), gyro, x);
+            Vector imuNeck = computeNeckVelFromdxFP(x, dx);
 
-        vNeck=commData->stabilizationGain*IntStabilizer->integrate(-1.0*imuNeck);
-        vEyes=computeEyesVelFromdxFP(dx);
-
+            vNeck = commData->stabilizationGain * IntStabilizer->integrate(-1.0 * imuNeck);
+            vEyes = computeEyesVelFromdxFP(dx);
+        }
         IntPlan->integrate(vNeck);
     }
     else 
@@ -1159,7 +1166,7 @@ bool Controller::unregisterMotionOngoingEvent(const double checkPoint)
     bool ret=false;
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
-        multiset<double>::iterator itr=motionOngoingEvents.find(checkPoint);
+        auto itr=motionOngoingEvents.find(checkPoint);
         if (itr!=motionOngoingEvents.end())
         {
             motionOngoingEvents.erase(itr);

@@ -243,7 +243,7 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
     H(2,3)=fp[2]-H(2,3);
 
     // gyro rate [rad/s]
-    Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
+    Vector gyro{commData->get_gyro().first};
 
     // filter out the noise on the gyro readouts
     if (norm(gyro)<commData->gyro_noise_threshold)
@@ -829,7 +829,7 @@ void Solver::run()
         Vector gDir(3,0.0); gDir[2]=-1.0;
         if (commData->stabilizationOn)
         {
-            Vector acc=-1.0*commData->get_imu().subVector(3,5);
+            Vector acc=-1.0*commData->get_accel().first;
             Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)));
             gDir=H.submatrix(0,2,0,2)*acc;
         }
