@@ -568,6 +568,7 @@ Windows, Linux
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 #include <yarp/dev/all.h>
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 
 #include <iCub/localizer.h>
 #include <iCub/solver.h>
@@ -591,11 +592,15 @@ protected:
     Solver         *slv;
     Controller     *ctrl;
     PolyDriver     *drvTorso, *drvHead;
+    PolyDriver      mas_client;
     ExchangeData    commData;
     bool            interrupting;
     bool            doSaveTweakFile;
     Mutex           mutexContext;
     Mutex           mutexTweak;
+
+    IThreeAxisGyroscopes* iGyro;
+    IThreeAxisLinearAccelerometers* iAccel;
 
     IMUPort   imuPort;
     RpcServer rpcPort;
@@ -638,9 +643,7 @@ protected:
         double t0=Time::now();
         while (Time::now()-t0<ping_robot_tmo)
         {
-            if (pDrv!=nullptr)
-                delete pDrv;
-
+            delete pDrv;
             pDrv=new PolyDriver(const_cast<Property&>(partOpt));
             bool ok=pDrv->isValid();
 
@@ -701,7 +704,7 @@ protected:
     bool restoreContext(const int id)
     {
         LockGuard lg(mutexContext);
-        map<int,Context>::iterator itr=contextMap.find(id);
+        auto itr=contextMap.find(id);
         if (itr!=contextMap.end())
         {
             Context &context=itr->second;
@@ -741,7 +744,7 @@ protected:
             for (int i=0; i<contextIdList->size(); i++)
             {
                 int id=contextIdList->get(i).asInt();
-                map<int,Context>::iterator itr=contextMap.find(id);
+                auto itr=contextMap.find(id);
                 if (itr!=contextMap.end())
                     contextMap.erase(itr);
             }
@@ -1083,17 +1086,19 @@ protected:
 
 public:
     /************************************************************************/
-    GazeModule()
+    GazeModule() : rf{nullptr},
+                   contextIdCnt{0},
+                   loc{nullptr},
+                   eyesRefGen{nullptr},
+                   slv{nullptr},
+                   ctrl{nullptr},
+                   drvTorso{nullptr},
+                   drvHead{nullptr},
+                   interrupting{false},
+                   doSaveTweakFile{false},
+                   iGyro{nullptr},
+                   iAccel{nullptr}
     {
-        loc=nullptr;
-        eyesRefGen=nullptr;
-        slv=nullptr;
-        ctrl=nullptr;
-        drvTorso=nullptr;
-        drvHead=nullptr;
-
-        interrupting=false;
-        doSaveTweakFile=false;
     }
 
     /************************************************************************/
@@ -1135,6 +1140,7 @@ public:
         commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
         commData.stabilizationOn=(imuGroup.check("mode",Value("on")).asString()=="on");
+        commData.useMASClient=(imuGroup.check("useMASClient",Value("off")).asString()=="on");
         commData.stabilizationGain=imuGroup.check("stabilization_gain",Value(11.0)).asDouble();
         commData.gyro_noise_threshold=CTRL_DEG2RAD*imuGroup.check("gyro_noise_threshold",Value(5.0)).asDouble();
         commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";
@@ -1228,18 +1234,44 @@ public:
         imuPort.setExchangeData(&commData);
         if (commData.stabilizationOn)
         {
-            imuPort.open(commData.localStemName+"/inertial:i");
-            if (Network::connect(remoteInertialName,imuPort.getName()))
-                yInfo("Receiving IMU data from %s",remoteInertialName.c_str());
-            else
-            {
-                yError("Unable to connect to %s!",remoteInertialName.c_str());
-                dispose();
-                return false;
+            if (commData.useMASClient) {
+                Property mas_conf{{"device", Value("multipleanalogsensorsclient")},
+                                  {"remote", Value("/"+commData.robotName+"/head/imurfe")},
+                                  {"local",  Value("/"+commData.localStemName+"/head/imurfe:i")}};
+
+                if (!(mas_client.open(mas_conf)))
+                {
+                    yError("Unable to open the MAS client");
+                    dispose();
+                    return false;
+                }
+
+                if (!(mas_client.view(iGyro)) ||
+                    !(mas_client.view(iAccel))) {
+
+                    yError("View failed of the MAS interfaces");
+                    dispose();
+                    return false;
+                }
+
+                commData.iGyro  = iGyro;
+                commData.iAccel = iAccel;
+            }
+            else {
+                imuPort.open(commData.localStemName+"/inertial:i");
+                if (Network::connect(remoteInertialName,imuPort.getName()))
+                    yInfo("Receiving IMU data from %s",remoteInertialName.c_str());
+                else
+                {
+                    yError("Unable to connect to %s!",remoteInertialName.c_str());
+                    dispose();
+                    return false;
+                }
             }
         }
-        else
+        else {
             yWarning("IMU data will be not received/used");
+        }
 
         if (commData.debugInfoEnabled)
             yDebug("Commands to robot will be also streamed out on debug port");
@@ -2067,6 +2099,9 @@ public:
 
         if (drvHead!=nullptr)
             drvHead->close();
+
+        if (mas_client.isValid())
+            mas_client.close();
 
         if (commData.port_xd!=nullptr)
             if (!commData.port_xd->isClosed())

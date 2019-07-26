@@ -21,6 +21,7 @@
 
 #include <string>
 #include <algorithm>
+#include <utility>
 
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
@@ -97,6 +98,7 @@ protected:
     Matrix S;
     Vector imu;
     double x_stamp;
+    Vector  get_imu();
 
 public:
     ExchangeData();
@@ -125,7 +127,9 @@ public:
     Vector  get_v();
     Vector  get_counterv();
     Matrix  get_fpFrame();
-    Vector  get_imu();
+
+    std::pair<Vector,bool>  get_gyro();
+    std::pair<Vector,bool>  get_accel();
 
     string  headVersion2String();
 
@@ -150,10 +154,14 @@ public:
     bool            saccadesOn;
     bool            neckPosCtrlOn;
     bool            stabilizationOn;
+    bool            useMASClient;
     ResourceFinder  rf_cameras;
     ResourceFinder  rf_tweak;
     string          tweakFile;
-    bool            debugInfoEnabled;    
+    bool            debugInfoEnabled;
+
+    IThreeAxisGyroscopes* iGyro;
+    IThreeAxisLinearAccelerometers* iAccel;
 };
 
 

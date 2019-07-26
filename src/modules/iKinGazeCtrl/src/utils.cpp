@@ -162,6 +162,9 @@ ExchangeData::ExchangeData()
     head_version=1.0;
     tweakOverwrite=true;
     tweakFile="";
+    useMASClient=false;
+    iGyro = nullptr;
+    iAccel = nullptr;
 }
 
 
@@ -360,6 +363,52 @@ Vector ExchangeData::get_imu()
     return _imu;
 }
 
+/************************************************************************/
+std::pair<Vector,bool>  ExchangeData::get_gyro() {
+    std::pair<Vector, bool> ret;
+    Vector gyro(3,0.0);
+    if (useMASClient) {
+
+        if (! iGyro) {
+            ret.second = false;
+        }
+        else {
+            double ts;
+            ret.second =  iGyro->getThreeAxisGyroscopeStatus(0) == MAS_OK;
+            ret.second &= iGyro->getThreeAxisGyroscopeMeasure(0, gyro, ts);
+            gyro *= CTRL_DEG2RAD;
+        }
+    }
+    else {
+        gyro = CTRL_DEG2RAD*get_imu().subVector(6,8);
+    }
+
+    ret.first = gyro;
+    return ret; // RVO
+}
+
+/************************************************************************/
+std::pair<Vector,bool>  ExchangeData::get_accel() {
+    std::pair<Vector, bool> ret;
+    Vector accel(3,0.0);
+    if (useMASClient) {
+
+        if (! iAccel) {
+            ret.second = false;
+        }
+        else {
+            double ts;
+            ret.second =  iAccel->getThreeAxisLinearAccelerometerStatus(0) == MAS_OK;
+            ret.second &= iAccel->getThreeAxisLinearAccelerometerMeasure(0, accel, ts);
+        }
+    }
+    else {
+        accel = get_imu().subVector(3,5);
+    }
+
+    ret.first = accel;
+    return ret; // RVO
+}
 
 /************************************************************************/
 string ExchangeData::headVersion2String()
