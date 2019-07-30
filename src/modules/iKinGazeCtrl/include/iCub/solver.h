@@ -99,14 +99,14 @@ public:
     void   disable() { genOn=false; }
     Vector getCounterRotGain();
     void   setCounterRotGain(const Vector &gain);
-    void   minAllowedVergenceChanged();
+    void   minAllowedVergenceChanged() override;
     bool   bindEyes(const double ver);
     bool   clearEyes();
     void   manageBindEyes(const double ver);
-    bool   threadInit();
-    void   threadRelease();
-    void   afterStart(bool s);
-    void   run();
+    bool   threadInit() override;
+    void   threadRelease() override;
+    void   afterStart(bool s) override;
+    void   run() override;
     void   suspend();
     void   resume();
 };
@@ -171,10 +171,10 @@ public:
     void   clearNeckYaw();
     double getNeckAngleUserTolerance() const;
     void   setNeckAngleUserTolerance(const double angle);    
-    bool   threadInit();
-    void   threadRelease();
-    void   afterStart(bool s);
-    void   run();
+    bool   threadInit() override;
+    void   threadRelease() override;
+    void   afterStart(bool s) override;
+    void   run() override;
     void   suspend();
     void   resume();
 };

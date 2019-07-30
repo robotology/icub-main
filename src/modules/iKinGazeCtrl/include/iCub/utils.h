@@ -66,11 +66,11 @@ protected:
     bool   closing;
     int    rx;
 
-    void onRead(Bottle &b);
-    void run();
+    void onRead(Bottle &b) override;
+    void run() override;
 
 public:
-    xdPort(void *_slv);
+    explicit xdPort(void *_slv);
     ~xdPort();
 
     void    init(const Vector &xd0);
@@ -170,7 +170,7 @@ class IMUPort : public BufferedPort<Vector>
 {
 protected:
     ExchangeData *commData;
-    void onRead(Vector &imu);
+    void onRead(Vector &imu) override ;
 
 public:
     IMUPort();

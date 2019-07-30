@@ -131,16 +131,16 @@ public:
     virtual ~Controller();
 
     void   findMinimumAllowedVergence();
-    void   minAllowedVergenceChanged();
+    void   minAllowedVergenceChanged() override;
     void   resetCtrlEyes();
     void   doSaccade(const Vector &ang, const Vector &vel);
     bool   look(const Vector &x);
     void   stopControl();    
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
-    bool   threadInit();
-    void   threadRelease();
-    void   afterStart(bool s);
-    void   run();
+    bool   threadInit() override;
+    void   threadRelease() override;
+    void   afterStart(bool s) override;
+    void   run() override;
     void   suspend();
     void   resume();
     double getTneck() const;

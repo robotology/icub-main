@@ -146,7 +146,7 @@ public:
 
     /************************************************************************/
     bool get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
-                      Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
+                      Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style) override
     {
         n=dim;
         m=3;
@@ -159,7 +159,7 @@ public:
 
     /************************************************************************/
     bool get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l, Ipopt::Number* x_u,
-                         Ipopt::Index m, Ipopt::Number* g_l, Ipopt::Number* g_u)
+                         Ipopt::Index m, Ipopt::Number* g_l, Ipopt::Number* g_u) override
     {
         for (Ipopt::Index i=0; i<n; i++)
         {
@@ -178,7 +178,7 @@ public:
     /************************************************************************/
     bool get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number* x, bool init_z,
                             Ipopt::Number* z_L, Ipopt::Number* z_U, Ipopt::Index m,
-                            bool init_lambda, Ipopt::Number* lambda)
+                            bool init_lambda, Ipopt::Number* lambda) override
     {
         for (Ipopt::Index i=0; i<n; i++)
             x[i]=q0[i];
@@ -188,7 +188,7 @@ public:
 
     /************************************************************************/
     bool eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-                Ipopt::Number& obj_value)
+                Ipopt::Number& obj_value) override
     {
         obj_value=0.0;
 
@@ -205,7 +205,7 @@ public:
 
     /************************************************************************/
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
-                     Ipopt::Number* grad_f)
+                     Ipopt::Number* grad_f) override
     {
         for (Ipopt::Index i=0; i<n; i++)
             grad_f[i]=x[i]-qRest[i];
@@ -215,7 +215,7 @@ public:
 
     /************************************************************************/
     bool eval_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Index m,
-                Ipopt::Number* g)
+                Ipopt::Number* g) override
     {
         computeQuantities(x);
 
@@ -229,7 +229,7 @@ public:
     /************************************************************************/
     bool eval_jac_g(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                     Ipopt::Index m, Ipopt::Index nele_jac, Ipopt::Index* iRow,
-                    Ipopt::Index *jCol, Ipopt::Number* values)
+                    Ipopt::Index *jCol, Ipopt::Number* values) override
     {
         if (!values)
         {
@@ -272,7 +272,7 @@ public:
     bool eval_h(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
                 Ipopt::Number obj_factor, Ipopt::Index m, const Ipopt::Number *lambda,
                 bool new_lambda, Ipopt::Index nele_hess, Ipopt::Index *iRow,
-                Ipopt::Index *jCol, Ipopt::Number *values)
+                Ipopt::Index *jCol, Ipopt::Number *values) override
     {
         return true;
     }
@@ -281,7 +281,7 @@ public:
     bool get_scaling_parameters(Ipopt::Number& obj_scaling, bool& use_x_scaling,
                                 Ipopt::Index n, Ipopt::Number* x_scaling,
                                 bool& use_g_scaling, Ipopt::Index m,
-                                Ipopt::Number* g_scaling)
+                                Ipopt::Number* g_scaling) override
     {
         obj_scaling=__obj_scaling;
 
@@ -301,7 +301,7 @@ public:
                            const Ipopt::Number* x, const Ipopt::Number* z_L,
                            const Ipopt::Number* z_U, Ipopt::Index m, const Ipopt::Number* g,
                            const Ipopt::Number* lambda, Ipopt::Number obj_value,
-                           const Ipopt::IpoptData* ip_data, Ipopt::IpoptCalculatedQuantities* ip_cq)
+                           const Ipopt::IpoptData* ip_data, Ipopt::IpoptCalculatedQuantities* ip_cq) override
     {
         for (Ipopt::Index i=0; i<n; i++)
             qd[i]=x[i];
