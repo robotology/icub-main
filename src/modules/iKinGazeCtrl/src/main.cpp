@@ -1125,7 +1125,7 @@ public:
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();
 
         commData.robotName=rf.check("robot",Value("icub")).asString();
-        commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-12.0)).asDouble();
+        commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-20.0)).asDouble();
         commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asDouble();
         commData.head_version=constrainHeadVersion(rf.check("head_version",Value(1.0)).asDouble());
         commData.verbose=rf.check("verbose");
