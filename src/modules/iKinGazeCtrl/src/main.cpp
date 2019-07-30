@@ -1305,7 +1305,7 @@ public:
     }
 
     /************************************************************************/
-    bool respond(const Bottle &command, Bottle &reply)
+    bool respond(const Bottle &command, Bottle &reply) override
     {
         int ack=Vocab::encode("ack");
         int nack=Vocab::encode("nack");
@@ -2126,7 +2126,7 @@ public:
     }
 
     /************************************************************************/
-    bool interruptModule()
+    bool interruptModule() override
     {
         interrupting=true;
 
@@ -2140,20 +2140,20 @@ public:
     }
 
     /************************************************************************/
-    bool close()
+    bool close() override
     {
         dispose();
         return true;
     }
 
     /************************************************************************/
-    double getPeriod()
+    double getPeriod() override
     {
         return 1.0;
     }
 
     /************************************************************************/
-    bool updateModule()
+    bool updateModule() override
     {
         if (doSaveTweakFile)
         {
