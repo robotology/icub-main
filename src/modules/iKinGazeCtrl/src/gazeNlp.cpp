@@ -33,9 +33,9 @@ class HeadCenter_NLP : public Ipopt::TNLP
 {
 private:
     // Copy constructor: not implemented.
-    HeadCenter_NLP(const HeadCenter_NLP&);
+    HeadCenter_NLP(const HeadCenter_NLP&) = delete;
     // Assignment operator: not implemented.
-    HeadCenter_NLP &operator=(const HeadCenter_NLP&);
+    HeadCenter_NLP &operator=(const HeadCenter_NLP&) = delete;
 
 protected:
     iKinChain &chain;
