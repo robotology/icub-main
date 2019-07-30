@@ -237,7 +237,7 @@ void Controller::notifyEvent(const string &event, const double checkPoint)
 /************************************************************************/
 void Controller::motionOngoingEventsHandling()
 {
-    if (motionOngoingEventsCurrent.size()!=0)
+    if (!motionOngoingEventsCurrent.empty())
     {
         double curCheckPoint=*motionOngoingEventsCurrent.begin();
         if (pathPerc>=curCheckPoint)
@@ -252,7 +252,7 @@ void Controller::motionOngoingEventsHandling()
 /************************************************************************/
 void Controller::motionOngoingEventsFlush()
 {
-    while (motionOngoingEventsCurrent.size()!=0)
+    while (!motionOngoingEventsCurrent.empty())
     {
         double curCheckPoint=*motionOngoingEventsCurrent.begin();
         notifyEvent("motion-ongoing",curCheckPoint);
@@ -574,7 +574,7 @@ bool Controller::areJointsHealthyAndSet()
 /************************************************************************/
 void Controller::setJointsCtrlMode()
 {
-    if (jointsToSet.size()==0)
+    if (jointsToSet.empty())
         return;
 
     vector<int> modes;
