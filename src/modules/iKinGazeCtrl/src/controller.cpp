@@ -285,10 +285,10 @@ void Controller::stopLimb(const bool execStopPosition)
         {
             if (execStopPosition)
             {
-                for (size_t i=0; i<neckJoints.size(); i++)
+                for (auto neckJoint : neckJoints)
                 {
                     ostringstream ss;
-                    ss<<"pos_"<<neckJoints[i];
+                    ss<<"pos_"<<neckJoint;
                     info.addString(ss.str());
                     info.addString("stop");
                 }
@@ -578,9 +578,9 @@ void Controller::setJointsCtrlMode()
         return;
 
     vector<int> modes;
-    for (int i=0; i<(int)jointsToSet.size(); i++)
+    for (auto i : jointsToSet)
     {
-        if (jointsToSet[i]<eyesJoints[0])
+        if (i<eyesJoints[0])
         {
             if (commData->neckPosCtrlOn)
                 modes.push_back(VOCAB_CM_POSITION_DIRECT);
@@ -1184,9 +1184,8 @@ Bottle Controller::listMotionOngoingEvents()
     LockGuard lg(mutexData);
 
     Bottle events;
-    for (multiset<double>::iterator itr=motionOngoingEvents.begin();
-          itr!=motionOngoingEvents.end(); itr++)
-        events.addDouble(*itr);
+    for (auto motionOngoingEvent : motionOngoingEvents)
+        events.addDouble(motionOngoingEvent);
 
     return events;
 }
