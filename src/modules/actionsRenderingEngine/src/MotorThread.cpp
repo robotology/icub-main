@@ -1554,7 +1554,7 @@ bool MotorThread::goUp(Bottle &options, const double h)
 
     Vector x,o;
     action[arm]->getPose(x,o);
-    x[2]+=(isnan(h)?go_up_distance:h);
+    x[2]+=(std::isnan(h)?go_up_distance:h);
 
     // no need to restore context (it's done in other methods)
 
