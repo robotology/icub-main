@@ -602,7 +602,6 @@ protected:
     IThreeAxisGyroscopes* iGyro;
     IThreeAxisLinearAccelerometers* iAccel;
 
-    IMUPort   imuPort;
     RpcServer rpcPort;
 
     struct Context
@@ -1140,7 +1139,6 @@ public:
         commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
         commData.stabilizationOn=(imuGroup.check("mode",Value("on")).asString()=="on");
-        commData.useMASClient=(imuGroup.check("useMASClient",Value("off")).asString()=="on");
         commData.stabilizationGain=imuGroup.check("stabilization_gain",Value(11.0)).asDouble();
         commData.gyro_noise_threshold=CTRL_DEG2RAD*imuGroup.check("gyro_noise_threshold",Value(5.0)).asDouble();
         commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";
@@ -1180,7 +1178,8 @@ public:
         string localHeadName=commData.localStemName+"/"+headName;
         string remoteTorsoName="/"+commData.robotName+"/"+torsoName;
         string localTorsoName=commData.localStemName+"/"+torsoName;
-        string remoteInertialName="/"+commData.robotName+"/inertial";
+        string remoteInertialName="/"+commData.robotName+"/head/inertials";
+        string localInertialName=commData.localStemName+"/head/inertials";
 
         // check if we have to retrieve IMU data from a different port
         if (imuGroup.check("source_port_name"))
@@ -1230,44 +1229,29 @@ public:
             dispose();
             return false;
         }
-
-        imuPort.setExchangeData(&commData);
         if (commData.stabilizationOn)
         {
-            if (commData.useMASClient) {
-                Property mas_conf{{"device", Value("multipleanalogsensorsclient")},
-                                  {"remote", Value("/"+commData.robotName+"/head/imurfe")},
-                                  {"local",  Value("/"+commData.localStemName+"/head/imurfe:i")}};
+            Property mas_conf{{"device", Value("multipleanalogsensorsclient")},
+                              {"remote", Value(remoteInertialName)},
+                              {"local",  Value(localInertialName)}};
 
-                if (!(mas_client.open(mas_conf)))
-                {
-                    yError("Unable to open the MAS client");
-                    dispose();
-                    return false;
-                }
-
-                if (!(mas_client.view(iGyro)) ||
-                    !(mas_client.view(iAccel))) {
-
-                    yError("View failed of the MAS interfaces");
-                    dispose();
-                    return false;
-                }
-
-                commData.iGyro  = iGyro;
-                commData.iAccel = iAccel;
+            if (!(mas_client.open(mas_conf)))
+            {
+                yError("Unable to open the MAS client");
+                dispose();
+                return false;
             }
-            else {
-                imuPort.open(commData.localStemName+"/inertial:i");
-                if (Network::connect(remoteInertialName,imuPort.getName()))
-                    yInfo("Receiving IMU data from %s",remoteInertialName.c_str());
-                else
-                {
-                    yError("Unable to connect to %s!",remoteInertialName.c_str());
-                    dispose();
-                    return false;
-                }
+
+            if (!(mas_client.view(iGyro)) ||
+                !(mas_client.view(iAccel))) {
+
+                yError("View failed of the MAS interfaces");
+                dispose();
+                return false;
             }
+
+            commData.iGyro  = iGyro;
+            commData.iAccel = iAccel;
         }
         else {
             yWarning("IMU data will be not received/used");
@@ -2106,10 +2090,6 @@ public:
         if (commData.port_xd!=nullptr)
             if (!commData.port_xd->isClosed())
                 commData.port_xd->close();
-
-        if (!imuPort.isClosed())
-            imuPort.close();
-
         if (rpcPort.asPort().isOpen())
             rpcPort.close();
 
@@ -2132,8 +2112,6 @@ public:
 
         if (commData.port_xd!=nullptr)
             commData.port_xd->interrupt();
-
-        imuPort.interrupt();
         rpcPort.interrupt();
 
         return true;

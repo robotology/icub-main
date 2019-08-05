@@ -32,8 +32,6 @@ constexpr int32_t MUTEX_TORSO    = 4;
 constexpr int32_t MUTEX_V        = 5;
 constexpr int32_t MUTEX_COUNTERV = 6;
 constexpr int32_t MUTEX_FPFRAME  = 7;
-constexpr int32_t MUTEX_IMU      = 8;
-
 
 /************************************************************************/
 xdPort::xdPort(void *_slv) : slv(_slv)
@@ -162,7 +160,6 @@ ExchangeData::ExchangeData()
     head_version=1.0;
     tweakOverwrite=true;
     tweakFile="";
-    useMASClient=false;
     iGyro = nullptr;
     iAccel = nullptr;
 }
@@ -264,15 +261,6 @@ void ExchangeData::set_fpFrame(const Matrix &_S)
     S=_S;
 }
 
-
-/************************************************************************/
-void ExchangeData::set_imu(const Vector &_imu)
-{
-    LockGuard lg(mutex[MUTEX_IMU]);
-    imu=_imu;
-}
-
-
 /************************************************************************/
 Vector ExchangeData::get_xd()
 {
@@ -354,35 +342,19 @@ Matrix ExchangeData::get_fpFrame()
     return _S;
 }
 
-
-/************************************************************************/
-Vector ExchangeData::get_imu()
-{
-    LockGuard lg(mutex[MUTEX_IMU]);
-    Vector _imu=imu;
-    return _imu;
-}
-
 /************************************************************************/
 std::pair<Vector,bool>  ExchangeData::get_gyro() {
     std::pair<Vector, bool> ret;
     Vector gyro(3,0.0);
-    if (useMASClient) {
-
-        if (! iGyro) {
-            ret.second = false;
-        }
-        else {
-            double ts;
-            ret.second =  iGyro->getThreeAxisGyroscopeStatus(0) == MAS_OK;
-            ret.second &= iGyro->getThreeAxisGyroscopeMeasure(0, gyro, ts);
-            gyro *= CTRL_DEG2RAD;
-        }
+    if (! iGyro) {
+        ret.second = false;
     }
     else {
-        gyro = CTRL_DEG2RAD*get_imu().subVector(6,8);
+        double ts;
+        ret.second =  iGyro->getThreeAxisGyroscopeStatus(0) == MAS_OK;
+        ret.second &= iGyro->getThreeAxisGyroscopeMeasure(0, gyro, ts);
+        gyro *= CTRL_DEG2RAD;
     }
-
     ret.first = gyro;
     return ret; // RVO
 }
@@ -391,21 +363,14 @@ std::pair<Vector,bool>  ExchangeData::get_gyro() {
 std::pair<Vector,bool>  ExchangeData::get_accel() {
     std::pair<Vector, bool> ret;
     Vector accel(3,0.0);
-    if (useMASClient) {
-
-        if (! iAccel) {
-            ret.second = false;
-        }
-        else {
-            double ts;
-            ret.second =  iAccel->getThreeAxisLinearAccelerometerStatus(0) == MAS_OK;
-            ret.second &= iAccel->getThreeAxisLinearAccelerometerMeasure(0, accel, ts);
-        }
+    if (! iAccel) {
+        ret.second = false;
     }
     else {
-        accel = get_imu().subVector(3,5);
+        double ts;
+        ret.second =  iAccel->getThreeAxisLinearAccelerometerStatus(0) == MAS_OK;
+        ret.second &= iAccel->getThreeAxisLinearAccelerometerMeasure(0, accel, ts);
     }
-
     ret.first = accel;
     return ret; // RVO
 }
@@ -417,29 +382,6 @@ string ExchangeData::headVersion2String()
     str<<"v"<<head_version;
     return str.str();
 }
-
-
-/************************************************************************/
-IMUPort::IMUPort() : commData(nullptr)
-{
-    useCallback();
-}
-
-
-/************************************************************************/
-void IMUPort::setExchangeData(ExchangeData *commData)
-{
-    this->commData=commData;
-}
-
-
-/************************************************************************/
-void IMUPort::onRead(Vector &imu)
-{
-    if (commData!=nullptr)
-        commData->set_imu(imu);
-}
-
 
 /************************************************************************/
 bool GazeComponent::getExtrinsicsMatrix(const string &type, Matrix &M)
