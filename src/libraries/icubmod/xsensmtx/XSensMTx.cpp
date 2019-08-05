@@ -6,6 +6,7 @@
  *
  */
 
+#include <yarp/os/LogStream.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Semaphore.h>
@@ -24,10 +25,16 @@ using namespace yarp::sig;
 #define CTRL_RAD2DEG    (180.0/M_PI)
 #define CTRL_DEG2RAD    (M_PI/180.0)
 
+constexpr size_t rpyStartIdx   = 0;
+constexpr size_t accelStartIdx = 3;
+constexpr size_t gyroStartIdx  = 6;
+constexpr size_t magnStartIdx  = 9;
+
+
 class XSensMTxResources: public Thread
 {
 public:
-    XSensMTxResources(void): _mutex(1)
+    explicit XSensMTxResources(): _semaphore(1)
     {
         _bStreamStarted=false;
         _bError=false;
@@ -39,7 +46,7 @@ public:
             _last[k]=0.0;
     }
 
-    ~XSensMTxResources()
+    virtual ~XSensMTxResources()
     {
         if (isRunning())
             stop();
@@ -61,12 +68,12 @@ public:
     double *_last;
     yarp::os::Stamp _lastStamp;
 
-    Semaphore _mutex;
+    Semaphore _semaphore;
 
     virtual void run ();
 };
 
-void XSensMTxResources::run (void)
+void XSensMTxResources::run ()
 {   
     unsigned char data[MAXMSGLEN];
     float euler_data[3] = {0};
@@ -89,7 +96,7 @@ void XSensMTxResources::run (void)
             // Parse and get calibrated magnetometer values
             mtcomm.getValue (VALUE_CALIB_MAG, magn_data, data, BID_MASTER);
 	    
-            _mutex.wait ();
+            _semaphore.wait ();
             
 			//euler_data are expressed in deg
             _last[0]  = euler_data[0]; //roll
@@ -115,7 +122,7 @@ void XSensMTxResources::run (void)
                 _bError=true;
 		
             _lastStamp.update();
-            _mutex.post ();
+            _semaphore.post ();
         }
 }
 
@@ -125,10 +132,11 @@ inline XSensMTxResources& RES(void *res) { return *(XSensMTxResources *)res; }
  * Driver for XSens's MTx IMU unit.
  * @author Radu Bogdan Rusu, Alexis Maldonado
  */ 
-XSensMTx::XSensMTx()
+XSensMTx::XSensMTx() : system_resources{nullptr},
+                       nchannels{12},
+                       m_sensorName{"sensor_imu_xsens"},
+                       m_frameName{"sensor_imu_xsens"}
 {
-    system_resources = 0;
-    nchannels        = 12;
 }
 
 XSensMTx::~XSensMTx()
@@ -148,14 +156,14 @@ bool XSensMTx::read(Vector &out)
     
     if (d._bStreamStarted)
         {
-            d._mutex.wait();
+            d._semaphore.wait();
             
             // Euler+accel+gyro+magn orientation values
             for (int i = 0; i < nchannels; i++)
                 out[i]=d._last[i];
 
             lastStamp=d._lastStamp;
-            d._mutex.post();
+            d._semaphore.post();
 
             ret=!d._bError;
         }
@@ -210,6 +218,14 @@ bool XSensMTx::open(yarp::os::Searchable &config)
     par.comPortString = config.check("serial",Value("/dev/ttyUSB0"),
                                      "device name of comport").asString().c_str();
 #endif
+    if (config.check("sensor_name") && config.find("sensor_name").isString())
+    {
+        m_sensorName = config.find("sensor_name").asString();
+    }
+    if (config.check("frame_name") && config.find("frame_name").isString())
+    {
+        m_frameName = config.find("frame_name").asString();
+    }
 
     return open(par);
 }
@@ -329,3 +345,161 @@ yarp::os::Stamp XSensMTx::getLastInputStamp()
     return lastStamp;
 }
 
+
+size_t XSensMTx::getNrOfThreeAxisLinearAccelerometers() const
+{
+    return 1;
+}
+
+
+yarp::dev::MAS_status XSensMTx::getThreeAxisLinearAccelerometerStatus(size_t sens_index) const
+{
+    return genericGetStatus(sens_index);
+}
+
+bool XSensMTx::getThreeAxisLinearAccelerometerName(size_t sens_index, std::string& name) const
+{
+    return genericGetSensorName(sens_index, name);
+}
+
+bool XSensMTx::getThreeAxisLinearAccelerometerFrameName(size_t sens_index, std::string& frameName) const
+{
+    return genericGetFrameName(sens_index, frameName);
+}
+
+bool XSensMTx::getThreeAxisLinearAccelerometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+{
+    return genericGetMeasure(sens_index, out, timestamp, accelStartIdx);
+}
+
+
+size_t XSensMTx::getNrOfThreeAxisGyroscopes() const
+{
+    return 1;
+}
+
+
+yarp::dev::MAS_status XSensMTx::getThreeAxisGyroscopeStatus(size_t sens_index) const
+{
+    return genericGetStatus(sens_index);
+}
+
+bool XSensMTx::getThreeAxisGyroscopeName(size_t sens_index, std::string& name) const
+{
+    return genericGetSensorName(sens_index, name);
+}
+
+bool XSensMTx::getThreeAxisGyroscopeFrameName(size_t sens_index, std::string& frameName) const
+{
+    return genericGetFrameName(sens_index, frameName);
+}
+
+bool XSensMTx::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+{
+    return genericGetMeasure(sens_index, out, timestamp, gyroStartIdx);
+}
+
+size_t XSensMTx::getNrOfOrientationSensors() const
+{
+    return 1;
+}
+
+yarp::dev::MAS_status XSensMTx::getOrientationSensorStatus(size_t sens_index) const
+{
+    return genericGetStatus(sens_index);
+}
+
+bool XSensMTx::getOrientationSensorName(size_t sens_index, std::string& name) const
+{
+    return genericGetSensorName(sens_index, name);
+}
+
+bool XSensMTx::getOrientationSensorFrameName(size_t sens_index, std::string& frameName) const
+{
+    return genericGetFrameName(sens_index, frameName);
+}
+
+bool XSensMTx::getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index, yarp::sig::Vector& rpy, double& timestamp) const
+{
+    return genericGetMeasure(sens_index, rpy, timestamp, rpyStartIdx);
+}
+
+size_t XSensMTx::getNrOfThreeAxisMagnetometers() const
+{
+    return 1;
+}
+
+yarp::dev::MAS_status XSensMTx::getThreeAxisMagnetometerStatus(size_t sens_index) const
+{
+    return genericGetStatus(sens_index);
+}
+
+bool XSensMTx::getThreeAxisMagnetometerName(size_t sens_index, std::string& name) const
+{
+    return genericGetSensorName(sens_index, name);
+}
+
+bool XSensMTx::getThreeAxisMagnetometerFrameName(size_t sens_index, std::string& frameName) const
+{
+    return genericGetFrameName(sens_index, frameName);
+}
+
+bool XSensMTx::getThreeAxisMagnetometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+{
+    return genericGetMeasure(sens_index, out, timestamp, magnStartIdx);
+}
+yarp::dev::MAS_status XSensMTx::genericGetStatus(size_t sens_index) const
+{
+    if (sens_index != 0)
+    {
+        yError() << "xsens: sens_index must be equal to 0, since there is  only one sensor in consideration";
+        return yarp::dev::MAS_status::MAS_ERROR;
+    }
+
+    return yarp::dev::MAS_status::MAS_OK;
+}
+
+bool XSensMTx::genericGetSensorName(size_t sens_index, std::string& name) const
+{
+    if (sens_index != 0)
+    {
+        yError() << "xsens: sens_index must be equal to 0, since there is  only one sensor in consideration";
+        return false;
+    }
+
+    name = m_sensorName;
+    return true;
+}
+
+bool XSensMTx::genericGetFrameName(size_t sens_index, std::string& frameName) const
+{
+    if (sens_index != 0)
+    {
+        yError() << "xsens: sens_index must be equal to 0, since there is  only one sensor in consideration";
+        return false;
+    }
+
+    frameName = m_frameName;
+    return true;
+
+}
+
+bool XSensMTx::genericGetMeasure(size_t sens_index, yarp::sig::Vector &out, double &timestamp, size_t startIdx) const {
+
+    if (sens_index != 0)
+    {
+        yError() << "xsens: sens_index must be equal to 0, since there is  only one sensor in consideration";
+        return false;
+    }
+
+    auto &d= RES(system_resources);
+    out.resize(3);
+    d._semaphore.wait();
+    out[0] = d._last[startIdx];
+    out[1] = d._last[startIdx + 1];
+    out[2] = d._last[startIdx + 2];
+
+    timestamp = d._lastStamp.getTime();
+    d._semaphore.post();
+    return true;
+}
