@@ -90,15 +90,13 @@ public:
 class ExchangeData
 {
 protected:
-    Mutex  mutex[9];
-    
+    Mutex  mutex[8];
     Vector xd,qd;
     Vector x,q,torso;
     Vector v,counterv;
     Matrix S;
     Vector imu;
     double x_stamp;
-    Vector  get_imu();
 
 public:
     ExchangeData();
@@ -116,7 +114,6 @@ public:
     void    set_v(const Vector &_v);
     void    set_counterv(const Vector &_counterv);
     void    set_fpFrame(const Matrix &_S);
-    void    set_imu(const Vector &_imu);
 
     Vector  get_xd();
     Vector  get_qd();
@@ -164,18 +161,6 @@ public:
     IThreeAxisLinearAccelerometers* iAccel;
 };
 
-
-// This class handles the incoming IMU data
-class IMUPort : public BufferedPort<Vector>
-{
-protected:
-    ExchangeData *commData;
-    void onRead(Vector &imu) override ;
-
-public:
-    IMUPort();
-    void setExchangeData(ExchangeData *commData);
-};
 
 
 // This class defines gaze components such as

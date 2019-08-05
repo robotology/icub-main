@@ -21,6 +21,7 @@
 #include <yarp/sig/all.h>
 #include <yarp/math/Math.h>
 
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/ctrl/filters.h>
 #include <iCub/ctrl/pids.h>
