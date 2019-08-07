@@ -2,18 +2,27 @@
 # Authors: Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-cmake_minimum_required(VERSION 2.6)
-set(PROJECTNAME imuFilter)
-project(${PROJECTNAME})
-
-file(GLOB source_files main.cpp)
-set(doc_files ${PROJECTNAME}.xml)
-
-source_group("Source Files" FILES ${source_files})
-source_group("DOC Files"    FILES ${doc_files})
-
-add_executable(${PROJECTNAME} ${source_files} ${doc_files})
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ctrlLib)
-install(TARGETS ${PROJECTNAME} DESTINATION bin)
-yarp_install(FILES ${doc_files} DESTINATION ${ICUB_MODULES_INSTALL_DIR})
-
+yarp_prepare_plugin(imuFilter
+                    CATEGORY device
+                    TYPE yarp::dev::ImuFilter
+                    INCLUDE ImuFilter.h
+                    DEPENDS "TARGET YARP::YARP_math"
+                    DEFAULT ON)
+if(ENABLE_imuFilter)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+  yarp_add_plugin(imuFilter ImuFilter.cpp
+                            ImuFilter.h
+                            PassThroughInertial.cpp
+                            PassThroughInertial.h)
+  target_link_libraries(imuFilter PRIVATE YARP::YARP_OS
+                                          YARP::YARP_sig
+                                          YARP::YARP_dev
+                                          YARP::YARP_math
+                                          ctrlLib)
+  yarp_install(TARGETS imuFilter
+               EXPORT icub-targets
+               COMPONENT Runtime
+               LIBRARY DESTINATION  ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION  ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+endif()
