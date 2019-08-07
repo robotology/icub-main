@@ -34,7 +34,8 @@ using namespace iCub::ctrl;
 
 
 /**********************************************************/
-class FilterModule: public RFModule
+class FilterModule: public RFModule/*,
+public yarp::dev::IThreeAxisGyroscopes*/
 {
     BufferedPort<Vector> iPort;
     BufferedPort<Vector> oPort;
