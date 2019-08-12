@@ -2612,7 +2612,7 @@ void iCubInertialSensor::allocate(const string &_type)
     H0.zero();
     H0(3,3)=1.0;
 
-    if ((getType()=="v2") || (getType()=="v2.5"))
+    if ((getType()=="v2") || (getType()=="v2.5") || (getType()=="v2.6"))
     {
         H0(0,1)=-1.0;
         H0(1,2)=-1.0;
@@ -2665,12 +2665,25 @@ void iCubInertialSensor::allocate(const string &_type)
     HN(3,3)=1.0;
     setHN(HN);
 
-    if ((getType()=="v2.5") || (getType()=="v3"))
+    if ((getType()=="v2.5") || (getType()=="v2.6") || (getType()=="v3"))
     {
         Matrix HN=eye(4,4);
         HN(0,3)=0.0087;
         HN(1,3)=0.01795;
         HN(2,3)=-0.0105;
+        setHN(getHN()*HN);
+    }
+
+    if (getType()=="v2.6")
+    {
+        Matrix HN=zeros(4,4);
+        HN(0,3)=0.0323779;
+        HN(1,3)=-0.0139537;
+        HN(2,3)=0.072;
+        HN(1,0)=1.0;
+        HN(0,1)=1.0;
+        HN(2,2)=-1.0;
+        HN(3,3)=1.0;
         setHN(getHN()*HN);
     }
 
