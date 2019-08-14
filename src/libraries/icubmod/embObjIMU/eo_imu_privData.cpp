@@ -243,6 +243,7 @@ bool SensorsData::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::
     {
         return outOfRangeErrorHandler(oor);
     }
+    return true;
 
 }
 
