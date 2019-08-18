@@ -2430,7 +2430,7 @@ void iCubEye::allocate(const string &_type)
         pushLink(new iKinLink(    0.0,  -0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0,     0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
     }
-    else if ((getType()=="right_v2") || (getType()=="right_v2.5"))
+    else if ((getType()=="right_v2") || (getType()=="right_v2.5") || (getType()=="right_v2.6"))
     {
         pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
@@ -2468,7 +2468,7 @@ void iCubEye::allocate(const string &_type)
     }
     else
     {
-        if ((type!="left_v2") && (type!="left_v2.5"))
+        if ((type!="left_v2") && (type!="left_v2.5") && (type!="left_v2.6"))
             type="left_v2";
 
         pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
@@ -2612,7 +2612,7 @@ void iCubInertialSensor::allocate(const string &_type)
     H0.zero();
     H0(3,3)=1.0;
 
-    if ((getType()=="v2") || (getType()=="v2.5"))
+    if ((getType()=="v2") || (getType()=="v2.5") || (getType()=="v2.6"))
     {
         H0(0,1)=-1.0;
         H0(1,2)=-1.0;
@@ -2665,12 +2665,25 @@ void iCubInertialSensor::allocate(const string &_type)
     HN(3,3)=1.0;
     setHN(HN);
 
-    if ((getType()=="v2.5") || (getType()=="v3"))
+    if ((getType()=="v2.5") || (getType()=="v2.6") || (getType()=="v3"))
     {
         Matrix HN=eye(4,4);
         HN(0,3)=0.0087;
         HN(1,3)=0.01795;
         HN(2,3)=-0.0105;
+        setHN(getHN()*HN);
+    }
+
+    if (getType()=="v2.6")
+    {
+        Matrix HN=zeros(4,4);
+        HN(0,3)=0.0323779;
+        HN(1,3)=-0.0139537;
+        HN(2,3)=0.072;
+        HN(1,0)=1.0;
+        HN(0,1)=1.0;
+        HN(2,2)=-1.0;
+        HN(3,3)=1.0;
         setHN(getHN()*HN);
     }
 
