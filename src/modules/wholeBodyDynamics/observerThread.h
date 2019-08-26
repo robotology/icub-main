@@ -30,7 +30,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include <string.h>
+#include <cstring>
 #include <list>
 
 using namespace yarp::os;
@@ -41,9 +41,9 @@ using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 using namespace std;
 
-#define MAX_JN 12
-#define MAX_FILTER_ORDER 6
-#define SKIN_EVENTS_TIMEOUT 0.2     // max time (in sec) a contact is kept without reading anything from the skin events port
+constexpr int8_t MAX_JN = 12;
+constexpr int8_t MAX_FILTER_ORDER = 6;
+constexpr float_t SKIN_EVENTS_TIMEOUT = 0.2;     // max time (in sec) a contact is kept without reading anything from the skin events port
 
 enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
 enum calib_enum {CALIB_ALL=0, CALIB_ARMS, CALIB_LEGS, CALIB_FEET};

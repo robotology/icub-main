@@ -116,7 +116,7 @@ This file can be edited at src/wholeBodyDynamics/main.cpp.
 
 #include <iostream>
 #include <iomanip>
-#include <string.h>
+#include <cstring>
 
 #include "observerThread.h"
 
@@ -128,8 +128,6 @@ using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 using namespace std;
 
-#define MAX_JN 12
-#define MAX_FILTER_ORDER 6
 
 class dataFilter : public BufferedPort<Bottle>
 {
