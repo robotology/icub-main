@@ -1555,22 +1555,22 @@ void inverseDynamics::addSkinContacts()
         skinContactsTimestamp = Time::now();
         if(scl->empty() && !default_ee_cont)   // if no skin contacts => leave the old contacts but reset pressure and contact list
         {
-            for(skinContactList::iterator it=skinContacts.begin(); it!=skinContacts.end(); it++)
+            for(auto & skinContact : skinContacts)
             {
-                it->setPressure(0.0);
-                it->setActiveTaxels(0);
+                skinContact.setPressure(0.0);
+                skinContact.setActiveTaxels(0);
             }
             return;
         }
         
         map<BodyPart, skinContactList> contactsPerBp = scl->splitPerBodyPart();
         // if there are more than 1 contact and less than 10 taxels are active then suppose zero moment
-        for(map<BodyPart,skinContactList>::iterator it=contactsPerBp.begin(); it!=contactsPerBp.end(); it++)
-            if(it->second.size()>1)
-                for(skinContactList::iterator c=it->second.begin(); c!=it->second.end(); c++)
-                    if(c->getActiveTaxels()<10)
-                        c->fixMoment();
-        
+        for(auto & it : contactsPerBp)
+            if(it.second.size()>1)
+                for(auto & c : it.second)
+                    if(c.getActiveTaxels()<10)
+                        c.fixMoment();
+
         icub->upperTorso->clearContactList();
         icub->upperTorso->leftSensor->addContacts(contactsPerBp[LEFT_ARM].toDynContactList());
         icub->upperTorso->rightSensor->addContacts(contactsPerBp[RIGHT_ARM].toDynContactList());
@@ -1601,11 +1601,11 @@ void inverseDynamics::sendMonitorData()
     monitorData.push_back(norm(icub->upperTorso->getTorsoMoment()));// moment norm upper node    
     for(size_t i=0;i<3;i++){                                           // w torso
         temp = icub->lowerTorso->up->getAngVel(i) * CTRL_RAD2DEG;
-        for(size_t j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
+        for(double j : temp) monitorData.push_back(j);
     }
     for(size_t i=0;i<3;i++){                                           // dw torso
         temp = icub->lowerTorso->up->getAngAcc(i) * CTRL_RAD2DEG;
-        for(size_t j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
+        for(double j : temp) monitorData.push_back(j);
     }
     //for(int j=0;j<TOTorques.size();j++)                             // torso torques
     //    monitorData.push_back(TOTorques[j]);
