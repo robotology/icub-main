@@ -1152,7 +1152,7 @@ void inverseDynamics::closePort(Contactable *_port)
         _port->close();
 
         delete _port;
-        _port = 0;
+        _port = nullptr;
     }
 }
 
@@ -1256,12 +1256,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     // arms
     if (ddAL)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to left arm sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_arm_left->read(waitMeasure);
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_arm_left  = *tmp;
             }
@@ -1275,12 +1275,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 
     if (ddAR)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to right arm sensor...");
         if (!dummy_ft)   
         {
             tmp = port_ft_arm_right->read(waitMeasure);
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_arm_right = *tmp;
             }
@@ -1297,12 +1297,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     // legs
     if (ddLL)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to left leg sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_leg_left->read(waitMeasure);
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_leg_left  = *tmp;
             }
@@ -1315,12 +1315,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     }
     if (ddLR)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to right leg sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_leg_right->read(waitMeasure);
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_leg_right = *tmp;
             }
@@ -1335,12 +1335,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     // feet
     if (ddLL)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to left foot sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_foot_left->read(false); //not all the robot versions have the FT sensors installed in the feet
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_foot_left  = *tmp;
             }
@@ -1353,12 +1353,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     }
     if (ddLR)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to right foot sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_foot_right->read(false); //not all the robot versions have the FT sensors installed in the feet
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_foot_right = *tmp;
             }
@@ -1379,7 +1379,7 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     if (waitMeasure) yInfo("done. \n");
 
     int sz = 0;
-    if(inertial!=0)
+    if(inertial!=nullptr)
     {
 //#define DEBUG_FIXED_INERTIAL
 #ifdef DEBUG_FIXED_INERTIAL

@@ -210,13 +210,13 @@ private:
 public:
     wholeBodyDynamics()
     {
-        inv_dyn=0;
-        dd_left_arm=0;
-        dd_right_arm=0;
-        dd_head=0;
-        dd_left_leg=0;
-        dd_right_leg=0;
-        dd_torso=0;
+        inv_dyn=nullptr;
+        dd_left_arm=nullptr;
+        dd_right_arm=nullptr;
+        dd_head=nullptr;
+        dd_left_leg=nullptr;
+        dd_right_leg=nullptr;
+        dd_torso=nullptr;
         com_vel_enabled=false;
         com_enabled=true;
         legs_enabled = true;
@@ -636,7 +636,7 @@ public:
             inv_dyn->stop();
             yInfo("inv_dyn thread stopped\n");     
             delete inv_dyn;
-            inv_dyn=0;
+            inv_dyn=nullptr;
           }
 
         if(port_inertial_input)
@@ -645,7 +645,7 @@ public:
             port_inertial_input->interrupt();
             port_inertial_input->close();
             delete port_inertial_input;
-            port_inertial_input=0;
+            port_inertial_input=nullptr;
         }
 
         yInfo("Closing the filtered inertial output port \n");     
@@ -660,21 +660,21 @@ public:
             yInfo("Closing dd_left_arm \n");     
             dd_left_arm->close();
             delete dd_left_arm;
-            dd_left_arm=0;
+            dd_left_arm=nullptr;
         }
         if (dd_right_arm)
         {
             yInfo("Closing dd_right_arm \n");     
             dd_right_arm->close();
             delete dd_right_arm;
-            dd_right_arm=0;
+            dd_right_arm=nullptr;
         }
         if (dd_head)
         {
             yInfo("Closing dd_head \n");     
             dd_head->close();
             delete dd_head;
-            dd_head=0;
+            dd_head=nullptr;
         }
 
         if (dd_left_leg)
@@ -682,21 +682,21 @@ public:
             yInfo("Closing dd_left_leg \n");     
             dd_left_leg->close();
             delete dd_left_leg;
-            dd_left_leg=0;
+            dd_left_leg=nullptr;
         }
         if (dd_right_leg)
         {
             yInfo("Closing dd_right_leg \n");     
             dd_right_leg->close();
             delete dd_right_leg;
-            dd_right_leg=0;
+            dd_right_leg=nullptr;
         }
         if (dd_torso)
         {
             yInfo("Closing dd_torso \n");     
             dd_torso->close();
             delete dd_torso;
-            dd_torso=0;
+            dd_torso=nullptr;
         }
 
         yInfo("wholeBodyDynamics module was closed successfully! \n");     
@@ -724,7 +724,7 @@ public:
             curr_time = Time::now();
         }
 
-        if (inv_dyn==0) 
+        if (inv_dyn==nullptr)
             return false;
         thread_status_enum thread_status = inv_dyn->getThreadStatus();
         if (thread_status==STATUS_OK)
