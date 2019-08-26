@@ -129,43 +129,64 @@ using namespace iCub::iDyn;
 using namespace std;
 
 
-class dataFilter : public BufferedPort<Bottle>
+class dataFilter : public PeriodicThread
 {
 private:
     BufferedPort<Vector> &port_filtered_output;
     Vector g;
-    
-    void onRead(Bottle &b) override
-    {
-        Stamp info;
-        BufferedPort<Bottle>::getEnvelope(info);
+    IThreeAxisGyroscopes* m_iGyro{nullptr};
+    IThreeAxisLinearAccelerometers* m_iAcc{nullptr};
 
-        size_t sz = b.size();
-        Vector x(sz);
-        Vector inertial(sz);
-        for(unsigned int i=0;i<sz;i++)
-        {
-            x[i]=b.get(i).asDouble();
-            inertial(i)=lpf_ord1_3hz(x(i), i);
+public:
+    dataFilter(BufferedPort<Vector> &_port_filtered_output,
+               IThreeAxisGyroscopes* iGyro,
+               IThreeAxisLinearAccelerometers* iAcc): PeriodicThread(0.001),
+                                                      port_filtered_output(_port_filtered_output),
+                                                      m_iGyro(iGyro),
+                                                      m_iAcc(iAcc)
+    {
+        g.resize(6);
+    }
+
+    void run() override
+    {
+        if (!m_iGyro || !m_iAcc || port_filtered_output.isClosed()) {
+            yError()<<"dataFilter: something went wrong during configuration closing";
+            this->askToStop();
+            return;
         }
-        g[0] = inertial[3];
-        g[1] = inertial[4];
-        g[2] = inertial[5]; 
-        g[3] = inertial[6];
-        g[4] = inertial[7];
-        g[5] = inertial[8];
+
+        double acc_ts{0.0}, gyro_ts{0.0};
+        Vector acc, gyro;
+        bool ok = true;
+        ok &= m_iAcc->getThreeAxisLinearAccelerometerMeasure(0, acc, acc_ts);
+        ok &= m_iGyro->getThreeAxisGyroscopeMeasure(0, gyro, gyro_ts);
+        if (!ok) {
+            yError()<<"dataFilter: error while reading from inertial sensor";
+            return;
+        }
+        static Stamp info;
+        info.update(gyro_ts);
+        Vector temp(6,0.0);
+        temp.setSubvector(0,acc);
+        temp.setSubvector(3,gyro);
+        for(size_t i=0;i<temp.size();i++)
+        {
+            temp(i)  = lpf_ord1_3hz(temp(i), i);
+        }
+        g[0] = temp[0]; // acc
+        g[1] = temp[1]; // acc
+        g[2] = temp[2]; // acc
+        g[3] = temp[3]; // gyro
+        g[4] = temp[4]; // gyro
+        g[5] = temp[5]; // gyro
         //g = (9.81/norm(g))*g;
-        
+
         port_filtered_output.prepare() = g;
         port_filtered_output.setEnvelope(info);
         port_filtered_output.write();
     }
-public:
-    dataFilter(BufferedPort<Vector> &_port_filtered_output, ResourceFinder &rf):    
-    port_filtered_output(_port_filtered_output)
-    {
-        g.resize(6);
-    }
+
 };
 
 // The main module
@@ -191,12 +212,14 @@ private:
     bool     auto_drift_comp;
     bool     default_ee_cont;       // true: when skin detects no contact, the ext contact is supposed at the end effector
                                     // false: ext contact is supposed at the last location where skin detected a contact
-    
-    dataFilter *port_inertial_input{};
-    BufferedPort<Vector> port_filtered_output;    
+
+    dataFilter *inertialFilter{};
+    BufferedPort<Vector> port_filtered_output;
     Port rpcPort;
 
     inverseDynamics *inv_dyn;
+    IThreeAxisLinearAccelerometers* m_iAcc{nullptr};
+    IThreeAxisGyroscopes* m_iGyro{nullptr};
 
     PolyDriver *dd_left_arm;
     PolyDriver *dd_right_arm;
@@ -204,6 +227,7 @@ private:
     PolyDriver *dd_left_leg;
     PolyDriver *dd_right_leg;
     PolyDriver *dd_torso;
+    PolyDriver  dd_MASClient;
 
 public:
     wholeBodyDynamics()
@@ -575,6 +599,23 @@ public:
                 yInfo("device driver created\n");
         }
 
+        Property masConf {{"device",Value("multipleanalogsensorsclient")},
+                          {"local", Value("/"+local_name+"/inertials")},
+                          {"remote",Value("/"+robot_name+"/head/inertials")},
+                          {"timeout",Value(0.04)}};
+
+        if (!dd_MASClient.open(masConf))
+        {
+            yError("unable to open the MAS client...quitting\n");
+            return false;
+        }
+
+        if(!dd_MASClient.view(m_iAcc) || !dd_MASClient.view(m_iGyro))
+        {
+            yError("view of one of the MAS interfaces required failed...quitting\n");
+            return false;
+        }
+
         //--------------------CHECK FT SENSOR------------------------
         if (!dummy_ft)
         {
@@ -610,6 +651,7 @@ public:
         yInfo("ft thread istantiated...\n");
         Time::delay(5.0);
 
+        inertialFilter->start();
         inv_dyn->start();
         yInfo("thread started\n");
         return true;
@@ -635,13 +677,13 @@ public:
             inv_dyn=nullptr;
           }
 
-        if(port_inertial_input)
+        if(inertialFilter)
         {
-            yInfo("Closing the inertial input port \n");     
-            port_inertial_input->interrupt();
-            port_inertial_input->close();
-            delete port_inertial_input;
-            port_inertial_input=nullptr;
+            yInfo("Stopping the inertial filter thread \n");
+            inertialFilter->stop();
+            delete inertialFilter;
+            inertialFilter=nullptr;
+            dd_MASClient.close();
         }
 
         yInfo("Closing the filtered inertial output port \n");     
