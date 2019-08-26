@@ -499,8 +499,8 @@ public:
         if(head_enabled)
         {
             OptionsHead.put("device","remote_controlboard");
-            OptionsHead.put("local",string("/"+local_name+"/head/client").c_str());
-            OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
+            OptionsHead.put("local","/"+local_name+"/head/client");
+            OptionsHead.put("remote","/"+robot_name+"/head");
 
             if (!createDriver(dd_head, OptionsHead))
             {
@@ -514,8 +514,8 @@ public:
         if (left_arm_enabled)
         {
             OptionsLeftArm.put("device","remote_controlboard");
-            OptionsLeftArm.put("local",string("/"+local_name+"/left_arm/client").c_str());
-            OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
+            OptionsLeftArm.put("local","/"+local_name+"/left_arm/client");
+            OptionsLeftArm.put("remote","/"+robot_name+"/left_arm");
 
             if (!createDriver(dd_left_arm, OptionsLeftArm))
             {
@@ -527,8 +527,8 @@ public:
         if (right_arm_enabled)
         {
             OptionsRightArm.put("device","remote_controlboard");
-            OptionsRightArm.put("local",string("/"+local_name+"/right_arm/client").c_str());
-            OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
+            OptionsRightArm.put("local","/"+local_name+"/right_arm/client");
+            OptionsRightArm.put("remote","/"+robot_name+"/right_arm");
 
             if (!createDriver(dd_right_arm, OptionsRightArm))
             {
@@ -540,8 +540,8 @@ public:
         if (legs_enabled)
         {
             OptionsLeftLeg.put("device","remote_controlboard");
-            OptionsLeftLeg.put("local",string("/"+local_name+"/left_leg/client").c_str());
-            OptionsLeftLeg.put("remote",string("/"+robot_name+"/left_leg").c_str());
+            OptionsLeftLeg.put("local","/"+local_name+"/left_leg/client");
+            OptionsLeftLeg.put("remote","/"+robot_name+"/left_leg");
 
             if (!createDriver(dd_left_leg, OptionsLeftLeg))
             {
@@ -550,8 +550,8 @@ public:
             }
 
             OptionsRightLeg.put("device","remote_controlboard");
-            OptionsRightLeg.put("local",string("/"+local_name+"/right_leg/client").c_str());
-            OptionsRightLeg.put("remote",string("/"+robot_name+"/right_leg").c_str());
+            OptionsRightLeg.put("local","/"+local_name+"/right_leg/client");
+            OptionsRightLeg.put("remote","/"+robot_name+"/right_leg");
 
             if (!createDriver(dd_right_leg, OptionsRightLeg))
             {
@@ -563,8 +563,8 @@ public:
         if (torso_enabled)
         {
             OptionsTorso.put("device","remote_controlboard");
-            OptionsTorso.put("local",string("/"+local_name+"/torso/client").c_str());
-            OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
+            OptionsTorso.put("local","/"+local_name+"/torso/client");
+            OptionsTorso.put("remote","/"+robot_name+"/torso");
 
             if (!createDriver(dd_torso, OptionsTorso))
             {
@@ -578,10 +578,10 @@ public:
         //--------------------CHECK FT SENSOR------------------------
         if (!dummy_ft)
         {
-            if ((dd_left_arm  && !Network::exists(string("/" + robot_name + "/left_arm/analog:o").c_str())) ||
-                (dd_right_arm && !Network::exists(string("/" + robot_name + "/right_arm/analog:o").c_str())) ||
-                (dd_left_leg  && !Network::exists(string("/" + robot_name + "/left_leg/analog:o").c_str())) ||
-                (dd_right_leg && !Network::exists(string("/" + robot_name + "/right_leg/analog:o").c_str())) )
+            if ((dd_left_arm  && !Network::exists("/" + robot_name + "/left_arm/analog:o"))  ||
+                (dd_right_arm && !Network::exists("/" + robot_name + "/right_arm/analog:o")) ||
+                (dd_left_leg  && !Network::exists("/" + robot_name + "/left_leg/analog:o"))  ||
+                (dd_right_leg && !Network::exists("/" + robot_name + "/right_leg/analog:o")) )
                 {     
                     yError("Unable to detect the presence of F/T sensors in your iCub...quitting\n");
                     return false;
@@ -590,14 +590,12 @@ public:
 
         //---------------OPEN RPC PORT--------------------//
         string rpcPortName = "/"+local_name+"/rpc:i";
-        rpcPort.open(rpcPortName.c_str());
+        rpcPort.open(rpcPortName);
         attach(rpcPort);                  
 
         //---------------OPEN INERTIAL PORTS--------------------//
-        port_filtered_output.open(string("/"+local_name+"/filtered/inertial:o").c_str());
-        port_inertial_input = new dataFilter(port_filtered_output, rf);
-        port_inertial_input->useCallback();
-        port_inertial_input->open(string("/"+local_name+"/unfiltered/inertial:i").c_str());
+        port_filtered_output.open("/"+local_name+"/filtered/inertial:o");
+        inertialFilter = new dataFilter(port_filtered_output, m_iGyro, m_iAcc);
 
         //--------------------------THREAD--------------------------
         inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, icub_type, autoconnect);
