@@ -194,7 +194,7 @@ private:
     bool     default_ee_cont;       // true: when skin detects no contact, the ext contact is supposed at the end effector
                                     // false: ext contact is supposed at the last location where skin detected a contact
     
-    dataFilter *port_inertial_input;
+    dataFilter *port_inertial_input{};
     BufferedPort<Vector> port_filtered_output;    
     Port rpcPort;
 

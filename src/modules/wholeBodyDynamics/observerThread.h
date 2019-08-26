@@ -73,7 +73,7 @@ class iCubStatus
 
     Vector inertial_w0,inertial_dw0,inertial_d2p0;
 
-    bool iCub_not_moving;
+    bool iCub_not_moving{};
 
     iCubStatus ()
     {
