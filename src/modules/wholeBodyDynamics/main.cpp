@@ -137,7 +137,7 @@ private:
     BufferedPort<Vector> &port_filtered_output;
     Vector g;
     
-    virtual void onRead(Bottle &b)
+    void onRead(Bottle &b) override
     {
         Stamp info;
         BufferedPort<Bottle>::getEnvelope(info);
@@ -280,7 +280,7 @@ public:
         return true;
     }
 
-    bool respond(const Bottle& command, Bottle& reply) 
+    bool respond(const Bottle& command, Bottle& reply) override
     {
         reply.clear(); 
         
@@ -338,7 +338,7 @@ public:
         return true;
     }
 
-    bool configure(ResourceFinder &rf)
+    bool configure(ResourceFinder &rf) override
     {
         //---------------------LOCAL NAME-----------------------//
         string local_name = "wholeBodyDynamics";
@@ -619,7 +619,7 @@ public:
         return true;
     }
 
-    bool close()
+    bool close() override
     {
         //The order of execution of the following closures is important, do not change it.
         yInfo("Closing wholeBodyDynamics module... \n");     
@@ -703,11 +703,11 @@ public:
         return true;
     }
 
-    double getPeriod()
+    double getPeriod() override
     {
         return 1.0;
     }
-    bool updateModule() 
+    bool updateModule() override
     {
         double avgTime, stdDev, period;
         period = inv_dyn->getPeriod();

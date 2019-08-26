@@ -310,15 +310,15 @@ private:
 
 public:
     inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, version_tag icub_type, bool _autoconnect=false );
-    bool threadInit();
+    bool threadInit() override;
     void setStiffMode();
     inline thread_status_enum getThreadStatus() 
     {
         return thread_status;
     }
 
-    void run();
-    void threadRelease();
+    void run() override;
+    void threadRelease() override;
     void closePort(Contactable *_port);
     void writeTorque(Vector _values, int _address, BufferedPort<Bottle> *_port);
     template <class T> void broadcastData(T& _values, BufferedPort<T> *_port);
