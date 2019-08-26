@@ -487,7 +487,7 @@ bool inverseDynamics::threadInit()
     {
         //read joints and ft sensor
         bool ret = readAndUpdate(true,true);
-        if (ret == false)
+        if (!ret)
         {
             yError("A problem occured during the initial readAndUpdate(), stopping... \n");
             thread_status = STATUS_DISCONNECTED;
@@ -544,7 +544,7 @@ void inverseDynamics::run()
 
     thread_status = STATUS_OK;
     static int delay_check=0;
-    if(readAndUpdate(false) == false)
+    if(!readAndUpdate(false))
     {
         delay_check++;
         yWarning ("network delays detected (%d/10)\n", delay_check);
@@ -571,7 +571,7 @@ void inverseDynamics::run()
 
     //check if iCub is currently moving. If not, put the current iCub positions in the status queue
     current_status.iCub_not_moving = current_status.checkIcubNotMoving();
-    if (current_status.iCub_not_moving == true)
+    if (current_status.iCub_not_moving)
     {
         not_moving_status.push_front(current_status);
         if (not_moving_status.size()>status_queue_size) 
@@ -588,7 +588,7 @@ void inverseDynamics::run()
     }
 
     // THIS BLOCK SHOULD BE NOW DEPRECATED
-    if (w0_dw0_enabled == false)
+    if (!w0_dw0_enabled)
     {
         //if w0 and dw0 are too noisy, you can disable them using 'no_w0_dw0' option
         current_status.inertial_w0.zero();

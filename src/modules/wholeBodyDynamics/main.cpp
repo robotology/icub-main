@@ -580,10 +580,10 @@ public:
         //--------------------CHECK FT SENSOR------------------------
         if (!dummy_ft)
         {
-            if ((dd_left_arm  && Network::exists(string("/"+robot_name+"/left_arm/analog:o").c_str())  == false ) || 
-                (dd_right_arm && Network::exists(string("/"+robot_name+"/right_arm/analog:o").c_str()) == false ) ||
-                (dd_left_leg  && Network::exists(string("/"+robot_name+"/left_leg/analog:o").c_str())  == false ) ||
-                (dd_right_leg && Network::exists(string("/"+robot_name+"/right_leg/analog:o").c_str()) == false ) )
+            if ((dd_left_arm  && !Network::exists(string("/" + robot_name + "/left_arm/analog:o").c_str())) ||
+                (dd_right_arm && !Network::exists(string("/" + robot_name + "/right_arm/analog:o").c_str())) ||
+                (dd_left_leg  && !Network::exists(string("/" + robot_name + "/left_leg/analog:o").c_str())) ||
+                (dd_right_leg && !Network::exists(string("/" + robot_name + "/right_leg/analog:o").c_str())) )
                 {     
                     yError("Unable to detect the presence of F/T sensors in your iCub...quitting\n");
                     return false;
