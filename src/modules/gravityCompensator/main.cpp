@@ -193,14 +193,13 @@ public:
         return true;
     }
 
-    bool configure(ResourceFinder &rf)
-    {       
+    bool configure(ResourceFinder &rf) override
+    {
         string fwdSlash = "/";
 
         string name;
         name = "gravityCompensator";    
-        
-        int rate;
+
         if (rf.check("period"))
             rate = rf.find("period").asInt();
         else rate = 20;
@@ -450,7 +449,7 @@ public:
     }
 
 
-    bool close()
+    bool close() override
     {
         //stop thread 
         if(g_comp)
@@ -474,8 +473,8 @@ public:
         return true;
     }
 
-    double getPeriod()  { return 1.0;  }
-    bool updateModule()
+    double getPeriod() override { return 1.0;  }
+    bool updateModule() override
     {
         static unsigned long int alive_counter = 0;
         static double curr_time = Time::now();

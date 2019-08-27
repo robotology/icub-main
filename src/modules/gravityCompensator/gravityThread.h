@@ -172,11 +172,10 @@ public:
     bool readAndUpdate(bool waitMeasure=false);
     bool getLowerEncodersSpeedAndAcceleration();
     bool getUpperEncodersSpeedAndAcceleration();
-    bool threadInit();
-    void feedFwdGravityControl(int part_ctrlJnt, std::string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing=false);
-    void run();
-    void threadRelease();
-    void closePort(Contactable *_port);
+    bool threadInit() override;
+    void feedFwdGravityControl(int part_ctrlJnt, const std::string& s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing=false);
+    void run() override;
+    void threadRelease() override;
 
     inline thread_status_enum getThreadStatus() 
     {
