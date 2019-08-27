@@ -205,7 +205,7 @@ gravityCompensatorThread::gravityCompensatorThread(string _wholeBodyName, int _r
 {   
     gravity_mode = GRAVITY_COMPENSATION_ON;
     external_mode = EXTERNAL_TRQ_ON;
-    wholeBodyName = _wholeBodyName;
+    wholeBodyName = std::move(_wholeBodyName);
 
     //--------------INTERFACE INITIALIZATION-------------//
     iencs_arm_left        = nullptr;
@@ -575,7 +575,7 @@ bool gravityCompensatorThread::threadInit()
 }
 
 
-void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing)
+void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, const string& s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing)
 {
     //check if interfaces are still up (icubinterface running)  
     if (iCtrlMode == nullptr)
@@ -868,7 +868,7 @@ void gravityCompensatorThread::run()
     }
     else
     {
-        if(Network::exists(string("/"+wholeBodyName+"/filtered/inertial:o").c_str()))
+        if(Network::exists("/"+wholeBodyName+"/filtered/inertial:o"))
         {
             yInfo("connection exists! starting calibration...\n");
             //the following delay is required because even if the filtered port exists, may be the 
@@ -876,7 +876,7 @@ void gravityCompensatorThread::run()
             Time::delay(1.0); 
 
             isCalibrated = true;
-            Network::connect(string("/"+wholeBodyName+"/filtered/inertial:o").c_str(),"/gravityCompensator/inertial:i");
+            Network::connect("/"+wholeBodyName+"/filtered/inertial:o","/gravityCompensator/inertial:i");
             setZeroJntAngVelAcc();
             setUpperMeasure();
             setLowerMeasure();

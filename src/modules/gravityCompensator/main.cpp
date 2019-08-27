@@ -266,7 +266,7 @@ public:
         {
             OptionsHead.put("device","remote_controlboard");
             OptionsHead.put("local","/gravityCompensator/head/client");
-            OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
+            OptionsHead.put("remote","/"+robot_name+"/head");
 
             if (!createDriver(dd_head, OptionsHead))
             {
@@ -279,7 +279,7 @@ public:
         {
             OptionsLeftArm.put("device","remote_controlboard");
             OptionsLeftArm.put("local","/gravityCompensator/left_arm/client");
-            OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
+            OptionsLeftArm.put("remote","/"+robot_name+"/left_arm");
             if (!createDriver(dd_left_arm,OptionsLeftArm))
             {
                 yError("unable to create left arm device driver...quitting\n");
@@ -291,7 +291,7 @@ public:
         {
             OptionsRightArm.put("device","remote_controlboard");
             OptionsRightArm.put("local","/gravityCompensator/right_arm/client");
-            OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
+            OptionsRightArm.put("remote","/"+robot_name+"/right_arm");
             if (!createDriver(dd_right_arm,OptionsRightArm))
             {
                 yError("unable to create right arm device driver...quitting\n");
@@ -303,7 +303,7 @@ public:
         {
             OptionsLeftLeg.put("device","remote_controlboard");
             OptionsLeftLeg.put("local","/gravityCompensator/left_leg/client");
-            OptionsLeftLeg.put("remote",string("/"+robot_name+"/left_leg").c_str());
+            OptionsLeftLeg.put("remote","/"+robot_name+"/left_leg");
             if (!createDriver(dd_left_leg,OptionsLeftLeg))
             {
                 yError("unable to create left leg device driver...quitting\n");
@@ -312,7 +312,7 @@ public:
 
             OptionsRightLeg.put("device","remote_controlboard");
             OptionsRightLeg.put("local","/gravityCompensator/right_leg/client");
-            OptionsRightLeg.put("remote",string("/"+robot_name+"/right_leg").c_str());
+            OptionsRightLeg.put("remote","/"+robot_name+"/right_leg");
             if (!createDriver(dd_right_leg,OptionsRightLeg))
             {
                 yError("unable to create right leg device driver...quitting\n");
@@ -324,7 +324,7 @@ public:
         {
             OptionsTorso.put("device","remote_controlboard");
             OptionsTorso.put("local","/gravityCompensator/torso/client");
-            OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
+            OptionsTorso.put("remote","/"+robot_name+"/torso");
 
             if (!createDriver(dd_torso,OptionsTorso))
             {
@@ -335,7 +335,7 @@ public:
         
         yInfo("device driver created\n");
 
-        rpcPort.open(("/"+name+"/rpc").c_str());
+        rpcPort.open("/"+name+"/rpc");
         attach(rpcPort);        
 
         //------------------CHECK FOR WHOLEBODYNAME -----------//
@@ -386,14 +386,14 @@ public:
         return true;
     }
 
-    bool respond(const Bottle& command, Bottle& reply) 
+    bool respond(const Bottle& command, Bottle& reply) override
     {
                         reply.addVocab(Vocab::encode("many"));
                 reply.addString("Available commands:");
                 reply.addString("calib all");
 
         Bottle position_bot;
-        string helpMessage =  string(getName().c_str()) + 
+        string helpMessage =  getName() +
                             " commands are: \n" +  
                             "help         to display this message\n" + 
                             "gravity_on   to enabl e the gravity compensation \n" + 
