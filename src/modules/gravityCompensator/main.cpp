@@ -66,25 +66,17 @@ the module add offset values which are assigned to the IImpedanceControl interfa
 This file can be edited at \in src/gravityCompensator/main.cpp.
 */ 
 
-#include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
-#include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/sig/Vector.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
-#include <iCub/ctrl/math.h>
-#include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>
 
 #include <iostream>
-#include <iomanip>
-#include <string.h>
 
 #include "gravityThread.h"
 
