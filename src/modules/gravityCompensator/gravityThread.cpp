@@ -1008,8 +1008,3 @@ void gravityCompensatorThread::threadRelease()
     to_additional_offset->close();
     if (icub)      {delete icub; icub=nullptr;}
 }
-
-void gravityCompensatorThread::closePort(Contactable *_port)
-{
-}
-

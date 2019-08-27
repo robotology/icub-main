@@ -38,12 +38,9 @@ using namespace yarp::dev;
 using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 
-#define MAX_JN 12
-#define MAX_FILTER_ORDER 6
 enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
 enum{GRAVITY_COMPENSATION_OFF = 0, GRAVITY_COMPENSATION_ON = 1};
 enum{EXTERNAL_TRQ_OFF = 0, EXTERNAL_TRQ_ON = 1};
-enum{TORQUE_INTERFACE = 0, IMPEDANCE_POSITION = 1, IMPEDANCE_VELOCITY = 2};
 
 class gravityCompensatorThread: public yarp::os::PeriodicThread
 {
