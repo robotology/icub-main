@@ -656,9 +656,9 @@ void gravityCompensatorThread::run()
 {  
     thread_status = STATUS_OK;
     static int delay_check=0;
-    if(isCalibrated==true)
+    if(isCalibrated)
     {
-        if (readAndUpdate(false) == false)
+        if (!readAndUpdate(false))
         {
             delay_check++;
             yWarning ("network delays detected (%d/10)\n", delay_check);
