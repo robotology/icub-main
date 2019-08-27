@@ -93,8 +93,8 @@ using namespace std;
 class gravityModuleCompensator: public RFModule
 {
 private:
-    int rate;
-    gravityCompensatorThread *g_comp;
+    int rate{};
+    gravityCompensatorThread *g_comp{};
 
     Property OptionsLeftArm;
     Property OptionsRightArm;

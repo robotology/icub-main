@@ -109,19 +109,19 @@ private:
     Vector encoders_leg_right;
     Vector encoders_torso;
 
-    Vector *inertial;
+    Vector *inertial{};
 
-    AWLinEstimator  *linEstUp;
-    AWQuadEstimator *quadEstUp;
-    AWLinEstimator  *linEstLow;
-    AWQuadEstimator *quadEstLow;
+    AWLinEstimator  *linEstUp{};
+    AWQuadEstimator *quadEstUp{};
+    AWLinEstimator  *linEstLow{};
+    AWQuadEstimator *quadEstLow{};
 
-    int left_arm_ctrlJnt;
-    int right_arm_ctrlJnt;
-    int left_leg_ctrlJnt;
-    int right_leg_ctrlJnt;
-    int torso_ctrlJnt;
-    int allJnt;
+    int left_arm_ctrlJnt{};
+    int right_arm_ctrlJnt{};
+    int left_leg_ctrlJnt{};
+    int right_leg_ctrlJnt{};
+    int torso_ctrlJnt{};
+    int allJnt{};
 
     iCubWholeBody* icub;
 
