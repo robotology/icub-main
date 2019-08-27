@@ -19,102 +19,121 @@
 #define BVHNODEINERTIAL_H
 
 #include "bvhnodeend.h"
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
+#include <cstring>
 
-#include <string.h>
+constexpr double DEG2RAD=3.14159265/180.0;
 extern std::string GUI_NAME;
-
 class BVHNodeINERTIAL : public BVHNodeEND
 {
 public:
 
-    BVHNodeINERTIAL(const QString& name,double a,double d,double alpha,double theta0,QString portIMUName,iCubMesh* mesh=0)
+    BVHNodeINERTIAL(const QString& name,double a,double d,double alpha,double theta0,const QString& portIMUName,iCubMesh* mesh=nullptr)
         : BVHNodeEND(name,-1,a,d,alpha,theta0,mesh)
         {
-            memset(dInertial,0,sizeof(dInertial));
+            Property masConf {{"device",Value("multipleanalogsensorsclient")},
+                              {"local", Value( GUI_NAME+"/inertials")},
+                              {"remote",Value(portIMUName.toStdString())},
+                              {"timeout",Value(0.04)},
+                              {"externalConnection",Value(true)}};
 
-            portIMU.open((GUI_NAME+"/inertial:i").c_str());
-        }
+            if (!dd_MASClient.open(masConf))
+            {
+                yError("unable to open the MAS client\n");
+            }
+
+            if(!dd_MASClient.view(iAcc) || !dd_MASClient.view(iGyro))
+            {
+                yError("view of one of the MAS interfaces required failed\n");
+            }
+
+            acc.resize(3);
+            gyro.resize(3);
+            }
 
     virtual ~BVHNodeINERTIAL()
     {
-        portIMU.interrupt();
-        portIMU.close();
+        dd_MASClient.close();
         qDebug("CLOSING INERTIAL");
     }
 
-    virtual void drawJoint()
+    void drawJoint() override
     {
-        if (portIMU.getInputCount()>0)
+        if (dd_MASClient.isValid())
         {
-            pIMUData=portIMU.read(false);
+            bool ok{true};
 
-            if (pIMUData)
-            {
-                for (int i=3; i<9; ++i)
-                {
-                    dInertial[i]=pIMUData->get(i).asDouble();
-                }
+            double ts;
 
-                static const double DEG2RAD=3.14159265/180.0;
-                dInertial[6]*=DEG2RAD;
-                dInertial[7]*=DEG2RAD;
-                dInertial[8]*=DEG2RAD;
+            ok &= iAcc->getThreeAxisLinearAccelerometerMeasure(0, acc, ts);
+            ok &= iGyro->getThreeAxisGyroscopeMeasure(0, gyro, ts);
+            if (ok) {
+
+                gyro[0]*=DEG2RAD;
+                gyro[1]*=DEG2RAD;
+                gyro[2]*=DEG2RAD;
+
+                glTranslated(40.0,0.0,230.0);
+                glColor4f(0.4,0.4,1.0,1.0);
+                glutSolidCube(22.0);
+
+                // Accelerometer
+                glLineWidth(3.0);
+                glColor4f(1.0,0.0,0.0,1.0);
+                glBegin(GL_LINES);
+                glVertex3d(0.0,0.0,0.0);
+                glVertex3d(-10.0*acc[0],0.0,0.0);
+                glEnd();
+
+                glColor4f(0.0,1.0,0.0,1.0);
+                glBegin(GL_LINES);
+                glVertex3d(0.0,0.0,0.0);
+                glVertex3d(0.0,-10.0*acc[1],0.0);
+                glEnd();
+
+                glColor4f(0.0,0.0,1.0,1.0);
+                glBegin(GL_LINES);
+                glVertex3d(0.0,0.0,0.0);
+                glVertex3d(0.0,0.0,-10.0*acc[2]);
+                glEnd();
+
+                // Gyro
+
+                glLineWidth(2.0);
+                glDisable(GL_LINE_SMOOTH);
+
+                glColor4f(1.0,0.0,0.0,1.0);
+                glPushMatrix();
+                glRotated(90.0,0.0,1.0,0.0);
+                drawArc(gyro[0]);
+                glPopMatrix();
+
+                glColor4f(0.0,1.0,0.0,1.0);
+                glPushMatrix();
+                glRotated(-90.0,1.0,0.0,0.0);
+                drawArc(gyro[1]);
+                glPopMatrix();
+
+                glColor4f(0.0,0.0,1.0,1.0);
+                glPushMatrix();
+                glRotated(-90.0,0.0,0.0,1.0);
+                drawArc(gyro[2]);
+                glPopMatrix();
+
+                glEnable(GL_LINE_SMOOTH);
+
             }
-
-            glTranslated(40.0,0.0,230.0);
-            glColor4f(0.4,0.4,1.0,1.0);
-            glutSolidCube(22.0);
-
-            // Accelerometer
-            glLineWidth(3.0);
-            glColor4f(1.0,0.0,0.0,1.0);
-            glBegin(GL_LINES);
-            glVertex3d(0.0,0.0,0.0);
-            glVertex3d(-10.0*dInertial[3],0.0,0.0);
-            glEnd();
-
-            glColor4f(0.0,1.0,0.0,1.0);
-            glBegin(GL_LINES);
-            glVertex3d(0.0,0.0,0.0);
-            glVertex3d(0.0,-10.0*dInertial[4],0.0);
-            glEnd();
-
-            glColor4f(0.0,0.0,1.0,1.0);
-            glBegin(GL_LINES);
-            glVertex3d(0.0,0.0,0.0);
-            glVertex3d(0.0,0.0,-10.0*dInertial[5]);
-            glEnd();
-
-            // Gyro
-
-            glLineWidth(2.0);
-            glDisable(GL_LINE_SMOOTH);
-
-            glColor4f(0.0,0.0,1.0,1.0);
-            glPushMatrix();
-            glRotated(-90.0,0.0,0.0,1.0);
-            drawArc(dInertial[8]);
-            glPopMatrix();
-
-            glColor4f(0.0,1.0,0.0,1.0);
-            glPushMatrix();
-            glRotated(-90.0,1.0,0.0,0.0);
-            drawArc(dInertial[7]);
-            glPopMatrix();
-
-            glColor4f(1.0,0.0,0.0,1.0);
-            glPushMatrix();
-            glRotated(90.0,0.0,1.0,0.0);
-            drawArc(dInertial[6]);
-            glPopMatrix();
-
-            glEnable(GL_LINE_SMOOTH);
         }
     }
-protected:
-    double dInertial[12];
-    yarp::os::BufferedPort<yarp::os::Bottle> portIMU;
-    yarp::os::Bottle *pIMUData;
+
+private:
+    yarp::dev::PolyDriver dd_MASClient;
+    yarp::dev::IThreeAxisGyroscopes* iGyro{nullptr};
+    yarp::dev::IThreeAxisLinearAccelerometers* iAcc{nullptr};
+    yarp::sig::Vector gyro;
+    yarp::sig::Vector acc;
+
 };
 
 #endif
