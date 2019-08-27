@@ -338,7 +338,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
             double b=token().toDouble();
             double c=token().toDouble();
             double d=token().toDouble();
-            node=new BVHNodeINERTIAL(sName,a,b,c,d,robot+"/inertial",pMesh);
+            node=new BVHNodeINERTIAL(sName,a,b,c,d,robot+"/head/inertials",pMesh);
         }
         break;
     }
