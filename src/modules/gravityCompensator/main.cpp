@@ -128,12 +128,12 @@ public:
         right_arm_enabled  = true;
         torso_enabled  = true;
         head_enabled  = true;
-        dd_left_arm   = 0;
-        dd_right_arm  = 0;
-        dd_head       = 0;
-        dd_left_leg   = 0;
-        dd_right_leg  = 0;
-        dd_torso      = 0;
+        dd_left_arm   = nullptr;
+        dd_right_arm  = nullptr;
+        dd_head       = nullptr;
+        dd_left_leg   = nullptr;
+        dd_right_leg  = nullptr;
+        dd_torso      = nullptr;
         m_side = "right";
         m_part = "arm";
     }
@@ -151,7 +151,7 @@ public:
             if (_dd)
             {
                 delete _dd;
-                _dd=0;
+                _dd=nullptr;
             }
 
             //creates the new device driver
@@ -174,10 +174,10 @@ public:
         }
         while (true);
 
-        IEncoders         *encs     = 0;
-        IControlMode      *ctrlMode = 0;
-        IImpedanceControl *imp      = 0;
-        ITorqueControl    *tqs      = 0;
+        IEncoders         *encs     = nullptr;
+        IControlMode      *ctrlMode = nullptr;
+        IImpedanceControl *imp      = nullptr;
+        ITorqueControl    *tqs      = nullptr;
 
         bool ok = true;
         ok = ok & _dd->view(encs);
@@ -456,16 +456,16 @@ public:
         if(g_comp)
         {
             g_comp->stop();
-            delete g_comp; g_comp = 0;
+            delete g_comp; g_comp = nullptr;
         }
         
         //closing interfaces
-        if (dd_left_arm)    {delete dd_left_arm;  dd_left_arm=0;  }
-        if (dd_right_arm)   {delete dd_right_arm; dd_right_arm=0; }
-        if (dd_left_leg)    {delete dd_left_leg;  dd_left_leg=0;  }
-        if (dd_right_leg)   {delete dd_right_leg; dd_right_leg=0; }
-        if (dd_head)        {delete dd_head;      dd_head=0;      }
-        if (dd_torso)       {delete dd_torso;     dd_torso=0;     }
+        if (dd_left_arm)    {delete dd_left_arm;  dd_left_arm=nullptr;  }
+        if (dd_right_arm)   {delete dd_right_arm; dd_right_arm=nullptr; }
+        if (dd_left_leg)    {delete dd_left_leg;  dd_left_leg=nullptr;  }
+        if (dd_right_leg)   {delete dd_right_leg; dd_right_leg=nullptr; }
+        if (dd_head)        {delete dd_head;      dd_head=nullptr;      }
+        if (dd_torso)       {delete dd_torso;     dd_torso=nullptr;     }
 
         //closing ports
         rpcPort.interrupt();
@@ -485,7 +485,7 @@ public:
             curr_time = Time::now();
         }
 
-        if (g_comp==0) return false;
+        if (g_comp==nullptr) return false;
 
         thread_status_enum thread_status = g_comp->getThreadStatus();
 
