@@ -709,36 +709,36 @@ void gravityCompensatorThread::run()
         Vector *offset_input_la = la_additional_offset->read(false);
         if(offset_input_la!=nullptr)
         {
-            int size = (offset_input_la->size() < 7) ? offset_input_la->size():7;
-            for (int i=0; i<size; i++)
+            auto size = (offset_input_la->size() < 7) ? offset_input_la->size():7;
+            for (size_t i=0; i<size; i++)
                 {externalcmd_torques_LA[i]=(*offset_input_la)[i];}
         }
         Vector *offset_input_ra = ra_additional_offset->read(false);
         if(offset_input_ra!=nullptr)
         {
-            int size = (offset_input_ra->size() < 7) ? offset_input_ra->size():7;
-            for (int i=0; i<size; i++)
+            auto size = (offset_input_ra->size() < 7) ? offset_input_ra->size():7;
+            for (size_t i=0; i<size; i++)
                 {externalcmd_torques_RA[i]=(*offset_input_ra)[i];}
         }
         Vector *offset_input_ll = ll_additional_offset->read(false);
         if(offset_input_ll!=nullptr)
         {
-            int size = (offset_input_ll->size() < 6) ? offset_input_ll->size():6;
-            for (int i=0; i<size; i++)
+            auto size = (offset_input_ll->size() < 6) ? offset_input_ll->size():6;
+            for (size_t i=0; i<size; i++)
                 {externalcmd_torques_LL[i]=(*offset_input_ll)[i];}
         }
         Vector *offset_input_rl = rl_additional_offset->read(false);
         if(offset_input_rl!=nullptr)
         {
-            int size = (offset_input_rl->size() < 6) ? offset_input_rl->size():6;
-            for (int i=0; i<size; i++)
+            auto size = (offset_input_rl->size() < 6) ? offset_input_rl->size():6;
+            for (size_t i=0; i<size; i++)
                 {externalcmd_torques_RL[i]=(*offset_input_rl)[i];}
         }
         Vector *offset_input_to = to_additional_offset->read(false);
         if(offset_input_to!=nullptr)
         {
-            int size = (offset_input_to->size() < 3) ? offset_input_to->size():3;
-            for (int i=0; i<size; i++)
+            auto size = (offset_input_to->size() < 3) ? offset_input_to->size():3;
+            for (size_t i=0; i<size; i++)
                 {externalcmd_torques_TO[i]=(*offset_input_to)[i];}
         }
 
