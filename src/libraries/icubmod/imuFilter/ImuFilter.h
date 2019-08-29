@@ -45,8 +45,114 @@ namespace yarp {
 }
 
 /**
- * bla bla bla
+* @ingroup icub_mod_library
+* @brief imuFilter.h device driver for apply a filter to remove gyro bias
 */
+
+/**
+*
+\defgroup icub_imuFilter imuFilter
+
+This device driver applies filtering to remove gyro bias. \n
+At startup it tries to attach directly to the IMU devcice of the specified robot
+or through a MultipleAnalogSensorClient(using the subdevice mechanism).
+
+\section parameters_sec Parameters
+
+--name("imuFilter")          // module's name; all the open ports will be tagged with the prefix /name.
+
+--robot("icub")              // name of the robot to connect to.
+
+--gyro-order(5)              // Order of the median filter for the gyro data
+
+--mag-order(51)              // Order of the median filter for the magnetometer data.
+
+--mag-vel-thres-up(0.04)     // Magnetic field up-threshold for stopping bias adaption.
+
+--mag-vel-thres-down(0.02)   // Magnetic field down-threshold for starting bias adaption.
+
+--bias-gain(0.001)           // Gain to integrate gyro bias.
+
+--verbose(false)             // If specified enable verbosity.
+
+--proxy-remote               // Required only if run with multipleanalgosensorsclient as subdevice, port prefix of the multipleanalogsensorsserver publishing the imu.
+
+--proxy-local                // Required only if run with multipleanalgosensorsclient as subdevice, port prefix of the multipleanalogsensorsclinet to be created.
+
+\subsection deployment how to run the imuFilter
+
+The `imuFilter` can be instantiated using the yarprobotinterface with the following xml files:
+
+\code{.xml}
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
+
+
+    <device xmlns:xi="http://www.w3.org/2001/XInclude" name="head-imuFilter" type="imuFilter">
+        <param name="period">       10                  </param>
+        <param name="name">     /imuFilter       </param>
+
+
+        <action phase="startup" level="5" type="attach">
+            <paramlist name="networks">
+                <!-- The name of the element can be any string (we use SetOfIMUs to better express its nature).
+                     Its value must match the device name in the corresponding body_part-jx_y-inertials.xml file
+                     or in body_part-ebX-inertials.xml -->
+                <elem name="SetOfIMUs"> head-inertial</elem>
+            </paramlist>
+        </action>
+
+        <action phase="shutdown" level="5" type="detach" />
+    </device
+\endcode
+
+\code{.xml}
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
+
+
+    <device xmlns:xi="http://www.w3.org/2001/XInclude" name="head-imuFilter_wrapper" type="multipleanalogsensorsserver">
+        <param name="period">       10                  </param>
+        <param name="name">     /imuFilter       </param>
+
+
+        <action phase="startup" level="6" type="attach">
+            <paramlist name="networks">
+                <!-- The name of the element can be any string (we use SetOfIMUs to better express its nature).
+                     Its value must match the device name in the corresponding body_part-jx_y-inertials.xml file
+                     or in body_part-ebX-inertials.xml -->
+                <elem name="SetOfIMUs"> head-imuFilter </elem>
+            </paramlist>
+        </action>
+
+        <action phase="shutdown" level="6" type="detach" />
+    </device>
+\endcode
+
+Alternatively it can be run using yarpdev through this command line:
+
+yarpdev --device imuFilter --subdevice multipleanalogsensorsclient --proxy-remote MASServerName --proxy-local MASClientName
+
+\section usage_sec  Usage
+
+The canonical way to use the imuFilter is to instantiate in the client
+code a MultipleAnalogSensorsClient specifying as <remote> argument the <name> used
+for the imuFilter.
+
+Another way is reading through the streaming port <name>/measures:o.
+
+\section portsc_sec Ports Created
+
+The imuFilter device is executed combined with the network wrapper multipleanalogsensorsserver. It opens the followig ports:
+
+Output ports:
+
+- <name>/bias:o         streams out a yarp::sig::Vector representing the current estimate of the gyro bias.
+- <name>/measures:o     streams out the imu data filtered serialized through the yarp::os::Bottle.
+- <name>/rpc:o          rpc to retrieve the MultipleAnalogSensorsMetadata.
+
+\author Ugo Pattacini, Nicolo' Genesio
+**/
 
 
 class yarp::dev::ImuFilter :  public yarp::os::PeriodicThread,
