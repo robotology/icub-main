@@ -5,7 +5,7 @@
 yarp_prepare_plugin(embObjIMU    CATEGORY device
                                  TYPE yarp::dev::embObjIMU
                                  INCLUDE embObjIMU.h
-                                 EXTRA_CONFIG WRAPPER=multipleanalogsensorsserver)
+                                 EXTRA_CONFIG WRAPPER=inertial)
 
 IF (NOT SKIP_embObjIMU)
 
@@ -20,7 +20,11 @@ IF (NOT SKIP_embObjIMU)
   TARGET_LINK_LIBRARIES(embObjIMU ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
   icub_export_plugin(embObjIMU)
 
-  yarp_install(FILES embObjIMU.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+        yarp_install(TARGETS embObjIMU
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 ENDIF (NOT SKIP_embObjIMU)
 

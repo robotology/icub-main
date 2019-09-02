@@ -5,8 +5,7 @@
 yarp_prepare_plugin(socketcan
     CATEGORY device
     TYPE yarp::dev::SocketCan
-    INCLUDE SocketCan.h 
-    EXTRA_CONFIG WRAPPER=controlboard)
+    INCLUDE SocketCan.h )
 
 IF (NOT SKIP_socketcan)
  
@@ -17,7 +16,13 @@ IF (NOT SKIP_socketcan)
 	    yarp_add_plugin(socketcan SocketCan.cpp SocketCan.h)
 	    TARGET_LINK_LIBRARIES(socketcan ${YARP_LIBRARIES})   
 	    icub_export_plugin(socketcan)
-       yarp_install(FILES socketcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
+  yarp_install(TARGETS socketcan
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
     ENDIF(WIN32)
 
 ENDIF (NOT SKIP_socketcan)

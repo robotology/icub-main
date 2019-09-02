@@ -5,7 +5,7 @@
 yarp_prepare_plugin(embObjStrain CATEGORY device
                                  TYPE yarp::dev::embObjStrain
                                  INCLUDE embObjStrain.h
-                                 EXTRA_CONFIG WRAPPER=AnalogServer)
+                                 EXTRA_CONFIG WRAPPER=analogServer)
 
 IF (NOT SKIP_embObjStrain)
 
@@ -20,7 +20,11 @@ IF (NOT SKIP_embObjStrain)
   TARGET_LINK_LIBRARIES(embObjStrain ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
   icub_export_plugin(embObjStrain)
 
-  yarp_install(FILES embObjStrain.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+  yarp_install(TARGETS embObjStrain
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 ENDIF (NOT SKIP_embObjStrain)
 

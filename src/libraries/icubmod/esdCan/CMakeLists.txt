@@ -5,8 +5,7 @@
 yarp_prepare_plugin(ecan
     CATEGORY device
     TYPE yarp::dev::EsdCan
-    INCLUDE EsdCan.h 
-    EXTRA_CONFIG WRAPPER=controlboard)
+    INCLUDE EsdCan.h )
 
 IF (NOT SKIP_ecan)
   FIND_PACKAGE(ESDCANAPI)
@@ -24,7 +23,13 @@ IF (NOT SKIP_ecan)
     TARGET_LINK_LIBRARIES(esdCan ${ESDCANAPI_LIB} ${YARP_LIBRARIES})
     
     icub_export_plugin(esdCan)
-    yarp_install(FILES esdcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
+  yarp_install(TARGETS esdCan
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
   ENDIF(NOT ESDCANAPI_FOUND)
 
 ENDIF (NOT SKIP_ecan)

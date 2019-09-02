@@ -19,7 +19,11 @@ if(NOT SKIP_cartesiancontrollerserver)
    yarp_add_plugin(cartesiancontrollerserver ${server_source} ${server_header})
    target_link_libraries(cartesiancontrollerserver iKin ${YARP_LIBRARIES})
    icub_export_plugin(cartesiancontrollerserver)
-   yarp_install(FILES cartesiancontrollerserver.ini DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+      yarp_install(TARGETS cartesiancontrollerserver
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 endif()
 
 yarp_prepare_plugin(cartesiancontrollerclient CATEGORY device
@@ -37,7 +41,11 @@ if(NOT SKIP_cartesiancontrollerclient)
    target_link_libraries(cartesiancontrollerclient iKin ${YARP_LIBRARIES})
 
    icub_export_plugin(cartesiancontrollerclient)
-   yarp_install(FILES cartesiancontrollerclient.ini DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+     yarp_install(TARGETS cartesiancontrollerclient
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 endif()
 
 

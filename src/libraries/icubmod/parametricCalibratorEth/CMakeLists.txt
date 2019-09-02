@@ -11,5 +11,11 @@ if(ENABLE_parametricCalibratorEth)
     yarp_add_plugin(parametricCalibratorEth parametricCalibratorEth.h parametricCalibratorEth.cpp)
     target_link_libraries(parametricCalibratorEth ${YARP_LIBRARIES})
     icub_export_plugin(parametricCalibratorEth)
-    yarp_install(FILES parametricCalibratorEth.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
+  yarp_install(TARGETS parametricCalibratorEth
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
 endif(ENABLE_parametricCalibratorEth)
