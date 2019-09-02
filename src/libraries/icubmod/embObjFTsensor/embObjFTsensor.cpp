@@ -67,6 +67,14 @@ bool embObjFTsensor::initialised()
 
 bool embObjFTsensor::enableTemperatureTransmission(bool enable)
 {
+    if(GET_privData(mPriv).res==nullptr)
+    {
+        //This check is necessary because the function is called by destructor and we cannot be sure that open function has been invoked before its deletion.
+        //Please notice that yarp::dev::DriversHelper::load() function creates this object and then destroys it without calls the open().
+        //Here I don't give error neither warning, because the load function is called to load this devicedriver at yarprobotinterface startup, so it is the wanted behaviour.
+        return false;
+    }
+
     uint8_t cmd;
     (enable) ? cmd =1: cmd=0;
 
