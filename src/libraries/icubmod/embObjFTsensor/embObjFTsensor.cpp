@@ -188,7 +188,12 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
     }
 
     // start the configured sensors. so far, we must keep it in here. later on we can remove this command
-    enableTemperatureTransmission(true);
+    if(!enableTemperatureTransmission(true))
+    {
+        yError() << getBoardInfo() << "open() fails to enable temperature transmission";
+        cleanup();
+        return false;
+    }
 
     GET_privData(mPriv).setOpen(true);
     return true;
