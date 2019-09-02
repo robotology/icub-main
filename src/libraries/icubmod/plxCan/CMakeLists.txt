@@ -4,8 +4,7 @@
 
 yarp_prepare_plugin(pcan TYPE yarp::dev::PlxCan
     CATEGORY device
-    INCLUDE PlxCan.h 
-    EXTRA_CONFIG WRAPPER="")
+    INCLUDE PlxCan.h )
 
 if (NOT SKIP_pcan)
   FIND_PACKAGE(PLXCANAPI)
@@ -23,7 +22,13 @@ if (NOT SKIP_pcan)
         TARGET_LINK_LIBRARIES(pcan ${PLXCANAPI_LIB} ${YARP_LIBRARIES})
         
         icub_export_plugin(pcan)
-        yarp_install(FILES pcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
+  yarp_install(TARGETS pcan
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+
   ENDIF (NOT PLXCANAPI_FOUND)
   
 endif (NOT SKIP_pcan)

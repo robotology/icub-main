@@ -25,7 +25,11 @@ yarp_prepare_plugin(embObjMotionControl
     TARGET_LINK_LIBRARIES(embObjMotionControl ethResources iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES})
     icub_export_plugin(embObjMotionControl)
     
-    yarp_install(FILES embObjMotionControl.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+      yarp_install(TARGETS embObjMotionControl
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
         
 ENDIF (NOT SKIP_embObjMotionControl)
 

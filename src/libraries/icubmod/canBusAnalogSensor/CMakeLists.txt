@@ -2,7 +2,7 @@
 # Authors: Marco Randazzo <marco.randazzo@iit.it>
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_plugin(canBusAnalogSensor CATEGORY device TYPE CanBusAnalogSensor INCLUDE CanBusAnalogSensor.h EXTRA_CONFIG WRAPPER=AnalogServer)
+yarp_prepare_plugin(canBusAnalogSensor CATEGORY device TYPE CanBusAnalogSensor INCLUDE CanBusAnalogSensor.h EXTRA_CONFIG WRAPPER=analogServer)
 
 if(NOT SKIP_canBusAnalogSensor)
 
@@ -15,7 +15,11 @@ target_link_libraries(canBusAnalogSensor ${YARP_LIBRARIES})
 
 icub_export_plugin(canBusAnalogSensor)
 
-yarp_install(FILES canBusAnalogSensor.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+  yarp_install(TARGETS canBusAnalogSensor
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 else(ICUB_HAS_icub_firmware_shared)
   message(ERROR " canBusAnalogSensor: cannot find icub_firmware_shared library, turn off device

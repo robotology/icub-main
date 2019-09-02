@@ -40,7 +40,11 @@ if(ICUB_HAS_icub_firmware_shared)
    TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES})
 
    icub_export_plugin(canmotioncontrol)
-   yarp_install(FILES canmotioncontrol.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+            yarp_install(TARGETS canmotioncontrol
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 else(ICUB_HAS_icub_firmware_shared)
   message(ERROR " canBusMotionControl: cannot find icub_firmware_shared library, turn off device

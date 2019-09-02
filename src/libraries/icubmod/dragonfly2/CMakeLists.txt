@@ -46,7 +46,12 @@ IF(NOT SKIP_dragonfly2)
   yarp_add_plugin(dragonfly2 common/DragonflyDeviceDriver2.h common/DragonflyDeviceDriver2.cpp ${EXTRA_SOURCES})
   target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
   icub_export_plugin(dragonfly2)
-  yarp_install(FILES dragonfly2.ini dragonfly2raw.ini DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+  
+          yarp_install(TARGETS dragonfly2
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
   if(NOT WIN32)
     add_executable(firewirebusreset linux/fwBusReset_main.cpp ${EXTRA_SOURCES})

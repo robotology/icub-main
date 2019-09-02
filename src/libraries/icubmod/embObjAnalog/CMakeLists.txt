@@ -5,7 +5,7 @@
 yarp_prepare_plugin(embObjAnalogSensor CATEGORY device
                                        TYPE yarp::dev::embObjAnalogSensor
                                        INCLUDE embObjAnalogSensor.h
-                                       EXTRA_CONFIG WRAPPER=AnalogServer)
+                                       EXTRA_CONFIG WRAPPER=analogServer)
 
 IF (NOT SKIP_embObjAnalogSensor)
 
@@ -19,7 +19,11 @@ IF (NOT SKIP_embObjAnalogSensor)
   TARGET_LINK_LIBRARIES(embObjAnalogSensor ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
   icub_export_plugin(embObjAnalogSensor)
 
-  yarp_install(FILES embObjAnalogSensor.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+          yarp_install(TARGETS embObjAnalogSensor
+               COMPONENT Runtime
+               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 ENDIF (NOT SKIP_embObjAnalogSensor)
 
