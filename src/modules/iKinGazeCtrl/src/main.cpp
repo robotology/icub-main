@@ -173,6 +173,9 @@ Factors</a>.
   contribution"</i>. If <i>imu::mode</i> is "off", then the gain
   is 0.0 by default. Values of the gain greater than 1.0 mean
   <i>"contribution amplified"</i>.
+--imu::timeout
+- Specify the read timeout (in seconds) for the imu data. The
+  default is 0.04 seconds.
 
 --ocr \e gain
 - Specify the contribution of the oculo-collic reflex (OCR) in
@@ -1181,9 +1184,12 @@ public:
         string remoteInertialName="/"+commData.robotName+"/head/inertials";
         string localInertialName=commData.localStemName+"/head/inertials";
 
+        float imuTimeout {0.04};
         // check if we have to retrieve IMU data from a different port
         if (imuGroup.check("source_port_name"))
             remoteInertialName=imuGroup.find("source_port_name").asString();
+        if (imuGroup.check("timeout"))
+            imuTimeout=imuGroup.find("timeout").asFloat32();
 
         Property optTorso("(device remote_controlboard)");
         optTorso.put("remote",remoteTorsoName);
@@ -1233,7 +1239,8 @@ public:
         {
             Property mas_conf{{"device", Value("multipleanalogsensorsclient")},
                               {"remote", Value(remoteInertialName)},
-                              {"local",  Value(localInertialName)}};
+                              {"local",  Value(localInertialName)},
+                              {"timeout",Value(imuTimeout)}};
 
             if (!(mas_client.open(mas_conf)))
             {
