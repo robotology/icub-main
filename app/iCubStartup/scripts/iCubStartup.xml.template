@@ -57,7 +57,7 @@
                 <node>pwrNode5</node>
                 <dependencies>
                     <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
-                    <port timeout="60">/imuFilter/inertial:o</port>
+                    <port timeout="60">/imuFilter/measures:o</port>
                 </dependencies>
         </module>
 
@@ -91,18 +91,5 @@
                 </dependencies>
         </module>
 
-        <module>
-                <name>imuFilter</name>
-                <node>pc104</node>
-                <dependencies>
-                    <port timeout="60">/icub/inertial</port>
-                </dependencies>
-        </module>
-
-        <connection>
-                <from>/icub/inertial</from>
-                <to>/imuFilter/inertial:i</to>
-                <protocol>tcp</protocol>
-        </connection>
 
 </application>
