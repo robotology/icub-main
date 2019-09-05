@@ -297,6 +297,8 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     startupPosThreshold = new double[n_joints];
     disableHomeAndPark = new int[n_joints];
     disableStartupPosCheck = new int[n_joints];
+    original_max_pwm = new double[n_joints];
+    limited_max_pwm = new double[n_joints];
 
     for (int i = 0; i < n_joints; i++) timeout_goToZero[i] = 10;
     for (int i = 0; i < n_joints; i++) timeout_calibration[i] = 20;
@@ -585,8 +587,6 @@ bool parametricCalibratorEth::calibrate()
         yWarning() << deviceName << " is calibrating only a subset of the robot part. Calibrating " << totJointsToCalibrate << " over a total of " << n_joints;
     }
 
-    original_max_pwm = new double[n_joints];
-    limited_max_pwm = new double[n_joints];
 
     if(skipCalibration)
         yWarning() << deviceName << ": skipCalibration flag is on! Setting safe pid but skipping calibration.";
