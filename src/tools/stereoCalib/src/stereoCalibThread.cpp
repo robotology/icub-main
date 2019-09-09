@@ -33,7 +33,8 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     int tmp=stereoCalibOpts.check("MonoCalib", Value(0)).asInt();
     this->stereo= tmp?false:true;
     this->camCalibFile=rf.getHomeContextPath().c_str();
-
+    this->standalone = rf.check("standalone") &&
+                  rf.check("standalone", yarp::os::Value(true)).asBool();
     string fileName= "outputCalib.ini"; //rf.find("from").asString().c_str();
 
     this->camCalibFile=this->camCalibFile+"/"+fileName.c_str();
@@ -43,6 +44,30 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
 
 bool stereoCalibThread::threadInit()
 {
+/* FOR DEBUG LOAD IMAGES FROM FILE
+    std::string path = "/home/icub/.local/share/yarp/contexts/cameraCalibration/calibImg_00050";
+    std::vector<string> imListL;
+    std::vector<string> imListR;
+    std::vector<string> imList;
+    for (int i = 1; i <= 30; i++) {
+	std::stringstream ssLeft;
+	ssLeft << path << "/left" << i << ".png";
+	imList.push_back(ssLeft.str());
+	imListL.push_back(ssLeft.str());
+	std::stringstream ssRight;
+	ssRight << path << "/right" << i << ".png";
+	imList.push_back(ssRight.str());
+	imListR.push_back(ssRight.str());
+    }
+    yInfo(" Running Left Camera Calibration... \n");
+    monoCalibration(imListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL);
+
+    yInfo(" Running Right Camera Calibration... \n");
+    monoCalibration(imListR,this->boardWidth,this->boardHeight,this->Kright,this->DistR);
+
+    stereoCalibration(imList,  this->boardWidth,this->boardHeight,this->squareSize);
+*/
+
      if (!imagePortInLeft.open(inputLeftPortName.c_str())) {
       cout  << ": unable to open port " << inputLeftPortName << endl;
       return false;
@@ -64,7 +89,7 @@ bool stereoCalibThread::threadInit()
    }
 
     //mono calibration does not need the joint positions initialised below
-    if(!stereo) return true;
+    if(!stereo || standalone) return true;
 
     Property optHead;
     optHead.put("device","remote_controlboard");
@@ -219,7 +244,7 @@ void stereoCalibThread::stereoCalibRun()
                     stereoCalibration(imageListLR, this->boardWidth,this->boardHeight,this->squareSize);
 
                     yInfo(" Saving Calibration Results... \n");
-                    updateIntrinsics(Left.cols,Left.rows,Kright.at<double>(0,0),Kright.at<double>(1,1),Kright.at<double>(0,2),Kright.at<double>(1,2),DistR.at<double>(0,0),DistR.at<double>(0,1),DistR.at<double>(0,2),DistR.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
+                    updateIntrinsics(Right.cols,Right.rows,Kright.at<double>(0,0),Kright.at<double>(1,1),Kright.at<double>(0,2),Kright.at<double>(1,2),DistR.at<double>(0,0),DistR.at<double>(0,1),DistR.at<double>(0,2),DistR.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
                     updateIntrinsics(Left.cols,Left.rows,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_LEFT");
 
                     Mat Rot=Mat::eye(3,3,CV_64FC1);
@@ -683,6 +708,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
     imagePoints[0].resize(nimages);
     imagePoints[1].resize(nimages);
     std::vector<string> goodImageList;
+    bool differentSizes = false;
 
     for( i = j = 0; i < nimages; i++ )
     {
@@ -696,8 +722,8 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                 imageSize = img.size();
             else if( img.size() != imageSize )
             {
-                cout << "The image " << filename << " has the size different from the first image size. Skipping the pair\n";
-                break;
+                yWarning() <<"The image " << filename << " has the size different from the first image size.\n";
+                differentSizes = true;
             }
             bool found = false;
             std::vector<Point2f>& corners = imagePoints[k][j];
@@ -757,9 +783,12 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
 
     Mat cameraMatrix[2], distCoeffs[2];
     Mat E, F;
-
     if(this->Kleft.empty() || this->Kright.empty())
     {
+        if (differentSizes){
+            yError("Images have different sizes. Please make sure to compute intrinsic parameters before running stereo calibration. Quitting...");
+            exit (-1);
+        }
         double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
                         this->Kleft, this->DistL,
                         this->Kright, this->DistR,
@@ -774,6 +803,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
         yInfo("done with RMS error= %f\n",rms);
     } else
     {
+        yInfo("Using precomputed intrinsic parameters");
         double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
                 this->Kleft, this->DistL,
                 this->Kright, this->DistR,
@@ -903,11 +933,13 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
                     line = "HN" + string(ss.str());
                 }
 
-                if (line.find("QL",0) != string::npos){
-                    line = "QL (" + string(qL.toString().c_str()) + ")";
-                }
-                if (line.find("QR",0) != string::npos){
-                    line = "QR (" + string(qR.toString().c_str())+ ")";
+                if (!standalone) {
+                    if (line.find("QL", 0) != string::npos) {
+                        line = "QL (" + string(qL.toString().c_str()) + ")";
+                    }
+                    if (line.find("QR", 0) != string::npos) {
+                        line = "QR (" + string(qR.toString().c_str()) + ")";
+                    }
                 }
             }
             // buffer line
