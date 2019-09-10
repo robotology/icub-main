@@ -49,7 +49,7 @@ private:
     double vergence;
     double version;
 
-
+    bool standalone;
     yarp::dev::PolyDriver polyHead;
     yarp::dev::IEncoders *posHead;
 
