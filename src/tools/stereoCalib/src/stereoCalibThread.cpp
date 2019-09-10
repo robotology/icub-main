@@ -33,8 +33,7 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     int tmp=stereoCalibOpts.check("MonoCalib", Value(0)).asInt();
     this->stereo= tmp?false:true;
     this->camCalibFile=rf.getHomeContextPath().c_str();
-    this->standalone = rf.check("standalone") &&
-                  rf.check("standalone", yarp::os::Value(true)).asBool();
+    this->standalone = rf.check("standalone");
     string fileName= "outputCalib.ini"; //rf.find("from").asString().c_str();
 
     this->camCalibFile=this->camCalibFile+"/"+fileName.c_str();
@@ -44,30 +43,6 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
 
 bool stereoCalibThread::threadInit()
 {
-/* FOR DEBUG LOAD IMAGES FROM FILE
-    std::string path = "/home/icub/.local/share/yarp/contexts/cameraCalibration/calibImg_00050";
-    std::vector<string> imListL;
-    std::vector<string> imListR;
-    std::vector<string> imList;
-    for (int i = 1; i <= 30; i++) {
-	std::stringstream ssLeft;
-	ssLeft << path << "/left" << i << ".png";
-	imList.push_back(ssLeft.str());
-	imListL.push_back(ssLeft.str());
-	std::stringstream ssRight;
-	ssRight << path << "/right" << i << ".png";
-	imList.push_back(ssRight.str());
-	imListR.push_back(ssRight.str());
-    }
-    yInfo(" Running Left Camera Calibration... \n");
-    monoCalibration(imListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL);
-
-    yInfo(" Running Right Camera Calibration... \n");
-    monoCalibration(imListR,this->boardWidth,this->boardHeight,this->Kright,this->DistR);
-
-    stereoCalibration(imList,  this->boardWidth,this->boardHeight,this->squareSize);
-*/
-
      if (!imagePortInLeft.open(inputLeftPortName.c_str())) {
       cout  << ": unable to open port " << inputLeftPortName << endl;
       return false;
