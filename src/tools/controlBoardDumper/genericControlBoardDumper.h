@@ -20,7 +20,7 @@
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/PreciselyTimed.h>
+#include <yarp/dev/IPreciselyTimed.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;
