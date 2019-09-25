@@ -18,8 +18,8 @@
     <protocol>udp</protocol>
   </connection>
   <connection>
-    <from>/icub/inertial</from>
-    <to>/iCubGui/inertial:i</to>
+    <from>/icub/head/inertials/measures:o</from>
+    <to>/iCubGui/inertials/measures:i</to>
     <protocol>udp</protocol>
   </connection>
   <connection>
