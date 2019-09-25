@@ -1,7 +1,7 @@
 <application>
 <name>Torque Observer</name>
         <dependencies>
-                <port>/icub/inertial</port>
+                <port>/icub/head/inertials/measures:o</port>
         </dependencies>
         <module>
                 <name>wholeBodyDynamics</name>
@@ -17,11 +17,6 @@
                 <tag>gravityCompensatorTag</tag>
         </module>
 
-        <connection>
-                <from>/icub/inertial</from>
-                <to>/wholeBodyDynamics/unfiltered/inertial:i</to>
-                <protocol>udp</protocol>
-        </connection>
         <connection>
                 <from>/wholeBodyDynamics/filtered/inertial:o</from>
                 <to>/wholeBodyDynamics/inertial:i</to>
