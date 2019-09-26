@@ -28,6 +28,7 @@
 #include <yarp/sig/Image.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/IRobotDescription.h>
+#include <yarp/dev/IMultipleWrapper.h>
 
 #include "RobotStreamer.h"
 #include "RobotConfig.h"
@@ -124,6 +125,9 @@ private:
     yarp::sig::ImageOf<yarp::sig::PixelRgb> buffer;
 
     yarp::dev::PolyDriver *iCubLArm, *iCubRArm, *iCubHead, *iCubLLeg ,*iCubRLeg, *iCubTorso;
+    yarp::dev::PolyDriver masserver, simImu;;
+    yarp::dev::PolyDriverList polyList;
+    yarp::dev::IMultipleWrapper* iMWrapper{nullptr};
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > portLeft, portRight, portWide;
 
 #ifndef OMIT_LOGPOLAR
