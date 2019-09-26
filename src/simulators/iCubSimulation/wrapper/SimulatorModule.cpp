@@ -284,6 +284,9 @@ bool SimulatorModule::interruptModule() {
         delete iCubTorso;
         iCubTorso = NULL;
     }
+
+    masserver.close();
+    simImu.close();
     world_manager.clear();
   
     return true;
@@ -477,6 +480,29 @@ bool SimulatorModule::initSimulatorModule()
         if (idesc) idesc->registerDevice(desc);
     }
 
+    Property masServerConf {{"device", Value("multipleanalogsensorsserver")},
+                            {"name",Value(moduleName+"/head/inertials")},
+                            {"period",Value(10)}};
+    Property simImuConf {{"device",Value("simulationIMU")}};
+
+
+    if (!simImu.open(simImuConf)) {
+        return false;
+    }
+
+    polyList.push(&simImu,"simImu");
+
+    if (!masserver.open(masServerConf)){
+        return false;
+    }
+
+    if (!masserver.view(iMWrapper))
+    {
+        yError()<<"Failed to view the IMultipleWrapper";
+        return false;
+    }
+
+    iMWrapper->attachAll(polyList);
     //dd_descClnt will be not used anymore.
     dd_descClnt->close();
     delete dd_descClnt;

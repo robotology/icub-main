@@ -35,6 +35,7 @@
 #include <yarp/os/Semaphore.h>
 #include "iCubLogicalJoints.h"
 #include "iCubSimulationControl.h"
+#include "iCubSimulationIMU.h"
 //#include <vector>
 
 #include "RobotConfig.h"
@@ -71,6 +72,7 @@ public:
     int verbosity;
     string name;
     iCubSimulationControl **_controls;
+    iCubSimulationIMU * _imu{nullptr};
     double contactFrictionCoefficient; //unlike the other ODE params fron .ini file that are used to intiialize the properties of the simulation (dWorldSet...),
     //This parameter is employed on the run as contact joints are created (in OdeSdlSimulation::nearCallback() )
     //for whole_body_skin_emul
@@ -95,6 +97,8 @@ public:
 
     void setSimulationControl(iCubSimulationControl *control, int part);
     void removeSimulationControl(int part);
+    void setSimulationIMU(iCubSimulationIMU *imu);
+    void removeSimulationIMU();
     static OdeInit& init(RobotConfig *config);
     void sendHomePos();
 

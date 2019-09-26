@@ -1087,6 +1087,16 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
             odeinit._controls[ipart]->jointStep();
         }
     }
+
+    // UPDATE INERTIAL
+
+    if(odeinit._imu) {
+        Bottle inertialBot;
+        retreiveInertialData(inertialBot);
+        odeinit._imu->updateIMUData(inertialBot);
+    }
+
+
     odeinit.sync = true;
     odeinit.mutex.post();
 

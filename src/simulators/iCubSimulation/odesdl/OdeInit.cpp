@@ -130,6 +130,17 @@ void OdeInit::setSimulationControl(iCubSimulationControl *control, int part)
     }
 }
 
+void OdeInit::setSimulationIMU(iCubSimulationIMU *imu) {
+    if (imu)
+    {
+        _imu = imu;
+    }
+}
+
+void OdeInit::removeSimulationIMU() {
+    _imu = nullptr;
+}
+
 void OdeInit::sendHomePos()
 {
     double refs[16] = {0,0,0,0,0,0,0,0,0,0,0,10*M_PI/180,10*M_PI/180,10*M_PI/180,10*M_PI/180,10*M_PI/180};

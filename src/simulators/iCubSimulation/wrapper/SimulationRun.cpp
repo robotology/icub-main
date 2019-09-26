@@ -25,6 +25,7 @@
 
 #include "SimulatorModule.h"
 #include "iCubSimulationControl.h"
+#include "iCubSimulationIMU.h"
 #include "SimConfig.h"
 
 using namespace yarp::dev;
@@ -67,6 +68,10 @@ bool SimulationRun::run(SimulationBundle *bundle, int argc, char *argv[]) {
     Drivers::factory().add(new DriverCreatorOf<iCubSimulationControl>("simulationcontrol", 
         "controlboard",
         "iCubSimulationControl"));
+
+    Drivers::factory().add(new DriverCreatorOf<iCubSimulationIMU>("simulationIMU",
+                                                                      "multipleanalogsensorsserver",
+                                                                      "iCubSimulationIMU"));
 
     SimulatorModule module(*world,config,bundle->createSimulation(config));
 
