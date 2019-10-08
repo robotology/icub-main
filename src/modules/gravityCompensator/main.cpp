@@ -224,6 +224,13 @@ public:
             icub_type.head_version = 2;
         }
 
+        if (rf.check("headV2.6"))
+        {
+            yInfo("'headV2.6' option found. Using icubV2.6 head kinematics.\n");
+            icub_type.head_version = 2;
+            icub_type.head_subversion = 6;
+        }
+
         //------------------CHECK IF LEGS ARE ENABLED-----------//
         if (rf.check("no_legs"))
         {
