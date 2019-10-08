@@ -2583,9 +2583,9 @@ bool iCubNeckInertialDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 ////////////////////////////////////////
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iCubNeckInertialDynV2::iCubNeckInertialDynV2(const ChainComputationMode _mode)
+iCubNeckInertialDynV2::iCubNeckInertialDynV2(const ChainComputationMode _mode, const string &_type)
 {
-    allocate("head");
+    allocate(_type);
     setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2596,7 +2596,7 @@ iCubNeckInertialDynV2::iCubNeckInertialDynV2(const iCubNeckInertialDynV2 &sensor
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCubNeckInertialDynV2::allocate(const string &_type)
 {
-    iDynLimb::allocate(_type);
+    iDynLimb::allocate("head");
 
     Matrix H0(4,4);
     H0.eye();
@@ -2613,6 +2613,19 @@ void iCubNeckInertialDynV2::allocate(const string &_type)
     pushLink(new iDynLink(0*mhd,           0,0,0,  0,0,0,0,0,0,     0.0,    0.0066,  M_PI/2.0,       0.0,                0.0,               0.0));
 
     blockLink(3,0.0);
+
+    if (_type=="v2.6") // imurfe
+    {
+        Matrix HN=zeros(4,4);
+        HN(0,3)=0.0323779;
+        HN(1,3)=-0.0139537;
+        HN(2,3)=0.072;
+        HN(1,0)=1.0;
+        HN(0,1)=1.0;
+        HN(2,2)=-1.0;
+        HN(3,3)=1.0;
+        setHN(getHN()*HN);
+    }
 
 #ifdef NO_JOINT_COSTRAINTS
     this->setAllConstraints(false);

@@ -1571,7 +1571,7 @@ public:
     /**
     * Default constructor. 
     */
-    iCubNeckInertialDynV2(const ChainComputationMode _mode=KINBWD_WREBWD);
+    iCubNeckInertialDynV2(const ChainComputationMode _mode=KINBWD_WREBWD, const std::string &_type ="v2.5");
 
     /**
     * Creates a new Inertial Sensor from an already existing object.

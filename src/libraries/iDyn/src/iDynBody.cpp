@@ -2244,10 +2244,14 @@ void iCubUpperTorso::build()
 {
     left    = new iCubArmNoTorsoDyn("left",KINFWD_WREBWD);
     right   = new iCubArmNoTorsoDyn("right",KINFWD_WREBWD);
-    if (tag.head_version == 2)
-    {up     = new iCubNeckInertialDynV2(KINBWD_WREBWD);}
-    else
-    {up     = new iCubNeckInertialDyn(KINBWD_WREBWD);}
+    if (tag.head_version == 2) {
+        std::string ver {"v2."};
+        ver += std::to_string(tag.head_subversion);
+        up     = new iCubNeckInertialDynV2(KINBWD_WREBWD, ver);
+    }
+    else {
+        up     = new iCubNeckInertialDyn(KINBWD_WREBWD);
+    }
 
     SensorLinkNewtonEuler* armLeftSensor = new iCubArmSensorLink("left", mode, verbose);
     SensorLinkNewtonEuler* armRightSensor = new iCubArmSensorLink("right", mode, verbose);
