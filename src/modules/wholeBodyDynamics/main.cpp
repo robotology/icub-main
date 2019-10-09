@@ -57,6 +57,11 @@ http://wiki.icub.org/wiki/Force_Control
 - The parameter \e name identifies the robot name. If not specified
   \e icub is assumed. 
 
+--imuPortName
+- The parameter identifies the prefix of the multipleanalogsensorsserver
+  to be attached to for retreiving inertial data.
+  The default value is /<robot>/head/inertials.
+
 --rate \e r 
 - The parameter \e r identifies the rate the thread will work. If not
   specified \e 10ms is assumed. 
@@ -116,7 +121,7 @@ This file can be edited at src/wholeBodyDynamics/main.cpp.
 
 #include <iostream>
 #include <iomanip>
-#include <string.h>
+#include <cstring>
 
 #include "observerThread.h"
 
@@ -128,46 +133,65 @@ using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 using namespace std;
 
-#define MAX_JN 12
-#define MAX_FILTER_ORDER 6
 
-class dataFilter : public BufferedPort<Bottle>
+class dataFilter : public PeriodicThread
 {
 private:
     BufferedPort<Vector> &port_filtered_output;
     Vector g;
-    
-    virtual void onRead(Bottle &b)
-    {
-        Stamp info;
-        BufferedPort<Bottle>::getEnvelope(info);
+    IThreeAxisGyroscopes* m_iGyro{nullptr};
+    IThreeAxisLinearAccelerometers* m_iAcc{nullptr};
 
-        size_t sz = b.size();
-        Vector x(sz);
-        Vector inertial(sz);
-        for(unsigned int i=0;i<sz;i++)
-        {
-            x[i]=b.get(i).asDouble();
-            inertial(i)=lpf_ord1_3hz(x(i), i);
+public:
+    dataFilter(BufferedPort<Vector> &_port_filtered_output,
+               IThreeAxisGyroscopes* iGyro,
+               IThreeAxisLinearAccelerometers* iAcc): PeriodicThread(0.001),
+                                                      port_filtered_output(_port_filtered_output),
+                                                      m_iGyro(iGyro),
+                                                      m_iAcc(iAcc)
+    {
+        g.resize(6);
+    }
+
+    void run() override
+    {
+        if (!m_iGyro || !m_iAcc || port_filtered_output.isClosed()) {
+            yError()<<"dataFilter: something went wrong during configuration closing";
+            this->askToStop();
+            return;
         }
-        g[0] = inertial[3];
-        g[1] = inertial[4];
-        g[2] = inertial[5]; 
-        g[3] = inertial[6];
-        g[4] = inertial[7];
-        g[5] = inertial[8];
+
+        double acc_ts{0.0}, gyro_ts{0.0};
+        Vector acc, gyro;
+        bool ok = true;
+        ok &= m_iAcc->getThreeAxisLinearAccelerometerMeasure(0, acc, acc_ts);
+        ok &= m_iGyro->getThreeAxisGyroscopeMeasure(0, gyro, gyro_ts);
+        if (!ok) {
+            yError()<<"dataFilter: error while reading from inertial sensor";
+            return;
+        }
+        static Stamp info;
+        info.update(gyro_ts);
+        Vector temp(6,0.0);
+        temp.setSubvector(0,acc);
+        temp.setSubvector(3,gyro);
+        for(size_t i=0;i<temp.size();i++)
+        {
+            temp(i)  = lpf_ord1_3hz(temp(i), i);
+        }
+        g[0] = temp[0]; // acc
+        g[1] = temp[1]; // acc
+        g[2] = temp[2]; // acc
+        g[3] = temp[3]; // gyro
+        g[4] = temp[4]; // gyro
+        g[5] = temp[5]; // gyro
         //g = (9.81/norm(g))*g;
-        
+
         port_filtered_output.prepare() = g;
         port_filtered_output.setEnvelope(info);
         port_filtered_output.write();
     }
-public:
-    dataFilter(BufferedPort<Vector> &_port_filtered_output, ResourceFinder &rf):    
-    port_filtered_output(_port_filtered_output)
-    {
-        g.resize(6);
-    }
+
 };
 
 // The main module
@@ -193,12 +217,14 @@ private:
     bool     auto_drift_comp;
     bool     default_ee_cont;       // true: when skin detects no contact, the ext contact is supposed at the end effector
                                     // false: ext contact is supposed at the last location where skin detected a contact
-    
-    dataFilter *port_inertial_input;
-    BufferedPort<Vector> port_filtered_output;    
+
+    dataFilter *inertialFilter{};
+    BufferedPort<Vector> port_filtered_output;
     Port rpcPort;
 
     inverseDynamics *inv_dyn;
+    IThreeAxisLinearAccelerometers* m_iAcc{nullptr};
+    IThreeAxisGyroscopes* m_iGyro{nullptr};
 
     PolyDriver *dd_left_arm;
     PolyDriver *dd_right_arm;
@@ -206,17 +232,18 @@ private:
     PolyDriver *dd_left_leg;
     PolyDriver *dd_right_leg;
     PolyDriver *dd_torso;
+    PolyDriver  dd_MASClient;
 
 public:
     wholeBodyDynamics()
     {
-        inv_dyn=0;
-        dd_left_arm=0;
-        dd_right_arm=0;
-        dd_head=0;
-        dd_left_leg=0;
-        dd_right_leg=0;
-        dd_torso=0;
+        inv_dyn=nullptr;
+        dd_left_arm=nullptr;
+        dd_right_arm=nullptr;
+        dd_head=nullptr;
+        dd_left_leg=nullptr;
+        dd_right_leg=nullptr;
+        dd_torso=nullptr;
         com_vel_enabled=false;
         com_enabled=true;
         legs_enabled = true;
@@ -280,7 +307,7 @@ public:
         return true;
     }
 
-    bool respond(const Bottle& command, Bottle& reply) 
+    bool respond(const Bottle& command, Bottle& reply) override
     {
         reply.clear(); 
         
@@ -338,7 +365,7 @@ public:
         return true;
     }
 
-    bool configure(ResourceFinder &rf)
+    bool configure(ResourceFinder &rf) override
     {
         //---------------------LOCAL NAME-----------------------//
         string local_name = "wholeBodyDynamics";
@@ -364,6 +391,13 @@ public:
         {
             yInfo("'headV2' option found. Using icubV2 head kinematics.\n");
             icub_type.head_version = 2;
+        }
+
+        if (rf.check("headV2.6"))
+        {
+            yInfo("'headV2.6' option found. Using icubV2.6 head kinematics.\n");
+            icub_type.head_version = 2;
+            icub_type.head_subversion = 6;
         }
 
         //----------SPECIAL PARAM TO DEFINE LEGS VERSION--------//
@@ -470,6 +504,11 @@ public:
             yError ("'rate' parameter is deprecated. Use 'period' instead");
             return false;
         }
+        std::string remoteInertialName{"/"+robot_name+"/head/inertials"};
+        if (rf.check("imuPortName"))
+        {
+            remoteInertialName = rf.find("imuPortName").asString();
+        }
 
         //---------------------DUMMY_FT-------------------------//
         if (rf.check("dummy_ft"))
@@ -501,8 +540,8 @@ public:
         if(head_enabled)
         {
             OptionsHead.put("device","remote_controlboard");
-            OptionsHead.put("local",string("/"+local_name+"/head/client").c_str());
-            OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
+            OptionsHead.put("local","/"+local_name+"/head/client");
+            OptionsHead.put("remote","/"+robot_name+"/head");
 
             if (!createDriver(dd_head, OptionsHead))
             {
@@ -516,8 +555,8 @@ public:
         if (left_arm_enabled)
         {
             OptionsLeftArm.put("device","remote_controlboard");
-            OptionsLeftArm.put("local",string("/"+local_name+"/left_arm/client").c_str());
-            OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
+            OptionsLeftArm.put("local","/"+local_name+"/left_arm/client");
+            OptionsLeftArm.put("remote","/"+robot_name+"/left_arm");
 
             if (!createDriver(dd_left_arm, OptionsLeftArm))
             {
@@ -529,8 +568,8 @@ public:
         if (right_arm_enabled)
         {
             OptionsRightArm.put("device","remote_controlboard");
-            OptionsRightArm.put("local",string("/"+local_name+"/right_arm/client").c_str());
-            OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
+            OptionsRightArm.put("local","/"+local_name+"/right_arm/client");
+            OptionsRightArm.put("remote","/"+robot_name+"/right_arm");
 
             if (!createDriver(dd_right_arm, OptionsRightArm))
             {
@@ -542,8 +581,8 @@ public:
         if (legs_enabled)
         {
             OptionsLeftLeg.put("device","remote_controlboard");
-            OptionsLeftLeg.put("local",string("/"+local_name+"/left_leg/client").c_str());
-            OptionsLeftLeg.put("remote",string("/"+robot_name+"/left_leg").c_str());
+            OptionsLeftLeg.put("local","/"+local_name+"/left_leg/client");
+            OptionsLeftLeg.put("remote","/"+robot_name+"/left_leg");
 
             if (!createDriver(dd_left_leg, OptionsLeftLeg))
             {
@@ -552,8 +591,8 @@ public:
             }
 
             OptionsRightLeg.put("device","remote_controlboard");
-            OptionsRightLeg.put("local",string("/"+local_name+"/right_leg/client").c_str());
-            OptionsRightLeg.put("remote",string("/"+robot_name+"/right_leg").c_str());
+            OptionsRightLeg.put("local","/"+local_name+"/right_leg/client");
+            OptionsRightLeg.put("remote","/"+robot_name+"/right_leg");
 
             if (!createDriver(dd_right_leg, OptionsRightLeg))
             {
@@ -565,8 +604,8 @@ public:
         if (torso_enabled)
         {
             OptionsTorso.put("device","remote_controlboard");
-            OptionsTorso.put("local",string("/"+local_name+"/torso/client").c_str());
-            OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
+            OptionsTorso.put("local","/"+local_name+"/torso/client");
+            OptionsTorso.put("remote","/"+robot_name+"/torso");
 
             if (!createDriver(dd_torso, OptionsTorso))
             {
@@ -577,13 +616,30 @@ public:
                 yInfo("device driver created\n");
         }
 
+        Property masConf {{"device",Value("multipleanalogsensorsclient")},
+                          {"local", Value("/"+local_name+"/inertials")},
+                          {"remote",Value(remoteInertialName)},
+                          {"timeout",Value(0.04)}};
+
+        if (!dd_MASClient.open(masConf))
+        {
+            yError("unable to open the MAS client...quitting\n");
+            return false;
+        }
+
+        if(!dd_MASClient.view(m_iAcc) || !dd_MASClient.view(m_iGyro))
+        {
+            yError("view of one of the MAS interfaces required failed...quitting\n");
+            return false;
+        }
+
         //--------------------CHECK FT SENSOR------------------------
         if (!dummy_ft)
         {
-            if ((dd_left_arm  && Network::exists(string("/"+robot_name+"/left_arm/analog:o").c_str())  == false ) || 
-                (dd_right_arm && Network::exists(string("/"+robot_name+"/right_arm/analog:o").c_str()) == false ) ||
-                (dd_left_leg  && Network::exists(string("/"+robot_name+"/left_leg/analog:o").c_str())  == false ) ||
-                (dd_right_leg && Network::exists(string("/"+robot_name+"/right_leg/analog:o").c_str()) == false ) )
+            if ((dd_left_arm  && !Network::exists("/" + robot_name + "/left_arm/analog:o"))  ||
+                (dd_right_arm && !Network::exists("/" + robot_name + "/right_arm/analog:o")) ||
+                (dd_left_leg  && !Network::exists("/" + robot_name + "/left_leg/analog:o"))  ||
+                (dd_right_leg && !Network::exists("/" + robot_name + "/right_leg/analog:o")) )
                 {     
                     yError("Unable to detect the presence of F/T sensors in your iCub...quitting\n");
                     return false;
@@ -592,14 +648,12 @@ public:
 
         //---------------OPEN RPC PORT--------------------//
         string rpcPortName = "/"+local_name+"/rpc:i";
-        rpcPort.open(rpcPortName.c_str());
+        rpcPort.open(rpcPortName);
         attach(rpcPort);                  
 
         //---------------OPEN INERTIAL PORTS--------------------//
-        port_filtered_output.open(string("/"+local_name+"/filtered/inertial:o").c_str());
-        port_inertial_input = new dataFilter(port_filtered_output, rf);
-        port_inertial_input->useCallback();
-        port_inertial_input->open(string("/"+local_name+"/unfiltered/inertial:i").c_str());
+        port_filtered_output.open("/"+local_name+"/filtered/inertial:o");
+        inertialFilter = new dataFilter(port_filtered_output, m_iGyro, m_iAcc);
 
         //--------------------------THREAD--------------------------
         inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, icub_type, autoconnect);
@@ -614,12 +668,13 @@ public:
         yInfo("ft thread istantiated...\n");
         Time::delay(5.0);
 
+        inertialFilter->start();
         inv_dyn->start();
         yInfo("thread started\n");
         return true;
     }
 
-    bool close()
+    bool close() override
     {
         //The order of execution of the following closures is important, do not change it.
         yInfo("Closing wholeBodyDynamics module... \n");     
@@ -636,16 +691,16 @@ public:
             inv_dyn->stop();
             yInfo("inv_dyn thread stopped\n");     
             delete inv_dyn;
-            inv_dyn=0;
+            inv_dyn=nullptr;
           }
 
-        if(port_inertial_input)
+        if(inertialFilter)
         {
-            yInfo("Closing the inertial input port \n");     
-            port_inertial_input->interrupt();
-            port_inertial_input->close();
-            delete port_inertial_input;
-            port_inertial_input=0;
+            yInfo("Stopping the inertial filter thread \n");
+            inertialFilter->stop();
+            delete inertialFilter;
+            inertialFilter=nullptr;
+            dd_MASClient.close();
         }
 
         yInfo("Closing the filtered inertial output port \n");     
@@ -660,21 +715,21 @@ public:
             yInfo("Closing dd_left_arm \n");     
             dd_left_arm->close();
             delete dd_left_arm;
-            dd_left_arm=0;
+            dd_left_arm=nullptr;
         }
         if (dd_right_arm)
         {
             yInfo("Closing dd_right_arm \n");     
             dd_right_arm->close();
             delete dd_right_arm;
-            dd_right_arm=0;
+            dd_right_arm=nullptr;
         }
         if (dd_head)
         {
             yInfo("Closing dd_head \n");     
             dd_head->close();
             delete dd_head;
-            dd_head=0;
+            dd_head=nullptr;
         }
 
         if (dd_left_leg)
@@ -682,32 +737,32 @@ public:
             yInfo("Closing dd_left_leg \n");     
             dd_left_leg->close();
             delete dd_left_leg;
-            dd_left_leg=0;
+            dd_left_leg=nullptr;
         }
         if (dd_right_leg)
         {
             yInfo("Closing dd_right_leg \n");     
             dd_right_leg->close();
             delete dd_right_leg;
-            dd_right_leg=0;
+            dd_right_leg=nullptr;
         }
         if (dd_torso)
         {
             yInfo("Closing dd_torso \n");     
             dd_torso->close();
             delete dd_torso;
-            dd_torso=0;
+            dd_torso=nullptr;
         }
 
         yInfo("wholeBodyDynamics module was closed successfully! \n");     
         return true;
     }
 
-    double getPeriod()
+    double getPeriod() override
     {
         return 1.0;
     }
-    bool updateModule() 
+    bool updateModule() override
     {
         double avgTime, stdDev, period;
         period = inv_dyn->getPeriod();
@@ -724,7 +779,7 @@ public:
             curr_time = Time::now();
         }
 
-        if (inv_dyn==0) 
+        if (inv_dyn==nullptr)
             return false;
         thread_status_enum thread_status = inv_dyn->getThreadStatus();
         if (thread_status==STATUS_OK)

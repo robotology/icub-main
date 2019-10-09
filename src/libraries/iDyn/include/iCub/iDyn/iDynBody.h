@@ -108,11 +108,13 @@ enum JacobType{ JAC_KIN, JAC_IKIN };
 struct version_tag
 {
     int head_version;
+    int head_subversion;
     int legs_version;
     
     version_tag () 
     {
         head_version=1;
+        head_subversion=0;
         legs_version=1;
     }
 };

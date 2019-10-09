@@ -38,12 +38,9 @@ using namespace yarp::dev;
 using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 
-#define MAX_JN 12
-#define MAX_FILTER_ORDER 6
 enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
 enum{GRAVITY_COMPENSATION_OFF = 0, GRAVITY_COMPENSATION_ON = 1};
 enum{EXTERNAL_TRQ_OFF = 0, EXTERNAL_TRQ_ON = 1};
-enum{TORQUE_INTERFACE = 0, IMPEDANCE_POSITION = 1, IMPEDANCE_VELOCITY = 2};
 
 class gravityCompensatorThread: public yarp::os::PeriodicThread
 {
@@ -112,19 +109,19 @@ private:
     Vector encoders_leg_right;
     Vector encoders_torso;
 
-    Vector *inertial;
+    Vector *inertial{};
 
-    AWLinEstimator  *linEstUp;
-    AWQuadEstimator *quadEstUp;
-    AWLinEstimator  *linEstLow;
-    AWQuadEstimator *quadEstLow;
+    AWLinEstimator  *linEstUp{};
+    AWQuadEstimator *quadEstUp{};
+    AWLinEstimator  *linEstLow{};
+    AWQuadEstimator *quadEstLow{};
 
-    int left_arm_ctrlJnt;
-    int right_arm_ctrlJnt;
-    int left_leg_ctrlJnt;
-    int right_leg_ctrlJnt;
-    int torso_ctrlJnt;
-    int allJnt;
+    int left_arm_ctrlJnt{};
+    int right_arm_ctrlJnt{};
+    int left_leg_ctrlJnt{};
+    int right_leg_ctrlJnt{};
+    int torso_ctrlJnt{};
+    int allJnt{};
 
     iCubWholeBody* icub;
 
@@ -175,11 +172,10 @@ public:
     bool readAndUpdate(bool waitMeasure=false);
     bool getLowerEncodersSpeedAndAcceleration();
     bool getUpperEncodersSpeedAndAcceleration();
-    bool threadInit();
-    void feedFwdGravityControl(int part_ctrlJnt, std::string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing=false);
-    void run();
-    void threadRelease();
-    void closePort(Contactable *_port);
+    bool threadInit() override;
+    void feedFwdGravityControl(int part_ctrlJnt, const std::string& s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing=false);
+    void run() override;
+    void threadRelease() override;
 
     inline thread_status_enum getThreadStatus() 
     {

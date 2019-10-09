@@ -487,7 +487,7 @@ bool inverseDynamics::threadInit()
     {
         //read joints and ft sensor
         bool ret = readAndUpdate(true,true);
-        if (ret == false)
+        if (!ret)
         {
             yError("A problem occured during the initial readAndUpdate(), stopping... \n");
             thread_status = STATUS_DISCONNECTED;
@@ -544,7 +544,7 @@ void inverseDynamics::run()
 
     thread_status = STATUS_OK;
     static int delay_check=0;
-    if(readAndUpdate(false) == false)
+    if(!readAndUpdate(false))
     {
         delay_check++;
         yWarning ("network delays detected (%d/10)\n", delay_check);
@@ -571,7 +571,7 @@ void inverseDynamics::run()
 
     //check if iCub is currently moving. If not, put the current iCub positions in the status queue
     current_status.iCub_not_moving = current_status.checkIcubNotMoving();
-    if (current_status.iCub_not_moving == true)
+    if (current_status.iCub_not_moving)
     {
         not_moving_status.push_front(current_status);
         if (not_moving_status.size()>status_queue_size) 
@@ -588,7 +588,7 @@ void inverseDynamics::run()
     }
 
     // THIS BLOCK SHOULD BE NOW DEPRECATED
-    if (w0_dw0_enabled == false)
+    if (!w0_dw0_enabled)
     {
         //if w0 and dw0 are too noisy, you can disable them using 'no_w0_dw0' option
         current_status.inertial_w0.zero();
@@ -1152,7 +1152,7 @@ void inverseDynamics::closePort(Contactable *_port)
         _port->close();
 
         delete _port;
-        _port = 0;
+        _port = nullptr;
     }
 }
 
@@ -1256,12 +1256,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     // arms
     if (ddAL)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to left arm sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_arm_left->read(waitMeasure);
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_arm_left  = *tmp;
             }
@@ -1275,12 +1275,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 
     if (ddAR)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to right arm sensor...");
         if (!dummy_ft)   
         {
             tmp = port_ft_arm_right->read(waitMeasure);
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_arm_right = *tmp;
             }
@@ -1297,12 +1297,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     // legs
     if (ddLL)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to left leg sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_leg_left->read(waitMeasure);
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_leg_left  = *tmp;
             }
@@ -1315,12 +1315,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     }
     if (ddLR)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to right leg sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_leg_right->read(waitMeasure);
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_leg_right = *tmp;
             }
@@ -1335,12 +1335,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     // feet
     if (ddLL)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to left foot sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_foot_left->read(false); //not all the robot versions have the FT sensors installed in the feet
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_foot_left  = *tmp;
             }
@@ -1353,12 +1353,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     }
     if (ddLR)
     {
-        Vector* tmp= 0;
+        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to right foot sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_foot_right->read(false); //not all the robot versions have the FT sensors installed in the feet
-            if (tmp != 0)
+            if (tmp != nullptr)
             {
                 current_status.ft_foot_right = *tmp;
             }
@@ -1379,7 +1379,7 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     if (waitMeasure) yInfo("done. \n");
 
     int sz = 0;
-    if(inertial!=0)
+    if(inertial!=nullptr)
     {
 //#define DEBUG_FIXED_INERTIAL
 #ifdef DEBUG_FIXED_INERTIAL
@@ -1555,22 +1555,22 @@ void inverseDynamics::addSkinContacts()
         skinContactsTimestamp = Time::now();
         if(scl->empty() && !default_ee_cont)   // if no skin contacts => leave the old contacts but reset pressure and contact list
         {
-            for(skinContactList::iterator it=skinContacts.begin(); it!=skinContacts.end(); it++)
+            for(auto & skinContact : skinContacts)
             {
-                it->setPressure(0.0);
-                it->setActiveTaxels(0);
+                skinContact.setPressure(0.0);
+                skinContact.setActiveTaxels(0);
             }
             return;
         }
         
         map<BodyPart, skinContactList> contactsPerBp = scl->splitPerBodyPart();
         // if there are more than 1 contact and less than 10 taxels are active then suppose zero moment
-        for(map<BodyPart,skinContactList>::iterator it=contactsPerBp.begin(); it!=contactsPerBp.end(); it++)
-            if(it->second.size()>1)
-                for(skinContactList::iterator c=it->second.begin(); c!=it->second.end(); c++)
-                    if(c->getActiveTaxels()<10)
-                        c->fixMoment();
-        
+        for(auto & it : contactsPerBp)
+            if(it.second.size()>1)
+                for(auto & c : it.second)
+                    if(c.getActiveTaxels()<10)
+                        c.fixMoment();
+
         icub->upperTorso->clearContactList();
         icub->upperTorso->leftSensor->addContacts(contactsPerBp[LEFT_ARM].toDynContactList());
         icub->upperTorso->rightSensor->addContacts(contactsPerBp[RIGHT_ARM].toDynContactList());
@@ -1601,11 +1601,11 @@ void inverseDynamics::sendMonitorData()
     monitorData.push_back(norm(icub->upperTorso->getTorsoMoment()));// moment norm upper node    
     for(size_t i=0;i<3;i++){                                           // w torso
         temp = icub->lowerTorso->up->getAngVel(i) * CTRL_RAD2DEG;
-        for(size_t j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
+        for(double j : temp) monitorData.push_back(j);
     }
     for(size_t i=0;i<3;i++){                                           // dw torso
         temp = icub->lowerTorso->up->getAngAcc(i) * CTRL_RAD2DEG;
-        for(size_t j=0;j<temp.size();j++) monitorData.push_back(temp[j]);
+        for(double j : temp) monitorData.push_back(j);
     }
     //for(int j=0;j<TOTorques.size();j++)                             // torso torques
     //    monitorData.push_back(TOTorques[j]);

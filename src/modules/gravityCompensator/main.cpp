@@ -66,25 +66,17 @@ the module add offset values which are assigned to the IImpedanceControl interfa
 This file can be edited at \in src/gravityCompensator/main.cpp.
 */ 
 
-#include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
-#include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/sig/Vector.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
-#include <iCub/ctrl/math.h>
-#include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>
 
 #include <iostream>
-#include <iomanip>
-#include <string.h>
 
 #include "gravityThread.h"
 
@@ -101,8 +93,8 @@ using namespace std;
 class gravityModuleCompensator: public RFModule
 {
 private:
-    int rate;
-    gravityCompensatorThread *g_comp;
+    int rate{};
+    gravityCompensatorThread *g_comp{};
 
     Property OptionsLeftArm;
     Property OptionsRightArm;
@@ -136,12 +128,12 @@ public:
         right_arm_enabled  = true;
         torso_enabled  = true;
         head_enabled  = true;
-        dd_left_arm   = 0;
-        dd_right_arm  = 0;
-        dd_head       = 0;
-        dd_left_leg   = 0;
-        dd_right_leg  = 0;
-        dd_torso      = 0;
+        dd_left_arm   = nullptr;
+        dd_right_arm  = nullptr;
+        dd_head       = nullptr;
+        dd_left_leg   = nullptr;
+        dd_right_leg  = nullptr;
+        dd_torso      = nullptr;
         m_side = "right";
         m_part = "arm";
     }
@@ -159,7 +151,7 @@ public:
             if (_dd)
             {
                 delete _dd;
-                _dd=0;
+                _dd=nullptr;
             }
 
             //creates the new device driver
@@ -182,10 +174,10 @@ public:
         }
         while (true);
 
-        IEncoders         *encs     = 0;
-        IControlMode      *ctrlMode = 0;
-        IImpedanceControl *imp      = 0;
-        ITorqueControl    *tqs      = 0;
+        IEncoders         *encs     = nullptr;
+        IControlMode      *ctrlMode = nullptr;
+        IImpedanceControl *imp      = nullptr;
+        ITorqueControl    *tqs      = nullptr;
 
         bool ok = true;
         ok = ok & _dd->view(encs);
@@ -201,14 +193,13 @@ public:
         return true;
     }
 
-    bool configure(ResourceFinder &rf)
-    {       
+    bool configure(ResourceFinder &rf) override
+    {
         string fwdSlash = "/";
 
         string name;
         name = "gravityCompensator";    
-        
-        int rate;
+
         if (rf.check("period"))
             rate = rf.find("period").asInt();
         else rate = 20;
@@ -231,6 +222,13 @@ public:
         {
             yInfo("'headV2' option found. Using icubV2 head kinematics.\n");
             icub_type.head_version = 2;
+        }
+
+        if (rf.check("headV2.6"))
+        {
+            yInfo("'headV2.6' option found. Using icubV2.6 head kinematics.\n");
+            icub_type.head_version = 2;
+            icub_type.head_subversion = 6;
         }
 
         //------------------CHECK IF LEGS ARE ENABLED-----------//
@@ -274,7 +272,7 @@ public:
         {
             OptionsHead.put("device","remote_controlboard");
             OptionsHead.put("local","/gravityCompensator/head/client");
-            OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
+            OptionsHead.put("remote","/"+robot_name+"/head");
 
             if (!createDriver(dd_head, OptionsHead))
             {
@@ -287,7 +285,7 @@ public:
         {
             OptionsLeftArm.put("device","remote_controlboard");
             OptionsLeftArm.put("local","/gravityCompensator/left_arm/client");
-            OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
+            OptionsLeftArm.put("remote","/"+robot_name+"/left_arm");
             if (!createDriver(dd_left_arm,OptionsLeftArm))
             {
                 yError("unable to create left arm device driver...quitting\n");
@@ -299,7 +297,7 @@ public:
         {
             OptionsRightArm.put("device","remote_controlboard");
             OptionsRightArm.put("local","/gravityCompensator/right_arm/client");
-            OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
+            OptionsRightArm.put("remote","/"+robot_name+"/right_arm");
             if (!createDriver(dd_right_arm,OptionsRightArm))
             {
                 yError("unable to create right arm device driver...quitting\n");
@@ -311,7 +309,7 @@ public:
         {
             OptionsLeftLeg.put("device","remote_controlboard");
             OptionsLeftLeg.put("local","/gravityCompensator/left_leg/client");
-            OptionsLeftLeg.put("remote",string("/"+robot_name+"/left_leg").c_str());
+            OptionsLeftLeg.put("remote","/"+robot_name+"/left_leg");
             if (!createDriver(dd_left_leg,OptionsLeftLeg))
             {
                 yError("unable to create left leg device driver...quitting\n");
@@ -320,7 +318,7 @@ public:
 
             OptionsRightLeg.put("device","remote_controlboard");
             OptionsRightLeg.put("local","/gravityCompensator/right_leg/client");
-            OptionsRightLeg.put("remote",string("/"+robot_name+"/right_leg").c_str());
+            OptionsRightLeg.put("remote","/"+robot_name+"/right_leg");
             if (!createDriver(dd_right_leg,OptionsRightLeg))
             {
                 yError("unable to create right leg device driver...quitting\n");
@@ -332,7 +330,7 @@ public:
         {
             OptionsTorso.put("device","remote_controlboard");
             OptionsTorso.put("local","/gravityCompensator/torso/client");
-            OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
+            OptionsTorso.put("remote","/"+robot_name+"/torso");
 
             if (!createDriver(dd_torso,OptionsTorso))
             {
@@ -343,7 +341,7 @@ public:
         
         yInfo("device driver created\n");
 
-        rpcPort.open(("/"+name+"/rpc").c_str());
+        rpcPort.open("/"+name+"/rpc");
         attach(rpcPort);        
 
         //------------------CHECK FOR WHOLEBODYNAME -----------//
@@ -394,14 +392,14 @@ public:
         return true;
     }
 
-    bool respond(const Bottle& command, Bottle& reply) 
+    bool respond(const Bottle& command, Bottle& reply) override
     {
                         reply.addVocab(Vocab::encode("many"));
                 reply.addString("Available commands:");
                 reply.addString("calib all");
 
         Bottle position_bot;
-        string helpMessage =  string(getName().c_str()) + 
+        string helpMessage =  getName() +
                             " commands are: \n" +  
                             "help         to display this message\n" + 
                             "gravity_on   to enabl e the gravity compensation \n" + 
@@ -458,22 +456,22 @@ public:
     }
 
 
-    bool close()
+    bool close() override
     {
         //stop thread 
         if(g_comp)
         {
             g_comp->stop();
-            delete g_comp; g_comp = 0;
+            delete g_comp; g_comp = nullptr;
         }
         
         //closing interfaces
-        if (dd_left_arm)    {delete dd_left_arm;  dd_left_arm=0;  }
-        if (dd_right_arm)   {delete dd_right_arm; dd_right_arm=0; }
-        if (dd_left_leg)    {delete dd_left_leg;  dd_left_leg=0;  }
-        if (dd_right_leg)   {delete dd_right_leg; dd_right_leg=0; }
-        if (dd_head)        {delete dd_head;      dd_head=0;      }
-        if (dd_torso)       {delete dd_torso;     dd_torso=0;     }
+        if (dd_left_arm)    {delete dd_left_arm;  dd_left_arm=nullptr;  }
+        if (dd_right_arm)   {delete dd_right_arm; dd_right_arm=nullptr; }
+        if (dd_left_leg)    {delete dd_left_leg;  dd_left_leg=nullptr;  }
+        if (dd_right_leg)   {delete dd_right_leg; dd_right_leg=nullptr; }
+        if (dd_head)        {delete dd_head;      dd_head=nullptr;      }
+        if (dd_torso)       {delete dd_torso;     dd_torso=nullptr;     }
 
         //closing ports
         rpcPort.interrupt();
@@ -482,8 +480,8 @@ public:
         return true;
     }
 
-    double getPeriod()  { return 1.0;  }
-    bool updateModule()
+    double getPeriod() override { return 1.0;  }
+    bool updateModule() override
     {
         static unsigned long int alive_counter = 0;
         static double curr_time = Time::now();
@@ -493,7 +491,7 @@ public:
             curr_time = Time::now();
         }
 
-        if (g_comp==0) return false;
+        if (g_comp==nullptr) return false;
 
         thread_status_enum thread_status = g_comp->getThreadStatus();
 

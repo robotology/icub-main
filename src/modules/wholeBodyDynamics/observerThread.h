@@ -30,7 +30,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include <string.h>
+#include <cstring>
 #include <list>
 
 using namespace yarp::os;
@@ -41,9 +41,9 @@ using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 using namespace std;
 
-#define MAX_JN 12
-#define MAX_FILTER_ORDER 6
-#define SKIN_EVENTS_TIMEOUT 0.2     // max time (in sec) a contact is kept without reading anything from the skin events port
+constexpr int8_t MAX_JN = 12;
+constexpr int8_t MAX_FILTER_ORDER = 6;
+constexpr float_t SKIN_EVENTS_TIMEOUT = 0.2;     // max time (in sec) a contact is kept without reading anything from the skin events port
 
 enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
 enum calib_enum {CALIB_ALL=0, CALIB_ARMS, CALIB_LEGS, CALIB_FEET};
@@ -73,7 +73,7 @@ class iCubStatus
 
     Vector inertial_w0,inertial_dw0,inertial_d2p0;
 
-    bool iCub_not_moving;
+    bool iCub_not_moving{};
 
     iCubStatus ()
     {
@@ -310,15 +310,15 @@ private:
 
 public:
     inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, version_tag icub_type, bool _autoconnect=false );
-    bool threadInit();
+    bool threadInit() override;
     void setStiffMode();
     inline thread_status_enum getThreadStatus() 
     {
         return thread_status;
     }
 
-    void run();
-    void threadRelease();
+    void run() override;
+    void threadRelease() override;
     void closePort(Contactable *_port);
     void writeTorque(Vector _values, int _address, BufferedPort<Bottle> *_port);
     template <class T> void broadcastData(T& _values, BufferedPort<T> *_port);

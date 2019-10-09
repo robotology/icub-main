@@ -19,7 +19,6 @@
 #include "gravityThread.h"
 
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/PeriodicThread.h>
@@ -206,55 +205,55 @@ gravityCompensatorThread::gravityCompensatorThread(string _wholeBodyName, int _r
 {   
     gravity_mode = GRAVITY_COMPENSATION_ON;
     external_mode = EXTERNAL_TRQ_ON;
-    wholeBodyName = _wholeBodyName;
+    wholeBodyName = std::move(_wholeBodyName);
 
     //--------------INTERFACE INITIALIZATION-------------//
-    iencs_arm_left        = 0;
-    iencs_arm_right       = 0;
-    iencs_head            = 0;
-    iCtrlMode_arm_left    = 0;
-    iCtrlMode_arm_right   = 0;
-    iCtrlMode_torso       = 0;
-    iIntMode_arm_left     = 0;
-    iIntMode_arm_right    = 0;
-    iIntMode_torso        = 0;
-    iImp_torso            = 0;
-    iTqs_torso            = 0;
-    iImp_arm_left         = 0;
-    iTqs_arm_left         = 0;
-    iImp_arm_right        = 0;
-    iTqs_arm_right        = 0;
-    iencs_leg_left        = 0;
-    iencs_leg_right       = 0;
-    iencs_torso           = 0;
-    iCtrlMode_leg_left    = 0;
-    iCtrlMode_leg_right   = 0;
-    iIntMode_leg_left     = 0;
-    iIntMode_leg_right    = 0;
-    iImp_leg_left         = 0;
-    iTqs_leg_left         = 0;
-    iImp_leg_right        = 0;
-    iTqs_leg_right        = 0;
+    iencs_arm_left        = nullptr;
+    iencs_arm_right       = nullptr;
+    iencs_head            = nullptr;
+    iCtrlMode_arm_left    = nullptr;
+    iCtrlMode_arm_right   = nullptr;
+    iCtrlMode_torso       = nullptr;
+    iIntMode_arm_left     = nullptr;
+    iIntMode_arm_right    = nullptr;
+    iIntMode_torso        = nullptr;
+    iImp_torso            = nullptr;
+    iTqs_torso            = nullptr;
+    iImp_arm_left         = nullptr;
+    iTqs_arm_left         = nullptr;
+    iImp_arm_right        = nullptr;
+    iTqs_arm_right        = nullptr;
+    iencs_leg_left        = nullptr;
+    iencs_leg_right       = nullptr;
+    iencs_torso           = nullptr;
+    iCtrlMode_leg_left    = nullptr;
+    iCtrlMode_leg_right   = nullptr;
+    iIntMode_leg_left     = nullptr;
+    iIntMode_leg_right    = nullptr;
+    iImp_leg_left         = nullptr;
+    iTqs_leg_left         = nullptr;
+    iImp_leg_right        = nullptr;
+    iTqs_leg_right        = nullptr;
     isCalibrated = false;
     inertial_enabled=_inertial_enabled;
     icub = new iCubWholeBody (icub_type,DYNAMIC, VERBOSE);
     thread_status=STATUS_DISCONNECTED;
-    port_inertial        = 0;
-    la_additional_offset = 0;
-    ra_additional_offset = 0;
-    ll_additional_offset = 0;
-    rl_additional_offset = 0;
-    to_additional_offset = 0;
-    left_arm_exec_torques     = 0;
-    right_arm_exec_torques    = 0;
-    left_leg_exec_torques     = 0;
-    right_leg_exec_torques    = 0;
-    torso_exec_torques        = 0;
-    left_arm_gravity_torques  = 0;
-    right_arm_gravity_torques = 0;
-    left_leg_gravity_torques  = 0;
-    right_leg_gravity_torques = 0;
-    torso_gravity_torques     = 0;
+    port_inertial        = nullptr;
+    la_additional_offset = nullptr;
+    ra_additional_offset = nullptr;
+    ll_additional_offset = nullptr;
+    rl_additional_offset = nullptr;
+    to_additional_offset = nullptr;
+    left_arm_exec_torques     = nullptr;
+    right_arm_exec_torques    = nullptr;
+    left_leg_exec_torques     = nullptr;
+    right_leg_exec_torques    = nullptr;
+    torso_exec_torques        = nullptr;
+    left_arm_gravity_torques  = nullptr;
+    right_arm_gravity_torques = nullptr;
+    left_leg_gravity_torques  = nullptr;
+    right_leg_gravity_torques = nullptr;
+    torso_gravity_torques     = nullptr;
 
 }
     
@@ -303,7 +302,7 @@ bool gravityCompensatorThread::readAndUpdate(bool waitMeasure)
     if (inertial_enabled)
     {
         inertial = port_inertial->read(waitMeasure);
-        if(inertial!=0)
+        if(inertial!=nullptr)
         {
             sz = inertial->length();
             inertial_measurements.resize(sz) ;
@@ -576,16 +575,16 @@ bool gravityCompensatorThread::threadInit()
 }
 
 
-void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing)
+void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, const string& s_part, IControlMode *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing)
 {
     //check if interfaces are still up (icubinterface running)  
-    if (iCtrlMode == 0) 
+    if (iCtrlMode == nullptr)
         {yError("ControlMode interface already closed, unable to reset compensation offset.\n");    return;}
-    if (iTqs == 0)
+    if (iTqs == nullptr)
         {yError("TorqueControl interface already closed, unable to reset compensation offset.\n");  return;}
-    if (iIntMode == 0)
+    if (iIntMode == nullptr)
         {yError("InteractionMode interface already closed, unable to reset compensation offset.\n");  return;}
-    if (iImp == 0)
+    if (iImp == nullptr)
         {yError("Impedance interface already closed, unable to reset compensation offset.\n");      return;}
 
     //set to zero all the offsets if the module is closing
@@ -657,9 +656,9 @@ void gravityCompensatorThread::run()
 {  
     thread_status = STATUS_OK;
     static int delay_check=0;
-    if(isCalibrated==true)
+    if(isCalibrated)
     {
-        if (readAndUpdate(false) == false)
+        if (!readAndUpdate(false))
         {
             delay_check++;
             yWarning ("network delays detected (%d/10)\n", delay_check);
@@ -708,38 +707,38 @@ void gravityCompensatorThread::run()
 
         //read the external command ports
         Vector *offset_input_la = la_additional_offset->read(false);
-        if(offset_input_la!=0)
+        if(offset_input_la!=nullptr)
         {
-            int size = (offset_input_la->size() < 7) ? offset_input_la->size():7;
-            for (int i=0; i<size; i++)
+            auto size = (offset_input_la->size() < 7) ? offset_input_la->size():7;
+            for (size_t i=0; i<size; i++)
                 {externalcmd_torques_LA[i]=(*offset_input_la)[i];}
         }
         Vector *offset_input_ra = ra_additional_offset->read(false);
-        if(offset_input_ra!=0)
+        if(offset_input_ra!=nullptr)
         {
-            int size = (offset_input_ra->size() < 7) ? offset_input_ra->size():7;
-            for (int i=0; i<size; i++)
+            auto size = (offset_input_ra->size() < 7) ? offset_input_ra->size():7;
+            for (size_t i=0; i<size; i++)
                 {externalcmd_torques_RA[i]=(*offset_input_ra)[i];}
         }
         Vector *offset_input_ll = ll_additional_offset->read(false);
-        if(offset_input_ll!=0)
+        if(offset_input_ll!=nullptr)
         {
-            int size = (offset_input_ll->size() < 6) ? offset_input_ll->size():6;
-            for (int i=0; i<size; i++)
+            auto size = (offset_input_ll->size() < 6) ? offset_input_ll->size():6;
+            for (size_t i=0; i<size; i++)
                 {externalcmd_torques_LL[i]=(*offset_input_ll)[i];}
         }
         Vector *offset_input_rl = rl_additional_offset->read(false);
-        if(offset_input_rl!=0)
+        if(offset_input_rl!=nullptr)
         {
-            int size = (offset_input_rl->size() < 6) ? offset_input_rl->size():6;
-            for (int i=0; i<size; i++)
+            auto size = (offset_input_rl->size() < 6) ? offset_input_rl->size():6;
+            for (size_t i=0; i<size; i++)
                 {externalcmd_torques_RL[i]=(*offset_input_rl)[i];}
         }
         Vector *offset_input_to = to_additional_offset->read(false);
-        if(offset_input_to!=0)
+        if(offset_input_to!=nullptr)
         {
-            int size = (offset_input_to->size() < 3) ? offset_input_to->size():3;
-            for (int i=0; i<size; i++)
+            auto size = (offset_input_to->size() < 3) ? offset_input_to->size():3;
+            for (size_t i=0; i<size; i++)
                 {externalcmd_torques_TO[i]=(*offset_input_to)[i];}
         }
 
@@ -869,7 +868,7 @@ void gravityCompensatorThread::run()
     }
     else
     {
-        if(Network::exists(string("/"+wholeBodyName+"/filtered/inertial:o").c_str()))
+        if(Network::exists("/"+wholeBodyName+"/filtered/inertial:o"))
         {
             yInfo("connection exists! starting calibration...\n");
             //the following delay is required because even if the filtered port exists, may be the 
@@ -877,7 +876,7 @@ void gravityCompensatorThread::run()
             Time::delay(1.0); 
 
             isCalibrated = true;
-            Network::connect(string("/"+wholeBodyName+"/filtered/inertial:o").c_str(),"/gravityCompensator/inertial:i");
+            Network::connect("/"+wholeBodyName+"/filtered/inertial:o","/gravityCompensator/inertial:i");
             setZeroJntAngVelAcc();
             setUpperMeasure();
             setLowerMeasure();
@@ -977,22 +976,22 @@ void gravityCompensatorThread::threadRelease()
     right_leg_gravity_torques->close();
     torso_gravity_torques->close();
 
-    if (left_arm_exec_torques)  {delete left_arm_exec_torques;  left_arm_exec_torques = 0;}
-    if (right_arm_exec_torques) {delete right_arm_exec_torques; right_arm_exec_torques = 0;}
-    if (left_leg_exec_torques)  {delete left_leg_exec_torques;  left_leg_exec_torques = 0;}
-    if (right_leg_exec_torques) {delete right_leg_exec_torques; right_leg_exec_torques = 0;}
-    if (torso_exec_torques)     {delete torso_exec_torques;     torso_exec_torques = 0;}
+    if (left_arm_exec_torques)  {delete left_arm_exec_torques;  left_arm_exec_torques = nullptr;}
+    if (right_arm_exec_torques) {delete right_arm_exec_torques; right_arm_exec_torques = nullptr;}
+    if (left_leg_exec_torques)  {delete left_leg_exec_torques;  left_leg_exec_torques = nullptr;}
+    if (right_leg_exec_torques) {delete right_leg_exec_torques; right_leg_exec_torques = nullptr;}
+    if (torso_exec_torques)     {delete torso_exec_torques;     torso_exec_torques = nullptr;}
 
-    if (left_arm_gravity_torques)  {delete left_arm_gravity_torques;  left_arm_gravity_torques = 0;}
-    if (right_arm_gravity_torques) {delete right_arm_gravity_torques; right_arm_gravity_torques = 0;}
-    if (left_leg_gravity_torques)  {delete left_leg_gravity_torques;  left_leg_gravity_torques = 0;}
-    if (right_leg_gravity_torques) {delete right_leg_gravity_torques; right_leg_gravity_torques = 0;}
-    if (torso_gravity_torques)     {delete torso_gravity_torques;     torso_gravity_torques = 0;}
+    if (left_arm_gravity_torques)  {delete left_arm_gravity_torques;  left_arm_gravity_torques = nullptr;}
+    if (right_arm_gravity_torques) {delete right_arm_gravity_torques; right_arm_gravity_torques = nullptr;}
+    if (left_leg_gravity_torques)  {delete left_leg_gravity_torques;  left_leg_gravity_torques = nullptr;}
+    if (right_leg_gravity_torques) {delete right_leg_gravity_torques; right_leg_gravity_torques = nullptr;}
+    if (torso_gravity_torques)     {delete torso_gravity_torques;     torso_gravity_torques = nullptr;}
 
-    if (linEstUp)          {delete linEstUp;   linEstUp = 0;}
-    if (quadEstUp)         {delete quadEstUp;  quadEstUp = 0;}
-    if (linEstLow)         {delete linEstLow;  linEstLow = 0;}
-    if (quadEstLow)        {delete quadEstLow; quadEstLow = 0;}
+    if (linEstUp)          {delete linEstUp;   linEstUp = nullptr;}
+    if (quadEstUp)         {delete quadEstUp;  quadEstUp = nullptr;}
+    if (linEstLow)         {delete linEstLow;  linEstLow = nullptr;}
+    if (quadEstLow)        {delete quadEstLow; quadEstLow = nullptr;}
 
     //closing ports
     port_inertial->interrupt();
@@ -1007,10 +1006,5 @@ void gravityCompensatorThread::threadRelease()
     rl_additional_offset->close();
     to_additional_offset->interrupt();
     to_additional_offset->close();
-    if (icub)      {delete icub; icub=0;}
+    if (icub)      {delete icub; icub=nullptr;}
 }
-
-void gravityCompensatorThread::closePort(Contactable *_port)
-{
-}
-
