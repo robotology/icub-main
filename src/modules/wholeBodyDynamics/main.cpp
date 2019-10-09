@@ -57,6 +57,11 @@ http://wiki.icub.org/wiki/Force_Control
 - The parameter \e name identifies the robot name. If not specified
   \e icub is assumed. 
 
+--imuPortName
+- The parameter identifies the prefix of the multipleanalogsensorsserver
+  to be attached to for retreiving inertial data.
+  The default value is /<robot>/head/inertials.
+
 --rate \e r 
 - The parameter \e r identifies the rate the thread will work. If not
   specified \e 10ms is assumed. 
@@ -499,6 +504,11 @@ public:
             yError ("'rate' parameter is deprecated. Use 'period' instead");
             return false;
         }
+        std::string remoteInertialName{"/"+robot_name+"/head/inertials"};
+        if (rf.check("imuPortName"))
+        {
+            remoteInertialName = rf.find("imuPortName").asString();
+        }
 
         //---------------------DUMMY_FT-------------------------//
         if (rf.check("dummy_ft"))
@@ -608,7 +618,7 @@ public:
 
         Property masConf {{"device",Value("multipleanalogsensorsclient")},
                           {"local", Value("/"+local_name+"/inertials")},
-                          {"remote",Value("/"+robot_name+"/head/inertials")},
+                          {"remote",Value(remoteInertialName)},
                           {"timeout",Value(0.04)}};
 
         if (!dd_MASClient.open(masConf))
