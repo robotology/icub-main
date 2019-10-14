@@ -17,6 +17,8 @@
 #include <yarp/math/Math.h>
 
 #include <iCub/iKin/iKinFwd.h>
+#include <dirent.h>
+#include <random>
 
 using namespace std;
 using namespace cv;
@@ -57,6 +59,7 @@ private:
     double version;
 
     bool standalone;
+    bool cfiShuffle;
     yarp::dev::PolyDriver polyHead;
     yarp::dev::IEncoders *posHead;
 
@@ -90,16 +93,23 @@ private:
     string boardType;
     char pathL[256];
     char pathR[256];
+    
+    string calibFileName;
+
+    string cfiFolder;
+    string cfiCalibFile;
+    int cfiReshuffle;
+
     void printMatrix(Mat &matrix);
     bool checkTS(double TSLeft, double TSRight, double th=0.08);
     void preparePath(const char * imageDir, char* pathL, char* pathR, int num);
     void saveStereoImage(const char * imageDir, const Mat& left, const Mat& right, int num);
-    void monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat &K, Mat &Dist);
-    void stereoCalibration(const vector<string>& imagelist, int boardWidth, int boardHeight,float sqsizee);
+    float monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat &K, Mat &Dist);
+    float stereoCalibration(const vector<string>& imagelist, int boardWidth, int boardHeight,float sqsizee);
     void saveCalibration(const string& extrinsicFilePath, const string& intrinsicFilePath);
     void calcChessboardCorners(Size boardSize, float squareSize, vector<Point3f>& corners);
-    bool updateIntrinsics( int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, const string& groupname);
-    bool updateExtrinsics(Mat Rot, Mat Tr, const string& groupname);
+    bool updateIntrinsics( int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, const string& groupname, string fileName);
+    bool updateExtrinsics(Mat Rot, Mat Tr, const string& groupname, string fileName);
     void saveImage(const char * imageDir, const Mat& left, int num);
     void stereoCalibRun();
     void monoCalibRun();
@@ -107,13 +117,15 @@ private:
 public:
 
 
-    stereoCalibThread(ResourceFinder &rf, Port* commPort, const char *imageDir);
-    void startCalib();
+    stereoCalibThread(ResourceFinder &rf, Port* commPort);
+    void startCalib(const char *imageDir);
     void stopCalib();
     bool threadInit();
     void threadRelease();
     void run(); 
     void onStop();
+    
+    void calibFromImages();
 
 };
 

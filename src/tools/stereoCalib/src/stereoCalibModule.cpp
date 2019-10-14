@@ -12,17 +12,7 @@ bool stereoCalibModule::configure(yarp::os::ResourceFinder &rf)
     handlerPortName="/";
     handlerPortName+=getName(rf.check("CommandPort",Value("/cmd"),"Output image port (string)").asString());
 
-    char dirName[255];
-    bool proceed=true;
-    string dir=rf.getHomeContextPath().c_str();
-
-    for (int i=1; proceed; i++)
-    {
-        sprintf(dirName,"%s/%s_%.5d",dir.c_str(),"calibImg",i);
-        proceed=!yarp::os::stat(dirName);
-        sprintf(dirName,"%s/%s_%.5d/",dir.c_str(),"calibImg",i);
-    }    
-    yarp::os::mkdir_p(dirName);
+    dir=rf.getHomeContextPath().c_str();
 
     if (!handlerPort.open(handlerPortName.c_str()))
     {
@@ -31,7 +21,7 @@ bool stereoCalibModule::configure(yarp::os::ResourceFinder &rf)
     }
     attach(handlerPort);
 
-    calibThread=new stereoCalibThread(rf,&handlerPort,dirName);
+    calibThread=new stereoCalibThread(rf,&handlerPort);
     calibThread->start();
 
     return true;
@@ -57,11 +47,29 @@ bool stereoCalibModule::close()
 
 bool stereoCalibModule::respond(const Bottle& command, Bottle& reply) 
 {
-    if (command.get(0).asString()=="start") {
+    if (command.get(0).asString()=="start")
+    {
+        //create a new folder everytime the it receives the start commmand
+        bool proceed=true;
+        for (int i=1; proceed; i++)
+        {
+            snprintf(dirName,PATH_LEN-1,"%s/%s_%.5d", dir.c_str(), "calibImg",i);
+            proceed=!yarp::os::stat(dirName);
+            snprintf(dirName,PATH_LEN-1,"%s/%s_%.5d/", dir.c_str(),"calibImg",i);
+        }    
+        yarp::os::mkdir_p(dirName);
+        
         reply.addString("Starting Calibration...");
-        calibThread->startCalib();
-   }
+        calibThread->startCalib(dirName);
+    }
+    else if (command.get(0).asString()=="cfi")
+    {
+        reply.addString("Calibration From Images (cfi) ...");
+        calibThread->calibFromImages();
+        reply.addString("... Done");
+    }
     return true;
+
 }
 
 

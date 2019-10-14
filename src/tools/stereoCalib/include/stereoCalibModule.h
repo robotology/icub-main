@@ -6,7 +6,9 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Thread.h>
 #include "stereoCalibThread.h"
- 
+
+#define PATH_LEN 255
+
 using namespace std;
 using namespace yarp::os; 
 using namespace yarp::sig;
@@ -21,10 +23,11 @@ class stereoCalibModule:public RFModule
     string outputPortNameLeft;  
     string handlerPortName;
     string outputCalibPath;
+    string dir;
 
     int thresholdValue;
 
-
+    char dirName[PATH_LEN];
 
     BufferedPort<ImageOf<PixelBgr> > imageOut;
     Port handlerPort;

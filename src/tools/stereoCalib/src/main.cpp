@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2011 RobotCub Consortium
- * Author: Sean Ryan Fanello
- * email:   sean.fanello@iit.it
+ * Authors: Sean Ryan Fanello, Leandro de Souza Rosa
+ * email:   (sean.fanello, leandro.desouzarosa) @iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -25,9 +25,10 @@ Calibrate the iCub's stereo system (both intrinsics and extrinsics).
 
 Copyright (C) 2011 RobotCub Consortium
  
-Author: Sean Ryan Fanello
+Authors: Sean Ryan Fanello, Leandro de Souza Rosa
  
 Date: first release on 26/03/2011
+      update on 07/11/2019
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -44,6 +45,9 @@ boardHeight H
 boardSize S
 numberOfImages N
 MonoCalib value
+standalone
+cfi_shuffle
+cfi_reshuffle N
 \endcode
 
 This is the ONLY group used by the module. Other groups in your config file will be discarded. See below for the parameter description. Calibration results will be saved in the specified context (default is: $ICUB_ROOT/main/app/cameraCalibration/conf/outputCalib.ini). You should replace your old calibration file (e.g. icubEyes.ini) with this new one.
@@ -72,6 +76,18 @@ YARP libraries and OpenCV
 --MonoCalib \e Val 
 - The parameter \e Val identifies if the module has to run the stereo calibration (Val=0) or the mono calibration (Val=1). For the mono calibration connect only the camera that you want to calibrate.
 
+--calibFileName \e fileName
+- Saves the intrinsic and extrinsic calibration parameters in the fileName file (default fileName=outputCalib.ini).
+
+--standalone
+- Enables the calibration with two different cameras
+
+--cfi_shuffle
+- Shuffles the images before performing the calibration with the cfi command
+
+--cfi_reshuffle \e Num
+- Re-adds the images for calibration Num-time in a random order to create more sets for calibration. Requires cfi_shuffle.
+
 \section portsc_sec Ports Created
 - <i> /stereoCalib/cam/left:i </i> accepts the incoming images from the left eye. 
 - <i> /stereoCalib/cam/right:i </i> accepts the incoming images from the right eye. 
@@ -82,17 +98,20 @@ YARP libraries and OpenCV
 - <i> /stereoCalib/cmd </i> for terminal commands comunication. 
  Recognized remote commands:
     - [start]: Starts the calibration procedure, you have to show the chessboard image in different positions and orientations. After N times (N specified in the config file, see above). the module will run the stereo calibration
+    - [cfi]: Reads images on calibFromImages/calibImgXXX folders and performs a different stereo calibration for every N images (N specified in the config file, see above).
 
 \section in_files_sec Input Data Files
 None.
 
 \section out_data_sec Output Data Files
 outputCalib.ini 
- 
+
 \section tested_os_sec Tested OS
-Windows and Linux.
+start - Windows and Linux.
+cfi - Linux.
 
 \author Sean Ryan Fanello
+\author Leandro de Souza Rosa
 */ 
 
 #include "stereoCalibModule.h"
