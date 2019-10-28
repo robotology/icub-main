@@ -95,14 +95,14 @@ Author: Lorenzo Natale
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Thread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/LogStream.h>
 
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 
+#include <mutex>
+#include <condition_variable>
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -199,7 +199,7 @@ protected:
     IPositionControl *pos;
     IEncoders        *enc;
     Actions actions;
-    Semaphore mutex;
+    mutex mtx;
  
     void _send(const ActionItem *x)
     {
@@ -289,9 +289,8 @@ public:
 
     void send(ActionItem *tmp)
     {
-        mutex.wait();
+        lock_guard<mutex> lck(mtx);
         _send(tmp);
-        mutex.post();
     }
 
     bool configure(const Property &options)
@@ -323,24 +322,21 @@ public:
 
     void queue(ActionItem *item)
     {
-        mutex.wait();
+        lock_guard<mutex> lck(mtx);
         actions.push_back(item);
-        mutex.post();
     }
 
     void sendNow(ActionItem *item)
     {
-        mutex.wait();
+        lock_guard<mutex> lck(mtx);
         actions.clear();
         _send(item);
-        mutex.post();
     }
 
     ActionItem *pop()
     {
-        mutex.wait();
+        lock_guard<mutex> lck(mtx);
         ActionItem *ret=actions.pop();
-        mutex.post();
         return ret;
     }
 
@@ -408,7 +404,9 @@ public:
 class VelocityThread: public Thread
 {
 private:
-    Semaphore       mutex;
+    mutex              mtx;
+    condition_variable cv;
+
     AWLinEstimator  linEst;
     Port           *velPort;
     Port           *velInitPort;
@@ -552,7 +550,7 @@ private:
     }
 
 public:
-    VelocityThread() : mutex(0), linEst(VEL_FILT_SIZE,VEL_FILT_THRES)
+    VelocityThread() : linEst(VEL_FILT_SIZE,VEL_FILT_THRES)
     {
         velInit=false;
         velPort=NULL;
@@ -595,7 +593,7 @@ public:
             fin.getline(&line[0],sizeof(line),'\n');
             firstRun=true;
             cout<<"File loaded"<<endl;
-            mutex.post();
+            cv.notify_all();
             return true;
         }
         else
@@ -608,7 +606,7 @@ public:
     void onStop()
     {
         closing=true;
-        mutex.post();
+        cv.notify_all();
     }
 
     void threadRelease()
@@ -646,7 +644,10 @@ public:
             else
             {
                 if (!closing)
-                    mutex.wait();
+                {
+                    unique_lock<mutex> lck(mtx);
+                    cv.wait(lck);
+                }
     
                 if (firstRun)
                 {
@@ -675,7 +676,7 @@ public:
                     p1=p2;
                     time1=time2;
                     send=true;
-                    mutex.post();
+                    cv.notify_all();
                 }
                 else
                 {

@@ -6,10 +6,10 @@
 #ifndef __VELCONTROLTHREAD__
 #define __VELCONTROLTHREAD__
 
+#include <mutex>
 #include <string>
 
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -48,7 +48,7 @@ private:
 
     int nb_void_loops;
 
-    yarp::os::Semaphore _mutex;
+    std::mutex _mutex;
 
     int control_rate; //in ms
 

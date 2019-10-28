@@ -414,8 +414,6 @@ Windows, Linux
 #define EXPLORE_HAND                yarp::os::createVocab('h','a','n','d')
 
 
-
-
 #define PORT_TAG_CMD                0
 #define PORT_TAG_GET                1
 
@@ -439,7 +437,6 @@ protected:
 
     Initializer                 *initializer;
 
-    Mutex                       processMutex;
     bool                        interrupted;
     volatile bool               closing;
     bool                        idle;
@@ -679,8 +676,6 @@ public:
 
     bool process(int &port_tag, Bottle &command, Bottle &reply)
     {
-        LockGuard guard(processMutex);
-
         if(closing)
         {
             reply.addVocab(NACK);

@@ -313,14 +313,14 @@ void Controller::stopLimb(const bool execStopPosition)
 
     commData->ctrlActive=false;
     motionDone=true;
-    eventLook.signal();
+    cv_eventLook.notify_all();
 }
 
 
 /************************************************************************/
 void Controller::stopControl()
 {
-    LockGuard lg(mutexRun);
+    lock_guard<mutex> lg(mutexRun);
     stopControlHelper();
 }
 
@@ -328,7 +328,7 @@ void Controller::stopControl()
 /************************************************************************/
 void Controller::stopControlHelper()
 {
-    LockGuard lg(mutexCtrl);
+    lock_guard<mutex> lg(mutexCtrl);
     if (commData->ctrlActive)
     {
         q_stamp=Time::now();
@@ -475,7 +475,7 @@ Vector Controller::computeEyesVelFromdxFP(const Vector &dfp)
 /************************************************************************/
 void Controller::doSaccade(const Vector &ang, const Vector &vel)
 {
-    LockGuard lg(mutexCtrl);
+    lock_guard<mutex> lg(mutexCtrl);
     if (ctrlInhibited)
         return;
 
@@ -518,16 +518,17 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
 /************************************************************************/
 bool Controller::look(const Vector &x)
 {
-    LockGuard lg(mutexLook);
+    lock_guard<mutex> lg(mutexLook);
 
     mutexRun.lock();
     bool ret=commData->port_xd->set_xd(x);
-    if (ret)
-        eventLook.reset();
     mutexRun.unlock();
 
     if (ret)
-        eventLook.wait();
+    {
+        unique_lock<mutex> lck(mtx_eventLook);
+        cv_eventLook.wait(lck);
+    }
 
     return ret;
 }
@@ -536,7 +537,7 @@ bool Controller::look(const Vector &x)
 /************************************************************************/
 void Controller::resetCtrlEyes()
 {
-    LockGuard lg(mutexCtrl);
+    lock_guard<mutex> lg(mutexCtrl);
     mjCtrlEyes->reset(zeros((int)fbEyes.length()));
     unplugCtrlEyes=false;
 }
@@ -602,7 +603,7 @@ bool Controller::setGazeStabilization(const bool f)
     {
         if (stabilizeGaze!=f)
         {
-            LockGuard lg(mutexRun);
+            lock_guard<mutex> lg(mutexRun);
             if (f)
             {
                 if (!commData->ctrlActive)
@@ -614,7 +615,7 @@ bool Controller::setGazeStabilization(const bool f)
             }
             else
             {
-                LockGuard lg(mutexCtrl);
+                lock_guard<mutex> lg(mutexCtrl);
                 q_stamp=Time::now();
                 stopLimb();
                 notifyEvent("stabilization-off");
@@ -640,7 +641,7 @@ bool Controller::getGazeStabilization() const
 /************************************************************************/
 void Controller::run()
 {
-    LockGuard lg(mutexRun);
+    lock_guard<mutex> lg(mutexRun);
     
     mutexCtrl.lock();
     bool jointsHealthy=areJointsHealthyAndSet();
@@ -650,7 +651,7 @@ void Controller::run()
     {
         stopControlHelper();
         commData->port_xd->get_new()=false;
-        eventLook.signal();
+        cv_eventLook.notify_all();
     }
 
     string event="none";
@@ -802,7 +803,7 @@ void Controller::run()
         jointsToSet.clear();
         motionDone=false;
         q0=fbHead;
-        eventLook.signal();        
+        cv_eventLook.notify_all();
     }
     mutexCtrl.unlock();
 
@@ -999,7 +1000,7 @@ void Controller::run()
 /************************************************************************/
 void Controller::suspend()
 {
-    LockGuard lg(mutexCtrl);
+    lock_guard<mutex> lg(mutexCtrl);
     PeriodicThread::suspend();    
     stopLimb();
     commData->saccadeUnderway=false;    
@@ -1071,7 +1072,7 @@ void Controller::setTeyes(const double execTime)
 /************************************************************************/
 bool Controller::isMotionDone()
 {
-    LockGuard lg(mutexRun);
+    lock_guard<mutex> lg(mutexRun);
     return motionDone;
 }
 
@@ -1084,7 +1085,7 @@ void Controller::setTrackingMode(const bool f)
         if (f)
             look(commData->get_x());
 
-        LockGuard lg(mutexRun);
+        lock_guard<mutex> lg(mutexRun);
         commData->trackingModeOn=f;
         yInfo("tracking mode set to %s",
               commData->trackingModeOn?"on":"off");
@@ -1102,7 +1103,7 @@ bool Controller::getTrackingMode() const
 /************************************************************************/
 bool Controller::getDesired(Vector &des)
 {
-    LockGuard lg(mutexData);
+    lock_guard<mutex> lg(mutexData);
     des=qddeg;
     return true;
 }
@@ -1111,7 +1112,7 @@ bool Controller::getDesired(Vector &des)
 /************************************************************************/
 bool Controller::getVelocity(Vector &vel)
 {
-    LockGuard lg(mutexData);
+    lock_guard<mutex> lg(mutexData);
     vel=vdeg;
     return true;
 }
@@ -1120,7 +1121,7 @@ bool Controller::getVelocity(Vector &vel)
 /************************************************************************/
 bool Controller::getPose(const string &poseSel, Vector &x, Stamp &stamp)
 {
-    LockGuard lg(mutexChain);
+    lock_guard<mutex> lg(mutexChain);
     if (poseSel=="left")
     {
         x=chainEyeL->EndEffPose();
@@ -1147,7 +1148,7 @@ bool Controller::getPose(const string &poseSel, Vector &x, Stamp &stamp)
 /************************************************************************/
 bool Controller::registerMotionOngoingEvent(const double checkPoint)
 {
-    LockGuard lg(mutexData);
+    lock_guard<mutex> lg(mutexData);
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
         motionOngoingEvents.insert(checkPoint);
@@ -1161,7 +1162,7 @@ bool Controller::registerMotionOngoingEvent(const double checkPoint)
 /************************************************************************/
 bool Controller::unregisterMotionOngoingEvent(const double checkPoint)
 {
-    LockGuard lg(mutexData);
+    lock_guard<mutex> lg(mutexData);
 
     bool ret=false;
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
@@ -1181,7 +1182,7 @@ bool Controller::unregisterMotionOngoingEvent(const double checkPoint)
 /************************************************************************/
 Bottle Controller::listMotionOngoingEvents()
 {
-    LockGuard lg(mutexData);
+    lock_guard<mutex> lg(mutexData);
 
     Bottle events;
     for (auto motionOngoingEvent : motionOngoingEvents)

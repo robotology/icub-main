@@ -19,6 +19,7 @@
 #ifndef __SOLVER_H__
 #define __SOLVER_H__
 
+#include <mutex>
 #include <string>
 
 #include <yarp/os/all.h>
@@ -64,7 +65,7 @@ protected:
     ExchangeData         *commData;
     Controller           *ctrl;
     Integrator           *I;
-    Mutex                 mutex;
+    mutex                 mtx;
 
     double                orig_eye_tilt_min;
     double                orig_eye_tilt_max;
@@ -127,7 +128,7 @@ protected:
     EyePinvRefGen      *eyesRefGen;
     Localizer          *loc;
     Controller         *ctrl;    
-    Mutex               mutex;
+    mutex               mtx;
 
     unsigned int period;
     int nJointsTorso;

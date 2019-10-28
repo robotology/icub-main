@@ -56,6 +56,8 @@
 #ifndef __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
 #define __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
 
+#include <mutex>
+
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
 #include <yarp/sig/all.h>
@@ -214,7 +216,7 @@ private:
     yarp::os::BufferedPort<yarp::os::Bottle> *port;
     yarp::dev::PolyDriver                     driver;
 
-    yarp::os::Mutex mutex;
+    std::mutex mtx;
 
     class CalibThread : public yarp::os::Thread
     {

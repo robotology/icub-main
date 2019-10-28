@@ -184,7 +184,7 @@ void Localizer::afterStart(bool s)
 /************************************************************************/
 void Localizer::getPidOptions(Bottle &options)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     pid->getOptions(options);
     Bottle &bDominantEye=options.addList();
     bDominantEye.addString("dominantEye");
@@ -195,7 +195,7 @@ void Localizer::getPidOptions(Bottle &options)
 /************************************************************************/
 void Localizer::setPidOptions(const Bottle &options)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     pid->setOptions(options);
     if (options.check("dominantEye"))
     {
@@ -228,7 +228,7 @@ Vector Localizer::getAbsAngles(const Vector &x)
 /************************************************************************/
 Vector Localizer::get3DPoint(const string &type, const Vector &ang)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     double azi=ang[0];
     double ele=ang[1];
     double ver=ang[2];
@@ -295,7 +295,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
 /************************************************************************/
 bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     if (x.length()<3)
     {
         yError("Not enough values given for the point!");
@@ -353,7 +353,7 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
 bool Localizer::projectPoint(const string &type, const double u, const double v,
                              const double z, Vector &x)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     bool isLeft=(type=="left");
 
     Matrix  *invPrj=(isLeft?invPrjL:invPrjR);
@@ -412,7 +412,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 
     if (projectPoint(type,u,v,1.0,x))
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         // pick up a point belonging to the plane
         Vector p0(3,0.0);
@@ -449,7 +449,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 /************************************************************************/
 bool Localizer::triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     if ((pxl.length()<2) || (pxr.length()<2))
     {
         yError("Not enough values given for the pixels!");
@@ -591,9 +591,9 @@ void Localizer::handleStereoInput()
                     fb=ul-cxl;
                 }
                 
-                mutex.lock();
+                mtx.lock();
                 Vector z=pid->compute(ref,fb);
-                mutex.unlock();
+                mtx.unlock();
 
                 if (projectPoint(dominantEye,u,v,z[0],fp))
                     commData->port_xd->set_xd(fp);

@@ -562,6 +562,7 @@ Windows, Linux
 \author Ugo Pattacini, Alessandro Roncone
 */
 
+#include <mutex>
 #include <cmath>
 #include <algorithm>
 #include <fstream>
@@ -599,8 +600,8 @@ protected:
     ExchangeData    commData;
     bool            interrupting;
     bool            doSaveTweakFile;
-    Mutex           mutexContext;
-    Mutex           mutexTweak;
+    mutex           mutexContext;
+    mutex           mutexTweak;
 
     IThreeAxisGyroscopes* iGyro;
     IThreeAxisLinearAccelerometers* iAccel;
@@ -675,7 +676,7 @@ protected:
     /************************************************************************/
     void storeContext(int *id)
     {
-        LockGuard lg(mutexContext);
+        lock_guard<mutex> lg(mutexContext);
         Context &context=contextMap[contextIdCnt];
 
         // solver part
@@ -705,7 +706,7 @@ protected:
     /************************************************************************/
     bool restoreContext(const int id)
     {
-        LockGuard lg(mutexContext);
+        lock_guard<mutex> lg(mutexContext);
         auto itr=contextMap.find(id);
         if (itr!=contextMap.end())
         {
@@ -742,7 +743,7 @@ protected:
     {
         if (contextIdList!=nullptr)
         {
-            LockGuard lg(mutexContext);
+            lock_guard<mutex> lg(mutexContext);
             for (int i=0; i<contextIdList->size(); i++)
             {
                 int id=contextIdList->get(i).asInt();
@@ -798,7 +799,7 @@ protected:
     /************************************************************************/
     bool tweakSet(const Bottle &options)
     {
-        LockGuard lg(mutexTweak);
+        lock_guard<mutex> lg(mutexTweak);
         if (Bottle *pB=options.find("camera_intrinsics_left").asList())
         {
             Matrix Prj=zeros(3,4); int w,h;
@@ -945,7 +946,7 @@ protected:
     /************************************************************************/
     bool tweakGet(Bottle &options)
     {
-        LockGuard lg(mutexTweak);
+        lock_guard<mutex> lg(mutexTweak);
         Bottle &intrinsicsLeft=options.addList();
         intrinsicsLeft.addString("camera_intrinsics_left");
         Bottle &intrinsicsLeftValues=intrinsicsLeft.addList();
@@ -2142,7 +2143,7 @@ public:
     {
         if (doSaveTweakFile)
         {
-            LockGuard lg(mutexTweak);
+            lock_guard<mutex> lg(mutexTweak);
             saveTweakFile();
             doSaveTweakFile=false;
         }

@@ -223,13 +223,13 @@
 #ifndef __IKINSLV_H__
 #define __IKINSLV_H__
 
+#include <mutex>
+#include <condition_variable>
 #include <string>
 #include <deque>
 
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Mutex.h>
-#include <yarp/os/Event.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
@@ -265,7 +265,7 @@ class InputPort : public yarp::os::BufferedPort<yarp::os::Bottle>
 protected:
     CartesianSolver *slv;
 
-    yarp::os::Mutex mutex;
+    std::mutex mtx;
 
     bool   contMode;
     bool   isNew;
@@ -345,7 +345,7 @@ protected:
     yarp::os::Port                           *rpcPort;
     InputPort                                *inPort;
     yarp::os::BufferedPort<yarp::os::Bottle> *outPort;
-    yarp::os::Mutex                           mutex;
+    std::mutex                                mtx;
 
     std::string   slvName;
     std::string   type;
@@ -381,7 +381,8 @@ protected:
     yarp::sig::Vector w_3rdTask;
     yarp::sig::Vector idx_3rdTask;
 
-    yarp::os::Event dofEvent;
+    std::mutex mtx_dofEvent;
+    std::condition_variable cv_dofEvent;
 
     virtual PartDescriptor *getPartDesc(yarp::os::Searchable &options)=0;
     virtual yarp::sig::Vector solve(yarp::sig::Vector &xd);

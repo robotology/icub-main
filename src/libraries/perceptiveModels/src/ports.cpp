@@ -15,9 +15,9 @@
  * Public License for more details
 */
 
-#include <yarp/os/LockGuard.h>
 #include <iCub/perception/private/ports.h>
 
+using namespace std;
 using namespace yarp::os;
 using namespace iCub::perception;
 
@@ -32,7 +32,7 @@ iCub::perception::Port::Port()
 /************************************************************************/
 void iCub::perception::Port::onRead(Bottle &bottle)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     this->bottle=bottle;
 }
 
@@ -40,7 +40,7 @@ void iCub::perception::Port::onRead(Bottle &bottle)
 /************************************************************************/
 Value iCub::perception::Port::getValue(const int index)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
 
     Value ret;
     if ((index>=0) && (index<bottle.size()))

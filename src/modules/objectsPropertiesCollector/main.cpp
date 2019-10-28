@@ -257,6 +257,7 @@ reply: [ack] (id (1))
 
 #include <cstdio>
 #include <cstdarg>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <map>
@@ -420,7 +421,7 @@ protected:
 
     ResourceFinder *rf;
     map<int,Item> itemsMap;
-    Mutex mutex;
+    mutex mtx;
     int  idCnt;
     bool initialized;
     bool nosavedb;
@@ -575,7 +576,7 @@ public:
 
         yInfo("loading database from %s ...",dbFileName.c_str());
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         clear();
         idCnt=0;
 
@@ -628,7 +629,7 @@ public:
         if (nosavedb)
             return;
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         string dbFileName=rf->getHomeContextPath();
         dbFileName+="/";
         dbFileName+=rf->find("db").asString();
@@ -644,7 +645,7 @@ public:
     /************************************************************************/
     void dump()
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         yInfo("dumping database content ...");
 
         if (itemsMap.size()==0)
@@ -660,7 +661,7 @@ public:
         {
             if (pBroadcastPort->getOutputCount()>0)
             {
-                LockGuard lg(mutex);
+                lock_guard<mutex> lck(mtx);
                 Bottle &bottle=pBroadcastPort->prepare();
                 bottle.clear();
 
@@ -694,7 +695,7 @@ public:
             return false;
         }
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         itemsMap[idCnt].prop=new Property(content->toString().c_str());
         itemsMap[idCnt].lastUpdate=Time::now();
 
@@ -713,7 +714,7 @@ public:
             {
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
-                    LockGuard lg(mutex);
+                    lock_guard<mutex> lck(mtx);
                     clear();
                     yInfo("database cleared");
                     return true;
@@ -729,7 +730,7 @@ public:
 
         int id=content->find(PROP_ID).asInt();
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -764,7 +765,7 @@ public:
 
         int id=content->find(PROP_ID).asInt();
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -807,7 +808,7 @@ public:
 
         int id=content->find(PROP_ID).asInt();
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -857,7 +858,7 @@ public:
 
         int id=content->find(PROP_ID).asInt();
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -886,7 +887,7 @@ public:
 
         int id=content->find(PROP_ID).asInt();
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -915,7 +916,7 @@ public:
 
         int id=content->find(PROP_ID).asInt();
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -942,7 +943,7 @@ public:
 
         int id=content->find(PROP_ID).asInt();
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
         if (it!=itemsMap.end())
         {
@@ -966,7 +967,7 @@ public:
         if (content==NULL)
             return false;
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         if (content->size()==1)
         {
             if (content->get(0).isVocab() || content->get(0).isString())
@@ -1075,7 +1076,7 @@ public:
     /************************************************************************/
     void periodicHandler(const double dt)   // manage the items life-timers
     {
-        mutex.lock();
+        mtx.lock();
         bool erased=false;
         for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
         {
@@ -1096,7 +1097,7 @@ public:
                 }
             }
         }
-        mutex.unlock();
+        mtx.unlock();
 
         if (asyncBroadcast && erased)
             broadcast(BCTAG_ASYNC);
@@ -1416,7 +1417,7 @@ public:
         if ((type!=BCTAG_EMPTY) && (type!=BCTAG_SYNC) && (type!=BCTAG_ASYNC))
             return false;
 
-        mutex.lock();
+        mtx.lock();
         clear();
 
         if (type!=BCTAG_EMPTY)
@@ -1444,7 +1445,7 @@ public:
             }
         }
 
-        mutex.unlock();
+        mtx.unlock();
 
         if (asyncBroadcast)
             broadcast(BCTAG_ASYNC);

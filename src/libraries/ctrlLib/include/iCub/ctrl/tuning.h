@@ -22,6 +22,9 @@
 #ifndef __TUNING_H__
 #define __TUNING_H__
 
+#include <mutex>
+#include <condition_variable>
+
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
 #include <yarp/sig/all.h>
@@ -159,12 +162,13 @@ protected:
     yarp::dev::IPWMControl     *ipwm;
     yarp::dev::ICurrentControl *icur;
 
-    yarp::os::Mutex    mutex;
-    yarp::os::Event    doneEvent;
-    yarp::sig::Vector  gamma;
-    yarp::sig::Vector  stiction;
-    yarp::os::Property info;
-    yarp::sig::Vector  done;
+    std::mutex              mtx;
+    std::mutex              mtx_doneEvent;
+    std::condition_variable cv_doneEvent;
+    yarp::sig::Vector       gamma;
+    yarp::sig::Vector       stiction;
+    yarp::os::Property      info;
+    yarp::sig::Vector       done;
 
     AWLinEstimator   velEst;
     AWQuadEstimator  accEst;
@@ -359,8 +363,9 @@ protected:
     yarp::dev::Pid               pidOld;
     yarp::dev::Pid               pidNew;
 
-    yarp::os::Mutex mutex;
-    yarp::os::Event doneEvent;
+    std::mutex mtx;
+    std::mutex mtx_doneEvent;
+    std::condition_variable cv_doneEvent;
     yarp::os::BufferedPort<yarp::sig::Vector> port;
 
     yarp::sig::Vector x0;

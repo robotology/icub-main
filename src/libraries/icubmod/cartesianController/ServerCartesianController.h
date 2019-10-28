@@ -19,6 +19,8 @@
 #ifndef __SERVERCARTESIANCONTROLLER_H__
 #define __SERVERCARTESIANCONTROLLER_H__
 
+#include <mutex>
+#include <condition_variable>
 #include <string>
 #include <vector>
 #include <set>
@@ -167,8 +169,9 @@ protected:
     bool         skipSlvRes;
     bool         syncEventEnabled;
 
-    yarp::os::Mutex mutex;
-    yarp::os::Event syncEvent;
+    std::mutex mtx;
+    std::mutex mtx_syncEvent;
+    std::condition_variable cv_syncEvent;
     yarp::os::Stamp txInfo;
     yarp::os::Stamp poseInfo;
     yarp::os::Stamp eventInfo;

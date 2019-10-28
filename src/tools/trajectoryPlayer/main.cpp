@@ -32,6 +32,7 @@
 #include <vector>
 #include <deque>
 #include <cmath>
+#include <mutex>
 
 #include "utils.h"
 
@@ -166,7 +167,7 @@ private:
 public:
     robotDriver           *driver;
     action_class          actions;
-    Semaphore             mutex;
+    mutex                 mtx;
     BufferedPort<Bottle>  port_command_out;
     BufferedPort<Bottle>  port_command_joints;
     bool                  enable_execute_joint_command;
@@ -270,7 +271,7 @@ public:
 
     void run()
     {
-        mutex.wait();
+        lock_guard<mutex> lck(mtx);
         double current_time = yarp::os::Time::now();
         if (actions.current_status==ACTION_IDLE)
         {
@@ -415,7 +416,6 @@ public:
         {
             yError() << "unknown current_status";
         }
-        mutex.post();
     }
 };
 
@@ -557,8 +557,8 @@ public:
 
     virtual bool respond(const Bottle &command, Bottle &reply)
     {
+        lock_guard<mutex> lck(this->w_thread.mtx);
         bool ret=true;
-        this->w_thread.mutex.wait();
 
         if (command.size()!=0)
         {
@@ -675,7 +675,6 @@ public:
             ret = false;
         }
 
-        this->w_thread.mutex.post();
         return ret;
     }
 

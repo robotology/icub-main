@@ -42,7 +42,7 @@ void positionDirectControlThread::run()
                 1000.0*getEstimatedUsed());
         resetStat();
     }
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     //read the position targets
     yarp::os::Bottle *bot = command_port.read(false);
@@ -64,7 +64,6 @@ void positionDirectControlThread::run()
     }
     else
     {
-        _mutex.post();
         return;
     }
 
@@ -109,8 +108,6 @@ void positionDirectControlThread::run()
     idir->setPositions(control_joints, control_joints_list, targets.data());
 
     yDebug() << curr_time << targets[0] << targets[1] << targets[2];
-    _mutex.post();
-
 }
 
 bool positionDirectControlThread::threadInit()
@@ -249,16 +246,12 @@ void positionDirectControlThread::go()
 
 void positionDirectControlThread::setVel(int i, double vel)
 {
-    _mutex.wait();
-
-    _mutex.post();
+    std::lock_guard<std::mutex> lck(_mutex);
 }
 
 void positionDirectControlThread::setGain(int i, double gain)
 {
-    _mutex.wait();
-
-    _mutex.post();
+    std::lock_guard<std::mutex> lck(_mutex);
 }
 
 

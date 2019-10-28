@@ -6,10 +6,10 @@
 #ifndef __POSDIRCONTROLTHREAD__
 #define __POSDIRCONTROLTHREAD__
 
+#include <mutex>
 #include <string>
 
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -40,7 +40,7 @@ private:
     yarp::sig::Vector prev_targets;
 
     yarp::sig::Vector error;
-    yarp::os::Semaphore _mutex;
+    std::mutex _mutex;
 
     bool suspended;
 

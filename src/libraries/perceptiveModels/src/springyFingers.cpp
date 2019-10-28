@@ -725,11 +725,11 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     double *tol=&tol_min;
     double timeout=2.0*(_max-_min)/finger.getCalibVel();
 
-    mutex.lock();
+    mtx.lock();
     IControlMode     *imod; driver.view(imod);
     IEncoders        *ienc; driver.view(ienc);
     IPositionControl *ipos; driver.view(ipos);
-    mutex.unlock();
+    mtx.unlock();
 
     // workaround
     if ((finger.getName()=="ring") || (finger.getName()=="little"))
@@ -746,16 +746,16 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
 
     finger.calibrate(reset);
 
-    mutex.lock();
+    mtx.lock();
     imod->setControlMode(joint,VOCAB_CM_POSITION);
     ipos->setRefSpeed(joint,finger.getCalibVel());
-    mutex.unlock();
+    mtx.unlock();
 
     for (int i=0; i<5; i++)
     {
-        mutex.lock();
+        mtx.lock();
         ipos->positionMove(joint,*val);
-        mutex.unlock();
+        mtx.unlock();
 
         bool done=false;
         double fbOld=std::numeric_limits<double>::max();
@@ -764,9 +764,9 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
         {
             Time::delay(0.01);
 
-            mutex.lock();
+            mtx.lock();
             double fb; ienc->getEncoder(joint,&fb);
-            mutex.unlock();
+            mtx.unlock();
 
             if (fabs(fb-fbOld)>0.5)
             {
