@@ -19,6 +19,8 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include <mutex>
+#include <condition_variable>
 #include <string>
 #include <algorithm>
 #include <utility>
@@ -55,16 +57,17 @@ class xdPort : public BufferedPort<Bottle>,
 protected:
     void *slv;
 
-    Mutex  mutex_0;
-    Mutex  mutex_1;
-    Event  triggerNeck;
-    Vector xd;
-    Vector xdDelayed;    
-    bool   isNew;
-    bool   isNewDelayed;
-    bool   locked;
-    bool   closing;
-    int    rx;
+    mutex              mutex_0;
+    mutex              mutex_1;
+    mutex              mtx_triggerNeck;
+    condition_variable cv_triggerNeck;
+    Vector             xd;
+    Vector             xdDelayed;    
+    bool               isNew;
+    bool               isNewDelayed;
+    bool               locked;
+    bool               closing;
+    int                rx;
 
     void onRead(Bottle &b) override;
     void run() override;
@@ -90,7 +93,7 @@ public:
 class ExchangeData
 {
 protected:
-    Mutex  mutex[8];
+    mutex  mtx[8];
     Vector xd,qd;
     Vector x,q,torso;
     Vector v,counterv;

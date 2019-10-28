@@ -79,6 +79,8 @@
 #ifndef __AFFACTIONPRIMITIVES_H__
 #define __AFFACTIONPRIMITIVES_H__
 
+#include <mutex>
+#include <condition_variable>
 #include <string>
 #include <vector>
 #include <deque>
@@ -205,9 +207,11 @@ protected:
     perception::Model            *graspModel;
                                  
     yarp::os::PeriodicThread     *armWaver;
-    yarp::os::Mutex               mutex;
-    yarp::os::Event               motionStartEvent;
-    yarp::os::Event               motionDoneEvent;
+    std::mutex                    mtx;
+    std::mutex                    mtx_motionStartEvent;
+    std::condition_variable       cv_motionStartEvent;
+    std::mutex                    mtx_motionDoneEvent;
+    std::condition_variable       cv_motionDoneEvent;
 
     bool armMoveDone;
     bool handMoveDone;

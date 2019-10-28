@@ -76,18 +76,16 @@ InputPort::InputPort(CartesianSolver *_slv)
 /************************************************************************/
 void InputPort::set_dof(const Vector &_dof)
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     dof=_dof;
-    mutex.unlock();
 }
 
 
 /************************************************************************/
 Vector InputPort::get_dof()
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     Vector _dof=dof;
-    mutex.unlock();
     return _dof;
 }
 
@@ -95,9 +93,8 @@ Vector InputPort::get_dof()
 /************************************************************************/
 Vector InputPort::get_xd()
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     Vector _xd=xd;
-    mutex.unlock();
     return _xd;
 }
 
@@ -105,9 +102,8 @@ Vector InputPort::get_xd()
 /************************************************************************/
 void InputPort::reset_xd(const Vector &_xd)
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     xd=_xd;
-    mutex.unlock();
     isNew=false;
 }
 
@@ -130,12 +126,10 @@ bool InputPort::handleTarget(Bottle *b)
 {
     if (b!=NULL)
     {
-        mutex.lock();
+        lock_guard<mutex> lck(mtx);
         size_t len=std::min(b->size(),maxLen);
         for (size_t i=0; i<len; i++)
             xd[i]=b->get(i).asDouble();
-        mutex.unlock();
-
         return isNew=true;
     }
     else
@@ -150,14 +144,13 @@ bool InputPort::handleDOF(Bottle *b)
     {
         slv->lock();
 
-        mutex.lock();
+        mtx.lock();
         dof.resize(b->size());
         for (int i=0; i<b->size(); i++)
             dof[i]=b->get(i).asInt();
-        mutex.unlock();
+        mtx.unlock();
 
         slv->unlock();
-
         return true;
     }
     else
@@ -484,29 +477,29 @@ void CartesianSolver::initPos()
 /************************************************************************/
 void CartesianSolver::lock()
 {
-    mutex.lock();
+    mtx.lock();
 }
 
 
 /************************************************************************/
 void CartesianSolver::unlock()
 {
-    mutex.unlock();
+    mtx.unlock();
 }
 
 
 /************************************************************************/
 void CartesianSolver::waitDOFHandling()
 {
-    dofEvent.reset();
-    dofEvent.wait();
+    unique_lock<mutex> lck(mtx_dofEvent);
+    cv_dofEvent.wait(lck);
 }
 
 
 /************************************************************************/
 void CartesianSolver::postDOFHandling()
 {
-    dofEvent.signal();
+    cv_dofEvent.notify_all();
 }
 
 

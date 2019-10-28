@@ -44,7 +44,7 @@ void velControlThread::run()
                 1000.0*getEstimatedUsed());
         resetStat();
     }
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     ////getting new commands from the fast command port
     //this command receives also feedforward velocities
@@ -153,8 +153,6 @@ void velControlThread::run()
             }
         }
     }
-    _mutex.post();
-
 }
 
 bool velControlThread::threadInit()
@@ -297,15 +295,14 @@ void velControlThread::setRef(int i, double pos)
 {
     yInfo("Setting new target %d to %lf\n", i, pos);
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     targets(i)=pos;
     ffVelocities(i)=0;
-    _mutex.post();
 }
 
 void velControlThread::setVel(int i, double vel)
 {
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     if((vel > 0.0) && (vel < MAX_SPEED) && (i>=0) && (i<nJoints))
     {
@@ -314,13 +311,11 @@ void velControlThread::setVel(int i, double vel)
     }
     else
         yError("Impossible to set max vel higher than %f\n",MAX_SPEED);
-
-    _mutex.post();
 }
 
 void velControlThread::setGain(int i, double gain)
 {
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     if (gain>MAX_GAIN)
         gain=MAX_GAIN;
@@ -332,8 +327,6 @@ void velControlThread::setGain(int i, double gain)
     }
     else
         yError("Cannot set gain of joint %d\n",i);
-
-    _mutex.post();
 }
 
 

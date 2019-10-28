@@ -621,12 +621,12 @@ int CalibModule::removeOutliers()
 /************************************************************************/
 void CalibModule::doMotorExploration()
 {
-    mutex.lock();
+    mtx.lock();
 
     // skip if in idle
     if (motorExplorationState==motorExplorationStateIdle)
     {
-        mutex.unlock();
+        mtx.unlock();
         return;
     }
 
@@ -645,7 +645,7 @@ void CalibModule::doMotorExploration()
         motorExplorationAsyncStop=enabled=false;
         motorExplorationState=motorExplorationStateIdle;
 
-        mutex.unlock();
+        mtx.unlock();
         return;
     }
 
@@ -684,14 +684,14 @@ void CalibModule::doMotorExploration()
         if (done)
         {
             igaze->stopControl();
-            mutex.unlock();
+            mtx.unlock();
             Time::delay(exploration_wait);
-            mutex.lock();
+            mtx.lock();
             motorExplorationState=motorExplorationStateLog;
         }
     }
 
-    mutex.unlock();
+    mtx.unlock();
 }
 
 
@@ -1047,7 +1047,7 @@ bool CalibModule::configure(ResourceFinder &rf)
 /************************************************************************/
 void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
 
     Vector kinPoint,o;
     iarm->getPose(kinPoint,o);
@@ -1131,29 +1131,22 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
         if (holdImg)
             Time::delay(0.5);
     }
-
-    mutex.unlock();
 }
 
 
 /************************************************************************/
 int CalibModule::getNumExperts()
 {
-    mutex.lock();
-    int num=(int)experts->size();
-    mutex.unlock();
-
-    return num;
+    lock_guard<mutex> lck(mtx);
+    return (int)experts->size();
 }
 
 
 /************************************************************************/
 bool CalibModule::clearExperts()
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     experts->clear();
-    mutex.unlock();
-
     return true;
 }
 
@@ -1171,12 +1164,10 @@ bool CalibModule::load()
     Property data; data.fromConfigFile(fileName); 
     Bottle b; b.read(data);
 
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     yInfo("loading experts from file: %s",fileName.c_str());
     for (int i=0; i<b.size(); i++)
         factory(b.get(i));
-    mutex.unlock();
-
     return true;
 }
 
@@ -1184,7 +1175,7 @@ bool CalibModule::load()
 /************************************************************************/
 bool CalibModule::save()
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     if (!isSaved)
     {
         ofstream fout;
@@ -1222,7 +1213,6 @@ bool CalibModule::save()
         }
     }
 
-    mutex.unlock();
     return isSaved;
 }
 
@@ -1236,7 +1226,7 @@ bool CalibModule::log(const string &type)
     if ((type=="calibrator") && !calibrated)
         return false;
 
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     deque<Vector> p_depth, p_kin;
     calibrator->getPoints(p_depth,p_kin);
 
@@ -1273,7 +1263,6 @@ bool CalibModule::log(const string &type)
         ret=(i>=p_depth.size());
     }
 
-    mutex.unlock();
     return ret;
 }
 
@@ -1293,10 +1282,9 @@ bool CalibModule::explore()
 /************************************************************************/
 bool CalibModule::stop()
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     yInfo("received stop command => stopping exploration...");
     motorExplorationAsyncStop=true;
-    mutex.unlock();
     return true;
 }
 
@@ -1419,7 +1407,7 @@ string CalibModule::getCalibrationType()
 /************************************************************************/
 Property CalibModule::calibrate(const bool rm_outliers)
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     double error;
     Matrix H;
     Property reply;
@@ -1465,7 +1453,6 @@ Property CalibModule::calibrate(const bool rm_outliers)
         }
     }
 
-    mutex.unlock();
     return reply;
 }
 
@@ -1473,7 +1460,7 @@ Property CalibModule::calibrate(const bool rm_outliers)
 /************************************************************************/
 bool CalibModule::pushCalibrator()
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     bool ret=false;
     if (calibrated)
     {
@@ -1481,7 +1468,6 @@ bool CalibModule::pushCalibrator()
         isSaved=false;
         ret=true;
     }
-    mutex.unlock();
     return ret;
 }
 
@@ -1731,7 +1717,7 @@ bool CalibModule::setExplorationSpaceDelta(const double dcx, const double dcy,
 /************************************************************************/
 Property CalibModule::getExplorationData()
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     Property reply;
 
     reply.put("status",(motorExplorationState==motorExplorationStateIdle?"idle":"ongoing"));
@@ -1740,7 +1726,6 @@ Property CalibModule::getExplorationData()
     reply.put("calibrator_points",(int)calibrator->getNumPoints());
     reply.put("aligner_points",(int)aligner.getNumPoints());
 
-    mutex.unlock();
     return reply;
 }
 
@@ -1748,14 +1733,13 @@ Property CalibModule::getExplorationData()
 /************************************************************************/
 bool CalibModule::clearExplorationData()
 {
-    mutex.lock();
+    lock_guard<mutex> lck(mtx);
     if (exp_depth2kin)
         calibrator->clearPoints(); 
 
     if (exp_aligneyes)
         aligner.clearPoints();
 
-    mutex.unlock();
     return true;
 }
 

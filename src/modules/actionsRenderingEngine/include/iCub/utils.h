@@ -23,25 +23,21 @@
 #include <yarp/os/RpcClient.h>
 #include <yarp/os/PortInfo.h>
 #include <yarp/os/PortReport.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Vocab.h>
 #include <yarp/sig/Vector.h>
 
+#include <mutex>
 #include <iostream>
 #include <string>
-
 
 #define LEFT                        0
 #define RIGHT                       1
 #define ARM_IN_USE                  -1
 #define ARM_MOST_SUITED             -2
 
-
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
-
-
 
 
 class ObjectPropertiesCollectorPort: public RpcClient, public PortReport
@@ -89,27 +85,25 @@ public:
 class StereoTarget: public Vector
 {
 private:
-    Semaphore                   mutex;
+    mutex mtx;
 
 public:
     void set(const Vector &stereo)
     {
-        mutex.wait();
+        lock_guard<mutex> lck(mtx);
         this->resize(stereo.size());
         for(size_t i=0; i<stereo.size(); i++)
             this->data()[i]=stereo[i];
-        mutex.post();
     }
 
     Vector get()
     {
         Vector stereo;
-        mutex.wait();
+        lock_guard<mutex> lck(mtx);
         stereo.resize(this->size());
         for(size_t i=0; i<this->size(); i++)
             stereo[i]= this->data()[i];
         this->clear();
-        mutex.post();
         return stereo;
     }
 };

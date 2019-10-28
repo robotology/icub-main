@@ -25,7 +25,6 @@
 #include <yarp/os/Thread.h>
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Time.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
@@ -35,6 +34,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
+#include <mutex>
 #include <time.h>
 #include <string>
 #include <iostream>
@@ -147,13 +147,12 @@ private:
     yarp::sig::Vector targetTemp;
     //string containing module name
     std::string moduleName;
-    yarp::os::Semaphore targetMutex, averageMutex;
+    std::mutex targetMutex, averageMutex, templateMutex;
 
     std::deque< TemplateStruct > tempList;
 
     bool                        updateNeeded;
     TemplateStruct              bestTempl;
-    yarp::os::Semaphore         templateMutex;
     yarp::os::Stamp             targetStamp;
 
     typedef struct params 

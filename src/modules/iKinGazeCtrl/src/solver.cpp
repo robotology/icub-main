@@ -135,7 +135,7 @@ EyePinvRefGen::~EyePinvRefGen()
 /************************************************************************/
 void EyePinvRefGen::minAllowedVergenceChanged()
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     lim(2,0)=commData->minAllowedVergence;
     I->setLim(lim);
     orig_lim=lim;
@@ -145,7 +145,7 @@ void EyePinvRefGen::minAllowedVergenceChanged()
 /************************************************************************/
 bool EyePinvRefGen::bindEyes(const double ver)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     if (ver>=0.0)
     {
         double ver_rad=std::max(CTRL_DEG2RAD*ver,commData->minAllowedVergence);
@@ -181,7 +181,7 @@ bool EyePinvRefGen::bindEyes(const double ver)
 /************************************************************************/
 bool EyePinvRefGen::clearEyes()
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     if (commData->eyesBoundVer>=0.0)
     {        
         commData->eyesBoundVer=-1.0;
@@ -217,7 +217,7 @@ void EyePinvRefGen::manageBindEyes(const double ver)
 /************************************************************************/
 Vector EyePinvRefGen::getCounterRotGain()
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     return counterRotGain;
 }
 
@@ -225,7 +225,7 @@ Vector EyePinvRefGen::getCounterRotGain()
 /************************************************************************/
 void EyePinvRefGen::setCounterRotGain(const Vector &gain)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     size_t len=std::min(counterRotGain.length(),gain.length());
     for (size_t i=0; i<len; i++)
         counterRotGain[i]=gain[i];
@@ -302,7 +302,7 @@ void EyePinvRefGen::run()
 {
     if (genOn)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         double timeStamp;
 
         // read encoders
@@ -568,7 +568,7 @@ Solver::~Solver()
 /************************************************************************/
 void Solver::bindNeckPitch(const double min_deg, const double max_deg)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckPitchMin,neckPitchMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckPitchMin,neckPitchMax);
 
@@ -582,7 +582,7 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
 /************************************************************************/
 void Solver::bindNeckRoll(const double min_deg, const double max_deg)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckRollMin,neckRollMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckRollMin,neckRollMax);
 
@@ -596,7 +596,7 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
 /************************************************************************/
 void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckYawMin,neckYawMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckYawMin,neckYawMax);
 
@@ -610,7 +610,7 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 /************************************************************************/
 void Solver::getCurNeckPitchRange(double &min_deg, double &max_deg)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     min_deg=CTRL_RAD2DEG*(*chainNeck)(0).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(0).getMax();
 }
@@ -619,7 +619,7 @@ void Solver::getCurNeckPitchRange(double &min_deg, double &max_deg)
 /************************************************************************/
 void Solver::getCurNeckRollRange(double &min_deg, double &max_deg)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     min_deg=CTRL_RAD2DEG*(*chainNeck)(1).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(1).getMax();
 }
@@ -628,7 +628,7 @@ void Solver::getCurNeckRollRange(double &min_deg, double &max_deg)
 /************************************************************************/
 void Solver::getCurNeckYawRange(double &min_deg, double &max_deg)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     min_deg=CTRL_RAD2DEG*(*chainNeck)(2).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(2).getMax();
 }
@@ -637,7 +637,7 @@ void Solver::getCurNeckYawRange(double &min_deg, double &max_deg)
 /************************************************************************/
 void Solver::clearNeckPitch()
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     (*chainNeck)(0).setMin(neckPitchMin);
     (*chainNeck)(0).setMax(neckPitchMax);
 
@@ -648,7 +648,7 @@ void Solver::clearNeckPitch()
 /************************************************************************/
 void Solver::clearNeckRoll()
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     (*chainNeck)(1).setMin(neckRollMin);
     (*chainNeck)(1).setMax(neckRollMax);
 
@@ -659,7 +659,7 @@ void Solver::clearNeckRoll()
 /************************************************************************/
 void Solver::clearNeckYaw()
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     (*chainNeck)(2).setMin(neckYawMin);
     (*chainNeck)(2).setMax(neckYawMax);
 
@@ -776,7 +776,7 @@ void Solver::run()
     typedef enum { ctrl_off, ctrl_wait, ctrl_on } cstate;
     static cstate state_=ctrl_off;
 
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
 
     // get the current target
     Vector xd=commData->port_xd->get_xdDelayed();
@@ -880,7 +880,7 @@ void Solver::suspend()
 /************************************************************************/
 void Solver::resume()
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
 
     // read encoders
     getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);

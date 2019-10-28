@@ -18,6 +18,7 @@
 #ifndef __DEPTH2KIN_MODULE_H__
 #define __DEPTH2KIN_MODULE_H__
 
+#include <mutex>
 #include <string>
 #include <deque>
 
@@ -75,7 +76,7 @@ protected:
     ICartesianControl *iarm;
     IGazeControl      *igaze;
         
-    Mutex mutex;
+    mutex mtx;
     iCubFinger finger;
     Vector curExplorationCenter;
 

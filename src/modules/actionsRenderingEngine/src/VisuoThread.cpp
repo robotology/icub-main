@@ -137,10 +137,10 @@ void VisuoThread::startTracker(const Vector &stereo, const int &side)
         eye_in_use=dominant_eye;
 
     cv::Mat imgMat;
-    imgMutex.wait();
+    imgMutex.lock();
     if (img[eye_in_use]!=nullptr)
         imgMat=yarp::cv::toCvMat(*img[eye_in_use]).clone();
-    imgMutex.post();
+    imgMutex.unlock();
 
     if (!imgMat.empty())
     {
@@ -158,11 +158,9 @@ void VisuoThread::startTracker(const Vector &stereo, const int &side)
         pftOutPort.write(tpl);
     }
 
-    trackMutex.wait();
+    lock_guard<mutex> lck(trackMutex);
     stereoTracker.side=side;
     tracking=true;
-    trackMutex.post();
-
     trackMode=MODE_TRACK_TEMPLATE;
 }
 
@@ -171,9 +169,8 @@ void VisuoThread::restartTracker()
 {
     pftOutPort.write(tpl);
 
-    trackMutex.wait();
+    lock_guard<mutex> lck(trackMutex);
     tracking=true;
-    trackMutex.post();
 }
 
 void VisuoThread::updateImages()
@@ -181,7 +178,7 @@ void VisuoThread::updateImages()
     ImageOf<PixelRgb> *iL=imgPort[LEFT].read(false);
     ImageOf<PixelRgb> *iR=imgPort[RIGHT].read(false);
 
-    imgMutex.wait();
+    lock_guard<mutex> lck(imgMutex);
     if(iL!=NULL) 
     {
         if(img[LEFT]!=NULL)
@@ -201,7 +198,6 @@ void VisuoThread::updateImages()
         
         newImage[RIGHT]=true;
     }
-    imgMutex.post();
 }
 
 void VisuoThread::updateLocationsMIL()
@@ -210,19 +206,7 @@ void VisuoThread::updateLocationsMIL()
 
     if(bLocations!=NULL)// && bLocations->size()==1)
     {
-        MILMutex.wait();
-        /*        
-        for(int cam=0; cam<2; cam++)
-        {
-            locations[cam].clear();
-            Bottle *bCam=bLocations->get(cam).asList();
-            for(int i=0; i<bCam->size(); i++)
-            {
-                Bottle *b=bCam->get(i).asList();
-                locations[cam][b->get(0).asString()]=cvPoint(b->get(1).asInt(),b->get(2).asInt());
-            }
-        }
-        */
+        lock_guard<mutex> lck(MILMutex);
         locations.clear();
         
         for(int i=0; i<bLocations->get(0).asList()->size(); i++)
@@ -230,7 +214,6 @@ void VisuoThread::updateLocationsMIL()
             Bottle *b=bLocations->get(0).asList()->get(i).asList();
             locations[b->get(0).asString()]=cvPoint(b->get(1).asInt(),b->get(2).asInt());
         }
-        MILMutex.post();
     }
 }
 
@@ -246,7 +229,7 @@ void VisuoThread::updateMotionCUT()
 
     bool detected=true;
 
-    motMutex.wait();
+    lock_guard<mutex> lck(motMutex);
 
     Vector stereo(4); stereo=0.0;
     for(int cam=0; cam<2; cam++)
@@ -274,12 +257,8 @@ void VisuoThread::updateMotionCUT()
             buffer[cam].pop_front();
     }
 
-
     if(trackMode==MODE_TRACK_MOTION)
         stereo_target.set(stereo);
-
-
-    motMutex.post();
 }
 
 
@@ -294,9 +273,9 @@ void VisuoThread::updatePFTracker()
         //must check if the tracker has gone mad.
         if(checkTracker(trackVec))
         {
-            trackMutex.wait();
+            trackMutex.lock();
             stereoTracker.vec=*trackVec;
-            trackMutex.post();
+            trackMutex.unlock();
 
             stereo.resize(4);
             stereo[0]=stereoTracker.vec[0];
@@ -309,14 +288,13 @@ void VisuoThread::updatePFTracker()
         }
         else
         {
-            trackMutex.wait();
+            lock_guard<mutex> lck(trackMutex);
             stereoTracker.vec.clear();
             stereoTracker.side=0;
-            trackMutex.post();
         }
     }
 
-    imgMutex.wait();
+    lock_guard<mutex> lck(imgMutex);
     if(img[LEFT]!=NULL && img[RIGHT]!=NULL)
     {
         ImageOf<PixelRgb> drawImg[2];
@@ -359,7 +337,6 @@ void VisuoThread::updatePFTracker()
         newImage[LEFT]=false;
         newImage[RIGHT]=false;
     }
-    imgMutex.post();
 }
 
 
@@ -566,7 +543,7 @@ bool VisuoThread::getFixation(Bottle &bStereo)
 {
     Vector stereo(4);
 
-    imgMutex.wait();
+    imgMutex.lock();
     if(img[LEFT]!=NULL)
     {
         stereo[0]=stereo[2]=0.5*img[LEFT]->width();
@@ -577,7 +554,7 @@ bool VisuoThread::getFixation(Bottle &bStereo)
         stereo[0]=stereo[2]=160;
         stereo[1]=stereo[3]=120;
     }
-    imgMutex.post();
+    imgMutex.unlock();
 
     for(size_t i=0; i<stereo.size(); i++)
         bStereo.addDouble(stereo[i]);
@@ -598,7 +575,7 @@ bool VisuoThread::getMotion(Bottle &bStereo)
 
     while(Time::now()-t<motionWaitThresh && !interrupted)
     {
-        motMutex.wait();
+        lock_guard<mutex> lck(motMutex);
         // If the buffers are sufficently dense and not so small, return true.
         double size=0.0;
         if (buffer[LEFT].size()>minMotionBufSize && buffer[RIGHT].size()>minMotionBufSize)
@@ -655,7 +632,6 @@ bool VisuoThread::getMotion(Bottle &bStereo)
                 ok=true;
             }
         }
-        motMutex.post();
     }
 
     for(size_t i=0; i<stereo.size(); i++)
@@ -667,11 +643,11 @@ bool VisuoThread::getMotion(Bottle &bStereo)
 
 bool VisuoThread::getTrack(Bottle &bStereo)
 {
-    Vector stereo;
+    lock_guard<mutex> lck(trackMutex);
 
+    Vector stereo;
     bool ok=false;
 
-    trackMutex.wait();
     if(stereoTracker.vec.size()==12)
     {
         stereo.resize(4);
@@ -680,15 +656,11 @@ bool VisuoThread::getTrack(Bottle &bStereo)
         stereo[2]=stereoTracker.vec[6];
         stereo[3]=stereoTracker.vec[7];
     }
-    trackMutex.post();
 
     for(size_t i=0; i<stereo.size(); i++)
         bStereo.addDouble(stereo[i]);
 
-    trackMutex.wait();
     tracking=true;
-    trackMutex.post();
-
     trackMode=MODE_TRACK_TEMPLATE;
 
     return ok;
@@ -754,7 +726,7 @@ bool VisuoThread::getObject(const std::string &object_name, Bottle &bStereo)
         double t=Time::now();
         while(Time::now()-t<objectWaitThresh && !interrupted)
         {
-            MILMutex.wait();
+            lock_guard<mutex> lck(MILMutex);
             if(locations.count(object_name)>0)
             {
                 stereo.resize(4);
@@ -765,7 +737,6 @@ bool VisuoThread::getObject(const std::string &object_name, Bottle &bStereo)
 
                 ok=true;
             }
-            MILMutex.post();
         }
     }
 

@@ -316,25 +316,23 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
 
                     if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
                     {
-                        mutex.lock();
+                        lock_guard<mutex> lck(mtx);
                         taskVelModeOn=false;
                         ret=goTo(IKINCTRL_POSE_FULL,xd,t,true);
-                        mutex.unlock();
                     }
                     else if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_XYZ)
                     {
-                        mutex.lock();
+                        lock_guard<mutex> lck(mtx);
                         taskVelModeOn=false;
                         ret=goTo(IKINCTRL_POSE_XYZ,xd,t,true);
-                        mutex.unlock();
                     }
 
                     if (ret)
                     {
                         // wait for the solver
-                        syncEvent.reset();
                         syncEventEnabled=true;
-                        syncEvent.wait();
+                        unique_lock<mutex> lck(mtx_syncEvent);
+                        cv_syncEvent.wait(lck);
 
                         reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
                     }
@@ -1272,7 +1270,7 @@ bool ServerCartesianController::getNewTarget()
         if (tokened && syncEventEnabled && (rxToken>=txTokenLatchedGoToRpc))
         {
             syncEventEnabled=false;
-            syncEvent.signal();
+            cv_syncEvent.notify_all();
         }
 
         return isNew;
@@ -1612,7 +1610,7 @@ void ServerCartesianController::run()
 {    
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         // read the feedback
         double stamp=getFeedback(fb);
@@ -2398,7 +2396,7 @@ bool ServerCartesianController::setTrackingModeHelper(const bool f)
 /************************************************************************/
 bool ServerCartesianController::setTrackingMode(const bool f)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     return setTrackingModeHelper(f);
 }
 
@@ -2448,7 +2446,7 @@ bool ServerCartesianController::setPosePriority(const string &p)
     bool ret=false;
     if (connected && ((p=="position") || (p=="orientation")))
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -2496,7 +2494,7 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
 {
     if (attached)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         Vector pose=chainState->EndEffPose();
     
         x.resize(3);
@@ -2524,7 +2522,7 @@ bool ServerCartesianController::getPose(const int axis, Vector &x,
 {
     if (attached)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         bool ret=false;
         if (axis<(int)chainState->getN())
@@ -2557,7 +2555,7 @@ bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od,
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Vector _xd(xd.length()+od.length());
         for (size_t i=0; i<xd.length(); i++)
@@ -2579,7 +2577,7 @@ bool ServerCartesianController::goToPosition(const Vector &xd, const double t)
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         taskVelModeOn=false;
         return goTo(IKINCTRL_POSE_XYZ,xd,t);
@@ -2610,7 +2608,7 @@ bool ServerCartesianController::getDesired(Vector &xdhat, Vector &odhat,
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         xdhat.resize(3);
         odhat.resize(xdes.length()-3);
@@ -2647,7 +2645,7 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     if (!connected)
         return false;
 
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
 
     Bottle command, reply;
     Vector tg(xd.length()+od.length());
@@ -2680,7 +2678,7 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     if (!connected)
         return false;
 
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
 
     Bottle command, reply;
     Vector tg(xd.length()+od.length());
@@ -2713,7 +2711,7 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     if (!connected)
         return false;
 
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
 
     Bottle command, reply;
     command.addVocab(IKINSLV_VOCAB_CMD_ASK);
@@ -2739,7 +2737,7 @@ bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &x
     if (!connected)
         return false;
 
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
 
     Bottle command, reply;
     command.addVocab(IKINSLV_VOCAB_CMD_ASK);
@@ -2763,7 +2761,7 @@ bool ServerCartesianController::getDOF(Vector &curDof)
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         curDof.resize(chainState->getN());
         for (unsigned int i=0; i<chainState->getN(); i++)
@@ -2781,7 +2779,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -2832,7 +2830,7 @@ bool ServerCartesianController::getRestPos(Vector &curRestPos)
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_GET);
@@ -2865,7 +2863,7 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos,
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -2898,7 +2896,7 @@ bool ServerCartesianController::getRestWeights(Vector &curRestWeights)
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_GET);
@@ -2931,7 +2929,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -2966,7 +2964,7 @@ bool ServerCartesianController::getLimits(const int axis, double *min,
     bool ret=false;
     if (connected && (min!=NULL) && (max!=NULL))
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         if (axis<(int)chainState->getN())
         {
             Bottle command, reply;
@@ -2997,7 +2995,7 @@ bool ServerCartesianController::setLimits(const int axis, const double min,
     bool ret=false;
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -3046,7 +3044,7 @@ bool ServerCartesianController::setTrajTimeHelper(const double t)
 /************************************************************************/
 bool ServerCartesianController::setTrajTime(const double t)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     return setTrajTimeHelper(t);
 }
 
@@ -3107,7 +3105,7 @@ bool ServerCartesianController::isInTargetHelper()
 /************************************************************************/
 bool ServerCartesianController::setInTargetTol(const double tol)
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     return setInTargetTolHelper(tol);
 }
 
@@ -3117,7 +3115,7 @@ bool ServerCartesianController::getJointsVelocities(Vector &qdot)
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         qdot=velCmd;
         return true;
     }
@@ -3131,7 +3129,7 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Matrix J=ctrl->get_J();
         Vector taskVel(7,0.0);
@@ -3173,7 +3171,7 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot,
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         for (int i=0; i<3; i++)
             xdot_set[i]=xdot[i];
@@ -3206,7 +3204,7 @@ bool ServerCartesianController::attachTipFrame(const Vector &x, const Vector &o)
 {
     if (connected && (x.length()>=3) || (o.length()>=4))
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -3248,7 +3246,7 @@ bool ServerCartesianController::getTipFrame(Vector &x, Vector &o)
 {
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         Matrix HN=chainState->getHN();
 
         x=HN.getCol(3);
@@ -3335,7 +3333,7 @@ bool ServerCartesianController::stopControlHelper()
 /************************************************************************/
 bool ServerCartesianController::stopControl()
 {
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     return stopControlHelper();
 }
 
@@ -3345,9 +3343,9 @@ bool ServerCartesianController::storeContext(int *id)
 {
     if (connected && (id!=NULL))
     {
-        mutex.lock();
+        mtx.lock();
         unsigned int N=chainState->getN();
-        mutex.unlock();
+        mtx.unlock();
 
         Vector _dof,_restPos,_restWeights;
         Vector _tip_x,_tip_o;
@@ -3374,7 +3372,7 @@ bool ServerCartesianController::storeContext(int *id)
         getTrackingMode(&_mode);
         getReferenceMode(&_useReference);
 
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Context &context=contextMap[contextIdCnt];
         context.dof=_dof;
@@ -3405,7 +3403,7 @@ bool ServerCartesianController::restoreContext(const int id)
 {
     if (attached)
     {
-        mutex.lock();
+        mtx.lock();
 
         map<int,Context>::iterator itr=contextMap.find(id);
         bool valid=(itr!=contextMap.end());
@@ -3413,7 +3411,7 @@ bool ServerCartesianController::restoreContext(const int id)
         if (valid)
             context=itr->second;
 
-        mutex.unlock();
+        mtx.unlock();
 
         if (valid)
         {
@@ -3463,7 +3461,7 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
 {
     if (contextIdList!=NULL)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         for (int i=0; i<contextIdList->size(); i++)
         {
@@ -3665,7 +3663,7 @@ bool ServerCartesianController::registerMotionOngoingEvent(const double checkPoi
 {
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         motionOngoingEvents.insert(checkPoint);
         return true;
     }
@@ -3680,7 +3678,7 @@ bool ServerCartesianController::unregisterMotionOngoingEvent(const double checkP
     bool ret=false;
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         multiset<double>::iterator itr=motionOngoingEvents.find(checkPoint);
         if (itr!=motionOngoingEvents.end())
         {
@@ -3698,7 +3696,7 @@ Bottle ServerCartesianController::listMotionOngoingEvents()
 {
     Bottle events;
 
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     for (multiset<double>::iterator itr=motionOngoingEvents.begin(); itr!=motionOngoingEvents.end(); itr++)
         events.addDouble(*itr);
 
@@ -3736,7 +3734,7 @@ bool ServerCartesianController::setTask2ndOptions(const Value &v)
     bool ret=false;
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -3784,7 +3782,7 @@ bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &option
     bool ret=false;
     if (connected)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -3829,7 +3827,7 @@ bool ServerCartesianController::tweakGet(Bottle &options)
 {
     if (attached)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         options.clear();
 
         bool ret=true;

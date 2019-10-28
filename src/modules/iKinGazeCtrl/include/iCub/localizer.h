@@ -19,6 +19,7 @@
 #ifndef __LOCALIZER_H__
 #define __LOCALIZER_H__
 
+#include <mutex>
 #include <string>
 
 #include <yarp/os/all.h>
@@ -43,7 +44,7 @@ using namespace iCub::iKin;
 class Localizer : public GazeComponent, public PeriodicThread
 {
 protected:
-    Mutex                 mutex;
+    mutex                 mtx;
     ExchangeData         *commData;
     BufferedPort<Bottle>  port_mono;
     BufferedPort<Bottle>  port_stereo;

@@ -19,6 +19,8 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
+#include <mutex>
+#include <condition_variable>
 #include <string>
 #include <vector>
 #include <set>
@@ -77,12 +79,13 @@ protected:
     Stamp txInfo_event;
     Stamp txInfo_debug;
 
-    Mutex mutexRun;
-    Mutex mutexChain;
-    Mutex mutexCtrl;
-    Mutex mutexData;
-    Mutex mutexLook;
-    Event eventLook;
+    mutex mutexRun;
+    mutex mutexChain;
+    mutex mutexCtrl;
+    mutex mutexData;
+    mutex mutexLook;
+    mutex mtx_eventLook;
+    condition_variable cv_eventLook;
     unsigned int period;
     bool unplugCtrlEyes;
     bool ctrlInhibited;

@@ -24,13 +24,13 @@
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/Semaphore.h>
 
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 
 #include <cv.h>
 
+#include <mutex>
 #include <string>
 #include <deque>
 #include <map>
@@ -90,10 +90,10 @@ private:
     Port                                    cmdMSRPort;
     BufferedPort<Bottle>                    recMSRPort;
 
-    Semaphore                   imgMutex;
-    Semaphore                   motMutex;
-    Semaphore                   MILMutex;
-    Semaphore                   trackMutex;
+    mutex                       imgMutex;
+    mutex                       motMutex;
+    mutex                       MILMutex;
+    mutex                       trackMutex;
 
     unsigned int                minMotionBufSize;
     unsigned int                minTrackBufSize;
@@ -154,11 +154,8 @@ public:
 
     bool isTracking()
     {
-        trackMutex.wait();
-        bool track=tracking;
-        trackMutex.post();
-
-        return track;
+        lock_guard<mutex> lck(trackMutex);
+        return tracking;
     }
 
     bool checkTracker(Vector *vec);

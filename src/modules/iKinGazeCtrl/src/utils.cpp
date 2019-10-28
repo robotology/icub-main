@@ -57,7 +57,7 @@ void xdPort::init(const Vector &xd0)
 xdPort::~xdPort()
 {
     closing=true;
-    triggerNeck.signal();
+    cv_triggerNeck.notify_all();
     stop();
 }
 
@@ -65,7 +65,7 @@ xdPort::~xdPort()
 /************************************************************************/
 void xdPort::onRead(Bottle &b)
 {
-    LockGuard lg(mutex_0);
+    lock_guard<mutex> lg(mutex_0);
     if (locked)
         return;
         
@@ -76,21 +76,21 @@ void xdPort::onRead(Bottle &b)
     isNew=true;
     rx++;
 
-    triggerNeck.signal();
+    cv_triggerNeck.notify_all();
 }
 
 
 /************************************************************************/
 bool xdPort::set_xd(const Vector &_xd)
 {
-    LockGuard lg(mutex_0);
+    lock_guard<mutex> lg(mutex_0);
     if (locked)
         return false;
 
     xd=_xd;
     isNew=true;
     rx++;
-    triggerNeck.signal();
+    cv_triggerNeck.notify_all();
     return true;
 }
 
@@ -98,7 +98,7 @@ bool xdPort::set_xd(const Vector &_xd)
 /************************************************************************/
 Vector xdPort::get_xd()
 {
-    LockGuard lg(mutex_0);
+    lock_guard<mutex> lg(mutex_0);
     Vector _xd=xd;
     return _xd;
 }
@@ -107,7 +107,7 @@ Vector xdPort::get_xd()
 /************************************************************************/
 Vector xdPort::get_xdDelayed()
 {
-    LockGuard lg(mutex_1);
+    lock_guard<mutex> lg(mutex_1);
     Vector _xdDelayed=xdDelayed;
     return _xdDelayed;
 }
@@ -118,8 +118,8 @@ void xdPort::run()
 {
     while (!isStopping() && !closing)
     {
-        triggerNeck.reset();
-        triggerNeck.wait();
+        unique_lock<mutex> lck(mtx_triggerNeck);
+        cv_triggerNeck.wait(lck);
 
         double timeDelay=0.0;
         double theta=static_cast<Solver*>(slv)->neckTargetRotAngle(xd);
@@ -128,7 +128,7 @@ void xdPort::run()
 
         Time::delay(timeDelay);
 
-        LockGuard lg(mutex_1);
+        lock_guard<mutex> lg(mutex_1);
         xdDelayed=xd;
         isNewDelayed=true;
     }
@@ -168,7 +168,7 @@ ExchangeData::ExchangeData()
 /************************************************************************/
 void ExchangeData::resize_v(const int sz, const double val)
 {
-    LockGuard lg(mutex[MUTEX_V]);
+    lock_guard<mutex> lg(mtx[MUTEX_V]);
     v.resize(sz,val);
 }
 
@@ -176,7 +176,7 @@ void ExchangeData::resize_v(const int sz, const double val)
 /************************************************************************/
 void ExchangeData::resize_counterv(const int sz, const double val)
 {
-    LockGuard lg(mutex[MUTEX_COUNTERV]);
+    lock_guard<mutex> lg(mtx[MUTEX_COUNTERV]);
     counterv.resize(sz,val);
 }
 
@@ -184,7 +184,7 @@ void ExchangeData::resize_counterv(const int sz, const double val)
 /************************************************************************/
 void ExchangeData::set_xd(const Vector &_xd)
 {
-    LockGuard lg(mutex[MUTEX_XD]);
+    lock_guard<mutex> lg(mtx[MUTEX_XD]);
     xd=_xd;
 }
 
@@ -192,7 +192,7 @@ void ExchangeData::set_xd(const Vector &_xd)
 /************************************************************************/
 void ExchangeData::set_qd(const Vector &_qd)
 {
-    LockGuard lg(mutex[MUTEX_QD]);
+    lock_guard<mutex> lg(mtx[MUTEX_QD]);
     qd=_qd;
 }
 
@@ -200,7 +200,7 @@ void ExchangeData::set_qd(const Vector &_qd)
 /************************************************************************/
 void ExchangeData::set_qd(const int i, const double val)
 {
-    LockGuard lg(mutex[MUTEX_QD]);
+    lock_guard<mutex> lg(mtx[MUTEX_QD]);
     qd[i]=val;
 }
 
@@ -208,7 +208,7 @@ void ExchangeData::set_qd(const int i, const double val)
 /************************************************************************/
 void ExchangeData::set_x(const Vector &_x)
 {
-    LockGuard lg(mutex[MUTEX_X]);
+    lock_guard<mutex> lg(mtx[MUTEX_X]);
     x=_x;
 }
 
@@ -216,7 +216,7 @@ void ExchangeData::set_x(const Vector &_x)
 /************************************************************************/
 void ExchangeData::set_x(const Vector &_x, const double stamp)
 {
-    LockGuard lg(mutex[MUTEX_X]);
+    lock_guard<mutex> lg(mtx[MUTEX_X]);
     x=_x;
     x_stamp=stamp;
 }
@@ -225,7 +225,7 @@ void ExchangeData::set_x(const Vector &_x, const double stamp)
 /************************************************************************/
 void ExchangeData::set_q(const Vector &_q)
 {
-    LockGuard lg(mutex[MUTEX_Q]);
+    lock_guard<mutex> lg(mtx[MUTEX_Q]);
     q=_q;
 }
 
@@ -233,7 +233,7 @@ void ExchangeData::set_q(const Vector &_q)
 /************************************************************************/
 void ExchangeData::set_torso(const Vector &_torso)
 {
-    LockGuard lg(mutex[MUTEX_TORSO]);
+    lock_guard<mutex> lg(mtx[MUTEX_TORSO]);
     torso=_torso;
 }
 
@@ -241,7 +241,7 @@ void ExchangeData::set_torso(const Vector &_torso)
 /************************************************************************/
 void ExchangeData::set_v(const Vector &_v)
 {
-    LockGuard lg(mutex[MUTEX_V]);
+    lock_guard<mutex> lg(mtx[MUTEX_V]);
     v=_v;
 }
 
@@ -249,7 +249,7 @@ void ExchangeData::set_v(const Vector &_v)
 /************************************************************************/
 void ExchangeData::set_counterv(const Vector &_counterv)
 {
-    LockGuard lg(mutex[MUTEX_COUNTERV]);
+    lock_guard<mutex> lg(mtx[MUTEX_COUNTERV]);
     counterv=_counterv;
 }
 
@@ -257,14 +257,14 @@ void ExchangeData::set_counterv(const Vector &_counterv)
 /************************************************************************/
 void ExchangeData::set_fpFrame(const Matrix &_S)
 {
-    LockGuard lg(mutex[MUTEX_FPFRAME]);
+    lock_guard<mutex> lg(mtx[MUTEX_FPFRAME]);
     S=_S;
 }
 
 /************************************************************************/
 Vector ExchangeData::get_xd()
 {
-    LockGuard lg(mutex[MUTEX_XD]);
+    lock_guard<mutex> lg(mtx[MUTEX_XD]);
     Vector _xd=xd;
     return _xd;
 }
@@ -273,7 +273,7 @@ Vector ExchangeData::get_xd()
 /************************************************************************/
 Vector ExchangeData::get_qd()
 {
-    LockGuard lg(mutex[MUTEX_QD]);
+    lock_guard<mutex> lg(mtx[MUTEX_QD]);
     Vector _qd=qd;
     return _qd;
 }
@@ -282,7 +282,7 @@ Vector ExchangeData::get_qd()
 /************************************************************************/
 Vector ExchangeData::get_x()
 {
-    LockGuard lg(mutex[MUTEX_X]);
+    lock_guard<mutex> lg(mtx[MUTEX_X]);
     Vector _x=x;
     return _x;
 }
@@ -291,7 +291,7 @@ Vector ExchangeData::get_x()
 /************************************************************************/
 Vector ExchangeData::get_x(double &stamp)
 {
-    LockGuard lg(mutex[MUTEX_X]);
+    lock_guard<mutex> lg(mtx[MUTEX_X]);
     Vector _x=x;
     stamp=x_stamp;
     return _x;
@@ -301,7 +301,7 @@ Vector ExchangeData::get_x(double &stamp)
 /************************************************************************/
 Vector ExchangeData::get_q()
 {
-    LockGuard lg(mutex[MUTEX_Q]);
+    lock_guard<mutex> lg(mtx[MUTEX_Q]);
     Vector _q=q;
     return _q;
 }
@@ -310,7 +310,7 @@ Vector ExchangeData::get_q()
 /************************************************************************/
 Vector ExchangeData::get_torso()
 {
-    LockGuard lg(mutex[MUTEX_TORSO]);
+    lock_guard<mutex> lg(mtx[MUTEX_TORSO]);
     Vector _torso=torso;
     return _torso;
 }
@@ -319,7 +319,7 @@ Vector ExchangeData::get_torso()
 /************************************************************************/
 Vector ExchangeData::get_v()
 {
-    LockGuard lg(mutex[MUTEX_V]);
+    lock_guard<mutex> lg(mtx[MUTEX_V]);
     Vector _v=v;
     return _v;
 }
@@ -328,7 +328,7 @@ Vector ExchangeData::get_v()
 /************************************************************************/
 Vector ExchangeData::get_counterv()
 {
-    LockGuard lg(mutex[MUTEX_COUNTERV]);
+    lock_guard<mutex> lg(mtx[MUTEX_COUNTERV]);
     Vector _counterv=counterv;
     return _counterv;
 }
@@ -337,7 +337,7 @@ Vector ExchangeData::get_counterv()
 /************************************************************************/
 Matrix ExchangeData::get_fpFrame()
 {
-    LockGuard lg(mutex[MUTEX_FPFRAME]);
+    lock_guard<mutex> lg(mtx[MUTEX_FPFRAME]);
     Matrix _S=S;
     return _S;
 }

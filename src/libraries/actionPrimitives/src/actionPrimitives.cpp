@@ -809,7 +809,7 @@ bool ActionPrimitives::clearActionsQueue()
 {
     if (configured)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         actionsQueue.clear();
         return true;
     }
@@ -859,7 +859,7 @@ bool ActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Ve
 {
     if (configured && !locked)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         Action action;
     
         action.waitState=false;
@@ -1025,7 +1025,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
 {
     if (configured && !locked)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         Action action;
         ArmWayPoints *thr=new ArmWayPoints(this,wayPoints);
         thr->set_default_exec_time(default_exec_time);
@@ -1052,7 +1052,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
 {
     if (configured && !locked)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
         if (itr!=handSeqMap.end())
         {
@@ -1109,7 +1109,7 @@ bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback 
 {
     if (configured && !locked)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         Action action;
 
         action.waitState=true;
@@ -1191,14 +1191,14 @@ bool ActionPrimitives::execQueuedAction()
     bool exec=false;
     Action action;
 
-    mutex.lock();
+    mtx.lock();
     if (actionsQueue.size()>0)
     {
         action=actionsQueue.front();
         actionsQueue.pop_front();
         exec=true;
     }
-    mutex.unlock();
+    mtx.unlock();
 
     if (exec)
     {
@@ -1232,7 +1232,7 @@ bool ActionPrimitives::execPendingHandSequences()
     bool exec=false;
     Action action;
 
-    LockGuard lg(mutex);
+    lock_guard<mutex> lck(mtx);
     if (actionsQueue.size()>0)
     {
         // polling on the first action in the queue
@@ -1311,7 +1311,7 @@ void ActionPrimitives::run()
 
             if (!handSeqTerminator)
                 if (execPendingHandSequences())     // here handMoveDone may switch false again
-                    motionStartEvent.signal();
+                    cv_motionStartEvent.notify_all();
         }
     }
 
@@ -1331,9 +1331,9 @@ void ActionPrimitives::run()
         }
 
         if (execQueuedAction())
-            motionStartEvent.signal();
+            cv_motionStartEvent.notify_all();
         else
-            motionDoneEvent.signal();
+            cv_motionDoneEvent.notify_all();
     }
 }
 
@@ -1737,7 +1737,7 @@ bool ActionPrimitives::areFingersMoving(bool &f)
 {
     if (configured)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         f=!latchHandMoveDone;
         return true;
     }
@@ -1751,7 +1751,7 @@ bool ActionPrimitives::areFingersInPosition(bool &f)
 {
     if (configured)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         f=fingersInPosition;
         return true;
     }
@@ -1765,7 +1765,7 @@ bool ActionPrimitives::areFingersInPosition(deque<bool> &f)
 {
     if (configured)
     {
-        LockGuard lg(mutex);
+        lock_guard<mutex> lck(mtx);
         f=fingerInPosition;
         return true;
     }
@@ -1989,8 +1989,8 @@ bool ActionPrimitives::checkActionsDone(bool &f, const bool sync)
     {
         if (sync && checkEnabled)
         {
-            motionDoneEvent.reset();
-            motionDoneEvent.wait();
+            unique_lock<mutex> lck(mtx_motionDoneEvent);
+            cv_motionDoneEvent.wait(lck);
         }
 
         f=latchArmMoveDone && latchHandMoveDone;
@@ -2009,8 +2009,8 @@ bool ActionPrimitives::checkActionOnGoing(bool &f, const bool sync)
     {
         if (sync && checkEnabled)
         {
-            motionStartEvent.reset();
-            motionStartEvent.wait();
+            unique_lock<mutex> lck(mtx_motionStartEvent);
+            cv_motionStartEvent.wait(lck);
         }
 
         f=!latchArmMoveDone || !latchHandMoveDone;
@@ -2027,7 +2027,7 @@ bool ActionPrimitives::syncCheckInterrupt(const bool disable)
 {
     if (configured)
     {
-        motionDoneEvent.signal();
+        cv_motionDoneEvent.notify_all();
 
         if (disable)
             checkEnabled=false;

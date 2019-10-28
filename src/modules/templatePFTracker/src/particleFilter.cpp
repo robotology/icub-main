@@ -128,9 +128,8 @@ void PARTICLEThread::run()
             else
             {
                 iCubImage = imageIn.read();
-                templateMutex.wait();
+                lock_guard<mutex> lck(templateMutex);
                 imageIn.getEnvelope(targetTemp);
-                templateMutex.post();
             }
  
             frame = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 3 );           
@@ -155,7 +154,7 @@ void PARTICLEThread::run()
                 delete tpl;
                 tpl = NULL;
                 
-                templateMutex.wait();
+                lock_guard<mutex> lck(templateMutex);
                 while(tempList.size())
                 {  
                     delete tempList.back().templ;
@@ -165,7 +164,6 @@ void PARTICLEThread::run()
                     delete bestTempl.templ;
                 bestTempl.w=0.0;
                 updateNeeded=false;
-                templateMutex.post();
             }
 
             if (gotTemplate)
@@ -205,7 +203,7 @@ void PARTICLEThread::threadRelease()
     imageOut.close();
     imageOutBlob.close();
 
-    templateMutex.wait();
+    lock_guard<mutex> lck(templateMutex);
     while(tempList.size())
     {
         delete tempList.back().templ;
@@ -214,7 +212,6 @@ void PARTICLEThread::threadRelease()
 
     if(bestTempl.templ!=NULL)
         delete bestTempl.templ;
-    templateMutex.post();
     cout << "finished closing ports" << endl; 
 }
 
@@ -272,23 +269,23 @@ void PARTICLEThread::runAll(IplImage *img)
     }
     qsort( particles, num_particles, sizeof( PARTICLEThread::particle ), &particle_cmp );
 
-    averageMutex.wait();
+    averageMutex.lock();
     for( j = 0; j < num_particles; j++ ) 
         average += particles[j].w;
         
     average = average/num_particles;
-    averageMutex.post();
+    averageMutex.unlock();
 
     //display most likely particle ------------------
     color = cvScalar(255,0,0);
-    targetMutex.wait();
+    targetMutex.lock();
     targetTemp.clear();
     //if (imageOut.getOutputCount()>0)
     display_particle( frame, particles[0], color, targetTemp );
     
     if (imageOutBlob.getOutputCount()>0)
         display_particleBlob( frame_blob, particles[0], targetTemp );
-    targetMutex.post();
+    targetMutex.unlock();
     trace_template( frame, particles[0] );
 
     cvReleaseImage(&img_hsv);
@@ -301,22 +298,19 @@ void PARTICLEThread::setTemplate(ImageOf<PixelRgb> *_tpl)
 /**********************************************************/
 void PARTICLEThread::pushTarget(Vector &target, Stamp &stamp)
 {
-    targetMutex.wait();
+    lock_guard<mutex> lck(targetMutex);
     for (size_t i=0; i< targetTemp.length(); i++ )
         target.push_back(targetTemp[i]);
 
     stamp=targetStamp;
-    targetMutex.post();
 }
 /**********************************************************/
 float PARTICLEThread::getAverage()
 {
-    averageMutex.wait();
+    lock_guard<mutex> lck(averageMutex);
     float tmpAv = 0.0;
     tmpAv = average;
-    averageMutex.post();
     return tmpAv;
-    //average.push_back(tmpAv);
 }
 /**********************************************************/
 int PARTICLEThread::get_regionsImage( IplImage* frame, CvRect** regions ) 
@@ -685,7 +679,7 @@ void PARTICLEThread::trace_template( IplImage* img, const particle &p )
         }
     }
     //keep in check the best template
-    templateMutex.wait();
+    lock_guard<mutex> lck(templateMutex);
     //detect if the image tracker should be updated with a template from the stored ones
     if(p.w<TEMP_LIST_PARTICLE_THRES_LOW)
         updateNeeded=true;
@@ -713,7 +707,6 @@ void PARTICLEThread::trace_template( IplImage* img, const particle &p )
         *bestTempl.templ=*tempList[best_idx].templ;
         bestTempl.w=best_w;
     }
-    templateMutex.post();
 }
 /**********************************************************/
 float PARTICLEThread::pixval32f(IplImage* img, int r, int c) 
@@ -739,14 +732,13 @@ TemplateStruct PARTICLEThread::getBestTemplate()
     best.templ=NULL;
     best.w=0.0;
 
-    templateMutex.wait();
+    lock_guard<mutex> lck(templateMutex);
     if(updateNeeded)
     {
         best.templ=new ImageOf<PixelRgb>;
         *best.templ=*bestTempl.templ;
         best.w=bestTempl.w;
     }
-    templateMutex.post();
     return best;
 }
 /**********************************************************/

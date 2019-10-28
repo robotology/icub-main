@@ -26,7 +26,6 @@
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/os/Thread.h>
 
