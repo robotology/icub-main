@@ -20,7 +20,7 @@
 #include "WorldOp.h"
 
 #include <stdio.h>
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 void show(const WorldOpTriplet& x) {
     if (!x.valid) {

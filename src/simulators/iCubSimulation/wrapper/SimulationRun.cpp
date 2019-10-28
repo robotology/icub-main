@@ -21,7 +21,7 @@
 #include "SimulationRun.h"
 
 #include <yarp/dev/DriverLinkCreator.h>
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 #include "SimulatorModule.h"
 #include "iCubSimulationControl.h"

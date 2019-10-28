@@ -21,18 +21,13 @@
 #include "iCub_Sim.h"
 
 #include "OdeInit.h"
-#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <mutex>
 #include <cstdlib>
 #include <csignal>
 #include <set>
 
 using namespace yarp::sig;
-
-// globals
-Semaphore ODE_access(1);
-#define CTRL_RAD2DEG    (180.0/M_PI)
-#define CTRL_DEG2RAD    (M_PI/180.0)
 
 // locals
 // NOTE that we use (long) instead of (clock_t), because on MacOS, (clock_t) is unsigned, while we need negative numbers
@@ -1064,7 +1059,7 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     //static clock_t startTimeODE= clock(), finishTimeODE= clock();
     //startTimeODE = clock();
 
-    odeinit.mutex.wait();
+    odeinit.mtx.lock();
     nFeedbackStructs=0;
     
     if (odeinit.verbosity > 3) yDebug("\n ***info code collision detection ***"); 
@@ -1098,7 +1093,7 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
 
 
     odeinit.sync = true;
-    odeinit.mutex.post();
+    odeinit.mtx.unlock();
 
     if (odeinit._iCub->actSkinEmul == "off"){
         if ( robot_streamer->shouldSendTouchLeftHand() || robot_streamer->shouldSendTouchRightHand() ) {
@@ -1291,9 +1286,9 @@ void OdeSdlSimulation::simLoop(int h,int w) {
         /* Draw the screen. */
         if ( !odeinit._wrld->WAITLOADING ){
             if (glrun) {
-                odeinit.mutexTexture.wait();
+                odeinit.mtxTexture.lock();
                 draw_screen();  
-                odeinit.mutexTexture.post();
+                odeinit.mtxTexture.unlock();
                 // check for framerate
                 timeLeft = (prevTime - (long) clock()) + gl_frame_length;
                 //yDebug() << "check for framerate " << timeLeft;

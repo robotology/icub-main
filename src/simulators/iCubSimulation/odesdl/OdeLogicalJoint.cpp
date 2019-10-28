@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 using namespace std;
 

@@ -28,7 +28,6 @@
 #include <cstdio>
 #include <cstring>
 #include <yarp/os/Bottle.h>
-#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/math/Math.h>
 #include <iCub/iKin/iKinFwd.h>

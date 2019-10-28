@@ -24,7 +24,7 @@
 #include "OdeInit.h" 
 #include "iCub_Sim.h"
 #include "OdeWorldManager.h"
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 bool OdeSdlSimulationBundle::onBegin() {
     dInitODE2(0); 

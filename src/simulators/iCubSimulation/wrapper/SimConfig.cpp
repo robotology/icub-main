@@ -28,7 +28,6 @@
 
 #include "SimConfig.h"
 #include <stdio.h>
-#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
 using namespace yarp::os;

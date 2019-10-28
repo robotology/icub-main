@@ -34,7 +34,6 @@
 #pragma warning(disable:4244 4305)  //for VC++, no precision loss complaints
 #include "VideoTexture.h"
 #include <cstring>
-#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
 using namespace yarp::os;

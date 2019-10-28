@@ -29,7 +29,6 @@
 #define ICUB_SIMH
 
 #include <yarp/os/Os.h>
-#include <yarp/os/Semaphore.h>
 
 #include "SDL_thread.h"
 #include "SDL.h"
@@ -59,8 +58,6 @@
 #include "iCub/skinDynLib/skinContactList.h"
 
 #define FAKE_TAXEL_ID 10000
-
-extern Semaphore ODE_access;
 
 /**
  *

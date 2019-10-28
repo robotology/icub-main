@@ -32,7 +32,6 @@
 #include "iCub.h"
 #include "world.h"
 #include <time.h>
-#include <yarp/os/Semaphore.h>
 #include "iCubLogicalJoints.h"
 #include "iCubSimulationControl.h"
 #include "iCubSimulationIMU.h"
@@ -40,6 +39,7 @@
 
 #include "RobotConfig.h"
 
+#include <mutex>
 #include <list>
 
 using namespace std;
@@ -62,8 +62,8 @@ public:
     //dJointFeedback *feedback;
     //dJointFeedback *feedback1;
     //dJointFeedback *feedback_mat;
-    yarp::os::Semaphore mutex;
-    yarp::os::Semaphore mutexTexture;
+    std::mutex mtx;
+    std::mutex mtxTexture;
     ICubSim *_iCub;
     worldSim *_wrld;
     bool stop;
