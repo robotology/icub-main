@@ -9,7 +9,8 @@
 #ifndef __CAMCALIBMODULE__
 #define __CAMCALIBMODULE__
 
- // std
+// std
+#include <mutex>
 #include <stdio.h>
 #include <map>
 
@@ -43,7 +44,7 @@ private:
     double roll;
     double pitch;
     double yaw;
-    yarp::os::Mutex m;
+    std::mutex m;
     bool leftEye; // true for left eye, false for right eye
     double maxDelay;
 

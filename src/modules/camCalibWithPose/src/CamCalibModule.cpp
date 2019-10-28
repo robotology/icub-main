@@ -133,7 +133,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
                 yDebug("just copied in %g [s]\n",Time::now()-t1);
         }
 
-        m.lock();
+        lock_guard<mutex> lck(m);
 
         //timestamp propagation
         //yarp::os::Stamp stamp;
@@ -147,7 +147,6 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         portImgOut->setEnvelope(pose);
 
         portImgOut->writeStrict();
-        m.unlock();
     }
 
     t0=t;
@@ -166,7 +165,7 @@ bool CamCalibPort::selectBottleFromMap(double time,
 
     if (useLast)
     {
-        m.lock();
+        lock_guard<mutex> lck(m);
         bottle->clear();
         if (useIMU)
         {
@@ -182,7 +181,6 @@ bool CamCalibPort::selectBottleFromMap(double time,
              //or torso? @@@ TO BE COMPLETED
         }
         datamap->clear();
-        m.unlock();
         return true;
     }
 

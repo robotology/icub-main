@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <mutex>
 
 #include <opencv2/opencv.hpp>
 
@@ -37,7 +38,7 @@ private:
     yarp::sig::Vector qL;
     yarp::sig::Vector qR;
 
-    Semaphore* mutex;
+    mutex mtx;
 
     int numOfPairs;
     bool stereo;

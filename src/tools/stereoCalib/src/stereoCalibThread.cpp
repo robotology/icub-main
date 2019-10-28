@@ -37,8 +37,6 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     string fileName= "outputCalib.ini"; //rf.find("from").asString().c_str();
 
     this->camCalibFile=this->camCalibFile+"/"+fileName.c_str();
-
-    this->mutex=new Semaphore(1);
 }
 
 bool stereoCalibThread::threadInit()
@@ -170,7 +168,7 @@ void stereoCalibThread::stereoCalibRun()
             bool foundL=false;
             bool foundR=false;
 
-            mutex->wait();
+            mtx.lock();
             if(startCalibration>0) {
 
                 string pathImg=imageDir;
@@ -236,7 +234,7 @@ void stereoCalibThread::stereoCalibRun()
                     imageListLR.clear();
                 }
             }
-            mutex->post();
+            mtx.unlock();
             ImageOf<PixelRgb>& outimL=outPortLeft.prepare();
             outimL=*imageL;
             outPortLeft.write();
@@ -297,7 +295,7 @@ void stereoCalibThread::monoCalibRun()
 
        if(imageL!=NULL){
             bool foundL=false;
-            mutex->wait();
+            mtx.lock();
             if(startCalibration>0) {
 
                 string pathImg=imageDir;
@@ -338,7 +336,7 @@ void stereoCalibThread::monoCalibRun()
                     imageListL.clear();
                 }
             }
-            mutex->post();
+            mtx.unlock();
             ImageOf<PixelRgb>& outimL=outPortLeft.prepare();
             outimL=*imageL;
             outPortLeft.write();
@@ -363,7 +361,6 @@ void stereoCalibThread::threadRelease()
     outPortLeft.close();
     outPortRight.close();
     commandPort->close();
-    delete mutex;
 
     if (polyHead.isValid())
         polyHead.close();
@@ -382,15 +379,13 @@ void stereoCalibThread::onStop() {
 
 }
 void stereoCalibThread::startCalib() {
-    mutex->wait();
+    lock_guard<mutex> lck(mtx);
     startCalibration=1;
-    mutex->post();
   }
 
 void stereoCalibThread::stopCalib() {
-    mutex->wait();
+    lock_guard<mutex> lck(mtx);
     startCalibration=0;
-    mutex->post();
   }
 
 void stereoCalibThread::printMatrix(Mat &matrix) {

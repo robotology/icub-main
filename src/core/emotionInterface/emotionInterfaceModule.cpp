@@ -206,7 +206,6 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
     bool ok = false;
     bool rec = false; // is the command recognized?
 
-    _semaphore.wait();
     switch (command.get(0).asVocab()) {
    
     case EMOTION_VOCAB_SET:
@@ -277,7 +276,6 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
         break;
 
     }
-    _semaphore.post();
 
     if (!rec)
         ok = false;
