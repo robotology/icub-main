@@ -85,9 +85,6 @@ private:
     // table with the setting for each emotion - from config file
     EM_CODE* _emotion_table;
 
-    //Mutual exclusion for the respond method
-    Semaphore _semaphore;
-
     //Time variables for automatic expression switching
     bool   _auto;
     double _lasttime;
