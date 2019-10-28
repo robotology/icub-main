@@ -492,8 +492,7 @@ int embObjStrain::read(yarp::sig::Vector &out)
         return false;
     }
 
-    mutex.wait();
-
+    std::lock_guard<std::mutex> lck(mtx);
 
     // errors are not handled for now... it'll always be OK!!
     if (status != IAnalogSensor::AS_OK)
@@ -517,7 +516,6 @@ int embObjStrain::read(yarp::sig::Vector &out)
               counterError++;
             } break;
         }
-        mutex.post();
         return status;
     }
 
@@ -526,9 +524,6 @@ int embObjStrain::read(yarp::sig::Vector &out)
     {
         out[k] = analogdata[k]+offset[k];
     }
-
-
-    mutex.post();
     
     return status;
 }
@@ -565,12 +560,11 @@ int embObjStrain::getChannels()
 
 int embObjStrain::calibrateSensor()
 {
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
     for (size_t i = 0; i < analogdata.size(); i++)
     {
         offset[i] = -analogdata[i];
     }
-    mutex.post();
     return AS_OK;
 }
 
@@ -621,7 +615,7 @@ bool embObjStrain::update(eOprotID32_t id32, double timestamp, void* rxdata)
     }
 
     // lock analogdata
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     for (size_t k = 0; k<analogdata.size(); k++)
     {
@@ -642,9 +636,6 @@ bool embObjStrain::update(eOprotID32_t id32, double timestamp, void* rxdata)
             }
         }
     }
-
-    // unlock analogdata
-    mutex.post();
 
     return true;
 }

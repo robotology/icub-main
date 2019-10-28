@@ -63,9 +63,9 @@ bool HostTransceiver::lock_transceiver(bool on)
 {
 #if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
     if(on)
-        htmtx->wait();
+        htmtx.lock();
     else
-        htmtx->post();
+        htmtx.unlock();
 #endif
     return true;
 }
@@ -77,9 +77,9 @@ bool HostTransceiver::lock_nvs(bool on)
 {
 #if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
     if(on)
-        nvmtx->wait();
+        nvmtx.lock();
     else
-        nvmtx->post();
+        nvmtx.unlock();
 #endif
     return true;
 }
@@ -109,21 +109,11 @@ HostTransceiver::HostTransceiver():delayAfterROPloadingFailure(0.001) // 1ms
 
     capacityofTXpacket = defMaxSizeOfTXpacket;
     maxSizeOfROP = defMaxSizeOfROP;
-
-#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
-    htmtx = new Semaphore(1);
-    nvmtx = new Semaphore(1);
-#endif
 }
 
 
 HostTransceiver::~HostTransceiver()
 {
-#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
-    delete htmtx;
-    delete nvmtx;
-#endif
-
     if(NULL != p_RxPkt)
     {
         eo_packet_Delete(p_RxPkt);

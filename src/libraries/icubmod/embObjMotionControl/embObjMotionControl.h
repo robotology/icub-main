@@ -31,11 +31,11 @@
 using namespace std;
 
 #include <string>
+#include <mutex>
 //  Yarp stuff
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardHelper.h>
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
@@ -177,7 +177,7 @@ private:
     ServiceParser*             parser;
     eomc::Parser *             _mcparser;
     ControlBoardHelper*        _measureConverter;
-    yarp::os::Semaphore        _mutex;
+    std::mutex                 _mutex;
     
     bool opened; //internal state
 

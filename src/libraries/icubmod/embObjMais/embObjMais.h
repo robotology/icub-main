@@ -6,10 +6,10 @@
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/PeriodicThread.h>
 #include <string>
 #include <list>
+#include <mutex>
 
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
@@ -89,7 +89,7 @@ private:
     // parameters
     servConfigMais_t serviceConfig;
 
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     vector<double> analogdata;
 

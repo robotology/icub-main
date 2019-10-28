@@ -53,12 +53,10 @@
 #include <ace/SOCK_Dgram_Bcast.h>
 
 #include <yarp/os/RFModule.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/DeviceDriver.h>
 
 using namespace yarp::dev;
 
-//static yarp::os::Semaphore _all_transceivers_mutex = 1;
 #define	RECV_BUFFER_SIZE        4000
 
 
@@ -89,8 +87,6 @@ protected:
 public:
     BoardTransceiver();
     ~BoardTransceiver();
-
-    yarp::os::Semaphore   transMutex;
 
     // yarp module methods
     bool createSocket(ACE_INET_Addr local_addr);

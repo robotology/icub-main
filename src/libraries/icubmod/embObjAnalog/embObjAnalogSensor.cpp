@@ -1182,11 +1182,10 @@ int embObjAnalogSensor::read(yarp::sig::Vector &out)
 {
     // This method gives analogdata to the analogServer
 
-      mutex.wait();
+      std::lock_guard<std::mutex> lck(mtx);
 
       if (!analogdata)
       {
-          mutex.post();
           return false;
       }
 
@@ -1212,7 +1211,6 @@ int embObjAnalogSensor::read(yarp::sig::Vector &out)
                   counterError++;
               } break;
           }
-          mutex.post();
           return status;
       }
 
@@ -1221,8 +1219,6 @@ int embObjAnalogSensor::read(yarp::sig::Vector &out)
       {
           out[k]=(*analogdata)[k];
       }
-
-      mutex.post();
     
     return status;
 }
@@ -1354,14 +1350,12 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
     }
 
     // lock analogdata
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     double *_buffer = this->analogdata->getBuffer();
 
     if(NULL == _buffer)
     {
-        // unlock analogdata
-        mutex.post();
         return false;
     }
 
@@ -1386,9 +1380,6 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
         }
     }
      
-    // unlock analogdata
-    mutex.post();
-
     return true;
 }
 
@@ -1408,13 +1399,12 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
         return false;
     }
 
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     double *_buffer = this->analogdata->getBuffer();
 
     if(NULL == _buffer)
     {
-        mutex.post();
         return false;
     }
 
@@ -1426,8 +1416,6 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
         // Get the kth element of the array
         _buffer[k] = (double)val;
     }
-
-    mutex.post();
 
     return true;
 }
@@ -1446,14 +1434,12 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
         return(true);
     }
    
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     double *_buffer = this->analogdata->getBuffer();
 
     if(NULL == _buffer)
     {
-        // unlock analogdata
-        mutex.post();
         return false;
     }
 
@@ -1484,8 +1470,6 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
         _buffer[firstpos+4] = (double) status->data.y;
         _buffer[firstpos+5] = (double) status->data.z;
     }
-
-    mutex.post();
 
     return true;
 #endif

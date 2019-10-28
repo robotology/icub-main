@@ -78,12 +78,6 @@ using namespace eth;
 
 
 TheEthManager* TheEthManager::handle = NULL;
-yarp::os::Semaphore TheEthManager::managerSem = 1;
-
-yarp::os::Semaphore TheEthManager::rxSem = 1;
-yarp::os::Semaphore TheEthManager::txSem = 1;
-
-
 
 TheEthManager::TheEthManager()
 {
@@ -160,7 +154,7 @@ TheEthManager *TheEthManager::instance()
     yTrace();
     // marco.accame: in here we dont use this->lock() because if object does not already exists, the function does (?) not exist.
     // much better using the static semaphore instead
-    managerSem.wait();
+    std::lock_guard<std::mutex> lck(managerSem);
     if (NULL == handle)
     {
         yTrace() << "Calling EthManager Constructor";
@@ -170,8 +164,6 @@ TheEthManager *TheEthManager::instance()
         else
             feat_Initialise(static_cast<void*>(handle)); // we give the pointer to the feature-interface c module
     }
-    managerSem.post();
-
     return handle;
 }
 
@@ -715,11 +707,11 @@ bool TheEthManager::lock(bool on)
 {
     if(on)
     {
-        managerSem.wait();
+        managerSem.lock();
     }
     else
     {
-        managerSem.post();
+        managerSem.unlock();
     }
 
     return true;
@@ -730,11 +722,11 @@ bool TheEthManager::lockTX(bool on)
 {
     if(on)
     {
-        txSem.wait();
+        txSem.lock();
     }
     else
     {
-        txSem.post();
+        txSem.unlock();
     }
 
     return true;
@@ -745,11 +737,11 @@ bool TheEthManager::lockRX(bool on)
 {
     if(on)
     {
-        rxSem.wait();
+        rxSem.lock();
     }
     else
     {
-        rxSem.post();
+        rxSem.unlock();
     }
 
     return true;
@@ -759,13 +751,13 @@ bool TheEthManager::lockTXRX(bool on)
 {
     if(on)
     {
-        txSem.wait();
-        rxSem.wait();
+        txSem.lock();
+        rxSem.lock();
     }
     else
     {
-        rxSem.post();
-        txSem.post();
+        rxSem.unlock();
+        txSem.unlock();
     }
 
     return true;

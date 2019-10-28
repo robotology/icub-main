@@ -45,8 +45,7 @@
 //#include "EOpacket.h"
 #include "EoProtocol.h"
 
-
-#include <yarp/os/Semaphore.h>
+#include <mutex>
 
 #include <yarp/os/Searchable.h>
 
@@ -142,11 +141,11 @@ namespace eth {
         eOprotBRD_t get_protBRDnumber(void);    // the number in range [0, max-1]
 
         bool lock_transceiver(bool on);
-        yarp::os::Semaphore *htmtx;
+        std::mutex htmtx;
 
 
         bool lock_nvs(bool on);
-        yarp::os::Semaphore *nvmtx;
+        std::mutex nvmtx;
 
 
         bool addSetROP__(const eOprotID32_t id32, const void* data, const uint32_t signature, bool writelocalrxcache = false);

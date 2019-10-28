@@ -9,8 +9,9 @@
 #ifndef __eo_ftsens_privData_h__
 #define __eo_ftsens_privData_h__
 
-#include "embObjGeneralDevPrivData.h"
+#include <mutex>
 
+#include "embObjGeneralDevPrivData.h"
 
 #include "serviceParser.h"
 
@@ -26,7 +27,7 @@ public:
     
     enum { strain_Channels = 6, strain_FormatData = 16 };
     
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
     std::string devicename;
     std::vector<double> analogdata;
     std::vector<double> offset;

@@ -49,7 +49,6 @@ FakeEthResource::FakeEthResource()
 
     ethManager                  = NULL;
     isInRunningMode             = false;
-    objLock                     = new Semaphore(1);
 
     verifiedBoardPresence       = false;
     verifiedBoardTransceiver    = false;
@@ -65,16 +64,14 @@ FakeEthResource::FakeEthResource()
 FakeEthResource::~FakeEthResource()
 {
     ethManager = NULL;
-
-    delete objLock;
 }
 
 bool FakeEthResource::lock(bool on)
 {
     if(true == on)
-        objLock->wait();
+        objLock.lock();
     else
-        objLock->post();
+        objLock.unlock();
 
     return true;
 }

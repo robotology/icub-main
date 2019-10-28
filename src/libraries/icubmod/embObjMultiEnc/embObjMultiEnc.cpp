@@ -426,8 +426,7 @@ int embObjMultiEnc::read(yarp::sig::Vector &out)
         return false;
     }
 
-    mutex.wait();
-
+    std::lock_guard<std::mutex> lck(mtx);
 
     // errors are not handled for now... it'll always be OK!!
     if (status != IAnalogSensor::AS_OK)
@@ -451,7 +450,6 @@ int embObjMultiEnc::read(yarp::sig::Vector &out)
                 counterError++;
             } break;
         }
-        mutex.post();
         return status;
     }
 
@@ -460,9 +458,6 @@ int embObjMultiEnc::read(yarp::sig::Vector &out)
     {
         out[k] = analogdata[k];
     }
-
-
-    mutex.post();
 
     return status;
 }
@@ -547,12 +542,11 @@ bool embObjMultiEnc::update(eOprotID32_t id32, double timestamp, void* rxdata)
     
     int startindex = joint * numofencperjoint; 
     
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
     for(int i=0; i< numofencperjoint; i++)
     {
         analogdata[startindex + i]=((double) multienc[i])/encoderConversionFactor[startindex + i];
     }
-    mutex.post();
 
     return true;
 }
