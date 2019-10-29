@@ -593,7 +593,7 @@ public:
             fin.getline(&line[0],sizeof(line),'\n');
             firstRun=true;
             cout<<"File loaded"<<endl;
-            cv.notify_all();
+            cv.notify_one();
             return true;
         }
         else
@@ -606,7 +606,7 @@ public:
     void onStop()
     {
         closing=true;
-        cv.notify_all();
+        cv.notify_one();
     }
 
     void threadRelease()
@@ -676,7 +676,7 @@ public:
                     p1=p2;
                     time1=time2;
                     send=true;
-                    cv.notify_all();
+                    cv.notify_one();
                 }
                 else
                 {
