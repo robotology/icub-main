@@ -16,7 +16,6 @@
 
 // May 06, readapted for YARP2 by nat
 
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/os/Stamp.h>

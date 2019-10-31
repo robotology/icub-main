@@ -109,7 +109,7 @@ bool BmsBattery::verify_checksum(int& raw_battery_current, int&  raw_battery_vol
 void BmsBattery::run()
 {
     double timeNow=yarp::os::Time::now();
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
 
     //if 100ms have passed since the last received message
     if (timeStamp+0.1<timeNow)
@@ -173,31 +173,26 @@ void BmsBattery::run()
         sprintf(buff, "battery status: %+6.1fA   % 6.1fV   charge:% 6.1f%%", battery_current, battery_voltage, battery_charge);
         yDebug("BmsBattery::run() log_buffer is: %s", buff);
     }
-
-    mutex.post();
 }
 
 bool BmsBattery::getBatteryVoltage(double &voltage)
 {
-    this->mutex.wait();
+    lock_guard<mutex> lck(mtx);
     voltage = battery_voltage;
-    this->mutex.post();
     return true;
 }
 
 bool BmsBattery::getBatteryCurrent(double &current)
 {
-    this->mutex.wait();
+    lock_guard<mutex> lck(mtx);
     current = battery_current;
-    this->mutex.post();
     return true;
 }
 
 bool BmsBattery::getBatteryCharge(double &charge)
 {
-    this->mutex.wait();
+    lock_guard<mutex> lck(mtx);
     charge = battery_charge;
-    this->mutex.post();
     return true;
 }
 
@@ -215,9 +210,8 @@ bool BmsBattery::getBatteryTemperature(double &temperature)
 
 bool BmsBattery::getBatteryInfo(string &info)
 {
-    this->mutex.wait();
+    lock_guard<mutex> lck(mtx);
     info = battery_info;
-    this->mutex.post();
     return true;
 }
 

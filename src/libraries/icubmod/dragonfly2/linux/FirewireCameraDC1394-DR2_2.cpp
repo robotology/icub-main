@@ -1142,11 +1142,10 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
 
 bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,unsigned char *pBuffer,bool bRaw)
 {
-    m_AcqMutex.wait();
+    std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_bCameraOn)
     {
-        m_AcqMutex.post();
         return false;
     }
 
@@ -1162,8 +1161,6 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
         {
             yError("dc1394_capture_dequeue returned %d\n\n",ret);
         }
-        
-        m_AcqMutex.post();
         return false;
     }
     
@@ -1179,7 +1176,6 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
     {
         --m_nInvalidFrames;
         dc1394_capture_enqueue(m_pCamera,m_pFrame);
-        m_AcqMutex.post();
         return false;
     }
 
@@ -1253,17 +1249,15 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
     }
 
     dc1394_capture_enqueue(m_pCamera,m_pFrame);
-    m_AcqMutex.post();
     return true;
 }
 
 bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelMono>* pImage)
 {
-    m_AcqMutex.wait();
+    std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_bCameraOn || dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_WAIT,&m_pFrame)!=DC1394_SUCCESS)
     {
-        m_AcqMutex.post();
         return false;
     }
     
@@ -1279,7 +1273,6 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelMono>* pImage)
     {
         --m_nInvalidFrames;
         dc1394_capture_enqueue(m_pCamera,m_pFrame);
-        m_AcqMutex.post();
         return false;
     }
 
@@ -1308,7 +1301,6 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelMono>* pImage)
     }
 
     dc1394_capture_enqueue(m_pCamera,m_pFrame);
-    m_AcqMutex.post();
     return true;
 }
 
@@ -1572,11 +1564,10 @@ bool CFWCamera_DR2_2::setVideoModeDC1394(int newVideoMode)
 
     yInfo("SET VIDEO MODE %d\n",newVideoMode);
 
-    m_AcqMutex.wait();
+    std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_pCamera)
     {
-        m_AcqMutex.post();
         return false;
     }
 
@@ -1603,7 +1594,6 @@ bool CFWCamera_DR2_2::setVideoModeDC1394(int newVideoMode)
         yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
         dc1394_camera_free(m_pCamera);
         m_pCamera=NULL;
-        m_AcqMutex.post();
         return false;
     }
 
@@ -1612,11 +1602,9 @@ bool CFWCamera_DR2_2::setVideoModeDC1394(int newVideoMode)
         yError("Can't set DC1394_ON\n");
         dc1394_camera_free(m_pCamera);
         m_pCamera=NULL;
-        m_AcqMutex.post();
         return false;
     }
 
-    m_AcqMutex.post();
     return true;
 }
 
@@ -1779,11 +1767,10 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
 {
     if (mRawDriver) return false;
 
-    m_AcqMutex.wait();
+    std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_pCamera)
     {
-        m_AcqMutex.post();
         return false;
     }
     
@@ -1792,7 +1779,6 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
     if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
     {
         yError("LINE: %d\n",__LINE__);
-        m_AcqMutex.post();
         return false;
     }
     
@@ -1821,8 +1807,6 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
         m_pCamera=NULL;
         bRetVal=false;
     }
-
-    m_AcqMutex.post();
 
     return bRetVal;
 }   
@@ -1866,11 +1850,10 @@ bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int 
 // 26
 bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0)
 {
-    m_AcqMutex.wait();
+    std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_pCamera)
     {
-        m_AcqMutex.post();
         return false;
     }
     
@@ -1879,7 +1862,6 @@ bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim
     if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
     {
         yError("LINE: %d\n",__LINE__);
-        m_AcqMutex.post();
         return false;
     }
 
@@ -1906,8 +1888,6 @@ bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim
         m_pCamera=NULL;
         bRetVal=false;
     }
-
-    m_AcqMutex.post();
 
     return bRetVal;
 }
@@ -1954,11 +1934,10 @@ bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &yd
 // 28
 bool CFWCamera_DR2_2::setOperationModeDC1394(bool b1394b)
 {
-    m_AcqMutex.wait();
+    std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_pCamera)
     {
-        m_AcqMutex.post();
         return false;
     }
 
@@ -1974,7 +1953,6 @@ bool CFWCamera_DR2_2::setOperationModeDC1394(bool b1394b)
         yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
         dc1394_camera_free(m_pCamera);
         m_pCamera=NULL;
-        m_AcqMutex.post();
         return false;
     }
 
@@ -1983,11 +1961,9 @@ bool CFWCamera_DR2_2::setOperationModeDC1394(bool b1394b)
         yError("Can't set DC1394_ON\n");
         dc1394_camera_free(m_pCamera);
         m_pCamera=NULL;
-        m_AcqMutex.post();
         return false;
     }
 
-    m_AcqMutex.post();
     return true;
 }
 
@@ -2029,11 +2005,10 @@ bool CFWCamera_DR2_2::setBroadcastDC1394(bool onoff)
 // 35
 bool CFWCamera_DR2_2::setDefaultsDC1394()
 {
-    m_AcqMutex.wait();
+    std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_pCamera)
     {
-        m_AcqMutex.post();
         return false;
     }
 
@@ -2046,19 +2021,16 @@ bool CFWCamera_DR2_2::setDefaultsDC1394()
     
     SetVideoMode(videoMode);
 
-    m_AcqMutex.post();
-
     return bRetVal;
 }
 
 // 36
 bool CFWCamera_DR2_2::setResetDC1394()
 {
-    m_AcqMutex.wait();
+    std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_pCamera)
     {
-        m_AcqMutex.post();
         return false;
     }
 
@@ -2072,7 +2044,6 @@ bool CFWCamera_DR2_2::setResetDC1394()
         yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
         dc1394_camera_free(m_pCamera);
         m_pCamera=NULL;
-        m_AcqMutex.post();
         return false;
     }
 
@@ -2081,22 +2052,19 @@ bool CFWCamera_DR2_2::setResetDC1394()
         yError("Can't set DC1394_ON\n");
         dc1394_camera_free(m_pCamera);
         m_pCamera=NULL;
-        m_AcqMutex.post();
         return false;
     }
 
-    m_AcqMutex.post();
     return true;
 }
 
 // 37
 bool CFWCamera_DR2_2::setPowerDC1394(bool onoff)
 {
-    m_AcqMutex.wait();
+    std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_pCamera)
     {
-        m_AcqMutex.post();
         return false;
     }
 
@@ -2109,7 +2077,6 @@ bool CFWCamera_DR2_2::setPowerDC1394(bool onoff)
             yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
             dc1394_camera_free(m_pCamera);
             m_pCamera=NULL;
-            m_AcqMutex.post();
             return false;
         }
 
@@ -2118,7 +2085,6 @@ bool CFWCamera_DR2_2::setPowerDC1394(bool onoff)
             yError("Can't set DC1394_ON\n");
             dc1394_camera_free(m_pCamera);
             m_pCamera=NULL;
-            m_AcqMutex.post();
             return false;
         }
 
@@ -2132,7 +2098,6 @@ bool CFWCamera_DR2_2::setPowerDC1394(bool onoff)
         dc1394_camera_set_power(m_pCamera,(dc1394switch_t)onoff);
     }
 
-    m_AcqMutex.post();
     return true;
 }
 
@@ -2191,21 +2156,20 @@ unsigned int CFWCamera_DR2_2::getBytesPerPacketDC1394()
 // 40
 bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
 {   
-    m_AcqMutex.wait();
+    std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_pCamera)
     {
-        m_AcqMutex.post();
         return false;
     }
     
     dc1394error_t error;
 
     error=dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
-    if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
     
     error=dc1394_capture_stop(m_pCamera);   
-    if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
     
     //
     
@@ -2214,7 +2178,6 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
     if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
     {
         yError("LINE: %d\n",__LINE__);
-        m_AcqMutex.post();
         return false;
     }
 
@@ -2229,7 +2192,7 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
     
     dc1394speed_t isoSpeed;
     error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
-    if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
     
     // get ISO bandwidth
     int busBand=10000000<<(isoSpeed-DC1394_ISO_SPEED_MIN);
@@ -2237,11 +2200,11 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
     dc1394color_coding_t colorCoding;
     unsigned int dummy,xDim,yDim;
     error=dc1394_format7_get_roi(m_pCamera,videoMode,&colorCoding,&dummy,&dummy,&dummy,&xDim,&yDim);    
-    if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     unsigned int maxBytesPerPacket,unitBytesPerPacket;
     error=dc1394_format7_get_packet_parameters(m_pCamera,videoMode,&unitBytesPerPacket,&maxBytesPerPacket);
-    if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     int fps=maxFPS(videoMode,colorCoding);
     double bpp=bytesPerPixel(colorCoding);
@@ -2261,17 +2224,16 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
     printf("videoMode %d band percnet %d bytesPerPacket %d\n",videoMode,newBandPercent,bytesPerPacket);
     
     error=dc1394_format7_set_packet_size(m_pCamera,videoMode,bytesPerPacket);
-    if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
     
     error=dc1394_format7_get_packet_size(m_pCamera,videoMode,&bytesPerPacket);
-    if (manage(error,&m_AcqMutex)) { yError("LINE: %d\n",__LINE__); return false; }
+    if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
           
     if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
     {
         yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
         dc1394_camera_free(m_pCamera);
         m_pCamera=NULL;
-        m_AcqMutex.post();
         return false;
     }
 
@@ -2280,11 +2242,9 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
         yError("Can't set DC1394_ON\n");
         dc1394_camera_free(m_pCamera);
         m_pCamera=NULL;
-        m_AcqMutex.post();
         return false;
     }
 
-    m_AcqMutex.post();
     printf("bytesPerPacket %d\n",bytesPerPacket);
     
     return true;
@@ -2320,18 +2280,13 @@ int CFWCamera_DR2_2::TRANSL(int feature)
     return NOT_PRESENT;
 }
 
-bool CFWCamera_DR2_2::manage(dc1394error_t error,yarp::os::Semaphore *pToUnlock)
+bool CFWCamera_DR2_2::manage(dc1394error_t error)
 {
     if (error!=DC1394_SUCCESS)
     {
         yError("%d\n",error);
-        if (pToUnlock)
-        {
-            pToUnlock->post();
-        }
         return true;
     }
-
     return false;
 }
 

@@ -114,10 +114,8 @@ bool SkinPrototype::close()
 
 int SkinPrototype::read(yarp::sig::Vector &out) 
 {
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
     out=data;
-    mutex.post();
-
     return yarp::dev::IAnalogSensor::AS_OK;
 }
 
@@ -207,7 +205,7 @@ bool SkinPrototype::threadInit()
 
 void SkinPrototype::run()
 {   
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
 
     unsigned int canMessages=0;
 
@@ -253,8 +251,6 @@ void SkinPrototype::run()
             }
         }
     }
-
-    mutex.post();
 }
 
 void SkinPrototype::threadRelease()

@@ -7,8 +7,8 @@
 #ifndef __BCBBATTERY_H__
 #define __BCBBATTERY_H__
 
+#include <mutex>
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/IBattery.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/SerialInterfaces.h>
@@ -21,7 +21,7 @@ using namespace yarp::dev;
 class BcbBattery : public PeriodicThread, public yarp::dev::IBattery, public DeviceDriver
 {
 protected:
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     unsigned short     batteryId;
     short              status;

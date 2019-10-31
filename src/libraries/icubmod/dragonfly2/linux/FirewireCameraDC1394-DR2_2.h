@@ -20,9 +20,9 @@
 
 #include <stdio.h>
 #include <memory.h>
+#include <mutex>
 #include <dc1394/dc1394.h>
 #include <libraw1394/raw1394.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Log.h>
@@ -113,7 +113,7 @@ protected:
     uint32_t m_iMin[DC1394_FEATURE_NUM],m_iMax[DC1394_FEATURE_NUM];
 
     dc1394video_frame_t *m_pFrame,*m_pFramePoll;
-    yarp::os::Semaphore m_AcqMutex;
+    std::mutex m_AcqMutex;
     yarp::os::Stamp m_Stamp;
     int m_LastSecond;
     double m_SecondOffset;
@@ -133,7 +133,7 @@ protected:
 
     int TRANSL(int feature);
 
-    bool manage(dc1394error_t error,yarp::os::Semaphore *pToUnlock=NULL);
+    bool manage(dc1394error_t error);
 
     int checkInt(yarp::os::Searchable& config,const char* key);
 
