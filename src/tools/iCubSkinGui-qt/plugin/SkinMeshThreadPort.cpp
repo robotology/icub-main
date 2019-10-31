@@ -13,7 +13,7 @@
 
 #define SKIN_THRESHOLD 15.0
 
-SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : PeriodicThread((double)period/1000.0),mutex(1)
+SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : PeriodicThread((double)period/1000.0)
 {
     yDebug("SkinMeshThreadPort running at %d ms.",(int)(1000.0*getPeriod()));
     mbSimpleDraw=config.check("light");
@@ -227,7 +227,7 @@ bool SkinMeshThreadPort::threadInit()
 
 void SkinMeshThreadPort::run()
 {
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     bool gotRealData=false;
     bool gotVirtualData=false;
@@ -357,8 +357,6 @@ void SkinMeshThreadPort::run()
             }
         }
     }
-
-    mutex.post();
 }
 
 void SkinMeshThreadPort::threadRelease()

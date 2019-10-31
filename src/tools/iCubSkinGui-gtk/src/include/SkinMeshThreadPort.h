@@ -10,11 +10,10 @@
 #ifndef __SKIN_MESH_THREAD_PORT_H__
 #define __SKIN_MESH_THREAD_PORT_H__
 
-//#include <stdio.h>
+#include <mutex>
 #include <string>
 
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -40,7 +39,7 @@ protected:
     BufferedPort<Bottle> skin_port;                         
     TouchSensor *sensor[MAX_SENSOR_NUM];
 
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     int sensorsNum;
     bool mbSimpleDraw;

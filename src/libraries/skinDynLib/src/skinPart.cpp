@@ -15,7 +15,7 @@ using namespace iCub::skinDynLib;
 
     skinPartBase & skinPartBase::operator=(const skinPartBase &_spb)
     {
-        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
+        std::lock_guard<std::recursive_mutex> rlg(recursive_mtx);
         if (this == &_spb)
         {
             return *this;
@@ -93,7 +93,7 @@ using namespace iCub::skinDynLib;
 
     skinPart & skinPart::operator=(const skinPart &_sp)
     {
-        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
+        std::lock_guard<std::recursive_mutex> rlg(recursive_mtx);
         if (this == &_sp)
         {
             return *this;
@@ -117,7 +117,7 @@ using namespace iCub::skinDynLib;
 
     bool skinPart::setTaxelPosesFromFile(const std::string &_filePath, const std::string &_spatial_sampling)
     {
-        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
+        std::lock_guard<std::recursive_mutex> rlg(recursive_mtx);
         // Get the filename from the full absolute path
         std::string filename = "";
         filename = strrchr(_filePath.c_str(), '/');
@@ -235,7 +235,7 @@ using namespace iCub::skinDynLib;
     // in icub-main/src/modules/skinManager/src/compensator.cpp
     bool skinPart::setTaxelPosesFromFileOld(const std::string &_filePath)
     {
-        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
+        std::lock_guard<std::recursive_mutex> rlg(recursive_mtx);
         std::string       line;
         std::ifstream     posFile;
         yarp::sig::Vector taxelPos(3,0.0);
@@ -286,7 +286,7 @@ using namespace iCub::skinDynLib;
 
     bool skinPart::mapTaxelsOntoThemselves()
     {
-        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
+        std::lock_guard<std::recursive_mutex> rlg(recursive_mtx);
         for (int i = 0; i < getSize(); ++i)
         {
             bool isIvalidID=false;
@@ -314,7 +314,7 @@ using namespace iCub::skinDynLib;
 
     bool skinPart::initRepresentativeTaxels()
     {
-        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
+        std::lock_guard<std::recursive_mutex> rlg(recursive_mtx);
         std::list<int> mapp(taxel2Repr.begin(), taxel2Repr.end());
         mapp.sort();
         mapp.unique();
@@ -336,7 +336,7 @@ using namespace iCub::skinDynLib;
 
     void skinPart::clearTaxels()
     {
-        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
+        std::lock_guard<std::recursive_mutex> rlg(recursive_mtx);
         while(!taxels.empty())
         {
             if (taxels.back())

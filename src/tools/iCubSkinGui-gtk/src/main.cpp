@@ -103,6 +103,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 This file can be edited at /src/gui/iCubSkinGui/src/main.cpp.
 **/
 
+#include <mutex>
 #include <memory.h>
 
 #include <yarp/os/all.h>
@@ -118,7 +119,7 @@ using namespace yarp::os;
 static GtkWidget *gpDrawingArea=NULL;
 static SkinMeshThreadCan  *gpSkinMeshThreadCan=NULL;
 static SkinMeshThreadPort *gpSkinMeshThreadPort=NULL;
-static yarp::os::Semaphore gMutex(1);
+static std::mutex gMutex;
 static int gbRunning=TRUE;
 static int gWidth=0,gHeight=0,gRowStride=0,gImageSize=0,gMapSize=0,gImageArea=0;
 static int gXpos=32,gYpos=32;
@@ -149,7 +150,7 @@ static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
 
     if (bDrawing) return TRUE;
 
-    gMutex.wait();
+    std::lock_guard<std::mutex> lck(gMutex);
     
     bDrawing=true;
 
@@ -231,8 +232,6 @@ static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
                            gRowStride);
     }
  
-    gMutex.post();
-
     bDrawing=false;
 
     return TRUE;
@@ -240,11 +239,10 @@ static gint paint(GtkWidget *pWidget,GdkEventExpose *pEvent,gpointer pData)
 
 void clean_exit()
 {
-    gMutex.wait();
+    std::lock_guard<std::mutex> lck(gMutex);
     gbRunning=FALSE;
     g_source_remove(gTimer);
     gtk_main_quit();
-    gMutex.post();
 }
 
 int main(int argc, char *argv[]) 

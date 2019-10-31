@@ -10,11 +10,10 @@
 #ifndef __SKIN_MESH_THREAD_CAN_H__
 #define __SKIN_MESH_THREAD_CAN_H__
 
-//#include <stdio.h>
+#include <mutex>
 #include <string>
 
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -44,14 +43,14 @@ protected:
     
     TouchSensor *sensor[16];
 
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     int cardId;
     int sensorsNum;
     bool mbSimpleDraw;
 
 public:
-    SkinMeshThreadCan(Searchable& config,int period) : PeriodicThread((double)period/1000.0),mutex(1)
+    SkinMeshThreadCan(Searchable& config,int period) : PeriodicThread((double)period/1000.0)
     {
         mbSimpleDraw=config.check("light");
 
@@ -176,20 +175,16 @@ public:
 
     void resize(int width,int height)
     {
-        mutex.wait();
-
+        std::lock_guard<std::mutex> lck(mtx);
         for (int t=0; t<16; ++t)
         {
             if (sensor[t]) sensor[t]->resize(width,height,40);
         }
-
-        mutex.post();
     }
 
     void eval(unsigned char *image)
     {
-        mutex.wait();
-
+        std::lock_guard<std::mutex> lck(mtx);
         for (int t=0; t<16; ++t)
         {
             if (sensor[t])
@@ -204,8 +199,6 @@ public:
                 }
             }
         }
-
-        mutex.post();
     }
 
     void draw(unsigned char *image)

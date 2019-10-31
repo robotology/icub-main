@@ -19,19 +19,19 @@
 #ifndef __COMP_H__
 #define __COMP_H__
 
+#include <mutex>
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <vector>
 #include <list>
-#include <fstream>//duarte code
+#include <fstream>
 #include <deque>
 
 #include <yarp/sig/Vector.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/os/ResourceFinder.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Log.h>
 #include <yarp/dev/IAnalogSensor.h>
@@ -76,7 +76,7 @@ private:
     vector<Vector>          taxelOri;           // taxel normals {xOri, yOri, zOri}
     Vector                  taxelPoseConfidence;// taxels pose estimation confidence
     double                  maxNeighDist;       // max distance between two neighbor taxels
-    Semaphore               poseSem;            // mutex to access taxel poses
+    mutex                   poseSem;            // mutex to access taxel poses
 
     // COMPENSATION
     vector<bool> touchDetected;                 // true if touch has been detected in the last read of the taxel
@@ -84,7 +84,7 @@ private:
     vector<bool> subTouchDetected;              // true if the taxel value has gone under the baseline (because of touch in neighbouring taxels)
     Vector rawData;                             // data read from the skin
     Vector touchThresholds;                     // thresholds for discriminating between "touch" and "no touch"
-    Semaphore touchThresholdSem;                // semaphore for controlling the access to the touchThreshold
+    mutex touchThresholdSem;                    // semaphore for controlling the access to the touchThreshold
     Vector initialBaselines;                    // mean of the raw tactile data computed during calibration
     Vector baselines;                           // mean of the raw tactile data
     Vector compensatedData;                     // compensated tactile data (that is rawData-touchThreshold)
@@ -114,7 +114,7 @@ private:
     bool binarization;                  // if true binarize the compensated output value (0: no touch, 255: touch)
     bool smoothFilter;                  // if true the smooth filter is on, otherwise it is off
     float smoothFactor;                 // intensity of the smooth filter action
-    Semaphore smoothFactorSem;
+    mutex smoothFactorSem;
 
     /* ports */
     BufferedPort<Vector> compensatedTactileDataPort;    // output port

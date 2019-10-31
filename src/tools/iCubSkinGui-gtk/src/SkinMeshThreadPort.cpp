@@ -24,7 +24,7 @@ bool SkinMeshThreadPort::threadInit()
 
 void SkinMeshThreadPort::run()
 {
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
 
     for (Bottle *input=NULL; input=skin_port.read(false);) 
     {    
@@ -47,8 +47,6 @@ void SkinMeshThreadPort::run()
             }
         }
     }
-
-    mutex.post();
 }
 
 void SkinMeshThreadPort::threadRelease()
