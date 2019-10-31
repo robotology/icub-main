@@ -20,6 +20,7 @@
 #ifndef __COMPTHREAD_H__
 #define __COMPTHREAD_H__
 
+#include <mutex>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -29,7 +30,6 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/os/ResourceFinder.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 
@@ -146,7 +146,7 @@ private:
     BufferedPort<Bottle> infoPort;                  // info output port
 
     CompensationThreadState state;                  // state of the thread (calibration, compensation)
-    Semaphore stateSem;
+    mutex stateSem;
 
     /* class private methods */
     void checkErrors();

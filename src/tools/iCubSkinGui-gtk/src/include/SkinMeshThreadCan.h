@@ -10,11 +10,10 @@
 #ifndef __SKIN_MESH_THREAD_CAN_H__
 #define __SKIN_MESH_THREAD_CAN_H__
 
-//#include <stdio.h>
+#include <mutex>
 #include <string>
 
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -42,7 +41,7 @@ protected:
     
     TouchSensor *sensor[16];
 
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     int cardId;
     int sensorsNum;

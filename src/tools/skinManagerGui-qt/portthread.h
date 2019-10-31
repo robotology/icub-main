@@ -19,7 +19,6 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
-#include <yarp/os/Semaphore.h>
 
 #include <iCub/skinDynLib/rpcSkinManager.h>
 

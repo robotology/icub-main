@@ -16,6 +16,7 @@
  * Public License for more details
  */
 
+#include <mutex>
 #include <string>
 #include <sstream> 
 #include <iomanip>					// io manipulator (setw, setfill)
@@ -34,7 +35,6 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
-#include <yarp/os/Semaphore.h>
 
 #include <iCub/skinDynLib/rpcSkinManager.h>
 
@@ -101,7 +101,7 @@ int                     currentSampleFreq;
 int                     currentSampleNum;       // size of the dataPlot array
 
 // plot data
-Semaphore               plotSem;
+mutex                   plotSem;
 gint                    port2plot;              // index of the skin port to plot
 gint                    tr2plot;                // triangle to plot
 gint                    tax2plot;               // taxel to plot

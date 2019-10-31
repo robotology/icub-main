@@ -388,7 +388,7 @@ static gint periodic_timeout(gpointer data) {
             const int numTr = numTax/12;
             if (numTax>0){
                 // *** UPDATE TAXEL PLOT (3RD TAB)                
-                plotSem.wait();
+                plotSem.lock();
                 for (int i=0; i<currentSampleNum-1; i++) {
                     dataPlot[i] = dataPlot[i+1];
                 }
@@ -398,7 +398,7 @@ static gint periodic_timeout(gpointer data) {
                 }
                 dataPlot[currentSampleNum-1] = (gfloat)(*b)[index];
                 gtk_curve_set_vector(curveComp, currentSampleNum, &(dataPlot[0]));
-                plotSem.post();
+                plotSem.unlock();
                                
 
                 // *** UPDATE DRIFT TREE VIEW (2ND TAB)
@@ -501,7 +501,7 @@ static void spinSampleNum_value_changed(GtkSpinButton *spinbutton, gpointer user
     if (sampleNum==currentSampleNum)
         return;
     
-    plotSem.wait();
+    lock_guard<mutex> lck(plotSem);
     vector<gfloat> newDataPlot(sampleNum);
     unsigned int data2copy = min(sampleNum, currentSampleNum);                
     for (unsigned int i=1;i<=data2copy;i++){
@@ -514,5 +514,4 @@ static void spinSampleNum_value_changed(GtkSpinButton *spinbutton, gpointer user
     stringstream maxXS; maxXS<< currentSampleNum/currentSampleFreq;
     gtk_label_set_text(lblMaxX, maxXS.str().c_str());
     gtk_curve_set_range(curveComp, 0, (gfloat)currentSampleNum, 0, 255);
-    plotSem.post();
 }

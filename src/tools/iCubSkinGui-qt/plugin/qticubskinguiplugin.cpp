@@ -106,8 +106,6 @@ This file can be edited at /src/gui/iCubSkinGui/src/main.cpp.
 using namespace yarp::os;
 
 
-static yarp::os::Semaphore gMutex(1);
-
 QtICubSkinGuiPlugin::QtICubSkinGuiPlugin(QQuickItem *parent):
     QQuickPaintedItem(parent)
 {

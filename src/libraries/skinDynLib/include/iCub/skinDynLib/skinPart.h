@@ -37,12 +37,12 @@
 
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RecursiveMutex.h>
-#include <yarp/os/LockGuard.h>
 
 #include <fstream>
 #include <vector>
 #include <map>
 #include <list>
+#include <mutex>
 
 namespace iCub
 {
@@ -61,7 +61,7 @@ class skinPartBase
     std::string version; // Version of the skin part - "V1", "V2", "V2.1" (or "unknown_version"). 
                          // Depending on the physical version of skin on the robot. For example,
                          // forearm V2 has one triangle more compared to V1 and also partly different taxel IDs. 
-    yarp::os::RecursiveMutex recursive_mutex;
+    std::recursive_mutex recursive_mtx;
   public:
     /**
     * Constructor

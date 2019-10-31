@@ -195,16 +195,15 @@ bool CompensationThread::threadInit()
 }
 
 void CompensationThread::calibrate(){
-    stateSem.wait();
+    lock_guard<mutex> lck(stateSem);
     if(state != calibration){
         state = calibration;
         calibrationCounter = 0;
     }
-    stateSem.post();
 }
 
 void CompensationThread::run(){
-    stateSem.wait();
+    stateSem.lock();
 
     if( state == compensation){
         // It reads the raw data, computes the difference between the read values and the baseline 
@@ -239,12 +238,12 @@ void CompensationThread::run(){
         calibrationCounter++;
     }
     else{
-        stateSem.post();
+        stateSem.unlock();
         sendDebugMsg("[ERROR] Unknown state in CompensationThread. Suspending the thread.\n");
         this->suspend();
         return;
     }    
-    stateSem.post();
+    stateSem.unlock();
     sendMonitorData();
     checkErrors();
 }
@@ -302,9 +301,9 @@ void CompensationThread::checkErrors(){
 }
 
 bool CompensationThread::doesBaselineExceed(unsigned int &compInd, unsigned int &taxInd, double &baseline, double &initialBaseline){
-    stateSem.wait();
+    stateSem.lock();
     CompensationThreadState currentState = state;
-    stateSem.post();
+    stateSem.unlock();
     if(currentState==compensation){
         FOR_ALL_PORTS(i){
             if(compWorking[i] && compensators[i]->doesBaselineExceed(taxInd, baseline, initialBaseline)){
@@ -343,7 +342,7 @@ void CompensationThread::sendMonitorData(){
         b.resize(1+ 2*originalSkinDim);
         b[0] = 1.0/getEstimatedPeriod(); // thread frequency
         
-        stateSem.wait();
+        stateSem.lock();
         if(state==compensation){    // during calibration don't send this data
             // for each taxel add how much the baseline has changed so far (i.e. the drift)
             int index = 1;
@@ -360,7 +359,7 @@ void CompensationThread::sendMonitorData(){
                 index += compensators[i]->getNumTaxels();
             }
         }
-        stateSem.post();
+        stateSem.unlock();
         //printf("Writing %d data on monitor port\n", b.size());
         monitorPort.write();
     }
@@ -416,12 +415,11 @@ void CompensationThread::setBinarization(bool value){
 }
 void CompensationThread::setSmoothFilter(bool value){
     if(smoothFilter != value){
-        stateSem.wait();
+        lock_guard<mutex> lck(stateSem);
         smoothFilter = value;
         FOR_ALL_PORTS(i){
             compensators[i]->setSmoothFilter(value);
         }
-        stateSem.post();
     }
 }
 bool CompensationThread::setSmoothFactor(float value){
@@ -581,9 +579,8 @@ bool CompensationThread::getSmoothFilter(){
     return smoothFilter;
 }
 bool CompensationThread::isCalibrating(){
-    stateSem.wait();
+    lock_guard<mutex> lck(stateSem);
     bool res = state==calibration;
-    stateSem.post();
     return res;
 }
 float CompensationThread::getSmoothFactor(){

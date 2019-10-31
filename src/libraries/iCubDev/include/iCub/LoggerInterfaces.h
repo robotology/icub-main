@@ -25,8 +25,8 @@
 #ifndef __LOGGERINTERFACES__
 #define __LOGGERINTERFACES__
 
+#include <mutex>
 #include <yarp/os/Value.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/DeviceDriver.h>
 
 namespace yarp{
@@ -69,9 +69,9 @@ public:
     * Set a mutex reference for data access synchronization.
     * @param external mutex address from IServerLogger. 
     */
-    void setMutex(yarp::os::Semaphore* mutex)
+    void setMutex(std::mutex* pMtx)
     {
-        pMutex=mutex;
+        pMutex=pMtx;
     }
 
     /**
@@ -83,17 +83,17 @@ public:
     */
     void write(const yarp::os::Value &data)
     {
-        if (pMutex) pMutex->wait();
+        if (pMutex) pMutex->lock();
         if (*pData!=data)
         {
             *pData=yarp::os::Value(data);
             *pFlag=true;
         }
-        if (pMutex) pMutex->post();
+        if (pMutex) pMutex->unlock();
     }
 
 protected:
-    yarp::os::Semaphore* pMutex;
+    std::mutex* pMutex;
     yarp::os::Value* pData;
     bool* pFlag;
 };

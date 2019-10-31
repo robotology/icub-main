@@ -64,7 +64,7 @@ bool SkinMeshThreadCan::threadInit()
 
 void SkinMeshThreadCan::run()
 {	
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
 
     unsigned int canMessages=0;
 
@@ -91,8 +91,6 @@ void SkinMeshThreadCan::run()
             }
         }
     }
-
-    mutex.post();
 }
 
 void SkinMeshThreadCan::threadRelease()

@@ -159,7 +159,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
 
 void Compensator::calibrationInit(){   
     // take the semaphore so that the touchThreshold can't be read during the calibration phase
-    touchThresholdSem.wait();
+    lock_guard<mutex> lck(touchThresholdSem);
 
     // send a command to the microcontroller for calibrating the skin sensors
     if(robotName!="icubSim"){    // this feature isn't implemented in the simulator and causes a runtime error
@@ -270,9 +270,6 @@ void Compensator::calibrationFinish(){
         printf("\n");
     }*/
     sendInfoMsg("Calibration finished");
-
-    // release the semaphore so that as of now the touchThreshold can be read
-    touchThresholdSem.post();
 }
 
 bool Compensator::readInputData(Vector& skin_values){
@@ -360,9 +357,8 @@ bool Compensator::readRawAndWriteCompensatedData(){
         
         // smooth filter
         if(smoothFilter){
-            smoothFactorSem.wait();
+            lock_guard<mutex> lck(smoothFactorSem);
             d = (1-smoothFactor)*d + smoothFactor*compensatedDataOld(i);
-            smoothFactorSem.post();
             compensatedDataOld(i) = d;    // update old value
         }
         compensatedDataFilt[i] = d;
@@ -471,7 +467,7 @@ skinContactList Compensator::getContacts(){
     int                 contactId = 0;                  // id of the next contact to create
     int                 neighCont;                      // id of the contact of the current neighbor
 
-    poseSem.wait();
+    poseSem.lock();
     {
         for(unsigned int i=0; i<skinDim; i++){
             if(touchDetectedFilt[i] ){ // && contactXtaxel[i]<0 (second condition should always be true)
@@ -509,7 +505,7 @@ skinContactList Compensator::getContacts(){
             }
         }
     }
-    poseSem.post();
+    poseSem.unlock();
 
     skinContactList contactList;
     Vector CoP(3), geoCenter(3), normal(3);
@@ -573,9 +569,8 @@ bool Compensator::setSmoothFactor(float value){
         return false;
     if(value==1.0) 
         value = 0.99f;    // otherwise with 1 the values don't update
-    smoothFactorSem.wait();
+    lock_guard<mutex> lck(smoothFactorSem);
     smoothFactor = value;
-    smoothFactorSem.post();
     return true;
 }
 
@@ -615,95 +610,80 @@ unsigned int Compensator::getNumTaxels(){
 Vector Compensator::getCompensation(){   return baselines-initialBaselines; }
 
 Vector Compensator::getTouchThreshold(){
-    touchThresholdSem.wait();
-    Vector res = touchThresholds;
-    touchThresholdSem.post();
-    return res;
+    lock_guard<mutex> lck(touchThresholdSem);
+    return touchThresholds;
 }
 
 float Compensator::getSmoothFactor(){
-    smoothFactorSem.wait();
-    float res=smoothFactor;
-    smoothFactorSem.post();
-    return res;
+    lock_guard<mutex> lck(smoothFactorSem);
+    return smoothFactor;
 }
 Vector Compensator::getTaxelPosition(unsigned int taxelId){
     if(taxelId>=skinDim)
         return zeros(0);
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     Vector res = taxelPos[taxelId];
     res.push_back(taxelPoseConfidence[taxelId]);
-    poseSem.post();
     return res;
 }
 vector<Vector> Compensator::getTaxelPositions(){
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     vector<Vector> res = taxelPos;
     for(unsigned int i=0; i<res.size(); i++)
         res[i].push_back(taxelPoseConfidence[i]);
-    poseSem.post();
     return res;
 }
 Vector Compensator::getTaxelOrientation(unsigned int taxelId){
     if(taxelId>=skinDim)
         return zeros(0);
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     Vector res = taxelOri[taxelId];
     res.push_back(taxelPoseConfidence[taxelId]);
-    poseSem.post();
     return res;
 }
 vector<Vector> Compensator::getTaxelOrientations(){
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     vector<Vector> res = taxelOri;
     for(unsigned int i=0; i<res.size(); i++)
         res[i].push_back(taxelPoseConfidence[i]);
-    poseSem.post();
     return res;
 }
 Vector Compensator::getTaxelPose(unsigned int taxelId){
     if(taxelId>=skinDim)
         return zeros(0);
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     Vector res = cat(taxelPos[taxelId], taxelOri[taxelId]);
     res.push_back(taxelPoseConfidence[taxelId]);
-    poseSem.post();
     return res;
 }
 vector<Vector> Compensator::getTaxelPoses(){
     vector<Vector> res(skinDim);
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     for(unsigned int i=0; i<skinDim; i++){
         res[i] = cat(taxelPos[i], taxelOri[i]);
         res[i].push_back(taxelPoseConfidence[i]);
     }
-    poseSem.post();
     return res;
 }
 
 double Compensator::getPoseConfidence(unsigned int taxelId){
     if(taxelId>=skinDim)
         return -1.0;
-    poseSem.wait();
-    double value = taxelPoseConfidence[taxelId];
-    poseSem.post();
-    return value;
+    lock_guard<mutex> lck(poseSem);
+    return taxelPoseConfidence[taxelId];
 }
 
 Vector Compensator::getPoseConfidences(){
-    poseSem.wait();
-    Vector value = taxelPoseConfidence;
-    poseSem.post();
-    return value;
+    lock_guard<mutex> lck(poseSem);
+    return taxelPoseConfidence;
 }
 
 bool Compensator::setMaxNeighborDistance(double d){
     if(d<0.0)
         return false;
     maxNeighDist = d;
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     computeNeighbors();
-    poseSem.post();
     return true;
 }
 
@@ -722,7 +702,7 @@ bool Compensator::setTaxelPosesFromFile(const char *filePath){
     }
     else
     {
-        poseSem.wait();
+        lock_guard<mutex> lck(poseSem);
         int size=calibration.size()-1;
         skinDim=size;
         taxelPos.resize(skinDim, zeros(3));
@@ -741,7 +721,6 @@ bool Compensator::setTaxelPosesFromFile(const char *filePath){
                 taxelPoseConfidence[i] = 1.0;
         }
         computeNeighbors();
-        poseSem.post();
     }
 
     return true;
@@ -767,7 +746,7 @@ bool Compensator::setTaxelPosesFromFileOld(const char *filePath){
             filePath, totalLines, skinDim);
         sendInfoMsg(temp);
     }
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     {
         for(unsigned int i= 0; getline(posFile,posLine); i++) {
             posLine.erase(posLine.find_last_not_of(" \n\r\t")+1);
@@ -788,14 +767,12 @@ bool Compensator::setTaxelPosesFromFileOld(const char *filePath){
         }
         computeNeighbors();
     }
-    poseSem.post();
-
     return true;
 }
 bool Compensator::setTaxelPoses(const vector<Vector> &poses){
     if(poses.size()!=skinDim)
         return false;
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     {
         for(unsigned int i=0; i<skinDim; i++){
             taxelPos[i] = poses[i].subVector(0,2);
@@ -805,13 +782,12 @@ bool Compensator::setTaxelPoses(const vector<Vector> &poses){
         }
     }
     computeNeighbors();
-    poseSem.post();
     return true;
 }
 bool Compensator::setTaxelPose(unsigned int taxelId, const Vector &pose){
     if(taxelId>=skinDim || pose.size()!=6)
         return false;
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     {
         taxelPos[taxelId] = pose.subVector(0,2);
         taxelOri[taxelId] = pose.subVector(3,5);
@@ -819,18 +795,16 @@ bool Compensator::setTaxelPose(unsigned int taxelId, const Vector &pose){
                 taxelPoseConfidence[taxelId] = pose[6];
     }
     updateNeighbors(taxelId);
-    poseSem.post();
     return true;
 }
 bool Compensator::setTaxelPositions(const Vector &positions){
+    lock_guard<mutex> lck(poseSem);
     if(skinDim*3 == positions.size()){
-        poseSem.wait();
         for(unsigned int j=0; j<skinDim; j++){
             taxelPos[j] = positions.subVector(3*j, 3*j+2);
         }    
     }    
     else if(skinDim*4 == positions.size()){
-        poseSem.wait();
         for(unsigned int j=0; j<skinDim; j++){
             taxelPos[j] = positions.subVector(4*j, 4*j+2);
             taxelPoseConfidence[j] = positions[4*j+3];
@@ -840,37 +814,33 @@ bool Compensator::setTaxelPositions(const Vector &positions){
         return false;
 
     computeNeighbors();
-    poseSem.post();
     return true;
 }
 
 bool Compensator::setTaxelPosition(unsigned int taxelId, const Vector &position){
      if(taxelId>=skinDim || (position.size()!=3 && position.size()!=4))
         return false;
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     taxelPos[taxelId] = position.subVector(0,2);
     if(position.size()==4)
         taxelPoseConfidence[taxelId] = position[3];
     updateNeighbors(taxelId);
-    poseSem.post();
     return true;
 }
 bool Compensator::setTaxelOrientations(const vector<Vector> &orientations){
     if(orientations.size()!=skinDim)
         return false;
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     taxelOri = orientations;
-    poseSem.post();
     return true;
 }
 bool Compensator::setTaxelOrientation(unsigned int taxelId, const Vector &orientation){
      if(taxelId>=skinDim || (orientation.size()!=3 && orientation.size()!=4))
         return false;
-    poseSem.wait();
+    lock_guard<mutex> lck(poseSem);
     taxelOri[taxelId] = orientation.subVector(0,2);
     if(orientation.size()==4)
         taxelPoseConfidence[taxelId] = orientation[3];
-    poseSem.post();
     return true;
 }
 void Compensator::computeNeighbors(){

@@ -10,12 +10,11 @@
 #ifndef __SKIN_MESH_THREAD_PORT_H__
 #define __SKIN_MESH_THREAD_PORT_H__
 
-//#include <stdio.h>
+#include <mutex>
 #include <string>
 #include <vector>
 
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Log.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -44,7 +43,7 @@ protected:
     BufferedPort<Bottle> skin_port_virtual;
     TouchSensor *sensor[MAX_SENSOR_NUM];
 
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     int sensorsNum;
     bool mbSimpleDraw;
@@ -70,20 +69,16 @@ public:
 
     void resize(int width,int height)
     {
-        mutex.wait();
-
+        std::lock_guard<std::mutex> lck(mtx);
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t]) sensor[t]->resize(width,height,40);
         }
-
-        mutex.post();
     }
 
     void eval(unsigned char *image)
     {
-        mutex.wait();
-
+        std::lock_guard<std::mutex> lck(mtx);
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t])
@@ -98,18 +93,14 @@ public:
                 }
             }
         }
-
-        mutex.post();
     }
 
     void draw(unsigned char *image)
     {
-        //mutex.wait();
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t]) sensor[t]->draw(image);
-        }        
-        //mutex.post();
+        }
     }
 };
 
