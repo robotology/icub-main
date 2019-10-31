@@ -27,7 +27,7 @@
  **/
 #include "world.h"
 #include <cstdio>
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <iostream>
 #include "OdeInit.h"
 
@@ -459,10 +459,10 @@ bool worldSim::MyObject2::create(const WorldOp& op, WorldResult& result, int idx
     
     // this all seems incredibly dodgy
     modelTexture[idx] = idx + 1 + (dynamic?19:49);
-    odeinit.mutexTexture.wait();
+    odeinit.mtxTexture.lock();
     odeinit._wrld->static_model = !dynamic;	
     odeinit._wrld->WAITLOADING = true;	
-    odeinit.mutexTexture.post();
+    odeinit.mtxTexture.unlock();
     
     return true;
 }

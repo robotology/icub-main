@@ -19,11 +19,11 @@
 */
 
 #include "OdeInit.h"
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 OdeInit *OdeInit::_odeinit = NULL;
 
-OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config)
+OdeInit::OdeInit(RobotConfig *config) : robot_config(config)
 {
     //create the world parameters
     world = dWorldCreate();

@@ -29,7 +29,6 @@
 #include <yarp/sig/Image.h>
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <stdio.h>
 #include <string.h>
@@ -56,7 +55,7 @@ const int baseHeight = 240;
 
 SimulatorModule::SimulatorModule(WorldManager& world, RobotConfig& config, 
                                  Simulation *sim) : 
-    moduleName(config.getModuleName()), mutex(1), pulse(0), ack(0), 
+    moduleName(config.getModuleName()), 
     world_manager(world),
     robot_config(config),
     robot_flags(config.getFlags()),
@@ -668,14 +667,13 @@ void SimulatorModule::checkTorques()
 
 void SimulatorModule::getTorques( yarp::os::BufferedPort<yarp::os::Bottle>& buffPort )
 {
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
     Bottle *torques = NULL;
     torques = buffPort.read(false);
     if ( torques !=NULL )
     {
         sim->getTrqData( torques->tail() );
     }
-    mutex.post();
 }
 
 void SimulatorModule::displayStep(int pause) {
@@ -691,11 +689,10 @@ void SimulatorModule::displayStep(int pause) {
         bool needRightLog = (portRightLog.getOutputCount()>0); 
 #endif
 
-        mutex.wait();
+        mtx.lock();
         //stopping
         bool done = stopped;
-        mutex.post();
-
+        mtx.unlock();
 
 #ifndef WIN32_DYNAMIC_LINK 
         const char *order = "lrw";

@@ -160,7 +160,7 @@
 #include <yarp/os/Property.h>
 #include <yarp/os/Thread.h>
 #include <yarp/dev/Drivers.h>
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 #include "SimulationRun.h"
 #ifdef ICUB_SIM_ENABLE_ODESDL

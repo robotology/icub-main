@@ -24,7 +24,6 @@
 
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Stamp.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/sig/Image.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/IRobotDescription.h>
@@ -35,6 +34,7 @@
 #include "WorldManager.h"
 #include "Simulation.h"
 
+#include <mutex>
 #include <string>
 
 #ifndef OMIT_LOGPOLAR
@@ -147,7 +147,7 @@ private:
     bool stopped;
     bool extractImages;
     void (*wrappedStep) (int pause);
-    yarp::os::Semaphore mutex, pulse, ack;
+    std::mutex mtx;
     double sloth;
 
     bool initSimulatorModule();

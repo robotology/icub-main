@@ -22,8 +22,9 @@
 
 #include "OdeInit.h"
 #include "iCub_Sim.h"
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <map>
+#include <mutex>
 
 #define DENSITY (1.0)		// density of all objects
 
@@ -31,6 +32,7 @@ using namespace yarp::os;
 using namespace std;
 
 class OdeLink {
+    std::mutex ODE_access;
 public:
     const WorldOp& op;
     WorldResult& result;
@@ -168,19 +170,17 @@ void OdeLink::doGet() {
 
     if (!checkObject()) return;
     if (bid!=NULL) {
-        odeinit.mutex.wait();
+        lock_guard<mutex> lck(odeinit.mtx);
         const dReal *coords = dBodyGetPosition(bid);
         result.location = WorldOpTriplet(coords[0],coords[1],coords[2]);
         result.setOk();
-        odeinit.mutex.post();
         return;
     }
     if (gid!=NULL) {
-        odeinit.mutex.wait();
+        lock_guard<mutex> lck(odeinit.mtx);
         const dReal *coords = dGeomGetPosition(gid);
         result.location = WorldOpTriplet(coords[0],coords[1],coords[2]);
         result.setOk();
-        odeinit.mutex.post();
         return;
     }
     result.setFail("no object found");
@@ -207,7 +207,7 @@ void OdeLink::doSet() {
         return;
     }
     if (bid!=NULL) {
-        odeinit.mutex.wait();
+        lock_guard<mutex> lck(odeinit.mtx);
         dBodySetPosition(bid,
                          op.location.get(0),
                          op.location.get(1),
@@ -215,17 +215,15 @@ void OdeLink::doSet() {
         dBodySetLinearVel(bid,0.0,0.0,0.0);
         dBodySetAngularVel(bid,0.0,0.0,0.0);
         result.setOk();
-        odeinit.mutex.post();
         return;
     }
     if (gid!=NULL) {
-        odeinit.mutex.wait();
+        lock_guard<mutex> lck(odeinit.mtx);
         dGeomSetPosition(gid,
                          op.location.get(0),
                          op.location.get(1),
                          op.location.get(2));
         result.setOk();
-        odeinit.mutex.post();
         return;
     }
     result.setFail("no object found");
@@ -238,11 +236,10 @@ void OdeLink::doMake() {
         return;
     }
     OdeInit& odeinit = OdeInit::get();
-    odeinit.mutex.wait();
+    lock_guard<mutex> lck(odeinit.mtx);
     if (store->create(op,result)) {
         result.setOk();
     }
-    odeinit.mutex.post();
 }
 
 void OdeLink::doGrab() {
@@ -277,7 +274,7 @@ void OdeLink::doGrab() {
         return;
     }
 
-    odeinit.mutex.wait();
+    lock_guard<mutex> lck(odeinit.mtx);
     if (active) {
         if (bid!=NULL) {
             if (left) {
@@ -299,7 +296,6 @@ void OdeLink::doGrab() {
             dJointDestroy(odeinit._iCub->grab1);
         }
     }
-    odeinit.mutex.post();
     result.setOk();
 }
 
@@ -316,19 +312,17 @@ void OdeLink::doRotate() {
     // We want to get the object rotation
     if (!op.rotation.isValid()) {
         if (bid!=NULL) {
-            odeinit.mutex.wait();
+            lock_guard<mutex> lck(odeinit.mtx);
             const dReal *R = dBodyGetRotation(bid);
             result.rotation = WorldOpTriplet(atan2(R[9], R[10])*180/M_PI, asin(-R[8])*180/M_PI, atan2(R[4], R[0])*180/M_PI);
             result.setOk();
-            odeinit.mutex.post();
             return;
         }
         if (gid!=NULL) {
-            odeinit.mutex.wait();
+            lock_guard<mutex> lck(odeinit.mtx);
             const dReal *R = dGeomGetRotation(gid);
             result.rotation = WorldOpTriplet(atan2(R[9], R[10])*180/M_PI, asin(-R[8])*180/M_PI, atan2(R[4], R[0])*180/M_PI);
             result.setOk();
-            odeinit.mutex.post();
             return;
         }
         result.setFail("no object found");
@@ -351,9 +345,8 @@ void OdeLink::doRotate() {
         
         dMultiply0 (Rtmp1,Rty,Rtz,3,3,3);
         dMultiply0 (Rtmp2,Rtx,Rtmp1,3,3,3);
-        odeinit.mutex.wait();
+        lock_guard<mutex> lck(odeinit.mtx);
         dGeomSetRotation(object->getGeometry(),Rtmp2);
-        odeinit.mutex.post();
         result.setOk();
     }
 }
@@ -387,7 +380,7 @@ void OdeLink::doDelete() {
     OdeInit& odeinit = OdeInit::get();
 
     if (op.kind.get() == "all") {
-        odeinit.mutex.wait();
+        lock_guard<mutex> lck(odeinit.mtx);
         odeinit._wrld->box_dynamic.clear();
         odeinit._wrld->box_static.clear();
         odeinit._wrld->cylinder_dynamic.clear();
@@ -396,7 +389,6 @@ void OdeLink::doDelete() {
         odeinit._wrld->model_static.clear();
         odeinit._wrld->sphere_dynamic.clear();
         odeinit._wrld->sphere_static.clear();
-        odeinit.mutex.post();
         result.setOk();
         return;
     }
@@ -414,17 +406,16 @@ void OdeLink::doNumber() {
         return;
     }
     OdeInit& odeinit = OdeInit::get();
-    odeinit.mutex.wait();
+    lock_guard<mutex> lck(odeinit.mtx);
     int ct = store->length();
     result.count = WorldOpIndex(ct);
     result.setOk();
-    odeinit.mutex.post();
 }
 
 void OdeLink::apply() {
     yDebug("ODE world\n");
     op.show();
-    ODE_access.wait();
+    std::lock_guard<std::mutex> lck(ODE_access);
     switch (op.cmd) {
     case WORLD_OP_GET:
         doGet();
@@ -455,7 +446,6 @@ void OdeLink::apply() {
         break;
     }
     result.show();
-    ODE_access.post();
 }
 
 void OdeWorldManager::apply(const WorldOp& op, WorldResult& result) {

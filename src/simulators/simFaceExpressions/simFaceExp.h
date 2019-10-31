@@ -28,7 +28,6 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
-#include <yarp/os/Semaphore.h>
 
 #define NUM_ARRAY 24
 

@@ -28,10 +28,10 @@
 #ifndef __iCubSimulationControlh__
 #define __iCubSimulationControlh__
 
+#include <mutex>
 #include <string>
 
 #include <yarp/os/Bottle.h>
-#include <yarp/os/Semaphore.h>
 //#include <yarp/os/PeriodicThread.h>
 #include <yarp/sig/Image.h>
 #include <yarp/sig/Matrix.h>
@@ -374,8 +374,7 @@ protected:
     yarp::dev::PolyDriver joints;
     LogicalJoints *manager;
 
-    yarp::os::Semaphore _mutex;
-    yarp::os::Semaphore _done;
+    std::mutex _mutex;
     
     bool _writerequested;
     bool _noreply;

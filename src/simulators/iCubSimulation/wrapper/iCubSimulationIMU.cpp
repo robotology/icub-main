@@ -32,17 +32,15 @@ iCubSimulationIMU::iCubSimulationIMU()
 iCubSimulationIMU::~iCubSimulationIMU()
 {
     OdeInit& odeinit = OdeInit::get();
-    odeinit.mutex.wait();
+    lock_guard<mutex> lck(odeinit.mtx);
     odeinit.removeSimulationIMU();
-    odeinit.mutex.post();
 }
 
 bool iCubSimulationIMU::open(yarp::os::Searchable &config)
 {
     OdeInit& odeinit = OdeInit::get();
-    odeinit.mutex.wait();
+    lock_guard<mutex> lck(odeinit.mtx);
     odeinit.setSimulationIMU(this);
-    odeinit.mutex.post();
     return true;
 }
 

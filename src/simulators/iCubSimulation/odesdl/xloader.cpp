@@ -27,7 +27,7 @@
  **/
 
 #include "xloader.h"
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 #if _MSC_VER
 #pragma warning(disable:4996 4244 4305)
