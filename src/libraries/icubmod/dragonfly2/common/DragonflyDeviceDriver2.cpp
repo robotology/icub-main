@@ -9,7 +9,6 @@
 
 #include "common/DragonflyDeviceDriver2.h"
 
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>

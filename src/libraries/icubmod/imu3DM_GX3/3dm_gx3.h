@@ -22,9 +22,9 @@
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/GenericSensorInterfaces.h>
 #include <yarp/os/Stamp.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/PreciselyTimed.h>
 #include <yarp/os/PeriodicThread.h>
+#include <mutex>
 #include <string.h>
 #include <dataTypes.h>
 #include <termios.h> // terminal io (serial port) interface
@@ -71,8 +71,7 @@ private:
     imu_cmd_t CF_cmd;
     imu_cmd_t DF_cmd;
 
-    yarp::os::Semaphore data_mutex;
-    yarp::os::Semaphore sync_mutex;
+    std::mutex          data_mutex;
 
     std::string         comPortName;
     data_3DM_GX3_t      rawData;

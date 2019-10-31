@@ -7,11 +7,10 @@
 #ifndef __SKINPROTOTYPE_H__
 #define __SKINPROTOTYPE_H__
 
-//#include <stdio.h>
+#include <mutex>
 #include <string>
 
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
@@ -30,7 +29,7 @@ protected:
     CanBuffer inBuffer;
     CanBuffer outBuffer;
    
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     yarp::sig::VectorOf<int> cardId;
     int sensorsNum;

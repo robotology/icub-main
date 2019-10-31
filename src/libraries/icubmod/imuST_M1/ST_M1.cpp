@@ -301,7 +301,7 @@ bool imuST_M1::read(yarp::sig::Vector &out)
     if(out.size() != 12)
         out.resize(12);
 
-    data_mutex.wait();
+    data_mutex.lock();
     uint64_t imu_timeStamp;
 
     int out_idx = 0;
@@ -317,7 +317,7 @@ bool imuST_M1::read(yarp::sig::Vector &out)
     for(int i=0; i<3; i++, out_idx++)
         out[out_idx] = (double) outVals.magn[i];
 
-    data_mutex.post();
+    data_mutex.unlock();
 
     lastStamp.update();
     return true;
@@ -416,7 +416,7 @@ void imuST_M1::run()
 
     int16_t temperature;
 
-    data_mutex.wait();
+    data_mutex.lock();
     pippo->accel[0] = ntohs(pippo->accel[0]);
     pippo->accel[1] = ntohs(pippo->accel[1]);
     pippo->accel[2] = ntohs(pippo->accel[2]);
@@ -436,7 +436,7 @@ void imuST_M1::run()
     pippo->euler_raw[2] = ntohl(pippo->euler_raw[2]);
 
     mempcpy(&outVals, pippo, sizeof(Pippo));
-    data_mutex.post();
+    data_mutex.unlock();
 
     if(verbose)
     {

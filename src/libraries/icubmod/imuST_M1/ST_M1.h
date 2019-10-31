@@ -19,13 +19,13 @@
 #ifndef __imuST_M1__
 #define __imuST_M1__
 
+#include <mutex>
 #include <string.h>
 #include <termios.h> // terminal io (serial port) interface
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/GenericSensorInterfaces.h>
 #include <yarp/os/Stamp.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/PreciselyTimed.h>
 #include <yarp/os/PeriodicThread.h>
 
@@ -83,8 +83,7 @@ private:
     double *temp_mag;
     double  temp_data[12];
 
-    yarp::os::Semaphore data_mutex;
-    yarp::os::Semaphore sync_mutex;
+    std::mutex data_mutex;
 
     std::string         comPortName;
     ST_IMU_Frame        rawData;

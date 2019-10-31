@@ -281,9 +281,8 @@ void imu3DM_GX3::run()
             }
 
             // copy for consumer ....
-            data_mutex.wait();
+            lock_guard<mutex> lck(data_mutex);
             memcpy((void*)&tmp_cmd->data.buffer, &th_data.buffer, tmp_cmd->expSize);
-            data_mutex.post();
         }
         it++;
     }
@@ -317,7 +316,7 @@ void imu3DM_GX3::get_Acc_Ang(float acc[3], float angRate[3], uint64_t *time) {
 
     acc_angRate_t * aa;
 
-    data_mutex.wait();
+    lock_guard<mutex> lck(data_mutex);
     aa = &C2_cmd.data.aa;
     if (acc) {
         memcpy((void*)acc, aa->acc._bytes, sizeof(float)*3);
@@ -325,14 +324,13 @@ void imu3DM_GX3::get_Acc_Ang(float acc[3], float angRate[3], uint64_t *time) {
     if (angRate) {
         memcpy((void*)angRate, aa->angRate._bytes, sizeof(float)*3);
     }
-    data_mutex.post();
 }
 
 void imu3DM_GX3::get_Acc_Ang_Orient(float acc[3], float angRate[3], float orientMat[9], uint64_t *time) {
 
     acc_ang_orient_t * aaom;
 
-    data_mutex.wait();
+    lock_guard<mutex> lck(data_mutex);
     aaom = &C8_cmd.data.aaom;
     if (acc) {
         memcpy((void*)acc, aaom->acc._bytes, sizeof(float)*3);
@@ -343,13 +341,12 @@ void imu3DM_GX3::get_Acc_Ang_Orient(float acc[3], float angRate[3], float orient
     if (orientMat) {
         memcpy((void*)orientMat, aaom->orientMat._bytes, sizeof(float)*9);
     }
-    data_mutex.post();
 }
 
 void imu3DM_GX3::get_Acc_Ang_Mag(float acc[3], float angRate[3], float mag[3], uint64_t *time) {
     acc_ang_mag_t * aam;
 
-    data_mutex.wait();
+    lock_guard<mutex> lck(data_mutex);
     aam = &CB_cmd.data.aam;
     if (acc) {
         memcpy((void*)acc, aam->acc._bytes, sizeof(float)*3);
@@ -360,14 +357,13 @@ void imu3DM_GX3::get_Acc_Ang_Mag(float acc[3], float angRate[3], float mag[3], u
     if (mag) {
         memcpy((void*)mag, aam->mag._bytes, sizeof(float)*3);
     }
-    data_mutex.post();
 }
 
 void imu3DM_GX3::get_Acc_Ang_Mag_Orient(float acc[3], float angRate[3], float mag[3], float orientMat[9], uint64_t *time) {
 
     acc_ang_mag_orient_t * aamom;
 
-    data_mutex.wait();
+    lock_guard<mutex> lck(data_mutex);
     aamom = &CC_cmd.data.aamom;
     if (acc) {
         memcpy((void*)acc, aamom->acc._bytes, sizeof(float)*3);
@@ -381,19 +377,17 @@ void imu3DM_GX3::get_Acc_Ang_Mag_Orient(float acc[3], float angRate[3], float ma
     if (orientMat) {
         memcpy((void*)orientMat, aamom->orientMat._bytes, sizeof(float)*9);
     }
-    data_mutex.post();
 }
 
 void imu3DM_GX3::get_Euler(float euler[3], uint64_t *time) {
 
     eul_t * eu;
 
-    data_mutex.wait();
+    lock_guard<mutex> lck(data_mutex);
     eu = &CE_cmd.data.eu;
     if (euler) {
         memcpy((void*)euler, eu->eul._bytes, sizeof(float)*3);
     }
-    data_mutex.post();
 }
 
 
@@ -401,7 +395,7 @@ void imu3DM_GX3::get_Euler_AngularRate(float euler[3], float angRate[3], uint64_
 
     eul_angRate_t * ea;
 
-    data_mutex.wait();
+    lock_guard<mutex> lck(data_mutex);
     ea = &CE_cmd.data.ea;
     if (euler) {
         memcpy((void*)euler, ea->eul._bytes, sizeof(float)*3);
@@ -409,17 +403,15 @@ void imu3DM_GX3::get_Euler_AngularRate(float euler[3], float angRate[3], uint64_
     if (angRate) {
         memcpy((void*)angRate, ea->angRate._bytes, sizeof(float)*3);
     }
-    data_mutex.post();
 }
 
 void imu3DM_GX3::get_Quaternion(float quat[4], uint64_t *time) {
 
     quat_t * q;
 
-    data_mutex.wait();
+    lock_guard<mutex> lck(data_mutex);
     q = &DF_cmd.data.quat;
     if (quat) {
         memcpy((void*)quat, q->quat._bytes, sizeof(float)*4);
     }
-    data_mutex.post();
 }

@@ -18,8 +18,8 @@
 
 #include <stdio.h>
 #include <memory.h>
+#include <mutex>
 #include <Flycapture2.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
@@ -113,7 +113,7 @@ protected:
 	unsigned int m_iMin[FlyCapture2::UNSPECIFIED_PROPERTY_TYPE],m_iMax[FlyCapture2::UNSPECIFIED_PROPERTY_TYPE];
 
 	FlyCapture2::Image *m_pFrame,*m_pBayer;
-	yarp::os::Semaphore m_AcqMutex;
+    std::mutex m_AcqMutex;
 	yarp::os::Stamp m_Stamp;
 
 	int DC2Fly(int feature);
@@ -124,7 +124,7 @@ protected:
     int maxFPS(FlyCapture2::Mode mode,FlyCapture2::PixelFormat pixelFormat);
     double bytesPerPixel(FlyCapture2::PixelFormat pixelFormat);
 
-    bool manage(FlyCapture2::Error& error,yarp::os::Semaphore *pToUnlock=NULL)
+    bool manage(FlyCapture2::Error& error)
     {
         if (error.GetType()!=FlyCapture2::PGRERROR_OK)
         {

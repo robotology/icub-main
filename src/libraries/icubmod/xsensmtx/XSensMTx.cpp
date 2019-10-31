@@ -9,9 +9,9 @@
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/Time.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Stamp.h>
 #include <string>
+#include <mutex>
 
 #include "MTComm.h"
 #include "XSensMTx.h"
@@ -34,7 +34,7 @@ constexpr size_t magnStartIdx  = 9;
 class XSensMTxResources: public Thread
 {
 public:
-    explicit XSensMTxResources(): _semaphore(1)
+    explicit XSensMTxResources()
     {
         _bStreamStarted=false;
         _bError=false;
@@ -68,7 +68,7 @@ public:
     double *_last;
     yarp::os::Stamp _lastStamp;
 
-    Semaphore _semaphore;
+    std::mutex _semaphore;
 
     virtual void run ();
 };
@@ -96,7 +96,7 @@ void XSensMTxResources::run ()
             // Parse and get calibrated magnetometer values
             mtcomm.getValue (VALUE_CALIB_MAG, magn_data, data, BID_MASTER);
 	    
-            _semaphore.wait ();
+            std::lock_guard<std::mutex> lck(_semaphore);
             
 			//euler_data are expressed in deg
             _last[0]  = euler_data[0]; //roll
@@ -122,7 +122,6 @@ void XSensMTxResources::run ()
                 _bError=true;
 		
             _lastStamp.update();
-            _semaphore.post ();
         }
 }
 
@@ -156,15 +155,13 @@ bool XSensMTx::read(Vector &out)
     
     if (d._bStreamStarted)
         {
-            d._semaphore.wait();
+            std::lock_guard<std::mutex> lck(d._semaphore);
             
             // Euler+accel+gyro+magn orientation values
             for (int i = 0; i < nchannels; i++)
                 out[i]=d._last[i];
 
             lastStamp=d._lastStamp;
-            d._semaphore.post();
-
             ret=!d._bError;
         }
     else
@@ -494,12 +491,11 @@ bool XSensMTx::genericGetMeasure(size_t sens_index, yarp::sig::Vector &out, doub
 
     auto &d= RES(system_resources);
     out.resize(3);
-    d._semaphore.wait();
+    std::lock_guard<std::mutex> lck(d._semaphore);
     out[0] = d._last[startIdx];
     out[1] = d._last[startIdx + 1];
     out[2] = d._last[startIdx + 2];
 
     timestamp = d._lastStamp.getTime();
-    d._semaphore.post();
     return true;
 }
