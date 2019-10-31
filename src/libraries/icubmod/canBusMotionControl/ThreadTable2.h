@@ -20,9 +20,10 @@
 #ifndef __THREADTABLE2__
 #define __THREADTABLE2__
 
+#include <mutex>
+#include <condition_variable>
 #include <ace/config.h>
 #include <ace/Thread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/CanBusInterface.h>
 
 #include "canControlConstants.h"
@@ -35,16 +36,17 @@ private:
     int _timedOut;
     yarp::dev::CanBuffer _replies;
     yarp::dev::ICanBufferFactory *ic;
-    yarp::os::Semaphore _synch;
+    std::mutex mtx_synch;
+    std::condition_variable cv_synch;
     int _replied;
     ACE_thread_t _handle;
-    yarp::os::Semaphore _mutex;
+    std::mutex _mutex;
 
     inline void lock()
-    { _mutex.wait(); }
+    { _mutex.lock(); }
 
     inline void unlock()
-    { _mutex.post(); }
+    { _mutex.unlock(); }
 
 public:
     ThreadTable2();
@@ -62,7 +64,10 @@ public:
     // wait on semaphore, usually thread sleeps here after
     // has issued a list of requests to the can 
     void synch()
-    { _synch.wait(); }
+    {
+        std::unique_lock<std::mutex> lck(mtx_synch);
+        cv_synch.wait(lck);
+    }
 
     // true if there are pending requests
     bool pending()
@@ -140,7 +145,7 @@ bool ThreadTable2::push(const yarp::dev::CanMessage &m)
     _replied++;
     _pending--;
     if (_pending==0)
-        _synch.post();
+        cv_synch.notify_one();
     
     unlock();
     return true;
@@ -154,7 +159,7 @@ bool ThreadTable2::timeout()
     _timedOut++;
     if (_pending==0)
         {
-            _synch.post();
+            cv_synch.notify_one();
         }
     unlock();
     return true;

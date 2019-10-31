@@ -7,6 +7,7 @@
  *
  */
 
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -24,7 +25,7 @@ const int DEFAULT_THREAD_PERIOD = 10;
 class SharedCanBus : public yarp::os::PeriodicThread
 {
 public:
-    SharedCanBus() : PeriodicThread((double)DEFAULT_THREAD_PERIOD/1000.0), writeMutex(1), configMutex(1)
+    SharedCanBus() : PeriodicThread((double)DEFAULT_THREAD_PERIOD/1000.0)
     {
         mBufferSize=0;
         mCanDeviceNum=-1;
@@ -81,16 +82,15 @@ public:
 
     void attachAccessPoint(yarp::dev::CanBusAccessPoint* ap)
     {
-        configMutex.wait();
+        std::lock_guard<std::mutex> lck(configMutex);
         accessPoints.push_back(ap);
-        configMutex.post();
     }
 
     void detachAccessPoint(yarp::dev::CanBusAccessPoint* ap)
     {
         if (!ap) return;
 
-        configMutex.wait();
+        std::lock_guard<std::mutex> lck(configMutex);
 
         int n=accessPoints.size();
 
@@ -115,8 +115,6 @@ public:
         {
             // should close the driver here?
         }
-
-        configMutex.post();
     }
 
     void run()
@@ -124,7 +122,7 @@ public:
         static const bool NOWAIT=false;
         unsigned int msgsNum=0;
 
-        configMutex.wait();
+        std::lock_guard<std::mutex> lck(configMutex);
 
         bool ret=theCanBus->canRead(readBufferUnion,mBufferSize,&msgsNum,NOWAIT);
 
@@ -146,13 +144,11 @@ public:
                 }
             }
         } 
-
-        configMutex.post();
     }
 
     bool canWrite(const yarp::dev::CanBuffer &msgs, unsigned int size, unsigned int *sent, bool wait,yarp::dev::CanBusAccessPoint* pFrom)
     {
-        writeMutex.wait();
+        std::lock_guard<std::mutex> lck(writeMutex);
         bool ret=theCanBus->canWrite(msgs,size,sent,wait);
 
         //this allows other istances to read back the sent message (echo)
@@ -175,31 +171,23 @@ public:
             }
         }
 
-        writeMutex.post();
-
         return ret;
     }
 
     void canIdAdd(unsigned int id)
     {
-        configMutex.wait();
-
+        std::lock_guard<std::mutex> lck(configMutex);
         if (reqIdsUnion[id]==UNREQ)
         {
             reqIdsUnion[id]=REQST;
             theCanBus->canIdAdd(id);
         }
-
-        configMutex.post();
     }
 
     void canIdDelete(unsigned int id)
     {
-        configMutex.wait();
-
+        std::lock_guard<std::mutex> lck(configMutex);
         canIdDeleteUnsafe(id);
-
-        configMutex.post();
     }
     
     yarp::dev::ICanBus* getCanBus()
@@ -224,13 +212,12 @@ public:
 
     bool open(yarp::os::Searchable &config)
     {
-        configMutex.wait();
+        std::lock_guard<std::mutex> lck(configMutex);
 
         //fprintf(stderr, "sharedCanBus::open() using the following configuration parameters: \n%s\n",config.toString().c_str());
         if (!config.check("physDevice"))
         {
             yError("SharedCanBus::open() could not find low level can driver specification\n");
-            configMutex.post();         
             return false;
         }
 
@@ -251,7 +238,6 @@ public:
         if (!polyDriver.isValid())
         {
             yError("SharedCanBus: could not instantiate can device\n");
-            configMutex.post();
             return false;
         }
 
@@ -260,7 +246,6 @@ public:
         if (theCanBus==NULL)
         {
             yError("SharedCanBus: could not get ICanBus interface\n");
-            configMutex.post();
             return false;
         }
 
@@ -269,7 +254,6 @@ public:
         if (theBufferFactory==NULL)
         {
             yError("SharedCanBus: could not get ICanBufferFactory interface\n");
-            configMutex.post();
             return false;
         }
 
@@ -292,8 +276,6 @@ public:
         {
             mCanDeviceNum=config.find("canDeviceNum").asInt();
         }
-
-        configMutex.post();
 
         return started;
     }
@@ -319,8 +301,8 @@ private:
 
     int mBufferSize;
 
-    yarp::os::Semaphore writeMutex;
-    yarp::os::Semaphore configMutex;
+    std::mutex writeMutex;
+    std::mutex configMutex;
 
     std::string mDevice;
     int mCanDeviceNum;

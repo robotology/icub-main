@@ -20,7 +20,7 @@
 #include "ThreadTable2.h"
 #include "canControlConstants.h"
 
-ThreadTable2::ThreadTable2():_synch(0)
+ThreadTable2::ThreadTable2()
 {
     ic=0;
     clear();

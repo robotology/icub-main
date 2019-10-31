@@ -411,9 +411,7 @@ inline EsdResources& RES(void *res) { return *(EsdResources *)res; }
 EsdMessageSniffer::EsdMessageSniffer(void) :
     ImplementPidControl<EsdMessageSniffer, IPidControl>(this),
     ImplementAmplifierControl<EsdMessageSniffer, IAmplifierControl>(this),
-    ImplementEncoders<EsdMessageSniffer, IEncoders>(this),
-	_mutex(1), 
-    _done(0)
+    ImplementEncoders<EsdMessageSniffer, IEncoders>(this)
 {
 	system_resources = (void *) new EsdResources;
 	ACE_ASSERT (system_resources != NULL);
@@ -479,11 +477,10 @@ bool EsdMessageSniffer::open(yarp::os::Searchable& config)
 
 bool EsdMessageSniffer::open (EsdMessageSnifferParameters& parms)
 {
-	_mutex.wait();
+	std::lock_guard<std::mutex> lck(_mutex);
 	EsdResources& r = RES (system_resources);
 	if (!r.initialize (parms))
         {
-            _mutex.post();
             return false;
         }
 
@@ -496,14 +493,14 @@ bool EsdMessageSniffer::open (EsdMessageSnifferParameters& parms)
         initialize(parms._njoints, parms._axisMap, parms._angleToEncoder, parms._zeros);
 
 	start();
-	_done.wait();
+
+    std::unique_lock<std::mutex> lck(mtx_done);
+    cv_done.wait(lck);
 
 	// used for printing debug messages.
 	_p = parms._p;
 	_writerequested = false;
 	_noreply = false;
-
-	_mutex.post ();
 
 	return true;
 }
@@ -541,13 +538,13 @@ void EsdMessageSniffer::run(void)
 	r._error_status = false;
 
 	/// ok, init completed. 
-	_done.post ();
+	cv_done.notify_one();
 
 	while (!isStopping() || messagePending)
         {
             before = Time::now();
 
-            _mutex.wait ();
+            _mutex.lock ();
             if (r.read () != true)
                 if (r._p) 
                     (*r._p) ("Sniffer: read failed\n");
@@ -731,7 +728,7 @@ void EsdMessageSniffer::run(void)
                     if (!messagePending)
                         {
                             /// tell the caller it can continue.
-                            _done.post();
+                            cv_done.notify_one();
                         }
                 }
             else
@@ -771,7 +768,7 @@ void EsdMessageSniffer::run(void)
                         }
                 }
 
-            _mutex.post ();
+            _mutex.unlock ();
 
             /// wait.
             now = Time::now();
@@ -794,10 +791,9 @@ void EsdMessageSniffer::run(void)
 
 bool EsdMessageSniffer::setDebugPrintFunction (void *cmd)
 {
-	_mutex.wait();
+	std::lock_guard<std::mutex> lck(_mutex);
     //	EsdResources& r = RES(system_resources);
 	_p = (int (*) (const char *fmt, ...))cmd;
-	_mutex.post();
 	return true;
 }
 
@@ -840,10 +836,8 @@ bool EsdMessageSniffer::getBCastPosition (int i, double *value)
 	EsdResources& r = RES(system_resources);
 	ACE_ASSERT (i >= 0 && i <= r.getJoints());
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 	*value = double(r._bcastRecvBuffer[i]._position);
-    _mutex.post();
-
 	return true;
 }
 
@@ -851,12 +845,11 @@ bool EsdMessageSniffer::getBCastPositions (double *p)
 {
 	EsdResources& r = RES(system_resources);
 	int i;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 	for (i = 0; i < r.getJoints(); i++)
         {
             p[i] = double(r._bcastRecvBuffer[i]._position);
         }
-    _mutex.post();
 	return true;
 }
 
@@ -865,10 +858,8 @@ bool EsdMessageSniffer::getBCastPIDOutput (int i, double *value)
 	EsdResources& r = RES(system_resources);
 	ACE_ASSERT (i >= 0 && i <= r.getJoints());
 	
-    _mutex.wait();
+    lock_guard<mutex> lck(_mutex);
 	*value = double(r._bcastRecvBuffer[i]._pid_value);
-    _mutex.post();
-
 	return true;
 }
 
@@ -876,12 +867,11 @@ bool EsdMessageSniffer::getBCastPIDOutputs (double *p)
 {
 	EsdResources& r = RES(system_resources);
 	int i;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 	for (i = 0; i < r.getJoints(); i++)
         {
             p[i] = double(r._bcastRecvBuffer[i]._pid_value);
         }
-    _mutex.post();
 	return true;
 }
 
@@ -890,10 +880,8 @@ bool EsdMessageSniffer::getBCastCurrent (int i, double *value)
 	EsdResources& r = RES(system_resources);
 	ACE_ASSERT (i >= 0 && i <= r.getJoints());
 	
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 	*value = double(r._bcastRecvBuffer[i]._current);
-    _mutex.post();
-
 	return true;
 }
 
@@ -902,13 +890,11 @@ bool EsdMessageSniffer::getBCastCurrents (double *p)
 	EsdResources& r = RES(system_resources);
 	int i;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 	for (i = 0; i < r.getJoints(); i++)
         {
             p[i] = double(r._bcastRecvBuffer[i]._current);
         }
-    _mutex.post();
-
 	return true;
 }
 
@@ -917,13 +903,11 @@ bool EsdMessageSniffer::getBCastFaults (int *p)
 	EsdResources& r = RES(system_resources);
 	int i;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 	for (i = 0; i < r.getJoints(); i++)
         {
             p[i] = short(r._bcastRecvBuffer[i]._fault);
         }
-    _mutex.post();
-
 	return true;
 }
 
@@ -932,10 +916,8 @@ bool EsdMessageSniffer::getBCastPositionError (int i, double *value)
 	EsdResources& r = RES(system_resources);
 	ACE_ASSERT (i >= 0 && i <= r.getJoints());
 	
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 	*value = double(r._bcastRecvBuffer[i]._position_error);
-    _mutex.post();
-
 	return true;
 }
 
@@ -945,13 +927,11 @@ bool EsdMessageSniffer::getBCastPositionErrors (double *p)
 	EsdResources& r = RES(system_resources);
 	int i;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 	for (i = 0; i < r.getJoints(); i++)
         {
             p[i] = double(r._bcastRecvBuffer[i]._position_error);
         }
-    _mutex.post();
-
 	return true;
 }
 
@@ -973,7 +953,7 @@ bool EsdMessageSniffer::_writeNone (int msg, int axis)
             return true;
         }
 
-	_mutex.wait();
+	_mutex.lock();
 
 	r.startPacket();
 	r.addMessage (msg, axis);
@@ -981,10 +961,11 @@ bool EsdMessageSniffer::_writeNone (int msg, int axis)
 	_writerequested = true;
 	_noreply = true;
 	
-	_mutex.post();
+	_mutex.unlock();
 
 	/// syncing.
-	_done.wait();
+    std::unique_lock<std::mutex> lck(mtx_done);
+    cv_done.wait(lck);
 
 	return true;
 }
@@ -1000,7 +981,7 @@ bool EsdMessageSniffer::_readWord16 (int msg, int axis, short& value)
             return true;
         }
 
-	_mutex.wait();
+	_mutex.lock();
 
 	r.startPacket();
 	r.addMessage (msg, axis);
@@ -1008,10 +989,11 @@ bool EsdMessageSniffer::_readWord16 (int msg, int axis, short& value)
 	_writerequested = true;
 	_noreply = false;
 
-	_mutex.post();
+	_mutex.unlock();
 
 	/// reads back position info.
-	_done.wait();
+	std::unique_lock<std::mutex> lck(mtx_done);
+    cv_done.wait(lck);
 
 	if (r.getErrorStatus() != true)
         {
@@ -1029,7 +1011,7 @@ bool EsdMessageSniffer::_readWord16Array (int msg, double *out)
 	EsdResources& r = RES(system_resources);
 	int i;
 
-	_mutex.wait();
+	_mutex.lock();
 	r.startPacket ();
 
 	for(i = 0; i < r.getJoints(); i++)
@@ -1044,15 +1026,16 @@ bool EsdMessageSniffer::_readWord16Array (int msg, double *out)
 
 	if (r._writeMessages < 1)
         {
-            _mutex.post();
+            _mutex.unlock();
             return false;
         }
 
 	_writerequested = true;
 	_noreply = false;
-	_mutex.post();
+	_mutex.unlock();
 
-	_done.wait();
+    std::unique_lock<std::mutex> lck(mtx_done);
+    cv_done.wait(lck);
 
 	if (r.getErrorStatus() != true)
         {
@@ -1087,7 +1070,7 @@ bool EsdMessageSniffer::_writeWord16 (int msg, int axis, short s)
 	if (!ENABLED(axis))
 		return true;
 
-	_mutex.wait();
+	_mutex.lock();
 
 	r.startPacket();
 	r.addMessage (msg, axis);
@@ -1098,10 +1081,11 @@ bool EsdMessageSniffer::_writeWord16 (int msg, int axis, short s)
 	_writerequested = true;
 	_noreply = true;
 	
-	_mutex.post();
+	_mutex.unlock();
 
 	/// syncing.
-	_done.wait();
+    std::unique_lock<std::mutex> lck(mtx_done);
+    cv_done.wait(lck);
 
 	/// hopefully ok...
 	return true;
@@ -1130,7 +1114,8 @@ bool EsdMessageSniffer::_writeDWord (int msg, int axis, int value)
 	_mutex.post();
 
 	/// syncing.
-	_done.wait();
+    std::unique_lock<std::mutex> lck(mtx_done);
+    cv_done.wait(lck);
 
 	return true;
 }
@@ -1147,7 +1132,7 @@ bool EsdMessageSniffer::_writeWord16Ex (int msg, int axis, short s1, short s2)
 	if (!ENABLED(axis))
 		return true;
 
-	_mutex.wait();
+	_mutex.lock();
 
 	r.startPacket();
 	r.addMessage (msg, axis);
@@ -1159,10 +1144,11 @@ bool EsdMessageSniffer::_writeWord16Ex (int msg, int axis, short s1, short s2)
 	_writerequested = true;
 	_noreply = true;
 	
-	_mutex.post();
+	_mutex.unlock();
 
 	/// syncing.
-	_done.wait();
+    std::unique_lock<std::mutex> lck(mtx_done);
+    cv_done.wait(lck);
 
 	/// hopefully ok...
 	return true;
@@ -1182,7 +1168,7 @@ bool EsdMessageSniffer::_readDWord (int msg, int axis, int& value)
             return true;
         }
 
-	_mutex.wait();
+	_mutex.lock();
 
 	r.startPacket();
 	r.addMessage (msg, axis);
@@ -1190,9 +1176,10 @@ bool EsdMessageSniffer::_readDWord (int msg, int axis, int& value)
 	_writerequested = true;
 	_noreply = false;
 	
-	_mutex.post();
+	_mutex.unlock();
 
-	_done.wait();
+    std::unique_lock<std::mutex> lck(mtx_done);
+    cv_done.wait(lck);
 
 	if (r.getErrorStatus() != true)
         {
@@ -1210,7 +1197,7 @@ bool EsdMessageSniffer::_readDWordArray (int msg, double *out)
 	EsdResources& r = RES(system_resources);
 	int i=0;
 
-	_mutex.wait();
+	_mutex.lock();
 	r.startPacket();
 
 	for (i = 0; i < r.getJoints(); i++)
@@ -1225,15 +1212,16 @@ bool EsdMessageSniffer::_readDWordArray (int msg, double *out)
 
 	if (r._writeMessages < 1)
         {
-            _mutex.post();
+            _mutex.unlock();
             return false;
         }
 
 	_writerequested = true;
 	_noreply = false;
-	_mutex.post();
+	_mutex.unlock();
 
-	_done.wait();
+    std::unique_lock<std::mutex> lck(mtx_done);
+    cv_done.wait(lck);
 
 	if (r.getErrorStatus() != true)
         {

@@ -32,7 +32,6 @@ using yarp::dev::CanMessage;
 
 
 CanBusSkin::CanBusSkin() :  PeriodicThread(0.02),
-                            mutex(1),
                             _verbose(false),
                             _isDiagnosticPresent(false)
 { }
@@ -545,12 +544,8 @@ bool CanBusSkin::close()
 
 int CanBusSkin::read(yarp::sig::Vector &out) 
 {
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
     out=data;
-//    if(_isDiagnosticPresent)
-//        diagnoseSkin();
-    mutex.post();
-
     return yarp::dev::IAnalogSensor::AS_OK;
 }
 
@@ -598,7 +593,7 @@ bool CanBusSkin::threadInit() {
 
 void CanBusSkin::run() {
 
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
 
     unsigned int canMessages = 0;
     bool res = pCanBus->canRead(inBuffer, CAN_DRIVER_BUFFER_SIZE, &canMessages);
@@ -700,7 +695,6 @@ void CanBusSkin::run() {
             }
         }
     }
-    mutex.post();
 }
 
 void CanBusSkin::threadRelease()

@@ -468,7 +468,7 @@ bool CanBusVirtualAnalogSensor::decode8(const unsigned char *msg, int msg_id, do
 
 void CanBusVirtualAnalogSensor::run()
 {    
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     unsigned int canMessages=0;
     bool ret=true; //return true by default
@@ -564,8 +564,6 @@ void CanBusVirtualAnalogSensor::run()
     {
         status= yarp::dev::VAS_status::VAS_TIMEOUT;
     }
-
-    mutex.post();
 }
 
 void CanBusVirtualAnalogSensor::threadRelease()

@@ -7,8 +7,8 @@
 #ifndef __CANBUSINERTIALMTB_H__
 #define __CANBUSINERTIALMTB_H__
 
+#include <mutex>
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -78,7 +78,7 @@ protected:
     CanBuffer          inBuffer;
     CanBuffer          outBuffer;
 
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     std::vector<MTBInertialBoardInfo> boards;
 

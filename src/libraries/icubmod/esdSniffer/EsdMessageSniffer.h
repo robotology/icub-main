@@ -14,10 +14,12 @@
 #ifndef __YARPEsdMessageSnifferh__
 #define __YARPEsdMessageSnifferh__
 
+#include <mutex>
+#include <condition_variable>
+
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Thread.h>
 
 namespace yarp{
@@ -241,8 +243,9 @@ protected:
 
 protected:
 	void *system_resources;
-    yarp::os::Semaphore _mutex;
-    yarp::os::Semaphore _done;
+    std::mutex _mutex;
+    std::mutex mtx_done;
+    std::condition_variable cv_done;
 
 	bool _writerequested;
 	bool _noreply;

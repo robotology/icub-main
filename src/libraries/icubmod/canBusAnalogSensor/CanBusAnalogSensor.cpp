@@ -306,9 +306,9 @@ bool CanBusAnalogSensor::close()
 
 int CanBusAnalogSensor::read(yarp::sig::Vector &out)
 {
-    mutex.wait();
+    mtx.lock();
     out=data;
-    mutex.post();
+    mtx.unlock();
 
     if( this->diagnostic )
         return status;
@@ -445,7 +445,7 @@ bool CanBusAnalogSensor::decode8(const unsigned char *msg, int msg_id, double *d
 
 void CanBusAnalogSensor::run()
 {
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
 
     unsigned int canMessages=0;
     bool ret=true; //return true by default
@@ -513,8 +513,6 @@ void CanBusAnalogSensor::run()
     {
         status=IAnalogSensor::AS_TIMEOUT;
     }
-
-    mutex.post();
 }
 
 void CanBusAnalogSensor::threadRelease()

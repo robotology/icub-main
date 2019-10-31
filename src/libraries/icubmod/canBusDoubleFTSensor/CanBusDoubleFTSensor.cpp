@@ -303,9 +303,9 @@ int CanBusDoubleFTSensor::read(yarp::sig::Vector &out)
     if( overallStatus == yarp::dev::IAnalogSensor::AS_OK
         || overallStatus == yarp::dev::IAnalogSensor::AS_OVF )
     {
-        mutex.wait();
+        mtx.lock();
         out=this->outputData;
-        mutex.post();
+        mtx.unlock();
         return yarp::dev::IAnalogSensor::AS_OK;
     }
 
@@ -403,7 +403,7 @@ bool CanBusDoubleFTSensor::decode16(const unsigned char *msg, int msg_id, int se
 
 void CanBusDoubleFTSensor::run()
 {
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
 
     unsigned int canMessages=0;
     bool ret=true; //return true by default
@@ -490,8 +490,6 @@ void CanBusDoubleFTSensor::run()
         combineDoubleSensorStatus();
         combineDoubleSensorReadings();
     }
-
-    mutex.post();
 }
 
 void CanBusDoubleFTSensor::combineDoubleSensorReadings()
