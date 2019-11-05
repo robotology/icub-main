@@ -24,7 +24,7 @@ bool SkinMeshThreadPort::threadInit()
 
 void SkinMeshThreadPort::run()
 {
-    lock_guard<mutex> lck(mtx);
+    std::lock_guard<std::mutex> lck(mtx);
 
     for (Bottle *input=NULL; input=skin_port.read(false);) 
     {    

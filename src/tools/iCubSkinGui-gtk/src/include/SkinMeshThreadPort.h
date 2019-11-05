@@ -45,7 +45,7 @@ protected:
     bool mbSimpleDraw;
 
 public:
-    SkinMeshThreadPort(Searchable& config,int period) : PeriodicThread((double)period/1000.0),mutex(1)
+    SkinMeshThreadPort(Searchable& config,int period) : PeriodicThread((double)period/1000.0)
     {
         mbSimpleDraw=config.check("light");
 
@@ -219,20 +219,16 @@ public:
 
     void resize(int width,int height)
     {
-        mutex.wait();
-
+        std::lock_guard<std::mutex> lck(mtx);
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t]) sensor[t]->resize(width,height,40);
         }
-
-        mutex.post();
     }
 
     void eval(unsigned char *image)
     {
-        mutex.wait();
-
+        std::lock_guard<std::mutex> lck(mtx);
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t])
@@ -247,18 +243,14 @@ public:
                 }
             }
         }
-
-        mutex.post();
     }
 
     void draw(unsigned char *image)
     {
-        //mutex.wait();
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t]) sensor[t]->draw(image);
         }        
-        //mutex.post();
     }
 };
 
