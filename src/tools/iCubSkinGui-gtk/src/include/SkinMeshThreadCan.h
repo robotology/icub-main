@@ -169,20 +169,16 @@ public:
 
     void resize(int width,int height)
     {
-        mutex.wait();
-
+        std::lock_guard<std::mutex> lck(mtx);
         for (int t=0; t<16; ++t)
         {
             if (sensor[t]) sensor[t]->resize(width,height,40);
         }
-
-        mutex.post();
     }
 
     void eval(unsigned char *image)
     {
-        mutex.wait();
-
+        std::lock_guard<std::mutex> lck(mtx);
         for (int t=0; t<16; ++t)
         {
             if (sensor[t])
@@ -197,8 +193,6 @@ public:
                 }
             }
         }
-
-        mutex.post();
     }
 
     void draw(unsigned char *image)
