@@ -48,7 +48,7 @@ protected:
     bool mbSimpleDraw;
 
 public:
-    SkinMeshThreadCan(Searchable& config,int period) : PeriodicThread((double)period/1000.0),mutex(1)
+    SkinMeshThreadCan(Searchable& config,int period) : PeriodicThread((double)period/1000.0)
     {
         mbSimpleDraw=config.check("light");
 
