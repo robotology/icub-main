@@ -103,7 +103,7 @@ private:
     servConfigStrain_t serviceConfig;
 
 
-    std::mutex mutex;
+    std::mutex mtx;
 
     vector<double> analogdata;
     vector<double> offset;
