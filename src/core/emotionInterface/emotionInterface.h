@@ -10,6 +10,8 @@
 #define __EMOTIONINTERFACE__
 
 #include <string>
+#include <yarp/os/Vocab.h>
+
 #include <yarp/os/Bottle.h>
 
 namespace iCub {
@@ -37,18 +39,20 @@ public:
 
 };
 
-#define EMOTION_VOCAB_SET           yarp::os::createVocab('s','e','t')
-#define EMOTION_VOCAB_GET           yarp::os::createVocab('g','e','t')
-#define EMOTION_VOCAB_IS            yarp::os::createVocab('i','s')
-#define EMOTION_VOCAB_FAILED        yarp::os::createVocab('f','a','i','l')
-#define EMOTION_VOCAB_OK            yarp::os::createVocab('o','k')
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_SET = yarp::os::createVocab('s','e','t');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_GET = yarp::os::createVocab('g','e','t');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_IS  = yarp::os::createVocab('i','s');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_FAILED        = yarp::os::createVocab('f','a','i','l');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_OK            = yarp::os::createVocab('o','k');
 
-#define EMOTION_VOCAB_MOUTH         yarp::os::createVocab('m','o','u')
-#define EMOTION_VOCAB_EYELIDS       yarp::os::createVocab('e','l','i') 
-#define EMOTION_VOCAB_LEFTEYEBROW   yarp::os::createVocab('l','e','b')
-#define EMOTION_VOCAB_RIGHTEYEBROW  yarp::os::createVocab('r','e','b')
-#define EMOTION_VOCAB_ALL           yarp::os::createVocab('a','l','l')
-#define EMOTION_VOCAB_RAW           yarp::os::createVocab('r','a','w')
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_MOUTH         = yarp::os::createVocab('m','o','u');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_EYELIDS       = yarp::os::createVocab('e','l','i');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_LEFTEYEBROW   = yarp::os::createVocab('l','e','b');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_RIGHTEYEBROW  = yarp::os::createVocab('r','e','b');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_ALL           = yarp::os::createVocab('a','l','l');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_RAW           = yarp::os::createVocab('r','a','w');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_COLOR         = yarp::os::createVocab('c','o','l');
+
 
 
 inline bool EMOTION_CHECK_FAIL(bool ok, yarp::os::Bottle& response) {
