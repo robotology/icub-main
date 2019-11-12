@@ -85,6 +85,7 @@ private:
 
     // table with the setting for each emotion - from config file
     EM_CODE* _emotion_table{};
+    std::map<std::string, char[2] > _color_table;
 
     //Time variables for automatic expression switching
     bool   _auto{};
@@ -115,6 +116,8 @@ public:
     bool setMouth(const std::string cmd) override;
     bool setAll(const std::string cmd) override;
     bool setRaw(const std::string cmd) override;
+
+    bool setColor(const string& cmd);
 };
 
 

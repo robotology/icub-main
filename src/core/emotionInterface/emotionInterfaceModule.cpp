@@ -36,6 +36,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     }
 
     _highlevelemotions = config.check("emotions", Value(0), "Number of predefined facial expressions").asInt();
+    _numberOfColors = config.check("colors", Value(0), "Number of predefined colors").asInt();
     _auto = config.check("auto");
     _period = config.check("period", Value(10.0), "Period for expression switching in auto mode").asDouble();
     if(_highlevelemotions == 0) 
@@ -134,23 +135,43 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
             }
         }
     }
-    
+    if(_numberOfColors) {
+        std::string color_id;
+        for(size_t index=0; index<_numberOfColors; index++){
+            color_id = "C"+std::to_string(index);
+            Bottle& bot = config.findGroup(color_id);
+            if( bot.size() < 3 )
+            {
+                yError("Invalid parameter list for the identifier %s.", color_id.c_str());
+                return false;
+            }
+
+            std::string code = bot.get(2).toString();
+            if (code.length()!=3)
+            {
+                yError("The identifier must have size 3");
+                return false;
+            }
+            strncpy(_color_table[bot.get(1).asString()], code.c_str(), 2);
+        }
+    }
+
       // open  ports
-      
     _inputPort.open(getName("/in")); 
     _outputPort.open(getName("/out"));
     _outputPort.setReporter(emotionInitReport);
     _initEmotionTrigger=0;
-    
     attach(_inputPort);
 
     return true;
 }
 
 bool EmotionInterfaceModule::close(){
-    
-    _inputPort.close();
-    _outputPort.close();
+
+    if(_inputPort.isOpen())
+        _inputPort.close();
+    if(!_outputPort.isClosed())
+        _outputPort.close();
     
     if (_emotion_table != nullptr)
     {
@@ -231,6 +252,10 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
             }
             case EMOTION_VOCAB_RAW:{
                 ok = setRaw(command.get(2).toString());
+                break;
+            }
+            case EMOTION_VOCAB_COLOR:{
+                ok = setColor(command.get(2).toString());
                 break;
             }
             default:
@@ -406,4 +431,18 @@ bool EmotionInterfaceModule::setRaw(const std::string cmd)
     return true;
 }
 
+bool EmotionInterfaceModule::setColor(const std::string& cmd)
+{
+    char cmdbuffer[] = {0,0,0,0};
+
+    if(_color_table.find(cmd) == _color_table.end()){
+        yError()<<"Color"<<cmd<<"not available";
+        return false;
+    }
+
+    cmdbuffer[0]= 'C';
+    cmdbuffer[1]=_color_table[cmd][0];
+    cmdbuffer[2]=_color_table[cmd][1];
+    return writePort(cmdbuffer);
+}
 
