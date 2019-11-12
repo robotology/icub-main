@@ -13,7 +13,7 @@
 
 
 void EmotionInitReport::report(const PortInfo &info) {
-    if ((emo!=NULL) && info.created && !info.incoming)
+    if ((emo!= nullptr) && info.created && !info.incoming)
         emo->initEmotion();
 }
 
@@ -43,7 +43,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     _period = config.check("period", Value(10.0), "Period for expression switching in auto mode").asDouble();
     if(_highlevelemotions == 0) 
     {
-        _emotion_table = NULL;
+        _emotion_table = nullptr;
     }
     else //allocate space for facial expression codes
     {
@@ -155,10 +155,10 @@ bool EmotionInterfaceModule::close(){
     _inputPort.close();
     _outputPort.close();
     
-    if (_emotion_table != NULL)
+    if (_emotion_table != nullptr)
     {
         delete [] _emotion_table;
-        _emotion_table = NULL;
+        _emotion_table = nullptr;
     }
 
     return true;
