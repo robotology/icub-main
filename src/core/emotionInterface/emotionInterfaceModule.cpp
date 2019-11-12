@@ -21,9 +21,6 @@ void EmotionInitReport::report(const PortInfo &info) {
 EmotionInterfaceModule::EmotionInterfaceModule() : emotionInitReport(this) {
 }
 
-EmotionInterfaceModule::~EmotionInterfaceModule(){
-}
-
 bool EmotionInterfaceModule::configure(ResourceFinder& config){
   
     char name[10];
