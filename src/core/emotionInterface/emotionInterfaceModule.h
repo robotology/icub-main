@@ -76,28 +76,29 @@ private:
     // reporter put on the init emotion
     EmotionInitReport emotionInitReport;
 
-    // output command port         
+    // output command port
     BufferedPort<Bottle> _outputPort;
 
     // number of high level emotions
-    int _highlevelemotions;
+    size_t _highlevelemotions{};
+    size_t _numberOfColors{};
 
     // table with the setting for each emotion - from config file
-    EM_CODE* _emotion_table;
+    EM_CODE* _emotion_table{};
 
     //Time variables for automatic expression switching
-    bool   _auto;
-    double _lasttime;
-    double _period;
-    int    _initEmotionTrigger;
+    bool   _auto{};
+    double _lasttime{};
+    double _period{};
+    int    _initEmotionTrigger{};
 
-    int getIndex(const std::string cmd);
+    int getIndex(std::string cmd);
     bool writePort(const char* cmd);
 
 public:
 
     EmotionInterfaceModule();
-    virtual ~EmotionInterfaceModule();
+    ~EmotionInterfaceModule() override = default;
     
     virtual bool configure(ResourceFinder& config);//virtual bool open(Searchable& config);
     virtual bool close();
