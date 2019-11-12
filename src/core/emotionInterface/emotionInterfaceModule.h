@@ -100,21 +100,21 @@ public:
     EmotionInterfaceModule();
     ~EmotionInterfaceModule() override = default;
     
-    virtual bool configure(ResourceFinder& config);//virtual bool open(Searchable& config);
-    virtual bool close();
-    virtual bool interruptModule();
-    virtual bool updateModule();
-    virtual double getPeriod();
-    virtual bool respond(const Bottle &command,Bottle &reply);
+    bool configure(ResourceFinder& config) override;//virtual bool open(Searchable& config);
+    bool close() override;
+    bool interruptModule() override;
+    bool updateModule() override;
+    double getPeriod() override;
+    bool respond(const Bottle &command,Bottle &reply)override;
     void initEmotion();
 
     // interface functions
-    virtual bool setLeftEyebrow(const std::string cmd);
-    virtual bool setRightEyebrow(const std::string cmd);
-    virtual bool setEyelids(const std::string cmd);
-    virtual bool setMouth(const std::string cmd);
-    virtual bool setAll(const std::string cmd);
-    virtual bool setRaw(const std::string cmd);
+    bool setLeftEyebrow(const std::string cmd) override;
+    bool setRightEyebrow(const std::string cmd) override;
+    bool setEyelids(const std::string cmd) override;
+    bool setMouth(const std::string cmd) override;
+    bool setAll(const std::string cmd) override;
+    bool setRaw(const std::string cmd) override;
 };
 
 
