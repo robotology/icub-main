@@ -75,15 +75,17 @@ jobs:
       shell: bash
       run: |
         # YCM
-        git clone -b devel https://github.com/robotology/ycm
+        git clone https://github.com/robotology/ycm
         cd ycm
+        git checkout devel
         mkdir -p build
         cd build
         cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install 
         # YARP
-        git clone -b devel https://github.com/robotology/yarp
+        git clone https://github.com/robotology/yarp
         cd yarp
+        git checkout devel
         mkdir -p build
         cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
