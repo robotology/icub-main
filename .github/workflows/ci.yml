@@ -34,7 +34,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         git clone https://github.com/robotology-dependencies/robotology-vcpkg-binary-ports C:/robotology-vcpkg-binary-ports
-        vcpkg.exe --overlay-ports=C:/robotology-vcpkg-binary-ports install --triplet x64-windows ace freeglut ode gsl eigen3 opencv3 qt5 ipopt-binary
+        vcpkg.exe --overlay-ports=C:/robotology-vcpkg-binary-ports install --triplet x64-windows ace freeglut ode gsl eigen3 opencv3 qt5-base ipopt-binary
         
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
