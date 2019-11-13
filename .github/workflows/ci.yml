@@ -34,7 +34,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         git clone https://github.com/robotology-dependencies/robotology-vcpkg-binary-ports C:/robotology-vcpkg-binary-ports
-        vcpkg.exe --overlay-ports=C:/robotology-vcpkg-binary-ports install --triplet x64-windows ace freeglut ode gsl eigen3 ipopt-binary  
+        vcpkg.exe --overlay-ports=C:/robotology-vcpkg-binary-ports install --triplet x64-windows ace freeglut ode gsl eigen3 opencv3 qt5 ipopt-binary
         
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
@@ -55,6 +55,7 @@ jobs:
         # YCM
         git clone https://github.com/robotology/ycm
         cd ycm
+        git checkout devel
         mkdir -p build
         cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -62,6 +63,7 @@ jobs:
         # YARP
         git clone https://github.com/robotology/yarp
         cd yarp
+        git checkout devel
         mkdir -p build
         cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
