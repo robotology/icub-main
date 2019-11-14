@@ -82,10 +82,13 @@ private:
     // number of high level emotions
     size_t _highlevelemotions{};
     size_t _numberOfColors{};
+    size_t _eyebrowmaskemotions{};
+    size_t _mouthmaskemotions{};
 
     // table with the setting for each emotion - from config file
     EM_CODE* _emotion_table{};
-    std::map<std::string, char[2] > _color_table;
+    std::map<std::string, std::string > _bitmask_emotion_table;
+    std::map<std::string, std::string > _color_table;
 
     //Time variables for automatic expression switching
     bool   _auto{};
@@ -119,6 +122,7 @@ public:
 
     bool setColor(const string& cmd);
     bool setBrightness(const string& cmd);
+    bool setMask(const Bottle& cmd);
 };
 
 
