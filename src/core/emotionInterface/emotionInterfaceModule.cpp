@@ -258,6 +258,10 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
                 ok = setColor(command.get(2).toString());
                 break;
             }
+            case EMOTION_VOCAB_BRIG: {
+                ok = setBrightness(command.get(2).toString());
+                break;
+            }
             default:
                 cout << "received an unknown request after a VOCAB_SET" << endl;
                 break;
@@ -446,3 +450,12 @@ bool EmotionInterfaceModule::setColor(const std::string& cmd)
     return writePort(cmdbuffer);
 }
 
+bool EmotionInterfaceModule::setBrightness(const std::string& cmd)
+{
+    char cmdbuffer[] = {0,0,0,0};
+
+    cmdbuffer[0]= 'B';
+    cmdbuffer[1]= '0';
+    cmdbuffer[2]= cmd[0];
+    return writePort(cmdbuffer);
+}

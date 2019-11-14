@@ -52,6 +52,7 @@ constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_RIGHTEYEBROW  = yarp::os::createV
 constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_ALL           = yarp::os::createVocab('a','l','l');
 constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_RAW           = yarp::os::createVocab('r','a','w');
 constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_COLOR         = yarp::os::createVocab('c','o','l');
+constexpr  yarp::conf::vocab32_t EMOTION_VOCAB_BRIG        = yarp::os::createVocab('b','r','i','g');
 
 
 

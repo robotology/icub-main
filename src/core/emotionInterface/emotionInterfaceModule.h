@@ -118,6 +118,7 @@ public:
     bool setRaw(const std::string cmd) override;
 
     bool setColor(const string& cmd);
+    bool setBrightness(const string& cmd);
 };
 
 
