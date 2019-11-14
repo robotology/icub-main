@@ -8,6 +8,8 @@
 
 #include <string>
 #include <cstdlib>
+#include <bitset>
+#include <iomanip>
 #include <yarp/os/ResourceFinder.h>
 #include "emotionInterfaceModule.h"
 
@@ -17,6 +19,33 @@ void EmotionInitReport::report(const PortInfo &info) {
         emo->initEmotion();
 }
 
+std::bitset<32> populateBitset(const yarp::os::Bottle& bt)
+{
+    std::bitset<32> bitSet{};
+    for(size_t i=0; i<bt.size(); i++){
+        bitSet.set(bt.get(i).asInt());
+    }
+    return bitSet;
+}
+
+std::string getHexCode(const Bottle& bot) {
+
+    if( bot.size() < 2 )
+    {
+        return {};
+    }
+
+    auto botBits = bot.get(1).asList();
+    if (!botBits || botBits->size() == 0 || botBits->size()>32)
+    {
+        yError()<<"The bitmask has to be defined as a list of <32 integers";
+        return {};
+    }
+    auto bitSet = populateBitset(*botBits);
+    stringstream ss;
+    ss << setfill('0') << setw(8) << hex << uppercase << bitSet.to_ulong();
+    return ss.str();
+}
 
 EmotionInterfaceModule::EmotionInterfaceModule() : emotionInitReport(this) {
 }
@@ -37,6 +66,8 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
 
     _highlevelemotions = config.check("emotions", Value(0), "Number of predefined facial expressions").asInt();
     _numberOfColors = config.check("colors", Value(0), "Number of predefined colors").asInt();
+    _eyebrowmaskemotions = config.check("bitmask_eyebrow_emotions", Value(0), "Number of predefined bitmask eyebrow expressions").asInt();
+    _mouthmaskemotions = config.check("bitmask_mouth_emotions", Value(0), "Number of predefined bitmask eyebrow expressions").asInt();
     _auto = config.check("auto");
     _period = config.check("period", Value(10.0), "Period for expression switching in auto mode").asDouble();
     if(_highlevelemotions == 0) 
@@ -152,8 +183,37 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 yError("The identifier must have size 3");
                 return false;
             }
-            strncpy(_color_table[bot.get(1).asString()], code.c_str(), 2);
+            _color_table[bot.get(1).asString()] = code.substr(0,code.length()-1);
         }
+    }
+    if(_eyebrowmaskemotions) {
+        std::string id;
+        for(size_t index=0; index<_eyebrowmaskemotions; index++){
+            id = "BM_EB"+std::to_string(index);
+            Bottle& bot = config.findGroup(id);
+            auto hexCode = getHexCode(bot);
+            if(hexCode.empty()){
+                yError()<<"Parsing of the bitmap failed";
+                return false;
+            }
+            _bitmask_emotion_table[id] = hexCode;
+        }
+
+    }
+    if(_mouthmaskemotions) {
+
+        std::string id;
+        for(size_t index=0; index<_eyebrowmaskemotions; index++){
+            id = "BM_M"+std::to_string(index);
+            Bottle& bot = config.findGroup(id);
+            auto hexCode = getHexCode(bot);
+            if(hexCode.empty()){
+                yError()<<"Parsing of the bitmap failed";
+                return false;
+            }
+            _bitmask_emotion_table[id] = hexCode;
+        }
+
     }
 
       // open  ports
@@ -260,6 +320,10 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
             }
             case EMOTION_VOCAB_BRIG: {
                 ok = setBrightness(command.get(2).toString());
+                break;
+            }
+            case EMOTION_VOCAB_MASK:{
+                ok = setMask(command);
                 break;
             }
             default:
@@ -458,4 +522,61 @@ bool EmotionInterfaceModule::setBrightness(const std::string& cmd)
     cmdbuffer[1]= '0';
     cmdbuffer[2]= cmd[0];
     return writePort(cmdbuffer);
+}
+
+
+bool EmotionInterfaceModule::setMask(const Bottle& cmd)
+{
+    string cmdbuffer{};
+    if(cmd.size()!=5) {
+        yError()<<"Bad request, it should be set mask (color mask) (color mask) (color mask)";
+        return false;
+    }
+    auto botLeb = cmd.get(2).asList(); // bottle of the left eyebrow
+    auto botReb = cmd.get(3).asList(); // bottle of the right eyebrow
+    auto botMou = cmd.get(4).asList(); // bottle of the mouth eyebrow
+
+    if(!botLeb || !botReb || !botMou) {
+        yError()<<"Bad request, missing one of the three list";
+        return false;
+    }
+
+    if(botLeb->size()!=3 || botReb->size()!=3 || botMou->size()!=3) {
+        yError()<<"Bad request, each list has to be (color mask brightness)";
+        return false;
+    }
+    auto colLeb = botLeb->get(0).asString();
+    auto colReb = botReb->get(0).asString();
+    auto colMou = botMou->get(0).asString();
+
+    auto maskLeb = botLeb->get(1).asString();
+    auto maskReb = botReb->get(1).asString();
+    auto maskMou = botMou->get(1).asString();
+
+    auto brightLeb = '0'+ botLeb->get(2).toString();
+    auto brightReb = '0'+ botReb->get(2).toString();
+    auto brightMou = '0'+ botMou->get(2).toString();
+
+    if(_bitmask_emotion_table.find(maskLeb) == _bitmask_emotion_table.end() ||
+       _bitmask_emotion_table.find(maskReb) == _bitmask_emotion_table.end() ||
+       _bitmask_emotion_table.find(maskMou) == _bitmask_emotion_table.end()) {
+        yError()<<"One or more bitmask has not been defined in the ini file";
+        return false;
+    }
+
+    cmdbuffer += 'Z';
+    // LEB
+    cmdbuffer += _color_table[colLeb];
+    cmdbuffer += brightLeb;
+    cmdbuffer += _bitmask_emotion_table[maskLeb];
+    // REB
+    cmdbuffer += _color_table[colReb];
+    cmdbuffer += brightReb;
+    cmdbuffer += _bitmask_emotion_table[maskReb];
+    // Mouth
+    cmdbuffer += _color_table[colMou];
+    cmdbuffer += brightMou;
+    cmdbuffer += _bitmask_emotion_table[maskMou];
+
+    return writePort(cmdbuffer.c_str());
 }
