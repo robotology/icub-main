@@ -76,8 +76,15 @@ using namespace eth;
 
 // - class eth::TheEthManager
 
+// explicit definition of static member variables: don't remove
 
-TheEthManager* TheEthManager::handle = NULL;
+// marco.accame: std::mutex is in unlocked state after the constructor completes
+//               that is the same behaviour of the former yarp::os::Semaphore initted w/ value 1
+std::mutex TheEthManager::managerSem {}; 
+std::mutex TheEthManager::txSem {};
+std::mutex TheEthManager::rxSem {};
+
+TheEthManager* TheEthManager::handle {nullptr};
 
 TheEthManager::TheEthManager()
 {
