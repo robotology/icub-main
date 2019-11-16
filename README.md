@@ -3,6 +3,7 @@ iCub
 ====
 
 [![ZenHub](https://img.shields.io/badge/Shipping_faster_with-ZenHub-435198.svg)](https://zenhub.com)
+[![Join the community on Spectrum](https://withspectrum.github.io/badge/badge.svg)](https://spectrum.chat/icub)
 
 See COPYING and AUTHORS for licensing info, authors and copyright holders.
 
@@ -13,5 +14,3 @@ up to date source of information.
 
 Direct link to installation instructions:
 http://wiki.icub.org/wiki/ICub_Software_Installation
-
-[![Join the community on Spectrum](https://withspectrum.github.io/badge/badge.svg)](https://spectrum.chat/icub)
