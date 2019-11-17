@@ -63,9 +63,7 @@ jobs:
         cd yarp && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-        cmake --build . --config ${{ matrix.build_type }} --target INSTALL 
-        # Workaround for https://github.com/robotology-dependencies/robotology-vcpkg-binary-ports/issues/3
-        export IPOPT_DIR=${VCPKG_INSTALLATION_ROOT}/installed/x64-windows
+        cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         
     - name: Source-based Dependencies [Ubuntu/macOS] 
       if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
