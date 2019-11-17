@@ -1,4 +1,4 @@
-name: C++ CI Workflow
+name: CI Workflow
 
 on:
   push:
@@ -34,7 +34,9 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         git clone https://github.com/robotology-dependencies/robotology-vcpkg-binary-ports C:/robotology-vcpkg-binary-ports
-        vcpkg.exe --overlay-ports=C:/robotology-vcpkg-binary-ports install --triplet x64-windows ace freeglut ode gsl eigen3 sdl1 opencv3 qt5-base ipopt-binary
+        vcpkg.exe --overlay-ports=C:/robotology-vcpkg-binary-ports install --triplet x64-windows ace freeglut ode gsl eigen3 libxml2 \
+                                                                                                 sdl1 opencv3 ipopt-binary qt5-base \
+                                                                                                 qt5-declarative qt5-multimedia qt5-quickcontrols2 
         
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
@@ -138,4 +140,3 @@ jobs:
       run: |
         cd build
         cmake --build . --config ${{ matrix.build_type }} --target install
-      
