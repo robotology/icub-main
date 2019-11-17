@@ -29,7 +29,6 @@ jobs:
     # ============
     # DEPENDENCIES
     # ============
-    
     - name: Dependencies [Windows]
       if: matrix.os == 'windows-latest'
       run: |
@@ -53,19 +52,15 @@ jobs:
       shell: bash
       run: |
         # YCM
-        git clone https://github.com/robotology/ycm
-        cd ycm
-        git checkout devel
-        mkdir -p build
-        cd build
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/ycm --depth 1 --branch devel
+        cd ycm && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL 
         # YARP
-        git clone https://github.com/robotology/yarp
-        cd yarp
-        git checkout devel
-        mkdir -p build
-        cd build
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/yarp --depth 1 --branch devel
+        cd yarp && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL 
@@ -77,26 +72,21 @@ jobs:
       shell: bash
       run: |
         # YCM
-        git clone https://github.com/robotology/ycm
-        cd ycm
-        git checkout devel
-        mkdir -p build
-        cd build
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/ycm --depth 1 --branch devel
+        cd ycm && mkdir -p build && cd build
         cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install 
         # YARP
-        git clone https://github.com/robotology/yarp
-        cd yarp
-        git checkout devel
-        mkdir -p build
-        cd build
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/yarp --depth 1 --branch devel
+        cd yarp && mkdir -p build && cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install 
  
     # ===================
     # CMAKE-BASED PROJECT
     # ===================
-    
     - name: Configure [Windows]
       # Use bash also on Windows (otherwise cd, mkdir, ... do not work)
       if: matrix.os == 'windows-latest'
