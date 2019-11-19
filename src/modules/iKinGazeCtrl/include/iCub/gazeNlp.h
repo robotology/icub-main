@@ -52,7 +52,7 @@ public:
                               max_iter,verbose,false) { }
 
     void   set_ctrlPose(const unsigned int _ctrlPose) { }
-    bool   set_posePriority(const string &priority)   { }
+    bool   set_posePriority(const string &priority)   { return false; }
     void   setHessianOpt(const bool useHessian)       { }   // Hessian not implemented
     Vector solve(const Vector &q0, Vector &xd, const Vector &gDir);
 };
