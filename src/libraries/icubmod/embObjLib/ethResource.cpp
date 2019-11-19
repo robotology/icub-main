@@ -782,7 +782,7 @@ bool EthResource::setcheckRemoteValue(const eOprotID32_t id32, void *value, cons
 bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
 {
     char str[256];
-    char canfullmessage[64];
+    char canfullmessage[128];
 
     static const char * sourcestrings[] =
     {
@@ -807,8 +807,8 @@ bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
     // Validity check
     if(address > 15)
     {
-        snprintf(canfullmessage,sizeof(canfullmessage),"Error while parsing the message: CAN address detected is out of allowed range");
-        snprintf(str,sizeof(str), "from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
+        snprintf(canfullmessage, sizeof(canfullmessage), "Error while parsing the message: CAN address detected is out of allowed range");
+        snprintf(str, sizeof(str), "from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
                                     properties.ipv4addrString.c_str(),
                                     boardstr,
                                     str_source,
