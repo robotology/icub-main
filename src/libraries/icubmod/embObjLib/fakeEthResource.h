@@ -24,10 +24,10 @@
 #define _FAKEETHRESOURCE_H_
 
 
+#include <mutex>
 
 #include<abstractEthResource.h>
 
-#include <yarp/os/Semaphore.h>
 #include <ethManager.h>
 
 
@@ -104,7 +104,7 @@ namespace eth {
         double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
         bool              isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
 
-        yarp::os::Semaphore* objLock;
+        std::mutex          objLock;
 
         bool                verifiedEPprotocol[eoprot_endpoints_numberof];
         bool                verifiedBoardPresence;

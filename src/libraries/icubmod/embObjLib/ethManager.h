@@ -29,6 +29,7 @@
 #include <list>
 #include <string>
 #include <stdio.h>
+#include <mutex>
 //#include <map>
 
 
@@ -43,7 +44,6 @@
 
 // YARP includes
 #include <yarp/os/Bottle.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Port.h>
 
@@ -162,10 +162,10 @@ namespace eth {
         void initEOYsystem(void);
 
         // this semaphore is used to ....
-        static yarp::os::Semaphore managerSem;
+        static std::mutex managerSem;
         // the following two semaphore are used separately or together to stop tx and rx if a change is done on ethboards (in startup and shutdown phases)
-        static yarp::os::Semaphore txSem;
-        static yarp::os::Semaphore rxSem;
+        static std::mutex txSem;
+        static std::mutex rxSem;
 
         static eth::TheEthManager* handle;
 

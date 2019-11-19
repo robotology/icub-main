@@ -52,7 +52,7 @@ int SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
     return -1;
 }
 
-EmbObjSkin::EmbObjSkin() :  mutex(1), _isDiagnosticPresent(false)
+EmbObjSkin::EmbObjSkin() :  _isDiagnosticPresent(false)
 {
     res         = NULL;
     ethManager  = NULL;
@@ -341,7 +341,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     sensorsNum = 16*12*_skCfg.totalCardsNum;     // max num of card
 
     // resize the skindata holder
-    mutex.wait();
+    mtx.lock();
 
     this->skindata.resize(sensorsNum);
     int ttt = this->skindata.size();
@@ -350,7 +350,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         this->skindata[i]=(double)240;
     }
 
-    mutex.post();
+    mtx.unlock();
 
     // fill the ethservice ...
 
@@ -577,10 +577,8 @@ bool EmbObjSkin::close()
 
 int EmbObjSkin::read(yarp::sig::Vector &out)
 {
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
     out = this->skindata;  //old - this needs the running thread
-    mutex.post();
-
     return yarp::dev::IAnalogSensor::AS_OK;
 }
 
@@ -607,9 +605,6 @@ int EmbObjSkin::calibrateChannel(int ch, double v)
 
 int EmbObjSkin::calibrateSensor(const yarp::sig::Vector& v)
 {
-    //mutex.wait();
-    //this->data=v;
-    //mutex.post;
     return 0;
 }
 
@@ -868,7 +863,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
             int index=16*12*mtbId + triangle*12;
 
             // marco.accame: added lock to avoid concurrent access to this->skindata. i lock at triangle resolution ...
-            mutex.wait();
+            mtx.lock();
 
             if (msgtype == 0x40)
             {
@@ -926,7 +921,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                     }
                 }
             }
-            mutex.post();
+            mtx.unlock();
         }
         else if(canframeid11 == 0x100)
         {

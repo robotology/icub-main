@@ -22,9 +22,9 @@
 #define __EMBOBJSKIN_H__
 
 #include <string>
+#include <mutex>
 
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
@@ -88,7 +88,7 @@ protected:
     eth::TheEthManager *ethManager;
     eth::AbstractEthResource *res;
 
-    Semaphore       mutex;
+    std::mutex        mtx;
     //int             totalCardsNum;
     //std::vector<SkinPatchInfo> patchInfoList;
     size_t          sensorsNum;

@@ -439,8 +439,7 @@ int embObjMais::read(yarp::sig::Vector &out)
         return false;
     }
 
-    mutex.wait();
-
+    std::lock_guard<std::mutex> lck(mtx);
 
     // errors are not handled for now... it'll always be OK!!
     if (status != IAnalogSensor::AS_OK)
@@ -464,7 +463,6 @@ int embObjMais::read(yarp::sig::Vector &out)
                 counterError++;
             } break;
         }
-        mutex.post();
         return status;
     }
 
@@ -473,9 +471,6 @@ int embObjMais::read(yarp::sig::Vector &out)
     {
         out[k] = analogdata[k];
     }
-
-
-    mutex.post();
 
     return status;
 }
@@ -564,7 +559,7 @@ bool embObjMais::update(eOprotID32_t id32, double timestamp, void* rxdata)
         return false;
     }
 
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     for (size_t k = 0; k<analogdata.size(); k++)
     {
@@ -576,8 +571,6 @@ bool embObjMais::update(eOprotID32_t id32, double timestamp, void* rxdata)
             analogdata[k] = (double)val;
         }
     }
-
-    mutex.post();
 
     return true;
 }

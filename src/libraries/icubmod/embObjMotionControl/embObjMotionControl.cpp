@@ -202,7 +202,6 @@ embObjMotionControl::embObjMotionControl() :
     ImplementAxisInfo(this),
     ImplementPWMControl(this),
     ImplementCurrentControl(this),
-    _mutex(1),
     SAFETY_THRESHOLD(2.0),
     _rotorsLimits(0),
     _jointsLimits(0),
@@ -1375,9 +1374,8 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
 
     if(true == initialised())
     {   // do it only if we already have opened the device
-        _mutex.wait();
+        std::lock_guard<std::mutex> lck(_mutex);
         _encodersStamp[joint] = timestamp;
-        _mutex.post();
     }
 
     return true;
@@ -2618,21 +2616,17 @@ bool embObjMotionControl::getEncoderAccelerationsRaw(double *accs)
 bool embObjMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
 {
     bool ret = getEncodersRaw(encs);
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for(int i=0; i<_njoints; i++)
         stamps[i] = _encodersStamp[i];
-    _mutex.post();
-
     return ret;
 }
 
 bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
 {
     bool ret = getEncoderRaw(j, encs);
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *stamp = _encodersStamp[j];
-    _mutex.post();
-
     return ret;
 }
 
@@ -2761,21 +2755,17 @@ bool embObjMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
 bool embObjMotionControl::getMotorEncodersTimedRaw(double *encs, double *stamps)
 {
     bool ret = getMotorEncodersRaw(encs);
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for(int i=0; i<_njoints; i++)
         stamps[i] = _encodersStamp[i];
-    _mutex.post();
-
     return ret;
 }
 
 bool embObjMotionControl::getMotorEncoderTimedRaw(int m, double *encs, double *stamp)
 {
     bool ret = getMotorEncoderRaw(m, encs);
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *stamp = _encodersStamp[m];
-    _mutex.post();
-
     return ret;
 }
 ///////////////////////// END Motor Encoder Interface
@@ -3708,7 +3698,6 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
 
 bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
 {
-    //_mutex.wait();
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
 
     uint16_t size;

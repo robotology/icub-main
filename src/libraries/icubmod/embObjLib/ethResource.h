@@ -24,13 +24,13 @@
 #ifndef _ETHRESOURCE_H_
 #define _ETHRESOURCE_H_
 
+#include <mutex>
 
 #include <abstractEthResource.h>
 #include <hostTransceiver.hpp>
 
 #include <ethMonitorPresence.h>
 #include <EoBoards.h>
-#include <yarp/os/Semaphore.h>
 
 #include <ethManager.h>
 
@@ -105,7 +105,7 @@ namespace eth {
 
         bool isInRunningMode;
 
-        yarp::os::Semaphore* objLock;
+        std::mutex          objLock;
 
 
 

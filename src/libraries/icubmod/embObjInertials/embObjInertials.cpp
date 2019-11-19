@@ -614,8 +614,7 @@ int embObjInertials::read(yarp::sig::Vector &out)
         return false;
     }
 
-    mutex.wait();
-
+    std::lock_guard<std::mutex> lck(mtx);
 
     // errors are not handled for now... it'll always be OK!!
     if (status != IAnalogSensor::AS_OK)
@@ -639,7 +638,6 @@ int embObjInertials::read(yarp::sig::Vector &out)
               counterError++;
             } break;
         }
-        mutex.post();
         return status;
     }
 
@@ -648,9 +646,6 @@ int embObjInertials::read(yarp::sig::Vector &out)
     {
         out[k] = analogdata[k];
     }
-
-
-    mutex.post();
 
     return status;
 
@@ -732,7 +727,7 @@ bool embObjInertials::update(eOprotID32_t id32, double timestamp, void* rxdata)
         return(true);
     }
 
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
 #if defined(EMBOBJINERTIALS_PUBLISH_OLDSTYLE)
 
@@ -756,8 +751,6 @@ bool embObjInertials::update(eOprotID32_t id32, double timestamp, void* rxdata)
     analogdata[firstpos+3] = (double) status->data.z;
 
 #endif
-
-    mutex.post();
 
     return true;
 }
@@ -846,7 +839,7 @@ bool embObjInertials::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig:
         return false;
     }
 
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     int firstpos = 2 + inertials_Channels*(gyrSensors[sens_index]);
     timestamp = analogdata[firstpos+2];
@@ -854,8 +847,6 @@ bool embObjInertials::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig:
     out[0] = analogdata[firstpos+3];
     out[1] = analogdata[firstpos+4];
     out[2] = analogdata[firstpos+5];
-
-    mutex.post();
 
     return true;
 }
@@ -898,7 +889,7 @@ bool embObjInertials::getThreeAxisLinearAccelerometerMeasure(size_t sens_index, 
         return false;
     }
 
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     int firstpos = 2 + inertials_Channels*(accSensors[sens_index]);
     timestamp = analogdata[firstpos+2];
@@ -907,13 +898,8 @@ bool embObjInertials::getThreeAxisLinearAccelerometerMeasure(size_t sens_index, 
     out[1] = analogdata[firstpos+4];
     out[2] = analogdata[firstpos+5];
 
-    mutex.post();
-
     return true;
-
 }
-
-
 
 
 // eof

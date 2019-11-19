@@ -15,8 +15,6 @@
 
 // Yarp Includes
 #include <yarp/os/Time.h>
-#include <yarp/os/Semaphore.h>
-
 
 // specific to this device driver.
 #include "embObjFTsensor.h"
@@ -267,7 +265,7 @@ bool embObjFTsensor::updateStrainValues(eOprotID32_t id32, double timestamp, voi
     }
 
     // lock analogdata
-    GET_privData(mPriv).mutex.wait();
+    std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
     GET_privData(mPriv).timestampAnalogdata = yarp::os::Time::now();
     for (size_t k = 0; k< GET_privData(mPriv).analogdata.size(); k++)
     {
@@ -288,9 +286,6 @@ bool embObjFTsensor::updateStrainValues(eOprotID32_t id32, double timestamp, voi
             }
         }
     }
-
-    // unlock analogdata
-    GET_privData(mPriv).mutex.post();
 
     return true;
 }
@@ -318,10 +313,9 @@ bool embObjFTsensor::updateTemperatureValues(eOprotID32_t id32, double timestamp
         else
         {
             //yDebug() << "embObjFTStrain" << getBoardInfo() << ": val "<< i<< "/" << numofIntem2update << ": value=" << data->value << ", time=" << data->timestamp;
-            GET_privData(mPriv).mutex.wait();
+            std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
             GET_privData(mPriv).lastTemperature = static_cast<float>(data->value);
             GET_privData(mPriv).timestampTemperature = yarp::os::Time::now();
-            GET_privData(mPriv).mutex.post();
         }
     }
     return true;
@@ -344,16 +338,13 @@ int embObjFTsensor::read(yarp::sig::Vector &out)
         return false;
     }
 
-    GET_privData(mPriv).mutex.wait();
+    std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
 
     out.resize(GET_privData(mPriv).analogdata.size());
     for (size_t k = 0; k<GET_privData(mPriv).analogdata.size(); k++)
     {
         out[k] = GET_privData(mPriv).analogdata[k] + GET_privData(mPriv).offset[k];
     }
-
-
-    GET_privData(mPriv).mutex.post();
 
     return IAnalogSensor::AS_OK;;
 }
@@ -372,12 +363,11 @@ int embObjFTsensor::getChannels()
 
 int embObjFTsensor::calibrateSensor()
 {
-    GET_privData(mPriv).mutex.wait();
+    std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
     for (size_t i = 0; i <  GET_privData(mPriv).analogdata.size(); i++)
     {
         GET_privData(mPriv).offset[i] = - GET_privData(mPriv).analogdata[i];
     }
-    GET_privData(mPriv).mutex.post();
     return AS_OK;
 }
 
@@ -428,20 +418,18 @@ bool embObjFTsensor::getTemperatureSensorFrameName(size_t sens_index, std::strin
 
 bool embObjFTsensor::getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const
 {
-    GET_privData(mPriv).mutex.wait();
+    std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
     out = GET_privData(mPriv).lastTemperature/10.0; //I need to convert from tenths of degree centigrade to degree centigrade
     timestamp =  GET_privData(mPriv).timestampTemperature;
-    GET_privData(mPriv).mutex.post();
     return true;
 }
 
 bool embObjFTsensor::getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-    GET_privData(mPriv).mutex.wait();
+    std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
     out.resize(1);
     out[0] = GET_privData(mPriv).lastTemperature/10.0; //I need to convert from tenths of degree centigrade to degree centigrade
     timestamp =  GET_privData(mPriv).timestampTemperature;
-    GET_privData(mPriv).mutex.post();
     return true;
 }
 
@@ -476,7 +464,7 @@ bool embObjFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp:
         return false;
     }
 
-    GET_privData(mPriv).mutex.wait();
+    std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
 
     out.resize(GET_privData(mPriv).analogdata.size());
     for (size_t k = 0; k<GET_privData(mPriv).analogdata.size(); k++)
@@ -485,8 +473,6 @@ bool embObjFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp:
     }
 
     timestamp =  GET_privData(mPriv).timestampAnalogdata;
-
-    GET_privData(mPriv).mutex.post();
 
     return true;
 }

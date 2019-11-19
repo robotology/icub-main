@@ -39,7 +39,6 @@ EthResource::EthResource()
 {
     ethManager                  = NULL;
     isInRunningMode             = false;
-    objLock                     = new Semaphore(1);
 
     verifiedBoardPresence       = false;
     askedBoardVersion           = false;
@@ -84,8 +83,6 @@ EthResource::EthResource()
 EthResource::~EthResource()
 {
     ethManager = NULL;
-    delete objLock;
-
 
     // Delete every initialized can_string_eth object
     for(int i=0; i<16; i++)
@@ -101,9 +98,9 @@ EthResource::~EthResource()
 bool EthResource::lock(bool on)
 {
     if(true == on)
-        objLock->wait();
+        objLock.lock();
     else
-        objLock->post();
+        objLock.unlock();
 
     return true;
 }

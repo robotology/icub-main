@@ -56,7 +56,7 @@ using namespace yarp::os;
 
 EOnvSet* arrayofnvsets[16] = {NULL};
 
-BoardTransceiver::BoardTransceiver() : transMutex(1)
+BoardTransceiver::BoardTransceiver()
 {
     yTrace();
 
@@ -330,7 +330,6 @@ void BoardTransceiver::onMsgReception(uint8_t *data, uint16_t size)
 
     // protezione per la scrittura dei dati all'interno della memoria del transceiver, su ricezione di un rop.
     // il mutex e' unico per tutto il transceiver
-    //transMutex.wait();
     eo_packet_Capacity_Get(p_RxPkt, &capacityrxpkt);
     if(size > capacityrxpkt)
     {
@@ -341,7 +340,6 @@ void BoardTransceiver::onMsgReception(uint8_t *data, uint16_t size)
     eo_packet_Payload_Set(p_RxPkt, data, size);
     eo_packet_Addressing_Set(p_RxPkt, remoteipaddr, remoteipport);
     eo_transceiver_Receive(transceiver, p_RxPkt, &numofrops, &txtime);
-    //transMutex.post();
 }
 
 

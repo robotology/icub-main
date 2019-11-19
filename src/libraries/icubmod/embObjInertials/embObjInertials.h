@@ -5,10 +5,10 @@
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/PeriodicThread.h>
 #include <string>
 #include <list>
+#include <mutex>
 
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
@@ -117,7 +117,7 @@ private:
     // parameters
     servConfigInertials_t serviceConfig;
 
-    mutable yarp::os::Semaphore mutex;
+    mutable std::mutex mtx;
 
     vector<double> analogdata;
     vector<uint16_t> gyrSensors;

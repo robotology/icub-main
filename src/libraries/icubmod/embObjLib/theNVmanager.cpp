@@ -34,8 +34,10 @@
 
 #include "ethManager.h"
 
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
 #include <map>
-
 #include <cstring>
 
 #include "EoProtocol.h"
@@ -53,25 +55,24 @@
     
 struct eth::theNVmanager::Impl
 {
+    static std::mutex mtx;
 
-    static yarp::os::Semaphore mtx;
-           
     struct askTransaction
     {
-        std::uint16_t           expectedrops;
-        std::uint16_t           receivedrops;
-        eOprotIP_t              _ipv4;
-        eOprotID32_t            _id32;
-        std::uint32_t           signature;
-        yarp::os::Semaphore     semaphore;
-        ACE_thread_t            owner;
-        double                  timeofwait;
-        double                  timeofpost;
+        std::uint16_t           expectedrops {0};
+        std::uint16_t           receivedrops {0};
+        eOprotIP_t              _ipv4 {0};
+        eOprotID32_t            _id32 {0};
+        std::uint32_t           signature {eo_rop_SIGNATUREdummy};
+        std::mutex              mtx_semaphore {};
+        std::condition_variable cv_semaphore {};
+        ACE_thread_t            owner {0};
+        double                  timeofwait {0};
+        double                  timeofpost {0};
 
         askTransaction() :
             expectedrops(0), receivedrops(0), _ipv4(0), _id32(0), signature(eo_rop_SIGNATUREdummy), owner(0), timeofwait(0), timeofpost(0)
         {
-            semaphore.wait();
         }
 
         ~askTransaction()
@@ -92,7 +93,7 @@ struct eth::theNVmanager::Impl
 
         void load(eOprotIP_t _ip, const std::vector<eOprotID32_t> &_ids, std::uint32_t _s)
         {
-            expectedrops =_ids.size();
+            expectedrops = static_cast<uint16_t>(_ids.size()); // ok to downcast
             receivedrops = 0;
 
             _ipv4 = _ip;
@@ -106,7 +107,9 @@ struct eth::theNVmanager::Impl
         bool wait(std::uint16_t &numofrxrops, double timeout = 0.5)
         {
             timeofwait = SystemClock::nowSystem();
-            bool r = semaphore.waitWithTimeout(timeout);
+            const int timeout_millis = static_cast<int>(1000.0 * timeout);
+            std::unique_lock<std::mutex> lck(mtx_semaphore);
+            bool r = (cv_semaphore.wait_for(lck, std::chrono::milliseconds(timeout_millis)) == cv_status::no_timeout);
             numofrxrops = receivedrops;
             return r;
         }
@@ -117,7 +120,7 @@ struct eth::theNVmanager::Impl
             if(receivedrops == expectedrops)
             {
                 timeofpost = SystemClock::nowSystem();
-                semaphore.post();
+                cv_semaphore.notify_one();
             }
             return true;
         }
@@ -126,17 +129,17 @@ struct eth::theNVmanager::Impl
 
     struct Data
     {
-        std::uint32_t sequence;
+        std::mutex locker {};
         // the key is u64: either [0, signature] or [ipv4, id32]
-        std::multimap<std::uint64_t, askTransaction*> themap;
-        yarp::os::Semaphore locker;
-        int pp1;
+        std::multimap<std::uint64_t, askTransaction*> themap {};
+        std::uint32_t sequence {0};
+        std::uint32_t filler {0};
+
         Data() { reset(); }
         void reset()
         {
             themap.clear();
             sequence = 0;
-            pp1 = 0;
         }
 
         std::uint32_t uniquesignature()
@@ -232,12 +235,12 @@ struct eth::theNVmanager::Impl
 
         void lock()
         {
-            locker.wait();
+            locker.lock();
         }
 
         void unlock()
         {
-            locker.post();
+            locker.unlock();
         }
     };
 
@@ -312,7 +315,7 @@ struct eth::theNVmanager::Impl
 };
 
 
-yarp::os::Semaphore eth::theNVmanager::Impl::mtx = 1;
+std::mutex eth::theNVmanager::Impl::mtx {};
 
 
 //bool eth::theNVmanager::Impl::initialise(const Config &_config)
@@ -1088,12 +1091,11 @@ eth::theNVmanager& eth::theNVmanager::getInstance()
 {
     static theNVmanager* p = nullptr;
 
-    eth::theNVmanager::Impl::mtx.wait();
+    std::lock_guard<std::mutex> lck(eth::theNVmanager::Impl::mtx);
     if(nullptr == p)
     {
         p = new theNVmanager();
     }
-    eth::theNVmanager::Impl::mtx.post();
 
     return *p;
 }
