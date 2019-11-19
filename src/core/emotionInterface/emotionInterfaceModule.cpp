@@ -47,6 +47,35 @@ std::string getHexCode(const Bottle& bot) {
     return ss.str();
 }
 
+void printHelp (yarp::os::Bottle& reply) {
+
+    std::string helpMessage{};
+    helpMessage = helpMessage +
+                      " commands are: \n" +
+                      "help         to display this message\n" +
+                      "\n"+
+                      "set <part> <emotion>  set a specific emotion for a defined part   \n" +
+                      "\tthe available part are: mou, eli, leb, reb, all\n"+
+                      "\tthe available emotions are: neu, hap, sad, sur, ang, evi, shy, cun\n"+
+                      "\n"+
+                      "set color <color>     set the color of the led\n" +
+                      "\t!! available only for rfe board !!\n"+
+                      "\tthe available colors are: black, white, red, lime, blue, yellow,"
+                      " cyan, magenta, silver, gray, maroon, olive, green, purple, teal, navy\n"+
+                      "\n"+
+                      "set brig <brig>       set the brightness of the leds\n"+
+                      "\t!! available only for rfe board !!\n"+
+                      "\tthe brightness is defined by an iteger from 0 to 5, where 0 means led of\n"+
+                      "\n"+
+                      "set mask (<col_leb> <m_name_leb> <brig_leb>) (<col_reb> <m_name_reb> <brig_reb>) (<col_mou> <m_name_mou> <brig_mou>) set color, bitmask and brightness for each part(leb, reb, mou)\n"+
+                      "\t!! available only for rfe board !!\n"+
+                      "\tm_name stands for mask name and the availble bitmasks can be consulted/added in faceExpressions/emotions_rfe.ini\n";
+
+    reply.clear();
+    reply.addVocab(Vocab::encode("many"));
+    reply.addString(helpMessage.c_str());
+}
+
 EmotionInterfaceModule::EmotionInterfaceModule() : emotionInitReport(this) {
 }
 
@@ -285,85 +314,87 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
     bool rec = false; // is the command recognized?
 
     switch (command.get(0).asVocab()) {
-   
-    case EMOTION_VOCAB_SET:
-        rec = true;
-        {
-            switch(command.get(1).asVocab()) {
-            case EMOTION_VOCAB_MOUTH:{
-                ok = setMouth(command.get(2).toString());
-                break;
-            }
-            case EMOTION_VOCAB_EYELIDS:{
-                ok = setEyelids(command.get(2).toString());
-                break;
-            }
-            case EMOTION_VOCAB_LEFTEYEBROW:{
-                ok = setLeftEyebrow(command.get(2).toString());
-                break;
-            }
-            case EMOTION_VOCAB_RIGHTEYEBROW:{
-                ok = setRightEyebrow(command.get(2).toString());
-                break;
-            }
-            case EMOTION_VOCAB_ALL:{
-                ok = setAll(command.get(2).toString());
-                break;
-            }
-            case EMOTION_VOCAB_RAW:{
-                ok = setRaw(command.get(2).toString());
-                break;
-            }
-            case EMOTION_VOCAB_COLOR:{
-                ok = setColor(command.get(2).toString());
-                break;
-            }
-            case EMOTION_VOCAB_BRIG: {
-                ok = setBrightness(command.get(2).toString());
-                break;
-            }
-            case EMOTION_VOCAB_MASK:{
-                ok = setMask(command);
-                break;
-            }
-            default:
-                cout << "received an unknown request after a VOCAB_SET" << endl;
-                break;
-            }
-        }
-        break;
-    case EMOTION_VOCAB_GET:
-        rec = true;
-        /*{
-            reply.addVocab(VOCAB_IS);
-            reply.add(command.get(1));
-            switch(command.get(1).asVocab()) {
-            case EGOSPHERE_VOCAB_THRESHOLD_SALIENCE:{
-                float thr = getThresholdSalience();
-                reply.addDouble((double)thr);
-                ok = true;
-                break;
-            }
-            case EGOSPHERE_VOCAB_OUTPUT:{
-                int v = (int)getOutput();
-                reply.addInt(v);
-                ok = true;
-                break;
-            }
-            case EGOSPHERE_VOCAB_SALIENCE_DECAY:{
-                double rate = getSalienceDecay();
-                reply.addDouble(rate);
-                ok = true;
-                break;
+        case EMOTION_VOCAB_HELP:
+            printHelp(reply);
+            return true;
+        case EMOTION_VOCAB_SET:
+            rec = true;
+            {
+                switch(command.get(1).asVocab()) {
+                case EMOTION_VOCAB_MOUTH:{
+                    ok = setMouth(command.get(2).toString());
+                    break;
+                }
+                case EMOTION_VOCAB_EYELIDS:{
+                    ok = setEyelids(command.get(2).toString());
+                    break;
+                }
+                case EMOTION_VOCAB_LEFTEYEBROW:{
+                    ok = setLeftEyebrow(command.get(2).toString());
+                    break;
+                }
+                case EMOTION_VOCAB_RIGHTEYEBROW:{
+                    ok = setRightEyebrow(command.get(2).toString());
+                    break;
+                }
+                case EMOTION_VOCAB_ALL:{
+                    ok = setAll(command.get(2).toString());
+                    break;
+                }
+                case EMOTION_VOCAB_RAW:{
+                    ok = setRaw(command.get(2).toString());
+                    break;
+                }
+                case EMOTION_VOCAB_COLOR:{
+                    ok = setColor(command.get(2).toString());
+                    break;
+                }
+                case EMOTION_VOCAB_BRIG: {
+                    ok = setBrightness(command.get(2).toString());
+                    break;
+                }
+                case EMOTION_VOCAB_MASK:{
+                    ok = setMask(command);
+                    break;
+                }
+                default:
+                    cout << "received an unknown request after a VOCAB_SET" << endl;
+                    break;
+                }
             }
             break;
-            default:
-                cout << "received an unknown request after a VOCAB_GET" << endl;
+        case EMOTION_VOCAB_GET:
+            rec = true;
+            /*{
+                reply.addVocab(VOCAB_IS);
+                reply.add(command.get(1));
+                switch(command.get(1).asVocab()) {
+                case EGOSPHERE_VOCAB_THRESHOLD_SALIENCE:{
+                    float thr = getThresholdSalience();
+                    reply.addDouble((double)thr);
+                    ok = true;
+                    break;
+                }
+                case EGOSPHERE_VOCAB_OUTPUT:{
+                    int v = (int)getOutput();
+                    reply.addInt(v);
+                    ok = true;
+                    break;
+                }
+                case EGOSPHERE_VOCAB_SALIENCE_DECAY:{
+                    double rate = getSalienceDecay();
+                    reply.addDouble(rate);
+                    ok = true;
+                    break;
+                }
                 break;
+                default:
+                    cout << "received an unknown request after a VOCAB_GET" << endl;
+                    break;
+                }
             }
-        }
-        */
-        break;
+            */
+            break;
 
     }
 
