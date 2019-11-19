@@ -59,22 +59,20 @@ struct eth::theNVmanager::Impl
 
     struct askTransaction
     {
-        std::uint16_t           expectedrops;
-        std::uint16_t           receivedrops;
-        eOprotIP_t              _ipv4;
-        eOprotID32_t            _id32;
-        std::uint32_t           signature;
-        std::mutex              mtx_semaphore;
-        std::condition_variable cv_semaphore;
-        ACE_thread_t            owner;
-        double                  timeofwait;
-        double                  timeofpost;
+        std::uint16_t           expectedrops {0};
+        std::uint16_t           receivedrops {0};
+        eOprotIP_t              _ipv4 {0};
+        eOprotID32_t            _id32 {0};
+        std::uint32_t           signature {eo_rop_SIGNATUREdummy};
+        std::mutex              mtx_semaphore {};
+        std::condition_variable cv_semaphore {};
+        ACE_thread_t            owner {0};
+        double                  timeofwait {0};
+        double                  timeofpost {0};
 
         askTransaction() :
             expectedrops(0), receivedrops(0), _ipv4(0), _id32(0), signature(eo_rop_SIGNATUREdummy), owner(0), timeofwait(0), timeofpost(0)
         {
-            std::unique_lock<std::mutex> lck(mtx_semaphore);
-            cv_semaphore.wait(lck);
         }
 
         ~askTransaction()
@@ -95,7 +93,7 @@ struct eth::theNVmanager::Impl
 
         void load(eOprotIP_t _ip, const std::vector<eOprotID32_t> &_ids, std::uint32_t _s)
         {
-            expectedrops =_ids.size();
+            expectedrops = static_cast<uint16_t>(_ids.size()); // ok to downcast
             receivedrops = 0;
 
             _ipv4 = _ip;
@@ -109,7 +107,7 @@ struct eth::theNVmanager::Impl
         bool wait(std::uint16_t &numofrxrops, double timeout = 0.5)
         {
             timeofwait = SystemClock::nowSystem();
-            const int timeout_millis = (int)(1000.0 * timeout);
+            const int timeout_millis = static_cast<int>(1000.0 * timeout);
             std::unique_lock<std::mutex> lck(mtx_semaphore);
             bool r = (cv_semaphore.wait_for(lck, std::chrono::milliseconds(timeout_millis)) == cv_status::no_timeout);
             numofrxrops = receivedrops;
@@ -131,17 +129,17 @@ struct eth::theNVmanager::Impl
 
     struct Data
     {
-        std::uint32_t sequence;
+        std::mutex locker {};
         // the key is u64: either [0, signature] or [ipv4, id32]
-        std::multimap<std::uint64_t, askTransaction*> themap;
-        std::mutex locker;
-        int pp1;
+        std::multimap<std::uint64_t, askTransaction*> themap {};
+        std::uint32_t sequence {0};
+        std::uint32_t filler {0};
+
         Data() { reset(); }
         void reset()
         {
             themap.clear();
             sequence = 0;
-            pp1 = 0;
         }
 
         std::uint32_t uniquesignature()
@@ -317,7 +315,7 @@ struct eth::theNVmanager::Impl
 };
 
 
-std::mutex eth::theNVmanager::Impl::mtx;
+std::mutex eth::theNVmanager::Impl::mtx {};
 
 
 //bool eth::theNVmanager::Impl::initialise(const Config &_config)
