@@ -11,6 +11,7 @@ add_subdirectory(trajectoryPlayer)
 add_subdirectory(imageBlender)
 add_subdirectory(imageCropper)
 add_subdirectory(embObjProtoTools/boardTransceiver)
+add_subdirectory(wholeBodyPlayer)
 
 #canLoader needs GtkPlus, but it contains a library needed by other modules
 add_subdirectory(canLoader)
