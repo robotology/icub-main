@@ -265,18 +265,18 @@ public:
     
         if(options.check("part"))
             {
-                char tmp[255];
-                sprintf(tmp, "/%s/vc/%s/client",
+                char tmp[800];
+                snprintf(tmp, sizeof(tmp), "/%s/vc/%s/client",
                         robotName,
                         options.find("part").asString().c_str());
                 options.put("local",tmp);
         
-                sprintf(tmp, "/%s/%s", 
+                snprintf(tmp, sizeof(tmp),"/%s/%s",
                         robotName,
                         options.find("part").asString().c_str());
                 options.put("remote", tmp);
         
-                sprintf(tmp,"/%s/vc/%s/input",
+                snprintf(tmp, sizeof(tmp), "/%s/vc/%s/input",
                         robotName,
                         options.find("part").asString().c_str());
                 input_port.open(tmp);
@@ -308,7 +308,7 @@ public:
         if (!options.check("part"))
             return false;
         
-        sprintf(partName, "%s", options.find("part").asString().c_str());
+        snprintf(partName, sizeof(partName), "%s", options.find("part").asString().c_str());
 
         vc=new velControlThread(period);
         vc->init(&driver, partName,

@@ -89,16 +89,16 @@ public:
 
         if(options.check("part"))
         {
-            sprintf(partName, "%s", options.find("part").asString().c_str());
+            snprintf(partName, sizeof(partName), "%s", options.find("part").asString().c_str());
 
-            char tmp[255];
-            sprintf(tmp, "/%s/%s/%s/client", moduleName.c_str(), robotName, partName);
+            char tmp[800];
+            snprintf(tmp, sizeof(tmp), "/%s/%s/%s/client", moduleName.c_str(), robotName, partName);
             options.put("local",tmp);
         
-            sprintf(tmp, "/%s/%s", robotName, partName);
+            snprintf(tmp, sizeof(tmp), "/%s/%s", robotName, partName);
             options.put("remote", tmp);
         
-            sprintf(tmp, "/%s/%s/rpc", moduleName.c_str(), partName);
+            snprintf(tmp, sizeof(tmp), "/%s/%s/rpc", moduleName.c_str(), partName);
             rpc_port.open(tmp);
             
             options.put("carrier", "tcp");
