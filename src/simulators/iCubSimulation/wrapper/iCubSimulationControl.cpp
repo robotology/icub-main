@@ -101,6 +101,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     double velocity = p.findGroup("GENERAL").check("Vel",Value(1),
                                           "Default velocity").asDouble();
+    _mutex.lock();
     partSelec = TypeArm;
 
     njoints = numTOTjoints;
@@ -340,6 +341,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     odeinit.setSimulationControl(this, partSelec);
     odeinit.mtx.unlock();
     //PeriodicThread::start();
+    _mutex.unlock();
     _opened = true;
 
     verbosity = odeinit.verbosity;
@@ -803,8 +805,10 @@ bool iCubSimulationControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, i
            }
            break;
            default:
+           {
                lock_guard<mutex> lck(_mutex);
                *out = 0;
+           }
            break;
        }
     }
