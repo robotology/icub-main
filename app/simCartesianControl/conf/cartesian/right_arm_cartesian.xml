@@ -6,7 +6,7 @@
             <param name="SolverNameToConnect">cartesianSolver/right_arm</param>
             <param name="KinematicPart">arm</param>
             <param name="KinematicType">right</param>
-            <param name="PositionControl">off</param>
+            <param name="PositionControl">on</param>
             <param name="MultipleJointsControl">on</param>
             <param name="NumberOfDrivers">2</param>
         </group>
