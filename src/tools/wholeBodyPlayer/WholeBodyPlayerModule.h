@@ -6,18 +6,38 @@
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 /**
-@ingroup icub_module
-\defgroup wholeBodyPlayer wholeBodyPlayer
-
-A module to replay the encoder data coming from yarpdataplayer(http://yarp.it/yarpdataplayer.html).
-
-\section intro_sec Description
-
-
-\section tested_os_sec Tested OS
-Windows, Linux
-
-\author Nicolo' Genesio
+ *
+ * @ingroup icub_tools
+ * \defgroup wholeBodyPlayer wholeBodyPlayer
+ * A module to replay the encoder data coming from yarpdataplayer(http://yarp.it/yarpdataplayer.html).
+ *
+ * \section disclaimer Disclaimer
+ * \warning This software has been fully tested only on simulators, it is in a beta state for the use on the real robots.
+ * \section intro_sec Description
+ * This module opens a remote_controlboard (http://yarp.it/classyarp_1_1dev_1_1RemoteControlBoard.html) for each <part>
+ * and commands it in position direct control to specific positions received by the input port related to the part.
+ *
+ * The position direct control ensure a more reliable repeatability of the movement but on the other hand can be
+ * dangerous if used without guards. In this sense this module checks if the jump from the current state of each joint and
+ * the target position is not greater of a tolerance. In this case for security reasons it pauses yarpdataplayer, moves
+ * the joint(s) in position control for reaching the target, then send a play command to the yarpdataplayer and resume
+ * the position direct control. If the reaching of the target fails also in position control, then a fatal error is
+ * triggered and the module closes.
+ *
+ * \section params Parameters
+ * --robot  The name of the robot to be controlled (e.g icub, icubSim, cer). icub is the default value.
+ * --name   The prefix to be given to the ports of the module. wholeBodyPlayer is the default value.
+ * --parts  List of parts to be controlled. It has to be from one to all the following parts: "(head torso left_arm right_arm left_leg right_arm)"
+ *
+ * \section ports Ports
+ * This module open one port for each part controlled, from which it receive data from yarpdataplayer.
+ * They have this name:
+ *
+ * /<name>/<part>/state:i
+ *
+ * \section tested_os_sec Tested OS
+ * Windows, Linux
+ * \author Nicolo' Genesio
 */
 
 
