@@ -199,7 +199,7 @@ public:
         printf("Detected arm kinematics version %g\n",hwver);
 
         map<string,int> torsoJointsRemap{{"pitch",0},{"roll",1},{"yaw",2}};
-        if (hwver>2.5)
+        if (hwver>=3.0)
         {
             torsoJointsRemap["roll"]=0;
             torsoJointsRemap["pitch"]=1;
