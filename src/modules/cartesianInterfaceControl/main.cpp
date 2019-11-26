@@ -112,8 +112,9 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
-#include <string>
 #include <cstdio>
+#include <string>
+#include <map>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -192,42 +193,54 @@ public:
         // set trajectory time
         defaultExecTime=rf.check("T",Value(2.0)).asDouble();
 
+        Bottle info;
+        iarm->getInfo(info);
+        double hwver=info.find("arm_version").asDouble();
+        printf("Detected arm kinematics version %g\n",hwver);
+
+        map<string,int> torsoJointsRemap{{"pitch",0},{"roll",1},{"yaw",2}};
+        if (hwver>2.5)
+        {
+            torsoJointsRemap["roll"]=0;
+            torsoJointsRemap["pitch"]=1;
+        }
+
         // set torso dofs
         Vector newDof, curDof;
         iarm->getDOF(curDof);
         newDof=curDof;
 
         if (rf.check("DOF10"))
-        {    
+        {
             // torso joints completely enabled
-            newDof[0]=1;
-            newDof[1]=1;
-            newDof[2]=1;
+            newDof[torsoJointsRemap["pitch"]]=1;
+            newDof[torsoJointsRemap["roll"]]=1;
+            newDof[torsoJointsRemap["yaw"]]=1;
 
-            limitTorsoPitch();
+            limitTorsoPitch(torsoJointsRemap["pitch"]);
         }
         else if (rf.check("DOF9"))
-        {    
+        {
             // torso yaw and pitch enabled
-            newDof[0]=1;
-            newDof[1]=0;
-            newDof[2]=1;
+            newDof[torsoJointsRemap["pitch"]]=1;
+            newDof[torsoJointsRemap["roll"]]=0;
+            newDof[torsoJointsRemap["yaw"]]=1;
 
-            limitTorsoPitch();
+            limitTorsoPitch(torsoJointsRemap["pitch"]);
         }
         else if (rf.check("DOF8"))
-        {                
+        {
             // only torso yaw enabled
-            newDof[0]=0;
-            newDof[1]=0;
-            newDof[2]=1;
+            newDof[torsoJointsRemap["pitch"]]=0;
+            newDof[torsoJointsRemap["roll"]]=0;
+            newDof[torsoJointsRemap["yaw"]]=1;
         }
         else
-        {    
+        {
             // torso joints completely disabled
-            newDof[0]=0;
-            newDof[1]=0;
-            newDof[2]=0;
+            newDof[torsoJointsRemap["pitch"]]=0;
+            newDof[torsoJointsRemap["roll"]]=0;
+            newDof[torsoJointsRemap["yaw"]]=0;
         }
 
         iarm->setDOF(newDof,curDof);
@@ -310,11 +323,9 @@ public:
     }
 
     /************************************************************************/
-    void limitTorsoPitch()
+    void limitTorsoPitch(const int axis)
     {
-        int axis=0; // pitch joint
         double min, max;
-
         iarm->getLimits(axis,&min,&max);
         iarm->setLimits(axis,min,MAX_TORSO_PITCH);
     }
