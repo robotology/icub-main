@@ -2445,7 +2445,7 @@ void iCubEye::allocate(const string &_type)
     {
         H0.zero();
         H0(0,2)=1.0;
-        H0(1,1)= -1.0;
+        H0(1,1)=-1.0;
         H0(2,0)=1.0;
         H0(3,3)=1.0;
         setH0(H0);
