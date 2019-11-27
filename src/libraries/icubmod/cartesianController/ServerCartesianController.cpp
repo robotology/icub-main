@@ -1294,14 +1294,15 @@ bool ServerCartesianController::areJointsHealthyAndSet(vector<int> &jointsToSet)
         {
             if (!(*chainState)[chainCnt].isBlocked())
             {
-                if ((modes[j]==VOCAB_CM_HW_FAULT) || (modes[j]==VOCAB_CM_IDLE))
+                int mode=modes[lRmp[i][j]];
+                if ((mode==VOCAB_CM_HW_FAULT) || (mode==VOCAB_CM_IDLE))
                     return false;
                 else if (posDirectEnabled)
                 {
-                    if (modes[j]!=VOCAB_CM_POSITION_DIRECT)
+                    if (mode!=VOCAB_CM_POSITION_DIRECT)
                         jointsToSet.push_back(chainCnt);
                 }
-                else if (modes[j]!=VOCAB_CM_VELOCITY)
+                else if (mode!=VOCAB_CM_VELOCITY)
                     jointsToSet.push_back(chainCnt);
             }
 
@@ -1329,8 +1330,8 @@ void ServerCartesianController::setJointsCtrlMode(const vector<int> &jointsToSet
         for (int j=0; j<lJnt[i]; j++)
         {
             if (chainCnt==jointsToSet[k])
-            {       
-                joints.push_back(j);
+            {
+                joints.push_back(lRmp[i][j]);
                 modes.push_back(posDirectEnabled?VOCAB_CM_POSITION_DIRECT:
                                                  VOCAB_CM_VELOCITY);
                 k++;
