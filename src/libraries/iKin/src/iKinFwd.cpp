@@ -2443,6 +2443,7 @@ void iCubEye::allocate(const string &_type)
     }
     else if ((getType()=="left_v3") || (getType()=="right_v3"))
     {
+        H0.zero();
         H0(0,2)=1.0;
         H0(1,1)= -1.0;
         H0(2,0)=1.0;
