@@ -17,6 +17,7 @@
 */
 
 
+#include <typeinfo>
 #include <fstream>
 #include <sstream>
 #include <cmath>
@@ -935,6 +936,7 @@ bool MotorThread::threadInit()
     string name=rf.find("name").asString();
     string robot=bMotor.check("robot",Value("icub")).asString();
     string partUsed=bMotor.check("part_used",Value("both_arms")).asString();
+    int actionprimitives_layer=bMotor.check("actionprimitives_layer",Value(2)).asInt();
     setPeriod((double)bMotor.check("thread_period",Value(100)).asInt()/1000.0);
 
     actions_path=bMotor.check("actions",Value("actions")).asString();
@@ -1239,8 +1241,16 @@ bool MotorThread::threadInit()
             string tmpGraspFile=rf.findFile(bArm[arm].find("grasp_model_file").asString());
             option_tmp.put("grasp_model_file",tmpGraspFile);
 
-            yInfo("***** Instantiating primitives for %s",arm_name[arm].c_str());
-            action[arm]=new ActionPrimitivesLayer2(option_tmp);
+            if (actionprimitives_layer==1)
+            {
+                yInfo("***** Instantiating primitives layer 1 for %s",arm_name[arm].c_str());
+                action[arm]=new ActionPrimitivesLayer1(option_tmp);
+            }
+            else
+            {
+                yInfo("***** Instantiating primitives layer 2 for %s",arm_name[arm].c_str());
+                action[arm]=new ActionPrimitivesLayer2(option_tmp);
+            }
             if (!action[arm]->isValid())
             {
                 close();
@@ -1248,8 +1258,10 @@ bool MotorThread::threadInit()
             }
 
             action[arm]->getGraspModel(graspModel[arm]);
-            action[arm]->setExtForceThres(extForceThresh[arm]);
             action[arm]->enableReachingTimeout(reachingTimeout);
+
+            if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+                dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->setExtForceThres(extForceThresh[arm]);
 
             deque<string> q=action[arm]->getHandSeqList();
             yInfo("***** List of available %s hand sequence keys:",arm_name[arm].c_str());
@@ -1414,7 +1426,9 @@ void MotorThread::run()
 
             // get the wrench at the end-effector
             // and filter out forces under threshold
-            action[dragger.arm]->getExtWrench(wrench);
+            if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+                dynamic_cast<ActionPrimitivesLayer2*>(action[dragger.arm])->getExtWrench(wrench);
+
             force[0]=wrench[0];
             force[1]=wrench[1];
             force[2]=wrench[2];
@@ -1455,7 +1469,9 @@ void MotorThread::run()
 
                 // get the wrench at the end-effector
                 // and filter out forces under threshold
-                action[dragger.arm]->getExtWrench(wrench);
+                if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+                    dynamic_cast<ActionPrimitivesLayer2*>(action[dragger.arm])->getExtWrench(wrench);
+
                 force[0]=wrench[0];
                 force[1]=wrench[1];
                 force[2]=wrench[2];
@@ -1611,7 +1627,8 @@ bool MotorThread::reach(Bottle &options)
     restoreContext(arm);
     
     wbdRecalibration();
-    action[arm]->enableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->enableContactDetection();
 
     ActionPrimitivesWayPoint wp;
     wp.x=xd+tmpDisp; wp.o=tmpOrient; wp.oEnabled=true;
@@ -1628,8 +1645,11 @@ bool MotorThread::reach(Bottle &options)
 
     bool f;
     action[arm]->checkActionsDone(f,true);
-    action[arm]->checkContact(f);
-    action[arm]->disableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+    {
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->checkContact(f);
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->disableContactDetection();
+    }
 
     action[arm]->enableReachingTimeout(reachingTimeout);
 
@@ -1705,7 +1725,8 @@ bool MotorThread::powerGrasp(Bottle &options)
     restoreContext(arm);
 
     wbdRecalibration();
-    action[arm]->enableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->enableContactDetection();
     action[arm]->enableReachingTimeout(0.6*reachingTimeout);
     action[arm]->pushAction(approach_x,approach_o,"pregrasp_hand");
 
@@ -1713,7 +1734,8 @@ bool MotorThread::powerGrasp(Bottle &options)
     action[arm]->pushAction(x,o);
     action[arm]->checkActionsDone(f,true);
     action[arm]->enableReachingTimeout(reachingTimeout);
-    action[arm]->disableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->disableContactDetection();
 
     return grasp(options);
 }
@@ -1758,10 +1780,12 @@ bool MotorThread::push(Bottle &options)
     }
 
     wbdRecalibration();
-    action[arm]->enableContactDetection();    
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->enableContactDetection();
     action[arm]->pushAction(xd-3*push_direction*reachSideDisp[arm],reachSideOrient[arm]);
     action[arm]->checkActionsDone(f,true);
-    action[arm]->disableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->disableContactDetection();
 
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
@@ -1937,7 +1961,8 @@ bool MotorThread::takeTool(Bottle &options)
     action[arm]->checkActionsDone(f,true);
 
     double force_thresh;
-    action[arm]->getExtForceThres(force_thresh);
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->getExtForceThres(force_thresh);
 
     bool contact_detected=false;
     Vector wrench(6);
@@ -1945,7 +1970,9 @@ bool MotorThread::takeTool(Bottle &options)
     
     while (!contact_detected && (Time::now()-t<5.0))
     {
-        action[arm]->getExtWrench(wrench);
+        if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+            dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->getExtWrench(wrench);
+
         if (norm(wrench)>force_thresh)
             contact_detected=true;
 
@@ -1980,16 +2007,20 @@ bool MotorThread::expect(Bottle &options)
     action[arm]->checkActionsDone(f,true);
     
     double force_thresh;
-    action[arm]->getExtForceThres(force_thresh);
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->getExtForceThres(force_thresh);
     
     bool contact_detected=false;
     Vector wrench(6);
     double t=Time::now();
     while(!contact_detected && Time::now()-t<5.0)
     {
-        action[arm]->getExtWrench(wrench);
+        if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+            dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->getExtWrench(wrench);
+
         if(norm(wrench)>force_thresh)
             contact_detected=true;
+
         Time::delay(0.1);
     }    
     
@@ -2022,17 +2053,20 @@ bool MotorThread::give(Bottle &options)
     action[arm]->pushAction("open_hand");
 
     wbdRecalibration();
-    action[arm]->enableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->enableContactDetection();
 
     bool contact_detected=false;
     double t=Time::now();
     while (!contact_detected && (Time::now()-t<5.0))
     {
-        action[arm]->checkContact(contact_detected);
+        if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+            dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->checkContact(contact_detected);
         Time::delay(0.1);
     }
 
-    action[arm]->disableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->disableContactDetection();
 
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
@@ -2361,7 +2395,8 @@ bool MotorThread::deploy(Bottle &options)
     action[arm]->checkActionsDone(f,true);
 
     wbdRecalibration();
-    action[arm]->enableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->enableContactDetection();
 
     ActionPrimitivesWayPoint wp;
     deployOffs*=0.5;
@@ -2375,7 +2410,8 @@ bool MotorThread::deploy(Bottle &options)
 
     action[arm]->checkActionsDone(f,true);
     action[arm]->getPose(x,o);
-    action[arm]->disableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->disableContactDetection();
 
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         ctrl_gaze->lookAtFixationPoint(x);
@@ -2502,7 +2538,8 @@ bool MotorThread::calibTable(Bottle &options)
     restoreContext(arm);
 
     wbdRecalibration();
-    action[arm]->enableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->enableContactDetection();
 
     ActionPrimitivesWayPoint wp;
     wp.x=deployPrepare; wp.o=reachAboveCata[arm];
@@ -2516,11 +2553,13 @@ bool MotorThread::calibTable(Bottle &options)
 
     action[arm]->checkActionsDone(f,true);
     action[arm]->pushWaitState(1.0);
-    action[arm]->disableContactDetection();
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->disableContactDetection();
     action[arm]->enableReachingTimeout(reachingTimeout);
 
     bool found;
-    action[arm]->checkContact(found);
+    if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
+        dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->checkContact(found);
 
     if(found)
     {

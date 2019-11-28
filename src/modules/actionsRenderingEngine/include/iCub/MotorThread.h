@@ -147,7 +147,7 @@ private:
 
     ff2LayNN_tansig_purelin             net;
 
-    ActionPrimitivesLayer2              *action[2];
+    ActionPrimitives                    *action[2];
     int                                 action_context[2];
 
     bool                                homeFixCartType;
