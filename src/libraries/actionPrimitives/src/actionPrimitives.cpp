@@ -47,6 +47,10 @@
 #define ACTIONPRIM_BALANCEARM_PERIOD                2.0     // [s]
 #define ACTIONPRIM_BALANCEARM_LENGTH                0.03    // [m]
 
+#define ACTIONPRIM_TORSO_PITCH                      "torso_pitch"
+#define ACTIONPRIM_TORSO_ROLL                       "torso_roll"
+#define ACTIONPRIM_TORSO_YAW                        "torso_yaw"
+
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -397,10 +401,21 @@ void ActionPrimitives::printMessage(const int logtype, const char *format, ...) 
 
 
 /************************************************************************/
-bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key, const int j)
+bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key)
 {
     if (opt.check(key))
     {
+        Bottle info;
+        cartCtrl->getInfo(info);
+        double hwver=info.find("arm_version").asDouble();
+        map<string,int> remap{{ACTIONPRIM_TORSO_PITCH,0},{ACTIONPRIM_TORSO_ROLL,1},{ACTIONPRIM_TORSO_YAW,2}};
+        if (hwver>=3.0)
+        {
+            remap[ACTIONPRIM_TORSO_ROLL]=0;
+            remap[ACTIONPRIM_TORSO_PITCH]=1;
+        }
+        const int j=remap[key];
+
         bool sw=opt.find(key).asString()=="on"?true:false;
 
         Vector newDof(3,2.0), dummyRet;
@@ -631,11 +646,11 @@ bool ActionPrimitives::open(Property &opt)
     setTrackingMode(tracking_mode);
 
     // handle torso DOF's
-    if (!handleTorsoDOF(opt,"torso_pitch",0))
+    if (!handleTorsoDOF(opt,ACTIONPRIM_TORSO_PITCH))
         return false;
-    if (!handleTorsoDOF(opt,"torso_roll",1))
+    if (!handleTorsoDOF(opt,ACTIONPRIM_TORSO_ROLL))
         return false;
-    if (!handleTorsoDOF(opt,"torso_yaw",2))
+    if (!handleTorsoDOF(opt,ACTIONPRIM_TORSO_YAW))
         return false;
 
     Vector curDof;

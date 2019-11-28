@@ -299,7 +299,7 @@ protected:
     
     virtual void printMessage(const int logtype, const char *format, ...) const;
 
-    virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,const int j);
+    virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key);
     virtual void disableTorsoDof();
     virtual void enableTorsoDof();
     virtual bool configHandSeq(yarp::os::Property &opt);
