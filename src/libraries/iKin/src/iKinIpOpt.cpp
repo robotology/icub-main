@@ -8,7 +8,9 @@
  * details.
 */
 
+#include <cstdlib>
 #include <limits>
+#include <string>
 
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
@@ -75,11 +77,11 @@ iKinLinIneqConstr &iKinLinIneqConstr::operator=(const iKinLinIneqConstr &obj)
 
 
 /************************************************************************/
-void iCubShoulderConstr::clone(const iKinLinIneqConstr *obj)
+void iCubAdditionalArmConstraints::clone(const iKinLinIneqConstr *obj)
 {
     iKinLinIneqConstr::clone(obj);
 
-    const iCubShoulderConstr *ptr=static_cast<const iCubShoulderConstr*>(obj);
+    const iCubAdditionalArmConstraints *ptr=static_cast<const iCubAdditionalArmConstraints*>(obj);
 
     shou_m=ptr->shou_m;
     shou_n=ptr->shou_n;
@@ -87,13 +89,18 @@ void iCubShoulderConstr::clone(const iKinLinIneqConstr *obj)
     elb_n=ptr->elb_n;
     
     chain=ptr->chain;
+    hw_version=ptr->hw_version;
 }
 
 
 /************************************************************************/
-iCubShoulderConstr::iCubShoulderConstr(iCubArm &arm) : iKinLinIneqConstr()
+iCubAdditionalArmConstraints::iCubAdditionalArmConstraints(iCubArm &arm) :
+                              iKinLinIneqConstr()
 {      
     chain=arm.asChain();
+
+    size_t underscore=arm.getType().find('_');
+    hw_version=(underscore!=string::npos)?strtod(arm.getType().substr(underscore+2).c_str(),NULL):1.0;
 
     double joint1_0, joint1_1;
     double joint2_0, joint2_1;
@@ -118,7 +125,7 @@ iCubShoulderConstr::iCubShoulderConstr(iCubArm &arm) : iKinLinIneqConstr()
 
 
 /************************************************************************/
-void iCubShoulderConstr::update(void*)
+void iCubAdditionalArmConstraints::update(void*)
 {
     // optimization won't use LinIneqConstr by default
     setActive(false);
@@ -132,35 +139,39 @@ void iCubShoulderConstr::update(void*)
     yarp::sig::Vector _uB;    
 
     // if shoulder's axes are controlled, constraint them
-    if (!(*chain)[3].isBlocked() && !(*chain)[3+1].isBlocked() &&
+    if (!(*chain)[3+0].isBlocked() && !(*chain)[3+1].isBlocked() &&
         !(*chain)[3+2].isBlocked())
     {
         // compute offset to shoulder's axes
         // given the blocked/released status of
-        // previous link
+        // torso links
         int offs=0;
         for (int i=0; i<3; i++)
             if (!(*chain)[i].isBlocked())
                 offs++;
 
         // constraints on the cables length
-        row.zero();
-        row[offs]=1.71; row[offs+1]=-1.71;
-        _C=pile(_C,row);
-        _lB=cat(_lB,-347.00*CTRL_DEG2RAD);
-        _uB=cat(_uB,upperBoundInf);
+        // (applies only for hw < 3.0)
+        if (hw_version<3.0)
+        {
+            row.zero();
+            row[offs]=1.71; row[offs+1]=-1.71;
+            _C=pile(_C,row);
+            _lB=cat(_lB,-347.00*CTRL_DEG2RAD);
+            _uB=cat(_uB,upperBoundInf);
 
-        row.zero();
-        row[offs]=1.71; row[offs+1]=-1.71; row[offs+2]=-1.71;
-        _C=pile(_C,row);
-        _lB=cat(_lB,-366.57*CTRL_DEG2RAD);
-        _uB=cat(_uB,112.42*CTRL_DEG2RAD);
+            row.zero();
+            row[offs]=1.71; row[offs+1]=-1.71; row[offs+2]=-1.71;
+            _C=pile(_C,row);
+            _lB=cat(_lB,-366.57*CTRL_DEG2RAD);
+            _uB=cat(_uB,112.42*CTRL_DEG2RAD);
 
-        row.zero();
-        row[offs+1]=1.0; row[offs+2]=1.0;
-        _C=pile(_C,row);
-        _lB=cat(_lB,-66.60*CTRL_DEG2RAD);
-        _uB=cat(_uB,213.30*CTRL_DEG2RAD);
+            row.zero();
+            row[offs+1]=1.0; row[offs+2]=1.0;
+            _C=pile(_C,row);
+            _lB=cat(_lB,-66.60*CTRL_DEG2RAD);
+            _uB=cat(_uB,213.30*CTRL_DEG2RAD);
+        }
 
         // constraints to prevent arm from touching torso
         row.zero();

@@ -1798,7 +1798,7 @@ PartDescriptor *iCubArmCartesianSolver::getPartDesc(Searchable &options)
     PartDescriptor *p=new PartDescriptor;
     p->lmb=new iCubArm(type);
     p->chn=p->lmb->asChain();
-    p->cns=new iCubShoulderConstr(*static_cast<iCubArm*>(p->lmb));
+    p->cns=new iCubAdditionalArmConstraints(*static_cast<iCubArm*>(p->lmb));
     p->prp.push_back(optTorso);
     p->prp.push_back(optArm);
     p->rvs.push_back(version<3.0);  // torso

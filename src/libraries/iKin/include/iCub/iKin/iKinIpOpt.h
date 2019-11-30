@@ -166,15 +166,16 @@ public:
 /**
 * \ingroup iKinIpOpt
 *
-* Class for dealing with iCub shoulder's constraints due to the 
-* cables length.
+* Class for dealing with additional iCub arm's constraints
 */
-class iCubShoulderConstr : public iKinLinIneqConstr
+class iCubAdditionalArmConstraints : public iKinLinIneqConstr
 {
-protected:    
+protected:
     double     shou_m, shou_n;
     double     elb_m,  elb_n;
+    
     iKinChain *chain;
+    double     hw_version;
 
     void clone(const iKinLinIneqConstr *obj);
 
@@ -183,7 +184,7 @@ public:
     * Constructor. 
     * @param arm the iCubArm object.
     */
-    iCubShoulderConstr(iCubArm &arm);
+    iCubAdditionalArmConstraints(iCubArm &arm);
 
     void update(void*);
 };
