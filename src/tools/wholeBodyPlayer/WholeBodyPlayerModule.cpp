@@ -8,6 +8,7 @@
 
 #include "WholeBodyPlayerModule.h"
 #include <algorithm>
+#include <yarp/dev/GenericVocabs.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -17,21 +18,43 @@ using namespace std;
 static const std::vector<std::string> partsVec {"head","torso","left_arm","right_arm","left_leg","right_leg"};
 
 double WholeBodyPlayerModule::getPeriod() {
-    return 2.0;
+    return 0.001;
 }
 
 bool WholeBodyPlayerModule::updateModule() {
-    // TODO Check if one ReplayPort triggered an error and in case shut down.
 
     for (auto& rep : m_replayerVec){
-        if (rep.m_replayPort->interrupted) {
+        if (rep.m_replayPort->m_state == state::fatal_error) {
             yError()<<"wholeBodyPlayer: the port"<<rep.m_replayPort->getName()<<"is closed because something went wrong.. closing";
             return false;
+        } else if (rep.m_replayPort->m_state == state::error) {
+            bool ok{true};
+            response.clear();
+            // pause
+            ok &= m_rpcPort.write(reqPause, response);
+            if (!ok || response.get(0).asVocab() != VOCAB_OK) {
+                yError()<<"wholeBodyPlayer: the port"<<rep.m_replayPort->getName()<<"is closed because the pause request failed.. closing";
+                return false;
+            }
+
+            // position move fallback
+            ok &= rep.m_replayPort->positionMoveFallback();
+            if (!ok) {
+                yError()<<"wholeBodyPlayer: the port"<<rep.m_replayPort->getName()<<"is closed because the fallback failed.. closing";
+                return false;
+            }
+
+            // start
+            response.clear();
+            ok &= m_rpcPort.write(reqPlay, response);
+            if (!ok || response.get(0).asVocab() != VOCAB_OK) {
+                yError()<<"wholeBodyPlayer: the port"<<rep.m_replayPort->getName()<<"is closed because the start request failed.. closing";
+                return false;
+            }
+            rep.m_replayPort->m_state = state::ok;
         }
     }
 
-
-    yInfo()<<"wholeBodyPlayerModule running happily...";
     return true;
 }
 
@@ -62,6 +85,16 @@ bool WholeBodyPlayerModule::configure(yarp::os::ResourceFinder& rf) {
         }
     }
 
+    if (!m_rpcPort.open("/"+name+"/rpc:o")) {
+        yError()<<"wholeBodyPlayerModule: failed to open"<<m_rpcPort.getName();
+        return false;
+    }
+
+    if (!Network::connect(m_rpcPort.getName(), "/yarpdataplayer/rpc:i")) {
+        yError()<<"wholeBodyPlayerModule: failed to connect to the yarpdataplayer, is it running?";
+        return false;
+    }
+
     return true;
 }
 
@@ -73,6 +106,7 @@ bool WholeBodyPlayerModule::interruptModule() {
     for (auto& rep : m_replayerVec){
         rep.m_replayPort->interrupt();
     }
+    m_rpcPort.interrupt();
     return true;
 }
 
@@ -80,5 +114,6 @@ bool WholeBodyPlayerModule::close() {
     for (auto& rep : m_replayerVec){
         rep.close();
     }
+    m_rpcPort.close();
     return true;
 }
