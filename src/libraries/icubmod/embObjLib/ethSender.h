@@ -33,6 +33,10 @@
 
 #include <yarp/os/PeriodicThread.h>
 
+#ifdef NETWORK_PERFORMANCE_BANCHMARK 
+#include <./tools/include/PeriodicEventsVerifier.h>
+#endif
+
 
 namespace eth {
 
@@ -46,6 +50,10 @@ namespace eth {
         uint8_t *p_sendData;
         TheEthManager *ethManager;
         ACE_SOCK_Dgram *send_socket;
+
+#ifdef NETWORK_PERFORMANCE_BANCHMARK 
+        Tools::Emb_PeriodicEventVerifier m_perEvtVerifier;
+#endif
         void run();
 
 

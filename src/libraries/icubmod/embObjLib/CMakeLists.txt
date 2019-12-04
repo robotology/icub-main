@@ -183,11 +183,31 @@ set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/theNVmanager.cpp
                             ${EXTRA_FOLDER}/embObjGeneralDevPrivData.cpp
                             )
+                            
+message("EXTRA_SOURCE= " ${EXTRA_SOURCE})
 
 set(DEBUG_SOURCE            ${DEBUG_FOLDER}/eODeb_eoProtoParser.c
                             ${DEBUG_FOLDER}/eOtheEthLowLevelParser.c)
 
+option(NETWORK_PERFORMANCE_BANCHMARK "Enable embedded network perfomance bamchmark." OFF)
+mark_as_advanced(NETWORK_PERFORMANCE_BANCHMARK)
 
+if(NETWORK_PERFORMANCE_BANCHMARK)
+
+set(TOOLS_FOLDER    ${EXTRA_FOLDER}/tools)
+set(TOOLS_HEADER    ${TOOLS_FOLDER}/include/PeriodicEventsVerifier.h)
+set(TOOLS_SOURCE    ${TOOLS_FOLDER}/src/PeriodicEventsVerifier.cpp 
+                    ${TOOLS_FOLDER}/src/embot_tools.cpp)
+else()
+
+set(TOOLS_FOLDER  ""  )
+set(TOOLS_HEADER  ""  )
+set(TOOLS_SOURCE  ""  )
+
+endif()
+
+
+message("tools source= " ${TOOLS_SOURCE})
 
 set(embobj_source
                             ${CORE_FOLDER_SOURCE}
@@ -203,14 +223,13 @@ set(embobj_source
                             ${NVS_USR_SOURCE}
                             ${NVS_CBK_SOURCE}
                             ${ICUB_INTERFACE_SOURCE}
-                            )
+                            ${TOOLS_SOURCE} )
 
 set(embobj_header           ${BODY_COMMON_SOURCE}
                             ${CORE_API_HEADER}
                             ${PROT_HEADER}
                             ${NVS_EB_SRC_FOLDER}
-                            )
-
+                            ${TOOLS_HEADER} )
 
 
 SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
@@ -221,7 +240,7 @@ include_directories(SYSTEM ${ACE_INCLUDE_DIRS} ${FIRMWARE_SHARED_INC})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${embObj_includes}
                     ${iCubDev_INCLUDE_DIRS}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/)
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 add_library(${PROJECTNAME} SHARED ${embobj_source} ${embobj_header})
