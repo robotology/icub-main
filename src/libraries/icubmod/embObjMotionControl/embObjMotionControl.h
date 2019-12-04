@@ -51,6 +51,10 @@ using namespace std;
 #include "eomcParser.h"
 #include "measuresConverter.h"
 
+#ifdef NETWORK_PERFORMANCE_BANCHMARK 
+#include <PeriodicEventsVerifier.h>
+#endif
+
 // - public #define  --------------------------------------------------------------------------------------------------
 
 #undef  VERIFY_ROP_SETIMPEDANCE     // this macro let you send setimpedence rop with signature.
@@ -248,6 +252,9 @@ private:
     eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
     
 
+#ifdef NETWORK_PERFORMANCE_BANCHMARK 
+    Tools:Emb_RensponseTimingVerifier m_responseTimingVerifier;
+#endif
 
 private:
 

@@ -64,6 +64,14 @@ EthSender::EthSender(int txrate) : PeriodicThread((double)txrate/1000.0)
     rateofthread = txrate;
     yDebug() << "EthSender is a PeriodicThread with txrate =" << rateofthread << "ms";
     yTrace();
+
+#ifdef NETWORK_PERFORMANCE_BANCHMARK 
+    /* We would like to verify if the receiver thread is ticked(running) every 1 millisecond, with a tollerance of 0.05 millisec.
+       The m_perEvtVerifier object after 1 second, prints an istogram with values from 0 to 3 millisec with a step of 0.1 millisec
+    */
+    //m_perEvtVerifier.init(0.001, 0.00005, 0.0, 0.003, 0.0001, 1);
+    m_perEvtVerifier.init(txrate, 5*txrate/100, 0.0, txrate+0.002, 0.0001, 1);
+#endif
 }
 
 EthSender::~EthSender()
@@ -106,6 +114,10 @@ void EthSender::run()
     // for tx we must protect the EthResource not being changed. they can be changed by a device such as
     // embObjMotionControl etc which adds or releases its resources.
     ethManager->Transmission();
+
+#ifdef NETWORK_PERFORMANCE_BANCHMARK
+    m_perEvtVerifier.tick(yarp::os::Time::now());
+#endif
 }
 
 
