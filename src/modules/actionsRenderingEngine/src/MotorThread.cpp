@@ -2369,8 +2369,7 @@ bool MotorThread::deploy(Bottle &options)
     else
     {
         arm=checkArm(arm,deployZone);
-        if (checkOptions(options,"gently") &&
-            !checkOptions(options,"over"))
+        if (checkOptions(options,"gently") && !checkOptions(options,"over"))
             deployZone[2]=table_height;
     }
 
