@@ -53,13 +53,13 @@ jobs:
       run: |
         # YCM
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/ycm --depth 1 --branch devel
+        git clone https://github.com/robotology/ycm --depth 1 --branch master
         cd ycm && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL 
         # YARP
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/yarp --depth 1 --branch devel
+        git clone https://github.com/robotology/yarp --depth 1 --branch master
         cd yarp && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -71,13 +71,13 @@ jobs:
       run: |
         # YCM
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/ycm --depth 1 --branch devel
+        git clone https://github.com/robotology/ycm --depth 1 --branch master
         cd ycm && mkdir -p build && cd build
         cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install 
         # YARP
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/yarp --depth 1 --branch devel
+        git clone https://github.com/robotology/yarp --depth 1 --branch master
         cd yarp && mkdir -p build && cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install 
