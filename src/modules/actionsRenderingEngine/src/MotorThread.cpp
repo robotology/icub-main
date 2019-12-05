@@ -2342,8 +2342,7 @@ bool MotorThread::goHome(Bottle &options)
 bool MotorThread::deploy(Bottle &options)
 {
     int arm=ARM_IN_USE;
-    if (checkOptions(options,"left") ||
-        checkOptions(options,"right"))
+    if (checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     arm=checkArm(arm);
@@ -2373,8 +2372,7 @@ bool MotorThread::deploy(Bottle &options)
             deployZone[2]=table_height;
     }
 
-    if (!checkOptions(options,"no_head") &&
-        !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
         ctrl_gaze->restoreContext(gaze_context);
