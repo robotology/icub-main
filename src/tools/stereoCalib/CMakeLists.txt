@@ -4,7 +4,7 @@
 
 project(stereoCalib)
 
-find_package(YARP COMPONENTS OS sig dev math cv)
+find_package(YARP COMPONENTS os sig dev math cv)
 
 file(GLOB source src/*.cpp)
 file(GLOB header include/*.h)

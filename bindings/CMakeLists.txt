@@ -8,7 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
 
 # Find YARP for bindings-only builds
 find_package(YARP COMPONENTS conf OS sig dev math gsl REQUIRED)
-foreach(_component conf OS sig dev math gsl)
+foreach(_component conf os sig dev math gsl)
   get_property(YARP_${_component}_INCLUDE_DIRS TARGET YARP::YARP_${_component} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
   include_directories(${YARP_${_component}_INCLUDE_DIRS})
 endforeach()

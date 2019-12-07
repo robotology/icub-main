@@ -5,7 +5,7 @@
 
 project(motionCUT)
 
-find_package(YARP COMPONENTS OS sig cv)
+find_package(YARP COMPONENTS os sig cv)
 
 set(source_files main.cpp)
 set(doc_files ${PROJECT_NAME}.xml)

@@ -4,7 +4,7 @@
 
 project(camCalib)
 
-find_package(YARP COMPONENTS OS sig cv)
+find_package(YARP COMPONENTS os sig cv)
 
 set(folder_source src/main.cpp
                   src/spherical_projection.cpp

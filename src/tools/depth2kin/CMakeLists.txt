@@ -4,7 +4,7 @@
 
 project(depth2kin)
 
-find_package(YARP COMPONENTS OS sig dev math cv)
+find_package(YARP COMPONENTS os sig dev math cv)
 
 file(GLOB header_files include/*.h)
 file(GLOB source_files src/*.cpp)

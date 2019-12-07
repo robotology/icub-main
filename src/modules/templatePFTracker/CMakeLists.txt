@@ -5,7 +5,7 @@
 
 project(templatePFTracker)
 
-find_package(YARP COMPONENTS OS sig cv)
+find_package(YARP COMPONENTS os sig cv)
 
 file(GLOB folder_header include/iCub/*.h)
 file(GLOB folder_source src/*.cpp src/*.cc src/*.c)

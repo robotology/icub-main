@@ -4,7 +4,7 @@
 
 project(camCalibWithPose)
 
-find_package(YARP COMPONENTS OS sig math cv)
+find_package(YARP COMPONENTS os sig math cv)
 
 set(folder_source src/main.cpp
                   src/spherical_projection.cpp

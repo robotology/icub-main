@@ -66,7 +66,7 @@ if(YARP_gsl_FOUND)
                                               "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
                                               ${GSL_INCLUDE_DIRS})
   
-  target_link_libraries(${LM_LIB} PUBLIC  YARP::YARP_OS YARP::YARP_sig YARP::YARP_math
+  target_link_libraries(${LM_LIB} PUBLIC  YARP::YARP_os YARP::YARP_sig YARP::YARP_math
                                   PRIVATE YARP::YARP_gsl ${GSL_LIBRARIES})
   
   icub_export_library(${LM_LIB} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
