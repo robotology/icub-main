@@ -20,8 +20,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
+
+    - name: Set up environment variables [Windows]
+      if: matrix.os == 'windows-latest'
+      shell: bash
+      run: |
+        echo "::set-env name=VCPKG_ROBOTOLOGY_ROOT::C:/vcpkg-robotology"
         
-    # Print environment variables to simplify development and debugging
     - name: Environment Variables
       shell: bash
       run: env
@@ -32,8 +37,10 @@ jobs:
     - name: Dependencies [Windows]
       if: matrix.os == 'windows-latest'
       run: |
+        git clone https://github.com/microsoft/vcpkg --depth 1 --branch 2019.10 ${VCPKG_ROBOTOLOGY_ROOT}
         git clone https://github.com/robotology-dependencies/robotology-vcpkg-binary-ports C:/robotology-vcpkg-binary-ports
-        vcpkg.exe --overlay-ports=C:/robotology-vcpkg-binary-ports install --triplet x64-windows ace freeglut ode gsl eigen3 libxml2 sdl1 opencv3 ipopt-binary qt5-base 
+        ${VCPKG_ROBOTOLOGY_ROOT}/bootstrap-vcpkg.sh
+        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=C:/robotology-vcpkg-binary-ports install --triplet x64-windows ace freeglut ode gsl eigen3 libxml2 sdl1 opencv3 ipopt-binary qt5-base 
         
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
@@ -55,13 +62,13 @@ jobs:
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/ycm --depth 1 --branch master
         cd ycm && mkdir -p build && cd build
-        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROBOTOLOGY_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL 
         # YARP
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/yarp --depth 1 --branch master
         cd yarp && mkdir -p build && cd build
-        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROBOTOLOGY_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         
@@ -92,7 +99,7 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROBOTOLOGY_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
               -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
     - name: Configure [Ubuntu/macOS]
@@ -110,7 +117,7 @@ jobs:
         cd build
         # Fix for using YARP idl generators (that link ACE) in Windows 
         # See https://github.com/robotology/idyntree/issues/569 for more details
-        export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin:${VCPKG_INSTALLATION_ROOT}/installed/x64-windows/bin:${VCPKG_INSTALLATION_ROOT}/installed/x64-windows/debug/bin
+        export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin:${VCPKG_ROBOTOLOGY_ROOT}/installed/x64-windows/bin
         cmake --build . --config ${{ matrix.build_type }}
         
     - name: Install [Windows]
