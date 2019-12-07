@@ -36,6 +36,7 @@ jobs:
     # ============
     - name: Dependencies [Windows]
       if: matrix.os == 'windows-latest'
+      shell: bash
       run: |
         git clone https://github.com/microsoft/vcpkg --depth 1 --branch 2019.10 ${VCPKG_ROBOTOLOGY_ROOT}
         git clone https://github.com/robotology-dependencies/robotology-vcpkg-binary-ports C:/robotology-vcpkg-binary-ports
