@@ -594,7 +594,7 @@ bool parametricCalibrator::calibrate()
         }
         return false;
     }
-    lock_guard<mutex> lck(calibMutex);
+    std::lock_guard<std::mutex> lck(calibMutex);
     isCalibrated = true;
     return isCalibrated;
 }

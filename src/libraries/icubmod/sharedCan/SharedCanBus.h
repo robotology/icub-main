@@ -82,7 +82,7 @@ public:
 
     bool pushReadMsg(CanMessage& msg)
     {
-        lock_guard<mutex> lck(synchroMutex);
+        std::lock_guard<std::mutex> lck(synchroMutex);
 
         if (nRecv>=mBufferSize)
         {
@@ -121,7 +121,7 @@ public:
         {
             waitingOnRead=true;
             synchroMutex.unlock();
-            unique_lock<mutex> lck(mtx_waitRead);
+            std::unique_lock<std::mutex> lck(mtx_waitRead);
             cv_waitRead.wait(lck);
             synchroMutex.lock();
         }
