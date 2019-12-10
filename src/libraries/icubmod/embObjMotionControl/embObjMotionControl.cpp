@@ -46,7 +46,7 @@ using namespace yarp::dev::eomc;
 // macros
 #define ASK_REFERENCE_TO_FIRMWARE 1
 
-#define PARSER_MOTION_CONTROL_VERSION   5
+#define PARSER_MOTION_CONTROL_VERSION   6
 
 
 
@@ -1072,7 +1072,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         yError() << "embObjMC" << getBoardInfo() << "------ This means that the configuration files of this device are not compatible with my parser, so I cannot start. ";
         yError() << "embObjMC" << getBoardInfo() << "------ I need version " << PARSER_MOTION_CONTROL_VERSION << ", but in configuration files have version " << currentMCversion << ".";
         yError() << "embObjMC" << getBoardInfo() << "------ Please update configuration files in robots-configuration repository. (see http://wiki.icub.org/wiki/Robot_configuration for more information). ";
-        yError() << "embObjMC" << getBoardInfo() << "------ If the problem persists contact icub-support@iit.it .";
+        yError() << "embObjMC" << getBoardInfo() << "------ If the problem persists contact icub-support@iit.it DO NOT DO IT BY YOURSELF.";
         yError() << "embObjMC" << getBoardInfo() << "----------------------------------------------------------------------------------------------------------------------------------------------------------------";
         return false;
     }
