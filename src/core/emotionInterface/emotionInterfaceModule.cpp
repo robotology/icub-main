@@ -58,7 +58,7 @@ void printHelp (yarp::os::Bottle& reply) {
                       "\tthe available part are: mou, eli, leb, reb, all\n"+
                       "\tthe available emotions are: neu, hap, sad, sur, ang, evi, shy, cun\n"+
                       "\n"+
-                      "set color <color>     set the color of the led\n" +
+                      "set col <color>     set the color of the led\n" +
                       "\t!! available only for rfe board !!\n"+
                       "\tthe available colors are: black, white, red, lime, blue, yellow,"
                       " cyan, magenta, silver, gray, maroon, olive, green, purple, teal, navy\n"+
