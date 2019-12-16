@@ -2339,7 +2339,7 @@ void iCubLeg::allocate(const string &_type)
     else
     {
         if ((type!="left_v2") && (type!="left_v2.5") && (type!="left_v2.6"))
-            type="left_v2.6";
+            type="left_v2";
 
         H0(1,3)=-0.0681;
 
