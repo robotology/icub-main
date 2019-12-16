@@ -189,10 +189,10 @@ message("EXTRA_SOURCE= " ${EXTRA_SOURCE})
 set(DEBUG_SOURCE            ${DEBUG_FOLDER}/eODeb_eoProtoParser.c
                             ${DEBUG_FOLDER}/eOtheEthLowLevelParser.c)
 
-option(NETWORK_PERFORMANCE_BANCHMARK "Enable embedded network perfomance bamchmark." OFF)
-mark_as_advanced(NETWORK_PERFORMANCE_BANCHMARK)
+option(NETWORK_PERFORMANCE_BENCHMARK "Enable embedded network perfomance bamchmark." OFF)
+mark_as_advanced(NETWORK_PERFORMANCE_BENCHMARK)
 
-if(NETWORK_PERFORMANCE_BANCHMARK)
+if(NETWORK_PERFORMANCE_BENCHMARK)
 
 set(TOOLS_FOLDER    ${EXTRA_FOLDER}/tools)
 set(TOOLS_HEADER    ${TOOLS_FOLDER}/include/PeriodicEventsVerifier.h)
