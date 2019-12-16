@@ -2289,7 +2289,7 @@ void iCubLeg::allocate(const string &_type)
         pushLink(new iKinLink(   0.0,     0.0, -M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(-0.041,     0.0,       0.0,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD));
     }
-    else if (getType()=="right_v2.5")
+    else if ((getType()=="right_v2") || (getType()=="right_v2.5") || (getType()=="right_v2.6"))
     {
         H0(1,3)=0.0681;
 
@@ -2338,7 +2338,9 @@ void iCubLeg::allocate(const string &_type)
     }
     else
     {
-        type="left_v2.5";
+        if ((type!="left_v2") && (type!="left_v2.5") && (type!="left_v2.6"))
+            type="left_v2.6";
+
         H0(1,3)=-0.0681;
 
         pushLink(new iKinLink(       0.0,       0.0, -M_PI/2.0,  M_PI/2.0,  -44.0*CTRL_DEG2RAD, 132.0*CTRL_DEG2RAD));
