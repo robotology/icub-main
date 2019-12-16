@@ -51,7 +51,7 @@ using namespace std;
 #include "eomcParser.h"
 #include "measuresConverter.h"
 
-#ifdef NETWORK_PERFORMANCE_BANCHMARK 
+#ifdef NETWORK_PERFORMANCE_BENCHMARK 
 #include <PeriodicEventsVerifier.h>
 #endif
 
@@ -252,7 +252,7 @@ private:
     eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
     
 
-#ifdef NETWORK_PERFORMANCE_BANCHMARK 
+#ifdef NETWORK_PERFORMANCE_BENCHMARK 
     Tools:Emb_RensponseTimingVerifier m_responseTimingVerifier;
 #endif
 

@@ -34,7 +34,7 @@
 #include <yarp/os/PeriodicThread.h>
 
 
-#ifdef NETWORK_PERFORMANCE_BANCHMARK 
+#ifdef NETWORK_PERFORMANCE_BENCHMARK 
 #include <./tools/include/PeriodicEventsVerifier.h>
 #endif
 
@@ -51,7 +51,7 @@ namespace eth {
         ACE_SOCK_Dgram *recv_socket;
         eth::TheEthManager *ethManager;
         double statPrintInterval;
-#ifdef NETWORK_PERFORMANCE_BANCHMARK 
+#ifdef NETWORK_PERFORMANCE_BENCHMARK 
         Tools::Emb_PeriodicEventVerifier m_perEvtVerifier;
 #endif
 

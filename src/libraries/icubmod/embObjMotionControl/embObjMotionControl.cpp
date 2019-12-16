@@ -265,7 +265,7 @@ embObjMotionControl::embObjMotionControl() :
     parser = NULL;
     _mcparser = NULL;
     
-#ifdef NETWORK_PERFORMANCE_BANCHMARK 
+#ifdef NETWORK_PERFORMANCE_BENCHMARK 
        /* We would like to verify if the round trimp of request and answer from embedded board is about 3 milliseconds, with a tollerance 0f 0.250 milliseconds.
        The m_responseTimingVerifier object, after 3 seconds, prints an istogram with values from 1 to 10 millisec with a step of 0.5 millisec
     */
@@ -1574,13 +1574,13 @@ bool embObjMotionControl::helper_getPosPidRaw(int j, Pid *pid)
     eOmc_PID_t eoPID = {0};
 
     
-#ifdef NETWORK_PERFORMANCE_BANCHMARK  
+#ifdef NETWORK_PERFORMANCE_BENCHMARK  
     double start = yarp::os::Time::now();
 #endif
     
     bool ret = askRemoteValue(protid, &eoPID, size);
 
-#ifdef NETWORK_PERFORMANCE_BANCHMARK  
+#ifdef NETWORK_PERFORMANCE_BENCHMARK  
     double end = yarp::os::Time::now();
     m_responseTimingVerifier.tick(end-start, start);
 #endif
