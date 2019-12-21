@@ -25,7 +25,8 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
-        echo "::set-env name=VCPKG_ROBOTOLOGY_ROOT::C:/vcpkg-robotology"
+        echo "::set-env name=VCPKG_ROBOTOLOGY_ROOT::D:/vcpkg-robotology"
+        echo "::set-env name=VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT::D:/vcpkg-robotology-binary-ports"
         
     - name: Environment Variables
       shell: bash
@@ -39,9 +40,12 @@ jobs:
       shell: bash
       run: |
         git clone https://github.com/microsoft/vcpkg --depth 1 --branch 2019.10 ${VCPKG_ROBOTOLOGY_ROOT}
-        git clone https://github.com/robotology-dependencies/robotology-vcpkg-binary-ports C:/robotology-vcpkg-binary-ports
+        git clone https://github.com/robotology-dependencies/robotology-vcpkg-binary-ports ${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT}
         ${VCPKG_ROBOTOLOGY_ROOT}/bootstrap-vcpkg.sh
-        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=C:/robotology-vcpkg-binary-ports install --triplet x64-windows ace freeglut ode gsl eigen3 libxml2 sdl1 opencv3 ipopt-binary qt5-base 
+        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows ace freeglut ode gsl eigen3 libxml2 sdl1 opencv3 ipopt-binary
+        rm -rf ${VCPKG_ROBOTOLOGY_ROOT}/buildtrees ${VCPKG_ROBOTOLOGY_ROOT}/packages ${VCPKG_ROBOTOLOGY_ROOT}/downloads
+        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows qt5-base 
+        rm -rf ${VCPKG_ROBOTOLOGY_ROOT}/buildtrees ${VCPKG_ROBOTOLOGY_ROOT}/packages ${VCPKG_ROBOTOLOGY_ROOT}/downloads
         
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
