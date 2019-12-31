@@ -125,15 +125,7 @@ jobs:
         export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin:${VCPKG_ROBOTOLOGY_ROOT}/installed/x64-windows/bin
         cmake --build . --config ${{ matrix.build_type }}
         
-    - name: Install [Windows]
-      if: matrix.os == 'windows-latest'
-      shell: bash
-      run: |
-        cd build
-        cmake --build . --config ${{ matrix.build_type }} --target INSTALL
-        
-    - name: Install [Ubuntu/macOS]
-      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
+    - name: Install
       shell: bash
       run: |
         cd build
