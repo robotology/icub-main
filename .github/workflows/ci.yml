@@ -44,7 +44,7 @@ jobs:
         ${VCPKG_ROBOTOLOGY_ROOT}/bootstrap-vcpkg.sh
         ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows ace freeglut ode sdl1 gsl eigen3 libxml2 sdl1 opencv3 ipopt-binary
         rm -rf ${VCPKG_ROBOTOLOGY_ROOT}/buildtrees ${VCPKG_ROBOTOLOGY_ROOT}/packages ${VCPKG_ROBOTOLOGY_ROOT}/downloads
-        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows qt5-base qt5-declarative qt5-multimedia qt5-quickcontrols2
+        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows qt5-base
         rm -rf ${VCPKG_ROBOTOLOGY_ROOT}/buildtrees ${VCPKG_ROBOTOLOGY_ROOT}/packages ${VCPKG_ROBOTOLOGY_ROOT}/downloads
         
     - name: Dependencies [macOS]
