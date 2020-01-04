@@ -18,7 +18,6 @@
 
 #include <algorithm>
 
-#include <gsl/gsl_math.h>
 #include <gsl/gsl_integration.h>
 
 #include <yarp/math/Math.h>
