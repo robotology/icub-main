@@ -49,6 +49,7 @@
 #include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/IControlMode.h>
 #include <yarp/dev/IEncoders.h>
+#include <yarp/dev/IControlLimits.h>
 #include <yarp/dev/PolyDriver.h>
 
 #include <atomic>
@@ -69,16 +70,20 @@ enum class state : std::uint8_t {
 class ReplayPort : public  yarp::os::BufferedPort<yarp::os::Bottle>
 {
 public:
-    ReplayPort(std::string partName, yarp::dev::IPositionDirect* iPosDir, yarp::dev::IEncoders* iEnc,
-               yarp::dev::IControlMode* iCM, yarp::dev::IPositionControl* iPosControl) :
+    ReplayPort(std::string partName, yarp::dev::IPositionDirect* iPosDir,
+               yarp::dev::IEncoders* iEnc, yarp::dev::IControlMode* iCM,
+               yarp::dev::IPositionControl* iPosControl,
+               yarp::dev::IControlLimits* iControlLimits, bool simulator=false) :
                                                                             m_partName(std::move(partName)),
                                                                             m_posDir(iPosDir),
                                                                             m_enc(iEnc),
                                                                             m_CM(iCM),
-                                                                            m_posControl(iPosControl)
+                                                                            m_posControl(iPosControl),
+                                                                            m_controlLimits(iControlLimits),
+                                                                            m_simulator(simulator)
 
     {
-        if (m_posDir && m_enc && m_CM) {
+        if (m_posDir && m_enc && m_CM && m_controlLimits) {
             // Get num of axes
             m_posDir->getAxes(&m_numAxes);
             // Set in position direct
@@ -87,9 +92,15 @@ public:
             // Allocate vectors
             m_currState.resize(m_numAxes);
             m_nextState.resize(m_numAxes);
+            max.resize(m_numAxes);
+            min.resize(m_numAxes);
+            for (size_t i = 0; i<m_numAxes; i++) {
+               m_controlLimits->getLimits(i,&min[i],&max[i]);
+            }
         }
         yarp::os::BufferedPort<yarp::os::Bottle>::useCallback();
         yarp::os::BufferedPort<yarp::os::Bottle>::setStrict(true);
+        m_isArm = m_partName.find("arm") != std::string::npos;
     }
 
     using yarp::os::TypedReaderCallback<yarp::os::Bottle>::onRead;
@@ -101,11 +112,16 @@ public:
             m_mutex.lock();
             for (size_t i=0; i<datum.size(); i++) {
                 m_nextState[i] = datum.get(i).asDouble();
+                if (m_nextState[i]<min[i] || m_nextState[i]> max[i]) {
+                    yWarning()<<"ReplayPort: trying to move joint"<<i<<"of"<<m_partName<<" to "<<m_nextState[i]<<"skipping...";
+                    continue;
+                }
                 auto delta = std::fabs(m_nextState[i] - m_currState[i]);
                 ok &= delta < tolerance; // TODO improve the check calculating the distance between the 2 vector !!!
-                if (!ok) {
+                if (!ok && !m_simulator && (!m_isArm || i < 5)) { // 5 is for ignoring the hands in the security check
                     yWarning()<<"ReplayPort: joint"<<i<<"of"<<m_partName<<"is too far to the target position";
-                    yWarning()<<"Desired: "<<datum.get(i).asDouble()<<"current: "<<m_currState[i]<<delta<<"Trying to reach "
+                    yWarning()<<"Desired: "<<datum.get(i).asDouble()<<"current: "<<m_currState[i]
+                    <<"delta: "<<delta<<"Trying to reach "
                                                                                                         "it in Position Control, "
                                                                                                         "the playback will be paused";
                     m_state = state::error;
@@ -169,16 +185,20 @@ public:
     std::atomic<state> m_state{state::ok};
 private:
     double now{0.0};
+    std::vector<double> min, max;
     std::string m_partName{};
     yarp::dev::IPositionDirect* m_posDir{nullptr};
     yarp::dev::IEncoders* m_enc{nullptr};
     yarp::dev::IPositionControl* m_posControl{nullptr};
     yarp::dev::IControlMode* m_CM{nullptr};
+    yarp::dev::IControlLimits* m_controlLimits{nullptr};
     std::mutex m_mutex;
 
 
     std::vector<double> m_currState, m_nextState;
     int m_numAxes{0};
+    bool m_simulator;
+    bool m_isArm{false};
 };
 
 struct Replayer {
@@ -194,6 +214,11 @@ struct Replayer {
         yarp::dev::IPositionDirect* iPosDir{nullptr};
         yarp::dev::IPositionControl* iPosControl{nullptr};
         yarp::dev::IEncoders* iEnc{nullptr};
+        yarp::dev::IControlLimits* iControlLimits{nullptr};
+        bool simulator{false};
+
+        if(robot == "icubSim")
+            simulator=true;
 
         m_remoteControlBoard = std::make_unique<yarp::dev::PolyDriver>();
 
@@ -206,10 +231,11 @@ struct Replayer {
         ok &= m_remoteControlBoard->view(iEnc);
         ok &= m_remoteControlBoard->view(iCM);
         ok &= m_remoteControlBoard->view(iPosControl);
+        ok &= m_remoteControlBoard->view(iControlLimits);
 
         if (ok)
         {
-            m_replayPort = std::make_unique<ReplayPort>(part, iPosDir, iEnc, iCM, iPosControl);
+            m_replayPort = std::make_unique<ReplayPort>(part, iPosDir, iEnc, iCM, iPosControl,iControlLimits, simulator);
             ok &= m_replayPort->open("/"+moduleName+"/"+part+"/state:i");
         }
         return ok;
