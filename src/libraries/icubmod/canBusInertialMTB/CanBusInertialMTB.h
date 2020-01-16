@@ -95,7 +95,6 @@ protected:
     int               count;
 public:
     CanBusInertialMTB(int period=20) : PeriodicThread((double)period/1000.0),
-                                       mutex(1),
                                        initted(false),
                                        count(0)
     {}

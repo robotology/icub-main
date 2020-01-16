@@ -78,7 +78,7 @@ protected:
     bool               diagnostic;
 
 public:
-    CanBusAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0), mutex(1)
+    CanBusAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0)
     {}
 
 

@@ -59,7 +59,7 @@ protected:
     bool               useCalibration;
 
 public:
-    CanBusVirtualAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0),mutex(1)
+    CanBusVirtualAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0)
     {}
     
 
