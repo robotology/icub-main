@@ -1,5 +1,5 @@
 <application>
- <name>iCubGui</name>
+ <name>iCubGui with Skin Contacts (WBD)</name>
    <module>
     <name>iCubGui</name>
     <parameters>--xpos 1500 --ypos 50 --width 370</parameters> 
