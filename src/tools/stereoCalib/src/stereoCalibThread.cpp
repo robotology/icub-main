@@ -830,7 +830,7 @@ void stereoCalibThread::saveCalibration(const string& extrinsicFilePath, const s
             return;
     }
 
-    FileStorage fs(intrinsicFilePath+".yml", CV_STORAGE_WRITE);
+    FileStorage fs(intrinsicFilePath+".yml", cv::FileStorage::Mode::WRITE);
     if( fs.isOpened() )
     {
         fs << "M1" << Kleft << "D1" << DistL << "M2" << Kright << "D2" << DistR;
@@ -839,7 +839,7 @@ void stereoCalibThread::saveCalibration(const string& extrinsicFilePath, const s
     else
         cout << "Error: can not save the intrinsic parameters\n";
 
-    fs.open(extrinsicFilePath+".yml", CV_STORAGE_WRITE);
+    fs.open(extrinsicFilePath+".yml", cv::FileStorage::Mode::WRITE);
     if( fs.isOpened() )
     {
         fs << "R" << R << "T" << T <<"Q" << Q;
