@@ -269,7 +269,26 @@ public:
 
         glColor4d(mR,mG,mB,mAlpha);
 
-        if (bTextured)
+        if (mName == "ball")
+        {
+            if (bTextured)
+            {
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D,nTexID);
+            }
+
+            glBegin(GL_QUADS);
+
+            glutSolidSphere(mDimx, 20.0, 20.0);
+
+            glEnd();
+
+            if (bTextured)
+            {
+                glDisable(GL_TEXTURE_2D);
+            }
+        }
+        else if (bTextured)
         {
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D,nTexID);
