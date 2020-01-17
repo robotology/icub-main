@@ -179,9 +179,9 @@ bool PinholeCalibTool::init(CvSize currImgSize, CvSize calibImgSize){
     _mapUndistortY = cvCreateImage(currImgSize, IPL_DEPTH_32F, 1);
 
     /* init the undistortion matrices */
-    cvInitUndistortMap( _intrinsic_matrix_scaled, _distortion_coeffs,
-                        _mapUndistortX, _mapUndistortY);
-
+    cv::initUndistortRectifyMap(cv::cvarrToMat(_intrinsic_matrix_scaled), cv::cvarrToMat(_distortion_coeffs), cv::Mat(),
+                                cv::cvarrToMat(_intrinsic_matrix_scaled), cv::Size(currImgSize.width, currImgSize.height),
+                                CV_32FC1,cv::cvarrToMat(_mapUndistortX), cv::cvarrToMat(_mapUndistortY));
     _needInit = false;
     return true;
 }

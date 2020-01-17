@@ -16,7 +16,7 @@
 #include <iCub/DualCamCalibModule.h>
 
 // OpenCV
-#include <cv.h>
+#include <opencv2/core/core_c.h>
 
 using namespace std;
 using namespace yarp::os;
