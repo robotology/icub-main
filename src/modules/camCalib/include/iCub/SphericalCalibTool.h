@@ -16,7 +16,7 @@
 #include <yarp/os/Value.h>
 
 // opencv
-#include <cv.h>
+#include <opencv2/core/core_c.h>
 
 // iCub
 #include <iCub/ICalibTool.h>
