@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 // opencv
-#include <cv.h>
+#include <opencv2/core/core_c.h>
 
 // yarp
 #include <yarp/os/all.h>
