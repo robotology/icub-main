@@ -40,7 +40,7 @@ jobs:
       shell: bash
       run: |
         git clone https://github.com/microsoft/vcpkg --depth 1 --branch 2019.10 ${VCPKG_ROBOTOLOGY_ROOT}
-        git clone https://github.com/robotology-dependencies/robotology-vcpkg-binary-ports ${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT}
+        git clone https://github.com/robotology/robotology-vcpkg-binary-ports ${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT}
         ${VCPKG_ROBOTOLOGY_ROOT}/bootstrap-vcpkg.sh
         ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows ace freeglut ode gsl eigen3 libxml2 sdl1 opencv3 ipopt-binary
         rm -rf ${VCPKG_ROBOTOLOGY_ROOT}/buildtrees ${VCPKG_ROBOTOLOGY_ROOT}/packages ${VCPKG_ROBOTOLOGY_ROOT}/downloads
