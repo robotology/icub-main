@@ -8,7 +8,7 @@
 #define __DUALCAMCALIBMODULE__
 
 // opencv
-#include <cv.h>
+#include <opencv2/core/core_c.h>
 
 // yarp
 #include <yarp/os/BufferedPort.h>
