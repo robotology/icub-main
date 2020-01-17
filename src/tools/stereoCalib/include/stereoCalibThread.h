@@ -3,7 +3,13 @@
 #include <string>
 #include <mutex>
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/calib3d/calib3d_c.h>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core/core_c.h>
+#include <opencv2/core/types_c.h>
+#include <opencv2/imgcodecs.hpp>
+
+
 
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
