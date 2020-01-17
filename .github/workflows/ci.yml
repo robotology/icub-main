@@ -39,8 +39,8 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
-        git clone https://github.com/microsoft/vcpkg --depth 1 --branch 2019.10 ${VCPKG_ROBOTOLOGY_ROOT}
-        git clone https://github.com/robotology/robotology-vcpkg-binary-ports ${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT}
+        git clone https://github.com/microsoft/vcpkg.git --depth 1 --branch 2019.10 ${VCPKG_ROBOTOLOGY_ROOT}
+        git clone https://github.com/robotology/robotology-vcpkg-binary-ports.git ${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT}
         ${VCPKG_ROBOTOLOGY_ROOT}/bootstrap-vcpkg.sh
         ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows ace freeglut ode sdl1 gsl eigen3 libxml2 sdl1 opencv3 ipopt-binary
         rm -rf ${VCPKG_ROBOTOLOGY_ROOT}/buildtrees ${VCPKG_ROBOTOLOGY_ROOT}/packages ${VCPKG_ROBOTOLOGY_ROOT}/downloads
@@ -65,13 +65,13 @@ jobs:
       run: |
         # YCM
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/ycm --depth 1 --branch master
+        git clone https://github.com/robotology/ycm.git --depth 1 --branch master
         cd ycm && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROBOTOLOGY_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL 
         # YARP
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/yarp --depth 1 --branch master
+        git clone https://github.com/robotology/yarp.git --depth 1 --branch master
         cd yarp && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROBOTOLOGY_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -83,13 +83,13 @@ jobs:
       run: |
         # YCM
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/ycm --depth 1 --branch master
+        git clone https://github.com/robotology/ycm.git --depth 1 --branch master
         cd ycm && mkdir -p build && cd build
         cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install 
         # YARP
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/yarp --depth 1 --branch master
+        git clone https://github.com/robotology/yarp.git --depth 1 --branch master
         cd yarp && mkdir -p build && cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install 
