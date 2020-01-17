@@ -40,9 +40,8 @@
 #include <iostream>
 #include <iomanip>
 #include <deque>
-
-#include <cv.h>
-#include <highgui.h>
+#include <opencv2/core/core_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
 
 /* default number of particles */
 #define PARTICLES 1000
