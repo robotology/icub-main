@@ -28,7 +28,7 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 
-#include <cv.h>
+#include <opencv2/core/core_c.h>
 
 #include <mutex>
 #include <string>
