@@ -25,6 +25,8 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
+        # the following fix the problem described in https://github.community/t5/GitHub-Actions/Windows-tests-worked-yesterday-broken-today/m-p/43839#M5530
+        echo "::add-path::C:\Program Files\Git\bin"
         echo "::set-env name=VCPKG_ROBOTOLOGY_ROOT::D:/vcpkg-robotology"
         echo "::set-env name=VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT::D:/vcpkg-robotology-binary-ports"
         
