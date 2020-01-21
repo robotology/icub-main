@@ -46,7 +46,7 @@ protected:
     std::string         localName;
 
 public:
-    BcbBattery(int period = 20) : PeriodicThread((double)period/1000.0), mutex(1)
+    BcbBattery(int period = 20) : PeriodicThread((double)period/1000.0)
     {}
 
     ~BcbBattery()
