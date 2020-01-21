@@ -2,7 +2,7 @@
 # Authors: Arjan Gijsberts
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-find_package(YARP COMPONENTS OS sig dev math gsl)
+find_package(YARP COMPONENTS os sig dev math gsl)
 if(YARP_gsl_FOUND)
   project(learningMachine)
 
