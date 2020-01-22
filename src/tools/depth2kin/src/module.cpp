@@ -26,6 +26,7 @@
 #include <utility>
 
 #include <yarp/cv/Cv.h>
+#include <opencv2/imgproc/imgproc_c.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h>
 #include <yarp/math/NormRand.h>
