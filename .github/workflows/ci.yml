@@ -44,7 +44,7 @@ jobs:
         git clone https://github.com/microsoft/vcpkg.git --depth 1 --branch 2019.10 ${VCPKG_ROBOTOLOGY_ROOT}
         git clone https://github.com/robotology/robotology-vcpkg-binary-ports.git ${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT}
         ${VCPKG_ROBOTOLOGY_ROOT}/bootstrap-vcpkg.sh
-        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows ace freeglut ode sdl1 gsl eigen3 libxml2 sdl1 opencv3 ipopt-binary
+        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows ace freeglut ode sdl1 gsl eigen3 libxml2 sdl1 opencv ipopt-binary
         rm -rf ${VCPKG_ROBOTOLOGY_ROOT}/buildtrees ${VCPKG_ROBOTOLOGY_ROOT}/packages ${VCPKG_ROBOTOLOGY_ROOT}/downloads
         ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows qt5-base
         rm -rf ${VCPKG_ROBOTOLOGY_ROOT}/buildtrees ${VCPKG_ROBOTOLOGY_ROOT}/packages ${VCPKG_ROBOTOLOGY_ROOT}/downloads
@@ -52,7 +52,7 @@ jobs:
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
       run: |
-        brew install ace cmake eigen gsl ipopt opencv@3 pkg-config qt5
+        brew install ace cmake eigen gsl ipopt opencv pkg-config qt5
     
     - name: Dependencies [Ubuntu]
       if: matrix.os == 'ubuntu-latest'
