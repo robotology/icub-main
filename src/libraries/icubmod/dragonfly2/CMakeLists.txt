@@ -8,7 +8,7 @@
 yarp_prepare_plugin(dragonfly2
                     CATEGORY device
                     TYPE yarp::dev::DragonflyDeviceDriver2Rgb
-                    INCLUDE DragonflyDeviceDriver2.h
+                    INCLUDE common/DragonflyDeviceDriver2.h
                     EXTRA_CONFIG WRAPPER=grabberDual)
 
 # dragonfly2raw is always enabled when dragonfly2 is enabled
@@ -17,7 +17,7 @@ set(ENABLE_icubmod_dragonfly2raw ${ENABLE_icubmod_dragonfly2} CACHE INTERNAL "En
 yarp_prepare_plugin(dragonfly2raw
                     CATEGORY device
                     TYPE yarp::dev::DragonflyDeviceDriver2Raw
-                    INCLUDE DragonflyDeviceDriver2.h
+                    INCLUDE common/DragonflyDeviceDriver2.h
                     EXTRA_CONFIG WRAPPER=grabberDual)
 
 IF(NOT SKIP_dragonfly2)
