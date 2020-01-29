@@ -12,8 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(ICUB_COMPILE_BINDINGS "Compile optional language bindings"  FALSE)
 
-find_package(YARP 3.3.0 REQUIRED)
-message(STATUS "YARP is version: ${YARP_VERSION}")
+find_package(YCM 0.11.0 REQUIRED)
+find_package(YARP 3.3.1 REQUIRED)
 
 if(YARP_math_FOUND)
   set(ICUB_HAS_YARP TRUE CACHE BOOL "" FORCE)
@@ -30,9 +30,6 @@ set_property(GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS) # this is populated iCubFi
 ############# Options and definitions
 # Important: all these have to come before all calls to add_subdirectory()
 # otherwise code inside these directory will not be aware of the options.
-#
-# pick up yarp's cmake scripts
-list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
 
 # Pick up our scripts - they are all in the conf subdirectory
 set(ICUB_MODULE_PATH ${PROJECT_SOURCE_DIR}/conf)
