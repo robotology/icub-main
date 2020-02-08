@@ -62,7 +62,7 @@ public:
 };
 
 bool OdeLink::checkObject(bool justNeedKind) {
-    op.show();
+    //op.show();
     OdeInit& odeinit = OdeInit::get();
 
     bid = NULL;
@@ -414,7 +414,7 @@ void OdeLink::doNumber() {
 
 void OdeLink::apply() {
     yDebug("ODE world\n");
-    op.show();
+    //op.show();
     std::lock_guard<std::mutex> lck(ODE_access);
     switch (op.cmd) {
     case WORLD_OP_GET:
@@ -445,7 +445,7 @@ void OdeLink::apply() {
         result.setFail("unrecognized command");
         break;
     }
-    result.show();
+    //result.show();
 }
 
 void OdeWorldManager::apply(const WorldOp& op, WorldResult& result) {
