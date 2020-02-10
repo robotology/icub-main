@@ -15,8 +15,10 @@
 #ifndef __SHARED_CAN_BUS_H__
 #define __SHARED_CAN_BUS_H__
 
+#include <mutex>
+#include <condition_variable>
+
 #include <yarp/os/Time.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/Log.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -51,7 +53,7 @@ class yarp::dev::CanBusAccessPoint :
     public DeviceDriver
 {
 public:
-    CanBusAccessPoint() : waitReadMutex(0),synchroMutex(1)
+    CanBusAccessPoint()
     {
         mSharedPhysDevice=NULL;
 
@@ -80,11 +82,10 @@ public:
 
     bool pushReadMsg(CanMessage& msg)
     {
-        synchroMutex.wait();
+        std::lock_guard<std::mutex> lck(synchroMutex);
 
         if (nRecv>=mBufferSize)
         {
-            synchroMutex.post();
             yError("recv buffer overrun (%4d > %4d)", nRecv, mBufferSize);
             return false;
         }
@@ -94,10 +95,9 @@ public:
         if (waitingOnRead)
         {
             waitingOnRead=false;
-            waitReadMutex.post();
+            cv_waitRead.notify_one();
         }
         
-        synchroMutex.post();
         return true;
     }
 
@@ -115,14 +115,15 @@ public:
 
     virtual bool canRead(CanBuffer &msgs, unsigned int size, unsigned int *nmsg, bool wait=false)
     {
-        synchroMutex.wait();
+        synchroMutex.lock();
 
         if (wait && !nRecv)
         {
             waitingOnRead=true;
-            synchroMutex.post();
-            waitReadMutex.wait();
-            synchroMutex.wait();
+            synchroMutex.unlock();
+            std::unique_lock<std::mutex> lck(mtx_waitRead);
+            cv_waitRead.wait(lck);
+            synchroMutex.lock();
         }
 
         if (nRecv)
@@ -134,13 +135,13 @@ public:
 
             *nmsg=nRecv;
             nRecv=0;
-            synchroMutex.post();
+            synchroMutex.unlock();
             return true;
         }
         else
         {
             *nmsg=0;
-            synchroMutex.post();
+            synchroMutex.unlock();
             return true;
         }
     }
@@ -164,8 +165,9 @@ public:
     /////////////////
 
 protected:
-    yarp::os::Semaphore waitReadMutex;
-    yarp::os::Semaphore synchroMutex;
+    std::mutex mtx_waitRead;
+    std::condition_variable cv_waitRead;
+    std::mutex synchroMutex;
     
     bool waitingOnRead;
 

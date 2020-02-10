@@ -64,7 +64,6 @@ parametricCalibrator::parametricCalibrator() :
     zeroPosThreshold(0),
     abortCalib(false),
     isCalibrated(false),
-    calibMutex(1),
     skipCalibration(false),
     clearHwFault(false),
     n_joints(0),
@@ -595,9 +594,8 @@ bool parametricCalibrator::calibrate()
         }
         return false;
     }
-    calibMutex.wait();
+    std::lock_guard<std::mutex> lck(calibMutex);
     isCalibrated = true;
-    calibMutex.post();
     return isCalibrated;
 }
 
@@ -777,14 +775,14 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     bool ret=false;
     abortParking=false;
 
-    calibMutex.wait();
+    calibMutex.lock();
     if(!isCalibrated)
     {
         yWarning() << deviceName << ": Calling park without calibration... skipping";
-        calibMutex.post();
+        calibMutex.unlock();
         return true;
     }
-    calibMutex.post();
+    calibMutex.unlock();
 
     if(skipCalibration)
     {
@@ -957,14 +955,14 @@ bool parametricCalibrator::parkSingleJoint(int j, bool _wait)
     int nj=0;
     abortParking=false;
 
-    calibMutex.wait();
+    calibMutex.lock();
     if(!isCalibrated)
     {
         yWarning() << deviceName << ": Calling park without calibration... skipping";
-        calibMutex.post();
+        calibMutex.unlock();
         return true;
     }
-    calibMutex.post();
+    calibMutex.unlock();
 
     if(skipCalibration)
     {

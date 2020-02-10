@@ -270,22 +270,15 @@ bool CanBusInertialMTB::close()
 
 int CanBusInertialMTB::read(yarp::sig::Vector &out)
 {
-    int tmp=0;
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
     out=data;
-    tmp=this->sharedGlobalStatus;
-    mutex.post();
-
-    return tmp;
+    return this->sharedGlobalStatus;
 }
 
 int CanBusInertialMTB::getState(int ch)
 {
-    int tmp=0;
-    mutex.wait();
-    tmp=this->sharedStatus[ch];
-    mutex.post();
-    return tmp;
+    lock_guard<mutex> lck(mtx);
+    return this->sharedStatus[ch];
 }
 
 int CanBusInertialMTB::getChannels()
@@ -482,14 +475,13 @@ void CanBusInertialMTB::run()
     }
 
     // Copy the data in the output data
-    mutex.wait();
+    lock_guard<mutex> lck(mtx);
     memcpy(data.data(), privateData.data(), sizeof(double)*privateData.size());
     for(size_t ch=0; ch < privateStatus.size(); ch++ )
     {
         this->sharedStatus[ch] =  this->privateStatus[ch];
     }
     this->sharedGlobalStatus = this->privateGlobalStatus;
-    mutex.post();
 
     return;
 }

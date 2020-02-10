@@ -19,10 +19,10 @@
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/dev/PreciselyTimed.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/PeriodicThread.h>
 #include <string>
 #include <list>
+#include <mutex>
 
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
@@ -220,7 +220,6 @@ public:
     {return _data;}
 };
 
-#include <yarp/os/Semaphore.h>
 typedef int AnalogDataFormat;
 
 class TBR_CanBackDoor;
@@ -256,7 +255,7 @@ private:
     short status;
     double timeStamp;
     double* scaleFactor;
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
     AnalogDataFormat dataFormat;
     yarp::os::Bottle initMsg;
     yarp::os::Bottle speedMsg;
@@ -1115,8 +1114,7 @@ protected:
 
 protected:
     void *system_resources;
-    yarp::os::Semaphore _mutex;
-    yarp::os::Semaphore _done;
+    std::mutex _mutex;
     ICanBus *canController;
 
     bool _writerequested;

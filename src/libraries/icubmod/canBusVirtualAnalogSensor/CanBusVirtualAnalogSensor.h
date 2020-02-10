@@ -7,17 +7,15 @@
 #ifndef __CANBUS_VIRTUAL_ANALOG_SENSOR_H__
 #define __CANBUS_VIRTUAL_ANALOG_SENSOR_H__
 
-//#include <stdio.h>
 #include <string>
+#include <mutex>
 
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/IVirtualAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/sig/Vector.h>
-#include <string>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -47,7 +45,7 @@ protected:
     CanBuffer          inBuffer;
     CanBuffer          outBuffer;
    
-    yarp::os::Semaphore mutex;
+    std::mutex         mtx;
 
     unsigned int       channelsNum;
     unsigned short     boardId;
@@ -61,7 +59,7 @@ protected:
     bool               useCalibration;
 
 public:
-    CanBusVirtualAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0),mutex(1)
+    CanBusVirtualAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0)
     {}
     
 
@@ -132,7 +130,7 @@ private:
     short status;
     double timeStamp;
     double* scaleFactor;
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
     AnalogDataFormat dataFormat;
     yarp::os::Bottle initMsg;
     yarp::os::Bottle speedMsg;

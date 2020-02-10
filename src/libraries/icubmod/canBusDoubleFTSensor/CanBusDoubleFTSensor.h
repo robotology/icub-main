@@ -7,8 +7,8 @@
 #ifndef CANBUSDOUBLEFTSENSOR_H
 #define CANBUSDOUBLEFTSENSOR_H
 
+#include <mutex>
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -92,7 +92,7 @@ protected:
     CanBuffer          outBuffer;
     int                canDeviceNum;
 
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     unsigned int       sensorsChannelsNum;
     unsigned int       outputChannelsNum;
@@ -113,7 +113,7 @@ protected:
     double frontSingleDistance;
 
 public:
-    CanBusDoubleFTSensor(int period=20) : PeriodicThread((double)period/1000.0),mutex(1),overallStatus(IAnalogSensor::AS_OK)
+    CanBusDoubleFTSensor(int period=20) : PeriodicThread((double)period/1000.0),overallStatus(IAnalogSensor::AS_OK)
     {
         status[0] = IAnalogSensor::AS_OK;
         status[1] = IAnalogSensor::AS_OK;

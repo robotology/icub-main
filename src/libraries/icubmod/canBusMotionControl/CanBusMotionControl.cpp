@@ -437,7 +437,7 @@ inline CanBusResources& RES(void *res) { return *(CanBusResources *)res; }
 class TBR_CanBackDoor: public BufferedPort<Bottle>
 {
     CanBusResources *bus;
-    Semaphore *semaphore;
+    std::mutex *semaphore;
     TBR_AnalogSensor *ownerSensor;
     bool canEchoEnabled;
 
@@ -447,9 +447,10 @@ public:
         bus=0;
         ownerSensor=0;
         canEchoEnabled=false;
+        semaphore=nullptr;
     }
 
-    void setUp(CanBusResources *p, Semaphore *sema, bool echo, TBR_AnalogSensor *owner)
+    void setUp(CanBusResources *p, std::mutex *sema, bool echo, TBR_AnalogSensor *owner)
     {
         semaphore=sema;
         bus=p;
@@ -469,7 +470,7 @@ void TBR_CanBackDoor::onRead(Bottle &b)
 
     double dval[6] = {0,0,0,0,0,0};
 
-    semaphore->wait();
+    std::lock_guard<std::mutex> lck(*semaphore);
     //RANDAZ_TODO: parse vector b
     int len = b.size();
     int commandId = b.get(0).asInt();
@@ -620,7 +621,6 @@ void TBR_CanBackDoor::onRead(Bottle &b)
        }
 
     }
-    semaphore->post();
 }
 
 speedEstimationHelper::speedEstimationHelper(int njoints, SpeedEstimationParameters* estim_parameters )
@@ -777,11 +777,10 @@ int TBR_AnalogSensor::getChannels()
 int TBR_AnalogSensor::read(yarp::sig::Vector &out)
 {
     // print errors
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     if (!data)
     {
-        mutex.post();
         return false;
     }
 
@@ -809,7 +808,6 @@ int TBR_AnalogSensor::read(yarp::sig::Vector &out)
                 counterError++;
             }
         }
-        mutex.post();
         return status;
     }
 
@@ -819,7 +817,6 @@ int TBR_AnalogSensor::read(yarp::sig::Vector &out)
         out[k]=(*data)[k];
     }
     
-    mutex.post();
     return status;
 }
  
@@ -927,7 +924,7 @@ bool TBR_AnalogSensor::handleAnalog(void *canbus)
 
     bool ret=true; //return true by default
 
-    mutex.wait();
+    std::lock_guard<std::mutex> lck(mtx);
 
     double timeNow=Time::now();
     for (unsigned int buff_num=0; buff_num<2; buff_num++)
@@ -1003,7 +1000,6 @@ bool TBR_AnalogSensor::handleAnalog(void *canbus)
             status=IAnalogSensor::AS_TIMEOUT;
         }
 
-    mutex.post();
     return ret;
 }
 
@@ -2404,9 +2400,7 @@ ImplementMotor(this),
 ImplementRemoteVariables(this),
 ImplementAxisInfo(this),
 ImplementPWMControl(this),
-ImplementCurrentControl(this),
-_mutex(1),
-_done(0)
+ImplementCurrentControl(this)
 {
     system_resources = (void *) new CanBusResources;
     ACE_ASSERT (system_resources != NULL);
@@ -2451,11 +2445,11 @@ bool CanBusMotionControl::open (Searchable &config)
     CanBusResources& res = RES (system_resources);
     CanBusMotionControlParameters p;
     bool ret=false;
-    _mutex.wait();
+    _mutex.lock();
 
     if(!p.fromConfig(config))
     {
-        _mutex.post();
+        _mutex.unlock();
         yError() << "One or more errors found while parsing device configuration";
         return false;
     }
@@ -2485,7 +2479,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     if (!ret)
     {
-        _mutex.post();
+        _mutex.unlock();
         yError() << "Unable to uninitialize CAN driver";
         return false;
     }
@@ -2565,7 +2559,7 @@ bool CanBusMotionControl::open (Searchable &config)
         _ref_command_speeds[i] = 0.0;
     }
 
-    _mutex.post ();
+    _mutex.unlock();
 
     // default initialization for this device driver.
     yarp::os::Time::delay(0.005);
@@ -3733,7 +3727,7 @@ void CanBusMotionControl:: run()
         }
 
     //DEBUG_FUNC("CanBusMotionControl::thread running [%d]: wait\n", mycount);
-    _mutex.wait ();
+    _mutex.lock();
     //DEBUG_FUNC("posted\n");
 
     if (r.read () != true)
@@ -3816,7 +3810,7 @@ void CanBusMotionControl:: run()
 
     r._echoMessages = 0; //echo buffer cleanup
 
-    _mutex.post ();
+    _mutex.unlock();
 
     double now = Time::now();
     averageThreadTime+=(now-before)*1000;
@@ -3831,13 +3825,12 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
     CanBusResources& r = RES(system_resources);
     int i;
     int temp;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++)
     {
         temp = int(r._bcastRecvBuffer[i]._controlmodeStatus);
         v[i]=from_modeint_to_modevocab(temp);
     }
-    _mutex.post();
     return true;
 }
 /*
@@ -4026,13 +4019,10 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
     DEBUG_FUNC("Calling GET_CONTROL_MODE\n");
     //_readWord16 (CAN_GET_CONTROL_MODE, j, s); 
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     s = r._bcastRecvBuffer[j]._controlmodeStatus;
   
     *v=from_modeint_to_modevocab(s);
-
-    _mutex.post();
-
     return true;
 }
 
@@ -4045,12 +4035,11 @@ bool CanBusMotionControl::getControlModesRaw(const int n_joints, const int *join
 
     CanBusResources& r = RES(system_resources);
     int i;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < n_joints; i++)
     {
         getControlModeRaw(joints[i], &modes[i]);
     }
-    _mutex.post();
     return true;
 }
 
@@ -4332,12 +4321,12 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
     }
  
     CanBusResources& r = RES(system_resources);
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -4347,7 +4336,7 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus() || (t->timedOut()))
@@ -4387,15 +4376,13 @@ bool CanBusMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     // *** This method is implementented reading data without sending/receiving data from the Canbus ***
     *min_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_min_stiff(); 
     *max_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_max_stiff(); 
     *min_damp= _axisImpedanceHelper->getImpedanceLimits()->get_min_damp(); 
     *max_damp= _axisImpedanceHelper->getImpedanceLimits()->get_max_damp(); 
     int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
-    _mutex.post();
-
     return true;
 }
 
@@ -4413,12 +4400,12 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
     }
  
     CanBusResources& r = RES(system_resources);
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -4428,7 +4415,7 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
      if (!r.getErrorStatus() || (t->timedOut()))
@@ -4468,16 +4455,15 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp)
         return true;
 
     CanBusResources& r = RES(system_resources);
-    _mutex.wait();
-        r.startPacket();
-        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_IMPEDANCE_PARAMS, axis);
-        *((short *)(r._writeBuffer[0].getData()+1)) = S_16(stiff);
-        *((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp*1000);
-        *((short *)(r._writeBuffer[0].getData()+5)) = S_16(0);
-        *((char  *)(r._writeBuffer[0].getData()+7)) = 0;
-        r._writeBuffer[0].setLen(8);
-        r.writePacket();
-    _mutex.post();
+    std::lock_guard<std::mutex> lck(_mutex);
+    r.startPacket();
+    r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_IMPEDANCE_PARAMS, axis);
+    *((short *)(r._writeBuffer[0].getData()+1)) = S_16(stiff);
+    *((short *)(r._writeBuffer[0].getData()+3)) = S_16(damp*1000);
+    *((short *)(r._writeBuffer[0].getData()+5)) = S_16(0);
+    *((char  *)(r._writeBuffer[0].getData()+7)) = 0;
+    r._writeBuffer[0].setLen(8);
+    r.writePacket();
 
     //yDebug("stiffness is: %d \n", S_16(stiff));
     return true;
@@ -4495,20 +4481,18 @@ bool CanBusMotionControl::setTorqueSource (int axis, char board_id, char board_c
         return true;
 
     CanBusResources& r = RES(system_resources);
-    _mutex.wait();
-        r.startPacket();
-        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_TORQUE_SOURCE, axis);
-        *((char *)(r._writeBuffer[0].getData()+1)) = board_id;
-        *((char *)(r._writeBuffer[0].getData()+2)) = board_chan;
-        *((char *)(r._writeBuffer[0].getData()+3)) = 0;
-        *((char *)(r._writeBuffer[0].getData()+4)) = 0;
-        *((char *)(r._writeBuffer[0].getData()+5)) = 0;
-        *((char *)(r._writeBuffer[0].getData()+6)) = 0;
-        *((char *)(r._writeBuffer[0].getData()+7)) = 0;
-        r._writeBuffer[0].setLen(8);
-        r.writePacket();
-    _mutex.post();
-
+    std::lock_guard<std::mutex> lck(_mutex);
+    r.startPacket();
+    r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_TORQUE_SOURCE, axis);
+    *((char *)(r._writeBuffer[0].getData()+1)) = board_id;
+    *((char *)(r._writeBuffer[0].getData()+2)) = board_chan;
+    *((char *)(r._writeBuffer[0].getData()+3)) = 0;
+    *((char *)(r._writeBuffer[0].getData()+4)) = 0;
+    *((char *)(r._writeBuffer[0].getData()+5)) = 0;
+    *((char *)(r._writeBuffer[0].getData()+6)) = 0;
+    *((char *)(r._writeBuffer[0].getData()+7)) = 0;
+    r._writeBuffer[0].setLen(8);
+    r.writePacket();
     return true;
 }
 
@@ -4524,14 +4508,12 @@ bool CanBusMotionControl::setImpedanceOffsetRaw (int axis, double off)
         return true;
 
     CanBusResources& r = RES(system_resources);
-    _mutex.wait();
-        r.startPacket();
-        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_IMPEDANCE_OFFSET, axis);
-        *((short *)(r._writeBuffer[0].getData()+1)) = S_16(off);
-        r._writeBuffer[0].setLen(3);
-        r.writePacket();
-    _mutex.post();
-
+    std::lock_guard<std::mutex> lck(_mutex);
+    r.startPacket();
+    r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_IMPEDANCE_OFFSET, axis);
+    *((short *)(r._writeBuffer[0].getData()+1)) = S_16(off);
+    r._writeBuffer[0].setLen(3);
+    r.writePacket();
     return true;
 }
 
@@ -4618,7 +4600,7 @@ bool CanBusMotionControl::helper_setTrqPidRaw(int axis, const Pid &pid)
     if (!ENABLED(axis))
         return true;
 
-    _mutex.wait();
+    _mutex.lock();
         r.startPacket();
         r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_TORQUE_PID, axis);
         *((short *)(r._writeBuffer[0].getData()+1)) = S_16(pid.kp);
@@ -4627,9 +4609,6 @@ bool CanBusMotionControl::helper_setTrqPidRaw(int axis, const Pid &pid)
         *((short *)(r._writeBuffer[0].getData()+7)) = S_16(pid.scale);
         r._writeBuffer[0].setLen(8);
         r.writePacket();
-    _mutex.post();
-    //yDebug(stderr, ">>>>>>>>>>>pid.kp set to %f\n",pid.kp);
-    _mutex.wait();
         r.startPacket();
         r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_TORQUE_PIDLIMITS, axis);
         *((short *)(r._writeBuffer[0].getData()+1)) = S_16(pid.offset);
@@ -4638,9 +4617,9 @@ bool CanBusMotionControl::helper_setTrqPidRaw(int axis, const Pid &pid)
         *((short *)(r._writeBuffer[0].getData()+7)) = S_16(0);
         r._writeBuffer[0].setLen(8);
         r.writePacket();
-    _mutex.post();
+    _mutex.unlock();
     _writeWord16Ex (ICUBCANPROTO_POL_MC_CMD__SET_TORQUE_STICTION_PARAMS, axis, S_16(pid.stiction_up_val), S_16(pid.stiction_down_val), false);
-    _mutex.wait();
+    _mutex.lock();
         r.startPacket();
         r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_MODEL_PARAMS, axis);
         *((short *)(r._writeBuffer[0].getData()+1)) = S_16(pid.kff);
@@ -4649,7 +4628,7 @@ bool CanBusMotionControl::helper_setTrqPidRaw(int axis, const Pid &pid)
         *((short *)(r._writeBuffer[0].getData()+7)) = S_16(0);
         r._writeBuffer[0].setLen(8);
         r.writePacket();
-    _mutex.post();
+    _mutex.unlock();
     return true;
 }
 
@@ -4670,13 +4649,12 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
         return true;
     }
  
-
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -4686,7 +4664,7 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus() || (t->timedOut()))
@@ -4717,7 +4695,7 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
 
     t->clear();
 
-    _mutex.wait();
+    _mutex.lock();
     
     DEBUG_FUNC("Calling CAN_GET_TORQUE_PIDLIMITS\n");
    
@@ -4727,7 +4705,7 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
 
     // ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus() || (t->timedOut()))
@@ -4755,7 +4733,7 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
 
     t->clear();
 
-    _mutex.wait();
+    _mutex.lock();
     
     DEBUG_FUNC("Calling CAN_GET_MODEL_PARAMS\n");
    
@@ -4765,7 +4743,7 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
 
     // ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus() || (t->timedOut()))
@@ -4865,10 +4843,8 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *trq)
         return false;
 
     int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *trq = double(r._bcastRecvBuffer[k]._torque);
-    _mutex.post();
-
     return true;
 }
 
@@ -4907,7 +4883,7 @@ bool CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     // *** This method is implementented reading data without sending/receiving data from the Canbus ***
     *min=0; //set output to zero (default value)
     *max=0; //set output to zero (default value)
@@ -4935,8 +4911,6 @@ bool CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
         }
         it++;
     }
-    _mutex.post();
-
     return true;
 }
 
@@ -4951,7 +4925,7 @@ bool CanBusMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int 
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     switch (pidtype)
     {
         case VOCAB_PIDTYPE_POSITION:
@@ -4969,7 +4943,6 @@ bool CanBusMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int 
         NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_CURRENT");
         break;
     }
-    _mutex.post();
     return true;
 }
 
@@ -4978,9 +4951,8 @@ bool CanBusMotionControl::getTargetPositionRaw(int axis, double *ref)
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *(ref) = this->_ref_command_positions[axis];
-    _mutex.post();
     return true;
 }
 
@@ -5010,9 +4982,8 @@ bool CanBusMotionControl::getRefVelocityRaw(int axis, double *ref)
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *(ref) = this->_ref_command_speeds[axis];
-    _mutex.post();
     return true;
 }
 
@@ -5091,12 +5062,12 @@ bool CanBusMotionControl::getParameterRaw(int axis, unsigned int type, double* v
     }
  
     CanBusResources& r = RES(system_resources);
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -5106,7 +5077,7 @@ bool CanBusMotionControl::getParameterRaw(int axis, unsigned int type, double* v
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus() || (t->timedOut()))
@@ -5148,12 +5119,12 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
     }
  
     CanBusResources& r = RES(system_resources);
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -5165,7 +5136,7 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus() || (t->timedOut()))
@@ -5222,12 +5193,12 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
     }
  
     CanBusResources& r = RES(system_resources);
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -5245,7 +5216,7 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus() || (t->timedOut()))
@@ -5404,17 +5375,15 @@ bool CanBusMotionControl::setDebugParameterRaw(int axis, unsigned int index, dou
 
     
     CanBusResources& r = RES(system_resources);
-    _mutex.wait();
-        r.startPacket();
-        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_DEBUG_PARAM, axis);
-        *((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(index & 0xFF);
-        *((short *)(r._writeBuffer[0].getData()+2)) = S_16(value);
-        *((short *)(r._writeBuffer[0].getData()+4)) = 0;
-        *((short *)(r._writeBuffer[0].getData()+6)) = 0;
-        r._writeBuffer[0].setLen(8);
-        r.writePacket();
-    _mutex.post();
-
+    std::lock_guard<std::mutex> lck(_mutex);
+    r.startPacket();
+    r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_DEBUG_PARAM, axis);
+    *((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(index & 0xFF);
+    *((short *)(r._writeBuffer[0].getData()+2)) = S_16(value);
+    *((short *)(r._writeBuffer[0].getData()+4)) = 0;
+    *((short *)(r._writeBuffer[0].getData()+6)) = 0;
+    r._writeBuffer[0].setLen(8);
+    r.writePacket();
     return true;
 }
 
@@ -5432,8 +5401,8 @@ bool CanBusMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
-    _mutex.wait();
 
+    std::lock_guard<std::mutex> lck(_mutex);
     switch (pidtype)
     {
         case VOCAB_PIDTYPE_POSITION:
@@ -5452,8 +5421,6 @@ bool CanBusMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int
             yError()<<"Invalid pidtype:"<<pidtype;
         break;
     }
-    
-    _mutex.post();
     return true;
 }
 
@@ -5503,7 +5470,7 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         return true;
     }
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__POSITION_MOVE, axis);
@@ -5514,9 +5481,6 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
     r._writeBuffer[0].setLen(7);
 
     r.writePacket();
-
-    _mutex.post();
-
     return true;
 }
 
@@ -5570,13 +5534,13 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
     int i;
     short value;
 
-    _mutex.wait();
+    _mutex.lock();
 
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -5591,7 +5555,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
 
     if (r._writeMessages < 1)
     {
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -5599,7 +5563,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus())
@@ -5818,12 +5782,12 @@ bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParamete
         return true;
     }
 
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -5834,7 +5798,7 @@ bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParamete
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus() || (t->timedOut()))
@@ -5886,14 +5850,12 @@ bool CanBusMotionControl::setFilterTypeRaw (int j, int type)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    _mutex.wait();
-        r.startPacket();
-        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_TCFILTER_TYPE, axis);
-        *((short *)(r._writeBuffer[0].getData()+1)) = S_16(type);
-        r._writeBuffer[0].setLen(2);
-        r.writePacket();
-    _mutex.post();
-
+    std::lock_guard<std::mutex> lck(_mutex);
+    r.startPacket();
+    r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_TCFILTER_TYPE, axis);
+    *((short *)(r._writeBuffer[0].getData()+1)) = S_16(type);
+    r._writeBuffer[0].setLen(2);
+    r.writePacket();
     return true;
 }
 
@@ -5907,18 +5869,16 @@ bool CanBusMotionControl::setMotorTorqueParamsRaw (int j, MotorTorqueParameters 
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    _mutex.wait();
-        r.startPacket();
-        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_MOTOR_PARAMS, axis);
-        *((short *)(r._writeBuffer[0].getData()+1)) = S_16(param.bemf);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = (unsigned char) (param.bemf_scale);
-        *((short *)(r._writeBuffer[0].getData()+4)) = S_16(param.ktau);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = (unsigned char) (param.ktau_scale);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = (unsigned char) (0);
-        r._writeBuffer[0].setLen(8);
-        r.writePacket();
-    _mutex.post();
-
+    std::lock_guard<std::mutex> lck(_mutex);
+    r.startPacket();
+    r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_MOTOR_PARAMS, axis);
+    *((short *)(r._writeBuffer[0].getData()+1)) = S_16(param.bemf);
+    *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = (unsigned char) (param.bemf_scale);
+    *((short *)(r._writeBuffer[0].getData()+4)) = S_16(param.ktau);
+    *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = (unsigned char) (param.ktau_scale);
+    *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = (unsigned char) (0);
+    r._writeBuffer[0].setLen(8);
+    r.writePacket();
     return true;
 }
 
@@ -5961,7 +5921,7 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         return true;
     }
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     r.startPacket();
 
@@ -5986,9 +5946,6 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     }
 
     r.writePacket();
-
-    _mutex.post();
-
     return true;
 }
 
@@ -6056,7 +6013,7 @@ bool CanBusMotionControl::getEncodersRaw(double *v)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
@@ -6067,16 +6024,13 @@ bool CanBusMotionControl::getEncodersRaw(double *v)
     }
 
     stampEncoders.update(stamp);
-
-    _mutex.post();
     return true;
 }
 
 Stamp CanBusMotionControl::getLastInputStamp()
 {
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     Stamp ret=stampEncoders;
-    _mutex.post();
     return ret;
 }
 
@@ -6085,10 +6039,8 @@ bool CanBusMotionControl::getEncoderRaw(int axis, double *v)
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[axis]._position_joint._value);
-    _mutex.post();
-
     return true;
 }
 
@@ -6096,12 +6048,11 @@ bool CanBusMotionControl::getEncoderSpeedsRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++) {
         int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
         v[i] = (double(r._bcastRecvBuffer[i]._speed_joint)*1000.0)/vel_factor;
     }
-    _mutex.post();
     return true;
 }
 
@@ -6112,11 +6063,9 @@ bool CanBusMotionControl::getEncoderSpeedRaw(int j, double *v)
     if (!(j >= 0 && j <= r.getJoints()))
         return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Vel_estimator_shift));
     *v = (double(r._bcastRecvBuffer[j]._speed_joint)*1000.0)/vel_factor;
-    _mutex.post();
-
     return true;
 }
 
@@ -6124,13 +6073,12 @@ bool CanBusMotionControl::getEncoderAccelerationsRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++) {
         int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
         int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Acc_estimator_shift));
         v[i] = (double(r._bcastRecvBuffer[i]._accel_joint)*1000000.0)/(vel_factor*acc_factor);
     }
-    _mutex.post();
     return true;
 }
 
@@ -6141,12 +6089,10 @@ bool CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
     if (!(j >= 0 && j <= r.getJoints()))
         return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Vel_estimator_shift));
     int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Acc_estimator_shift));
     *v = (double(r._bcastRecvBuffer[j]._accel_joint)*1000000.0)/(vel_factor*acc_factor);
-    _mutex.post();
-
     return true;
 }
 
@@ -6176,7 +6122,7 @@ bool CanBusMotionControl::getMotorEncodersRaw(double *v)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
@@ -6187,8 +6133,6 @@ bool CanBusMotionControl::getMotorEncodersRaw(double *v)
     }
 
     stampEncoders.update(stamp);
-
-    _mutex.post();
     return true;
 }
 
@@ -6197,10 +6141,8 @@ bool CanBusMotionControl::getMotorEncoderRaw(int m, double *v)
     CanBusResources& r = RES(system_resources);
     if (!(m >= 0 && m <= r.getJoints()))return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[m]._position_rotor._value);
-    _mutex.post();
-
     return true;
 }
 
@@ -6209,7 +6151,7 @@ bool CanBusMotionControl::getMotorEncodersTimedRaw(double *v, double *t)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
@@ -6221,8 +6163,6 @@ bool CanBusMotionControl::getMotorEncodersTimedRaw(double *v, double *t)
     }
 
     stampEncoders.update(stamp);
-
-    _mutex.post();
     return true;
 }
 
@@ -6231,11 +6171,9 @@ bool CanBusMotionControl::getMotorEncoderTimedRaw(int m, double *v, double *t)
     CanBusResources& r = RES(system_resources);
     if (!(m >= 0 && m <= r.getJoints()))return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[m]._position_rotor._value);
     *t = r._bcastRecvBuffer[m]._position_rotor._stamp;
-    _mutex.post();
-
     return true;
 }
 
@@ -6267,12 +6205,11 @@ bool CanBusMotionControl::getMotorEncoderSpeedsRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++) {
         int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Vel_estimator_shift));
         v[i] = (double(r._bcastRecvBuffer[i]._speed_rotor._value)*1000.0)/vel_factor;
     }
-    _mutex.post();
     return true;
 }
 
@@ -6281,10 +6218,9 @@ bool CanBusMotionControl::getMotorEncoderSpeedRaw(int m, double *v)
     CanBusResources& r = RES(system_resources);
     if (!(m >= 0 && m <= r.getJoints()))return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Vel_estimator_shift));
     *v = (double(r._bcastRecvBuffer[m]._speed_rotor._value)*1000.0)/vel_factor;
-    _mutex.post();
     return true;
 }
 
@@ -6292,13 +6228,12 @@ bool CanBusMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
 {
     CanBusResources& r = RES(system_resources);
     int i;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++) {
         int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Vel_estimator_shift));
         int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Acc_estimator_shift));
         accs[i] = (double(r._bcastRecvBuffer[i]._accel_rotor._value)*1000000.0)/(vel_factor*acc_factor);
     }
-    _mutex.post();
     return true;
 }
 
@@ -6307,11 +6242,10 @@ bool CanBusMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
     CanBusResources& r = RES(system_resources);
     if (!(m >= 0 && m <= r.getJoints()))return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Vel_estimator_shift));
     int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Acc_estimator_shift));
     *acc = (double(r._bcastRecvBuffer[m]._accel_rotor._value)*1000000.0)/(vel_factor*acc_factor);
-    _mutex.post();
     return true;
 }
 
@@ -6331,13 +6265,11 @@ bool CanBusMotionControl::getCurrentsRaw(double *cs)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++)
     {
         cs[i] = double(r._bcastRecvBuffer[i]._current);
     }
-
-    _mutex.post();
     return true;
 }
 
@@ -6348,10 +6280,8 @@ bool CanBusMotionControl::getCurrentRaw(int axis, double *c)
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *c = double(r._bcastRecvBuffer[axis]._current);
-    _mutex.post();
-
     return true;
 }
 
@@ -6460,17 +6390,15 @@ bool CanBusMotionControl::setSpeedEstimatorShiftRaw(int axis, double jnt_speed, 
         return false;
     
     CanBusResources& r = RES(system_resources);
-    _mutex.wait();
-        r.startPacket();
-        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_SPEED_ESTIM_SHIFT, axis);
-        *((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(jnt_speed) & 0xFF;
-        *((unsigned char *)(r._writeBuffer[0].getData()+2)) = (unsigned char)(jnt_acc)   & 0xFF;
-        *((unsigned char *)(r._writeBuffer[0].getData()+3)) = (unsigned char)(mot_speed) & 0xFF;
-        *((unsigned char *)(r._writeBuffer[0].getData()+4)) = (unsigned char)(mot_acc)   & 0xFF;
-        r._writeBuffer[0].setLen(5);
-        r.writePacket();
-    _mutex.post();
-
+    std::lock_guard<std::mutex> lck(_mutex);
+    r.startPacket();
+    r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_SPEED_ESTIM_SHIFT, axis);
+    *((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(jnt_speed) & 0xFF;
+    *((unsigned char *)(r._writeBuffer[0].getData()+2)) = (unsigned char)(jnt_acc)   & 0xFF;
+    *((unsigned char *)(r._writeBuffer[0].getData()+3)) = (unsigned char)(mot_speed) & 0xFF;
+    *((unsigned char *)(r._writeBuffer[0].getData()+4)) = (unsigned char)(mot_acc)   & 0xFF;
+    r._writeBuffer[0].setLen(5);
+    r.writePacket();
     return true;
 }
 
@@ -6513,7 +6441,7 @@ bool CanBusMotionControl::getAmpStatusRaw(int *st)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++)
     {
     //  WARNING
@@ -6522,8 +6450,6 @@ bool CanBusMotionControl::getAmpStatusRaw(int *st)
         st[i] = short(r._bcastRecvBuffer[i]._axisStatus);  
    
     }
-    _mutex.post();
-
     return true;
 }
 
@@ -6531,10 +6457,8 @@ bool CanBusMotionControl::getAmpStatusRaw(int j, int *st)
 {
     CanBusResources& r = RES(system_resources);
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     st[j] = short(r._bcastRecvBuffer[j]._axisStatus);  
-    _mutex.post();
-
     return true;
 }
 
@@ -6702,10 +6626,9 @@ bool CanBusMotionControl::setVelLimitsRaw(int axis, double min, double max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
         return false;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     _max_vel_jnt_cmd[axis]=max;
     //min not implemented
-    _mutex.post();
     return true;
 }
 
@@ -6713,10 +6636,9 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
         return false;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *max = _max_vel_jnt_cmd[axis];
     *min = 0;
-    _mutex.post();
     return true;
 }
 
@@ -6844,15 +6766,13 @@ bool CanBusMotionControl::_writeNone (int msg, int axis)
     }
 
     DEBUG_FUNC("Write None msg:%d axis:%d\n", msg, axis);
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (msg, axis);
 
     // send immediatly
     r.writePacket();
-    _mutex.post();
-
     return true;
 }
 
@@ -6869,7 +6789,7 @@ bool CanBusMotionControl::_writeWord16 (int msg, int axis, short s)
     if (!ENABLED(axis))
         return true;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (msg, axis);
@@ -6878,10 +6798,6 @@ bool CanBusMotionControl::_writeWord16 (int msg, int axis, short s)
     r._writeBuffer[0].setLen(3);
 
     r.writePacket();
-
-    _mutex.post();
-
-    /// hopefully ok...
     return true;
 }
 
@@ -6897,7 +6813,7 @@ bool CanBusMotionControl::_writeByte8 (int msg, int axis, int value)
     if (!ENABLED(axis))
         return true;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (msg, axis);
@@ -6906,9 +6822,6 @@ bool CanBusMotionControl::_writeByte8 (int msg, int axis, int value)
     r._writeBuffer[0].setLen(2);
 
     r.writePacket();
-
-    _mutex.post();
-
     return true;
 }
 
@@ -6924,7 +6837,7 @@ bool CanBusMotionControl::_writeDWord (int msg, int axis, int value)
     if (!ENABLED(axis))
         return true;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (msg, axis);
@@ -6933,9 +6846,6 @@ bool CanBusMotionControl::_writeDWord (int msg, int axis, int value)
     r._writeBuffer[0].setLen(5);
 
     r.writePacket();
-
-    _mutex.post();
-
     return true;
 }
 
@@ -6956,7 +6866,7 @@ bool CanBusMotionControl::_writeWord16Ex (int msg, int axis, short s1, short s2,
     if (!ENABLED(axis))
         return true;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (msg, axis);
@@ -6966,10 +6876,6 @@ bool CanBusMotionControl::_writeWord16Ex (int msg, int axis, short s1, short s2,
     r._writeBuffer[0].setLen(5);
 
     r.writePacket();
-
-    _mutex.post();
-
-    /// hopefully ok...
     return true;
 }
 
@@ -6985,13 +6891,12 @@ bool CanBusMotionControl::_writeByteWords16 (int msg, int axis, unsigned char va
     if (!ENABLED(axis))
         return true;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
 
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
         return false;
     }
 
@@ -7007,12 +6912,10 @@ bool CanBusMotionControl::_writeByteWords16 (int msg, int axis, unsigned char va
 
     if (r._writeMessages < 1)
     {
-        _mutex.post();
         return false;
     }
 
     r.writePacket(); //write now
-    _mutex.post();
     return true;
 }
 
@@ -7031,12 +6934,12 @@ bool CanBusMotionControl::_readDWord (int msg, int axis, int& value)
         return true;
     }
 
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -7047,7 +6950,7 @@ bool CanBusMotionControl::_readDWord (int msg, int axis, int& value)
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus() || (t->timedOut()))
@@ -7074,12 +6977,12 @@ bool CanBusMotionControl::_readDWordArray (int msg, double *out)
     CanBusResources& r = RES(system_resources);
     int i = 0;
 
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -7098,7 +7001,7 @@ bool CanBusMotionControl::_readDWordArray (int msg, double *out)
 
     if (r._writeMessages < 1)
     {
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -7106,7 +7009,7 @@ bool CanBusMotionControl::_readDWordArray (int msg, double *out)
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus() || t->timedOut())
@@ -7149,12 +7052,12 @@ bool CanBusMotionControl::_readWord16 (int msg, int axis, short& value)
         return true;
     }
 
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -7166,7 +7069,7 @@ bool CanBusMotionControl::_readWord16 (int msg, int axis, short& value)
     ThreadTable2 *t=threadPool->getThreadTable(id);
     DEBUG_FUNC("readWord16: going to wait for packet %d\n", id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
     DEBUG_FUNC("readWord16: ok, wait done %d\n",id);
 
@@ -7201,12 +7104,12 @@ bool CanBusMotionControl::_readByte8(int msg, int axis, int& value)
         return true;
     }
 
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -7218,7 +7121,7 @@ bool CanBusMotionControl::_readByte8(int msg, int axis, int& value)
     ThreadTable2 *t = threadPool->getThreadTable(id);
     DEBUG_FUNC("_readByte8: going to wait for packet %d\n", id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
     DEBUG_FUNC("_readByte8: ok, wait done %d\n", id);
 
@@ -7254,12 +7157,12 @@ bool CanBusMotionControl::_readWord16Ex (int msg, int axis, short& value1, short
         return true;
     }
 
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         value1 = 0;
         value2 = 0;
         return false;
@@ -7273,7 +7176,7 @@ bool CanBusMotionControl::_readWord16Ex (int msg, int axis, short& value1, short
     ThreadTable2 *t=threadPool->getThreadTable(id);
     DEBUG_FUNC("readWord16Ex: going to wait for packet %d\n", id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
     DEBUG_FUNC("readWord16Ex: ok, wait done %d\n",id);
 
@@ -7304,12 +7207,12 @@ bool CanBusMotionControl::_readWord16Array (int msg, double *out)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    _mutex.wait();
+    _mutex.lock();
     int id;
     if (!threadPool->getId(id))
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -7328,7 +7231,7 @@ bool CanBusMotionControl::_readWord16Array (int msg, double *out)
 
     if (r._writeMessages < 1)
     {
-        _mutex.post();
+        _mutex.unlock();
         return false;
     }
 
@@ -7337,7 +7240,7 @@ bool CanBusMotionControl::_readWord16Array (int msg, double *out)
 
     ThreadTable2 *t=threadPool->getThreadTable(id);
     t->setPending(r._writeMessages);
-    _mutex.post();
+    _mutex.unlock();
     t->synch();
 
     if (!r.getErrorStatus()||(t->timedOut()))
@@ -7402,7 +7305,7 @@ bool CanBusMotionControl::getEncodersTimedRaw(double *v, double *t)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
@@ -7414,8 +7317,6 @@ bool CanBusMotionControl::getEncodersTimedRaw(double *v, double *t)
     }
 
     stampEncoders.update(stamp);
-
-    _mutex.post();
     return true;
 }
 
@@ -7424,11 +7325,9 @@ bool CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double *t)
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))return false;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[axis]._position_joint._value);
     *t = r._bcastRecvBuffer[axis]._position_joint._stamp;
-    _mutex.post();
-
     return true;
 }
 
@@ -7439,12 +7338,10 @@ bool CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::Interaction
     DEBUG_FUNC("Calling GET_INTERACTION_MODE SINGLE JOINT\n");
     CanBusResources& r = RES(system_resources);
     int temp;
-    _mutex.wait();
 
+    std::lock_guard<std::mutex> lck(_mutex);
     temp = int(r._bcastRecvBuffer[axis]._interactionmodeStatus);
     *mode=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
-    
-    _mutex.post();
     return true;
 }
 
@@ -7456,12 +7353,11 @@ bool CanBusMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp
 
     CanBusResources& r = RES(system_resources);
     int i;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < n_joints; i++)
     {
         getInteractionModeRaw(joints[i], &modes[i]);
     }
-    _mutex.post();
     return true;
 }
 
@@ -7471,13 +7367,12 @@ bool CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum*
     CanBusResources& r = RES(system_resources);
     int i;
     int temp;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++)
     {
         temp = int(r._bcastRecvBuffer[i]._interactionmodeStatus);
         modes[i]=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
     }
-    _mutex.post();
     return true;
 }
 
@@ -7581,9 +7476,8 @@ bool CanBusMotionControl::getDutyCycleRaw(int j, double *v)
     CanBusResources& r = RES(system_resources);
     if (!(j >= 0 && j <= r.getJoints()))
         return false;
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     *(v) = double(r._bcastRecvBuffer[j]._pid_value);
-    _mutex.post();
     return true;
 }
 
@@ -7592,13 +7486,11 @@ bool CanBusMotionControl::getDutyCyclesRaw(double *v)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    _mutex.wait();
+    std::lock_guard<std::mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++)
     {
         v[i] = double(r._bcastRecvBuffer[i]._pid_value);
     }
-
-    _mutex.post();
     return true;
 }
 

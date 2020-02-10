@@ -7,8 +7,8 @@
 #ifndef __CANBUSANALOGSENSOR_H__
 #define __CANBUSANALOGSENSOR_H__
 
+#include <mutex>
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -65,7 +65,7 @@ protected:
     CanBuffer          outBuffer;
     int                canDeviceNum;
 
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     unsigned int       channelsNum;
     unsigned short     boardId;
@@ -78,7 +78,7 @@ protected:
     bool               diagnostic;
 
 public:
-    CanBusAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0), mutex(1)
+    CanBusAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0)
     {}
 
 

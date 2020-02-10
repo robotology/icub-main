@@ -7,10 +7,10 @@
 #ifndef __CANBUSSKIN_H__
 #define __CANBUSSKIN_H__
 
+#include <mutex>
 #include <string>
 
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
@@ -70,7 +70,7 @@ protected:
     yarp::dev::CanBuffer inBuffer;
     yarp::dev::CanBuffer outBuffer;
 
-    yarp::os::Semaphore mutex;
+    std::mutex mtx;
 
     /** The CAN net ID. */
     int netID;

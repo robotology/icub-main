@@ -13,10 +13,10 @@
 #ifndef __ICUB_PARAMETRIC_CALIBRATOR__
 #define __ICUB_PARAMETRIC_CALIBRATOR__
 
+#include <mutex>
 #include <string>
 #include <list>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/dev/CalibratorInterfaces.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 
@@ -96,7 +96,7 @@ public:
     virtual bool parkWholePart()  override;
 
 private:
-    yarp::os::Semaphore calibMutex;
+    std::mutex calibMutex;
 
     bool calibrate();
     bool calibrateJoint(int j);
