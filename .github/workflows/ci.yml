@@ -27,8 +27,8 @@ jobs:
       run: |
         # the following fix the problem described in https://github.community/t5/GitHub-Actions/Windows-tests-worked-yesterday-broken-today/m-p/43839#M5530
         echo "::add-path::C:\Program Files\Git\bin"
-        echo "::set-env name=VCPKG_ROBOTOLOGY_ROOT::D:/vcpkg-robotology"
-        echo "::set-env name=VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT::D:/vcpkg-robotology-binary-ports"
+        echo "::set-env name=VCPKG_ROBOTOLOGY_ROOT::C:/vcpkg-robotology"
+        echo "::set-env name=VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT::C:/vcpkg-robotology-binary-ports"
         
     - name: Environment Variables
       shell: bash
@@ -51,10 +51,8 @@ jobs:
         git clone https://github.com/microsoft/vcpkg.git --depth 1 --branch 2019.10 ${VCPKG_ROBOTOLOGY_ROOT}
         git clone https://github.com/robotology/robotology-vcpkg-binary-ports.git ${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT}
         ${VCPKG_ROBOTOLOGY_ROOT}/bootstrap-vcpkg.sh
-        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows ace freeglut ode sdl1 gsl eigen3 libxml2 sdl1 opencv ipopt-binary
-        rm -rf ${VCPKG_ROBOTOLOGY_ROOT}/buildtrees ${VCPKG_ROBOTOLOGY_ROOT}/packages ${VCPKG_ROBOTOLOGY_ROOT}/downloads
-        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows qt5-base
-        rm -rf ${VCPKG_ROBOTOLOGY_ROOT}/buildtrees ${VCPKG_ROBOTOLOGY_ROOT}/packages ${VCPKG_ROBOTOLOGY_ROOT}/downloads
+        ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows ace freeglut ode sdl1 gsl eigen3 libxml2 \
+                                                                                                                            opencv ipopt-binary qt5-base
         
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
