@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(ICUB_COMPILE_BINDINGS "Compile optional language bindings"  FALSE)
 
 find_package(YCM 0.11.0 REQUIRED)
-find_package(YARP 3.3.1 REQUIRED)
+find_package(YARP 3.3.2 REQUIRED)
 
 if(YARP_math_FOUND)
   set(ICUB_HAS_YARP TRUE CACHE BOOL "" FORCE)
