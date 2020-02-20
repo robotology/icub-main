@@ -1,4 +1,4 @@
-﻿// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 #ifndef __serviceParser_h__
 #define __serviceParser_h__
