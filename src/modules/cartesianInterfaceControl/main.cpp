@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -16,80 +16,80 @@
  * Public License for more details
 */
 
-/** 
+/**
 \defgroup cartesianInterfaceControl cartesianInterfaceControl
- 
-@ingroup icub_module  
- 
-Just an example of how to control the iCub arm in the 
+
+@ingroup icub_module
+
+Just an example of how to control the iCub arm in the
 operational space making use of the Cartesian Interface.
- 
+
 Copyright (C) 2010 RobotCub Consortium
- 
-Author: Ugo Pattacini 
+
+Author: Ugo Pattacini
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
- 
+
 This module relies on \ref icub_cartesian_interface to provide a
-kind of easy-to-use port-based front-end for controlling the 
-iCub's arm in the operational space. 
- 
-\section lib_sec Libraries 
-- YARP libraries. 
+kind of easy-to-use port-based front-end for controlling the
+iCub's arm in the operational space.
+
+\section lib_sec Libraries
+- YARP libraries.
 
 \section parameters_sec Parameters
---name \e name 
-- The parameter \e name identifies the controller's name; all 
+--name \e name
+- The parameter \e name identifies the controller's name; all
   the open ports will be tagged with the prefix
   /<name>/<part>/. If not specified \e armCtrl is assumed.
- 
---robot \e name 
+
+--robot \e name
 - The parameter \e name selects the robot name to connect to; if
   not specified \e icub is assumed.
- 
---part \e type 
+
+--part \e type
 - The parameter \e type selects the robot's arm to work with. It
   can be \e right_arm or \e left_arm; if not specified
   \e right_arm is assumed.
- 
+
 --T \e time
 - specify the task execution time in seconds; by default \e time
   is 2.0 seconds. Note that this is just an approximation of
   execution time since there exists a controller running
   underneath.
- 
---tol \e tol 
-- specify the cartesian tolerance in meters for reaching the 
+
+--tol \e tol
+- specify the cartesian tolerance in meters for reaching the
   target.
- 
+
 --DOF8
-- enable the control of torso yaw joint. 
- 
+- enable the control of torso yaw joint.
+
 --DOF9
-- enable the control of torso yaw/pitch joints. 
- 
+- enable the control of torso yaw/pitch joints.
+
 --DOF10
-- enable the control of torso yaw/roll/pitch joints. 
- 
---onlyXYZ  
-- disable orientation control. 
- 
---reinstate_context 
+- enable the control of torso yaw/roll/pitch joints.
+
+--onlyXYZ
+- disable orientation control.
+
+--reinstate_context
 - reinstate controller context upon target reception.
- 
+
 \section portsa_sec Ports Accessed
 
-The robot interface is assumed to be operative; in particular, 
-the ICartesianControl interface must be available. 
- 
-\section portsc_sec Ports Created 
- 
+The robot interface is assumed to be operative; in particular,
+the ICartesianControl interface must be available.
+
+\section portsc_sec Ports Created
+
 The module creates the ports required for the communication with
-the robot (through interfaces) and the following ports: 
- 
-- \e /<name>/<part>/xd:i receives the target end-effector 
+the robot (through interfaces) and the following ports:
+
+- \e /<name>/<part>/xd:i receives the target end-effector
   pose. It accepts 7 double (also as a Bottle object): 3 for xyz
   and 4 for orientation in axis/angle mode.
 
@@ -100,12 +100,12 @@ the robot (through interfaces) and the following ports:
 \section in_files_sec Input Data Files
 None.
 
-\section out_data_sec Output Data Files 
-None. 
- 
+\section out_data_sec Output Data Files
+None.
+
 \section conf_file_sec Configuration Files
-None. 
- 
+None.
+
 \section tested_os_sec Tested OS
 Windows, Linux
 

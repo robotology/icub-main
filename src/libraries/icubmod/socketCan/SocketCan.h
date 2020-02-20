@@ -89,7 +89,7 @@ public:
     { return (const unsigned char *) msg; }
 
     virtual void setBuffer(unsigned char *b)
-    { 
+    {
         if (b!=0)
             msg=(can_frame *)(b);
     }
@@ -104,7 +104,7 @@ public:
  * | `socketcan` |
  */
 class yarp::dev::SocketCan: public ImplementCanBufferFactory<SocketCanMessage, can_frame>,
-    public ICanBus, 
+    public ICanBus,
     public DeviceDriver
 {
 private:
@@ -119,8 +119,8 @@ public:
     virtual bool canIdAdd(unsigned int id);
     virtual bool canIdDelete(unsigned int id);
 
-    virtual bool canRead(CanBuffer &msgs, 
-        unsigned int size, 
+    virtual bool canRead(CanBuffer &msgs,
+        unsigned int size,
         unsigned int *read,
         bool wait=false);
 

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -32,7 +32,7 @@
 #include <iCub/action/actionPrimitives.h>
 
 #define RES_WAVER(x)                                (dynamic_cast<ArmWavingMonitor*>(x))
-                                                    
+
 #define ACTIONPRIM_DEFAULT_PER                      50      // [ms]
 #define ACTIONPRIM_DEFAULT_EXECTIME                 2.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL                 0.005   // [m]
@@ -351,7 +351,7 @@ void ActionPrimitives::init()
     fingersInPosition=true;
     fingerInPosition.insert(fingerInPosition.begin(),5,true);
     reachTmoEnabled=false;
-    locked=false;    
+    locked=false;
 
     latchTimerWait=waitTmo=0.0;
     latchTimerReach=reachTmo=0.0;
@@ -374,10 +374,10 @@ void ActionPrimitives::printMessage(const int logtype, const char *format, ...) 
     {
         string str;
         str="*** "+local+"/"+part+": ";
-    
+
         va_list arg;
         char buf[512];
-        va_start(arg,format);        
+        va_start(arg,format);
         vsnprintf(buf,sizeof(buf),format,arg);
         va_end(arg);
 
@@ -466,22 +466,22 @@ bool ActionPrimitives::configHandSeq(Property &opt)
 {
     if (opt.check("hand_sequences_file"))
     {
-        string handSeqFile=opt.find("hand_sequences_file").asString();        
+        string handSeqFile=opt.find("hand_sequences_file").asString();
 
         printMessage(log::info,"Processing %s file",handSeqFile.c_str());
         Property handSeqProp; handSeqProp.fromConfigFile(handSeqFile);
-    
+
         // GENERAL group
         Bottle &bGeneral=handSeqProp.findGroup("GENERAL");
         if (bGeneral.isNull())
         {
-            printMessage(log::warning,"\"GENERAL\" group is missing");    
+            printMessage(log::warning,"\"GENERAL\" group is missing");
             return false;
         }
 
         if (!bGeneral.check("numSequences"))
         {
-            printMessage(log::warning,"\"numSequences\" option is missing");    
+            printMessage(log::warning,"\"numSequences\" option is missing");
             return false;
         }
 
@@ -517,7 +517,7 @@ bool ActionPrimitives::configHandSeq(Property &opt)
 
             addHandSequence(key,bSeq);
         }
-    
+
         return true;
     }
     else
@@ -546,7 +546,7 @@ bool ActionPrimitives::configGraspModel(Property &opt)
                     return false;
                 }
 
-                string modelFile=opt.find("grasp_model_file").asString();                
+                string modelFile=opt.find("grasp_model_file").asString();
                 printMessage(log::info,"Retrieving grasp model data from %s file",modelFile.c_str());
                 Property modelProp; modelProp.fromConfigFile(modelFile);
 
@@ -598,9 +598,9 @@ bool ActionPrimitives::open(Property &opt)
     part=opt.check("part",Value(ACTIONPRIM_DEFAULT_PART)).asString();
     default_exec_time=opt.check("default_exec_time",Value(ACTIONPRIM_DEFAULT_EXECTIME)).asDouble();
     tracking_mode=opt.check("tracking_mode",Value(ACTIONPRIM_DEFAULT_TRACKINGMODE)).asString()=="on"?true:false;
-    verbose=opt.check("verbosity",Value(ACTIONPRIM_DEFAULT_VERBOSITY)).asString()=="on"?true:false;    
+    verbose=opt.check("verbosity",Value(ACTIONPRIM_DEFAULT_VERBOSITY)).asString()=="on"?true:false;
 
-    int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();    
+    int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();
     double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
 
     // create the model for grasp detection (if any)
@@ -635,7 +635,7 @@ bool ActionPrimitives::open(Property &opt)
 
     // open views
     polyHand.view(modCtrl);
-    polyHand.view(encCtrl);    
+    polyHand.view(encCtrl);
     polyHand.view(posCtrl);
     polyCart.view(cartCtrl);
 
@@ -774,7 +774,7 @@ bool ActionPrimitives::isHandSeqEnded()
 
                 // take joints belonging to the finger
                 pair<multimap<int,int>::iterator,multimap<int,int>::iterator> i=fingers2JntsMap.equal_range(fng);
-                
+
                 for (multimap<int,int>::iterator j=i.first; j!=i.second; ++j)
                 {
                     int jnt=j->second;
@@ -788,7 +788,7 @@ bool ActionPrimitives::isHandSeqEnded()
                         posCtrl->stop(jnt);
                         tmpSet.erase(jnt);
                     }
-                }                
+                }
             }
         }
     }
@@ -876,7 +876,7 @@ bool ActionPrimitives::_pushAction(const bool execArm, const Vector &x, const Ve
     {
         lock_guard<mutex> lck(mtx);
         Action action;
-    
+
         action.waitState=false;
         action.execArm=execArm;
         action.x=x;
@@ -922,7 +922,7 @@ bool ActionPrimitives::_pushAction(const Vector &x, const Vector &o,
                     // decompose hand action in sum of fingers sequences
                     for (i=1; i<q.size()-1; i++)
                         _pushAction(false,vectDummy,vectDummy,ACTIONPRIM_DISABLE_EXECTIME,false,true,q[i],false,NULL);
-    
+
                     // reserve the callback whenever the last hand WP is achieved
                     if (i<q.size())
                         _pushAction(false,vectDummy,vectDummy,ACTIONPRIM_DISABLE_EXECTIME,false,true,q[i],true,clb);
@@ -934,7 +934,7 @@ bool ActionPrimitives::_pushAction(const Vector &x, const Vector &o,
         else
         {
             printMessage(log::warning,"\"%s\" hand sequence key not found",
-                         handSeqKey.c_str());    
+                         handSeqKey.c_str());
 
             return false;
         }
@@ -1024,7 +1024,7 @@ bool ActionPrimitives::pushAction(const string &handSeqKey,
         else
         {
             printMessage(log::warning,"\"%s\" hand sequence key not found",
-                         handSeqKey.c_str());    
+                         handSeqKey.c_str());
 
             return false;
         }
@@ -1088,7 +1088,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
                 action.wayPointsThr=thr;
                 action.clb=(q.size()==1?clb:NULL);
 
-                actionsQueue.push_back(action);                
+                actionsQueue.push_back(action);
 
                 if (q.size()>1)
                 {
@@ -1098,7 +1098,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
                     // decompose hand action in sum of fingers sequences
                     for (i=1; i<q.size()-1; i++)
                         _pushAction(false,vectDummy,vectDummy,ACTIONPRIM_DISABLE_EXECTIME,false,true,q[i],false,NULL);
-    
+
                     // reserve the callback whenever the last hand WP is achieved
                     if (i<q.size())
                         _pushAction(false,vectDummy,vectDummy,ACTIONPRIM_DISABLE_EXECTIME,false,true,q[i],true,clb);
@@ -1110,7 +1110,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
         else
         {
             printMessage(log::warning,"\"%s\" hand sequence key not found",
-                         handSeqKey.c_str());    
+                         handSeqKey.c_str());
             return false;
         }
     }
@@ -1132,7 +1132,7 @@ bool ActionPrimitives::pushWaitState(const double tmo, ActionPrimitivesCallback 
         action.execArm=false;
         action.execHand=false;
         action.handSeqTerminator=false;
-        action.execWayPoints=false;        
+        action.execWayPoints=false;
         action.clb=clb;
 
         actionsQueue.push_back(action);
@@ -1255,7 +1255,7 @@ bool ActionPrimitives::execPendingHandSequences()
 
         // if it is an hand-action then execute and update queue
         if (action.execHand && !action.execArm && !action.waitState)
-        {    
+        {
             actionsQueue.pop_front();
             cmdHand(action);
             exec=true;
@@ -1309,7 +1309,7 @@ void ActionPrimitives::run()
         }
 
         if (armMoveDone)
-        {    
+        {
             printMessage(log::no_info,"reaching complete");
             disableTorsoDof();
         }
@@ -1321,7 +1321,7 @@ void ActionPrimitives::run()
         // to a complete stop
         handMoveDone=isHandSeqEnded();
         if (handMoveDone)
-        {    
+        {
             printMessage(log::no_info,"hand WP reached");
 
             if (!handSeqTerminator)
@@ -1334,12 +1334,12 @@ void ActionPrimitives::run()
     latchHandMoveDone=handMoveDone;
 
     if (latchArmMoveDone && latchHandMoveDone && (t-latchTimerWait>waitTmo))
-    {    
+    {
         // execute action-end callback
         if (actionClb!=NULL)
         {
             printMessage(log::no_info,"executing action-end callback ...");
-            actionClb->exec();            
+            actionClb->exec();
             printMessage(log::no_info,"... action-end callback executed");
 
             actionClb=NULL;
@@ -1401,7 +1401,7 @@ void ActionPrimitives::disableTorsoDof()
 bool ActionPrimitives::wait(const Action &action)
 {
     if (configured)
-    {        
+    {
         printMessage(log::no_info,"wait for %g seconds",action.tmo);
         waitTmo=action.tmo;
         latchTimerWait=Time::now();
@@ -1434,7 +1434,7 @@ bool ActionPrimitives::cmdArm(const Action &action)
                 printMessage(log::error,"reach log::error");
                 return false;
             }
-            
+
             printMessage(log::no_info,"reach at %g [s] for [%s], [%s]",t,
                          x.toString(3,3).c_str(),
                          o.toString(3,3).c_str());
@@ -1493,7 +1493,7 @@ bool ActionPrimitives::cmdHand(const Action &action)
         const Vector &tols=action.handWP.tols;
         const Vector &thres=action.handWP.thres;
         const double &tmo=action.handWP.tmo;
-        
+
         fingersMovingJntsSet=fingersJntsSet;
         curHandFinalPoss=poss;
         curHandTols=tols;
@@ -1507,7 +1507,7 @@ bool ActionPrimitives::cmdHand(const Action &action)
             modCtrl->setControlMode(j,VOCAB_CM_POSITION);
             posCtrl->setRefSpeed(j,vels[j-jHandMin]);
         }
-        
+
         posCtrl->positionMove((int)sz,fingersJnts.data(),poss.data());
 
         latchHandMoveDone=handMoveDone=false;
@@ -1543,7 +1543,7 @@ bool ActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &poss
         handWP.tols=tols;
         handWP.thres=thres;
         handWP.tmo=tmo;
-    
+
         handSeqMap[handSeqKey].push_back(handWP);
 
         return true;
@@ -1662,7 +1662,7 @@ bool ActionPrimitives::removeHandSeq(const string &handSeqKey)
     map<string,deque<HandWayPoint> >::iterator itr=handSeqMap.find(handSeqKey);
 
     if (itr!=handSeqMap.end())
-    {    
+    {
         handSeqMap[handSeqKey].clear();
         return true;
     }
@@ -1696,7 +1696,7 @@ bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequenc
         Bottle &bNum=sequence.addList();
         bNum.addString("numWayPoints");
         bNum.addInt((int)handWP.size());
-        
+
         // wayPoints parts
         for (unsigned int i=0; i<handWP.size(); i++)
         {
@@ -1738,7 +1738,7 @@ bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequenc
             Bottle &bTmo=bWP.addList();
             bTmo.addString("tmo");
             bTmo.addDouble(handWP[i].tmo);
-        }       
+        }
 
         return true;
     }
@@ -1895,7 +1895,7 @@ bool ActionPrimitives::setDefaultExecTime(const double execTime)
 {
     if (configured && (execTime>0.0))
     {
-        default_exec_time=execTime; 
+        default_exec_time=execTime;
         return true;
     }
     else
@@ -2132,7 +2132,7 @@ void liftAndGraspCallback::exec()
         action->cartCtrl->getPose(x,o);
         action->printMessage(log::no_info,"logged 3-d pos: [%s]",
                              x.toString(3,3).c_str());
-    
+
         action->pushAction(x+action->grasp_d2,action->grasp_o);
     }
 
@@ -2168,7 +2168,7 @@ ActionPrimitivesLayer2::ActionPrimitivesLayer2(Property &opt) :
 
 /************************************************************************/
 void ActionPrimitivesLayer2::init()
-{    
+{
     skipFatherPart=false;
     configuredLayer2=false;
     contactDetectionOn=false;
@@ -2195,7 +2195,7 @@ void ActionPrimitivesLayer2::run()
 {
     // skip until this layer is configured
     if (!configuredLayer2)
-        return;    
+        return;
 
     // get the input from WBDYN
     if (Vector *wbdynWrench=wbdynPortIn.read(false))

@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff
 * This code was written starting from tutorial code by Kosei Demura
@@ -56,7 +56,7 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
     }
     else {
         yDebug("Loading mesh data from '%s' ", FileName);
-    
+
         while((symbol = fgets(buff, 256, in)) != (char*) NULL) { // Read till the end of file
             word = buff;
             while (word[0]==' ' || word[0]=='\t')
@@ -64,7 +64,7 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
             if (strcmp(word, "template") == 0) {
                 ret=fscanf(in, "%s", word);
                 ret=fscanf(in, "%s", word);
-            }else 
+            }else
                 if (strncmp(word, "Mesh ", 5) == 0){								// All you need is Mesh !!
                 if (strcmp(word, "{") != 0 )	// If the mesh has a name
                 //fscanf(in, "%s", word);			// then skip it.
@@ -81,7 +81,7 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                         return 0;
 
                 //yDebug("Read(%d): '%s'\n", i, word);
-                p = strtok(word, ",;");		
+                p = strtok(word, ",;");
                 while (p != NULL) {
                     //yDebug("p = '%s'\n", p);
                     ret = sscanf(p, "%lf", &dblval);
@@ -96,7 +96,7 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                 yDebug("...");
                 ret=fscanf(in, "%d", &indexCount);	// Get index count
                 tmpTriMesh->IndexCount = indexCount * 3;
-                tmpTriMesh->Indices = (int *)malloc(tmpTriMesh->IndexCount * sizeof(int)); 
+                tmpTriMesh->Indices = (int *)malloc(tmpTriMesh->IndexCount * sizeof(int));
 
                 if (fgets(word, 256, in)==0)
                     return 0;
@@ -134,14 +134,14 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
             word = buff;
             while (word[0]==' ' || word[0]=='\t')
                 word=word+1;
-            if (strncmp(word, "MeshTextureCoords", 17) == 0){	
+            if (strncmp(word, "MeshTextureCoords", 17) == 0){
                 ret=fscanf(in, "%d", &(tmpTriMesh->MeshCoordCount));
                 if (fgets(word, 256, in)==NULL)
                     return 0; // consume newline
 
             tmpTriMesh->MeshCoord = (float *)malloc(tmpTriMesh->MeshCoordCount*2 * sizeof(float));
             yDebug("...");
-            for (i = 0; i < tmpTriMesh->MeshCoordCount; i++) {	
+            for (i = 0; i < tmpTriMesh->MeshCoordCount; i++) {
                 if (fgets(word, 256, in)==0)
                     return 0;
 
@@ -149,8 +149,8 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                 while (p != NULL) {
                     ret = sscanf(p, "%lf", &dblval);
                     if(ret > 0) {
-                        tmpTriMesh->MeshCoord[j] = dblval ;//* ModelScale;		
-                        j++;	
+                        tmpTriMesh->MeshCoord[j] = dblval ;//* ModelScale;
+                        j++;
                     }
                     p = strtok(NULL, ",;");
                     }
@@ -173,14 +173,14 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
             word = buff;
             while (word[0]==' ' || word[0]=='\t')
                 word=word+1;
-            if (strncmp(word, "MeshNormals", 11) == 0){	
+            if (strncmp(word, "MeshNormals", 11) == 0){
                 ret=fscanf(in, "%d", &(tmpTriMesh->NormCount));
                 if (fgets(word, 256, in)==NULL)
                     return 0; // consume newline
 
             tmpTriMesh->NormCoord = (float *)malloc(tmpTriMesh->NormCount*3 * sizeof(float));
             yDebug("...");
-            for (i = 0; i < tmpTriMesh->NormCount; i++) {	
+            for (i = 0; i < tmpTriMesh->NormCount; i++) {
                 if (fgets(word, 256, in)==0)
                     return 0;
 
@@ -188,8 +188,8 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                 while (p != NULL) {
                     ret = sscanf(p, "%lf", &dblval);
                     if(ret > 0) {
-                        tmpTriMesh->NormCoord[j] = dblval ;//* ModelScale;		
-                        j++;	
+                        tmpTriMesh->NormCoord[j] = dblval ;//* ModelScale;
+                        j++;
                     }
                     p = strtok(NULL, ",;");
                     }

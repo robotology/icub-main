@@ -1,9 +1,9 @@
 
-/* 
+/*
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Andrea Del Prete, Alexander Schmitz
  * email:   andrea.delprete@iit.it, alexander.schmitz@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -31,13 +31,13 @@ using namespace yarp::math;
 using namespace iCub::skinManager;
 
 
-CompensationThread::CompensationThread(string name, ResourceFinder* rf, string robotName, double _compensationGain, double _contactCompensationGain, 
-                                       int addThreshold, float minBaseline, bool zeroUpRawData, 
+CompensationThread::CompensationThread(string name, ResourceFinder* rf, string robotName, double _compensationGain, double _contactCompensationGain,
+                                       int addThreshold, float minBaseline, bool zeroUpRawData,
                                        int period, bool binarization, bool smoothFilter, float smoothFactor)
-                                       : 
-                                       PeriodicThread((double)period/1000.0), moduleName(name), compensationGain(_compensationGain), 
-                                       contactCompensationGain(_contactCompensationGain), 
-                                       ADD_THRESHOLD(addThreshold), robotName(robotName), 
+                                       :
+                                       PeriodicThread((double)period/1000.0), moduleName(name), compensationGain(_compensationGain),
+                                       contactCompensationGain(_contactCompensationGain),
+                                       ADD_THRESHOLD(addThreshold), robotName(robotName),
                                        binarization(binarization), smoothFilter(smoothFilter), smoothFactor(smoothFactor)
 {
    this->rf                             = rf;
@@ -46,7 +46,7 @@ CompensationThread::CompensationThread(string name, ResourceFinder* rf, string r
    initializationFinished               = false;
 }
 
-bool CompensationThread::threadInit() 
+bool CompensationThread::threadInit()
 {
     yTrace("[CompensationThread] threadInit()\n");
 
@@ -91,7 +91,7 @@ bool CompensationThread::threadInit()
         initializationFinished = true;
         return false;
     }
-    
+
     compensators.resize(portNum);
     compWorking.resize(portNum);
     compEnable.resize(portNum, true);
@@ -106,7 +106,7 @@ bool CompensationThread::threadInit()
         stringstream name;
         name<< moduleName<< i;
         compensators[i] = new Compensator(name.str(), robotName, outputPortName, inputPortName, &infoPort,
-                         compensationGain, contactCompensationGain, ADD_THRESHOLD, minBaseline, zeroUpRawData, binarization, 
+                         compensationGain, contactCompensationGain, ADD_THRESHOLD, minBaseline, zeroUpRawData, binarization,
                          smoothFilter, smoothFactor);
         SKIN_DIM += compensators[i]->getNumTaxels();
     }
@@ -128,9 +128,9 @@ bool CompensationThread::threadInit()
                 return false;
             }
             compensatorCounter--;
-            SKIN_DIM -= compensators[i]->getNumTaxels();            
+            SKIN_DIM -= compensators[i]->getNumTaxels();
         }
-    }    
+    }
 
 
     // configure the SKIN_EVENT if the corresponding section exists
@@ -159,7 +159,7 @@ bool CompensationThread::threadInit()
                 }
             }
         }
-    
+
         if(skinEventsConf.check("taxelPositionFiles")){
             Bottle *taxelPosFiles = skinEventsConf.find("taxelPositionFiles").asList();
             if(portNum!=taxelPosFiles->size()){
@@ -206,7 +206,7 @@ void CompensationThread::run(){
     stateSem.lock();
 
     if( state == compensation){
-        // It reads the raw data, computes the difference between the read values and the baseline 
+        // It reads the raw data, computes the difference between the read values and the baseline
         // and outputs these values
         FOR_ALL_PORTS(i){
             if(compWorking[i]){
@@ -222,11 +222,11 @@ void CompensationThread::run(){
         }
     }
     else if(state == calibration){
-        FOR_ALL_PORTS(i){    
+        FOR_ALL_PORTS(i){
             if(compWorking[i]){
                 if(calibrationCounter==0)
                     compensators[i]->calibrationInit();
-                
+
                 compensators[i]->calibrationDataCollection();
 
                 if(calibrationCounter==CAL_SAMPLES){
@@ -242,7 +242,7 @@ void CompensationThread::run(){
         sendDebugMsg("[ERROR] Unknown state in CompensationThread. Suspending the thread.\n");
         this->suspend();
         return;
-    }    
+    }
     stateSem.unlock();
     sendMonitorData();
     checkErrors();
@@ -266,7 +266,7 @@ void CompensationThread::sendSkinEvents(){
         printf("SkinContacts size: %d\n", skinEvents.size());
         /*printf("SkinContacts:\n%s\n", skinEvents.toString().c_str());*/
 #endif
-    
+
     skinEventsPort.setEnvelope(timestamp);
     skinEventsPort.write();     // send something anyway (if there is no contact the bottle is empty)
 }
@@ -282,9 +282,9 @@ void CompensationThread::checkErrors(){
                     this->suspend();
                     return;
                 }
-                
+
                 compensatorCounter--;
-                SKIN_DIM -= compensators[i]->getNumTaxels();    // remove the taxel from the total count                                
+                SKIN_DIM -= compensators[i]->getNumTaxels();    // remove the taxel from the total count
             }
         }
     }
@@ -294,7 +294,7 @@ void CompensationThread::checkErrors(){
     if(doesBaselineExceed(compInd, taxInd, baseline, initialBaseline)){
         stringstream msg;
         msg<< "Baseline of the taxel "<< taxInd<< " of port "<< compensators[compInd]->getInputPortName()
-            << " saturated (current baseline="<< baseline<< "; initial baseline="<< initialBaseline<< 
+            << " saturated (current baseline="<< baseline<< "; initial baseline="<< initialBaseline<<
             ")! A skin calibration is suggested.";
         sendDebugMsg(msg.str());
     }
@@ -311,11 +311,11 @@ bool CompensationThread::doesBaselineExceed(unsigned int &compInd, unsigned int 
                 return true;
             }
         }
-    }    
+    }
     return false;
 }
 
-void CompensationThread::threadRelease() 
+void CompensationThread::threadRelease()
 {
     FOR_ALL_PORTS(i){
         delete compensators[i];
@@ -338,10 +338,10 @@ void CompensationThread::sendMonitorData(){
             originalSkinDim += compensators[i]->getNumTaxels();
 
         Vector &b = monitorPort.prepare();
-        b.clear();        
+        b.clear();
         b.resize(1+ 2*originalSkinDim);
         b[0] = 1.0/getEstimatedPeriod(); // thread frequency
-        
+
         stateSem.lock();
         if(state==compensation){    // during calibration don't send this data
             // for each taxel add how much the baseline has changed so far (i.e. the drift)
@@ -390,7 +390,7 @@ Bottle CompensationThread::getInfo(){
         nameB.addString("Name: ");
         nameB.addString(moduleName.c_str());
         Bottle& robotB = res.addList();
-        robotB.addString("Robot Name: "); 
+        robotB.addString("Robot Name: ");
         robotB.addString(robotName.c_str());
         Bottle& portB = res.addList();
         string compName;
@@ -425,7 +425,7 @@ void CompensationThread::setSmoothFilter(bool value){
 bool CompensationThread::setSmoothFactor(float value){
     if(value<0 || value>1)
         return false;
-    if(value==1) 
+    if(value==1)
         value = 0.99f;    // otherwise with 1 the values don't update
     smoothFactor = value;
     FOR_ALL_PORTS(i){
@@ -547,7 +547,7 @@ bool CompensationThread::setTaxelPoses(SkinPart sp, const Vector &poses){
 
 //************************************************************************************************************
 //************************************************************************************************************
-//                       GET METHODS    
+//                       GET METHODS
 //************************************************************************************************************
 //************************************************************************************************************
 Vector CompensationThread::getTouchThreshold(){

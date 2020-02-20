@@ -77,7 +77,7 @@ struct ImpedanceLimits
     double get_max_damp()  {return max_damp;}
 };
 /**
-* \file CanBusMotionControl.h 
+* \file CanBusMotionControl.h
 * class for interfacing with a generic can device driver.
 */
 
@@ -110,7 +110,7 @@ public:
     * @param nj is the number of controlled joints/axes.
     */
     CanBusMotionControlParameters ();
-    
+
     /**
     * Destructor, with memory deallocation.
     */
@@ -180,7 +180,7 @@ public:
     int *_velocityTimeout;                      /** velocity shifts */
     double *_maxStep;                           /** max size of a positionDirect step */
     double *_maxJntCmdVelocity;                 /** max velocity command for a joint */
-    double *_optical_factor;                    /** reduction ratio of the optical encoder on motor axis */ 
+    double *_optical_factor;                    /** reduction ratio of the optical encoder on motor axis */
     int *_torqueSensorId;                       /** Id of associated Joint Torque Sensor */
     int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
     double *_maxTorque;                         /** Max torque of a joint */
@@ -213,7 +213,7 @@ public:
     inline double &operator[](int i)
     { return _data[i]; }
 
-    inline int size() 
+    inline int size()
     { return _size; }
 
     inline double *getBuffer()
@@ -349,11 +349,11 @@ class speedEstimationHelper
 {
     int  jointsNum;
     SpeedEstimationParameters *estim_params;
-    
+
     public:
     speedEstimationHelper (int njoints, SpeedEstimationParameters* estim_parameters );
     inline int getNumberOfJoints ()
-    { 
+    {
         return jointsNum;
     }
     inline SpeedEstimationParameters getEstimationParameters (int jnt)
@@ -410,7 +410,7 @@ struct firmware_info
 class firmwareVersionHelper
 {
     int  jointsNum;
-    
+
     public:
     firmware_info* infos;
     can_protocol_info icub_protocol;
@@ -426,7 +426,7 @@ class firmwareVersionHelper
         }
     }
     inline int getNumberOfJoints ()
-    { 
+    {
         return jointsNum;
     }
     bool checkFirmwareVersions()
@@ -449,7 +449,7 @@ class firmwareVersionHelper
             if (infos[j].board_type==BOARD_TYPE_BLL)
             {
                 // Note: Also BLL2DC firmware is identified BLL. This is intentional.
-                if (infos[j].fw_build<LAST_BLL_BUILD) 
+                if (infos[j].fw_build<LAST_BLL_BUILD)
                 {
                     if (!printed) printMessagePleaseUpgradeFirmware();
                     printed = true;
@@ -463,12 +463,12 @@ class firmwareVersionHelper
 
             if (infos[j].board_type==BOARD_TYPE_4DC)
             {
-                if (infos[j].fw_build<LAST_MC4_BUILD) 
+                if (infos[j].fw_build<LAST_MC4_BUILD)
                 {
                     if (!printed) printMessagePleaseUpgradeFirmware();
                     printed = true;
                 }
-                if (infos[j].fw_build>LAST_MC4_BUILD) 
+                if (infos[j].fw_build>LAST_MC4_BUILD)
                 {
                     if (!printed) printMessagePleaseUpgradeiCub();
                     printed = true;
@@ -546,7 +546,7 @@ class axisImpedanceHelper
 {
     int  jointsNum;
     ImpedanceLimits* impLimits;
-    
+
     public:
     axisImpedanceHelper(int njoints, ImpedanceLimits* imped_limits );
 
@@ -555,7 +555,7 @@ class axisImpedanceHelper
         delete [] impLimits;
         impLimits=0;
            }
-    
+
     inline ImpedanceLimits* getImpedanceLimits () {return impLimits;}
 };
 
@@ -565,7 +565,7 @@ class axisPositionDirectHelper
     double* maxHwStep;
     double* maxUserStep;
     yarp::dev::ControlBoardHelper* helper;
-    
+
     public:
     axisPositionDirectHelper(int njoints, const int *aMap, const double *angToEncs, double* _maxStep);
 
@@ -578,12 +578,12 @@ class axisPositionDirectHelper
         delete helper;
         helper = 0;
     }
-    
+
     inline double posA2E (double ang, int j) {return helper->posA2E(ang, j);}
     inline double posE2A (double ang, int j) {return helper->posE2A(ang, j);}
     inline double getMaxHwStep (int j) {return maxHwStep[j];}
     inline double getMaxUserStep (int j) {return maxUserStep[j];}
-    inline double getSaturatedValue (int j, double curr_value, double ref_value); 
+    inline double getSaturatedValue (int j, double curr_value, double ref_value);
 };
 
 class axisTorqueHelper
@@ -652,8 +652,8 @@ class axisTorqueHelper
  *
  */
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
-            public os::PeriodicThread, 
-            public IPidControlRaw, 
+            public os::PeriodicThread,
+            public IPidControlRaw,
             public IPositionControlRaw,
             public IPositionDirectRaw,
             public IVelocityControlRaw,
@@ -674,7 +674,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementMotorEncoders,
             public IMotorRaw,
             public ImplementMotor,
-            public ImplementControlCalibration,    
+            public ImplementControlCalibration,
             public ImplementAmplifierControl,
             public ImplementControlLimits,
             public ImplementTorqueControl,
@@ -729,7 +729,7 @@ private:
     void operator=(const CanBusMotionControl&);
 
     void handleBroadcasts();
- 
+
     double previousRun;
     double averagePeriod;
     double averageThreadTime;
@@ -772,9 +772,9 @@ public:
 
     /**
     * Open the device driver.
-    * @param par is the parameter structure 
+    * @param par is the parameter structure
     * @return true/false on success/failure.
-    */ 
+    */
     bool open(const CanBusMotionControlParameters &par);
 
 
@@ -789,12 +789,12 @@ public:
 
     ////////////// IClientLogger
     void setServerLogger(const IServerLogger *server)
-    { 
-        mServerLogger=(IServerLogger*)server; 
+    {
+        mServerLogger=(IServerLogger*)server;
     }
 
     #ifdef _USE_INTERFACEGUI
-    
+
     void logNetworkData(const char *devName,int network,int index,const yarp::os::Value& data)
     {
         if (mServerLogger)
@@ -803,7 +803,7 @@ public:
             mServerLogger->log(std::string(_buff),data);
         }
     }
-    
+
     void logJointData(const char *devName,int network,int joint,int index,const yarp::os::Value& data)
     {
         if (mServerLogger)
@@ -899,16 +899,16 @@ public:
     //helper
     bool helper_setTrqPidRaw(int j, const Pid &pid);
     bool helper_getTrqPidRaw(int j, Pid *pid);
-    
+
     //
     /////////////////////////////// END Torque Control INTERFACE
 
     //
     /// IMPEDANCE CONTROL INTERFACE RAW
-    virtual bool getImpedanceRaw(int j, double *stiff, double *damp) override;  
-    virtual bool setImpedanceRaw(int j, double  stiff, double  damp) override;   
-    virtual bool getImpedanceOffsetRaw(int j, double *offs) override;  
-    virtual bool setImpedanceOffsetRaw(int j, double  offs) override;   
+    virtual bool getImpedanceRaw(int j, double *stiff, double *damp) override;
+    virtual bool setImpedanceRaw(int j, double  stiff, double  damp) override;
+    virtual bool getImpedanceOffsetRaw(int j, double *offs) override;
+    virtual bool setImpedanceOffsetRaw(int j, double  offs) override;
     virtual bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp) override;
 
     //
@@ -1178,7 +1178,7 @@ protected:
     enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000 };
     enum { CAN_SKIP_ADDR = 0x80 };
 
-    inline short S_16(double x) const 
+    inline short S_16(double x) const
     {
         if (x <= double(-(MAX_SHORT))-1)
             return MIN_SHORT;

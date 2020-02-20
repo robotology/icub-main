@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C)2013  iCub Facility - Istituto Italiano di Tecnologia
  * Author: Marco Randazzo
  * email:  marco.randazzo@iit.it
@@ -200,7 +200,7 @@ public:
             return false;
         return true;
     }
-    
+
     bool execute_joint_command(int action_id)
     {
         if (!driver) return false;
@@ -352,7 +352,7 @@ public:
                 {
                     driver->positionMove(j, ll[j]);
                 }
-                
+
                 yInfo() << "going to home position";
                 double enc[50];
                 int loops = 100;
@@ -387,7 +387,7 @@ public:
                 else
                 {
                     yError() << "unable to reach start position!";
-                    if (0) 
+                    if (0)
                     {
                         //very strict behavior! if your are controlling fingers, you will probably end here
                         actions.current_status = ACTION_STOP;
@@ -431,7 +431,7 @@ protected:
     BroadcastingThread  b_thread;
 
 public:
-    scriptModule() 
+    scriptModule()
     {
         verbose=true;
     }
@@ -456,7 +456,7 @@ public:
             yError() << "Error configuring position controller, check parameters";
             return false;
         }
-        
+
         if (!robot.init())
         {
             yError() << "Error cannot connect to remote ports" ;
@@ -500,7 +500,7 @@ public:
         {
             string filename = rf.find("filename").asString().c_str();
             int req_joints = 0; //default value
-            if (rf.check("joints")) 
+            if (rf.check("joints"))
             {
                 req_joints = rf.find("joints").asInt();}
             else
@@ -565,7 +565,7 @@ public:
             string cmdstring = command.get(0).asString().c_str();
             {
                 if  (cmdstring == "help")
-                    {                    
+                    {
                         cout << "Available commands:"          << endl;
                         cout << "start" << endl;
                         cout << "stop"  << endl;
@@ -722,7 +722,7 @@ int main(int argc, char *argv[])
     }
 
     scriptModule mod;
- 
+
     return mod.runModule(rf);
 }
 

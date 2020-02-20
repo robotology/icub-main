@@ -5,7 +5,7 @@
  *
  */
 
- 
+
 #ifndef FEATUREINTERFACE_H_
 #define FEATUREINTERFACE_H_
 
@@ -59,7 +59,7 @@ typedef uint8_t FEAT_boardnumber_t;     // boards are numbered in range [1, maxn
 /** \anchor FEAT_ID   */
 typedef struct
 {
-    FEAT_boardnumber_t  boardNum;       
+    FEAT_boardnumber_t  boardNum;
     eOprotEndpoint_t    ep;
     void                *handle;
 

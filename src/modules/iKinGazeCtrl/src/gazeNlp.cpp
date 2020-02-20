@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini, Alessandro Roncone
  * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
@@ -48,7 +48,7 @@ protected:
     Vector  qRest;
     Matrix  Hxd;
     Matrix  GeoJacobP;
-    Matrix  AnaJacobZ;    
+    Matrix  AnaJacobZ;
 
     double mod;
     double cosAng;
@@ -94,7 +94,7 @@ protected:
             // approaches its minimum
             fPitch=0.5*(1.0+_tanh);
             dfPitch=0.5*c*(1.0-_tanh*_tanh);
-            
+
             GeoJacobP=chain.GeoJacobian();
             AnaJacobZ=chain.AnaJacobian(2);
         }
@@ -153,7 +153,7 @@ public:
         nnz_jac_g=n+2*(n-1);
         nnz_h_lag=0;
         index_style=TNLP::C_STYLE;
-        
+
         return true;
     }
 
@@ -337,7 +337,7 @@ Vector GazeIpOptMin::solve(const Vector &q0, Vector &xd, const Vector &gDir)
     nlp->set_scaling(obj_scaling,x_scaling,g_scaling);
     nlp->set_bound_inf(lowerBoundInf,upperBoundInf);
     nlp->setGravityDirection(gDir);
-    
+
     static_cast<Ipopt::IpoptApplication*>(App)->OptimizeTNLP(GetRawPtr(nlp));
     return nlp->get_qd();
 }

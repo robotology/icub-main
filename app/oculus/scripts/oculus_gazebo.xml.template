@@ -1,7 +1,7 @@
 <application>
 <name>Oculus Gazebo</name>
 <dependencies>
-</dependencies> 
+</dependencies>
 <module>
   <name>camCalibWithPose</name>
   <parameters>--context cameraCalibration --from icubSimEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icubGazeboSim/camcalibPose/left</parameters>
@@ -26,12 +26,12 @@
 -->
 <module>
   <name>positionDirectControl</name>
-  <parameters>--robot icubGazeboSim --part head --joints "(0 1 2)"</parameters> 
+  <parameters>--robot icubGazeboSim --part head --joints "(0 1 2)"</parameters>
   <node>/iitrbcsws120</node>
 </module>
 <module>
   <name>yarpdev</name>
-  <parameters>--device ovrheadset --hfov 90 --w 480 --h 360 --imagepose</parameters> 
+  <parameters>--device ovrheadset --hfov 90 --w 480 --h 360 --imagepose</parameters>
   <node>/iitrbcsws120</node>
 </module>
 <connection>

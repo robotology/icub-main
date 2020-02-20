@@ -173,7 +173,7 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
         e_thres=fabs(options.check("e_thres",Value(1.0)).asDouble());
 
         gamma.resize(2,1.0);
-        if (Bottle *pB=options.find("gamma").asList()) 
+        if (Bottle *pB=options.find("gamma").asList())
         {
             size_t len=std::min(gamma.length(),(size_t)pB->size());
             for (size_t i=0; i<len; i++)
@@ -181,7 +181,7 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
         }
 
         stiction.resize(2,0.0);
-        if (Bottle *pB=options.find("stiction").asList()) 
+        if (Bottle *pB=options.find("stiction").asList())
         {
             size_t len=std::min(stiction.length(),(size_t)pB->size());
             for (size_t i=0; i<len; i++)
@@ -226,7 +226,7 @@ bool OnlineStictionEstimator::reconfigure(const Property &options)
 
         if (options.check("gamma"))
         {
-            if (Bottle *pB=options.find("gamma").asList()) 
+            if (Bottle *pB=options.find("gamma").asList())
             {
                 size_t len=std::min(gamma.length(),(size_t)pB->size());
                 for (size_t i=0; i<len; i++)
@@ -236,7 +236,7 @@ bool OnlineStictionEstimator::reconfigure(const Property &options)
 
         if (options.check("stiction"))
         {
-            if (Bottle *pB=options.find("stiction").asList()) 
+            if (Bottle *pB=options.find("stiction").asList())
             {
                 size_t len=std::min(stiction.length(),(size_t)pB->size());
                 for (size_t i=0; i<len; i++)
@@ -332,7 +332,7 @@ void OnlineStictionEstimator::run()
     }
 
     trajGen.computeNextValues(Vector(1,tg));
-    xd_pos=trajGen.getPos()[0];        
+    xd_pos=trajGen.getPos()[0];
 
     Vector pid_out=pid->compute(Vector(1,xd_pos),Vector(1,x_pos));
     double e_pos=xd_pos-x_pos;
@@ -483,7 +483,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
         return false;
 
     joint=optGeneral.find("joint").asInt();
-    
+
     if (optGeneral.check("port"))
     {
         string name=optGeneral.find("port").asString();
@@ -502,7 +502,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     Pid pidInfo;
     ipid->getPid(VOCAB_PIDTYPE_POSITION,joint,&pidInfo);
     dpos_dV=(pidInfo.kp>=0.0?-1.0:1.0);
-    
+
     ilim->getLimits(joint,&x_min,&x_max);
     double x_range=x_max-x_min;
     x_min+=0.1*x_range;
@@ -618,7 +618,7 @@ void OnlineCompensatorDesign::commandJoint(double &enc, double &u)
 {
     double t=Time::now();
     bool timeoutExpired=(switch_timeout>0.0?t-t1>switch_timeout:false);
-    ienc->getEncoder(joint,&enc);    
+    ienc->getEncoder(joint,&enc);
 
     // switch logic
     if (x_tg==x_max)
@@ -759,7 +759,7 @@ void OnlineCompensatorDesign::run()
                 {
                     if (++controller_validation_num_cycles>=controller_validation_cycles_to_switch)
                     {
-                        pidCur=(pidCur==&pidOld?&pidNew:&pidOld);                    
+                        pidCur=(pidCur==&pidOld?&pidNew:&pidOld);
                         if ((pidCur==&pidOld) && controller_validation_stiction_yarp)
                             ipwm->setRefDutyCycle(joint,0.0);
 
@@ -906,7 +906,7 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
 {
     if (!configured || !options.check("tau") || !options.check("K"))
         return false;
-    
+
     max_time=options.check("max_time",Value(0.0)).asDouble();
     switch_timeout=options.check("switch_timeout",Value(0.0)).asDouble();
     measure_update_ticks=options.check("measure_update_ticks",Value(100)).asInt();
@@ -951,7 +951,7 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
 
 /**********************************************************************/
 bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
-{    
+{
     if (!configured)
         return false;
 
@@ -1106,7 +1106,7 @@ bool OnlineCompensatorDesign::getResults(Property &results)
             break;
         }
     }
-    
+
     return true;
 }
 

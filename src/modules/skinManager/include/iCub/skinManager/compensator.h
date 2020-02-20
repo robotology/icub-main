@@ -1,9 +1,9 @@
 
-/* 
+/*
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Andrea Del Prete, Alexander Schmitz
  * email:   andrea.delprete@iit.it, alexander.schmitz@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -43,14 +43,14 @@
 #include "iCub/skinDynLib/common.h"
 
 using namespace std;
-using namespace yarp::os; 
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace iCub::skinDynLib;
 
 namespace iCub{
 
-namespace skinManager{    
+namespace skinManager{
 
 class Compensator
 {
@@ -61,7 +61,7 @@ private:
     static const int MIN_TOUCH_THR = 1;         // min value assigned to the touch thresholds (i.e. the 95% percentile)
     static const double BIN_TOUCH;              // output value of the binarization filter when touch is detected
     static const double BIN_NO_TOUCH;           // output value of the binarization filter when no touch is detected
-    
+
     // INIT
     unsigned int skinDim;                       // number of taxels (for the hand it is 192)
     string robotName;
@@ -71,7 +71,7 @@ private:
     unsigned int linkNum;                       // number of the link
 
     // SKIN CONTACTS
-    vector< list<int> >     neighborsXtaxel;    // list of neighbors for each taxel    
+    vector< list<int> >     neighborsXtaxel;    // list of neighbors for each taxel
     vector<Vector>          taxelPos;           // taxel positions {xPos, yPos, zPos}
     vector<Vector>          taxelOri;           // taxel normals {xOri, yOri, zOri}
     Vector                  taxelPoseConfidence;// taxels pose estimation confidence
@@ -90,12 +90,12 @@ private:
     Vector compensatedData;                     // compensated tactile data (that is rawData-touchThreshold)
     Vector compensatedDataOld;                  // compensated tactile data of the previous step (used for smoothing filter)
     Vector compensatedDataFilt;                 // compensated tactile data after smooth filter
-    
+
     // CALIBRATION
     int calibrationRead;                        // count the calibration reads
     vector<float> start_sum;                    // sum of the values read during the calibration
     vector< vector<int> > skin_empty;           // distribution of the values read during the calibration
-    
+
     // DEVICE
     IAnalogSensor* tactileSensor;               // interface for executing the tactile sensor calibration
     PolyDriver* tactileSensorDevice;
@@ -106,7 +106,7 @@ private:
     vector<unsigned int> saturatedTaxels;       // list of all the taxels whose baseline exceeded
 
     // input parameters
-    unsigned int addThreshold;          // value added to the touch threshold of every taxel    
+    unsigned int addThreshold;          // value added to the touch threshold of every taxel
     double compensationGain;            // proportional gain of the compensation algorithm
     double contactCompensationGain;     // proportional gain of the compensation algorithm during contact
     bool zeroUpRawData;                 // if true the raw data are considered from zero up, otherwise from 255 down
@@ -122,8 +122,8 @@ private:
     BufferedPort<Vector> inputPort;
     Stamp timestamp;                                    // timestamp of last data read from inputPort
 
-    
-    /* class private methods */        
+
+    /* class private methods */
     bool init(string name, string robotName, string outputPortName, string inputPortName);
     bool readInputData(Vector& skin_values);
     void sendInfoMsg(string msg);
@@ -133,10 +133,10 @@ private:
     /* class methods */
 public:
     Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort,
-                         double _compensationGain, double _contactCompensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, 
+                         double _compensationGain, double _contactCompensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData,
                          bool _binarization, bool _smoothFilter, float _smoothFactor, unsigned int _linkId = 0);
     ~Compensator();
-        
+
     void calibrationInit();
     void calibrationDataCollection();
     void calibrationFinish();
@@ -148,7 +148,7 @@ public:
 
     void setBinarization(bool value){ binarization = value; }
     void setSmoothFilter(bool value);
-    bool setSmoothFactor(float value);    
+    bool setSmoothFactor(float value);
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
     bool setContactCompensationGain(double gain);
@@ -184,7 +184,7 @@ public:
     Vector getRawData(){        return rawData; }
     Vector getCompData(){       return compensatedData; }
     Stamp getTimestamp(){       return timestamp; }
-    
+
     string getName(){           return name; }
     string getInputPortName(){  return tactileSensorDevice->getValue("remote").asString().c_str(); }
     string getSkinPartName(){   return SkinPart_s[skinPart]; }

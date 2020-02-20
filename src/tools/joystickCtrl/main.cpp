@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo
  * email:  marco.randazzo@iit.it
@@ -16,36 +16,36 @@
  * Public License for more details
 */
 
-/** 
+/**
 \defgroup joystickCtrl joystickCtrl
- 
+
 @ingroup icub_tools
- 
+
 A configurable tool to send on a yarp port the data retrieved from a joystick.
- 
+
 Copyright (C) 2010 RobotCub Consortium
- 
+
 Author: Marco Randazzo
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
- 
+
 This module reads the axis data from a connected joystick and
 outputs them on a yarp port. The format of the output can be specified using a configuration file.
- 
-\section lib_sec Libraries 
-- YARP libraries. 
+
+\section lib_sec Libraries
+- YARP libraries.
 - SDL libraries.
 
 \section parameters_sec Parameters
-The only used parameter is the name of the configuration file. The configuration file name can be specified using --from \e file 
+The only used parameter is the name of the configuration file. The configuration file name can be specified using --from \e file
 You can also use the \e --context option to change the current context (e.g. the directory where to search the configuration file).
- 
+
 \section portsa_sec Ports Accessed
-None. 
- 
-\section portsc_sec Ports Created 
+None.
+
+\section portsc_sec Ports Created
 The module creates the port /joystickCtrl:o used to transmit the joystick data.
 The output of the port consists in a sequence of <n> doubles (<n> depending on the number of axes specified
 in the configuration file) containing the readings.
@@ -55,19 +55,19 @@ The port /joystickCtrl/buttons:o contains the buttons output only (raw data).
 \section in_files_sec Input Data Files
 None.
 
-\section out_data_sec Output Data Files 
-None. 
- 
+\section out_data_sec Output Data Files
+None.
+
 \section conf_file_sec Configuration Files
-A description of the available configuration options can be 
-found in the example files located under joystickControl 
-context. 
- 
+A description of the available configuration options can be
+found in the example files located under joystickControl
+context.
+
 \section tested_os_sec Tested OS
 Windows, Linux
 
 \author Marco Randazzo
-*/ 
+*/
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -107,7 +107,7 @@ class CtrlThread: public PeriodicThread
 {
     struct struct_jointProperties
     {
-        int type; 
+        int type;
         int param[3];
         string param_s;
     };
@@ -128,7 +128,7 @@ protected:
     int numButtons;
     int joy_id;
     SDL_Joystick* joy1;
-    
+
     //button actions;
     string button_actions [20];
 
@@ -210,7 +210,7 @@ public:
         }
 
         Bottle b;
-        
+
 
         b = rf.findGroup("INPUTS").findGroup("Reverse");
         if (b.size()-1 == num_inputs)
@@ -342,7 +342,7 @@ public:
             do
             {
                 char tmp[80];
-                sprintf(tmp, "button%d", joystick_actions_count); 
+                sprintf(tmp, "button%d", joystick_actions_count);
                 if (exec_comm_bottle.check(tmp))
                 {
                     button_actions[joystick_actions_count] = exec_comm_bottle.find(tmp).toString();
@@ -469,7 +469,7 @@ public:
         yInfo (  "\n");
 
         // check: selected joint MUST have at least one axis
-        if (numAxes<=0) 
+        if (numAxes<=0)
         {
             yError ( "Error: selected joystick has %d Axes?!\n",numAxes );
             return false;
@@ -484,7 +484,7 @@ public:
                 yWarning (  "Do you want to continue anyway (y/n)?\n");
                 char input[255];
                 cin >> input;
-                if (input[0]!='y' && input[0]!='Y') 
+                if (input[0]!='y' && input[0]!='Y')
                 {
                     yInfo ( "Quitting...\n");
                     return false;
@@ -602,7 +602,7 @@ public:
         Bottle axis_data;
         Bottle buttons_data;
         for(int i=0;i<num_outputs;i++)
-        {            
+        {
             if (jointProperties[i].type == JTYPE_POLAR)
             {
                 if (jointProperties[i].param[2] == 0)
@@ -704,7 +704,7 @@ public:
 
         // Preparing data to be sent on the yarp ports
         for(int i=0;i<num_outputs;i++)
-        {    
+        {
             if ( jointProperties[i].type == JTYPE_STRING)
                 data.addString(jointProperties[i].param_s.c_str());
             else
@@ -741,7 +741,7 @@ public:
     }
 
     virtual void threadRelease()
-    {    
+    {
         if (rawAxes)         delete [] rawAxes;
         if (rawHats)         delete [] rawHats;
         if (outAxes)         delete [] outAxes;

@@ -24,8 +24,8 @@ cd $ICUB_DIR
 echo "Main build: in $ICUB_DIR"
 rm -f $ICUB_ROOT/$module/CMakeCache.txt
 rm -f CMakeCache.txt
-  
-make_config $ICUB_ROOT/$module --graphviz=graph.dot 
+
+make_config $ICUB_ROOT/$module --graphviz=graph.dot
 
 
 # This is a sneaky way to get the list of CMake build targets.
@@ -67,7 +67,7 @@ for m in $targets; do
 	    status="ignored"
 	    color="000000"
 	else
-	    ( ( ( 
+	    ( ( (
 			echo "----- BUILD ------------------------------"
 			#make_clean
 			make_build $m || echo FAILURE to build
@@ -91,7 +91,7 @@ for m in $targets; do
 #		echo hello > junk.wget
 #		    if grep -q "currently no text" junk.wget; then
 #			echo "<A HREF=http://wiki.icub.org/wiki/$spec>(add wiki)</a> "
-#		    else 
+#		    else
 #			echo "<A HREF=http://wiki.icub.org/wiki/$spec>(view wiki)</a> "
 #		    fi
 		    for k in $keys; do
@@ -176,7 +176,7 @@ echo "</TABLE>" >> $main
     else
 	echo "GTKMM_BASEPATH=$GTKMM_BASEPATH"
     fi
-    
+
     if [ "k$IPOPT_DIR" = "k" ]; then
 	echo "IPOPT_DIR undefined"
     else

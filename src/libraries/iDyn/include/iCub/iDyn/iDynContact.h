@@ -7,25 +7,25 @@
 
 /**
  * \defgroup iDynContact
- *    
+ *
  * @ingroup iDyn
- *  
+ *
  * Classes for external contact force/torque computation.
- * 
+ *
  * \section intro_sec Description
- * 
+ *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows and Linux
  *
  *
  * \author Andrea Del Prete
- * 
+ *
  * Copyright (C) 2010 RobotCub Consortium
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
- * 
- **/ 
+ *
+ *
+ **/
 
 #ifndef __IDYNCONT_H__
 #define __IDYNCONT_H__
@@ -51,7 +51,7 @@ namespace iDyn
 */
 class iDynContactSolver : public iDynSensor
 {
-protected:        
+protected:
     /// list of contacts acting on the link chain
     iCub::skinDynLib::dynContactList contactList;
     // empty list
@@ -60,10 +60,10 @@ protected:
     iCub::skinDynLib::BodyPart      bodyPart;
 
     void findContactSubChain(unsigned int &firstLink, unsigned int &lastLink);
-    
+
     yarp::sig::Matrix buildA(unsigned int firstContactLink, unsigned int lastContactLink);
     yarp::sig::Vector buildB(unsigned int firstContactLink, unsigned int lastContactLink);
-    
+
     //***************************************************************************************
     // UTILITY METHODS
     //***************************************************************************************
@@ -80,23 +80,23 @@ protected:
     yarp::sig::Vector projectContact2Root(const iCub::skinDynLib::dynContact &c);
 
 public:
-    
+
 
     /**
      * Constructor.
      * @param _c the robotic chain
      */
-    iDynContactSolver(iDynChain *_c, const std::string &_info="", const NewEulMode _mode=DYNAMIC, 
+    iDynContactSolver(iDynChain *_c, const std::string &_info="", const NewEulMode _mode=DYNAMIC,
         iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::BODY_PART_UNKNOWN, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
-    
+
     /**
      * Constructor with F/T sensor.
      * @param _c the robotic chain
      * @param sensLink the index of the link containing the F/T sensor
      * @param sensor the F/T sensor
      */
-    iDynContactSolver(iDynChain *_c, unsigned int sensLink, SensorLinkNewtonEuler *sensor, 
-        const std::string &_info="", const NewEulMode _mode=DYNAMIC, iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::BODY_PART_UNKNOWN, 
+    iDynContactSolver(iDynChain *_c, unsigned int sensLink, SensorLinkNewtonEuler *sensor,
+        const std::string &_info="", const NewEulMode _mode=DYNAMIC, iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::BODY_PART_UNKNOWN,
         unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
     /**
@@ -108,8 +108,8 @@ public:
      * @param _m mass of the F/T sensor sub-link
      * @param _I inertia of the F/T sensor sub-link
      */
-    iDynContactSolver(iDynChain *_c, unsigned int sensLink, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC, 
-        double _m, const yarp::sig::Matrix &_I, const std::string &_info="", const NewEulMode _mode=DYNAMIC, 
+    iDynContactSolver(iDynChain *_c, unsigned int sensLink, const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_HC,
+        double _m, const yarp::sig::Matrix &_I, const std::string &_info="", const NewEulMode _mode=DYNAMIC,
         iCub::skinDynLib::BodyPart bodyPart = iCub::skinDynLib::BODY_PART_UNKNOWN, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
     /**
@@ -144,7 +144,7 @@ public:
     const iCub::skinDynLib::dynContactList& computeExternalContacts(const yarp::sig::Vector &FMsens);
 
     /**
-     * Compute an estimate of the external contact wrenches 
+     * Compute an estimate of the external contact wrenches
      * (assuming the F/T sensor measure have already been set)
      * @return A copy of the external contact list
      */
@@ -166,7 +166,7 @@ public:
 
     /**
      * Returns the end effector force-moment as a single (6x1) vector
-     * @return a (6x1) vector, in the form 0:2=F 3:5=Mu 
+     * @return a (6x1) vector, in the form 0:2=F 3:5=Mu
      */
     yarp::sig::Vector getForceMomentEndEff() const;
 

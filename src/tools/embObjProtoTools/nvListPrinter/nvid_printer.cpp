@@ -17,7 +17,7 @@
 */
 
 /* @file       eOtheEthLowLevelParser.c
-    @brief      
+    @brief
     @author     valentina.gaggero@iit.it
     @date       03/18/2013
 **/
@@ -48,7 +48,7 @@
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - declaration of extern hidden interface 
+// - declaration of extern hidden interface
 // --------------------------------------------------------------------------------------------------------------------
 
 
@@ -60,7 +60,7 @@
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition (and initialisation) of extern variables, but better using _get(), _set() 
+// - definition (and initialisation) of extern variables, but better using _get(), _set()
 // --------------------------------------------------------------------------------------------------------------------
 // empty-section
 
@@ -99,12 +99,12 @@ int main(int argc, char *argv[])
     uint8_t board = 0;
     eOmc_jointId_t j = 0xFF;
     char eptype[10];
-    
 
-    
+
+
     //1) init data
     sprintf(eptype, "mc");
-    
+
     //2) parse arguments
     if(argc>1)
     {
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
                 }
                 continue;
             }
-            
+
             if(strcmp("--j", argv[i]) == 0)
             {
                 if(i<(argc-1))
@@ -142,17 +142,17 @@ int main(int argc, char *argv[])
                 s_print_help();
                 continue;
             }
-               
+
         }
-    
+
     }
-    
+
     if((board <1) || (board>9))
     {
         printf("ERROR: board has to belong to [1,9]\n");
 	    return -1;
     }
-    
+
     printf("------The following NVID are of baord %d ", board);
     if(j==0xFF)
     {
@@ -162,9 +162,9 @@ int main(int argc, char *argv[])
     {
         printf("of joint %d ", j);
     }
-    
+
     printf("about %s-----\n\n", eptype);
-    
+
     printf("\nENPOINT=0x%x\n\n", s_getEP(board, eptype));
 
     if(j == 0xFF)
@@ -174,30 +174,30 @@ int main(int argc, char *argv[])
     else
    {
         s_print_mc_nvid(j);
-   }  
+   }
 }
 
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of extern hidden functions 
+// - definition of extern hidden functions
 // --------------------------------------------------------------------------------------------------------------------
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of static functions 
+// - definition of static functions
 // --------------------------------------------------------------------------------------------------------------------
 static void s_print_help(void)
 {
     printf("--board <n>: num of board\n");
     printf("--j <n>: num of joint. if not insert, nvid of all joint are printed\n");
-    printf("--ep <str>:endpoint. str can be <mc>, or <as>, or <sk> or <mn>\n");    
+    printf("--ep <str>:endpoint. str can be <mc>, or <as>, or <sk> or <mn>\n");
 }
 
 static uint16_t s_getEP(uint8_t board, char *eptype)
 {
     uint16_t ep = 0;
-    
+
 
     if(strcmp(eptype, "mc") == 0)
     {
@@ -219,7 +219,7 @@ static uint16_t s_getEP(uint8_t board, char *eptype)
     {
          ep = 0xFFFF;
     }
-  
+
     return(ep);
 }
 
@@ -270,12 +270,12 @@ static uint16_t s_getEP_mc(uint8_t board )
         {
             return(endpoint_mc_rightupperleg);
         }break;
-        
+
         case 9:
         {
             return(endpoint_mc_rightlowerleg);
-        }break; 
-        
+        }break;
+
         default:
         {
             return (0xFFFF);
@@ -319,8 +319,8 @@ static uint16_t s_getEP_as(uint8_t board )
         case 8:
         {
             return(endpoint_as_rightupperleg);
-        }break;    
-        
+        }break;
+
         default:
         {
             return (0xFFFF);
@@ -341,12 +341,12 @@ static uint16_t s_getEP_sk(uint8_t board )
         {
             return(endpoint_sk_emsboard_leftlowerarm);
         }break;
-        
+
         case 4:
         {
             return(endpoint_sk_emsboard_rightlowerarm);
         }break;
-        
+
         default:
         {
             return (0xFFFF);
@@ -398,7 +398,7 @@ static void s_print_mc_nvid(eOmc_jointId_t j)
     printf("%s : 0x%x\n", "NVID_jxx_jstatus__ofpid",                      EOK_cfg_nvsEP_mc_any_con_bodypart_NVID_jxx_jstatus__ofpid(j) );
     printf("%s : 0x%x\n", "NVID_jxx_jstatus__chamaleon04",                EOK_cfg_nvsEP_mc_any_con_bodypart_NVID_jxx_jstatus__chamaleon04(j) );
 
-    
+
     printf("%s : 0x%x\n", "NVID_jxx_jinputs",                             EOK_cfg_nvsEP_mc_any_con_bodypart_NVID_jxx_jinputs(j) );
     printf("%s : 0x%x\n", "NVID_jxx_jinputs__externallymeasuredtorque",   EOK_cfg_nvsEP_mc_any_con_bodypart_NVID_jxx_jinputs__externallymeasuredtorque(j) );
     printf("%s : 0x%x\n", "NVID_jxx_jinputs__holder02FFU01",              EOK_cfg_nvsEP_mc_any_con_bodypart_NVID_jxx_jinputs__holder02FFU01(j) );

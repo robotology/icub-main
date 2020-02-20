@@ -47,8 +47,8 @@ class SharedCanBus;
  * |:-----------------:|
  * | `sharedcan` |
  */
-class yarp::dev::CanBusAccessPoint : 
-    public ICanBus, 
+class yarp::dev::CanBusAccessPoint :
+    public ICanBus,
     public ICanBufferFactory,
     public DeviceDriver
 {
@@ -91,13 +91,13 @@ public:
         }
 
         readBuffer[nRecv++]=msg;
-        
+
         if (waitingOnRead)
         {
             waitingOnRead=false;
             cv_waitRead.notify_one();
         }
-        
+
         return true;
     }
 
@@ -149,7 +149,7 @@ public:
     virtual bool canWrite(const CanBuffer &msgs, unsigned int size, unsigned int *sent, bool wait=false);
     // ICanBus
     ////////////
-    
+
     //////////////////////
     // ICanBufferFactory
     virtual CanBuffer createBuffer(int nmessage);
@@ -168,12 +168,12 @@ protected:
     std::mutex mtx_waitRead;
     std::condition_variable cv_waitRead;
     std::mutex synchroMutex;
-    
+
     bool waitingOnRead;
 
     unsigned int nRecv;
     CanBuffer readBuffer;
-    
+
     char *reqIds; //[0x800];
 
     unsigned int mBufferSize;

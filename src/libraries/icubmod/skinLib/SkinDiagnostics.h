@@ -100,7 +100,7 @@ namespace iCub {
                 return s;
             }
             */
-            
+
             inline std::string printErrorCode(int code)
             {
                 std::string errortype_str;
@@ -131,7 +131,7 @@ namespace iCub {
                         break;
                     }
                 }
-                
+
                 std::stringstream ss;
                 int numoftaxel_in_error = 0;
                 for(int i=0; i<12; i++)
@@ -142,22 +142,22 @@ namespace iCub {
                         ss << i <<", ";
                     }
                 }
-                
+
                 std::stringstream outs;
                 if(numoftaxel_in_error>0)
                 {
-                    outs << numoftaxel_in_error <<" taxels are out of range:"<< ss.str(); 
+                    outs << numoftaxel_in_error <<" taxels are out of range:"<< ss.str();
                 }
                 else
                 {
                     outs << "None taxels are out of range";
                 }
-                
+
                 if(error_type!=0)
                     outs << ". Triangle error is "<< errortype_str;
                 else
                     outs << ". Triangle has not error ";
-                
+
                 return outs.str();
             }
         }

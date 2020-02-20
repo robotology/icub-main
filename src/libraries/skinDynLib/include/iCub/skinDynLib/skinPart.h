@@ -20,13 +20,13 @@
  * This file contains the definition of a skinPart, i.e. a class that collects multiple taxels..
  *
  * \section intro_sec Description
- * 
+ *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows, Linux
  *
  * \author Alessandro Roncone
- * 
+ *
  **/
 
 #ifndef __SKINPART_H__
@@ -54,20 +54,20 @@ class skinPartBase
   public:
     std::string name;
     int         size;   // theoretical maximum size of the skinPart
-                        // it corresponds to the number of values on the respective port 
+                        // it corresponds to the number of values on the respective port
                         // and number of rows in the taxel positions .txt files in
-                        // icub-main/app/skinGui/conf/positions in the [calibration] group 
+                        // icub-main/app/skinGui/conf/positions in the [calibration] group
                         // IMPORTANT: it may differ from taxels.size()
-    std::string version; // Version of the skin part - "V1", "V2", "V2.1" (or "unknown_version"). 
+    std::string version; // Version of the skin part - "V1", "V2", "V2.1" (or "unknown_version").
                          // Depending on the physical version of skin on the robot. For example,
-                         // forearm V2 has one triangle more compared to V1 and also partly different taxel IDs. 
+                         // forearm V2 has one triangle more compared to V1 and also partly different taxel IDs.
     std::recursive_mutex recursive_mtx;
   public:
     /**
     * Constructor
-    **/    
+    **/
     skinPartBase();
-    
+
     /**
      * Copy constructor
      * @param _spb is the skinPart to copy from
@@ -106,7 +106,7 @@ class skinPartBase
 
     /**
      * Sets the version ("V1" / "V2" / "V2.1")
-     * @param _version 
+     * @param _version
      */
     void setVersion(const std::string &_version);
 
@@ -115,7 +115,7 @@ class skinPartBase
      * @return string containing the version
      */
     std::string getVersion();
-    
+
     /**
      * Populates the skinPartBase by reading from a file.
      * @param  _filePath   is the full absolute path of the file
@@ -136,12 +136,12 @@ class skinPartBase
     virtual std::string toString(int precision=0);
 };
 
-/** 
-* @ingroup skinDynLib 
+/**
+* @ingroup skinDynLib
 *
 * Class that encloses everything relate to a skinPart.
 * It consists of a std::vector of Taxel(s), and a number of methods for loading and populating these taxels from files.
-* 
+*
 */
 class skinPart : public skinPartBase
 {
@@ -150,9 +150,9 @@ class skinPart : public skinPartBase
     * List of taxels that belong to the skinPart.
     **/
     std::vector<Taxel*> taxels;
-      
+
     /**
-     * Spatial_sampling used in building up the skinPart class. 
+     * Spatial_sampling used in building up the skinPart class.
      * It can be either full, i.e. "taxel", or "triangle", where the latter remaps the individual taxels onto the center taxels
      * of their respective triangular module (composed of 10 taxels, but 12 values on the port - 2 are thermal pads)
      */
@@ -162,7 +162,7 @@ class skinPart : public skinPartBase
     * Indexing variable used in the case of reducing the resolution - e.g. taking only triangle centers
     * The index into the vector is the taxel ID, the value stored is its representative
     **/
-    std::vector<int> taxel2Repr; 
+    std::vector<int> taxel2Repr;
 
     /**
     * Mapping in the opposite direction
@@ -216,7 +216,7 @@ class skinPart : public skinPartBase
      * @param  _filePath   is the full absolute path of the file
      * @param  _spatial_sampling is the type of spatial sampling to perform (default "default")
      *                           if "default", the spatial_sampling will be read from file
-     *                           if "taxel" or "triangle", this will be the spatial_sampling performed 
+     *                           if "taxel" or "triangle", this will be the spatial_sampling performed
      * @return true/false in case of success/failure
      */
     bool setTaxelPosesFromFile(const std::string &_filePath,

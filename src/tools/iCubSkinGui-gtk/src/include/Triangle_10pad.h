@@ -43,10 +43,10 @@ public:
         dX[ 3]=0.0; dY[ 3]=0.0;
         dX[ 4]=-128.62; dY[ 4]=-222.83;
         dX[ 5]=-385.83; dY[ 5]=-222.83;
-        dX[ 7]=-257.2; dY[ 7]=0.0;        
+        dX[ 7]=-257.2; dY[ 7]=0.0;
 
 
-        
+
         for (int i=0; i<nTaxels; ++i)
         {
             dX[i]*=scale;
@@ -83,7 +83,7 @@ public:
         }
 
         // in static definition
-        //dXmin=dYmin= HUGE; 
+        //dXmin=dYmin= HUGE;
         //dXmax=dYmax=-HUGE;
 
         for (int i=0; i<nVerts; ++i)
@@ -103,14 +103,14 @@ public:
         {
             drawLine(image,xv[i],yv[i],xv[(i+1)%nVerts],yv[(i+1)%nVerts]);
         }
-        
+
         for (int i=0; i<nTaxels; ++i)
         {
-			if ((i==6) || (i==10)) 
+			if ((i==6) || (i==10))
 			{
 				drawCircle(image,x[i],y[i],m_Radius/2);
 			}
-			else  
+			else
             drawCircle(image,x[i],y[i],m_Radius);
         }
     }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -46,7 +46,7 @@ void Model::printMessage(const int logtype, const int level,
 
         va_list arg;
         char buf[512];
-        va_start(arg,format);        
+        va_start(arg,format);
         vsnprintf(buf,sizeof(buf),format,arg);
         va_end(arg);
 

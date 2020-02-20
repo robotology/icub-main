@@ -34,11 +34,11 @@
 
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
 {
-public:   
+public:
     CFWCamera_DR2_2(bool raw) : mRawDriver(raw)
 	{
 	}
-	
+
 	virtual ~CFWCamera_DR2_2()
 	{
 		Close();
@@ -91,7 +91,7 @@ protected:
     bool mHires;
 	FlyCapture2::CameraInfo m_CameraInfo;
 	int m_BusSpeedBS;
-	
+
 	FlyCapture2::FC2Config m_CamConfig;
 
 	FlyCapture2::Format7ImageSettings m_F7ImageSettings;
@@ -107,7 +107,7 @@ protected:
 
     bool m_bFrameIsValid;
     bool m_bCameraOn;
- 
+
 	unsigned int m_XDim,m_YDim;
 
 	unsigned int m_iMin[FlyCapture2::UNSPECIFIED_PROPERTY_TYPE],m_iMax[FlyCapture2::UNSPECIFIED_PROPERTY_TYPE];
@@ -247,7 +247,7 @@ public:
 	virtual unsigned int getColorCodingDC1394();
 
 	// 22
-	virtual bool setColorCodingDC1394(int coding);	
+	virtual bool setColorCodingDC1394(int coding);
 
 	// 25
 	virtual bool getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep);
@@ -256,8 +256,8 @@ public:
 	virtual bool setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0);
 
 	// 27
-	virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);	
-	
+	virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);
+
 	// 28
 	virtual bool setOperationModeDC1394(bool b1394b);
 
@@ -297,9 +297,9 @@ public:
 	///////////////////////////////////////////////
 	// base class implementation
 	///////////////////////////////////////////////
-	
+
 	// SET
-		
+
 	virtual bool setBrightness(double v);
     virtual bool setExposure(double v);
 	virtual bool setSharpness(double v);
@@ -310,19 +310,19 @@ public:
 	virtual bool setShutter(double v);
     virtual bool setGain(double v);
     virtual bool setIris(double v);
-    
+
     // GET
 
 	virtual double getBrightness();
-	virtual double getExposure();	
+	virtual double getExposure();
 	virtual double getSharpness();
-    virtual bool getWhiteBalance(double &blue, double &red);	
-	virtual double getHue();	
+    virtual bool getWhiteBalance(double &blue, double &red);
+	virtual double getHue();
 	virtual double getSaturation();
 	virtual double getGamma();
     virtual double getShutter();
     virtual double getGain();
     virtual double getIris();
 };
- 
+
 #endif

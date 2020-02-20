@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Andrea Del Prete
  * email:   andrea.delprete@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -39,16 +39,16 @@
  * - monitor the skin data frequency
  * - monitor the drift of each skin taxel
  * - get warning and error messages related to the skin
- * - see all the ports read by the interested \ref icub_skinManager module 
+ * - see all the ports read by the interested \ref icub_skinManager module
  *
  * \section parameters_sec Parameters
- * 
+ *
  * \code
  * --name: name of the gui (used to form port names)
  * --from: configuration file
  * --context: directory where to search the configuration file (specified from $ICUB_ROOT/app)
- * --xpos: position of the gui on the screen on the x axis expressed in pixel 
- * --ypos: position of the gui on the screen on the y axis expressed in pixel 
+ * --xpos: position of the gui on the screen on the x axis expressed in pixel
+ * --ypos: position of the gui on the screen on the y axis expressed in pixel
  * \endcode
  * Example:
  * \code
@@ -65,7 +65,7 @@
  * - "/" + guiName + "/monitor:i"
  * - "/" + guiName + "/info:i"
  * \n These ports should be externally connected to the corresponding \ref icub_skinManager ports.
- * 
+ *
  * \section conf_file_sec Configuration Files
  *
  * None.
@@ -103,7 +103,7 @@ bool initGuiStatus() {
 
     reply = sendRpcCommand(true, get_smooth_factor);
     currentSmoothFactor = reply.get(0).asDouble();
-    gtk_adjustment_set_value(scaleSmooth->range.adjustment, currentSmoothFactor);   
+    gtk_adjustment_set_value(scaleSmooth->range.adjustment, currentSmoothFactor);
 
     reply = sendRpcCommand(true, get_threshold);
     if(reply.isNull() || reply.size()==0 || !reply.get(0).isInt()){
@@ -130,7 +130,7 @@ bool initGuiStatus() {
     }else{
         currentContCompGain = reply.get(0).asDouble();
         gtk_adjustment_set_value(spinContGain->adjustment, currentContCompGain);
-    } 
+    }
 
     reply = sendRpcCommand(true,get_max_neigh_dist);
     if(reply.isNull() || reply.size()==0 || (!reply.get(0).isDouble() && !reply.get(0).isInt())){
@@ -163,14 +163,14 @@ bool initGuiStatus() {
     }
     gtk_label_set_text(lblInfo, ss.str().c_str());
 
-    // plot        
-    unsigned int numTriangles = portDim[0]/12;    
-    GtkTreeIter iter;    
+    // plot
+    unsigned int numTriangles = portDim[0]/12;
+    GtkTreeIter iter;
     //gtk_label_set_text(lblMaxX, ss.str().c_str());
     for(unsigned int i=0;i<portDim.size();i++){
         gtk_list_store_append (listPort, &iter);
         gtk_list_store_set (listPort, &iter, 0, i, 1, portNames[i].c_str(), -1);
-    }    
+    }
     for(unsigned int i=0;i<numTriangles;i++){
         gtk_list_store_append (listTriangle, &iter);
         gtk_list_store_set (listTriangle, &iter, 0, i, -1);
@@ -197,13 +197,13 @@ bool initGuiStatus() {
     return true;
 }
 
-bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], string &guiName, unsigned int& gXpos, unsigned int& gYpos){    
+bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], string &guiName, unsigned int& gXpos, unsigned int& gYpos){
     rf.setVerbose(true);
     rf.setDefaultConfigFile("skinManGui.ini");      //overridden by --from parameter
     rf.setDefaultContext("skinGui");                    //overridden by --context parameter
     rf.configure(argc, argv);
 
-    gXpos=10; 
+    gXpos=10;
     gYpos=10;
     if (rf.check("xpos")) gXpos=rf.find("xpos").asInt();
     if (rf.check("ypos")) gYpos=rf.find("ypos").asInt();
@@ -240,7 +240,7 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
         openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
         return false;
     }
-        
+
  //   if (!wholeBodyRpcPort.open(wholeBodyRpcPortName.c_str())){
     //  string msg = string("Unable to open port ") + wholeBodyRpcPortName.c_str();
     //  openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
@@ -248,21 +248,21 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
     //}
 
     driftCompInfoPort.setStrict();
-    
-    // automatic connections removed because they gave problems when running the gui 
+
+    // automatic connections removed because they gave problems when running the gui
     // just after the skinDriftCompensation module (using manager.py)
     /*if(!yarp.connect(guiRpcPortName.c_str(), driftCompRpcPortName.c_str())){
-        string msg = string("Unable to connect to skinDriftCompensation rpc port: ") 
+        string msg = string("Unable to connect to skinDriftCompensation rpc port: ")
             + driftCompRpcPortName.c_str() + ". Connect later.";
         openDialog(msg.c_str(), GTK_MESSAGE_WARNING);
     }
     if(!yarp.connect(driftCompMonitorPortName.c_str(), guiMonitorPortName.c_str())){
-        string msg = string("Unable to connect to skinDriftCompensation monitor port: ") 
+        string msg = string("Unable to connect to skinDriftCompensation monitor port: ")
             + driftCompMonitorPortName.c_str() + ". Connect later.";
         openDialog(msg.c_str(), GTK_MESSAGE_WARNING);
     }
     if(!yarp.connect(driftCompInfoPortName.c_str(), guiInfoPortName.c_str())){
-        string msg = string("Unable to connect to skinDriftCompensation info port: ") 
+        string msg = string("Unable to connect to skinDriftCompensation info port: ")
             + driftCompInfoPortName.c_str() + ". Connect later.";
         openDialog(msg.c_str(), GTK_MESSAGE_WARNING);
     }*/
@@ -273,8 +273,8 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 
 
 int main (int argc, char *argv[])
-{       
-    GtkBuilder              *builder;       
+{
+    GtkBuilder              *builder;
     GtkButton               *btnTouchThr;
     GtkButton               *btnClearLog;
     GtkSpinButton           *spinSampleFreq;
@@ -290,17 +290,17 @@ int main (int argc, char *argv[])
     // since Glib 2.32 g_thread_init is deprecated
     g_thread_init (NULL);
 #endif
-    gdk_threads_init ();    
+    gdk_threads_init ();
     gdk_threads_enter ();
     gtk_init (&argc, &argv);    // initialize gtk
     builder = gtk_builder_new ();
-        
+
     if(!initNetwork(yarp, rf, argc, argv, guiName, gXpos, gYpos))
         return 0;
 
     rf.setDefault("gladeFile", "skinManGui.glade");
     string gladeFile = rf.findFile("gladeFile");
-    
+
     if( !gtk_builder_add_from_file (builder, gladeFile.c_str(), &error)){
         g_warning( "%s", error->message );
         clean_exit();
@@ -313,7 +313,7 @@ int main (int argc, char *argv[])
     btnSmooth       = GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "btnSmooth"));
     btnBinarization = GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "btnBinarization"));
     btnClearLog     = GTK_BUTTON (gtk_builder_get_object (builder, "btnClearLog"));
-    scaleSmooth     = GTK_SCALE (gtk_builder_get_object (builder, "scaleSmooth"));  
+    scaleSmooth     = GTK_SCALE (gtk_builder_get_object (builder, "scaleSmooth"));
     btnCalibration  = GTK_BUTTON (gtk_builder_get_object (builder, "btnCalibration"));
     progBarCalib    = GTK_PROGRESS_BAR (gtk_builder_get_object (builder, "progressbarCalib"));
     btnTouchThr     = GTK_BUTTON (gtk_builder_get_object (builder, "btnThreshold"));
@@ -347,7 +347,7 @@ int main (int argc, char *argv[])
 
     // if the rpc port is connected, then initialize the gui status
     initDone = false;
-    if(guiRpcPort.getOutputCount()>0)       
+    if(guiRpcPort.getOutputCount()>0)
         initDone = initGuiStatus();
 
     if(initDone)
@@ -391,7 +391,7 @@ int main (int argc, char *argv[])
     gtk_window_resize(GTK_WINDOW(window),600,200);
     gtk_window_move(GTK_WINDOW(window),gXpos,gYpos);
 
-    
+
     //printf("Main thread: %p\n", g_thread_self());
     gtk_main ();
     gdk_threads_leave();

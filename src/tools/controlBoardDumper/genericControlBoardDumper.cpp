@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Francesco Nori
  * email:  francesco.nori@iit.it
@@ -365,7 +365,7 @@ bool GetMotPwm::getData(double *e)
     {
         return 0;
     }
-    
+
     bool ret = true;
     for(int j=0; j<n_joint_part; j++)
     {

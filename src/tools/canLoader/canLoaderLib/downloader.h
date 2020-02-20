@@ -24,7 +24,7 @@ struct sBoard
 public:
  int  bus;                  // the can bus
  int  pid;                  // the id inside the can bus
- int  type;                 // the board type. use macros ICUBCANPROTO_BOARDTYPE__DSP etc. or .. eObrd_type_t 
+ int  type;                 // the board type. use macros ICUBCANPROTO_BOARDTYPE__DSP etc. or .. eObrd_type_t
  bool applicationisrunning; // if true the board runs the application. if false it runs the bootloader
  int  appl_vers_major;      // the major number of the version of the sw it is running (former ...)
  int  appl_vers_minor;      // the minor number of the version of the sw it is running (former ...)
@@ -58,7 +58,7 @@ public:
 
 #define SPRS_TYPE_0 '0'
 #define SPRS_TYPE_1 '1'
-#define SPRS_TYPE_3 '3'   
+#define SPRS_TYPE_3 '3'
 #define SPRS_TYPE_4 '4'
 #define SPRS_TYPE_7 '7'
 
@@ -152,7 +152,7 @@ int				   progress;
 int				   file_length;
 unsigned int       sprsPage;
  std::fstream            filestr;
- int nSelectedBoards; 
+ int nSelectedBoards;
 
 bool    connected;
 int initdriver(yarp::os::Searchable &config, bool verbose = true);
@@ -252,7 +252,7 @@ struct strain_value_t
     }
 };
 
-typedef enum 
+typedef enum
 {
     strain_acquisition_mode_streaming   = 0,
     strain_acquisition_mode_polling    = 1
@@ -281,19 +281,19 @@ private:
 #endif
 
     bool _verbose;
-    
-    
+
+
     int strain_calibrate_offset2_strain1(int bus, int target_id, int16_t t, string *errorstring);
     int strain_calibrate_offset2_strain1safer(int bus, int target_id, int16_t t, uint8_t nmeasures, bool fullsearch, string *errorstring);
     int strain_calibrate_offset2_strain2(int bus, int target_id, const std::vector<strain2_ampl_discretegain_t> &gains, const std::vector<int16_t> &targets, string *errorstring = NULL);
-    
+
     int readADC(int bus, int target_id, int channel, int nmeasures = 2);
 
     void (*_externalLoggerFptr)(void *caller, const std::string &output);
     void * _externalLoggerCaller;
 
     void Log(const std::string &msg);
-    
+
 };
 
 #endif

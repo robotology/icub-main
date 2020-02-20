@@ -24,7 +24,7 @@ public:
 
         const double H=sin(DEG2RAD*60.0);
         const double L=2.0*H/9.0;
-     
+
         dGain=gain;
         ilrMirror=lrMirror;
         ilayoutNum=layoutNum;
@@ -35,7 +35,7 @@ public:
 		for (int i=0; i<nTaxels; ++i)
         {
 			dX[0]=15; //not used
-			dY[0]=15; //not used 
+			dY[0]=15; //not used
 		}
 
 
@@ -75,7 +75,7 @@ public:
 		dX[14]=32;    dY[14]=-9;
 		dX[16]=37;    dY[16]=-9;
 		dX[19]=42;    dY[19]=-10.5;
-		
+
 		dX[13]=38;    dY[13]=-14;
 		dX[18]=43;    dY[18]=-16;
 		dX[22]=47;    dY[22]=-13;
@@ -113,7 +113,7 @@ public:
         dYv[2]=+50;
         dXv[3]=-25;
         dYv[3]=+50;
-        
+
         for (int i=0; i<nVerts; ++i)
         {
             double x=dXv[i];
@@ -124,7 +124,7 @@ public:
         }
 
         // in static definition
-        //dXmin=dYmin= HUGE; 
+        //dXmin=dYmin= HUGE;
         //dXmax=dYmax=-HUGE;
 
         for (int i=0; i<nVerts; ++i)
@@ -144,14 +144,14 @@ public:
         {
             //drawLine(image,xv[i],yv[i],xv[(i+1)%nVerts],yv[(i+1)%nVerts]);
         }
-        
+
         for (int i=0; i<nTaxels; ++i)
         {
-			if ((i==43) || (i==23) || (i==11) || (i==35) ) 
+			if ((i==43) || (i==23) || (i==11) || (i==35) )
 			{
 				drawCircle(image,x[i],y[i],m_Radius/2);
 			}
-			else  
+			else
             drawCircle(image,x[i],y[i],m_Radius);
         }
     }

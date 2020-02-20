@@ -49,7 +49,7 @@ void boardtransceiver_fun_UPDT_mc_joint_cmmnds_interactionmode(const EOnv* nv, c
 
     eOnvID32_t id32status = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, index, eoprot_tag_mc_joint_status);
     eo_nvset_NV_Get(mynvset, eok_ipv4addr_localhost, id32status, &aNV);
-    
+
     eOmc_joint_status_t jointstatus = {0};
     uint16_t size = 0;
 

@@ -20,13 +20,13 @@ open AUTHORS, ">licenses-authors.txt";
 open AUTHORS_COMPACT, ">licenses-authors-compact.txt";
 open COPYRIGHT_COMPACT, ">licenses-copyright-compact.txt";
 
-open(FILE, $fname) || 
+open(FILE, $fname) ||
     die "Can't open $fname";
 
 ## First we detect authors, copyright and licenses
 while(!eof(FILE) && defined (my $line=<FILE>)) {
 
-    next unless $line=~m/File/;    
+    next unless $line=~m/File/;
     chomp $line;
     my $filename=$line;
     $line=<FILE>;
@@ -46,7 +46,7 @@ while(!eof(FILE) && defined (my $line=<FILE>)) {
     ## clean year from authors/names
     $copyright=~s/\s*(\d\d\d\d)\s*//;
     $author=~s/\s*(\d\d\d\d)\s*//;
-    
+
     $filename=~s/File://;
 
     if ($license=~m/unknown/i) {
@@ -82,7 +82,7 @@ while(!eof(FILE) && defined (my $line=<FILE>)) {
     }
 }
 
-#print in sorted 
+#print in sorted
 
 print AUTHORS "=== List of Copyright Owners ===\n";
 foreach $value (sort {$copyright_owners{$b} <=> $copyright_owners{$a} } keys %copyright_owners)
@@ -93,7 +93,7 @@ foreach $value (sort {$copyright_owners{$b} <=> $copyright_owners{$a} } keys %co
 
 print AUTHORS "==== List of Authors ====\n";
 foreach $value (sort {$authors{$b} <=> $authors{$a} } keys %authors)
-{ 
+{
     print AUTHORS "$value: $authors{$value}\n";
     print AUTHORS_COMPACT "* $value ($authors{$value} files)\n";
 }

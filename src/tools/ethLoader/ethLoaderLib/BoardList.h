@@ -131,7 +131,7 @@ public:
         }
     }
 
-    BoardInfo& operator[](int i){ return *mpBoards[i]; } 
+    BoardInfo& operator[](int i){ return *mpBoards[i]; }
 
 protected:
     int mnBoards;

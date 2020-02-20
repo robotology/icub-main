@@ -136,7 +136,7 @@ eObool_t feat_manage_motioncontrol_addinfo_multienc(eOipv4addr_t ipv4, eOprotID3
     }
 
     multienc = _interface2ethManager->ethBoards->get_interface(ipv4, iethres_analogmultienc);
-    
+
     if(NULL == multienc)
     {
         char ipinfo[20];
@@ -161,7 +161,7 @@ eObool_t feat_manage_motioncontrol_addinfo_multienc(eOipv4addr_t ipv4, eOprotID3
 
 
 eObool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *arrayofcandata)
-{   
+{
     IethResource* skin;
 
     if(NULL == _interface2ethManager)

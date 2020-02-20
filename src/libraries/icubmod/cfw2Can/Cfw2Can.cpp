@@ -45,7 +45,7 @@ bool Cfw2Can::canGetBaudRate(unsigned int *rate)
 
 bool Cfw2Can::canIdAdd(unsigned int id)
 {
- 
+
 #ifdef CFW2_HAS_FILTERS
     int res;
     res = cfwCanSetIdFilter(*handle ,  id , 1);
@@ -64,7 +64,7 @@ bool Cfw2Can::canIdDelete(unsigned int id)
 }
 
 bool Cfw2Can::canRead(CanBuffer &msgs,
-                     unsigned int size, 
+                     unsigned int size,
                      unsigned int *read,
                      bool wait)
 {
@@ -114,10 +114,10 @@ bool Cfw2Can::open(yarp::os::Searchable &par)
 
                          netId=par.check("CanDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
     if  (netId == -1)    netId=par.check("canDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
-    
+
                          txTimeout=par.check("CanTxTimeout", Value(0),  "timeout on transmission [ms]").asInt();
     if  (txTimeout == 0) txTimeout=par.check("canTxTimeout", Value(0),  "timeout on transmission [ms]").asInt();
-    
+
                          rxTimeout=par.check("CanRxTimeout", Value(0), "timeout on receive when calling blocking read [ms]").asInt() ;
     if  (rxTimeout == 0) rxTimeout=par.check("canRxTimeout", Value(0), "timeout on receive when calling blocking read [ms]").asInt() ;
 
@@ -143,11 +143,11 @@ bool Cfw2Can::close()
     int res;
     if (!handle)
         return false;
-#ifdef CFW2_HAS_FILTERS    
+#ifdef CFW2_HAS_FILTERS
     int rtxDisable = cfwCanRtxDisable(*handle);
     if(rtxDisable != 0) {
         fprintf(stderr, "Cfw2Can::RtxDisabling() returning error %d\n", rtxDisable);
-        return false;  
+        return false;
     }
 #endif
     res=cfwCanClose (*handle);
@@ -172,9 +172,9 @@ bool Cfw2Can::canGetErrors(CanErrors &err)
 
 CanMessage &Cfw2CanMessage::operator=(const CanMessage &l)
 {
-    // reinterpret_cast is used here for performance reasons, and it works 
+    // reinterpret_cast is used here for performance reasons, and it works
     // with the current version of the iCub software. However it can hide bugs
-    // if this operator is used in a reckless way (i.e. assigning 
+    // if this operator is used in a reckless way (i.e. assigning
     // a CanMessage of different type to a Cfw2CanMessage).
     // For more information, check https://github.com/robotology/icub-main/pull/82
     const Cfw2CanMessage &tmp=reinterpret_cast<const Cfw2CanMessage &>(l);

@@ -10,14 +10,14 @@
 
 /**
  * \defgroup clustering Clustering
- *  
+ *
  * @ingroup ctrlLib
  *
  * Classes for clustering.
  *
  * \author Ugo Pattacini
  *
- */ 
+ */
 
 #ifndef __CLUSTERING_H__
 #define __CLUSTERING_H__
@@ -43,9 +43,9 @@ class Clustering
 {
 public:
     /**
-    * Cluster the provided data. 
-    * @param data contains points to be clustered. 
-    * @param options contains clustering options. 
+    * Cluster the provided data.
+    * @param data contains points to be clustered.
+    * @param options contains clustering options.
     * @return clusters as a mapping between classes and the sets of
     *         elements indexes wrt the original data.
     */
@@ -62,8 +62,8 @@ public:
 /**
 * \ingroup clustering
 *
-* Data clustering based on DBSCAN algorithm. 
-* 
+* Data clustering based on DBSCAN algorithm.
+*
 * @note This implementation is based on the code available at
 *       https://github.com/gyaikhom/dbscan.
 */
@@ -72,8 +72,8 @@ class DBSCAN : public Clustering
 public:
     /**
     * Cluster the provided data.
-    * @param data contains points to be clustered. 
-    * @param options contains clustering options. The available 
+    * @param data contains points to be clustered.
+    * @param options contains clustering options. The available
     *                options are: "epsilon" representing the
     *                proximity sensitivity; "minpts" representing
     *                the minimum number of neighbours.

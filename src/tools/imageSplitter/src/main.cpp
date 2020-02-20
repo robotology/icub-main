@@ -11,7 +11,7 @@ Parameters
 \code
   align horizontal / vertical  :  input images are coupled on the horizontal / vertical way  -- default horizontal
 \endcode
-*/ 
+*/
 
 #include <yarp/dev/Drivers.h>
 #include <imageSplitter.h>

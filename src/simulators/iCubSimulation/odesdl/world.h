@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff
 * email:  vadim.tikhanoff@iit.it
@@ -31,7 +31,7 @@
 
 #include "SDL.h"
 #include "SDL_opengl.h"
-#include "rendering.h" 
+#include "rendering.h"
 #include <ode/ode.h>
 #include <string>
 #include "RobotConfig.h"
@@ -41,7 +41,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4244 4305)  // for VC++, no precision loss complaints
-#endif 
+#endif
 
 class WorldObject {
 public:
@@ -148,8 +148,8 @@ public:
 
 };
 
-class worldSimData{ 
-public:	
+class worldSimData{
+public:
 #define MAXNUM 100
 #define GPB 3// maximum number of geometries per body
     double l_massobj0;
@@ -271,7 +271,7 @@ public:
         virtual bool takeColor() { return false; }
     };
     MyObject2 ThreeD_obj[100];
-    MyObject2 s_ThreeD_obj[100]; 
+    MyObject2 s_ThreeD_obj[100];
 
     WorldObjectListOf<MyObject2> model_static;
     WorldObjectListOf<MyObject2> model_dynamic;

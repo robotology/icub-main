@@ -9,14 +9,14 @@
    </module>
     <module>
         <name>camCalib</name>
-        <parameters>--context cameraCalibration --from icubEyes_640x480.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
+        <parameters>--context cameraCalibration --from icubEyes_640x480.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>
         <node>icubsrv</node>
-    </module> 
+    </module>
     <module>
         <name>camCalib</name>
-        <parameters>--context cameraCalibration --from icubEyes_640x480.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
+        <parameters>--context cameraCalibration --from icubEyes_640x480.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters>
         <node>icubsrv</node>
-    </module> 
+    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/left --x 0 --y 0 --p 50</parameters>
@@ -33,7 +33,7 @@
       <node>icubsrv</node>
 	  <dependencies>
          <port timeout="10">/icub/cam/left</port>
-      </dependencies>	  
+      </dependencies>
    </module>
    <module>
       <name>frameGrabberGui2</name>
@@ -41,7 +41,7 @@
       <node>icubsrv</node>
 	  <dependencies>
          <port timeout="10">/icub/cam/right</port>
-      </dependencies>	  
+      </dependencies>
    </module>
 <connection>
   <output>/icub/cam/left</output>

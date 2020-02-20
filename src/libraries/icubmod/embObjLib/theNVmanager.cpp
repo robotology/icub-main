@@ -52,7 +52,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 
-    
+
 struct eth::theNVmanager::Impl
 {
     static std::mutex mtx;
@@ -244,27 +244,27 @@ struct eth::theNVmanager::Impl
         }
     };
 
-    
+
 
     // see http://en.cppreference.com/w/cpp/container/map/find
 
 
 //    Config config;
-           
+
     Data data;
 
     // we can use: std::map, std::multimap, std::set, std::multiset because therya re ordered and thus quicker. they have teh find method.
     // strategy: find by signature. in such a way every transaction is unique. it must have ....
     // see https://www.fluentcpp.com/2017/01/26/searching-an-stl-container/
 
-    Impl() 
-    {   
+    Impl()
+    {
         data.reset();
     }
 
 
 
-    
+
 //    bool initialise(const Config &_config);
 
     bool supported(const eOprotIP_t ipv4);
@@ -289,7 +289,7 @@ struct eth::theNVmanager::Impl
 
     bool set(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value);
     bool setcheck(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout);
-    
+
 
     //size_t maxSizeOfNV(const eOprotIP_t ipv4);
 
@@ -587,7 +587,7 @@ bool eth::theNVmanager::Impl::setcheck(eth::HostTransceiver *t, const eOprotID32
 
 
 bool eth::theNVmanager::Impl::check(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries)
-{    
+{
     if(false == validparameters(t, id32, value))
     {
         return false;
@@ -1109,12 +1109,12 @@ eth::theNVmanager::theNVmanager()
 
 }
 
-         
+
 //bool eth::theNVmanager::initialise(const Config &config)
 //{
 
 //    pImpl->initialise(config);
-       
+
 //    return true;
 //}
 

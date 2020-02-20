@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2008 The RobotCub Consortium
  * Author: Lorenzo Natale
  * website: www.robotcub.org

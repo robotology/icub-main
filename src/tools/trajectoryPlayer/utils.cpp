@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C)2013  iCub Facility - Istituto Italiano di Tecnologia
  * Author: Marco Randazzo
  * email:  marco.randazzo@iit.it
@@ -47,7 +47,7 @@ using namespace yarp::math;
 // ******************** ACTION CLASS
 
 int action_struct::get_n_joints()
-{ 
+{
     return N_JOINTS;
 }
 
@@ -91,7 +91,7 @@ action_struct & action_struct::operator=(const action_struct & as)
 action_struct::~action_struct()
 {
     if (q_joints)
-    { 
+    {
         delete []q_joints;
         q_joints = 0;
     }
@@ -148,7 +148,7 @@ bool action_class::openFile(string filename, int n_joints)
 
         fclose (data_file);
     }
-    else 
+    else
     {
         yError("unable to find file\n");
         ret = false;
@@ -164,7 +164,7 @@ bool action_class::parseCommandLineFixTime(const char* command_line, int line, d
 
     tmp_action.counter = count; count = count + 1;
     tmp_action.time    = time;  time = time+fixTime;
-        
+
     char* tok;
     size_t ss = strlen(command_line);
     char* cline = new char [ss];
@@ -186,7 +186,7 @@ bool action_class::parseCommandLineFixTime(const char* command_line, int line, d
     }
     action_vector.insert(action_it,tmp_action);*/
 
-    if (action_vector.size()==0) 
+    if (action_vector.size()==0)
     {
         action_vector.push_back(tmp_action);
         return true;
@@ -212,10 +212,10 @@ bool action_class::parseCommandLine(const char* command_line, int line, int n_jo
         sprintf(command_line_format+off, "%%lf ");
     }
 
-    int ret = sscanf(command_line, "%d %lf    %lf %lf %lf %lf %lf %lf", 
+    int ret = sscanf(command_line, "%d %lf    %lf %lf %lf %lf %lf %lf",
     &tmp_action.counter,
     &tmp_action.time,
-            
+
     &tmp_action.q_joints[0],
     &tmp_action.q_joints[1],
     &tmp_action.q_joints[2],
@@ -224,7 +224,7 @@ bool action_class::parseCommandLine(const char* command_line, int line, int n_jo
     &tmp_action.q_joints[5]
     );
 
-    if (ret == n_joints+2) 
+    if (ret == n_joints+2)
     {
         //insertion in the vector based on the timestamp
         for (action_it=action_vector.begin(); action_it<action_vector.end(); action_it++)
@@ -232,7 +232,7 @@ bool action_class::parseCommandLine(const char* command_line, int line, int n_jo
         action_vector.insert(action_it,tmp_action);
         return true;
     }
-            
+
     return false;
 }
 
@@ -288,7 +288,7 @@ bool robotDriver::init()
         drv_connected=false;
 
     if (!drv_connected)
-    {  
+    {
         if (drv_ll)
         {
             delete drv_ll;

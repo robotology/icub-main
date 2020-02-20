@@ -26,28 +26,28 @@
 
 #define POINTGREY_REGISTER_TIMESTAMP 0x12F8
 
-static dc1394error_t set_embedded_timestamp(dc1394camera_t *camera, 
+static dc1394error_t set_embedded_timestamp(dc1394camera_t *camera,
                                             bool enable) {
     uint32_t value;
     dc1394error_t err;
 
-    err = dc1394_get_control_register(camera, 
-                                      POINTGREY_REGISTER_TIMESTAMP, 
+    err = dc1394_get_control_register(camera,
+                                      POINTGREY_REGISTER_TIMESTAMP,
                                       &value);
     DC1394_ERR_RTN(err, "No embedded timestamp capability");
-    
+
     bool current = (value & 0x1U)!=0;
-    
+
     if(enable==current) {
         return DC1394_SUCCESS;
     }
     value ^= 0x1;
-    err = dc1394_set_control_register(camera, 
-                                      POINTGREY_REGISTER_TIMESTAMP, 
+    err = dc1394_set_control_register(camera,
+                                      POINTGREY_REGISTER_TIMESTAMP,
                                       value);
     DC1394_ERR_RTN(err, "Cannot configure embedded timestamp");
-    err = dc1394_get_control_register(camera, 
-                                      POINTGREY_REGISTER_TIMESTAMP, 
+    err = dc1394_get_control_register(camera,
+                                      POINTGREY_REGISTER_TIMESTAMP,
                                       &value);
     DC1394_ERR_RTN(err, "Configuration for embedded timestamp won't stick");
 
@@ -150,13 +150,13 @@ int CFWCamera_DR2_2::maxFPS(dc1394video_mode_t mode,dc1394color_coding_t pixelFo
             switch (pixelFormat)
             {
             case DC1394_COLOR_CODING_MONO8:
-            case DC1394_COLOR_CODING_RAW8:  
+            case DC1394_COLOR_CODING_RAW8:
             case DC1394_COLOR_CODING_YUV411: return 59;
-        
+
             case DC1394_COLOR_CODING_MONO16:
             case DC1394_COLOR_CODING_RAW16:
             case DC1394_COLOR_CODING_YUV422: return 47;
-        
+
             case DC1394_COLOR_CODING_YUV444:
             case DC1394_COLOR_CODING_RGB8:    return 31;
             }
@@ -263,7 +263,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     }
     delete retM;
 
-    // check for CPU affinity 
+    // check for CPU affinity
     if(config.check("cpu_affinity")) {
         cpu_set_t set;
         CPU_ZERO(&set);
@@ -282,8 +282,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
             yWarning("failed to set the real-time priority\n");
         }
     }
-   
-    int size_x=checkInt(config,"width");   
+
+    int size_x=checkInt(config,"width");
     int size_y=checkInt(config,"height");
     int off_x=checkInt(config,"xoff");
     int off_y=checkInt(config,"yoff");
@@ -301,12 +301,12 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     unsigned int idCamera=0;
 
     m_Framerate=checkInt(config,"framerate");
-    
+
     yDebug("Format = %d\n",format);
 
     m_XDim=m_YDim=0;
     m_RawBufferSize=0;
-   
+
     m_bCameraOn=false;
     m_pCamera=NULL;
     m_pCameraList=NULL;
@@ -324,7 +324,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     }
 
     dc1394error_t error;
-    
+
     error=dc1394_camera_enumerate(m_dc1394_handle,&m_pCameraList);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
@@ -333,7 +333,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     if (!m_nNumCameras)
     {
         yError("no active cameras\n");
-        yError("LINE: %d\n",__LINE__); 
+        yError("LINE: %d\n",__LINE__);
         return false;
     }
 
@@ -355,26 +355,26 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         {
             yError("GUID=%s camera not found\n",sguid.c_str());
             yError("LINE: %d\n",__LINE__);
-            return false;  
+            return false;
         }
     }
     else if (config.check("d"))
     {
         yWarning("--d <unit_number> parameter is deprecated, use --guid <64_bit_global_unique_identifier> instead\n");
-        idCamera=config.find("d").asInt(); 
+        idCamera=config.find("d").asInt();
     }
 
     if (idCamera<0 || idCamera>=m_nNumCameras)
     {
         yError("invalid camera number\n");
-        yError("LINE: %d\n",__LINE__); 
-        return false;       
+        yError("LINE: %d\n",__LINE__);
+        return false;
     }
 
     if (!(m_pCamera=dc1394_camera_new(m_dc1394_handle,m_pCameraList->ids[idCamera].guid)))
     {
         yError("can't create camera\n");
-        yError("LINE: %d\n",__LINE__); 
+        yError("LINE: %d\n",__LINE__);
         return false;
     }
 
@@ -387,12 +387,12 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     /*
     if (channel_in_use != 0)
-    {                
-        dc1394_iso_release_channel(m_pCamera,idCamera);        
+    {
+        dc1394_iso_release_channel(m_pCamera,idCamera);
         const uint64_t ISO_CHANNEL_MASK=idCamera;
-        int allocated_channel;        
+        int allocated_channel;
         dc1394_iso_allocate_channel(m_pCamera,ISO_CHANNEL_MASK,&allocated_channel);
-        dc1394_video_set_iso_channel(m_pCamera,idCamera);        
+        dc1394_video_set_iso_channel(m_pCamera,idCamera);
         dc1394_iso_release_channel(m_pCamera,channel_in_use);
     }
     */
@@ -413,13 +413,13 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
-    dc1394_video_set_operation_mode(m_pCamera,DC1394_OPERATION_MODE_1394B);       
+    dc1394_video_set_operation_mode(m_pCamera,DC1394_OPERATION_MODE_1394B);
     //if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     error=dc1394_video_set_iso_speed(m_pCamera,DC1394_ISO_SPEED_400);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
-    error=dc1394_camera_print_info(m_pCamera,stdout); 
+    error=dc1394_camera_print_info(m_pCamera,stdout);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     // CONFIGURE
@@ -455,7 +455,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         if (!format) format=DR_BAYER_1024x768;
 
         if (mRawDriver) format=DR_BAYER_1024x768;
-    
+
         switch (format)
         {
         case DR_UNINIT:
@@ -465,7 +465,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
             if (!size_x) { size_x=512; }
             if (!size_y) { size_y=384; }
             SetF7(DC1394_VIDEO_MODE_FORMAT7_1,size_x,size_y,DC1394_COLOR_CODING_RGB8,44,off_x,off_y);
-            break; 
+            break;
 
         case DR_RGB_640x480:
             SetVideoMode(DC1394_VIDEO_MODE_640x480_RGB8);
@@ -477,18 +477,18 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
         case DR_RGB_800x600:
             SetVideoMode(DC1394_VIDEO_MODE_800x600_RGB8);
-            break; 
+            break;
 
         case DR_YUV_800x600:
             SetVideoMode(DC1394_VIDEO_MODE_800x600_YUV422);
-            break; 
-        
+            break;
+
         case DR_RGB_1024x768:
             if (!size_x) { size_x=1024; }
             if (!size_y) { size_y=768; }
             SetF7(DC1394_VIDEO_MODE_FORMAT7_0,size_x,size_y,DC1394_COLOR_CODING_RGB8,44,off_x,off_y);
             break;
-        
+
         case DR_YUV_1024x768:
             if (!size_x) { size_x=1024; }
             if (!size_y) { size_y=768; }
@@ -506,7 +506,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
             break;
 
         default:
-            yError("Unsupported video format, camera configuration will be used.\n");     
+            yError("Unsupported video format, camera configuration will be used.\n");
         }
     }
     else // lores
@@ -551,12 +551,12 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
             break;
 
         default:
-            yError("Unsupported video format, camera configuration will be used.\n");    
+            yError("Unsupported video format, camera configuration will be used.\n");
         }
     }
 
     for (int f=DC1394_FEATURE_MIN; f<=DC1394_FEATURE_MAX; ++f)
-    {   
+    {
         dc1394bool_t bPresent;
         error=dc1394_feature_is_present(m_pCamera,(dc1394feature_t)f,&bPresent);
 
@@ -614,12 +614,12 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     m_GainSaveModeAuto=DC1394_FEATURE_MODE_MANUAL;
     m_ShutterSaveModeAuto=DC1394_FEATURE_MODE_MANUAL;
-    
+
     setBrightness(checkDouble(config,"brightness"));
     setExposure(checkDouble(config,"exposure"));
     setSharpness(checkDouble(config,"sharpness"));
     yarp::os::Bottle& white_balance=config.findGroup("white_balance");
-    if (!white_balance.isNull()) 
+    if (!white_balance.isNull())
     {
         setWhiteBalance(white_balance.get(2).asDouble(),white_balance.get(1).asDouble());
     }
@@ -706,45 +706,45 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
     {
         switch (videoMode)
         {
-        case DC1394_VIDEO_MODE_160x120_YUV444: 
-            xdim=160; 
-            ydim=120; 
-            buffDim=xdim*ydim*3;
-            maxFramerate=DC1394_FRAMERATE_30; 
-            break;
-        case DC1394_VIDEO_MODE_320x240_YUV422: 
-            xdim=320; 
-            ydim=240; 
-            buffDim=xdim*ydim*2;   
-            maxFramerate=DC1394_FRAMERATE_30; 
-            break;
-        case DC1394_VIDEO_MODE_640x480_YUV411: 
-            xdim=640; 
-            ydim=480; 
-            buffDim=(xdim*ydim*3)/2; 
-            maxFramerate=DC1394_FRAMERATE_30; 
-            break;
-        case DC1394_VIDEO_MODE_640x480_YUV422: 
-            xdim=640; 
-            ydim=480; 
-            buffDim=xdim*ydim*2;    
-            maxFramerate=DC1394_FRAMERATE_30; 
-            break;
-        case DC1394_VIDEO_MODE_640x480_RGB8:
-            xdim=640; 
-            ydim=480; 
+        case DC1394_VIDEO_MODE_160x120_YUV444:
+            xdim=160;
+            ydim=120;
             buffDim=xdim*ydim*3;
             maxFramerate=DC1394_FRAMERATE_30;
             break;
-        case DC1394_VIDEO_MODE_640x480_MONO8:  
-            xdim=640; 
-            ydim=480; 
+        case DC1394_VIDEO_MODE_320x240_YUV422:
+            xdim=320;
+            ydim=240;
+            buffDim=xdim*ydim*2;
+            maxFramerate=DC1394_FRAMERATE_30;
+            break;
+        case DC1394_VIDEO_MODE_640x480_YUV411:
+            xdim=640;
+            ydim=480;
+            buffDim=(xdim*ydim*3)/2;
+            maxFramerate=DC1394_FRAMERATE_30;
+            break;
+        case DC1394_VIDEO_MODE_640x480_YUV422:
+            xdim=640;
+            ydim=480;
+            buffDim=xdim*ydim*2;
+            maxFramerate=DC1394_FRAMERATE_30;
+            break;
+        case DC1394_VIDEO_MODE_640x480_RGB8:
+            xdim=640;
+            ydim=480;
+            buffDim=xdim*ydim*3;
+            maxFramerate=DC1394_FRAMERATE_30;
+            break;
+        case DC1394_VIDEO_MODE_640x480_MONO8:
+            xdim=640;
+            ydim=480;
             buffDim=xdim*ydim;
             maxFramerate=DC1394_FRAMERATE_30;
             break;
-        case DC1394_VIDEO_MODE_640x480_MONO16: 
-            xdim=640; 
-            ydim=480; 
+        case DC1394_VIDEO_MODE_640x480_MONO16:
+            xdim=640;
+            ydim=480;
             buffDim=xdim*ydim*2;
             maxFramerate=DC1394_FRAMERATE_30;
             break;
@@ -799,9 +799,9 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
             maxFramerate=DC1394_FRAMERATE_15;
             break;
         /*
-        case DC1394_VIDEO_MODE_FORMAT7_0: 
-            xdim=1024; 
-            ydim=768; 
+        case DC1394_VIDEO_MODE_FORMAT7_0:
+            xdim=1024;
+            ydim=768;
             buffDim=xdim*ydim*3;
             maxFramerate=DC1394_FRAMERATE_;
             break;
@@ -813,52 +813,52 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
     {
         switch (videoMode)
         {
-        case DC1394_VIDEO_MODE_160x120_YUV444: 
-            xdim=160; 
-            ydim=120; 
+        case DC1394_VIDEO_MODE_160x120_YUV444:
+            xdim=160;
+            ydim=120;
             buffDim=xdim*ydim*3;
-            maxFramerate=DC1394_FRAMERATE_60; 
+            maxFramerate=DC1394_FRAMERATE_60;
             break;
-        case DC1394_VIDEO_MODE_320x240_YUV422: 
-            xdim=320; 
-            ydim=240; 
-            buffDim=xdim*ydim*2;   
-            maxFramerate=DC1394_FRAMERATE_60; 
+        case DC1394_VIDEO_MODE_320x240_YUV422:
+            xdim=320;
+            ydim=240;
+            buffDim=xdim*ydim*2;
+            maxFramerate=DC1394_FRAMERATE_60;
             break;
-        case DC1394_VIDEO_MODE_640x480_YUV411: 
-            xdim=640; 
-            ydim=480; 
-            buffDim=(xdim*ydim*3)/2; 
-            maxFramerate=DC1394_FRAMERATE_60; 
+        case DC1394_VIDEO_MODE_640x480_YUV411:
+            xdim=640;
+            ydim=480;
+            buffDim=(xdim*ydim*3)/2;
+            maxFramerate=DC1394_FRAMERATE_60;
             break;
-        case DC1394_VIDEO_MODE_640x480_YUV422: 
-            xdim=640; 
-            ydim=480; 
-            buffDim=xdim*ydim*2;    
-            maxFramerate=DC1394_FRAMERATE_30; 
+        case DC1394_VIDEO_MODE_640x480_YUV422:
+            xdim=640;
+            ydim=480;
+            buffDim=xdim*ydim*2;
+            maxFramerate=DC1394_FRAMERATE_30;
             break;
         case DC1394_VIDEO_MODE_640x480_RGB8:
-            xdim=640; 
-            ydim=480; 
+            xdim=640;
+            ydim=480;
             buffDim=xdim*ydim*3;
             maxFramerate=DC1394_FRAMERATE_30;
             break;
-        case DC1394_VIDEO_MODE_640x480_MONO8:  
-            xdim=640; 
-            ydim=480; 
+        case DC1394_VIDEO_MODE_640x480_MONO8:
+            xdim=640;
+            ydim=480;
             buffDim=xdim*ydim;
             maxFramerate=DC1394_FRAMERATE_30;
             break;
-        case DC1394_VIDEO_MODE_640x480_MONO16: 
-            xdim=640; 
-            ydim=480; 
+        case DC1394_VIDEO_MODE_640x480_MONO16:
+            xdim=640;
+            ydim=480;
             buffDim=xdim*ydim*2;
             maxFramerate=DC1394_FRAMERATE_60;
             break;
         /*
-        case DC1394_VIDEO_MODE_FORMAT7_0: 
-            xdim=640; 
-            ydim=480; 
+        case DC1394_VIDEO_MODE_FORMAT7_0:
+            xdim=640;
+            ydim=480;
             buffDim=xdim*ydim*3;
             maxFramerate=DC1394_FRAMERATE_60;
             break;
@@ -881,9 +881,9 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
     printf("fpsMax = %f\n",fpsMax);
 
     dc1394framerate_t framerate;
-    
+
     if (m_Framerate)
-    { 
+    {
         if (m_Framerate<(int)fpsMax)
         {
             fpsMax=double(m_Framerate);
@@ -892,7 +892,7 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
         {
             yWarning("framerate %d is too high, it will be set to the maximum available\n",m_Framerate);
         }
-        
+
         m_Framerate=0;
     }
 
@@ -912,7 +912,7 @@ bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
     {
         framerate=maxFramerate;
     }
-    
+
     yDebug("Framerate = %f\n",1.875*double(1<<(framerate-DC1394_FRAMERATE_MIN)));
 
     error=dc1394_video_set_mode(m_pCamera,videoMode);
@@ -1022,7 +1022,7 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
     error=dc1394_format7_get_unit_position(m_pCamera,(dc1394video_mode_t)newVideoMode,&xStep,&yStep);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
-    if (newVideoMode==DC1394_VIDEO_MODE_FORMAT7_1) 
+    if (newVideoMode==DC1394_VIDEO_MODE_FORMAT7_1)
     {
         wStep*=2;
     }
@@ -1041,7 +1041,7 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
         if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
         error=dc1394_format7_get_image_position(m_pCamera,actVideoMode,&xpos,&ypos);
         if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-        
+
         if (newXdim==SKIP) newXdim=xdim;
         if (newYdim==SKIP) newYdim=ydim;
         if (x0==SKIP) x0=xpos;
@@ -1060,7 +1060,7 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
     int yOff=(maxHeight-newYdim)/2+y0;
     xOff=(xOff/xStep)*xStep;
     yOff=(yOff/yStep)*yStep;
-    
+
     if (xOff<0) xOff=0;
     if (yOff<0) yOff=0;
 
@@ -1076,14 +1076,14 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
     // speed
     //////////////////
     if (newBandPercent<0)
-    { 
+    {
         newBandPercent=40;
-    } 
-    else if (newBandPercent>100) 
+    }
+    else if (newBandPercent>100)
     {
         newBandPercent=100;
     }
-    
+
     dc1394speed_t isoSpeed;
     error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
@@ -1093,14 +1093,14 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
     int fpsMax=maxFPS((dc1394video_mode_t)newVideoMode,(dc1394color_coding_t)newColorCoding);
     double bpp=bytesPerPixel((dc1394color_coding_t)newColorCoding);
     double newBandOcc=double(fpsMax*newXdim*newYdim)*bpp;
-    
+
     int fps=fpsMax;
-    
+
     unsigned int roundUp=0;
     if (m_Framerate)
-    { 
+    {
         roundUp=1;
-        
+
         if (m_Framerate<fps)
         {
             fps=m_Framerate;
@@ -1109,16 +1109,16 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
         {
             yWarning("framerate %d is too high, it will be set to the maximum available %d\n",m_Framerate,fps);
         }
-        
+
         m_Framerate=0;
     }
-    
+
     unsigned int bytesPerPacket,maxBytesPerPacket,unitBytesPerPacket;
     error=dc1394_format7_get_packet_parameters(m_pCamera,(dc1394video_mode_t)newVideoMode,&unitBytesPerPacket,&maxBytesPerPacket);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
     bytesPerPacket=(unsigned int)(0.01*double(fps)/double(fpsMax)*double(newBandPercent)*double(busBand)*double(maxBytesPerPacket)/newBandOcc);
     bytesPerPacket=(roundUp+bytesPerPacket/unitBytesPerPacket)*unitBytesPerPacket;
-    
+
     if (bytesPerPacket>maxBytesPerPacket)
     {
         bytesPerPacket=maxBytesPerPacket;
@@ -1127,9 +1127,9 @@ bool CFWCamera_DR2_2::SetF7(int newVideoMode,int newXdim,int newYdim,int newColo
     {
         bytesPerPacket=unitBytesPerPacket;
     }
-    
+
     printf("\nfps=%d newBandOcc=%f bpp=%f bytesPerPacket=%d maxBytesPerPacket=%d\n\n",fps,newBandOcc,bpp,bytesPerPacket,maxBytesPerPacket);
-    
+
     error=dc1394_format7_set_roi(m_pCamera,(dc1394video_mode_t)newVideoMode,(dc1394color_coding_t)newColorCoding,bytesPerPacket,xOff,yOff,newXdim,newYdim);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
@@ -1149,7 +1149,7 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
         return false;
     }
 
-    dc1394error_t ret=dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_WAIT,&m_pFrame); 
+    dc1394error_t ret=dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_WAIT,&m_pFrame);
 
     if (ret!=DC1394_SUCCESS)
     {
@@ -1163,13 +1163,13 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelRgb>* pImage,un
         }
         return false;
     }
-    
-    m_pFramePoll=0; 
+
+    m_pFramePoll=0;
     while (dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_POLL,&m_pFramePoll)==DC1394_SUCCESS && m_pFramePoll)
     {
         dc1394_capture_enqueue(m_pCamera,m_pFrame);
         m_pFrame=m_pFramePoll;
-        m_pFramePoll=0; 
+        m_pFramePoll=0;
     }
 
     if (m_nInvalidFrames)
@@ -1260,13 +1260,13 @@ bool CFWCamera_DR2_2::Capture(yarp::sig::ImageOf<yarp::sig::PixelMono>* pImage)
     {
         return false;
     }
-    
-    m_pFramePoll=0; 
+
+    m_pFramePoll=0;
     while (dc1394_capture_dequeue(m_pCamera,DC1394_CAPTURE_POLICY_POLL,&m_pFramePoll)==DC1394_SUCCESS && m_pFramePoll)
     {
         dc1394_capture_enqueue(m_pCamera,m_pFrame);
         m_pFrame=m_pFramePoll;
-        m_pFramePoll=0; 
+        m_pFramePoll=0;
     }
 
     if (m_nInvalidFrames)
@@ -1320,7 +1320,7 @@ uint32_t CFWCamera_DR2_2::NormToValue(double& dVal,int feature)
 }
 
 double CFWCamera_DR2_2::ValueToNorm(uint32_t iVal,int feature)
-{ 
+{
     int f=feature-DC1394_FEATURE_MIN;
 
     double dVal=double(iVal-m_iMin[f])/double(m_iMax[f]-m_iMin[f]);
@@ -1360,7 +1360,7 @@ double CFWCamera_DR2_2::getFeatureDC1394(int feature)
     if (!m_pCamera) return -1.0;
     feature+=DC1394_FEATURE_MIN;
     uint32_t iVal;
-    dc1394_feature_get_value(m_pCamera,(dc1394feature_t)feature,&iVal); 
+    dc1394_feature_get_value(m_pCamera,(dc1394feature_t)feature,&iVal);
     return ValueToNorm(iVal,feature);
 }
 
@@ -1379,9 +1379,9 @@ bool CFWCamera_DR2_2::setActiveDC1394(int feature, bool onoff)
 {
     if (!m_pCamera) return false;
     feature+=DC1394_FEATURE_MIN;
-    
+
     if (feature==DC1394_FEATURE_EXPOSURE)
-    {   
+    {
         if (onoff)
         {
             dc1394_feature_set_power(m_pCamera,DC1394_FEATURE_GAIN,DC1394_ON);
@@ -1416,7 +1416,7 @@ bool CFWCamera_DR2_2::setActiveDC1394(int feature, bool onoff)
             }
         }
     }
-    
+
     return DC1394_SUCCESS==dc1394_feature_set_power(m_pCamera,(dc1394feature_t)feature,onoff?DC1394_ON:DC1394_OFF);
 }
 
@@ -1443,7 +1443,7 @@ bool CFWCamera_DR2_2::hasManualDC1394(int feature)
         {
             return true;
         }
-    }   
+    }
     return false;
 }
 
@@ -1462,7 +1462,7 @@ bool CFWCamera_DR2_2::hasAutoDC1394(int feature)
         }
     }
     return false;
-}   
+}
 
 // 08
 bool CFWCamera_DR2_2::hasOnePushDC1394(int feature)
@@ -1486,7 +1486,7 @@ bool CFWCamera_DR2_2::setModeDC1394(int feature, bool auto_onoff)
 {
     if (!m_pCamera) return false;
     feature+=DC1394_FEATURE_MIN;
-    
+
     return DC1394_SUCCESS==dc1394_feature_set_mode(m_pCamera,(dc1394feature_t)feature,auto_onoff?DC1394_FEATURE_MODE_AUTO:DC1394_FEATURE_MODE_MANUAL);
 }
 
@@ -1495,7 +1495,7 @@ bool CFWCamera_DR2_2::getModeDC1394(int feature)
 {
     if (!m_pCamera) return false;
     feature+=DC1394_FEATURE_MIN;
-    dc1394feature_mode_t mode; 
+    dc1394feature_mode_t mode;
     dc1394_feature_get_mode(m_pCamera,(dc1394feature_t)feature,&mode);
     return mode==DC1394_FEATURE_MODE_AUTO;
 }
@@ -1515,7 +1515,7 @@ bool CFWCamera_DR2_2::setWhiteBalanceDC1394(double b, double r)
     {
         return false;
     }
-    
+
     return DC1394_SUCCESS==dc1394_feature_whitebalance_set_value(m_pCamera,
                                                                  NormToValue(b,DC1394_FEATURE_WHITE_BALANCE),
                                                                  NormToValue(r,DC1394_FEATURE_WHITE_BALANCE));
@@ -1610,7 +1610,7 @@ bool CFWCamera_DR2_2::setVideoModeDC1394(int newVideoMode)
 
 // 14
 unsigned int CFWCamera_DR2_2::getVideoModeDC1394()
-{ 
+{
     dc1394video_mode_t videoMode;
     dc1394_video_get_mode(m_pCamera,&videoMode);
     return videoMode-DC1394_VIDEO_MODE_MIN;
@@ -1624,9 +1624,9 @@ unsigned int CFWCamera_DR2_2::getFPSMaskDC1394()
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error) || videoMode>=DC1394_VIDEO_MODE_FORMAT7_MIN)
-    { 
-        yError("LINE: %d\n",__LINE__); 
-        return 0; 
+    {
+        yError("LINE: %d\n",__LINE__);
+        return 0;
     }
 
     dc1394framerates_t fps;
@@ -1637,7 +1637,7 @@ unsigned int CFWCamera_DR2_2::getFPSMaskDC1394()
     {
         mask|=1<<(fps.framerates[f]-DC1394_FRAMERATE_MIN);
     }
-    
+
     return mask;
 }
 
@@ -1649,12 +1649,12 @@ unsigned int CFWCamera_DR2_2::getFPSDC1394()
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error) || videoMode>=DC1394_VIDEO_MODE_FORMAT7_MIN)
-    { 
-        yError("LINE: %d\n",__LINE__); 
+    {
+        yError("LINE: %d\n",__LINE__);
         return 0;
     }
 
-    dc1394framerate_t fps; 
+    dc1394framerate_t fps;
     dc1394_video_get_framerate(m_pCamera,&fps);
 
     return fps-DC1394_FRAMERATE_MIN;
@@ -1668,12 +1668,12 @@ bool CFWCamera_DR2_2::setFPSDC1394(int fps)
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error) || videoMode>=DC1394_VIDEO_MODE_FORMAT7_MIN)
-    { 
-        yError("LINE: %d\n",__LINE__); 
-        return false; 
+    {
+        yError("LINE: %d\n",__LINE__);
+        return false;
     }
 
-    return DC1394_SUCCESS==dc1394_video_set_framerate(m_pCamera,(dc1394framerate_t)((int)fps+DC1394_FRAMERATE_MIN));    
+    return DC1394_SUCCESS==dc1394_video_set_framerate(m_pCamera,(dc1394framerate_t)((int)fps+DC1394_FRAMERATE_MIN));
 }
 
 // 18
@@ -1687,7 +1687,7 @@ unsigned int CFWCamera_DR2_2::getISOSpeedDC1394()
 
 // 19
 bool CFWCamera_DR2_2::setISOSpeedDC1394(int speed)
-{   
+{
     if (!m_pCamera) return false;
     return DC1394_SUCCESS==dc1394_video_set_iso_speed(m_pCamera,(dc1394speed_t)(speed+DC1394_ISO_SPEED_MIN));
 }
@@ -1711,7 +1711,7 @@ unsigned int CFWCamera_DR2_2::getColorCodingMaskDC1394(unsigned int videoMode)
     {
         mask|=1<<(codings.codings[m]-DC1394_COLOR_CODING_MIN);
     }
-    
+
     yInfo("color coding mask for video mode %d is %x\n",videoMode,mask);
 
     return mask;
@@ -1725,9 +1725,9 @@ unsigned int CFWCamera_DR2_2::getActualColorCodingMaskDC1394()
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
-    { 
-        yError("LINE: %d\n",__LINE__); 
-        return 0; 
+    {
+        yError("LINE: %d\n",__LINE__);
+        return 0;
     }
 
     dc1394color_codings_t codings;
@@ -1738,7 +1738,7 @@ unsigned int CFWCamera_DR2_2::getActualColorCodingMaskDC1394()
     {
         mask|=1<<(codings.codings[m]-DC1394_COLOR_CODING_MIN);
     }
-    
+
     yInfo("actual color coding mask %x\n",mask);
 
     return mask;
@@ -1752,9 +1752,9 @@ unsigned int CFWCamera_DR2_2::getColorCodingDC1394()
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
-    { 
-        yError("LINE: %d\n",__LINE__); 
-        return 0; 
+    {
+        yError("LINE: %d\n",__LINE__);
+        return 0;
     }
 
     dc1394color_coding_t coding;
@@ -1773,7 +1773,7 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
     {
         return false;
     }
-    
+
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
@@ -1781,7 +1781,7 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
         yError("LINE: %d\n",__LINE__);
         return false;
     }
-    
+
     m_nInvalidFrames=NUM_DMA_BUFFERS;
 
     dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
@@ -1809,7 +1809,7 @@ bool CFWCamera_DR2_2::setColorCodingDC1394(int coding)
     }
 
     return bRetVal;
-}   
+}
 
 //experimental cleanup function, Lorenzo
 
@@ -1828,7 +1828,7 @@ bool CFWCamera_DR2_2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int 
         xoffstep=yoffstep=2;
         return false;
     }
-    
+
     if (videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
     {
         xdim=m_XDim;
@@ -1856,7 +1856,7 @@ bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim
     {
         return false;
     }
-    
+
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
@@ -1899,10 +1899,10 @@ bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &yd
 
     //xdim=m_XDim;
     //ydim=m_YDim;
-    
+
     dc1394video_mode_t actVideoMode;
     dc1394error_t error;
-    
+
     error=dc1394_video_get_mode(m_pCamera,&actVideoMode);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
@@ -1913,23 +1913,23 @@ bool CFWCamera_DR2_2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &yd
         x0=y0=0;
         return true;
     }
-    
+
     unsigned int xmaxdim,ymaxdim;
     error=dc1394_format7_get_max_image_size(m_pCamera,actVideoMode,&xmaxdim,&ymaxdim);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-    
+
     unsigned int xoff,yoff;
     error=dc1394_format7_get_image_position(m_pCamera,actVideoMode,&xoff,&yoff);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-    
+
     error=dc1394_format7_get_image_size(m_pCamera,actVideoMode,&xdim,&ydim);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-    
+
     x0=(int)xoff-(xmaxdim-xdim)/2;
     y0=(int)yoff-(ymaxdim-ydim)/2;
 
     return true;
-}   
+}
 
 // 28
 bool CFWCamera_DR2_2::setOperationModeDC1394(bool b1394b)
@@ -2015,10 +2015,10 @@ bool CFWCamera_DR2_2::setDefaultsDC1394()
     m_nInvalidFrames=NUM_DMA_BUFFERS;
 
     bool bRetVal=DC1394_SUCCESS==dc1394_memory_load(m_pCamera,0);
-    
+
     dc1394video_mode_t videoMode;
     dc1394_video_get_mode(m_pCamera,&videoMode);
-    
+
     SetVideoMode(videoMode);
 
     return bRetVal;
@@ -2036,9 +2036,9 @@ bool CFWCamera_DR2_2::setResetDC1394()
 
     dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
     dc1394_capture_stop(m_pCamera);
-    
+
     dc1394_camera_reset(m_pCamera);
-    
+
     if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
     {
         yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
@@ -2106,7 +2106,7 @@ bool CFWCamera_DR2_2::setCaptureDC1394(bool bON)
 {
     if (!m_pCamera) return false;
 
-    if (bON) 
+    if (bON)
         return DC1394_SUCCESS==dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT);
     else
         return DC1394_SUCCESS==dc1394_capture_stop(m_pCamera);
@@ -2116,15 +2116,15 @@ bool CFWCamera_DR2_2::setCaptureDC1394(bool bON)
 unsigned int CFWCamera_DR2_2::getBytesPerPacketDC1394()
 {
     if (!m_pCamera) return 0;
-    
+
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
-    { 
-        yError("LINE: %d\n",__LINE__); 
-        return 0; 
+    {
+        yError("LINE: %d\n",__LINE__);
+        return 0;
     }
-    
+
     dc1394speed_t isoSpeed;
     error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return 0; }
@@ -2134,7 +2134,7 @@ unsigned int CFWCamera_DR2_2::getBytesPerPacketDC1394()
 
     dc1394color_coding_t colorCoding;
     unsigned int dummy,bytesPerPacket,xDim,yDim;
-    error=dc1394_format7_get_roi(m_pCamera,videoMode,&colorCoding,&bytesPerPacket,&dummy,&dummy,&xDim,&yDim);   
+    error=dc1394_format7_get_roi(m_pCamera,videoMode,&colorCoding,&bytesPerPacket,&dummy,&dummy,&xDim,&yDim);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return 0; }
 
     unsigned int maxBytesPerPacket,unitBytesPerPacket;
@@ -2155,24 +2155,24 @@ unsigned int CFWCamera_DR2_2::getBytesPerPacketDC1394()
 
 // 40
 bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
-{   
+{
     std::lock_guard<std::mutex> lck(m_AcqMutex);
 
     if (!m_pCamera)
     {
         return false;
     }
-    
+
     dc1394error_t error;
 
     error=dc1394_video_set_transmission(m_pCamera,DC1394_OFF);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-    
-    error=dc1394_capture_stop(m_pCamera);   
+
+    error=dc1394_capture_stop(m_pCamera);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-    
+
     //
-    
+
     dc1394video_mode_t videoMode;
     error=dc1394_video_get_mode(m_pCamera,&videoMode);
     if (manage(error) || videoMode<DC1394_VIDEO_MODE_FORMAT7_MIN)
@@ -2189,17 +2189,17 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
     {
         newBandPercent=100;
     }
-    
+
     dc1394speed_t isoSpeed;
     error=dc1394_video_get_iso_speed(m_pCamera,&isoSpeed);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-    
+
     // get ISO bandwidth
     int busBand=10000000<<(isoSpeed-DC1394_ISO_SPEED_MIN);
 
     dc1394color_coding_t colorCoding;
     unsigned int dummy,xDim,yDim;
-    error=dc1394_format7_get_roi(m_pCamera,videoMode,&colorCoding,&dummy,&dummy,&dummy,&xDim,&yDim);    
+    error=dc1394_format7_get_roi(m_pCamera,videoMode,&colorCoding,&dummy,&dummy,&dummy,&xDim,&yDim);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
 
     unsigned int maxBytesPerPacket,unitBytesPerPacket;
@@ -2220,15 +2220,15 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
     {
         bytesPerPacket=unitBytesPerPacket;
     }
-    
+
     printf("videoMode %d band percnet %d bytesPerPacket %d\n",videoMode,newBandPercent,bytesPerPacket);
-    
+
     error=dc1394_format7_set_packet_size(m_pCamera,videoMode,bytesPerPacket);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-    
+
     error=dc1394_format7_get_packet_size(m_pCamera,videoMode,&bytesPerPacket);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return false; }
-          
+
     if (dc1394_capture_setup(m_pCamera,NUM_DMA_BUFFERS,DC1394_CAPTURE_FLAGS_DEFAULT)!=DC1394_SUCCESS)
     {
         yError("Can't set DC1394_CAPTURE_FLAGS_DEFAULT\n");
@@ -2246,7 +2246,7 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
     }
 
     printf("bytesPerPacket %d\n",bytesPerPacket);
-    
+
     return true;
 }
 
@@ -2315,24 +2315,24 @@ bool CFWCamera_DR2_2::setBrightness(double v)
     if (v<0.0 || v>1.0) return false;
     int feature=YARP_FEATURE_BRIGHTNESS;
     setActiveDC1394(feature,true);
-    setModeDC1394(feature,false);  
-    return setFeatureDC1394(feature,v); 
+    setModeDC1394(feature,false);
+    return setFeatureDC1394(feature,v);
 }
 bool CFWCamera_DR2_2::setExposure(double v)
 {
     if (v<0.0 || v>1.0) return false;
     int feature=YARP_FEATURE_EXPOSURE;
     setActiveDC1394(feature,true);
-    setModeDC1394(feature,false);  
-    return setFeatureDC1394(feature,v); 
+    setModeDC1394(feature,false);
+    return setFeatureDC1394(feature,v);
 }
 bool CFWCamera_DR2_2::setSharpness(double v)
-{ 
+{
     if (v<0.0 || v>1.0) return false;
     int feature=YARP_FEATURE_SHARPNESS;
     setActiveDC1394(feature,true);
-    setModeDC1394(feature,false);  
-    return setFeatureDC1394(feature,v); 
+    setModeDC1394(feature,false);
+    return setFeatureDC1394(feature,v);
 }
 bool CFWCamera_DR2_2::setWhiteBalance(double blue, double red)
 {
@@ -2340,97 +2340,97 @@ bool CFWCamera_DR2_2::setWhiteBalance(double blue, double red)
     int feature=YARP_FEATURE_WHITE_BALANCE;
     setActiveDC1394(feature,true);
     setModeDC1394(feature,false);
-    return setWhiteBalanceDC1394(blue,red); 
+    return setWhiteBalanceDC1394(blue,red);
 }
 bool CFWCamera_DR2_2::setHue(double v)
 {
     if (v<0.0 || v>1.0) return false;
     int feature=YARP_FEATURE_HUE;
     setActiveDC1394(feature,true);
-    setModeDC1394(feature,false);  
-    return setFeatureDC1394(feature,v);  
+    setModeDC1394(feature,false);
+    return setFeatureDC1394(feature,v);
 }
 bool CFWCamera_DR2_2::setSaturation(double v)
 {
     if (v<0.0 || v>1.0) return false;
     int feature=YARP_FEATURE_SATURATION;
     setActiveDC1394(feature,true);
-    setModeDC1394(feature,false);  
-    return setFeatureDC1394(feature,v);  
+    setModeDC1394(feature,false);
+    return setFeatureDC1394(feature,v);
 }
 bool CFWCamera_DR2_2::setGamma(double v)
 {
     if (v<0.0 || v>1.0) return false;
     int feature=YARP_FEATURE_GAMMA;
     setActiveDC1394(feature,true);
-    setModeDC1394(feature,false);  
-    return setFeatureDC1394(feature,v);  
+    setModeDC1394(feature,false);
+    return setFeatureDC1394(feature,v);
 }
 bool CFWCamera_DR2_2::setShutter(double v)
 {
     if (v<0.0 || v>1.0) return false;
     int feature=YARP_FEATURE_SHUTTER;
     setActiveDC1394(feature,true);
-    setModeDC1394(feature,false);  
-    return setFeatureDC1394(feature,v);  
+    setModeDC1394(feature,false);
+    return setFeatureDC1394(feature,v);
 }
 bool CFWCamera_DR2_2::setGain(double v)
 {
     if (v<0.0 || v>1.0) return false;
     int feature=YARP_FEATURE_GAIN;
     setActiveDC1394(feature,true);
-    setModeDC1394(feature,false);  
-    return setFeatureDC1394(feature,v);  
+    setModeDC1394(feature,false);
+    return setFeatureDC1394(feature,v);
 }
 bool CFWCamera_DR2_2::setIris(double v)
 {
     if (v<0.0 || v>1.0) return false;
     int feature=YARP_FEATURE_IRIS;
     setActiveDC1394(feature,true);
-    setModeDC1394(feature,false);  
-    return setFeatureDC1394(feature,v);  
+    setModeDC1394(feature,false);
+    return setFeatureDC1394(feature,v);
 }
 
 // GET
 
 double CFWCamera_DR2_2::getBrightness()
-{ 
+{
     return getFeatureDC1394(TRANSL(YARP_FEATURE_BRIGHTNESS));
 }
 double CFWCamera_DR2_2::getExposure()
-{ 
+{
     return getFeatureDC1394(TRANSL(YARP_FEATURE_EXPOSURE));
-}   
+}
 double CFWCamera_DR2_2::getSharpness()
-{ 
+{
     return getFeatureDC1394(TRANSL(YARP_FEATURE_SHARPNESS));
 }
 bool CFWCamera_DR2_2::getWhiteBalance(double &blue, double &red)
-{ 
-    return getWhiteBalance(blue,red); 
-}   
+{
+    return getWhiteBalance(blue,red);
+}
 double CFWCamera_DR2_2::CFWCamera_DR2_2::getHue()
-{ 
+{
     return getFeatureDC1394(TRANSL(YARP_FEATURE_HUE));
-}   
+}
 double CFWCamera_DR2_2::getSaturation()
-{ 
+{
     return CFWCamera_DR2_2::getFeatureDC1394(TRANSL(YARP_FEATURE_SATURATION));
 }
 double CFWCamera_DR2_2::getGamma()
-{ 
+{
     return getFeatureDC1394(TRANSL(YARP_FEATURE_GAMMA));
 }
 double CFWCamera_DR2_2::getShutter()
-{ 
+{
     return getFeatureDC1394(TRANSL(YARP_FEATURE_SHUTTER));
 }
 double CFWCamera_DR2_2::getGain()
-{ 
+{
     return getFeatureDC1394(TRANSL(YARP_FEATURE_GAIN));
 }
 double CFWCamera_DR2_2::getIris()
-{ 
+{
     return getFeatureDC1394(TRANSL(YARP_FEATURE_IRIS));
 }
 

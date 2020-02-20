@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -100,7 +100,7 @@ class LSSVMCalibrator : public Calibrator
 {
 protected:
     iCub::learningmachine::IMachineLearner *impl;
-    
+
 public:
     LSSVMCalibrator(const std::string &type="lssvm");
     LSSVMCalibrator(const LSSVMCalibrator &calibrator);
@@ -121,8 +121,8 @@ class LocallyWeightedExperts
 protected:
     std::deque<Calibrator*> models;
 
-public:    
-    virtual size_t size() const { return models.size(); }    
+public:
+    virtual size_t size() const { return models.size(); }
     virtual Calibrator *operator[](const size_t i);
     virtual LocallyWeightedExperts &operator<<(Calibrator &c);
     virtual bool retrieve(const yarp::sig::Vector &in, yarp::sig::Vector &out);

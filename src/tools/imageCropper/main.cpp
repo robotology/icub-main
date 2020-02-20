@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.configure(argc, argv);
-    
+
     BufferedPort<ImageOf<PixelRgb> > input;
     BufferedPort<ImageOf<PixelRgb> > out;
 
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 }
 
 void printFrame(int h, int w, int c)
-{   
+{
     if (c%500 == 0)
         printf("Frame #%d %dx%d \n", c, h, w);
 }

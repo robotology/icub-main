@@ -15,15 +15,15 @@
 *
 *
 * \section intro_sec Description
-* 
+*
 * When this tool is connected to a running camera, it provides a visual representation of
 * the energy of the edges in the images. A level indicator bar shows the rate between
 * the actual energy in the image and the maximum energy level detected during the calibration
-* process. The calibration procedure is the following: the focus adjust must be slowly changed 
+* process. The calibration procedure is the following: the focus adjust must be slowly changed
 * from its minimum to its maximum; the maximum of the energy is recorder by the tool during this
 * calibration phase. In the second phase, the focus adjust must be brought back until the maximum
-* is shown by the energy level bar. 
-* 
+* is shown by the energy level bar.
+*
 *
 * \section lib_sec Libraries
 *  - YARP
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
         printf("USAGE: %s /localport /cameraport\n",argv[0]);
         return 1;
     }
-    
+
     Glib::thread_init();
     Gtk::Main kit(argc,argv);
     yarp::os::Network yarp;

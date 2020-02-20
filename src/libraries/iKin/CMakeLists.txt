@@ -24,7 +24,7 @@ if(ICUB_USE_IPOPT)
 
    set(folder_header ${folder_header}
                      include/iCub/iKin/iKinIpOpt.h
-                     include/iCub/iKin/iKinSlv.h)   
+                     include/iCub/iKin/iKinSlv.h)
 endif()
 
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
@@ -49,6 +49,6 @@ endif()
 icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                     DEPENDS ctrlLib
                                     DESTINATION include/iCub/iKin
-                                    FILES ${folder_header})                                    
+                                    FILES ${folder_header})
 
 

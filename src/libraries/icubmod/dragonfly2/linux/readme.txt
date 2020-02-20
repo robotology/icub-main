@@ -9,8 +9,8 @@ wget http://downloads.sourceforge.net/libdc1394/libdc1394-2.1.0.tar.gz?modtime=1
 
 INSTALLATION:
 
-Untar and unzip the package, 
-then in the main folder do 
+Untar and unzip the package,
+then in the main folder do
 the following steps:
 
 ./configure --prefix=/usr

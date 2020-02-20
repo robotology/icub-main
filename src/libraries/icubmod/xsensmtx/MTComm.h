@@ -51,7 +51,7 @@
 //			  - Deleted obsolete functions
 //			  - Changed function getLastErrorCode into getLastDeviceError
 //			  - Changed OpenPort function for compatiblity with Bluetooth ports
-//			  - Added workaround for lockup of USB driver (close function) 
+//			  - Added workaround for lockup of USB driver (close function)
 //			  - Added workaround for clock() problem with read function of USB driver
 //
 // v1.0.2
@@ -254,7 +254,7 @@
 #define MID_REQTRANSMITDELAYACK		(const unsigned char)0xDD
 #define LEN_TRANSMITDELAY			(const unsigned short)2
 #define MID_SETTRANSMITDELAY		(const unsigned char)0xDC
-#define MID_SETTRANSMITDELAYACK		(const unsigned char)0xDD		
+#define MID_SETTRANSMITDELAYACK		(const unsigned char)0xDD
 
 // Xbus Master
 #define MID_REQXMERRORMODE			(const unsigned char)0x82
@@ -267,7 +267,7 @@
 #define MID_REQBUFFERSIZEACK		(const unsigned char)0x85
 #define LEN_BUFFERSIZE				(const unsigned short)2
 #define MID_SETBUFFERSIZE			(const unsigned char)0x84
-#define MID_SETBUFFERSIZEACK		(const unsigned char)0x85			
+#define MID_SETBUFFERSIZEACK		(const unsigned char)0x85
 // End Xbus Master
 
 #define MID_REQHEADING				(const unsigned char)0x82
@@ -313,7 +313,7 @@
 #define MID_REQDATA					(const unsigned char)0x34
 #define MID_REQDATAACK				(const unsigned char)0x35
 
-// MTData defines 
+// MTData defines
 // Length of data blocks in bytes
 #define LEN_RAWDATA					(const unsigned short)20
 #define LEN_CALIBDATA				(const unsigned short)36
@@ -558,7 +558,7 @@
 #define MSG_SETOPMODEACKLEN			5
 #define MSG_REQBAUDRATE				(const unsigned char *)"\xFA\xFF\x18\x00"
 #define MSG_REQBAUDRATELEN			4
-#define MSG_REQBAUDRATEACKLEN		6	
+#define MSG_REQBAUDRATEACKLEN		6
 #define MSG_SETBAUDRATE				(const unsigned char *)"\xFA\xFF\x18\x01"
 #define MSG_SETBAUDRATELEN			5
 #define MSG_SETBAUDRATEACKLEN		5
@@ -831,7 +831,7 @@
 #define SENDRAWSTRING_DEFAULT		1
 #define SENDRAWSTRING_SEND			2
 
-// Timeouts	
+// Timeouts
 #define TO_DEFAULT					500
 #define TO_INIT						250
 #define TO_RETRY					50
@@ -890,12 +890,12 @@
 #define MTRV_ANINPUTALREADYOPEN		12	// File and serial port can not be opened at same time
 #define MTRV_ENDOFFILE				13	// End of file is reached
 #define MTRV_NOINPUTINITIALIZED		14	// No file or serial port opened for reading/writing
-#define MTRV_NOVALIDMODESPECIFIED	15	// No valid outputmode or outputsettings are specified (use 
+#define MTRV_NOVALIDMODESPECIFIED	15	// No valid outputmode or outputsettings are specified (use
 										// mtGetDeviceMode or mtSetMode)
 #define MTRV_INVALIDVALUESPEC		16	// Value specifier does not match value type or not available in data
 #define MTRV_INVALIDFORFILEINPUT	17	// Function is not valid for file based interfaces
 
-class CMTComm  
+class CMTComm
 {
 public:
 	CMTComm();
@@ -923,26 +923,26 @@ public:
 	short   readMessage(unsigned char &mid, unsigned char data[], short &dataLen, unsigned char *bid = NULL);
 	short	readDataMessage(unsigned char data[], short &dataLen);
 	short	readMessageRaw(unsigned char *msgBuffer, short *msgBufferLength);
-	short	writeMessage(const unsigned char mid, const unsigned long dataValue = 0, 
+	short	writeMessage(const unsigned char mid, const unsigned long dataValue = 0,
                          const unsigned char dataValueLen = 0, const unsigned char bid = BID_MASTER);
-	short   writeMessage(const unsigned char mid, const unsigned char data[], 
+	short   writeMessage(const unsigned char mid, const unsigned char data[],
                          const unsigned short &dataLen, const unsigned char bid = BID_MASTER);
 	short	waitForMessage(const unsigned char mid, unsigned char data[] = NULL, short *dataLen = NULL, unsigned char *bid = NULL);
 
 	// Request & set setting functions
 	short	reqSetting(const unsigned char mid, unsigned long &value, const unsigned char bid = BID_MASTER);
-	short	reqSetting(const unsigned char mid, const unsigned char param, unsigned long &value,  
+	short	reqSetting(const unsigned char mid, const unsigned char param, unsigned long &value,
                        const unsigned char bid = BID_MASTER);
 	short	reqSetting(const unsigned char mid, float &value, const unsigned char bid = BID_MASTER);
 	short	reqSetting(const unsigned char mid, const unsigned char param, float &value,
                        const unsigned char bid = BID_MASTER);
-	short	reqSetting(const unsigned char mid, 
+	short	reqSetting(const unsigned char mid,
                        unsigned char data[], short &dataLen, const unsigned char bid = BID_MASTER);
 	short	reqSetting(const unsigned char mid,
                        unsigned char dataIn[], short dataInLen,
-                       unsigned char dataOut[], short &dataOutLen, 
+                       unsigned char dataOut[], short &dataOutLen,
                        const unsigned char bid = BID_MASTER);
-	short	reqSetting(const unsigned char mid, const unsigned char param, 
+	short	reqSetting(const unsigned char mid, const unsigned char param,
                        unsigned char data[], short &dataLen, const unsigned char bid = BID_MASTER);
 	short	setSetting(const unsigned char mid,
                        const unsigned long value, const unsigned short valuelen,
@@ -958,14 +958,14 @@ public:
 	// Data-related functions
 	short	getDeviceMode(unsigned short *numDevices = NULL);
 	short	setDeviceMode(unsigned long OutputMode, unsigned long OutputSettings, const unsigned char bid = BID_MASTER);
-	short	getMode(unsigned long &OutputMode, unsigned long &OutputSettings, unsigned short &dataLength, 
+	short	getMode(unsigned long &OutputMode, unsigned long &OutputSettings, unsigned short &dataLength,
                     const unsigned char bid = BID_MASTER);
 	short	setMode(unsigned long OutputMode, unsigned long OutputSettings, const unsigned char bid = BID_MASTER);
-	short	getValue(const unsigned long valueSpec, unsigned short &value, const unsigned char data[], 
+	short	getValue(const unsigned long valueSpec, unsigned short &value, const unsigned char data[],
                      const unsigned char bid = BID_MT);
-	short	getValue(const unsigned long valueSpec, unsigned short value[], const unsigned char data[], 
+	short	getValue(const unsigned long valueSpec, unsigned short value[], const unsigned char data[],
                      const unsigned char bid = BID_MT);
-	short	getValue(const unsigned long valueSpec, float value[], const unsigned char data[], 
+	short	getValue(const unsigned long valueSpec, float value[], const unsigned char data[],
                      const unsigned char bid = BID_MT);
 
 	// Generic MTComm functions
@@ -974,7 +974,7 @@ public:
 	short	setTimeOut(short timeOutMs);
 	static void	swapEndian(const unsigned char input[], unsigned char output[], const short length);
 	void	calcChecksum(unsigned char *msgBuffer, const int msgBufferLength);
-	bool	checkChecksum(const unsigned char *msgBuffer, const int msgBufferLength);	
+	bool	checkChecksum(const unsigned char *msgBuffer, const int msgBufferLength);
 protected:
 	// member variables
 #ifdef WIN32

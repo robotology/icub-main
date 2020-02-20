@@ -388,7 +388,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
 
     // configure the service: aka, send to the remote board information about the whereabouts of the can boards mais, strain, mtb which offers the service.
-    
+
     switch(_as_type)
     {
         case AS_Type_MAIS:
@@ -430,13 +430,13 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
             entity = eoprot_entity_as_mais;
             ret = sendConfig2Mais();
         } break;
-        
+
         case AS_Type_STRAIN:
         {
             entity = eoprot_entity_as_strain;
             ret = sendConfig2Strain();
         } break;
-        
+
         case AS_Type_INERTIAL_MTB:
         {
             entity = eoprot_entity_as_inertial;
@@ -992,11 +992,11 @@ bool embObjAnalogSensor::getFullscaleValues()
     // {
     //     eOas_arrayofupto12bytes_t fullscale_values = {0};
     //     eo_array_New(6, 2, &fullscale_values); // itemsize = 2, capacity = 6
-    //     eo_nv_Set(nv, &fullscale_values, eobool_true, eo_nv_upd_dontdo);    
+    //     eo_nv_Set(nv, &fullscale_values, eobool_true, eo_nv_upd_dontdo);
     // }
     // moreover, even if properly initted, it is required to set the size to 0 because the size being not 0 is the check of reception of a message.
 
-    
+
 
    // Check initial size of array...  it should be zero.
     bool gotFullScaleValues = false;
@@ -1004,13 +1004,13 @@ bool embObjAnalogSensor::getFullscaleValues()
     EOnv tmpNV;
     EOnv *p_tmpNV = NULL;
     eOas_arrayofupto12bytes_t fullscale_values = {0};
-    // force it to be an empty array of itemsize 2 and capacity 6. 
+    // force it to be an empty array of itemsize 2 and capacity 6.
     // the reason is that the eoprot_tag_as_strain_status_fullscale contains 3 forces and 3 torques each of 2 bytes. see eOas_strain_status_t in EoAnalogSensors.h
     eo_array_New(6, 2, &fullscale_values);
 
     eOprotID32_t protoid_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
 
-        
+
     // at first we impose that the local value of fullscales is zero.
     // we also force the change because this variable is readonly
     const bool overrideROprotection = true;
@@ -1095,13 +1095,13 @@ bool embObjAnalogSensor::getFullscaleValues()
         }
     }
 
-    return true;  
+    return true;
 }
 
 bool embObjAnalogSensor::init()
 {
     yTrace();
-    
+
     // - configure regular rops
     vector<eOprotID32_t> id32v(0);
     eOprotID32_t protoid = eo_prot_ID32dummy;
@@ -1118,7 +1118,7 @@ bool embObjAnalogSensor::init()
             protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_status_the15values);
 
         } break;
-        
+
         case AS_Type_STRAIN:
         {
             servcategory = eomn_serv_category_strain;
@@ -1128,7 +1128,7 @@ bool embObjAnalogSensor::init()
             else
                 protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_uncalibratedvalues);
         } break;
-        
+
         case AS_Type_INERTIAL_MTB:
         {
             servcategory = eomn_serv_category_inertials;
@@ -1168,7 +1168,7 @@ bool embObjAnalogSensor::init()
     }
 
     SystemClock::delaySystem(0.005);  // 5 ms (m.a.a-delay: before it was 0)
-   
+
 
     return true;
 }
@@ -1219,7 +1219,7 @@ int embObjAnalogSensor::read(yarp::sig::Vector &out)
       {
           out[k]=(*analogdata)[k];
       }
-    
+
     return status;
 }
 
@@ -1312,17 +1312,17 @@ bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdat
         {
             ret = fillDatOfMais(rxdata);
         } break;
-        
+
         case AS_Type_STRAIN:
         {
             ret = fillDatOfStrain(rxdata);
         } break;
-        
+
         case AS_Type_INERTIAL_MTB:
         {
             ret = fillDatOfInertial(rxdata);
         } break;
-        
+
         default:
         {
             //i should not be here. if AS_Type_NONE then i should get error in fromConfig function
@@ -1338,8 +1338,8 @@ bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdat
 bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
 {
     // called by  embObjAnalogSensor::fillData() which is called by handle_AS_data() which is called by handle_data() which is called by:
-    // eoprot_fun_UPDT_as_strain_status_calibratedvalues() or eoprot_fun_UPDT_as_strain_status_uncalibratedvalues() 
-    // the void* parameter inside this function is a eOas_arrayofupto12bytes_t*   
+    // eoprot_fun_UPDT_as_strain_status_calibratedvalues() or eoprot_fun_UPDT_as_strain_status_uncalibratedvalues()
+    // the void* parameter inside this function is a eOas_arrayofupto12bytes_t*
     // and can be treated as a EOarray
     EOarray *array = (EOarray*)as_array_raw;
     uint8_t size = eo_array_Size(array);
@@ -1359,12 +1359,12 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
         return false;
     }
 
-  
+
     for(int k=0; k<_channels; k++)
     {
         // Get the kth element of the array as a 2 bytes msg
         char* tmp = (char*) eo_array_At(array, k);
-        // marco.accame: i am nervous about iterating for _channels instead of size of array.... 
+        // marco.accame: i am nervous about iterating for _channels instead of size of array....
         //               thus i add a protection. if k goes beyond size of array, eo_array_At() returns NULL.
         if(NULL != tmp)
         {
@@ -1379,7 +1379,7 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
             }
         }
     }
-     
+
     return true;
 }
 
@@ -1388,7 +1388,7 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
 {
     // called by  embObjAnalogSensor::fillData() which is called by handle_AS_data() which is called by handle_data() which is called by:
     // eoprot_fun_UPDT_as_mais_status_the15values()
-    // the void* parameter inside this function is a eOas_arrayofupto36bytes_t*   
+    // the void* parameter inside this function is a eOas_arrayofupto36bytes_t*
     // and can be treated as a EOarray
 
     EOarray *array = (EOarray*)as_array_raw;
@@ -1433,7 +1433,7 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
     {   // we dont have any info to manage or the received position is WRONG
         return(true);
     }
-   
+
     std::lock_guard<std::mutex> lck(mtx);
 
     double *_buffer = this->analogdata->getBuffer();

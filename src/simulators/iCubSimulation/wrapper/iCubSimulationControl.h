@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick, Giorgio Metta
 * email:    vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu, giorgio.metta@iit.it
@@ -76,7 +76,7 @@ namespace yarp{
 }
 class yarp::dev::iCubSimulationControl :
     public DeviceDriver,
-    //public yarp::os::PeriodicThread, 
+    //public yarp::os::PeriodicThread,
     public IPositionControlRaw,
     public ImplementPositionControl,
     public IVelocityControlRaw,
@@ -124,12 +124,12 @@ class yarp::dev::iCubSimulationControl :
    * object and then open the device driver.
    */
   iCubSimulationControl();
-  
+
   /**
    * Destructor.
    */
   virtual ~iCubSimulationControl();
-  
+
   /**
    * Open the device driver and start communication with the hardware.
    * @param config is a Searchable object containing the list of parameters.
@@ -206,7 +206,7 @@ class yarp::dev::iCubSimulationControl :
   // Velocity Control
   virtual bool velocityMoveRaw(int j, double sp) override;
   virtual bool velocityMoveRaw(const double *sp) override;
-  
+
   // Velocity Control2 Interface
   virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds) override;
   virtual bool getRefVelocityRaw(const int joint, double *ref) override;
@@ -375,7 +375,7 @@ protected:
     LogicalJoints *manager;
 
     std::mutex _mutex;
-    
+
     bool _writerequested;
     bool _noreply;
     bool _opened;
@@ -401,7 +401,7 @@ protected:
     double *current_mot_vel;
     double *estimated_jnt_vel;
     double *estimated_mot_vel;
-    
+
     //current acceleration of the joints
     double *current_jnt_acc;
     double *current_mot_acc;
@@ -425,7 +425,7 @@ protected:
     //next torques of the joints during torque control
     double *next_torques;
     double *ref_torques;
-    
+
     //semaphore access for synch with run function of webots
     int semaphoreNum;
 
@@ -435,15 +435,15 @@ protected:
 
     // velocity
     double vel;
-    
+
     //rate at which the position are updated im ms
     //int positionUpdateRate;
     static const int positionUpdateRate = 100;
 
     //axis remapping lookup-table
-    int *axisMap;                              
+    int *axisMap;
     // angle to encoder conversion factors
-    double *angleToEncoder;                    
+    double *angleToEncoder;
 
     double *zeros;                             /** encoder zeros */
     double *newtonsToSensor;

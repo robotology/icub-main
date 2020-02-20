@@ -25,14 +25,14 @@
 
 
 /** @file       wrappePcap_linux.h
-    @brief      
+    @brief
     @author     valentina.gaggero@iit.it
     @date       03/19/2013
 **/
 
-/** @defgroup 
-     
-    @{        
+/** @defgroup
+
+    @{
  **/
 
 
@@ -45,11 +45,11 @@
 
 // - public #define  --------------------------------------------------------------------------------------------------
 
-  
 
-// - declaration of public user-defined types ------------------------------------------------------------------------- 
 
-    
+// - declaration of public user-defined types -------------------------------------------------------------------------
+
+
 // - declaration of extern public variables, ... but better using use _get/_set instead -------------------------------
 // empty-section
 
@@ -61,8 +61,8 @@ extern uint8_t wrapperPcap_init(char* dev, char*filter_expr);
 extern uint8_t wrapperPcap_loop(int32_t cnt, pcap_handler callback, uint8_t *user);
 
 extern void wrapperPcap_close(void);
-/** @}            
-    end of group  
+/** @}
+    end of group
  **/
 
 

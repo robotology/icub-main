@@ -16,15 +16,15 @@ public:
     virtual LogicalJoint& control(int part, int axis) {
         return *this;
     }
-    
+
     virtual double getAngle() { return 0; }
-    
+
     virtual double getVelocity() { return 0; }
-    
+
     virtual void setControlParameters(double vel, double acc) {}
-    
+
     virtual void setPosition(double target) {}
-    
+
     virtual void setVelocity(double target) {}
 
     virtual bool isValid() {

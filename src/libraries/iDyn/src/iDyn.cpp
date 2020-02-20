@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010-2011 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Serena Ivaldi, Matteo Fumagalli
 * email:   serena.ivaldi@iit.it, matteo.fumagalli@iit.it
@@ -105,7 +105,7 @@ bool iCub::iDyn::asForceMoment(const Vector &w, Vector &f, Vector &m)
     if(w.length()==6)
     {
         f[0]=w[0]; f[1]=w[1]; f[2]=w[2];
-        m[0]=w[3]; m[1]=w[4]; m[2]=w[5];  
+        m[0]=w[3]; m[1]=w[4]; m[2]=w[5];
         return true;
     }
     else
@@ -318,7 +318,7 @@ bool iDynLink::setCOM(const yarp::sig::Vector &_rC)
         rc_proj = rc*RC;
         return true;
     }
-    else    
+    else
     {
         if(verbose)
             yError("iDynLink error, cannot set distance from COM due to wrong sized vector: %d instead of 3 \n",(int)_rC.length());
@@ -339,7 +339,7 @@ void iDynLink::setCOM(const double _rCx, const double _rCy, const double _rCz)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynLink::setForce(const yarp::sig::Vector &_F)
 {
-    if( _F.length()==3) 
+    if( _F.length()==3)
     {
         F = _F;
         return true;
@@ -402,7 +402,7 @@ void iDynLink::zero()
      //~~~~~~~~~~~~~~~~~~~~~~
      //   get methods
      //~~~~~~~~~~~~~~~~~~~~~~
-         
+
 const Matrix&   iDynLink::getInertia()  const   {return I;}
 double  iDynLink::getMass()     const   {return m;}
 double  iDynLink::getIm()       const   {return Im;}
@@ -448,7 +448,7 @@ const Matrix& iDynLink::getH()
     return H_store;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const Vector& iDynLink::getr(bool proj)     
+const Vector& iDynLink::getr(bool proj)
 {
     updateHstore();
     if(proj==false)
@@ -555,7 +555,7 @@ Vector iDynChain::setDAng(const Vector &dq)
         for(unsigned int i=0; i<DOF; i++)
             curr_dq[i]=quickList[hash_dof[i]]->setDAng(dq[i]);
     }
-    else 
+    else
         if(verbose)
             yError("iDynChain error: setVel() failed: %d joint angles needed \n",DOF);
 
@@ -569,12 +569,12 @@ Vector iDynChain::setD2Ang(const Vector &ddq)
 
     curr_ddq.resize(DOF);
 
-    if(ddq.length()>=(int)DOF)      
+    if(ddq.length()>=(int)DOF)
     {
         for(unsigned int i=0; i<DOF; i++)
             curr_ddq[i]=quickList[hash_dof[i]]->setD2Ang(ddq[i]);
     }
-    else 
+    else
         if(verbose)
             yError("iDynChain error: setD2Ang() failed: %d joint angles needed \n",DOF);
 
@@ -645,11 +645,11 @@ double iDynChain::setDAng(const unsigned int i, double _dq)
 {
     if(i<N)
         return allList[i]->setDAng(_dq);
-    else 
-    {   
+    else
+    {
         if(verbose) yError("iDynChain error: setVel() failed due to out of range index: %d >= %d \n",i,N);
         return 0.0;
-        
+
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -657,7 +657,7 @@ double iDynChain::setD2Ang(const unsigned int i, double _ddq)
 {
     if(i<N)
          return allList[i]->setD2Ang(_ddq);
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: setD2Ang() failed due to out of range index: %d >= %d \n",i,N);
         return 0.0;
@@ -668,7 +668,7 @@ double iDynChain::getDAng(const unsigned int i)
 {
     if(i<N)
         return allList[i]->getDAng();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getDAng() failed due to out of range index: %d >= %d \n",i,N);
         return 0.0;
@@ -679,7 +679,7 @@ double iDynChain::getD2Ang(const unsigned int i)
 {
     if(i<N)
         return allList[i]->getD2Ang();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getD2Ang() failed due to out of range index: %d >= %d \n",i,N);
         return 0.0;
@@ -690,106 +690,106 @@ Vector iDynChain::getLinVel(const unsigned int i) const
 {
     if(i<N)
         return allList[i]->getLinVel();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getLinVel() failed due to out of range index: %d >= %d \n",i,N);
         return Vector(0);
-    }   
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynChain::getLinVelCOM(const unsigned int i) const
 {
     if(i<N)
         return allList[i]->getLinVelC();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getLinVelCOM() failed due to out of range index: %d >= %d \n",i,N);
         return Vector(0);
-    }   
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynChain::getLinAcc(const unsigned int i) const
 {
     if(i<N)
         return allList[i]->getLinAcc();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getLinAcc() failed due to out of range index: %d >= %d \n",i,N);
         return Vector(0);
-    }   
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const Vector& iDynChain::getLinAccCOM(const unsigned int i) const
 {
     if(i<N)
         return allList[i]->getLinAccC();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getLinAccCOM() failed due to out of range index: %d >= %d \n",i,N);
         return zero0;
-    }   
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynChain::getAngVel(const unsigned int i) const
 {
     if(i<N)
         return allList[i]->getW();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getAngVel() failed due to out of range index: %d >= %d \n",i,N);
         return Vector(0);
-    }   
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynChain::getAngAcc(const unsigned int i) const
 {
     if(i<N)
         return allList[i]->getdW();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getAngAcc() failed due to out of range index: %d >= %d \n",i,N);
         return Vector(0);
-    }   
+    }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynLink * iDynChain::refLink(const unsigned int i)
 {
     if(i<N)
         return dynamic_cast<iDynLink *>(allList[i]);
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: refLink() failed due to out of range index: %d >= %d \n",i,N);
         return NULL;
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const Vector& iDynChain::getForce(const unsigned int iLink) const       
+const Vector& iDynChain::getForce(const unsigned int iLink) const
 {
     if(iLink<N)
         return allList[iLink]->getForce();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getForce() failed due to out of range index: %d >= %d \n",iLink,N);
         return zero0;
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const Vector& iDynChain::getMoment(const unsigned int iLink) const  
+const Vector& iDynChain::getMoment(const unsigned int iLink) const
 {
     if(iLink<N)
         return allList[iLink]->getMoment();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getMoment() failed due to out of range index: %d >= %d \n",iLink,N);
         return zero0;
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double iDynChain::getTorque(const unsigned int iLink) const 
+double iDynChain::getTorque(const unsigned int iLink) const
 {
     if(iLink<N)
         return allList[iLink]->getTorque();
-    else 
+    else
     {
         if(verbose) yError("iDynChain error: getTorque() failed due to out of range index: %d >= %d \n",iLink,N);
         return 0.0;
@@ -798,13 +798,13 @@ double iDynChain::getTorque(const unsigned int iLink) const
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynChain::getMasses() const
 {
-    Vector ret(N); ret.zero();  
+    Vector ret(N); ret.zero();
     for(unsigned int i=0;i<N;i++)
         ret[i] = allList[i]->getMass();
     return ret;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool iDynChain::setMasses(Vector _m) 
+bool iDynChain::setMasses(Vector _m)
 {
     if(_m.length()==N)
     {
@@ -883,7 +883,7 @@ Vector iDynChain::getTorques() const
 bool iDynChain::setDynamicParameters(const unsigned int i, const double _m, const Matrix &_HC, const Matrix &_I, const double _kr, const double _Fv, const double _Fs, const double _Im)
 {
     if(i<N)
-        return  allList[i]->setDynamicParameters(_m,_HC,_I,_kr,_Fv,_Fs,_Im);    
+        return  allList[i]->setDynamicParameters(_m,_HC,_I,_kr,_Fv,_Fs,_Im);
     else
     {
         if(verbose) yError("iDynChain error: setDynamicParameters() failed due to out of range index: %d >= %d \n",i,N);
@@ -917,7 +917,7 @@ void iDynChain::prepareNewtonEuler(const NewEulMode NewEulMode_s)
 {
     string info;
     info = "[Chain] ";
-    char buffer[60]; 
+    char buffer[60];
     int j = sprintf(buffer,"DOF=%d N=%d",DOF,N);
     info.append(buffer);
 
@@ -927,7 +927,7 @@ void iDynChain::prepareNewtonEuler(const NewEulMode NewEulMode_s)
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Vector &ddp0, const Vector &F0, const Vector &Mu0 )
-{ 
+{
     if( NE == NULL)
     {
         if(verbose)
@@ -940,14 +940,14 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 
     if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3)&&(F0.length()==3)&&(Mu0.length()==3))
     {
-        if(iterateMode_kinematics == FORWARD)   
+        if(iterateMode_kinematics == FORWARD)
             NE->ForwardKinematicFromBase(w0,dw0,ddp0);
-        else 
+        else
             NE->BackwardKinematicFromEnd(w0,dw0,ddp0);
 
-        if(iterateMode_wrench == BACKWARD)  
+        if(iterateMode_wrench == BACKWARD)
             NE->BackwardWrenchFromEnd(F0,Mu0);
-        else 
+        else
             NE->ForwardWrenchFromBase(F0,Mu0);
         return true;
     }
@@ -963,7 +963,7 @@ bool iDynChain::computeNewtonEuler(const Vector &w0, const Vector &dw0, const Ve
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynChain::computeNewtonEuler()
-{ 
+{
     if( NE == NULL)
     {
         if(verbose)
@@ -976,14 +976,14 @@ bool iDynChain::computeNewtonEuler()
         initNewtonEuler();
     }
 
-    if(iterateMode_kinematics == FORWARD)   
+    if(iterateMode_kinematics == FORWARD)
         NE->ForwardKinematicFromBase();
-    else 
+    else
         NE->BackwardKinematicFromEnd();
 
-    if(iterateMode_wrench == BACKWARD)  
+    if(iterateMode_wrench == BACKWARD)
         NE->BackwardWrenchFromEnd();
-    else 
+    else
         NE->ForwardWrenchFromBase();
 
     return true;
@@ -991,17 +991,17 @@ bool iDynChain::computeNewtonEuler()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::computeKinematicNewtonEuler()
 {
-    if(iterateMode_kinematics == FORWARD)   
+    if(iterateMode_kinematics == FORWARD)
         NE->ForwardKinematicFromBase();
-    else 
+    else
         NE->BackwardKinematicFromEnd();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iDynChain::computeWrenchNewtonEuler()
 {
-    if(iterateMode_wrench == BACKWARD)  
+    if(iterateMode_wrench == BACKWARD)
         NE->BackwardWrenchFromEnd();
-    else 
+    else
         NE->ForwardWrenchFromBase();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1018,14 +1018,14 @@ void iDynChain::getKinematicNewtonEuler(Vector &w, Vector &dw, Vector &ddp)
         prepareNewtonEuler();
         initNewtonEuler();
     }
-    
+
     w.resize(3); dw.resize(3); ddp.resize(3); w=dw=ddp=0.0;
-    if(iterateMode_kinematics == FORWARD)   
+    if(iterateMode_kinematics == FORWARD)
     {
         //get kinematics from the end-effector
         NE->getVelAccEnd(w,dw,ddp);
     }
-    else 
+    else
     {
         //get kinematics from the base
         NE->getVelAccBase(w,dw,ddp);
@@ -1069,7 +1069,7 @@ void iDynChain::getFrameWrench(unsigned int i, Vector &F, Vector &Mu)
     NE->getWrenchAfterForward(i,F,Mu);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynChain::getWrenchNewtonEuler(Vector &F, Vector &Mu) 
+void iDynChain::getWrenchNewtonEuler(Vector &F, Vector &Mu)
 {
     if( NE == NULL)
     {
@@ -1083,7 +1083,7 @@ void iDynChain::getWrenchNewtonEuler(Vector &F, Vector &Mu)
         initNewtonEuler();
     }
     F.resize(3); Mu.resize(3); F=Mu=0.0;
-    if(iterateMode_wrench == BACKWARD)          
+    if(iterateMode_wrench == BACKWARD)
     {
         //get wrench from the base
         NE->getWrenchBase(F,Mu);
@@ -1118,14 +1118,14 @@ bool iDynChain::initNewtonEuler(const Vector &w0, const Vector &dw0, const Vecto
     {
         bool ret=true;
 
-        if(iterateMode_kinematics == FORWARD)   
+        if(iterateMode_kinematics == FORWARD)
             ret = ret && NE->initKinematicBase(w0,dw0,ddp0);
-        else 
+        else
             ret = ret && NE->initKinematicEnd(w0,dw0,ddp0);
 
-        if(iterateMode_wrench == BACKWARD)  
+        if(iterateMode_wrench == BACKWARD)
             ret = ret && NE->initWrenchEnd(Fend,Muend);
-        else 
+        else
             ret = ret && NE->initWrenchBase(Fend,Muend);
 
         return ret;
@@ -1155,9 +1155,9 @@ bool iDynChain::initKinematicNewtonEuler(const Vector &w0, const Vector &dw0, co
 
     if((w0.length()==3)&&(dw0.length()==3)&&(ddp0.length()==3))
     {
-        if(iterateMode_kinematics == FORWARD)   
+        if(iterateMode_kinematics == FORWARD)
             return NE->initKinematicBase(w0,dw0,ddp0);
-        else 
+        else
             return NE->initKinematicEnd(w0,dw0,ddp0);
     }
     else
@@ -1185,9 +1185,9 @@ bool iDynChain::initWrenchNewtonEuler(const Vector &Fend, const Vector &Muend)
 
     if((Fend.length()==3)&&(Muend.length()==3))
     {
-        if(iterateMode_wrench == BACKWARD)  
+        if(iterateMode_wrench == BACKWARD)
             return NE->initWrenchEnd(Fend,Muend);
-        else 
+        else
             return NE->initWrenchBase(Fend,Muend);
     }
     else
@@ -1279,12 +1279,12 @@ Vector iDynChain::getForceMomentEndEff() const
     return ret;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynChain::setIterModeKinematic(const ChainIterationMode _iterateMode_kinematics) 
+void iDynChain::setIterModeKinematic(const ChainIterationMode _iterateMode_kinematics)
 {
     iterateMode_kinematics = _iterateMode_kinematics;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void iDynChain::setIterModeWrench(const ChainIterationMode _iterateMode_wrench) 
+void iDynChain::setIterModeWrench(const ChainIterationMode _iterateMode_wrench)
 {
     iterateMode_wrench = _iterateMode_wrench;
 }
@@ -1312,7 +1312,7 @@ void iDynChain::setIterMode(const ChainComputationMode mode)
     case KINBWD_WREFWD: setIterModeKinematic(BACKWARD); setIterModeWrench(FORWARD);
         break;
     default:
-        if(verbose) yError("iDynChain error: in setIterMode() could not set iteration mode due to unexisting mode \n"); 
+        if(verbose) yError("iDynChain error: in setIterMode() could not set iteration mode due to unexisting mode \n");
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1464,8 +1464,8 @@ Matrix iDynChain::computeGeoJacobian(const Matrix &Pn, const Matrix &_H0)
     return J;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynChain::getDenHart(unsigned int i) 
-{ 
+Matrix iDynChain::getDenHart(unsigned int i)
+{
     return allList[i]->getH();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1484,7 +1484,7 @@ Matrix iDynChain::TESTING_computeCOMJacobian(const unsigned int iLink)
     }
 
     //note: all links must be considered! the Jacobian is 6xN, but only the first
-    //iLink columns are filled.  
+    //iLink columns are filled.
     Matrix J(6,iLink+1);
     //Matrix J(6,N); J.zero();
     Matrix Pn,Z;
@@ -1494,9 +1494,9 @@ Matrix iDynChain::TESTING_computeCOMJacobian(const unsigned int iLink)
     intH.push_back(H0);
 
     for (unsigned int j=0; j<=iLink; j++)
-        intH.push_back(intH[j]*allList[j]->getH(true)); 
+        intH.push_back(intH[j]*allList[j]->getH(true));
 
-    Pn=intH[iLink+1]*allList[iLink]->getCOM(); 
+    Pn=intH[iLink+1]*allList[iLink]->getCOM();
 
     for (unsigned int j=0; j<=iLink; j++)
     {
@@ -1614,13 +1614,13 @@ Matrix iDynChain::computeMassMatrix()
         prepareNewtonEuler(DYNAMIC);
     initNewtonEuler();                  // init with zero w, dw, ddp, F, Mu
     NE->ForwardKinematicFromBase();     // propagate zero kinematics from base
-    
+
     for(int i=DOF-1; i>=0; i--) // start from the end of the chain
     {
         l = quickList[hash_dof[i]];
         hash_i = hash[i];
         l->setD2Ang(1.0);       // set i-th accelleration to 1
-        
+
         // forward kinematics from link i-1 to end
         for(unsigned int j=1+hash_i; j<N+1; j++)
             NE->neChain[j]->ForwardKinematics(NE->neChain[j-1]);
@@ -1631,7 +1631,7 @@ Matrix iDynChain::computeMassMatrix()
 
         // copy the joint torques in the i-th column of M
         for(unsigned int j=i; j<DOF; j++)
-            M(j,i) = M(i,j) = NE->neChain[hash[j]]->getMoment(true)[2]; 
+            M(j,i) = M(i,j) = NE->neChain[hash[j]]->getMoment(true)[2];
         //same as quickList[hash_dof[j]]->getTorque(), but in this way you do not need to call computeTorque
 
         l->setD2Ang(0.0);          // set i-th accelleration to 0
@@ -1681,7 +1681,7 @@ Vector iDynChain::computeCcTorques()
     computeNewtonEuler();
     for(unsigned int i=0; i<DOF; i++)
         cc(i) = quickList[hash_dof[i]]->getTorque();
-    
+
     return cc;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1768,7 +1768,7 @@ void iDynLimb::pushLink(iDynLink *pl)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynLimb::fromLinksProperties(const Property &option)
 {
-    dispose();   
+    dispose();
     int i,j;
     Matrix I(3,3);
     Matrix HC(4,4);
@@ -1788,7 +1788,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         j=0;
         H0.zero();
         for(int cnt=0; (cnt<bH0->size()) && (cnt<H0.rows()*H0.cols()); cnt++)
-        {    
+        {
             H0(i,j)=bH0->get(cnt).asDouble();
             if(++j>=H0.cols())
             {
@@ -1830,7 +1830,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         double offset=CTRL_DEG2RAD*bLink.check("offset",Value(0.0)).asDouble();
         double min=CTRL_DEG2RAD*bLink.check("min",Value(0.0)).asDouble();
         double max=CTRL_DEG2RAD*bLink.check("max",Value(0.0)).asDouble();
-        
+
         //dynamic parameters
         //mass
         double mass=bLink.check("mass",Value(0.0)).asDouble();
@@ -1838,9 +1838,9 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         if(Bottle *bI=option.find("Inertia").asList())
         {
             i=0; j=0;
-            I.zero(); 
+            I.zero();
             for(int cnt=0; (cnt<bI->size()) && (cnt<I.rows()*I.cols()); cnt++)
-            {    
+            {
                 I(i,j)=bI->get(cnt).asDouble();
                 if(++j>=I.cols())
                 {
@@ -1853,9 +1853,9 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         if(Bottle *bHC=option.find("H_COM").asList())
         {
             i=0; j=0;
-            HC.zero(); 
+            HC.zero();
             for(int cnt=0; (cnt<bHC->size()) && (cnt<HC.rows()*HC.cols()); cnt++)
-            {    
+            {
                 HC(i,j)=bHC->get(cnt).asDouble();
                 if(++j>=HC.cols())
                 {
@@ -1877,7 +1877,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynLimb &iDynLimb::operator=(const iDynLimb &limb)
 {
-    dispose();  
+    dispose();
     clone(limb);
 
     return *this;
@@ -1928,7 +1928,7 @@ void iDynLimb::dispose()
     for(unsigned int i=0; i<linkList.size(); i++)
         if(linkList[i])
             delete linkList[i];
-    
+
     linkList.clear();
     iDynChain::dispose();
 
@@ -2026,7 +2026,7 @@ bool iCubArmDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
     double min, max;
 
     for (iTorso=0; iTorso<3; iTorso++)
-    {   
+    {
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
@@ -2035,7 +2035,7 @@ bool iCubArmDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
     }
 
     for (iArm=0; iArm<getN()-iTorso; iArm++)
-    {   
+    {
         if (!limArm.getLimits(iArm,&min,&max))
             return false;
 
@@ -2125,7 +2125,7 @@ bool iCubArmNoTorsoDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
     double min, max;
 
     for (iArm=0; iArm<getN(); iArm++)
-    {   
+    {
         if (!limArm.getLimits(iArm,&min,&max))
             return false;
 
@@ -2154,7 +2154,7 @@ iCubTorsoDyn::iCubTorsoDyn()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iCubTorsoDyn::iCubTorsoDyn(const string &_type, const ChainComputationMode _mode)
 {
-    allocate(_type); 
+    allocate(_type);
     setIterMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2169,7 +2169,7 @@ void iCubTorsoDyn::allocate(const string &_type)
 
     // note: H0 here is an identity, whereas in iCubArm and iCubArmDyn is different (0 -1 00; 00 -1 0; 1 000; 0001 by row)
     // the reason is that the torso limb is cursed, and its H0 is different if we consider it a standalone limb attached
-    // to upper body or lower torso nodes. 
+    // to upper body or lower torso nodes.
     // check the RBT matrix linking torso to each node, and set the H0 properly before performing computations involving it
     // like the Jacobians..
     Matrix H0(4,4);
@@ -2192,7 +2192,7 @@ void iCubTorsoDyn::allocate(const string &_type)
     pushLink(new iDynLink(0,          3.120e-2,         0,  -9.758e-7,      4.544e-4,  -4.263e-5,  -3.889e-8,   1.141e-3,   0.000e-0,   1.236e-3,       32.0e-3,         0,     M_PI/2.0,        0.0,   -100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
     pushLink(new iDynLink(0,                 0, +4.296e-5,  -1.360e-3,      5.308e-4,  -1.923e-6,   5.095e-5,   2.031e-3,  -3.849e-7,   1.803e-3,             0,   -5.5e-3,     M_PI/2.0,  -M_PI/2.0,   -100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
     pushLink(new iDynLink(4.81e+0,   -8.102e-5, -1.183e-1,          0,      7.472e-2,  -3.600e-6,  -4.705e-5,   8.145e-2,   4.567e-3,   1.306e-2,       2.31e-3, -193.3e-3,    -M_PI/2.0,  -M_PI/2.0,   -100.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
-#endif  
+#endif
 
 #ifdef NO_JOINT_COSTRAINTS
     this->setAllConstraints(false);
@@ -2210,7 +2210,7 @@ bool iCubTorsoDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
     double min, max;
 
     for (iTorso=0; iTorso<3; iTorso++)
-    {   
+    {
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
@@ -2257,15 +2257,15 @@ void iCubLegDyn::allocate(const string &_type)
     iDynLimb::allocate(_type);
 
     Matrix H0(4,4);
-    H0.eye();       
+    H0.eye();
     setH0(H0);
-    
+
 #ifdef  LEGS_NO_WEIGHT
     if(getType()=="right")
     {
         //create iDynLink from parameters calling
         //pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
-        //                    m            rcx        rcy        rcZ               I1          I2          I3          I4          I5          I6          A            D          alpha     offset                   
+        //                    m            rcx        rcy        rcZ               I1          I2          I3          I4          I5          I6          A            D          alpha     offset
         pushLink(new iDynLink(0,               0,   -0.0782,         0,             0,          0,          0,          0,          0,          0,         0.0,         0.0,    M_PI/2.0,    M_PI/2.0,  -44.0*CTRL_DEG2RAD,  132.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0,               0,         0,   0.03045,             0,          0,          0,          0,          0,          0,         0.0,         0.0,    M_PI/2.0,    M_PI/2.0,  -17.0*CTRL_DEG2RAD,  119.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0,         0.00144,   0.06417,   0.00039,             0,          0,          0,          0,          0,          0,         0.0,      0.2236,   -M_PI/2.0,   -M_PI/2.0,  -79.0*CTRL_DEG2RAD,   79.0*CTRL_DEG2RAD));
@@ -2324,7 +2324,7 @@ bool iCubLegDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
     double min, max;
 
     for (iLeg=0; iLeg<getN(); iLeg++)
-    {   
+    {
         if (!limLeg.getLimits(iLeg,&min,&max))
             return false;
 
@@ -2365,7 +2365,7 @@ void iCubLegDynV2::allocate(const string &_type)
     iDynLimb::allocate(_type);
 
     Matrix H0(4,4);
-    H0.eye();       
+    H0.eye();
     setH0(H0);
 
 #ifdef LEGS_NO_WEIGHT
@@ -2373,7 +2373,7 @@ void iCubLegDynV2::allocate(const string &_type)
     {
         //create iDynLink from parameters calling
         //pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
-        //                    m            rcx        rcy        rcZ                          I1             I2               I3                   I4          I5           I6          A            D        alpha       offset      
+        //                    m            rcx        rcy        rcZ                          I1             I2               I3                   I4          I5           I6          A            D        alpha       offset
         pushLink(new iDynLink(0,   80.4310e-6,  -6.91643e-3,  2.30470e-3,                 0,             0,               0,                   0,           0,          0,      0.0,        0.0,    M_PI/2.0,    M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0,  -31.3229e-6,  -1.09640e-3,  59.8624e-3,                 0,             0,               0,                   0,           0,          0,      0.0,    M_PI/2.0,    M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0,    3.1143e-3,   60.0431e-3,  -1.3437e-3,                 0,             0,               0,                   0,           0,          0,  -0.0009175,    0.234545,   -M_PI/2.0,   -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
@@ -2430,7 +2430,7 @@ void iCubLegDynV2::allocate(const string &_type)
     iDynLimb::allocate(_type);
 
     Matrix H0(4,4);
-    H0.eye();       
+    H0.eye();
     setH0(H0);
 
 #ifdef LEGS_NO_WEIGHT
@@ -2438,7 +2438,7 @@ void iCubLegDynV2::allocate(const string &_type)
     {
         //create iDynLink from parameters calling
         //pushLink(new iDynLink(mass,HC,I,A,D,alfa,offset,min,max));
-        //                    m            rcx        rcy        rcZ                          I1             I2               I3                   I4          I5           I6          A            D        alpha       offset      
+        //                    m            rcx        rcy        rcZ                          I1             I2               I3                   I4          I5           I6          A            D        alpha       offset
         pushLink(new iDynLink(0,   80.4310e-6,  -6.91643e-3,  2.30470e-3,                 0,             0,               0,                   0,           0,          0,      0.0,        0.0,    M_PI/2.0,    M_PI/2.0,  -44.0*CTRL_DEG2RAD,     132.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0,  -31.3229e-6,  -1.09640e-3,  59.8624e-3,                 0,             0,               0,                   0,           0,          0,      0.0,    M_PI/2.0,    M_PI/2.0,  -17.0*CTRL_DEG2RAD,     119.0*CTRL_DEG2RAD));
         pushLink(new iDynLink(0,    3.1143e-3,   60.0431e-3,  -1.3437e-3,                 0,             0,               0,                   0,           0,          0,  -0.0009175,    0.234545,   -M_PI/2.0,   -M_PI/2.0,  -79.0*CTRL_DEG2RAD,      79.0*CTRL_DEG2RAD));
@@ -2501,7 +2501,7 @@ bool iCubLegDynV2::alignJointsBounds(const deque<IControlLimits*> &lim)
     double min, max;
 
     for (iLeg=0; iLeg<getN(); iLeg++)
-    {   
+    {
         if (!limLeg.getLimits(iLeg,&min,&max))
             return false;
 
@@ -2514,7 +2514,7 @@ bool iCubLegDynV2::alignJointsBounds(const deque<IControlLimits*> &lim)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ////////////////////////////////////////
-//      ICUB INERTIAL SENSOR DYN            
+//      ICUB INERTIAL SENSOR DYN
 ////////////////////////////////////////
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2565,7 +2565,7 @@ bool iCubNeckInertialDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     // only the neck: the sensor is in a virtual link
     for (iHead=0; iHead<3; iHead++)
-    {   
+    {
         if (!limHead.getLimits(iHead,&min,&max))
             return false;
 
@@ -2579,7 +2579,7 @@ bool iCubNeckInertialDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 
 
 ////////////////////////////////////////
-//      ICUB INERTIAL SENSOR DYN V2          
+//      ICUB INERTIAL SENSOR DYN V2
 ////////////////////////////////////////
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2644,7 +2644,7 @@ bool iCubNeckInertialDynV2::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     // only the neck: the sensor is in a virtual link
     for (iHead=0; iHead<3; iHead++)
-    {   
+    {
         if (!limHead.getLimits(iHead,&min,&max))
             return false;
 

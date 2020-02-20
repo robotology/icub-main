@@ -95,7 +95,7 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
         return false;
 
     // read stuff from config file
-    
+
     servConfigFTsensor_t serviceConfig;
     if(!GET_privData(mPriv).fromConfig(config, serviceConfig))
         return false;

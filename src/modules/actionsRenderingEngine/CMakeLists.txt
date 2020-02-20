@@ -1,7 +1,7 @@
 # Copyright: 2011 RobotCub Consortium
 # Author: Carlo Ciliberto
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# 
+#
 
 project(actionsRenderingEngine)
 
@@ -14,11 +14,11 @@ set(folder_source src/main.cpp
                   src/MotorThread.cpp
                   src/VisuoThread.cpp)
 
-set(folder_header include/iCub/utils.h 
-                  include/iCub/pointing_far.h 
+set(folder_header include/iCub/utils.h
+                  include/iCub/pointing_far.h
                   include/iCub/VisuoThread.h
                   include/iCub/MotorThread.h)
-                  
+
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${IPOPT_INCLUDE_DIRS})
 

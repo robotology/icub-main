@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -50,7 +50,7 @@ SmithPredictor::~SmithPredictor()
 
 /************************************************************************/
 void SmithPredictor::dealloc()
-{    
+{
     if (I!=NULL)
         delete I;
 
@@ -126,9 +126,9 @@ void SmithPredictor::configure(const Property &options, iKinChain &chain)
             }
 
             i++;
-        }        
-    }    
-    
+        }
+    }
+
     // create integrator
     I=new Integrator(Ts,y0,lim);
 
@@ -155,7 +155,7 @@ void SmithPredictor::configure(const Property &options, iKinChain &chain)
         den[0]=Ts2    + _den_2 + _den_0;
         den[1]=twoTs2 - _den_1;
         den[2]=Ts2    - _den_2 + _den_0;
-        
+
         y01[0]=_y0[i];
         F.push_back(new Filter(num,den,y01));
     }

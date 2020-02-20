@@ -10,15 +10,15 @@
             <port>/iKinGazeCtrl/angles:o</port>
         </dependencies>
 
-        <!--Core module-->  
+        <!--Core module-->
         <module>
             <name>actionsRenderingEngine</name>
-            <stdio>console</stdio>            
+            <stdio>console</stdio>
             <node>node0</node>
             <tag>actionsRenderingEngine</tag>
         </module>
-       
-        <!--Viewers-->  
+
+        <!--Viewers-->
         <module>
             <name>yarpview</name>
             <parameters>--name /actionsRenderingEngine/left/view --x 0 --y 0 --RefreshTime 33 --out /actionsRenderingEngine/left/raw:o</parameters>
@@ -31,8 +31,8 @@
             <node>console</node>
             <tag>viewRight</tag>
         </module>
-        
-        <!--Optional modules-->  
+
+        <!--Optional modules-->
         <module>
                 <name>templatePFTracker</name>
                 <node>node1</node>
@@ -58,7 +58,7 @@
         </module>
 
 
-        <!--Core connections-->  
+        <!--Core connections-->
            <connection>
             <from>/icub/camcalib/left/out</from>
             <to>/actionsRenderingEngine/left/img:i</to>
@@ -89,9 +89,9 @@
             <to>/actionsRenderingEngine/right/raw:i</to>
             <protocol>tcp</protocol>
         </connection>
-           
-           
-        <!-- Particle Filtering connections-->  
+
+
+        <!-- Particle Filtering connections-->
         <connection>
             <from>/icub/camcalib/left/out</from>
             <to>/templatePFTracker/left/image:i</to>
@@ -112,8 +112,8 @@
             <to>/actionsRenderingEngine/tracker:i</to>
             <protocol>udp</protocol>
         </connection>
-        
-        <!--motionCUT connections--> 
+
+        <!--motionCUT connections-->
         <connection>
             <from>/icub/camcalib/left/out</from>
             <to>/motionCUT/left/img:i</to>
@@ -134,8 +134,8 @@
             <to>/actionsRenderingEngine/right/blobs:i</to>
             <protocol>udp</protocol>
         </connection>
-        
-        <!--stereoDisparity connections-->                                 
+
+        <!--stereoDisparity connections-->
            <connection>
              <output>/icub/cam/right</output>
              <input>/stereoDisparity/cam/right:i</input>
@@ -160,7 +160,7 @@
                 <from>/actionsRenderingEngine/wbd:rpc</from>
                 <to>/wholeBodyDynamics/rpc:i</to>
                 <protocol>tcp</protocol>
-           </connection> 
+           </connection>
 
 
 </application>

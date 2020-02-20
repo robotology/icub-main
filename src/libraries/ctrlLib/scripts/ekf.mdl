@@ -673,7 +673,7 @@ Model {
       }
       Name		      "Configuration"
       CurrentDlgPage	      "Solver"
-      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ] 
+      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ]
     }
     Simulink.ConfigSet {
       $ObjectID		      20
@@ -1177,7 +1177,7 @@ Model {
       }
       Name		      "Configuration1"
       CurrentDlgPage	      "Solver"
-      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ] 
+      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ]
     }
     Simulink.ConfigSet {
       $ObjectID		      32
@@ -1681,7 +1681,7 @@ Model {
       }
       Name		      "Configuration2"
       CurrentDlgPage	      "Solver"
-      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ] 
+      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ]
     }
     Simulink.ConfigSet {
       $ObjectID		      44
@@ -2185,7 +2185,7 @@ Model {
       }
       Name		      "Configuration3"
       CurrentDlgPage	      "Solver"
-      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ] 
+      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ]
     }
     Simulink.ConfigSet {
       $ObjectID		      56
@@ -2689,7 +2689,7 @@ Model {
       }
       Name		      "Configuration4"
       CurrentDlgPage	      "Solver"
-      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ] 
+      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ]
     }
     Simulink.ConfigSet {
       $ObjectID		      68
@@ -3193,7 +3193,7 @@ Model {
       }
       Name		      "Configuration5"
       CurrentDlgPage	      "Solver"
-      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ] 
+      ConfigPrmDlgPosition     [ 200, 85, 1080, 715 ]
     }
     Simulink.ConfigSet {
       $ObjectID		      80
@@ -3696,7 +3696,7 @@ Model {
       }
       Name		      "Configuration6"
       CurrentDlgPage	      "Solver"
-      ConfigPrmDlgPosition     [ 46, 84, 990, 765 ] 
+      ConfigPrmDlgPosition     [ 46, 84, 990, 765 ]
     }
     PropName		    "ConfigurationSets"
   }

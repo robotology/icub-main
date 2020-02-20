@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick, Vadim Tikhanoff
 * email:   paulfitz@alum.mit.edu, vadim.tikhanoff@iit.it
@@ -21,13 +21,13 @@
 #include "iCubLogicalJoints.h"
 #include "OdeSdlSimulationBundle.h"
 
-#include "OdeInit.h" 
+#include "OdeInit.h"
 #include "iCub_Sim.h"
 #include "OdeWorldManager.h"
 #include <yarp/os/LogStream.h>
 
 bool OdeSdlSimulationBundle::onBegin() {
-    dInitODE2(0); 
+    dInitODE2(0);
     yDebug("\nODE configuration: %s\n\n", dGetConfiguration());
     return true;
 }
@@ -37,7 +37,7 @@ LogicalJoints *OdeSdlSimulationBundle::createJoints(RobotConfig& config) {
     odeinit.setName(config.getModuleName().c_str());
 
     odeinit.verbosity = config.getVerbosity();
-   
+
     // Set up ODE joints
     return new iCubLogicalJoints(config);
 }

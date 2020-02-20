@@ -154,7 +154,7 @@
         <graph remote="/icub/skin/right_hand" index="59"
                color="#FFFFFF" title="Raw values" size="2" type="lines" />
     </plot>
-    
+
     <!-- Compensated values-->
     <plot gridx="0" gridy="2" hspan="2" vspan="2"
           title="Right Hand Comp - Index"

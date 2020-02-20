@@ -40,7 +40,7 @@ List here dependencies. Often these are just YARP libraries.
 Provide a comprehensive list of the parameters you can pass to the module. For example:
 
 --file mymodule.ini: configuration file to use
- 
+
 \section portsa_sec Ports Accessed
 This is important. List here ports accessed by the module. This is useful to build a list of dependencies between modules.
 
@@ -64,12 +64,12 @@ If your module expect data from a file, say so.
 
 \section out_data_sec Output Data Files
 If your module writes data to a file, say so.
- 
+
 \section conf_file_sec Configuration Files
-If parameters to your module can be passed through a txt file, describe it here. 
+If parameters to your module can be passed through a txt file, describe it here.
 
 For example:
-The module requires a description of the robot through the parameter 
+The module requires a description of the robot through the parameter
 --file.
 
 The file consists in a few sections:
@@ -108,15 +108,15 @@ This file can be edited at src/myModule/main.cpp.
 \endverbatim
 
 A few notes about the content of the Doxygen documentation:
-- Please describe the command line options carefully. It is 
+- Please describe the command line options carefully. It is
 important to specify how to run the module.
-- Please use Doxygen throughout the code. Public classes should be documented. 
+- Please use Doxygen throughout the code. Public classes should be documented.
 Classes for internal usage (of the module) would be a plus.
 - Please use namespaces (see existing iCub code): e.g. iCub::contrib.
 - Your images (JPEG and EPS, see template) should be placed in iCub/src/doc.
-- Please list all input and output ports with description of the data 
-types. For complex protocols and/or message definition you can resort to 
-additional pages (they can be also placed in /iCub/src/doc and referenced 
+- Please list all input and output ports with description of the data
+types. For complex protocols and/or message definition you can resort to
+additional pages (they can be also placed in /iCub/src/doc and referenced
 through \\ref from the module documentation page).
 - Please add links when appropriate by using \\ref PAGENAME.
 - Examples of existing pages can be found in /iCub/src/doc.

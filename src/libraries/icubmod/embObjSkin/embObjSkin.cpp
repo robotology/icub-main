@@ -249,9 +249,9 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 //        yDebug() << "\n Special triangle cfg num " << j;
 //        boardCfgList[j].debugPrint();
 
-        // allow the remote board to process one command at a time. 
+        // allow the remote board to process one command at a time.
         // otherwise the board sends up a diagnostics message telling that it cannot send a message in can bus
-        // we do that by ... sic ... adding a small delay. 
+        // we do that by ... sic ... adding a small delay.
         // the above "yDebug() << "\n Special triangle cfg num " << j;" used to test was probably doing the same effect as a delay of a few ms
         SystemClock::delaySystem(0.010);
 
@@ -382,9 +382,9 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 
         // patch np-th, can2 ... for each address put a bit using
         ethservice.configuration.data.sk.skin.canmapskin[np][1] = 0;
-  
+
         eOcanport_t canport = _skCfg.patchInfoList[np].canport;
-        
+
         int max = _skCfg.patchInfoList[np].cardAddrList.size();
         for(int n=0; n<max; n++)
         {
@@ -809,7 +809,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
     errors.resize(sizeofarray);
 
     for(i=0; i<sizeofarray; i++)
-    {       
+    {
         eOsk_candata_t *candata = (eOsk_candata_t*) eo_array_At(arrayof, i);
 
         if(NULL == candata)

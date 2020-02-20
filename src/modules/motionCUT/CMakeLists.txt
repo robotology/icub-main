@@ -1,7 +1,7 @@
 # Copyright: 2010 RobotCub Consortium
 # Author: Carlo Ciliberto, Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# 
+#
 
 project(motionCUT)
 

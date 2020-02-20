@@ -23,7 +23,7 @@
 #include <SkinDiagnostics.h>
 
 
-class CanBusSkin : public yarp::os::PeriodicThread, public yarp::dev::IAnalogSensor, public yarp::dev::DeviceDriver 
+class CanBusSkin : public yarp::os::PeriodicThread, public yarp::dev::IAnalogSensor, public yarp::dev::DeviceDriver
 {
 private:
 
@@ -38,7 +38,7 @@ private:
     yarp::os::Bottle msg4C_CDCOffsetH;
     yarp::os::Bottle msg4C_TimeL;
     yarp::os::Bottle msg4C_TimeH;
-    
+
     //4E Message
     yarp::os::Bottle msg4E_Shift;
     yarp::os::Bottle msg4E_Shift3_1;
@@ -50,7 +50,7 @@ private:
 
     /** Output port for skin diagnostics. */
     yarp::os::BufferedPort<yarp::sig::Vector> portSkinDiagnosticsOut;
-    
+
     /****************** new cfg **********************************/
     SkinBoardCfgParam       _brdCfg;
     SkinTriangleCfgParam    _triangCfg;
@@ -92,7 +92,7 @@ public:
     virtual bool threadInit();
     virtual void threadRelease();
     virtual void run();
-   
+
     //IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);
     virtual int getState(int ch);
@@ -121,7 +121,7 @@ private:
      * \param i_defaultValue The default value for the given parameter
      */
     void checkParameterListLength(const std::string &i_paramName, yarp::os::Bottle &i_paramList, const int &i_length, const yarp::os::Value &i_defaultValue);
-    
+
     /**
      * Sends the CMD_TACT_SETUP 0x4C CAN message to the MTB boards.
      */

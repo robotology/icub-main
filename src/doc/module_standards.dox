@@ -11,11 +11,11 @@ single executable) should behave:
  - Ideally, a command-line option of "--name /PORT/NAME" should cause
    the module to use "/PORT/NAME" as a stem for all port names.
 
- - Robot name. If you connect automatically to the robot, make sure 
+ - Robot name. If you connect automatically to the robot, make sure
    the name of the ports to which you connect to can be changed from
    the command line. This will make it possible to switch from using the
-   simulator (whose ports are prefixed with /icubSim/...) to the real 
-   robot (whose ports are prefixed with /icub/...). Usually this is 
+   simulator (whose ports are prefixed with /icubSim/...) to the real
+   robot (whose ports are prefixed with /icub/...). Usually this is
    achieved with a --robot parameter.
 
  - Configuration can, at a minimum, be changed by changing configuration
@@ -60,7 +60,7 @@ For console programs, it is useful if modules close cleanly
 either when "^C" is hit, or "quit" is typed, or a quit message
 is received on a port.  With the yarp::os::Module helper class,
 console input is implemented by the runModule() by default.
-Messages sent to a special dedicated port or an existing port 
+Messages sent to a special dedicated port or an existing port
 can be processed for the "quit" message by adding a line like
 the following to the open() method:
 \code
@@ -80,7 +80,7 @@ After that a clean shutdown will be initiated.
 To achieve clean shutdown, two methods yarp::os::Module::interruptModule()
 and yarp::os::Module::close() should be overridden.  The interruptModule()
 method will be called when it is desired that updateModule() finish up.
-When it has indeed finished, close() will be called.  Suitable 
+When it has indeed finished, close() will be called.  Suitable
 method bodies for our MyModule class would be:
 \code
 virtual bool interruptModule() {
@@ -96,12 +96,12 @@ virtual bool close() {
 \endcode
 
 For the module to actually do anything, it should start or stop threads.
-See yarp classes Thread and RateThread for doing this. You can start and stop 
-threads in the open and close methods of the Module class. 
+See yarp classes Thread and RateThread for doing this. You can start and stop
+threads in the open and close methods of the Module class.
 
-If you need to monitor threads or perform other periodic activities you can also 
-override the yarp::os::Module::updateModule() method (but see notes below).  This method 
-gets called repeatedly until it returns false, at which point the whole module shuts 
+If you need to monitor threads or perform other periodic activities you can also
+override the yarp::os::Module::updateModule() method (but see notes below).  This method
+gets called repeatedly until it returns false, at which point the whole module shuts
 down, so it is useful as the main thread:
 
 For example assuming your module started a WorkingThread:
@@ -116,12 +116,12 @@ For example assuming your module started a WorkingThread:
 
 Important notes:
  - updateModule() is not meant to run code with precise timing. If you are writing
-a control loop or an algorithm that require precise scheduling we strongly advise that you 
+a control loop or an algorithm that require precise scheduling we strongly advise that you
 use the RateThread class instead.
 
- - We also suggest that you do not use the Module class to implement directly your algorithms. 
-See the Module as a simple container that simplifies the management of parameters and messages 
-to your executable. Implement algorithms in separate threads monitored by the Module. 
+ - We also suggest that you do not use the Module class to implement directly your algorithms.
+See the Module as a simple container that simplifies the management of parameters and messages
+to your executable. Implement algorithms in separate threads monitored by the Module.
 
 This page can be edited at src/doc/module_standards.dox.
 

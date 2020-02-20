@@ -93,15 +93,15 @@ public:
 
 
 private:
-    
+
     void *mPriv;
-    
+
     std::string getBoardInfo(void) const;
     void cleanup(void);
-    
+
     //debug
     void updateDebugPrints(eOprotID32_t id32, double timestamp, void* rxdata);
-    
+
 };
 
 #endif //__embObjIMU_h__

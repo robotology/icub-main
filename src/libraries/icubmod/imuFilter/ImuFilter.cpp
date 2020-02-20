@@ -107,7 +107,7 @@ void ImuFilter::run() {
 }
 void ImuFilter::threadRelease() {}
 
-//DEVICE DRIVER 
+//DEVICE DRIVER
 bool ImuFilter::open(yarp::os::Searchable& config)
 {
     bool ok = true;

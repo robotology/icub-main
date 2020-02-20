@@ -25,7 +25,7 @@ private:
     yarp::dev::IPositionControl *ipos;
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IControlMode     *imod;
-    
+
     unsigned int part_joints;
     unsigned int control_joints;
     int* control_joints_list;
@@ -35,7 +35,7 @@ private:
     yarp::sig::Vector min_limits;
     yarp::sig::Vector max_limits;
     yarp::sig::Vector encoders;
-    
+
     yarp::sig::Vector targets;
     yarp::sig::Vector prev_targets;
 
@@ -61,7 +61,7 @@ public:
     void go();
 
     void setVel(int i, double vel);
-    void setGain(int i, double gain); 
+    void setGain(int i, double gain);
 
     void run();
     bool threadInit();

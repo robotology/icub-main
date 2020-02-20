@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -42,14 +42,14 @@ void SimConfig::deleteFinder(){
 }
 */
 
-static string configureFinder(int argc, char *argv[], 
+static string configureFinder(int argc, char *argv[],
                               string &moduleName, int & verbosity,
                               ResourceFinder& finder) {
     //string moduleName;
     finder.setVerbose();
     finder.setDefaultConfigFile("simulator.ini");
     finder.setDefaultContext("simConfig");
-    finder.configure(argc, argv); 
+    finder.configure(argc, argv);
 
 
     if ( finder.check( "name" ) ) {
@@ -57,7 +57,7 @@ static string configureFinder(int argc, char *argv[],
         moduleName = "/" + moduleName;
         yInfo() << "NEW MODULE NAME " << moduleName;
     }
-    else {    
+    else {
         moduleName ="/icubSim";
         yInfo()  << "default module name: " << moduleName;
     }
@@ -65,7 +65,7 @@ static string configureFinder(int argc, char *argv[],
         verbosity = finder.find( "verbosity" ).asInt();
         yInfo()  << "custom verbosity level: " << verbosity;
     }
-    else {    
+    else {
         verbosity = 0;
         yInfo() << "default verbosity level: " << verbosity;
     }

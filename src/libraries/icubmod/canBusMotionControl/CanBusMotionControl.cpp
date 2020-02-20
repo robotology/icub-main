@@ -151,7 +151,7 @@ struct BCastElement
 
     inline void update(int value)
     { _value=value; }
-    
+
     inline int getValue()
     { return _value; }
 
@@ -165,7 +165,7 @@ struct BCastElement
                 max=0;
             }
         else
-            {        
+            {
                 dT=_accDt/_count;
                 min=_minDt;
                 max=_maxDt;
@@ -232,7 +232,7 @@ public:
 
     // msg 4b
     short _position_error;
-    short _torque_error;   
+    short _torque_error;
     double _update_r;
 
     // msg 4c
@@ -243,7 +243,7 @@ public:
     // msg 4d (special message)
     double _torque;
     double _update_t;
-    
+
     // msg 6
     unsigned int _canTxError;
     // msg 7
@@ -272,10 +272,10 @@ public:
     bool isCanRxOverrun        () { return _canStatus & 0x40; }
     bool isMainLoopOverflow    () { return _boardStatus & 0x01; }
     bool isOverTempCh1         () { return _boardStatus & 0x02; }
-    bool isOverTempCh2         () { return _boardStatus & 0x04; } 
+    bool isOverTempCh2         () { return _boardStatus & 0x04; }
     bool isTempErrorCh1        () { return _boardStatus & 0x08; }
-    bool isTempErrorCh2        () { return _boardStatus & 0x10; } 
-    void ControlStatus         (int net, short controlmode,short addr) 
+    bool isTempErrorCh2        () { return _boardStatus & 0x10; }
+    void ControlStatus         (int net, short controlmode,short addr)
     {
         switch (controlmode)
         {
@@ -377,12 +377,12 @@ public:
 
     void printMessage(const char *fmt, ...)
     {
-        va_list ap; 
-        va_start(ap, fmt); 
+        va_list ap;
+        va_start(ap, fmt);
 #ifdef WIN32
-        _vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap); 
+        _vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap);
 #else
-        vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap); 
+        vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap);
 #endif
         yDebug("%s", buffer);
         va_end(ap);
@@ -416,7 +416,7 @@ public:
 
     BCastBufferElement *_bcastRecvBuffer;/// local storage for bcast messages.
 
-    unsigned char _my_address;/// 
+    unsigned char _my_address;///
     unsigned char _destinations[CAN_MAX_CARDS];/// list of connected cards (and their addresses).
     int _velShifts[CAN_MAX_CARDS];/// list of velocity shift
     unsigned char *_destInv;
@@ -498,7 +498,7 @@ void TBR_CanBackDoor::onRead(Bottle &b)
             dval[2] = b.get(3).asDouble(); //shoulder 3 yaw
             dval[3] = b.get(4).asDouble(); //elbow
             dval[4] = b.get(5).asDouble(); //wrist pronosupination
-            dval[5] = 0; 
+            dval[5] = 0;
         break;
         case 2: //legs torque message
             dval[0] = b.get(1).asDouble(); //hip pitch
@@ -514,7 +514,7 @@ void TBR_CanBackDoor::onRead(Bottle &b)
             dval[2] = 0;
             dval[3] = 0;
             dval[4] = 0;
-            dval[5] = 0; 
+            dval[5] = 0;
         break;
         case 4:
             dval[0] = b.get(1).asDouble(); //torso yaw (respect gravity)
@@ -522,7 +522,7 @@ void TBR_CanBackDoor::onRead(Bottle &b)
             dval[2] = b.get(3).asDouble(); //torso pitch (front-back movement)
             dval[3] = 0;
             dval[4] = 0;
-            dval[5] = 0; 
+            dval[5] = 0;
         break;
         default:
             yWarning("Got unexpected message on backdoor: %s\n", this->getName().c_str());
@@ -539,7 +539,7 @@ void TBR_CanBackDoor::onRead(Bottle &b)
        for (i=0; i<6; i++)
        {
            double fullScale = ownerSensor->getScaleFactor()[i];
-           if (dval[i] >  fullScale) 
+           if (dval[i] >  fullScale)
            {
                if (Time::now() - curr_time > 2)
                     {
@@ -603,7 +603,7 @@ void TBR_CanBackDoor::onRead(Bottle &b)
        bus->_writeBuffer[0].setLen(6);
        bus->_writeMessages++;
        bus->writePacket();
-       
+
        if (canEchoEnabled)
        {
            if (bus->_readMessages<BUF_SIZE-1 && bus->_echoMessages<BUF_SIZE-1)
@@ -784,7 +784,7 @@ int TBR_AnalogSensor::read(yarp::sig::Vector &out)
         return false;
     }
 
-     if (status!=IAnalogSensor::AS_OK) 
+     if (status!=IAnalogSensor::AS_OK)
     {
         switch (status)
         {
@@ -816,10 +816,10 @@ int TBR_AnalogSensor::read(yarp::sig::Vector &out)
     {
         out[k]=(*data)[k];
     }
-    
+
     return status;
 }
- 
+
 int TBR_AnalogSensor::calibrateChannel(int ch, double v)
 {
     return AS_OK;
@@ -832,7 +832,7 @@ int TBR_AnalogSensor::calibrateSensor()
 
 bool TBR_AnalogSensor::decode16(const unsigned char *msg, int id, double *data)
 {
-    
+
     const char groupId=(id&0x00f);
     int baseIndex=0;
     {
@@ -951,7 +951,7 @@ bool TBR_AnalogSensor::handleAnalog(void *canbus)
             buff=m.getData();
             msgid=m.getId();
             len=m.getLen();
-        
+
             status=IAnalogSensor::AS_OK;
             const char type=((msgid&0x700)>>8);
             const char id=((msgid&0x0f0)>>4);
@@ -968,7 +968,7 @@ bool TBR_AnalogSensor::handleAnalog(void *canbus)
                                 status=IAnalogSensor::AS_OK;
                                 break;
                             case ANALOG_FORMAT_16:
-                                if (len==6) 
+                                if (len==6)
                                 {
                                     ret=decode16(buff, msgid, data->getBuffer());
                                     status=IAnalogSensor::AS_OK;
@@ -1038,7 +1038,7 @@ bool CanBusMotionControlParameters::parsePosPidsGroup_OldFormat(Bottle& pidsGrou
     for(j=0;j<nj;j++)
     {
         char tmp[80];
-        sprintf(tmp, "Pid%d", j); 
+        sprintf(tmp, "Pid%d", j);
 
         Bottle &xtmp = pidsGroup.findGroup(tmp);
         myPid[j].kp = xtmp.get(1).asDouble();
@@ -1066,7 +1066,7 @@ bool CanBusMotionControlParameters::parseTrqPidsGroup_OldFormat(Bottle& pidsGrou
     for(j=0;j<nj;j++)
     {
         char tmp[80];
-        sprintf(tmp, "TPid%d", j); 
+        sprintf(tmp, "TPid%d", j);
 
         Bottle &xtmp = pidsGroup.findGroup(tmp);
         myPid[j].kp = xtmp.get(1).asDouble();
@@ -1103,7 +1103,7 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     if (!validate(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
 
     //optional kff
-    xtmp = pidsGroup.findGroup("kff");         
+    xtmp = pidsGroup.findGroup("kff");
     if (!xtmp.isNull())
     {
         for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
@@ -1179,7 +1179,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 yWarning("canBusMotionControl using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file \n");
                 yWarning("DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION! \n");
                 yWarning("CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue \n");
-                getchar(); 
+                getchar();
             }
         }
     }
@@ -1246,14 +1246,14 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
     _polling_interval=canGroup.check("CanPollingInterval",Value(20),
                                         "polling period").asInt();
-    
+
     _timeout=canGroup.check("CanTimeout",Value(20),"timeout period").asInt();
 
     _txTimeout=canGroup.check("CanTxTimeout", Value(20), "tx timeout").asInt();
     _rxTimeout=canGroup.check("CanRxTimeout", Value(20), "rx timeout").asInt();
 
-    // default values for CanTxQueueSize/CanRxQueueSize should be the 
-    // maximum, difficult to pick a correct value, let the driver 
+    // default values for CanTxQueueSize/CanRxQueueSize should be the
+    // maximum, difficult to pick a correct value, let the driver
     // decide on this
     if (canGroup.check("CanTxQueueSize"))
         _txQueueSize=canGroup.find("CanTxQueueSize").asInt();
@@ -1282,15 +1282,15 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     Bottle xtmp;
     if (!validate(general, xtmp, "AxisMap", "a list of reordered indices for the axes", nj+1))
         return false;
-       
+
     for (i = 1; i < xtmp.size(); i++)
         _axisMap[i-1] = xtmp.get(i).asInt();
-    
+
     if (!validate(general, xtmp, "AxisName", "a list of strings representing the axes names", nj + 1))
-    { 
+    {
         //return false; //this parameter is not yet mandatory
     }
-    //beware: axis name has to be remapped here because they are not set using the toHw() helper function  
+    //beware: axis name has to be remapped here because they are not set using the toHw() helper function
     for (i = 1; i < xtmp.size(); i++)
         _axisName[_axisMap[i-1]] = xtmp.get(i).asString();
 
@@ -1298,7 +1298,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     {
         //return false; //this parameter is not yet mandatory
     }
-    //beware: axis name has to be remapped here because they are not set using the toHw() helper function  
+    //beware: axis name has to be remapped here because they are not set using the toHw() helper function
     for (i = 1; i < xtmp.size(); i++)
         _axisType[_axisMap[i - 1]] = xtmp.get(i).asString();
 
@@ -1306,19 +1306,19 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
 
     int test = xtmp.size();
-    for (i = 1; i < xtmp.size(); i++) 
+    for (i = 1; i < xtmp.size(); i++)
         _angleToEncoder[i-1] = xtmp.get(i).asDouble();
 
     if (!validate_optional(general, xtmp, "Rotor", "a list of scales for the rotor encoders", nj+1))
         {
             yWarning("Rotor: Using default value = 1\n");
-            for(i=1;i<nj+1; i++) 
+            for(i=1;i<nj+1; i++)
                 _rotToEncoder[i-1] = 1.0;
         }
     else
         {
             int test = xtmp.size();
-            for (i = 1; i < xtmp.size(); i++) 
+            for (i = 1; i < xtmp.size(); i++)
                 _rotToEncoder[i-1] = xtmp.get(i).asDouble();
         }
 
@@ -1341,7 +1341,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     if (!validate(general, xtmp, "Zeros","a list of offsets for the zero point", nj+1))
         return false;
 
-    for (i = 1; i < xtmp.size(); i++) 
+    for (i = 1; i < xtmp.size(); i++)
         _zeros[i-1] = xtmp.get(i).asDouble();
 
     if (useRawJointEncoderData)
@@ -1371,19 +1371,19 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     if (!validate_optional(general, xtmp, "TorqueId","a list of associated joint torque sensor ids", nj+1))
     {
         yWarning("TorqueId: Using default value = 0 (disabled)\n");
-        for(i=1;i<nj+1; i++) 
-            _torqueSensorId[i-1] = 0;   
+        for(i=1;i<nj+1; i++)
+            _torqueSensorId[i-1] = 0;
     }
     else
     {
         for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
     }
-    
+
     if (!validate_optional(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", nj+1))
     {
         yWarning("TorqueChan: Using default value = 0 (disabled)\n");
-        for(i=1;i<nj+1; i++) 
-            _torqueSensorChan[i-1] = 0;   
+        for(i=1;i<nj+1; i++)
+            _torqueSensorChan[i-1] = 0;
     }
     else
     {
@@ -1396,7 +1396,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     }
     else
     {
-        for (i = 1; i < xtmp.size(); i++) 
+        for (i = 1; i < xtmp.size(); i++)
         {
                 _maxTorque[i-1] = xtmp.get(i).asInt();
                 _newtonsToSensor[i-1] = double(0x8000)/double(_maxTorque[i-1]);
@@ -1430,13 +1430,13 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 parsePosPidsGroup_OldFormat (posPidsGroup2, nj, _pids);
             }
             else
-            {   
+            {
                 yError () << "no PIDS group found in config file, returning";
                 return false;
             }
         }
     }
-    
+
     ////// TORQUE PIDS
     {
         Bottle trqPidsGroup;
@@ -1456,18 +1456,18 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            }
            else
            {
-                xtmp = trqPidsGroup.findGroup("kbemf"); 
+                xtmp = trqPidsGroup.findGroup("kbemf");
                 {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; }
 
-                xtmp = trqPidsGroup.findGroup("ktau"); 
+                xtmp = trqPidsGroup.findGroup("ktau");
                 {for (j=0;j<nj;j++) this->_ktau[j] = 1; }
-                
-                xtmp = trqPidsGroup.findGroup("filterType"); 
+
+                xtmp = trqPidsGroup.findGroup("filterType");
                 {for (j=0;j<nj;j++) this->_filterType[j] = 3; }
-                
-                xtmp = trqPidsGroup.findGroup("controlUnits"); 
+
+                xtmp = trqPidsGroup.findGroup("controlUnits");
                 this->_torqueControlUnits = MACHINE_UNITS;
-                
+
                 _torqueControlEnabled = true;
            }
         }
@@ -1481,18 +1481,18 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             }
             else
             {
-                xtmp = trqPidsGroup.findGroup("kbemf"); 
+                xtmp = trqPidsGroup.findGroup("kbemf");
                 {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; }
 
-                xtmp = trqPidsGroup.findGroup("ktau"); 
+                xtmp = trqPidsGroup.findGroup("ktau");
                 {for (j=0;j<nj;j++) this->_ktau[j] = 1; }
-            
-                xtmp = trqPidsGroup.findGroup("filterType"); 
+
+                xtmp = trqPidsGroup.findGroup("filterType");
                 {for (j=0;j<nj;j++) this->_filterType[j] = 3; }
-            
-                xtmp = trqPidsGroup.findGroup("controlUnits"); 
+
+                xtmp = trqPidsGroup.findGroup("controlUnits");
                 this->_torqueControlUnits = MACHINE_UNITS;
-            
+
                 _torqueControlEnabled = true;
             }
         }
@@ -1506,27 +1506,27 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            }
            else
            {
-                xtmp = trqControlGroup.findGroup("kbemf"); 
+                xtmp = trqControlGroup.findGroup("kbemf");
                 if (!xtmp.isNull())
                 {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asDouble();}
                 else
                 {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; yWarning ("TORQUE_PIDS: 'kbemf' param missing");}
 
-                xtmp = trqControlGroup.findGroup("ktau"); 
+                xtmp = trqControlGroup.findGroup("ktau");
                 if (!xtmp.isNull())
                 {for (j=0;j<nj;j++) this->_ktau[j] = xtmp.get(j+1).asDouble();}
                 else
                 {for (j=0;j<nj;j++) this->_ktau[j] = 1.0; yWarning ("TORQUE_PIDS: 'ktau' param missing");}
-                
-                xtmp = trqControlGroup.findGroup("filterType"); 
+
+                xtmp = trqControlGroup.findGroup("filterType");
                 if (!xtmp.isNull())
                 {for (j=0;j<nj;j++) this->_filterType[j] = xtmp.get(j+1).asInt();}
                 else
                 {for (j=0;j<nj;j++) this->_filterType[j] = 3; yWarning ("TORQUE_PIDS: 'filterType' param missing");}
-                
-                xtmp = trqControlGroup.findGroup("controlUnits"); 
+
+                xtmp = trqControlGroup.findGroup("controlUnits");
                 if (!xtmp.isNull())
-                {    
+                {
                      if      (xtmp.toString()==std::string("metric_units"))  {this->_torqueControlUnits=METRIC_UNITS;}
                      else if (xtmp.toString()==std::string("machine_units")) {this->_torqueControlUnits=MACHINE_UNITS;}
                      else    {yError() << "invalid controlUnits value"; return false;}
@@ -1536,17 +1536,17 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                      yError ("TORQUE_PIDS: 'controlUnits' param missing. Cannot continue");
                      return false;
                 }
-                
+
                 _torqueControlEnabled = true;
            }
         }
         else
-        {   
+        {
             _torqueControlEnabled=false;
             yWarning("Torque control parameters not found for part %s, skipping...\n", _networkName.c_str());
         }
     }
-    
+
     ////// DEBUG PARAMETERS
     {
         Bottle &debugGroup=p.findGroup("DEBUG_PARAMETERS","DEBUG parameters");
@@ -1664,7 +1664,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     }
     else
     {
-        for(i=1;i<xtmp.size(); i++) 
+        for(i=1;i<xtmp.size(); i++)
         {
             _maxStep[i-1]=xtmp.get(i).asDouble();
             if (_maxStep[i-1]<0)
@@ -1706,7 +1706,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             }
             else
             {
-                for(i=1;i<xtmp.size(); i++) 
+                for(i=1;i<xtmp.size(); i++)
                     _velocityShifts[i-1]=xtmp.get(i).asInt();
             }
 
@@ -1720,7 +1720,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             }
             else
                 {
-                    for(i=1;i<xtmp.size(); i++) 
+                    for(i=1;i<xtmp.size(); i++)
                         _velocityTimeout[i-1]=xtmp.get(i).asInt();
                 }
 
@@ -1734,7 +1734,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 }
             else
                 {
-                    for(i=1;i<xtmp.size(); i++) 
+                    for(i=1;i<xtmp.size(); i++)
                         _estim_params[i-1].jnt_Vel_estimator_shift = xtmp.get(i).asInt();
                 }
 
@@ -1748,7 +1748,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 }
             else
                 {
-                    for(i=1;i<xtmp.size(); i++) 
+                    for(i=1;i<xtmp.size(); i++)
                         _estim_params[i-1].mot_Vel_estimator_shift = xtmp.get(i).asInt();
                 }
 
@@ -1762,7 +1762,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             }
             else
                 {
-                    for(i=1;i<xtmp.size(); i++) 
+                    for(i=1;i<xtmp.size(); i++)
                         _estim_params[i-1].jnt_Acc_estimator_shift = xtmp.get(i).asInt();
                 }
 
@@ -1776,7 +1776,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 }
             else
                 {
-                    for(i=1;i<xtmp.size(); i++) 
+                    for(i=1;i<xtmp.size(); i++)
                         _estim_params[i-1].mot_Acc_estimator_shift = xtmp.get(i).asInt();
                 }
 
@@ -1795,9 +1795,9 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         for(i=1;i<nj+1; i++)
         {
             _estim_params[i-1].jnt_Vel_estimator_shift = 5;   //Default value
-            _estim_params[i-1].jnt_Acc_estimator_shift = 5;   
-            _estim_params[i-1].mot_Vel_estimator_shift = 5;   
-            _estim_params[i-1].mot_Acc_estimator_shift = 5;  
+            _estim_params[i-1].jnt_Acc_estimator_shift = 5;
+            _estim_params[i-1].mot_Vel_estimator_shift = 5;
+            _estim_params[i-1].mot_Acc_estimator_shift = 5;
         }
     }
 
@@ -2049,9 +2049,9 @@ CanBusResources::CanBusResources ()
     requestsQueue=0;
 }
 
-CanBusResources::~CanBusResources () 
-{ 
-    uninitialize(); 
+CanBusResources::~CanBusResources ()
+{
+    uninitialize();
 }
 
 bool CanBusResources::initialize (yarp::os::Searchable &config)
@@ -2333,15 +2333,15 @@ bool CanBusResources::printMessage (const CanMessage& m)
 
     int ret = sprintf (_printBuffer, "class: %2d s: %2x d: %2x c: %1d msg: %3d (%x) ",
         (id & 0x700) >> 8,
-        (id & 0xf0) >> 4, 
-        (id & 0x0f), 
+        (id & 0xf0) >> 4,
+        (id & 0x0f),
         ((data[0] & 0x80)==0)?0:1,
         (data[0] & 0x7f),
         (data[0] & 0x7f));
 
     if (len > 1)
     {
-        ret += sprintf (_printBuffer+ret, "x: "); 
+        ret += sprintf (_printBuffer+ret, "x: ");
     }
 
     unsigned int j;
@@ -2441,7 +2441,7 @@ bool CanBusMotionControl::open (Searchable &config)
 {
     yTrace("Opening CanBusMotionControl Control\n");
     std::string dbg_string = config.toString().c_str();
-    
+
     CanBusResources& res = RES (system_resources);
     CanBusMotionControlParameters p;
     bool ret=false;
@@ -2523,11 +2523,11 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementControlMode::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor, p._ampsToSensor, nullptr,nullptr,nullptr);
     _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
-    
+
     if      (p._torqueControlUnits==CanBusMotionControlParameters::MACHINE_UNITS) {}
     else if (p._torqueControlUnits==CanBusMotionControlParameters::METRIC_UNITS)  {}
     else    {yError() << "Invalid _torqueControlUnits value: %d" << p._torqueControlUnits; return false;}
-    
+
     _axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_limits);
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -2564,13 +2564,13 @@ bool CanBusMotionControl::open (Searchable &config)
     // default initialization for this device driver.
     yarp::os::Time::delay(0.005);
     setPids(VOCAB_PIDTYPE_POSITION, p._pids);
-    
+
     if (p._torqueControlEnabled==true)
     {
         _MCtorqueControlEnabled = true;
         yarp::os::Time::delay(0.005);
         setPids(VOCAB_PIDTYPE_TORQUE, p._tpids);
-        
+
         for (int i=0; i<p._njoints; i++)
         {
             MotorTorqueParameters ps;
@@ -2582,7 +2582,7 @@ bool CanBusMotionControl::open (Searchable &config)
             yarp::os::Time::delay(0.002);
         }
     }
-    
+
     //set the source of the torque measurments to the boards
     #if 0
     for (int j=0; j<p._njoints; j++)
@@ -2626,7 +2626,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     // set limits, on encoders and max current
     for(i = 0; i < p._njoints; i++)
-    {   
+    {
         yarp::os::Time::delay(0.001);
         setVelocityShiftRaw(i, p._velocityShifts[i]);
         yarp::os::Time::delay(0.001);
@@ -2645,7 +2645,7 @@ bool CanBusMotionControl::open (Searchable &config)
                                     p._estim_params[i].mot_Acc_estimator_shift);
     }
     _speedEstimationHelper = new speedEstimationHelper(p._njoints, p._estim_params);
-    
+
     // disable the controller, cards will start with the pid controller & pwm off
     for (i = 0; i < p._njoints; i++)
     {
@@ -2679,7 +2679,7 @@ bool CanBusMotionControl::open (Searchable &config)
     can_protocol_info icub_interface_protocol;
     icub_interface_protocol.major=CAN_PROTOCOL_MAJOR;
     icub_interface_protocol.minor=CAN_PROTOCOL_MINOR;
-    for (int j=0; j<p._njoints; j++) 
+    for (int j=0; j<p._njoints; j++)
     {
         yarp::os::Time::delay(0.001);
         bool b=getFirmwareVersionRaw(j,icub_interface_protocol,&(info[j]));
@@ -2722,10 +2722,10 @@ bool CanBusMotionControl::readFullScaleAnalog(int analog_address, int ch, double
     res._writeBuffer[0].setLen(2);
     res._writeMessages++;
     res.writePacket();
-                
+
     long int timeout=0;
     bool full_scale_read=false;
-    do 
+    do
     {
         res.read();
         for (i=0; i<res._readMessages; i++)
@@ -2747,8 +2747,8 @@ bool CanBusMotionControl::readFullScaleAnalog(int analog_address, int ch, double
     }
     while(timeout<32 && full_scale_read==false);
 
-    if (full_scale_read==false) 
-        {                            
+    if (full_scale_read==false)
+        {
             yError() << "Trying to get fullscale data from sensor: no answer received or message lost (ch:" << ch <<")";
             return false;
         }
@@ -2768,7 +2768,7 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
     if (analogConfig.size()>0)
     {
         yDebug("Initializing analog device %s\n", deviceid.c_str());
-        
+
         analogSensor=new TBR_AnalogSensor;
         analogSensor->setDeviceId(deviceid);
 
@@ -2790,7 +2790,7 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
             rn += config.find("robotName").asString().c_str();
             //rn+=String("/");
             rn+=virtualPortName;
-            analogSensor->backDoor->open(rn.c_str()); 
+            analogSensor->backDoor->open(rn.c_str());
             //RANDAZ_TODO if needed set other parameters to backDoor
         }
 
@@ -2843,10 +2843,10 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
                     {
                         bool b=false;
                         int attempts = 0;
-                        while(attempts<15) 
+                        while(attempts<15)
                         {
                             b = readFullScaleAnalog(analogSensor->getId(), ch, &analogSensor->getScaleFactor()[ch]);
-                            if (b==true) 
+                            if (b==true)
                                 {
                                     if (attempts>0)    yWarning("Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
                                     break;
@@ -2895,7 +2895,7 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
                 }
         }
         else if (analogChannels==6 && analogFormat==16 && isVirtualSensor==true)
-        {    
+        {
             //set the full scale values for a VIRTUAL sensor
             for (int jnt=0; jnt<_axisTorqueHelper->getNumberOfJoints(); jnt++)
             {
@@ -2948,7 +2948,7 @@ void CanBusMotionControl::finiAnalog(TBR_AnalogSensor *analogSensor)
 
                 //debug
 #if 0
-                yDebug("---> Len:%d %x %x %x\n", 
+                yDebug("---> Len:%d %x %x %x\n",
                     res._writeBuffer[0].getLen(),
                     res._writeBuffer[0].getId(),
                     res._writeBuffer[0].getData()[0],
@@ -3021,7 +3021,7 @@ bool CanBusMotionControl::close (void)
             }
             it++;
         }
-        
+
     }
 
     if (threadPool != 0)
@@ -3046,7 +3046,7 @@ bool CanBusMotionControl::close (void)
 }
 
 void CanBusMotionControl::handleBroadcasts()
-{        
+{
     CanBusResources& r = RES (system_resources);
 
     double before=Time::now();
@@ -3160,11 +3160,11 @@ void CanBusMotionControl::handleBroadcasts()
 
                         if (data[0] == ICUBCANPROTO_PER_MC_MSG__PRINT    ||
                             data[0] == ICUBCANPROTO_PER_MC_MSG__PRINT + 128)
-                        {    
+                        {
                             int addr = (((id & 0x0f0) >> 4)-1);
 
                             int string_id = cstring[addr].add_string(&r._readBuffer[i]);
-                            if (string_id != -1) 
+                            if (string_id != -1)
                             {
                                 cstring[addr].print(string_id, canDevName.c_str(), r._networkN);
                                 cstring[addr].clear_string(string_id);
@@ -3266,8 +3266,8 @@ void CanBusMotionControl::handleBroadcasts()
                         r._bcastRecvBuffer[j]._controlmodeStatus=*((char *)(data+1));
                         r._bcastRecvBuffer[j]._address=addr;
                         r._bcastRecvBuffer[j]._canTxError+=*((char *) (data+6));
-                        r._bcastRecvBuffer[j]._canRxError+=*((char *) (data+7));                                    
-    #if 0                    
+                        r._bcastRecvBuffer[j]._canRxError+=*((char *) (data+7));
+    #if 0
                         if (_networkN==1)
                             {
                                 for(int m=0;m<8;m++)
@@ -3281,14 +3281,14 @@ void CanBusMotionControl::handleBroadcasts()
                         if ((bFlag=r._bcastRecvBuffer[j].isOverCurrent())) yError ("%s [%d] board %d OVERCURRENT AXIS 0\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,9,yarp::os::Value((int)bFlag));
 
-                        //r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
+                        //r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr);
                         //if (r._bcastRecvBuffer[j].isFaultOk()) yInfo("Board %d OK\n", addr);
-                    
+
                         logJointData(canDevName.c_str(),_networkN,j,21,yarp::os::Value((int)r._bcastRecvBuffer[j]._controlmodeStatus));
 
                         if ((bFlag=r._bcastRecvBuffer[j].isFaultUndervoltage())) yError ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 0\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,7,yarp::os::Value((int)bFlag));
-                    
+
                         if ((bFlag=r._bcastRecvBuffer[j].isFaultExternal())) yWarning ("%s [%d] board %d FAULT EXT AXIS 0\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,10,yarp::os::Value((int)bFlag));
 
@@ -3298,10 +3298,10 @@ void CanBusMotionControl::handleBroadcasts()
                         if ((bFlag=r._bcastRecvBuffer[j].isHallSensorError())) yError ("%s [%d] board %d HALL SENSOR ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,11,yarp::os::Value((int)bFlag));
 
-                        if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) yError ("%s [%d] board %d ABS ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);        
+                        if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) yError ("%s [%d] board %d ABS ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
 
-                        if ((bFlag=r._bcastRecvBuffer[j].isOpticalEncoderError())) yError ("%s [%d] board %d OPTICAL ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);        
+                        if ((bFlag=r._bcastRecvBuffer[j].isOpticalEncoderError())) yError ("%s [%d] board %d OPTICAL ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
 
                         if ((bFlag=r._bcastRecvBuffer[j].isCanTxOverflow())) yError ("%s [%d] board %d CAN TX OVERFLOW \n", canDevName.c_str(), _networkN, addr);
@@ -3324,7 +3324,7 @@ void CanBusMotionControl::handleBroadcasts()
                         if ((bFlag=r._bcastRecvBuffer[j].isCanRxOverrun())) yError ("%s [%d] board %d CAN RX OVERRUN \n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,17,yarp::os::Value((int)bFlag));
 
-                        if ((bFlag=r._bcastRecvBuffer[j].isMainLoopOverflow())) 
+                        if ((bFlag=r._bcastRecvBuffer[j].isMainLoopOverflow()))
                         {
                             r._bcastRecvBuffer[j]._mainLoopOverflowCounter++;
                             //yWarning ("%s [%d] board %d MAIN LOOP TIME EXCEDEED \n", canDevName.c_str(), _networkN, addr);
@@ -3333,13 +3333,13 @@ void CanBusMotionControl::handleBroadcasts()
 
                         if ((bFlag=r._bcastRecvBuffer[j].isOverTempCh1())) yError ("%s [%d] board %d OVER TEMPERATURE CH 1 \n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,19,yarp::os::Value((int)bFlag));
-                    
+
                         if ((bFlag=r._bcastRecvBuffer[j].isOverTempCh2())) yError ("%s [%d] board %d OVER TEMPERATURE CH 2 \n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j+1,19,yarp::os::Value((int)bFlag));
-                    
+
                         if ((bFlag=r._bcastRecvBuffer[j].isTempErrorCh1())) yError ("%s [%d] board %d ERROR TEMPERATURE CH 1\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j,20,yarp::os::Value((int)bFlag));
-                    
+
                         if ((bFlag=r._bcastRecvBuffer[j].isTempErrorCh2())) yError ("%s [%d] board %d ERROR TEMPERATURE CH 2\n", canDevName.c_str(), _networkN, addr);
                         logJointData(canDevName.c_str(),_networkN,j+1,20,yarp::os::Value((int)bFlag));
 
@@ -3349,33 +3349,33 @@ void CanBusMotionControl::handleBroadcasts()
                         {
                             r._bcastRecvBuffer[j]._address=addr;
                             r._bcastRecvBuffer[j]._axisStatus= *((short *)(data+2));
-                            r._bcastRecvBuffer[j]._update_e = before;    
+                            r._bcastRecvBuffer[j]._update_e = before;
                             r._bcastRecvBuffer[j]._controlmodeStatus=*((char *)(data+3));
-                            // r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr); 
-                        
+                            // r._bcastRecvBuffer[j].ControlStatus(r._networkN, r._bcastRecvBuffer[j]._controlmodeStatus,addr);
+
                             logJointData(canDevName.c_str(),_networkN,j,21,yarp::os::Value((int)r._bcastRecvBuffer[j]._controlmodeStatus));
 
                             if ((bFlag=r._bcastRecvBuffer[j].isOverCurrent())) yError ("%s [%d] board %d OVERCURRENT AXIS 1\n", canDevName.c_str(), _networkN, addr);
                             logJointData(canDevName.c_str(),_networkN,j,9,yarp::os::Value((int)bFlag));
-                        
+
                             if ((bFlag=r._bcastRecvBuffer[j].isFaultUndervoltage())) yError ("%s [%d] board %d FAULT UNDERVOLTAGE AXIS 1\n", canDevName.c_str(), _networkN, addr);
                             logJointData(canDevName.c_str(),_networkN,j,7,yarp::os::Value((int)bFlag));
-                        
+
                             if ((bFlag=r._bcastRecvBuffer[j].isFaultExternal())) yWarning ("%s [%d] board %d FAULT EXT AXIS 1\n", canDevName.c_str(), _networkN, addr);
                             logJointData(canDevName.c_str(),_networkN,j,10,yarp::os::Value((int)bFlag));
-                        
+
                             if ((bFlag=r._bcastRecvBuffer[j].isFaultOverload())) yError ("%s [%d] board %d FAULT OVERLOAD AXIS 1\n", canDevName.c_str(), _networkN, addr);
                             logJointData(canDevName.c_str(),_networkN,j,8,yarp::os::Value((int)bFlag));
-                        
+
                             if ((bFlag=r._bcastRecvBuffer[j].isHallSensorError())) yError ("%s [%d] board %d HALL SENSOR ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
                             logJointData(canDevName.c_str(),_networkN,j,11,yarp::os::Value((int)bFlag));
-                        
+
                             if ((bFlag=r._bcastRecvBuffer[j].isAbsEncoderError())) yError ("%s [%d] board %d ABS ENCODER ERROR AXIS 1\n", canDevName.c_str(), _networkN, addr);
                             logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
 
-                            if ((bFlag=r._bcastRecvBuffer[j].isOpticalEncoderError())) yError ("%s [%d] board %d OPTICAL ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);        
+                            if ((bFlag=r._bcastRecvBuffer[j].isOpticalEncoderError())) yError ("%s [%d] board %d OPTICAL ENCODER ERROR AXIS 0\n", canDevName.c_str(), _networkN, addr);
                             logJointData(canDevName.c_str(),_networkN,j,12,yarp::os::Value((int)bFlag));
-                        }    
+                        }
 
                         break;
 
@@ -3499,7 +3499,7 @@ void CanBusMotionControl:: run()
                                 rq.threadId=(*it).id;
                                 timedout.push_back(rq); //store this request, so we can wake up the waiting thread
                                 it=fifo->erase(it); //it now points to the next element
-                                yError("%s [%d] thread:%d msg:%d joint:%d timed out\n", 
+                                yError("%s [%d] thread:%d msg:%d joint:%d timed out\n",
                                         canDevName.c_str(),
                                         r._networkN,
                                         rq.threadId, rq.msg, rq.joint);
@@ -3531,10 +3531,10 @@ void CanBusMotionControl:: run()
             double avThTime=1000.0*getEstimatedUsed();//averageThreadTime/myCount;
             unsigned int it=getIterations();
             resetStat();
-            yDebug("%s [%d] thread ran %d times, req.dT:%d[ms], av.dT:%.2lf[ms] av.loopT :%.2lf[ms]\n", 
+            yDebug("%s [%d] thread ran %d times, req.dT:%d[ms], av.dT:%.2lf[ms] av.loopT :%.2lf[ms]\n",
                     canDevName.c_str(),
-                    r._networkN, 
-                    it, 
+                    r._networkN,
+                    it,
                     r._polling_interval,
                     avPeriod,
                     avThTime);
@@ -3548,7 +3548,7 @@ void CanBusMotionControl:: run()
                 {
                     CanErrors errors;
                     r.iCanErrors->canGetErrors(errors);
-                    yDebug(" Can Errors --  Device Rx:%u, Device Tx:%u, RxOvf: %u, TxOvf: %u, BusOff: %d -- Driver Fifo Rx:%u, Driver Fifo Tx:%u\n", 
+                    yDebug(" Can Errors --  Device Rx:%u, Device Tx:%u, RxOvf: %u, TxOvf: %u, BusOff: %d -- Driver Fifo Rx:%u, Driver Fifo Tx:%u\n",
                             errors.rxCanErrors,
                             errors.txCanErrors,
                             errors.rxCanFifoOvr,
@@ -3559,7 +3559,7 @@ void CanBusMotionControl:: run()
 
                     logNetworkData(can,r._networkN,5,yarp::os::Value(errors.rxCanErrors));
                     logNetworkData(can,r._networkN,6,yarp::os::Value(errors.txCanErrors));
-                    
+
                     logNetworkData(can,r._networkN,7,yarp::os::Value((int)errors.rxCanFifoOvr));
                     logNetworkData(can,r._networkN,8,yarp::os::Value((int)errors.txCanFifoOvr));
 
@@ -3572,7 +3572,7 @@ void CanBusMotionControl:: run()
                 {
                     yDebug("     Device has no ICanBusErr interface\n");
                 }
-                
+
 
             int j=0;
             /// reports board errors
@@ -3588,7 +3588,7 @@ void CanBusMotionControl:: run()
                     errorF=true;
                     int addr=r._destinations[j/2];
                     yWarning("%s [%d] board %d MAIN LOOP TIME EXCEDEED %d TIMES!\n", canDevName.c_str(), r._networkN, addr,r._bcastRecvBuffer[j]._mainLoopOverflowCounter);
-                    logJointData(canDevName.c_str(),r._networkN,j,18,yarp::os::Value((int)r._bcastRecvBuffer[j]._mainLoopOverflowCounter));                
+                    logJointData(canDevName.c_str(),r._networkN,j,18,yarp::os::Value((int)r._bcastRecvBuffer[j]._mainLoopOverflowCounter));
                     r._bcastRecvBuffer[j]._mainLoopOverflowCounter=0;
                 }
                 else
@@ -3634,9 +3634,9 @@ void CanBusMotionControl:: run()
                     {
                             int ch=j%2;
                             int addr=r._destinations[j/2];
-                            yWarning("%s [%d] have not heard from board %d (channel %d) since %.2lf seconds\n", 
+                            yWarning("%s [%d] have not heard from board %d (channel %d) since %.2lf seconds\n",
                                     canDevName.c_str(),
-                                    r._networkN, 
+                                    r._networkN,
                                     addr, ch, currentRun-lastRecv);
 
                             logJointData(canDevName.c_str(),r._networkN,j,3,yarp::os::Value(1));
@@ -3665,7 +3665,7 @@ void CanBusMotionControl:: run()
                         yWarning("%s [%d] jnt %d, warning encoder latency above threshold (lat: %.2lf [ms], received %d msgs)\n",
                                 canDevName.c_str(),
                                 r._networkN,
-                                j, 
+                                j,
                                 max,
                                 it);
                     }
@@ -3675,7 +3675,7 @@ void CanBusMotionControl:: run()
                         yWarning("%s [%d] joint %d, warning not enough encoder messages (received %d msgs)\n",
                                 canDevName.c_str(),
                                 r._networkN,
-                                j, 
+                                j,
                                 it);
 
                         logJointData(canDevName.c_str(),r._networkN,j,4,yarp::os::Value(1));
@@ -3695,7 +3695,7 @@ void CanBusMotionControl:: run()
                 {
                     unsigned int sat;
                     unsigned int err;
-                    unsigned int tout; 
+                    unsigned int tout;
                     pAnalog->getCounters(sat, err, tout);
 
                     const char* devName=canDevName.c_str();
@@ -3751,10 +3751,10 @@ void CanBusMotionControl:: run()
         }
         else
             yWarning("Got null pointer this is unusual\n");
-            
+
         analogIt++;
     }
- 
+
     //
     // handle class 0 messages - polling messages.
     // (class 0, 8 bits of the ID used to represent the source and destination).
@@ -3762,14 +3762,14 @@ void CanBusMotionControl:: run()
     //
     if (r.requestsQueue->getPending()>0)
         {
-            DEBUG_FUNC("There are %d pending messages, read msgs: %d\n", 
+            DEBUG_FUNC("There are %d pending messages, read msgs: %d\n",
                   r.requestsQueue->getPending(), r._readMessages);
             for (i = 0; i < r._readMessages; i++)
                 {
                     unsigned char *msgData;
 
                     CanMessage& m = r._readBuffer[i];
-                    msgData=m.getData();      
+                    msgData=m.getData();
 
                     if (getClass(m) == 0) /// class 0 msg.
                         {
@@ -3845,7 +3845,7 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
 
 #ifndef icubCanProto_interactionmode_stiff
 #define icubCanProto_interactionmode_stiff 0x00
-#endif 
+#endif
 
 #ifndef icubCanProto_interactionmode_compliant
 #define icubCanProto_interactionmode_compliant 0x01
@@ -3928,7 +3928,7 @@ unsigned char CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
         yError("'VOCAB_CM_CURRENT' error condition detected");
         break;
 
-    case VOCAB_CM_FORCE_IDLE: 
+    case VOCAB_CM_FORCE_IDLE:
         return icubCanProto_controlmode_forceIdle;
         break;
 
@@ -4008,7 +4008,7 @@ int CanBusMotionControl::from_modeint_to_modevocab (unsigned char modeint)
 bool CanBusMotionControl::getControlModeRaw(int j, int *v)
 {
     CanBusResources& r = RES(system_resources);
-    if (!(j>= 0 && j <= r.getJoints())) 
+    if (!(j>= 0 && j <= r.getJoints()))
     {
         *v=VOCAB_CM_UNKNOWN;
         return false;
@@ -4017,11 +4017,11 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
     short s;
 
     DEBUG_FUNC("Calling GET_CONTROL_MODE\n");
-    //_readWord16 (CAN_GET_CONTROL_MODE, j, s); 
+    //_readWord16 (CAN_GET_CONTROL_MODE, j, s);
 
     std::lock_guard<std::mutex> lck(_mutex);
     s = r._bcastRecvBuffer[j]._controlmodeStatus;
-  
+
     *v=from_modeint_to_modevocab(s);
     return true;
 }
@@ -4319,7 +4319,7 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
         //*damp = 0;
         return true;
     }
- 
+
     CanBusResources& r = RES(system_resources);
     _mutex.lock();
     int id;
@@ -4361,7 +4361,7 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
     data=m->getData()+1;
     *stiff= *((short *)(data));
     data+=2;
-    *damp= *((short *)(data)); 
+    *damp= *((short *)(data));
     *damp/= 1000;
 
     t->clear();
@@ -4378,10 +4378,10 @@ bool CanBusMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
 
     std::lock_guard<std::mutex> lck(_mutex);
     // *** This method is implementented reading data without sending/receiving data from the Canbus ***
-    *min_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_min_stiff(); 
-    *max_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_max_stiff(); 
-    *min_damp= _axisImpedanceHelper->getImpedanceLimits()->get_min_damp(); 
-    *max_damp= _axisImpedanceHelper->getImpedanceLimits()->get_max_damp(); 
+    *min_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_min_stiff();
+    *max_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_max_stiff();
+    *min_damp= _axisImpedanceHelper->getImpedanceLimits()->get_min_damp();
+    *max_damp= _axisImpedanceHelper->getImpedanceLimits()->get_max_damp();
     int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
     return true;
 }
@@ -4398,7 +4398,7 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
         //*off = 0;
         return true;
     }
- 
+
     CanBusResources& r = RES(system_resources);
     _mutex.lock();
     int id;
@@ -4543,7 +4543,7 @@ bool CanBusMotionControl::helper_getPosPidRaw (int axis, Pid *out)
     DEBUG_FUNC("Calling CAN_GET_POS_STICTION_PARAMS\n");
     _readWord16Ex (ICUBCANPROTO_POL_MC_CMD__GET_POS_STICTION_PARAMS, axis, s, s2 ); out->stiction_up_val = double(s); out->stiction_down_val = double(s2);
     DEBUG_FUNC("Get PID done!\n");
-    
+
     return true;
 }
 
@@ -4640,15 +4640,15 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
- 
- 
+
+
     if (!ENABLED(axis))
     {
         //@@@ TODO: check here
         // value = 0;
         return true;
     }
- 
+
     _mutex.lock();
     int id;
     if (!threadPool->getId(id))
@@ -4696,9 +4696,9 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
     t->clear();
 
     _mutex.lock();
-    
+
     DEBUG_FUNC("Calling CAN_GET_TORQUE_PIDLIMITS\n");
-   
+
     r.startPacket();
     r.addMessage (id, axis, ICUBCANPROTO_POL_MC_CMD__GET_TORQUE_PIDLIMITS);
     r.writePacket();
@@ -4734,9 +4734,9 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
     t->clear();
 
     _mutex.lock();
-    
+
     DEBUG_FUNC("Calling CAN_GET_MODEL_PARAMS\n");
-   
+
     r.startPacket();
     r.addMessage (id, axis, ICUBCANPROTO_POL_MC_CMD__GET_MODEL_PARAMS);
     r.writePacket();
@@ -4771,7 +4771,7 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
     short s1;
     short s2;
     _readWord16Ex (ICUBCANPROTO_POL_MC_CMD__GET_TORQUE_STICTION_PARAMS, axis, s1, s2 );
-    out->stiction_up_val = double(s1); 
+    out->stiction_up_val = double(s1);
     out->stiction_down_val = double(s2);
 
     return true;
@@ -4896,7 +4896,7 @@ bool CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
         {
             int id = (*it)->getId();
             int cfgId   = _axisTorqueHelper->getTorqueSensorId(k);
-            if (cfgId == 0) 
+            if (cfgId == 0)
             {
                 *min=0;
                 *max=0;
@@ -5060,7 +5060,7 @@ bool CanBusMotionControl::getParameterRaw(int axis, unsigned int type, double* v
         // value = 0;
         return true;
     }
- 
+
     CanBusResources& r = RES(system_resources);
     _mutex.lock();
     int id;
@@ -5117,7 +5117,7 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
         // value = 0;
         return true;
     }
- 
+
     CanBusResources& r = RES(system_resources);
     _mutex.lock();
     int id;
@@ -5191,7 +5191,7 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
         // value = 0;
         return true;
     }
- 
+
     CanBusResources& r = RES(system_resources);
     _mutex.lock();
     int id;
@@ -5373,7 +5373,7 @@ bool CanBusMotionControl::setDebugParameterRaw(int axis, unsigned int index, dou
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    
+
     CanBusResources& r = RES(system_resources);
     std::lock_guard<std::mutex> lck(_mutex);
     r.startPacket();
@@ -5453,7 +5453,7 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         return true;
     }
 
-    if (yarp::os::Time::now()-_last_position_move_time[axis]<MAX_POSITION_MOVE_INTERVAL) 
+    if (yarp::os::Time::now()-_last_position_move_time[axis]<MAX_POSITION_MOVE_INTERVAL)
     {
         yWarning() << "Performance warning: You are using positionMove commands at high rate (<"<< MAX_POSITION_MOVE_INTERVAL*1000.0 <<" ms). Probably position control mode is not the right control mode to use.";
     }
@@ -5632,8 +5632,8 @@ bool CanBusMotionControl::setRefAccelerationRaw(int axis, double acc)
         return false;
 
     /*
-    *Acceleration is expressed in imp/s^2. 
-    *We divided it by 1000^2 to express 
+    *Acceleration is expressed in imp/s^2.
+    *We divided it by 1000^2 to express
     *it in imp/ms^2
     */
     acc /= 1000.0;
@@ -5652,8 +5652,8 @@ bool CanBusMotionControl::setRefAccelerationsRaw(const double *accs)
     for (i = 0; i < r.getJoints(); i++)
     {
         /*
-        *Acceleration is expressed in imp/s^2. 
-        *We divided it by 1000^2 to express 
+        *Acceleration is expressed in imp/s^2.
+        *We divided it by 1000^2 to express
         *it in imp/ms^2
         */
         double acc;
@@ -5815,7 +5815,7 @@ bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParamete
 
     param->bemf = *((short *)(m->getData()+1)); //1&2
     param->bemf_scale = 0;
-    param->ktau = *((short *)(m->getData()+4)); //4&5 
+    param->ktau = *((short *)(m->getData()+4)); //4&5
     param->ktau_scale = 0;
     //7 dummy
     return true;
@@ -5899,11 +5899,11 @@ bool CanBusMotionControl::stopRaw()
     {
        ret &= _writeNone  (ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
     }
-    
+
     return ret;
 }
 
-/// cmd is an array of double of length njoints specifying speed 
+/// cmd is an array of double of length njoints specifying speed
 /// for each axis
 bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
 {
@@ -5914,7 +5914,7 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     getControlModeRaw(axis, &mode);
     if (mode != VOCAB_CM_VELOCITY &&
         mode != VOCAB_CM_MIXED    &&
-        mode != VOCAB_CM_IMPEDANCE_VEL && 
+        mode != VOCAB_CM_IMPEDANCE_VEL &&
         mode != VOCAB_CM_IDLE)
     {
         yError() << "velocityMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_VELOCITY mode";
@@ -5949,7 +5949,7 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     return true;
 }
 
-/// cmd is an array of double of length njoints specifying speed 
+/// cmd is an array of double of length njoints specifying speed
 /// for each axis
 bool CanBusMotionControl::velocityMoveRaw (const double *sp)
 {
@@ -6014,7 +6014,7 @@ bool CanBusMotionControl::getEncodersRaw(double *v)
     int i;
 
     std::lock_guard<std::mutex> lck(_mutex);
-    
+
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
         v[i] = double(r._bcastRecvBuffer[i]._position_joint._value);
@@ -6123,7 +6123,7 @@ bool CanBusMotionControl::getMotorEncodersRaw(double *v)
     int i;
 
     std::lock_guard<std::mutex> lck(_mutex);
-    
+
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
         v[i] = double(r._bcastRecvBuffer[i]._position_rotor._value);
@@ -6152,7 +6152,7 @@ bool CanBusMotionControl::getMotorEncodersTimedRaw(double *v, double *t)
     int i;
 
     std::lock_guard<std::mutex> lck(_mutex);
-    
+
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
         v[i] = double(r._bcastRecvBuffer[i]._position_rotor._value);
@@ -6302,7 +6302,7 @@ bool CanBusMotionControl::getMaxCurrentRaw(int axis, double* v)
     //int tmp=0;
     //v=0;
     //bool ret = _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_CURRENT_LIMIT, axis, tmp);
-    //if (ret) *v=tmp; 
+    //if (ret) *v=tmp;
     //return ret;
 }
 
@@ -6388,7 +6388,7 @@ bool CanBusMotionControl::setSpeedEstimatorShiftRaw(int axis, double jnt_speed, 
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
-    
+
     CanBusResources& r = RES(system_resources);
     std::lock_guard<std::mutex> lck(_mutex);
     r.startPacket();
@@ -6420,7 +6420,7 @@ bool CanBusMotionControl::calibrationDoneRaw(int axis)
     if (!_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_CONTROL_MODE, axis, value))
     {
         return false;
-    } 
+    }
 
     if (!(value & 0xf0))
     {
@@ -6446,9 +6446,9 @@ bool CanBusMotionControl::getAmpStatusRaw(int *st)
     {
     //  WARNING
     //    Line changed with no idea about what it should do
-    //    st[i] = short(r._bcastRecvBuffer[i]._fault);  
-        st[i] = short(r._bcastRecvBuffer[i]._axisStatus);  
-   
+    //    st[i] = short(r._bcastRecvBuffer[i]._fault);
+        st[i] = short(r._bcastRecvBuffer[i]._axisStatus);
+
     }
     return true;
 }
@@ -6458,7 +6458,7 @@ bool CanBusMotionControl::getAmpStatusRaw(int j, int *st)
     CanBusResources& r = RES(system_resources);
 
     std::lock_guard<std::mutex> lck(_mutex);
-    st[j] = short(r._bcastRecvBuffer[j]._axisStatus);  
+    st[j] = short(r._bcastRecvBuffer[j]._axisStatus);
     return true;
 }
 
@@ -6661,7 +6661,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
         return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
     }
     else
-    { 
+    {
         yWarning("skipping setPosition() on %s, joint %d (req: %.1f curr %.1f) \n", networkName.c_str() , j,
         _axisPositionDirectHelper->posE2A(ref, j),
         _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, j));
@@ -6921,7 +6921,7 @@ bool CanBusMotionControl::_writeByteWords16 (int msg, int axis, unsigned char va
 
 /// READ functions
 /// sends a message and gets a dword back.
-/// 
+///
 bool CanBusMotionControl::_readDWord (int msg, int axis, int& value)
 {
     CanBusResources& r = RES(system_resources);
@@ -7274,7 +7274,7 @@ yarp::dev::DeviceDriver *CanBusMotionControl::createDevice(yarp::os::Searchable&
     std::string deviceType=config.find("device").asString().c_str();
     std::string deviceId=config.find("deviceid").asString().c_str();
 
-    
+
     yDebug() <<"CanBusMotionControl::createDevice() looking for device " << deviceType << " with id " << deviceId;
 
     if (deviceType=="analog")
@@ -7282,11 +7282,11 @@ yarp::dev::DeviceDriver *CanBusMotionControl::createDevice(yarp::os::Searchable&
         std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
         while(it!=analogSensors.end())
         {
-            yDebug() <<"CanBusMotionControl::createDevice() inspecting "<< (*it)->getDeviceId(); 
+            yDebug() <<"CanBusMotionControl::createDevice() inspecting "<< (*it)->getDeviceId();
 
             if ((*it)->getDeviceId()==deviceId)
             {
-                yDebug() <<"CanBusMotionControl::createDevice() found valid device"; 
+                yDebug() <<"CanBusMotionControl::createDevice() found valid device";
                 return (*it);
             }
             it++;
@@ -7306,7 +7306,7 @@ bool CanBusMotionControl::getEncodersTimedRaw(double *v, double *t)
     int i;
 
     std::lock_guard<std::mutex> lck(_mutex);
-    
+
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
         v[i] = double(r._bcastRecvBuffer[i]._position_joint._value);

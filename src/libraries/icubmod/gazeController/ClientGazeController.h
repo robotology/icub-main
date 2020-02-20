@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -137,7 +137,7 @@ public:
     bool getRightEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool getHeadPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool get2DPixel(const int camSel, const yarp::sig::Vector &x, yarp::sig::Vector &px);
-    bool get3DPoint(const int camSel, const yarp::sig::Vector &px, const double z, yarp::sig::Vector &x);    
+    bool get3DPoint(const int camSel, const yarp::sig::Vector &px, const double z, yarp::sig::Vector &x);
     bool get3DPointOnPlane(const int camSel, const yarp::sig::Vector &px, const yarp::sig::Vector &plane, yarp::sig::Vector &x);
     bool get3DPointFromAngles(const int mode, const yarp::sig::Vector &ang, yarp::sig::Vector &x);
     bool getAnglesFrom3DPoint(const yarp::sig::Vector &x, yarp::sig::Vector &ang);

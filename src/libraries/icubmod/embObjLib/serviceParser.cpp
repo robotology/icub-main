@@ -453,7 +453,7 @@ bool ServiceParser::convert(std::string const &fromstring, eObrd_location_t &loc
     {
         //Add here parsing for local port (both PWM port (P7, P8, etc and "index_proximal"for hand))
         //in xml file we have: LOC:P7 or LOC:index_proximal
-        
+
     }
     else
     {
@@ -722,7 +722,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             Bottle b_PROPERTIES_SENSORS_boardtype;
             if(type == eomn_serv_AS_inertials3)
             {
-                
+
                 b_PROPERTIES_SENSORS_boardtype = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
                 if(b_PROPERTIES_SENSORS_boardtype.isNull())
                 {
@@ -1389,29 +1389,29 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
         yError() << "ServiceParser::parseService() has received an invalid SERVICE group for strain";
         return false;
     }
-    
+
     // now we extract values ... so far we dont make many checks ... we just assume the vector<> are of size 1.
     servCanBoard_t thestrain_props = as_service.properties.canboards.at(0);
     servAnalogSensor_t thestrain_sensor = as_service.settings.enabledsensors.at(0);
-    
+
     // first check we do is about thestrain_props.type
     if(eobrd_cantype_strain2 != thestrain_props.type)
     {
         yError() << "ServiceParser::parseService() for embObjFTsensor has detected an invalid type of board. it should be a eobrd_strain2 but is a:" << eoboards_type2string2(eoboards_cantype2type(thestrain_props.type), eobool_false);
         return false;
     }
-    
+
     ftconfig.acquisitionrate = as_service.settings.acquisitionrate;
     ftconfig.useCalibration = as_strain_settings.useCalibration;
     ftconfig.nameOfStrain = thestrain_sensor.id;
-    
+
     memset(&ftconfig.ethservice.configuration, 0, sizeof(ftconfig.ethservice.configuration));
-    
+
     ftconfig.ethservice.configuration.type = eomn_serv_AS_strain;
     ftconfig.ethservice.configuration.data.as.strain.boardtype.type = thestrain_props.type;
     memcpy(&ftconfig.ethservice.configuration.data.as.strain.boardtype.protocol, &thestrain_props.protocol, sizeof(eObrd_protocolversion_t));
     memcpy(&ftconfig.ethservice.configuration.data.as.strain.boardtype.firmware, &thestrain_props.firmware, sizeof(eObrd_firmwareversion_t));
-    
+
     // second check we do is about thestrain_sensor.location
     if(eobrd_place_can != thestrain_sensor.location.any.place)
     {
@@ -1421,9 +1421,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     ftconfig.ethservice.configuration.data.as.strain.canloc.port = thestrain_sensor.location.can.port;
     ftconfig.ethservice.configuration.data.as.strain.canloc.addr = thestrain_sensor.location.can.addr;
     ftconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eobrd_caninsideindex_none;
-    
-    
-    
+
+
+
     Bottle b_SERVICE(config.findGroup("SERVICE")); //b_SERVICE and b_SETTINGS could not be null, otherwise parseService function would have returned false
     Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
     Bottle b_SETTINGS_temp = Bottle(b_SETTINGS.findGroup("temperature-acquisitionRate"));
@@ -1437,7 +1437,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
         ftconfig.temperatureAcquisitionrate = b_SETTINGS_temp.get(1).asInt();
         //TODO: chek that the acquisition rate is inside a reasonable range
     }
-    
+
     return true;
 }
 
@@ -1508,10 +1508,10 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
         yError() << "ServiceParser::parseService(IMU) has received an invalid SERVICE group for IMU";
         return false;
     }
-    
-    
+
+
     //check the num of type of boards. At max we have 4 board type  (see eOas_inertials3_boardinfos_maxnumber)
-    
+
     if(as_service.properties.canboards.size() > eOas_inertials3_boardinfos_maxnumber)
     {
         yError() << "ServiceParser::parseService(IMU): too many type board info are configured. The max num is " << eOas_inertials3_boardinfos_maxnumber;
@@ -1520,18 +1520,18 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
 
     //reset configuration service
     memset(&imuconfig.ethservice.configuration, 0, sizeof(imuconfig.ethservice.configuration));
-    
+
     //set type of service
     imuconfig.ethservice.configuration.type = eomn_serv_AS_inertials3;
-    
-    
-    //get acquisition rate 
+
+
+    //get acquisition rate
     imuconfig.acquisitionrate = as_service.settings.acquisitionrate;
-    
+
     //get enabled sensor and fill canboard array. Note that we get only the enabled sensor, not all configured sensors !!!
-    
+
     imuconfig.inertials.resize(0);
-    
+
     eOas_inertial3_setof_boardinfos_t * boardInfoSet_ptr = &imuconfig.ethservice.configuration.data.as.inertial3.setofboardinfos;
     eOresult_t res = eoas_inertial3_setof_boardinfos_clear(boardInfoSet_ptr);
     if(res != eores_OK)
@@ -1539,7 +1539,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
         yError() << "ServiceParser::parseService(IMU). Error in eoas_inertial3_setof_boardinfos_clear()";
         return false;
     }
-    
+
     EOarray* array = eo_array_New(eOas_inertials3_descriptors_maxnumber, sizeof(eOas_inertial3_descriptor_t), &imuconfig.ethservice.configuration.data.as.inertial3.arrayofdescriptor);
     for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
     {
@@ -1547,18 +1547,18 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
         eOas_sensor_t type = sensor.type;
 
         //TODO: temperature???
-        if( (eoas_imu_acc != type) && (eoas_imu_mag != type) && (eoas_imu_gyr != type) && (eoas_imu_eul != type) && 
+        if( (eoas_imu_acc != type) && (eoas_imu_mag != type) && (eoas_imu_gyr != type) && (eoas_imu_eul != type) &&
             (eoas_imu_qua != type) && (eoas_imu_lia != type) && (eoas_imu_grv != type) && (eoas_imu_status != type) )
         {
             yWarning() << "ServiceParser::parseService() has detected a wrong inertial sensor:" << eoas_sensor2string(type) << " ...  we drop it";
             continue;
         }
         // if ok, i copy it inside ...
-        
+
         eOas_inertial3_descriptor_t des = {0};
         des.typeofsensor = type;
         memcpy(&des.on, &sensor.location, sizeof(eObrd_location_t));
-        
+
         const eObrd_info_t *boardInfo_ptr =  eoas_inertial3_setof_boardinfos_find(boardInfoSet_ptr, eoboards_type2cantype(sensor.boardtype));
         if(nullptr == boardInfo_ptr)//if I did not already insert the borad info with type == sensor.boardtype, now I insert it
         {
@@ -1590,13 +1590,13 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
             }
         }
         des.typeofboard = sensor.boardtype;
-        
+
         eo_array_PushBack(array, &des);
         imuconfig.inertials.push_back(des);
         imuconfig.id.push_back(sensor.id);
     }
-    
-    
+
+
     return true;
 }
 
@@ -2017,12 +2017,12 @@ bool ServiceParser::parse_actuator_port(std::string const &fromstring, eObrd_eth
                     ret = false;
                 }
             }
-            
+
             if(false == ret)
             {
                 return ret;
             }
-            
+
             if(eomc_act_foc == type)
             {
                 // copy into todes.foc
@@ -2261,7 +2261,7 @@ bool ServiceParser::convert(std::string const &fromstring, eOmc_encoder_t &toenc
 bool ServiceParser::check_motion(Searchable &config)
 {
     bool formaterror = false;
-    
+
     // complete format is SERVICE{ type, PROPERTIES{ ETHBOARD, CANBOARDS, MC4, MAIS, CONTROLLER, JOINTMAPPING, JOINTSETS } }
     // so far, there is no SETTINGS{}.
     // then, some groups are not present for some kind of SERVICE.type
@@ -3360,7 +3360,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
     // ...
 
     mcconfig.ethservice.configuration.type = mc_service.type;
-    
+
     switch(mc_service.type)
     {
         case eomn_serv_MC_foc:
@@ -3386,7 +3386,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
                 jomodes.actuator.foc.canloc.port = mc_service.properties.actuators[i].desc.foc.canloc.port;
                 jomodes.actuator.foc.canloc.addr = mc_service.properties.actuators[i].desc.foc.canloc.addr;
                 jomodes.actuator.foc.canloc.insideindex = eobrd_caninsideindex_first;
-            
+
                 // 2. encoder1 is ...
                 jomodes.encoder1.type = mc_service.properties.encoder1s[i].desc.type;
                 jomodes.encoder1.port = mc_service.properties.encoder1s[i].desc.port;
@@ -3411,7 +3411,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             ret = true;
 
         } break;
-        
+
         case eomn_serv_MC_mc4:
         {
             eOmn_serv_config_data_mc_mc4_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4_based);
@@ -3474,7 +3474,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             ret = true;
 
         } break;
-        
+
         case eomn_serv_MC_mc4plus:
         {
             eOmn_serv_config_data_mc_mc4plus_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plus_based);
@@ -3513,7 +3513,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             ret = true;
 
         } break;
-        
+
         case eomn_serv_MC_mc4plusmais:
         {
             eOmn_serv_config_data_mc_mc4plusmais_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plusmais_based);
@@ -3632,7 +3632,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             ret = false;
         } break;
     }
-    
+
 
     return ret;
 }

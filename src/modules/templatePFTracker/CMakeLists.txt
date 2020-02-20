@@ -1,7 +1,7 @@
 # Copyright: 2009 RobotCub Consortium
 # Author: Vadim Tikhanoff
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# 
+#
 
 project(templatePFTracker)
 

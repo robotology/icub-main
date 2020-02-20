@@ -1,6 +1,6 @@
 // -*- Mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo
  * email:  marco.randazzo@iit.it
@@ -45,7 +45,7 @@
 #ifndef PF_CAN
 #define PF_CAN 29
 #endif
- 
+
 #ifndef AF_CAN
 #define AF_CAN PF_CAN
 #endif
@@ -65,11 +65,11 @@ SocketCan::SocketCan()
 
 SocketCan::~SocketCan()
 {
- 
+
 }
 
 bool SocketCan::canSetBaudRate(unsigned int rate)
-{ 
+{
     //not yet implemented
     return true;
 }
@@ -88,12 +88,12 @@ bool SocketCan::canIdAdd(unsigned int id)
 
 bool SocketCan::canIdDelete(unsigned int id)
 {
-    //not yet implemented 
+    //not yet implemented
     return true;
 }
 
 bool SocketCan::canRead(CanBuffer &msgs,
-                     unsigned int size, 
+                     unsigned int size,
                      unsigned int *readout,
                      bool wait)
 {
@@ -200,22 +200,22 @@ bool SocketCan::canWrite(const CanBuffer &msgs,
 
     //debug
     //fprintf(stderr, "id:%d data:%d size:%d\n", tmp->can_id, tmp->data[0], tmp->can_dlc );
-   
+
     //@@@ IMPORTANT (RANDAZ): I'm putting here a delay of one millisecond.
 	//I noticed that without this delay a lot CAN messages are lost when iCubInterface starts and
 	//sends the configuration parameters (PIDs etc.) to the control boards.
-	//Further investigation is required in order to understand how the internal buffer is handled 
+	//Further investigation is required in order to understand how the internal buffer is handled
 	//when the function write( skt, tmp, sizeof(*tmp) ); is called.
 	Time::delay(0.001);
-	
+
     int i=0;
 	(*sent)=0;
 	for (i=0; i<size; i++)
     {
 		CanBuffer &buffer=const_cast<CanBuffer &>(msgs);
-		const struct can_frame *tmp=reinterpret_cast<const struct can_frame*>(buffer[i].getPointer());   
+		const struct can_frame *tmp=reinterpret_cast<const struct can_frame*>(buffer[i].getPointer());
 		bytes_sent = write( skt, tmp, sizeof(*tmp) );
-		if (bytes_sent>0) 
+		if (bytes_sent>0)
 		{
 			(*sent)++;
 		}
@@ -225,13 +225,13 @@ bool SocketCan::canWrite(const CanBuffer &msgs,
 			//break;
 		}
 	}
-	
+
     if (*sent <size)
        {
            fprintf(stderr, "Error: SocketCan::canWrite() not all messages were sent.\n");
            return false;
        }
-   
+
     return true;
 }
 
@@ -245,28 +245,28 @@ bool SocketCan::open(yarp::os::Searchable &par)
 
                          netId=par.check("CanDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
     if  (netId == -1)    netId=par.check("canDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
-    
+
                            txTimeout=par.check("CanTxTimeout", Value(500), "timeout on transmission [ms]").asInt();
     if  (txTimeout == 500) txTimeout=par.check("canTxTimeout", Value(500), "timeout on transmission [ms]").asInt();
-    
+
                            rxTimeout=par.check("CanRxTimeout", Value(500), "timeout on receive when calling blocking read [ms]").asInt() ;
     if  (rxTimeout == 500) rxTimeout=par.check("canRxTimeout", Value(500), "timeout on receive when calling blocking read [ms]").asInt() ;
 
                                       canTxQueue=par.check("CanTxQueue", Value(TX_QUEUE_SIZE), "length of tx buffer").asInt();
     if  (canTxQueue == TX_QUEUE_SIZE) canTxQueue=par.check("canTxQueue", Value(TX_QUEUE_SIZE), "length of tx buffer").asInt();
-    
+
                                       canRxQueue=par.check("CanRxQueue", Value(RX_QUEUE_SIZE), "length of rx buffer").asInt() ;
     if  (canRxQueue == RX_QUEUE_SIZE) canRxQueue=par.check("canRxQueue", Value(RX_QUEUE_SIZE), "length of rx buffer").asInt() ;
 
    int so_timestamping_flags = 0;
    /* Create the socket */
    skt = socket( PF_CAN, SOCK_RAW, CAN_RAW );
- 
+
    /* Locate the interface you wish to use */
    struct ifreq ifr;
    sprintf (ifr.ifr_name, "can%d",netId);
    ioctl(skt, SIOCGIFINDEX, &ifr); // ifr.ifr_ifindex gets filled with that device's index
- 
+
    /* Select that CAN interface, and bind the socket to it. */
    struct sockaddr_can addr;
    addr.can_family = AF_CAN;
@@ -300,6 +300,6 @@ bool SocketCan::close()
     if (!skt)
         return false;
 
-    //not yet implemented 
+    //not yet implemented
     return true;
 }

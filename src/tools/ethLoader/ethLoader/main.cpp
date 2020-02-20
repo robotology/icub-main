@@ -38,7 +38,7 @@ GtkWidget *main_hbox   = NULL;
 GtkWidget *sw          = NULL;
 GtkWidget *treeview    = NULL;
 
-GtkWidget *right_vbox      = NULL; 
+GtkWidget *right_vbox      = NULL;
 GtkWidget *info_scroll     = NULL;
 GtkWidget *info_text       = NULL;
 GtkWidget *info_cls_button = NULL;
@@ -47,7 +47,7 @@ GtkWidget *buttons_box = NULL;
 
 GtkWidget *sel_all_button  = NULL;
 GtkWidget *des_all_button  = NULL;
-        
+
 GtkWidget *discover_button = NULL;
 #if !defined(ETHLOADER_USE_MAINTAINER)
 #else
@@ -62,10 +62,10 @@ GtkWidget *upload_loader_button  = NULL;
 GtkWidget *boot_upd_button = NULL;
 GtkWidget *boot_app_button = NULL;
 GtkWidget *jump_upd_button = NULL;
-        
+
 GtkWidget *reset_button    = NULL;
 GtkWidget *procs_button    = NULL;
-GtkWidget *eprom_button    = NULL;         
+GtkWidget *eprom_button    = NULL;
 GtkWidget *blink_button    = NULL;
 GtkWidget *einfo_button    = NULL;
 GtkWidget *progress_bar    = NULL;
@@ -99,10 +99,10 @@ void activate_buttons()
 
     bool bHaveSelected=nsel!=0;
     bool bAllSelected=size==nsel;
-    
+
     gtk_widget_set_sensitive(sel_all_button,!bAllSelected);
     gtk_widget_set_sensitive(des_all_button,bHaveSelected);
-        
+
     gtk_widget_set_sensitive(discover_button,true);
 #if !defined(ETHLOADER_USE_MAINTAINER)
 #else
@@ -119,7 +119,7 @@ void activate_buttons()
     gtk_widget_set_sensitive(boot_upd_button,bHaveSelected);
     gtk_widget_set_sensitive(boot_app_button,bHaveSelected);
     gtk_widget_set_sensitive(jump_upd_button,nsel==1);
-        
+
     gtk_widget_set_sensitive(reset_button,bHaveSelected);
     gtk_widget_set_sensitive(eprom_button,nsel==1);
     gtk_widget_set_sensitive(blink_button,nsel==1);
@@ -131,7 +131,7 @@ static GtkTreeModel* refresh_board_list_model()
     GtkListStore *store;
     GtkTreeIter iter;
 
-    // create list store 
+    // create list store
     store=gtk_list_store_new(NUM_COLUMNS,
         G_TYPE_BOOLEAN,
         G_TYPE_STRING,
@@ -161,7 +161,7 @@ static GtkTreeModel* refresh_board_list_model()
     {
         ACE_UINT32 ip=gUpdater.getBoardList()[i].mAddress;
         sprintf(board_ipaddr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
-        
+
         ACE_UINT64 mac=gUpdater.getBoardList()[i].mMac;
         //ACE_UINT32 macL=(ACE_UINT32)(mac&0xFFFFFFFF);
         //ACE_UINT32 macH=(ACE_UINT32)((mac>>32)&0xFFFF);
@@ -345,10 +345,10 @@ static void fixed_toggled(GtkCellRendererToggle *cell,gchar *path_str,gpointer d
 {
     GtkTreeModel *model=gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
     GtkTreePath *path=gtk_tree_path_new_from_string(path_str);
-     
+
     GtkTreeIter  iter;
     gtk_tree_model_get_iter(model,&iter,path);
-    
+
     gboolean fixed;
     gtk_tree_model_get(model,&iter,COLUMN_SELECTED,&fixed,-1);
 
@@ -361,7 +361,7 @@ static void fixed_toggled(GtkCellRendererToggle *cell,gchar *path_str,gpointer d
     {
         gUpdater.getBoardList()[index[0]].mSelected=fixed;
     }
-#else    
+#else
     if (index!=NULL && index[0]<gMNT.boards_get().size())
     {
         gMNT.boards_get()[index[0]].setSelected(fixed);
@@ -388,9 +388,9 @@ bool dialog_question_ip_address(char* old_addr,char* new_addr,const char* ip_or_
     gtk_window_set_modal(GTK_WINDOW(message),true);
 
     gint response=gtk_dialog_run(GTK_DIALOG(message));
-    
+
     gtk_widget_destroy(message);
-    
+
     return response==GTK_RESPONSE_YES;
 }
 
@@ -489,7 +489,7 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
     {
         char old_addr[16];
         sprintf(old_addr,"%d.%d.%d.%d",(address>>24)&0xFF,(address>>16)&0xFF,(address>>8)&0xFF,address&0xFF);
-        
+
         if (dialog_question_ip_address(old_addr,new_addr,"IP address"))
         {
 #if !defined(ETHLOADER_USE_MAINTAINER)
@@ -504,7 +504,7 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
     gtk_widget_draw(treeview, NULL);
 
-    // clean up 
+    // clean up
     gtk_tree_path_free(path);
 }
 
@@ -522,14 +522,14 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
 //    if (ip1<0 || ip1>255 || ip2<0 || ip2>255 || ip3<0 || ip3>255 || ip4<0 || ip4>255) return;
 //    ACE_UINT32 iNewMask=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
 //    ACE_UINT32 iOldMask=gUpdater.getBoardList()[index[0]].mMask;
-    
+
 //    ACE_UINT32 address=gUpdater.getBoardList()[index[0]].mAddress;
 
 //    if (iNewMask!=iOldMask)
 //    {
 //        char old_mask[16];
 //        sprintf(old_mask,"%d.%d.%d.%d",(iOldMask>>24)&0xFF,(iOldMask>>16)&0xFF,(iOldMask>>8)&0xFF,iOldMask&0xFF);
-        
+
 //        if (dialog_question_ip_address(old_mask,new_mask,"IP mask"))
 //        {
 //            gUpdater.cmdChangeMask(iNewMask, address);
@@ -759,8 +759,8 @@ static void applicationON_cbk(GtkButton *button,gpointer user_data)
 #endif
 
 static void upload_cbk(GtkButton *button, gpointer user_data)
-{ 
-#if !defined(ETHLOADER_USE_MAINTAINER) 
+{
+#if !defined(ETHLOADER_USE_MAINTAINER)
     if (!gUpdater.getBoardList().numSelected())
 #else
     if(0 == gMNT.boards_get().numberof(EthMaintainer::ipv4OfAllSelected))
@@ -778,9 +778,9 @@ static void upload_cbk(GtkButton *button, gpointer user_data)
     GtkWidget *dialog=gtk_file_chooser_dialog_new("Choose File",
                                                   GTK_WINDOW(window),
 				                                  GTK_FILE_CHOOSER_ACTION_OPEN,
-				                                  GTK_STOCK_CANCEL, 
+				                                  GTK_STOCK_CANCEL,
                                                   GTK_RESPONSE_CANCEL,
-				                                  GTK_STOCK_OPEN, 
+				                                  GTK_STOCK_OPEN,
                                                   GTK_RESPONSE_ACCEPT,
                                                   NULL);
 
@@ -897,7 +897,7 @@ static void des_all_cbk(GtkButton *button,gpointer user_data)
     eOipv4addr_t ipv4 = EthBoardList::ipv4all;
     gMNT.boards_get().select(false, ipv4);
 #endif
-   
+
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
     gtk_widget_draw(treeview,NULL);
 
@@ -951,7 +951,7 @@ static void procs_cbk(GtkButton *button,gpointer user_data)
 
     gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(info_text)), procs.c_str(), -1);
 }
-       
+
 static void blink_cbk(GtkButton *button,gpointer user_data)
 {
 #if !defined(ETHLOADER_USE_MAINTAINER)
@@ -1048,7 +1048,7 @@ int myMain(int argc,char *argv[])
     yarp::os::Property config;
 
     config.fromCommand(argc,argv);
-    
+
     int port=MY_PORT;
 
     bool bPrintUsage=false;
@@ -1087,7 +1087,7 @@ int myMain(int argc,char *argv[])
 #endif
     {
         printf("Can't open socket, aborting.");
-        
+
         return -1;
     }
 
@@ -1115,7 +1115,7 @@ int myMain(int argc,char *argv[])
     gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw),GTK_SHADOW_ETCHED_IN);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),GTK_POLICY_NEVER,GTK_POLICY_AUTOMATIC);
     gtk_box_pack_start(GTK_BOX(main_hbox),sw,TRUE,TRUE,0);
-    
+
     //List of the cards
     //create tree model
     model=refresh_board_list_model();
@@ -1181,7 +1181,7 @@ int myMain(int argc,char *argv[])
         g_signal_connect(applicationON_button,"clicked",G_CALLBACK(applicationON_cbk),NULL);
         gtk_widget_set_size_request(applicationON_button,180,30);
 #endif
-        
+
         //add_button("Start Upload",  upload_button,   upload_cbk,   buttons_box);
         upload_button=gtk_button_new_with_mnemonic("Program eApplication");
         gtk_container_add(GTK_CONTAINER(buttons_box),upload_button);
@@ -1222,7 +1222,7 @@ int myMain(int argc,char *argv[])
         gtk_container_add(GTK_CONTAINER(buttons_box),jump_upd_button);
         g_signal_connect(jump_upd_button,"clicked",G_CALLBACK(jump_upd_cbk),NULL);
         gtk_widget_set_size_request(jump_upd_button,180,30);
-        
+
         //add_button("Reset",         reset_button,    reset_cbk,    buttons_box);
         reset_button=gtk_button_new_with_mnemonic("Restart Board");
         gtk_container_add(GTK_CONTAINER(buttons_box),reset_button);
@@ -1234,7 +1234,7 @@ int myMain(int argc,char *argv[])
 //        gtk_container_add(GTK_CONTAINER(buttons_box),procs_button);
 //        g_signal_connect(procs_button,"clicked",G_CALLBACK(procs_cbk),NULL);
 //        gtk_widget_set_size_request(procs_button,180,30);
-         
+
         //add_button("Erase Eprom",    eeprom_button,    procs_cbk,    buttons_box);
         eprom_button=gtk_button_new_with_mnemonic("Erase EEPROM");
         gtk_container_add(GTK_CONTAINER(buttons_box),eprom_button);
@@ -1292,7 +1292,7 @@ int myMain(int argc,char *argv[])
     activate_buttons();
 
     gtk_main();
-    
+
     return 0;
 }
 

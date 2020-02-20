@@ -1,4 +1,4 @@
-/* 
+/*
 \file main.dox
 \brief This file is the main page for the iCub software repository documentation.
 */
@@ -9,19 +9,19 @@
 \image html icub_small_new-white.gif "Welcome to my brain!"
 
 This is the iCub online code documentation (the iCub manual can be found
-elsewhere: http://wiki.icub.org/wiki/Manual). This is the result of an 
-automatic process that parses the doxygen documentation in the repository. 
-For this reason the information here at times can be innaccurate or 
+elsewhere: http://wiki.icub.org/wiki/Manual). This is the result of an
+automatic process that parses the doxygen documentation in the repository.
+For this reason the information here at times can be innaccurate or
 completely broken!
 
 Topics:
 
  - <a href="http://wiki.icub.org/wiki/ICub_Software_Installation">Software installation</a>.
  - \ref icub_modules_all \endref - most of the software (including \ref icub_module \endref and \ref icub_mod_library \endref)
- - \ref icub_applications \endref - a list of documented applications 
+ - \ref icub_applications \endref - a list of documented applications
    (collections of modules)
  - \ref icub_tutorials \endref - a set of tutorials to learn how to use the software
- - The documentation for contributed software is here: <a href="http://wiki.icub.org/iCub/contrib"> Contrib documentation </A> 
+ - The documentation for contributed software is here: <a href="http://wiki.icub.org/iCub/contrib"> Contrib documentation </A>
  - \ref changelog
  - Programmer's checklist:
   - \ref compile_status \endref - check if your code is compiling on a test server
@@ -34,7 +34,7 @@ Topics:
   - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
   - Our software architecture, <a href="http://www.yarp.it/">YARP</a>.
 
-This documentation is developed by scanning all source code 
+This documentation is developed by scanning all source code
 in icub-main/src and icub-tutorials. If your comments or classes are
 not showing up, try running:
 

@@ -26,7 +26,7 @@
 2012-04-04 Andrea Del Prete <andrea.delprete@iit.it>
       * iKinFwd.cpp/h: changing signature of iDynLink get methods,
         now they return const references
-                         
+
 2012-03-30 Andrea Del Prete <andrea.delprete@iit.it>
       * iKinFwd.cpp/h: add method DJacobian that computes the time derivative of
         the geometric jacobian;
@@ -73,7 +73,7 @@
 
 2010-02-27 Ugo Pattacini <ugo.pattacini@iit.it>
       * iKinSlv.h,.cpp: minimization against current q added
-      
+
 2010-02-03 Ugo Pattacini <ugo.pattacini@iit.it>
       * CMakeLists.txt, IKINConfig.cmake: for win32 DEBUG_POSTFIX put equal to "d"
 

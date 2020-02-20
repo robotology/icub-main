@@ -7,20 +7,20 @@
 
 /**
  * Class representing a contact on the tactile sensor system (skin) of iCub.
- * 
+ *
  * \section intro_sec Description
- * 
+ *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows, Linux
  *
  * \author Andrea Del Prete
- * 
+ *
  * Copyright (C) 2010 RobotCub Consortium
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
- * 
- **/ 
+ *
+ *
+ **/
 
 #ifndef __DINCONT_H__
 #define __DINCONT_H__
@@ -35,11 +35,11 @@ namespace iCub
 namespace skinDynLib
 {
 
-/** 
-* @ingroup skinDynLib 
-*  
+/**
+* @ingroup skinDynLib
+*
 * Class representing an external contact acting on a link of the robot body.
-* A contact is identified by a unique id, a robot body part, a link number, 
+* A contact is identified by a unique id, a robot body part, a link number,
 * the center of pressure (CoP), the contact force and moment.
 * All the vectors (i.e. CoP, force, moment) are expressed w.r.t. the reference frame of the link.
 *
@@ -80,7 +80,7 @@ protected:
     unsigned int verbose;
 
 
-    void init(const BodyPart &_bodyPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+    void init(const BodyPart &_bodyPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP,
         const yarp::sig::Vector &_Mu=yarp::sig::Vector(0), const yarp::sig::Vector &_Fdir=yarp::sig::Vector(0));
     bool checkVectorDim(const yarp::sig::Vector &v, unsigned int dim, const std::string &descr="");
 
@@ -115,7 +115,7 @@ public:
     * @param _Mu the moment applied at this contact, expressed in link reference frame
     * @param _Fdir the direction of the contact force, expressed in link reference frame
     */
-    dynContact(const BodyPart &_bodyPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+    dynContact(const BodyPart &_bodyPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP,
         const yarp::sig::Vector &_Mu, const yarp::sig::Vector &_Fdir);
 
     //~~~~~~~~~~~~~~~~~~~~~~
@@ -171,7 +171,7 @@ public:
     * @return the contact id
     */
     virtual unsigned long               getId()                 const;
-    
+
     //~~~~~~~~~~~~~~~~~~~~~~
     //   IS methods
     //~~~~~~~~~~~~~~~~~~~~~~
@@ -185,10 +185,10 @@ public:
     * @return true if the force direction is known, false otherwise.
     */
     virtual bool isForceDirectionKnown()        const;
-   
+
     //~~~~~~~~~~~~~~~~~~~~~~
     //   SET methods
-    //~~~~~~~~~~~~~~~~~~~~~~    
+    //~~~~~~~~~~~~~~~~~~~~~~
     /**
      * Set the contact force
      * @param _F a 3-dim vector containing the contact force
@@ -248,7 +248,7 @@ public:
 
     //~~~~~~~~~~~~~~~~~~~~~~
     //   FIX/UNFIX methods
-    //~~~~~~~~~~~~~~~~~~~~~~ 
+    //~~~~~~~~~~~~~~~~~~~~~~
     /**
     * Fix the direction of the contact force. Differently from the method
     * setForceDirection, this method also sets the flag 'fDirKnown'
@@ -272,13 +272,13 @@ public:
     */
     virtual bool fixMoment(const yarp::sig::Vector &_Mu);
     /**
-     * Set the flag fDirKnown to false so that when estimating the contact wrenches 
+     * Set the flag fDirKnown to false so that when estimating the contact wrenches
      * the solver estimates also the force direction and does not consider it as known
      * a-priori.
      */
     virtual void unfixForceDirection();
     /**
-     * Set the flag muKnown to false so that when estimating the contact wrenches 
+     * Set the flag muKnown to false so that when estimating the contact wrenches
      * the solver estimates also the contact moment and does not consider it as known
      * a-priori.
      */
@@ -286,7 +286,7 @@ public:
 
     //~~~~~~~~~~~~~~~~~~~~~~
     //   SERIALIZATION methods
-    //~~~~~~~~~~~~~~~~~~~~~~ 
+    //~~~~~~~~~~~~~~~~~~~~~~
     /*
     * Read dynContact from a connection. It expects a list of 4 elements, that are:
     * - a list of 3 int, containing contactId, bodyPart and linkNumber
@@ -308,12 +308,12 @@ public:
     */
     virtual bool write(yarp::os::ConnectionWriter& connection) const override;
 
-    
+
     /**
      * Convert this contact into a string. Useful to print some information.
      * @param precision number of decimal digits to use in the string representation
      * @return a string representation of this contact in this format:
-     * "Contact id: "<< contactId<< "Body part: "<< bodyPartName<< ", link: "<< linkNumber<< 
+     * "Contact id: "<< contactId<< "Body part: "<< bodyPartName<< ", link: "<< linkNumber<<
      * ", CoP: "<< CoP<< ", F: "<< F<< ", M: "<< Mu
      */
     virtual std::string toString(int precision=-1) const;

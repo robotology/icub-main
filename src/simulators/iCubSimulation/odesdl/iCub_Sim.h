@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick, Vadim Tikhanoff, Martin Peniak
 * email:    paulfitz@alum.mit.edu, vadim.tikhanoff@iit.it, martin.peniak@plymouth.ac.uk
@@ -19,7 +19,7 @@
 */
 /**
  * \file iCub_Sim.h
- * \brief This class controls the simulation speed using dWorldstep for "exact" calculations, the collisions between objects/spaces and the rendering functions. It also deals with separating the physics calculations from the rendering 
+ * \brief This class controls the simulation speed using dWorldstep for "exact" calculations, the collisions between objects/spaces and the rendering functions. It also deals with separating the physics calculations from the rendering
  * \author Vadim Tikhanoff, Paul Fitzpatrick
  * \date 2007
  * \note Release under GNU GPL v2.0
@@ -65,7 +65,7 @@
  *
  */
 class OdeSdlSimulation : public Simulation {
-public:	
+public:
     /**
      *
      * Constructor.  Be sure to also call init().
@@ -84,7 +84,7 @@ public:
 
     /**
      *
-     * Render the requested view.  
+     * Render the requested view.
      *
      */
 	void drawView(bool left, bool right, bool wide);
@@ -148,14 +148,14 @@ private:
     static int thread_ode(void *unused);
 
     static void sighandler(int sig);
-    
+
     static void initContactICubSkinEmulMap(void);
     static void resetContactICubSkinEmulMap(void);
     static void printContactICubSkinEmulMap(void); //for debugging
-    
+
     // in the self_collisions regime, this is to ignore collisions between certain geoms, such as upper arm covers colliding with torso
     static bool selfCollisionOnIgnoreList(string geom1_string, string geom2_string);
-    
+
     static void inspectWholeBodyContactsAndSendTouch();      //We emulate the skin of the iCub - covers + fingertips;  the rest of the geoms will only be processed by the skinEvents
     static void mapPositionIntoTaxelList(const SkinPart skin_part,const Vector geo_center_link_FoR,std::vector<unsigned int>& list_of_taxels);
     static void pushTriangleToTaxelList(const int startingTaxelID,std::vector<unsigned int>& list_of_taxels);

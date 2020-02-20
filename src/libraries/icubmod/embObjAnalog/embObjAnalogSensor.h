@@ -49,7 +49,7 @@ public:
     inline double &operator[](int i)
     { return _data[i]; }
 
-    inline int size() 
+    inline int size()
     { return _size; }
 
     inline double *getBuffer()
@@ -60,7 +60,7 @@ public:
 
 typedef int AnalogDataFormat;
 /*! class yarp::dev::embObjAnalogSensor
- * 
+ *
  */
 class yarp::dev::embObjAnalogSensor:    public yarp::dev::IAnalogSensor,
                                         public yarp::dev::DeviceDriver,

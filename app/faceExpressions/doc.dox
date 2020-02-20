@@ -31,7 +31,7 @@ There are two applications:
 
 If you are using the simulator edit and customize \e appSim.xml.template .
 
-Now from any machine you can rpc to the port "/icub/face/emotions/in" 
+Now from any machine you can rpc to the port "/icub/face/emotions/in"
 and send high level commands.
 
 \code
@@ -59,7 +59,7 @@ Alternatively you can run:
 \code
 ./cycle.sh: demonstates the face expressions, cycle randomly through a set of expressions.
 \endcode
- 
+
 \author Lorenzo Natale and Alex Bernardino
 
 Copyright (C) 2008 RobotCub Consortium

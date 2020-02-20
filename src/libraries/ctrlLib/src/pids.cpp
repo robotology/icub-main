@@ -65,17 +65,17 @@ void Integrator::allocate(const Integrator &I)
 
 /************************************************************************/
 Vector Integrator::saturate(const Vector &v)
-{    
+{
     if (applySat)
     {
         Vector res=v;
-    
+
         for (unsigned int i=0; i<dim; i++)
             if (res[i]<lim(i,0))
                 res[i]=lim(i,0);
             else if (res[i]>lim(i,1))
                 res[i]=lim(i,1);
-    
+
         return res;
     }
     else
@@ -171,7 +171,7 @@ bool helperPID::getVectorFromOption(const Bottle &options, const char *key,
 parallelPID::parallelPID(const double _Ts,
                          const Vector &_Kp, const Vector &_Ki, const Vector &_Kd,
                          const Vector &_Wp, const Vector &_Wi, const Vector &_Wd,
-                         const Vector &_N,  const Vector &_Tt, const Matrix &_satLim) : 
+                         const Vector &_N,  const Vector &_Tt, const Matrix &_satLim) :
                          Ts(_Ts), Kp(_Kp), Ki(_Ki), Kd(_Kd), Wp(_Wp), Wi(_Wi), Wd(_Wd),
                          N(_N), Tt(_Tt), satLim(_satLim)
 {
@@ -199,7 +199,7 @@ parallelPID::parallelPID(const double _Ts,
             num[0]=num[1]=den[1]=0.0;
             den[0]=1.0;
         }
-        
+
         Der.push_back(new Filter(num,den,u0));
     }
 
@@ -278,7 +278,7 @@ void parallelPID::getOptions(Bottle &options)
     addVectorToOption(options,"N",N);
     addVectorToOption(options,"Tt",Tt);
     addVectorToOption(options,"satLim",satLimVect);
-        
+
     Bottle &bTs=options.addList();
     bTs.addString("Ts");
     bTs.addDouble(Ts);
@@ -302,10 +302,10 @@ void parallelPID::setOptions(const Bottle &options)
     getVectorFromOption(options,"Tt",Tt,size);
 
     if (getVectorFromOption(options,"Kp",Kp,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"Kd",Kd,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"N",N,size))
         recomputeQuantities=true;
@@ -318,7 +318,7 @@ void parallelPID::setOptions(const Bottle &options)
 
         recomputeQuantities=true;
     }
-    
+
     if (options.check("Ts"))
     {
         double _Ts=options.find("Ts").asDouble();
@@ -333,7 +333,7 @@ void parallelPID::setOptions(const Bottle &options)
     {
         for (unsigned int i=0; i<dim; i++)
             uSat[i]=PID_SAT(uSat[i],satLim(i,0),satLim(i,1));
-    
+
         Vector u0(1,0.0);
         Vector num(2),den(2);
         for (unsigned int i=0; i<dim; i++)
@@ -373,7 +373,7 @@ void parallelPID::setOptions(const Bottle &options)
 parallelPID::~parallelPID()
 {
     delete Int;
-    
+
     for (unsigned int i=0; i<dim; i++)
         delete Der[i];
 
@@ -446,7 +446,7 @@ const Vector& seriesPID::compute(const Vector &ref, const Vector &fb)
     {
         Vector inputIi(1);
         Vector outputIi(1);
-        
+
         inputIi[0]=uSat[i];
         outputIi=Int[i]->filt(inputIi);
 
@@ -470,7 +470,7 @@ void seriesPID::reset()
     Vector u0(1,0.0);
     for (unsigned int i=0; i<dim; i++)
     {
-        Int[i]->init(u0);    
+        Int[i]->init(u0);
         Der[i]->init(u0);
     }
 }
@@ -490,7 +490,7 @@ void seriesPID::getOptions(Bottle &options)
     addVectorToOption(options,"Kd",Kd);
     addVectorToOption(options,"N",N);
     addVectorToOption(options,"satLim",satLimVect);
-        
+
     Bottle &bTs=options.addList();
     bTs.addString("Ts");
     bTs.addDouble(Ts);
@@ -508,16 +508,16 @@ void seriesPID::setOptions(const Bottle &options)
     bool recomputeQuantities=false;
     int size;
     if (getVectorFromOption(options,"Kp",Kp,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"Ti",Ti,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"Kd",Kd,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"N",N,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"satLim",satLimVect,size))
     {
@@ -542,7 +542,7 @@ void seriesPID::setOptions(const Bottle &options)
     {
         for (unsigned int i=0; i<dim; i++)
             uSat[i]=PID_SAT(uSat[i],satLim(i,0),satLim(i,1));
-    
+
         Vector u0(1,0.0);
         Vector num(2),den(2);
         for (unsigned int i=0; i<dim; i++)
@@ -578,8 +578,8 @@ void seriesPID::setOptions(const Bottle &options)
 seriesPID::~seriesPID()
 {
     for (unsigned int i=0; i<dim; i++)
-    {   
-        delete Int[i]; 
+    {
+        delete Int[i];
         delete Der[i];
     }
 

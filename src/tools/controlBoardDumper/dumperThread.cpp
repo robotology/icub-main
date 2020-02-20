@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Francesco Nori
  * email:  francesco.nori@iit.it
@@ -70,11 +70,11 @@ void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int 
 }
 
 boardDumperThread::~boardDumperThread()
-{    
+{
 }
 
 void boardDumperThread::setThetaMap(int *map, int n)
-{ 
+{
     fprintf(stderr, "Setting the map dimension %d \n", n);
     numberOfJointsRead = n;
     dataRead = new double [numberOfJointsRead];
@@ -170,7 +170,7 @@ void boardDumperThread::run()
         getter -> getData(data);
 
         //fprintf(stderr, "Time is %lf \n", stmp.getTime());
-        
+
         Bottle bData;
         for (int i = 0; i < numberOfJointsRead; i++)
         {
@@ -178,8 +178,8 @@ void boardDumperThread::run()
             dataRead[i] = data[dataMap[i]];
             bData.addDouble(dataRead[i]);
         }
-        
-        if (getter->getStamp(stmp)) 
+
+        if (getter->getStamp(stmp))
         {
             if (stmp.isValid())
             {
@@ -207,7 +207,7 @@ void boardDumperThread::run()
             fputs (bData.toString().c_str(),logFile);
             fputs ("\n",logFile);
         }
-        
+
         port->write(bData);
     }
-}  
+}

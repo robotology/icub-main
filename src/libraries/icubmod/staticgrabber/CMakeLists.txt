@@ -12,9 +12,9 @@ if (NOT SKIP_static_grabber)
   yarp_add_plugin(static_grabber StaticGrabber.h StaticGrabber.cpp)
 
   target_link_libraries(static_grabber ${YARP_LIBRARIES})
-  
+
   icub_export_plugin(static_grabber)
- 
+
   yarp_install(TARGETS static_grabber
                COMPONENT Runtime
                LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}

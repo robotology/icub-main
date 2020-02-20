@@ -58,7 +58,7 @@ bool PlxCan::canIdDelete(unsigned int id)
 }
 
 bool PlxCan::canRead(CanBuffer &msgs,
-                     unsigned int size, 
+                     unsigned int size,
                      unsigned int *read,
                      bool wait)
 {
@@ -108,10 +108,10 @@ bool PlxCan::open(yarp::os::Searchable &par)
 
                          netId=par.check("CanDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
     if  (netId == -1)    netId=par.check("canDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
-    
+
                          txTimeout=par.check("CanTxTimeout", Value(0),  "timeout on transmission [ms]").asInt();
     if  (txTimeout == 0) txTimeout=par.check("canTxTimeout", Value(0),  "timeout on transmission [ms]").asInt();
-    
+
                          rxTimeout=par.check("CanRxTimeout", Value(0), "timeout on receive when calling blocking read [ms]").asInt() ;
     if  (rxTimeout == 0) rxTimeout=par.check("canRxTimeout", Value(0), "timeout on receive when calling blocking read [ms]").asInt() ;
 

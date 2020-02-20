@@ -42,7 +42,7 @@ set(UTILS_FOLDER        ${BASE}/embobj/plus/utils/)
 set(ICUB_API            ${BASE}/embobj/plus/comm-v2/icub/)
 
 
-set(embObj_includes     
+set(embObj_includes
                         ${CORE_FOLDER}
 			${ICUB_API}
                         ${PROT_FOLDER}/transport/
@@ -78,12 +78,12 @@ set(CORE_SOURCE         ${CORE_FOLDER}/EOarray.c
 
 set(CORE_VEE_SOURCE     ${CORE_FOLDER}/EOVmutex.c
                         ${CORE_FOLDER}/EOVtask.c
-                        ${CORE_FOLDER}/EOVtheSystem.c	
+                        ${CORE_FOLDER}/EOVtheSystem.c
                         )
 
 #set(PROTO_SRC               ${PROT_FOLDER}/protocol/src/EoProtocol.c)
 
-set(embobj_source 
+set(embobj_source
                         ${CORE_SOURCE}
                         ${UTILS_HEADER}
                         ${UTILS_SOURCE}
@@ -92,7 +92,7 @@ set(embobj_source
                         )
 
 
-#insert here name of parser cfg file!!! 
+#insert here name of parser cfg file!!!
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_getPid.cpp )
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_searchPosSetpoint4all.cpp )
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_searchPosSetpoint.cpp )
@@ -105,7 +105,7 @@ set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_calibration.cpp)
 
 message(INFO "  you are using  ${PARSER_CFG_FILE} for parser cfg!!!")
 
-set(EXTRA_SOURCE 	    ${PARSER_CFG_FILE}                
+set(EXTRA_SOURCE 	    ${PARSER_CFG_FILE}
                         ${EXTRA_FOLDER}/main.cpp
                         ${EXTRA_FOLDER}/pcap_wrapper_linux.cpp
                         )

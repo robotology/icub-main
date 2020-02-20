@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2008 The RobotCub Consortium
  * Author: Lorenzo Natale
  * website: www.robotcub.org
@@ -54,7 +54,7 @@ public:
 
     void clear();
 
-    // initialize, need factory to create internal buffer of 
+    // initialize, need factory to create internal buffer of
     // messages which will store replies
     void init(yarp::dev::ICanBufferFactory *i);
 
@@ -62,7 +62,7 @@ public:
     inline void setPending(int pend);
 
     // wait on semaphore, usually thread sleeps here after
-    // has issued a list of requests to the can 
+    // has issued a list of requests to the can
     void synch()
     {
         std::unique_lock<std::mutex> lck(mtx_synch);
@@ -133,11 +133,11 @@ bool ThreadTable2::push(const yarp::dev::CanMessage &m)
             //have been requested. Check the following calls:
             //  t->setPending(r._writeMessages);
             //  t->synch();
-            // the buffer should be large enough to match the worst case 
+            // the buffer should be large enough to match the worst case
             // i.e. the largest value of _writeMessages
             // Increase BUF_SIZE accordingly.
             fprintf(stderr, "Warning: buffer full in ThreadTable2, increase value of BUF_SIZE\n");
-            return false; 
+            return false;
         }
 
     _replies[_replied]=m;
@@ -146,7 +146,7 @@ bool ThreadTable2::push(const yarp::dev::CanMessage &m)
     _pending--;
     if (_pending==0)
         cv_synch.notify_one();
-    
+
     unlock();
     return true;
 }

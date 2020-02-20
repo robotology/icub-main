@@ -6,39 +6,39 @@
  */
 
 /**
- * \defgroup RecursiveNewtonEuler RecursiveNewtonEuler 
- *    
+ * \defgroup RecursiveNewtonEuler RecursiveNewtonEuler
+ *
  * @ingroup iDyn
- *  
+ *
  * Classes for force/torque computation using Newton-Euler recursive formulation,
  * both in the forward/backward sense.
- * 
+ *
  * \section intro_sec Description
- * 
+ *
  * OneLinkNewtonEuler is a class that provides Newton-Euler recursive formulation,
- * for the computation of forces, moments and joint torques in a kinematic chain; 
- * both classical and "inverse" formulation are included; the classe is the basis 
- * for the computation of torques given force/torque sensor measurements, given 
+ * for the computation of forces, moments and joint torques in a kinematic chain;
+ * both classical and "inverse" formulation are included; the classe is the basis
+ * for the computation of torques given force/torque sensor measurements, given
  * any sensor anywhere in the dynamic/kinematic chain. BaseLink-, FinalLink- and
  * SensorLink-NewtonEuler are derived class, to be used for computations.
  * OneChainNewtonEuler defines a chain of OneLinkNewtonEuler corresponding to an
- * iDynChain: it constructs a chain with a BaseLink, N OneLinks corresponding to 
- * the N iDynLinks of the iDynChain, and a FinalLink. BaseLink and FinalLink are 
- * used only to initialize the two phases of the Newton-Euler algorithm, thus 
+ * iDynChain: it constructs a chain with a BaseLink, N OneLinks corresponding to
+ * the N iDynLinks of the iDynChain, and a FinalLink. BaseLink and FinalLink are
+ * used only to initialize the two phases of the Newton-Euler algorithm, thus
  * they don't have a corresponding dynamic link but a virtual one.
- * 
+ *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows
  *
  *
  * \author Serena Ivaldi, Matteo Fumagalli
- * 
+ *
  * Copyright (C) 2010 RobotCub Consortium
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
- * 
- **/ 
+ *
+ *
+ **/
 
 #ifndef __IDYNINV_H__
 #define __IDYNINV_H__
@@ -97,7 +97,7 @@ class OneLinkNewtonEuler
 protected:
 
     /// STATIC/DYNAMIC/DYNAMIC_W_ROTOR/DYNAMIC_CORIOLIS_GRAVITY
-    NewEulMode mode;    
+    NewEulMode mode;
     ///info or useful notes
     std::string info;
     ///verbosity flag
@@ -105,12 +105,12 @@ protected:
     ///z0=[0 0 1]'
     yarp::sig::Vector z0;
     ///z^{i-1}_{m_{i}}      versor rotating solidally with link i, projected in frame i ==>> constant
-    yarp::sig::Vector zm;   
-    ///the corresponding iDynLink 
-    iDyn::iDynLink *link;   
+    yarp::sig::Vector zm;
+    ///the corresponding iDynLink
+    iDyn::iDynLink *link;
 
     //~~~~~~~~~~~~~~~~~~~~~~
-    //   set methods  
+    //   set methods
     //~~~~~~~~~~~~~~~~~~~~~~
 
     /**
@@ -137,33 +137,33 @@ protected:
     virtual void setTorque(const double _Tau);
 
     /**
-    * Set the OneLink angular velocity (w), ie the corresponding iDynLink angular 
+    * Set the OneLink angular velocity (w), ie the corresponding iDynLink angular
     * velocity (w) (in the child classes derived from OneLink, it depends)
     * @param _w angular velocity
     */
     virtual bool setAngVel(const yarp::sig::Vector &_w);
-    
+
     /**
-    * Set the OneLink angular acceleration (dw), ie the corresponding iDynLink angular 
+    * Set the OneLink angular acceleration (dw), ie the corresponding iDynLink angular
     * acceleration (dw) (in the child classes derived from OneLink, it depends)
     * @param _dw angular acceleration
     */
     virtual bool setAngAcc(const yarp::sig::Vector &_dw);
     /**
-    * Set the OneLink linear acceleration (ddp), ie the corresponding iDynLink linear 
+    * Set the OneLink linear acceleration (ddp), ie the corresponding iDynLink linear
     * acceleration (ddp) (in the child classes derived from OneLink, it depends)
     * @param _ddp linear acceleration
     */
     virtual bool setLinAcc(const yarp::sig::Vector &_ddp);
     /**
-    * Set the OneLink linear acceleration of the COM (ddpC), ie the corresponding 
-    * iDynLink linear acceleration of the COM (ddpC) (nothing in the child classes 
+    * Set the OneLink linear acceleration of the COM (ddpC), ie the corresponding
+    * iDynLink linear acceleration of the COM (ddpC) (nothing in the child classes
     * derived from OneLink, except for SensorLink)
     * @param _ddpC linear acceleration of the COM
     */
     virtual bool setLinAccC(const yarp::sig::Vector &_ddpC);
     /**
-    * Set the OneLink angular acceleration of the motor (dwM), ie the corresponding 
+    * Set the OneLink angular acceleration of the motor (dwM), ie the corresponding
     * iDynLink angular acceleration of the COM (dwM) (nothing in the child classes
     * derived from OneLink)
     * @param _dwM angular acceleration of the motor
@@ -204,7 +204,7 @@ protected:
       * @param prev the OneLinkNewtonEuler class of the previous link
      */
      void computeLinAcc( OneLinkNewtonEuler *prev);
-     
+
     /**
      * [Forward Newton-Euler] compute linear acceleration of the reference frame of the previous link
       * @param prev the OneLinkNewtonEuler class of the previous link
@@ -252,20 +252,20 @@ protected:
 public:
 
     /**
-    * Default constructor 
+    * Default constructor
     */
     OneLinkNewtonEuler(iDyn::iDynLink *dlink=NULL);
-  
+
     /**
      * Constructor, with initialization of some data
      */
     OneLinkNewtonEuler(const NewEulMode _mode, unsigned int verb = iCub::skinDynLib::NO_VERBOSE, iDyn::iDynLink *dlink=NULL);
-    
+
     /**
      * Destructor
      */
     virtual ~OneLinkNewtonEuler() {};
-         
+
     /**
      * Set everything to zero; R is set to an identity matrix
      */
@@ -304,17 +304,17 @@ public:
     virtual bool setMeasuredFMu(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
     /**
-     * Set measured torque in a joint torque sensor frame     
+     * Set measured torque in a joint torque sensor frame
      * @param _Tau the sensor torque
      */
     virtual bool setMeasuredTorque(const double _Tau);
-    
+
     /**
      * Useful to print some information..
      */
     virtual std::string toString() const;
 
- 
+
     //~~~~~~~~~~~~~~~~~~~~~~
     //   set methods
     //~~~~~~~~~~~~~~~~~~~~~~
@@ -450,28 +450,28 @@ public:
 
     /**
      * [Forward Newton-Euler] Compute w, dw, ddp, ddpC, dwM
-      * @param prev the OneLinkNewtonEuler class of the previous link 
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
      void ForwardKinematics( OneLinkNewtonEuler *prev);
- 
+
     /**
      * [Backward Kinematic computation] Compute w, dw, ddp, ddpC, dwM
-      * @param prev the OneLinkNewtonEuler class of the previous link 
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
      void BackwardKinematics( OneLinkNewtonEuler *prev);
 
     /**
      * [Backward Newton-Euler] Compute F, Mu, Tau
-      * @param next the OneLinkNewtonEuler class of the following link 
+      * @param next the OneLinkNewtonEuler class of the following link
      */
      void BackwardWrench( OneLinkNewtonEuler *next);
 
     /**
      * [Inverse Newton-Euler] Compute F, Mu, Tau
-      * @param prev the OneLinkNewtonEuler class of the previous link 
+      * @param prev the OneLinkNewtonEuler class of the previous link
      */
      void ForwardWrench( OneLinkNewtonEuler *prev);
-    
+
     /**
      * [all] Compute joint torque; moment must be pre-computed
       * @param next the OneLinkNewtonEuler class of the following link
@@ -485,18 +485,18 @@ public:
 *
 * A class for setting a virtual base link: this is useful to initialize the forward phase of
 * Newton-Euler's method, by setting w, dw, ddp; H is an identity matrix, while ddpC=ddp;
-* Note that this is a virtual link, since there's no iDynLink attached: it is just necessary to make 
-* the recursive Newton-Euler computations 
+* Note that this is a virtual link, since there's no iDynLink attached: it is just necessary to make
+* the recursive Newton-Euler computations
 */
 class BaseLinkNewtonEuler : public OneLinkNewtonEuler
 {
 protected:
     ///initial angular velocity
-    yarp::sig::Vector w;    
+    yarp::sig::Vector w;
     ///initial angular acceleration
     yarp::sig::Vector dw;
     ///initial linear acceleration
-    yarp::sig::Vector ddp;  
+    yarp::sig::Vector ddp;
     ///base roto-traslation (if necessary)
     yarp::sig::Matrix H0;
     ///initial force
@@ -506,7 +506,7 @@ protected:
     ///initial moment
     yarp::sig::Vector Mu0;
     ///corresponding torque
-    double Tau;         
+    double Tau;
 
     // dummy matrixes/vectors
     const yarp::sig::Matrix eye3x3;
@@ -516,7 +516,7 @@ protected:
 public:
 
     /**
-    * Default constructor 
+    * Default constructor
     * @param _H0 the base roto-translation
     * @param _mode the analysis mode (static/dynamic)
     * @param verb flag for verbosity
@@ -532,7 +532,7 @@ public:
     * @param _mode the analysis mode (static/dynamic)
     * @param verb flag for verbosity
     */
-    BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw, 
+    BaseLinkNewtonEuler(const yarp::sig::Matrix &_H0, const yarp::sig::Vector &_w, const yarp::sig::Vector &_dw,
         const yarp::sig::Vector &_ddp, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
     /**
@@ -558,15 +558,15 @@ public:
      const yarp::sig::Vector&   getAngAccM()    const;
      const yarp::sig::Vector&   getLinAcc()     const;
      const yarp::sig::Vector&   getLinAccC()    const;
-        
-     // redefine the other unuseful methods 
+
+     // redefine the other unuseful methods
      // to avoid errors due to missing link
 
      const yarp::sig::Vector&   getForce()      const;
      const yarp::sig::Vector&   getMoment(bool isBase = false) const;
      double             getTorque()     const;
-     const yarp::sig::Matrix&   getR();     
-     const yarp::sig::Matrix&   getRC();    
+     const yarp::sig::Matrix&   getR();
+     const yarp::sig::Matrix&   getRC();
      double             getIm()     const;
      double             getD2q()    const;
      double             getDq()     const;
@@ -604,22 +604,22 @@ public:
 *
 * A class for setting a virtual final link: this is useful to initialize the backward phase of
 * Newton-Euler's method, by setting F, Mu; H is an identity matrix, while ddpC=ddp;
-* Note that this is a virtual link, since there's no iDynLink attached: it is just necessary to make 
-* the recursive Newton-Euler computations 
+* Note that this is a virtual link, since there's no iDynLink attached: it is just necessary to make
+* the recursive Newton-Euler computations
 */
 class FinalLinkNewtonEuler : public OneLinkNewtonEuler
 {
 protected:
     ///initial angular velocity
-    yarp::sig::Vector w;    
+    yarp::sig::Vector w;
     ///initial angular acceleration
     yarp::sig::Vector dw;
     ///initial linear acceleration
-    yarp::sig::Vector ddp;  
+    yarp::sig::Vector ddp;
     ///final force
-    yarp::sig::Vector F;    
+    yarp::sig::Vector F;
     ///final moment
-    yarp::sig::Vector Mu;   
+    yarp::sig::Vector Mu;
     ///final roto-traslation (if necessary)
     yarp::sig::Matrix HN;
 
@@ -632,7 +632,7 @@ protected:
 public:
 
     /**
-    * Default constructor 
+    * Default constructor
     * @param _mode the analysis mode (static/dynamic)
     * @param verb flag for verbosity
     */
@@ -654,7 +654,7 @@ public:
       * @return true if dimensions are correct, false otherwise
      */
     bool setAsFinal(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
-    
+
     /**
      * Set the final frame data
       * @param _w the final force
@@ -679,8 +679,8 @@ public:
     const yarp::sig::Vector&    getLinAccC()    const;
     double              getTorque()     const;
     const yarp::sig::Matrix&    getH();
-    const yarp::sig::Matrix&    getR();     
-    const yarp::sig::Matrix&    getRC();    
+    const yarp::sig::Matrix&    getR();
+    const yarp::sig::Matrix&    getRC();
     double              getIm()     const;
     double              getFs()     const;
     double              getFv()     const;
@@ -709,10 +709,10 @@ public:
 * \ingroup RecursiveNewtonEuler
 *
 * A class for setting a virtual sensor link. This class is used to initialize the forward and backward phase of
-* Newton-Euler's method in the Inverse formulation, but also to have estimation of the FT measures by the sensor; 
+* Newton-Euler's method in the Inverse formulation, but also to have estimation of the FT measures by the sensor;
 * the sensor frame is defined with respect to the i-th link, where the sensor is attached.
-* Note that this is a virtual link, since there's no iDynLink attached: it is just necessary to make 
-* the recursive Inverse Newton-Euler computations; however, inertia, mass and COM are defined, for the portion of 
+* Note that this is a virtual link, since there's no iDynLink attached: it is just necessary to make
+* the recursive Inverse Newton-Euler computations; however, inertia, mass and COM are defined, for the portion of
 * link defined between sensor and i-th frame.
 */
 class SensorLinkNewtonEuler : public OneLinkNewtonEuler
@@ -721,24 +721,24 @@ protected:
     /// measured or estimated force
     yarp::sig::Vector F;
     /// measured or estimated moment
-    yarp::sig::Vector Mu;   
-    
+    yarp::sig::Vector Mu;
+
     /// angular velocity
     yarp::sig::Vector w;
     /// angular acceleration
     yarp::sig::Vector dw;
     /// linear acceleration
-    yarp::sig::Vector ddp;  
+    yarp::sig::Vector ddp;
     /// linear acceleration of the COM
-    yarp::sig::Vector ddpC; 
+    yarp::sig::Vector ddpC;
     /// the roto-translational matrix from the i-th link to the sensor: it's the matrix describing the sensor position and orientation with respect to the frame of the link where the sensor is placed on
     yarp::sig::Matrix H;
     /// the roto-translational matrix of the COM of the semi-link (bewteen sensor and ith link frame)
     yarp::sig::Matrix COM;
     /// the semi-link inertia
-    yarp::sig::Matrix I;    
+    yarp::sig::Matrix I;
     /// the semi-link mass (the portion of link defined by the sensor)
-    double m;               
+    double m;
 
     yarp::sig::Matrix R;
     yarp::sig::Matrix RC;
@@ -751,24 +751,24 @@ protected:
 public:
 
     /**
-    * Default constructor 
+    * Default constructor
     * @param _mode the analysis mode (static/dynamic)
     * @param verb flag for verbosity
     */
     SensorLinkNewtonEuler(const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
 
     /**
-    * Constructor 
+    * Constructor
     * @param _mode the analysis mode (static/dynamic)
     * @param verb flag for verbosity
     */
     SensorLinkNewtonEuler(const yarp::sig::Matrix &_H, const yarp::sig::Matrix &_COM, const double _m, const yarp::sig::Matrix &_I, const NewEulMode _mode, unsigned int verb=iCub::skinDynLib::NO_VERBOSE);
-    
+
     /**
      * Destructor
      */
     virtual ~SensorLinkNewtonEuler() {};
-    
+
     /**
      * Set the sensor measured force/moment - if measured by a FT sensor
       * @param _F the final force
@@ -788,21 +788,21 @@ public:
 
     /**
      * Compute w,dw,ddp,dppC given the reference frame of the link where the sensor is
-     * @param link the iDynLink class of the same link 
+     * @param link the iDynLink class of the same link
      */
      void ForwardAttachToLink( iDynLink *link);
 
     /**
      * Compute F,Mu given the reference frame of the link where the sensor is
-     * @param link the iDynLink class of the same link 
+     * @param link the iDynLink class of the same link
      */
      void BackwardAttachToLink( iDynLink *link);
 
      /**
      * Forward the sensor forces and moments, measured by the sensor, to the reference
-     * frame of the link where the sensor is: this method is the base for the inverse 
+     * frame of the link where the sensor is: this method is the base for the inverse
      * Newton-Euler algorithm, since it forwards the sensor measurements to the iDynChain
-     * @param link the iDynLink class of the same link 
+     * @param link the iDynLink class of the same link
      */
      void ForwardForcesMomentsToLink( iDynLink *link);
 
@@ -823,7 +823,7 @@ public:
 
     const yarp::sig::Vector&    getForce()      const;
     const yarp::sig::Vector&    getMoment(bool isBase = false)      const;
-    
+
     double              getIm()     const;
     double              getFs()     const;
     double              getFv()     const;
@@ -885,14 +885,14 @@ class OneChainNewtonEuler
 protected:
 
     /// the real kinematic/dynamic chain of the robot
-    iDyn::iDynChain *chain; 
+    iDyn::iDynChain *chain;
     /// the chain of links/frames for Newton-Euler computations
-    OneLinkNewtonEuler ** neChain;  
+    OneLinkNewtonEuler ** neChain;
 
     /// number of links
-    unsigned int nLinks;        
+    unsigned int nLinks;
     /// the index of the end-effector in the chain (the last frame)
-    unsigned int nEndEff;       
+    unsigned int nEndEff;
 
     /// static/dynamic/dynamicWrotor
     NewEulMode mode;
@@ -933,7 +933,7 @@ public:
      * iDynLimb, through iDynNode.
      */
     void getVelAccBase(yarp::sig::Vector &w, yarp::sig::Vector &dw,yarp::sig::Vector &ddp) const;
-    
+
     /**
      * This method is used by iDynChain to retrieve kinematic information for connection with one or more
      * iDynLimb, through iDynNode.
@@ -945,7 +945,7 @@ public:
      * iDynLimb, through iDynNode.
      */
     void getWrenchBase(yarp::sig::Vector &F, yarp::sig::Vector &Mu) const;
-    
+
     /**
      * This method is used by iDynChain to retrieve wrench information for connection with one or more
      * iDynLimb, through iDynNode.
@@ -959,7 +959,7 @@ public:
     void setVerbose(unsigned int verb=iCub::skinDynLib::VERBOSE);
     void setMode(const NewEulMode _mode);
     void setInfo(const std::string _info);
-    
+
     /**
     * [classic] Initialize the base with measured or known kinematics variables
     * @param w0 angular velocity
@@ -968,7 +968,7 @@ public:
     * @return true if succeeds, false otherwise
     */
     bool initKinematicBase(const yarp::sig::Vector &w0,const yarp::sig::Vector &dw0,const yarp::sig::Vector &ddp0);
-    
+
     /**
     * [inverse] Initialize the end-effector finalLink with measured or known kinematics variables
     * @param w0 angular velocity
@@ -977,7 +977,7 @@ public:
     * @return true if succeeds, false otherwise
     */
     bool initKinematicEnd(const yarp::sig::Vector &w0,const yarp::sig::Vector &dw0,const yarp::sig::Vector &ddp0);
-    
+
     /**
     * [classic] Initialize the end-effector finalLink with measured or known wrench
     * @param F0 force
@@ -1018,7 +1018,7 @@ public:
      * [classic/inverse] Base function for forward of classical Newton-Euler.
      */
     void ForwardKinematicFromBase();
-    
+
     /**
      * [classic/inverse] Forward of classical Newton-Euler, after initializing the base link
      */
@@ -1028,7 +1028,7 @@ public:
      * [inverse] Base function for forward of classical Newton-Euler.
      */
     void BackwardKinematicFromEnd();
-    
+
     /**
      * [inverse] Forward of classical Newton-Euler, after initializing the base link
      */
@@ -1051,13 +1051,13 @@ public:
     void computeTorques();
 
     /**
-     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the end, 
+     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the end,
      * forward of forces and moments using the inverse formula
      */
     void ForwardWrenchFromBase();
 
     /**
-     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the base, 
+     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the base,
      * backward of forces and moments using the classical formula
      * @param lSens the i-th link, where the sensor is attached to
      * @return true if the operation is successful, false otherwise (eg out of range index)
@@ -1065,7 +1065,7 @@ public:
     void ForwardWrenchFromBase(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
 
     /**
-     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the end, 
+     * [inverse] Base function for inverse Newton-Euler: from the i-th link to the end,
      * forward of forces and moments using the inverse formula
      * @param lSens the i-th link, where the sensor is attached to
      * @return true if the operation is successful, false otherwise (eg out of range index)
@@ -1073,7 +1073,7 @@ public:
     bool ForwardWrenchToEnd(unsigned int lSens);
 
     /**
-     * [classic/inverse] Base function for inverse Newton-Euler: from the i-th link to the base, 
+     * [classic/inverse] Base function for inverse Newton-Euler: from the i-th link to the base,
      * backward of forces and moments using the classical formula
      * @param lSens the i-th link, where the sensor is attached to
      * @return true if the operation is successful, false otherwise (eg out of range index)
@@ -1085,7 +1085,7 @@ public:
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
-     * Base function for inverse Newton-Euler: from the lA-th link to the lB-th, 
+     * Base function for inverse Newton-Euler: from the lA-th link to the lB-th,
      * forward of forces and moments using the inverse formula; lA < lB
      * @param lA the lA-th link
      * @param lB the lB-th link
@@ -1094,7 +1094,7 @@ public:
     bool ForwardWrenchFromAtoB(unsigned int lA, unsigned int lB);
 
     /**
-     * Base function for inverse Newton-Euler: from the lA-th link to the lB-th, 
+     * Base function for inverse Newton-Euler: from the lA-th link to the lB-th,
      * backward of forces and moments; lA > lB
      * @param lA the lA-th link
      * @param lB the lB-th link
@@ -1108,39 +1108,39 @@ public:
 
 
 /**
- * \defgroup iDynInv iDynInv 
- *    
+ * \defgroup iDynInv iDynInv
+ *
  * @ingroup iDyn
- *  
- * Classes for force/torque computation in a dynamic 
- * chain, where a single FT sensor is placed. 
- * Using Newton-Euler formula it is possible to 
- * compute an estimate of the FT sensor measurements. 
- * iDynInvSensor is the generic class which takes a 
- * iDynChain, sets a generic sensor attached to the 
- * chain, and manages the proper computations. 
+ *
+ * Classes for force/torque computation in a dynamic
+ * chain, where a single FT sensor is placed.
+ * Using Newton-Euler formula it is possible to
+ * compute an estimate of the FT sensor measurements.
+ * iDynInvSensor is the generic class which takes a
+ * iDynChain, sets a generic sensor attached to the
+ * chain, and manages the proper computations.
  * iDynInvSensorArm and iDynInvSensorLeg
  * are specific classes performing computations for iCub
  * arms and legs: by choosing left/right part, they
  * automatically set the proper FT sensor parameters.
  * Given single FT sensor measurements it is also possible
  * to compute link/joint force/moment/torque.
- * As iDynInvSensor, iDynSensor attachs a FT sensor into a 
- * iDynChain; exploiting the sensor force/moment measurements, 
- * and applying the inverse formula of Newton-Euler recursive 
+ * As iDynInvSensor, iDynSensor attachs a FT sensor into a
+ * iDynChain; exploiting the sensor force/moment measurements,
+ * and applying the inverse formula of Newton-Euler recursive
  * algorithm, it is possible to compute joint torques given
- * single FT measurements. The dynamical parameters necessary 
- * to the algorithm are read automatically from the iDynChain 
- * (consisting of iDynLinks), whereas the FT sensor must be 
- * set from iDynSensor constructor. 
- * 
+ * single FT measurements. The dynamical parameters necessary
+ * to the algorithm are read automatically from the iDynChain
+ * (consisting of iDynLinks), whereas the FT sensor must be
+ * set from iDynSensor constructor.
+ *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows
  *
  * \section example_sec Example: estimation of FT in a sensor
  *
- * Set a iDynInvSensor for iCub's left arm, with 
+ * Set a iDynInvSensor for iCub's left arm, with
  * force/moment computation in the static case (STATIC), and
  * verbose (VERBOSE==1) output:
  *
@@ -1149,7 +1149,7 @@ public:
  *
  * Note that by setting the arm as "left", the sensor is automatically set
  * as the left sensor of the arm.
- * Then start retrieving the sensor force/moment. First the chain must be updated with 
+ * Then start retrieving the sensor force/moment. First the chain must be updated with
  * the current angle configuration:
  *
  * <tt> arm->setAng(q); </tt> \n
@@ -1165,7 +1165,7 @@ public:
  *
  * <tt> armWSensorSolver->computeSensorForceMoment(); </tt> \n
  *
- * The sensor force/moment can be retrieved separately (3x1 vectors) or 
+ * The sensor force/moment can be retrieved separately (3x1 vectors) or
  * together (6x1 vector).
  *
  * <tt> Vector F = armWSensorSolver->getSensorForce(); </tt> \n
@@ -1175,7 +1175,7 @@ public:
  *
  * \section example_sec Example: computation of joint torques
  *
- * Set a iDynSensor for iCub's left arm, with 
+ * Set a iDynSensor for iCub's left arm, with
  * force/moment computation in the static case (STATIC), and
  * verbose (VERBOSE==1) output:
  *
@@ -1184,7 +1184,7 @@ public:
  *
  * Note that by setting the arm as "left", the sensor is automatically set
  * as the left sensor of the arm.
- * The chain must be updated with the current angle configuration, and the sensor 
+ * The chain must be updated with the current angle configuration, and the sensor
  * measurements must be put into two (3x1) vectors or one (6x1).
  *
  * <tt> arm->setAng(q); </tt> \n
@@ -1204,20 +1204,20 @@ public:
  * <tt> Vector Tau = armWSensorSolver->getTorques(); </tt> \n
  *
  * \author Serena Ivaldi
- * 
+ *
  * Copyright (C) 2010 RobotCub Consortium
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
- * 
- **/ 
+ *
+ *
+ **/
 
 /**
 * \ingroup iDynInv
 *
-* A class for computing force/moment of a sensor placed anywhere in 
+* A class for computing force/moment of a sensor placed anywhere in
 *  a kinematic chain; its position in the chain is defined wrt a certain link in the chain;
 * this class can be useful to estimate the FT measurements of the sensor
-* 
+*
 */
 class iDynInvSensor
 {
@@ -1225,11 +1225,11 @@ class iDynInvSensor
 protected:
 
     /// the link where the sensor is attached to
-    unsigned int lSens;     
+    unsigned int lSens;
     /// the sensor
     SensorLinkNewtonEuler * sens;
     /// the iDynChain describing the robotic chain
-    iDynChain * chain;  
+    iDynChain * chain;
     /// static/dynamic/etc..
     NewEulMode mode;
     /// verbosity flag
@@ -1277,8 +1277,8 @@ public:
 
     /**
      * Compute forces and moments at the sensor frame; this method calls special Forward and Backward methods of
-     * SensorLink, using Newton-Euler's formula applied in the link where the sensor is placed on; the link is 
-     * automatically found, being specified by the index in the chain and the chain itself; 
+     * SensorLink, using Newton-Euler's formula applied in the link where the sensor is placed on; the link is
+     * automatically found, being specified by the index in the chain and the chain itself;
      * The case of a contact (ie external force) acting in the host link is not currently implemented.
      */
     void computeSensorForceMoment();
@@ -1305,13 +1305,13 @@ public:
      * @return a (6x1) vector where 0:2=force 3:5=moment
      */
     yarp::sig::Vector getSensorForceMoment() const;
-    
+
     /**
      * Get the sensor roto-translational matrix defining its position/orientation wrt the link
      * @return a (4x4) matrix
      */
     yarp::sig::Matrix getH() const;
-    
+
     /**
      * Get the mass of the portion of link defined between sensor and i-th frame
      * @return the mass of the semi-link
@@ -1338,7 +1338,7 @@ public:
     void setVerbose(unsigned int verb=iCub::skinDynLib::VERBOSE);
     void setInfo(const std::string &_info);
     void setSensorInfo(const std::string &_info);
-    
+
     /**
      * Set the dynamic parameters of the the portion of link defined between sensor and i-th frame.
      * @param _m is the semi-link mass
@@ -1355,7 +1355,7 @@ public:
     std::string getInfo() const;
     std::string getSensorInfo() const;
     unsigned int getSensorLink()    const;
-    yarp::sig::Vector getTorques() const;   
+    yarp::sig::Vector getTorques() const;
 
     //destructor
     virtual ~iDynInvSensor();
@@ -1365,7 +1365,7 @@ public:
 /**
 * \ingroup RecursiveNewtonEuler
 *
-* A class for setting a virtual sensor link on the iCub 
+* A class for setting a virtual sensor link on the iCub
 * arm, for the arm FT sensor. The parameters are
 * automatically set after choosing "left" or "right"
 * part. By default, the CAD parameters are set.
@@ -1373,7 +1373,7 @@ public:
 class iCubArmSensorLink : public SensorLinkNewtonEuler
 {
 protected:
-    
+
     /// the arm type: left/right
     std::string type;
 
@@ -1381,12 +1381,12 @@ public:
 
     /**
     * Constructor: the sensor parameters are automatically set with "right" or "left" choice
-    * @param _type a string "left"/"right" 
+    * @param _type a string "left"/"right"
     * @param _mode the analysis mode (STATIC/DYNAMIC)
     * @param verb flag for verbosity
     */
     iCubArmSensorLink(const std::string &_type, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
-    
+
     /**
      * Destructor
      */
@@ -1410,7 +1410,7 @@ public:
 class iCubLegSensorLink : public SensorLinkNewtonEuler
 {
 protected:
-    
+
     /// the leg type: left/right
     std::string type;
 
@@ -1418,7 +1418,7 @@ protected:
 
     /**
     * Constructor: the sensor parameters are automatically set with "right" or "left" choice
-    * @param _type a string "left"/"right" 
+    * @param _type a string "left"/"right"
     * @param _mode the analysis mode (STATIC/DYNAMIC)
     * @param verb flag for verbosity
     */
@@ -1428,7 +1428,7 @@ protected:
      * Destructor
      */
     virtual ~iCubLegSensorLink() {};
-    
+
     /**
     * @return type the leg type: left/right
     */
@@ -1444,7 +1444,7 @@ protected:
 * in the middle of the iCub's left or right arm. The sensor
 * parameters are automatically set by chosing left or right
 * during initialization of the iCubArmDyn.
-* 
+*
 */
 class iDynInvSensorArm : public iDynInvSensor
 {
@@ -1460,7 +1460,7 @@ public:
     iDynInvSensorArm(iDyn::iCubArmDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
     /**
-    * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
+    * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case
     * there is not a specification of the iCubArmDyn, but the part must be specified
     * @param _c a pointer to the iDynChain where the sensor is placed on
     * @param _type a string setting the arm type
@@ -1484,7 +1484,7 @@ public:
 * in the middle of the iCub's left or right arm. The sensor
 * parameters are automatically set by chosing left or right
 * during initialization of the iCubArmNoTorsoDyn.
-* 
+*
 */
 class iDynInvSensorArmNoTorso : public iDynInvSensor
 {
@@ -1500,7 +1500,7 @@ public:
     iDynInvSensorArmNoTorso(iDyn::iCubArmNoTorsoDyn *_c, const NewEulMode _mode = DYNAMIC, unsigned int verb = iCub::skinDynLib::NO_VERBOSE);
 
     /**
-    * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case 
+    * Constructor: the sensor is automatically set with "right" or "left" choice; note that in this case
     * there is not a specification of the iCubArmNoTorsoDyn, but the part must be specified
     * @param _c a pointer to the iDynChain where the sensor is placed on
     * @param _type a string setting the arm type
@@ -1524,7 +1524,7 @@ public:
 * in the middle of the iCub's left or right leg. The sensor
 * parameters are automatically set by chosing left or right
 * during initialization of iCubLegDyn.
-* 
+*
 */
 class iDynInvSensorLeg : public iDynInvSensor
 {
@@ -1566,13 +1566,13 @@ public:
 /**
 * \ingroup iDynInv
 *
-* A class for computing forces and torques in a iDynChain, 
-* when a force/torque sensor is placed in the middle of the 
-* kinematic chain and it is the only available sensor for 
-* measuring forces and moments; the sensor position in the 
-* chain must be set; the computation of joint forces, moments 
+* A class for computing forces and torques in a iDynChain,
+* when a force/torque sensor is placed in the middle of the
+* kinematic chain and it is the only available sensor for
+* measuring forces and moments; the sensor position in the
+* chain must be set; the computation of joint forces, moments
 * and torques is performed by an Inverse Newton-Euler method.
-* 
+*
 */
 class iDynSensor: public iDynInvSensor
 {
@@ -1624,8 +1624,8 @@ public:
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     /**
-     * The main computation method: given the FT sensor measurements, compute forces moments 
-     * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
+     * The main computation method: given the FT sensor measurements, compute forces moments
+     * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is
      * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
      * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
      * from sensor to base the classical backward pass is run.
@@ -1636,8 +1636,8 @@ public:
     virtual bool computeFromSensorNewtonEuler(const yarp::sig::Vector &F, const yarp::sig::Vector &Mu);
 
     /**
-     * The main computation method: given the FT sensor measurements, compute forces moments 
-     * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
+     * The main computation method: given the FT sensor measurements, compute forces moments
+     * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is
      * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
      * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
      * from sensor to base the classical backward pass is run.
@@ -1647,8 +1647,8 @@ public:
     virtual bool computeFromSensorNewtonEuler(const yarp::sig::Vector &FMu);
 
     /**
-     * The main computation method: given the FT sensor measurements, compute forces moments 
-     * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is 
+     * The main computation method: given the FT sensor measurements, compute forces moments
+     * and torques in the iDynChain. A forward pass of the classical Newton-Euler method is
      * run, to retrieve angular and linear accelerations. Then, from sensor to end-effector
      * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
      * from sensor to base the classical backward pass is run.
@@ -1658,8 +1658,8 @@ public:
     virtual void computeFromSensorNewtonEuler();
 
     /**
-     * The main computation method: given the FT sensor measurements, compute forces moments 
-     * and torques in the iDynChain. The kinematic pass is already performed. Only the wrench 
+     * The main computation method: given the FT sensor measurements, compute forces moments
+     * and torques in the iDynChain. The kinematic pass is already performed. Only the wrench
      * computation are performed here: from sensor to end-effector
      * the inverse Newton-Euler formula is applied to retrieve joint forces and torques, while
      * from sensor to base the classical backward pass is run.
@@ -1747,7 +1747,7 @@ public:
 * in the middle of the arm. The sensor
 * parameters are automatically set by chosing left or right
 * during initialization of the iCubArmDyn.
-* 
+*
 */
 class iDynSensorArm : public iDynSensor
 {
@@ -1779,7 +1779,7 @@ public:
 * in the middle of the arm. The sensor
 * parameters are automatically set by chosing left or right
 * during initialization of the iCubArmDyn.
-* 
+*
 */
 class iDynSensorArmNoTorso : public iDynSensor
 {
@@ -1810,7 +1810,7 @@ public:
 * in the middle of the leg. The sensor
 * parameters are automatically set by chosing left or right
 * during initialization of iCubLegDyn.
-* 
+*
 */
 class iDynSensorLeg : public iDynSensor
 {

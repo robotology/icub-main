@@ -7,7 +7,7 @@
 # BSD-3-Clause license. See the accompanying LICENSE file for details.
 
 import yarp
-  
+
 import icub
 
 yarp.Network.init()

@@ -24,7 +24,7 @@ public:
 
         const double H=sin(DEG2RAD*60.0);
         const double L=2.0*H/9.0;
-     
+
         dGain=gain;
         ilrMirror=lrMirror;
         ilayoutNum=layoutNum;
@@ -36,7 +36,7 @@ public:
         dX[1]=0.4; dY[1]=0.2;
         dX[2]=0.6; dY[2]=0.2;
         dX[3]=0.8; dY[3]=0.2;
-        
+
         dX[4]=0.2; dY[4]=0.4;
         dX[5]=0.4; dY[5]=0.4;
         dX[6]=0.6; dY[6]=0.4;
@@ -46,7 +46,7 @@ public:
         dX[9]=0.4;  dY[9]=0.6;
         dX[10]=0.6; dY[10]=0.6;
         dX[11]=0.8; dY[11]=0.6;
-        
+
         dX[12]=0.2; dY[12]=0.8;
         dX[13]=0.4; dY[13]=0.8;
         dX[14]=0.6; dY[14]=0.8;
@@ -70,7 +70,7 @@ public:
         dYv[2]=+15;
         dXv[3]=-15;
         dYv[3]=+15;
-        
+
         for (int i=0; i<nVerts; ++i)
         {
             double x=dXv[i];
@@ -81,7 +81,7 @@ public:
         }
 
         // in static definition
-        //dXmin=dYmin= HUGE; 
+        //dXmin=dYmin= HUGE;
         //dXmax=dYmax=-HUGE;
 
         for (int i=0; i<nVerts; ++i)

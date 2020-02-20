@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -40,9 +40,9 @@ public:
     double fudgeFactor;
     double stopCFM;
     double jointCFM;
-    double worldCFM; 
+    double worldCFM;
     int    worldTimestep;
-    double stopERP;   
+    double stopERP;
     double worldERP;
     double maxContactCorrectingVel;
     double contactFrictionCoefficient;
@@ -71,7 +71,7 @@ public:
     virtual double getStopCFM() = 0;
     virtual double getJointCFM() = 0;
     virtual double getStopERP() = 0;
-    
+
     virtual double getMaxContactCorrectingVel() = 0;
     virtual double getContactFrictionCoefficient() = 0;
     virtual double getContactSurfaceLayer() = 0;

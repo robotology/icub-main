@@ -25,7 +25,7 @@ SphericalCalibTool::SphericalCalibTool(){
 }
 
 SphericalCalibTool::~SphericalCalibTool(){
-   
+
 }
 
 bool SphericalCalibTool::open(Searchable &config){
@@ -48,7 +48,7 @@ void SphericalCalibTool::stopConfig( std::string val ){
 }
 
 bool SphericalCalibTool::configure (Searchable &config){
-    
+
     // Defaults will correspond to a view field of 90 deg.
     _calibImgSize.width = config.check("w",
                                       Value(320),
@@ -125,12 +125,12 @@ bool SphericalCalibTool::init(CvSize currImgSize, CvSize calibImgSize){
     _mapX = cvCreateImage(currImgSize, IPL_DEPTH_32F, 1);
     _mapY = cvCreateImage(currImgSize, IPL_DEPTH_32F, 1);
 
-    
 
-    if(!compute_sp_map(currImgSize.height, currImgSize.width, 
+
+    if(!compute_sp_map(currImgSize.height, currImgSize.width,
                        currImgSize.height, currImgSize.width,
-                        _fx_scaled, _fy_scaled, _cx_scaled, _cy_scaled, 
-                        _k1, _k2, _p1, _p2, 
+                        _fx_scaled, _fy_scaled, _cx_scaled, _cy_scaled,
+                        _k1, _k2, _p1, _p2,
                         (float*)_mapX->imageData, (float*)_mapY->imageData))
         return false;
 
@@ -143,8 +143,8 @@ void SphericalCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> &
     CvSize inSize = cvSize(in.width(),in.height());
 
     // check if reallocation required
-    if ( inSize.width  != _oldImgSize.width || 
-         inSize.height != _oldImgSize.height || 
+    if ( inSize.width  != _oldImgSize.width ||
+         inSize.height != _oldImgSize.height ||
         _needInit)
         init(inSize,_calibImgSize);
 

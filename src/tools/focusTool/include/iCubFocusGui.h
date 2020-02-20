@@ -20,7 +20,7 @@ public:
     iCubFocusGuiThread(yarp::os::Searchable &config)
     {
         mR=mD=0.0;
-        
+
         //yarp::os::Property p;
         //p.put("local",loc);
         //p.put("remote",rem);
@@ -39,9 +39,9 @@ public:
     }
 
     double getValue(){ return mR; }
-    
+
     void run()
-    { 
+    {
         while (!isStopping())
         {
             if (pFG->getImage(img))
@@ -75,16 +75,16 @@ public:
 
                 mR=D/mD;
 
-                mSigWindow();  
+                mSigWindow();
             }
         }
     }
-    
+
     Glib::Dispatcher mSigWindow;
-    
+
 protected:
     int mW,mH;
-    
+
     double mR;
     double mD;
 
@@ -112,7 +112,7 @@ public:
         show_all();
 
         //yarp::os::Time::delay(1.0);
-        
+
         mThread=new iCubFocusGuiThread(config);
         mThread->mSigWindow.connect(sigc::mem_fun(*this,&iCubFocusGuiWindow::run));
         mThread->start();

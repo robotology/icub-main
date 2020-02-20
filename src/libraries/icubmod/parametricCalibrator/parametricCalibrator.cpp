@@ -207,7 +207,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     xtmp = p.findGroup("CALIBRATION").findGroup("startupPosThreshold");
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupPosThreshold params"; return false;}
     for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asDouble();
- 
+
     calibJointsString = p.findGroup("CALIB_ORDER");
     int calib_order_size = calibJointsString.size();
     if (calib_order_size <= 1) {yError() << deviceName << ": invalid number CALIB_ORDER params"; return false;}
@@ -320,9 +320,9 @@ bool parametricCalibrator::calibrate(DeviceDriver *device)
     {
         //yError() << deviceName << ": invalid dynamic cast to yarp::dev::PolyDriver";
         //return false;
-        
+
         //This is to ensure backward-compatibility with iCubInterface
-        yWarning() << deviceName << ": using parametricCalibrator on an old iCubInterface system. Upgrade to robotInterface is recommended."; 
+        yWarning() << deviceName << ": using parametricCalibrator on an old iCubInterface system. Upgrade to robotInterface is recommended.";
         device->view(iCalibrate);
         device->view(iEncoders);
         device->view(iPosition);
@@ -404,7 +404,7 @@ bool parametricCalibrator::calibrate()
         yWarning() << deviceName << ": skipCalibration flag is on! Setting safe pid but skipping calibration.";
 
     Bit=joints.begin();
-    std::list<int>::iterator lit; //iterator for joint in a set 
+    std::list<int>::iterator lit; //iterator for joint in a set
     while( (Bit != Bend) && (!abortCalib) )   // for each set of joints
     {
         setOfJoint_idx++;
@@ -430,7 +430,7 @@ bool parametricCalibrator::calibrate()
             }
 
             limited_max_pwm[(*lit)] = original_max_pwm[(*lit)];
-            
+
             if (maxPWM[(*lit)]==0)
             {
                 yDebug() << deviceName << ": skipping maxPwm=0 of joint " << (*lit);
@@ -464,13 +464,13 @@ bool parametricCalibrator::calibrate()
         {
             if (type[*lit]==0 ||
                 type[*lit]==2 ||
-                type[*lit]==4 ) 
+                type[*lit]==4 )
             {
                 yDebug() << "In calibration " <<  deviceName  << ": enabling joint " << *lit << " to test hardware limit";
                 iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
             }
         }
-        
+
         Time::delay(0.1f);
         if(abortCalib)
         {
@@ -520,11 +520,11 @@ bool parametricCalibrator::calibrate()
         // 5) if calibration finish with success enable disabled joints in order to move them to zero
         for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++)   //for each joint of set
         {
-            // if the joint han not been enabled at point 1, now i enable it 
+            // if the joint han not been enabled at point 1, now i enable it
             //iAmps->enableAmp((*lit));
             if (type[*lit]!=0 &&
                 type[*lit]!=2 &&
-                type[*lit]!=4 ) 
+                type[*lit]!=4 )
             {
                 iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
             }
@@ -584,7 +584,7 @@ bool parametricCalibrator::calibrate()
         // Go to the next set of joints to calibrate... if any
         Bit++;
     }
-    
+
     if(abortCalib)
     {
         yError() << deviceName << ": calibration has been aborted!I'm going to disable all joints..." ;
@@ -841,7 +841,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     iPosition->setRefSpeeds(homeVel);
     iPosition->positionMove(homePos);
     Time::delay(0.01);
-    
+
     if (wait)
     {
        int timeout = 0; //this variable is shared between all joints

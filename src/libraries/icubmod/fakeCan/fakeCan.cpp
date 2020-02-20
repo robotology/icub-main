@@ -42,8 +42,8 @@ bool FakeCan::canIdDelete(unsigned int id)
     return true;
 }
 
-bool FakeCan::canRead(CanBuffer &msgs, 
-        unsigned int size, 
+bool FakeCan::canRead(CanBuffer &msgs,
+        unsigned int size,
         unsigned int *read,
         bool wait)
 {
@@ -58,7 +58,7 @@ bool FakeCan::canRead(CanBuffer &msgs,
     MsgIt it=replies.begin();
     unsigned int k=0;
     while(it!=replies.end() && k<l)
-    {    
+    {
         FCMSG *r=reinterpret_cast<FCMSG *>(msgs[k].getPointer());
         *r=*it;
         it++;
@@ -110,7 +110,7 @@ bool FakeCan::open(yarp::os::Searchable &par)
         fprintf(stderr, "Check ini file, wrong number of board ids or joints\n");
         return false;
     }
-    
+
     for(int i=1;i<=njoints/2;i++)
     {
         FakeBoard *tmp=new FakeBoard;
@@ -120,7 +120,7 @@ bool FakeCan::open(yarp::os::Searchable &par)
         tmp->start();
         boardList.push_back(tmp);
     }
-        
+
     return true;
 }
 

@@ -128,7 +128,7 @@ class SkinConfigReader
 {
 private:
     char                _name[CONFIG_READER_NAME_LEN];
-    
+
 public:
     SkinConfigReader();
     void setName(char *name);

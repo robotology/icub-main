@@ -3,7 +3,7 @@
 #ifndef ICUBSIMULATION_LOGICALJOINT_INC
 #define ICUBSIMULATION_LOGICALJOINT_INC
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick
 * email:  paulfitz@alum.mit.edu
@@ -26,7 +26,7 @@
 
 /**
  *
- * Abstract class for mapping from "physical" (simulated) joints in the model 
+ * Abstract class for mapping from "physical" (simulated) joints in the model
  * to control joints in the ICUB specification.
  *
  */

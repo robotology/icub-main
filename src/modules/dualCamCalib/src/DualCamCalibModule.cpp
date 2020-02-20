@@ -55,7 +55,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
 
     string strLeftGroup = "CAMERA_CALIBRATION_LEFT";
     if (botLeftConfig.check(strLeftGroup.c_str()))
-    {            
+    {
         Bottle &group=botLeftConfig.findGroup(strLeftGroup.c_str(),string("Loading configuration from group " + strLeftGroup).c_str());
         botLeftConfig.fromString(group.toString());
     }
@@ -64,10 +64,10 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
         yError() << "Group " << strLeftGroup << " not found.";
         return false;
     }
-    
+
     string strRightGroup = "CAMERA_CALIBRATION_RIGHT";
     if (botRightConfig.check(strRightGroup.c_str()))
-    {            
+    {
         Bottle &group=botRightConfig.findGroup(strRightGroup.c_str(),string("Loading configuration from group " + strRightGroup).c_str());
         botRightConfig.fromString(group.toString());
     }
@@ -352,14 +352,14 @@ double CamCalibModule::getPeriod()
   return 0.0;
 }
 
-bool CamCalibModule::respond(const Bottle& command, Bottle& reply) 
+bool CamCalibModule::respond(const Bottle& command, Bottle& reply)
 {
-    reply.clear(); 
+    reply.clear();
 
-    if (command.get(0).asString()=="quit") 
+    if (command.get(0).asString()=="quit")
     {
         reply.addString("quitting");
-        return false;     
+        return false;
     }
     else
     {

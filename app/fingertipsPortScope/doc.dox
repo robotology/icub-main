@@ -1,32 +1,32 @@
 /**
  * @ingroup  icub_applications
  * \defgroup icub_fingertipsPortScope fingertipsPortScope
- * 
+ *
  * A collection of yarpscope instances used to display fingertips skin values.
  *
- * 
+ *
  * \section intro_sec Description
  * This applications launches two yarpscope instances, one for the left and one for the right hand.
  * Each yarpscope displays the raw and compensated skin values for all fingertips in the specified hand.
  *
  * This is a useful application when trying to diagnose issues with the fingertips.
  *
- * 
- * \section int_sec Instantiated Modules
- * - \ref yarpscope --context fingertipsPortScope --xml FingertipsPortScopeConf-LeftHandAll.xml 
- * - \ref yarpscope --context fingertipsPortScope --xml FingertipsPortScopeConf-RightHandAll.xml 
  *
- * 
+ * \section int_sec Instantiated Modules
+ * - \ref yarpscope --context fingertipsPortScope --xml FingertipsPortScopeConf-LeftHandAll.xml
+ * - \ref yarpscope --context fingertipsPortScope --xml FingertipsPortScopeConf-RightHandAll.xml
+ *
+ *
  * \section howto How to run the Application
  * Customize the file ./scripts/*.template for your specific platform.
  *
- * 
+ *
  * \author Francesco Giovannini (francesco.giovannini@iit.it)
- * 
+ *
  * Copyright (C) 2014 Francesco Giovannini, iCub Facility - Istituto Italiano di Tecnologia
- * 
+ *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
+ *
 **/
 
 

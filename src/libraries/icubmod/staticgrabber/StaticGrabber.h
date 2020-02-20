@@ -4,7 +4,7 @@
  * Copyright (C) 2007 Jonas Ruesch
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  */
- 
+
 #ifndef __ICUB_STATICGRABBER__
 #define __ICUB_STATICGRABBER__
 
@@ -30,23 +30,23 @@ using namespace yarp::os;
  * (A file grabber for a series of files can be found in yarp/examples/dev)
  */
 
-class yarp::dev::StaticGrabber : 
+class yarp::dev::StaticGrabber :
                         public yarp::dev::IFrameGrabber,
-                        public yarp::dev::IFrameGrabberImage, 
+                        public yarp::dev::IFrameGrabberImage,
                         public yarp::dev::DeviceDriver {
 private:
 
     std::string filename;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> img;
     yarp::sig::ImageOf<yarp::sig::PixelMono> bayer;
-    
+
     bool makeSimpleBayer(yarp::sig::ImageOf<yarp::sig::PixelRgb>& src, yarp::sig::ImageOf<yarp::sig::PixelMono>& bayer);
 
 public:
     StaticGrabber() {
     }
 
-    virtual bool open(yarp::os::Searchable& config) { 
+    virtual bool open(yarp::os::Searchable& config) {
         bool ok = true;
         filename = config.check("filename",
                                 Value(""),
@@ -77,10 +77,10 @@ public:
     // implement IFrameGrabber interface
 
     /**
-     * Get the raw buffer from the frame grabber. The driver returns 
+     * Get the raw buffer from the frame grabber. The driver returns
      * a copy of the internal memory buffer acquired by the frame grabber, no
      * post processing is applied (e.g. no color reconstruction/demosaicking).
-     * The user must allocate the buffer; the size of the buffer, in bytes, 
+     * The user must allocate the buffer; the size of the buffer, in bytes,
      * is determined by calling getRawBufferSize().
      * @param buffer: pointer to the buffer to be filled (must be previously allocated)
      * @return true/false upon success/failure
@@ -88,7 +88,7 @@ public:
     virtual bool getRawBuffer(unsigned char *buffer);
 
     /**
-     * Get the size of the card's internal buffer, the user should use this 
+     * Get the size of the card's internal buffer, the user should use this
      * method to allocate the storage to contain a raw frame (getRawBuffer).
      * @return the size of the internal buffer, in bytes.
      **/

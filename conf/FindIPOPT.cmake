@@ -83,7 +83,7 @@ if(NOT WIN32)
     endif()
 
     find_path(IPOPT_INCLUDE_DIRS NAMES IpIpoptApplication.hpp coin/IpIpoptApplication.hpp PATHS ${IPOPT_DIR}/include/coin)
-    
+
     find_library(IPOPT_LIBRARIES ipopt ${IPOPT_DIR}/lib
                                        ${IPOPT_DIR}/lib/coin)
 
@@ -127,7 +127,7 @@ else()
   include(SelectLibraryConfigurations)
 
   set(IPOPT_DIR $ENV{IPOPT_DIR} CACHE PATH "Path to IPOPT build directory")
-  
+
   find_path(IPOPT_INCLUDE_DIRS NAMES IpIpoptApplication.hpp coin/IpIpoptApplication.hpp PATHS ${IPOPT_DIR}/include/coin)
 
   find_library(IPOPT_IPOPT_LIBRARY_RELEASE libipopt ${IPOPT_DIR}/lib

@@ -12,15 +12,15 @@
     <node>console</node>
     <tag>skinCompGuiT</tag>
   </module>
-  
+
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from torso.ini --useCalibration</parameters>
     <node>console</node>
     <tag>skinGuiT</tag>
-  </module>  
-  
-  
+  </module>
+
+
   <connection>
     <from>/skinManGuiTorso/rpc:o</from>
     <to>/torsoSkinMan/rpc</to>
@@ -36,7 +36,7 @@
     <to>/skinManGuiTorso/info:i</to>
     <protocol>tcp</protocol>
   </connection>
-  
+
   <connection>
     <from>/icub/skin/torso_comp</from>
     <to>/skinGui/torso:i</to>

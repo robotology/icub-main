@@ -45,8 +45,8 @@
     <name>iCubSkinGui</name>
     <parameters>--from right_leg_lower.ini --useCalibration --xpos 320 --ypos 680 --width 300 --height 300</parameters>
     <node>icubsrv</node>
-  </module>  
-  
+  </module>
+
   <connection>
     <from>/skinManager/skin_events:o</from>
     <to>/wholeBodyDynamics/skin_contacts:i</to>
@@ -67,7 +67,7 @@
     <to>/skinManagerGui/info:i</to>
     <protocol>tcp</protocol>
   </connection>
-  
+
   <connection>
     <from>/icub/skin/left_foot_comp</from>
     <to>/skinGui/left_foot:i</to>
@@ -78,7 +78,7 @@
     <to>/skinGui/right_foot:i</to>
     <protocol>udp</protocol>
   </connection>
-  
+
    <connection>
     <from>/icub/skin/left_leg_upper_comp</from>
     <to>/skinGui/left_foot:i</to>
@@ -89,7 +89,7 @@
     <to>/skinGui/right_foot:i</to>
     <protocol>udp</protocol>
   </connection>
-  
+
     <connection>
     <from>/icub/skin/left_leg_lower_comp</from>
     <to>/skinGui/left_foot:i</to>

@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick
 * email:   paulfitz@alum.mit.edu
@@ -61,7 +61,7 @@ bool VideoTexture::add(Searchable& config) {
             entry = NULL;
         } else {
             inputs.push_back(entry);
-            
+
             return true;
         }
     }

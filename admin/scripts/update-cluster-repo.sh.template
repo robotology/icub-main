@@ -20,7 +20,7 @@ function msg_error {
     RED='\033[0;31m'
     NC='\033[0m'
     printf "${RED}[ERROR]${NC} $1\n"
-    continue 
+    continue
 }
 
 
@@ -30,7 +30,7 @@ for repo in ${REPOS[@]}; do
 
     # updating repo
     msg_info "pulling \033[0;93m${repo}\033[0m..."
-    if [ "$VERBOSE" = true ] ; then   
+    if [ "$VERBOSE" = true ] ; then
         git pull --rebase || msg_error "failed to pull ${repo}!"
     else
         git pull --rebase > /dev/null 2>&1 || msg_error "failed to pull ${repo}!"
@@ -38,38 +38,38 @@ for repo in ${REPOS[@]}; do
 
     #####################
     # Ubutnus
-    #####################    
+    #####################
     # configuring on Ubutnus
     msg_info "running cmake for ${repo} on Ubuntus (laptops) ..."
     cd ${REPOS_DIR}/${repo}/build-ubuntu
-    if [ "$VERBOSE" = true ] ; then   
+    if [ "$VERBOSE" = true ] ; then
         cmake -DCMAKE_BUILD_TYPE=Release ../ || msg_error "failed to cmake ${repo} on Ubuntus (laptops)!"
     else
         cmake -DCMAKE_BUILD_TYPE=Release ../ > /dev/null 2>&1 || msg_error "failed to cmake ${repo} on Ubuntus (laptops)!"
     fi
     # building on Ubuntus
     msg_info "building ${repo} on Ubuntus (laptops) ..."
-    if [ "$VERBOSE" = true ] ; then 
+    if [ "$VERBOSE" = true ] ; then
         make -j6  || msg_error "failed to build ${repo} on blades Ubuntus (laptops)!"
     else
         make -j6  > /dev/null 2>&1 || msg_error "failed to build ${repo} on blades Ubuntus (laptops)!"
     fi
-    
+
     cd ${REPOS_DIR}
 
     #####################
     # Blades (icub-b1)
-    #####################    
+    #####################
     # configuring on icub-b1
     msg_info "running cmake for ${repo} on blades (icub-b1) ..."
-    if [ "$VERBOSE" = true ] ; then   
+    if [ "$VERBOSE" = true ] ; then
         ssh icub-b1 "cd ${REPOS_DIR}/${repo}/build-x86_64 && cmake -DCMAKE_BUILD_TYPE=Release ../" || msg_error "failed to cmake ${repo} on blades (icub-b1)!"
     else
         ssh icub-b1 "cd ${REPOS_DIR}/${repo}/build-x86_64 && cmake -DCMAKE_BUILD_TYPE=Release  ../" > /dev/null 2>&1 || msg_error "failed to cmake ${repo} on blades (icub-b1)!"
     fi
     # building on icub-b1s
     msg_info "building ${repo} on blades (icub-b1) ..."
-    if [ "$VERBOSE" = true ] ; then 
+    if [ "$VERBOSE" = true ] ; then
         ssh icub-b1 "cd ${REPOS_DIR}/${repo}/build-x86_64 && make -j6"  || msg_error "failed to build ${repo} on blades (icub-b1)!"
     else
         ssh icub-b1 "cd ${REPOS_DIR}/${repo}/build-x86_64 && make -j6"  > /dev/null 2>&1 || msg_error "failed to build ${repo} on blades (icub-b1)!"
@@ -77,17 +77,17 @@ for repo in ${REPOS[@]}; do
 
     #####################
     # pc104
-    #####################    
+    #####################
     # configuring on pc104
     msg_info "running cmake for ${repo} on pc104 ..."
-    if [ "$VERBOSE" = true ] ; then   
+    if [ "$VERBOSE" = true ] ; then
         ssh pc104 "cd ${REPOS_DIR}/${repo}/build-pc104 && cmake -DCMAKE_BUILD_TYPE=Release ../" || msg_error "failed to cmake ${repo} on pc104!"
     else
         ssh pc104 "cd ${REPOS_DIR}/${repo}/build-pc104 && cmake -DCMAKE_BUILD_TYPE=Release ../" > /dev/null 2>&1 || msg_error "failed to cmake ${repo} on pc104!"
     fi
     # building on pc104
     msg_info "building ${repo} on pc104 ..."
-    if [ "$VERBOSE" = true ] ; then 
+    if [ "$VERBOSE" = true ] ; then
         ssh pc104 "cd ${REPOS_DIR}/${repo}/build-pc104 && make -j2"  || msg_error "failed to build ${repo} on pc104!"
     else
         ssh pc104 "cd ${REPOS_DIR}/${repo}/build-pc104 && make -j2"  > /dev/null 2>&1 || msg_error "failed to build ${repo} on pc104!"
@@ -99,7 +99,7 @@ for repo in ${REPOS[@]}; do
     else
         msg_error "updating ${repo} is failed!\n"
     fi
-   
+
 done
 
 

@@ -5,10 +5,10 @@ on:
   pull_request:
   schedule:
   # * is a special character in YAML so you have to quote this string
-  # Execute a "nightly" build at 2 AM UTC 
+  # Execute a "nightly" build at 2 AM UTC
   - cron:  '0 2 * * *'
-  
-  
+
+
 jobs:
   build:
     name: '[${{ matrix.os }}@${{ matrix.build_type }}]'
@@ -29,18 +29,18 @@ jobs:
         echo "::add-path::C:\Program Files\Git\bin"
         echo "::set-env name=VCPKG_ROBOTOLOGY_ROOT::C:/vcpkg-robotology"
         echo "::set-env name=VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT::C:/vcpkg-robotology-binary-ports"
-        
+
     - name: Environment Variables
       shell: bash
       run: env
-      
-    # Remove apt repos that are known to break from time to time 
-    # See https://github.com/actions/virtual-environments/issues/323  
+
+    # Remove apt repos that are known to break from time to time
+    # See https://github.com/actions/virtual-environments/issues/323
     - name: Remove broken apt repos [Ubuntu]
       if: matrix.os == 'ubuntu-latest'
       run: |
         for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
-        
+
     # ============
     # DEPENDENCIES
     # ============
@@ -53,20 +53,20 @@ jobs:
         ${VCPKG_ROBOTOLOGY_ROOT}/bootstrap-vcpkg.sh
         ${VCPKG_ROBOTOLOGY_ROOT}/vcpkg.exe --overlay-ports=${VCPKG_ROBOTOLOGY_BIN_PORTS_ROOT} install --triplet x64-windows ace freeglut ode sdl1 gsl eigen3 libxml2 \
                                                                                                                             opencv ipopt-binary qt5-base
-        
+
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
       run: |
         brew install ace cmake eigen gsl ipopt opencv pkg-config qt5
-    
+
     - name: Dependencies [Ubuntu]
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev swig libopencv-dev qtbase5-dev \
-                                 qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev 
-        
-    - name: Source-based Dependencies [Windows] 
+                                 qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev
+
+    - name: Source-based Dependencies [Windows]
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
@@ -75,7 +75,7 @@ jobs:
         git clone https://github.com/robotology/ycm.git --depth 1 --branch master
         cd ycm && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROBOTOLOGY_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-        cmake --build . --config ${{ matrix.build_type }} --target INSTALL 
+        cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         # YARP
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/yarp.git --depth 1 --branch master
@@ -83,8 +83,8 @@ jobs:
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROBOTOLOGY_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
-        
-    - name: Source-based Dependencies [Ubuntu/macOS] 
+
+    - name: Source-based Dependencies [Ubuntu/macOS]
       if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
       shell: bash
       run: |
@@ -93,14 +93,14 @@ jobs:
         git clone https://github.com/robotology/ycm.git --depth 1 --branch master
         cd ycm && mkdir -p build && cd build
         cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-        cmake --build . --config ${{ matrix.build_type }} --target install 
+        cmake --build . --config ${{ matrix.build_type }} --target install
         # YARP
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/yarp.git --depth 1 --branch master
         cd yarp && mkdir -p build && cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-        cmake --build . --config ${{ matrix.build_type }} --target install 
- 
+        cmake --build . --config ${{ matrix.build_type }} --target install
+
     # ===================
     # CMAKE-BASED PROJECT
     # ===================
@@ -119,19 +119,19 @@ jobs:
       shell: bash
       run: |
         mkdir -p build
-        cd build    
+        cd build
         cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-      
+
     - name: Build
       shell: bash
       run: |
         cd build
-        # Fix for using YARP idl generators (that link ACE) in Windows 
+        # Fix for using YARP idl generators (that link ACE) in Windows
         # See https://github.com/robotology/idyntree/issues/569 for more details
         export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin:${VCPKG_ROBOTOLOGY_ROOT}/installed/x64-windows/bin
         cmake --build . --config ${{ matrix.build_type }}
-        
+
     - name: Install
       shell: bash
       run: |

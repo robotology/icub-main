@@ -12,7 +12,7 @@ set(folder_source src/main.cpp
                   src/CalibToolFactory.cpp
                   src/PinholeCalibTool.cpp
                   src/SphericalCalibTool.cpp)
-                             
+
 set(folder_header include/iCub/spherical_projection.h
                   include/iCub/CamCalibModule.h
                   include/iCub/CalibToolFactory.h

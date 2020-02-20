@@ -9,7 +9,7 @@ case "$1" in
                 bash -c "$command"
                 ;;
     start)
-                
+
 
                 command="yarpdatadumper --name /dump_head --demul 2"
                 bash -c "$command &"
@@ -28,7 +28,7 @@ case "$1" in
                 command="$ICUB_ROOT/app/kinematicCalibration/demoSwitch.sh start"
                 bash -c "$command"
                 ;;
-   connect)    
+   connect)
                 command="yarp connect /icub/head/state:o /dump_head udp"
                 bash -c "$command &"
                 command="yarp connect /icub/left_arm/state:o /dump_left_arm udp"
@@ -44,7 +44,7 @@ case "$1" in
                 command="yarp connect /icub/right_leg/state:o /dump_right_leg udp"
                 bash -c "$command &"
                            ;;
-   disconnect)    
+   disconnect)
                 command="yarp disconnect /icub/head/state:o /dump_head"
                 bash -c "$command &"
                 command="yarp disconnect /icub/left_arm/state:o /dump_left_arm"

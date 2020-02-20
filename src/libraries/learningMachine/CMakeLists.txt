@@ -35,7 +35,7 @@ if(YARP_gsl_FOUND)
       include/iCub/learningMachine/Standardizer.h
       include/iCub/learningMachine/TransformerCatalogue.h
       include/iCub/learningMachine/TransformerPortable.h )
-  
+
   set(LM_MACHINE_SRC
       src/DatasetRecorder.cpp
       src/DummyLearner.cpp
@@ -44,7 +44,7 @@ if(YARP_gsl_FOUND)
       src/LSSVMLearner.cpp
       src/Prediction.cpp
       src/RLSLearner.cpp )
-  
+
   set(LM_TRANSFORMER_SRC
       src/FixedRangeScaler.cpp
       src/IFixedSizeTransformer.cpp
@@ -55,22 +55,22 @@ if(YARP_gsl_FOUND)
       src/ScaleTransformer.cpp
       src/SparseSpectrumFeature.cpp
       src/Standardizer.cpp )
-  
+
   set(LM_SUPPORT_SRC
-      src/Math.cpp 
+      src/Math.cpp
       src/Serialization.cpp )
-  
+
   add_library(${LM_LIB} ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC} ${LM_SUPPORT_SRC} ${LM_HEADER})
 
   target_include_directories(${LM_LIB} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                                               "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
                                               ${GSL_INCLUDE_DIRS})
-  
+
   target_link_libraries(${LM_LIB} PUBLIC  YARP::YARP_os YARP::YARP_sig YARP::YARP_math
                                   PRIVATE YARP::YARP_gsl ${GSL_LIBRARIES})
-  
+
   icub_export_library(${LM_LIB} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                 DESTINATION include/iCub/learningMachine
                                 FILES ${LM_HEADER})
 endif()
-  
+

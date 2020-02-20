@@ -31,16 +31,16 @@
 #include <hostTransceiver.hpp>
 
 namespace eth {
-           
+
     class theNVmanager
     {
     public:
         static theNVmanager& getInstance();
-                
+
     public:
 
         enum class ropCode { sig = eo_ropcode_sig, say = eo_ropcode_say };
-        
+
         // value and values[i] must point to memory with enough space to host the reply. the ask() functions will just copy the reply
         // into these memory locations, hence the user must pre-allocate enough memory before calling ask()
         // but what must be the size of the memory? well, it depends on {ipv4, id32}. in any case, it is upper bounded.
@@ -121,7 +121,7 @@ namespace eth {
         bool group_stop(const double timeout = 0.5);
 
     private:
-        theNVmanager(); 
+        theNVmanager();
 
     public:
         // remove copy constructors and copy assignment operators
@@ -130,10 +130,10 @@ namespace eth {
         void operator=(const theNVmanager&) = delete;
         void operator=(theNVmanager&) = delete;
 
-    private:    
+    private:
         struct Impl;
-        Impl *pImpl;        
-    };       
+        Impl *pImpl;
+    };
 
 
 } // namespace eth

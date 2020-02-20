@@ -18,7 +18,7 @@
 #include <abstractEthResource.h>
 
 
-#include "FeatureInterface.h"  
+#include "FeatureInterface.h"
 #include "EoAnalogSensors.h"
 
 

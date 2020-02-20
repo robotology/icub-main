@@ -21,7 +21,7 @@ bool stereoCalibModule::configure(yarp::os::ResourceFinder &rf)
         sprintf(dirName,"%s/%s_%.5d",dir.c_str(),"calibImg",i);
         proceed=!yarp::os::stat(dirName);
         sprintf(dirName,"%s/%s_%.5d/",dir.c_str(),"calibImg",i);
-    }    
+    }
     yarp::os::mkdir_p(dirName);
 
     if (!handlerPort.open(handlerPortName.c_str()))
@@ -55,7 +55,7 @@ bool stereoCalibModule::close()
 }
 
 
-bool stereoCalibModule::respond(const Bottle& command, Bottle& reply) 
+bool stereoCalibModule::respond(const Bottle& command, Bottle& reply)
 {
     if (command.get(0).asString()=="start") {
         reply.addString("Starting Calibration...");
@@ -72,7 +72,7 @@ bool stereoCalibModule::updateModule()
 
 
 double stereoCalibModule::getPeriod()
-{    
+{
    return 0.1;
 }
 

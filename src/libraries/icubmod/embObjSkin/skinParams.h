@@ -37,7 +37,7 @@ public:
 
 public:
     void setDefaultValues(void)
-    { 
+    {
         period                  = sk_period_default;
         noLoad                  = sk_noLoad_default;
         skinType                = sk_skintype_default;

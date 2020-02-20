@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Andrea Del Prete
 * email:   andrea.delprete@iit.it
@@ -39,7 +39,7 @@ using namespace iCub::skinDynLib;
 iDynContactSolver::iDynContactSolver(iDynChain *_c, const string &_info, const NewEulMode _mode, BodyPart _bodyPart, unsigned int verb)
 :iDynSensor(_c, _info, _mode, verb), bodyPart(_bodyPart){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynContactSolver::iDynContactSolver(iDynChain *_c, unsigned int sensLink, SensorLinkNewtonEuler *sensor, 
+iDynContactSolver::iDynContactSolver(iDynChain *_c, unsigned int sensLink, SensorLinkNewtonEuler *sensor,
                                     const string &_info, const NewEulMode _mode, BodyPart _bodyPart, unsigned int verb)
 :iDynSensor(_c, _info, _mode, verb), bodyPart(_bodyPart)
 {
@@ -47,7 +47,7 @@ iDynContactSolver::iDynContactSolver(iDynChain *_c, unsigned int sensLink, Senso
     sens = sensor;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-iDynContactSolver::iDynContactSolver(iDynChain *_c, unsigned int sensLink, const Matrix &_H, const Matrix &_HC, double _m, 
+iDynContactSolver::iDynContactSolver(iDynChain *_c, unsigned int sensLink, const Matrix &_H, const Matrix &_HC, double _m,
                                      const Matrix &_I, const string &_info, const NewEulMode _mode, BodyPart _bodyPart, unsigned int verb)
 :iDynSensor(_c, sensLink, _H, _HC, _m, _I, _info, _mode, verb), bodyPart(_bodyPart){}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -103,7 +103,7 @@ const dynContactList& iDynContactSolver::computeExternalContacts()
         chain->prepareNewtonEuler(mode);
         chain->initNewtonEuler();       // here I assume the chain base is still
     }
-    
+
     // KINEMATIC PHASE
     chain->computeKinematicNewtonEuler();               // compute kinematics of all the links
     sens->ForwardAttachToLink(chain->refLink(lSens));   // compute kinematics of the sensor sub-link
@@ -112,7 +112,7 @@ const dynContactList& iDynContactSolver::computeExternalContacts()
     unsigned int firstContactLink, lastContactLink;
     findContactSubChain(firstContactLink, lastContactLink);
     /*if(verbose)
-        fprintf(stdout, "Estimating %d contacts between link %d and %d\n", 
+        fprintf(stdout, "Estimating %d contacts between link %d and %d\n",
             contactList.size(), firstContactLink, lastContactLink);*/
     if(firstContactLink<lSens)
     {
@@ -137,12 +137,12 @@ const dynContactList& iDynContactSolver::computeExternalContacts()
     chain->NE->BackwardWrenchFromAtoB(chain->getN()-1, lastContactLink);
 
     // BUILD AND SOLVE THE LINEAR SYSTEM AX=B RELATIVE TO THE CONTACT SUB-CHAIN
-    // the reference frame is the <firstContactLink-1> 
+    // the reference frame is the <firstContactLink-1>
     Matrix A = buildA(firstContactLink, lastContactLink);
     Vector B = buildB(firstContactLink, lastContactLink);
     Matrix pinv_A = pinv(A, TOLLERANCE);
     Vector X = pinv_A * B;
-    
+
     // SET THE COMPUTED VALUES IN THE CONTACT LIST
     unsigned int unknownInd = 0;
     Matrix H, R;
@@ -193,8 +193,8 @@ Matrix iDynContactSolver::buildA(unsigned int firstContactLink, unsigned int las
     // For each contact add some columns to A:
     //    * wrench: add 6 columns, 3 composed by I_3 above and the S(r_E) below, 3 composed by 0_3 above and I_3 below
     //    * pure force: add 3 columns composed by I_3 above and the S(r_E) below
-    //    * force module: add 1 column composed by the force direction unit vector above and the cross product between 
-    //          the contact point and the force direction unit vector below    
+    //    * force module: add 1 column composed by the force direction unit vector above and the cross product between
+    //          the contact point and the force direction unit vector below
     unsigned int colInd = 0;
     Matrix H, R;
     Matrix eye3x3 = eye(3,3);
@@ -224,7 +224,7 @@ Matrix iDynContactSolver::buildA(unsigned int firstContactLink, unsigned int las
             A.setSubmatrix(eye3x3, 0, colInd);
             A.setSubmatrix(crossProductMatrix(temp1), 3, colInd);
             colInd += 3;
-            
+
             if(!it->isMomentKnown())
             {                       // 6 UNKNOWNS: FORCE AND MOMENT
                 A.setSubmatrix(zero3x3, 0, colInd);
@@ -248,7 +248,7 @@ Vector iDynContactSolver::buildB(unsigned int firstContactLink, unsigned int las
     Matrix Rlast = Hlast.submatrix(0,2,0,2);
     Vector rLast = Hlast.subcol(0,3,3);
     //Vector rLast = Hlast.submatrix(0,2,3,3).getCol(0);
-    Vector Bforce = Rlast * chain->getForce(lastContactLink); 
+    Vector Bforce = Rlast * chain->getForce(lastContactLink);
     Bforce -= chain->getForce(firstContactLink-1);
 
     // For each link add the mass multiplied by the linear accelleration of the COM
@@ -262,7 +262,7 @@ Vector iDynContactSolver::buildB(unsigned int firstContactLink, unsigned int las
     // initialize the moment part (computed w.r.t. the begin of the first link) of the B vector (last 3 components) as:
     //  * the moment exerted by the last link on the next one
     //  * minus the moment applied on the first link
-    //  * the displacement between the beginning of the first link and the end of the last link, 
+    //  * the displacement between the beginning of the first link and the end of the last link,
     //    vector product the force exerted by the last link on the next one
     Vector Bmoment = Rlast * chain->getMoment(lastContactLink);
     Bmoment -= chain->getMoment(firstContactLink-1);
@@ -281,7 +281,7 @@ Vector iDynContactSolver::buildB(unsigned int firstContactLink, unsigned int las
         H *= link->getCOM();
         R = H.submatrix(0,2,0,2);
         r = H.subcol(0,3,3);        // vector from <firstContactLink-1> to COM of i
-        
+
         Bmoment += link->getMass() * cross(r, R * link->getLinAccC());
         Bmoment += R * (link->getInertia() * link->getdW() +
                                  cross(link->getW(), link->getInertia()*link->getW()));
@@ -308,7 +308,7 @@ Vector iDynContactSolver::getForceMomentEndEff() const
 void iDynContactSolver::findContactSubChain(unsigned int &firstLink, unsigned int &lastLink)
 {
     dynContactList::const_iterator it=contactList.begin();
-    firstLink = chain->getN()+1; 
+    firstLink = chain->getN()+1;
     lastLink = 0;
 
     for(; it!=contactList.end(); it++)
@@ -331,7 +331,7 @@ Matrix iDynContactSolver::getHFromAtoB(unsigned int a, unsigned int b)
         Matrix Hinv = getHFromAtoB(b, a);
         return SE3inv(Hinv);
     }
-    
+
     Matrix H = chain->refLink(a+1)->getH();     // initialize H with the rototranslation from <a> to <a+1>
     for(unsigned int i=a+2; i<=b; i++)
         H *= chain->refLink(i)->getH();

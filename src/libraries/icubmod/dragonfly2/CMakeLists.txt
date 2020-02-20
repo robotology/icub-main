@@ -22,7 +22,7 @@ yarp_prepare_plugin(dragonfly2raw
 
 IF(NOT SKIP_dragonfly2)
   FIND_PACKAGE(DRAGONFLYAPI)
-  
+
   SET (EXTRA_SOURCES)
   IF(NOT DRAGONFLYAPI_FOUND)
 	MESSAGE(SEND_ERROR "dragonfly2: dragonfly api not found, turn off device")
@@ -46,7 +46,7 @@ IF(NOT SKIP_dragonfly2)
   yarp_add_plugin(dragonfly2 common/DragonflyDeviceDriver2.h common/DragonflyDeviceDriver2.cpp ${EXTRA_SOURCES})
   target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
   icub_export_plugin(dragonfly2)
-  
+
           yarp_install(TARGETS dragonfly2
                COMPONENT Runtime
                LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
@@ -56,10 +56,10 @@ IF(NOT SKIP_dragonfly2)
   if(NOT WIN32)
     add_executable(firewirebusreset linux/fwBusReset_main.cpp ${EXTRA_SOURCES})
     target_link_libraries(firewirebusreset ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
-    install(TARGETS firewirebusreset DESTINATION bin) 
+    install(TARGETS firewirebusreset DESTINATION bin)
   endif()
 
   ENDIF(NOT DRAGONFLYAPI_FOUND)
 ENDIF(NOT SKIP_dragonfly2)
 
-    
+

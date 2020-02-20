@@ -38,7 +38,7 @@ namespace iCub {
 using namespace iCub::contrib;
 
 typedef struct
-{  
+{
     char name[3];
     char leb[2];
     char reb[2];
@@ -62,7 +62,7 @@ public:
  *
  * EmotionInterface Module class
  *
- * 
+ *
  *
  */
 class iCub::contrib::EmotionInterfaceModule : public RFModule,
@@ -103,7 +103,7 @@ public:
 
     EmotionInterfaceModule();
     ~EmotionInterfaceModule() override = default;
-    
+
     bool configure(ResourceFinder& config) override;//virtual bool open(Searchable& config);
     bool close() override;
     bool interruptModule() override;

@@ -14,14 +14,14 @@ if(ICUB_HAS_icub_firmware_shared)
     target_link_libraries(canBusVirtualAnalogSensor ${YARP_LIBRARIES})
 
     icub_export_plugin(canBusVirtualAnalogSensor)
-    
+
           yarp_install(TARGETS canBusVirtualAnalogSensor
                COMPONENT Runtime
                LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
                ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
                YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
-    
+
 else(ICUB_HAS_icub_firmware_shared)
   message(ERROR " canBusVirtualAnalogSensor: cannot find icub_firmware_shared library, turn off device
   embObj library can now be found in the icub-firmware-shared package that

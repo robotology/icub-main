@@ -57,11 +57,11 @@ void velControlThread::run()
         for(int i=0;i<size;i++)
         {
             int ind = bot->get(2*i).asInt();
-            if(ind < VELOCITY_INDEX_OFFSET) 
+            if(ind < VELOCITY_INDEX_OFFSET)
             {//this is a position command
                 targets(ind) = bot->get(2*i+1).asDouble();
-            } 
-            else 
+            }
+            else
             {//this is a velocity command
                 ffVelocities(ind - VELOCITY_INDEX_OFFSET) = bot->get(2*i+1).asDouble();
             }

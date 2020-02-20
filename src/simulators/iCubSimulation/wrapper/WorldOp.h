@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick, Vadim Tikhanoff
 * email:   paulfitz@alum.mit.edu, vadim.tikhanoff@iit.it
@@ -100,8 +100,8 @@ public:
 
     WorldOpTriplet() { x[0] = x[1] = x[2] = 0; }
 
-    WorldOpTriplet(double x, double y, double z) { 
-        valid = true; 
+    WorldOpTriplet(double x, double y, double z) {
+        valid = true;
         this->x[0] = x;
         this->x[1] = y;
         this->x[2] = z;

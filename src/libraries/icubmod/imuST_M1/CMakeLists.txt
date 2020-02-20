@@ -23,7 +23,7 @@ if (ENABLE_${PROJECTNAME})
     yarp_add_plugin(${PROJECTNAME} ST_M1.cpp ST_M1.h ST_M1_dataType.h)
     target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
     icub_export_plugin(${PROJECTNAME})
- 
+
   yarp_install(TARGETS ${PROJECTNAME}
                COMPONENT Runtime
                LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}

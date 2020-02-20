@@ -59,7 +59,7 @@ public:
     {
         if (!config.check("physDevice"))
         {
-            yError("SharedCanBus could not find low level can driver specification\n");         
+            yError("SharedCanBus could not find low level can driver specification\n");
             return false;
         }
 
@@ -102,9 +102,9 @@ public:
                 {
                     if (ap->hasId(id)) canIdDeleteUnsafe(id);
                 }
-                
+
                 accessPoints[i]=accessPoints[n-1];
-                
+
                 accessPoints.pop_back();
 
                 break;
@@ -143,7 +143,7 @@ public:
                     }
                 }
             }
-        } 
+        }
     }
 
     bool canWrite(const yarp::dev::CanBuffer &msgs, unsigned int size, unsigned int *sent, bool wait,yarp::dev::CanBusAccessPoint* pFrom)
@@ -189,7 +189,7 @@ public:
         std::lock_guard<std::mutex> lck(configMutex);
         canIdDeleteUnsafe(id);
     }
-    
+
     yarp::dev::ICanBus* getCanBus()
     {
         return theCanBus;
@@ -234,7 +234,7 @@ public:
 
         // low level driver
         polyDriver.open(prop);
-    
+
         if (!polyDriver.isValid())
         {
             yError("SharedCanBus: could not instantiate can device\n");
@@ -390,7 +390,7 @@ private:
 bool yarp::dev::CanBusAccessPoint::open(yarp::os::Searchable& config)
 {
     mSharedPhysDevice=SharedCanBusManager::getInstance().open(config);
-    
+
     if (!mSharedPhysDevice) return false;
 
     mBufferSize=(unsigned int)(mSharedPhysDevice->getBufferSize());
@@ -462,7 +462,7 @@ bool yarp::dev::CanBusAccessPoint::canIdDelete(unsigned int id)
 yarp::dev::CanBuffer yarp::dev::CanBusAccessPoint::createBuffer(int nmessage)
 {
     yarp::dev::CanBuffer cb;
-    
+
     if (mSharedPhysDevice) cb = mSharedPhysDevice->getCanBufferFactory()->createBuffer(nmessage);
 
     return cb;
@@ -473,6 +473,6 @@ void yarp::dev::CanBusAccessPoint::destroyBuffer(CanBuffer &msgs)
     if (!mSharedPhysDevice) return;
 
     yarp::dev::ICanBufferFactory* tmp = mSharedPhysDevice->getCanBufferFactory();
-    
+
     if (tmp) tmp->destroyBuffer(msgs);
 }

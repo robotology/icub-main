@@ -7,7 +7,7 @@ Test how much left and right images are aligned.
 
 \section intro_sec Description
 Superimpose images from the left and right cameras. The two streams
-go to different color channels (left image to red and right image to green), 
+go to different color channels (left image to red and right image to green),
 when images matches perfectly you see a yellow image.
 
 \section lib_sec Libraries
@@ -17,8 +17,8 @@ YARP libs.
 No parameters.
 
 \section portsa_sec Ports Accessed
-The module does not assume ports are already created. You have to connect 
-them manually. To properly work you will need two camera streams (e.g. 
+The module does not assume ports are already created. You have to connect
+them manually. To properly work you will need two camera streams (e.g.
 /icub/cam/left or /icub/cam/right).
 
 \section portsc_sec Ports Created
@@ -55,7 +55,7 @@ yarp connect /teststereomatch/o /match/view
 \author Lorenzo Natale
 
 Copyright (C) 2008 RobotCub Consortium
- 
+
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 This file can be edited at src/testStereoMatch/main.cpp
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 }
 
 void printFrame(int h, int w, int c)
-{   
+{
     if (c%500 == 0)
         printf("Frame #%d %dx%d \n", c, h, w);
 }

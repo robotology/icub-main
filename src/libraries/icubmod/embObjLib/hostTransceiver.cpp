@@ -288,7 +288,7 @@ bool HostTransceiver::write(const eOprotID32_t id32, const void* data, bool forc
 }
 
 
-// if signature is eo_rop_SIGNATUREdummy (0xffffffff) we dont send the signature. if writelocalcache is true we copy data into local ram of the EOnv 
+// if signature is eo_rop_SIGNATUREdummy (0xffffffff) we dont send the signature. if writelocalcache is true we copy data into local ram of the EOnv
 bool HostTransceiver::addSetROP__(const eOprotID32_t id32, const void* data, const uint32_t signature, bool writelocalrxcache)
 {
     eOresult_t eores = eores_NOK_generic;
@@ -311,7 +311,7 @@ bool HostTransceiver::addSetROP__(const eOprotID32_t id32, const void* data, con
         yError() << "HostTransceiver::addSetROP__() called w/ with NULL data";
         return false;
     }
-    
+
     if(true == writelocalrxcache)
     {
         EOnv    nv;
@@ -330,18 +330,18 @@ bool HostTransceiver::addSetROP__(const eOprotID32_t id32, const void* data, con
         lock_nvs(false);
 
         // marco.accame on 09 apr 2014:
-        // we write data into 
+        // we write data into
         if(eores_OK != eores)
         {
             // the nv is not writeable
             yError() << "HostTransceiver::addSetROP__(): Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
             return false;
         }
-        
+
     }
 
     eOropdescriptor_t ropdesc = {0};
-    
+
     // marco.accame: use eok_ropdesc_basic to have a basic valid descriptor which is modified later
     memcpy(&ropdesc, &eok_ropdesc_basic, sizeof(eOropdescriptor_t));
 
@@ -380,7 +380,7 @@ bool HostTransceiver::addSetROP__(const eOprotID32_t id32, const void* data, con
                 char nvinfo[128];
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
                 yDebug() << "HostTransceiver::addSetROP__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "successful ONLY at attempt num " << i+1 <<
-                              "with id: " << nvinfo;                
+                              "with id: " << nvinfo;
             }
 
             ret = true;
@@ -486,7 +486,7 @@ bool HostTransceiver::addROPask(const eOprotID32_t id32, const uint32_t signatur
 
 
 bool HostTransceiver::read(const eOprotID32_t id32, void *data)
-{      
+{
     if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
     {
         char nvinfo[128];
@@ -495,13 +495,13 @@ bool HostTransceiver::read(const eOprotID32_t id32, void *data)
                     "with id: " << nvinfo;
         return false;
     }
-    
+
     if(NULL == data)
     {
         yError() << "HostTransceiver:read() called w/ NULL data";
         return false;
-    }       
-    
+    }
+
     EOnv nv;
     EOnv *nv_ptr = getnvhandler(id32, &nv);
 
@@ -514,9 +514,9 @@ bool HostTransceiver::read(const eOprotID32_t id32, void *data)
     }
 
     uint16_t size = 0;
-    // marco.accame: protection is inside getNVvalue() member function  
+    // marco.accame: protection is inside getNVvalue() member function
     bool ret = getNVvalue(nv_ptr, reinterpret_cast<uint8_t *>(data), &size);
- 
+
 
     return ret;
 }
@@ -530,14 +530,14 @@ bool HostTransceiver::parseUDP(const void *data, const uint16_t size)
     {
         yError() << "eo HostTransceiver::parse() called with NULL data";
         return false;
-    } 
+    }
 
     if(size > pktsizerx)
     {
         yError() << "eo HostTransceiver::parse() called too big a packet: max size is" << pktsizerx;
         return false;
     }
-    
+
     uint16_t numofrops;
     uint64_t txtime;
     uint16_t capacityrxpkt = 0;
@@ -547,7 +547,7 @@ bool HostTransceiver::parseUDP(const void *data, const uint16_t size)
     {
         yError () << "received packet has size " << size << "which is higher than capacity of rx pkt = " << capacityrxpkt << "\n";
         return false;
-    } 
+    }
 
     eo_packet_Payload_Set(p_RxPkt, reinterpret_cast<uint8_t*>(const_cast<void*>(data)), size);
     eo_packet_Addressing_Set(p_RxPkt, remoteipaddr, ipport);
@@ -665,7 +665,7 @@ bool HostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
 {
     bool ret;
     if (NULL == nv)
-    {   
+    {
         yError() << "HostTransceiver::getNVvalue() called w/ NULL nv value: BOARD w/ IP" << remoteipstring;
         return false;
     }
@@ -715,7 +715,7 @@ bool HostTransceiver::initProtocol()
     if(false == alreadyinitted)
     {
 	    // configure all the callbacks of all endpoints.
-	
+
 	    eoprot_override_mn();
 	    eoprot_override_mc();
 	    eoprot_override_as();
@@ -811,14 +811,14 @@ void HostTransceiver::eoprot_override_mc(void)
     // marco.accame on 22 mar 2016:
     // i want to keep a minimum of callbacks, thus i have cleaned and put comments about what is needed and why
 
-    static const eOprot_callbacks_endpoint_descriptor_t mc_callbacks_descriptor_endp = 
-    { 
-        EO_INIT(.endpoint)          eoprot_endpoint_motioncontrol, 
+    static const eOprot_callbacks_endpoint_descriptor_t mc_callbacks_descriptor_endp =
+    {
+        EO_INIT(.endpoint)          eoprot_endpoint_motioncontrol,
         EO_INIT(.raminitialise)     NULL
     };
-    
-    static const eOprot_callbacks_variable_descriptor_t mc_callbacks_descriptors_vars[] = 
-    { 
+
+    static const eOprot_callbacks_variable_descriptor_t mc_callbacks_descriptors_vars[] =
+    {
         // joint
         {   // joint_status: used to inform the motioncontrol device that a sig<> ROP about joint status has arrived. for .. updating timestamps
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
@@ -862,7 +862,7 @@ void HostTransceiver::eoprot_override_mc(void)
 
     // ------------------------------------------------------------------------------------------------------------------------------------
     // -- override of the callbacks of variables of MC. common to every board. they perform an action or reception of a specific sig<> ROP.
-    
+
     int number = sizeof(mc_callbacks_descriptors_vars)/sizeof(mc_callbacks_descriptors_vars[0]);
     for(int i=0; i<number; i++)
     {
@@ -876,14 +876,14 @@ void HostTransceiver::eoprot_override_as(void)
     // marco.accame on 22 mar 2016:
     // i want to keep a minimum of callbacks, thus i have cleaned and put comments about what is needed and why
 
-    static const eOprot_callbacks_endpoint_descriptor_t as_callbacks_descriptor_endp = 
-    { 
-        EO_INIT(.endpoint)          eoprot_endpoint_analogsensors, 
+    static const eOprot_callbacks_endpoint_descriptor_t as_callbacks_descriptor_endp =
+    {
+        EO_INIT(.endpoint)          eoprot_endpoint_analogsensors,
         EO_INIT(.raminitialise)     NULL
     };
-    
-    static const eOprot_callbacks_variable_descriptor_t as_callbacks_descriptors_vars[] = 
-    { 
+
+    static const eOprot_callbacks_variable_descriptor_t as_callbacks_descriptors_vars[] =
+    {
         // strain
         {   // strain_status_calibratedvalues: it gives data from strain to the device, so that it writes it in the relevant yarp port
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
@@ -899,7 +899,7 @@ void HostTransceiver::eoprot_override_as(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_strain_status_uncalibratedvalues
         },
-        // mais        
+        // mais
         {   // mais_status_the15values: it gives data from mais to the device, so that it writes it in the relevant yarp port
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_mais,
@@ -937,7 +937,7 @@ void HostTransceiver::eoprot_override_as(void)
             EO_INIT(.update)        eoprot_fun_UPDT_as_psc_status
         }
 
-#if 0   // marco.accame: i keep the code just for the debug phase.       
+#if 0   // marco.accame: i keep the code just for the debug phase.
         ,{   // eoprot_tag_as_inertial_status_accelerometer
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_inertial,
@@ -952,7 +952,7 @@ void HostTransceiver::eoprot_override_as(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_status_gyroscope
         }
-#endif        
+#endif
     };
 
 
@@ -967,7 +967,7 @@ void HostTransceiver::eoprot_override_as(void)
 
     // ------------------------------------------------------------------------------------------------------------------------------------
     // -- override of the callbacks of variables of AS. common to every board. they perform an action or reception of a specific sig<> ROP.
-    
+
     int number = sizeof(as_callbacks_descriptors_vars)/sizeof(as_callbacks_descriptors_vars[0]);
     for(int i=0; i<number; i++)
     {
@@ -982,14 +982,14 @@ void HostTransceiver::eoprot_override_sk(void)
     // marco.accame on 22 mar 2016:
     // i want to keep a minimum of callbacks, thus i have cleaned and put comments about what is needed and why
 
-    static const eOprot_callbacks_endpoint_descriptor_t sk_callbacks_descriptor_endp = 
-    { 
-        EO_INIT(.endpoint)          eoprot_endpoint_skin, 
+    static const eOprot_callbacks_endpoint_descriptor_t sk_callbacks_descriptor_endp =
+    {
+        EO_INIT(.endpoint)          eoprot_endpoint_skin,
         EO_INIT(.raminitialise)     NULL
     };
-    
-    static const eOprot_callbacks_variable_descriptor_t sk_callbacks_descriptors_vars[] = 
-    { 
+
+    static const eOprot_callbacks_variable_descriptor_t sk_callbacks_descriptors_vars[] =
+    {
         // skin
         {   // skin_status_arrayof10canframes: it gives data from mtb to the device, so that it writes it in the relevant yarp port
             EO_INIT(.endpoint)      eoprot_endpoint_skin,
@@ -997,7 +997,7 @@ void HostTransceiver::eoprot_override_sk(void)
             EO_INIT(.tag)           eoprot_tag_sk_skin_status_arrayofcandata,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_sk_skin_status_arrayofcandata
-        }    
+        }
     };
 
 
@@ -1012,7 +1012,7 @@ void HostTransceiver::eoprot_override_sk(void)
 
     // ------------------------------------------------------------------------------------------------------------------------------------
     // -- override of the callbacks of variables of SK. common to every board. they perform an action or reception of a specific sig<> ROP.
-    
+
     int number = sizeof(sk_callbacks_descriptors_vars)/sizeof(sk_callbacks_descriptors_vars[0]);
     for(int i=0; i<number; i++)
     {
@@ -1023,7 +1023,7 @@ void HostTransceiver::eoprot_override_sk(void)
 
 
 void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(EOreceiver *r)
-{  
+{
     const eOreceiver_seqnum_error_t * err = eo_receiver_GetSequenceNumberError(r);
     long long unsigned int exp = err->exp_seqnum;
     long long unsigned int rec = err->rec_seqnum;

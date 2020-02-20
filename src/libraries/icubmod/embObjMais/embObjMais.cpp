@@ -152,7 +152,7 @@ embObjMais::embObjMais()
 
 
 embObjMais::~embObjMais()
-{   
+{
     analogdata.resize(0);
 
     if(NULL != parser)
@@ -420,7 +420,7 @@ bool embObjMais::initRegulars()
             }
         }
     }
-   
+
     return true;
 }
 
@@ -536,7 +536,7 @@ eth::iethresType_t embObjMais::type()
 
 
 bool embObjMais::update(eOprotID32_t id32, double timestamp, void* rxdata)
-{   
+{
     id32 = id32;
     timestamp = timestamp;
 

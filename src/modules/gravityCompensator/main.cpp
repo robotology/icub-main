@@ -2,32 +2,32 @@
 @ingroup icub_module
 
 \defgroup gravityCompensator gravityCompensator
- 
+
 Estimates the gravitational contribute to motors based on estimation of the robot dynamics
- 
+
 Copyright (C) 2008 RobotCub Consortium
- 
+
 Author: Matteo Fumagalli
- 
-Date: first release 24/07/2010 
+
+Date: first release 24/07/2010
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
 
 This module estimates the gravitational term acting on joints due to links weight.
-The estimation is perfomed relying on rigid body dynamics using CAD 
-parameters. 
+The estimation is perfomed relying on rigid body dynamics using CAD
+parameters.
 For further information about the use of this module and of the iCub force control interface, please refer to the force control page:
 http://wiki.icub.org/wiki/Force_Control
 
-\section lib_sec Libraries 
-- YARP libraries. 
-- iDyn library.  
+\section lib_sec Libraries
+- YARP libraries.
+- iDyn library.
 
 \section parameters_sec Parameters
 
---rate \e r 
+--rate \e r
 - The parameter \e r identifies the rate the thread will work. If not
   specified \e 20ms is assumed. The minimum suggested rate is \e 10ms.
 
@@ -39,32 +39,32 @@ The port the service is listening to.
 
 \section portsc_sec Ports Created
 None.
- 
+
 \section in_files_sec Input Data Files
 None.
 
 \section out_data_sec Output Data Files
-None. 
- 
+None.
+
 \section conf_file_sec Configuration Files
 None
- 
+
 \section tested_os_sec Tested OS
 Linux and Windows.
 
 \section example_sec Example
-By launching the following command: 
- 
-\code 
-gravityCompensator 
-\endcode 
- 
+By launching the following command:
+
+\code
+gravityCompensator
+\endcode
+
 the module add offset values which are assigned to the IImpedanceControl interface and ITorqueControl interface
-  
+
 \author Matteo Fumagalli
 
 This file can be edited at \in src/gravityCompensator/main.cpp.
-*/ 
+*/
 
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Time.h>
@@ -160,7 +160,7 @@ public:
 
             //check if the driver is connected
             if (connected) break;
-        
+
             //check if the timeout (60s) is expired
             if (current_time-start_time > 60.0)
             {
@@ -198,7 +198,7 @@ public:
         string fwdSlash = "/";
 
         string name;
-        name = "gravityCompensator";    
+        name = "gravityCompensator";
 
         if (rf.check("period"))
             rate = rf.find("period").asInt();
@@ -325,7 +325,7 @@ public:
                 return false;
             }
         }
-        
+
         if (torso_enabled)
         {
             OptionsTorso.put("device","remote_controlboard");
@@ -338,11 +338,11 @@ public:
                 return false;
             }
         }
-        
+
         yInfo("device driver created\n");
 
         rpcPort.open("/"+name+"/rpc");
-        attach(rpcPort);        
+        attach(rpcPort);
 
         //------------------CHECK FOR WHOLEBODYNAME -----------//
         std::string wholeBodyName = "wholeBodyDynamics";
@@ -400,14 +400,14 @@ public:
 
         Bottle position_bot;
         string helpMessage =  getName() +
-                            " commands are: \n" +  
-                            "help         to display this message\n" + 
-                            "gravity_on   to enabl e the gravity compensation \n" + 
+                            " commands are: \n" +
+                            "help         to display this message\n" +
+                            "gravity_on   to enabl e the gravity compensation \n" +
                             "gravity_off  to disbale the gravity compensation \n" +
                             "external_on  to enable the external input torque \n" +
                             "external_off to disable the external input torque \n";
 
-          reply.clear(); 
+          reply.clear();
         if (command.get(0).asString()=="help")
         {
             cout << helpMessage;
@@ -417,7 +417,7 @@ public:
         }
         else if (command.get(0).asString()=="gravity_on")
         {
-            if (g_comp) 
+            if (g_comp)
             {
                 g_comp->gravity_mode = GRAVITY_COMPENSATION_ON;
                 reply.addString("gravity compensation on");
@@ -433,7 +433,7 @@ public:
         }
         else if (command.get(0).asString()=="external_on")
         {
-            if (g_comp) 
+            if (g_comp)
             {
                 g_comp->external_mode = EXTERNAL_TRQ_ON;
                 reply.addString("external input on");
@@ -451,20 +451,20 @@ public:
         {
             reply.addString("unknown command. type help.");
         }
-        
+
         return true;
     }
 
 
     bool close() override
     {
-        //stop thread 
+        //stop thread
         if(g_comp)
         {
             g_comp->stop();
             delete g_comp; g_comp = nullptr;
         }
-        
+
         //closing interfaces
         if (dd_left_arm)    {delete dd_left_arm;  dd_left_arm=nullptr;  }
         if (dd_right_arm)   {delete dd_right_arm; dd_right_arm=nullptr; }
@@ -504,7 +504,7 @@ public:
         }
         else
         {
-            yInfo("gravityCompensator module was closed successfully! \n");    
+            yInfo("gravityCompensator module was closed successfully! \n");
             return true;
         }
     }

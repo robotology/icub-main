@@ -169,11 +169,11 @@ static void my_cbk_fullScaleFound(eOethLowLevParser_packetInfo_t *pktInfo_ptr, e
 {
         eOas_strain_config_t *straincfg_ptr = (eOas_strain_config_t *)ropAddInfo_ptr->desc.data;
 
-	printf("fullscale found!!: id=0x%x ropcode=0x%x fullscale=%d plussig=%d sig=%d seqnum=%d\n", 
-		ropAddInfo_ptr->desc.id32, 
-		ropAddInfo_ptr->desc.ropcode, 
-		straincfg_ptr->signaloncefullscale, 
-		ropAddInfo_ptr->desc.control.plussign, 
+	printf("fullscale found!!: id=0x%x ropcode=0x%x fullscale=%d plussig=%d sig=%d seqnum=%d\n",
+		ropAddInfo_ptr->desc.id32,
+		ropAddInfo_ptr->desc.ropcode,
+		straincfg_ptr->signaloncefullscale,
+		ropAddInfo_ptr->desc.control.plussign,
 		ropAddInfo_ptr->desc.signature,
                 ropAddInfo_ptr->seqnum);
 

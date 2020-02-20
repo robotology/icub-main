@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright (C) 2014 Francesco Giovannini, iCub Facility - Istituto Italiano di Tecnologia
  * Authors: Francesco Giovannini
  * email:   francesco.giovannini@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -42,7 +42,7 @@ namespace iCub {
                 /* ******* Ports.                                       ******* */
                 yarp::os::BufferedPort<yarp::sig::Vector> portSkinDiagnosticsErrorsIn;
                 yarp::os::BufferedPort<yarp::os::Bottle> portSkinManagerErrorsOut;
-                
+
 
                 /* ****** Resource finder                                ****** */
                 yarp::os::ResourceFinder rf;

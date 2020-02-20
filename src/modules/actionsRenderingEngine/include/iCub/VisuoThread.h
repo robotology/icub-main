@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Carlo Ciliberto, Vadim Tikhanoff
 * email:   carlo.ciliberto@iit.it vadim.tikhanoff@iit.it

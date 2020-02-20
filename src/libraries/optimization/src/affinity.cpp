@@ -53,7 +53,7 @@ inline Matrix computeA(const Ipopt::Number *x)
 /****************************************************************/
 class AffinityWithMatchedPointsNLP : public Ipopt::TNLP
 {
-protected:    
+protected:
     const deque<Vector> &p0;
     const deque<Vector> &p1;
 
@@ -73,7 +73,7 @@ public:
         min=_min;
         max=_max;
         A0=0.5*(min+max);
-        
+
         for (int c=0; c<A0.cols(); c++)
         {
             for (int r=0; r<A0.rows()-1; r++)
@@ -126,7 +126,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number *x,
                             bool init_z, Ipopt::Number *z_L, Ipopt::Number *z_U,
@@ -141,7 +141,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_f(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
                 Ipopt::Number &obj_value)
@@ -159,7 +159,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
@@ -207,7 +207,7 @@ public:
     {
         return true;
     }
-    
+
     /****************************************************************/
     void finalize_solution(Ipopt::SolverReturn status, Ipopt::Index n,
                            const Ipopt::Number *x, const Ipopt::Number *z_L,

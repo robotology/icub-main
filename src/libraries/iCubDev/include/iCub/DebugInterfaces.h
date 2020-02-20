@@ -1,10 +1,10 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Giorgio Metta
  * email: giorgio.metta@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -27,7 +27,7 @@
  * \defgroup icub_icubDev iCubDev
  * \ingroup icub_libraries
  *
- * A library that collects device interfaces. This is similar to the 
+ * A library that collects device interfaces. This is similar to the
  * libYARP_dev in YARP. To be populated.
  *
  * Author: Marco Randazzo
@@ -78,7 +78,7 @@ inline void checkAndDestroyDebug(T* &p) {
 class ControlBoardHelper2
 {
 public:
-    ControlBoardHelper2(int n, const int *aMap, const double *angToEncs, const double *zs, const double *nw, const double *angToRot): zeros(0), 
+    ControlBoardHelper2(int n, const int *aMap, const double *angToEncs, const double *zs, const double *nw, const double *angToRot): zeros(0),
         signs(0),
         axisMap(0),
         invAxisMap(0),
@@ -88,9 +88,9 @@ public:
     {
         nj=n;
         alloc(n);
-        
+
         memcpy(axisMap, aMap, sizeof(int)*nj);
-        
+
         if (zs!=0)
             memcpy(zeros, zs, sizeof(double)*nj);
         else
@@ -127,9 +127,9 @@ public:
 			}
 		}
 
-    } 
+    }
 
-    ~ControlBoardHelper2() 
+    ~ControlBoardHelper2()
     {
         dealloc();
     }
@@ -169,7 +169,7 @@ public:
 
     inline int toHw(int axis)
     { return axisMap[axis]; }
-    
+
     inline int toUser(int axis)
     { return invAxisMap[axis]; }
 
@@ -222,7 +222,7 @@ public:
     inline double posE2A(double enc, int j)
     {
         int k=toUser(j);
-        
+
         return (enc/angleToEncoders[k])-zeros[k];
     }
 
@@ -236,7 +236,7 @@ public:
     inline double posR2A(double enc, int j)
     {
         int k=toUser(j);
-        
+
         return (enc/angleToRotor[k]);//-zeros[k];
     }
 
@@ -307,7 +307,7 @@ public:
     inline double trqS2N(double sens, int j)
     {
         int k=toUser(j);
-        
+
         return (sens/newtonsToSensors[k]);
     }
 
@@ -332,7 +332,7 @@ public:
     inline double impS2N(double sens, int j)
     {
         int k=toUser(j);
-        
+
         return (sens/newtonsToSensors[k]*angleToEncoders[k]);
     }
 
@@ -364,7 +364,7 @@ public:
     {
         velA2E(ang, j, enc, k);
     }
-	
+
 	inline void accA2E_abs(double ang, int j, double &enc, int &k)
     {
         velA2E_abs(ang, j, enc, k);
@@ -517,7 +517,7 @@ public:
 
     inline int axes()
     { return nj; }
-        
+
  	int nj;
 
 	double *zeros;
@@ -546,13 +546,13 @@ public:
     virtual ~IDebugInterface() {}
 
     /* Set a generic parameter (for debug)
-     * @param type is the CAN code representing the command message 
+     * @param type is the CAN code representing the command message
      * @return true/false on success/failure
      */
     virtual bool setParameter(int j, unsigned int type, double value)=0;
 
     /* Get a generic parameter (for debug)
-     * @param type is the CAN code representing the command message 
+     * @param type is the CAN code representing the command message
      * @return true/false on success/failure
      */
     virtual bool getParameter(int j, unsigned int type, double* value)=0;
@@ -575,13 +575,13 @@ public:
     virtual ~IDebugInterfaceRaw() {}
 
     /* Set a generic parameter (for debug)
-	 * @param type is the CAN code representing the command message 
+	 * @param type is the CAN code representing the command message
      * @return true/false on success/failure
      */
     virtual bool setParameterRaw(int j, unsigned int type, double value)=0;
 
     /* Get a generic parameter (for debug)
-     * @param type is the CAN code representing the command message 
+     * @param type is the CAN code representing the command message
      * @return true/false on success/failure
      */
     virtual bool getParameterRaw(int j, unsigned int type, double* value)=0;

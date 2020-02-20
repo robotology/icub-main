@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 """
-This script facilitates training, hyperparameter optimization, and testing 
-of the Sparse Spectrum Gaussian Process for Regression. In addition, models of 
-the algorithm can be exported to a format that can be imported directly in the 
+This script facilitates training, hyperparameter optimization, and testing
+of the Sparse Spectrum Gaussian Process for Regression. In addition, models of
+the algorithm can be exported to a format that can be imported directly in the
 iCub learningMachine framework (see example below).
 
 Notes:
- - Please supply the --help parameter to see an overview of the available 
+ - Please supply the --help parameter to see an overview of the available
    options.
- - All outputs dimensions share the same hyperparameter configuration. If this 
-   is problematic in your application domain, consider learning different 
+ - All outputs dimensions share the same hyperparameter configuration. If this
+   is problematic in your application domain, consider learning different
    (sets of) outputs individually.
- - By design, the method uses a randomized initialization for the feature 
+ - By design, the method uses a randomized initialization for the feature
    mapping. The results may therefore vary depending on the seed of the PRNG.
-   However, variance in results will decrease as the number of projections 
+   However, variance in results will decrease as the number of projections
    increases.
- - Hyperparameter optimization is performed by minimizing the negative log 
-   marginal likelihood. This is a non-convex, non-linear optimization problem 
-   and may therefore result in local optima, depending on the initial 
+ - Hyperparameter optimization is performed by minimizing the negative log
+   marginal likelihood. This is a non-convex, non-linear optimization problem
+   and may therefore result in local optima, depending on the initial
    parameter configuration.
 
 
@@ -59,45 +59,45 @@ def main():
     optimizationgroup = optparse.OptionGroup(parser, 'Optimization Options')
 
 
-    generalgroup.add_option('--projections', dest='projections', type='int', default=100, metavar='D', 
+    generalgroup.add_option('--projections', dest='projections', type='int', default=100, metavar='D',
                       help='number of spectral projections (default: 100)')
-    generalgroup.add_option('--nofixed', dest='fixed', action='store_false', default=True, 
+    generalgroup.add_option('--nofixed', dest='fixed', action='store_false', default=True,
                       help='tune sparse spectrum frequencies')
-    generalgroup.add_option('--params', dest='params', default=None, metavar='[\sigma_n, \sigma_f, \ell_1,  ..., \ell_n]', 
+    generalgroup.add_option('--params', dest='params', default=None, metavar='[\sigma_n, \sigma_f, \ell_1,  ..., \ell_n]',
                       help='set hyperparameters (takes precedence over --guess)')
-    generalgroup.add_option('--seed', dest="seed", default=None, type='int', 
+    generalgroup.add_option('--seed', dest="seed", default=None, type='int',
                       help='seed for the PRNG (default: None)')
-    generalgroup.add_option('--yarp', dest="yarp", default=False, action='store_true', 
+    generalgroup.add_option('--yarp', dest="yarp", default=False, action='store_true',
                       help='serialize to YARP learningMachine compatible files')
 
     # datasets for 4 different functions
-    datasetgroup.add_option('-i', '--inputs', dest='inputs', default=None, metavar='IDX[,IDX]*', 
+    datasetgroup.add_option('-i', '--inputs', dest='inputs', default=None, metavar='IDX[,IDX]*',
                       help='input column indices')
-    datasetgroup.add_option('-o', '--outputs', dest='outputs', default=None, metavar='IDX[,IDX]*', 
+    datasetgroup.add_option('-o', '--outputs', dest='outputs', default=None, metavar='IDX[,IDX]*',
                       help='output column indices')
-    datasetgroup.add_option('--guess', dest='guess', default=None, metavar='DATASET', 
+    datasetgroup.add_option('--guess', dest='guess', default=None, metavar='DATASET',
                       help='guess hyperparameters using specified dataset')
-    datasetgroup.add_option('--optimize', dest='optimize', default=None, metavar='DATASET', 
+    datasetgroup.add_option('--optimize', dest='optimize', default=None, metavar='DATASET',
                       help='optimize hyperparameters using specified dataset')
-    datasetgroup.add_option('--train', dest='train', default=None, metavar='DATASET', 
+    datasetgroup.add_option('--train', dest='train', default=None, metavar='DATASET',
                       help='train machine using specified dataset')
-    datasetgroup.add_option('--test', dest='test', default=None, metavar='DATASET', 
+    datasetgroup.add_option('--test', dest='test', default=None, metavar='DATASET',
                       help='test machine on specified dataset')
 
     # optimization options
-    optimizationgroup.add_option('--solver', dest='solver', default='ralg', 
+    optimizationgroup.add_option('--solver', dest='solver', default='ralg',
                       help='solver (default: ralg)')
-    optimizationgroup.add_option('--verboseopt', dest='verboseopt', default=False, action='store_true', 
+    optimizationgroup.add_option('--verboseopt', dest='verboseopt', default=False, action='store_true',
                       help='enable verbose optimization output')
-    optimizationgroup.add_option('--ftol', dest='ftol', type='float', default=1e-4, metavar='TOL', 
+    optimizationgroup.add_option('--ftol', dest='ftol', type='float', default=1e-4, metavar='TOL',
                       help='function tolerance for stop condition (default: 1e-4)')
-    optimizationgroup.add_option('--gtol', dest='gtol', type='float', default=1e-4, metavar='TOL', 
+    optimizationgroup.add_option('--gtol', dest='gtol', type='float', default=1e-4, metavar='TOL',
                       help='gradient tolerance for stop condition (default: 1e-4)')
-    optimizationgroup.add_option('--maxtime', dest='maxtime', type='float', default=3600., metavar='SECONDS', 
+    optimizationgroup.add_option('--maxtime', dest='maxtime', type='float', default=3600., metavar='SECONDS',
                       help='maximum time (default: 3600)')
-    optimizationgroup.add_option('--maxiters', dest='maxiters', type='int', default=2000, metavar='ITERS', 
+    optimizationgroup.add_option('--maxiters', dest='maxiters', type='int', default=2000, metavar='ITERS',
                       help='maximum iterations (default: 2000)')
-    optimizationgroup.add_option('--maxfevals', dest='maxfevals', type='int', default=5000, metavar='EVALS', 
+    optimizationgroup.add_option('--maxfevals', dest='maxfevals', type='int', default=5000, metavar='EVALS',
                       help='maximum function evaluations (default: 5000)')
 
     parser.add_option_group(generalgroup)
@@ -120,8 +120,8 @@ def main():
     sigma_n, sigma_n_prior = 0.2, NoPrior()
 
     # construct machine and feature mapping
-    ssf = SparseSpectrumFeatures(n, nproj = options.projections, 
-                                 sigma_o = sigma_o, sigma_o_prior = sigma_o_prior, 
+    ssf = SparseSpectrumFeatures(n, nproj = options.projections,
+                                 sigma_o = sigma_o, sigma_o_prior = sigma_o_prior,
                                  l = l, l_prior = l_prior, fixed = options.fixed)
     ssgpr = LinearGPR(n, p, ssf, sigma_n = sigma_n, sigma_n_prior = sigma_n_prior)
 
@@ -163,9 +163,9 @@ def main():
         print '%12s: % d' % ('max iters', options.maxiters)
 
         start = time.time()
-        res = ssgpr.optimize(hyperx, hypery, solver = options.solver, verbose = options.verboseopt, 
-                       ftol = options.ftol, gtol = options.gtol, 
-                       maxtime = options.maxtime, maxIter = options.maxiters, maxFunEvals = options.maxfevals, 
+        res = ssgpr.optimize(hyperx, hypery, solver = options.solver, verbose = options.verboseopt,
+                       ftol = options.ftol, gtol = options.gtol,
+                       maxtime = options.maxtime, maxIter = options.maxiters, maxFunEvals = options.maxfevals,
                        checkgrad = False)
         end = time.time()
         print '%12s: % g seconds' % ('timing', end - start)

@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -50,7 +50,7 @@ public:
     virtual ~OdeLogicalJoint();
 
     /**
-     * Create an array of nested control units.  The array will be 
+     * Create an array of nested control units.  The array will be
      * destroyed when this object is destroyed.
      */
     OdeLogicalJoint *nest(int len);

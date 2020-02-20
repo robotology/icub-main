@@ -34,7 +34,7 @@ private:
     yarp::sig::Vector encoders_speed;
     yarp::sig::Vector Kp;
     yarp::sig::Vector Kd; //derivative term
-    
+
     yarp::sig::Vector targets;
     yarp::sig::Vector ffVelocities;
     yarp::sig::Vector command;

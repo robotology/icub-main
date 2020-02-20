@@ -49,7 +49,7 @@ class yarp::dev::XSensMTx : public yarp::dev::IGenericSensor,
 public:
     XSensMTx();
     virtual ~XSensMTx();
-    
+
     // IGenericSensor interface.
     bool read(yarp::sig::Vector &out) override;
     bool getChannels(int *nc) override;

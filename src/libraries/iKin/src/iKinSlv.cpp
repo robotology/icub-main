@@ -44,11 +44,11 @@ bool RpcProcessor::read(ConnectionReader &connection)
         Bottle cmd, reply;
         if (!cmd.read(connection))
             return false;
-    
+
         slv->respond(cmd,reply);
         if (ConnectionWriter *writer=connection.getWriter())
             reply.write(*writer);
-    
+
         return true;
     }
     else
@@ -245,7 +245,7 @@ void InputPort::onRead(Bottle &b)
 
     // shall be the last handling
     if (xdOptIn)
-    {    
+    {
         if (!handleTarget(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList()))
             yWarning("%s: expected %s data",slv->slvName.c_str(),
                      Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
@@ -266,7 +266,7 @@ void SolverCallback::exec(const Vector &xd, const Vector &q)
 /************************************************************************/
 CartesianSolver::CartesianSolver(const string &_slvName) :
                                 PeriodicThread((double)CARTSLV_DEFAULT_PER/1000.0)
-{          
+{
     // initialization
     slvName=_slvName;
     configured=false;
@@ -299,7 +299,7 @@ CartesianSolver::CartesianSolver(const string &_slvName) :
 
 /************************************************************************/
 PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
-{    
+{
     string partName=partOpt.find("part").asString();
     PolyDriver *pDrv=NULL;
 
@@ -341,14 +341,14 @@ bool CartesianSolver::alignJointsBounds()
 {
     hwLimits.resize(prt->chn->getN(),2);
     double min, max;
-    int cnt=0;    
-    
+    int cnt=0;
+
     yInfo("%s: aligning joints bounds ...",slvName.c_str());
     for (int i=0; i<prt->num; i++)
     {
         yInfo("part #%d: %s",i,prt->prp[i].find("part").asString().c_str());
         for (int j=0; j<jnt[i]; j++)
-        {               
+        {
             if (!lim[i]->getLimits(rmp[i][j],&min,&max))
             {
                 yError("joint #%d: failed getting limits!",cnt);
@@ -361,7 +361,7 @@ bool CartesianSolver::alignJointsBounds()
 
             hwLimits(cnt,0)=min;
             hwLimits(cnt,1)=max;
-        
+
             cnt++;
         }
     }
@@ -411,7 +411,7 @@ void CartesianSolver::latchUncontrolledJoints(Vector &joints)
     {
         joints.resize(unctrlJointsNum);
         int j=0;
-        
+
         for (unsigned int i=0; i<prt->chn->getN(); i++)
             if ((*prt->chn)[i].isBlocked())
                 joints[j++]=prt->chn->getAng(i);
@@ -428,7 +428,7 @@ void CartesianSolver::getFeedback(const bool wait)
     int chainCnt=0;
 
     for (int i=0; i<prt->num; i++)
-    {    
+    {
         bool ok=enc[i]->getEncoders(fbTmp.data());
         while (wait && !closing && !ok)
         {
@@ -437,21 +437,21 @@ void CartesianSolver::getFeedback(const bool wait)
         }
 
         if (ok)
-        {    
+        {
             for (int j=0; j<jnt[i]; j++)
             {
                 double tmp=CTRL_DEG2RAD*fbTmp[rmp[i][j]];
-            
+
                 if ((*prt->chn)[chainCnt].isBlocked())
                     prt->chn->setBlockingValue(chainCnt,tmp);
                 else
                     prt->chn->setAng(chainCnt,tmp);
-            
+
                 chainCnt++;
             }
         }
         else
-        {    
+        {
             yWarning("%s: timeout detected on part %s!",
                      slvName.c_str(),prt->prp[i].find("part").asString().c_str());
 
@@ -533,15 +533,15 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                         case IKINSLV_VOCAB_OPT_POSE:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                    
+
                             if (ctrlPose==IKINCTRL_POSE_FULL)
                                 reply.addVocab(IKINSLV_VOCAB_VAL_POSE_FULL);
                             else
                                 reply.addVocab(IKINSLV_VOCAB_VAL_POSE_XYZ);
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_PRIO:
                         {
@@ -560,22 +560,22 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                         case IKINSLV_VOCAB_OPT_MODE:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                    
+
                             if (inPort->get_contMode())
                                 reply.addVocab(IKINSLV_VOCAB_VAL_MODE_TRACK);
                             else
                                 reply.addVocab(IKINSLV_VOCAB_VAL_MODE_SINGLE);
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_LIM:
                         {
                             if (command.size()>2)
-                            {                    
+                            {
                                 int axis=command.get(2).asInt();
-                    
+
                                 if (axis<(int)prt->chn->getN())
                                 {
                                     reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -587,23 +587,23 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             }
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_VERB:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                    
+
                             if (verbosity)
                                 reply.addVocab(IKINSLV_VOCAB_VAL_ON);
                             else
                                 reply.addVocab(IKINSLV_VOCAB_VAL_OFF);
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_DOF:
                         {
@@ -612,7 +612,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             fillDOFInfo(dofPart);
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_REST_POS:
                         {
@@ -620,7 +620,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             handleJointsRestPosition(NULL,&reply);
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_REST_WEIGHTS:
                         {
@@ -628,14 +628,14 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             handleJointsRestWeights(NULL,&reply);
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_TASK2:
                         {
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             Bottle &payLoad=reply.addList();
                             payLoad.addInt(slv->get2ndTaskChain().getN());
-            
+
                             Bottle &posPart=payLoad.addList();
                             for (size_t i=0; i<xd_2ndTask.length(); i++)
                                 posPart.addDouble(xd_2ndTask[i]);
@@ -643,10 +643,10 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             Bottle &weightsPart=payLoad.addList();
                             for (size_t i=0; i<w_2ndTask.length(); i++)
                                 weightsPart.addDouble(w_2ndTask[i]);
-            
-                            break; 
+
+                            break;
                         }
-            
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_CONVERGENCE:
                         {
@@ -675,10 +675,10 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 }
                 else
                     reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-            
+
                 break;
             }
-            
+
             //-----------------
             case IKINSLV_VOCAB_CMD_SET:
             {
@@ -693,10 +693,10 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_PRIO:
                         {
@@ -712,7 +712,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             }
                             else
-                                reply.addVocab(IKINSLV_VOCAB_REP_NACK); 
+                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -724,10 +724,10 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_LIM:
                         {
@@ -736,7 +736,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                 int axis=command.get(2).asInt();
                                 double min=command.get(3).asDouble();
                                 double max=command.get(4).asDouble();
-                    
+
                                 if (setLimits(axis,min,max))
                                     reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                                 else
@@ -744,86 +744,86 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             }
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_VERB:
                         {
                             int sw=command.get(2).asVocab();
-                    
+
                             if (sw==IKINSLV_VOCAB_VAL_ON)
                             {
-                                verbosity=true;    
+                                verbosity=true;
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             }
                             else if (sw==IKINSLV_VOCAB_VAL_OFF)
-                            {   
-                                verbosity=false; 
+                            {
+                                verbosity=false;
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                             }
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_DOF:
                         {
                             if (inPort->handleDOF(command.get(2).asList()))
-                            {                                    
+                            {
                                 waitDOFHandling();  // sleep till dof handling is done
-                    
+
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                                 Bottle &dofPart=reply.addList();
                                 fillDOFInfo(dofPart);
                             }
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_REST_POS:
                         {
                             Bottle restPart;
-                    
+
                             if (handleJointsRestPosition(command.get(2).asList(),&restPart))
                             {
                                 lock();
                                 prepareJointsRestTask();
                                 unlock();
-                    
+
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                                 reply.append(restPart);
                             }
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_REST_WEIGHTS:
                         {
                             Bottle restPart;
-                    
+
                             if (handleJointsRestWeights(command.get(2).asList(),&restPart))
                             {
                                 lock();
                                 prepareJointsRestTask();
                                 unlock();
-                    
+
                                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                                 reply.append(restPart);
                             }
                             else
                                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-                    
+
                             break;
                         }
-                    
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_TIP_FRAME:
                         {
@@ -834,27 +834,27 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                     Vector x(3);
                                     for (size_t i=0; i<x.length(); i++)
                                         x[i]=tipPart->get(i).asDouble();
-            
+
                                     Vector o(4);
                                     for (size_t i=0; i<o.length(); i++)
                                         o[i]=tipPart->get(i+x.length()).asDouble();
-            
+
                                     Matrix HN=axis2dcm(o);
                                     HN.setSubcol(x,0,3);
 
                                     lock();
                                     prt->chn->setHN(HN);
                                     unlock();
-            
+
                                     reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                                     break;
                                 }
                             }
-            
+
                             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                             break;
                         }
-            
+
                         //-----------------
                         case IKINSLV_VOCAB_OPT_TASK2:
                         {
@@ -865,29 +865,29 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                     int n=payLoad->get(0).asInt();
                                     Bottle *posPart=payLoad->get(1).asList();
                                     Bottle *weightsPart=payLoad->get(2).asList();
-            
+
                                     if ((posPart!=NULL) && (weightsPart!=NULL))
                                     {
                                         if ((posPart->size()>=3) && (weightsPart->size()>=3))
                                         {
                                             for (size_t i=0; i<xd_2ndTask.length(); i++)
                                                 xd_2ndTask[i]=posPart->get(i).asDouble();
-            
+
                                             for (size_t i=0; i<w_2ndTask.length(); i++)
                                                 w_2ndTask[i]=weightsPart->get(i).asDouble();
-            
+
                                             if (n>=0)
                                                 slv->specify2ndTaskEndEff(n);
                                             else
                                                 slv->get2ndTaskChain().clear();
 
-                                            reply.addVocab(IKINSLV_VOCAB_REP_ACK); 
+                                            reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                                             break;
                                         }
                                     }
                                 }
                             }
-           
+
                             reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                             break;
                         }
@@ -931,35 +931,35 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 }
                 else
                     reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-            
+
                 break;
             }
-            
+
             //-----------------
             case IKINSLV_VOCAB_CMD_ASK:
             {
                 Bottle *b_xd=getTargetOption(command);
                 Bottle *b_q=getJointsOption(command);
-            
+
                 // some integrity checks
                 if (b_xd==NULL)
                 {
                     reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                     break;
                 }
-                else if (b_xd->size()<3)    // at least the positional part must be given 
+                else if (b_xd->size()<3)    // at least the positional part must be given
                 {
                     reply.addVocab(IKINSLV_VOCAB_REP_NACK);
                     break;
                 }
-            
+
                 lock();
-            
+
                 // get the target
                 Vector xd(b_xd->size());
                 for (size_t i=0; i<xd.length(); i++)
                     xd[i]=b_xd->get(i).asDouble();
-            
+
                 // accounts for the starting DOF
                 // if different from the actual one
                 if (b_q!=NULL)
@@ -970,49 +970,49 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 }
                 else
                     getFeedback();  // otherwise get the current configuration
-            
-                // account for the pose 
+
+                // account for the pose
                 if (command.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
                 {
                     int pose=command.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
-            
+
                     if (pose==IKINSLV_VOCAB_VAL_POSE_FULL)
                         slv->set_ctrlPose(IKINCTRL_POSE_FULL);
                     else if (pose==IKINSLV_VOCAB_VAL_POSE_XYZ)
                         slv->set_ctrlPose(IKINCTRL_POSE_XYZ);
                 }
-            
+
                 // set things for the 3rd task
                 for (unsigned int i=0; i<prt->chn->getDOF(); i++)
                     if (idx_3rdTask[i]!=0.0)
                         qd_3rdTask[i]=(*prt->chn)(i).getAng();
-            
+
                 // call the solver to converge
                 double t0=Time::now();
                 Vector q=solve(xd);
                 double t1=Time::now();
-            
+
                 Vector x=prt->chn->EndEffPose(q);
-            
+
                 // change to degrees
                 q*=CTRL_RAD2DEG;
-            
+
                 // dump on screen
                 if (verbosity)
                     printInfo("ask",xd,x,q,t1-t0);
-            
+
                 // prepare the complete joints configuration
                 Vector _q(prt->chn->getN());
                 for (unsigned int i=0; i<prt->chn->getN(); i++)
                     _q[i]=CTRL_RAD2DEG*prt->chn->getAng(i);
-            
+
                 // fill the reply accordingly
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                 addVectorOption(reply,IKINSLV_VOCAB_OPT_X,x);
                 addVectorOption(reply,IKINSLV_VOCAB_OPT_Q,_q);
 
                 unlock();
-            
+
                 break;
             }
 
@@ -1023,7 +1023,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                 break;
             }
-            
+
             //-----------------
             case IKINSLV_VOCAB_CMD_RUN:
             {
@@ -1034,11 +1034,11 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 }
                 else
                     resume();
-            
+
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                 break;
             }
-                        
+
             //-----------------
             case IKINSLV_VOCAB_CMD_STATUS:
             {
@@ -1049,7 +1049,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                     reply.addString("running");
                 else
                     reply.addString("not_started");
-                break; 
+                break;
             }
 
             //-----------------
@@ -1057,18 +1057,18 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
             {
                 Property options(command.toString().c_str());
                 yInfo("Configuring with options: %s",options.toString().c_str());
-            
+
                 if (open(options))
                     reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                 else
                     reply.addVocab(IKINSLV_VOCAB_REP_NACK);
-            
+
                 break;
             }
-            
+
             //-----------------
             case IKINSLV_VOCAB_CMD_HELP:
-            {                    
+            {
                 reply.addVocab(Vocab::encode("many"));
                 reply.addString("***** commands");
                 reply.addVocab(IKINSLV_VOCAB_CMD_GET);
@@ -1103,7 +1103,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 reply.addVocab(IKINSLV_VOCAB_VAL_OFF);
                 break;
             }
-            
+
             //-----------------
             case IKINSLV_VOCAB_CMD_QUIT:
             {
@@ -1111,7 +1111,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 close();
                 break;
             }
-            
+
             //-----------------
             default:
                 reply.addVocab(IKINSLV_VOCAB_REP_NACK);
@@ -1125,7 +1125,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 /************************************************************************/
 void CartesianSolver::send(const Vector &xd, const Vector &x, const Vector &q,
                            double *tok)
-{       
+{
     Bottle &b=outPort->prepare();
     b.clear();
 
@@ -1197,7 +1197,7 @@ bool CartesianSolver::handleJointsRestPosition(const Bottle *options, Bottle *re
     bool ret=false;
 
     if (options!=NULL)
-    {            
+    {
         size_t len=std::min((size_t)options->size(),restJntPos.length());
         for (size_t i=0; i<len; i++)
         {
@@ -1228,7 +1228,7 @@ bool CartesianSolver::handleJointsRestWeights(const Bottle *options, Bottle *rep
     bool ret=false;
 
     if (options!=NULL)
-    {            
+    {
         size_t len=std::min((size_t)options->size(),restWeights.length());
         for (size_t i=0; i<len; i++)
         {
@@ -1268,7 +1268,7 @@ bool CartesianSolver::isNewDOF(const Vector &_dof)
 
 /************************************************************************/
 bool CartesianSolver::open(Searchable &options)
-{    
+{
     if (configured)
     {
         yWarning("%s already configured",slvName.c_str());
@@ -1284,7 +1284,7 @@ bool CartesianSolver::open(Searchable &options)
 
     Property DHTable; prt->lmb->toLinksProperties(DHTable);
     yInfo()<<"DH Table: "<<DHTable.toString();  // stream version to prevent long strings truncation
-    
+
     if (options.check("ping_robot_tmo"))
         ping_robot_tmo=options.find("ping_robot_tmo").asDouble();
 
@@ -1302,7 +1302,7 @@ bool CartesianSolver::open(Searchable &options)
         if (!pDrv->isValid())
         {
             delete pDrv;
-            yError("Device driver not available!");            
+            yError("Device driver not available!");
             close();
             return false;
         }
@@ -1398,7 +1398,7 @@ bool CartesianSolver::open(Searchable &options)
     // instantiate the optimizer
     slv=new iKinIpOptMin(*prt->chn,ctrlPose,tol,constr_tol,maxIter);
 
-    // instantiate solver callback object if required    
+    // instantiate solver callback object if required
     if (options.check("interPoints"))
         if (options.find("interPoints").asVocab()==IKINSLV_VOCAB_VAL_ON)
             clb=new SolverCallback(this);
@@ -1410,8 +1410,8 @@ bool CartesianSolver::open(Searchable &options)
     if (prt->cns!=NULL)
     {
         slv->attachLIC(*prt->cns);
-        
-        double lower_bound_inf, upper_bound_inf;        
+
+        double lower_bound_inf, upper_bound_inf;
         slv->getBoundsInf(lower_bound_inf,upper_bound_inf);
         slv->getLIC().getLowerBoundInf()=2.0*lower_bound_inf;
         slv->getLIC().getUpperBoundInf()=2.0*upper_bound_inf;
@@ -1425,14 +1425,14 @@ bool CartesianSolver::open(Searchable &options)
     // define input port
     inPort=new InputPort(this);
     inPort->useCallback();
-    
+
     // init input port data
     inPort->set_dof(dof);
     inPort->get_pose()=ctrlPose;
     inPort->get_contMode()=contModeOld=mode;
 
     // define output port
-    outPort=new BufferedPort<Bottle>;    
+    outPort=new BufferedPort<Bottle>;
 
     // count uncontrolled joints
     countUncontrolledJoints();
@@ -1490,7 +1490,7 @@ void CartesianSolver::prepareJointsRestTask()
 {
     unsigned int nDOF=prt->chn->getDOF();
     int offs=0;
-    
+
     qd_3rdTask.resize(nDOF);
     w_3rdTask.resize(nDOF,1.0);
     idx_3rdTask.resize(nDOF,1.0);
@@ -1498,7 +1498,7 @@ void CartesianSolver::prepareJointsRestTask()
     for (unsigned int i=0; i<prt->chn->getN(); i++)
     {
         if (!(*prt->chn)[i].isBlocked())
-        {            
+        {
             qd_3rdTask[offs]=restJntPos[i];
             if (restWeights[i]!=0.0)
             {
@@ -1621,7 +1621,7 @@ void CartesianSolver::suspend()
     else
     {
         PeriodicThread::suspend();
-        yInfo("%s suspended",slvName.c_str());        
+        yInfo("%s suspended",slvName.c_str());
     }
 }
 
@@ -1630,7 +1630,7 @@ void CartesianSolver::suspend()
 void CartesianSolver::resume()
 {
     if (isSuspended())
-    {        
+    {
         initPos();
         PeriodicThread::resume();
         yInfo("%s resumed",slvName.c_str());
@@ -1649,7 +1649,7 @@ void CartesianSolver::run()
     bool doSolve=false;
 
     // handle changeDOF()
-    changeDOF(inPort->get_dof());    
+    changeDOF(inPort->get_dof());
 
     // wake up sleeping threads
     postDOFHandling();
@@ -1670,7 +1670,7 @@ void CartesianSolver::run()
             unctrlJointsOld=unctrlJoints;
 
         // detect movements of uncontrolled joints
-        double distExtMoves=CTRL_RAD2DEG*norm(unctrlJoints-unctrlJointsOld);        
+        double distExtMoves=CTRL_RAD2DEG*norm(unctrlJoints-unctrlJointsOld);
 
         // run the solver if movements of uncontrolled joints
         // are detected and we are in continuous mode
@@ -1682,9 +1682,9 @@ void CartesianSolver::run()
 
     // run the solver if any input is received
     if (inPort->isNewDataEvent())
-    {    
+    {
         // update solver condition
-        doSolve=true;        
+        doSolve=true;
     }
 
     // solver part
@@ -1716,7 +1716,7 @@ void CartesianSolver::run()
         // q is the estimation of the real qd,
         // so that x is the actual achieved pose
         Vector x=prt->chn->EndEffPose(q);
-        
+
         // change to degrees
         q*=CTRL_RAD2DEG;
 
@@ -1729,7 +1729,7 @@ void CartesianSolver::run()
 
         // save the values of uncontrolled joints
         if (!fullDOF)
-            unctrlJointsOld=unctrlJoints; 
+            unctrlJointsOld=unctrlJoints;
     }
 
     contModeOld=inPort->get_contMode();
@@ -1740,7 +1740,7 @@ void CartesianSolver::run()
 
 /************************************************************************/
 void CartesianSolver::threadRelease()
-{    
+{
     yInfo("Stopping %s ...",slvName.c_str());
 }
 
@@ -1839,9 +1839,9 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
         newDOF[i]=_dof[i];
 
     // check whether shoulder's axes are treated properly
-    if (!(((newDOF[3]!=0.0) && (newDOF[4]!=0)   && (newDOF[5]!=0)) || 
+    if (!(((newDOF[3]!=0.0) && (newDOF[4]!=0)   && (newDOF[5]!=0)) ||
           ((newDOF[3]==0.0) && (newDOF[4]==0.0) && (newDOF[5]==0.0))))
-    {        
+    {
         // restore previous condition:
         // they all shall be on or off
         newDOF[3]=newDOF[4]=newDOF[5]=dof[3];
@@ -1887,7 +1887,7 @@ PartDescriptor *iCubLegCartesianSolver::getPartDesc(Searchable &options)
     p->lmb=new iCubLeg(type);
     p->chn=p->lmb->asChain();
     p->cns=NULL;
-    p->prp.push_back(optLeg);   
+    p->prp.push_back(optLeg);
     p->rvs.push_back(false);
     p->num=1;
 

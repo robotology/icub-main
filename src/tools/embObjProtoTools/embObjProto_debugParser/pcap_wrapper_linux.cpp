@@ -17,7 +17,7 @@
 */
 
 /* @file       main.cpp
-    @brief      
+    @brief
     @author     valentina.gaggero@iit.it
     @date       03/19/2013
 **/
@@ -51,7 +51,7 @@
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - declaration of extern hidden interface 
+// - declaration of extern hidden interface
 // --------------------------------------------------------------------------------------------------------------------
 
 
@@ -63,7 +63,7 @@
 #define TIMEOUT_MS 1000
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition (and initialisation) of extern variables, but better using _get(), _set() 
+// - definition (and initialisation) of extern variables, but better using _get(), _set()
 // --------------------------------------------------------------------------------------------------------------------
 // empty-section
 
@@ -98,10 +98,10 @@ extern uint8_t wrapperPcap_init(char* dev, char*filter_expr)
 	char 			errbuf[PCAP_ERRBUF_SIZE];
 	bpf_u_int32 		mask;						/* The netmask of our sniffing device */
 	bpf_u_int32 		net;						/* The IP of our sniffing device */
-	
+
     //3) init pcap
 
-	if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1) 
+	if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1)
        {
 		printf("Sorry, Can't get netmask for device %s\n", dev);
 		net = 0;
@@ -109,7 +109,7 @@ extern uint8_t wrapperPcap_init(char* dev, char*filter_expr)
 	}
 
 	handle = pcap_open_live(dev, BUFSIZ, 0, TIMEOUT_MS, errbuf);				// 0 = non promiscuo
-	if (handle == NULL) 
+	if (handle == NULL)
        {
 		printf("Sorry, occured problem while opening pcap\n");
         //fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
@@ -117,7 +117,7 @@ extern uint8_t wrapperPcap_init(char* dev, char*filter_expr)
 	}
 
 	/* make sure we're capturing on an Ethernet device [2] */
-	if (pcap_datalink(handle) != DLT_EN10MB) 
+	if (pcap_datalink(handle) != DLT_EN10MB)
     {
 		printf("Sorry, pcap has been open on a NOT ethernet device\n");
         //fprintf(stderr, "%s is not an Ethernet\n", dev);
@@ -138,7 +138,7 @@ extern uint8_t wrapperPcap_init(char* dev, char*filter_expr)
     //		fprintf(stderr, "Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
 		return(0);
 	}
-    
+
     return(1); //ok
 
 }
@@ -147,9 +147,9 @@ extern uint8_t wrapperPcap_init(char* dev, char*filter_expr)
 extern uint8_t wrapperPcap_loop(int32_t cnt, pcap_handler callback, uint8_t *user)
 {
     uint8_t ret;
-    
+
     ret = pcap_loop(handle, cnt, callback, user); // Get into the loop
-    
+
     return(ret);
 }
 
@@ -160,13 +160,13 @@ extern void wrapperPcap_close(void)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of extern hidden functions 
+// - definition of extern hidden functions
 // --------------------------------------------------------------------------------------------------------------------
 
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of static functions 
+// - definition of static functions
 // --------------------------------------------------------------------------------------------------------------------
 
 

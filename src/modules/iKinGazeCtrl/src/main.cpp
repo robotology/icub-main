@@ -119,7 +119,7 @@ Factors</a>.
 --torso \e name
 - The parameter \e name selects the robot's torso port to
   connect to; if not specified, \e torso is assumed. The special
- *string \e off can be used to skip opening the torso device.  
+ *string \e off can be used to skip opening the torso device.
 
 --trajectory_time::neck \e time
 - Specify the neck trajectory execution time in point-to-point

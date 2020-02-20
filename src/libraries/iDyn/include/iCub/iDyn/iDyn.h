@@ -6,41 +6,41 @@
  */
 
 /**
- * \defgroup iDyn iDyn 
- *    
+ * \defgroup iDyn iDyn
+ *
  * @ingroup icub_libraries
- *  
+ *
  * Classes for forward-inverse kinematics and dynamics of serial-links chains
  * of revolute joints and iCub limbs. It is basically an extension of the iKin
- * library, including dynamics. The library also provides a Newton-Euler 
- * based method to compute forces, moments, and joint torques, for each link 
+ * library, including dynamics. The library also provides a Newton-Euler
+ * based method to compute forces, moments, and joint torques, for each link
  * and for FT sensor placed anywhere in the chain.
  *
  * \note <b>SI units adopted</b>: meters for lengths and radians
  *       for angles.
  *
- * \section dep_sec Dependencies 
- * - ctrlLib 
+ * \section dep_sec Dependencies
+ * - ctrlLib
  * - iKin
- * 
+ *
  * \section intro_sec Description
- * 
+ *
  * iDyn is basically an extension of the iKin library, including serial-links
- * chain dynamics. Thus, starting from Links (from iKinLink to iDynLink) the 
+ * chain dynamics. Thus, starting from Links (from iKinLink to iDynLink) the
  * library provides classes for links, chain of links, and generic limbs.
- * Of course, iCub limbs are included. 
- * In order to compute forces, moments, and joint torques, a Newton-Euler 
+ * Of course, iCub limbs are included.
+ * In order to compute forces, moments, and joint torques, a Newton-Euler
  * recursive formulation is provided: in the iDynChain class, the dynamics of
  * the chain (ie computing forces and torques for each link given the dynamic
- information of each link and the joints configuration - pos, vel, acc) can 
- * be computed by means of the classical Newton-Euler algorithm. 
+ information of each link and the joints configuration - pos, vel, acc) can
+ * be computed by means of the classical Newton-Euler algorithm.
  * It is also possible to retrieve joint torques of iCub limbs with single FT
  * sensor measurements: to this scope, iDynSensor must be used.
- * Furthermore, projection of forces along the chain is supported: to this 
+ * Furthermore, projection of forces along the chain is supported: to this
  * scope, iDynTransform must be used.
- * 
+ *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows
  *
  * \section example_sec Example
@@ -51,12 +51,12 @@
  * Date: first draft 05/2010
  *
  * \author Serena Ivaldi, Matteo Fumagalli
- * 
+ *
  * Copyright (C) 2010 RobotCub Consortium
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
- * 
- **/ 
+ *
+ *
+ **/
 
 #ifndef __IDYN_H__
 #define __IDYN_H__
@@ -108,9 +108,9 @@ namespace iDyn
 /**
 * \ingroup iDyn
 *
-* A base class for defining a Link with standard Denavit-Hartenberg convention, providing kinematic and dynamic information. 
-*  
-* \note This class implements revolute joints only, as they are 
+* A base class for defining a Link with standard Denavit-Hartenberg convention, providing kinematic and dynamic information.
+*
+* \note This class implements revolute joints only, as they are
 *       the unique type of joints used in humanoid robotics
 *
 */
@@ -129,7 +129,7 @@ protected:
     bool H_store_valid;
 
     /// m_i, mass
-    double m;   
+    double m;
     ///4x4, H^i_{C_i} = R^i_{C_i}, r^i_{i,C_i}, roto-translation matrix from i to Ci, constant
     yarp::sig::Matrix HC;
     ///3x3, R^i_{C_i} rotational part of HC, constant
@@ -137,44 +137,44 @@ protected:
     ///3x1, r^i_{i,C_i}, translational part of HC, constant
     yarp::sig::Vector rc, rc_proj;
     ///3x3, I^i_i, inertia matrix, constant
-    yarp::sig::Matrix I;    
+    yarp::sig::Matrix I;
     /// dq, joint vel
     double dq;
     /// ddq=d2q, joint acc
-    double ddq;                 
+    double ddq;
     ///1x3, w^i_i               angular velocity
     yarp::sig::Vector w;
     ///1x3, dw^i_i              angular acceleration
     yarp::sig::Vector dw;
     ///1x3, dw^{i-1}_{m_i}      angular acceleration of rotor
-    yarp::sig::Vector dwM;      
+    yarp::sig::Vector dwM;
 
     ///1x3, dp^i_i              linear velocity of frame i
-    yarp::sig::Vector dp;   
+    yarp::sig::Vector dp;
     ///1x3, dp^i_{C_i}          linear velocity of center of mass C_i
-    yarp::sig::Vector dpC;  
+    yarp::sig::Vector dpC;
     ///1x3, d2p=ddp^i_i         linear acceleration of frame i
-    yarp::sig::Vector ddp;  
+    yarp::sig::Vector ddp;
     ///1x3, d2p=ddp^i_{C_i}     linear acceleration of center of mass C_i
-    yarp::sig::Vector ddpC;     
+    yarp::sig::Vector ddpC;
 
     ///1x3, f^i_i           force
     yarp::sig::Vector F;
     ///1x3, mu^i_i          moment
-    yarp::sig::Vector Mu;   
+    yarp::sig::Vector Mu;
     /// tau_i               joint torque
-    double Tau;                 
+    double Tau;
 
     //only including motor dynamic
 
     ///I_{m_i}  rotor inertia
-    double Im;  
+    double Im;
     ///k_{r,i}  inertia constant
-    double kr;  
+    double kr;
     ///F_{v,i}  viscous friction
-    double Fv;  
+    double Fv;
     ///F_{s,i}  static friction
-    double Fs;                  
+    double Fs;
 
     /**
     * Default constructor : not implemented
@@ -184,7 +184,7 @@ protected:
     /**
     * Clone function
     */
-    virtual void clone(const iDynLink &l);  
+    virtual void clone(const iDynLink &l);
 
     virtual void updateHstore();
 
@@ -223,10 +223,10 @@ public:
     * @return true if operation is successful (ie matrices size is correct), false otherwise
     */
      bool setStaticParameters(const double _m, const yarp::sig::Matrix &_HC);
-     
+
     /**
     * Sets the link inertia
-    * @param _I is the inertia matrix 
+    * @param _I is the inertia matrix
     * @return true if operation is successful (ie matrices size is correct), false otherwise
     */
      bool setInertia(const yarp::sig::Matrix &_I);
@@ -250,42 +250,42 @@ public:
 
     /**
     * Sets the joint position (position constraints are evaluated).
-    * @param _teta is the new angle value 
+    * @param _teta is the new angle value
     * @return current joint angle
     */
     double setAng(const double _teta);
 
     /**
-    * Sets the joint velocity 
-    * @param _dteta is the new velocity value 
+    * Sets the joint velocity
+    * @param _dteta is the new velocity value
     * @return current joint velocity (velocity constraints can be evaluated - not done at the moment)
     */
      double setDAng(const double _dteta);
-    
+
      /**
-    * Sets the joint acceleration 
-    * @param _ddteta is the new acceleration value 
+    * Sets the joint acceleration
+    * @param _ddteta is the new acceleration value
     * @return current joint acceleration (acceleration constraints can be evaluated - not done at the moment)
     */
      double setD2Ang(const double _ddteta);
 
      /**
-    * Gets the linear velocity of the link 
+    * Gets the linear velocity of the link
     * @return current link velocity (the computation is not implemented at the moment)
     */
      const yarp::sig::Vector& getLinVel()  const;
 
      /**
-    * Gets the linear velocity of the COM 
+    * Gets the linear velocity of the COM
     * @return current COM velocity (the computation is not implemented at the moment)
     */
      const yarp::sig::Vector& getLinVelC() const;
 
      /**
     * Sets the joint angle position, velocity, acceleration. constraints are automatically checked if present.
-    * @param _teta is the new position value 
-    * @param _dteta is the new velocity value 
-    * @param _ddteta is the new acceleration value 
+    * @param _teta is the new position value
+    * @param _dteta is the new velocity value
+    * @param _ddteta is the new acceleration value
     */
      void setAngPosVelAcc(const double _teta,const double _dteta,const double _ddteta);
 
@@ -304,37 +304,37 @@ public:
 
     /**
     * Set the roto-translation matrix from i to COM, where the rotational part is and identity matrix, and the traslation is specified by the three parameters
-    * @param _rCx is the x component of the distance vector of COM wrt the link frame 
-    * @param _rCy is the y component of the distance vector of COM wrt the link frame 
+    * @param _rCx is the x component of the distance vector of COM wrt the link frame
+    * @param _rCy is the y component of the distance vector of COM wrt the link frame
     * @param _rCz is the z component of the distance vector of COM wrt the link frame
     */
      void setCOM(const double _rCx, const double _rCy, const double _rCz);
 
     /**
     * Sets the joint force, in the link frame: F^i_i
-    * @param _F is the measured/computed force 
+    * @param _F is the measured/computed force
     * @return true if operation is successful (ie vector size is correct), false otherwise
     */
      bool setForce(const yarp::sig::Vector &_F);
 
     /**
     * Sets the joint moment, in the link frame: Mu^i_i
-    * @param _Mu is the measured/computed moment 
+    * @param _Mu is the measured/computed moment
     * @return true if operation is successful (ie vector size is correct), false otherwise
     */
      bool setMoment(const yarp::sig::Vector &_Mu);
 
     /**
     * Sets the joint force and moment, in the link frame: F^i_i , Mu^i_i
-    * @param _F is the measured/computed force 
-    * @param _Mu is the measured/computed moment 
+    * @param _F is the measured/computed force
+    * @param _Mu is the measured/computed moment
     * @return true if operation is successful (ie vectors size is correct), false otherwise
-    */   
+    */
      bool setForceMoment(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
     /**
     * Sets the joint moment, in the link frame: Tau_i
-    * @param _Tau is the measured/computed moment 
+    * @param _Tau is the measured/computed moment
     */
      void setTorque(const double _Tau);
 
@@ -342,7 +342,7 @@ public:
      //~~~~~~~~~~~~~~~~~~~~~~
      //   get methods
      //~~~~~~~~~~~~~~~~~~~~~~
-    
+
      /**
     * Get the inertia matrix
     * @return I the inertia matrix (4x4)
@@ -380,90 +380,90 @@ public:
     /**
     * Get the angular acceleration of the link
     * @return dW the angular acceleration of the link (3x1)
-    */  
+    */
      const yarp::sig::Vector&   getdW()     const;
     /**
     * Get the angular acceleration of the motor
     * @return dWM the angular acceleration of the motor (3x1)
-    */  
+    */
      const yarp::sig::Vector&   getdWM()    const;
     /**
     * Get the linear acceleration of the link
     * @return ddpC the linear acceleration of the link (3x1)
-    */  
+    */
      const yarp::sig::Vector&   getLinAcc()     const;
     /**
     * Get the linear acceleration of the COM
     * @return ddpC the linear acceleration of the COM (3x1)
-    */  
+    */
      const yarp::sig::Vector&   getLinAccC()    const;
     /**
     * Get the link force
     * @return Mu the link force (3x1)
-    */  
+    */
      const yarp::sig::Vector&   getForce()      const;
     /**
     * Get the link moment
     * @return Mu the link moment (3x1)
-    */  
+    */
      const yarp::sig::Vector&   getMoment()     const;
     /**
     * Get the joint torque
     * @return Tau the joint torque
-    */  
+    */
      double             getTorque()     const;
     /**
     * Redefine the getH of iKinLink so that it does not compute the H matrix if the
     * joint angles have not changed since the last call to this method.
-    */  
+    */
     const yarp::sig::Matrix&    getH();
     /**
     * Get the link rotational matrix, from the Denavit-Hartenberg matrix
     * @return R the link rotational matrix (3x3)
-    */  
+    */
     const yarp::sig::Matrix&        getR();
     /**
     * Get the link COM's rotational matrix, from the COM matrix
     * @return R the COM rotational matrix (3x3)
-    */  
+    */
     const yarp::sig::Matrix&        getRC()     const;
 
     /**
     * Get the link distance vector r, or r*R if projection is specified
     * @param proj true/false enables or disable the projection along the rotation of the link
     * @return r if false, r*R if true
-    */  
+    */
     const yarp::sig::Vector&        getr(bool proj=false);
     /**
     * Get the COM distance vector rC, or rC*R if projection is specified
     * @param proj true/false enables or disable the projection along the rotation of the link
     * @return rC if false, rC*R if true
-    */  
+    */
     const yarp::sig::Vector&        getrC(bool proj=false) const;
 
      //~~~~~~~~~~~~~~~~~~~~~~
      //   basic functions
      //~~~~~~~~~~~~~~~~~~~~~~
-  
+
     /**
-     * Constructor, with initialization of kinematic data; dynamic data are set to zero, while the roto-translational matrix for the COM 
+     * Constructor, with initialization of kinematic data; dynamic data are set to zero, while the roto-translational matrix for the COM
     * @param _A is the link length
-    * @param _D is the link offset 
-    * @param _Alpha is the link twist 
+    * @param _D is the link offset
+    * @param _Alpha is the link twist
     * @param _Offset is the joint angle offset in [-pi,pi]
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
     */
     iDynLink(double _A, double _D, double _Alpha, double _Offset, double _Min=-iCub::ctrl::CTRL_PI, double _Max=iCub::ctrl::CTRL_PI);
-     
+
     /**
      * Constructor, with initialization of kinematic and dynamic data
     * @param _m is the Link mass
     * @param _HC is the rototranslation matrix from the link frame to the center of mass
     * @param _I is the Inertia matrix
     * @param _A is the Link length
-    * @param _D is the Link offset 
-    * @param _Alpha is the Link twist 
+    * @param _D is the Link offset
+    * @param _Alpha is the Link twist
     * @param _Offset is the joint angle offset in [-pi,pi]
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
@@ -476,8 +476,8 @@ public:
     * @param _C is the distance vector of COM wrt the link frame, the orientation of COM is the same of the link
     * @param _I is the Inertia matrix
     * @param _A is the Link length
-    * @param _D is the Link offset 
-    * @param _Alpha is the Link twist 
+    * @param _D is the Link offset
+    * @param _Alpha is the Link twist
     * @param _Offset is the joint angle offset in [-pi,pi]
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
@@ -487,8 +487,8 @@ public:
     /**
     * Constructor, with initialization of kinematic and dynamic data
     * @param _m is the Link mass
-    * @param _rCx is the x component of the distance vector of COM wrt the link frame 
-    * @param _rCy is the y component of the distance vector of COM wrt the link frame 
+    * @param _rCx is the x component of the distance vector of COM wrt the link frame
+    * @param _rCy is the y component of the distance vector of COM wrt the link frame
     * @param _rCz is the z component of the distance vector of COM wrt the link frame
     * @param Ixx is the xx component of the inertia matrix of the link
     * @param Ixy is the xy component of the inertia matrix of the link
@@ -497,8 +497,8 @@ public:
     * @param Iyz is the yz component of the inertia matrix of the link
     * @param Izz is the zz component of the inertia matrix of the link
     * @param _A is the Link length
-    * @param _D is the Link offset 
-    * @param _Alpha is the Link twist 
+    * @param _D is the Link offset
+    * @param _Alpha is the Link twist
     * @param _Offset is the joint angle offset in [-pi,pi]
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
@@ -514,7 +514,7 @@ public:
      * Set all dynamic parameters to zero
      */
     void zero();
-     
+
     /**
      * Overload of operator =
      */
@@ -527,7 +527,7 @@ public:
 /**
 * \ingroup iDyn
 *
-* A Base class for defining a Serial Link Chain, using dynamics and kinematics. 
+* A Base class for defining a Serial Link Chain, using dynamics and kinematics.
 */
 class iDynChain : public iKin::iKinChain
 {
@@ -538,17 +538,17 @@ class iDynChain : public iKin::iKinChain
     friend class iDynContactSolver;
 
 protected:
-    
+
     /// specifies the 'direction' of recursive computation of kinematics variables (w,dw,d2p): FORWARD, BACKWARD
-    ChainIterationMode iterateMode_kinematics;  
+    ChainIterationMode iterateMode_kinematics;
     /// specifies the 'direction' of recursive computation of wrenches (F,Mu): FORWARD, BACKWARD
     ChainIterationMode iterateMode_wrench;
 
     //curr_q = q pos is already in iKinChain
     ///q vel
-    yarp::sig::Vector curr_dq;  
+    yarp::sig::Vector curr_dq;
     ///q acc
-    yarp::sig::Vector curr_ddq; 
+    yarp::sig::Vector curr_ddq;
 
     ///pointer to OneChainNewtonEuler class, to be used for computing forces and torques
     OneChainNewtonEuler *NE;
@@ -562,12 +562,12 @@ protected:
 
     /**
     * Build chains and lists
-    */  
+    */
     virtual void build();
 
     /**
     * Dispose
-    */  
+    */
     virtual void dispose();
 
     /**
@@ -581,7 +581,7 @@ protected:
 public:
 
     /**
-    * Default constructor 
+    * Default constructor
     */
     iDynChain();
 
@@ -601,7 +601,7 @@ public:
     /**
     * Sets the free joint angles to values of q[i].
     * @param q is a vector containing values for DOF.
-    * @return the actual DOF values (angles constraints are 
+    * @return the actual DOF values (angles constraints are
     *         evaluated).
     */
     yarp::sig::Vector setAng(const yarp::sig::Vector &q);
@@ -645,40 +645,40 @@ public:
     yarp::sig::Vector getJointBoundMax();
 
     /**
-    * Sets the ith joint angle. 
-    * @param i is the Link position. 
-    * @param Ang the new angle's value. 
-    * @return current ith joint angle (angle constraint is 
+    * Sets the ith joint angle.
+    * @param i is the Link position.
+    * @param Ang the new angle's value.
+    * @return current ith joint angle (angle constraint is
     *         evaluated).
     */
     double setAng(const unsigned int i, double q);
 
     /**
-    * Sets the ith joint angle velocity 
-    * @param i is the Link position 
-    * @param Ang the new angle's velocity value 
+    * Sets the ith joint angle velocity
+    * @param i is the Link position
+    * @param Ang the new angle's velocity value
     * @return current ith joint angle (velocity constraints can be evaluated - not done at the moment)
     */
     double setDAng(const unsigned int i, double dq);
 
     /**
-    * Sets the ith joint angle acceleration 
-    * @param i is the Link position 
-    * @param Ang the new angle's acceleration value 
+    * Sets the ith joint angle acceleration
+    * @param i is the Link position
+    * @param Ang the new angle's acceleration value
     * @return current ith joint angle (acceleration constraints can be evaluated - not done at the moment)
     */
     double setD2Ang(const unsigned int i, double ddq);
 
     /**
-    * Returns the current angle velocity of ith joint 
-    * @param i is the Link position  
+    * Returns the current angle velocity of ith joint
+    * @param i is the Link position
     * @return current ith joint angle velocity
     */
     double getDAng(const unsigned int i);
 
     /**
-    * Returns the current angle acceleration of ith joint 
-    * @param i is the Link position  
+    * Returns the current angle acceleration of ith joint
+    * @param i is the Link position
     * @return current ith joint angle acceleration
     */
     double getD2Ang(const unsigned int i);
@@ -832,7 +832,7 @@ public:
     /**
     * Compute forces and torques with the Newton-Euler recursive algorithm: forward
     * and backward phase are performed, and results are stored in the links; to get
-    * resulting forces and torques, one can call getForces() and getMoments() methods; 
+    * resulting forces and torques, one can call getForces() and getMoments() methods;
     * before calling this method, initNewtonEuler() must be called.
     */
     bool computeNewtonEuler();
@@ -842,7 +842,7 @@ public:
     * and the final (virtual link) forces and moments Fend and Muend
     */
     bool initNewtonEuler(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0, const yarp::sig::Vector &Fend, const yarp::sig::Vector &Muend);
-    
+
     /**
     * Initialize the Newton-Euler method by setting the base (virtual link) velocity and accelerations ( w0, dw0 and ddp0 )
     * and the final (virtual link) forces and moments Fend and Muend all to zero
@@ -874,7 +874,7 @@ public:
 
     /**
     * Returns the end effector force-moment as a single (6x1) vector
-    * @return a (6x1) vector, in the form 0:2=F 3:5=Mu 
+    * @return a (6x1) vector, in the form 0:2=F 3:5=Mu
     */
     yarp::sig::Vector getForceMomentEndEff() const;
 
@@ -894,17 +894,17 @@ public:
 
     /**
     * Set the computation mode during recursive computation of kinematics (w,dw,d2p,d2pC)
-    * and wrench variables(F,Mu,Tau). The mode is NE_KIN_WRE_kw, where the suffix 'kw' identifies 
-    * the modes for the kinematics ('k') and wrench ('w') computations: 
-    * {FF,FB,BF,BB} where the F stands for FORWARD and B for BACKWARD. 
-    * Default mode is KINFWD_WREBWD, which sets Kinematics=FORWARD and Wrench=BACKWARD. 
+    * and wrench variables(F,Mu,Tau). The mode is NE_KIN_WRE_kw, where the suffix 'kw' identifies
+    * the modes for the kinematics ('k') and wrench ('w') computations:
+    * {FF,FB,BF,BB} where the F stands for FORWARD and B for BACKWARD.
+    * Default mode is KINFWD_WREBWD, which sets Kinematics=FORWARD and Wrench=BACKWARD.
     * @param mode NE_KIN_WRE_{FF,FB,BF,BB}
     */
     void setIterMode(const ChainComputationMode mode = KINFWD_WREBWD);
 
     /**
     * Get the iteration direction during recursive computation of kinematics variables
-    * (w,dw,d2p,d2pC). 
+    * (w,dw,d2p,d2pC).
     * @return iterateMode_kinematics
     */
     ChainIterationMode getIterModeKinematic() const;
@@ -918,22 +918,22 @@ public:
 
     /**
     * Calls the proper method to compute kinematics variables: either
-    * ForwardKinematicFromBase() or BackwardKinematicFromEnd(). This method 
+    * ForwardKinematicFromBase() or BackwardKinematicFromEnd(). This method
     * is protected and it is used by iDynSensor and iDynNode for the Kinematics computations.
     */
     void computeKinematicNewtonEuler();
 
     /**
     * Calls the proper method to compute wrench variables: either
-    * BackwardWrenchFromEnd() or ForwardWrenchFromBase(). This method 
+    * BackwardWrenchFromEnd() or ForwardWrenchFromBase(). This method
     * is protected and it is used by iDynSensor and iDynNode for the Wrench computations.
     */
     void computeWrenchNewtonEuler();
 
     /**
     * Calls the proper method to set kinematics variables in OneChainNewtonEuler: either
-    * initKinematicBase() or initKinematicEnd(). This method 
-    * is protected and it is used by RigidBodyTransformation for setting the Kinematics 
+    * initKinematicBase() or initKinematicEnd(). This method
+    * is protected and it is used by RigidBodyTransformation for setting the Kinematics
     * variables.
     * @param w0 angular velocity
     * @param dw0 angular acceleration
@@ -944,8 +944,8 @@ public:
 
     /**
     * Calls the proper method to set wrench variables in OneChainNewtonEuler: either
-    * initKinematicBase() or initKinematicEnd(). This method 
-    * is protected and it is used by RigidBodyTransformation for setting the Kinematics 
+    * initKinematicBase() or initKinematicEnd(). This method
+    * is protected and it is used by RigidBodyTransformation for setting the Kinematics
     * variables.
     * @param Fend external force
     * @param Muend external moment
@@ -955,7 +955,7 @@ public:
 
     /**
     * Calls the proper method to get kinematics variables in OneChainNewtonEuler either
-    * in the base or in the final link. This method is used by RigidBodyTransformation 
+    * in the base or in the final link. This method is used by RigidBodyTransformation
     * for setting the kinematics variables.
     * @param w the vector which will contain the angular velocity
     * @param dw the vector which will contain the angular acceleration
@@ -983,13 +983,13 @@ public:
     void getFrameWrench(unsigned int i, yarp::sig::Vector &F, yarp::sig::Vector &Mu);
     /**
     * Calls the proper method to get wrench variables in OneChainNewtonEuler either
-    * in the base or in the final link. This method is used by RigidBodyTransformation 
+    * in the base or in the final link. This method is used by RigidBodyTransformation
     * for setting the wrench variables.
     */
     void getWrenchNewtonEuler( yarp::sig::Vector &F,  yarp::sig::Vector &Mu);
-    
+
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~iDynChain();
 
@@ -999,7 +999,7 @@ public:
     //------------
 
     /**
-    * Compute the Jacobian from link 0 to iLinkN. 
+    * Compute the Jacobian from link 0 to iLinkN.
     * This method is used to compute the Jacobian between two links in two different chains.
     * @param iLinkN the index of the link, in the chain, being the final (<N>) frame for the Jacobian computation
     * @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
@@ -1008,7 +1008,7 @@ public:
     yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN , const yarp::sig::Matrix &Pn );
 
     /**
-    * Compute the Jacobian from link 0 to iLinkN. 
+    * Compute the Jacobian from link 0 to iLinkN.
     * This method is used to compute the Jacobian between two links in two different chains.
     * @param iLinkN the index of the link, in the chain, being the final (<N>) frame for the Jacobian computation
     * @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
@@ -1016,9 +1016,9 @@ public:
     * @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
     */
     yarp::sig::Matrix computeGeoJacobian(const unsigned int iLinkN, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
-    
+
     /**
-    * Compute the Jacobian of the chain, from link 0 to N. 
+    * Compute the Jacobian of the chain, from link 0 to N.
     * This method is used to compute the Jacobian between two links in two different chains.
     * @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
     * @return the Jacobian matrix from the iLink of the chain until the base of the chain (ie from link 4 to 0)
@@ -1026,7 +1026,7 @@ public:
     yarp::sig::Matrix computeGeoJacobian(const yarp::sig::Matrix &Pn );
 
     /**
-    * Compute the Jacobian of the chain, from link 0 to N. 
+    * Compute the Jacobian of the chain, from link 0 to N.
     * This method is used to compute the Jacobian between two links in two different chains.
     * @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
     * @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
@@ -1047,13 +1047,13 @@ public:
     //---------------
 
     /**
-    * Compute the Jacobian of the COM of link indexed iLink. 
+    * Compute the Jacobian of the COM of link indexed iLink.
     * The chain considered for the computation is the entire kinematic chain, between
     * links 0 and N-1. Hence, the Jacobian is 6xN (differently from the Jacobian of the i-th link
     * which assumes the chain to be from 0 to iLink, and differently from the Jacobian of the end-effector
     * which is 6xDOF).
     * @param iLinkN the index of the link, in the chain
-    * @return the Jacobian matrix of the COM of the iLink of the chain 
+    * @return the Jacobian matrix of the COM of the iLink of the chain
     */
     yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink);
 
@@ -1061,7 +1061,7 @@ public:
     * Compute the Jacobian of the COM of link iLink (considering chain 0-iLink).
     * @param iLinkN the index of the link, in the chain, being the final  frame for the Jacobian computation
     * @param Pn the matrix describing the roto-translational matrix between base and the iLink (in two different limbs)
-    * @return the Jacobian matrix of the COM of the iLink of the chain 
+    * @return the Jacobian matrix of the COM of the iLink of the chain
     */
     yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn);
 
@@ -1070,7 +1070,7 @@ public:
     * @param iLinkN the index of the link, in the chain, being the final frame for the Jacobian computation
     * @param Pn the matrix describing the roto-translational matrix between base and the iLink (in two different limbs)
     * @param _H0 the matrix to initialize the jacobian computation, usually taking into account the previous limb
-    * @return the Jacobian matrix of the COM of the iLink of the chain 
+    * @return the Jacobian matrix of the COM of the iLink of the chain
     */
     yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0 );
 
@@ -1206,7 +1206,7 @@ public:
     iDynLimb();
 
     /**
-    * Constructor. 
+    * Constructor.
     * @param _type is a string to discriminate between "left" and "right" limb
     */
     iDynLimb(const std::string &_type);
@@ -1218,57 +1218,57 @@ public:
     iDynLimb(const iDynLimb &limb);
 
     /**
-    * Creates a new Limb from a list of properties wherein links parameters are specified. 
-    * @param option is the list of links properties. 
+    * Creates a new Limb from a list of properties wherein links parameters are specified.
+    * @param option is the list of links properties.
     * @see fromProperty
     */
     iDynLimb(const yarp::os::Property &option);
 
     /**
-    * Initializes the Limb from a list of properties wherein links 
-    * parameters are specified. 
-    * @param option is the list of links properties. 
-    *  
-    * @note Available options are: 
-    *  
-    * \b type <string>: specifies the limb handedness [left/right] 
+    * Initializes the Limb from a list of properties wherein links
+    * parameters are specified.
+    * @param option is the list of links properties.
+    *
+    * @note Available options are:
+    *
+    * \b type <string>: specifies the limb handedness [left/right]
     *    (default=right).
-    *  
-    * \b H0 <list of 4x4 doubles (per rows)>: specifies the rigid 
+    *
+    * \b H0 <list of 4x4 doubles (per rows)>: specifies the rigid
     *    roto-translation matrix from the root reference frame to
     *    the 0th frame (default=eye(4,4)).
-    *  
+    *
     * \b numLinks <int>: specifies the expected number of links.
-    *  
+    *
     * \b A <double>: specifies the link length [m] (default=0.0).
-    *  
+    *
     * \b D <double>: specifies the link offset [m] (default=0.0).
-    *  
-    * \b alpha <double>: specifies the link twist [deg] 
+    *
+    * \b alpha <double>: specifies the link twist [deg]
     *    (default=0.0).
-    *  
-    * \b offset <double>: specifies the joint angle offset [deg] 
+    *
+    * \b offset <double>: specifies the joint angle offset [deg]
     *    (default=0.0).
-    *  
+    *
     * \b min <double>: specifies the joint angle lower bound [deg]
     *    (default=0.0).
-    *  
-    * \b max <double>: specifies the joint angle upper bound [deg] 
+    *
+    * \b max <double>: specifies the joint angle upper bound [deg]
     *    (default=0.0).
-    *  
-    * \b blocked <double>: blocks the link at the specified value 
+    *
+    * \b blocked <double>: blocks the link at the specified value
     *    [deg] (default=released).
-    *  
-    * @note The list should look like as the following: 
-    *  
-    * @code 
-    * type right 
-    * H0 (1.0 2.0 3.0 ...) 
-    * numLinks 4 
-    * link_0 (option1 value1) (option2 value2) ... 
-    * link_1 (option1 value1) ... 
-    * ... 
-    * @endcode 
+    *
+    * @note The list should look like as the following:
+    *
+    * @code
+    * type right
+    * H0 (1.0 2.0 3.0 ...)
+    * numLinks 4
+    * link_0 (option1 value1) (option2 value2) ...
+    * link_1 (option1 value1) ...
+    * ...
+    * @endcode
     */
     bool fromLinksProperties(const yarp::os::Property &option);
 
@@ -1286,32 +1286,32 @@ public:
     iDynLimb &operator=(const iDynLimb &limb);
 
     /**
-    * Returns a pointer to the Limb seen as Chain object. 
+    * Returns a pointer to the Limb seen as Chain object.
     * Useful to to operate on the Links of Limb.
-    * @return a pointer to a Chain object with the same Links of 
+    * @return a pointer to a Chain object with the same Links of
     *         Limb.
     */
     iDynChain *asChain() { return static_cast<iDynChain*>(this); }
 
     /**
-    * Returns the Limb type as a string. 
+    * Returns the Limb type as a string.
     * @return the type as a string {"left", "right"}.
     */
     std::string getType() { return type; }
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~iDynLimb();
 
     /**
-    * Alignes the Limb joints bounds with current values set aboard 
+    * Alignes the Limb joints bounds with current values set aboard
     * the robot - see also iKin.
     * This method is empty in iDynLimb because it's limb-specific: see
     * the implementations for iCubLimbs.
-    * @param lim is the ordered list of control interfaces that 
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Limb limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim)
     { notImplemented(verbose); return true; }
@@ -1331,12 +1331,12 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubArmDyn();
 
     /**
-    * Constructor. 
+    * Constructor.
     * @param _type is a string to discriminate between "left" and "right" arm
     */
     iCubArmDyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
@@ -1348,11 +1348,11 @@ public:
     iCubArmDyn(const iCubArmDyn &arm);
 
     /**
-    * Alignes the Arm joints bounds with current values set aboard 
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Arm joints bounds with current values set aboard
+    * the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Torso and the Arm limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 
@@ -1372,13 +1372,13 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubArmNoTorsoDyn();
 
     /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
+    * Constructor.
+    * @param _type is a string to discriminate between "left" and
     *              "right" arm
     */
     iCubArmNoTorsoDyn(const std::string &_type, const ChainComputationMode _mode=KINFWD_WREBWD);
@@ -1390,11 +1390,11 @@ public:
     iCubArmNoTorsoDyn(const iCubArmNoTorsoDyn &arm);
 
     /**
-    * Alignes the Arm joints bounds with current values set aboard 
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Arm joints bounds with current values set aboard
+    * the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Arm limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 
@@ -1413,12 +1413,12 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubTorsoDyn();
 
     /**
-    * Constructor. Note that the type is not influential at the moment, 
+    * Constructor. Note that the type is not influential at the moment,
     * but the distinction could be useful for future developments.
     * @param _type is a string to discriminate between "upper" and "lower" torso
     */
@@ -1431,11 +1431,11 @@ public:
     iCubTorsoDyn(const iCubTorsoDyn &torso);
 
     /**
-    * Alignes the Torso joints bounds with current values set aboard 
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Torso joints bounds with current values set aboard
+    * the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Torso limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 
@@ -1455,13 +1455,13 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubLegDyn();
 
     /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
+    * Constructor.
+    * @param _type is a string to discriminate between "left" and
     *              "right" leg
     */
     iCubLegDyn(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
@@ -1473,11 +1473,11 @@ public:
     iCubLegDyn(const iCubLegDyn &leg);
 
     /**
-    * Alignes the Leg joints bounds with current values set aboard 
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Leg joints bounds with current values set aboard
+    * the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Leg limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 
@@ -1495,13 +1495,13 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubLegDynV2();
 
     /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
+    * Constructor.
+    * @param _type is a string to discriminate between "left" and
     *              "right" leg
     */
     iCubLegDynV2(const std::string &_type,const ChainComputationMode _mode=KINFWD_WREBWD);
@@ -1513,11 +1513,11 @@ public:
     iCubLegDynV2(const iCubLegDyn &leg);
 
     /**
-    * Alignes the Leg joints bounds with current values set aboard 
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Leg joints bounds with current values set aboard
+    * the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Leg limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 
@@ -1536,7 +1536,7 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubNeckInertialDyn(const ChainComputationMode _mode=KINBWD_WREBWD);
 
@@ -1547,11 +1547,11 @@ public:
     iCubNeckInertialDyn(const iCubNeckInertialDyn &sensor);
 
     /**
-    * Alignes the Inertial Sensor joints bounds with current values 
-    * set aboard the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Inertial Sensor joints bounds with current values
+    * set aboard the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the limb limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 
@@ -1569,7 +1569,7 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubNeckInertialDynV2(const ChainComputationMode _mode=KINBWD_WREBWD, const std::string &_type ="v2.5");
 
@@ -1580,11 +1580,11 @@ public:
     iCubNeckInertialDynV2(const iCubNeckInertialDynV2 &sensor);
 
     /**
-    * Alignes the Inertial Sensor joints bounds with current values 
-    * set aboard the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Inertial Sensor joints bounds with current values
+    * set aboard the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the limb limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 

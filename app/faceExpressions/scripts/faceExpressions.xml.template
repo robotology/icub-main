@@ -16,6 +16,5 @@
   <from>/icub/face/emotions/out</from>
   <to>/icub/face/raw/in</to>
   <protocol>tcp</protocol>
-</connection> 
+</connection>
 </application>
-  

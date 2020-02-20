@@ -21,9 +21,9 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 
-#include "stdio.h" 
-#include "stdlib.h" 
-#include "string.h" 
+#include "stdio.h"
+#include "stdlib.h"
+#include "string.h"
 #include "EoCommon.h"
 #include "EoDiagnostics.h"
 #include "OPCprotocolManager.h"
@@ -37,7 +37,7 @@
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - declaration of extern hidden interface 
+// - declaration of extern hidden interface
 // --------------------------------------------------------------------------------------------------------------------
 
 
@@ -49,7 +49,7 @@
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition (and initialisation) of extern variables, but better using _get(), _set() 
+// - definition (and initialisation) of extern variables, but better using _get(), _set()
 // --------------------------------------------------------------------------------------------------------------------
 extern eOdgn_commands_t dgnCommands;
 extern uint32_t cmdena_rxsetPointCheck;
@@ -91,20 +91,20 @@ extern void on_rec_runner_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map,
 {   // for the host
 
     EOMtheEMSrunnerDEBUG_t* data = (EOMtheEMSrunnerDEBUG_t*)recdata;
-    
+
     switch(opc)
     {
-        
+
         default:
         case opcprotman_opc_set:
-        {   // nobody can order that to us           
-            // we just dont do it ...         
+        {   // nobody can order that to us
+            // we just dont do it ...
         } break;
-        
+
         case opcprotman_opc_say:    // someboby has replied to a ask we sent
         case opcprotman_opc_sig:    // someboby has spontaneously sent some data
-        {   
-        
+        {
+
             printf("\n\n-----received data of runner---\n");
 
         printf("numberofperiods=%lld\n ", data->numberofperiods);
@@ -119,10 +119,10 @@ extern void on_rec_runner_debug(opcprotman_opc_t opc, opcprotman_var_map_t* map,
         printf("executionoverflows[1]=%d\n ", data->executionoverflows[1]);
         printf("executionoverflows[2]=%d\n ", data->executionoverflows[2]);
         printf("datagrams_failed_to_go_in_txsocket=%d\n ", data->datagrams_failed_to_go_in_txsocket);
-        
+
         } break;
-    }       
-    
+    }
+
 }
 */
 
@@ -246,18 +246,18 @@ extern opcprotman_res_t opcprotman_personalize_database(OPCprotocolManager *p)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of extern hidden functions 
+// - definition of extern hidden functions
 // --------------------------------------------------------------------------------------------------------------------
 
 
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of static functions 
+// - definition of static functions
 // --------------------------------------------------------------------------------------------------------------------
 static void s_print_emsperiph_candata(eOdgn_canstatus_t *canst_ptr)
 {
-    printf("\t\twarning=%d passive=%d busoff=%d\n", canst_ptr->hw.warning, canst_ptr->hw.passive, canst_ptr->hw.busoff);  
+    printf("\t\twarning=%d passive=%d busoff=%d\n", canst_ptr->hw.warning, canst_ptr->hw.passive, canst_ptr->hw.busoff);
     printf("\t\thw_rx_queue_is_full=%d\n", canst_ptr->hw.rxqueueisfull);
     printf("\t\tsw_rx_queue_is_full=%d sw_tx_queue_is_full=%d dummy=0x%x\n", canst_ptr->sw.rxqueueisfull, canst_ptr->sw.txqueueisfull, canst_ptr->sw.dummy);
 }
@@ -270,17 +270,17 @@ static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
 
     switch(opc)
     {
-        
+
         default:
         case opcprotman_opc_set:
-        {   // nobody can order that to us           
-            // we just dont do it ...         
+        {   // nobody can order that to us
+            // we just dont do it ...
         } break;
-        
+
         case opcprotman_opc_say:    // someboby has replied to a ask we sent
         case opcprotman_opc_sig:    // someboby has spontaneously sent some data
-        {   
-        
+        {
+
             printf("-----EMS periph data---\n");
             printf("\t CAN 1:\n");
             s_print_emsperiph_candata(&data->can_dev[0]);
@@ -324,7 +324,7 @@ static void on_rec_emsperiph(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
             fflush(stdout);
 
         } break;
-    }       
+    }
 
 
 }
@@ -333,29 +333,29 @@ static void on_rec_emsapplcommon(opcprotman_opc_t opc, opcprotman_var_map_t* map
 {
 
     eOdgn_emsapplication_common_t* data = (eOdgn_emsapplication_common_t*)recdata;
-    
+
     switch(opc)
     {
-        
+
         default:
         case opcprotman_opc_set:
-        {   // nobody can order that to us           
-            // we just dont do it ...         
+        {   // nobody can order that to us
+            // we just dont do it ...
         } break;
-        
+
         case opcprotman_opc_say:    // someboby has replied to a ask we sent
         case opcprotman_opc_sig:    // someboby has spontaneously sent some data
-        {   
-        
+        {
+
             printf("-----EMS appl common---\n");
 
             s_print_emsapplcomm_core(&data->core);
             s_print_emsapplcomm_ipnet(&data->ipnet);
             s_print_emsapplcomm_transceiver(&data->transceiver);
 
-            fflush(stdout);    
+            fflush(stdout);
         } break;
-    }       
+    }
 }
 
 static void s_print_emsapplcomm_core(eOdgn_coreapplication_t *appcore_ptr)
@@ -406,20 +406,20 @@ static void on_rec_emsapplmc(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
 {
 
     eOdgn_emsapplication_emswithmc_t* data = (eOdgn_emsapplication_emswithmc_t*)recdata;
-    
+
     switch(opc)
     {
-        
+
         default:
         case opcprotman_opc_set:
-        {   // nobody can order that to us           
-            // we just dont do it ...         
+        {   // nobody can order that to us
+            // we just dont do it ...
         } break;
-        
+
         case opcprotman_opc_say:    // someboby has replied to a ask we sent
         case opcprotman_opc_sig:    // someboby has spontaneously sent some data
-        {   
-        
+        {
+
             printf("-----EMS appl mc---\n");
 
 
@@ -442,7 +442,7 @@ static void on_rec_emsapplmc(opcprotman_opc_t opc, opcprotman_var_map_t* map, vo
             memcpy(&s_emswithmc_data, data, sizeof(eOdgn_emsapplication_emswithmc_t));
 
         } break;
-    }      
+    }
 
 }
 
@@ -452,8 +452,8 @@ static void s_print_emsapplmc_encoderserror(eOdgn_encoderreads_t *encreads)
     for(i=0; i<6; i++)
     {
         printf("Encoder num %d\t", i);
-        printf("\t err_onReadFromSpi=%d   ", encreads->encList[i].err_onReadFromSpi);  
-        printf("err_onParityError=%d  ", encreads->encList[i].err_onParityError);  
+        printf("\t err_onReadFromSpi=%d   ", encreads->encList[i].err_onReadFromSpi);
+        printf("err_onParityError=%d  ", encreads->encList[i].err_onParityError);
         printf("err_onInvalidValue=%d  \n", encreads->encList[i].err_onInvalidValue);
     }
     printf("\tcount=%d\n", encreads->count);
@@ -464,20 +464,20 @@ static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map,
     eOdgn_motorstatusflags_t* data = (eOdgn_motorstatusflags_t*)recdata;
     uint8_t i;
     char stroutput[300];
-    
+
     switch(opc)
     {
-        
+
         default:
         case opcprotman_opc_set:
-        {   // nobody can order that to us           
-            // we just dont do it ...         
+        {   // nobody can order that to us
+            // we just dont do it ...
         } break;
-        
+
         case opcprotman_opc_say:    // someboby has replied to a ask we sent
         case opcprotman_opc_sig:    // someboby has spontaneously sent some data
-        {   
-        
+        {
+
             printf("-----motor status flag---\n");
 
             for(i=0; i<12; i++)
@@ -506,9 +506,9 @@ static void on_rec_motorstflags(opcprotman_opc_t opc, opcprotman_var_map_t* map,
             }
 
 
-            fflush(stdout);    
+            fflush(stdout);
         } break;
-    }      
+    }
 
 }
 
@@ -600,7 +600,7 @@ static void on_rec_rxcheckSetpoints(opcprotman_opc_t opc, opcprotman_var_map_t* 
 
     eOdgn_rxCheckSetpoints_t* data = (eOdgn_rxCheckSetpoints_t*)recdata;
     uint8_t i;
-    
+
     if(!cmdena_rxsetPointCheck)
     {
         return;
@@ -609,17 +609,17 @@ static void on_rec_rxcheckSetpoints(opcprotman_opc_t opc, opcprotman_var_map_t* 
 
     switch(opc)
     {
-        
+
         default:
         case opcprotman_opc_set:
-        {   // nobody can order that to us           
-            // we just dont do it ...         
+        {   // nobody can order that to us
+            // we just dont do it ...
         } break;
-        
+
         case opcprotman_opc_say:    // someboby has replied to a ask we sent
         case opcprotman_opc_sig:    // someboby has spontaneously sent some data
-        {   
-        
+        {
+
             printf("\n\n-----rx check setpoints---\n");
 
             for(i=0; i<4; i++)
@@ -671,9 +671,9 @@ static void on_rec_rxcheckSetpoints(opcprotman_opc_t opc, opcprotman_var_map_t* 
             }
 
 
-            fflush(stdout);    
+            fflush(stdout);
         } break;
-    }      
+    }
 
 
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -35,7 +35,7 @@ Sensor::Sensor()
 {
     name="";
     source=NULL;
-    configured=false;    
+    configured=false;
 }
 
 
@@ -59,7 +59,7 @@ bool SensorEncoders::configure(void *source, const Property &options)
 bool SensorEncoders::getOutput(Value &in) const
 {
     if (!configured)
-        return false;    
+        return false;
 
     Vector vect(size);
     static_cast<IEncoders*>(source)->getEncoders(vect.data());

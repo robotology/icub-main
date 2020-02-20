@@ -6,7 +6,7 @@
  */
 
 
- 
+
 #include "FeatureInterface.h"
 #include "FeatureInterface_hid.h"
 
@@ -98,7 +98,7 @@
 
 //    // if the following is required ... include "EoAnalogSensors.h"
 //    // eOas_arrayofupto12bytes_t *debug_tmp = (eOas_arrayofupto12bytes_t *) as_array;
-    
+
 //    // specie di view grezza, usare dynamic cast?
 //    embObjAnalogSensor *tmp = (embObjAnalogSensor *)(_interface2ethManager->getHandle(id->boardNum, id->ep));
 
@@ -149,7 +149,7 @@
 //    {
 //        return(FEAT_boardnumber_dummy);
 //    }
-    
+
 //    return(nvboardnum+1);
 //}
 

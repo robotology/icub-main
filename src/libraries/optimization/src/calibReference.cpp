@@ -121,7 +121,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number *x,
                             bool init_z, Ipopt::Number *z_L, Ipopt::Number *z_U,
@@ -132,7 +132,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_f(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
                 Ipopt::Number &obj_value)
@@ -150,7 +150,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
@@ -227,7 +227,7 @@ public:
     {
         return true;
     }
-    
+
     /****************************************************************/
     void finalize_solution(Ipopt::SolverReturn status, Ipopt::Index n,
                            const Ipopt::Number *x, const Ipopt::Number *z_L,
@@ -285,7 +285,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
@@ -395,7 +395,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
@@ -498,7 +498,7 @@ void CalibReferenceWithMatchedPoints::setBounds(const Matrix &min,
         (max.rows()<3) || (max.cols()<3))
         return;
 
-    this->min[0]=min(0,3); this->max[0]=max(0,3); 
+    this->min[0]=min(0,3); this->max[0]=max(0,3);
     this->min[1]=min(1,3); this->max[1]=max(1,3);
     this->min[2]=min(2,3); this->max[2]=max(2,3);
 

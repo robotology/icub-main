@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -53,25 +53,25 @@ const int ifovea = 128;
 const int baseWidth = 320;
 const int baseHeight = 240;
 
-SimulatorModule::SimulatorModule(WorldManager& world, RobotConfig& config, 
-                                 Simulation *sim) : 
-    moduleName(config.getModuleName()), 
+SimulatorModule::SimulatorModule(WorldManager& world, RobotConfig& config,
+                                 Simulation *sim) :
+    moduleName(config.getModuleName()),
     world_manager(world),
     robot_config(config),
     robot_flags(config.getFlags()),
     finder(config.getFinder()),
     sim(sim) {
-    Property options;       
+    Property options;
     wrappedStep = NULL;
     stopped = false;
     extractImages = false;
     viewParam1 = false;
-    viewParam2 = false;	
+    viewParam2 = false;
     sim = NULL;
     sloth = 0;
     iCubLArm = NULL;
     iCubRArm = NULL;
-    iCubHead = NULL; 
+    iCubHead = NULL;
     iCubLLeg = NULL;
     iCubRLeg = NULL;
     iCubTorso = NULL;
@@ -94,7 +94,7 @@ void SimulatorModule::sendTouchRightHand(Bottle& report){
     tactileRightHandPort.setEnvelope(generalStamp);
     tactileRightHandPort.write();
 }
-	
+
 bool SimulatorModule::shouldSendTouchLeftHand() {
     return tactileLeftHandPort.getOutputCount()>0;
 }
@@ -108,12 +108,12 @@ bool SimulatorModule::shouldSendTouchRightHand() {
 void SimulatorModule::sendSkinEvents(iCub::skinDynLib::skinContactList& skinContactListReport){
     iCub::skinDynLib::skinContactList &skinEvents = skinEventsPort.prepare();
     skinEvents.clear();
-    skinEvents.insert(skinEvents.end(), skinContactListReport.begin(), skinContactListReport.end()); 
+    skinEvents.insert(skinEvents.end(), skinContactListReport.begin(), skinContactListReport.end());
     generalStamp.update(Time::now());
     skinEventsPort.setEnvelope(generalStamp);
     skinEventsPort.write();
 }
-    
+
 bool SimulatorModule::shouldSendSkinEvents(){
     return skinEventsPort.getOutputCount()>0;
 }
@@ -131,7 +131,7 @@ void SimulatorModule::sendTouchRightArm(Bottle& report){
      tactileRightArmPort.setEnvelope(generalStamp);
      tactileRightArmPort.write();
 }
-        
+
 bool SimulatorModule::shouldSendTouchLeftArm() {
      return tactileLeftArmPort.getOutputCount()>0;
 }
@@ -153,7 +153,7 @@ void SimulatorModule::sendTouchRightForearm(Bottle& report){
     tactileRightForearmPort.setEnvelope(generalStamp);
     tactileRightForearmPort.write();
 }
-        
+
 bool SimulatorModule::shouldSendTouchLeftForearm() {
     return tactileLeftForearmPort.getOutputCount()>0;
 }
@@ -161,7 +161,7 @@ bool SimulatorModule::shouldSendTouchLeftForearm() {
 bool SimulatorModule::shouldSendTouchRightForearm() {
     return tactileRightForearmPort.getOutputCount()>0;
 }
-    
+
 void SimulatorModule::sendTouchTorso(Bottle& report){
     tactileTorsoPort.prepare() = report;
     generalStamp.update(Time::now());
@@ -204,7 +204,7 @@ bool SimulatorModule::closeModule() {
     portLeftLog.interrupt();
     portRightFov.interrupt();
     portRightLog.interrupt();
-#endif    
+#endif
     portWide.interrupt();
 
     portLeft.close();
@@ -258,7 +258,7 @@ bool SimulatorModule::closeModule() {
 // this should become a close
 bool SimulatorModule::interruptModule() {
     stopped = true;
-    
+
     if (iCubLArm!=NULL) {
         delete iCubLArm;
         iCubLArm = NULL;
@@ -287,7 +287,7 @@ bool SimulatorModule::interruptModule() {
     masserver.close();
     simImu.close();
     world_manager.clear();
-  
+
     return true;
 }
 
@@ -515,37 +515,37 @@ void SimulatorModule::initImagePorts() {
 
     string cameras = finder.findFile("cameras");
     options.fromConfigFile(cameras.c_str());
-    
-    string nameExternal = 
+
+    string nameExternal =
         options.check("name_wide",
                       Value("/cam"),
                       "Name of external view camera port").asString();
-    
-    string nameLeft = 
+
+    string nameLeft =
         options.check("name_left",
                       Value("/cam/left"),
                       "Name of left camera port").asString();
-    
-    string nameRight = 
+
+    string nameRight =
         options.check("name_right",
                       Value("/cam/right"),
                       "Name of right camera port").asString();
 
 #ifndef OMIT_LOGPOLAR
-    string nameLeftFov = 
+    string nameLeftFov =
         options.check("name_leftFov",
                       Value("/cam/left/fov"),
                       "Name of left camera fovea port").asString();
-    string nameRightFov = 
+    string nameRightFov =
         options.check("name_rightFov",
                       Value("/cam/right/fov"),
                       "Name of right camera fovea port ").asString();
 
-    string nameLeftLog = 
+    string nameLeftLog =
         options.check("name_leftLog",
                       Value("/cam/left/logpolar"),
                       "Name of left camera logpolar port").asString();
-    string nameRightLog = 
+    string nameRightLog =
         options.check("name_rightLog",
                       Value("/cam/right/logpolar"),
                       "Name of right camera logpolar port").asString();
@@ -555,7 +555,7 @@ void SimulatorModule::initImagePorts() {
     string rightCam = moduleName + nameRight.c_str();
     string mainCam = moduleName + nameExternal.c_str();
 
-#ifndef OMIT_LOGPOLAR    
+#ifndef OMIT_LOGPOLAR
     string leftFov = moduleName + nameLeftFov.c_str();
     string rightFov = moduleName + nameRightFov.c_str();
     string leftLog = moduleName + nameLeftLog.c_str();
@@ -566,7 +566,7 @@ void SimulatorModule::initImagePorts() {
     portRight.open( rightCam.c_str() );
     portWide.open( mainCam.c_str() );
 
-#ifndef OMIT_LOGPOLAR    
+#ifndef OMIT_LOGPOLAR
     portLeftFov.open( leftFov.c_str() );
     portRightFov.open( rightFov.c_str() );
 
@@ -579,18 +579,18 @@ void SimulatorModule::initImagePorts() {
 bool SimulatorModule::open() {
     cmdPort.setReader(*this);
     string world = moduleName + "/world";
-    
+
     string tactileLeft = moduleName + "/skin/left_hand_comp"; //Matej - changed the name to comp - this corresponds to the real iCub convention - higher values ~ higher pressure
     string tactileRight = moduleName + "/skin/right_hand_comp";
     string tactileLeftrpc = moduleName + "/skin/left_hand_comp/rpc:i";
     string tactileRightrpc = moduleName + "/skin/right_hand_comp/rpc:i";
-    
+
     string torqueLeftLeg = moduleName +"/joint_vsens/left_leg:i";
     string torqueRightLeg = moduleName +"/joint_vsens/right_leg:i";
     string torqueTorso = moduleName +"/joint_vsens/torso:i";
     string torqueRightArm = moduleName +"/joint_vsens/left_arm:i";
     string torqueLeftArm = moduleName +"/joint_vsens/right_arm:i";
-    
+
     string inertial = moduleName + "/inertial";
     cmdPort.open( world.c_str() );
     tactileLeftHandPort.open( tactileLeft.c_str() );
@@ -618,7 +618,7 @@ bool SimulatorModule::open() {
     tactileRightForearmPort.open(tactileRightForearmPortString.c_str());
     string tactileTorsoPortString = moduleName + "/skin/torso_comp";
     tactileTorsoPort.open(tactileTorsoPortString.c_str());
-    
+
     if (robot_flags.actVision) {
         initImagePorts();
     }
@@ -634,7 +634,7 @@ bool SimulatorModule::open() {
     buffer.resize( w, h);
 
     firstpass = true;
-   
+
     return true;
 }
 
@@ -686,7 +686,7 @@ void SimulatorModule::displayStep(int pause) {
         bool needLeftFov = (portLeftFov.getOutputCount()>0);
         bool needLeftLog = (portLeftLog.getOutputCount()>0);
         bool needRightFov = (portRightFov.getOutputCount()>0);
-        bool needRightLog = (portRightLog.getOutputCount()>0); 
+        bool needRightLog = (portRightLog.getOutputCount()>0);
 #endif
 
         mtx.lock();
@@ -694,7 +694,7 @@ void SimulatorModule::displayStep(int pause) {
         bool done = stopped;
         mtx.unlock();
 
-#ifndef WIN32_DYNAMIC_LINK 
+#ifndef WIN32_DYNAMIC_LINK
         const char *order = "lrw";
         if (viewParam1) {
             order = "rwl";
@@ -715,7 +715,7 @@ void SimulatorModule::displayStep(int pause) {
                     sendImage(portLeft);
                     sim->clearBuffer();
                 }
-#ifndef OMIT_LOGPOLAR    
+#ifndef OMIT_LOGPOLAR
                 if (needLeftFov) {
                     sim->drawView(true,false,false);
                     getImage();
@@ -737,7 +737,7 @@ void SimulatorModule::displayStep(int pause) {
                     sendImage(portRight);
                     sim->clearBuffer();
                 }
-#ifndef OMIT_LOGPOLAR    
+#ifndef OMIT_LOGPOLAR
                 if (needRightFov) {
                     sim->drawView(false,true,false);
                     getImage();
@@ -792,7 +792,7 @@ void SimulatorModule::sendImage(BufferedPort<ImageOf<PixelRgb> >& port) {
     port.write();
 }
 
-#ifndef OMIT_LOGPOLAR    
+#ifndef OMIT_LOGPOLAR
 
 void SimulatorModule::sendImageFov(BufferedPort<ImageOf<PixelRgb> >& portFov) {
     static ImageOf<PixelRgb> fov;
@@ -814,7 +814,7 @@ void SimulatorModule::sendImageLog(BufferedPort<ImageOf<PixelRgb> >& portLog) {
 
 
 bool SimulatorModule::cartToLogPolar(ImageOf<PixelRgb>& lp, const ImageOf<PixelRgb>& cart) {
-    //  
+    //
     if (firstpass) {
         if (!trsf.allocated())
             trsf.allocLookupTables(C2L, lp.height(), lp.width(), cart.width(), cart.height(), 1.);
@@ -825,7 +825,7 @@ bool SimulatorModule::cartToLogPolar(ImageOf<PixelRgb>& lp, const ImageOf<PixelR
     return trsf.cartToLogpolar(lp, cart);
 }
 
-bool SimulatorModule::subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, 
+bool SimulatorModule::subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst,
                                      const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src) {
     //
     dst.resize (ifovea, ifovea);

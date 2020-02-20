@@ -165,7 +165,7 @@ public:
 
     // retrieve a vector of pointers with a given ip address. if ipv4 is 0, then it retrieves all the selected
     // if 0xffffffff we retrieve them all
-    // we have a vector of pointer so that we can modify the boards (but dont delete them, use rem() or clear() instead).    
+    // we have a vector of pointer so that we can modify the boards (but dont delete them, use rem() or clear() instead).
     vector<EthBoard *> get(eOipv4addr_t ipv4);
 
     EthBoard& operator[](int i);

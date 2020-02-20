@@ -85,43 +85,43 @@ bool embObjIMU::open(yarp::os::Searchable &config)
         return false;
     }
 
-    
+
     const eOmn_serv_parameter_t* servparam = &servCfg.ethservice;
-    
+
     if(false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_inertials3, servparam, 5.0))
     {
         yError() << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate() ";
         cleanup();
         return false;
     }
-    
+
     //init conversion factor
     //TODO: currently the conversion factors are not read from xml files, but configured here.
     //please read IMUbosh datasheet for more information
-    
+
     servCfg.convFactors.accFactor = 100.0; // 1 m/sec2 = 100 binary units
     servCfg.convFactors.magFactor = 16.0 * 1000000.0;  // 1 microT = 16 binary units
     servCfg.convFactors.gyrFactor = 16.0;  // 1 degree/sec = 16 binary units
     servCfg.convFactors.eulFactor = 16.0; //  1 degree  = 16 binary units
     //eul angles don't need a conversion.
     GET_privData(mPriv).sens.measConverter.Initialize(servCfg.convFactors.accFactor, servCfg.convFactors.gyrFactor,  servCfg.convFactors.magFactor, servCfg.convFactors.eulFactor);
-    
+
     // configure the sensor(s)
-    
+
     if(false == GET_privData(mPriv).sendConfing2board(servCfg))
     {
         cleanup();
         return false;
     }
-    
-    
+
+
     if(false == GET_privData(mPriv).initRegulars())
     {
         cleanup();
         return false;
     }
-    
-    
+
+
     if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_inertials3))
     {
         yError() << getBoardInfo() << "open() fails to start as service.... cannot continue";
@@ -138,12 +138,12 @@ bool embObjIMU::open(yarp::os::Searchable &config)
 
     // build data structure used to handle rx packets
     GET_privData(mPriv).maps.init(servCfg);
-    
-    
+
+
     {   // start the configured sensors. so far, we must keep it in here. later on we can remove this command
-        
+
         uint8_t enable = 1;
-        
+
         eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial3, 0, eoprot_tag_as_inertial3_cmmnds_enable);
         if(false == GET_privData(mPriv).res->setRemoteValue(id32, &enable))
         {
@@ -152,7 +152,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
             return false;
         }
     }
-    
+
     GET_privData(mPriv).sens.init(servCfg, getBoardInfo());
     GET_privData(mPriv).setOpen(true);
     return true;
@@ -266,7 +266,7 @@ bool embObjIMU::getOrientationSensorFrameName(size_t sens_index, std::string &fr
 bool embObjIMU::getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index, yarp::sig::Vector& rpy_out, double& timestamp) const
 {
     return GET_privData(mPriv).sens.getSensorMeasure(sens_index, eoas_imu_eul, rpy_out, timestamp);
-    
+
 }
 
 
@@ -297,13 +297,13 @@ bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
         if(data == NULL)
         {
             yError() << getBoardInfo() << "update(): I have to update " << numofIntem2update << "items, but the " << i << "-th item is null.";
-            continue; 
+            continue;
             //NOTE: I signal this strange situation with an arror for debug porpouse...maybe we can convert in in warning when the device is stable....
         }
         uint8_t index;
         eOas_sensor_t type;
         bool validdata =  GET_privData(mPriv).maps.getIndex(data, index, type);
-        
+
         if(!validdata)
         {
 
@@ -350,18 +350,18 @@ void embObjIMU::updateDebugPrints(eOprotID32_t id32, double timestamp, void* rxd
 {
     static int prog = 1;
     static double prevtime =  yarp::os::Time::now();
-    
+
     double delta = yarp::os::Time::now() - prevtime;
     double millidelta = 1000.0 *delta;
     long milli = static_cast<long>(millidelta);
-    
-    
+
+
     eOas_inertial3_status_t *i3s  = (eOas_inertial3_status_t*)rxdata;
-    
+
     EOconstarray* arrayofvalues = eo_constarray_Load(reinterpret_cast<const EOarray*>(&i3s->arrayofdata));
-    
+
     uint8_t n = eo_constarray_Size(arrayofvalues);
-    
+
     if(n > 0)
     {
         prog++;

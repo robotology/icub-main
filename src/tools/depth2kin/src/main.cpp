@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
-    
+
     CalibModule mod;
     return mod.runModule(rf);
 }

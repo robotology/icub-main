@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Andrea Del Prete
  * email:   andrea.delprete@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -18,7 +18,7 @@
 
 #include <mutex>
 #include <string>
-#include <sstream> 
+#include <sstream>
 #include <iomanip>					// io manipulator (setw, setfill)
 #include <cstdarg>
 //#include <cstdlib>
@@ -52,7 +52,7 @@ GtkProgressBar			*progBarCalib;
 GtkButton				*btnCalibration;
 GtkToggleButton			*btnSmooth;
 GtkToggleButton			*btnBinarization;
-GtkScale				*scaleSmooth;	
+GtkScale				*scaleSmooth;
 GtkTextView             *tvLog;
 GtkTextBuffer           *tbLog;
 GtkSpinButton           *spinThreshold;
@@ -111,7 +111,7 @@ bool initGuiStatus();
 
 static void printLog(string text){
     text = text + "\n";
-    GtkTextIter tbIter;    
+    GtkTextIter tbIter;
     gtk_text_buffer_get_end_iter(tbLog, &tbIter);
     gtk_text_buffer_insert(tbLog, &tbIter, text.c_str(), text.length());
     gtk_text_view_scroll_to_iter(tvLog, &tbIter, 0.0, false, 0.0, 0.0);
@@ -163,7 +163,7 @@ static Bottle sendRpcCommand(bool responseExpected, SkinManagerCommand cmd){
 	Bottle b;
     b.addInt(cmd);
 	//g_print("Going to send rpc msg: %s\n", b.toString().c_str());
-	if(responseExpected){		
+	if(responseExpected){
 		guiRpcPort.write(b, resp);
 	}else{
 		guiRpcPort.write(b);

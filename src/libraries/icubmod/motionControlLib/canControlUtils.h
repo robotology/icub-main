@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2008 The RobotCub Consortium
  * Author: Lorenzo Natale
  * website: www.robotcub.org
@@ -64,7 +64,7 @@ inline unsigned char getMessageType(const yarp::dev::CanMessage &m)
 
 /**
  * Extract the joint number to which a RECEIVED message is referring to.
- * This is the conversion message -> joint (uses can id and first bit of 
+ * This is the conversion message -> joint (uses can id and first bit of
  * first data byte in the can message)
  */
 inline int getJoint(const yarp::dev::CanMessage &m, const unsigned char *invM)
@@ -118,7 +118,7 @@ unsigned char getMessageType(const T &m)
 
 /**
  * Extract the joint number to which a RECEIVED message is referring to.
- * This is the conversion message -> joint (uses can id and first bit of 
+ * This is the conversion message -> joint (uses can id and first bit of
  * first data byte in the can message)
  */
 template<class T>
@@ -134,13 +134,13 @@ const int DEBUG_PRINTF_BUFFER_LENGTH=255;
 inline void DEBUG_FUNC(const char *fmt, ...)
 {
 #ifdef CAN_DEBUG
-    va_list ap; 
+    va_list ap;
     va_start(ap, fmt);
     char buffer[DEBUG_PRINTF_BUFFER_LENGTH];
 #ifdef WIN32
-    _vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap); 
+    _vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap);
 #else
-    vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap); 
+    vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap);
 #endif
     yDebug("%s", buffer);
     va_end(ap);
@@ -169,7 +169,7 @@ class ThreadFifo: public std::list<ThreadId>
 
         tmp=front();
         pop_front();
-        
+
         ret=tmp.id;
         return true;
     }

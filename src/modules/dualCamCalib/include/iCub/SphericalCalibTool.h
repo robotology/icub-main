@@ -65,12 +65,12 @@ public:
 
     // ICalibTool
     void apply(const yarp::sig::ImageOf<yarp::sig::PixelRgb> & in,
-               yarp::sig::ImageOf<yarp::sig::PixelRgb> & out);    
+               yarp::sig::ImageOf<yarp::sig::PixelRgb> & out);
 };
 
 
 #endif
 
- 
- 
- 
+
+
+

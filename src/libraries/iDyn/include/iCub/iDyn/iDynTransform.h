@@ -7,22 +7,22 @@
 
 /**
  * \defgroup iDynTransform iDynTransform
- *  
+ *
  * @ingroup iDyn
- *  
+ *
  * Classes for FT sensor transformation
- *  
+ *
  * \note SI units adopted: Newton for Forces and Newton-Meter for
  *       Torques.
 
- * \section dep_sec Dependencies 
- * 
- *  
+ * \section dep_sec Dependencies
+ *
+ *
  * \author Matteo Fumagalli
- *  
+ *
  * \section intro_sec Description
  *
- * Classes for insertion of a FT sensor on a Link of a Chain and its prijection 
+ * Classes for insertion of a FT sensor on a Link of a Chain and its prijection
  * on the base frame.
  *
  * Date: first release 16/10/2009
@@ -35,7 +35,7 @@
 istantiate your limb (example: iCubArm *arm)
 istantiate a iFrameOnLink Variable as pointer (iFrameOnLink *Sens) and a pointer to a variable of type iGenericFrame
 (ex: iGenericFrame *sensore)
-Sens need a iGenericFrame and an iKinLimb variables with some properties defining the location of the sensor over a link of the 
+Sens need a iGenericFrame and an iKinLimb variables with some properties defining the location of the sensor over a link of the
 iKinLimb chain.
 
 example code:
@@ -49,10 +49,10 @@ example code:
     iGenericFrame *sensore = new iGenericFrame(Rs,ps);
     iFrameOnLink *Sens = new iFrameOnLink(2);
     chain=arm->asChain();
-    
+
     Sens->attach(sensore);
     Sens->attach(arm);
-        
+
     Vector q(7);
     q=...
     Vector FT;
@@ -60,12 +60,12 @@ example code:
     FT = ReadFT(); //a function that reads the FT values from a sensor
 
     Vector FT_B; //will be the vector of forces and torqes in the base frame
-    
+
     arm->setAng(q);
     sensore->setFT(FT);
     FT_B = Sens->getFT();
  *
- */ 
+ */
 
 #ifndef __IFORCECONTROL_H__
 #define __IFORCECONTROL_H__
@@ -122,24 +122,24 @@ class iGenericFrame
 {
 private:
         // Default constructor: not implemented.
-    yarp::sig::Matrix R; // Rotation Matrix wrt the link reference frame on which the FT sensor is put 
-    yarp::sig::Vector p; // Vector distance of the FT sensor wrt the link reference frame on which the FT sensor is put 
+    yarp::sig::Matrix R; // Rotation Matrix wrt the link reference frame on which the FT sensor is put
+    yarp::sig::Vector p; // Vector distance of the FT sensor wrt the link reference frame on which the FT sensor is put
     yarp::sig::Matrix H; // Rototranslation matrix
     yarp::sig::Vector FT;
 public:
     /* Default Constructor */
     iGenericFrame();
-    /* 
+    /*
     * Overload constructor
     * @param _R is the rotation matrix with respect to another reference frame
-    * @param _x, _y, _z are the position vector of one reference frame with respect 
-    * to another 
+    * @param _x, _y, _z are the position vector of one reference frame with respect
+    * to another
     */
     iGenericFrame(const yarp::sig::Matrix &_R, double _x, double _y, double _z);
-    /* 
+    /*
     * Overload constructor
     * @param _R as previously
-    * @param _p is a vector composed by {_x, _y, _z} of the previous definition 
+    * @param _p is a vector composed by {_x, _y, _z} of the previous definition
     */
     iGenericFrame(const yarp::sig::Matrix &_R, const yarp::sig::Vector &_p);
 
@@ -147,33 +147,33 @@ public:
     void initFTransform();
 
     /*
-    * Set the Rotation matrix among two reference Frame 
+    * Set the Rotation matrix among two reference Frame
     * @param _R is the rotation matrix with respect to another reference frame
     */
     void setR(const yarp::sig::Matrix &_R);
 
-    /* 
-    * Set the distance between the two reference Frame 
-    * @param _x, _y, _z are the position vector of one reference frame with respect 
-    * to another 
+    /*
+    * Set the distance between the two reference Frame
+    * @param _x, _y, _z are the position vector of one reference frame with respect
+    * to another
     */
     void setP(double _x, double _y, double _z);
-    /* 
-    * Set the distance between the two reference Frame 
-    * where _p is composed by {_x, _y, _z} of the previous definition 
+    /*
+    * Set the distance between the two reference Frame
+    * where _p is composed by {_x, _y, _z} of the previous definition
     */
     void setP(const yarp::sig::Vector &_p);
 
     /* Set the homogeneous transformation among two frames */
     /*
     * @param _R is the rotation matrix with respect to another reference frame
-    * @param _x, _y, _z are the position vector of one reference frame with respect 
-    * to another 
+    * @param _x, _y, _z are the position vector of one reference frame with respect
+    * to another
     */
     void setH(const yarp::sig::Matrix &_R, double _x, double _y, double _z);
     /*
     * @param _R is the rotation matrix with respect to another reference frame
-    * @param _p is composed by {_x, _y, _z} of the previous definition 
+    * @param _p is composed by {_x, _y, _z} of the previous definition
     */
     void setH(const yarp::sig::Matrix &_R, const yarp::sig::Vector &_p);
     /*
@@ -208,8 +208,8 @@ public:
 
     /*return the Wrench set with setFT*/
     yarp::sig::Vector getFT(){return FT;}
-    
-    /* Destructor*/ 
+
+    /* Destructor*/
     ~iGenericFrame(){};
 };
 
@@ -225,7 +225,7 @@ private:
     int l;
     yarp::sig::Matrix H;
     yarp::sig::Vector FT;
- 
+
     iGenericFrame   *Sensor;
     iGenericFrame   *Link;
     iKin::iKinChain *Limb;
@@ -274,11 +274,11 @@ public:
     /* @param _pl is the position vector of the sensor FoR with respect to the base FoR */
     yarp::sig::Vector getPl(){return Link->getP();}
     /* @param _Hl is the homogeneous transformation matrix of the sensor FoR with respect to the base FoR   */
-    yarp::sig::Matrix getHl(){return Link->getH();} 
+    yarp::sig::Matrix getHl(){return Link->getH();}
 
     //set transformation variables of the sensor, with respect to a base frame:
     yarp::sig::Matrix getH();
-    
+
     void setSensor(int _l, const yarp::sig::Vector &_FT);
     void setSensor(const yarp::sig::Matrix &_H, const yarp::sig::Vector &_FT);
     void setSensor(const yarp::sig::Vector &_FT);
@@ -349,7 +349,7 @@ public:
     yarp::sig::Matrix getHs(){return Hs;}
     yarp::sig::Matrix getHe(){return He;}
 
-    
+
 };
 
 }

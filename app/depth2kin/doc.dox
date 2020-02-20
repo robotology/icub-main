@@ -14,11 +14,11 @@ In order to run the application, the robot must be running with the cartesian an
 \section int_sec Instantiated Modules
 - \ref depth2kin
 - SFM
-- yarpview 
+- yarpview
 
 \section howto_sec How to run the Application
 ...
- 
+
 \author Ugo Pattacini
 
 Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia

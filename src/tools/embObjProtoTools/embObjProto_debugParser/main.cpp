@@ -17,7 +17,7 @@
 */
 
 /* @file       main.cpp
-    @brief      
+    @brief
     @author     valentina.gaggero@iit.it
     @date       03/19/2013
 **/
@@ -62,7 +62,7 @@
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - declaration of extern hidden interface 
+// - declaration of extern hidden interface
 // --------------------------------------------------------------------------------------------------------------------
 
 
@@ -74,7 +74,7 @@
 #define MAX_ACQUISITION		1000000000L
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition (and initialisation) of extern variables, but better using _get(), _set() 
+// - definition (and initialisation) of extern variables, but better using _get(), _set()
 // --------------------------------------------------------------------------------------------------------------------
 //extern const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg;
 extern const eODeb_eoProtoParser_cfg_t *deb_eoParserCfg_ptr;
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 	struct pcap_pkthdr header;	/* The header that pcap gives us */
 	const u_char *packet;		/* The actual packet */
 
-    
+
     //1) init data
     sprintf(dev, "eth1");
     sprintf(filter_exp, "src host 10.0.1.104");
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
                 }
                 continue;
             }
-            
+
             if(strcmp("--filterSrcAddr", argv[i]) == 0)
             {
                 if(i<(argc-1))
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
                 continue;
             }
 
-            
+
             if(strcmp("--filterDstAddr", argv[i]) == 0)
             {
                 if(i<(argc-1))
@@ -212,20 +212,20 @@ int main(int argc, char *argv[])
 
     printf("Debug-tool: Ethernet Low Level Praser start on interface %s\n", dev);
     printf("\t\t Used filter: %s\n", filter_exp);
-    
+
 
     //3) init pcap
 /*
 	handle = pcap_open_live(dev, BUFSIZ, 0, TIMEOUT_MS, errbuf);				// 0 = non promiscuo
-	if (handle == NULL) 
+	if (handle == NULL)
     {
 		printf("Sorry, occured problem while opening pcap\n");
         //fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
 		return(2);
 	}
 
-	// make sure we're capturing on an Ethernet device [2] 
-	if (pcap_datalink(handle) != DLT_EN10MB) 
+	// make sure we're capturing on an Ethernet device [2]
+	if (pcap_datalink(handle) != DLT_EN10MB)
     {
 		printf("Sorry, pcap has been open on a NOT ethernet device\n");
         //fprintf(stderr, "%s is not an Ethernet\n", dev);
@@ -251,12 +251,12 @@ int main(int argc, char *argv[])
         printf("error in inti libpacap\n");
         return(1);
     }
-    
+
     //4)init low level parser objs
     s_ethLowLevelPraser_configure();
-    
+
     //5)start to acquire packets
-/*	
+/*
 	pcap_loop(handle, maxacquisition, s_process_packet, NULL); // Get into the loop
 
 */
@@ -279,19 +279,19 @@ int main(int argc, char *argv[])
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of extern hidden functions 
+// - definition of extern hidden functions
 // --------------------------------------------------------------------------------------------------------------------
 
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of static functions 
+// - definition of static functions
 // --------------------------------------------------------------------------------------------------------------------
 static void s_process_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
 //    printf("process pkt\n");
     //eOTheEthLowLevParser_DissectPacket(eo_ethLowLevParser_GetHandle, packet);
-    
+
     ////currently use thelow level parser and appl paser separately
     eOethLowLevParser_packetInfo_t pktInfo;
     eOresult_t res;
@@ -431,19 +431,19 @@ static void s_ethLowLevelPraser_configure(void)
 //            EO_INIT(.invalidRopFrame)               {0}
 //        }
 //    };
-    
+
     eODeb_eoProtoParser_Initialise(/*&deb_eoParserCfg*/deb_eoParserCfg_ptr);
-    
-    
+
+
     //4.2) init low level parser: eOethLowLevParser
-/*    const eOethLowLevParser_cfg_t  ethLowLevParserCfg = 
+/*    const eOethLowLevParser_cfg_t  ethLowLevParserCfg =
     {
-        EO_INIT(.conFiltersData) 
+        EO_INIT(.conFiltersData)
         {
             EO_INIT(.filtersEnable)     0,
             EO_INIT(.filters)           {0}, //use pcap filter
         },
-        
+
         EO_INIT(.appParserData)
         {
             EO_INIT(.func)             eODeb_eoProtoParser_RopFrameDissect
@@ -452,7 +452,7 @@ static void s_ethLowLevelPraser_configure(void)
     };
 */
     //currently use thelow level parser and appl paser separately
-    const eOethLowLevParser_cfg_t  ethLowLevParserCfg = {0}; 
+    const eOethLowLevParser_cfg_t  ethLowLevParserCfg = {0};
     eo_ethLowLevParser_Initialise(&ethLowLevParserCfg);
 }
 

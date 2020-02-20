@@ -57,7 +57,7 @@ using namespace iCub::skinDynLib;
         return version;
     }
 
-    
+
     void skinPartBase::print(int verbosity)
     {
         yDebug("**********\n");
@@ -78,7 +78,7 @@ using namespace iCub::skinDynLib;
 *****************************************************************/
     skinPart::skinPart()
     {
-        spatial_sampling = "taxel";        
+        spatial_sampling = "taxel";
     }
 
     skinPart::skinPart(const std::string &_filePath)
@@ -129,7 +129,7 @@ using namespace iCub::skinDynLib;
         rf.setDefaultConfigFile(_filePath.c_str()); //overridden by --from parameter
         rf.configure(0,NULL);
         rf.setVerbose(true);
-        
+
         if (rf.check("name"))
         {
             setName(rf.find("name").asString());
@@ -173,7 +173,7 @@ using namespace iCub::skinDynLib;
             else if ((_spatial_sampling!="default" && _spatial_sampling!="taxel" &&
                       _spatial_sampling!="triangle") && (_ss=="taxel" || _ss=="triangle"))
             {
-                spatial_sampling = _ss;   
+                spatial_sampling = _ss;
             }
         }
         else
@@ -202,7 +202,7 @@ using namespace iCub::skinDynLib;
             taxelPosNrm = vectorFromBottle(*(calibration.get(i).asList()),0,6);
             taxelPos = taxelPosNrm.subVector(0,2);
             taxelNrm = taxelPosNrm.subVector(3,5);
-            // the NULL taxels will be automatically discarded 
+            // the NULL taxels will be automatically discarded
             if (norm(taxelNrm) != 0 || norm(taxelPos) != 0)
             {
                 taxels.push_back(new Taxel(taxelPos,taxelNrm,i-1));
@@ -215,7 +215,7 @@ using namespace iCub::skinDynLib;
         if (rf.check("taxel2Repr"))
         {
             yarp::os::Bottle b = *(rf.find("taxel2Repr").asList());
-            
+
             for (int i = 0; i < getSize(); i++)
             {
                 taxel2Repr.push_back(b.get(i).asInt());
@@ -227,7 +227,7 @@ using namespace iCub::skinDynLib;
             yError("[skinPart::setTaxelPosesFromFile] No 'taxel2Repr' field found");
             return false;
         }
-           
+
         return true;
     }
 
@@ -245,7 +245,7 @@ using namespace iCub::skinDynLib;
         filename = filename.c_str() ? filename.c_str() + 1 : _filePath.c_str();
 
         // Open File
-        posFile.open(_filePath.c_str());  
+        posFile.open(_filePath.c_str());
         if (!posFile.is_open())
         {
             yError("[skinPart::setTaxelPosesFromFileOld] File %s has not been opened!",
@@ -254,7 +254,7 @@ using namespace iCub::skinDynLib;
         }
 
         // Acquire taxels
-        posFile.clear(); 
+        posFile.clear();
         posFile.seekg(0, std::ios::beg);//rewind iterator
         for(unsigned int i= 0; getline(posFile,line); i++)
         {
@@ -310,7 +310,7 @@ using namespace iCub::skinDynLib;
         }
 
         return true;
-    } 
+    }
 
     bool skinPart::initRepresentativeTaxels()
     {
@@ -325,7 +325,7 @@ using namespace iCub::skinDynLib;
             repr2TaxelList[mapp.front()]=vectorofIntEqualto(taxel2Repr,mapp.front());
             mapp.pop_front();
         }
-        
+
         return true;
     }
 
@@ -363,7 +363,7 @@ using namespace iCub::skinDynLib;
                 printf("[ %i->%d ]\t",i,taxel2Repr[i]);
             }
             printf("\n");
-            
+
             yDebug("Representative ID -> Taxel IDs:\n");
             for(std::map<int, std::list<unsigned int> >::const_iterator iter_map = repr2TaxelList.begin(); iter_map != repr2TaxelList.end(); ++iter_map)
             {
@@ -374,7 +374,7 @@ using namespace iCub::skinDynLib;
                     printf("%u, ",*iter_list);
                 }
                 printf("}\n");
-            }    
+            }
         }
         if (verbosity>=2)
         {

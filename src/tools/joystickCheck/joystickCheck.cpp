@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2011 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo
  * email:  marco.randazzo@iit.it
@@ -16,43 +16,43 @@
  * Public License for more details
 */
 
-/** 
+/**
 \defgroup joystickCheck joystickCheck
- 
+
 @ingroup icub_tools
- 
+
 This module is used to check if one joystick is currently used.
- 
+
 Copyright (C) 2011 RobotCub Consortium
- 
+
 Author: Marco Randazzo
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
- 
+
 The module returns 1 to the O.S. if at least one axis/button of the default joystick is pressed, 0 otherwise (no axis/buttons pressed or no joysticks active).
 
 \section portsa_sec Ports Accessed
-None. 
- 
-\section portsc_sec Ports Created 
-None. 
+None.
+
+\section portsc_sec Ports Created
+None.
 
 \section in_files_sec Input Data Files
 None.
 
-\section out_data_sec Output Data Files 
-None. 
- 
+\section out_data_sec Output Data Files
+None.
+
 \section conf_file_sec Configuration Files
-None. 
+None.
 
 \section tested_os_sec Tested OS
 Windows, Linux
 
 \author Marco Randazzo
-*/ 
+*/
 
 #include <iostream>
 #include <SDL.h>
@@ -60,7 +60,7 @@ Windows, Linux
 #include <yarp/os/Log.h>
 #include <math.h>
 
-int main( int argc, char **argv ) 
+int main( int argc, char **argv )
 {
     // start SDL subsystem
     SDL_JoystickEventState ( SDL_QUERY );
@@ -107,7 +107,7 @@ int main( int argc, char **argv )
 
     //check for user activity on the opened joystick
     for (int trial=0; trial < 1000; trial++ )
-    {  
+    {
         yarp::os::Time::delay(0.010);
         SDL_JoystickUpdate();
 
@@ -157,7 +157,7 @@ int main( int argc, char **argv )
         first = false;
         if (active==true)
         {
-            yInfo ( "joysticks activity detected.\n" ); 
+            yInfo ( "joysticks activity detected.\n" );
             return 101;
         }
     }

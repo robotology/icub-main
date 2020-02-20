@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -100,17 +100,17 @@ bool ClientCartesianController::open(Searchable &config)
         local=config.find("local").asString();
     else
         return false;
-    
+
     closed=false;
     carrier=config.check("carrier",Value("udp")).asString();
 
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
-    
+
     portCmd.open(local+"/command:o");
     portState.open(local+"/state:i");
     portEvents.open(local+"/events:i");
-    portRpc.open(local+"/rpc:o");    
+    portRpc.open(local+"/rpc:o");
 
     bool ok=true;
     ok&=Network::connect(portRpc.getName(),remote+"/rpc:i");
@@ -141,16 +141,16 @@ bool ClientCartesianController::open(Searchable &config)
 
     ok&=Network::connect(portCmd.getName(),remote+"/command:i",carrier);
     ok&=Network::connect(remote+"/state:o",portState.getName(),carrier);
-    ok&=Network::connect(remote+"/events:o",portEvents.getName(),carrier);    
+    ok&=Network::connect(remote+"/events:o",portEvents.getName(),carrier);
 
     // check whether the solver is alive and connected
     if (ok)
     {
         Bottle command, reply;
-    
+
         command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
         command.addVocab(IKINCARTCTRL_VOCAB_OPT_ISSOLVERON);
-    
+
         if (!portRpc.write(command,reply))
         {
             yError("unable to get reply from server!");
@@ -462,7 +462,7 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od,
         xdesPart.addDouble(xd[i]);
 
     for (int i=0; i<4; i++)
-        xdesPart.addDouble(od[i]);    
+        xdesPart.addDouble(od[i]);
 
     // send command
     portCmd.writeStrict();
@@ -485,7 +485,7 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
     Bottle &xdesPart=command.addList();
 
     for (int i=0; i<3; i++)
-        xdesPart.addDouble(xd[i]);    
+        xdesPart.addDouble(xd[i]);
 
     // send command
     portCmd.writeStrict();
@@ -583,7 +583,7 @@ bool ClientCartesianController::askForPose(const Vector &xd, const Vector &od,
 
     for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
-    
+
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
     addPoseOption(command,IKINCTRL_POSE_FULL);
@@ -696,7 +696,7 @@ bool ClientCartesianController::getDOF(Vector &curDof)
         if (Bottle *dofPart=reply.get(1).asList())
         {
             curDof.resize(dofPart->size());
-            
+
             for (size_t i=0; i<curDof.length(); i++)
                 curDof[i]=dofPart->get(i).asDouble();
 
@@ -729,9 +729,9 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
     }
 
     if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
-    {        
+    {
         if (Bottle *dofPart=reply.get(1).asList())
-        {                        
+        {
             curDof.resize(dofPart->size());
 
             for (size_t i=0; i<curDof.length(); i++)
@@ -766,7 +766,7 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
         if (Bottle *restPart=reply.get(1).asList())
         {
             curRestPos.resize(restPart->size());
-            
+
             for (size_t i=0; i<curRestPos.length(); i++)
                 curRestPos[i]=restPart->get(i).asDouble();
 
@@ -797,9 +797,9 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos,
     }
 
     if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
-    {        
+    {
         if (Bottle *restPart=reply.get(1).asList())
-        {                        
+        {
             curRestPos.resize(restPart->size());
             for (size_t i=0; i<curRestPos.length(); i++)
                 curRestPos[i]=restPart->get(i).asDouble();
@@ -832,7 +832,7 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
         if (Bottle *restPart=reply.get(1).asList())
         {
             curRestWeights.resize(restPart->size());
-            
+
             for (size_t i=0; i<curRestWeights.length(); i++)
                 curRestWeights[i]=restPart->get(i).asDouble();
 
@@ -863,9 +863,9 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
     }
 
     if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
-    {        
+    {
         if (Bottle *restPart=reply.get(1).asList())
-        {                        
+        {
             curRestWeights.resize(restPart->size());
             for (size_t i=0; i<curRestWeights.length(); i++)
                 curRestWeights[i]=restPart->get(i).asDouble();

@@ -2,7 +2,7 @@
 <name>Cameras</name>
 <dependencies>
       <port>/root</port>
-</dependencies> 
+</dependencies>
 <module>
       <name>yarpdev</name>
       <parameters>--name /icub/earing --device portaudio --id 1 --c 2 --read --rate 48000 </parameters>

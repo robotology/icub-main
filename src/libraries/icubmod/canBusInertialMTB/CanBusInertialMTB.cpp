@@ -89,7 +89,7 @@ bool checkRequiredParamIsVectorOfInt(yarp::os::Searchable& config,
     return correct;
 }
 
-// \todo TODO bug ? 
+// \todo TODO bug ?
 bool checkRequiredParamIsVectorOfString(yarp::os::Searchable& config,
                                      const std::string& paramName,
                                      std::vector<std::string> & output_vector)
@@ -159,7 +159,7 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     //Parse sensor type and address of all readed sensors
     this->boards.resize(canAddresses.size());
     this->nrOfTotalChannels = 0;
-    
+
 
     for(size_t board=0; board < this->boards.size(); board++ )
     {

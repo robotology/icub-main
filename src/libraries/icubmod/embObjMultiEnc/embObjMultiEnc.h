@@ -75,7 +75,7 @@ private:
     string boardIPstring;
     string boardName;
     eOipv4addr_t ipv4addr;
-    
+
     uint8_t numofjoints;
     uint8_t numofencperjoint;
 

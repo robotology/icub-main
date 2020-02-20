@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -69,7 +69,7 @@ bool CalibModule::createTargets(const Vector &c, const Vector &size)
 {
     if ((c.length()<3) || (size.length()<2))
         return false;
-    
+
     double a=std::max(fabs(size[0]),0.04);
     double b=std::max(fabs(size[1]),0.02);
 
@@ -139,7 +139,7 @@ Calibrator *CalibModule::factory(const string &type)
 /************************************************************************/
 bool CalibModule::factory(Value &v)
 {
-    if (!v.check("arm") || !v.check("type")) 
+    if (!v.check("arm") || !v.check("type"))
         return false;
 
     string arm=v.find("arm").asString();
@@ -154,8 +154,8 @@ bool CalibModule::factory(Value &v)
 
         Calibrator *c=factory(type);
         if (c->fromProperty(info))
-        {            
-            c->toProperty(info); 
+        {
+            c->toProperty(info);
             yInfo("loaded %s calibrator: %s",arm.c_str(),info.toString().c_str());
             ((arm=="left")?expertsL:expertsR)<<*c;
             return true;
@@ -175,7 +175,7 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     // produce a colored image
     imgOut.resize(imgIn);
     cv::Mat imgOutMat=toCvMat(imgOut);
-    
+
     // proceed iff the center is within the image plane
     if ((c[0]<10.0) || (c[0]>imgIn.width()-10) ||
         (c[1]<10.0) || (c[1]>imgIn.height()-10))
@@ -195,7 +195,7 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     br.y=std::max(1,br.y); br.y=std::min(br.y,(int)imgIn.height()-1);
     cv::Rect rect(tl,br);
 
-    // run Otsu algorithm to segment out the finger    
+    // run Otsu algorithm to segment out the finger
     cv::Mat imgInMatRoi(imgInMat,rect);
     cv::threshold(imgInMatRoi,imgInMatRoi,0,255,cv::THRESH_BINARY|cv::THRESH_OTSU);
     cv::cvtColor(imgInMat,imgOutMat,CV_GRAY2BGR);
@@ -246,7 +246,7 @@ bool CalibModule::getGazeParams(const string &eye, const string &type, Matrix &M
     Bottle info;
     igaze->getInfo(info);
     if (Bottle *pB=info.find("camera_"+type+"_"+eye).asList())
-    {        
+    {
         M.resize((type=="intrinsics")?3:4,4);
 
         int cnt=0;
@@ -305,7 +305,7 @@ bool CalibModule::getDepth(const Vector &px, Vector &x, Vector &pxr)
 /************************************************************************/
 bool CalibModule::getDepthAveraged(const Vector &px, Vector &x, Vector &pxr,
                                    const int maxSamples)
-{        
+{
     x.resize(3,0.0);
     pxr.resize(2,0.0);
 
@@ -320,7 +320,7 @@ bool CalibModule::getDepthAveraged(const Vector &px, Vector &x, Vector &pxr,
             cnt+=1.0;
         }
     }
-    
+
     if (norm(x)==0.0)
         return false;
 
@@ -545,7 +545,7 @@ void CalibModule::prepareRobot()
     {
         Time::delay(1.0);
         iposs->checkMotionDone(i0+4,&done);
-    }    
+    }
 
     Vector encs(nEncs);
     iencs->getEncoders(encs.data());
@@ -560,7 +560,7 @@ void CalibModule::prepareRobot()
     Vector xf=finger.getH(CTRL_DEG2RAD*joints).getCol(3);
 
     iarm->storeContext(&context_arm);
-    
+
     Vector dof;
     iarm->getDOF(dof);
     dof=1.0;
@@ -727,7 +727,7 @@ void CalibModule::doTouch(const Vector &xd)
     yInfo("moving to xd=(%s); od=(%s)",x.toString(3,3).c_str(),od.toString(3,3).c_str());
     iarm->setInTargetTol(exploration_intargettol);
     iarm->goToPoseSync(x,od);
-    iarm->waitMotionDone();    
+    iarm->waitMotionDone();
 
     x[0]=-0.35;
     x[1]=(arm=="left"?-0.2:0.2);
@@ -760,7 +760,7 @@ void CalibModule::doTest()
     x_rad[3]=CTRL_DEG2RAD*0.0;
     x_rad[4]=CTRL_DEG2RAD*5.0;
     x_rad[5]=CTRL_DEG2RAD*2.3;
-    
+
     Vector x_deg=x_rad.subVector(0,2);
     x_deg=cat(x_deg,CTRL_RAD2DEG*x_rad.subVector(3,5));
     Matrix H=computeH(x_rad);
@@ -806,7 +806,7 @@ void CalibModule::doTest()
                 p2d+=NormRand::vector(2,0.0,5.0);   // add up some noise
 
                 aligner.addPoints(p2d,p3d);
-            }   
+            }
 
             Matrix H1; double error;
             ok=aligner.calibrate(H1,error);
@@ -892,7 +892,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     string robot=rf.check("robot",Value("icub")).asString();
     string name=rf.check("name",Value("depth2kin")).asString();
     string type=rf.check("type",Value("se3+scale")).asString();
-    test=rf.check("test",Value(-1)).asInt();    
+    test=rf.check("test",Value(-1)).asInt();
     max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
     roi_side=abs(rf.check("roi_side",Value(100)).asInt());
     block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
@@ -915,7 +915,7 @@ bool CalibModule::configure(ResourceFinder &rf)
         yError("Unknown method %s!",type.c_str());
         return false;
     }
-    
+
     load();
     calibrator=factory(type);
 
@@ -933,7 +933,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     {
         Matrix K=eye(3,4);
         K(0,0)=257.34; K(1,1)=257.34;
-        K(0,2)=160.0;  K(1,2)=120.0; 
+        K(0,2)=160.0;  K(1,2)=120.0;
 
         aligner.setProjection(K);
         return true;
@@ -981,7 +981,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     optionGaze.put("local","/"+name+"/gaze");
     if (!drvGaze.open(optionGaze))
         yWarning("Gaze controller not available!");
-    
+
     // set up some global vars
     useArmL=(drvArmL.isValid() && drvAnalogL.isValid() && drvCartL.isValid());
     useArmR=(drvArmR.isValid() && drvAnalogR.isValid() && drvCartR.isValid());
@@ -1006,7 +1006,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     (arm=="left")?drvArmL.view(iposs):drvArmR.view(iposs);
     (arm=="left")?drvArmL.view(ilim):drvArmR.view(ilim);
     (arm=="left")?drvAnalogL.view(ianalog):drvAnalogR.view(ianalog);
-    (arm=="left")?drvCartL.view(iarm):drvCartR.view(iarm);    
+    (arm=="left")?drvCartL.view(iarm):drvCartR.view(iarm);
     drvGaze.view(igaze);
     iencs->getAxes(&nEncs);
 
@@ -1058,7 +1058,7 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
 
     ImageOf<PixelBgr> imgOut;
     cv::Rect rect=extractFingerTip(imgIn,imgOut,c,tipl);
-    
+
     bool holdImg=false;
     if (motorExplorationState==motorExplorationStateLog)
     {
@@ -1124,7 +1124,7 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
         motorExplorationState=motorExplorationStateTrigger;
         holdImg=true;
     }
-    
+
     if (depthOutPort.getOutputCount()>0)
     {
         depthOutPort.prepare()=imgOut;
@@ -1162,7 +1162,7 @@ bool CalibModule::load()
         return false;
     }
 
-    Property data; data.fromConfigFile(fileName); 
+    Property data; data.fromConfigFile(fileName);
     Bottle b; b.read(data);
 
     lock_guard<mutex> lck(mtx);
@@ -1183,12 +1183,12 @@ bool CalibModule::save()
         string contextPath=rf->getHomeContextPath();
         string fileName=rf->find("calibrationFile").asString();
         fileName=contextPath+"/"+fileName;
-        
+
         yInfo("saving experts into file: %s",fileName.c_str());
         fout.open(fileName.c_str());
-        
+
         if (fout.is_open())
-        {        
+        {
             for (size_t i=0; i<expertsL.size(); i++)
             {
                 Property info;
@@ -1207,7 +1207,7 @@ bool CalibModule::save()
                 ostringstream entry;
                 entry<<"expert_right_"<<i;
                 fout<<entry.str()<<" "<<info.toString()<<endl;
-            }        
+            }
 
             fout.close();
             isSaved=true;
@@ -1391,7 +1391,7 @@ bool CalibModule::setCalibrationType(const string &type, const string &extrapola
         (extrapolation=="auto")?calibrator->setExtrapolation(type!="lssvm"):
                                 calibrator->setExtrapolation(extrapolation=="true");
 
-        return true; 
+        return true;
     }
     else
         return false;
@@ -1552,7 +1552,7 @@ PointReq CalibModule::getPoint(const string &arm, const double x, const double y
 
 
 /************************************************************************/
-vector<PointReq> CalibModule::getPoints(const string &arm, 
+vector<PointReq> CalibModule::getPoints(const string &arm,
                                         const vector<double> &coordinates)
 {
     LocallyWeightedExperts *experts=&(arm=="left"?expertsL:expertsR);
@@ -1572,7 +1572,7 @@ vector<PointReq> CalibModule::getPoints(const string &arm,
             point.result="ok";
             point.x=out[0];
             point.y=out[1];
-            point.z=out[2];            
+            point.z=out[2];
         }
 
         reply.push_back(point);
@@ -1588,7 +1588,7 @@ bool CalibModule::setExperiment(const string &exp, const string &v)
     if ((v!="on") && (v!="off"))
         return false;
 
-    if (exp=="depth2kin") 
+    if (exp=="depth2kin")
     {
         exp_depth2kin=(v=="on");
         return true;
@@ -1691,7 +1691,7 @@ bool CalibModule::setExplorationSpace(const double cx, const double cy,
     c[2]=cz;
     size[0]=a;
     size[1]=b;
-    
+
     return createTargets(c,size);
 }
 
@@ -1707,7 +1707,7 @@ bool CalibModule::setExplorationSpaceDelta(const double dcx, const double dcy,
     dc[2]=dcz;
     dsize[0]=da;
     dsize[1]=db;
-    
+
     Vector c(3),size(2);
     c[0]=-0.4; c[1]=0.0; c[2]=0.05;
     size[0]=0.10; size[1]=0.05;
@@ -1736,7 +1736,7 @@ bool CalibModule::clearExplorationData()
 {
     lock_guard<mutex> lck(mtx);
     if (exp_depth2kin)
-        calibrator->clearPoints(); 
+        calibrator->clearPoints();
 
     if (exp_aligneyes)
         aligner.clearPoints();
@@ -1786,7 +1786,7 @@ void CalibModule::terminate()
 {
     if (!touchInPort.isClosed())
     {
-        touchInPort.close();        
+        touchInPort.close();
         depthInPort.close();
         depthOutPort.close();
         depthRpcPort.close();

@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff
 * email:   vadim.tikhanoff@iit.it
@@ -19,7 +19,7 @@
 */
 /**
  * \file OdeInit.h
- * \brief This file is responsible for the initialisation of the world parameters that are controlled by ODE. 
+ * \brief This file is responsible for the initialisation of the world parameters that are controlled by ODE.
  * Some extra parameters are/can be added here for simulation stability
  * \author Vadim Tikhanoff
  * \date 2007
@@ -79,12 +79,12 @@ public:
     struct contactOnSkin_t {
         dGeomID body_geom_id;
         dSpaceID body_geom_space_id;
-        int body_index; //if there are two iCub bodies colliding, they share the same contact geom and joint - but we need to know that they are two different 
+        int body_index; //if there are two iCub bodies colliding, they share the same contact geom and joint - but we need to know that they are two different
         dContactGeom contact_geom;
         dJointID contact_joint;
     };
     list<contactOnSkin_t> listOfSkinContactInfos;
-  
+
 
     void setName( string module ){
         name = module;
@@ -105,10 +105,10 @@ public:
     static OdeInit& get();
 
     static void destroy();
-    
+
     static void printGeomClassAndNr(int geom_class, int geom_nr);
     static void printInfoOnSpace(dSpaceID my_space,const std::string & my_space_name);
-    
+
 
 private:
     OdeInit(RobotConfig *config);

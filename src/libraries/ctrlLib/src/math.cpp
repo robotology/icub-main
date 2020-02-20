@@ -55,7 +55,7 @@ double iCub::ctrl::norm(const Matrix &M, int col)
 
 /************************************************************************/
 Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB)
-{    
+{
     yAssert((A.rows()>=3) && (B.rows()>=3));
 
     Vector v(3);
@@ -70,7 +70,7 @@ Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB)
 /************************************************************************/
 Vector iCub::ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b,
                           const Vector &Db)
-{    
+{
     yAssert((a.length()>=3) && (b.length()>=3) &&
             (Da.length()>=3) && (Db.length()>=3));
 
@@ -86,7 +86,7 @@ Vector iCub::ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b,
 /************************************************************************/
 Vector iCub::ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
                           const Matrix &B, const Matrix &DB, int colB)
-{    
+{
     yAssert((A.rows()>=3) && (B.rows()>=3) &&
             (DA.rows()>=3) && (DB.rows()>=3));
 

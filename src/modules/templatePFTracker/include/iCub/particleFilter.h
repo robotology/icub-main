@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Vadim Tikhanoff
  * email:   vadim.tikhanoff@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -74,7 +74,7 @@
 #define TEMP_LIST_PARTICLE_THRES_HIGH   0.9
 #define TEMP_LIST_PARTICLE_THRES_LOW    0.5
 
-typedef struct TemplateStruct 
+typedef struct TemplateStruct
 {
     float                                       w;
     yarp::sig::ImageOf<yarp::sig::PixelRgb>     *templ;
@@ -84,16 +84,16 @@ typedef struct TemplateStruct
 int particle_cmp( const void* p1, const void* p2 );
 
 
-class PARTICLEThread : public yarp::os::Thread 
+class PARTICLEThread : public yarp::os::Thread
 {
 public:
-    typedef struct histogram 
+    typedef struct histogram
     {
         float histo[NH*NS + NV];  /* histogram array */
         int n;                    /* length of histogram array */
     } histogram;
 
-    typedef struct particle 
+    typedef struct particle
     {
         float x;                  /* current x coordinate */
         float y;                  /* current y coordinate */
@@ -112,9 +112,9 @@ public:
     float average;
 
 private:
-    /*port name strings*/    
+    /*port name strings*/
     std::string inputPortName;
-    std::string outputPortName;  
+    std::string outputPortName;
     std::string outputPortNameBlob;
 
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  imageIn;
@@ -127,7 +127,7 @@ private:
     bool init;
     bool getImage, getTemplate, gotTemplate, sendTarget;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *iCubImage;
-    
+
     IplImage *temp, *res_left, *res_right, *res;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *tpl;
 
@@ -154,7 +154,7 @@ private:
     TemplateStruct              bestTempl;
     yarp::os::Stamp             targetStamp;
 
-    typedef struct params 
+    typedef struct params
     {
         CvPoint loc1[MAX_OBJECTS];
         CvPoint loc2[MAX_OBJECTS];
@@ -164,11 +164,11 @@ private:
         IplImage* cur_img;
         int n;
     } params;
-    
+
     int total;
 
     histogram** ref_histos;
-    particle* particles, * new_particles;    
+    particle* particles, * new_particles;
 
     void free_histos( histogram** histo, int n );
     void free_regions( CvRect** regions, int n);
@@ -193,16 +193,16 @@ private:
     void normalize_histogram( histogram* histo );
     void initAll();
     void runAll(IplImage *img);
-   
+
 
 public:
     /* class methods */
     PARTICLEThread();
     ~PARTICLEThread();
 
-    bool threadInit();     
+    bool threadInit();
     void threadRelease();
-    void run(); 
+    void run();
     void setName(std::string module);
     void setTemplate(yarp::sig::ImageOf<yarp::sig::PixelRgb> *tpl);
     void pushTarget(yarp::sig::Vector &target, yarp::os::Stamp &stamp);
@@ -211,10 +211,10 @@ public:
 };
 
 
-class PARTICLEManager : public yarp::os::PeriodicThread 
+class PARTICLEManager : public yarp::os::PeriodicThread
 {
 private:
-    
+
     std::string inputPortNameTemp;
     std::string outputPortNameTarget;
 
@@ -228,7 +228,7 @@ private:
 
     yarp::sig::ImageOf<yarp::sig::PixelRgb> *tpl;
     std::string moduleName;
-    
+
 
 public:
     PARTICLEManager();
@@ -236,32 +236,32 @@ public:
     bool            shouldSend;
 
     void setName(std::string module);
-    bool threadInit();     
+    bool threadInit();
     void threadRelease();
-    void run(); 
+    void run();
 };
 
 
-class PARTICLEModule:public yarp::os::RFModule 
+class PARTICLEModule:public yarp::os::RFModule
 {
 
     /* module parameters */
     std::string moduleName;
     std::string handlerPortName;
 
-    yarp::os::Port handlerPort;      //a port to handle messages 
-    
+    yarp::os::Port handlerPort;      //a port to handle messages
+
     /* pointer to a new thread to be created and started in configure() and stopped in close() */
     PARTICLEManager *particleManager;
-    
+
 
 public:
 
     bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
-    bool interruptModule();                       // interrupt, e.g., the ports 
+    bool interruptModule();                       // interrupt, e.g., the ports
     bool close();                                 // close and shut down the module
     bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
-    double getPeriod(); 
+    double getPeriod();
     bool updateModule();
 };
 #endif

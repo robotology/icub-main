@@ -105,14 +105,14 @@ bool ff2LayNN::configure(const Property &options)
 
     inMinMaxX.clear();
     inMinMaxY.clear();
-   
+
     outMinMaxX.clear();
     outMinMaxY.clear();
 
     configured=false;
 
     // acquire options
-    if (!options.check("numInputNodes") || !options.check("numHiddenNodes") || 
+    if (!options.check("numInputNodes") || !options.check("numHiddenNodes") ||
         !options.check("numOutputNodes"))
         return false;
 
@@ -128,7 +128,7 @@ bool ff2LayNN::configure(const Property &options)
         else
             return false;
     }
-    
+
     if (!getItem(options,"b1",b1))
         return false;
 
@@ -247,7 +247,7 @@ Vector ff2LayNN::predict(const Vector &x) const
         for (size_t i=0; i<n2.length(); i++)
             n2[i]=yarp::math::dot(LW[i],a1)+b2[i];
         Vector a2=outputLayerFcn(n2);
-    
+
         // output postprocessing
         return scaleOutputFromNetFormat(a2);
     }

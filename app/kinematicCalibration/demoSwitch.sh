@@ -29,7 +29,7 @@ $POS_PATH/calibrationSequence18.txt
 $POS_PATH/calibrationSequence19.txt
 "
 
-	
+
 	for a in $list; do
 	    sleep 1
 	    echo "switching sequence $a..."
@@ -40,7 +40,7 @@ $POS_PATH/calibrationSequence19.txt
 	    sleep 120
 	    killall iCubDemoY3
 	done
-	
+
 	;;
     *)
         echo "stop, start"

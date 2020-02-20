@@ -323,7 +323,7 @@ bool embObjStrain::fillScaleFactor()
     // {
     //     eOas_arrayofupto12bytes_t fullscale_values = {0};
     //     eo_array_New(6, 2, &fullscale_values); // itemsize = 2, capacity = 6
-    //     eo_nv_Set(nv, &fullscale_values, eobool_true, eo_nv_upd_dontdo);    
+    //     eo_nv_Set(nv, &fullscale_values, eobool_true, eo_nv_upd_dontdo);
     // }
     // moreover, even if properly initted, it is required to set the size to 0 because the size being not 0 is the check of reception of a message.
 
@@ -336,19 +336,19 @@ bool embObjStrain::fillScaleFactor()
     EOnv tmpNV;
     EOnv *p_tmpNV = NULL;
     eOas_arrayofupto12bytes_t fullscale_values = {0};
-    // force it to be an empty array of itemsize 2 and capacity 6. 
+    // force it to be an empty array of itemsize 2 and capacity 6.
     // the reason is that the eoprot_tag_as_strain_status_fullscale contains 3 forces and 3 torques each of 2 bytes. see eOas_strain_status_t in EoAnalogSensors.h
     eo_array_New(6, 2, &fullscale_values);
 
     eOprotID32_t id32_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
 
-        
+
     // at first we impose that the local value of fullscales is zero.
     // we also force the change because this variable is readonly
     const bool overrideROprotection = true;
     res->setLocalValue(id32_fullscale, &fullscale_values, overrideROprotection);
 
-        
+
     // Prepare analog sensor
     eOas_strain_config_t strainConfig = {0};
     strainConfig.datarate               = serviceConfig.acquisitionrate;
@@ -474,7 +474,7 @@ bool embObjStrain::initRegulars()
             }
         }
     }
-   
+
     return true;
 }
 
@@ -524,7 +524,7 @@ int embObjStrain::read(yarp::sig::Vector &out)
     {
         out[k] = analogdata[k]+offset[k];
     }
-    
+
     return status;
 }
 
@@ -652,7 +652,7 @@ bool embObjStrain::close()
 
 
 void embObjStrain::printServiceConfig(void)
-{    
+{
     char loc[20] = {0};
     char fir[20] = {0};
     char pro[20] = {0};

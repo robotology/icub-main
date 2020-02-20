@@ -48,7 +48,7 @@ public:
         dX[ 3]=-30.0; dY[ 3]=64.0;
         dX[ 2]=-41.0; dY[ 2]=35.0;
         dX[ 1]=-15.0; dY[ 1]=35.0;
-        dX[ 0]=-15.0; dY[ 0]=10.0;        
+        dX[ 0]=-15.0; dY[ 0]=10.0;
 
         dXv[0]=53.0; dYv[0]= 0.0;
         dXv[1]=53.0; dYv[1]=45.0;
@@ -97,7 +97,7 @@ public:
         }
 
         // in static definition
-        //dXmin=dYmin= HUGE; 
+        //dXmin=dYmin= HUGE;
         //dXmax=dYmax=-HUGE;
 
         for (int i=0; i<nVerts; ++i)

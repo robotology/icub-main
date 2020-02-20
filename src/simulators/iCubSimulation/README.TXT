@@ -54,10 +54,10 @@ elevation on
 
 [PARTS]
 legs on
-torso on 
+torso on
 left_arm on
 left_hand off
-right_arm on 
+right_arm on
 right_hand off
 head on
 fixed_hip on
@@ -81,7 +81,7 @@ SIM:
 
     * New ressource finder for the configuration of the simulator
     * Added the possibility to create cylinders in the world dynamic or static
-    * Added rotation command for the boxes in the world (see section 4.4) 
+    * Added rotation command for the boxes in the world (see section 4.4)
     * Added colour choice in making of new objects (see section 4.4)
     * iCub parts activation file (see section 2)
     * Fixed vision left/right with proper rotations
@@ -89,7 +89,7 @@ SIM:
     * Stable hand/finger functionality for grasping/manipulating objects
     * Better collision detection and friction
     * Much more performant (without fingers > 35 fps with fingers > 25 fps)
-    * Multiple object in environment...the two standards ball and cube and possibility of creating up to 100 boxes see below. 
+    * Multiple object in environment...the two standards ball and cube and possibility of creating up to 100 boxes see below.
 
 YARPED features:
 
@@ -98,18 +98,18 @@ YARPED features:
     * Object (box) can now be created and placed in the world with any size and at any position
     * Any object coordinates can be retrieve
     * Can retrieve robots hand coordinates
-    * Grab "magnet" and release object possibility for the no finger functionality 
+    * Grab "magnet" and release object possibility for the no finger functionality
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 USING THE FEATURES:
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     * Please set the desired iCub parts activation before running.
-    * Manual navigation in the environment is possible. Use keys w,a,s,d and mouse for rotating. 
+    * Manual navigation in the environment is possible. Use keys w,a,s,d and mouse for rotating.
 
-iCub_SIM.exe 
+iCub_SIM.exe
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 CONTROLLING THE ROBOT:
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -143,7 +143,7 @@ connect yarpview to /icubSim/cam/left for view from left camera
 connect yarpview to /icubSim/cam/right for view from right camera
 connect yarpview to /icubSim/cam/ for the environment view
 
-eg: "yarp connect /icubSim/cam/left /example" 
+eg: "yarp connect /icubSim/cam/left /example"
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 OBJECT INFORMATION:
@@ -155,11 +155,11 @@ in the world port:
 
 "yarp rpc /icubSim/world"
 
-    * GET example: 
+    * GET example:
 
 "world get cube"  (or ball) this will return the x y z coordinates of the object
 
-    * SET example: 
+    * SET example:
 
 "world set box x y z"  eg: "world set ball 1.0 0.1 2.0"
 
@@ -180,12 +180,12 @@ world mk cyl (radius lenght) (three params for pos) (three params for colour)   
 
 world mk sbox (three params for size) (three params for pos) (three params for colour)    (This creates a static box)
 
-world mk scyl (radius lenght) (three params for pos) (three params for colour)    (This creates a static cylinder) 
+world mk scyl (radius lenght) (three params for pos) (three params for colour)    (This creates a static cylinder)
 
 eg:
 
-world mk box 0.03 0.03 0.03 0.3 0.2 1 1 0 0     
-world mk cyl 0.1 0.2 0.0 0.9 1.0 0 0 1     
+world mk box 0.03 0.03 0.03 0.3 0.2 1 1 0 0
+world mk cyl 0.1 0.2 0.0 0.9 1.0 0 0 1
 
 the first box will be named box/cyl 1, second box/cyl 2 and so on...
 
@@ -204,7 +204,7 @@ rotate objects:
 
 If you need to rotate the boxes or the cylinders just use the following function:
 
-world rot (object)(num) rotx roty rotz 
+world rot (object)(num) rotx roty rotz
 
 (where: rotx = rotation in degrees on the x axis roty = rotation in degrees on the y axis rotz = rotation in degrees on the z axis )
 
@@ -220,7 +220,7 @@ yarp rpc /icubSim/world
 
 hand positions:
 
-world get lhand 
+world get lhand
 
 or
 
@@ -239,9 +239,9 @@ Touch sensors:
     * last part of middle finger
     * last part of ring finger
     * last part of little finger
-    * last part of thumb 
+    * last part of thumb
 
-    * new port added 
+    * new port added
 
 the sensor data is streamed to this port: /icubSim/touch
 
@@ -282,7 +282,7 @@ Face expressions can now be used with the simulator. First of all, compile and r
 
 Run the simulator and connect these ports:
 
-yarp connect /face/eyelids /icubSim/face/eyelids 
+yarp connect /face/eyelids /icubSim/face/eyelids
 yarp connect /face/image/out /icubSim/texture
 
 Open writer so you can set face expressions in the simulator
@@ -334,7 +334,7 @@ DrawBox(1.0,1.0,0.001,false,textured,2)
 
 x, y , z , wireframe, texture, whichTexture
 
-wireframe => draw it as wireframe = false 
+wireframe => draw it as wireframe = false
 textured => use texture = true (textured)
 whichTexture => which texture to use = in this case use "2"
 
@@ -357,5 +357,5 @@ To test these settings enter the following commands:
 yarpdev --device test_grabber --name /test/video --mode ball
 yarp connect /test/video /icubSim/texture
 
-At this stage you can send web cam streams or video sequences directly to the port /icubSim/texture and it will be displayed as a texture on an object. 
+At this stage you can send web cam streams or video sequences directly to the port /icubSim/texture and it will be displayed as a texture on an object.
 

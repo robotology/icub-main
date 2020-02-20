@@ -25,7 +25,7 @@ surprised() {
 
 }
 
-while true; do 
+while true; do
     # neutral fade out
     echo "set mask (blue BM_EB1 4) (blue BM_EB1 4) (blue BM_M0 4)" | yarp rpc /icub/face/emotions/in
     sleep 0.5

@@ -1,7 +1,7 @@
 # Copyright: 2010 RobotCub Consortium
 # Author: Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# 
+#
 
 yarp_prepare_plugin(gazecontrollerclient CATEGORY device
                                          TYPE ClientGazeController
@@ -12,7 +12,7 @@ if(NOT SKIP_gazecontrollerclient)
    set(CMAKE_INCLUDE_CURRENT_DIR ON)
    set(client_source ClientGazeController.cpp)
    set(client_header ClientGazeController.h)
-  
+
    yarp_add_plugin(gazecontrollerclient ${client_source} ${client_header})
 
    target_link_libraries(gazecontrollerclient ${YARP_LIBRARIES})

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -172,7 +172,7 @@ bool Calibrator::fromProperty(const Property &info)
                 if (++r>=spatialCompetence.A.rows())
                     break;
             }
-        }        
+        }
     }
 
     computeSpatialTransformation();
@@ -242,7 +242,7 @@ bool MatrixCalibrator::clearPoints()
 {
     impl->clearPoints();
     in.clear();
-    out.clear();    
+    out.clear();
     return true;
 }
 
@@ -252,7 +252,7 @@ bool MatrixCalibrator::getPoints(deque<Vector> &in, deque<Vector> &out) const
 {
     in=this->in;
     out=this->out;
-    return true; 
+    return true;
 }
 
 
@@ -332,7 +332,7 @@ bool MatrixCalibrator::fromProperty(const Property &info)
     {
         scale=values->get(0).asDouble();
 
-        int r=0; int c=0;        
+        int r=0; int c=0;
         for (int i=1; i<values->size(); i++)
         {
             H(r,c)=values->get(i).asDouble();
@@ -480,7 +480,7 @@ bool LSSVMCalibrator::fromProperty(const Property &info)
         if (values->size()>=1)
             ret=impl->fromString(values->toString());
 
-    ret&=Calibrator::fromProperty(info); 
+    ret&=Calibrator::fromProperty(info);
     return ret;
 }
 
@@ -542,7 +542,7 @@ bool LocallyWeightedExperts::retrieve(const Vector &in, Vector &out)
             outExtrapolators+=competence*pred;
             sumExtrapolators+=competence;
             if (competence>=1.0)
-            {                
+            {
                 outExperts+=competence*pred;
                 sumExperts+=competence;
             }
@@ -563,7 +563,7 @@ bool LocallyWeightedExperts::retrieve(const Vector &in, Vector &out)
     }
     // no models found
     else
-        return false; 
+        return false;
 }
 
 

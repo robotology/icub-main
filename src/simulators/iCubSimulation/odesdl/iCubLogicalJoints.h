@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick, Vadim Tikhanoff
 * email:    paulfitz@alum.mit.edu, vadim.tikhanoff@iit.it
@@ -54,14 +54,14 @@ public:
 
     /**
      *
-     * Access the ODE control for a logical joint, based on part and axis 
+     * Access the ODE control for a logical joint, based on part and axis
      * number.
      *
      */
     virtual LogicalJoint& control(int part, int axis);
 private:
     OdeLogicalJoint simControl[MAX_PART][MAX_AXIS];
-    
+
     OdeLogicalJoint& getController(int part, int axis) {
         return simControl[part][axis];
     }

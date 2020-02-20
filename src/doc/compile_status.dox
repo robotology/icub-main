@@ -10,7 +10,7 @@ Tests are performed:
  - Every hour, only after new commits (Continuous builds).
  - Every night, full checkout and build (Nightly builds).
 
-Tests report compilation errors and warnings. Close to the name of each machine you find the configuration of 
+Tests report compilation errors and warnings. Close to the name of each machine you find the configuration of
 the machine (environment variables, installed packages).
 
 Failure to compile can be for a very trivial reasons, and is
@@ -22,14 +22,14 @@ Some tips for developers:
    that don't show up on Windows.  For example, you need to use
    FIND_LIBRARY(OpenCV) rather than FIND_LIBRARY(OPENCV).
    And you'll need to capitalize your include files consistently.
-   
- - Different  compilers catch different errors, if something compiles on 
-   Visual Studio does not mean it will compile on gcc (or the other way around).
-   Also, remember that newer compilers might be stricter than old ones.   
 
- - The current list of packages you can rely on. See the Dependencies chapter 
+ - Different  compilers catch different errors, if something compiles on
+   Visual Studio does not mean it will compile on gcc (or the other way around).
+   Also, remember that newer compilers might be stricter than old ones.
+
+ - The current list of packages you can rely on. See the Dependencies chapter
    of the manual to see the official list of dependencies.
-   
+
  - Once again don't forget environment variables. See the manual for more informations
    on this.
 

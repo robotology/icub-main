@@ -251,7 +251,7 @@ namespace strain { namespace amplifier {
 
 
 class cDownloader;
-    
+
 namespace strain { namespace regulation {
 
 
@@ -337,9 +337,9 @@ namespace strain { namespace regulation {
     bool apply(cDownloader *down, const FullRegulation &reg);
 
 } }   // namespace strain { namespace regulation {
- 
 
-    
+
+
 
 
 #endif  // include-guard

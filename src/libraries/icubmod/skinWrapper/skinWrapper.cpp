@@ -17,7 +17,7 @@ using namespace yarp::os;
 
 skinWrapper::skinWrapper()
 {
-    yTrace(); 
+    yTrace();
     multipleWrapper=NULL;
     analog=NULL;
 		setId("undefinedPartName");
@@ -36,7 +36,7 @@ void skinWrapper::calibrate()
 bool skinWrapper::open(yarp::os::Searchable &params)
 {
     bool correct=true;
-		
+
     if(params.check("ports"))
     {
         Bottle *ports=params.find("ports").asList();
@@ -99,7 +99,7 @@ bool skinWrapper::close()
     return true;
 }
 
-// implementare i metodi attach e detach come un vero wrapper che si rispetti!!!! 
+// implementare i metodi attach e detach come un vero wrapper che si rispetti!!!!
 bool skinWrapper::attachAll(const yarp::dev::PolyDriverList &skinDev)
 {
     yTrace() ;

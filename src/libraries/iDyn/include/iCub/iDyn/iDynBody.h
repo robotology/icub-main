@@ -7,41 +7,41 @@
 
 /**
  * \defgroup iDynBody iDynBody
- *    
+ *
  * @ingroup iDyn
- *  
+ *
  * Classes for connecting multiple limbs and solve whole body dynamics.
  *
  * \note <b>SI units adopted</b>: meters for lengths and radians
  *       for angles.
  *
- * \section dep_sec Dependencies 
- * - ctrlLib 
+ * \section dep_sec Dependencies
+ * - ctrlLib
  * - iKin
- * 
+ *
  * \section intro_sec Description
- * 
+ *
  * iDynNode represents a virtual node where multiple limbs are connected, and exchange
  * kinematic and wrench information. The mutual exchange bewteen node and limb (full duplex)
  * is managed used a RigidBodyTransformation class, containing the roto-translational matrix
  * which describes the connection. Multiple limbs can be attached to the Node. A connection
- * is defined also by the flows of kinematic and wrench variables: from limb to node 
- * (RBT_NODE_IN) or from limb to node (RBT_NODE_OUT). 
+ * is defined also by the flows of kinematic and wrench variables: from limb to node
+ * (RBT_NODE_IN) or from limb to node (RBT_NODE_OUT).
  *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows
  *
  * \note <b>Release status</b>:  this library is currently under development!
  * Date: first draft 06/2010
  *
  * \author Serena Ivaldi, Matteo Fumagalli
- * 
+ *
  * Copyright (C) 2010 RobotCub Consortium
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
- * 
- **/ 
+ *
+ *
+ **/
 
 #ifndef __IDYNBODY_H__
 #define __IDYNBODY_H__
@@ -82,7 +82,7 @@ namespace iDyn
 // used to define what side of the chain (limb) is attached to the node
 // the base or the end-effector
 // note: up, arm and legs are attached with the base
-// torso is attached with the end-effector to the upper arm, and with the 
+// torso is attached with the end-effector to the upper arm, and with the
 enum InteractionType { RBT_BASE, RBT_ENDEFF };
 
 // Flow Type
@@ -92,11 +92,11 @@ enum InteractionType { RBT_BASE, RBT_ENDEFF };
 enum FlowType{ RBT_NODE_IN, RBT_NODE_OUT };
 
 // Jacobian Flow
-// used to specify if the direction of computation of the Jacobian is the same as 
+// used to specify if the direction of computation of the Jacobian is the same as
 // the one of the kinematics of the chain
 // JAC_KIN = same flow of kinematics
 // JAC_IKIN = inverse flow wrt kinematics
-enum JacobType{ JAC_KIN, JAC_IKIN }; 
+enum JacobType{ JAC_KIN, JAC_IKIN };
 
 
 #define RBT_HAS_SENSOR      true
@@ -110,8 +110,8 @@ struct version_tag
     int head_version;
     int head_subversion;
     int legs_version;
-    
-    version_tag () 
+
+    version_tag ()
     {
         head_version=1;
         head_subversion=0;
@@ -119,13 +119,13 @@ struct version_tag
     }
 };
 
-//enum partEnum{ LEFT_ARM=0, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, TORSO, HEAD, ALL }; 
+//enum partEnum{ LEFT_ARM=0, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, TORSO, HEAD, ALL };
 
 /**
 * \ingroup iDynBody
 *
 * A class for setting a rigid body transformation between iDynLimb and iDynNode. This
-* class is used by iDynNode to connect two or mutiple limbs and exchanging kinematic and 
+* class is used by iDynNode to connect two or mutiple limbs and exchanging kinematic and
 * wrench information between limbs.
 */
 class RigidBodyTransformation
@@ -145,40 +145,40 @@ protected:
     yarp::sig::Matrix H;
 
     /// STATIC/DYNAMIC/DYNAMIC_W_ROTOR/DYNAMIC_CORIOLIS_GRAVITY
-    NewEulMode mode;    
-    
+    NewEulMode mode;
+
     ///info or useful notes
     std::string info;
-    
+
     ///verbosity flag
     unsigned int verbose;
 
     ///flag for sensor or not - only used for setWrenchMeasures()
     bool hasSensor;
 
-    // these variables are not redundant: because multiple RBT can be attached 
+    // these variables are not redundant: because multiple RBT can be attached
     // to a node, and different policies of information sharing can exist
 
     /// angular velocity
-    yarp::sig::Vector w;    
+    yarp::sig::Vector w;
     /// angular acceleration
     yarp::sig::Vector dw;
     /// linear acceleration
-    yarp::sig::Vector ddp;  
+    yarp::sig::Vector ddp;
     /// force
-    yarp::sig::Vector F;    
+    yarp::sig::Vector F;
     /// moment
-    yarp::sig::Vector Mu;   
-        
-    
+    yarp::sig::Vector Mu;
+
+
     // useful methods
 
     /**
     * Return the rotational 3x3 matrix of the RBT
     * @return the rotational matrix of the RBT
     */
-    yarp::sig::Matrix   getR(); 
-    
+    yarp::sig::Matrix   getR();
+
     /**
     * Return the translational part of the RBT matrix
     * @param proj=true/false
@@ -188,15 +188,15 @@ protected:
 
     /**
     * Basic computations for applying RBT on kinematic variables.
-    * The computations are similar to the Forward/Backward ones in 
+    * The computations are similar to the Forward/Backward ones in
     * OneLinkNewtonEuler: compute AngVel/AngAcc/LinAcc.
-    * Here they are fastened and adapted to the RBT.    
+    * Here they are fastened and adapted to the RBT.
     */
     void computeKinematic();
 
     /**
     * Basic computations for applying RBT on wrench variables.
-    * The computations are similar to the Forward/Backward ones in 
+    * The computations are similar to the Forward/Backward ones in
     * OneLinkNewtonEuler: compute Force/Moment.
     * Here they are fastened and adapted to the RBT.
     */
@@ -240,10 +240,10 @@ public:
     * @param ddp0 the linear acceleration
     * @return true if succeeds, false otherwise
     */
-    bool setKinematic(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0); 
+    bool setKinematic(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
 
     /**
-    * Set the kinematic variables (w,dw,ddp) of the limb, coming from external measurements (ie a sensor). 
+    * Set the kinematic variables (w,dw,ddp) of the limb, coming from external measurements (ie a sensor).
     * This method calls initKinematicNewtonEuler()
     * in the limb, and the limb itself knows whether to set this information in the base or in the end-
     * effector, depending on its iteration mode for kinematics. This method is used by iDynNode to connect
@@ -253,45 +253,45 @@ public:
     * @param ddp0 the linear acceleration
     * @return true if succeeds, false otherwise
     */
-    bool setKinematicMeasure(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0); 
+    bool setKinematicMeasure(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
 
     /**
     * Set the wrench variables (F,Mu) of the limb. This method calls initWrenchNewtonEuler() in the limb,
-    * and the limb itself knows whether to set this information in the base ot in the end-effector, 
-    * depending on its iteration mode for wrenches. This method is used by iDynNode to connect two or 
-    * multiple limbs. 
+    * and the limb itself knows whether to set this information in the base ot in the end-effector,
+    * depending on its iteration mode for wrenches. This method is used by iDynNode to connect two or
+    * multiple limbs.
     * @param F0 the force
     * @param Mu0 the moment
     * @return true if succeeds, false otherwise
     */
-    bool setWrench(const yarp::sig::Vector &F0, const yarp::sig::Vector &Mu0); 
+    bool setWrench(const yarp::sig::Vector &F0, const yarp::sig::Vector &Mu0);
 
     /**
     * Set the wrench variables (F,Mu) of the limb. This method calls initWrenchNewtonEuler() in the limb,
-    * and the limb itself knows whether to set this information in the base ot in the end-effector, 
-    * depending on its iteration mode for wrenches. This method is used by iDynNode to connect two or 
-    * multiple limbs. 
+    * and the limb itself knows whether to set this information in the base ot in the end-effector,
+    * depending on its iteration mode for wrenches. This method is used by iDynNode to connect two or
+    * multiple limbs.
     * @param F0 the force
     * @param Mu0 the moment
     * @return true if succeeds, false otherwise
     */
-    bool setWrenchMeasure(const yarp::sig::Vector &F0, const yarp::sig::Vector &Mu0); 
+    bool setWrenchMeasure(const yarp::sig::Vector &F0, const yarp::sig::Vector &Mu0);
 
     /**
-    * Set the wrench variables in the sensor. 
+    * Set the wrench variables in the sensor.
     * @param sensor the sensor attached to the limb
     * @param Fsens  the force
     * @param Musens the moment
     * @return true if succeeds, false otherwise
     */
-    bool setWrenchMeasure(iDyn::iDynSensor *sensor, const yarp::sig::Vector &Fsens, const yarp::sig::Vector &Musens); 
+    bool setWrenchMeasure(iDyn::iDynSensor *sensor, const yarp::sig::Vector &Fsens, const yarp::sig::Vector &Musens);
 
     /**
     * Return the the (4x4) roto-translational matrix defining the rigid body transformation
     * @return H, the 4x4 matrix of the RBT
     */
     yarp::sig::Matrix getRBT() const;
-    
+
     /**
     * Get the kinematic variables (w,dw,ddp) of the limb, applies the RBT transformation and compute
     * the kinematic variables of the node. The variables are stored into the param vectors,
@@ -303,19 +303,19 @@ public:
     * @param dwNode the angular acceleration of the Node - it is modified!
     * @param ddpNode the linear acceleration of the Node - it is modified!
     */
-    void getKinematic( yarp::sig::Vector &wNode, yarp::sig::Vector &dwNode, yarp::sig::Vector &ddpNode); 
-    
+    void getKinematic( yarp::sig::Vector &wNode, yarp::sig::Vector &dwNode, yarp::sig::Vector &ddpNode);
+
     /**
     * Get the wrench variables (F,Mu) of the limb, transform it according to the RBT and
     * add it to the node wrench. The variables are stored into the param vectors,
     * which are accessible. This method calls getWrenchNewtonEuler() in the limb,
-    * and the limb itself knows whether to get this information in the base ot in the end-effector, 
-    * depending on its iteration mode for wrenches. This method is used by iDynNode to connect two or 
-    * multiple limbs. 
+    * and the limb itself knows whether to get this information in the base ot in the end-effector,
+    * depending on its iteration mode for wrenches. This method is used by iDynNode to connect two or
+    * multiple limbs.
     * @param FNode  the iDynNode force - it is modified!
     * @param MuNode the iDynNode moment - it is modified!
     */
-    void getWrench( yarp::sig::Vector &FNode,  yarp::sig::Vector &MuNode); 
+    void getWrench( yarp::sig::Vector &FNode,  yarp::sig::Vector &MuNode);
 
     /**
     * Set the flow of kinematic/wrench information: input to node or output from node.
@@ -329,7 +329,7 @@ public:
     * @return the kinematic flow
     */
     FlowType getKinematicFlow() const;
-    
+
     /**
     * return the wrench flow type
     * @return the wrench flow
@@ -379,13 +379,13 @@ public:
     * @param allLink if all the links are considered
     * @return H of the i-th link
     */
-    yarp::sig::Matrix getH(const unsigned int i, const bool allLink=false);        
-    
+    yarp::sig::Matrix getH(const unsigned int i, const bool allLink=false);
+
     /**
     * Return the end-effector roto-translational matrix of the end-effector
     * H of the end-effector
     */
-    yarp::sig::Matrix getH(); 
+    yarp::sig::Matrix getH();
 
     /**
     * Return the end-effector pose: x-y-z Cartesian position and 3/4 angles of orientation.
@@ -450,8 +450,8 @@ public:
     yarp::sig::Matrix computeGeoJacobian(const unsigned int iLink, bool rbtRoto = false);
 
     /**
-    * Return a 6x6 diagonal matrix with the rotational matrix of the RBT 
-    * @return a 6x6 diagonal matrix with the rotational matrix of the RBT 
+    * Return a 6x6 diagonal matrix with the rotational matrix of the RBT
+    * @return a 6x6 diagonal matrix with the rotational matrix of the RBT
     */
     yarp::sig::Matrix   getR6() const;
 
@@ -476,7 +476,7 @@ public:
     * Returns the Jacobian matrix of the COM of the selected link (index = iLink) in the chain.
     * @param iLink the index of the link, in the chain
     * @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
-    * @return the Jacobian matrix of the selected link COM 
+    * @return the Jacobian matrix of the selected link COM
     */
     yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, bool rbtRoto = false);
 
@@ -486,7 +486,7 @@ public:
     * @param Pn the matrix describing the roto-translational matrix between base and end-effector (in two different limbs)
     * @param iLink the index of the link, in the chain
     * @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
-    * @return the Jacobian matrix of the selected link COM 
+    * @return the Jacobian matrix of the selected link COM
     */
     yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, bool rbtRoto = false);
 
@@ -498,14 +498,14 @@ public:
     * @param H0 the H0 matrix of the base to be used for the Jacobian computation
     * @param iLink the index of the link, in the chain
     * @param rbtRoto if false, simply return Jacobian; if true return T * Jacobian, where T is a 6x6 diagonal matrix with the rotational part of the RBT
-    * @return the Jacobian matrix of the selected link COM 
+    * @return the Jacobian matrix of the selected link COM
     */
     yarp::sig::Matrix TESTING_computeCOMJacobian(const unsigned int iLink, const yarp::sig::Matrix &Pn, const yarp::sig::Matrix &_H0, bool rbtRoto = false );
 
     /**
     * Returns the COM matrix of the selected link (index = iLink) in the chain.
     * @param iLink the index of the link, in the chain
-    * @return the roto-translational matrix of the selected link COM 
+    * @return the roto-translational matrix of the selected link COM
     */
     yarp::sig::Matrix getHCOM(unsigned int iLink);
 
@@ -515,17 +515,17 @@ public:
 /**
 * \ingroup iDynBody
 *
-* A class for connecting two or mutiple limbs and exchanging kinematic and 
+* A class for connecting two or mutiple limbs and exchanging kinematic and
 * wrench information between limbs.
 * A virtual node, connecting multiple limbs, is set.
-* The limbs can exchange kinematics and wrench information with the node 
+* The limbs can exchange kinematics and wrench information with the node
 * through a RigidBodyTransfromation. The node only has kinematic (w,dw,ddp) and wrench (F,Mu) information: no
 * mass, length, inertia, COM, or else. Each limb is connected to
-* the node by a roto-translation matrix, which must be set when a limb is 
-* attached to the node: a RigidBodyTransfromation object is then created, which allows the proper 
+* the node by a roto-translation matrix, which must be set when a limb is
+* attached to the node: a RigidBodyTransfromation object is then created, which allows the proper
 * computation of wrench and kinematic variables.
 * When multiple limbs are attached to a node, the kinematic variables are set by a single limb, having
-* kinematic flow = RBT_NODE_IN, while the wrench variables are found as the sum of the wrench 
+* kinematic flow = RBT_NODE_IN, while the wrench variables are found as the sum of the wrench
 * contribution of all the links (inbound and outbound wrenches must balance in the node).
 */
 class iDynNode
@@ -536,26 +536,26 @@ protected:
     std::deque<RigidBodyTransformation> rbtList;
 
     /// STATIC/DYNAMIC/DYNAMIC_W_ROTOR/DYNAMIC_CORIOLIS_GRAVITY
-    NewEulMode mode;    
-    
+    NewEulMode mode;
+
     ///info or useful notes
     std::string info;
-    
+
     ///verbosity flag
     unsigned int verbose;
 
     /// angular velocity
-    yarp::sig::Vector w;    
+    yarp::sig::Vector w;
     /// angular acceleration
     yarp::sig::Vector dw;
     /// linear acceleration
-    yarp::sig::Vector ddp;  
+    yarp::sig::Vector ddp;
     /// force
-    yarp::sig::Vector F;    
+    yarp::sig::Vector F;
     /// moment
-    yarp::sig::Vector Mu;   
+    yarp::sig::Vector Mu;
     /// COM position of the node
-    yarp::sig::Vector COM;  
+    yarp::sig::Vector COM;
     /// total mass of the node
     double mass;
 
@@ -639,7 +639,7 @@ public:
     /**
     * Main function to manage the exchange of kinematic information among the limbs attached to the node.
     * One single limb with kinematic flow of input type must exist: this limb is initilized with the kinematic variables
-    * w0,dw0,ddp0 (eg the up receives this information from the inertia sensor). The limb itself knows where to init the 
+    * w0,dw0,ddp0 (eg the up receives this information from the inertia sensor). The limb itself knows where to init the
     * chain (base/end) depending on how it is attached to the node. Then the first limb kinematics is solved.
     * The kinematic variables are retrieved from the RBT, which applies its roto-translation. Then the kinematic
     * variables are sent to the other limbs, having kinematic flow of output type: the RBT transformation is applied from node
@@ -664,9 +664,9 @@ public:
 
     /**
     * Main function to manage the exchange of wrench information among the limbs attached to the node.
-    * Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to 
+    * Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to
     * compute the wrench balance on the node.
-    * The measured/input wrenches to the limbs are here assumed to be set 
+    * The measured/input wrenches to the limbs are here assumed to be set
     * elsewhere: eg another class or the main is setting the measured wrenches.
     * Note: RBT calls computeWrenchNewtonEuler in the limb, meaning that
     * performs a "basic" wrench computation without any sensor, just
@@ -678,7 +678,7 @@ public:
 
     /**
     * This is to manage the exchange of wrench information among the limbs attached to the node.
-    * Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to 
+    * Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to
     * compute the wrench balance on the node.
     * The measured/input wrenches to the limbs are here passed as a big matrix. In this function the input wrench
     * is set in the limb calling initWrenchNewtonEuler(), which simply set the measured forces in the base/final
@@ -687,7 +687,7 @@ public:
     * Input (eg measured) wrenches are stored in a 6xN matrix: each column is a 6x1 vector
     * with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
     * the order is assumed coherent with the one built when adding limbs
-    * eg: 
+    * eg:
     * adding limbs: addLimb(limb1), addLimb(limb2), addLimb(limb3)
     * where limb1, limb3 have wrench flow input
     * setting wrenches: Matrix FM(6,2), FM.setcol(0,fm1), FM.setcol(1,fm3)
@@ -697,14 +697,14 @@ public:
     * setting wrenches at the end-effector or at the base, and calling
     * recursive wrench computation.
     *
-    * @param FM a (6xN) matrix with forces and moments 
+    * @param FM a (6xN) matrix with forces and moments
     * @return true if succeeds, false otherwise
     */
     bool solveWrench(const yarp::sig::Matrix &FM);
 
     /**
     * This is to manage the exchange of wrench information among the limbs attached to the node.
-    * Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to 
+    * Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to
     * compute the wrench balance on the node.
     * The measured/input wrenches to the limbs are here passed as a big matrix. In this function the input wrench
     * is set in the limb calling initWrenchNewtonEuler(), which simply set the measured forces in the base/final
@@ -712,7 +712,7 @@ public:
     * Input (eg measured) wrenches are stored in two 3xN matrix: each column is a 3x1 vector
     * with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
     * the order is assumed coherent with the one built when adding limbs
-    * eg: 
+    * eg:
     * adding limbs: addLimb(limb1), addLimb(limb2), addLimb(limb3)
     * where limb1, limb3 have wrench flow input
     * passing wrenches: Matrix F(3,2), F.setcol(0,f1), F.setcol(1,f3) and similar for moment
@@ -723,7 +723,7 @@ public:
     * recursive wrench computation.
     *
     * @param F a (3xN) matrix with forces
-    * @param M a (3xN) matrix with moments 
+    * @param M a (3xN) matrix with moments
     * @return true if succeeds, false otherwise
     */
     bool solveWrench(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M);
@@ -731,14 +731,14 @@ public:
     /**
     * Set the wrench measure on the limbs with input wrench
     * @param F a (3xN) matrix with forces
-    * @param M a (3xN) matrix with moments 
+    * @param M a (3xN) matrix with moments
     * @return true if succeeds, false otherwise
     */
     virtual bool setWrenchMeasure(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M);
 
     /**
     * Set the wrench measure on the limbs with input wrench
-    * @param FM a (6xN) matrix with forces and moments 
+    * @param FM a (6xN) matrix with forces and moments
     * @return true if succeeds, false otherwise
     */
     virtual bool setWrenchMeasure(const yarp::sig::Matrix &FM);
@@ -748,13 +748,13 @@ public:
     * @return the node force
     */
     yarp::sig::Vector getForce() const;
-    
+
     /**
     * Return the node moment
     * @return the node moment
     */
     yarp::sig::Vector getMoment() const;
-    
+
     /**
     * Return the node angular velocity
     * @return the node angular velocity
@@ -780,21 +780,21 @@ public:
     /**
     * Compute the Jacobian of the limb with index iChain in the node, in its default direction (as
     * it would be done by iKin).
-    * @param iChain the index of the chain (limb) in the node 
+    * @param iChain the index of the chain (limb) in the node
     * @return the Jacobian matrix
     */
     yarp::sig::Matrix computeJacobian(unsigned int iChain);
 
     /**
-    * Compute the Jacobian of the i-th link of the limb with index iChain in the node, in its default 
+    * Compute the Jacobian of the i-th link of the limb with index iChain in the node, in its default
     * direction (as it would be done by iKin).
     * If the link index is not correct, a null Jacobian is returned.
     *
     * Important note: since we are specifying the link index in the chain, the Jacobian computation
-    * will deal with all the links, even blocked links. 
+    * will deal with all the links, even blocked links.
     * The Jacobian size is not 6x(the DOF until iLinkB) but 6xiLinkB, where 0<iLinkB<N
     *
-    * @param iChain the index of the chain (limb) in the node 
+    * @param iChain the index of the chain (limb) in the node
     * @param iLink  the index of the limnk in the limb
     * @return the Jacobian matrix
     */
@@ -825,7 +825,7 @@ public:
     * the second limb (limb B - index=iChainB) has the final link of the jacobian (index=iLinkB).
     *
     * Important note: since we are specifying the link index in chain B, the Jacobian computation
-    * on chain B will deal with all the links, even blocked links. 
+    * on chain B will deal with all the links, even blocked links.
     * The Jacobian size is not 6x(DOF_A + the DOF until iLinkB) but 6x(DOF_A+iLinkB), where 0<iLinkB<N
     *
     * @param iChainA the index of the chain (the limb) in the node having the base (<0>) frame
@@ -876,7 +876,7 @@ public:
     */
     yarp::sig::Vector computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep);
 
-    
+
     //---------------
     //   JAC COM
     //---------------
@@ -884,7 +884,7 @@ public:
     /**
     * Compute the Jacobian of the COM of the i-th link of the limb with index iChain in the node.
     * If the link index is not correct, a null Jacobian is returned.
-    * @param iChain the index of the chain (limb) in the node 
+    * @param iChain the index of the chain (limb) in the node
     * @param iLink  the index of the limnk in the limb
     * @return the Jacobian matrix of the COM
     */
@@ -910,7 +910,7 @@ public:
 /**
 * \ingroup iDynBody
 *
-* A class for connecting two or mutiple limbs and exchanging kinematic and 
+* A class for connecting two or mutiple limbs and exchanging kinematic and
 * wrench information between limbs, when one or multiple limbs have FT sensors.
 */
 class iDynSensorNode : public iDynNode
@@ -954,7 +954,7 @@ public:
     virtual void addLimb(iDyn::iDynLimb *limb, const yarp::sig::Matrix &H, const FlowType kinFlow=RBT_NODE_OUT, const FlowType wreFlow=RBT_NODE_IN);
 
     /**
-    * Add one limb to the node, defining its RigidBodyTransformation and the iDynSensor used to 
+    * Add one limb to the node, defining its RigidBodyTransformation and the iDynSensor used to
     * solve it after FT sensor measurements. A new RigidBodyTransformation
     * is added to the RBT list. The iDynSensor is added to the sensorList.
     * @param limb pointer to generic limb
@@ -967,9 +967,9 @@ public:
 
     /**
     * Main function to manage the exchange of wrench information among the limbs attached to the node.
-    * Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to 
+    * Multiple limbs with wrench flow of input type can exist, but at least one limb with output type must exist, to
     * compute the wrench balance on the node.
-    * The measured/input wrenches to the limbs are here assumed to be set 
+    * The measured/input wrenches to the limbs are here assumed to be set
     * elsewhere: eg another class or the main is setting the measured wrenches.
     * Note: RBT calls computeWrenchNewtonEuler in the limb, meaning that
     * performs a "basic" wrench computation without any sensor, just
@@ -982,15 +982,15 @@ public:
     /**
     * Set the Wrench measures on the limbs attached to the node.
     * The parameters F and M are (3xN) matrices, where each column
-    * is an external wrench to be used for initializing the wrench phase; N is the number of 
+    * is an external wrench to be used for initializing the wrench phase; N is the number of
     * limbs Nlimbs attached to the node. The boolean flag is used in case the external wrench on
     * the first limb has already been set; this is useful whenever two different nodes are
     * connected and share information: the first node sends kinematic and wrench information
     * to the 'first' limb of the second node (eg the torso). In that case the F and M matrices
     * should only contain external wrench for the other limbs, so it should be a (6x(Nlimbs-1)).
-    * @param F a (3xN) matrix with forces, where N is the number of limbs 
+    * @param F a (3xN) matrix with forces, where N is the number of limbs
     * if afterAttach=false, number of limbs -1 if afterAttach=true
-    * @param M a (3xN) matrix with moments , where N is the number of limbs 
+    * @param M a (3xN) matrix with moments , where N is the number of limbs
     * if afterAttach=false, number of limbs -1 if afterAttach=true
     * @param afterAttach a flag for specifying if the external wrench of the first limb has been already set or not
     * @return true if succeeds, false otherwise
@@ -998,15 +998,15 @@ public:
     virtual bool setWrenchMeasure(const yarp::sig::Matrix &F, const yarp::sig::Matrix &M, bool afterAttach=false);
 
     /**
-    * Set the Wrench measures on the limbs attached to the node. 
+    * Set the Wrench measures on the limbs attached to the node.
     * The parameter FM is a (6xN), where each column
-    * is an external wrench to be used for initializing the wrench phase; N is the number of 
+    * is an external wrench to be used for initializing the wrench phase; N is the number of
     * limbs Nlimbs attached to the node. The boolean flag is used in case the external wrench on
     * the first limb has already been set; this is useful whenever two different nodes are
     * connected and share information: the first node sends kinematic and wrench information
     * to the 'first' limb of the second node (eg the torso). In that case the FM matrix
     * should only contain external wrench for the other limbs, so it should be a (6x(Nlimbs-1)).
-    * @param FM a (6xN) matrix with the external wrenches, where N is the number of limbs 
+    * @param FM a (6xN) matrix with the external wrenches, where N is the number of limbs
     * if afterAttach=false, number of limbs -1 if afterAttach=true
     * @param afterAttach a flag for specifying if the external wrench of the first limb has been already set or not
     * @return true if succeeds, false otherwise
@@ -1016,13 +1016,13 @@ public:
     /**
     * Exploit iDynInvSensor methods to retrieve FT sensor measurements after
     * solving wrenches in the limbs. The parameter FM is a (6xN), where each column
-    * is an external wrench to be used for initializing the wrench phase; N is the number of 
+    * is an external wrench to be used for initializing the wrench phase; N is the number of
     * limbs Nlimbs attached to the node. The boolean flag is used in case the external wrench on
     * the first limb has already been set; this is useful whenever two different nodes are
     * connected and share information: the first node sends kinematic and wrench information
     * to the 'first' limb of the second node (eg the torso). In that case the FM matrix
     * should only contain external wrench for the other limbs, so it should be a (6x(Nlimbs-1)).
-    * @param FM a (6xN) matrix with the external wrenches,where N is the number of limbs 
+    * @param FM a (6xN) matrix with the external wrenches,where N is the number of limbs
     * if afterAttach=false, number of limbs -1 if afterAttach=true
     * @param afterAttach a flag for specifying if the external wrench of the first limb has been already set or not
     */
@@ -1036,11 +1036,11 @@ public:
 /**
 * \ingroup iDynBody
 *
-* A class for connecting a central-up limb, a left and right limb of the iCub, and exchanging kinematic and 
-* wrench information between limbs, when both left/right limb have FT sensors and the central-up one use the 
-* kinematic and wrench information coming from a inertial measurements or another iDynSensorNode. 
+* A class for connecting a central-up limb, a left and right limb of the iCub, and exchanging kinematic and
+* wrench information between limbs, when both left/right limb have FT sensors and the central-up one use the
+* kinematic and wrench information coming from a inertial measurements or another iDynSensorNode.
 * This is the base class of UpperTorso and LowerTorso. The connection between UpperTorso
-* and LowerTorso is not handled here: it is simply supposed that a Torso Node receives correct 
+* and LowerTorso is not handled here: it is simply supposed that a Torso Node receives correct
 * kinematic and wrench input from outside.
 */
 class iDynSensorTorsoNode : public iDynSensorNode
@@ -1121,14 +1121,14 @@ public:
 
     /**
     * Main method for solving kinematics and wrench among limbs, where information are shared.
-    * This method assumes that the initial kinematics informations have already been set, as the 
+    * This method assumes that the initial kinematics informations have already been set, as the
     * external wrench on the central limb: i.e. this method is the one called after attachTorso().
     * @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right limb
     * @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left limb
     * @return true if succeeds, false otherwise
     */
     bool update(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left, bool afterAttach=true);
-    
+
     /**
     * Main method for solving kinematics and wrench among limbs, where information are shared.
     * @param w0 a 3x1 vector with the initial/measured angular velocity
@@ -1148,22 +1148,22 @@ public:
     /**
     * Return HLeft, i.e. the roto-translation matrix between the 'left' limb and the node.
     */
-    inline yarp::sig::Matrix getHLeft() { return HLeft; }   
+    inline yarp::sig::Matrix getHLeft() { return HLeft; }
     /**
     * Return HRight, i.e. the roto-translation matrix between the 'right' limb and the node.
     */
-    yarp::sig::Matrix getHRight() { return HRight; }    
+    yarp::sig::Matrix getHRight() { return HRight; }
     /**
     * Return HUp, i.e. the roto-translation matrix between the 'up' limb and the node.
     */
-    yarp::sig::Matrix getHUp() { return HUp; }  
+    yarp::sig::Matrix getHUp() { return HUp; }
 
     /**
     * Return the chosen limb forces, as a 6xN matrix.
     * @param limbType a string with the limb name
     * @return the chosen limb forces
     */
-    yarp::sig::Matrix getForces(const std::string &limbType);   
+    yarp::sig::Matrix getForces(const std::string &limbType);
 
     /**
     * Return the chosen limb-link force, as a 3x1 vector
@@ -1224,7 +1224,7 @@ public:
     * Return the torso moment
     * @return the torso moment
     */
-    yarp::sig::Vector getTorsoMoment() const;   
+    yarp::sig::Vector getTorsoMoment() const;
     /**
     * Return the torso angular velocity
     * @return the torso angular velocity
@@ -1254,10 +1254,10 @@ public:
     * @return true if succeeds (correct vectors size), false otherwise
     */
     bool setInertialMeasure(const yarp::sig::Vector &w0, const yarp::sig::Vector &dw0, const yarp::sig::Vector &ddp0);
-    
+
     /**
-    * Set the FT sensor measurements on the sensor in right and left limb. This operation is necessary to 
-    * initialize the wrench phase correctly. 
+    * Set the FT sensor measurements on the sensor in right and left limb. This operation is necessary to
+    * initialize the wrench phase correctly.
     * The central-up limb wrench is assumed to be already initialized: for example after an attachTorso().
     * @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right limb
     * @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left limb
@@ -1266,7 +1266,7 @@ public:
     bool setSensorMeasurement(const yarp::sig::Vector &FM_right, const yarp::sig::Vector &FM_left);
 
     /**
-    * Set the FT sensor measurements on the sensor in right and left limb. This operation is necessary to 
+    * Set the FT sensor measurements on the sensor in right and left limb. This operation is necessary to
     * initialize the wrench phase correctly. The central-up limb wrench initializing wrench is also specified.
     * @param FM_right a 6x1 vector with forces and moments measured by the FT sensor in the right limb
     * @param FM_left a 6x1 vector with forces and moments measured by the FT sensor in the left limb
@@ -1336,7 +1336,7 @@ public:
     * @param i the link index in the limb
     * @return the joint velocity
     */
-    double            getDAng(const std::string &limbType, const unsigned int i);                                  
+    double            getDAng(const std::string &limbType, const unsigned int i);
 
     /**
     * Set joints angle acceleration in the chosen limb
@@ -1380,13 +1380,13 @@ public:
     * @param FM a (6xN) matrix of forces/moments where N is the number of external wrenches for the N limbs of the node
     * @return a (6xM), matrix with estimated wrench for the M sensors
     */
-    yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM, bool afterAttach=false) 
+    yarp::sig::Matrix estimateSensorsWrench(const yarp::sig::Matrix &FM, bool afterAttach=false)
     { return iDynSensorNode::estimateSensorsWrench(FM,afterAttach); }
 
 
     void clearContactList();
 
-    
+
 };
 
 
@@ -1394,8 +1394,8 @@ public:
 /**
 * \ingroup iDynBody
 *
-* A class for connecting head, left and right arm of the iCub, and exchanging kinematic and 
-* wrench information between limbs, when both arms have FT sensors and the head use the 
+* A class for connecting head, left and right arm of the iCub, and exchanging kinematic and
+* wrench information between limbs, when both arms have FT sensors and the head use the
 * inertial sensor.
 */
 class iCubUpperTorso : public iDynSensorTorsoNode
@@ -1404,7 +1404,7 @@ protected:
     /**
     * Build the node.
     */
-    version_tag tag;    
+    version_tag tag;
     void build();
 
 public:
@@ -1416,7 +1416,7 @@ public:
     * @param verb verbosity flag
     */
     iCubUpperTorso(version_tag tag, const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
-    
+
     /**
     * Destructor
     */
@@ -1428,8 +1428,8 @@ public:
 /**
 * \ingroup iDynBody
 *
-* A class for connecting torso, left and right leg of the iCub, and exchanging kinematic and 
-* wrench information between limbs, when both legs have FT sensors and the torso use the 
+* A class for connecting torso, left and right leg of the iCub, and exchanging kinematic and
+* wrench information between limbs, when both legs have FT sensors and the torso use the
 * kinematic and wrench information coming from UpperTorso. The correct connection bewteen UpperTorso
 * and LowerTorso is not handled here; it is supposed that LowerTorso receives correct kinematic
 * and wrench variables for the initialization of the kinematic and wrench phases.
@@ -1452,7 +1452,7 @@ public:
     * @param verb verbosity flag
     */
     iCubLowerTorso(version_tag _tag, const NewEulMode _mode=DYNAMIC, unsigned int verb=iCub::skinDynLib::VERBOSE);
-    
+
     /**
     * Destructor
     */
@@ -1464,9 +1464,9 @@ public:
 /**
 * \ingroup iDynBody
 *
-* A class for connecting UpperTorso and LowerTorso of the iCub, then getting the 
+* A class for connecting UpperTorso and LowerTorso of the iCub, then getting the
 * WholeBody in the dynamic framework. It is merely a container: pointers to upper and
-* lower torso objects are accessible, so all public methods of the two objects can be used. 
+* lower torso objects are accessible, so all public methods of the two objects can be used.
 */
 class iCubWholeBody
 {
@@ -1482,7 +1482,7 @@ public:
     iCubUpperTorso * upperTorso;
     /// pointer to LowerTorso = torso + right leg + left leg
     iCubLowerTorso * lowerTorso;
-    
+
     /// masses and position of the center of mass of the iCub sub-parts
     double whole_mass;
     double lower_mass;
@@ -1532,7 +1532,7 @@ public:
     * @return true if succeeds, false otherwise
     */
     bool getAllVelocities(yarp::sig::Vector &vel);
-    
+
     /**
     * Retrieves a vector containing the anglular position of all the iCub joints, ordered in this way:
     * left leg (6), right leg (6), torso (3), left arm (7), right arm (7), head (3).
@@ -1540,7 +1540,7 @@ public:
     * @return true if succeeds, false otherwise
     */
     bool getAllPositions(yarp::sig::Vector &pos);
-    
+
     /**
     * Retrieves the result of the last COM jacobian computation
     * @param jac the jacobian matrix

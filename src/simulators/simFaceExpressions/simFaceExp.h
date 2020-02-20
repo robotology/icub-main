@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Authors: Vadim Tikhanoff
  * email:   vadim.tikhanoff@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -43,7 +43,7 @@ private:
     yarp::os::Port expressionVals;                  //incoming port for the hexadeimal values
     yarp::os::Port eyeLidsPos;                      //incoming port for the hexadeimal values
 
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imgOut; //outgoing port sending the texture of the expression 
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imgOut; //outgoing port sending the texture of the expression
 
     int width;                                      //integer containing the width of the mask
     int height;                                     //integer containing the height of the mask
@@ -62,11 +62,11 @@ private:
 public:
 
     bool configure(yarp::os::ResourceFinder &rf);                           // configure all the module parameters and return true if successful
-    bool interruptModule();                                                 // interrupt, e.g., the ports 
+    bool interruptModule();                                                 // interrupt, e.g., the ports
     bool close();                                                           // close and shut down the module
     bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
     bool readMask(const char * filename);
-    double getPeriod(); 
+    double getPeriod();
     bool updateModule();
     float linearMap( float x, float min, float max, float outMin, float outMax );
     void prepareData(unsigned char *data, int width, int height);

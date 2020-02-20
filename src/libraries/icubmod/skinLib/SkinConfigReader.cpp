@@ -125,7 +125,7 @@ bool SkinConfigReader::readDefaultBoardCfg(yarp::os::Searchable& config, SkinBoa
 {
     if(NULL == boardCfg)
         return false;
-    
+
     Bottle boardCfgDefGroup =config.findGroup("defaultCfgBoard", "Default configuration for skin boards");
     if (boardCfgDefGroup.isNull()==true)
     {
@@ -181,9 +181,9 @@ bool SkinConfigReader::readDefaultTriangleCfg(yarp::os::Searchable& config, Skin
 {
     if(NULL == triangCfg)
         return false;
-    
+
     Bottle triangleCfgDefGroup =config.findGroup("defaultCfgTriangle", "Default configuration for skin triangle");
-    
+
     if (triangleCfgDefGroup.isNull()==true)
     {
         yError() << "skin " << _name << "defaultCfgTriangle param is not present in config file";
@@ -214,7 +214,7 @@ bool SkinConfigReader::readDefaultTriangleCfg(yarp::os::Searchable& config, Skin
         return false;
     }
     triangCfg->cdcOffset = xtmp.get(1).asInt();
-    
+
     return true;
 }
 
@@ -223,10 +223,10 @@ bool SkinConfigReader::readSpecialBoardCfg(yarp::os::Searchable& config, Special
     Bottle          bNumOfset;
     unsigned int    numOfSets;
 
-    
+
     if((NULL == boardCfg) || (NULL == numofcfg))
         return false;
-    
+
     Bottle boardCfgSpecialGroup = config.findGroup("specialCfgBoards", "Special configuration for skin boards");
     if(boardCfgSpecialGroup.isNull()==true) //not mandatory field
     {
@@ -241,7 +241,7 @@ bool SkinConfigReader::readSpecialBoardCfg(yarp::os::Searchable& config, Special
         yError() << "skin " << _name << "numOfSet is missed from specialCfgBoards";
         return(false);
     }
-    
+
     numOfSets =  bNumOfset.get(1).asInt();
     if(numOfSets > *numofcfg)
     {
@@ -279,10 +279,10 @@ bool SkinConfigReader::readSpecialTriangleCfg(yarp::os::Searchable& config, Spec
 {
     Bottle          bNumOfset;
     unsigned int    numOfSets;
-    
+
    if((NULL == triangleCfg) || (NULL == numofcfg))
        return false;
-   
+
     Bottle triangleCfgSpecialGroup = config.findGroup("specialCfgTriangles", "Special configuration for skin triangles");
     if(triangleCfgSpecialGroup.isNull()) //not mandatory field
     {

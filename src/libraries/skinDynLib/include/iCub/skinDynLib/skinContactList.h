@@ -7,20 +7,20 @@
 
 /**
  * Class representing a contact on the tactile sensor system (skin) of iCub.
- * 
+ *
  * \section intro_sec Description
- * 
+ *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows
  *
  * \author Andrea Del Prete
- * 
+ *
  * Copyright (C) 2010 RobotCub Consortium
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
- * 
- **/ 
+ *
+ *
+ **/
 
 #ifndef __SKINCONTLIST_H__
 #define __SKINCONTLIST_H__
@@ -36,15 +36,15 @@ namespace iCub
 namespace skinDynLib
 {
 
-/** 
-* @ingroup skinDynLib 
-*  
+/**
+* @ingroup skinDynLib
+*
 * Class representing a list of external contacts acting on the iCub' skin.
 */
 class skinContactList  : public std::vector<skinContact>, public yarp::os::Portable
 {
 protected:
-    
+
 public:
     //~~~~~~~~~~~~~~~~~~~~~~
     //   CONSTRUCTORS
@@ -69,7 +69,7 @@ public:
     */
     virtual std::map<SkinPart, skinContactList> splitPerSkinPart();
 
-    
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~
     //   SERIALIZATION methods
     //~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,7 +96,7 @@ public:
     * @return true if operation succeeded, false otherwise
     */
     //virtual bool fromDynContactList(dynContactList &l);
-    
+
     /**
      * Useful to print some information.
      */

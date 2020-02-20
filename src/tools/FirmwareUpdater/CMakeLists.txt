@@ -77,8 +77,8 @@ target_link_libraries(FirmwareUpdater-qt    YARP::YARP_OS
                                             canLoaderLib
                                             strainCalibLib
                                             )
-qticub_use_modules(FirmwareUpdater-qt   Core 
-                                        Gui 
+qticub_use_modules(FirmwareUpdater-qt   Core
+                                        Gui
                                         Widgets)
 if(WIN32 AND CMAKE_VERSION VERSION_LESS 2.8.11)
   target_link_libraries(FirmwareUpdater-qt Qt5::WinMain)

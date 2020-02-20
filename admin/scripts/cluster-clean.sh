@@ -13,7 +13,7 @@ ssh -T icub@$1<<END
     echo ""
     pwd
     ls -l --time-style="long-iso" --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print `echo '$8'`}' | while read line
-    do      
+    do
        ps -ef | grep -i `echo '$line'` | grep -v grep | awk '{print `echo '$2'`}' | xargs kill -9 &>/dev/null
     done
     yarp clean timeout 0.1 &>/dev/null
@@ -30,12 +30,12 @@ ssh -T icub@$1<<END
     cd `echo "${2}"`/bin
     echo ""
     echo "I have found the following modules:"
-    
-    ls -l --time-style="long-iso" --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print `echo '$8'`}' | while read line         
+
+    ls -l --time-style="long-iso" --ignore=*.sh --ignore=*.py | grep '^-' | awk '{print `echo '$8'`}' | while read line
     do
-        ps -ef | grep -iw `echo '$line'` | grep -v grep 
+        ps -ef | grep -iw `echo '$line'` | grep -v grep
     done
-    
+
     exit
     echo ""
 END
@@ -71,16 +71,16 @@ function askForListFunc(){
     echo "Are you sure you want to run this script on node "[$1]"?"
     select yn in "Yes" "No"; do
         case $yn in
-            Yes )   actionFunc $1 $2; 
-                    askForKillFunc $1 $2; 
-                    if [ $count -eq 0 ] 
-                    then 
-                        askForYarp $1 
-                    fi; 
-                    if [ $count -eq 1 ] 
-                    then 
-                        askForContrib $1 
-                    fi; 
+            Yes )   actionFunc $1 $2;
+                    askForKillFunc $1 $2;
+                    if [ $count -eq 0 ]
+                    then
+                        askForYarp $1
+                    fi;
+                    if [ $count -eq 1 ]
+                    then
+                        askForContrib $1
+                    fi;
                     break;;
             No ) exit;;
         esac
@@ -93,4 +93,4 @@ if [[ -n "$1" ]] ; then
 else
     echo 'node is empty, please select which node you want to clean-up'
 fi
-    
+

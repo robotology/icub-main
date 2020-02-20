@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Carlo Ciliberto, Vadim Tikhanoff
 * email:   carlo.ciliberto@iit.it vadim.tikhanoff@iit.it
@@ -391,11 +391,11 @@ bool ObjectPropertiesCollectorPort::getAction(const string &act_name, Bottle *tr
 
     if(!bReply.get(1).asList()->check("trajectory"))
         return false;
-   
+
     *trajectory =  *(bReply.get(1).asList()->find("trajectory").asList());
 
     return true;
-    
+
 };
 
 

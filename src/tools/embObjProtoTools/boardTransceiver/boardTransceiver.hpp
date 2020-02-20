@@ -28,7 +28,7 @@
 /** @defgroup  Library BoardTransceiver
     It is an example of how the embOBJ can operate as host trasceiver.
 
-    @{        
+    @{
  **/
 
 
@@ -67,10 +67,10 @@ void fromDouble(ACE_Time_Value &v, double x,int unit=1);
 class BoardTransceiver : public yarp::os::RFModule
 {
 protected:
-    eOprotBRD_t                 protboardnumber;     
-    EOdeviceTransceiver*        devtxrx;             
+    eOprotBRD_t                 protboardnumber;
+    EOdeviceTransceiver*        devtxrx;
     EOtransceiver*              transceiver;
-    eOdevicetransceiver_cfg_t   devtxrxcfg;          
+    eOdevicetransceiver_cfg_t   devtxrxcfg;
     EOnvSet*                    nvset;
     uint32_t                    localipaddr;
     uint32_t                    remoteipaddr;
@@ -115,15 +115,15 @@ private:
     void eoprot_override_mn(void);
     void eoprot_override_mc(void);
     void eoprot_override_as(void);
-    void eoprot_override_sk(void); 
+    void eoprot_override_sk(void);
 
     bool prepareTransceiverConfig(yarp::os::Searchable &config);
 
 
-    const eOnvset_DEVcfg_t * getNVset_DEVcfg(yarp::os::Searchable &config);  
+    const eOnvset_DEVcfg_t * getNVset_DEVcfg(yarp::os::Searchable &config);
 
 public:
-    
+
     eOprotBRD_t get_protBRDnumber(void);    // the number in range [0, max-1]
 };
 

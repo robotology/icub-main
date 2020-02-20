@@ -30,7 +30,7 @@ namespace yarp{
 }
 
 /**
- * \file EsdMessageSniffer.h 
+ * \file EsdMessageSniffer.h
  * class for interfacing with the ESD can device driver and reading messages.
  */
 
@@ -74,12 +74,12 @@ struct yarp::dev::EsdMessageSnifferParameters
  * The EsdMessageSniffer device driver. Poll the CAN bus for incoming broadcast messages
  * and make them available through appropriate interfaces.
  */
-class yarp::dev::EsdMessageSniffer : 
+class yarp::dev::EsdMessageSniffer :
     public DeviceDriver,
-            public os::Thread, 
-            public IPidControlRaw, 
+            public os::Thread,
+            public IPidControlRaw,
             public IAmplifierControlRaw,
-            public IEncodersRaw, 
+            public IEncodersRaw,
             public ImplementPidControl<EsdMessageSniffer, IPidControl>,
             public ImplementAmplifierControl<EsdMessageSniffer, IAmplifierControl>,
             public ImplementEncoders<EsdMessageSniffer, IEncoders>
@@ -110,7 +110,7 @@ public:
 	 * @param params is the parameter structure which is expected to be
 	 * of type EsdMessageSnifferParameters.
 	 * @return true/false on success/failure.
-	 */ 
+	 */
 	virtual bool open(EsdMessageSnifferParameters& params);
 
     /**
@@ -215,7 +215,7 @@ public:
     virtual bool getCurrentRaw(int j, double *val) { return getBCastCurrent(j, val); }
 
     /* Get the status of the amplifiers, coded in a 32 bits integer for
-     * each amplifier (at the moment contains only the fault, it will be 
+     * each amplifier (at the moment contains only the fault, it will be
      * expanded in the future).
      * @param st pointer to storage
      * @return true in good luck, false otherwise.
@@ -278,7 +278,7 @@ protected:
 	enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000 };
 	enum { ESD_CAN_SKIP_ADDR = 0x80 };
 
-	inline short S_16(double x) const 
+	inline short S_16(double x) const
 	{
 		if (x <= double(-(MAX_SHORT))-1)
 			return MIN_SHORT;

@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick, Vadim Tikhanoff
 * email:   paulfitz@alum.mit.edu, vadim.tikhanoff@iit.it
@@ -49,7 +49,7 @@ public:
     }
 
     bool checkObject(bool forCreate = false);
-    
+
     void doGet();
     void doSet();
     void doMake();
@@ -82,20 +82,20 @@ bool OdeLink::checkObject(bool justNeedKind) {
     } else if (kind=="hand") {
         if (op.rightHanded.get()) {
              if (
-                odeinit._iCub->actRHand=="on") { 
-                bid = odeinit._iCub->body[11]; 
+                odeinit._iCub->actRHand=="on") {
+                bid = odeinit._iCub->body[11];
                 yDebug("Full left hand\n");
             } else {
-                bid = odeinit._iCub->r_hand; 
+                bid = odeinit._iCub->r_hand;
                 yDebug("slim left hand\n");
             }
         } else {
             if (
-                odeinit._iCub->actLHand=="on") { 
-                bid = odeinit._iCub->body[10]; 
+                odeinit._iCub->actLHand=="on") {
+                bid = odeinit._iCub->body[10];
                 yDebug("Full left hand\n");
             } else {
-                bid = odeinit._iCub->l_hand; 
+                bid = odeinit._iCub->l_hand;
                 yDebug("slim left hand\n");
             }
         }
@@ -140,7 +140,7 @@ bool OdeLink::checkObject(bool justNeedKind) {
             result.setFail("out of range");
             return false;
         }
-        
+
         WorldObject& obj = store->get(index);
         if (op.dynamic.get()) {
             bid = obj.getBody();
@@ -334,15 +334,15 @@ void OdeLink::doRotate() {
         // We want to set the object rotation
 
         dMatrix3 Rtx,Rty,Rtz, Rtmp1,Rtmp2;
-    
+
         double rotx = (op.rotation.get(0) * M_PI) / 180;
         double roty = (op.rotation.get(1) * M_PI) / 180;
         double rotz = (op.rotation.get(2) * M_PI) / 180;
-        
+
         dRFromAxisAndAngle(Rtx,1,0,0,rotx);
         dRFromAxisAndAngle(Rty,0,1,0,roty);
         dRFromAxisAndAngle(Rtz,0,0,1,rotz);
-        
+
         dMultiply0 (Rtmp1,Rty,Rtz,3,3,3);
         dMultiply0 (Rtmp2,Rtx,Rtmp1,3,3,3);
         lock_guard<mutex> lck(odeinit.mtx);
@@ -359,11 +359,11 @@ void OdeLink::doColor() {
             store->colors[op.index.index-1][0] = op.color.get(0);
             store->colors[op.index.index-1][1] = op.color.get(1);
             store->colors[op.index.index-1][2] = op.color.get(2);
-           
+
         }
     } else {
         if (store->colors!=NULL) {
-            result.color = 
+            result.color =
                 WorldOpTriplet(store->colors[op.index.index-1][0],
                                store->colors[op.index.index-1][1],
                                store->colors[op.index.index-1][2]);

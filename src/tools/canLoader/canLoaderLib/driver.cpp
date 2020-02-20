@@ -108,7 +108,7 @@ int cDriver2::receive_message(vector<CanPacket> &canpackets, int howMany, double
                     // convert a yarp::dev::CanMessage into a CanPacket. we use operator = of CanPacket.
                     canpackets[read].setLen(canRXbuffer[k].getLen());
                     canpackets[read].setId(canRXbuffer[k].getId());
-                    memcpy(canpackets[read].getData(), canRXbuffer[k].getData(), canRXbuffer[k].getLen()); 
+                    memcpy(canpackets[read].getData(), canRXbuffer[k].getData(), canRXbuffer[k].getLen());
                     //canpackets[read] = canRXbuffer[k];
                     read++;
                 }

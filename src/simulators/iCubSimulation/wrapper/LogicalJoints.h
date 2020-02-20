@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick
 * email:  paulfitz@alum.mit.edu
@@ -34,7 +34,7 @@ public:
 
     /**
      *
-     * Access the control for a logical joint, based on part and axis 
+     * Access the control for a logical joint, based on part and axis
      * number.
      *
      */

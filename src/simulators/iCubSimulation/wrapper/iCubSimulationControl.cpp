@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick, Giorgio Metta
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu, giorgio.metta@iit.it
@@ -52,7 +52,7 @@ static inline bool DEPRECATED(const char *txt)
 
 //////////////////////////////////
 
-iCubSimulationControl::iCubSimulationControl() : 
+iCubSimulationControl::iCubSimulationControl() :
     //PeriodicThread(0.01),
     ImplementPositionControl(this),
     ImplementVelocityControl(this),
@@ -117,16 +117,16 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     controlMode = allocAndCheck<int>(njoints);
     interactionMode = allocAndCheck<int>(njoints);
     maxCurrent = allocAndCheck<double>(njoints);
-    
+
     limitsMin = allocAndCheck<double>(njoints);
     limitsMax = allocAndCheck<double>(njoints);
     velLimitsMin = allocAndCheck<double>(njoints);
     velLimitsMax = allocAndCheck<double>(njoints);
     torqueLimits = allocAndCheck<double>(njoints);
-    
+
     refSpeed = allocAndCheck<double>(njoints);
     refAccel = allocAndCheck<double>(njoints);
-    controlP = allocAndCheck<double>(njoints); 
+    controlP = allocAndCheck<double>(njoints);
 
     axisMap = allocAndCheck<int>(njoints);
 //  jointNames = new string[njoints];
@@ -184,10 +184,10 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     /////////////////////////
     /*   GENERAL           */
-    ///////////////////////// 
+    /////////////////////////
 
     Bottle& xtmp = p.findGroup("GENERAL").findGroup("AxisMap","a list of reordered indices for the axes");
-    
+
     if (xtmp.size() != njoints+1) {
         yError("AxisMap does not have the right number of entries\n");
         return false;
@@ -253,16 +253,16 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
             yError("Not enough max joint limits\n");
             return false;
         }
-    for( int i =1;i<xtmp.size();i++ ) 
+    for( int i =1;i<xtmp.size();i++ )
         limitsMax[i-1] = xtmp.get(i).asDouble()*angleToEncoder[i-1];
-    
+
     //max velocity
     for (int i = 1; i < xtmp.size(); i++)
     {
         velLimitsMin[i - 1] = 0;
         velLimitsMax[i - 1] = 100 * angleToEncoder[i - 1];
     }
-        
+
     xtmp = p.findGroup("LIMITS").findGroup("jntPosMin","access the joint limits min");
     if(xtmp.size() != njoints+1)
         {
@@ -286,7 +286,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         current_jnt_pos[axis] = 0.0;
         current_mot_pos[axis] = 0.0;
         ErrorPos[axis] = 0.0;
-        double v = 0.0;     
+        double v = 0.0;
         if (v<limitsMin[axis]) v = limitsMin[axis];
         if (v>limitsMax[axis]) v = limitsMax[axis];
         //else v = next_pos[i];
@@ -355,9 +355,9 @@ bool iCubSimulationControl::close (void)
         //if (PeriodicThread::isRunning())
         //    {
         //    }
-        
+
         //PeriodicThread::stop();/// stops the thread first (joins too).
-        
+
         ImplementPositionControl::uninitialize();
         ImplementVelocityControl::uninitialize();
         ImplementTorqueControl::uninitialize();
@@ -416,10 +416,10 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<double>(vels);
     checkAndDestroy<double>(torqueLimits);
     checkAndDestroy<double>(maxCurrent);
-    
+
     checkAndDestroy<double>(refSpeed);
     checkAndDestroy<double>(refAccel);
-    checkAndDestroy<double>(controlP);   
+    checkAndDestroy<double>(controlP);
 
     checkAndDestroy<double>(error_tol);
     checkAndDestroy<bool>(motor_on);
@@ -479,22 +479,22 @@ void iCubSimulationControl::jointStep() {
         return;
     }
     if (partSelec<=6)
-    {   
+    {
         for (int axis=0; axis<njoints; axis++)
         {
-            LogicalJoint& ctrl = manager->control(partSelec,axis); 
+            LogicalJoint& ctrl = manager->control(partSelec,axis);
             if (!ctrl.isValid()) continue;
             current_jnt_pos[axis] = ctrl.getAngle();
             current_jnt_vel[axis] = ctrl.getVelocity();
             current_jnt_torques[axis] = (controlMode[axis]==MODE_TORQUE) ? ctrl.getTorque() : 0.0;  // if not torque ctrl, set torque feedback to 0
             current_mot_torques[axis]=0;
 
-            if (maxCurrent[axis]<=0) 
+            if (maxCurrent[axis]<=0)
             {
                 controlMode[axis]= VOCAB_CM_HW_FAULT;
                 motor_on[axis] = false;
             }
-            
+
             //motor_on[axis] = true; // no reason to turn motors off, for now
 
             if (controlMode[axis]==MODE_VELOCITY || controlMode[axis]==VOCAB_CM_MIXED || controlMode[axis]==MODE_IMPEDANCE_VEL)
@@ -1015,9 +1015,9 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
             ref_command_positions[axis] = ref;
             if (njoints == 16)
             {
-                if ( axis == 10 ||  axis == 12 || axis == 14 ) 
+                if ( axis == 10 ||  axis == 12 || axis == 14 )
                     next_pos[axis] = ref/2;
-                else if ( axis == 15 ) 
+                else if ( axis == 15 )
                     next_pos[axis] = ref/3;
                 else if ( axis == 7 )
                     next_pos[axis] = fabs(limitsMax[axis] - ref);
@@ -1321,7 +1321,7 @@ bool iCubSimulationControl::getRefSpeedsRaw(const int nj, const int * jnts, doub
     return ret;
 }
 
-// cmd is an array of double of length njoints specifying speed 
+// cmd is an array of double of length njoints specifying speed
 /// for each axis
 bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
 {
@@ -1343,10 +1343,10 @@ bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
     }
     if (verbosity)
         yError("velocityMoveRaw: joint with index %d does not exist, valis joints indices are between 0 and %d \n",axis,njoints);
-    return false;    
+    return false;
 }
 
-/// cmd is an array of double of length njoints specifying speed 
+/// cmd is an array of double of length njoints specifying speed
 /// for each axis
 bool iCubSimulationControl::velocityMoveRaw (const double *sp)
 {
@@ -1383,13 +1383,13 @@ bool iCubSimulationControl::getEncodersRaw(double *v)
    lock_guard<mutex> lck(_mutex);
     for(int axis = 0;axis<njoints;axis++)
     {
-        if ( axis == 10 ||  axis == 12 || axis == 14 ) 
+        if ( axis == 10 ||  axis == 12 || axis == 14 )
             v[axis] = current_jnt_pos[axis]*2;
-        else if ( axis == 15 ) 
+        else if ( axis == 15 )
             v[axis] = current_jnt_pos[axis]*3;
-        else if ( axis == 7 ) 
-            v[axis] = limitsMax[axis] - current_jnt_pos[axis]; 
-        else 
+        else if ( axis == 7 )
+            v[axis] = limitsMax[axis] - current_jnt_pos[axis];
+        else
             v[axis] = current_jnt_pos[axis];
     }
     return true;
@@ -1399,14 +1399,14 @@ bool iCubSimulationControl::getEncoderRaw(int axis, double *v)
 {
     if((axis>=0) && (axis<njoints)) {
         lock_guard<mutex> lck(_mutex);
-        
-        if ( axis == 10 ||  axis == 12 || axis == 14 ) 
+
+        if ( axis == 10 ||  axis == 12 || axis == 14 )
             *v = current_jnt_pos[axis]*2;
-        else if ( axis == 15 ) 
+        else if ( axis == 15 )
             *v = current_jnt_pos[axis]*3;
-        else if ( axis == 7 ) 
+        else if ( axis == 7 )
             *v = limitsMax[axis] - current_jnt_pos[axis];
-        else 
+        else
             *v = current_jnt_pos[axis];
 
         return true;
@@ -1619,7 +1619,7 @@ bool iCubSimulationControl::getCurrentRaw(int axis, double *c)
         *c = current_ampere[axis];
     }
     else
-    {  
+    {
         if (verbosity)
             yError("getCurrentRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
     }
@@ -1634,7 +1634,7 @@ bool iCubSimulationControl::setMaxCurrentRaw(int axis, double v)
         maxCurrent[axis]=v;
     }
     else
-    {  
+    {
         if (verbosity)
             yError("setMaxCurrentRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
     }
@@ -1649,7 +1649,7 @@ bool iCubSimulationControl::getMaxCurrentRaw(int axis, double* v)
         *v=maxCurrent[axis];
     }
     else
-    {  
+    {
         if (verbosity)
             yError("getMaxCurrentRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
     }
@@ -1677,7 +1677,7 @@ bool iCubSimulationControl::getAmpStatusRaw(int *st)
 
 bool iCubSimulationControl::getAmpStatusRaw(int axis, int *st)
 {
-    if( (axis>=0) && (axis<njoints)) 
+    if( (axis>=0) && (axis<njoints))
     {
         lock_guard<mutex> lck(_mutex);
         st[axis] = (int)motor_on[axis];
@@ -1894,7 +1894,7 @@ bool iCubSimulationControl::getAxisNameRaw(int axis, string& name)
         name.assign(buff,strlen(buff));
         return true;
     }
-    
+
     return false;
 }
 
@@ -2113,7 +2113,7 @@ int iCubSimulationControl::ControlModes_iCubSIM2yarp(int iCubMode)
 }
 
 bool iCubSimulationControl::getControlModeRaw(int j, int *mode)
-{    
+{
     if( (j >=0) && (j < njoints)) {
         lock_guard<mutex> lck(_mutex);
         *mode = ControlModes_iCubSIM2yarp(controlMode[j]);
@@ -2121,7 +2121,7 @@ bool iCubSimulationControl::getControlModeRaw(int j, int *mode)
     }
     if (verbosity)
         yError("getControlModeRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
-    return false; 
+    return false;
 }
 
 bool iCubSimulationControl::getControlModesRaw(int* modes)

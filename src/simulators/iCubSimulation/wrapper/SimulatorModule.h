@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -56,7 +56,7 @@ public:
 
     bool read(yarp::os::ConnectionReader& connection);
 
-    bool respond(const yarp::os::Bottle &command, 
+    bool respond(const yarp::os::Bottle &command,
                  yarp::os::Bottle &reply);
 
     // RobotStreamer interface
@@ -71,31 +71,31 @@ public:
 
     virtual void sendInertial(yarp::os::Bottle& report);
     virtual bool shouldSendInertial();
-    
+
     // whole_body_skin_emul
     virtual void sendSkinEvents(iCub::skinDynLib::skinContactList& skinContactListReport);
     virtual bool shouldSendSkinEvents();
-        
+
     virtual void sendTouchLeftArm(yarp::os::Bottle& report);
     virtual void sendTouchRightArm(yarp::os::Bottle& report);
     virtual bool shouldSendTouchLeftArm();
     virtual bool shouldSendTouchRightArm();
-       
+
     virtual void sendTouchLeftForearm(yarp::os::Bottle& report);
     virtual void sendTouchRightForearm(yarp::os::Bottle& report);
     virtual bool shouldSendTouchLeftForearm();
     virtual bool shouldSendTouchRightForearm();
-       
+
     virtual void sendTouchTorso(yarp::os::Bottle& report);
     virtual bool shouldSendTouchTorso();
-    
+
 private:
 
 #ifndef OMIT_LOGPOLAR
     // wrapper to logpolarTransform, taking into account initialization
-    bool cartToLogPolar(yarp::sig::ImageOf<yarp::sig::PixelRgb> &lp, 
+    bool cartToLogPolar(yarp::sig::ImageOf<yarp::sig::PixelRgb> &lp,
                         const yarp::sig::ImageOf<yarp::sig::PixelRgb> &cart);
-    bool subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst, 
+    bool subsampleFovea(yarp::sig::ImageOf<yarp::sig::PixelRgb>& dst,
                         const yarp::sig::ImageOf<yarp::sig::PixelRgb>& src);
 
     void sendImageFov(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
@@ -138,7 +138,7 @@ private:
     yarp::os::BufferedPort<yarp::os::Bottle> trqLeftLegPort, trqRightLegPort, trqLeftArmPort, trqRightArmPort, trqTorsoPort;
     yarp::os::Port tactileLeftHandPortrpc, tactileRightHandPortrpc;
     //whole_body_skin_emul
-    yarp::os::BufferedPort<iCub::skinDynLib::skinContactList> skinEventsPort;  
+    yarp::os::BufferedPort<iCub::skinDynLib::skinContactList> skinEventsPort;
     yarp::os::BufferedPort<yarp::os::Bottle> tactileLeftArmPort, tactileRightArmPort, tactileLeftForearmPort, tactileRightForearmPort, tactileTorsoPort;
 
     int _argc;

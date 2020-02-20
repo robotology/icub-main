@@ -33,28 +33,28 @@ public:
         bool verbosewhenok;
     }behFlags;
     std::string deviceNameType;
-    
+
     embObjDevPrivData(std::string name);
     ~embObjDevPrivData();
-    
+
     inline  eth::AbstractEthResource* getEthRes()
     {return res;}
-    
+
     inline  eth::TheEthManager* getEthManager()
     {return ethManager;}
-    
+
     inline bool isOpen() {return behFlags.opened;}
     inline void setOpen(bool flag) {behFlags.opened=flag;}
     inline bool isVerbose() {return behFlags.verbosewhenok;}
-    
+
     inline bool NOT_YET_IMPLEMENTED(const char *txt, const char *classname)
     {
         yWarning() << std::string(txt) << " not yet implemented for "<< std::string(classname) << "\n";
         return false;
     };
-    
+
     std::string getBoardInfo(void) const; //This function need to be const
-    
+
     bool prerareEthService(yarp::os::Searchable &config, eth::IethResource *interface);
     void cleanup(eth::IethResource *interface);
 

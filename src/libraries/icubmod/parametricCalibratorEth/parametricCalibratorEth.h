@@ -36,7 +36,7 @@ namespace yarp {
 /**
  * @ingroup icub_calibrators
  * @brief `parametricCalibrator`: implement calibration routines for the iCub arm(s) (version 1.2).
- * 
+ *
  * A calibrator interface implementation for the Arm of the robot iCub.
  */
 class yarp::dev::parametricCalibratorEth : public ICalibrator, public DeviceDriver, public IRemoteCalibrator

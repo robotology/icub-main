@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick
 * email:    paulfitz@alum.mit.edu
@@ -32,30 +32,30 @@ private:
     double last;
     double torque;
 public:
-    FakeLogicalJoint() { 
-        last = yarp::os::Time::now(); 
+    FakeLogicalJoint() {
+        last = yarp::os::Time::now();
         angle = vel = torque = 0;
     }
 
-    virtual double getAngle() { 
+    virtual double getAngle() {
         update();
-        return angle; 
+        return angle;
     }
-    
-    virtual double getVelocity() { 
+
+    virtual double getVelocity() {
         update();
-        return vel; 
+        return vel;
     }
-    
+
     virtual void setControlParameters(double vel, double acc) {
         this->vel = vel;
     }
-    
+
     virtual void setPosition(double target) {
         update();
         vel = (target-angle)*5;
     }
-    
+
     virtual void setVelocity(double target) {
         update();
         vel = target;
@@ -65,7 +65,7 @@ public:
         return true;
     }
 
-    
+
     virtual double getTorque(){
         return true;
     }

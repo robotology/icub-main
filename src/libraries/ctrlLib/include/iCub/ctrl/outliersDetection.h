@@ -10,14 +10,14 @@
 
 /**
  * \defgroup outliersDetection Outliers Detection
- *  
+ *
  * @ingroup ctrlLib
  *
  * Classes for outliers detection.
  *
  * \author Ugo Pattacini
  *
- */ 
+ */
 
 #ifndef __OUTLIERSDETECTION_H__
 #define __OUTLIERSDETECTION_H__
@@ -43,9 +43,9 @@ class OutliersDetection
 {
 public:
     /**
-    * Perform outliers detection over the provided data. 
-    * @param data contains points to be verified. 
-    * @param options contains detection options. 
+    * Perform outliers detection over the provided data.
+    * @param data contains points to be verified.
+    * @param options contains detection options.
     * @return set containing the outliers indexes.
     */
     virtual std::set<size_t> detect(const yarp::sig::Vector &data,
@@ -76,10 +76,10 @@ public:
     ModifiedThompsonTau();
 
     /**
-    * Perform outliers detection over the provided data. \n 
-    * Only one element is considered at a time, unless the 
-    * <i>recursive</i> option is specified. 
-    * @param data contains points to be verified. 
+    * Perform outliers detection over the provided data. \n
+    * Only one element is considered at a time, unless the
+    * <i>recursive</i> option is specified.
+    * @param data contains points to be verified.
     * @param options contains detection options. If the properties
     *                <i>mean</i> and <i>std</i> are provided with
     *                corresponding doubles, then the computation of

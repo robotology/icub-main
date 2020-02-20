@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini, Alessandro Roncone
  * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
@@ -71,7 +71,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     }
     else
         nJointsTorso=3;
-    
+
     IEncoders *encHead; drvHead->view(encHead);
     encHead->getAxes(&nJointsHead);
 
@@ -183,7 +183,7 @@ void Controller::findMinimumAllowedVergence()
         cl(cl.getDOF()-1).setAng(ver/2.0);
         cr(cr.getDOF()-1).setAng(-ver/2.0);
 
-        Vector fp;        
+        Vector fp;
         if (CartesianHelper::computeFixationPointData(cl,cr,fp))
         {
             // impose homogeneous coordinates
@@ -241,7 +241,7 @@ void Controller::motionOngoingEventsHandling()
     {
         double curCheckPoint=*motionOngoingEventsCurrent.begin();
         if (pathPerc>=curCheckPoint)
-        {            
+        {
             notifyEvent("motion-ongoing",curCheckPoint);
             motionOngoingEventsCurrent.erase(curCheckPoint);
         }
@@ -366,7 +366,7 @@ bool Controller::threadInit()
     port_event.open(commData->localStemName+"/events:o");
 
     if (commData->debugInfoEnabled)
-        port_debug.open(commData->localStemName+"/dbg:o");        
+        port_debug.open(commData->localStemName+"/dbg:o");
 
     yInfo("Starting Controller at %d ms",period);
     q_stamp=Time::now();
@@ -415,13 +415,13 @@ Vector Controller::computedxFP(const Matrix &H, const Vector &v,
     Matrix H_=H;
     Vector w_=w;
     w_.push_back(1.0);
-    
+
     H_(0,3)=x_FP[0]-H_(0,3);
     H_(1,3)=x_FP[1]-H_(1,3);
     H_(2,3)=x_FP[2]-H_(2,3);
     Vector dx_FP_pos=v+(w_[0]*cross(H_,0,H_,3)+
                         w_[1]*cross(H_,1,H_,3)+
-                        w_[2]*cross(H_,2,H_,3));    
+                        w_[2]*cross(H_,2,H_,3));
 
     H_(0,3)=H_(1,3)=H_(2,3)=0.0;
     Vector dx_FP_rot=H_*w_;
@@ -439,7 +439,7 @@ Vector Controller::computeNeckVelFromdxFP(const Vector &fp, const Vector &dfp)
     fpR.push_back(1.0);
     Vector fpE=SE3inv(chainNeck->getH())*fpR;
 
-    // compute the Jacobian of the head joints alone 
+    // compute the Jacobian of the head joints alone
     // (by adding the new fixation point beforehand)
     Matrix HN=eye(4,4);
     HN(0,3)=fpE[0];
@@ -608,7 +608,7 @@ bool Controller::setGazeStabilization(const bool f)
             {
                 if (!commData->ctrlActive)
                 {
-                    IntPlan->reset(fbNeck); 
+                    IntPlan->reset(fbNeck);
                     IntStabilizer->reset(zeros((int)vNeck.length()));
                 }
                 notifyEvent("stabilization-on");
@@ -642,7 +642,7 @@ bool Controller::getGazeStabilization() const
 void Controller::run()
 {
     lock_guard<mutex> lg(mutexRun);
-    
+
     mutexCtrl.lock();
     bool jointsHealthy=areJointsHealthyAndSet();
     mutexCtrl.unlock();
@@ -668,7 +668,7 @@ void Controller::run()
             notifyEvent("saccade-done");
     }
     mutexCtrl.unlock();
-    
+
     // get data
     double x_stamp;
     Vector xd=commData->get_xd();
@@ -680,7 +680,7 @@ void Controller::run()
     if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
     {
         yError("Communication timeout detected!");
-        notifyEvent("comm-timeout");        
+        notifyEvent("comm-timeout");
         suspend();
         return;
     }
@@ -701,7 +701,7 @@ void Controller::run()
             chainEyeR->setAng(nJointsTorso+i,fbHead[i]);
         }
 
-        chainEyeL->setAng(nJointsTorso+3,fbHead[3]);               
+        chainEyeL->setAng(nJointsTorso+3,fbHead[3]);
         chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0);
         chainEyeR->setAng(nJointsTorso+3,fbHead[3]);
         chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
@@ -751,11 +751,11 @@ void Controller::run()
             else
             {
                 event="motion-done";
-                mutexCtrl.lock(); 
+                mutexCtrl.lock();
                 stopLimb(false);
                 mutexCtrl.unlock();
             }
-        }        
+        }
     }
     else if (jointsHealthy)
     {
@@ -780,12 +780,12 @@ void Controller::run()
             }
             else
             {
-                mjCtrlNeck->reset(zeros((int)fbNeck.length())); 
+                mjCtrlNeck->reset(zeros((int)fbNeck.length()));
                 mjCtrlEyes->reset(zeros((int)fbEyes.length()));
                 IntStabilizer->reset(zeros((int)vNeck.length()));
                 IntPlan->reset(fbNeck);
             }
-            
+
             reliableGyro=true;
 
             event="motion-onset";
@@ -878,7 +878,7 @@ void Controller::run()
         }
         IntPlan->integrate(vNeck);
     }
-    else 
+    else
     {
         vNeck=0.0;
         vEyes=0.0;
@@ -952,7 +952,7 @@ void Controller::run()
 
     // print info
     if (commData->verbose)
-        printIter(xd,x,qddeg,qdeg,vdeg,1.0); 
+        printIter(xd,x,qddeg,qdeg,vdeg,1.0);
 
     // send x,q through YARP ports
     Vector q(nJointsTorso+nJointsHead);
@@ -1001,9 +1001,9 @@ void Controller::run()
 void Controller::suspend()
 {
     lock_guard<mutex> lg(mutexCtrl);
-    PeriodicThread::suspend();    
+    PeriodicThread::suspend();
     stopLimb();
-    commData->saccadeUnderway=false;    
+    commData->saccadeUnderway=false;
     yInfo("Controller has been suspended!");
     notifyEvent("suspended");
 }
@@ -1015,7 +1015,7 @@ void Controller::resume()
     getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
     fbNeck=fbHead.subVector(0,2);
     fbEyes=fbHead.subVector(3,5);
-    
+
     PeriodicThread::resume();
     yInfo("Controller has been resumed!");
     notifyEvent("resumed");
@@ -1041,7 +1041,7 @@ void Controller::setTneck(const double execTime)
 {
     double lowerThresNeck=eyesTime+0.2;
     if (execTime<lowerThresNeck)
-    {        
+    {
         yWarning("neck execution time is under the lower bound!");
         yWarning("a new neck execution time of %g s is chosen",lowerThresNeck);
         neckTime=lowerThresNeck;
@@ -1056,7 +1056,7 @@ void Controller::setTeyes(const double execTime)
 {
     double lowerThresEyes=10.0*Ts;
     if (execTime<lowerThresEyes)
-    {        
+    {
         yWarning("eyes execution time is under the lower bound!");
         yWarning("a new eyes execution time of %g s is chosen",lowerThresEyes);
         eyesTime=lowerThresEyes;
@@ -1081,7 +1081,7 @@ bool Controller::isMotionDone()
 void Controller::setTrackingMode(const bool f)
 {
     if (commData->trackingModeOn!=f)
-    {        
+    {
         if (f)
             look(commData->get_x());
 
@@ -1094,7 +1094,7 @@ void Controller::setTrackingMode(const bool f)
 
 
 /************************************************************************/
-bool Controller::getTrackingMode() const 
+bool Controller::getTrackingMode() const
 {
     return commData->trackingModeOn;
 }

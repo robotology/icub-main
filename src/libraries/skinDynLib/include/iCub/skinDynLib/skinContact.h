@@ -7,24 +7,24 @@
 
 /**
  * \defgroup skinDynLib skinDynLib
- *  
- * @ingroup icub_libraries 
- *    
+ *
+ * @ingroup icub_libraries
+ *
  * Class representing a contact on the tactile sensor system (skin) of iCub.
- * 
+ *
  * \section intro_sec Description
- * 
+ *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows, Linux
  *
  * \author Andrea Del Prete
- * 
+ *
  * Copyright (C) 2010 RobotCub Consortium
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- * 
- * 
- **/ 
+ *
+ *
+ **/
 
 #ifndef __SKINCONT_H__
 #define __SKINCONT_H__
@@ -41,9 +41,9 @@ namespace iCub
 namespace skinDynLib
 {
 
-/** 
-* @ingroup skinDynLib 
-*  
+/**
+* @ingroup skinDynLib
+*
 * Class representing an external contact acting on the iCub' skin.
 */
 class skinContact : public dynContact
@@ -51,7 +51,7 @@ class skinContact : public dynContact
 protected:
     // id of the skin patch where the contact is applied
     SkinPart skinPart;
-    // average pressure applied on the contact area 
+    // average pressure applied on the contact area
     // (if the skin is not calibrated in pressure this is just the average taxel output)
     double pressure;
     // geometric center of the contact area expressed w.r.t. the reference frame of the link where the contact is applied
@@ -62,7 +62,7 @@ protected:
     unsigned int activeTaxels;
     // list of active taxel ids
     std::vector<unsigned int> taxelList;
-    
+
 public:
     //~~~~~~~~~~~~~~~~~~~~~~
     //   CONSTRUCTORS
@@ -87,7 +87,7 @@ public:
     * @param _activeTaxels number of taxels activated
     * @param _pressure average pressure applied on the contact area
     */
-    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP,
         const yarp::sig::Vector &_geoCenter, unsigned int _activeTaxels, double _pressure);
 
     /**
@@ -100,7 +100,7 @@ public:
     * @param _taxelList list of activated taxels
     * @param _pressure average pressure applied on the contact area
     */
-    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP,
         const yarp::sig::Vector &_geoCenter, std::vector<unsigned int> _taxelList, double _pressure);
 
     /**
@@ -114,7 +114,7 @@ public:
     * @param _pressure average pressure applied on the contact area
     * @param _normalDir contact area normal direction (link reference frame)
     */
-    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP,
         const yarp::sig::Vector &_geoCenter, unsigned int _activeTaxels, double _pressure, const yarp::sig::Vector &_normalDir);
 
     /**
@@ -128,9 +128,9 @@ public:
     * @param _pressure average pressure applied on the contact area
     * @param _normalDir contact area normal direction (link reference frame)
     */
-    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP,
         const yarp::sig::Vector &_geoCenter, std::vector<unsigned int> _taxelList, double _pressure, const yarp::sig::Vector &_normalDir);
-    
+
      /**
     * Constructor with contact surface normal, list of active taxels, direction of contact force, and moment applied at this contact.
     * @param _bodyPart the part of the body
@@ -144,7 +144,7 @@ public:
     * @param _F force applied at contact, expressed in link reference frame
     * @param _Mu the moment applied at this contact, expressed in link reference frame
     */
-    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
+    skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP,
         const yarp::sig::Vector &_geoCenter, std::vector<unsigned int> _taxelList, double _pressure, const yarp::sig::Vector &_normalDir,
     const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
@@ -187,11 +187,11 @@ public:
     * @return the list of taxels' id's
     */
     std::vector<unsigned int>           getTaxelList()          const{ return taxelList; }
-    
-   
+
+
     //~~~~~~~~~~~~~~~~~~~~~~
     //   SET methods
-    //~~~~~~~~~~~~~~~~~~~~~~    
+    //~~~~~~~~~~~~~~~~~~~~~~
     /**
      * Set the geometric center of the contact area (link reference frame).
      * @param _geoCenter a 3-dim vector containing the geometric center of this contact area
@@ -258,17 +258,17 @@ public:
     /**
     * Convert this skinContact to a vector. The size of the vector is 21 plus
     * the number of active taxels. The vector contains this data, in this order:
-    * 0: contactId; 
-    * 1: body part id; 
-    * 2: link number; 
-    * 3: skin part; 
-    * 4-6: center of pressure; 
-    * 7-9: force; 
-    * 10-12: moment; 
-    * 13-15: geometric center; 
-    * 16-18: surface normal direction; 
+    * 0: contactId;
+    * 1: body part id;
+    * 2: link number;
+    * 3: skin part;
+    * 4-6: center of pressure;
+    * 7-9: force;
+    * 10-12: moment;
+    * 13-15: geometric center;
+    * 16-18: surface normal direction;
     * 19: number of active taxels;
-    * 20-?: list of the id's of the activated taxels; 
+    * 20-?: list of the id's of the activated taxels;
     * ?: pressure;
     * @return a Vector representation of this skinContact
     */
@@ -277,17 +277,17 @@ public:
     /**
     * Convert the specified vector into a skinContact. The vector has to contain
     * the following data, in this specific order:
-    * 0: contactId; 
-    * 1: body part id; 
-    * 2: link number; 
-    * 3: skin part; 
-    * 4-6: center of pressure; 
-    * 7-9: force; 
-    * 10-12: moment; 
-    * 13-15: geometric center; 
-    * 16-18: surface normal direction; 
+    * 0: contactId;
+    * 1: body part id;
+    * 2: link number;
+    * 3: skin part;
+    * 4-6: center of pressure;
+    * 7-9: force;
+    * 10-12: moment;
+    * 13-15: geometric center;
+    * 16-18: surface normal direction;
     * 19: number of active taxels;
-    * 20-?: list of the id's of the activated taxels; 
+    * 20-?: list of the id's of the activated taxels;
     * ?: pressure;
     * @param v the vector to convert into a skinContact
     * @return true iff operation succeeded, false otherwise
@@ -300,7 +300,7 @@ public:
      * @return a string representation of this contact
      */
     virtual std::string toString(int precision=-1) const override;
-   
+
 };
 
 

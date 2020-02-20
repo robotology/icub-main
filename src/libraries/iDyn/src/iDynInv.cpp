@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Serena Ivaldi, Matteo Fumagalli
 * email:   serena.ivaldi@iit.it, matteo.fumagalli@iit.it
@@ -49,7 +49,7 @@ OneLinkNewtonEuler::OneLinkNewtonEuler(iDynLink *dlink)
     verbose = NO_VERBOSE;
     info = "link";
     link = dlink;
-    z0.resize(3); z0.zero(); z0(2)=1;   
+    z0.resize(3); z0.zero(); z0(2)=1;
     zm.resize(3); zm.zero();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,13 +59,13 @@ OneLinkNewtonEuler::OneLinkNewtonEuler(const NewEulMode _mode, unsigned int verb
     verbose = verb;
     info = "link";
     link = dlink;
-    z0.resize(3); z0.zero(); z0(2)=1;   
+    z0.resize(3); z0.zero(); z0(2)=1;
     zm.resize(3); zm.zero();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneLinkNewtonEuler::zero()
 {
-    z0.resize(3); z0.zero(); z0(2)=1;   
+    z0.resize(3); z0.zero(); z0(2)=1;
     zm.resize(3); zm.zero();
     if (link != NULL) link->zero();
 }
@@ -107,8 +107,8 @@ bool OneLinkNewtonEuler::setAsFinal(const Vector &_F, const Vector &_Mu)
 bool OneLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const Vector &_ddp)
 {
     zero();
-    setAngVel(_w); 
-    setAngAcc(_dw); 
+    setAngVel(_w);
+    setAngAcc(_dw);
     setLinAcc(_ddp);
     info = "final";
     return true;
@@ -154,7 +154,7 @@ bool OneLinkNewtonEuler::setForce(const Vector &_F)
     {
         if(verbose) fprintf(stderr,"OneLink error, could not set force due to wrong size: %d instead of 3.\n",(int)_F.length());
 
-        return false;       
+        return false;
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -169,7 +169,7 @@ bool OneLinkNewtonEuler::setMoment(const Vector &_Mu)
     {
         if(verbose) fprintf(stderr,"OneLink error, could not set moment due to wrong size: %d instead of 3.\n",(int)_Mu.length());
 
-        return false;       
+        return false;
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -182,7 +182,7 @@ bool OneLinkNewtonEuler::setAngVel(const Vector &_w)
 {
     if(_w.length()==3)
     {
-        link->w = _w; 
+        link->w = _w;
         return true;
     }
     else
@@ -197,7 +197,7 @@ bool OneLinkNewtonEuler::setAngAcc(const Vector &_dw)
 {
     if(_dw.length()==3)
     {
-        link->dw = _dw; 
+        link->dw = _dw;
         return true;
     }
     else
@@ -212,7 +212,7 @@ bool OneLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 {
     if(_ddp.length()==3)
     {
-        link->ddp = _ddp; 
+        link->ddp = _ddp;
         return true;
     }
     else
@@ -227,7 +227,7 @@ bool OneLinkNewtonEuler::setLinAccC(const Vector &_ddpC)
 {
     if(_ddpC.length()==3)
     {
-        link->ddpC = _ddpC; 
+        link->ddpC = _ddpC;
         return true;
     }
     else
@@ -242,7 +242,7 @@ bool OneLinkNewtonEuler::setAngAccM(const Vector &_dwM)
 {
     if(_dwM.length()==3)
     {
-        link->dwM = _dwM; 
+        link->dwM = _dwM;
         return true;
     }
     else
@@ -259,8 +259,8 @@ void OneLinkNewtonEuler::setInfo(const string &_info)
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setMeasuredFMu(const Vector &_F, const Vector &_Mu)
-{   
-    if(link != NULL) 
+{
+    if(link != NULL)
     {
         if((_F.length()==3)&&(_Mu.length()==3))
         {
@@ -272,20 +272,20 @@ bool OneLinkNewtonEuler::setMeasuredFMu(const Vector &_F, const Vector &_Mu)
             if(verbose) fprintf(stderr,"OneLinkNewtonEuler error: could not set forces/moments due to wrong dimensions: (%d,%d) instead of (3,3). \n",(int)_F.length(),(int)_Mu.length());
 
             return false;
-        }       
+        }
     }
-    else        
+    else
     {
         if(verbose) fprintf(stderr,"OneLinkNewtonEuler error: could not set forces/moments due to missing link. \n");
         return false;
     }
-    
+
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setMeasuredTorque(const double _Tau)
 {
-    if(link != NULL) 
+    if(link != NULL)
     {
         link->setTorque(_Tau);
         return true;
@@ -302,10 +302,10 @@ string OneLinkNewtonEuler::toString() const
 {
     string ret = "[Link/frame]: " + info + " [Mode]: " + NewEulMode_s[mode];
 
-    char buffer[300]; int j=0;        
+    char buffer[300]; int j=0;
     j=sprintf(buffer," [Torque]: %f",link->Tau);
     j+=sprintf(buffer+j," [Force]: %.3f,%.3f,%.3f",link->F(0),link->F(1),link->F(2));
-    j+=sprintf(buffer+j," [Moment]: %.3f,%.3f,%.3f",link->Mu(0),link->Mu(1),link->Mu(2));   
+    j+=sprintf(buffer+j," [Moment]: %.3f,%.3f,%.3f",link->Mu(0),link->Mu(1),link->Mu(2));
     if(verbose)
     {
         j+=sprintf(buffer+j," [mass]: %.3f",link->m);
@@ -377,7 +377,7 @@ const Matrix&   OneLinkNewtonEuler::getInertia()const       { return link->getIn
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const Vector&   OneLinkNewtonEuler::getr(bool proj)         { return link->getr(proj);}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const Vector&   OneLinkNewtonEuler::getrC(bool proj)        { return link->getrC(proj);} 
+const Vector&   OneLinkNewtonEuler::getrC(bool proj)        { return link->getrC(proj);}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
      //~~~~~~~~~~~~~~~~~~~~~~
@@ -528,8 +528,8 @@ void OneLinkNewtonEuler::computeLinAccBackward(OneLinkNewtonEuler *next)
             temp -= cross(next->getAngAcc(), r);
             temp -= cross(next->getAngVel(), cross(next->getAngVel(), r));
             setLinAcc(R*temp);
-            /*setLinAcc(R * (next->getLinAcc() 
-                - cross(next->getAngAcc(), r) 
+            /*setLinAcc(R * (next->getLinAcc()
+                - cross(next->getAngAcc(), r)
                 - cross(next->getAngVel(), cross(next->getAngVel(), r)) ));*/
             break;
         }
@@ -573,7 +573,7 @@ void OneLinkNewtonEuler::computeAngAccM(OneLinkNewtonEuler *prev)
             + (getKr() * getDq()) * cross(prev->getAngVel(),zm) );
         break;
     case STATIC:
-        setAngAccM(zeros(3)); 
+        setAngAccM(zeros(3));
         break;
     }
 }
@@ -608,19 +608,19 @@ void OneLinkNewtonEuler::computeMomentBackward(OneLinkNewtonEuler *next)
             temp += next->getInertia() * next->getAngAcc();
             temp += cross( next->getAngVel() , next->getInertia() * next->getAngVel());
             setMoment(Rn*temp);
-            /*setMoment( Rn * ( cross(rnp , next->getForce()) 
+            /*setMoment( Rn * ( cross(rnp , next->getForce())
                             + cross(rnp + next->getrC() , next->getMass() * next->getLinAccC())
                             + next->getMoment(false)
-                            + next->getInertia() * next->getAngAcc() 
+                            + next->getInertia() * next->getAngAcc()
                             + cross( next->getAngVel() , next->getInertia() * next->getAngVel()))
                     );*/
             break;
         }
     case DYNAMIC_W_ROTOR:
-        setMoment( Rn * ( cross(rnp , next->getForce()) 
+        setMoment( Rn * ( cross(rnp , next->getForce())
                     + cross(rnp + next->getrC() , next->getMass() * next->getLinAccC())
                     + next->getMoment(false)
-                    + next->getInertia() * next->getAngAcc() 
+                    + next->getInertia() * next->getAngAcc()
                     + cross( next->getAngVel() , next->getInertia() * next->getAngVel()))
             + next->getKr() * next->getD2q() * next->getIm() * next->getZM()
             + next->getKr() * next->getDq() * next->getIm() * cross(next->getAngVel(),next->getZM()) );
@@ -631,7 +631,7 @@ void OneLinkNewtonEuler::computeMomentBackward(OneLinkNewtonEuler *next)
             temp += cross(rnp + next->getrC() , next->getMass() * next->getLinAccC());
             temp += next->getMoment(false);
             setMoment(Rn*temp);
-            /*setMoment( Rn * ( cross(rnp , next->getForce()) 
+            /*setMoment( Rn * ( cross(rnp , next->getForce())
                         + cross(rnp + next->getrC() , next->getMass() * next->getLinAccC())
                         + next->getMoment(false)));*/
             break;
@@ -705,9 +705,9 @@ void OneLinkNewtonEuler::computeTorque(OneLinkNewtonEuler *prev)
         setTorque(prev->getMoment(true)[2]);
         break;
     case DYNAMIC_W_ROTOR:
-        setTorque(prev->getMoment(true)[2] + getKr() * getIm() * dot(getAngAccM(),zm) 
+        setTorque(prev->getMoment(true)[2] + getKr() * getIm() * dot(getAngAccM(),zm)
                     + getFv() * getDq() + getFs() * sign(getDq()));
-        break;      
+        break;
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -798,7 +798,7 @@ BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const Vector &_w, co
     F.resize(3);    F.zero();
     Mu.resize(3);   Mu.zero();
     Tau = 0.0;
-    setAsBase(_w,_dw,_ddp);         
+    setAsBase(_w,_dw,_ddp);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool BaseLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const Vector &_ddp)
@@ -815,7 +815,7 @@ bool BaseLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const V
         w.resize(3);    w.zero();
         dw.resize(3);   dw.zero();
         ddp.resize(3);  ddp.zero();
-    
+
         if(verbose)
         {
             fprintf(stderr,"BaseLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: (%d,%d,%d) instead of (3,3,3). ",(int)_w.length(),(int)_dw.length(),(int)_ddp.length());
@@ -838,7 +838,7 @@ bool BaseLinkNewtonEuler::setAsBase(const Vector &_F, const Vector &_Mu)
     {
         F.resize(3);    F.zero();
         Mu.resize(3);   Mu.zero();
-    
+
         if(verbose)
         {
             fprintf(stderr,"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3).",(int)_F.length(),(int)_Mu.length());
@@ -853,7 +853,7 @@ string BaseLinkNewtonEuler::toString() const
 {
     string ret = "[Base link]: " + info + " [Mode]: " + NewEulMode_s[mode];
 
-    char buffer[300]; int j=0;        
+    char buffer[300]; int j=0;
     if(verbose)
     {
         j=sprintf(buffer," [w]  : %.3f,%.3f,%.3f",w(0),w(1),w(2));
@@ -881,10 +881,10 @@ const Vector&   BaseLinkNewtonEuler::getLinAcc()        const   {return ddp; }
 const Vector&   BaseLinkNewtonEuler::getLinAccC()       const   {return getLinAcc();}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const Vector&   BaseLinkNewtonEuler::getForce() const   {return F;}
-const Vector&   BaseLinkNewtonEuler::getMoment(bool isBase) const   
-{ 
-    if(isBase==false) 
-        return Mu; 
+const Vector&   BaseLinkNewtonEuler::getMoment(bool isBase) const
+{
+    if(isBase==false)
+        return Mu;
     return Mu0;
 }
 double  BaseLinkNewtonEuler::getTorque()const   {return Tau;}
@@ -901,7 +901,7 @@ const Matrix&   BaseLinkNewtonEuler::getInertia()const  {return zeros3x3;}
 const Vector&   BaseLinkNewtonEuler::getr(bool proj) {return zeros3;}
 const Vector&   BaseLinkNewtonEuler::getrC(bool proj){return zeros3;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool BaseLinkNewtonEuler::setForce(const Vector &_F)    
+bool BaseLinkNewtonEuler::setForce(const Vector &_F)
 {
     if(_F.length()==3)
     {
@@ -917,7 +917,7 @@ bool BaseLinkNewtonEuler::setForce(const Vector &_F)
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool BaseLinkNewtonEuler::setMoment(const Vector &_Mu)  
+bool BaseLinkNewtonEuler::setMoment(const Vector &_Mu)
 {
     if(_Mu.length()==3)
     {
@@ -940,7 +940,7 @@ bool BaseLinkNewtonEuler::setAngVel(const Vector &_w)
 {
     if(_w.length()==3)
     {
-        w = H0.submatrix(0,2,0,2).transposed()*_w; 
+        w = H0.submatrix(0,2,0,2).transposed()*_w;
         return true;
     }
     else
@@ -956,7 +956,7 @@ bool BaseLinkNewtonEuler::setAngAcc(const Vector &_dw)
 {
     if(_dw.length()==3)
     {
-        dw = H0.submatrix(0,2,0,2).transposed()*_dw; 
+        dw = H0.submatrix(0,2,0,2).transposed()*_dw;
         return true;
     }
     else
@@ -972,7 +972,7 @@ bool BaseLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 {
     if(_ddp.length()==3)
     {
-        ddp = H0.submatrix(0,2,0,2).transposed()*_ddp; 
+        ddp = H0.submatrix(0,2,0,2).transposed()*_ddp;
         return true;
     }
     else
@@ -1065,7 +1065,7 @@ bool FinalLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const
         w.resize(3);    w.zero();
         dw.resize(3);   dw.zero();
         ddp.resize(3);  ddp.zero();
-    
+
         if(verbose)
         {
             fprintf(stderr,"FinalLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: (%d,%d,%d) instead of (3,3,3).",(int)_w.length(),(int)_dw.length(),(int)_ddp.length());
@@ -1089,7 +1089,7 @@ bool FinalLinkNewtonEuler::setAsFinal(const Vector &_F, const Vector &_Mu)
     {
         F.resize(3);    F.zero();
         Mu.resize(3);   Mu.zero();
-    
+
         if(verbose)
         {
             fprintf(stderr,"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3).",(int)_F.length(),(int)_Mu.length());
@@ -1104,7 +1104,7 @@ string FinalLinkNewtonEuler::toString() const
 {
     string ret = "[Final link]: " + info + " [Mode]: " + NewEulMode_s[mode];
 
-    char buffer[300]; int j=0;        
+    char buffer[300]; int j=0;
     if(verbose)
     {
         j=sprintf(   buffer," [F]  : %.3f,%.3f,%.3f",F(0),F(1),F(2));
@@ -1131,7 +1131,7 @@ const Vector&   FinalLinkNewtonEuler::getLinAcc()   const   {return ddp;}
 const Vector&   FinalLinkNewtonEuler::getLinAccC()  const   {return zeros3;}
 double  FinalLinkNewtonEuler::getTorque()   const   {return 0.0;}
 const Matrix&   FinalLinkNewtonEuler::getH()                {return eye4x4;}
-const Matrix&   FinalLinkNewtonEuler::getR()                {return eye3x3;}    
+const Matrix&   FinalLinkNewtonEuler::getR()                {return eye3x3;}
 const Matrix&   FinalLinkNewtonEuler::getRC()               {return eye3x3;}
 double  FinalLinkNewtonEuler::getIm()       const   {return 0.0;}
 double  FinalLinkNewtonEuler::getFs()       const   {return 0.0;}
@@ -1238,7 +1238,7 @@ SensorLinkNewtonEuler::SensorLinkNewtonEuler(const NewEulMode _mode, unsigned in
     ddpC.resize(3); ddpC.zero();
     H.resize(4,4); H.eye();
     COM.resize(4,4); COM.eye();
-    R = RC = eye(3,3); 
+    R = RC = eye(3,3);
     r = rc = r_proj = rc_proj = zeros(3);
     I.resize(3,3); I.zero();
     m=0.0;
@@ -1269,7 +1269,7 @@ bool SensorLinkNewtonEuler::setMeasuredFMu(const Vector &_F, const Vector &_Mu)
     {
         F.resize(3);    F.zero();
         Mu.resize(3);   Mu.zero();
-    
+
         if(verbose)
             fprintf(stderr,"SensorLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3). Default zero is set.\n",(int)_F.length(),(int)_Mu.length());
 
@@ -1292,7 +1292,7 @@ bool SensorLinkNewtonEuler::setSensor(const Matrix &_H, const Matrix &_COM, cons
         m = _m;
         H.resize(4,4); H.eye();
         COM.resize(4,4); COM.eye();
-        R = RC = eye(3,3); 
+        R = RC = eye(3,3);
         r = rc = r_proj = rc_proj = zeros(3);
         I.resize(3,3); I.zero();
         if(verbose)
@@ -1311,7 +1311,7 @@ string SensorLinkNewtonEuler::toString() const
 {
     string ret = "[Sensor link]: " + info + " [Mode]: " + NewEulMode_s[mode];
 
-    char buffer[300]; int j=0;        
+    char buffer[300]; int j=0;
     if(verbose)
     {
         j=sprintf(   buffer," [F]  : %.3f,%.3f,%.3f",F(0),F(1),F(2));
@@ -1369,14 +1369,14 @@ const Matrix&   SensorLinkNewtonEuler::getR()               { return R;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 const Matrix&   SensorLinkNewtonEuler::getRC()              { return RC;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const Vector&   SensorLinkNewtonEuler::getr(bool proj)      
+const Vector&   SensorLinkNewtonEuler::getr(bool proj)
 {
     if(proj==false)
         return r;
     return r_proj;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const Vector&   SensorLinkNewtonEuler::getrC(bool proj) 
+const Vector&   SensorLinkNewtonEuler::getrC(bool proj)
 {
     if(proj==false)
         return rc;
@@ -1431,7 +1431,7 @@ bool    SensorLinkNewtonEuler::setAngVel    (const Vector &_w)
 {
     if(_w.length()==3)
     {
-        w = _w; 
+        w = _w;
         return true;
     }
     else
@@ -1447,7 +1447,7 @@ bool    SensorLinkNewtonEuler::setAngAcc    (const Vector &_dw)
 {
     if(_dw.length()==3)
     {
-        dw = _dw; 
+        dw = _dw;
         return true;
     }
     else
@@ -1463,7 +1463,7 @@ bool    SensorLinkNewtonEuler::setLinAcc    (const Vector &_ddp)
 {
     if(_ddp.length()==3)
     {
-        ddp = _ddp; 
+        ddp = _ddp;
         return true;
     }
     else
@@ -1479,7 +1479,7 @@ bool    SensorLinkNewtonEuler::setLinAccC   (const Vector &_ddpC)
 {
     if(_ddpC.length()==3)
     {
-        ddpC = _ddpC; 
+        ddpC = _ddpC;
         return true;
     }
     else
@@ -1524,7 +1524,7 @@ void SensorLinkNewtonEuler::computeLinAcc( iDynLink *link)
         ddp = link->getLinAcc() * R;
         ddp += cross(dw, r_proj);
         ddp += cross(w, cross(w, r_proj));
-        /*ddp = getR().transposed() * link->getLinAcc() 
+        /*ddp = getR().transposed() * link->getLinAcc()
             - cross(dw,getr(true))
             - cross(w,cross(w,getr(true)));*/
         break;
@@ -1582,7 +1582,7 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
             link->setMoment(R*temp);
             /*link->setMoment( getR()*( Mu + cross(getr(true),getR().transposed()*link->getForce())
                 - cross(getrC(),(m * getLinAccC()))
-                - getInertia() * getR().transposed() * getAngAcc() 
+                - getInertia() * getR().transposed() * getAngAcc()
                 - cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel())
                 ));*/
             break;
@@ -1590,7 +1590,7 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
     case DYNAMIC_W_ROTOR:
         link->setMoment( getR()*( Mu + cross(getr(true),getR().transposed()*link->getForce())
             - cross(getrC(),(m * getLinAccC()))
-            - getInertia() * getAngAcc() 
+            - getInertia() * getAngAcc()
             - cross( getAngVel() , getInertia() * getAngVel())
             - link->getKr() * link->getD2Ang() * link->getIm() * getZM()
             - link->getKr() * link->getDAng() * link->getIm() * cross(getAngVel(),getZM())
@@ -1602,7 +1602,7 @@ void SensorLinkNewtonEuler::computeMomentToLink( iDynLink *link)
             temp += cross(r_proj, link->getForce()*R);
             temp -= cross(rc, m*ddpC);
             link->setMoment(R*temp);
-            /*link->setMoment( getR() * ( Mu + cross(getr(true),getR().transposed()*link->getForce()) )         
+            /*link->setMoment( getR() * ( Mu + cross(getr(true),getR().transposed()*link->getForce()) )
                 - cross(getrC(), m*getLinAccC()) );*/
             break;
         }
@@ -1621,16 +1621,16 @@ void SensorLinkNewtonEuler::computeMoment(iDynLink *link)
             Mu += I * (dw);
             Mu += cross( w , I*(w));
             /*Mu = cross(getrC(),(m * getLinAccC()))
-                - cross(getr(true),getR().transposed()*link->getForce()) 
+                - cross(getr(true),getR().transposed()*link->getForce())
                 + getR().transposed() * link->getMoment()
-                + getInertia() * getR().transposed() * getAngAcc() 
+                + getInertia() * getR().transposed() * getAngAcc()
                 + cross( getR().transposed() * getAngVel() , getInertia() * getR().transposed() * getAngVel());*/
             break;
     case DYNAMIC_W_ROTOR:
-    Mu =    cross(getrC(),(m * getLinAccC()))  
-            - cross(getr(true),getR().transposed()*link->getForce()) 
+    Mu =    cross(getrC(),(m * getLinAccC()))
+            - cross(getr(true),getR().transposed()*link->getForce())
             + getR().transposed() * link->getMoment()
-            + getInertia() *  getAngAcc() 
+            + getInertia() *  getAngAcc()
             + cross( getAngVel() , getInertia() * getAngVel())
             + link->getKr() * link->getD2Ang() * link->getIm() * getZM()
             + link->getKr() * link->getDAng() * link->getIm() * cross(getAngVel(),getZM()) ;
@@ -1640,8 +1640,8 @@ void SensorLinkNewtonEuler::computeMoment(iDynLink *link)
         Mu = cross(rc, m*ddpC);
         Mu -= cross(r_proj, link->getForce()*R);
         Mu += link->getMoment()*R;
-        /*Mu = cross(getrC(), m*getLinAccC()) 
-            - cross(getr(true),getR().transposed()*link->getForce()) 
+        /*Mu = cross(getrC(), m*getLinAccC())
+            - cross(getr(true),getR().transposed()*link->getForce())
             + getR().transposed() * link->getMoment();*/
         break;
     }
@@ -1655,7 +1655,7 @@ Vector SensorLinkNewtonEuler::getForceMoment() const
     return cat(F, Mu);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string SensorLinkNewtonEuler::getType() const 
+string SensorLinkNewtonEuler::getType() const
 {
     return "no type for the basic sensor - only iCub sensors have type";
 }
@@ -1676,7 +1676,7 @@ OneChainNewtonEuler::OneChainNewtonEuler(iDynChain *_c, string _info, const NewE
     chain = _c;
 
     string descript;
-    char buffer[100]; int j=0;        
+    char buffer[100]; int j=0;
 
     mode = _mode;
     verbose = verb;
@@ -1690,11 +1690,11 @@ OneChainNewtonEuler::OneChainNewtonEuler(iDynChain *_c, string _info, const NewE
 
     //first the base frame, for the forward - insertion as first
     neChain[0] = new BaseLinkNewtonEuler(chain->getH0(),mode,verbose);
-        
+
     //then the link frames (the true ones)
     for(unsigned int i=0; i<nLinks; i++)
-    {   
-        //OneLinkNewtonEuler * tmp 
+    {
+        //OneLinkNewtonEuler * tmp
         neChain[i+1] = new OneLinkNewtonEuler(mode,verbose,chain->refLink(i));
         //insertion in the chain
         descript.clear();
@@ -1796,21 +1796,21 @@ void OneChainNewtonEuler::getWrenchEnd(Vector &F, Vector &Mu) const
     //~~~~~~~~~~~~~~~~~~~~~~
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneChainNewtonEuler::setVerbose(unsigned int verb)                 
+void OneChainNewtonEuler::setVerbose(unsigned int verb)
 {
     verbose=verb;
     for(unsigned int i=0;i<=nEndEff;i++)
         neChain[i]->setVerbose(verb);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneChainNewtonEuler::setMode(const NewEulMode _mode)       
+void OneChainNewtonEuler::setMode(const NewEulMode _mode)
 {
     mode=_mode;
     for(unsigned int i=0;i<=nEndEff;i++)
         neChain[i]->setMode(_mode);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void OneChainNewtonEuler::setInfo(const string _info)           
+void OneChainNewtonEuler::setInfo(const string _info)
 {
     info=_info;
 }
@@ -1861,7 +1861,7 @@ void OneChainNewtonEuler::ForwardKinematicFromBase(const Vector &_w, const Vecto
     //set initial values on the base frame
     neChain[0]->setAsBase(_w,_dw,_ddp);
     //finally forward
-    ForwardKinematicFromBase(); 
+    ForwardKinematicFromBase();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::BackwardKinematicFromEnd()
@@ -1877,11 +1877,11 @@ void OneChainNewtonEuler::BackwardKinematicFromEnd(const Vector &_w, const Vecto
     //set initial values on the base frame
     neChain[nEndEff]->setAsFinal(_w,_dw,_ddp);
     //finally forward
-    BackwardKinematicFromEnd(); 
+    BackwardKinematicFromEnd();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::BackwardWrenchFromEnd()
-{    
+{
     for(int i=nEndEff-1; i>=0; i--)
         neChain[i]->BackwardWrench(neChain[i+1]);
 
@@ -1898,7 +1898,7 @@ void OneChainNewtonEuler::computeTorques()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void OneChainNewtonEuler::BackwardWrenchFromEnd(const Vector &F, const Vector &Mu)
 {
-    
+
     //set initial values on the end-effector frame
     neChain[nEndEff]->setAsFinal(F,Mu);
     //then backward
@@ -1958,7 +1958,7 @@ bool OneChainNewtonEuler::BackwardWrenchToBase(unsigned int lSens)
             neChain[i]->BackwardWrench(neChain[i+1]);
         }
         // now we can compute all torques
-        // we also compute the one of the sensor link, since we needed the 
+        // we also compute the one of the sensor link, since we needed the
         // previous link done
         for(int i=lSens+1; i>0; i--)
             neChain[i]->computeTorque(neChain[i-1]);
@@ -1971,7 +1971,7 @@ bool OneChainNewtonEuler::BackwardWrenchToBase(unsigned int lSens)
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//      new methods for contact 
+//      new methods for contact
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneChainNewtonEuler::ForwardWrenchFromAtoB(unsigned int lA, unsigned int lB)
 {
@@ -1982,7 +1982,7 @@ bool OneChainNewtonEuler::ForwardWrenchFromAtoB(unsigned int lA, unsigned int lB
         for(unsigned int i=lA+1; i<=lB+1; i++){
             // the torques are automatically computed inside the "ForwardWrench" method
             neChain[i]->ForwardWrench(neChain[i-1]);
-        }        
+        }
         return true;
     }
     else
@@ -2002,7 +2002,7 @@ bool OneChainNewtonEuler::BackwardWrenchFromAtoB(unsigned int lA, unsigned int l
         for(int i=lA+1; i>=(int)(lB+1); i--){
             neChain[i]->BackwardWrench(neChain[i+1]);
         }
-        
+
         // Del Prete: now we can compute all torques
         for(int i=lA+2; i>=(int)(lB+2); i--)
             neChain[i]->computeTorque(neChain[i-1]);
@@ -2077,7 +2077,7 @@ bool iDynInvSensor::setSensor(unsigned int i, const Matrix &_H, const Matrix &_H
             return true;
         }
         else
-            return sens->setSensor(_H,_HC,_m,_I); 
+            return sens->setSensor(_H,_HC,_m,_I);
     }
     else
     {
@@ -2105,7 +2105,7 @@ void iDynInvSensor::computeSensorForceMoment()
     {
         sens->ForwardAttachToLink(chain->refLink(lSens));
         sens->BackwardAttachToLink(chain->refLink(lSens));
-    
+
         //if there's a contact in the link hosting the sensor
         // another function must be done!
     }
@@ -2115,7 +2115,7 @@ void iDynInvSensor::computeSensorForceMoment()
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector  iDynInvSensor::getSensorForce() const   
+Vector  iDynInvSensor::getSensorForce() const
 {
     if(sens != NULL)
         return sens->getForce();
@@ -2127,9 +2127,9 @@ Vector  iDynInvSensor::getSensorForce() const
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector  iDynInvSensor::getSensorMoment()const   
+Vector  iDynInvSensor::getSensorMoment()const
 {
-    if(sens != NULL)    
+    if(sens != NULL)
         return sens->getMoment(false);
     else
     {
@@ -2139,7 +2139,7 @@ Vector  iDynInvSensor::getSensorMoment()const
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynInvSensor::getTorques()      const   
+Vector iDynInvSensor::getTorques()      const
 {
     return chain->getTorques();
 }
@@ -2194,9 +2194,9 @@ bool iDynInvSensor::setDynamicParameters(const double _m, const yarp::sig::Matri
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iDynInvSensor::getInfo()                 const   {return info;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix iDynInvSensor::getH()                    const   
+Matrix iDynInvSensor::getH()                    const
 {
-    if(sens != NULL) 
+    if(sens != NULL)
         return sens->getH();
     else
     {
@@ -2250,9 +2250,9 @@ Matrix iDynInvSensor::getInertia()                  const
 
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-string iDynInvSensor::getSensorInfo()           const   
+string iDynInvSensor::getSensorInfo()           const
 {
-    if(sens != NULL) 
+    if(sens != NULL)
         return sens->getInfo();
     else
     {
@@ -2262,10 +2262,10 @@ string iDynInvSensor::getSensorInfo()           const
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynInvSensor::getSensorForceMoment()    const   
+Vector iDynInvSensor::getSensorForceMoment()    const
 {
-    if(sens != NULL) 
-        return sens->getForceMoment(); 
+    if(sens != NULL)
+        return sens->getForceMoment();
     else
     {
         if(verbose)
@@ -2289,19 +2289,19 @@ iCubArmSensorLink::iCubArmSensorLink(const string &_type, const NewEulMode _mode
 :SensorLinkNewtonEuler(_mode,verb)
 {
     // the arm type determines the sensor properties
-    type = _type;   
+    type = _type;
     //now setting inertia, mass and COM specifically for each link
     H.resize(4,4); COM.resize(4,4); I.resize(3,3);
     if(type=="left")
     {
         H.zero(); H(0,0) = 1.0; H(2,1) = 1.0; H(1,2) = -1.0; H(1,3) = 0.08428; H(3,3) = 1.0;
-        COM.eye(); COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2; 
+        COM.eye(); COM(0,3) = -1.56e-04; COM(1,3) = -9.87e-05;  COM(2,3) = 2.98e-2;
         I.zero(); I(0,0) = 4.08e-04; I(0,1) = I(1,0) = -1.08e-6; I(0,2) = I(2,0) = -2.29e-6;
         I(1,1) = 3.80e-04; I(1,2) = I(2,1) =  3.57e-6; I(2,2) = 2.60e-4;
-        m = 7.2784301e-01; 
+        m = 7.2784301e-01;
     }
     else
-    { 
+    {
         if(!(type =="right"))
         {
             if(verbose)
@@ -2323,7 +2323,7 @@ iCubArmSensorLink::iCubArmSensorLink(const string &_type, const NewEulMode _mode
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iCubArmSensorLink::getType() const
-{ 
+{
     return type;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2382,7 +2382,7 @@ iDynInvSensorArm::iDynInvSensorArm(iDynChain *_c, const string _type, const NewE
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iDynInvSensorArm::getType() const
-{ 
+{
     return sens->getType();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2445,7 +2445,7 @@ iDynInvSensorArmNoTorso::iDynInvSensorArmNoTorso(iDynChain *_c, const string _ty
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iDynInvSensorArmNoTorso::getType() const
-{ 
+{
     return sens->getType();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2468,12 +2468,12 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
     {
         H.zero(); H(0,1) = -1.0; H(1,0) = -1.0; H(2,2) = -1.0; H(2,3) = -0.0665; H(3,3) = 1.0;
         COM.zero();
-        I.zero(); 
-        
+        I.zero();
+
         m = 0.0;
     }
     else
-    { 
+    {
         if(!(type =="right"))
         {
             if(verbose)
@@ -2481,11 +2481,11 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
             type = "right";
         }
 
-        
+
         H.zero(); H(0,1) = 1.0; H(1,0) = -1.0; H(2,2) = 1.0; H(2,3) = 0.0665; H(3,3) = 1.0;
-        COM.zero(); 
-        I.zero(); 
-        
+        COM.zero();
+        I.zero();
+
         m = 0.0;
     }
     R = H.submatrix(0,2,0,2); r = H.subcol(0,3,3); r_proj = r*R;
@@ -2496,7 +2496,7 @@ iCubLegSensorLink::iCubLegSensorLink(const string _type, const NewEulMode _mode,
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iCubLegSensorLink::getType() const
-{ 
+{
     return type;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2556,7 +2556,7 @@ iDynInvSensorLeg::iDynInvSensorLeg(iDynChain *_c, const string _type, const NewE
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iDynInvSensorLeg::getType() const
-{ 
+{
     return sens->getType();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2587,7 +2587,7 @@ bool iDynSensor::setSensorMeasures(const Vector &F, const Vector &Mu)
 bool iDynSensor::setSensorMeasures(const Vector &FM)
 {
     if(FM.length()==6)
-    { 
+    {
         Vector f(3); f[0]=FM[0];f[1]=FM[1];f[2]=FM[2];
         Vector m(3); m[0]=FM[3];m[1]=FM[4];m[2]=FM[5];
         return sens->setMeasuredFMu(f,m);
@@ -2612,7 +2612,7 @@ void iDynSensor::computeFromSensorNewtonEuler()
 {
     //first forward all the quantities w,dw,.. in the chain
     //just in case it was not initialized before
-    if(chain->NE == NULL)       
+    if(chain->NE == NULL)
     {
         chain->prepareNewtonEuler(mode);
         chain->initNewtonEuler();
@@ -2621,7 +2621,7 @@ void iDynSensor::computeFromSensorNewtonEuler()
     //setting w,dw,ddp,ddpC
     chain->computeKinematicNewtonEuler();
     sens->ForwardAttachToLink(chain->refLink(lSens));
-    //the sensor does not need to retrieve w,dw,ddp,ddpC in this case 
+    //the sensor does not need to retrieve w,dw,ddp,ddpC in this case
     //then propagate forces and moments
     //from sensor to lSens
     sens->ForwardForcesMomentsToLink(chain->refLink(lSens));
@@ -2728,7 +2728,7 @@ iDynSensorArm::iDynSensorArm(iCubArmDyn *_c, const NewEulMode _mode, unsigned in
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iDynSensorArm::getType() const
-{ 
+{
     return sens->getType();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2768,7 +2768,7 @@ iDynSensorArmNoTorso::iDynSensorArmNoTorso(iCubArmNoTorsoDyn *_c, const NewEulMo
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iDynSensorArmNoTorso::getType() const
-{ 
+{
     return sens->getType();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2808,7 +2808,7 @@ iDynSensorLeg::iDynSensorLeg(iCubLegDyn *_c, const NewEulMode _mode, unsigned in
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string iDynSensorLeg::getType() const
-{ 
+{
     return sens->getType();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

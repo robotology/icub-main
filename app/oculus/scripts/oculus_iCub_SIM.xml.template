@@ -1,15 +1,15 @@
 <application>
 <name>Oculus iCub_SIM</name>
 <dependencies>
-</dependencies> 
+</dependencies>
 <module>
   <name>camCalibWithPose</name>
-  <parameters>--context cameraCalibration --from icubSimEyes_640x480.ini --group CAMERA_CALIBRATION_LEFT --name /icubSim/camcalibPose/left</parameters>  
+  <parameters>--context cameraCalibration --from icubSimEyes_640x480.ini --group CAMERA_CALIBRATION_LEFT --name /icubSim/camcalibPose/left</parameters>
   <node>localhost</node>
 </module>
 <module>
   <name>camCalibWithPose</name>
-  <parameters>--context cameraCalibration --from icubSimEyes_640x480.ini --group CAMERA_CALIBRATION_RIGHT --name /icubSim/camcalibPose/right</parameters> 
+  <parameters>--context cameraCalibration --from icubSimEyes_640x480.ini --group CAMERA_CALIBRATION_RIGHT --name /icubSim/camcalibPose/right</parameters>
   <node>localhost</node>
 </module>
 <module>
@@ -24,12 +24,12 @@
 </module>
 <module>
   <name>positionDirectControl</name>
-  <parameters>--robot icubSim --part head --joints "(0 1 2)"</parameters> 
+  <parameters>--robot icubSim --part head --joints "(0 1 2)"</parameters>
   <node>/iitrbcsws120</node>
 </module>
 <module>
   <name>yarpdev</name>
-  <parameters>--device ovrheadset --hfov 105 --w 960 --h 720 --imagepose</parameters> 
+  <parameters>--device ovrheadset --hfov 105 --w 960 --h 720 --imagepose</parameters>
   <node>/iitrbcsws120</node>
 </module>
 <connection>

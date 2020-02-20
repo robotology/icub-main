@@ -47,18 +47,18 @@
     <to>/skinManGuiRight/info:i</to>
     <protocol>tcp</protocol>
   </connection>
-  
+
   <connection>
     <from>/diagnostics/skin/errors:o</from>
     <to>/skinManager/diagnostics/skin/errors:i</to>
     <protocol>tcp</protocol>
-  </connection>  
+  </connection>
   <connection>
     <from>/skinManager/diagnostics/skin/errors:o</from>
     <to>/skinManagerGui/diagnostics/skin/errors:i</to>
     <protocol>tcp</protocol>
   </connection>
-    
+
   <connection>
     <from>/icub/skin/right_hand_comp</from>
     <to>/skinGui/right_hand:i</to>

@@ -11,7 +11,7 @@ IF (NOT SKIP_fakecan)
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
     yarp_add_plugin(fcan fakeCan.cpp fakeBoard.cpp fakeCan.h fakeBoard.h fbCanBusMessage.h msgList.h)
     target_link_libraries(fcan ${YARP_LIBRARIES})
-    
+
     icub_export_plugin(fcan)
 
   yarp_install(TARGETS fcan

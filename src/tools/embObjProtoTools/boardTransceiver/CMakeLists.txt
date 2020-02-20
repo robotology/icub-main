@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-# Name of the project must correspond to the class name that needs to be 
+# Name of the project must correspond to the class name that needs to be
 # instantiated by the factory - so embObjLib is not ok
 SET(PROJECTNAME boardTransceiver)
 PROJECT(${PROJECTNAME})
@@ -30,17 +30,17 @@ add_definitions(-D_ICUB_CALLBACK_ -DUSE_EOPROT_XML -DEOPROT_CFG_OVERRIDE_CALLBAC
 include(${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/embObjLib.cmake)
 # Debug messages
 
-    
+
 # get all files needed, collected in different lists for better organization and handling
 
 # Common, architecture independent
 
 
-set(NVS_CBK_SOURCE          
+set(NVS_CBK_SOURCE
                             board_protocol_callback.c
-                            
-                            
-                            
+
+
+
                             )
 
 
@@ -57,14 +57,14 @@ set(DEMO_BOARD_HEADER       boardTransceiver.hpp
 
 SOURCE_GROUP("EmbObj Source Files" FILES ${DEMO_BOARD_SOURCE})
 SOURCE_GROUP("EmbObj Header Files" FILES ${DEMO_BOARD_HEADER})
-  
-include_directories(   
+
+include_directories(
                             ${CMAKE_CURRENT_SOURCE_DIR}
                             ${embObj_includes}
                             ${iCubDev_INCLUDE_DIRS}
                             ${icub_firmware_shared_embobj_INCLUDE_DIR}
                             )
-  
+
 add_executable(${PROJECTNAME}       ${DEMO_BOARD_SOURCE}
                                     ${embobj_source}
                                     #${NVS_CBK_SOURCE}

@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff
 * email:   vadim.tikhanoff@iit.it
@@ -118,8 +118,8 @@ void worldSim::draw(){
         */
         glColor3d(0.0,0.0,0.8);
         glPushMatrix(); LDEsetM(dBodyGetPosition(ballBody),dBodyGetRotation(ballBody));
-        DrawSphere(0.04,false,textured,2);glPopMatrix();	
-        
+        DrawSphere(0.04,false,textured,2);glPopMatrix();
+
     }
 
     for (int i=0; i<OBJNUM; i++) {
@@ -178,7 +178,7 @@ void worldSim::loadTexture(string texture, int numTexture){
 }
 
 void worldSim::setPosition(dReal agent1X, dReal agent1Y, dReal agent1Z ) {
-        //dBodySetPosition(tempBody,-0.0,0.2, -100);  
+        //dBodySetPosition(tempBody,-0.0,0.2, -100);
         //dGeomSetPosition(tempGeom[1],-0.4,0.2, -100);
     if (actWorld == "on"){
         dGeomSetPosition(tableGeom[0],0.3,0.25,0.3);
@@ -421,7 +421,7 @@ bool worldSim::MyObject2::create(const WorldOp& op, WorldResult& result, int idx
     dTriMeshDataID *tridata = dynamic?odeinit._wrld->TriData:odeinit._wrld->s_TriData;
     dTriMeshX *trimesh = dynamic?odeinit._wrld->trimesh:odeinit._wrld->s_trimesh;
     int *modelTexture = dynamic?odeinit._wrld->modelTexture:odeinit._wrld->s_modelTexture;
-                    
+
     tridata[idx] = dGeomTriMeshDataCreate();
     string tmp = (char *) odeinit._wrld->model_DIR.c_str();
     model = string(tmp.c_str()) + "/" + model.c_str();
@@ -429,14 +429,14 @@ bool worldSim::MyObject2::create(const WorldOp& op, WorldResult& result, int idx
     if (!trimesh[idx]){
         result.setFail("Check spelling and location of model file");
         return false;
-    } 
-    
-    dGeomTriMeshDataBuildSingle(tridata[idx], 
-                                trimesh[idx]->Vertices, 
-                                3 * sizeof(float), 
-                                trimesh[idx]->VertexCount, 
-                                trimesh[idx]->Indices, 
-                                trimesh[idx]->IndexCount, 
+    }
+
+    dGeomTriMeshDataBuildSingle(tridata[idx],
+                                trimesh[idx]->Vertices,
+                                3 * sizeof(float),
+                                trimesh[idx]->VertexCount,
+                                trimesh[idx]->Indices,
+                                trimesh[idx]->IndexCount,
                                 3 * sizeof(int));
     if (dynamic) {
         body = dBodyCreate (odeinit.world);
@@ -445,7 +445,7 @@ bool worldSim::MyObject2::create(const WorldOp& op, WorldResult& result, int idx
         geom = dCreateTriMesh(odeinit.space, tridata[idx], 0, 0, 0);
     else
         geom = dCreateTriMesh(odeinit._iCub->iCub, tridata[idx], 0, 0, 0);
-    
+
     //geom = dCreateTriMesh(odeinit.space, tridata[idx], 0, 0, 0);
     dGeomSetData(geom,tridata[idx]);
     if (dynamic) {
@@ -456,14 +456,14 @@ bool worldSim::MyObject2::create(const WorldOp& op, WorldResult& result, int idx
         dMassTranslate(&m, -m.c[0], -m.c[1], -m.c[2]);
         dBodySetMass(body, &m);
     }
-    
+
     // this all seems incredibly dodgy
     modelTexture[idx] = idx + 1 + (dynamic?19:49);
     odeinit.mtxTexture.lock();
-    odeinit._wrld->static_model = !dynamic;	
-    odeinit._wrld->WAITLOADING = true;	
+    odeinit._wrld->static_model = !dynamic;
+    odeinit._wrld->WAITLOADING = true;
     odeinit.mtxTexture.unlock();
-    
+
     return true;
 }
 

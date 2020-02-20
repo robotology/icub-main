@@ -44,7 +44,7 @@
 #include "EoBoards.h"
 
 // --------------------------------------------------------------------------------------------------------------------
-// - declaration of extern hidden interface 
+// - declaration of extern hidden interface
 // --------------------------------------------------------------------------------------------------------------------
 // empty-section
 
@@ -181,14 +181,14 @@ extern void eoprot_fun_UPDT_mn_service_status_commandresult(const EOnv* nv, cons
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of extern hidden functions 
+// - definition of extern hidden functions
 // --------------------------------------------------------------------------------------------------------------------
 // empty-section
 
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of static functions 
+// - definition of static functions
 // --------------------------------------------------------------------------------------------------------------------
 
 static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
@@ -275,10 +275,10 @@ static void s_process_category_Default(eOmn_info_basic_t* infobasic, uint8_t * e
 
     p64 = (uint8_t*)&(infobasic->properties.par64);
 
-    
+
     eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
     //int boardnum = eo_nv_GetBRD(nv)+1;
-    
+
     snprintf(str, sizeof(str), " from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + %s",
                                 ipinfo,
                                 boardstr,
@@ -416,7 +416,7 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             appl.minor = (reqfw >> 8)  & 0xff;
             appl.build = reqfw & 0xff;
 
-           
+
             if(eobool_true == fakesearch)
             {
                 snprintf(strOK, sizeof(strOK), "OK but FAKE (without any control on CAN w/ get-fw-version<> message)");

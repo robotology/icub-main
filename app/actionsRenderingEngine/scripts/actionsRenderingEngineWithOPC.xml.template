@@ -10,23 +10,23 @@
             <port>/iKinGazeCtrl/angles:o</port>
         </dependencies>
 
-        <!--Core module-->  
+        <!--Core module-->
         <module>
             <name>actionsRenderingEngine</name>
-       <parameters>--actions OPC </parameters>           
+       <parameters>--actions OPC </parameters>
             <node>mynode</node>
             <tag>actionsRenderingEngine</tag>
         </module>
 
-       <!--Optional module-->  
+       <!--Optional module-->
         <module>
             <name>objectsPropertiesCollector</name>
-       <parameters>--db actionsLearned</parameters>            
+       <parameters>--db actionsLearned</parameters>
             <node>mynode</node>
             <tag>objPropCollector</tag>
         </module>
-       
-        <!--Viewers-->  
+
+        <!--Viewers-->
         <module>
             <name>yarpview</name>
             <parameters>--name /actionsRenderingEngine/left/view --x 0 --y 0 --RefreshTime 33 --out /actionsRenderingEngine/left/raw:o</parameters>
@@ -37,10 +37,10 @@
             <parameters>--name /actionsRenderingEngine/right/view --x 308 --y 0 --RefreshTime 33 --out /actionsRenderingEngine/right/raw:o</parameters>
             <tag>viewRight</tag>
         </module>
-        
 
 
-        <!--Core connections-->  
+
+        <!--Core connections-->
         <connection>
             <from>/actionsRenderingEngine/OPC:io</from>
             <to>/objectsPropertiesCollector/rpc</to>
@@ -82,7 +82,7 @@
             <from>/actionsRenderingEngine/wbd:rpc</from>
             <to>/wholeBodyDynamics/rpc:i</to>
             <protocol>tcp</protocol>
-        </connection>       
-           
+        </connection>
+
 
 </application>

@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Carlo Ciliberto, Vadim Tikhanoff
 * email:   carlo.ciliberto@iit.it vadim.tikhanoff@iit.it
@@ -111,7 +111,7 @@ class MotorThread: public PeriodicThread
 private:
     ResourceFinder                      &rf;
 
-    StereoTarget                        &stereo_target;    
+    StereoTarget                        &stereo_target;
 
     ObjectPropertiesCollectorPort       &opcPort;
 
@@ -125,7 +125,7 @@ private:
     IEncoders                           *enc_head;
     IEncoders                           *enc_torso;
     IGazeControl                        *ctrl_gaze;
-        
+
     IPositionControl                    *pos_torso;
     IVelocityControl                    *vel_torso;
     IControlMode                        *ctrl_mode_torso;
@@ -347,7 +347,7 @@ public:
     bool setWaveing(bool _waveing)
     {
         waveing=_waveing;
-        
+
         if(waveing)
         {
             if(action[RIGHT]!=NULL)

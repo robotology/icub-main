@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Carlo Ciliberto, Vadim Tikhanoff
 * email:   carlo.ciliberto@iit.it vadim.tikhanoff@iit.it
@@ -68,7 +68,7 @@ bool VisuoThread::checkTracker(Vector *vec)
     bool track=false;
 
     trackBuffer.push_back(*vec);
-    
+
     if(isTracking() && trackBuffer.size()>minTrackBufSize)
     {
         double speed_avg[2];
@@ -114,7 +114,7 @@ bool VisuoThread::checkTracker(Vector *vec)
         }
         // check that both images are tracking similar things
     }
-    
+
     while(trackBuffer.size()>maxTrackBufSize)
         trackBuffer.pop_front();
 
@@ -151,7 +151,7 @@ void VisuoThread::startTracker(const Vector &stereo, const int &side)
         int y=stereo[2*eye_in_use+1]-0.5*side<0?0:cvRound(stereo[2*eye_in_use+1]-0.5*side);
         int width=stereo[2*eye_in_use]+0.5*side>=imgMat.cols?imgMat.cols-x:side;
         int height=stereo[2*eye_in_use+1]+0.5*side>=imgMat.rows?imgMat.rows-y:side;
-        
+
         imgMat(cv::Rect(x,y,width,height)).copyTo(tplMat);
         cv::cvtColor(tplMat,tplMat,CV_BGR2RGB);
 
@@ -179,13 +179,13 @@ void VisuoThread::updateImages()
     ImageOf<PixelRgb> *iR=imgPort[RIGHT].read(false);
 
     lock_guard<mutex> lck(imgMutex);
-    if(iL!=NULL) 
+    if(iL!=NULL)
     {
         if(img[LEFT]!=NULL)
             delete img[LEFT];
 
         img[LEFT]=new ImageOf<PixelRgb>(*iL);
-        
+
         newImage[LEFT]=true;
     }
 
@@ -193,9 +193,9 @@ void VisuoThread::updateImages()
     {
         if(img[RIGHT]!=NULL)
             delete img[RIGHT];
-        
+
         img[RIGHT]=new ImageOf<PixelRgb>(*iR);
-        
+
         newImage[RIGHT]=true;
     }
 }
@@ -208,7 +208,7 @@ void VisuoThread::updateLocationsMIL()
     {
         lock_guard<mutex> lck(MILMutex);
         locations.clear();
-        
+
         for(int i=0; i<bLocations->get(0).asList()->size(); i++)
         {
             Bottle *b=bLocations->get(0).asList()->get(i).asList();
@@ -329,7 +329,7 @@ void VisuoThread::updatePFTracker()
 
         if(newImage[LEFT])
             outPort[LEFT].write(drawImg[LEFT]);
-        
+
         if(newImage[RIGHT])
             outPort[RIGHT].write(drawImg[RIGHT]);
 
@@ -626,7 +626,7 @@ bool VisuoThread::getMotion(Bottle &bStereo)
                 stereo[1]=p[LEFT][1];
                 stereo[2]=p[RIGHT][0];
                 stereo[3]=p[RIGHT][1];
-                
+
                 startTracker(stereo,cvRound(side));
 
                 ok=true;
@@ -684,7 +684,7 @@ bool VisuoThread::getRaw(Bottle &bStereo)
     {
         Bottle *bL=rawInPort[LEFT].read(false);
         Bottle *bR=rawInPort[RIGHT].read(false);
-        
+
         if(bL!=NULL || bR!=NULL)
             stereo.resize(4,0.0);
 
@@ -693,7 +693,7 @@ bool VisuoThread::getRaw(Bottle &bStereo)
             stereo[0]=bL->get(0).asInt();
             stereo[1]=bL->get(1).asInt();
         }
-        
+
         if(bR!=NULL)
         {
             stereo[2]=bR->get(0).asInt();

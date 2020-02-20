@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Copyright: (C) 2011 RobotCub Consortium
-# Author: Lorenzo Natale 
+# Author: Lorenzo Natale
 # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 
 # Inspired from similar script in yarp by Paul Fitzpatrick
@@ -45,7 +45,7 @@ echo "The list of copyright holders for iCub main is:"
 cat licenses-copyright-compact.txt
 echo
 cat<<EOF
-The identifier "RobotCub Consortium" used in some copyright statements is 
+The identifier "RobotCub Consortium" used in some copyright statements is
 equivalent to the following list of institutions:
   * Ecole Polytechnique Federale de Lausanne - Biologically-Inspired
     Robotics Group (BIRG) and Learning Algorithms and Systems Lab (LASA),

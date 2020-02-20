@@ -25,7 +25,7 @@ set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_
 target_link_libraries(${PROJECT_NAME} ctrlLib
                                       ${IPOPT_LIBRARIES}
                                       ${YARP_LIBRARIES})
-                 
+
 icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                     DEPENDS ctrlLib
                                     DESTINATION include/iCub/optimization

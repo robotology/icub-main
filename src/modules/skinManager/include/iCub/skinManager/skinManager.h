@@ -1,9 +1,9 @@
- 
-/* 
+
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Andrea Del Prete, Alexander Schmitz
  * email:   andrea.delprete@iit.it, alexander.schmitz@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -33,13 +33,13 @@ If the 3d position of the tactile sensors is provided, then this module computes
  which can be used by \ref wholeBodyDynamics to compute the contact forces.
 
 \section intro_sec Description
-When launched the module executes the skin sensor calibration, assuming that the sensors are not in contact 
-with anything during this phase. 
-The calibration resets the taxel baselines, gathers the sensor data for 5 sec, computes the mean (i.e. the baseline) 
+When launched the module executes the skin sensor calibration, assuming that the sensors are not in contact
+with anything during this phase.
+The calibration resets the taxel baselines, gathers the sensor data for 5 sec, computes the mean (i.e. the baseline)
 and the 95 percentile (i.e. the touch threshold) for every taxel.
 
-After the calibration the module starts reading the raw data, computing the difference between the read values 
-and the baseline, and outputs the results. 
+After the calibration the module starts reading the raw data, computing the difference between the read values
+and the baseline, and outputs the results.
 If no touch is detected (i.e. the compensated values are under the touch threshold) then the baseline is updated
 in order to follow the drift (if any).
 
@@ -66,23 +66,23 @@ YARP.
 
 \section parameters_sec Parameters
 
-<b>Command-line Parameters</b> 
+<b>Command-line Parameters</b>
 
-The following key-value pairs can be specified as command-line parameters by prefixing -- to the key 
+The following key-value pairs can be specified as command-line parameters by prefixing -- to the key
 (e.g. --from file.ini). The value part can be changed to suit your needs; the default values are shown below.
- - \c from \c [driftCompLeft.ini] \n 
+ - \c from \c [driftCompLeft.ini] \n
    specifies the configuration file
  - \c context \c [skinGui] \n
     specifies the sub-path from \c $ICUB_ROOT/app to the configuration file
- - \c name \c [skinManager] \n   
-    specifies the name of the module (used to form the stem of module port names)  
- - \c robot \c [icub] \n          
+ - \c name \c [skinManager] \n
+    specifies the name of the module (used to form the stem of module port names)
+ - \c robot \c [icub] \n
     specifies the name of the robot (used only to distiguish the simulator and the real robot)
 
 <b>Configuration File Parameters </b>
 
- The following key-value pairs can be specified as parameters in the configuration file 
- (they can also be specified as command-line parameters if you so wish). 
+ The following key-value pairs can be specified as parameters in the configuration file
+ (they can also be specified as command-line parameters if you so wish).
  The value part can be changed to suit your needs; the default values are shown below.
  - \c inputPorts \c [emptyList] \n
    list of the input ports from which the module has to read the tactile data.
@@ -92,7 +92,7 @@ The following key-value pairs can be specified as command-line parameters by pre
    For each output port there has to be a corresponding input port specified in the "inputPorts" parameter.
  - \c period \c [20] \n
    period of the compensating thread expressed in ms.
- - \c minBaseline \c [3] \n  
+ - \c minBaseline \c [3] \n
    if the baseline of one sensor (at least) reaches this value, then a warning message is sent on the info output port.
  - \c zeroUpRawData \c [false] \n
    if true the input tactile data are considered from zero up, otherwise from 255 down
@@ -125,7 +125,7 @@ These are the parameters of this section:
     missing calibration procedure for that skin part).
  - \c maxNeighborDist \c 0.015 \n
     maximum distance between two neighbor tactile sensors (in meters).
- 
+
 
 \section portsa_sec Ports Accessed
 All the ports listed in the "inputPorts" parameter and the corresponding rpc ports.
@@ -141,13 +141,13 @@ will be accessed.
 \section portsc_sec Ports Created
 <b>Output ports </b>
 - Every port specified in the "outputPorts" parameter: outputs a yarp::sig::Vector containing the compensated tactile data.
-- "/"+moduleName+"/monitor:o": \n 
-    outputs a yarp::os::Bottle containing streaming information regarding the compensation status 
+- "/"+moduleName+"/monitor:o": \n
+    outputs a yarp::os::Bottle containing streaming information regarding the compensation status
     (used to communicate with the \ref icub_skinManagerGui). The first value is the data frequency, while
     all the following ones represent the drift compensated so far for each taxel.
-- "/"+moduleName+"/info:o": \n 
-    outputs a yarp::os::Bottle containing occasional information regarding the compensation status 
-    such as warning or error messages (used to communicate with the \ref icub_skinManagerGui). Possible messages may regard 
+- "/"+moduleName+"/info:o": \n
+    outputs a yarp::os::Bottle containing occasional information regarding the compensation status
+    such as warning or error messages (used to communicate with the \ref icub_skinManagerGui). Possible messages may regard
     an error in the sensor reading or an excessive drift of the baseline of a taxel.\n
 - "/"+moduleName+"/skin_events:o": \n
     outputs a iCub::skinDynLib::skinContactList containing the list of contacts.
@@ -155,7 +155,7 @@ will be accessed.
 <b>Input ports</b>
 - For each port specified in the "inputPorts" parameter a local port is created with the name
   "/"+moduleName+index+"/input", where "index" is an increasing counter starting from 0.
-- "/"+moduleName+"/rpc:i": input port to control the module (alternatively the \ref icub_skinManagerGui can be used). 
+- "/"+moduleName+"/rpc:i": input port to control the module (alternatively the \ref icub_skinManagerGui can be used).
     This port accepts a yarp::os::yarp::os::Bottle that contains one of these commands:
     - "calib": force the sensor calibration
     - "get touch thr": return a yarp::os::yarp::os::Bottle containing the 95 percentile values of the tactile sensors
@@ -186,7 +186,7 @@ None.
 
 \section out_data_sec Output Data Files
 None.
- 
+
 
 \section conf_file_sec Configuration Files
 None.
@@ -222,16 +222,16 @@ This file can be edited at ICUB_HOME/main/src/modules/skinManager/include/iCub/s
 #include "iCub/skinManager/compensationThread.h"
 #include "iCub/skinManager/SkinDiagnosticsReadThread.h"
 #include "iCub/skinDynLib/rpcSkinManager.h"
- 
+
 namespace iCub {
     namespace skinManager {
         class skinManager : public RFModule {
         public:
             bool configure(yarp::os::ResourceFinder &rf); // configure all the module parameters and return true if successful
-            bool interruptModule();                       // interrupt, e.g., the ports 
+            bool interruptModule();                       // interrupt, e.g., the ports
             bool close();                                 // close and shut down the module
             bool respond(const yarp::os::Bottle& command, yarp::os::Bottle& reply);
-            double getPeriod(); 
+            double getPeriod();
             bool updateModule();
 
         private:

@@ -43,7 +43,7 @@ class yarp::dev::PlxCanMessage:public yarp::dev::CanMessage
     {
         msg=0;
     }
-    
+
     virtual ~PlxCanMessage()
     {
     }
@@ -80,7 +80,7 @@ class yarp::dev::PlxCanMessage:public yarp::dev::CanMessage
         { return (const unsigned char *) msg; }
 
     virtual void setBuffer(unsigned char *b)
-    { 
+    {
         if (b!=0)
             msg=(PLXCAN_MSG *)(b);
     }
@@ -95,7 +95,7 @@ class yarp::dev::PlxCanMessage:public yarp::dev::CanMessage
  * | `pcan` |
  */
 class yarp::dev::PlxCan: public ImplementCanBufferFactory<PlxCanMessage, PLXCAN_MSG>,
-            public ICanBus, 
+            public ICanBus,
             public ICanBusErrors,
             public DeviceDriver
 {
@@ -111,8 +111,8 @@ public:
     virtual bool canIdAdd(unsigned int id);
     virtual bool canIdDelete(unsigned int id);
 
-    virtual bool canRead(CanBuffer &msgs, 
-                         unsigned int size, 
+    virtual bool canRead(CanBuffer &msgs,
+                         unsigned int size,
                          unsigned int *read,
                          bool wait=false);
 

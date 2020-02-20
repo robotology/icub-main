@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -40,8 +40,8 @@ namespace ctrl
     double waveLUP[WAVELET_LUP_SIZE][2]={ { 0.000,                   0.0 },
                                           { 0.125,    0.0345833411415645 },
                                           { 0.250,     0.107309738113335 },
-                                          { 0.375,     0.202014885729746 }, 
-                                          { 0.500,     0.328773960240219 }, 
+                                          { 0.375,     0.202014885729746 },
+                                          { 0.500,     0.328773960240219 },
                                           { 0.625,     0.467801596736295 },
                                           { 0.750,     0.618433317340402 },
                                           { 0.875,     0.799799587363102 },
@@ -196,7 +196,7 @@ Code WaveletEncoder::encode(const Vector &values)
 {
     Code code;
     pVal=&values;
-    unsigned int N=(unsigned int)resolution+1;    
+    unsigned int N=(unsigned int)resolution+1;
     code.coefficients.resize(N+1);
     double error;
 

@@ -31,12 +31,12 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class SkinMeshThreadPort : public PeriodicThread 
+class SkinMeshThreadPort : public PeriodicThread
 {
 protected:
     static const int MAX_SENSOR_NUM = 128;
 
-    BufferedPort<Bottle> skin_port;                         
+    BufferedPort<Bottle> skin_port;
     TouchSensor *sensor[MAX_SENSOR_NUM];
 
     std::mutex mtx;
@@ -55,9 +55,9 @@ public:
         {
             sensor[t]=NULL;
         }
-    
+
         std::string part="/skinGui/";
-        
+
         if (config.check("name"))
         {
             part=config.find("name").asString().c_str();
@@ -70,7 +70,7 @@ public:
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
         bool useCalibration = config.check("useCalibration");
-        if (useCalibration==true) 
+        if (useCalibration==true)
         {
             printf("Using calibrated skin values (0-255)\n");
         }
@@ -78,7 +78,7 @@ public:
         {
             printf("Using raw skin values (255-0)\n");
         }
-        
+
         Bottle *color = config.find("color").asList();
         unsigned char r=255, g=0, b=0;
         if(color)
@@ -103,7 +103,7 @@ public:
         yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
 
         for (int t=0; t<sensorSetConfig.size(); ++t)
-        {       
+        {
             yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
             std::string type(sensorConfig.get(0).asString());
@@ -168,7 +168,7 @@ public:
                             sensor[id]=new PalmL(xc,yc,th,gain,layoutNum,lrMirror);
                             sensor[id]->setCalibrationFlag(useCalibration);
                         }
-                      
+
                         ++sensorsNum;
                     }
                 }
@@ -186,19 +186,19 @@ public:
         int max_tax=0;
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
-            
-            if (sensor[t]) 
+
+            if (sensor[t])
             {
                 sensor[t]->min_tax=max_tax;
                 max_tax = sensor[t]->min_tax+sensor[t]->get_nTaxels();
                 sensor[t]->max_tax=max_tax-1;
                 sensor[t]->setColor(r, g, b);
-            } 
+            }
             else
             {
                 //this deals with the fact that some traingles can be not present,
                 //but they anyway broadcast an array of zeros...
-                max_tax += 12; 
+                max_tax += 12;
             }
         }
 
@@ -250,7 +250,7 @@ public:
         for (int t=0; t<MAX_SENSOR_NUM; ++t)
         {
             if (sensor[t]) sensor[t]->draw(image);
-        }        
+        }
     }
 };
 

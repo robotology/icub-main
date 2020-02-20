@@ -60,7 +60,7 @@ using namespace std;
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - declaration of external variables 
+// - declaration of external variables
 // --------------------------------------------------------------------------------------------------------------------
 
 
@@ -70,7 +70,7 @@ using namespace std;
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - declaration of extern hidden interface 
+// - declaration of extern hidden interface
 // --------------------------------------------------------------------------------------------------------------------
 
 
@@ -83,7 +83,7 @@ using namespace std;
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition (and initialisation) of extern variables, but better using _get(), _set() 
+// - definition (and initialisation) of extern variables, but better using _get(), _set()
 // --------------------------------------------------------------------------------------------------------------------
 OPCprotocolManager *opcMan_ptr = NULL;
 
@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
 				if(byte2send > 0)
 				{
 					ssize_t sentBytes = ACE_socket->send(&payload_buffer[0], byte2send, remote.addr, 0/*flags*/);
-					ACE_TCHAR     address[64];					
+					ACE_TCHAR     address[64];
 					remote.addr.addr_to_string(address, 64);
 					printf("payload of size %d is sent to %s!! (sentbytes=%ld)\n",  byte2send, address, sentBytes);
 				}
@@ -380,7 +380,7 @@ void *recvThread(void * arg)
 		s_check_seqNum(src_addr, opcprotman_getSeqNum(opcMan_ptr, (opcprotman_message_t*)&rec_payload_buffer[0]));
 		/*chiama qui funzione parser*/
 /*		for(int i =0; i<rec_payload_size; i++)
-		{		
+		{
 			printf("%x", rec_payload_buffer[i]);
 		}
 */

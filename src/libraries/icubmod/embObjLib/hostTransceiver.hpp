@@ -28,7 +28,7 @@
 /** @defgroup  Library hostTransceiver
     It is an example of how the embOBJ can operate as host trasceiver.
 
-    @{        
+    @{
  **/
 
 

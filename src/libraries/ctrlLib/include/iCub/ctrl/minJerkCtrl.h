@@ -10,14 +10,14 @@
 
 /**
  * \defgroup minJerkCtrl Minimum-Jerk Controller
- *  
+ *
  * @ingroup ctrlLib
  *
  * Classes for Minimum-Jerk Control.
  *
  * \author Ugo Pattacini
  *
- */ 
+ */
 
 #ifndef __MINJERKCTRL_H__
 #define __MINJERKCTRL_H__
@@ -40,7 +40,7 @@ namespace ctrl
 /**
 * \ingroup minJerkCtrl
 *
-* Abstract class for minimum-jerk controllers with velocity 
+* Abstract class for minimum-jerk controllers with velocity
 * commands.
 */
 class minJerkVelCtrl
@@ -52,7 +52,7 @@ public:
     /**
     * Computes the velocity command.
     * @param _T the current execution time.
-    * @param e the error between the desired position and the 
+    * @param e the error between the desired position and the
     *          feedback.
     * @return the velocity command.
     */
@@ -65,7 +65,7 @@ public:
     virtual void reset(const yarp::sig::Vector &u0) = 0;
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~minJerkVelCtrl() { }
 };
@@ -75,8 +75,8 @@ public:
 * \ingroup minJerkCtrl
 *
 * Implements a minimum-jerk controller with velocity commands in
-* the assumption that the plant can be modelled as a pure 
-* integrator 1/s. 
+* the assumption that the plant can be modelled as a pure
+* integrator 1/s.
 */
 class minJerkVelCtrlForIdealPlant : public minJerkVelCtrl
 {
@@ -95,16 +95,16 @@ protected:
 
 public:
     /**
-    * Constructor. 
-    * @param _Ts is the controller sample time in seconds. 
-    * @param _dim is the controller's dimension 
+    * Constructor.
+    * @param _Ts is the controller sample time in seconds.
+    * @param _dim is the controller's dimension
     */
     minJerkVelCtrlForIdealPlant(const double _Ts, const int _dim);
 
     /**
     * Computes the velocity command.
     * @param _T the current execution time.
-    * @param e the error between the desired position and the 
+    * @param e the error between the desired position and the
     *          feedback.
     * @return the velocity command.
     */
@@ -117,7 +117,7 @@ public:
     virtual void reset(const yarp::sig::Vector &u0);
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~minJerkVelCtrlForIdealPlant();
 };
@@ -126,10 +126,10 @@ public:
 /**
 * \ingroup minJerkCtrl
 *
-* Implements a minimum-jerk controller with velocity commands 
-* assuming a non ideal plant represented with a pure integrator 
-* followed by a system with one zero and two poles (real or 
-* underdamped), such that the overall transfer function is 
+* Implements a minimum-jerk controller with velocity commands
+* assuming a non ideal plant represented with a pure integrator
+* followed by a system with one zero and two poles (real or
+* underdamped), such that the overall transfer function is
 * (1/s)*(Kp*(1+Tz*s)/(1+2*Zeta*Tw*s+(Tw*s)^2)).
 */
 class minJerkVelCtrlForNonIdealPlant : public minJerkVelCtrl
@@ -153,16 +153,16 @@ protected:
 
 public:
     /**
-    * Constructor. 
-    * @param _Ts is the controller sample time in seconds. 
-    * @param _dim is the controller's dimension 
+    * Constructor.
+    * @param _Ts is the controller sample time in seconds.
+    * @param _dim is the controller's dimension
     */
     minJerkVelCtrlForNonIdealPlant(const double _Ts, const int _dim);
 
     /**
     * Computes the velocity command.
     * @param _T the current execution time.
-    * @param e the error between the desired position and the 
+    * @param e the error between the desired position and the
     *          feedback.
     * @return the velocity command.
     */
@@ -174,20 +174,20 @@ public:
     */
     virtual void reset(const yarp::sig::Vector &u0);
 
-    /** 
+    /**
     * Allows user to assign values to plant parameters.
-    * @param parameters contains the set of plant parameters for 
+    * @param parameters contains the set of plant parameters for
     *                   each dimension in form of a Property object.
-    *  
-    * Available parameters are: 
-    *  
-    * \b dimension_# < list>: example (dimension_2 ((Kp 1.0) (Tw 
+    *
+    * Available parameters are:
+    *
+    * \b dimension_# < list>: example (dimension_2 ((Kp 1.0) (Tw
     *    0.1) ...)), specifies the Kp, Tz, Tw and Zeta parameters
     *    for a given dimension of the plant ("dimension_2" in the
     *    example). Dimensions are 0-based numbers.
-    * @param entryTag specifies an entry tag different from 
+    * @param entryTag specifies an entry tag different from
     *                 "dimension".
-    * @param ordering if a not empty Bottle is provided, the 
+    * @param ordering if a not empty Bottle is provided, the
     *                 ordering is not 0,1,2...dim-1 but the one
     *                 specified by the bottle content.
     */
@@ -195,25 +195,25 @@ public:
                                     const std::string &entryTag="dimension",
                                     const yarp::os::Bottle &ordering=yarp::os::Bottle());
 
-    /** 
+    /**
     * Allows user to retrieve plant parameters.
-    * @param parameters contains the set of plant parameters for 
+    * @param parameters contains the set of plant parameters for
     *                   each dimension in form of a Property object.
-    *  
-    * Available parameters are: 
-    *  
-    * \b dimension_# < list>: example (dimension_2 ((Kp 1.0) (Tw 
+    *
+    * Available parameters are:
+    *
+    * \b dimension_# < list>: example (dimension_2 ((Kp 1.0) (Tw
     *    0.1) ...)), specifies the Kp, Tz, Tw and Zeta parameters
     *    for a given dimension of the plant ("dimension_2" in the
     *    example). Dimensions are 0-based numbers.
-    * @param entryTag specifies an entry tag different from 
+    * @param entryTag specifies an entry tag different from
     *                 "dimension".
     */
     virtual void getPlantParameters(yarp::os::Property &parameters,
                                     const std::string &entryTag="dimension");
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~minJerkVelCtrlForNonIdealPlant();
 };
@@ -247,7 +247,7 @@ public:
     * Constructor.
     * @param _dim number of variables.
     * @param _Ts sample time in seconds.
-    * @param _T trajectory reference time (90% of steady-state value 
+    * @param _T trajectory reference time (90% of steady-state value
     *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkBaseGen(const unsigned int _dim, const double _Ts, const double _T);
@@ -256,27 +256,27 @@ public:
     * Constructor with initial value.
     * @param _y0 initial value of the trajectory.
     * @param _Ts sample time in seconds.
-    * @param _T trajectory reference time (90% of steady-state value 
+    * @param _T trajectory reference time (90% of steady-state value
     *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkBaseGen(const yarp::sig::Vector &y0, const double _Ts, const double _T);
 
     /**
-    * Copy constructor. 
-    * @param z the object to copy. 
-    * @note After copy, internal filters are reset. 
+    * Copy constructor.
+    * @param z the object to copy.
+    * @note After copy, internal filters are reset.
     */
     minJerkBaseGen(const minJerkBaseGen &z);
 
     /**
-    * Assignment operator. 
-    * @param z the object to copy. 
-    * @note After copy, internal filters are reset. 
+    * Assignment operator.
+    * @param z the object to copy.
+    * @note After copy, internal filters are reset.
     */
     minJerkBaseGen& operator=(const minJerkBaseGen &z);
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~minJerkBaseGen();
 
@@ -296,7 +296,7 @@ public:
     * Get the current position.
     */
     const yarp::sig::Vector& getPos() const { return pos; }
-    
+
     /**
     * Get the current velocity.
     */
@@ -310,7 +310,7 @@ public:
     /**
     * Get the trajectory reference time in seconds
     * (90% of steady-state value in t=_T, transient extinguished for
-    * t>=1.5*_T). 
+    * t>=1.5*_T).
     */
     double getT() const { return T; }
 
@@ -340,12 +340,12 @@ public:
 * \ingroup minJerkCtrl
 *
 * Generator of approximately minimum jerk trajectories.
-* The min jerk trajectory is approximated using a 3rd order LTI 
-* dynamical system (for more details see <a 
-* href="https://doi.org/10.1109/IROS.2010.5650851">Pattacini2010</a>). 
+* The min jerk trajectory is approximated using a 3rd order LTI
+* dynamical system (for more details see <a
+* href="https://doi.org/10.1109/IROS.2010.5650851">Pattacini2010</a>).
 * Position, velocity and acceleration trajectories are computed.
 * The main advantage with respect to the standard polynomial form
-* is that if the reference value yd changes there is no need to 
+* is that if the reference value yd changes there is no need to
 * recompute the filter coefficients.
 */
 class minJerkTrajGen : public minJerkBaseGen
@@ -358,7 +358,7 @@ public:
     * Constructor.
     * @param _dim number of variables.
     * @param _Ts sample time in seconds.
-    * @param _T trajectory reference time (90% of steady-state value 
+    * @param _T trajectory reference time (90% of steady-state value
     *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkTrajGen(const unsigned int _dim, const double _Ts, const double _T);
@@ -367,22 +367,22 @@ public:
     * Constructor with initial value.
     * @param _y0 initial value of the trajectory.
     * @param _Ts sample time in seconds.
-    * @param _T trajectory reference time (90% of steady-state value 
+    * @param _T trajectory reference time (90% of steady-state value
     *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkTrajGen(const yarp::sig::Vector &y0, const double _Ts, const double _T);
 
     /**
-    * Copy constructor. 
-    * @param z the object to copy. 
-    * @note After copy, internal filters are reset. 
+    * Copy constructor.
+    * @param z the object to copy.
+    * @note After copy, internal filters are reset.
     */
     minJerkTrajGen(const minJerkTrajGen &z);
 
     /**
-    * Assignment operator. 
-    * @param z the object to copy. 
-    * @note After copy, internal filters are reset. 
+    * Assignment operator.
+    * @param z the object to copy.
+    * @note After copy, internal filters are reset.
     */
     minJerkTrajGen& operator=(const minJerkTrajGen &z);
 
@@ -413,7 +413,7 @@ public:
     * Constructor.
     * @param _dim number of variables.
     * @param _Ts sample time in seconds.
-    * @param _T trajectory reference time (90% of steady-state value 
+    * @param _T trajectory reference time (90% of steady-state value
     *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkRefGen(const unsigned int _dim, const double _Ts, const double _T);
@@ -422,22 +422,22 @@ public:
     * Constructor with initial value.
     * @param _y0 initial value of the trajectory.
     * @param _Ts sample time in seconds.
-    * @param _T trajectory reference time (90% of steady-state value 
+    * @param _T trajectory reference time (90% of steady-state value
     *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkRefGen(const yarp::sig::Vector &y0, const double _Ts, const double _T);
 
     /**
-    * Copy constructor. 
-    * @param z the object to copy. 
-    * @note After copy, internal filters are reset. 
+    * Copy constructor.
+    * @param z the object to copy.
+    * @note After copy, internal filters are reset.
     */
     minJerkRefGen(const minJerkRefGen &z);
 
     /**
-    * Assignment operator. 
-    * @param z the object to copy. 
-    * @note After copy, internal filters are reset. 
+    * Assignment operator.
+    * @param z the object to copy.
+    * @note After copy, internal filters are reset.
     */
     minJerkRefGen& operator=(const minJerkRefGen &z);
 

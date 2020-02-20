@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -28,13 +28,13 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
         yError("Robot flags are not set when creating iCubLogicalJoints\n");
         ::exit(1);
     }
-    
+
     ////////////////////////////////////////////////////////////
     // Setting up the head
-    
+
     int head = PART_HEAD;
     int rawHead = PART_HEAD_RAW;
-    if (flags.actHead){      
+    if (flags.actHead){
         const char *headName = "head";
         // for (int i=0; i<4; i++) {
         getController(head,0).init(headName,"hinge",0,+1, config);
@@ -46,7 +46,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
         // individual hinge joints
         getController(rawHead,4).init(headName,"hinge",4,-1, config);
         getController(rawHead,5).init(headName,"hinge",5,+1, config);
-        
+
         getController(head,4).init(getController(rawHead,4),
                                    getController(rawHead,5),
                                    getController(head,5),
@@ -58,7 +58,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
     }
     ////////////////////////////////////////////////////////////
     // Setting up the left and right arms
-    
+
     for (int arm = PART_ARM_LEFT; arm <= PART_ARM_RIGHT; arm++) {
         const char *armName = (arm==PART_ARM_LEFT)?"leftarm":"rightarm";
 
@@ -93,7 +93,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
             getController(arm,10).init(armName,"hinge",23,-1, config);
             sub = getController(arm,10).nest(1);
             sub[0].init(armName,"hinge",24,-1, config);
-        
+
             getController(arm,11).init(armName,"hinge",10,-1, config);//index proximal
             getController(arm,12).init(armName,"hinge",14,-1, config);
             sub = getController(arm,12).nest(1);
@@ -124,7 +124,7 @@ iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
             getController(arm,10).init(armName,"hinge",23,+1, config);
             sub = getController(arm,10).nest(1);
             sub[0].init(armName,"hinge",24,+1, config);
-        
+
             getController(arm,11).init(armName,"hinge",10,+1, config);//index proximal
             getController(arm,12).init(armName,"hinge",14,+1, config);
             sub = getController(arm,12).nest(1);

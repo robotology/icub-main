@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2008 The RobotCub Consortium
  * Author: Lorenzo Natale
  * website: www.robotcub.org
@@ -22,7 +22,7 @@
 
 // this constant determines the number of requests (messages)
 // that can be queued by a thread before waiting on synch().
-// the worst case is when a request is sent to all joints of a 
+// the worst case is when a request is sent to all joints of a
 // netowork, we use 50 to be conservative.
 const int BUF_SIZE=500;
 const int debug_mask = 0x20;
@@ -35,8 +35,8 @@ const int ESD_MAX_CARDS= 16;
 
 // Max number of threads allowed to communicate with the
 // CanBusMotionControl object at the same time.
-// Since the thread table is allocated statically 
-// this value is a constant. 
+// Since the thread table is allocated statically
+// this value is a constant.
 const int CANCONTROL_MAX_THREADS=500;
 
 /**

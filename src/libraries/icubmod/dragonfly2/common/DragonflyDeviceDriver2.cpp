@@ -24,7 +24,7 @@ using namespace yarp::dev;
 inline CFWCamera_DR2_2* RES(void *res) { return (CFWCamera_DR2_2*)res; }
 ////////////////////////////////////////////////////////////////////////
 
-bool DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image) 
+bool DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image)
 {
     return RES(system_resources)->CaptureImage(image);
 }
@@ -44,7 +44,7 @@ int DragonflyDeviceDriver2Rgb::height () const
 	return RES(system_resources)->height();
 }
 
-bool DragonflyDeviceDriver2Raw::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image) 
+bool DragonflyDeviceDriver2Raw::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
 {
     return RES(system_resources)->CaptureImage(image);
 }
@@ -96,7 +96,7 @@ bool DragonflyDeviceDriver2::open(yarp::os::Searchable& config)
 		fprintf(stderr,"DragonflyDeviceDriver2: can't open camera\n");
 		return false;
 	}
-	
+
     return true;
 }
 

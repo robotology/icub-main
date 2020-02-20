@@ -36,7 +36,7 @@ done
 echo Fixing links to unselected material
 rm -f junk.tex
 for f in `ls *.tex`; do
-    ( 
+    (
 	perl -pe "s/\\\\hyperlink\\{\\}\\{([^\\}]*)\\}/\$1/g" | \
 	    perl -pe "s/p\\....pageref\\{\\}/see class docs/g" | \
 	    perl -pe "s/\\\\doxyref\\{([^\\}]*)\\}\\{p\\.\\}\\{\\}/\$1/g"|\
@@ -83,6 +83,6 @@ for f in ; do
 done
 
 sed "s/.*chapter.*//" -i ${special_page}_title.tex
-   
+
 make pdf
 

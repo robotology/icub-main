@@ -38,7 +38,7 @@ public:
     {
         _bStreamStarted=false;
         _bError=false;
-            
+
         _last=0;
 
         _last=new double [12];
@@ -64,7 +64,7 @@ public:
     bool _bError;
 
     CMTComm mtcomm;
-    
+
     double *_last;
     yarp::os::Stamp _lastStamp;
 
@@ -74,7 +74,7 @@ public:
 };
 
 void XSensMTxResources::run ()
-{   
+{
     unsigned char data[MAXMSGLEN];
     float euler_data[3] = {0};
     float accel_data[3] = {0};
@@ -95,9 +95,9 @@ void XSensMTxResources::run ()
             mtcomm.getValue (VALUE_CALIB_GYR, gyro_data, data, BID_MASTER);
             // Parse and get calibrated magnetometer values
             mtcomm.getValue (VALUE_CALIB_MAG, magn_data, data, BID_MASTER);
-	    
+
             std::lock_guard<std::mutex> lck(_semaphore);
-            
+
 			//euler_data are expressed in deg
             _last[0]  = euler_data[0]; //roll
             _last[1]  = euler_data[1]; //pitch
@@ -106,12 +106,12 @@ void XSensMTxResources::run ()
             _last[3]  = accel_data[0]; //accel-X
             _last[4]  = accel_data[1]; //accel-Y
             _last[5]  = accel_data[2]; //accel-Z
-	    
+
 			//gyro_data are expressed in rad/s, so they have to be converted in deg/s
             _last[6]  = gyro_data[0]*CTRL_RAD2DEG;  //gyro-X
             _last[7]  = gyro_data[1]*CTRL_RAD2DEG;  //gyro-Y
             _last[8]  = gyro_data[2]*CTRL_RAD2DEG;  //gyro-Z
-	    
+
             _last[9]  = magn_data[0];  //magn-X
             _last[10] = magn_data[1];  //magn-Y
             _last[11] = magn_data[2];  //magn-Z
@@ -120,7 +120,7 @@ void XSensMTxResources::run ()
                 _bError=false;
             else
                 _bError=true;
-		
+
             _lastStamp.update();
         }
 }
@@ -130,7 +130,7 @@ inline XSensMTxResources& RES(void *res) { return *(XSensMTxResources *)res; }
 /**
  * Driver for XSens's MTx IMU unit.
  * @author Radu Bogdan Rusu, Alexis Maldonado
- */ 
+ */
 XSensMTx::XSensMTx() : system_resources{nullptr},
                        nchannels{12},
                        m_sensorName{"sensor_imu_xsens"},
@@ -152,11 +152,11 @@ bool XSensMTx::read(Vector &out)
 {
     XSensMTxResources &d= RES(system_resources);
     bool ret;
-    
+
     if (d._bStreamStarted)
         {
             std::lock_guard<std::mutex> lck(d._semaphore);
-            
+
             // Euler+accel+gyro+magn orientation values
             for (int i = 0; i < nchannels; i++)
                 out[i]=d._last[i];
@@ -207,7 +207,7 @@ bool XSensMTx::stop()
 bool XSensMTx::open(yarp::os::Searchable &config)
 {
     XSensMTxParameters par;
-     
+
 #ifdef WIN32
     par.comPort = config.check ("serial", Value(11),
         "numeric identifier of comport").asInt();
@@ -240,7 +240,7 @@ bool XSensMTx::open(const XSensMTxParameters &par)
 #ifdef WIN32
     if (d.mtcomm.openPort (par.comPort) != MTRV_OK)
         {
-            fprintf(stderr, "Failed to open com port %d\n", 
+            fprintf(stderr, "Failed to open com port %d\n",
                     par.comPort);
 
             return false;
@@ -248,17 +248,17 @@ bool XSensMTx::open(const XSensMTxParameters &par)
 #else
     if (d.mtcomm.openPort (par.comPortString.c_str ()) != MTRV_OK)
         {
-            fprintf(stderr, "Failed to open com port %s\n", 
+            fprintf(stderr, "Failed to open com port %s\n",
                     par.comPortString.c_str());
             return false;
         }
 #endif
 
     int outputSettings = OUTPUTSETTINGS_ORIENTMODE_EULER;
-    
+
     unsigned long tmpOutputMode, tmpOutputSettings;
     unsigned short tmpDataLength;
-		
+
     // Put MTi/MTx in Config State. Here sometimes there are problems if the device was not properly closed.
     int count = 0;
     for (count = 0; count <10; count++ )
@@ -268,7 +268,7 @@ bool XSensMTx::open(const XSensMTxParameters &par)
             printf ("MRCHECK Unable to connect to XSensMtX device, attempt %d.\n", count);
             yarp::os::Time::delay(0.010);
         }
-        else 
+        else
             break;
     }
     if (count >= 10)
@@ -316,7 +316,7 @@ bool XSensMTx::close()
 {
     // stop thread
     if (system_resources==0)
-        return false; //the device was never opened, or there was an error 
+        return false; //the device was never opened, or there was an error
 
     XSensMTx::stop();
 

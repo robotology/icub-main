@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick, Vadim Tikhanoff
 * email:   paulfitz@alum.mit.edu, vadim.tikhanoff@iit.it
@@ -23,7 +23,7 @@
  * \brief Header for the automatic configuration of the iCub Simulator
  * \author  Paul Fitzpatrick and Vadim Tikhanoff
  * \date 2008
- * \note CopyPolicy: Released under the terms of the GNU GPL v2.0. 
+ * \note CopyPolicy: Released under the terms of the GNU GPL v2.0.
  **/
 
 #ifndef SIMCONFIG_INC
@@ -42,7 +42,7 @@ using namespace std;
 using namespace yarp::os;
 
 class SimConfig : public yarp::os::ResourceFinder, public RobotConfig {
-    
+
 public:
 
     SimConfig(){
@@ -53,7 +53,7 @@ public:
     // some config files get loaded before main() - this needs
     // to be fixed.
     std::string configure(int argc, char *argv[], std::string &moduleName, int &verbosity);
-    
+
     //std::stringfind(const char *fileName);
     //std::string findPath(const char *key);
     //bool isActive();
@@ -65,7 +65,7 @@ public:
     virtual std::string getModuleName() {
         return moduleName.c_str();
     }
-    
+
     virtual int getVerbosity() {
         return verbosity;
     }
@@ -134,17 +134,17 @@ public:
         readOdeParams();
         return p;
     }
-   
+
 
 private:
-    std::string moduleName;    
+    std::string moduleName;
     int verbosity;
     RobotFlags flags;
 
     bool odeParamRead;
     OdeParams p;
 
-    
+
     void readOdeParams(){
         if(odeParamRead==true)
             return;
@@ -158,7 +158,7 @@ private:
         p.worldTimestep   = bParamWorld.check("timestep", Value(10)).asInt();
         p.worldCFM        = bParamWorld.check("worldCFM", Value(0.00001)).asDouble();
         p.worldERP        = bParamWorld.check("worldERP", Value(0.2)).asDouble();
-        
+
         p.maxContactCorrectingVel = bParamContacts.check("maxContactCorrectingVel", Value(1e6)).asDouble();
         p.contactFrictionCoefficient = bParamContacts.check("contactFrictionCoefficient",Value(1.0)).asDouble();
         p.contactSurfaceLayer     = bParamContacts.check("contactSurfaceLayer", Value(0.0)).asDouble();

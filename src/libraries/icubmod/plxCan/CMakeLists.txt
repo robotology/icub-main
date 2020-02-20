@@ -20,7 +20,7 @@ if (NOT SKIP_pcan)
         yarp_add_plugin(pcan PlxCan.cpp PlxCan.h)
 
         TARGET_LINK_LIBRARIES(pcan ${PLXCANAPI_LIB} ${YARP_LIBRARIES})
-        
+
         icub_export_plugin(pcan)
 
   yarp_install(TARGETS pcan
@@ -30,6 +30,6 @@ if (NOT SKIP_pcan)
                YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
   ENDIF (NOT PLXCANAPI_FOUND)
-  
+
 endif (NOT SKIP_pcan)
 

@@ -125,7 +125,7 @@ ModifiedThompsonTau::ModifiedThompsonTau()
     tauLUP[99]  =1.9457;
     tauLUP[100] =1.9458;
     tauLUP[150] =1.9506;
-    tauLUP[200] =1.9530;      
+    tauLUP[200] =1.9530;
     tauLUP[500] =1.9572;
     tauLUP[1000]=1.9586;
     tauLUP[5000]=1.9597;

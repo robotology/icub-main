@@ -27,10 +27,10 @@ namespace iCub {
 class iCub::contrib::IEmotionInterface
 {
 public:
-    
+
     virtual ~IEmotionInterface(){}
-   
-    virtual bool setEyelids(const std::string s)=0;    
+
+    virtual bool setEyelids(const std::string s)=0;
     virtual bool setMouth(const std::string s)=0;
     virtual bool setLeftEyebrow(const std::string s)=0;
     virtual bool setRightEyebrow(const std::string s)=0;

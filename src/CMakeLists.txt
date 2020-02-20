@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 ## Order here is important, libraries go first because they set variables
-## that are used by the other modules. 
+## that are used by the other modules.
 
 option(ICUBMAIN_COMPILE_LIBRARIES "Enable icub-main libraries." ON)
 mark_as_advanced(ICUBMAIN_COMPILE_LIBRARIES)

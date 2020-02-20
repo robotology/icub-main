@@ -19,13 +19,13 @@
  * This file contains the definition of the iCubSkin, i.e. a class that collects multiple skinPart(s).
  *
  * \section intro_sec Description
- * 
+ *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows, Linux
  *
  * \author Alessandro Roncone
- * 
+ *
  **/
 
 #ifndef __ICUBSKIN_H__
@@ -40,13 +40,13 @@ namespace iCub
 namespace skinDynLib
 {
 
-/** 
-* @ingroup skinDynLib 
+/**
+* @ingroup skinDynLib
 *
 * Class that collects a set of skinParts.
 * It consists of a std::vector of skinPart(s), and a number of methods for loading and populating these taxels from files.
-* 
-*/    
+*
+*/
 class iCubSkin
 {
   protected:

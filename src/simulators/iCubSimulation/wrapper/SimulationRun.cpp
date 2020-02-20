@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -65,7 +65,7 @@ bool SimulationRun::run(SimulationBundle *bundle, int argc, char *argv[]) {
     Drivers::factory().add(new DriverLinkCreator("robot_joints",icub_joints_dev));
 
     // Provide simulated controlboard driver
-    Drivers::factory().add(new DriverCreatorOf<iCubSimulationControl>("simulationcontrol", 
+    Drivers::factory().add(new DriverCreatorOf<iCubSimulationControl>("simulationcontrol",
         "controlboard",
         "iCubSimulationControl"));
 
@@ -78,7 +78,7 @@ bool SimulationRun::run(SimulationBundle *bundle, int argc, char *argv[]) {
     if (module.open()) {
         //this blocks until termination (through ctrl+c or a kill)
         module.runModule();
-    }        
+    }
 
     module.closeModule();
 

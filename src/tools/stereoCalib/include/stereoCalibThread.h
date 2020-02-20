@@ -50,7 +50,7 @@ private:
     bool stereo;
     Mat Kleft;
     Mat Kright;
-    
+
     Mat DistL;
     Mat DistR;
     double vergence;
@@ -112,7 +112,7 @@ public:
     void stopCalib();
     bool threadInit();
     void threadRelease();
-    void run(); 
+    void run();
     void onStop();
 
 };

@@ -21,9 +21,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
 
-icub_export_library(${PROJECTNAME} 
-                    INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include 
-                    DESTINATION include/iCub 
+icub_export_library(${PROJECTNAME}
+                    INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
+                    DESTINATION include/iCub
                     FILES ${folder_header})
 
 

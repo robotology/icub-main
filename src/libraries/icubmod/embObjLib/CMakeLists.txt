@@ -183,7 +183,7 @@ set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/theNVmanager.cpp
                             ${EXTRA_FOLDER}/embObjGeneralDevPrivData.cpp
                             )
-                            
+
 message("EXTRA_SOURCE= " ${EXTRA_SOURCE})
 
 set(DEBUG_SOURCE            ${DEBUG_FOLDER}/eODeb_eoProtoParser.c
@@ -196,7 +196,7 @@ if(NETWORK_PERFORMANCE_BENCHMARK)
 
 set(TOOLS_FOLDER    ${EXTRA_FOLDER}/tools)
 set(TOOLS_HEADER    ${TOOLS_FOLDER}/include/PeriodicEventsVerifier.h)
-set(TOOLS_SOURCE    ${TOOLS_FOLDER}/src/PeriodicEventsVerifier.cpp 
+set(TOOLS_SOURCE    ${TOOLS_FOLDER}/src/PeriodicEventsVerifier.cpp
                     ${TOOLS_FOLDER}/src/embot_tools.cpp)
 else()
 

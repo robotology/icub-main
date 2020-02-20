@@ -66,13 +66,13 @@ const strain2_ampl_discretegain_t CalibrationWindow::defaultStrain2AmplGains[6] 
 
 const uint16_t CalibrationWindow::defaultStrain2AmplOffsets[6] =
 {
-    32767, 32767, 32767, 32767, 32767, 32767 
+    32767, 32767, 32767, 32767, 32767, 32767
 };
 
 const uint16_t CalibrationWindow::defaultStrain1DACoffsets[6] =
 {
-    511, 511, 511, 511, 511, 511 
-}; 
+    511, 511, 511, 511, 511, 511
+};
 
 
 CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boardType_t b, CustomTreeWidgetItem *item, QWidget *parent) :
@@ -657,7 +657,7 @@ void CalibrationWindow::Clear_Regulation()
 
 void CalibrationWindow::resetMatricesState(int index)
 {
-    
+
     for(int i=0;i<MATRIX_COUNT;i++){
         matrix_changed[i] = false;
         if(index >=0){
@@ -980,7 +980,7 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
     int i=0;
 
     QByteArray line = filestr.readLine();
-#if defined(MARCO_ACCAME_19SEP2018)    
+#if defined(MARCO_ACCAME_19SEP2018)
     if(line.at(0) != '#')
     {
         // it must be a hex file: close it and call importCalibrationFileHEX()

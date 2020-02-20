@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo
  * email:  marco.randazzo@iit.it
@@ -55,7 +55,7 @@ bool yarp::dev::ImplementDebugInterface::initialize(int size, const int *amap, c
 {
     if (helper!=0)
         return false;
-    
+
     double *dummy=new double [size];
     for(int k=0;k<size;k++)
         dummy[k]=0;
@@ -79,7 +79,7 @@ bool yarp::dev::ImplementDebugInterface::uninitialize ()
         delete castToMapper2(helper);
         helper=0;
     }
- 
+
     return true;
 }
 

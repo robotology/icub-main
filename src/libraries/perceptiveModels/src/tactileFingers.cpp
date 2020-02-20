@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -94,7 +94,7 @@ bool TactileFinger::isCalibrated() const
 
 /************************************************************************/
 bool TactileFinger::getSensorsData(Value &data) const
-{    
+{
     Vector in(12);
     for (int j=0; j<12; j++)
     {
@@ -134,7 +134,7 @@ bool TactileFinger::extractSensorsData(Vector &in) const
         {
             if (Bottle *b2=b1->find("in").asList())
             {
-                in.resize(b2->size()); 
+                in.resize(b2->size());
                 for (size_t i=0; i<in.length(); i++)
                     in[i]=b2->get(i).asDouble();
 
@@ -373,7 +373,7 @@ bool TactileFingersModel::getOutput(Value &out) const
         fingers[2].getOutput(val[2]);
         fingers[3].getOutput(val[3]);
         fingers[4].getOutput(val[4]);
-        
+
         Bottle bOut; Bottle &ins=bOut.addList();
         ins.addDouble(val[0].asDouble());
         ins.addDouble(val[1].asDouble());

@@ -4,7 +4,7 @@
  * Copyright (C) 2007 Paul Fitzpatrick
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  */
- 
+
 #include <yarp/sig/all.h>
 #include <yarp/os/all.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
@@ -19,7 +19,7 @@ using namespace yarp::sig;
 
 // cmake cannot guess c/c++ language with just a .h
 
-bool StaticGrabber::close() { 
+bool StaticGrabber::close() {
     return true; // easy
 }
 
@@ -31,7 +31,7 @@ bool StaticGrabber::getRawBuffer(unsigned char *buffer) {
 // DF2 bayer sequence.
 // first row GBGBGB, second row RGRGRG.
 bool StaticGrabber::makeSimpleBayer(
-        ImageOf<PixelRgb>& src, 
+        ImageOf<PixelRgb>& src,
         ImageOf<PixelMono>& bayer) {
 
     bayer.resize(img.width(), img.height());
@@ -59,7 +59,7 @@ bool StaticGrabber::makeSimpleBayer(
                         *rd++ = row->b;
                         row++;
                         break;
-                }                
+                }
             }
 
             if ((i%2) == 1) {
@@ -75,7 +75,7 @@ bool StaticGrabber::makeSimpleBayer(
                         *rd++ = row->r;
                         row++;
                         break;
-                }                
+                }
             }
         }
     }

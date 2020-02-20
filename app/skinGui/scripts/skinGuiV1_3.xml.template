@@ -36,8 +36,8 @@
 	  <node>icubsrv</node>
 	<tag>skinGuiRightForearm_upper</tag>
    </module>
-   
-   
+
+
 <connection>
   <from>/icub/skin/lefthand</from>
   <to>/skinGui/left_hand:i</to>

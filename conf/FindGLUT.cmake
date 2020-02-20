@@ -34,7 +34,7 @@
 
 #message(Find GLUT form iCub package)
 
-# save current CMAKE_MODULE_PATH, disable it 
+# save current CMAKE_MODULE_PATH, disable it
 # to avoid recursive calls to FindGLUT
 set(_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH "")
@@ -58,10 +58,10 @@ if(WIN32)
 
 	#message(${GLUT_LIBRARIES})
 	if (GLUT_INCLUDE_DIR AND GLUT_LIBRARIES)
-		set(GLUT_FOUND TRUE CACHE BOOL "GLUT found?") 
+		set(GLUT_FOUND TRUE CACHE BOOL "GLUT found?")
 	endif(GLUT_INCLUDE_DIR AND GLUT_LIBRARIES)
 endif(WIN32)
-	
+
 if(NOT GLUT_FOUND)
 	#message(calling kitware find)
 	# Previous find failed, so let's try kitware find. Cleanup variables first.

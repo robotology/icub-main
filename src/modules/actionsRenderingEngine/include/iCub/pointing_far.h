@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2017 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -25,12 +25,12 @@ struct PointingFar
 public:
     /*!
      * \author Ugo Pattacini (15/01/2017)
-     * 
+     *
      * \param iarm the Cartesian Interface.
      * \param requirements a Property specifying: <br>"point":(x y z) [m]<br>"finger-joints":(...) [deg].
      * \param q Vector containing the joints: torso(3) ... arm(7) [deg].
      * \param x Vector containing the pose: x y z ax ay az [m]/[rad].
-     *  
+     *
      * \return true/false on success/fail.
      */
     static bool compute(yarp::dev::ICartesianControl *iarm,
@@ -39,11 +39,11 @@ public:
 
     /*!
      * \author Ugo Pattacini (18/01/2017)
-     * 
+     *
      * \param iarm the Cartesian Interface.
      * \param q Vector containing the joints.
      * \param x Vector containing the pose.
-     * 
+     *
      * \return true/false on success/fail.
      */
     static bool point(yarp::dev::ICartesianControl *iarm,

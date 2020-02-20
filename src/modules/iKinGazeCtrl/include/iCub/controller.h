@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini, Alessandro Roncone
  * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
@@ -60,7 +60,7 @@ protected:
     IControlMode       *modHead;
     IPositionControl   *posHead;
     IVelocityControl   *velHead;
-    IPositionDirect    *posNeck;    
+    IPositionDirect    *posNeck;
     ExchangeData       *commData;
 
     minJerkVelCtrl     *mjCtrlNeck;
@@ -95,7 +95,7 @@ protected:
     int nJointsTorso;
     int nJointsHead;
     double ctrlActiveRisingEdgeTime;
-    double saccadeStartTime;    
+    double saccadeStartTime;
     double printAccTime;
     double neckTime;
     double eyesTime;
@@ -138,7 +138,7 @@ public:
     void   resetCtrlEyes();
     void   doSaccade(const Vector &ang, const Vector &vel);
     bool   look(const Vector &x);
-    void   stopControl();    
+    void   stopControl();
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
     bool   threadInit() override;
     void   threadRelease() override;

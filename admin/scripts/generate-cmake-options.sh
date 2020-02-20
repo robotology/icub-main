@@ -1,4 +1,4 @@
-### parameters are 
+### parameters are
 # $1: hostname (could be also buildtype)
 # $2: os type (macos, winxp, lenny, etch, karmic ...)
 # $3: test type: nightly continuous experimental
@@ -28,16 +28,16 @@ case $3 in
       CMAKE_OPTIONS=" \
         -DICUB_ICUBINTERFACE_EXPERIMENTAL:BOOL=TRUE \
         $CMAKE_OPTIONS \
-      " 
+      "
      ;;
    "Continuous" )
       CMAKE_OPTIONS=" \
         $CMAKE_OPTIONS \
-      " 
+      "
      ;;
    "Nightly" )
       CMAKE_OPTIONS=" \
         $CMAKE_OPTIONS \
-      " 
+      "
      ;;
 esac

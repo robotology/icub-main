@@ -2,7 +2,7 @@
 
 /**
 *
-Connect to the canbus, read messages and dump to file. Based on 
+Connect to the canbus, read messages and dump to file. Based on
 code by Lorenzo Natale adn Alberto Parmiggiani.
 
 \author Unknown
@@ -79,7 +79,7 @@ bool done=false;
   //Create the output array.
   out = (fftw_complex*)fftw_malloc ( sizeof ( fftw_complex ) * n );
   fft = new double[n];
-  
+
   plan_forward = fftw_plan_dft_1d ( n, in, out, FFTW_FORWARD, FFTW_ESTIMATE );
 
   fftw_execute ( plan_forward );
@@ -98,7 +98,7 @@ bool done=false;
   for ( i = 0; i < NNFT/2; i++ )
   {
       freq[i] = float(i)/(float(NNFT)/2);
-      
+
       freq[i] = F_SAMPLE/2*freq[i];
   }
 
@@ -124,7 +124,7 @@ class SnifferThread: public PeriodicThread
     ICanBus *iCanBus;
     ICanBufferFactory *iBufferFactory;
     CanBuffer messageBuffer;
-    unsigned long int cnt;    
+    unsigned long int cnt;
     FILE *fp;
 
     /* dimension of local buffer, number of recieved messages */
@@ -150,7 +150,7 @@ class SnifferThread: public PeriodicThread
     signed short dataBuffer[6];
 
     signed short filterData(signed short datum);
-    
+
 
 
 
@@ -175,7 +175,7 @@ public:
             pwm[i] = 0;
             dutyCycle[i] = 0;
         }
-        
+
     }
 
     bool threadInit()
@@ -224,7 +224,7 @@ public:
         messageBuffer[0].getData()[0]=7;
         messageBuffer[0].getData()[1]=0;
         bool res=iCanBus->canWrite(messageBuffer,1,&readMessages);
-        
+
         if (res)
             return true;
         else
@@ -240,12 +240,12 @@ public:
 
     void run()
     {
-        readMessages = 0; 
-        /* read from the Can Bus messages with the id that has been 
+        readMessages = 0;
+        /* read from the Can Bus messages with the id that has been
            specified */
         bool res=iCanBus->canRead(messageBuffer, messages, &readMessages);
-        
-        /* cycle from zero to the number of read messages */   
+
+        /* cycle from zero to the number of read messages */
         for(int i=0; i<readMessages; i++)
         {
             if (messageBuffer[i].getId() == 0x35a)
@@ -279,14 +279,14 @@ public:
                 dutyCycle[0] = (messageBuffer[i].getData()[3]<<8)|messageBuffer[i].getData()[2];
                 pid[0] = (messageBuffer[i].getData()[5]<<8)|messageBuffer[i].getData()[4];
                 kp[0] = (messageBuffer[i].getData()[7]<<8)|messageBuffer[i].getData()[6];
-            
+
             /*  if (kp[0]==1000)
                 {
                     this->stop();
                     fclose(fp);
                     exit(0);
                 };*/
-                
+
                 //FFT
                 //if (samples.add_sample(torque[0])) fft.do_fft(samples);
                 //if (samples.add_sample(dutyCycle[0])) fft.do_fft(samples);
@@ -295,12 +295,12 @@ public:
                 if (kp[0]==30 && log_start==false) log_start=true;
 
                 log_start=true;
-                
+
                 if(log_start) fprintf(fp,"%d %d %d %d %d\n",cnt,kp[0],pid[0],dutyCycle[0],torque[0]);
                 cnt++;
             }
         }
-            
+
 
 /*
             if (messageBuffer[i].getId() == 0x172)
@@ -313,14 +313,14 @@ public:
 //          fprintf(fp,"%d %d %d %d %d %d %d\n",cnt,gaugeData[0],gaugeData[1],gaugeData[2],gaugeData[3],gaugeData[4],gaugeData[5]);
             //fprintf(fp,"%d %d %d %d %d %d\n",cnt,signed_gaugeData[5],torque[0],dutyCycle[0],pid[0],kp[0]);
 /*
-            if (cnt==50000) 
+            if (cnt==50000)
             {
                 this->stop();
                 done =true;
             }
 */
-        
-    /*  
+
+    /*
         cout<<setiosflags(ios::fixed)
             <<setw(10)<<"commut:"
             <<setw(8)<<setprecision(3)<<commut[0]
@@ -335,7 +335,7 @@ public:
             <<" kp:"
             <<setw(8)<<setprecision(3)<<kp[0]
             <<"\r";
-        */  
+        */
         /*
         cout<<setiosflags(ios::fixed)
             <<" "
@@ -382,7 +382,7 @@ signed short SnifferThread::filterData(signed short datum)
 }
 
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
     SnifferThread thread;
 

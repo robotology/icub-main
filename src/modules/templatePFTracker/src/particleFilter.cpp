@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Authors: Vadim Tikhanoff, Carlo Ciliberto 
+ * Authors: Vadim Tikhanoff, Carlo Ciliberto
  *
  * Algorithm taken from R. Hess, A. Fern, "Discriminatively trained particle filters for complex multi-object tracking," cvpr, pp.240-247, 2009 IEEE Conference on Computer Vision and Pattern Recognition, 2009
  *
  * email:   vadim.tikhanoff@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -29,7 +29,7 @@ using namespace yarp::sig;
 using namespace yarp::cv;
 
 /**********************************************************/
-int particle_cmp( const void* p1, const void* p2 ) 
+int particle_cmp( const void* p1, const void* p2 )
 {
     PARTICLEThread::particle* _p1 = (PARTICLEThread::particle*)p1;
     PARTICLEThread::particle* _p2 = (PARTICLEThread::particle*)p2;
@@ -42,26 +42,26 @@ int particle_cmp( const void* p1, const void* p2 )
 }
 /**********************************************************/
 
-PARTICLEThread::~PARTICLEThread() 
+PARTICLEThread::~PARTICLEThread()
 {
     cout << "deleting dynamic objects" << endl;
     if(regions!=NULL)
         free_regions ( regions, num_objects );
 
     gsl_rng_free ( rng );
-    free_histos ( ref_histos, num_objects);  
+    free_histos ( ref_histos, num_objects);
     if(particles != NULL)
         free ( particles);
 
     if (temp)
     {
-        cout << "releasing temp" << endl;        
+        cout << "releasing temp" << endl;
         cvReleaseImage(&temp);
     }
     cout << "finished particle thread" << endl;
 }
 /**********************************************************/
-PARTICLEThread::PARTICLEThread() 
+PARTICLEThread::PARTICLEThread()
 {
     firstFrame = true;
     num_objects = 0;
@@ -82,13 +82,13 @@ PARTICLEThread::PARTICLEThread()
     total = 0;
 }
 /**********************************************************/
-void PARTICLEThread::setName(string module) 
+void PARTICLEThread::setName(string module)
 {
     this->moduleName = module;
 }
 
 /**********************************************************/
-bool PARTICLEThread::threadInit() 
+bool PARTICLEThread::threadInit()
 {
     /* initialize variables and create data-structures if needed */
 
@@ -97,7 +97,7 @@ bool PARTICLEThread::threadInit()
 
     outputPortName = "/" + moduleName + "/image:o";
     imageOut.open( outputPortName.c_str() );
-    
+
     outputPortNameBlob = "/" + moduleName + "/blob/image:o";
     imageOutBlob.open( outputPortNameBlob.c_str() );
 
@@ -110,20 +110,20 @@ bool PARTICLEThread::threadInit()
     return true;
 }
 /**********************************************************/
-void PARTICLEThread::run() 
+void PARTICLEThread::run()
 {
     while (isStopping() != true) { // the thread continues to run until isStopping() returns true
 
         getImage =  ( imageIn.getInputCount() > 0 );
-        
+
         if ( !getImage )
             Time::delay(0.1);
         else{
-            
+
             if (init)
             {//Get first RGB image to establish width, height:
-                cout << "initializing" << endl;   
-                initAll();     
+                cout << "initializing" << endl;
+                initAll();
             }
             else
             {
@@ -131,8 +131,8 @@ void PARTICLEThread::run()
                 lock_guard<mutex> lck(templateMutex);
                 imageIn.getEnvelope(targetTemp);
             }
- 
-            frame = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 3 );           
+
+            frame = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 3 );
             cv::cvtColor(toCvMat(*iCubImage), cv::cvarrToMat(frame), CV_RGB2BGR);
             frame_blob = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U, 1 );
 
@@ -153,10 +153,10 @@ void PARTICLEThread::run()
                 num_objects = 0;
                 delete tpl;
                 tpl = NULL;
-                
+
                 lock_guard<mutex> lck(templateMutex);
                 while(tempList.size())
-                {  
+                {
                     delete tempList.back().templ;
                     tempList.pop_back();
                 }
@@ -192,13 +192,13 @@ void PARTICLEThread::run()
     } //while
 }
 /**********************************************************/
-void PARTICLEThread::threadRelease() 
+void PARTICLEThread::threadRelease()
 {
     cout << "cleaning up..." << endl;
     cout << "attempting to close ports" << endl;
     imageIn.interrupt();
     imageOut.interrupt();
-    imageOutBlob.interrupt();    
+    imageOutBlob.interrupt();
     imageIn.close();
     imageOut.close();
     imageOutBlob.close();
@@ -212,7 +212,7 @@ void PARTICLEThread::threadRelease()
 
     if(bestTempl.templ!=NULL)
         delete bestTempl.templ;
-    cout << "finished closing ports" << endl; 
+    cout << "finished closing ports" << endl;
 }
 
 /**********************************************************/
@@ -232,15 +232,15 @@ void PARTICLEThread::runAll(IplImage *img)
     {
         w = img->width;
         h = img->height;
-            
+
         while( num_objects == 0 )
         {
             num_objects = get_regionsImage( img, regions );
             if( num_objects == 0 )
                 fprintf( stderr, "Problem! seg has issues\n" );
-        }   
+        }
         if (ref_histos!=NULL)
-            free_histos ( ref_histos, num_objects);        
+            free_histos ( ref_histos, num_objects);
 
         ref_histos = compute_ref_histos( img_hsv, *regions, num_objects );
         if (particles != NULL)
@@ -251,7 +251,7 @@ void PARTICLEThread::runAll(IplImage *img)
     else
     {
         // perform prediction and measurement for each particle
-        for( j = 0; j < num_particles; j++ ) 
+        for( j = 0; j < num_particles; j++ )
         {
             particles[j] = transition( particles[j], w, h, rng );
             s = particles[j].s;
@@ -270,9 +270,9 @@ void PARTICLEThread::runAll(IplImage *img)
     qsort( particles, num_particles, sizeof( PARTICLEThread::particle ), &particle_cmp );
 
     averageMutex.lock();
-    for( j = 0; j < num_particles; j++ ) 
+    for( j = 0; j < num_particles; j++ )
         average += particles[j].w;
-        
+
     average = average/num_particles;
     averageMutex.unlock();
 
@@ -282,7 +282,7 @@ void PARTICLEThread::runAll(IplImage *img)
     targetTemp.clear();
     //if (imageOut.getOutputCount()>0)
     display_particle( frame, particles[0], color, targetTemp );
-    
+
     if (imageOutBlob.getOutputCount()>0)
         display_particleBlob( frame_blob, particles[0], targetTemp );
     targetMutex.unlock();
@@ -313,7 +313,7 @@ float PARTICLEThread::getAverage()
     return tmpAv;
 }
 /**********************************************************/
-int PARTICLEThread::get_regionsImage( IplImage* frame, CvRect** regions ) 
+int PARTICLEThread::get_regionsImage( IplImage* frame, CvRect** regions )
 {
     firstFrame = false;
     params p;
@@ -335,14 +335,14 @@ int PARTICLEThread::get_regionsImage( IplImage* frame, CvRect** regions )
         cvReleaseImage( &(p.cur_img) );
     p.n = 1;
     // extract regions defined by user; store as an array of rectangles ----------
-    
+
     r = (CvRect*) malloc ( p.n * sizeof( CvRect ) );
 
     for( i = 0; i < p.n; i++ )
         r[i] = cvRect( minloc.x, minloc.y, tpl_width, tpl_height );
-        
+
     *regions = r;
-    
+
     return p.n;
 }
 /**********************************************************/
@@ -352,7 +352,7 @@ PARTICLEThread::histogram** PARTICLEThread::compute_ref_histos( IplImage* frame,
     IplImage* tmp;
     int i;
 
-    // extract each region from frame and compute its histogram 
+    // extract each region from frame and compute its histogram
     for( i = 0; i < n; i++ )
     {
         cvSetImageROI( frame, regions[i]);
@@ -366,7 +366,7 @@ PARTICLEThread::histogram** PARTICLEThread::compute_ref_histos( IplImage* frame,
     return histos;
 }
 /**********************************************************/
-PARTICLEThread::histogram* PARTICLEThread::calc_histogram( IplImage** imgs, int n ) 
+PARTICLEThread::histogram* PARTICLEThread::calc_histogram( IplImage** imgs, int n )
 {
     IplImage* img;
     histogram* histo;
@@ -379,14 +379,14 @@ PARTICLEThread::histogram* PARTICLEThread::calc_histogram( IplImage** imgs, int 
     memset( hist, 0, histo->n * sizeof(float) );
     for( i = 0; i < n; i++ )
     {
-        // extract individual HSV planes from image 
+        // extract individual HSV planes from image
         img = imgs[i];
         h = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1 );
         s = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1 );
         v = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1 );
         cvSplit( img, h, s, v, NULL );
 
-        // increment appropriate histogram bin for each pixel 
+        // increment appropriate histogram bin for each pixel
         for( r = 0; r < img->height; r++ )
             for( c = 0; c < img->width; c++ )
             {
@@ -402,23 +402,23 @@ PARTICLEThread::histogram* PARTICLEThread::calc_histogram( IplImage** imgs, int 
     return histo;
 }
 /**********************************************************/
-void PARTICLEThread::free_histos( PARTICLEThread::histogram** histo, int n) 
+void PARTICLEThread::free_histos( PARTICLEThread::histogram** histo, int n)
 {
-    for (int i = 0; i < n; i++)    
+    for (int i = 0; i < n; i++)
         free (histo[i]);
 
     free(histo);
 }
 /**********************************************************/
-void PARTICLEThread::free_regions( CvRect** regions, int n) 
+void PARTICLEThread::free_regions( CvRect** regions, int n)
 {
-    for (int i = 0; i < n; i++)    
+    for (int i = 0; i < n; i++)
         free (regions[i]);
 
    free(regions);
 }
 /**********************************************************/
-void PARTICLEThread::normalize_histogram( PARTICLEThread::histogram* histo ) 
+void PARTICLEThread::normalize_histogram( PARTICLEThread::histogram* histo )
 {
     float* hist;
     float sum = 0, inv_sum;
@@ -427,7 +427,7 @@ void PARTICLEThread::normalize_histogram( PARTICLEThread::histogram* histo )
     hist = histo->histo;
     n = histo->n;
 
-    // compute sum of all bins and multiply each bin by the sum's inverse 
+    // compute sum of all bins and multiply each bin by the sum's inverse
     for( i = 0; i < n; i++ )
         sum += hist[i];
     inv_sum = 1.0f / sum;
@@ -439,18 +439,18 @@ int PARTICLEThread::histo_bin( float h, float s, float v )
 {
     int hd, sd, vd;
 
-    // if S or V is less than its threshold, return a "colorless" bin 
+    // if S or V is less than its threshold, return a "colorless" bin
     vd = MIN( (int)(v * NV / V_MAX), NV-1 );
     if( s < S_THRESH  ||  v < V_THRESH )
         return NH * NS + vd;
 
-    // otherwise determine "colorful" bin 
+    // otherwise determine "colorful" bin
     hd = MIN( (int)(h * NH / H_MAX), NH-1 );
     sd = MIN( (int)(s * NS / S_MAX), NS-1 );
     return sd * NH + hd;
 }
 /**********************************************************/
-PARTICLEThread::particle* PARTICLEThread::init_distribution( CvRect* regions, histogram** histos, int n, int p) 
+PARTICLEThread::particle* PARTICLEThread::init_distribution( CvRect* regions, histogram** histos, int n, int p)
 {
     particle* particles;
     int np;
@@ -460,13 +460,13 @@ PARTICLEThread::particle* PARTICLEThread::init_distribution( CvRect* regions, hi
     particles = (particle* )malloc( p * sizeof( particle ) );
     np = p / n;
 
-    // create particles at the centers of each of n regions 
+    // create particles at the centers of each of n regions
     for( i = 0; i < n; i++ ) {
         width = regions[i].width;
         height = regions[i].height;
         x = regions[i].x + (float)(width / 2);
         y = regions[i].y + (float) (height / 2);
-        for( j = 0; j < np; j++ ) 
+        for( j = 0; j < np; j++ )
         {
             particles[k].x0 = particles[k].xp = particles[k].x = x;
             particles[k].y0 = particles[k].yp = particles[k].y = y;
@@ -477,9 +477,9 @@ PARTICLEThread::particle* PARTICLEThread::init_distribution( CvRect* regions, hi
             particles[k++].w = 0;
         }
     }
-    // make sure to create exactly p particles 
+    // make sure to create exactly p particles
     i = 0;
-    while( k < p ) 
+    while( k < p )
     {
         width = regions[i].width;
         height = regions[i].height;
@@ -497,12 +497,12 @@ PARTICLEThread::particle* PARTICLEThread::init_distribution( CvRect* regions, hi
     return particles;
 }
 /**********************************************************/
-PARTICLEThread::particle PARTICLEThread::transition( const PARTICLEThread::particle &p, int w, int h, gsl_rng* rng ) 
+PARTICLEThread::particle PARTICLEThread::transition( const PARTICLEThread::particle &p, int w, int h, gsl_rng* rng )
 {
     float x, y, s;
     PARTICLEThread::particle pn;
 
-    // sample new state using second-order autoregressive dynamics 
+    // sample new state using second-order autoregressive dynamics
     x = pfot_A1 * ( p.x - p.x0 ) + pfot_A2 * ( p.xp - p.x0 ) +
     pfot_B0 * (float)(gsl_ran_gaussian( rng, TRANS_X_STD )) + p.x0;
     pn.x = MAX( 0.0f, MIN( (float)w - 1.0f, x ) );
@@ -520,19 +520,19 @@ PARTICLEThread::particle PARTICLEThread::transition( const PARTICLEThread::parti
     pn.y0 = p.y0;
     pn.width = p.width;
     pn.height = p.height;
-    pn.histo = p.histo; 
+    pn.histo = p.histo;
     pn.w = 0;
 
     return pn;
 }
 /**********************************************************/
-float PARTICLEThread::likelihood( IplImage* img, int r, int c, int w, int h, histogram* ref_histo ) 
+float PARTICLEThread::likelihood( IplImage* img, int r, int c, int w, int h, histogram* ref_histo )
 {
     IplImage* tmp;
     histogram* histo;
     float d_sq;
 
-    // extract region around (r,c) and compute and normalize its histogram 
+    // extract region around (r,c) and compute and normalize its histogram
     cvSetImageROI( img, cvRect( c - w / 2, r - h / 2, w, h ) );
     tmp = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 3 );
     cvCopy( img, tmp, NULL );
@@ -541,13 +541,13 @@ float PARTICLEThread::likelihood( IplImage* img, int r, int c, int w, int h, his
     cvReleaseImage( &tmp );
     normalize_histogram( histo );
 
-    // compute likelihood as e^{\lambda D^2(h, h^*)} 
+    // compute likelihood as e^{\lambda D^2(h, h^*)}
     d_sq = histo_dist_sq( histo, ref_histo );
     free( histo );
     return exp( -LAMBDA * d_sq );
 }
 /**********************************************************/
-float PARTICLEThread::histo_dist_sq( histogram* h1, histogram* h2 ) 
+float PARTICLEThread::histo_dist_sq( histogram* h1, histogram* h2 )
 {
     float* hist1, * hist2;
     float sum = 0;
@@ -572,7 +572,7 @@ float PARTICLEThread::histo_dist_sq( histogram* h1, histogram* h2 )
     }
 }
 /**********************************************************/
-void PARTICLEThread::normalize_weights( particle* particles, int n ) 
+void PARTICLEThread::normalize_weights( particle* particles, int n )
 {
     float sum = 0;
     int i;
@@ -583,7 +583,7 @@ void PARTICLEThread::normalize_weights( particle* particles, int n )
         particles[i].w /= sum;
 }
 /**********************************************************/
-PARTICLEThread::particle* PARTICLEThread::resample( particle* particles, int n ) 
+PARTICLEThread::particle* PARTICLEThread::resample( particle* particles, int n )
 {
     particle* _new_particles;
     int i, j, np, k = 0;
@@ -592,10 +592,10 @@ PARTICLEThread::particle* PARTICLEThread::resample( particle* particles, int n )
     qsort( particles, n, sizeof( particle ), &particle_cmp );
     _new_particles = (particle* ) malloc( n * sizeof( particle ) );
 
-    for( i = 0; i < n; i++ ) 
+    for( i = 0; i < n; i++ )
     {
         np = cvRound( particles[i].w * n );
-        for( j = 0; j < np; j++ ) 
+        for( j = 0; j < np; j++ )
         {
             _new_particles[k++] = particles[i];
         if( k == n )
@@ -609,7 +609,7 @@ PARTICLEThread::particle* PARTICLEThread::resample( particle* particles, int n )
     return _new_particles;
 }
 /**********************************************************/
-void PARTICLEThread::display_particle( IplImage* img, const PARTICLEThread::particle &p, CvScalar color, Vector& target ) 
+void PARTICLEThread::display_particle( IplImage* img, const PARTICLEThread::particle &p, CvScalar color, Vector& target )
 {
     int x0, y0, x1, y1;
     x0 = cvRound( p.x - 0.5 * p.s * p.width );
@@ -618,7 +618,7 @@ void PARTICLEThread::display_particle( IplImage* img, const PARTICLEThread::part
     y1 = y0 + cvRound( p.s * p.height );
 
     cvRectangle( img, cvPoint( x0, y0 ), cvPoint( x1, y1 ), color, 1, 8, 0 );
-    
+
     cvCircle (img, cvPoint((x0+x1)/2, (y0+y1)/2), 3, cvScalar(255,0 ,0),1);
     cvCircle (img, cvPoint( x0, y0), 3, cvScalar(0, 255 ,0),1);
     cvCircle (img, cvPoint( x1, y1), 3, cvScalar(0, 255 ,0),1);
@@ -631,7 +631,7 @@ void PARTICLEThread::display_particle( IplImage* img, const PARTICLEThread::part
     target.push_back(y1);
 }
 /**********************************************************/
-void PARTICLEThread::display_particleBlob( IplImage* img, const PARTICLEThread::particle &p, Vector& target ) 
+void PARTICLEThread::display_particleBlob( IplImage* img, const PARTICLEThread::particle &p, Vector& target )
 {
     int x0, y0, x1, y1;
     x0 = cvRound( p.x - 0.5 * p.s * p.width );
@@ -641,11 +641,11 @@ void PARTICLEThread::display_particleBlob( IplImage* img, const PARTICLEThread::
 
     int step       = img->widthStep/sizeof(uchar);
     uchar* data    = (uchar *)img->imageData;
-    
+
     for (int i=0; i<img->height; i++)
     {
         for (int j=0; j<img->width; j++)
-        {   
+        {
             data[i*step+j] = 0;
         }
     }
@@ -709,12 +709,12 @@ void PARTICLEThread::trace_template( IplImage* img, const particle &p )
     }
 }
 /**********************************************************/
-float PARTICLEThread::pixval32f(IplImage* img, int r, int c) 
+float PARTICLEThread::pixval32f(IplImage* img, int r, int c)
 {
     return ( (float*)(img->imageData + img->widthStep*r) )[c];
 }
 /**********************************************************/
-IplImage* PARTICLEThread::bgr2hsv( IplImage* bgr ) 
+IplImage* PARTICLEThread::bgr2hsv( IplImage* bgr )
 {
     IplImage* bgr32f, * hsv;
 
@@ -742,19 +742,19 @@ TemplateStruct PARTICLEThread::getBestTemplate()
     return best;
 }
 /**********************************************************/
-PARTICLEManager::PARTICLEManager() : PeriodicThread(0.02) 
+PARTICLEManager::PARTICLEManager() : PeriodicThread(0.02)
 {
     tpl = NULL;
 }
 /**********************************************************/
 PARTICLEManager::~PARTICLEManager() { }
 /**********************************************************/
-void PARTICLEManager::setName(string module) 
+void PARTICLEManager::setName(string module)
 {
     this->moduleName = module;
 }
 /**********************************************************/
-bool PARTICLEManager::threadInit() 
+bool PARTICLEManager::threadInit()
 {
     //create all ports
     inputPortNameTemp = "/" + moduleName + "/template/image:i";
@@ -778,7 +778,7 @@ bool PARTICLEManager::threadInit()
     return true;
 }
 /**********************************************************/
-void PARTICLEManager::run() 
+void PARTICLEManager::run()
 {
     TemplateStruct templLeft,templRight;
 
@@ -791,8 +791,8 @@ void PARTICLEManager::run()
     // copy tmp_tpl whether it is NULL or not
     tpl =  tmp_tpl;
     tpl = imageInTemp.read(false);
-    
-    if (tpl!=NULL) 
+
+    if (tpl!=NULL)
     {
         shouldSend = true;
         particleThreadLeft->setTemplate(tpl);
@@ -813,13 +813,13 @@ void PARTICLEManager::run()
 
 
     if (shouldSend)
-    { 
-        if (target.getOutputCount() > 0 && targetTemp.size() > 4 && 
-            fabs(leftStamp.getTime()-rightStamp.getTime())<0.002) 
+    {
+        if (target.getOutputCount() > 0 && targetTemp.size() > 4 &&
+            fabs(leftStamp.getTime()-rightStamp.getTime())<0.002)
         {
             //fprintf(stdout,"output %lf %lf %lf %lf\n", targetTemp[0], targetTemp[1], targetTemp[2], targetTemp[3]);
             Stamp propagatedStamp(leftStamp.getCount(),0.5*(leftStamp.getTime()+rightStamp.getTime()));
-            target.setEnvelope(propagatedStamp);        
+            target.setEnvelope(propagatedStamp);
             target.write(targetTemp);
         }
         if (disparityPort.getOutputCount() > 0 && targetTemp.size())
@@ -831,9 +831,9 @@ void PARTICLEManager::run()
             cmd.addDouble(targetTemp[6]);
             cmd.addDouble(targetTemp[7]);
             fprintf(stdout,"output %lf %lf %lf %lf\n", targetTemp[0], targetTemp[1], targetTemp[6], targetTemp[7]);
-            
+
             disparityPort.write(cmd,reply);
-            
+
             Bottle targets;
             targets.addDouble(reply.get(0).asDouble());
             targets.addDouble(reply.get(1).asDouble());
@@ -842,7 +842,7 @@ void PARTICLEManager::run()
             targets.addDouble(0.0);
             targets.addDouble(0.0);
             targets.addDouble(averageTempLeft);
-            
+
             target3D.write(targets);
         }
     }
@@ -853,7 +853,7 @@ void PARTICLEManager::run()
         delete templRight.templ;
 }
 /**********************************************************/
-void PARTICLEManager::threadRelease() 
+void PARTICLEManager::threadRelease()
 {
     cout << "cleaning up Manager..." << endl;
     cout << "attempting to close ports Manager" << endl;
@@ -870,7 +870,7 @@ void PARTICLEManager::threadRelease()
 
     target3D.interrupt();
     target3D.close();
-    
+
     cout << "deleteing thread " << endl;
     delete particleThreadLeft;
     delete particleThreadRight;
@@ -878,36 +878,36 @@ void PARTICLEManager::threadRelease()
 }
 /**********************************************************/
 bool PARTICLEModule::configure(yarp::os::ResourceFinder &rf)
-{    
+{
     /* Process all parameters from both command-line and .ini file */
 
-    moduleName            = rf.check("name", 
-                           Value("templatePFTracker"), 
+    moduleName            = rf.check("name",
+                           Value("templatePFTracker"),
                            "module name (string)").asString();
 
     setName(moduleName.c_str());
 
     handlerPortName =  "/";
-    handlerPortName += getName();         // use getName() rather than a literal 
- 
-    if (!handlerPort.open(handlerPortName.c_str())) 
-    {           
-        cout << getName() << ": Unable to open port " << handlerPortName << endl;  
+    handlerPortName += getName();         // use getName() rather than a literal
+
+    if (!handlerPort.open(handlerPortName.c_str()))
+    {
+        cout << getName() << ": Unable to open port " << handlerPortName << endl;
         return false;
     }
 
     attach(handlerPort);
- 
+
     /* create the thread and pass pointers to the module parameters */
     particleManager = new PARTICLEManager();
 
     /*pass the name of the module in order to create ports*/
-    particleManager->setName(moduleName);    
+    particleManager->setName(moduleName);
     /* now start the thread to do the work */
     particleManager->start();
-    
-    
-    return true ;     
+
+
+    return true ;
 }
 /**********************************************************/
 bool PARTICLEModule::interruptModule()
@@ -926,26 +926,26 @@ bool PARTICLEModule::close()
     return true;
 }
 /**********************************************************/
-bool PARTICLEModule::respond(const Bottle& command, Bottle& reply) 
+bool PARTICLEModule::respond(const Bottle& command, Bottle& reply)
 {
-    string helpMessage =  string(getName().c_str()) + 
-                        " commands are: \n" +  
-                        "help \n" + 
+    string helpMessage =  string(getName().c_str()) +
+                        " commands are: \n" +
+                        "help \n" +
                         "quit \n";
 
-    reply.clear(); 
+    reply.clear();
 
-    if (command.get(0).asString()=="quit") 
+    if (command.get(0).asString()=="quit")
     {
         reply.addString("quitting");
-        return false;     
+        return false;
     }
-    else if (command.get(0).asString()=="help") 
+    else if (command.get(0).asString()=="help")
     {
         cout << helpMessage;
         reply.addString("ok");
     }
-    else if (command.get(0).asString()=="reset") 
+    else if (command.get(0).asString()=="reset")
     {
         cout << "reset has been asked "<< endl;
         particleManager->shouldSend=false;
@@ -963,7 +963,7 @@ bool PARTICLEModule::updateModule()
     return true;
 }
 /**********************************************************/
-double PARTICLEModule::getPeriod() 
+double PARTICLEModule::getPeriod()
 {
     return 0.1;
 }

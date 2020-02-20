@@ -42,7 +42,7 @@
 #define DR_BAYER16_640x480       4
 #define DR_YUV_640x480           5
 
-//#define DR_YUV_320x240         
+//#define DR_YUV_320x240
 #define DR_RGB_512x384           6
 #define DR_RGB_800x600           7
 #define DR_YUV_800x600           8
@@ -53,12 +53,12 @@
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394,
                         public yarp::dev::IRgbVisualParams
 {
-public:   
+public:
     CFWCamera_DR2_2(bool raw);
 
     virtual ~CFWCamera_DR2_2()
     {
-        if (m_pCamera) Close(); 
+        if (m_pCamera) Close();
     }
 
     int width();
@@ -106,7 +106,7 @@ protected:
     unsigned int m_RawBufferSize;
     unsigned int m_XDim,m_YDim;
     int m_Framerate;
-    
+
     unsigned int m_GainSaveValue,m_ShutterSaveValue;
     dc1394feature_mode_t m_GainSaveModeAuto,m_ShutterSaveModeAuto;
 
@@ -234,7 +234,7 @@ public:
     virtual unsigned int getColorCodingDC1394();
 
     // 22
-    virtual bool setColorCodingDC1394(int coding);	
+    virtual bool setColorCodingDC1394(int coding);
 
     // 25
     virtual bool getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep);
@@ -243,7 +243,7 @@ public:
     virtual bool setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0);
 
     // 27
-    virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);	
+    virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);
 
     // 28
     virtual bool setOperationModeDC1394(bool b1394b);
@@ -305,10 +305,10 @@ public:
     // GET
 
     virtual double getBrightness();
-    virtual double getExposure();	
+    virtual double getExposure();
     virtual double getSharpness();
-    virtual bool getWhiteBalance(double &blue, double &red);	
-    virtual double getHue();	
+    virtual bool getWhiteBalance(double &blue, double &red);
+    virtual double getHue();
     virtual double getSaturation();
     virtual double getGamma();
     virtual double getShutter();

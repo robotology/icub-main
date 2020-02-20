@@ -52,5 +52,5 @@ case $1 in
 		echo "killall: forces a kill of yarp run on all machines"
     ;;
 
-esac    
+esac
 

@@ -38,7 +38,7 @@
     <node>console</node>
     <tag>skinGuiRH</tag>
   </module>
-  
+
   <connection>
     <from>/skinManGuiArms/rpc:o</from>
     <to>/armSkinMan/rpc</to>
@@ -54,18 +54,18 @@
     <to>/skinManGuiArms/info:i</to>
     <protocol>tcp</protocol>
   </connection>
-  
+
   <connection>
     <from>/diagnostics/skin/errors:o</from>
     <to>/skinManager/diagnostics/skin/errors:i</to>
     <protocol>tcp</protocol>
-  </connection>  
+  </connection>
   <connection>
     <from>/skinManager/diagnostics/skin/errors:o</from>
     <to>/skinManagerGui/diagnostics/skin/errors:i</to>
     <protocol>tcp</protocol>
   </connection>
-  
+
   <connection>
     <from>/icub/skin/left_hand_comp</from>
     <to>/skinGui/left_hand:i</to>
@@ -75,7 +75,7 @@
     <from>/icub/skin/left_forearm_comp</from>
     <to>/skinGui/left_forearm:i</to>
     <protocol>udp</protocol>
-  </connection>   
+  </connection>
   <connection>
     <from>/icub/skin/right_hand_comp</from>
     <to>/skinGui/right_hand:i</to>

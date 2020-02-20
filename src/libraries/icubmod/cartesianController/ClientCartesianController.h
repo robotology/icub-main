@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -78,8 +78,8 @@ protected:
     yarp::os::BufferedPort<yarp::os::Bottle>  portCmd;
     yarp::os::RpcClient                       portRpc;
 
-    std::set<int> contextIdList;    
-    std::map<std::string,yarp::dev::CartesianEvent*> eventsMap;    
+    std::set<int> contextIdList;
+    std::map<std::string,yarp::dev::CartesianEvent*> eventsMap;
     CartesianEventHandler portEvents;
     friend class CartesianEventHandler;
 

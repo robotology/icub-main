@@ -24,3 +24,5 @@ licenses-good.txt
 .vs/
 CMakeSettings.json
 *.txt.user
+.idea/
+.directory

@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Ronny André Reierstad, Vadim Tikhanoff
 * email:   vadim.tikhanoff@iit.it
@@ -20,7 +20,7 @@
 /**
  * \file MS3D.cpp
  * \brief This file deals with the loading of 3D objects into the simulator. To be changed by a more generic method
- * \author Ronny André Reierstad, Vadim Tikhanoff 
+ * \author Ronny André Reierstad, Vadim Tikhanoff
  * \date 2007
  * \note Released under GNU GPL v2.0
  **/
@@ -116,7 +116,7 @@ bool Model::loadModelData( const char *filename )
     if ( pHeader->m_version < 3 )
         return false; // "Unhandled file version. Only Milkshape3D Version 1.3 and 1.4 is supported." );
 
-    int nVertices = *( word* )pPtr; 
+    int nVertices = *( word* )pPtr;
     m_numVertices = nVertices;
     m_pVertices = new Vertex[nVertices];
     pPtr += sizeof( word );
@@ -210,7 +210,7 @@ bool Model::loadModelData( const char *filename )
 
 
 
-void Model::draw(bool wireframed, int TextureNumber) 
+void Model::draw(bool wireframed, int TextureNumber)
 {
     GLboolean texEnabled = glIsEnabled( GL_TEXTURE_2D );
     static bool once=true;

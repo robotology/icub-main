@@ -87,7 +87,7 @@ void iCubAdditionalArmConstraints::clone(const iKinLinIneqConstr *obj)
     shou_n=ptr->shou_n;
     elb_m=ptr->elb_m;
     elb_n=ptr->elb_n;
-    
+
     chain=ptr->chain;
     hw_version=ptr->hw_version;
 }
@@ -96,7 +96,7 @@ void iCubAdditionalArmConstraints::clone(const iKinLinIneqConstr *obj)
 /************************************************************************/
 iCubAdditionalArmConstraints::iCubAdditionalArmConstraints(iCubArm &arm) :
                               iKinLinIneqConstr()
-{      
+{
     chain=arm.asChain();
 
     size_t underscore=arm.getType().find('_');
@@ -136,7 +136,7 @@ void iCubAdditionalArmConstraints::update(void*)
     // new constraints will be added up
     yarp::sig::Matrix _C(0,row.length());
     yarp::sig::Vector _lB;
-    yarp::sig::Vector _uB;    
+    yarp::sig::Vector _uB;
 
     // if shoulder's axes are controlled, constraint them
     if (!(*chain)[3+0].isBlocked() && !(*chain)[3+1].isBlocked() &&
@@ -306,12 +306,12 @@ protected:
                 v[2]=xd[5];
                 v[3]=xd[6];
             }
-            
+
             q=chain.setAng(q);
             yarp::sig::Matrix H=chain.getH();
             yarp::sig::Matrix E=axis2dcm(v)*H.transposed();
             v=dcm2axis(E);
-            
+
             e_xyz[0]=xd[0]-H(0,3);
             e_xyz[1]=xd[1]-H(1,3);
             e_xyz[2]=xd[2]-H(2,3);
@@ -360,7 +360,7 @@ public:
              chain(c), q0(_q0), xd(_xd),
              chain2ndTask(_chain2ndTask),   xd_2nd(_xd_2nd), w_2nd(_w_2nd),
              weight3rdTask(_weight3rdTask), qd_3rd(_qd_3rd), w_3rd(_w_3rd),
-             LIC(_LIC), 
+             LIC(_LIC),
              exhalt(_exhalt)
     {
         dim=chain.getDOF();
@@ -480,7 +480,7 @@ public:
             e_cst=&e_ang;
             J_cst=&J_ang;
         }
-        else 
+        else
             return false;
 
         return true;
@@ -507,10 +507,10 @@ public:
             else
                 LIC.setActive(false);
         }
-        
+
         nnz_h_lag=(dim*(dim+1))>>1;
         index_style=TNLP::C_STYLE;
-        
+
         return true;
     }
 
@@ -523,7 +523,7 @@ public:
             x_l[i]=chain(i).getMin();
             x_u[i]=chain(i).getMax();
         }
-        
+
         Index offs=0;
 
         for (Index i=0; i<m; i++)
@@ -542,7 +542,7 @@ public:
 
         return true;
     }
-    
+
     /************************************************************************/
     bool get_starting_point(Index n, bool init_x, Number* x, bool init_z,
                             Number* z_L, Number* z_U, Index m, bool init_lambda,
@@ -553,7 +553,7 @@ public:
 
         return true;
     }
-    
+
     /************************************************************************/
     bool eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
     {
@@ -569,7 +569,7 @@ public:
 
         return true;
     }
-    
+
     /************************************************************************/
     bool eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
     {
@@ -588,7 +588,7 @@ public:
 
         return true;
     }
-    
+
     /************************************************************************/
     bool eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
     {
@@ -609,7 +609,7 @@ public:
 
         return true;
     }
-    
+
     /************************************************************************/
     bool eval_jac_g(Index n, const Number* x, bool new_x, Index m, Index nele_jac,
                     Index* iRow, Index *jCol, Number* values)
@@ -619,7 +619,7 @@ public:
             if (values==NULL)
             {
                 Index idx=0;
-        
+
                 for (Index row=0; row<m; row++)
                 {
                     for (Index col=0; col<n; col++)
@@ -633,7 +633,7 @@ public:
             else
             {
                 computeQuantities(x);
-            
+
                 yarp::sig::Vector grad=-2.0*(J_cst->transposed() * *e_cst);
 
                 Index idx =0;
@@ -642,15 +642,15 @@ public:
                 for (Index row=0; row<m; row++)
                 {
                     for (Index col=0; col<n; col++)
-                    {    
+                    {
                         if (row==0)
                         {
-                            values[idx]=grad[idx];                    
+                            values[idx]=grad[idx];
                             offs=1;
                         }
                         else
                             values[idx]=LIC.getC()(row-offs,col);
-                    
+
                         idx++;
                     }
                 }
@@ -659,7 +659,7 @@ public:
 
         return true;
     }
-    
+
     /************************************************************************/
     bool eval_h(Index n, const Number* x, bool new_x, Number obj_factor,
                 Index m, const Number* lambda, bool new_lambda,
@@ -668,7 +668,7 @@ public:
         if (values==NULL)
         {
             Index idx=0;
-        
+
             for (Index row=0; row<n; row++)
             {
                 for (Index col=0; col<=row; col++)
@@ -695,7 +695,7 @@ public:
                 for (Index col=0; col<=row; col++)
                 {
                     // warning: row and col are swapped due to asymmetry
-                    // of orientation part within the hessian 
+                    // of orientation part within the hessian
                     yarp::sig::Vector h=chain.fastHessian_ij(col,row);
                     yarp::sig::Vector h_xyz(3), h_ang(3), h_zero(3,0.0);
                     h_xyz[0]=h[0];
@@ -719,25 +719,25 @@ public:
 
                     values[idx]=2.0*(obj_factor*(dot(*J_1st,row,*J_1st,col)-dot(*h_1st,*e_1st))+
                                      lambda[0]*(dot(*J_cst,row,*J_cst,col)-dot(*h_cst,*e_cst)));
-                
+
                     if ((weight2ndTask!=0.0) && (row<(int)dim_2nd) && (col<(int)dim_2nd))
-                    {    
+                    {
                         // warning: row and col are swapped due to asymmetry
-                        // of orientation part within the hessian 
+                        // of orientation part within the hessian
                         yarp::sig::Vector h2=chain2ndTask.fastHessian_ij(col,row);
                         yarp::sig::Vector h_2nd(3);
                         h_2nd[0]=(w_2nd[0]*w_2nd[0])*h2[0];
                         h_2nd[1]=(w_2nd[1]*w_2nd[1])*h2[1];
                         h_2nd[2]=(w_2nd[2]*w_2nd[2])*h2[2];
-                
+
                         values[idx]+=2.0*obj_factor*weight2ndTask*(dot(J_2nd,row,J_2nd,col)-dot(h_2nd,e_2nd));
                     }
-                
+
                     idx++;
                 }
             }
         }
-        
+
         return true;
     }
 
@@ -847,7 +847,7 @@ bool iKinIpOptMin::set_posePriority(const string &priority)
         posePriority=priority;
         return true;
     }
-    else 
+    else
         return false;
 }
 
@@ -865,7 +865,7 @@ void iKinIpOptMin::specify2ndTaskEndEff(const unsigned int n)
 
     chain2ndTask.setH0(chain.getH0());
     if (_n==chain.getN())
-        chain2ndTask.setHN(chain.getHN()); 
+        chain2ndTask.setHN(chain.getHN());
 }
 
 
@@ -1037,7 +1037,7 @@ yarp::sig::Vector iKinIpOptMin::solve(const yarp::sig::Vector &q0, yarp::sig::Ve
                                         weight2ndTask,chain2ndTask,xd_2nd,w_2nd,
                                         weight3rdTask,qd_3rd,w_3rd,
                                         *pLIC,exhalt);
-    
+
     nlp->set_scaling(obj_scaling,x_scaling,g_scaling);
     nlp->set_bound_inf(lowerBoundInf,upperBoundInf);
     nlp->set_posePriority(posePriority);

@@ -1421,7 +1421,7 @@ bool EthMaintainer::go2maintenance(eOipv4addr_t ipv4, bool verify, int retries, 
 
 
 bool EthMaintainer::go2application(eOipv4addr_t ipv4, bool checkdef2runapplication, double bootstraptime, bool verify)
-{    
+{
     bool ret = false;
 
     EthBoardList boardlist = information(ipv4, true, false, 2, 1.0);

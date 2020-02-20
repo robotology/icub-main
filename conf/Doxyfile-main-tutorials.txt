@@ -738,7 +738,7 @@ WARN_LOGFILE           =
 INPUT                  = icub-main/src \
                          icub-main/app \
                          generated-from-xml \
-                         icub-tutorials                    
+                         icub-tutorials
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

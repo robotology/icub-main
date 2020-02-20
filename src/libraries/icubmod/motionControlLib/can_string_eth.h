@@ -121,7 +121,7 @@ public:
         * @param cbuffer_num is the number of the buffer.  0 <= buffer_num <= MAX_STRINGS
         */
         inline void  clear_string(int buffer_num);
-        
+
         inline char* get_string(int buffer_num);
 };
 
@@ -147,7 +147,7 @@ int can_string_eth::add_string(CanFrame* can_packet)
     size=can_packet->getSize();
     uint64_t candatabytes = can_packet->getData();
     char *candata=(char*)&candatabytes;
-    int code = candata[0]&0xFF; 
+    int code = candata[0]&0xFF;
 
     string_id = (candata[1]&0xF0)>>4;
     offset    = (candata[1]&0x0F);

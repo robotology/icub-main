@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini, Alessandro Roncone
  * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
@@ -36,7 +36,7 @@ using namespace iCub::ctrl;
 using namespace iCub::iKin;
 
 
-// Solve through IPOPT the nonlinear problem 
+// Solve through IPOPT the nonlinear problem
 class GazeIpOptMin : public iKinIpOptMin
 {
 private:

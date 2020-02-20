@@ -33,10 +33,10 @@ public:
     ImageSplitter();
     ~ImageSplitter();
     bool configure(yarp::os::ResourceFinder &rf);
-    bool interruptModule();                       
-    bool close();                                 
+    bool interruptModule();
+    bool close();
     bool updateModule();
-    double getPeriod(); 
+    double getPeriod();
 };
 
 #endif  // ICUB_TOOLS_IMAGE_SPLITTER_H

@@ -24,7 +24,7 @@ using namespace iCub::ctrl;
 
 
 /***************************************************************************/
-AWPolyEstimator::AWPolyEstimator(unsigned int _order, unsigned int _N, const double _D) : 
+AWPolyEstimator::AWPolyEstimator(unsigned int _order, unsigned int _N, const double _D) :
                                  order(_order), N(_N), D(_D)
 {
     order=std::max(order,1U);
@@ -105,11 +105,11 @@ Vector AWPolyEstimator::estimate()
     Vector esteem(dim,0.0);
 
     if (firstRun)
-    {    
+    {
         winLen.resize(dim,N);
         mse.resize(dim,0.0);
         firstRun=false;
-    }    
+    }
 
     size_t L=elemList.size();
     int delta=(int)L-(int)N;
@@ -148,14 +148,14 @@ Vector AWPolyEstimator::estimate()
         {
             // find the regressor's coefficients
             coeff=fit(t,x,n);
-            bool _stop=false;            
+            bool _stop=false;
 
             // test the regressor upon all the elements
             // belonging to the actual window
             mse[i]=0.0;
             for (unsigned int k=N-n; k<N; k++)
             {
-                double e=x[k]-eval(t[k]);                
+                double e=x[k]-eval(t[k]);
                 _stop|=(fabs(e)>D);
                 mse[i]+=e*e;
             }

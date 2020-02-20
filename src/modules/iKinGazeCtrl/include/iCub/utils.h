@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini, Alessandro Roncone
  * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
@@ -44,8 +44,8 @@ using namespace iCub::iKin;
 
 // This class handles the incoming fixation point
 // xyz coordinates.
-// 
-// Since it accepts a bottle, it is possible to 
+//
+// Since it accepts a bottle, it is possible to
 // issue the command "yarp read /sender /ctrlName/xd:i"
 // and type the target position manually.
 //
@@ -62,7 +62,7 @@ protected:
     mutex              mtx_triggerNeck;
     condition_variable cv_triggerNeck;
     Vector             xd;
-    Vector             xdDelayed;    
+    Vector             xdDelayed;
     bool               isNew;
     bool               isNewDelayed;
     bool               locked;
@@ -82,7 +82,7 @@ public:
     bool    islocked() const { return locked;       }
     int     get_rx() const   { return rx;           }
     bool   &get_new()        { return isNew;        }
-    bool   &get_newDelayed() { return isNewDelayed; }    
+    bool   &get_newDelayed() { return isNewDelayed; }
     bool    set_xd(const Vector &_xd);
     Vector  get_xd();
     Vector  get_xdDelayed();

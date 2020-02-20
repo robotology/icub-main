@@ -1,7 +1,7 @@
 # Copyright: 2011 RobotCub Consortium
 # Author: Carlo Ciliberto
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# 
+#
 
 set(appname actionsRenderingEngine)
 

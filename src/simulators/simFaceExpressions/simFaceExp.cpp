@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Authors: Vadim Tikhanoff, Martin Peniak
  * email:   vadim.tikhanoff@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -24,28 +24,28 @@
 #include "simFaceExp.h"
 
 using namespace std;
-using namespace yarp::os; 
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::sig::draw;
 using namespace yarp::sig::file;
 
 bool simFaceExp::configure(yarp::os::ResourceFinder &rf)
-{    
+{
     /* Process all parameters from both command-line and .ini file */
     Property options;
     string general = rf.findFile("general");
     options.fromConfigFile(general.c_str());
 
-    moduleName          = options.check("name", 
-                        Value("simFaceExp"), 
+    moduleName          = options.check("name",
+                        Value("simFaceExp"),
                         "module name (string)").asString();
 
     width               = options.check("width",
-                        Value(512), 
+                        Value(512),
                         "mask width").asInt();
 
     height              = options.check("height",
-                        Value(512), 
+                        Value(512),
                         "mask height").asInt();
 
     maskPath = rf.findFile("mask");
@@ -58,11 +58,11 @@ bool simFaceExp::configure(yarp::os::ResourceFinder &rf)
     */
 
     handlerPortName =  "/";
-    handlerPortName += getName();         // use getName() rather than a literal 
- 
-    if (!handlerPort.open(handlerPortName.c_str())) 
+    handlerPortName += getName();         // use getName() rather than a literal
+
+    if (!handlerPort.open(handlerPortName.c_str()))
     {
-        cout << getName() << ": Unable to open port " << handlerPortName << endl;  
+        cout << getName() << ": Unable to open port " << handlerPortName << endl;
         return false;
     }
 
@@ -135,37 +135,37 @@ void simFaceExp::setSubSystem(const char *command)
     else if (systemID == 'R') pos = 8;
     //else if (systemID == 'M') pos = 16;
     else if (systemID == 'M') pos = 21;
-    
+
     //truncate string
     char hex[2];
     hex[0]=command[1];
     hex[1]=command[2];
 
-    //convert hexdec to binary 
+    //convert hexdec to binary
     int num = strtol(hex, (char **)NULL, 16);
 
     if (systemID == 'S')
     {
-        for (int i=0;i<8;i++) 
+        for (int i=0;i<8;i++)
             eyeLids[i] = (num >> i)&1;
 
         //print the array
-        for (int i = 0; i<8;i++) 
+        for (int i = 0; i<8;i++)
             yDebug("%d", eyeLids[i]);
         yDebug("\n");
 
         eyeLidPos = linearMap((float)num,36,72,0,30);
         yDebug("eyeLid pos is %lf\n",eyeLidPos);
     }
-    else 
+    else
     {
         if (pos == 21)
         {
-            for (int i=0;i<8;i++) 
+            for (int i=0;i<8;i++)
                 ledsActivation[(pos)-i] = (num >> i)&1;
         }
         else
-            for (int i=0;i<8;i++) 
+            for (int i=0;i<8;i++)
                 ledsActivation[pos+i] = (num >> i)&1;
 
         if (ledsActivation[19]==1 && ledsActivation[18]!=1)
@@ -180,7 +180,7 @@ void simFaceExp::setSubSystem(const char *command)
         }
     }
 }
-//generate texture by checking leds that are switched on and drawing them 
+//generate texture by checking leds that are switched on and drawing them
 void simFaceExp::generateTexture()
 {
     for (int i=0;i<512;i++)
@@ -188,7 +188,7 @@ void simFaceExp::generateTexture()
         {
             PixelRgb& maskPixel = mask.pixel(i,j);
             PixelRgb& imagePixel = image.pixel(i,j);
-            if (maskPixel.b <NUM_ARRAY && ledsActivation[maskPixel.b]==1) 
+            if (maskPixel.b <NUM_ARRAY && ledsActivation[maskPixel.b]==1)
             {
                 imagePixel.r = 255;
                 imagePixel.g = 120;
@@ -204,7 +204,7 @@ void simFaceExp::generateTexture()
     //write(image,"Texture.ppm");
 }
 
-void simFaceExp::prepareData(unsigned char *data, int width, int height) 
+void simFaceExp::prepareData(unsigned char *data, int width, int height)
 {
     image.setQuantum(1);
     image.setExternal(data,width,height);
@@ -220,7 +220,7 @@ float simFaceExp::linearMap( float x, float min, float max, float outMin, float 
     return ret;
 }
 
-double simFaceExp::getPeriod() 
+double simFaceExp::getPeriod()
 {
     return 0.1;
 }
@@ -245,16 +245,16 @@ bool simFaceExp::close()
     return true;
 }
 
-bool simFaceExp::respond(const Bottle& command, Bottle& reply) 
+bool simFaceExp::respond(const Bottle& command, Bottle& reply)
 {
-    reply.clear(); 
+    reply.clear();
 
-    if (command.get(0).asString()=="quit") 
+    if (command.get(0).asString()=="quit")
     {
         reply.addString("quitting");
-        return false;     
+        return false;
     }
-    else if (command.get(0).asString()=="help") 
+    else if (command.get(0).asString()=="help")
     {
         yInfo("Options:\n\n");
         yInfo("\t--name       name: module name (default: simFaceExpressions)\n");

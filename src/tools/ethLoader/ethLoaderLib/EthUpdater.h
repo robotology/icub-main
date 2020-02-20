@@ -35,7 +35,7 @@ protected:
     ACE_UINT16 mPort;
     ACE_UINT32 mBroadcast;
     ACE_UINT32 mMyAddress;
-    
+
     DSocket mSocket;
 
 public:

@@ -51,7 +51,7 @@ using namespace std;
 #include "eomcParser.h"
 #include "measuresConverter.h"
 
-#ifdef NETWORK_PERFORMANCE_BENCHMARK 
+#ifdef NETWORK_PERFORMANCE_BENCHMARK
 #include <PeriodicEventsVerifier.h>
 #endif
 
@@ -77,7 +77,7 @@ using namespace std;
 namespace yarp {
     namespace dev {
         namespace eomc {
-            
+
 typedef struct
 {
     vector<int>                         joint2set;
@@ -182,14 +182,14 @@ private:
     eomc::Parser *             _mcparser;
     ControlBoardHelper*        _measureConverter;
     std::mutex                 _mutex;
-    
+
     bool opened; //internal state
 
 
      /////configuartion info (read from xml files)
     int                                     _njoints;       /** Number of joints handled by this EMS */
     eomc::behaviour_flags_t                  behFlags;       /** Contains all flags that define the behaviour of this device */
-    servConfigMC_t                          serviceConfig;  /** contains the needed data for configure motion control service, like i.e. board ports where joint are connected */ 
+    servConfigMC_t                          serviceConfig;  /** contains the needed data for configure motion control service, like i.e. board ports where joint are connected */
     double *                                _gearbox_M2J;   /** the gearbox ratio motor to joint */
     double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
     double *                                _deadzone;
@@ -248,11 +248,11 @@ private:
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
-    double *_last_position_move_time;           /** time stamp for last received position move command*/    
+    double *_last_position_move_time;           /** time stamp for last received position move command*/
     eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
-    
 
-#ifdef NETWORK_PERFORMANCE_BENCHMARK 
+
+#ifdef NETWORK_PERFORMANCE_BENCHMARK
     Tools:Emb_RensponseTimingVerifier m_responseTimingVerifier;
 #endif
 
@@ -260,7 +260,7 @@ private:
 
     std::string getBoardInfo(void);
     bool askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size);
-    template <class T> 
+    template <class T>
     bool askRemoteValues(eOprotEndpoint_t ep, eOprotEntity_t entity, eOprotTag_t tag, std::vector<T>& values);
     bool checkRemoteControlModeStatus(int joint, int target_mode);
 
@@ -290,7 +290,7 @@ private:
     bool getJointDeadZoneRaw(int j, double &jntDeadZone);
 
 private:
-    
+
     //functions used in init this object
     bool fromConfig(yarp::os::Searchable &config);
     int fromConfig_NumOfJoints(yarp::os::Searchable &config);
@@ -300,35 +300,35 @@ private:
     bool initializeInterfaces(measureConvFactors &f);
     bool alloc(int njoints);
     bool init(void);
-    
+
     //function used in the closing this object
     void cleanup(void);
-    
+
     //used in pid interface
     bool helper_setPosPidRaw( int j, const Pid &pid);
     bool helper_getPosPidRaw(int j, Pid *pid);
     bool helper_getPosPidsRaw(Pid *pid);
-    
+
     //used in torque control interface
     bool helper_setTrqPidRaw( int j, const Pid &pid);
     bool helper_getTrqPidRaw(int j, Pid *pid);
     bool helper_getTrqPidsRaw(Pid *pid);
-    
+
     //used in velocity control interface
     bool helper_setVelPidRaw( int j, const Pid &pid);
     bool helper_getVelPidRaw(int j, Pid *pid);
     bool helper_getVelPidsRaw(Pid *pid);
-    
+
     //used in current control interface
     bool helper_setCurPidRaw(int j, const Pid &pid);
     bool helper_getCurPidRaw(int j, Pid *pid);
     bool helper_getCurPidsRaw(Pid *pid);
-    
+
     //used in low level speed control interface
     bool helper_setSpdPidRaw(int j, const Pid &pid);
     bool helper_getSpdPidRaw(int j, Pid *pid);
     bool helper_getSpdPidsRaw(Pid *pid);
-    
+
 public:
 
     embObjMotionControl();
@@ -599,7 +599,7 @@ public:
     virtual bool getRefCurrentsRaw(double *t) override;
     virtual bool getRefCurrentRaw(int j, double *t) override;
 
-    
+
 };
 
 #endif // include guard

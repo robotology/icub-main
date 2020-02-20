@@ -81,7 +81,7 @@
             <item row="3" column="1">
              <widget class="QPushButton" name="btn4">
               <property name="text">
-               <string>x+ pointing UPwards  
+               <string>x+ pointing UPwards
    25kg</string>
               </property>
              </widget>
@@ -89,7 +89,7 @@
             <item row="4" column="1">
              <widget class="QPushButton" name="btn5">
               <property name="text">
-               <string>x- pointing UPwards  
+               <string>x- pointing UPwards
    25kg</string>
               </property>
              </widget>
@@ -107,7 +107,7 @@
                <string notr="true"/>
               </property>
               <property name="text">
-               <string>z+ pointing UPwards  
+               <string>z+ pointing UPwards
     25kg compression</string>
               </property>
              </widget>

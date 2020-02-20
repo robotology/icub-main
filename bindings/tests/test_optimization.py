@@ -51,7 +51,7 @@ def euler2dcm(v):
     gamma=v[2]
     cg=math.cos(gamma)
     sg=math.sin(gamma)
- 
+
     Rza[0,0]=ca
     Rza[1,1]=ca
     Rza[1,0]=sa
@@ -64,7 +64,7 @@ def euler2dcm(v):
     Ryb[2,2]=cb
     Ryb[2,0]=-sb
     Ryb[0,2]=sb;
- 
+
     return np.matmul(np.matmul(Rza,Ryb),Rzg)
 
 yarp.Network.init()

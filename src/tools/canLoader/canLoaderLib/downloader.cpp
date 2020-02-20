@@ -436,7 +436,7 @@ int cDownloader::strain_get_offset(int bus, int target_id, char channel, unsigne
                     if(_verbose) yError ("strain_get_offset : invalid response\n");
                     return -1;
                 }
-                
+
             }
     }
 
@@ -1456,7 +1456,7 @@ int cDownloader::strain_acquire_get(int bus, int target_id, vector<strain_value_
     }
 
     unsigned int errorcount = 0;
-    
+
 
     if (strain_acquisition_mode_polling == acqmode)
     {

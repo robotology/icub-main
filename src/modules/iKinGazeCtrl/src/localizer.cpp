@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini, Alessandro Roncone
  * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
@@ -146,7 +146,7 @@ Localizer::~Localizer()
 
 /************************************************************************/
 bool Localizer::threadInit()
-{ 
+{
     port_mono.open(commData->localStemName+"/mono:i");
     port_stereo.open(commData->localStemName+"/stereo:i");
     port_anglesIn.open(commData->localStemName+"/angles:i");
@@ -250,9 +250,9 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
 
         ver+=head[5];
     }
-    
+
     // impose vergence != 0.0
-    ver=std::max(ver,commData->minAllowedVergence);    
+    ver=std::max(ver,commData->minAllowedVergence);
 
     q[7]+=ver/2.0;
     eyeL->setAng(q);
@@ -263,7 +263,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     // compute new fp due to changed vergence
     Vector fp;
     CartesianHelper::computeFixationPointData(*(eyeL->asChain()),*(eyeR->asChain()),fp);
-    fp.push_back(1.0);  // impose homogeneous coordinates    
+    fp.push_back(1.0);  // impose homogeneous coordinates
 
     // compute rotational matrix to
     // account for elevation and azimuth
@@ -271,7 +271,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     x[0]=1.0;    y[0]=0.0;
     x[1]=0.0;    y[1]=1.0;
     x[2]=0.0;    y[2]=0.0;
-    x[3]=ele;    y[3]=azi;   
+    x[3]=ele;    y[3]=azi;
     Matrix R=axis2dcm(y)*axis2dcm(x);
 
     Vector fph, xd;
@@ -321,14 +321,14 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
         q[5]=head[2];
         q[6]=head[3];
         q[7]=head[4]+head[5]/(isLeft?2.0:-2.0);
-        
+
         Vector xo=x;
         // impose homogeneous coordinates
         if (xo.length()<4)
             xo.push_back(1.0);
         else
         {
-            xo=xo.subVector(0,3); 
+            xo=xo.subVector(0,3);
             xo[3]=1.0;
         }
 
@@ -384,7 +384,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         Vector xe=*invPrj*p;
         xe[3]=1.0;  // impose homogeneous coordinates
 
-        // find position wrt the root frame        
+        // find position wrt the root frame
         x=eye->getH(q)*xe;
         x.pop_back();
         return true;
@@ -473,7 +473,7 @@ bool Localizer::triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x
 
         Vector qR=qL;
         qR[7]-=head[5];
-        
+
         Matrix HL=SE3inv(eyeL->getH(qL));
         Matrix HR=SE3inv(eyeR->getH(qR));
 
@@ -585,12 +585,12 @@ void Localizer::handleStereoInput()
                     // we can keep gains always positive
                 }
                 else
-                {                    
+                {
                     u=ur;
                     v=vr;
                     fb=ul-cxl;
                 }
-                
+
                 mtx.lock();
                 Vector z=pid->compute(ref,fb);
                 mtx.unlock();
@@ -615,7 +615,7 @@ void Localizer::handleAnglesInput()
         if (angles->size()>=4)
         {
             Vector ang(3);
-        
+
             string type=angles->get(0).asString();
             ang[0]=CTRL_DEG2RAD*angles->get(1).asDouble();
             ang[1]=CTRL_DEG2RAD*angles->get(2).asDouble();

@@ -17,7 +17,7 @@ if (NOT SKIP_embObjSkin)
     yarp_add_plugin(embObjSkin embObjSkin.h embObjSkin.cpp ../skinLib/SkinConfigReader.cpp ../skinLib/SkinDiagnostics.h)
     target_link_libraries(embObjSkin ethResources ${YARP_LIBRARIES})
     icub_export_plugin(embObjSkin)
- 
+
   yarp_install(TARGETS embObjSkin
                COMPONENT Runtime
                LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}

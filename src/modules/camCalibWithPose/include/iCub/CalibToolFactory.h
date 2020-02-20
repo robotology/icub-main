@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
- * Copyright (C) 2007 Jonas Ruesch 
+ * Copyright (C) 2007 Jonas Ruesch
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  * Written by Jonas Ruesch inspired by Paul Fitzpatrick.
@@ -34,7 +34,7 @@ public:
     virtual ICalibTool *create() {
         return new T;
     }
-    
+
     virtual std::string getName() {
         return name;
     }
@@ -46,7 +46,7 @@ public:
     virtual ~CalibToolFactories() {
         clear();
     }
-    
+
     void add(CalibToolFactory *factory) {
         group.push_back(factory);
     }

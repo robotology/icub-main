@@ -46,4 +46,4 @@ jointPositions -3.025724	2.066821	-4.914963
 numberOfPoses 22
 numberOfJoints 3
 [REORDER]
-order 6 20 21 16 17 12 11 14 7 3 0 9 18 19 8 2 1 5 4 10 13 15 
+order 6 20 21 16 17 12 11 14 7 3 0 9 18 19 8 2 1 5 4 10 13 15

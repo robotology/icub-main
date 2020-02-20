@@ -24,7 +24,7 @@ namespace yarp{
 
 
 /*! class yarp::dev::embObjVirtualAnalogSensor
- * 
+ *
  */
 class yarp::dev::embObjVirtualAnalogSensor:     public yarp::dev::IVirtualAnalogSensor,
                                                 public yarp::dev::DeviceDriver,
@@ -59,7 +59,7 @@ public:
 
     embObjVirtualAnalogSensor();
     ~embObjVirtualAnalogSensor();
-    
+
     // An open function yarp factory compatible
     bool open(yarp::os::Searchable &config);
     void cleanup(void);

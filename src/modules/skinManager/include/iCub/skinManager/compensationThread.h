@@ -1,9 +1,9 @@
- 
-/* 
+
+/*
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Andrea Del Prete, Alexander Schmitz
  * email:   andrea.delprete@iit.it, alexander.schmitz@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -37,7 +37,7 @@
 #include "iCub/skinDynLib/skinContactList.h"
 
 using namespace std;
-using namespace yarp::os; 
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace iCub::skinDynLib;
@@ -57,8 +57,8 @@ public:
         int addThreshold, float minBaseline, bool zeroUpRawData, int period, bool binarization, bool smoothFilter, float smoothFactor);
     bool threadInit();
     void threadRelease();
-    void run(); 
-    
+    void run();
+
     void calibrate();
     void setBinarization(bool value);
     void setSmoothFilter(bool value);
@@ -112,9 +112,9 @@ private:
     unsigned int SKIN_DIM;                      // total number of taxels
     double compensationGain;                    // the gain of the compensation algorithm
     double contactCompensationGain;             // the gain of the compensation algorithm during contact
-    
+
     bool initializationFinished;
-    
+
     // calibration variables
     int calibrationCounter;                     // count the calibration cycles
     int readErrorCounter;                       // it counts the number of successive errors
@@ -135,7 +135,7 @@ private:
     vector<Compensator*> compensators;
     vector<bool> compEnable;            // true if the related compensator is enabled, false otherwise
     vector<bool> compWorking;           // true if the related compensator is working, false otherwise
-    unsigned int compensatorCounter;    // count the number of compensators that are working 
+    unsigned int compensatorCounter;    // count the number of compensators that are working
 
     // SKIN EVENTS
     bool skinEventsOn;

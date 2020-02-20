@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2011 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo, Matteo Fumagalli
  * email:  marco.randazzo@iit.it
@@ -45,7 +45,7 @@ constexpr int8_t MAX_JN = 12;
 constexpr int8_t MAX_FILTER_ORDER = 6;
 constexpr float_t SKIN_EVENTS_TIMEOUT = 0.2;     // max time (in sec) a contact is kept without reading anything from the skin events port
 
-enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
+enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED};
 enum calib_enum {CALIB_ALL=0, CALIB_ARMS, CALIB_LEGS, CALIB_FEET};
 
 // struct version
@@ -174,7 +174,7 @@ private:
 
     const  long double zero_sens_tolerance;
     double skinContactsTimestamp;
-    
+
     //input ports
     BufferedPort<Vector> *port_ft_arm_left;
     BufferedPort<Vector> *port_ft_arm_right;
@@ -276,8 +276,8 @@ private:
     Vector F_mdl_left_leg, F_mdl_right_leg;
     Vector F_ext_cartesian_left_leg, F_ext_cartesian_right_leg;
     Vector F_ext_cartesian_left_foot, F_ext_cartesian_right_foot;
-    Vector F_LLeg, F_RLeg; 
-    Vector F_LFoot, F_RFoot; 
+    Vector F_LLeg, F_RLeg;
+    Vector F_LFoot, F_RFoot;
     Vector F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
     Vector F_iDyn_LFoot, F_iDyn_RFoot, Offset_LFoot, Offset_RFoot;
     Matrix F_sens_up, F_sens_low, F_ext_up, F_ext_low;
@@ -312,7 +312,7 @@ public:
     inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, version_tag icub_type, bool _autoconnect=false );
     bool threadInit() override;
     void setStiffMode();
-    inline thread_status_enum getThreadStatus() 
+    inline thread_status_enum getThreadStatus()
     {
         return thread_status;
     }

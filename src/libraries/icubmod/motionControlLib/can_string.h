@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2008 The RobotCub Consortium
  * Author: Marco Randazzo, Marco Maggiali
  * website: www.robotcub.org
@@ -66,12 +66,12 @@ public:
     /**
     * Prints a string buffer. The buffer can be already completed (all parts of the can
 	* string have been already received or not). If the string contains a "hole" (a can
-	* packet is not arrived yet), the string will be printed till the first missing packet. 
+	* packet is not arrived yet), the string will be printed till the first missing packet.
     * @param buffer_num is the number of the buffer.  0 <= buffer_num <= MAX_STRINGS
     * @return the content of the buffer.
     */
 	inline char* print(int buffer_num);
-	
+
 	/**
     * Resets the string buffer
     * @param cbuffer_num is the number of the buffer.  0 <= buffer_num <= MAX_STRINGS
@@ -113,12 +113,12 @@ int can_string2<T>::add_string(void* can_packet)
 	int offset = 0;
 	T* t;
 
-	t = (T*) (can_packet); 
+	t = (T*) (can_packet);
 	string_id = (t->data[1]>>4);
 	offset = (t->data[1]&0x0F);
     data[string_id].board_id = char(t->id>>4&0xf);
 
-	if (string_id>=MAX_STRINGS) 
+	if (string_id>=MAX_STRINGS)
 	{
 		yError("msg from board %d contains an ERROR! (>MAX_STRINGS)\r\n",data[string_id ].board_id);
 		return -1;
@@ -129,7 +129,7 @@ int can_string2<T>::add_string(void* can_packet)
 
 	if (t->data[0]==ICUBCANPROTO_PER_MC_MSG__PRINT + 128)
 	{
-		data[string_id].maybe_last_part = true;	
+		data[string_id].maybe_last_part = true;
 		data[string_id].expected_length=offset*6+t->len-2;
 	}
 
@@ -150,7 +150,7 @@ int can_string2<T>::add_string(void* can_packet)
 /*
 	//DEBUG ONLY
 	ACE_OS::printf("%d %d\r\n",string_id,offset);
-	
+
 	for (j=0 ; j<50; j++)
 		ACE_OS::printf("%c",data[string_id].text_buffer[j]);
 
@@ -171,7 +171,7 @@ char* can_string2<T>::print(int buffer_num)
 	if (buffer_num>=MAX_STRINGS) return 0;
 
 	yDebug("msg from board %d: %s \r\n",data[buffer_num].board_id , data[buffer_num].text_buffer);
-	
+
 	return data[buffer_num].text_buffer;
 }
 

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
- 
+
 <module>
   <name>depth2kin</name>
   <doxygen-group>icub_tools</doxygen-group>
   <description>Stereo-Kinematics Calibration.</description>
   <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
   <version>1.0</version>
-  
+
   <description-long>
     This module implements the calibration procedure aimed to build a map
     between the 3D information retrieved by means of stereo vision and the
@@ -15,8 +15,8 @@
     To find out detailed instructions on how to run the calibration, visit
     the \ref depth2kinApp "application page".
   </description-long>
- 
-  <arguments>    
+
+  <arguments>
     <param default="depth2kin" desc="select the current context.">context</param>
     <param default="config.ini" desc="configuration file name.">from</param>
     <param default="calibration_data.ini" desc="file containing the calibration data.">calibrationFile</param>
@@ -35,11 +35,11 @@
     <param default="0.01" desc="overall tolerance used for cartesian movements during exploration phase.">exploration_intargettol</param>
     <param default="0.001" desc="overall tolerance used for cartesian movements during touch actions.">touch_intargettol</param>
   </arguments>
- 
+
   <authors>
     <author email="ugo.pattacini@iit.it"> Ugo Pattacini </author>
   </authors>
- 
+
   <data>
     <input>
       <type>yarp::sig::Image</type>
@@ -79,7 +79,7 @@
       </description>
     </output>
   </data>
-  
+
   <services>
     <server>
       <type>depth2kin_IDL</type>
@@ -88,6 +88,6 @@
       <description>service port</description>
     </server>
   </services>
- 
+
 </module>
 

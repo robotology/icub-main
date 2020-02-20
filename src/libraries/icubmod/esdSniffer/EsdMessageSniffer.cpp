@@ -134,17 +134,17 @@ public:
 	bool dumpBuffers (void);
 	inline int getJoints (void) const { return _njoints; }
 	inline bool getErrorStatus (void) const { return _error_status; }
-	
+
 public:
 	enum { ESD_TIMEOUT = 20, ESD_POLLING_INTERVAL = 10 };
 
 	HANDLE _handle;								/// the actual ddriver handle.
 	int _timeout;								/// this is my thread timeout.
-	
+
 	int _polling_interval;						/// thread polling interval.
 	int _speed;									/// speed of the bus.
 	int _networkN;								/// network number.
-	
+
 	long int _txQueueSize;
 	long int _rxQueueSize;
 	long int _txTimeout;
@@ -159,7 +159,7 @@ public:
 
 	BCastBufferElement *_bcastRecvBuffer;		/// local storage for bcast messages.
 
-	unsigned char _my_address;					/// 
+	unsigned char _my_address;					///
 	unsigned char _destinations[ESD_MAX_CARDS];	/// list of connected cards (and their addresses).
 	int _njoints;								/// number of joints (ncards * 2).
 
@@ -167,7 +167,7 @@ public:
 
 	PV _p;										///	pointer to a printf type function
 												/// used to spy on can messages.
-	
+
 	char _printBuffer[16384];                   /// old-style static print buffer (should be used only for debugging).
 };
 
@@ -196,9 +196,9 @@ EsdResources::EsdResources ()
 	_error_status = false;
 }
 
-EsdResources::~EsdResources () 
-{ 
-	uninitialize(); 
+EsdResources::~EsdResources ()
+{
+	uninitialize();
 }
 
 bool EsdResources::initialize (const EsdMessageSnifferParameters& parms)
@@ -220,7 +220,7 @@ bool EsdResources::initialize (const EsdMessageSnifferParameters& parms)
 	_my_address = parms._my_address;
 	_polling_interval = parms._polling_interval;
 	_timeout = parms._timeout;
-	_njoints = parms._njoints;	
+	_njoints = parms._njoints;
 	_p = parms._p;
 
 	_txQueueSize = parms._txQueueSize;
@@ -252,7 +252,7 @@ bool EsdResources::initialize (const EsdMessageSnifferParameters& parms)
 	int i;
 	for (i = 0; i < 0xff; i++)
 		canIdAdd (_handle, i);
-	
+
 	for (i = 0x100; i < 0x1ff; i++)
 		canIdAdd (_handle, i);
 
@@ -262,7 +262,7 @@ bool EsdResources::initialize (const EsdMessageSnifferParameters& parms)
 
 bool EsdResources::uninitialize ()
 {
-	if (_bcastRecvBuffer != NULL) 
+	if (_bcastRecvBuffer != NULL)
         {
             delete[] _bcastRecvBuffer;
             _bcastRecvBuffer = NULL;
@@ -275,7 +275,7 @@ bool EsdResources::uninitialize ()
                 return false;
             _handle = ACE_INVALID_HANDLE;
         }
-	
+
 	return true;
 }
 
@@ -288,7 +288,7 @@ bool EsdResources::read (void)
 	int32_t messages = BUF_SIZE;
 #endif
 
-	int res = canTake (_handle, _readBuffer, &messages); 
+	int res = canTake (_handle, _readBuffer, &messages);
 	if (res != NTCAN_SUCCESS)
 		return false;
 
@@ -346,15 +346,15 @@ bool EsdResources::printMessage (const CMSG& m)
 
 	int ret = ACE_OS::sprintf (_printBuffer, "class: %2d s: %2x d: %2x c: %1d msg: %3d (%x) ",
                                (m.id & 0x700) >> 8,
-                               (m.id & 0xf0) >> 4, 
-                               (m.id & 0x0f), 
+                               (m.id & 0xf0) >> 4,
+                               (m.id & 0x0f),
                                ((m.data[0] & 0x80)==0)?0:1,
                                (m.data[0] & 0x7f),
                                (m.data[0] & 0x7f));
 
 	if (m.len > 1)
         {
-            ret += ACE_OS::sprintf (_printBuffer+ret, "x: "); 
+            ret += ACE_OS::sprintf (_printBuffer+ret, "x: ");
         }
 
 	int j;
@@ -364,7 +364,7 @@ bool EsdResources::printMessage (const CMSG& m)
         }
 	ret += ACE_OS::sprintf(_printBuffer+ret, "st: %x\n", m.msg_lost);
 
-	(*_p) 
+	(*_p)
 		("%s", _printBuffer);
 
 	return true;
@@ -455,7 +455,7 @@ bool EsdMessageSniffer::open(yarp::os::Searchable& config)
 
     xtmp = p.findGroup("CAN").findGroup("CanAddresses");
     for (i = 1; i < xtmp.size(); i++) params._destinations[i-1] = (unsigned char)(xtmp.get(i).asInt());
-   
+
     ////// GENERAL
     xtmp = p.findGroup("GENERAL").findGroup("AxisMap");
 	ACE_ASSERT (xtmp.size() == nj+1);
@@ -534,10 +534,10 @@ void EsdMessageSniffer::run(void)
 
 	_writerequested = false;
 	_noreply = false;
-	
+
 	r._error_status = false;
 
-	/// ok, init completed. 
+	/// ok, init completed.
 	cv_done.notify_one();
 
 	while (!isStopping() || messagePending)
@@ -546,7 +546,7 @@ void EsdMessageSniffer::run(void)
 
             _mutex.lock ();
             if (r.read () != true)
-                if (r._p) 
+                if (r._p)
                     (*r._p) ("Sniffer: read failed\n");
 
             // handle broadcast messages.
@@ -650,15 +650,15 @@ void EsdMessageSniffer::run(void)
                         {
                             CMSG& m = r._readBuffer[i];
                             if (m.len & NTCAN_NO_DATA)
-                                if (r._p) 
+                                if (r._p)
                                     {
-                                        (*r._p) ("Sniffer: error in message %x len: %d type: %x: %x\n", 
+                                        (*r._p) ("Sniffer: error in message %x len: %d type: %x: %x\n",
                                                  m.id, m.len, m.data[0], m.msg_lost);
-						
+
                                         continue;
                                     }
 
-                            if (((m.id &0x700) == 0) && 
+                            if (((m.id &0x700) == 0) &&
                                 ((m.data[0] & 0x7f) < NUM_OF_MESSAGES))
                                 r.printMessage (m);
 
@@ -711,7 +711,7 @@ void EsdMessageSniffer::run(void)
                     /// timeout
                     counter ++;
                     if (counter > r._timeout)
-                        {	
+                        {
                             /// complains.
                             if (r._p)
                                 {
@@ -778,7 +778,7 @@ void EsdMessageSniffer::run(void)
                     Time::delay(k);
                     //before = now + k;
                 }
-            else 
+            else
                 {
                     if (r._p) (*r._p)("Sniffer: thread can't poll fast enough (time: %f)\n", now-before);
                     //before = now;
@@ -799,7 +799,7 @@ bool EsdMessageSniffer::setDebugPrintFunction (void *cmd)
 
 
 ///
-/// 
+///
 /// control card commands.
 ///
 inline bool EsdMessageSniffer::ENABLED (int axis)
@@ -857,7 +857,7 @@ bool EsdMessageSniffer::getBCastPIDOutput (int i, double *value)
 {
 	EsdResources& r = RES(system_resources);
 	ACE_ASSERT (i >= 0 && i <= r.getJoints());
-	
+
     lock_guard<mutex> lck(_mutex);
 	*value = double(r._bcastRecvBuffer[i]._pid_value);
 	return true;
@@ -879,7 +879,7 @@ bool EsdMessageSniffer::getBCastCurrent (int i, double *value)
 {
 	EsdResources& r = RES(system_resources);
 	ACE_ASSERT (i >= 0 && i <= r.getJoints());
-	
+
     std::lock_guard<std::mutex> lck(_mutex);
 	*value = double(r._bcastRecvBuffer[i]._current);
 	return true;
@@ -915,7 +915,7 @@ bool EsdMessageSniffer::getBCastPositionError (int i, double *value)
 {
 	EsdResources& r = RES(system_resources);
 	ACE_ASSERT (i >= 0 && i <= r.getJoints());
-	
+
     std::lock_guard<std::mutex> lck(_mutex);
 	*value = double(r._bcastRecvBuffer[i]._position_error);
 	return true;
@@ -960,7 +960,7 @@ bool EsdMessageSniffer::_writeNone (int msg, int axis)
 
 	_writerequested = true;
 	_noreply = true;
-	
+
 	_mutex.unlock();
 
 	/// syncing.
@@ -985,7 +985,7 @@ bool EsdMessageSniffer::_readWord16 (int msg, int axis, short& value)
 
 	r.startPacket();
 	r.addMessage (msg, axis);
-		
+
 	_writerequested = true;
 	_noreply = false;
 
@@ -1066,7 +1066,7 @@ bool EsdMessageSniffer::_writeWord16 (int msg, int axis, short s)
 	/// prepare Can message.
 	EsdResources& r = RES(system_resources);
 	ACE_ASSERT (axis >= 0 && axis <= (ESD_MAX_CARDS-1)*2);
-	
+
 	if (!ENABLED(axis))
 		return true;
 
@@ -1077,10 +1077,10 @@ bool EsdMessageSniffer::_writeWord16 (int msg, int axis, short s)
 
 	*((short *)(r._writeBuffer[0].data+1)) = s;
 	r._writeBuffer[0].len = 3;
-		
+
 	_writerequested = true;
 	_noreply = true;
-	
+
 	_mutex.unlock();
 
 	/// syncing.
@@ -1107,10 +1107,10 @@ bool EsdMessageSniffer::_writeDWord (int msg, int axis, int value)
 
 	*((int*)(r._writeBuffer[0].data+1)) = value;
 	r._writeBuffer[0].len = 5;
-		
+
 	_writerequested = true;
 	_noreply = true;
-	
+
 	_mutex.post();
 
 	/// syncing.
@@ -1143,7 +1143,7 @@ bool EsdMessageSniffer::_writeWord16Ex (int msg, int axis, short s1, short s2)
 
 	_writerequested = true;
 	_noreply = true;
-	
+
 	_mutex.unlock();
 
 	/// syncing.
@@ -1156,7 +1156,7 @@ bool EsdMessageSniffer::_writeWord16Ex (int msg, int axis, short s1, short s2)
 
 ///
 /// sends a message and gets a dword back.
-/// 
+///
 bool EsdMessageSniffer::_readDWord (int msg, int axis, int& value)
 {
 	EsdResources& r = RES(system_resources);
@@ -1172,10 +1172,10 @@ bool EsdMessageSniffer::_readDWord (int msg, int axis, int& value)
 
 	r.startPacket();
 	r.addMessage (msg, axis);
-		
+
 	_writerequested = true;
 	_noreply = false;
-	
+
 	_mutex.unlock();
 
     std::unique_lock<std::mutex> lck(mtx_done);

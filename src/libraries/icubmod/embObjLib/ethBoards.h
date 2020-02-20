@@ -42,7 +42,7 @@ namespace eth {
         IethResource* interface;
         iethresType_t type;
     } interfaceInfo_t;
-           
+
     class EthBoards
     {
 
@@ -65,7 +65,7 @@ namespace eth {
         eth::IethResource* get_interface(eOipv4addr_t ipv4, eOprotID32_t id32);
         eth::IethResource* get_interface(eOipv4addr_t ipv4, iethresType_t type);
         bool rem(eth::AbstractEthResource* res, iethresType_t type);
-        
+
 
         // the name of the board
         const string & name(eOipv4addr_t ipv4);
@@ -79,7 +79,7 @@ namespace eth {
 
     private:
 
-        // private types      
+        // private types
 
         typedef struct
         {

@@ -29,7 +29,7 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class SkinMeshThreadCan : public PeriodicThread 
+class SkinMeshThreadCan : public PeriodicThread
 {
 protected:
     PolyDriver driver;
@@ -38,7 +38,7 @@ protected:
     CanBuffer canBuffer;
     std::string deviceName;
     int netId;
-    
+
     TouchSensor *sensor[16];
 
     std::mutex mtx;
@@ -69,7 +69,7 @@ public:
         int width =config.find("width" ).asInt();
         int height=config.find("height").asInt();
         bool useCalibration = config.check("useCalibration");
-        if (useCalibration==true) 
+        if (useCalibration==true)
         {
             printf("Reading datadirectly from CAN! Calibration unsupported\n");
             useCalibration = false;
@@ -82,7 +82,7 @@ public:
         yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
 
         for (int t=0; t<sensorSetConfig.size(); ++t)
-        {       
+        {
             yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
             std::string type(sensorConfig.get(0).asString());
@@ -200,7 +200,7 @@ public:
         for (int t=0; t<16; ++t)
         {
             if (sensor[t]) sensor[t]->draw(image);
-        }        
+        }
     }
 };
 

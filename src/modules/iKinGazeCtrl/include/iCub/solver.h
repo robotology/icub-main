@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini, Alessandro Roncone
  * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
@@ -60,7 +60,7 @@ class EyePinvRefGen : public GazeComponent, public PeriodicThread
 protected:
     iCubHeadCenter       *neck;
     iCubInertialSensor   *imu;
-    iKinChain            *chainNeck, *chainEyeL, *chainEyeR;    
+    iKinChain            *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver           *drvTorso, *drvHead;
     ExchangeData         *commData;
     Controller           *ctrl;
@@ -71,7 +71,7 @@ protected:
     double                orig_eye_tilt_max;
     double                orig_eye_pan_min;
     double                orig_eye_pan_max;
-    
+
     unsigned int period;
     bool   saccadeUnderWayOld;
     bool   genOn;
@@ -81,7 +81,7 @@ protected:
     double saccadesClock;
     double eyesHalfBaseline;
     double Ts;
-    
+
     Matrix orig_lim,lim;
     Vector fbTorso;
     Vector fbHead;
@@ -118,16 +118,16 @@ public:
 // on IPOPT computation.
 class Solver : public GazeComponent, public PeriodicThread
 {
-protected:    
+protected:
     iCubHeadCenter     *neck;
     iCubInertialSensor *imu;
-    iKinChain          *chainNeck, *chainEyeL, *chainEyeR;    
+    iKinChain          *chainNeck, *chainEyeL, *chainEyeR;
     GazeIpOptMin       *invNeck;
     PolyDriver         *drvTorso, *drvHead;
     ExchangeData       *commData;
     EyePinvRefGen      *eyesRefGen;
     Localizer          *loc;
-    Controller         *ctrl;    
+    Controller         *ctrl;
     mutex               mtx;
 
     unsigned int period;
@@ -171,7 +171,7 @@ public:
     void   clearNeckRoll();
     void   clearNeckYaw();
     double getNeckAngleUserTolerance() const;
-    void   setNeckAngleUserTolerance(const double angle);    
+    void   setNeckAngleUserTolerance(const double angle);
     bool   threadInit() override;
     void   threadRelease() override;
     void   afterStart(bool s) override;

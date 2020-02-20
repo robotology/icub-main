@@ -10,17 +10,17 @@
 
 /**
  * \defgroup iKinInv iKinInv
- *  
- * @ingroup iKin 
  *
- * Classes for inverse kinematics of serial-links chains and 
- * iCub limbs 
+ * @ingroup iKin
+ *
+ * Classes for inverse kinematics of serial-links chains and
+ * iCub limbs
  *
  * Date: first release 16/06/2008
  *
  * \author Ugo Pattacini
  *
- */ 
+ */
 
 #ifndef __IKININV_H__
 #define __IKININV_H__
@@ -46,7 +46,7 @@
 #define IKINCTRL_RET_TOLQ           2
 #define IKINCTRL_RET_MAXITER        3
 #define IKINCTRL_RET_EXHALT         4
-                                    
+
 #define IKINCTRL_DISABLED           -1
 
 
@@ -100,7 +100,7 @@ protected:
 
     /**
     * Computes the error according to the current controller
-    * settings (complete pose/translational/rotational part). 
+    * settings (complete pose/translational/rotational part).
     * Note that x must be previously set.
     * @return the error.
     */
@@ -117,23 +117,23 @@ protected:
     virtual void watchDog();
 
     /**
-    * Checks each joint velocity and sets it to zero if it steers 
-    * the joint out of range. 
-    * @param _qdot is the joint velocities vector to be checked. 
+    * Checks each joint velocity and sets it to zero if it steers
+    * the joint out of range.
+    * @param _qdot is the joint velocities vector to be checked.
     * @param _Ts is the joint velocities sample time.
-    * @return the new velocity. 
+    * @return the new velocity.
     */
     virtual yarp::sig::Vector checkVelocity(const yarp::sig::Vector &_qdot, double _Ts);
 
     /**
-    * Method called whenever in target. 
-    * Shall be implemented. 
+    * Method called whenever in target.
+    * Shall be implemented.
     */
     virtual void inTargetFcn() = 0;
 
     /**
     * Method called whenever the watchDog is triggered. Put here the
-    * code to recover from deadLock. Shall be implemented. 
+    * code to recover from deadLock. Shall be implemented.
     */
     virtual void deadLockRecoveryFcn() = 0;
 
@@ -152,24 +152,24 @@ protected:
     *                0x0001####=>print one iteration and skip the
     *                next one, 0x0002####=> print one iteration and
     *                skip the next two).
-    * @note Angles are dumperd as degrees. 
-    * Shall be implemented. 
+    * @note Angles are dumperd as degrees.
+    * Shall be implemented.
     */
     virtual void printIter(const unsigned int verbose=0) = 0;
 
     /**
-    * Method to be called within the printIter routine inherited by 
-    * children in order to handle the highest word of verbose 
-    * integer. 
+    * Method to be called within the printIter routine inherited by
+    * children in order to handle the highest word of verbose
+    * integer.
     */
     unsigned int printHandling(const unsigned int verbose=0);
 
 public:
     /**
-    * Constructor. 
-    * @param c is the Chain object on which the control operates. Do 
+    * Constructor.
+    * @param c is the Chain object on which the control operates. Do
     *          not change Chain DOF from this point onwards!!
-    * @param _ctrlPose one of the following: 
+    * @param _ctrlPose one of the following:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
@@ -183,7 +183,7 @@ public:
     virtual void setChainConstraints(bool _constrained) { chain.setAllConstraints(_constrained); }
 
     /**
-    * Executes one iteration of the control algorithm 
+    * Executes one iteration of the control algorithm
     * @param xd is the End-Effector target Pose to be tracked.
     * @param verbose is a integer whose 32 bits are intended as
     *                follows. The lowest word (16 bits)
@@ -199,15 +199,15 @@ public:
     *                next one, 0x0002####=> print one iteration and
     *                skip the next two).
     * @return current estimation of joints configuration.
-    * Shall be implemented. 
+    * Shall be implemented.
     */
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0) = 0;
 
     /**
-    * Iterates the control algorithm trying to converge on the 
-    * target. 
-    * @param xd is the End-Effector target Pose to be tracked. 
-    * @param tol_size exits if test_convergence(tol_size) is true 
+    * Iterates the control algorithm trying to converge on the
+    * target.
+    * @param xd is the End-Effector target Pose to be tracked.
+    * @param tol_size exits if test_convergence(tol_size) is true
     *                 (tol_size<0 disables this check, default).
     * @param max_iter exits if iter>=max_iter (max_iter<0 disables
     *                 this check, default).
@@ -224,7 +224,7 @@ public:
     *                0x0001####=>print one iteration and skip the
     *                next one, 0x0002####=> print one iteration and
     *                skip the next two).
-    * @param exit_code stores the exit code (NULL by default). Test 
+    * @param exit_code stores the exit code (NULL by default). Test
     *                  for one of this:
     *                 IKINCTRL_RET_TOLX
     *                 IKINCTRL_RET_TOLSIZE
@@ -241,63 +241,63 @@ public:
                                     int *exit_code=NULL, bool *exhalt=NULL);
 
     /**
-    * Tests convergence by comparing the size of the algorithm 
+    * Tests convergence by comparing the size of the algorithm
     * internal structure (may be the gradient norm or the simplex
-    * size or whatever) to a certain tolerance. 
+    * size or whatever) to a certain tolerance.
     * @param tol_size is tolerance to compare to.
     * Shall be implemented.
     */
     virtual bool test_convergence(const double tol_size) = 0;
 
     /**
-    * Reinitializes the algorithm's internal state and resets the 
-    * starting point. 
-    * @param q0 is the new starting point. 
+    * Reinitializes the algorithm's internal state and resets the
+    * starting point.
+    * @param q0 is the new starting point.
     */
     virtual void restart(const yarp::sig::Vector &q0);
 
     /**
     * Returns the algorithm's name.
     * @return algorithm name as string.
-    * Shall be implemented. 
+    * Shall be implemented.
     */
     virtual std::string getAlgoName() = 0;
 
     /**
-    * Switch on/off the watchDog mechanism to trigger deadLocks. 
-    * A deadLock is triggered whenerver norm(q(k)-q(k-1))<tol_q for 
-    * a specified number of iterations. 
-    * @param sw control the watchDog activation. 
+    * Switch on/off the watchDog mechanism to trigger deadLocks.
+    * A deadLock is triggered whenerver norm(q(k)-q(k-1))<tol_q for
+    * a specified number of iterations.
+    * @param sw control the watchDog activation.
     */
     void switchWatchDog(bool sw) { watchDogOn=sw; }
 
     /**
-    * Sets tolerance for in-target check (5e-3 by default). 
+    * Sets tolerance for in-target check (5e-3 by default).
     * @param tol_x is the tolerance
     */
     virtual void setInTargetTol(double tol_x) { inTargetTol=tol_x; }
 
     /**
-    * Returns tolerance for in-target check. 
+    * Returns tolerance for in-target check.
     * @return tolerance
     */
     virtual double getInTargetTol() const { return inTargetTol; }
 
     /**
-    * Sets tolerance for watchDog check (1e-4 by default). 
+    * Sets tolerance for watchDog check (1e-4 by default).
     * @param tol_q is the tolerance
     */
     virtual void setWatchDogTol(double tol_q) { watchDogTol=tol_q; }
 
     /**
-    * Returns tolerance for watchDog check. 
+    * Returns tolerance for watchDog check.
     * @return tolerance
     */
     virtual double getWatchDogTol() const { return watchDogTol; }
 
     /**
     * Sets maximum number of iterations to trigger the watchDog (200
-    * by default). 
+    * by default).
     * @param maxIter is the iterations limit.
     */
     virtual void setWatchDogMaxIter(int maxIter) { watchDogMaxIter=maxIter; }
@@ -309,23 +309,23 @@ public:
     virtual int getWatchDogMaxIter() const { return watchDogMaxIter; }
 
     /**
-    * Checks if the End-Effector is in target. 
+    * Checks if the End-Effector is in target.
     * @return true if in target.
     */
     virtual bool isInTarget() { return dist()<inTargetTol; }
-                                                                          
+
     /**
     * Returns the algorithm's state.
     * @return algorithm's state:
-    * IKINCTRL_STATE_RUNNING 
-    * IKINCTRL_STATE_INTARGET 
-    * IKINCTRL_STATE_DEADLOCK 
+    * IKINCTRL_STATE_RUNNING
+    * IKINCTRL_STATE_INTARGET
+    * IKINCTRL_STATE_DEADLOCK
     */
     int get_state() const { return state; }
 
     /**
     * Sets the state of Pose control settings.
-    * @param _ctrlPose one of the following: 
+    * @param _ctrlPose one of the following:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
@@ -364,7 +364,7 @@ public:
 
     /**
     * Sets the joint angles values.
-    * @param q0 is the joint angles vector. 
+    * @param q0 is the joint angles vector.
     */
     virtual void set_q(const yarp::sig::Vector &q0);
 
@@ -388,7 +388,7 @@ public:
 
     /**
     * Returns the actual distance from the target in cartesian space
-    * (euclidean norm is used). 
+    * (euclidean norm is used).
     * @return actual distance from the target.
     */
     virtual double dist() const { return yarp::math::norm(e); }
@@ -403,10 +403,10 @@ public:
 /**
 * \ingroup iKinInv
 *
-* A class derived from iKinCtrl implementing two standard 
-* algorithms based on steepest descent qdot=-Kp*grad. 
-* 1) grad=-Jt*e 
-* 2) grad=-pinv(J)*e. 
+* A class derived from iKinCtrl implementing two standard
+* algorithms based on steepest descent qdot=-Kp*grad.
+* 1) grad=-Jt*e
+* 2) grad=-pinv(J)*e.
 */
 class SteepCtrl : public iKinCtrl
 {
@@ -436,13 +436,13 @@ protected:
 
 public:
     /**
-    * Constructor. 
-    * @param c is the Chain object on which the control operates. Do 
+    * Constructor.
+    * @param c is the Chain object on which the control operates. Do
     *          not change Chain DOF from this point onwards!!
-    * @param _type one of the following: 
+    * @param _type one of the following:
     *  IKINCTRL_STEEP_JT   => implements J transposed method.
     *  IKINCTRL_STEEP_PINV => implements J pseudo-inverse method.
-    * @param _ctrlPose one of the following: 
+    * @param _ctrlPose one of the following:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
@@ -453,11 +453,11 @@ public:
               double _Ts, double _Kp);
 
     /**
-    * Returns the further contribution to the qdot=pinvJ*xdot 
-    * equation according to the Gradient Projection Method, i.e. 
-    * qdot=pinvJ*xdot+(I-pinvJ*J)*w 
-    * @return shall return the quantity (I-pinvJ*J)*w. 
-    * @note This method shall be inherited and handled accordingly 
+    * Returns the further contribution to the qdot=pinvJ*xdot
+    * equation according to the Gradient Projection Method, i.e.
+    * qdot=pinvJ*xdot+(I-pinvJ*J)*w
+    * @return shall return the quantity (I-pinvJ*J)*w.
+    * @note This method shall be inherited and handled accordingly
     *       (here a vector of 0s is returned). To do that, J and
     *       pinvJ are already computed when this method is called.
     */
@@ -476,7 +476,7 @@ public:
 
     /**
     * Returns the actual derivative of joint angles.
-    * @return the actual derivative of joint angles. 
+    * @return the actual derivative of joint angles.
     */
     yarp::sig::Vector get_qdot() const { return qdot; }
 
@@ -494,7 +494,7 @@ public:
 
     /**
     * Destructor.
-    */                                                         
+    */
     virtual ~SteepCtrl();
 };
 
@@ -502,11 +502,11 @@ public:
 /**
 * \ingroup iKinInv
 *
-* A class derived from SteepCtrl implementing the variable gain 
-* algorithm 
-*  
-* r(k)=dist(k)/dist(k-1) 
-* r(k)<1 => Kp(k)=Kp(k-1)*Kp_inc; 
+* A class derived from SteepCtrl implementing the variable gain
+* algorithm
+*
+* r(k)=dist(k)/dist(k-1)
+* r(k)<1 => Kp(k)=Kp(k-1)*Kp_inc;
 * r(k)>max_per_inc => Kp(k)=Kp(k-1)*Kp_dec;
 */
 class VarKpSteepCtrl : public SteepCtrl
@@ -534,22 +534,22 @@ protected:
 
 public:
     /**
-    * Constructor. 
-    * @param c is the Chain object on which the control operates. Do 
+    * Constructor.
+    * @param c is the Chain object on which the control operates. Do
     *          not change Chain DOF from this point onwards!!
-    * @param _type one of the following: 
+    * @param _type one of the following:
     *  IKINCTRL_STEEP_JT   => implements J transposed method.
     *  IKINCTRL_STEEP_PINV => implements J pseudo-inverse method.
-    * @param _ctrlPose one of the following: 
+    * @param _ctrlPose one of the following:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
     * @param _Ts is the controller sample time.
-    * @param _Kp0 is the initial gain. 
+    * @param _Kp0 is the initial gain.
     * @param _Kp_inc is the increasing factor.
     * @param _Kp_dec is the drecreasing factor.
     * @param _Kp_max is the maximum value for Kp.
-    * @param _max_perf_inc is the threshold value to decreas Kp. 
+    * @param _max_perf_inc is the threshold value to decreas Kp.
                                                                 */
     VarKpSteepCtrl(iKinChain &c, unsigned int _type, unsigned int _ctrlPose, double _Ts,
                    double _Kp0, double _Kp_inc, double _Kp_dec, double _Kp_max, double _max_perf_inc);
@@ -563,9 +563,9 @@ public:
 * \ingroup iKinInv
 *
 * A class derived from iKinCtrl implementing the
-* Levenberg-Marquardt algorithm: 
-*  
-* qdot=-pinv(Jt*J+mu*I)*grad 
+* Levenberg-Marquardt algorithm:
+*
+* qdot=-pinv(Jt*J+mu*I)*grad
 *
 * r(k)=dist(k)/dist(k-1)
 * r(k)<1 => mu(k)=mu(k-1)*mu_dec;
@@ -603,7 +603,7 @@ protected:
     double dist_old;
     double svMin;
     double svThres;
-    
+
     virtual double update_mu();
     virtual void   inTargetFcn()         { }
     virtual void   deadLockRecoveryFcn() { }
@@ -620,12 +620,12 @@ public:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
-    * @param _Ts is the controller sample time. 
+    * @param _Ts is the controller sample time.
     * @param _mu0 is the initial value for weighting factor mu.
     * @param _mu_inc is the increasing factor.
     * @param _mu_dec is the drecreasing factor.
     * @param _mu_min is the minimum value for mu.
-    * @param _mu_max is the maximum value for mu. 
+    * @param _mu_max is the maximum value for mu.
     * @param _sv_thres is the minimum singular value under which the
     *                mu is constantly kept equal to _mu_max.
     */
@@ -633,11 +633,11 @@ public:
            double _mu_dec, double _mu_min, double _mu_max, double _sv_thres=1e-6);
 
     /**
-    * Returns the further contribution to the qdot=pinvJ*xdot 
-    * equation according to the Gradient Projection Method, i.e. 
-    * qdot=pinvJ*xdot+(I-pinvJ*J)*w 
-    * @return shall return the quantity (I-pinvJ*J)*w. 
-    * @note This method shall be inherited and handled accordingly 
+    * Returns the further contribution to the qdot=pinvJ*xdot
+    * equation according to the Gradient Projection Method, i.e.
+    * qdot=pinvJ*xdot+(I-pinvJ*J)*w
+    * @return shall return the quantity (I-pinvJ*J)*w.
+    * @note This method shall be inherited and handled accordingly
     *       (here a vector of 0s is returned). To do that, J and
     *       pinvJ are already computed when this method is called.
     *       The LM-inverse matrix pinvLM is also available.
@@ -657,7 +657,7 @@ public:
 
     /**
     * Returns the actual derivative of joint angles.
-    * @return the actual derivative of joint angles. 
+    * @return the actual derivative of joint angles.
     */
     yarp::sig::Vector get_qdot() const { return qdot; }
 
@@ -680,7 +680,7 @@ public:
 
     /**
     * Destructor.
-    */                                                         
+    */
     virtual ~LMCtrl();
 };
 
@@ -688,9 +688,9 @@ public:
 /**
 * \ingroup iKinInv
 *
-* A class derived from LMCtrl implementing the Gradient 
-* Projection Method according to the paper available <a 
-* href="http://robotics.hanyang.ac.kr/new/papers/TA02-4.pdf">here</a>. 
+* A class derived from LMCtrl implementing the Gradient
+* Projection Method according to the paper available <a
+* href="http://robotics.hanyang.ac.kr/new/papers/TA02-4.pdf">here</a>.
 */
 class LMCtrl_GPM : public LMCtrl
 {
@@ -734,7 +734,7 @@ public:
 
     /**
     * Sets the safe area ratio [0-1], which is for each joint the
-    * ratio between the angle span within which the chain can be 
+    * ratio between the angle span within which the chain can be
     * operated with 0-GPM and the overall angle span.
     * @param _safeAreaRatio the safe area ratio.
     */
@@ -751,10 +751,10 @@ public:
 /**
 * \ingroup iKinInv
 *
-* A class derived from iKinCtrl implementing the 
-* multi-referential approach (<a 
+* A class derived from iKinCtrl implementing the
+* multi-referential approach (<a
 * href="http://wiki.icub.org/images/c/cf/CartesianControllersEvaluation.pdf">pdf</a>).
-* @note Minimum-Jerk controllers in Task Space and Joint Space 
+* @note Minimum-Jerk controllers in Task Space and Joint Space
 */
 class MultiRefMinJerkCtrl : public iKinCtrl
 {
@@ -805,15 +805,15 @@ protected:
 
 public:
     /**
-    * Constructor. 
-    * @param c is the Chain object on which the control operates. Do 
+    * Constructor.
+    * @param c is the Chain object on which the control operates. Do
     *          not change Chain DOF from this point onwards!!
-    * @param _ctrlPose one of the following: 
+    * @param _ctrlPose one of the following:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled.
-    * @param _Ts is the nominal controller sample time. 
-    * @param nonIdealPlant if true allocate a dedicated min-jerk 
+    * @param _Ts is the nominal controller sample time.
+    * @param nonIdealPlant if true allocate a dedicated min-jerk
     *                      controller for the configuration space
     *                      capable of compansating plants that
     *                      differ from pure integrators.
@@ -822,7 +822,7 @@ public:
 
     /**
     * Executes one iteration of the control algorithm.
-    * @param xd is the End-Effector target Pose to be tracked. 
+    * @param xd is the End-Effector target Pose to be tracked.
     * @param qd is the target joint angles (it shall satisfy the
     *           forward kinematic function xd=f(qd)).
     * @param verbose is a integer whose 32 bits are intended as
@@ -838,22 +838,22 @@ public:
     *                0x0001####=>print one iteration and skip the
     *                next one, 0x0002####=> print one iteration and
     *                skip the next two).
-    * @return current estimation of joints configuration. 
-    * @note The reason why qd is provided externally instead of 
+    * @return current estimation of joints configuration.
+    * @note The reason why qd is provided externally instead of
     *       computed here is to discouple the inverse kinematic
     *       problem (which may require some computational effort
     *       depending on the current pose xd) from the reaching
-    *       issue. 
+    *       issue.
     */
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, yarp::sig::Vector &qd,
                                       const unsigned int verbose=0);
 
     /**
     * Executes one iteration of the control algorithm.
-    * @param xd is the End-Effector target Pose to be tracked. 
+    * @param xd is the End-Effector target Pose to be tracked.
     * @param qd is the target joint angles (it shall satisfy the
     *           forward kinematic function xd=f(qd)).
-    * @param xdot_set is the Task Space reference velocity; the 
+    * @param xdot_set is the Task Space reference velocity; the
     *                 vector size is 7 (due to the axis-angle
     *                 notation) and units are [rad/s].
     * @param verbose is a integer whose 32 bits are intended as
@@ -869,12 +869,12 @@ public:
     *                0x0001####=>print one iteration and skip the
     *                next one, 0x0002####=> print one iteration and
     *                skip the next two).
-    * @return current estimation of joints configuration. 
-    * @note The reason why qd is provided externally instead of 
+    * @return current estimation of joints configuration.
+    * @note The reason why qd is provided externally instead of
     *       computed here is to discouple the inverse kinematic
     *       problem (which may require some computational effort
     *       depending on the current pose xd) from the reaching
-    *       issue.  
+    *       issue.
     */
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, yarp::sig::Vector &qd,
                                       yarp::sig::Vector &xdot_set, const unsigned int verbose=0);
@@ -884,8 +884,8 @@ public:
     virtual std::string getAlgoName() { return "multi-referential-minimum-jerk-controllers"; }
 
     /**
-    * Returns the guard ratio for the joints span (0.1 by default). 
-    * @note The weights W_theta^-1 are non-zero only within the 
+    * Returns the guard ratio for the joints span (0.1 by default).
+    * @note The weights W_theta^-1 are non-zero only within the
     *       range [ q_min+0.5*guardRatio*D, q_max-0.5*guardRatio*D ]
     *       for each join, where D=q_max-q_min.
     * @return guard ratio.
@@ -893,88 +893,88 @@ public:
     double get_guardRatio() const { return guardRatio; }
 
     /**
-    * Returns the parameter gamma which is used to blend the 
-    * contribute of the task controller versus the contribute 
-    * of the joint controller. 
+    * Returns the parameter gamma which is used to blend the
+    * contribute of the task controller versus the contribute
+    * of the joint controller.
     * @return gamma.
     */
     double get_gamma() const { return gamma; }
 
     /**
-    * Returns the task execution time in seconds (1.0 by default). 
+    * Returns the task execution time in seconds (1.0 by default).
     * @return task execution time.
     */
     double get_execTime() const { return execTime; }
 
     /**
     * Returns the actual derivative of joint angles.
-    * @return the actual derivative of joint angles. 
+    * @return the actual derivative of joint angles.
     */
     yarp::sig::Vector get_qdot() const { return qdot; }
 
     /**
-    * Returns the actual derivative of End-Effector Pose (6 
-    * components; xdot=J*qdot). 
-    * @return the actual derivative of End-Effector Pose. 
+    * Returns the actual derivative of End-Effector Pose (6
+    * components; xdot=J*qdot).
+    * @return the actual derivative of End-Effector Pose.
     */
     yarp::sig::Vector get_xdot() const { return xdot; }
 
     /**
-    * Sets the guard ratio (in [0 1]). 
-    * @param _guardRatio. 
+    * Sets the guard ratio (in [0 1]).
+    * @param _guardRatio.
     */
     void set_guardRatio(double _guardRatio);
 
     /**
-    * Sets the parameter gamma which is used to blend the contribute 
+    * Sets the parameter gamma which is used to blend the contribute
     * of the task controller versus the contribute of the joint
-    * controller. 
-    * @param _gamma. 
+    * controller.
+    * @param _gamma.
     */
     void set_gamma(double _gamma) { gamma=_gamma; }
 
     /**
     * Sets the joint angles values.
-    * @param q0 is the joint angles vector. 
+    * @param q0 is the joint angles vector.
     */
     virtual void set_q(const yarp::sig::Vector &q0);
 
     /**
-    * Sets the task execution time in seconds. 
-    * @param _execTime. 
-    * @param warn enable/disable warning message for thresholding 
+    * Sets the task execution time in seconds.
+    * @param _execTime.
+    * @param warn enable/disable warning message for thresholding
     *             (disabled by default).
     * @return the actual execTime.
-    * @note A lower bound equal to 10*Ts (Ts=controller's sample 
+    * @note A lower bound equal to 10*Ts (Ts=controller's sample
     *       time) is imposed.
     */
     double set_execTime(const double _execTime, const bool warn=false);
 
     /**
     * Adds to the controller input a further compensation term.
-    * @param comp the compensation term. 
-    * @note The compensation term holds for one iteration step, then 
+    * @param comp the compensation term.
+    * @note The compensation term holds for one iteration step, then
     *       it is automatically set to zero for safety reasons.
     */
     void add_compensation(const yarp::sig::Vector &comp);
 
-    /** 
-    * Allows user to assign values to the parameters of plant under 
-    * control (for the configuration space only). In case the 
-    * controlled plant is not a pure integrator, then it can be 
-    * modelled as the following transfer function: 
-    * (Kp/s)*((1+Tz*s)/(1+2*Zeta*Tw*s+(Tw*s)^2)) 
-    * @param parameters contains the set of plant parameters for 
+    /**
+    * Allows user to assign values to the parameters of plant under
+    * control (for the configuration space only). In case the
+    * controlled plant is not a pure integrator, then it can be
+    * modelled as the following transfer function:
+    * (Kp/s)*((1+Tz*s)/(1+2*Zeta*Tw*s+(Tw*s)^2))
+    * @param parameters contains the set of plant parameters for
     *                   each dimension in form of a Property object.
-    *  
-    * Available parameters are: 
-    *  
-    * \b dimension_# < list>: example (dimension_2 ((Kp 1.0) (Tw 
+    *
+    * Available parameters are:
+    *
+    * \b dimension_# < list>: example (dimension_2 ((Kp 1.0) (Tw
     *    0.1) ...)), specifies the Kp, Tz, Tw and Zeta parameters
     *    for a given dimension of the plant ("dimension_2" in the
     *    example). Dimensions are 0-based numbers.
-    * @param entryTag specifies an entry tag different from 
-    *                 "dimension". 
+    * @param entryTag specifies an entry tag different from
+    *                 "dimension".
     */
     void setPlantParameters(const yarp::os::Property &parameters,
                             const std::string &entryTag="dimension");

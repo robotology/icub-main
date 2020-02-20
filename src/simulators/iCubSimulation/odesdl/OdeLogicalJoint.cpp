@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -128,16 +128,16 @@ void OdeLogicalJoint::init(const char *unit,
             speed = &(odeinit._iCub->ra_speed[index]);
         }
         torque = &(odeinit._iCub->ra_torques[index]);
-    } 
+    }
     else if (sunit=="head") {
         joint = &(odeinit._iCub->Hjoints[index]);
         speed = &(odeinit._iCub->h_speed[index]);
         torque = &(odeinit._iCub->h_torques[index]);
-    } 
+    }
     else if (sunit=="leftleg") {
         joint = &(odeinit._iCub->LLegjoints[index]);
         if (hinged) {
-            speed = &(odeinit._iCub->LLeg_speed[index]);	
+            speed = &(odeinit._iCub->LLeg_speed[index]);
         }
         torque = &(odeinit._iCub->LLeg_torques[index]);
     }
@@ -174,7 +174,7 @@ void OdeLogicalJoint::init(const char *unit,
 
 double OdeLogicalJoint::getTorque() {
     // odeinit._iCub->torqueData[0]
-    if(!hinged || !feedback) 
+    if(!hinged || !feedback)
         return 0.0;
     return *torque; //(feedback->t1[0]*axis[0]+feedback->t1[1]*axis[1]+feedback->t1[2]*axis[2]);
 }
@@ -191,7 +191,7 @@ double OdeLogicalJoint::getAngleRaw() {
             return dJointGetUniversalAngle1(*joint);
         } else if (universal == 2) {
             return dJointGetUniversalAngle2(*joint);
-        } 
+        }
         return 0;
     }
 
@@ -210,7 +210,7 @@ double OdeLogicalJoint::getVelocityRaw() {
             return dJointGetUniversalAngle1Rate(*joint);
         } else if (universal == 2) {
             return dJointGetUniversalAngle2Rate(*joint);
-        } 
+        }
         return 0;
     }
 

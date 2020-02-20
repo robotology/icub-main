@@ -14,7 +14,7 @@ do
   let "ver %= 15"
 
   let "count += 1"
-  
+
   echo "abs "$azi" "$ele" "$ver"" | yarp write ... /iKinGazeCtrl/angles:i
   sleep "$2"
 done

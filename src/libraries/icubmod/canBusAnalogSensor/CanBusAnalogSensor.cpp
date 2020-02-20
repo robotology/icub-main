@@ -489,7 +489,7 @@ void CanBusAnalogSensor::run()
                         }
                         else
                         {
-                            if ((len==7) && (buff[6] != 0)) // changed from "== 1" in order to maintain compatibility with extra overflow information in byte 6. 
+                            if ((len==7) && (buff[6] != 0)) // changed from "== 1" in order to maintain compatibility with extra overflow information in byte 6.
                             {
                                 status=IAnalogSensor::AS_OVF;
                             }

@@ -12,7 +12,7 @@ copy from or to.  Currently there are four:
   sources/sf-icub
   sources/sf-icub-platform
 These should be a copy of the CVS directory used to check out the
-desired sources.  In other words, they should contain a Root and 
+desired sources.  In other words, they should contain a Root and
 Repository file.  For example, in sources/native-icub, we have:
   Repository -> "iCub"
   Root       -> "username@cvs.robotcub.org:/cvsroot/robotcub"

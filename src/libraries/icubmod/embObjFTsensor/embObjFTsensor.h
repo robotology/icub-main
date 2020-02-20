@@ -69,7 +69,7 @@ public:
     virtual bool initialised();
     virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
-    
+
     // ITemperatureSensors
     virtual size_t getNrOfTemperatureSensors() const override;
     virtual yarp::dev::MAS_status getTemperatureSensorStatus(size_t sens_index) const override;
@@ -77,7 +77,7 @@ public:
     virtual bool getTemperatureSensorFrameName(size_t sens_index, std::string &frameName) const override;
     virtual bool getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const override;
     virtual bool getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
-    
+
     // ISixAxisForceTorqueSensors
     virtual size_t getNrOfSixAxisForceTorqueSensors() const override;
     virtual yarp::dev::MAS_status getSixAxisForceTorqueSensorStatus(size_t sens_index) const override;

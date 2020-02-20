@@ -105,12 +105,12 @@ StrainCalibGui::StrainCalibGui(QString device, int bus, int pid, FirmwareUpdater
     {
         config.network = strainInterface::Network::ETH;
         yDebug() << "strainInterface::Network::ETH";
-    } 
+    }
     else if ((device == "SOCKETCAN") || (device == "socketcan"))
     {
         yDebug() << "strainInterface::Network::socketcan";
         config.network = strainInterface::Network::socketcan;
-    } 
+    }
     else if((device == "ECAN") || (device == "ecan"))
     {
         yDebug() << "strainInterface::Network::ecan";

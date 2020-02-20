@@ -9,15 +9,15 @@
 */
 
 /**
- * \defgroup Filters Filters 
- *  
+ * \defgroup Filters Filters
+ *
  * @ingroup ctrlLib
  *
  * Classes for filtering.
  *
  * \author Ugo Pattacini
  *
- */ 
+ */
 
 #ifndef __FILTERS_H__
 #define __FILTERS_H__
@@ -87,87 +87,87 @@ protected:
 
 public:
    /**
-   * Creates a filter with specified numerator and denominator 
-   * coefficients. 
-   * @param num vector of numerator elements given as increasing 
+   * Creates a filter with specified numerator and denominator
+   * coefficients.
+   * @param num vector of numerator elements given as increasing
    *            power of z^-1.
-   * @param den vector of denominator elements given as increasing 
-   *            power of z^-1. 
+   * @param den vector of denominator elements given as increasing
+   *            power of z^-1.
    * @param y0 initial output.
-   * @note den[0] shall not be 0. 
-   */ 
+   * @note den[0] shall not be 0.
+   */
    Filter(const yarp::sig::Vector &num, const yarp::sig::Vector &den,
           const yarp::sig::Vector &y0=yarp::sig::Vector(1,0.0));
 
    /**
-   * Internal state reset. 
+   * Internal state reset.
    * @param y0 new internal state.
-   */ 
+   */
    virtual void init(const yarp::sig::Vector &y0);
 
    /**
    * Internal state reset for filter with zero gain.
    * @param y0 new internal state.
    * @param u0 expected next input.
-   * @note The gain of a digital filter is the sum of the coefficients of its 
+   * @note The gain of a digital filter is the sum of the coefficients of its
    *       numerator divided by the sum of the coefficients of its denumerator.
-   */ 
+   */
    virtual void init(const yarp::sig::Vector &y0, const yarp::sig::Vector &u0);
 
    /**
    * Returns the current filter coefficients.
    * @param num vector of numerator elements returned as increasing
    *            power of z^-1.
-   * @param den vector of denominator elements returned as 
+   * @param den vector of denominator elements returned as
    *            increasing power of z^-1.
-   */ 
+   */
    void getCoeffs(yarp::sig::Vector &num, yarp::sig::Vector &den);
 
    /**
    * Sets new filter coefficients.
-   * @param num vector of numerator elements given as increasing 
+   * @param num vector of numerator elements given as increasing
    *            power of z^-1.
-   * @param den vector of denominator elements given as increasing 
-   *            power of z^-1. 
-   * @note den[0] shall not be 0. 
-   * @note the internal state is reinitialized to the current 
+   * @param den vector of denominator elements given as increasing
+   *            power of z^-1.
+   * @note den[0] shall not be 0.
+   * @note the internal state is reinitialized to the current
    *       output.
-   */ 
+   */
    void setCoeffs(const yarp::sig::Vector &num, const yarp::sig::Vector &den);
 
    /**
-   * Modifies the values of existing filter coefficients without 
-   * varying their lengths. 
-   * @param num vector of numerator elements given as increasing 
+   * Modifies the values of existing filter coefficients without
+   * varying their lengths.
+   * @param num vector of numerator elements given as increasing
    *            power of z^-1.
-   * @param den vector of denominator elements given as increasing 
+   * @param den vector of denominator elements given as increasing
    *            power of z^-1.
-   * @return true/false on success/fail. 
-   * @note den[0] shall not be 0. 
-   * @note the adjustment is carried out iff num.size() and 
+   * @return true/false on success/fail.
+   * @note den[0] shall not be 0.
+   * @note the adjustment is carried out iff num.size() and
    *       den.size() match the existing numerator and denominator
    *       lengths.
-   */ 
+   */
    bool adjustCoeffs(const yarp::sig::Vector &num, const yarp::sig::Vector &den);
 
    /**
    * Returns the current filter states.
-   * @param u the current input states. 
-   * @param y the current output states. 
-   */ 
+   * @param u the current input states.
+   * @param y the current output states.
+   */
    void getStates(std::deque<yarp::sig::Vector> &u, std::deque<yarp::sig::Vector> &y);
 
    /**
    * Performs filtering on the actual input.
-   * @param u reference to the actual input. 
-   * @return the corresponding output. 
-   */ 
+   * @param u reference to the actual input.
+   * @return the corresponding output.
+   */
    virtual const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
 
    /**
    * Return current filter output.
-   * @return the filter output. 
-   */ 
+   * @return the filter output.
+   */
    virtual const yarp::sig::Vector& output() const { return y; }
 };
 
@@ -189,8 +189,8 @@ protected:
 
 public:
     /**
-    * Creates a Rate Limiter which keeps the rate of the input 
-    * within assigned thresholds. 
+    * Creates a Rate Limiter which keeps the rate of the input
+    * within assigned thresholds.
     * @param rL Rate lower limit.
     * @param rU Rate upper limit.
     */
@@ -212,14 +212,14 @@ public:
     /**
     * Sets new Rate limits
     * @param rL Rate lower limit.
-    * @param rU Rate upper limit. 
-    * @note coherence between new limits length and the state 
+    * @param rU Rate upper limit.
+    * @note coherence between new limits length and the state
     *       length is not veriified.
     */
     void setLimits(const yarp::sig::Vector &rL, const yarp::sig::Vector &rU);
 
     /**
-    * Limits the input rate. 
+    * Limits the input rate.
     * @param u is the current input.
     * @return the output within the thresholds.
     */
@@ -227,8 +227,8 @@ public:
 
     /**
     * Return current filter output.
-    * @return the filter output. 
-    */ 
+    * @return the filter output.
+    */
     virtual const yarp::sig::Vector& output() const { return uLim; }
 };
 
@@ -256,56 +256,56 @@ public:
     * @param cutFrequency cut frequency (Hz).
     * @param sampleTime sample time (s).
     * @param y0 initial output.
-    */ 
+    */
     FirstOrderLowPassFilter(const double cutFrequency, const double sampleTime,
                             const yarp::sig::Vector &y0=yarp::sig::Vector(1,0.0));
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~FirstOrderLowPassFilter();
 
     /**
-    * Internal state reset. 
+    * Internal state reset.
     * @param y0 new internal state.
-    */ 
+    */
     virtual void init(const yarp::sig::Vector &y0);
 
     /**
-    * Change the cut frequency of the filter. 
-    * @param cutFrequency the new cut frequency (Hz). 
+    * Change the cut frequency of the filter.
+    * @param cutFrequency the new cut frequency (Hz).
     */
     bool setCutFrequency(const double cutFrequency);
 
     /**
-    * Change the sample time of the filter. 
-    * @param sampleTime the new sample time (s). 
+    * Change the sample time of the filter.
+    * @param sampleTime the new sample time (s).
     */
     bool setSampleTime(const double sampleTime);
 
     /**
-    * Retrieve the cut frequency of the filter. 
-    * @return the cut frequency (Hz). 
+    * Retrieve the cut frequency of the filter.
+    * @return the cut frequency (Hz).
     */
     double getCutFrequency() { return fc; }
 
     /**
-    * Retrieve the sample time of the filter. 
-    * @return the sample time (s). 
+    * Retrieve the sample time of the filter.
+    * @return the sample time (s).
     */
     double getSampleTime() { return Ts; }
 
     /**
     * Performs filtering on the actual input.
-    * @param u reference to the actual input. 
-    * @return the corresponding output. 
-    */ 
+    * @param u reference to the actual input.
+    * @return the corresponding output.
+    */
     virtual const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
 
     /**
     * Return current filter output.
-    * @return the filter output. 
-    */ 
+    * @return the filter output.
+    */
     virtual const yarp::sig::Vector& output() const { return y; }
 };
 
@@ -330,38 +330,38 @@ public:
    * Creates a median filter of the specified order.
    * @param n the filter order.
    * @param y0 initial output.
-   */ 
+   */
    MedianFilter(const size_t n, const yarp::sig::Vector &y0=yarp::sig::Vector(1,0.0));
 
    /**
-   * Internal state reset. 
+   * Internal state reset.
    * @param y0 new internal state.
-   */ 
+   */
    virtual void init(const yarp::sig::Vector &y0);
 
    /**
    * Sets new filter order.
-   * @param n new filter order. 
-   * @note the internal memory is reset. 
-   */ 
+   * @param n new filter order.
+   * @note the internal memory is reset.
+   */
    void setOrder(const size_t n);
 
    /**
    * Returns the current filter order.
-   */ 
+   */
    size_t getOrder() const { return n; }
 
    /**
    * Performs filtering on the actual input.
-   * @param u reference to the actual input. 
-   * @return the corresponding output. 
-   */ 
+   * @param u reference to the actual input.
+   * @return the corresponding output.
+   */
    virtual const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
 
    /**
    * Return current filter output.
-   * @return the filter output. 
-   */ 
+   * @return the filter output.
+   */
    virtual const yarp::sig::Vector& output() const { return y; }
 };
 

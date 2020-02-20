@@ -33,9 +33,9 @@ def fileExists(f):
 def printUsage(scriptName):
     print "scripting.py: a python gui for scripting"
     print "Usage:"
-    print scriptName, 
+    print scriptName,
     print "dir"
-     
+
 class ApplicationDescriptor:
     title=''
     applications=[]
@@ -49,7 +49,7 @@ def pruneContexts(appDirs, allContexts):
             if (c==ap):
                 ret.append(c)
     return ret
-    
+
 def isText(x):
     return fnmatch.fnmatch(x, '*.txt')
 
@@ -62,7 +62,7 @@ class App:
     def __init__(self, master):
         frame = Frame(master)
         frame.pack()
-        self.master=frame      
+        self.master=frame
 
     def setScriptsList(self, scripts, directory):
         self.directory=directory
@@ -103,7 +103,7 @@ class App:
 
 def searchScripts(scriptDir):
     all=os.listdir(scriptDir)
-   
+
     ret=[]
 
     for c in all:
@@ -119,11 +119,11 @@ class EditWindow:
         self.directory=directory
         self.script=script
         self.master=frame
-    
+
         Label(frame, text=script).grid(row=0, column=0, sticky=W)
         bottom=Frame(frame).grid(row=1, column=0)
         f=open(os.path.join(directory, script),'r')
- 
+
         self.lines=[]
         r=1
         for line in f:
@@ -153,7 +153,7 @@ class EditWindow:
         rootx=master.winfo_rootx()
         rooty=master.winfo_rooty()
         #frame.geometry('%dx%d+%d+%d' %(width, height, rootx, rooty))
- 
+
     def update(self):
         r=0
         for l in self.lines:
@@ -161,24 +161,24 @@ class EditWindow:
             tmp.insert(END, l)
             tmp.grid(row=r,column=0)
             r=r+1
-            
+
     def addLine(self):
         tmp=Entry(self.master)
         self.lines.append(tmp)
         self.update()
-        
+
     def removeLine(self):
         self.lines.pop()
         self.update()
 
     def save(self):
         f=open(os.path.join(directory, 'temp.txt'),'w')
-   
+
         for l in self.lines:
             tmp=l.get()
             f.write(tmp)
         f.close()
-            
+
 if __name__ == '__main__':
 
     argc = len(sys.argv)
@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
     scripts=searchScripts(directory)
     print scripts
-  
+
     root = Tk()
     app = App(root)
     app.setScriptsList(scripts, directory)

@@ -172,19 +172,19 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     if(p.findGroup("GENERAL").check("deviceName"))
     {
       deviceName = p.findGroup("GENERAL").find("deviceName").asString();
-    } 
+    }
     else
     {
-      yError() << "Parametric calibrator: missing deviceName parameter"; 
+      yError() << "Parametric calibrator: missing deviceName parameter";
       return false;
-    } 
+    }
 
     std::string str;
     if(config.findGroup("GENERAL").find("verbose").asInt())
     {
         str=config.toString().c_str();
         yTrace() << deviceName.c_str() << str;
-    }  
+    }
 
     // Check clearHwFaultBeforeCalibration
     Value val_clearHwFault = config.findGroup("GENERAL").find("clearHwFaultBeforeCalibration");
@@ -259,7 +259,7 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
                 {
                     yWarning() << deviceName << ": skipping calibration!! This option was set in general.xml file.";
                     yWarning() << deviceName << ": BE CAREFUL USING THE ROBOT IN THIS CONFIGURATION! See 'skipCalibration' param in config file";
-                } 
+                }
            }
         }
     }
@@ -393,11 +393,11 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     xtmp = p.findGroup("CALIBRATION").findGroup("startupPosThreshold");
     if (xtmp.size()-1!=n_joints) {yError() <<  deviceName << ": invalid number of startupPosThreshold params"; return false;}
     for (i = 1; i < xtmp.size(); i++) startupPosThreshold[i-1] =  xtmp.get(i).asDouble();
- 
+
     xtmp = p.findGroup("CALIBRATION").findGroup("startupDisablePosCheck");
     if (xtmp.size() - 1 != n_joints) { } //this parameter is optional
     else { for (i = 1; i < xtmp.size(); i++) disableStartupPosCheck[i - 1] = xtmp.get(i).asInt(); }
-   
+
     xtmp = p.findGroup("CALIBRATION").findGroup("startupTimeout");
     if (xtmp.size() - 1 != n_joints) {} //this parameter is optional
     else { for (i = 1; i < xtmp.size(); i++) timeout_goToZero[i - 1] = xtmp.get(i).asDouble(); }
@@ -503,9 +503,9 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *device)
     {
         //yError() << deviceName << ": invalid dynamic cast to yarp::dev::PolyDriver";
         //return false;
-        
+
         //This is to ensure backward-compatibility with iCubInterface
-        yWarning() << deviceName << ": using parametricCalibrator on an old iCubInterface system. Upgrade to robotInterface is recommended."; 
+        yWarning() << deviceName << ": using parametricCalibrator on an old iCubInterface system. Upgrade to robotInterface is recommended.";
         device->view(iCalibrate);
         device->view(iEncoders);
         device->view(iPosition);
@@ -592,14 +592,14 @@ bool parametricCalibratorEth::calibrate()
         yWarning() << deviceName << ": skipCalibration flag is on! Setting safe pid but skipping calibration.";
 
     Bit=joints.begin();
-    std::list<int>::iterator lit; //iterator for joint in a set 
+    std::list<int>::iterator lit; //iterator for joint in a set
     while( (Bit != Bend) && (!abortCalib) )   // for each set of joints
     {
-        
+
         setOfJoint_idx++;
         currentSetList.clear();
         currentSetList = (*Bit);
-        
+
         // 1) set safe pid
         for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
@@ -643,7 +643,7 @@ bool parametricCalibratorEth::calibrate()
             Bit++;
             continue;
         }
-        
+
         //2) if calibration needs to go to hardware limits, enable joint
         //VALE: i can add this cycle for calib on eth because it does nothing,
         //      because enablePid doesn't send command because joints are not calibrated
@@ -652,13 +652,13 @@ bool parametricCalibratorEth::calibrate()
         {
             if (type[*lit]==0 ||
                 type[*lit]==2 ||
-                type[*lit]==4 ) 
+                type[*lit]==4 )
             {
                 yDebug() << "In calibration " <<  deviceName  << ": enabling joint " << *lit << " to test hardware limit";
                 iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
             }
         }*/
-        
+
         Time::delay(0.1f);
         if(abortCalib)
         {
@@ -708,11 +708,11 @@ bool parametricCalibratorEth::calibrate()
         // 5) if calibration finish with success enable disabled joints in order to move them to zero
         /*for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
-            // if the joint han not been enabled at point 1, now i enable it 
+            // if the joint han not been enabled at point 1, now i enable it
             //iAmps->enableAmp((*lit));
             if (type[*lit]!=0 &&
                 type[*lit]!=2 &&
-                type[*lit]!=4 ) 
+                type[*lit]!=4 )
             {
                 iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
             }
@@ -731,7 +731,7 @@ bool parametricCalibratorEth::calibrate()
             // Manda in Zero
             goToStartupPosition((*lit));
         }
-        
+
         if(abortCalib)
         {
             Bit++;
@@ -751,7 +751,7 @@ bool parametricCalibratorEth::calibrate()
             Bit++;
             continue;
         }
-        
+
         if(goneToZero)
         {
             yDebug() <<  deviceName  << ": set" << setOfJoint_idx  << ": Reached zero position!\n";
@@ -768,11 +768,11 @@ bool parametricCalibratorEth::calibrate()
                 iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
             }
         }
-        
+
         // Go to the next set of joints to calibrate... if any
         Bit++;
     }
-    
+
     if(abortCalib)
     {
         yError() << deviceName << ": calibration has been aborted!I'm going to disable all joints..." ;
@@ -808,7 +808,7 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
 
     lit = set.begin();
     lend = set.end();
-    
+
     while (lit != lend)
     {
         if (abortCalib)
@@ -831,7 +831,7 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
                 lit++;
                 timeout = 0;
             }
-            
+
             yarp::os::Time::delay(1.0);
             timeout++;
         }
@@ -938,7 +938,7 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
         iPosition->checkMotionDone(j, &done);
         iControlMode->getControlMode(j, &mode);
         iPids->getPidOutput(VOCAB_PIDTYPE_POSITION,j, &output);
-        
+
         delta = fabs(angj-legacyStartupPosition.positions[j]);
         yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" , \
                deviceName.c_str(), j, angj, legacyStartupPosition.positions[j], delta, startupPosThreshold[j], output, yarp::os::Vocab::decode(mode).c_str());
@@ -981,7 +981,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     // when function 'calibration' was called.
     yTrace();
     std::list<int>::iterator joint;
- 
+
     // legacy version: can be removed when legacy will not be supported anymore
     if (useLegacyParking)
     {
@@ -1073,7 +1073,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     else
     {
         // call one step of parking sequence for each 'park' call
- 
+
 	bool stepDone = true;
 	if(parkingSequence.size() > 0)
 	{

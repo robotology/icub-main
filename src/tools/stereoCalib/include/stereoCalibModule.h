@@ -6,11 +6,11 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/Thread.h>
 #include "stereoCalibThread.h"
- 
+
 using namespace std;
-using namespace yarp::os; 
+using namespace yarp::os;
 using namespace yarp::sig;
-  
+
 
 class stereoCalibModule:public RFModule
 {
@@ -18,7 +18,7 @@ class stereoCalibModule:public RFModule
     string inputLeftPortName;
     string inputRightPortName;
     string outputPortNameRight;
-    string outputPortNameLeft;  
+    string outputPortNameLeft;
     string handlerPortName;
     string outputCalibPath;
 
@@ -36,10 +36,10 @@ class stereoCalibModule:public RFModule
 public:
 
     bool configure(yarp::os::ResourceFinder &rf);
-    bool interruptModule();                       
-    bool close();                                 
+    bool interruptModule();
+    bool close();
     bool respond(const Bottle& command, Bottle& reply);
-    double getPeriod(); 
-    bool updateModule();    
+    double getPeriod();
+    bool updateModule();
 };
 

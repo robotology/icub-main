@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick, Vadim Tikhanoff, Martin Peniak
 * email:   paulfitz@alum.mit.edu, vadim.tikhanoff@iit.it, martin.peniak@plymouth.ac.uk
@@ -80,8 +80,8 @@ static Uint32          colorkey;
 static SDL_Surface     *image;
 static bool extractImages = false;
 static VideoTexture *video = NULL;
-static RobotStreamer *robot_streamer = NULL;        
-static RobotConfig *robot_config = NULL;        
+static RobotStreamer *robot_streamer = NULL;
+static RobotConfig *robot_config = NULL;
 static bool eyeCams;
 static const GLfloat light_position[] = { 0.0f, 5.0f, 5.0f, 0.0f };
 
@@ -98,12 +98,12 @@ static int cameraSizeHeight;
 
 struct contactICubSkinEmul_t{
     bool coverTouched;
-    bool indivTaxelResolution; 
+    bool indivTaxelResolution;
     std::set<unsigned int> taxelsTouched;
 };
-    
+
 static std::map<SkinPart,contactICubSkinEmul_t> contactICubSkinEmulMap;
-    
+
 /* For every collision detected by ODE, contact joints (up to MAX_CONTACTS per collison) are created and a feedback structs may be associated with them - that will carry information about the contact.
  * The number of collisions and contact joints may vary, but we allocate these as a static array for performance issues.
  * (Allocating feedback structs at every simulation step would degrade simulation performance).
@@ -112,13 +112,13 @@ static std::map<SkinPart,contactICubSkinEmul_t> contactICubSkinEmulMap;
 */
 #define MAX_DJOINT_FEEDBACKSTRUCTS 500
 
-static dJointFeedback touchSensorFeedbacks[MAX_DJOINT_FEEDBACKSTRUCTS]; 
+static dJointFeedback touchSensorFeedbacks[MAX_DJOINT_FEEDBACKSTRUCTS];
 static int nFeedbackStructs=0;
 
 static bool START_SELF_COLLISION_DETECTION = false; //we want to set this trigger on only after the robot is in in home pos -
- //it's initial configuration is with arms inside the thighs 
-static const double EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.03; //0.03 //for skin emulation we get the coordinates of the collision and contact with skin cover from ODE; 
-//after transforming to local reference frame of respective skin part, we emulate which set of taxels would get activated at that position; 
+ //it's initial configuration is with arms inside the thighs
+static const double EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.03; //0.03 //for skin emulation we get the coordinates of the collision and contact with skin cover from ODE;
+//after transforming to local reference frame of respective skin part, we emulate which set of taxels would get activated at that position;
 //however, with errors in the position, we need an extra margin, so the contact falls onto some taxels
 static const double MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.01; //0.01;
 
@@ -181,7 +181,7 @@ void OdeSdlSimulation::handle_mouse_motion(SDL_MouseMotionEvent* mousemotion) {
         mouseMovement(angle_xref,angle_yref);
 
         if (v<1){
-            //mouse_ray_x = mouse0_down_x; 
+            //mouse_ray_x = mouse0_down_x;
             //mouse_ray_y = mouse0_down_y;
         }
         /*mouseDiffx = mouse0_down_x - mouse_ray_x;
@@ -210,7 +210,7 @@ void OdeSdlSimulation::handle_mouse_motion(SDL_MouseMotionEvent* mousemotion) {
     if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(3)){// MOUSE RIGHT BUTTON
 
         //xdistance -= mousemotion->xrel / 10.0f;
-        //ydistance -= mousemotion->yrel / 10.0f;	
+        //ydistance -= mousemotion->yrel / 10.0f;
     }
 }
 
@@ -221,9 +221,9 @@ void OdeSdlSimulation::process_events(void) {
     Uint8 * keystate = SDL_GetKeyState(NULL);
     if(keystate[SDLK_q]){xrot += 1 * 0.4f;if (xrot >360) xrot -= 360 * 0.1f;}
     if(keystate[SDLK_z]){xrot -= 1 * 0.4f;if (xrot < -360) xrot += 360 * 0.1f;}
-    if(keystate[SDLK_w]){yrotrad = (yrot / 180 * 3.141592654f); xrotrad = (xrot / 180 * 3.141592654f); 
+    if(keystate[SDLK_w]){yrotrad = (yrot / 180 * 3.141592654f); xrotrad = (xrot / 180 * 3.141592654f);
         xpos += float(sin(yrotrad))* 0.005f; ;zpos -= float(cos(yrotrad))* 0.005f; ypos -= float(sin(xrotrad))* 0.005f;}
-    if(keystate[SDLK_s]){yrotrad = (yrot / 180 * 3.141592654f); xrotrad = (xrot / 180 * 3.141592654f); 
+    if(keystate[SDLK_s]){yrotrad = (yrot / 180 * 3.141592654f); xrotrad = (xrot / 180 * 3.141592654f);
         xpos -= float(sin(yrotrad))* 0.005f;zpos += float(cos(yrotrad))* 0.005f; ;ypos += float(sin(xrotrad))* 0.005f;}
     if (keystate[SDLK_a]){yrotrad = (yrot / 180 * 3.141592654f);xpos -= float(cos(yrotrad)) * 0.008;zpos -= float(sin(yrotrad)) * 0.008; }
     if (keystate[SDLK_d]){yrotrad = (yrot / 180 * 3.141592654f);xpos += float(cos(yrotrad)) * 0.008;zpos += float(sin(yrotrad)) * 0.008;}
@@ -274,7 +274,7 @@ void OdeSdlSimulation::process_events(void) {
             case SDL_MOUSEMOTION:
                 handle_mouse_motion(&event.motion);
                 mouse0_down_x = event.button.x;
-                mouse0_down_y = event.button.y;	
+                mouse0_down_y = event.button.y;
                 break;
             case SDL_QUIT:
             /* Handle quit requests (like Ctrl-c). */
@@ -324,14 +324,14 @@ void OdeSdlSimulation::process_events(void) {
 
 void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
 
-    const double CONTACT_HEIGHT_TRESHOLD_METERS = 0.1; //for debugging or skin emulation purposes, assuming the robot is in contact with a flat ground (typically standing), 
+    const double CONTACT_HEIGHT_TRESHOLD_METERS = 0.1; //for debugging or skin emulation purposes, assuming the robot is in contact with a flat ground (typically standing),
     //the contacts generated between the robot and the ground that are always present can be ignored
-    
+
     OdeInit& odeinit = OdeInit::get();
 
     assert(o1);
     assert(o2);
-     
+
     dSpaceID space1,space2;
     dSpaceID superSpace1,superSpace2;
     std::string geom1className("");
@@ -347,7 +347,7 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
     string indentString("");
     std::map<dGeomID,string>::iterator geom1namesIt;
     std::map<dGeomID,string>::iterator geom2namesIt;
-    
+
     if (dGeomIsSpace(o1)){
        space1 = (dSpaceID)o1;
     } else {
@@ -358,9 +358,9 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
     for (int i=1;i<=subLevel1;i++){ //start from i=1, for sublevel==0 we don't add any indentation
       indentString = indentString + " --- ";
     }
-     
+
     if (odeinit.verbosity > 3) yDebug("%s nearCallback()\n",indentString.c_str());
-   
+
     if (dGeomIsSpace(o1)){
         space1 = (dSpaceID)o1;
         if (odeinit.verbosity > 3){
@@ -372,14 +372,14 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
         superSpace1 = dGeomGetSpace(o1);
         geom1namesIt = odeinit._iCub->dGeomNames.find(o1);
         if (geom1namesIt != odeinit._iCub->dGeomNames.end()){
-           geom1name = geom1namesIt->second;   
+           geom1name = geom1namesIt->second;
            if (odeinit.verbosity > 3) yDebug("%s Object nr. 1: geom: %s, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),geom1name.c_str(),geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),dSpaceGetSublevel(superSpace1));
         }
         else{
            if (odeinit.verbosity > 3) yDebug("%s Object nr. 1: A geom, ID: %p, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),o1,geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),dSpaceGetSublevel(superSpace1));
         }
     }
- 
+
     if (dGeomIsSpace(o2)){
         space2 = (dSpaceID)o2;
         if (odeinit.verbosity > 3){
@@ -397,16 +397,16 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
            if (odeinit.verbosity > 3) yDebug("%s Object nr. 2: A geom, ID: %p, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),o2,geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str(),dSpaceGetSublevel(superSpace2));
         }
     }
-    
-    // if at least one of the geoms is a space, we need to go deeper -> recursive calls 
+
+    // if at least one of the geoms is a space, we need to go deeper -> recursive calls
     if (dGeomIsSpace(o1) || dGeomIsSpace(o2)){
       if (dGeomIsSpace(o1) && dGeomIsSpace(o2)){ //if both are spaces, we exclude special combinations from the checking
           if (((space1 == odeinit._iCub->iCubHeadSpace) && (space2 == odeinit._iCub->iCubTorsoSpace)) || ((space1 == odeinit._iCub->iCubTorsoSpace) && (space2 == odeinit._iCub->iCubHeadSpace))){
-              if (odeinit.verbosity > 3) yDebug("%s Ignoring head vs. torso collision space checking.\n",indentString.c_str()); 
+              if (odeinit.verbosity > 3) yDebug("%s Ignoring head vs. torso collision space checking.\n",indentString.c_str());
                 //these are unnecessary geoms to check, moreover 2 of these were colliding while not connected by a joint
           }
           else if (((space1 == odeinit._iCub->iCubLegsSpace) && (space2 == odeinit._iCub->iCubTorsoSpace)) || ((space1 == odeinit._iCub->iCubTorsoSpace) && (space2 == odeinit._iCub->iCubLegsSpace))){
-             if (odeinit.verbosity > 3) yDebug("%s Ignoring legs vs. torso collision space checking.\n",indentString.c_str()); 
+             if (odeinit.verbosity > 3) yDebug("%s Ignoring legs vs. torso collision space checking.\n",indentString.c_str());
             //these are unnecessary geoms to check - it always check collisions of geoms connected by a joint
           }
           else{
@@ -420,13 +420,13 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
       //if (dGeomIsSpace(o2)){
 	//  dSpaceCollide2(o2,o1,data,&nearCallback); //start the recursion from the other end
       //}
-      return;      
-    }  
+      return;
+    }
     /* Note we do not want to test intersections within a space,
     * only between spaces. Therefore, we do not call  dSpaceCollide ((dSpaceID)o1, data, &nearCallback) and the same for o2 */
-	
+
     /* if we made it up to here, it means we have two geoms (not spaces) o1, o2 from two different spaces and we should handle their collision */
-     
+
     dBodyID b1 = dGeomGetBody(o1);
     dBodyID b2 = dGeomGetBody(o2);
     if (b1 && b2 && dAreConnectedExcluding (b1,b2,dJointTypeContact)){
@@ -441,7 +441,7 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
        }
        return;
     }
-       
+
     if (odeinit.verbosity > 3) yDebug("%s Collision candidate. Preparing contact joints.\n",indentString.c_str());
     dContact contact[MAX_CONTACTS];   // up to MAX_CONTACTS contacts per box-box
     int i;
@@ -455,8 +455,8 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
         contact[i].surface.slip2 = (dReal)0.000001;
         contact[i].surface.soft_cfm = 0.0001;
     }
-    int numc = dCollide (o1,o2,MAX_CONTACTS,&contact[0].geom,sizeof(dContact)); 
-    if (numc > 0){          
+    int numc = dCollide (o1,o2,MAX_CONTACTS,&contact[0].geom,sizeof(dContact));
+    if (numc > 0){
         if (odeinit.verbosity > 3) yDebug("%s Collision suspect confirmed. There are %d contacts - creating joints.\n",indentString.c_str(),numc);
         dMatrix3 RI;
         dRSetIdentity (RI);
@@ -474,20 +474,20 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
             // check if the bodies are touch sensitive.
             if (odeinit._iCub->actSkinEmul == "off"){ //this is the old implementation - hands (fingers and palm) are checked for touch
                 bool b1isTouchSensitive = isBodyTouchSensitive (b1);
-                bool b2isTouchSensitive = isBodyTouchSensitive (b2); 
+                bool b2isTouchSensitive = isBodyTouchSensitive (b2);
                 // if any of the bodies are touch sensitive...
                 if (b1isTouchSensitive || b2isTouchSensitive) {
                     // ... add a feedback structure to the contact joint.
                     if (odeinit.verbosity > 2) yDebug("%s	Adding tactile feedback for emulating finger/palm skin to this one (ODE joint feedback counter: %d).\n",indentString.c_str(),nFeedbackStructs);
-                    dJointSetFeedback (c, &(touchSensorFeedbacks[nFeedbackStructs])); 
+                    dJointSetFeedback (c, &(touchSensorFeedbacks[nFeedbackStructs]));
                     nFeedbackStructs++;
                 }
             }
             else { //whole_body_skin_emul ~ actSkinEmul is on
             /* here we treat all bodies belonging to the icub as touch sensitive
-            * we want to know if the geom is part of the iCub - that is its superSpace is one of the iCub subspaces*/ 
+            * we want to know if the geom is part of the iCub - that is its superSpace is one of the iCub subspaces*/
 
-                if ((superSpace1 == odeinit._iCub->iCubHeadSpace) ||  (superSpace1 == odeinit._iCub->iCubLegsSpace)){ 
+                if ((superSpace1 == odeinit._iCub->iCubHeadSpace) ||  (superSpace1 == odeinit._iCub->iCubLegsSpace)){
                     geom1isiCubPart = true;
                 }
                 else if ((superSpace1==odeinit._iCub->iCubTorsoSpace) || (superSpace1==odeinit._iCub->iCubLeftArmSpace) || (superSpace1== odeinit._iCub->iCubRightArmSpace)){
@@ -495,43 +495,43 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
                     geom1isTorsoOrArm = true;
                 }
                 // || (superSpace1 == iCub){ - this should never happen here - in the self-collision mode, the iCub space contains only subspaces - no geoms directly
-                
-                if ((superSpace2 == odeinit._iCub->iCubHeadSpace) ||  (superSpace2 == odeinit._iCub->iCubLegsSpace)){ 
+
+                if ((superSpace2 == odeinit._iCub->iCubHeadSpace) ||  (superSpace2 == odeinit._iCub->iCubLegsSpace)){
                     geom2isiCubPart = true;
                 }
                 else if ((superSpace2==odeinit._iCub->iCubTorsoSpace) || (superSpace2==odeinit._iCub->iCubLeftArmSpace) || (superSpace2== odeinit._iCub->iCubRightArmSpace)){
                     geom2isiCubPart = true;
                     geom2isTorsoOrArm = true;
                 }
-        
+
                 // if (geom1isiCubPart || geom2isiCubPart){ //we don't have the legs and head implemented yet - these don't have skin in the real robot - but legs will -> should do that
                 if ( geom1isTorsoOrArm || geom2isTorsoOrArm){
                     if (odeinit.verbosity > 3) yDebug("%s	Adding tactile feedback for whole-body skinContact to this contact (ODE joint feedback counter: %d).\n",indentString.c_str(),nFeedbackStructs);
                     if (nFeedbackStructs >= MAX_DJOINT_FEEDBACKSTRUCTS){
-                        yWarning("out of contact joint feedback structures for ODE (exceeded %d) - some contact joints will not have info about forces stored\n.",MAX_DJOINT_FEEDBACKSTRUCTS); 
+                        yWarning("out of contact joint feedback structures for ODE (exceeded %d) - some contact joints will not have info about forces stored\n.",MAX_DJOINT_FEEDBACKSTRUCTS);
                     }
                     else{
-                        dJointSetFeedback (c, &(touchSensorFeedbacks[nFeedbackStructs])); 
-                        nFeedbackStructs++;	
+                        dJointSetFeedback (c, &(touchSensorFeedbacks[nFeedbackStructs]));
+                        nFeedbackStructs++;
                     }
                     OdeInit::contactOnSkin_t contactOnSkin, contactOnSkin2;
                     if (geom1isiCubPart){
                         contactOnSkin.body_geom_space_id = superSpace1;
-                        contactOnSkin.body_geom_id = o1; 
+                        contactOnSkin.body_geom_id = o1;
                         contactOnSkin.body_index = 1;
                         contactOnSkin.contact_geom = contact[i].geom;
-                        contactOnSkin.contact_joint = c; 
+                        contactOnSkin.contact_joint = c;
                         odeinit.listOfSkinContactInfos.push_back(contactOnSkin);
                     }
                     if (geom2isiCubPart){
                         contactOnSkin2.body_geom_space_id = superSpace2;
-                        contactOnSkin2.body_geom_id = o2; 
+                        contactOnSkin2.body_geom_id = o2;
                         contactOnSkin2.body_index = 2;
                         contactOnSkin2.contact_geom = contact[i].geom;
-                        contactOnSkin2.contact_joint = c; 
+                        contactOnSkin2.contact_joint = c;
                         odeinit.listOfSkinContactInfos.push_back(contactOnSkin2);
                     }
-                } 
+                }
                 else {
                     if (odeinit.verbosity > 3) yDebug("%s Ignoring skin contact - so far only arms and torso are implemented.\n",indentString.c_str());
                 }
@@ -547,69 +547,69 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
 
 bool OdeSdlSimulation::selfCollisionOnIgnoreList(string geom1_string, string geom2_string)
 {
-  /** left arm vs. torso ********/  
+  /** left arm vs. torso ********/
  if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torsoGeom[4]")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torsoGeom[4]")==0) ) ){
-      return true; 
+      return true;
   }
   if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
-      return true; 
+      return true;
   }
   if ( ( (geom1_string.compare("geom[2]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[2]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
-      return true; 
+      return true;
   } //geom[2] is the cylinder in at shoulder joint (when it is "on" - part activated, it may collide ; when off (different geom name), it will not go into the torso, so no need to handle this)
-  
+
   if ( ( (geom1_string.compare("geom[4]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[4]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
-      return true; 
+      return true;
   } //geom[4] is the cylinder in upper left arm (similarly, no need to test for the version with part off (ICubSim::initLeftArmOff))
   if ( ( (geom1_string.compare("geom[4]")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("geom[4]")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
-      return true; 
-  } //upper arm cylinder colliding with torso box
-    
-  /** right arm vs. torso ********/
-  if ( ( (geom1_string.compare("upper right arm cover")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("upper right arm cover")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
-      return true; 
-  }
-  if ( ( (geom1_string.compare("upper right arm cover")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("upper right arm cover")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
-      return true; 
-  }
-  if ( ( (geom1_string.compare("geom[3]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[3]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
-      return true; 
-  } //geom[3] is the cylinder in at shoulder joint (when it is "on" - part activated, it may collide ; when off (different geom name), it will not go into the torso, so no need to handle this)
-  if ( ( (geom1_string.compare("geom[5]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[5]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
-      return true; 
-  } //geom[5] is the cylinder in upper right arm (similarly, no need to test for the version with part off (ICubSim::initRightArmOff))
-  if ( ( (geom1_string.compare("geom[5]")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("geom[5]")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
-      return true; 
-  } //upper arm cylinder colliding with torso box
-  
-   /** left arm vs. torso ********/  
- if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torsoGeom[4]")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torsoGeom[4]")==0) ) ){
-      return true; 
-  }
-  if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
-      return true; 
-  }
-  if ( ( (geom1_string.compare("geom[2]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[2]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
-      return true; 
-  } //geom[2] is the cylinder in at shoulder joint (when it is "on" - part activated, it may collide ; when off (different geom name), it will not go into the torso, so no need to handle this)
-  
-  if ( ( (geom1_string.compare("geom[4]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[4]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
-      return true; 
-  } //geom[4] is the cylinder in upper left arm (similarly, no need to test for the version with part off (ICubSim::initLeftArmOff))
-  if ( ( (geom1_string.compare("geom[4]")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("geom[4]")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
-      return true; 
+      return true;
   } //upper arm cylinder colliding with torso box
 
-  
-  return false;  
-} 
- 
+  /** right arm vs. torso ********/
+  if ( ( (geom1_string.compare("upper right arm cover")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("upper right arm cover")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
+      return true;
+  }
+  if ( ( (geom1_string.compare("upper right arm cover")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("upper right arm cover")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
+      return true;
+  }
+  if ( ( (geom1_string.compare("geom[3]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[3]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
+      return true;
+  } //geom[3] is the cylinder in at shoulder joint (when it is "on" - part activated, it may collide ; when off (different geom name), it will not go into the torso, so no need to handle this)
+  if ( ( (geom1_string.compare("geom[5]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[5]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
+      return true;
+  } //geom[5] is the cylinder in upper right arm (similarly, no need to test for the version with part off (ICubSim::initRightArmOff))
+  if ( ( (geom1_string.compare("geom[5]")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("geom[5]")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
+      return true;
+  } //upper arm cylinder colliding with torso box
+
+   /** left arm vs. torso ********/
+ if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torsoGeom[4]")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torsoGeom[4]")==0) ) ){
+      return true;
+  }
+  if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
+      return true;
+  }
+  if ( ( (geom1_string.compare("geom[2]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[2]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
+      return true;
+  } //geom[2] is the cylinder in at shoulder joint (when it is "on" - part activated, it may collide ; when off (different geom name), it will not go into the torso, so no need to handle this)
+
+  if ( ( (geom1_string.compare("geom[4]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[4]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
+      return true;
+  } //geom[4] is the cylinder in upper left arm (similarly, no need to test for the version with part off (ICubSim::initLeftArmOff))
+  if ( ( (geom1_string.compare("geom[4]")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("geom[4]")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
+      return true;
+  } //upper arm cylinder colliding with torso box
+
+
+  return false;
+}
+
 // returns true if the body with the bodyID is a touch-sensitive body, returns false otherwise.
 bool OdeSdlSimulation::isBodyTouchSensitive (dBodyID bodyID) {
     OdeInit& odeinit = OdeInit::get();
 
     // check the smaller hand parts if the left hand is active.
-    if (odeinit._iCub->actLHand == "on") {	
+    if (odeinit._iCub->actLHand == "on") {
         if (bodyID == odeinit._iCub->body[10]) {
             return true;
         } else if (bodyID == odeinit._iCub->body[30]) {
@@ -628,7 +628,7 @@ bool OdeSdlSimulation::isBodyTouchSensitive (dBodyID bodyID) {
     }
 
     // check the smaller hand parts if the right hand is active.
-    if (odeinit._iCub->actRHand == "on") {	
+    if (odeinit._iCub->actRHand == "on") {
         if (bodyID == odeinit._iCub->body[11]) {
             return true;
         } else if (bodyID == odeinit._iCub->body[49]) {
@@ -650,8 +650,8 @@ bool OdeSdlSimulation::isBodyTouchSensitive (dBodyID bodyID) {
 }
 
 // this is a function to mimic the sensor data from the physical icub fingertip/palm sensors
-//but the palm cover is not being checked here 
-void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& reportRight, bool boolean) { 
+//but the palm cover is not being checked here
+void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& reportRight, bool boolean) {
     OdeInit& odeinit = OdeInit::get();
     reportLeft.clear();
     reportRight.clear();
@@ -670,27 +670,27 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 resultRight = odeinit._iCub->checkTouchSensor_continuousValued( indicesRight[x] );
             }
 
-            if (x < 5){ //five fingers 
+            if (x < 5){ //five fingers
                 for (int i = 0; i < 12; i++){
                     reportLeft.addDouble(resultLeft * 255);
                     reportRight.addDouble(resultRight * 255);
                 }
             }
             if (x == 5){
-                for (int y = 0; y<3; y++){            
+                for (int y = 0; y<3; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(0.0);
                         reportRight.addDouble(0.0);
                     }
                 }
                 //these are palm taxels
-                for (int y = 0; y<4; y++){ 
+                for (int y = 0; y<4; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(resultLeft * 255);
                         reportRight.addDouble(resultRight * 255);
                     }
                 }
-                for (int y = 0; y<4; y++){ 
+                for (int y = 0; y<4; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(0.0);
                         reportRight.addDouble(0.0);
@@ -699,7 +699,7 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
             }
         }
     }//end lhand on rhand on
-    else if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "off" ){ 
+    else if (odeinit._iCub->actLHand == "on" && odeinit._iCub->actRHand == "off" ){
         double resultLeft=0, resultRight = 0;
         for (int x = 0; x < 6; x++){
              if (boolean){
@@ -717,19 +717,19 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 }
             }
             if (x == 5){
-                for (int y = 0; y<3; y++){            
+                for (int y = 0; y<3; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(0.0);
                         reportRight.addDouble(0.0);
                     }
                 }
-                for (int y = 0; y<4; y++){ 
+                for (int y = 0; y<4; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(resultLeft * 255);
                         reportRight.addDouble(resultRight * 255);
                     }
                 }
-                for (int y = 0; y<4; y++){ 
+                for (int y = 0; y<4; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(0.0);
                         reportRight.addDouble(0.0);
@@ -749,7 +749,7 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( odeinit._iCub->l_hand );
                 resultRight = odeinit._iCub->checkTouchSensor_continuousValued( indicesRight[x] );
             }
-            
+
             if (x < 5){
                 for (int i = 0; i < 12; i++){
                     reportLeft.addDouble(resultLeft * 255);
@@ -757,26 +757,26 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 }
             }
             if (x == 5){
-                for (int y = 0; y<3; y++){            
+                for (int y = 0; y<3; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(0.0);
                         reportRight.addDouble(0.0);
                     }
                 }
-                for (int y = 0; y<4; y++){ 
+                for (int y = 0; y<4; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(resultLeft * 255);
                         reportRight.addDouble(resultRight * 255);
                     }
                 }
-                for (int y = 0; y<4; y++){ 
+                for (int y = 0; y<4; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(0.0);
                         reportRight.addDouble(0.0);
                     }
                 }
             }
-        }   
+        }
     }//end lhand off rhand on
     else{//both off
         for (int x = 0; x < 6; x++){
@@ -789,7 +789,7 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( odeinit._iCub->l_hand );
                 resultRight = odeinit._iCub->checkTouchSensor_continuousValued(odeinit._iCub->r_hand);
             }
-            
+
             if (x < 5){
                 for (int i = 0; i < 12; i++){
                     reportLeft.addDouble(resultLeft * 255);
@@ -797,19 +797,19 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
                 }
             }
             if (x == 5){
-                for (int y = 0; y<3; y++){            
+                for (int y = 0; y<3; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(0.0);
                         reportRight.addDouble(0.0);
                     }
                 }
-                for (int y = 0; y<4; y++){ 
+                for (int y = 0; y<4; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(resultLeft * 255);
                         reportRight.addDouble(resultRight * 255);
                     }
                 }
-                for (int y = 0; y<4; y++){ 
+                for (int y = 0; y<4; y++){
                     for (int i = 0; i < 12; i++){
                         reportLeft.addDouble(0.0);
                         reportRight.addDouble(0.0);
@@ -859,7 +859,7 @@ void OdeSdlSimulation::mouseMovement(float x, float y) {
 
 void OdeSdlSimulation::draw_screen() {
     OdeInit& odeinit = OdeInit::get();
-        
+
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // refresh opengl
 
     if (extractImages || odeinit._iCub->actVision == "on"){
@@ -872,14 +872,14 @@ void OdeSdlSimulation::draw_screen() {
     gluPerspective( 75, (float)width/height, 0.01, 100.0 );
     glMatrixMode (GL_MODELVIEW);
     glLoadIdentity();
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);	
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glRotatef (xrot, 1,0,0);
     glRotatef (yrot, 0,1,0);
     glRotatef (zrot, 0,0,1);
     glTranslated(-xpos,-ypos,-zpos);
 
     // set up any video textures
-        
+
     if (video!=0)
         DrawVideo(video);
 
@@ -888,7 +888,7 @@ void OdeSdlSimulation::draw_screen() {
     glPushMatrix();
     glRotatef(90.0,1,0,0);
     glRotatef(180.0,0,1,0);
-    DrawGround(false);     
+    DrawGround(false);
     glPopMatrix();
     glDisable(GL_TEXTURE_2D);
     draw();
@@ -912,11 +912,11 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     x = angles[1];
     y = angles[2];
     z = angles[3];
-    
-    double sqw = w * w;    
-    double sqx = x * x;    
-    double sqy = y * y;    
-    double sqz = z * z; 
+
+    double sqw = w * w;
+    double sqx = x * x;
+    double sqy = y * y;
+    double sqz = z * z;
     float roll, pitch, yaw;
 
     double unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
@@ -944,7 +944,7 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     //Add Euler angles roll pitch yaw
     inertialReport.addDouble( -yaw * 180/M_PI);// yaw
     inertialReport.addDouble( -pitch * 180/M_PI);// pitch
-    inertialReport.addDouble( roll * 180/M_PI);// roll 
+    inertialReport.addDouble( roll * 180/M_PI);// roll
 
     /*//in order to calculate linear acceleration (make sure of body) Inertial Measurement Unit IMU
     LinearVel[0] = dBodyGetLinearVel(odeinit._iCub->inertialBody)[0];
@@ -957,7 +957,7 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     OldLinearVel[0] = LinearVel[0];
     OldLinearVel[1] = LinearVel[1];
     OldLinearVel[2] = LinearVel[2];*/
-        
+
     ////Add linear acceleration
     Vector grav,grav1,grav2,grav3;
     grav.resize(3);
@@ -993,7 +993,7 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[2]*CTRL_RAD2DEG);
     inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[0]*CTRL_RAD2DEG);
     inertialReport.addDouble( dBodyGetAngularVel(odeinit._iCub->inertialBody)[1]*CTRL_RAD2DEG);
-        
+
     //Add magnetic fields
     inertialReport.addDouble(0.0);
     inertialReport.addDouble(0.0);
@@ -1026,7 +1026,7 @@ int OdeSdlSimulation::thread_ode(void *unused) {
             lastTimeCacheUpdate = temp;
         }
 
-        /*if(timeCache >= 2.0*ode_step_length) 
+        /*if(timeCache >= 2.0*ode_step_length)
             yWarning("Simulation delay: running %d steps in a row to recover.\n", (int)(timeCache/ode_step_length));*/
 
         while(timeCache >= ode_step_length){
@@ -1034,7 +1034,7 @@ int OdeSdlSimulation::thread_ode(void *unused) {
             lastOdeProcess = (long) (clock()*cpms);
             ODE_process(1, (void*)1);
             avg_ode_step_length = alpha*avg_ode_step_length + (1.0-alpha)*((long) (clock()*cpms) -lastOdeProcess);
-            
+
             if(realTime)
                 timeCache -= ode_step_length;
             else
@@ -1043,10 +1043,10 @@ int OdeSdlSimulation::thread_ode(void *unused) {
             // check if the desired timestep is achieved, if not, print a warning msg
             if(count % (10000/ode_step_length)==0){
                 if(avg_ode_step_length >= ode_step_length+1)
-                    yWarning("the simulation is too slow to run in real-time, you should increase the timestep in ode_params.ini (current value: %ld, suggested value: %.0f)\n", 
+                    yWarning("the simulation is too slow to run in real-time, you should increase the timestep in ode_params.ini (current value: %ld, suggested value: %.0f)\n",
                         ode_step_length, avg_ode_step_length);
                 else if(avg_ode_step_length <= ode_step_length-1)
-                    yWarning("you could get a more accurate dynamics simulation by decreasing the timestep in ode_params.ini (current value: %ld, suggested value: %.0f)\n", 
+                    yWarning("you could get a more accurate dynamics simulation by decreasing the timestep in ode_params.ini (current value: %ld, suggested value: %.0f)\n",
                         ode_step_length, avg_ode_step_length);
             }
         }
@@ -1061,20 +1061,20 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
 
     odeinit.mtx.lock();
     nFeedbackStructs=0;
-    
-    if (odeinit.verbosity > 3) yDebug("\n ***info code collision detection ***"); 
+
+    if (odeinit.verbosity > 3) yDebug("\n ***info code collision detection ***");
     if (odeinit.verbosity > 3) yDebug("OdeSdlSimulation::ODE_process: dSpaceCollide(odeinit.space,0,&nearCallback): will test iCub space against the rest of the world (e.g. ground).\n");
     dSpaceCollide(odeinit.space,0,&nearCallback); //determines which pairs of geoms in a space may potentially intersect, and calls a callback function with each candidate pair
     if (odeinit._iCub->actSelfCol == "on"){
-           if (START_SELF_COLLISION_DETECTION){ 
+           if (START_SELF_COLLISION_DETECTION){
                 if (odeinit.verbosity > 3){
                     yDebug("OdeSdlSimulation::ODE_process: dSpaceCollide(odeinit._iCub->iCub,0,&nearCallback): will test iCub subspaces against each other.");
                 }
                 dSpaceCollide(odeinit._iCub->iCub,0,&nearCallback); //determines which pairs of geoms in a space may potentially intersect, and calls a callback function with each candidate pair
         }
     }
-    if (odeinit.verbosity > 3) yDebug("***END OF info code collision detection\n ***"); 
-    
+    if (odeinit.verbosity > 3) yDebug("***END OF info code collision detection\n ***");
+
     dWorldStep(odeinit.world, dstep);
     // do 1 TIMESTEP in controllers (ok to run at same rate as ODE: 1 iteration takes about 300 times less computation time than dWorldStep)
     for (int ipart = 0; ipart<MAX_PART; ipart++) {
@@ -1102,9 +1102,9 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
             bool boolean = true;
             if (odeinit._iCub->actPressure == "on"){
                 boolean = false;
-            }    
+            }
             inspectHandTouch_icubSensors(reportLeft, reportRight, boolean);//inspectBodyTouch_continuousValued(report);
-            
+
             if ( robot_streamer->shouldSendTouchLeftHand() )
                     robot_streamer->sendTouchLeftHand( reportLeft );
 
@@ -1114,33 +1114,33 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     }
     else{ // actSkinEmul == "on"
           if(robot_streamer->shouldSendSkinEvents() || (robot_streamer->shouldSendTouchLeftHand() || robot_streamer->shouldSendTouchRightHand() ||
-            robot_streamer->shouldSendTouchLeftArm() || robot_streamer->shouldSendTouchLeftForearm() || 
-            robot_streamer->shouldSendTouchRightArm() || robot_streamer->shouldSendTouchRightForearm() || 
-            robot_streamer->shouldSendTouchTorso())){ 
-               if (! odeinit.listOfSkinContactInfos.empty()){ //if someone is reading AND there are contacts to process 
+            robot_streamer->shouldSendTouchLeftArm() || robot_streamer->shouldSendTouchLeftForearm() ||
+            robot_streamer->shouldSendTouchRightArm() || robot_streamer->shouldSendTouchRightForearm() ||
+            robot_streamer->shouldSendTouchTorso())){
+               if (! odeinit.listOfSkinContactInfos.empty()){ //if someone is reading AND there are contacts to process
                     if (odeinit.verbosity > 2) yDebug("OdeSdlSimulation::ODE_process():There were %lu iCub collisions to process.", odeinit.listOfSkinContactInfos.size());
-                    inspectWholeBodyContactsAndSendTouch(); 
+                    inspectWholeBodyContactsAndSendTouch();
                }
                else{ //someone is reading but no contacts, we send empty lists
                    if(robot_streamer->shouldSendSkinEvents()){
                         skinContactList emptySkinContactList;
                         emptySkinContactList.clear();
-                        robot_streamer->sendSkinEvents(emptySkinContactList); 
+                        robot_streamer->sendSkinEvents(emptySkinContactList);
                    }
                    if(robot_streamer->shouldSendTouchLeftHand()){
-                         Bottle bottleLeftHand = Bottle(odeinit._iCub->emptySkinActivationHand);    
+                         Bottle bottleLeftHand = Bottle(odeinit._iCub->emptySkinActivationHand);
                          robot_streamer->sendTouchLeftHand(bottleLeftHand);
                    }
                    if(robot_streamer->shouldSendTouchRightHand()){
-                         Bottle bottleRightHand = Bottle(odeinit._iCub->emptySkinActivationHand);  
+                         Bottle bottleRightHand = Bottle(odeinit._iCub->emptySkinActivationHand);
                          robot_streamer->sendTouchRightHand(bottleRightHand);
                    }
                    if(robot_streamer->shouldSendTouchLeftArm()){
-                         Bottle bottleLeftArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm); 
+                         Bottle bottleLeftArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm);
                          robot_streamer->sendTouchLeftArm(bottleLeftArm);
                    }
                    if(robot_streamer->shouldSendTouchLeftForearm()){
-                         Bottle bottleLeftForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);    
+                         Bottle bottleLeftForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);
                          robot_streamer->sendTouchLeftForearm(bottleLeftForearm);
                    }
                    if(robot_streamer->shouldSendTouchRightArm()){
@@ -1161,14 +1161,14 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
         if(odeinit.verbosity > 4){
             yDebug("contactICubSkinEmulMap before resetting:");
             printContactICubSkinEmulMap();
-        }    
+        }
         resetContactICubSkinEmulMap();
         if(odeinit.verbosity > 4){
             yDebug("contactICubSkinEmulMap after resetting:");
             printContactICubSkinEmulMap();
-        } 
+        }
     }
-    
+
     dJointGroupEmpty (odeinit.contactgroup);
 
     if (robot_streamer->shouldSendInertial()) {
@@ -1181,7 +1181,7 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     robot_streamer->checkTorques();
 
     odeinit._iCub->setJointControlAction();
-    
+
     //finishTimeODE = clock() ;
     //SPS();
     //yDebug("ODE=%lf\n",(double)(finishTimeODE - startTimeODE) / CLOCKS_PER_SEC);
@@ -1200,14 +1200,14 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
 }
 */
 /*
-  static void SPS()     
+  static void SPS()
   {
-  static float sps           = 0.0f;      
-  static float previousTime  = 0.0f; 
-  static int currentsps; 
+  static float sps           = 0.0f;
+  static float previousTime  = 0.0f;
+  static int currentsps;
   static char  strSPS[60]    = {0};
 
-  float currentTime = (GetTickCount() * 0.001f);    
+  float currentTime = (GetTickCount() * 0.001f);
 
   ++sps; // Increment the SPS counter
 
@@ -1231,7 +1231,7 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     OdeInit& odeinit = OdeInit::get();
 
     SDL_Init(SDL_INIT_TIMER | SDL_GL_ACCELERATED_VISUAL);
-    SDL_SetVideoMode(h,w,32,SDL_OPENGL | SDL_RESIZABLE);// | SDL_SWSURFACE| SDL_ANYFORMAT); // on init 
+    SDL_SetVideoMode(h,w,32,SDL_OPENGL | SDL_RESIZABLE);// | SDL_SWSURFACE| SDL_ANYFORMAT); // on init
 
     dAllocateODEDataForThread(dAllocateMaskAll);
     string logo = robot_config->getFinder().findFile("logo");
@@ -1264,7 +1264,7 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     odeinit._wrld->static_model = false;
     long prevTime = (long) clock();
     long timeLeft;
-    
+
     if (odeinit._iCub->actStartHomePos == "on"){
         odeinit.sendHomePos();
     }
@@ -1279,7 +1279,7 @@ void OdeSdlSimulation::simLoop(int h,int w) {
            START_SELF_COLLISION_DETECTION = true;
        }
     }
-    
+
     while(!odeinit.stop) {
         /* Process incoming events. */
         process_events();
@@ -1287,12 +1287,12 @@ void OdeSdlSimulation::simLoop(int h,int w) {
         if ( !odeinit._wrld->WAITLOADING ){
             if (glrun) {
                 odeinit.mtxTexture.lock();
-                draw_screen();  
+                draw_screen();
                 odeinit.mtxTexture.unlock();
                 // check for framerate
                 timeLeft = (prevTime - (long) clock()) + gl_frame_length;
                 //yDebug() << "check for framerate " << timeLeft;
-                if (timeLeft > 0) 
+                if (timeLeft > 0)
                 { // if there is still time left in this frame, just wait
                     SDL_Delay(timeLeft);
                 }
@@ -1310,10 +1310,10 @@ void OdeSdlSimulation::simLoop(int h,int w) {
             }else{
                 odeinit._wrld->loadTexture(odeinit._wrld->texture, odeinit._wrld->modelTexture[odeinit._wrld->MODEL_NUM-1]);
             }
-            odeinit._wrld->WAITLOADING = false;	
-            odeinit._wrld->static_model = false;	
+            odeinit._wrld->WAITLOADING = false;
+            odeinit._wrld->static_model = false;
         }
-    }     
+    }
     yInfo("Stopping SDL and ODE threads...");
     //stop the timer
     //SDL_RemoveTimer(id);
@@ -1331,7 +1331,7 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     const dReal *rot;
     glViewport(0,0,cameraSizeWidth,cameraSizeHeight);
     glMatrixMode (GL_PROJECTION);
-    
+
     if (left){
         glLoadIdentity();
         gluPerspective( fov_left, (float) width_left/height_left, 0.04, 100.0 );
@@ -1367,7 +1367,7 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
                   pos[2] + rot[10],
                   -rot[4], 1, 0
                   );
-    }	
+    }
     if (wide){
         glLoadIdentity();
         gluPerspective( 55.8, (float) cameraSizeWidth/cameraSizeHeight, 0.04, 100.0 );//here nothing to do with cameras
@@ -1385,12 +1385,12 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     glPushMatrix();
     glRotatef(90.0,1,0,0);
     glRotatef(180.0,0,1,0);
-    DrawGround(false);     
+    DrawGround(false);
     glPopMatrix();
     glDisable(GL_TEXTURE_2D);
     draw();//robot
     glEnable(GL_TEXTURE_2D);
-    drawSkyDome(0,0,0,50,50,50); // Draw the Skybox	
+    drawSkyDome(0,0,0,50,50,50); // Draw the Skybox
 }
 
 void OdeSdlSimulation::clearBuffer() {
@@ -1400,7 +1400,7 @@ void OdeSdlSimulation::clearBuffer() {
 OdeSdlSimulation::OdeSdlSimulation() {
 }
 
-void OdeSdlSimulation::init(RobotStreamer *streamer, 
+void OdeSdlSimulation::init(RobotStreamer *streamer,
                             RobotConfig *config) {
     OdeInit& odeinit = OdeInit::get();
     if (video!=NULL) {
@@ -1415,7 +1415,7 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
 
     video = new VideoTexture;
     string moduleName = odeinit.getName();
-    video->setName( moduleName ); 
+    video->setName( moduleName );
     odeinit._iCub->eyeLidsPortName = moduleName;
     Property options;
 
@@ -1461,81 +1461,81 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
         yInfo("Adding video texture %s\n", name.c_str());
         video->add(options.findGroup(name.c_str()));
     }
-    
+
     initContactICubSkinEmulMap();
-   
+
 };
 
 void OdeSdlSimulation::initContactICubSkinEmulMap(void)
 {
 
     contactICubSkinEmul_t skin_emul_struct;
-    
+
     //SKIN_LEFT_HAND
     skin_emul_struct.coverTouched = false; //for the hand, this comprises also fingertips - they are treated like covers
     skin_emul_struct.indivTaxelResolution = true;
     contactICubSkinEmulMap[SKIN_LEFT_HAND]=skin_emul_struct;
-    
+
     //SKIN_LEFT_FOREARM
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = true;
     contactICubSkinEmulMap[SKIN_LEFT_FOREARM]=skin_emul_struct;
-    
+
     //SKIN_LEFT_UPPER_ARM
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = false;
     contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM]=skin_emul_struct;
-    
+
     //SKIN_RIGHT_HAND
     skin_emul_struct.coverTouched = false; //for the hand, this comprises also fingertips - they are treated like covers
     skin_emul_struct.indivTaxelResolution = true;
     contactICubSkinEmulMap[SKIN_RIGHT_HAND]=skin_emul_struct;
-    
+
     //SKIN_RIGHT_FOREARM
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = true;
     contactICubSkinEmulMap[SKIN_RIGHT_FOREARM]=skin_emul_struct;
-    
+
     //SKIN_RIGHT_UPPER_ARM
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = false;
     contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM]=skin_emul_struct;
- 
+
     //SKIN_FRONT_TORSO
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = false;
     contactICubSkinEmulMap[SKIN_FRONT_TORSO]=skin_emul_struct;
-   
+
     //LEFT_LEG_UPPER
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = false;
     contactICubSkinEmulMap[LEFT_LEG_UPPER]=skin_emul_struct;
-    
+
      //LEFT_LEG_LOWER
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = false;
     contactICubSkinEmulMap[LEFT_LEG_LOWER]=skin_emul_struct;
-    
+
      //LEFT_FOOT
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = false;
     contactICubSkinEmulMap[LEFT_FOOT]=skin_emul_struct;
-    
+
      //RIGHT_LEG_UPPER
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = false;
     contactICubSkinEmulMap[RIGHT_LEG_UPPER]=skin_emul_struct;
-    
+
      //RIGHT_LEG_LOWER
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = false;
     contactICubSkinEmulMap[RIGHT_LEG_LOWER]=skin_emul_struct;
-    
+
      //RIGHT_FOOT
     skin_emul_struct.coverTouched = false;
     skin_emul_struct.indivTaxelResolution = false;
     contactICubSkinEmulMap[RIGHT_FOOT]=skin_emul_struct;
-    
+
 
 }
 
@@ -1545,51 +1545,51 @@ void OdeSdlSimulation::resetContactICubSkinEmulMap(void)
     //SKIN_LEFT_HAND
     contactICubSkinEmulMap[SKIN_LEFT_HAND].coverTouched=false;
     contactICubSkinEmulMap[SKIN_LEFT_HAND].taxelsTouched.clear();
-    
+
     //SKIN_LEFT_FOREARM
     contactICubSkinEmulMap[SKIN_LEFT_FOREARM].coverTouched=false;
     contactICubSkinEmulMap[SKIN_LEFT_FOREARM].taxelsTouched.clear();
-    
+
     //SKIN_LEFT_UPPER_ARM
     contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].coverTouched=false;
     contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].taxelsTouched.clear();
-    
+
     //SKIN_RIGHT_HAND
     contactICubSkinEmulMap[SKIN_RIGHT_HAND].coverTouched=false;
     contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.clear();
-    
+
     //SKIN_RIGHT_FOREARM
     contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].coverTouched=false;
     contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].taxelsTouched.clear();
-    
+
     //SKIN_RIGHT_UPPER_ARM
     contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].coverTouched=false;
     contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].taxelsTouched.clear();
-    
+
     //SKIN_FRONT_TORSO
     contactICubSkinEmulMap[SKIN_FRONT_TORSO].coverTouched=false;
     contactICubSkinEmulMap[SKIN_FRONT_TORSO].taxelsTouched.clear();
-    
+
     //LEFT_LEG_UPPER
     contactICubSkinEmulMap[LEFT_LEG_UPPER].coverTouched=false;
     contactICubSkinEmulMap[LEFT_LEG_UPPER].taxelsTouched.clear();
-    
+
     //LEFT_LEG_LOWER
     contactICubSkinEmulMap[LEFT_LEG_LOWER].coverTouched=false;
     contactICubSkinEmulMap[LEFT_LEG_LOWER].taxelsTouched.clear();
-    
+
      //LEFT_FOOT
     contactICubSkinEmulMap[LEFT_FOOT].coverTouched=false;
     contactICubSkinEmulMap[LEFT_FOOT].taxelsTouched.clear();
-    
+
      //RIGHT_LEG_UPPER
     contactICubSkinEmulMap[RIGHT_LEG_UPPER].coverTouched=false;
     contactICubSkinEmulMap[RIGHT_LEG_UPPER].taxelsTouched.clear();
-    
+
      //RIGHT_LEG_LOWER
     contactICubSkinEmulMap[RIGHT_LEG_LOWER].coverTouched=false;
     contactICubSkinEmulMap[RIGHT_LEG_LOWER].taxelsTouched.clear();
-    
+
      //RIGHT_FOOT
     contactICubSkinEmulMap[RIGHT_FOOT].coverTouched=false;
     contactICubSkinEmulMap[RIGHT_FOOT].taxelsTouched.clear();
@@ -1665,34 +1665,34 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
       SkinPart skinPart;    // id of the part of the skin (e.g. SKIN_LEFT_FOREARM; from skinDynLib/common.h)
       BodyPart bodyPart;    // id of the body part
       HandPart handPart;    // id of the hand part  - INDEX, MIDDLE, RING, LITTLE, THUMB, PALM, ALL_HAND_PARTS, HAND_PART_SIZE
-     
+
       //coordinate transformations for skinEvents and for emulating ind. taxel groups per skin part
       Vector geoCenter_SIM_FoR_forHomo(4,0.0), normal_SIM_FoR_forHomo(4,0.0);
       Vector force_SIM_FoR_forHomo(4,0.0), moment_SIM_FoR_forHomo(4,0.0);
       Vector v1(4,0.0); //auxilliary vector
       Vector geoCenter_link_FoR(3,0.0), normal_link_FoR(3,0.0);
       Vector force_link_FoR(3,0.0), moment_link_FoR(3,0.0);
-      double forceOnBody_magnitude; 
+      double forceOnBody_magnitude;
       double left_arm_encoders[16], right_arm_encoders[16], torso_encoders[3], head_encoders[6];
       Vector left_arm_for_iKin(10,0.0), right_arm_for_iKin(10,0.0), inertial_for_iKin(6,0.0);
       Matrix T_root_to_link = yarp::math::zeros(4,4);
       Matrix T_link_to_root = yarp::math::zeros(4,4);
-      std::vector<unsigned int> taxel_list;  
+      std::vector<unsigned int> taxel_list;
       bool upper_body_transforms_available = false;
-      
+
       bool skinCoverFlag = false;
       bool fingertipFlag = true;
       OdeInit& odeinit = OdeInit::get();
       skinContactList mySkinContactList;
       mySkinContactList.clear();
-          
+
       if ((odeinit._iCub->actHead=="off") || (odeinit._iCub->actTorso=="off") || (odeinit._iCub->actLArm=="off") || (odeinit._iCub->actRArm=="off")){
         upper_body_transforms_available = false;
         yWarning("With self-collisions on but head/torso/left_arm/right_arm off, the upper body transforms are unavailable and skinContactList can't be created.");
       }
       else{
            upper_body_transforms_available = true;
-          
+
            odeinit._controls[PART_ARM_LEFT]->getEncodersRaw(left_arm_encoders); //! do not use the BODY_PART enums from skinDynLib to index here - in the simulator the order of "controls[]" is different
            odeinit._controls[PART_ARM_RIGHT]->getEncodersRaw(right_arm_encoders);
            odeinit._controls[PART_TORSO]->getEncodersRaw(torso_encoders);
@@ -1704,7 +1704,7 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
            }
            for (int l=0;l<7;l++){
                left_arm_for_iKin(l+TORSO_DOF) = left_arm_encoders[l]; // then we put seven arm joints (we ignore the rest of the encoders up to 16 - these are fingers)
-               right_arm_for_iKin(l+TORSO_DOF) = right_arm_encoders[l]; 
+               right_arm_for_iKin(l+TORSO_DOF) = right_arm_encoders[l];
            }
            for (int m=0;m<3;m++){
                inertial_for_iKin(m+TORSO_DOF) = head_encoders[m]; //we put the second three - the neck joints and ignore the rest of head_encoders (the eyes)
@@ -1713,7 +1713,7 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
            odeinit._iCub->iKinRightArm.setAng(right_arm_for_iKin);
            odeinit._iCub->iKinInertialSensor.setAng(inertial_for_iKin);
       }
-      
+
       if (odeinit.verbosity > 4) yDebug("OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch:There were %lu iCub collisions to process.", odeinit.listOfSkinContactInfos.size());
       //main loop through all the contacts
       for (list<OdeInit::contactOnSkin_t>::iterator it = odeinit.listOfSkinContactInfos.begin(); it!=odeinit.listOfSkinContactInfos.end(); it++){
@@ -1722,8 +1722,8 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
           odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,handPart,skinCoverFlag,fingertipFlag);
           if(upper_body_transforms_available){
               geoCenter_SIM_FoR_forHomo.zero(); geoCenter_SIM_FoR_forHomo(3)=1.0; //setting the extra row to 1 - for multiplication by homogenous rototransl. matrix
-              normal_SIM_FoR_forHomo.zero(); normal_SIM_FoR_forHomo(3)=1.0; 
-              force_SIM_FoR_forHomo.zero(); force_SIM_FoR_forHomo(3)=1.0; 
+              normal_SIM_FoR_forHomo.zero(); normal_SIM_FoR_forHomo(3)=1.0;
+              force_SIM_FoR_forHomo.zero(); force_SIM_FoR_forHomo(3)=1.0;
               moment_SIM_FoR_forHomo.zero(); moment_SIM_FoR_forHomo(3)=1.0;
               geoCenter_link_FoR.zero();normal_link_FoR.zero();
               moment_link_FoR.zero();force_link_FoR.zero();
@@ -1735,7 +1735,7 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
               }
               dJointFeedback * fb = dJointGetFeedback ((*it).contact_joint);
               if (fb==NULL){
-                  yDebug("Warning:OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch: This joint (at %d skin part) has no feedback structure defined - contact force not available: setting to -1.",skinPart); 
+                  yDebug("Warning:OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch: This joint (at %d skin part) has no feedback structure defined - contact force not available: setting to -1.",skinPart);
                   forceOnBody_magnitude = -1;
               }
               else{
@@ -1756,56 +1756,56 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
                           yError("OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch: unexpected body_index for colliding body: %d.\n",(*it).body_index);
                       }
                 }
-                  forceOnBody_magnitude=sqrt(force_SIM_FoR_forHomo(0)*force_SIM_FoR_forHomo(0) + force_SIM_FoR_forHomo(1)*force_SIM_FoR_forHomo(1) 
-                      + force_SIM_FoR_forHomo(2)*force_SIM_FoR_forHomo(2)); 
+                  forceOnBody_magnitude=sqrt(force_SIM_FoR_forHomo(0)*force_SIM_FoR_forHomo(0) + force_SIM_FoR_forHomo(1)*force_SIM_FoR_forHomo(1)
+                      + force_SIM_FoR_forHomo(2)*force_SIM_FoR_forHomo(2));
               }
               //Let's do all the transformations
               //Assuming, dJointFeedback and contact_geom data from ODE are in global ODE frame; the contact_geom.pos is the position; the contact_geom.normal and the dJointFeedback
               // vectors (f1, m1) are originating from the global origin, i.e. they need to be translated to contact_geom.pos;
-              //see the post in ode-users group "dJointFeedback and dContactGeom reference frame", 6.12.2013; local FoR of the contact point; 
-                        
+              //see the post in ode-users group "dJointFeedback and dContactGeom reference frame", 6.12.2013; local FoR of the contact point;
+
               switch(bodyPart){
                   case LEFT_ARM:
                       T_root_to_link = odeinit._iCub->iKinLeftArm.getH(SkinPart_2_LinkNum[skinPart].linkNum + TORSO_DOF);
-                      //e.g. skinPart LEFT_UPPER_ARM gives link number 2, which means we ask iKin for getH(2+3), which gives us  FoR 6 - at the first elbow joint, which is the FoR for the upper arm 
+                      //e.g. skinPart LEFT_UPPER_ARM gives link number 2, which means we ask iKin for getH(2+3), which gives us  FoR 6 - at the first elbow joint, which is the FoR for the upper arm
                       break;
                   case RIGHT_ARM:
                       T_root_to_link = odeinit._iCub->iKinRightArm.getH(SkinPart_2_LinkNum[skinPart].linkNum + TORSO_DOF);
                       break;
                   case TORSO:
-                      T_root_to_link = odeinit._iCub->iKinInertialSensor.getH(SkinPart_2_LinkNum[skinPart].linkNum); 
+                      T_root_to_link = odeinit._iCub->iKinInertialSensor.getH(SkinPart_2_LinkNum[skinPart].linkNum);
                       // SkinPart_2_LinkNum[SKIN_FRONT_TORSO].linkNum  is 2, this should give us the FoR 3 - the first neck joint which is the expected torso FoR
                       //- check " SKIN torso 2" in iCub/main/app/iCubGui/skeleton.ini
-                      //- importantly, this needs to be the iKinInertialSensor, not the iKin Arm; 
+                      //- importantly, this needs to be the iKinInertialSensor, not the iKin Arm;
                       break;
                   default:
                       if (odeinit.verbosity > 0) yDebug("OdeSdlSimulation::processWholeBodyCollisions: FoR transforms to BODY PART %d not implemented yet\n",bodyPart);
                           continue;
               }
               T_link_to_root = SE3inv(T_root_to_link);
-                    
-              v1.zero();      
+
+              v1.zero();
               v1 = T_link_to_root * (odeinit._iCub->H_r2w) * geoCenter_SIM_FoR_forHomo; //first transform to robot coordinates, then transform to local FoR of respective body part
               geoCenter_link_FoR = v1.subVector(0,2); //strip the last one away
-                  
+
               v1.zero();
-              v1 = T_link_to_root * (odeinit._iCub->H_r2w) * normal_SIM_FoR_forHomo; 
+              v1 = T_link_to_root * (odeinit._iCub->H_r2w) * normal_SIM_FoR_forHomo;
               normal_link_FoR = v1.subVector(0,2);
-              
+
               v1.zero();
               v1 = T_link_to_root * (odeinit._iCub->H_r2w) * force_SIM_FoR_forHomo;
-              force_link_FoR = v1.subVector(0,2); 
-                
+              force_link_FoR = v1.subVector(0,2);
+
               v1.zero();
               v1 = T_link_to_root * (odeinit._iCub->H_r2w) * moment_SIM_FoR_forHomo;
-              moment_link_FoR = v1.subVector(0,2); 
-                
-              //Note that the normal, force, and moment are just carrying the orientation (and apart from the normal also magnitude) - they will still need to be translated to the 
+              moment_link_FoR = v1.subVector(0,2);
+
+              //Note that the normal, force, and moment are just carrying the orientation (and apart from the normal also magnitude) - they will still need to be translated to the
               //appropariate CoP / geoCenter to make the arrow to the taxel
-              //Note also the dJointFeedback force vector does not necessarily point along the normal at the contact point (which points into the colliding body) - as is a sum of the 
+              //Note also the dJointFeedback force vector does not necessarily point along the normal at the contact point (which points into the colliding body) - as is a sum of the
               //forces along the normal and frictional forces perpendicular to the normal
               //alternatively, I could just take the magnitude from the force and send the normal as the direction
-                
+
               //yDebug("Contact coordinates in ODE / SIM FoR: %s\n",geoCenter_SIM_FoR_forHomo.subVector(0,2).toString().c_str());
               Vector temp_v4(4,0.0);
               temp_v4 =  (odeinit._iCub->H_r2w) * geoCenter_SIM_FoR_forHomo;
@@ -1816,25 +1816,25 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
               /*for (int l=0;l<2;l++){ geoCenter_link_FoR(l)=0.0;  force_link_FoR(l)=1.0;  normal_link_FoR(l)=1.0; moment_link_FoR(l)=1.0;
               } */
               //forceOnBody_magnitude=10.0;
-              if (contactICubSkinEmulMap[skinPart].indivTaxelResolution && (skinCoverFlag || fingertipFlag)){ //indiv taxels get emulated only on covers - where the actual skin is 
+              if (contactICubSkinEmulMap[skinPart].indivTaxelResolution && (skinCoverFlag || fingertipFlag)){ //indiv taxels get emulated only on covers - where the actual skin is
                 if(skinCoverFlag){
-                    mapPositionIntoTaxelList(skinPart,geoCenter_link_FoR,taxel_list); 
+                    mapPositionIntoTaxelList(skinPart,geoCenter_link_FoR,taxel_list);
                 }
                 else if(fingertipFlag){
-                    mapFingertipIntoTaxelList(handPart,taxel_list);   
+                    mapFingertipIntoTaxelList(handPart,taxel_list);
                 }
               }
-              else{    
+              else{
                   taxel_list.push_back(FAKE_TAXEL_ID); // we will emulate one non-existent activated "taxel" per contact joint - say taxel "10000"
               }
-              skinContact c(bodyPart, skinPart, getLinkNum(skinPart), geoCenter_link_FoR, geoCenter_link_FoR,taxel_list, forceOnBody_magnitude, normal_link_FoR,force_link_FoR,moment_link_FoR);       
-              //we have only one source of information - the contact as detected by ODE - therefore, we take the coordinates and set them both to CoP 
+              skinContact c(bodyPart, skinPart, getLinkNum(skinPart), geoCenter_link_FoR, geoCenter_link_FoR,taxel_list, forceOnBody_magnitude, normal_link_FoR,force_link_FoR,moment_link_FoR);
+              //we have only one source of information - the contact as detected by ODE - therefore, we take the coordinates and set them both to CoP
               //(which is supposed to come from the dynamic estimation) and as geoCenter (from skin); Similarly, we derive the pressure directly from the force vector from ODE.
               if (odeinit.verbosity > 4) yDebug("Creating skin contact as follows: %s.\n",c.toString().c_str());
-              mySkinContactList.push_back(c); 
+              mySkinContactList.push_back(c);
           } //if(upper_body_transforms_available){
-          // here we collect the info for emulating the skin ports (compensated tactile ports) 
-          if(skinCoverFlag || fingertipFlag){ 
+          // here we collect the info for emulating the skin ports (compensated tactile ports)
+          if(skinCoverFlag || fingertipFlag){
                 //if it was a cover (including palm cover) or fingertip that was touched, we will append the taxels touched to respective contactICubSkinEmulMap
                 contactICubSkinEmulMap[skinPart].coverTouched = true;
                 if (contactICubSkinEmulMap[skinPart].indivTaxelResolution){
@@ -1843,68 +1843,68 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
                         if (first_taxel_in_list != FAKE_TAXEL_ID){
                             for (std::vector<unsigned int>::const_iterator it = taxel_list.begin() ; it != taxel_list.end(); ++it){
                                 contactICubSkinEmulMap[skinPart].taxelsTouched.insert(*it); //inserting the taxel IDs into the set
-                            }                 
+                            }
                         }
                     }
                 }
           }
       } //cycle through odeinit.listOfSkinContactInfos
-      
+
       //all contacts have been processed, now we produce the output
-      
+
       if(robot_streamer->shouldSendSkinEvents()){ //note that these are generated here for any body parts - not only those that have tactile sensors in the real robot
-        // the contacts can be visualized using the icubGui (not skinGui) 
+        // the contacts can be visualized using the icubGui (not skinGui)
           robot_streamer->sendSkinEvents(mySkinContactList); //we send even if empty
-      }  
-   
+      }
+
       //for hands, this is now done differently than in the original inspectTouch_icubSensors, where finger bodies were inspected, whether they have contact joints attached to them
       // the palm cover replaces sensing in the palm body
       //now all info about contacts has come from cycling through the odeinit.listOfSkinContactInfos above and it has beem filled into appropriate structs
-      //the output of actual pressure values is discontinued; 
+      //the output of actual pressure values is discontinued;
       int y=0;
       if(robot_streamer->shouldSendTouchLeftHand()){
             Bottle bottleLeftHand;
-            if (contactICubSkinEmulMap[SKIN_LEFT_HAND].coverTouched){ 
+            if (contactICubSkinEmulMap[SKIN_LEFT_HAND].coverTouched){
                 //prepare the bottle
                 //first 60 are fingers
                 if (contactICubSkinEmulMap[SKIN_LEFT_HAND].indivTaxelResolution){
-                    for (y = 0; y<=59; y++){ 
+                    for (y = 0; y<=59; y++){
                         if (contactICubSkinEmulMap[SKIN_LEFT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                            bottleLeftHand.addDouble(255.0); 
+                            bottleLeftHand.addDouble(255.0);
                         }
                         else{
-                            bottleLeftHand.addDouble(0.0); 
-                        } 
+                            bottleLeftHand.addDouble(0.0);
+                        }
                     }
                 }
                 else{ //we fill them all
-                   for (y = 0; y<=59; y++){ 
+                   for (y = 0; y<=59; y++){
                         bottleLeftHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
                 }
                     }
                 //zero padding - the port output: 61-96 zeros; taxel IDs 60-95
-                for (y = 60; y<=95; y++){           
+                for (y = 60; y<=95; y++){
                         bottleLeftHand.addDouble(0.0);
                 }
-                
-                //pam - positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s); 
+
+                //pam - positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s);
                     if (contactICubSkinEmulMap[SKIN_LEFT_HAND].indivTaxelResolution){
-                    for (y = 96; y<=143; y++){ 
+                    for (y = 96; y<=143; y++){
                             if (contactICubSkinEmulMap[SKIN_LEFT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                                bottleLeftHand.addDouble(255.0); 
+                                bottleLeftHand.addDouble(255.0);
                             }
                             else{
-                                 bottleLeftHand.addDouble(0.0); 
+                                 bottleLeftHand.addDouble(0.0);
                             }
                         }
                     }
                     else{ //we fill the whole palm
-                        for (int y = 96; y<=143; y++){ 
+                        for (int y = 96; y<=143; y++){
                         bottleLeftHand.addDouble(255.0); //we ignore the thermal pad positions, which should be 0s, for now
                         }
                     }
                 //filling the rest: 145-192 zeros. IDs: 144-191
-                for (int y = 144; y<=191; y++){ 
+                for (int y = 144; y<=191; y++){
                     bottleLeftHand.addDouble(0.0);
                 }
             }
@@ -1913,79 +1913,79 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
             }
             robot_streamer->sendTouchLeftHand(bottleLeftHand);
       }
-        
-      
+
+
       if(robot_streamer->shouldSendTouchRightHand()){
           Bottle bottleRightHand;
-            if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].coverTouched){ 
+            if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].coverTouched){
                 //prepare the bottle
                 //first 60 are fingers
                 if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].indivTaxelResolution){
-                    for (y = 0; y<=59; y++){ 
+                    for (y = 0; y<=59; y++){
                         if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                            bottleRightHand.addDouble(255.0); 
+                            bottleRightHand.addDouble(255.0);
                           }
                           else{
-                            bottleRightHand.addDouble(0.0); 
-                          } 
+                            bottleRightHand.addDouble(0.0);
+                          }
                           }
                   }
                 else{ //we fill them all
-                   for (y = 0; y<=59; y++){ 
+                   for (y = 0; y<=59; y++){
                         bottleRightHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
               }
                   }
                 //zero padding - the port output: 61-96 zeros; taxel IDs 60-95
-                for (y = 60; y<=95; y++){           
+                for (y = 60; y<=95; y++){
                       bottleRightHand.addDouble(0.0);
               }
-                
-                //pam - positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s); 
+
+                //pam - positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s);
                   if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].indivTaxelResolution){
-                    for (y = 96; y<=143; y++){ 
+                    for (y = 96; y<=143; y++){
                           if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                                bottleRightHand.addDouble(255.0); 
+                                bottleRightHand.addDouble(255.0);
                             }
                             else{
-                                 bottleRightHand.addDouble(0.0); 
+                                 bottleRightHand.addDouble(0.0);
                             }
                         }
                   }
                   else{ //we fill the whole palm
-                        for (int y = 96; y<=143; y++){ 
+                        for (int y = 96; y<=143; y++){
                         bottleRightHand.addDouble(255.0); //we ignore the thermal pad positions, which should be 0s, for now
                         }
-                  }                               
+                  }
                   //filling the rest: 145-192 zeros. IDs: 144-191
-                  for (int y = 144; y<=191; y++){ 
+                  for (int y = 144; y<=191; y++){
                     bottleRightHand.addDouble(0.0);
                   }
             }
         else{
             bottleRightHand = Bottle(odeinit._iCub->emptySkinActivationHand);
         }
-        // yDebug("bottleRightHand: %s \n",bottleRightHand.toString().c_str());  
-        // yDebug("bottleRightHand: %s \n",bottleRightHand.toString().c_str());  
+        // yDebug("bottleRightHand: %s \n",bottleRightHand.toString().c_str());
+        // yDebug("bottleRightHand: %s \n",bottleRightHand.toString().c_str());
         robot_streamer->sendTouchRightHand(bottleRightHand);
      }
-        
-        
+
+
      if(robot_streamer->shouldSendTouchLeftArm()){
          Bottle bottleLeftArm;
          if (contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].coverTouched){
              if (contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].indivTaxelResolution){
-                for (int y = 0; y<=767; y++){ 
+                for (int y = 0; y<=767; y++){
                     if (contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                             bottleLeftArm.addDouble(255.0); 
+                             bottleLeftArm.addDouble(255.0);
                     }
                     else{
-                             bottleLeftArm.addDouble(0.0); 
+                             bottleLeftArm.addDouble(0.0);
                     }
                 }
              }
-             else{ //we fill the whole upper arm 
+             else{ //we fill the whole upper arm
                   bottleLeftArm = Bottle(odeinit._iCub->fullSkinActivationUpperArm);
-             }     
+             }
          }
          else{
              bottleLeftArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm);
@@ -1996,18 +1996,18 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
          Bottle bottleLeftForearm;
           if (contactICubSkinEmulMap[SKIN_LEFT_FOREARM].coverTouched){
              if (contactICubSkinEmulMap[SKIN_LEFT_FOREARM].indivTaxelResolution){
-                for (int y = 0; y<=383; y++){ 
+                for (int y = 0; y<=383; y++){
                     if (contactICubSkinEmulMap[SKIN_LEFT_FOREARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                             bottleLeftForearm.addDouble(255.0); 
+                             bottleLeftForearm.addDouble(255.0);
                     }
                     else{
-                             bottleLeftForearm.addDouble(0.0); 
+                             bottleLeftForearm.addDouble(0.0);
                     }
                 }
              }
-             else{ //we fill the whole forearm 
+             else{ //we fill the whole forearm
                   bottleLeftForearm = Bottle(odeinit._iCub->fullSkinActivationForearm);
-             }     
+             }
          }
          else{
              bottleLeftForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);
@@ -2018,18 +2018,18 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
          Bottle bottleRightArm;
          if (contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].coverTouched){
              if (contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].indivTaxelResolution){
-                for (int y = 0; y<=767; y++){ 
+                for (int y = 0; y<=767; y++){
                     if (contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                        bottleRightArm.addDouble(255.0); 
+                        bottleRightArm.addDouble(255.0);
                     }
                     else{
-                        bottleRightArm.addDouble(0.0); 
+                        bottleRightArm.addDouble(0.0);
                     }
                 }
              }
-             else{ //we fill the whole upper arm 
+             else{ //we fill the whole upper arm
                   bottleRightArm = Bottle(odeinit._iCub->fullSkinActivationUpperArm);
-             }     
+             }
          }
          else{
              bottleRightArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm);
@@ -2040,18 +2040,18 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
          Bottle bottleRightForearm;
           if (contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].coverTouched){
              if (contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].indivTaxelResolution){
-                for (int y = 0; y<=383; y++){ 
+                for (int y = 0; y<=383; y++){
                     if (contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                             bottleRightForearm.addDouble(255.0); 
+                             bottleRightForearm.addDouble(255.0);
                     }
                     else{
-                             bottleRightForearm.addDouble(0.0); 
+                             bottleRightForearm.addDouble(0.0);
                     }
                 }
              }
-             else{ //we fill the whole forearm 
+             else{ //we fill the whole forearm
                   bottleRightForearm = Bottle(odeinit._iCub->fullSkinActivationForearm);
-             }     
+             }
          }
          else{
              bottleRightForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);
@@ -2062,32 +2062,32 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
          Bottle bottleTorso;
          if (contactICubSkinEmulMap[SKIN_FRONT_TORSO].coverTouched){
              if (contactICubSkinEmulMap[SKIN_FRONT_TORSO].indivTaxelResolution){
-                for (int y = 0; y<=767; y++){ 
+                for (int y = 0; y<=767; y++){
                     if (contactICubSkinEmulMap[SKIN_FRONT_TORSO].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                             bottleTorso.addDouble(255.0); 
+                             bottleTorso.addDouble(255.0);
                     }
                     else{
-                             bottleTorso.addDouble(0.0); 
+                             bottleTorso.addDouble(0.0);
                     }
                 }
              }
-             else{ //we fill the whole torso 
+             else{ //we fill the whole torso
                   bottleTorso = Bottle(odeinit._iCub->fullSkinActivationTorso);
-             }     
+             }
          }
          else{
              bottleTorso = Bottle(odeinit._iCub->emptySkinActivationTorso);
          }
          robot_streamer->sendTouchTorso(bottleTorso);
-     } 
+     }
 }
 
-     
+
 void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const Vector geo_center_link_FoR,std::vector<unsigned int>& list_of_taxels){
- 
-  
-   // EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.03; //for skin emulation we get the coordinates of the collision and contact with skin cover from ODE; 
-   //after transforming to local reference frame of respective skin part, we emulate which set of taxels would get activated at that position; 
+
+
+   // EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.03; //for skin emulation we get the coordinates of the collision and contact with skin cover from ODE;
+   //after transforming to local reference frame of respective skin part, we emulate which set of taxels would get activated at that position;
    //however, with errors in the position, we need an extra margin, so the contact falls onto some taxels
     switch (skin_part){
         case SKIN_LEFT_HAND:
@@ -2098,28 +2098,28 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
             }
             else if ((geo_center_link_FoR[0]<=0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>=-0.014) && (geo_center_link_FoR[1]>=-0.0055) && (geo_center_link_FoR[1]<=0.01)){
-                list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98); 
+                list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98);
                 list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103);
                 list_of_taxels.push_back(120);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
             }
             else if ((geo_center_link_FoR[0]<=0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>=-0.014) && (geo_center_link_FoR[1]>=0.01) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
-                    list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(104);  
-                    list_of_taxels.push_back(105);list_of_taxels.push_back(106);list_of_taxels.push_back(113);  
-                    list_of_taxels.push_back(116);list_of_taxels.push_back(117);  
+                    list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(104);
+                    list_of_taxels.push_back(105);list_of_taxels.push_back(106);list_of_taxels.push_back(113);
+                    list_of_taxels.push_back(116);list_of_taxels.push_back(117);
             }
             else if ((geo_center_link_FoR[0]<=-0.014) && (geo_center_link_FoR[0]>=-0.024) && (geo_center_link_FoR[1]>=0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
-                    list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(110);  
-                    list_of_taxels.push_back(111);list_of_taxels.push_back(112);list_of_taxels.push_back(114);  
-                    list_of_taxels.push_back(115);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
+                    list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(110);
+                    list_of_taxels.push_back(111);list_of_taxels.push_back(112);list_of_taxels.push_back(114);
+                    list_of_taxels.push_back(115);list_of_taxels.push_back(118); list_of_taxels.push_back(142);
                     list_of_taxels.push_back(143);
-            }   
+            }
             else if ((geo_center_link_FoR[0]<=-0.024) && (geo_center_link_FoR[0]>=-0.04-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2.0*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>=0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
-                    list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
-                    list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
-                    list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
-            } 
+                    list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);
+                    list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);
+                    list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);
+            }
             else{
-                yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]); 
+                yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]);
             }
             break;
          case SKIN_RIGHT_HAND:
@@ -2130,28 +2130,28 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
             }
             else if ((geo_center_link_FoR[0]<=0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>=-0.014) && (geo_center_link_FoR[1]>=-0.0055) && (geo_center_link_FoR[1]<=0.01)){
-                list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103); 
+                list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103);
                 list_of_taxels.push_back(104);list_of_taxels.push_back(105);list_of_taxels.push_back(106);
                 list_of_taxels.push_back(127);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
             }
             else if ((geo_center_link_FoR[0]<=0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>=-0.014) && (geo_center_link_FoR[1]>=0.01) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
-                    list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98);  
-                    list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(110);  
-                    list_of_taxels.push_back(111);list_of_taxels.push_back(112);  
+                    list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98);
+                    list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(110);
+                    list_of_taxels.push_back(111);list_of_taxels.push_back(112);
             }
             else if ((geo_center_link_FoR[0]<=-0.014) && (geo_center_link_FoR[0]>=-0.024) && (geo_center_link_FoR[1]>=0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
-                    list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(113);  
-                    list_of_taxels.push_back(114);list_of_taxels.push_back(115);list_of_taxels.push_back(116);  
-                    list_of_taxels.push_back(117);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
+                    list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(113);
+                    list_of_taxels.push_back(114);list_of_taxels.push_back(115);list_of_taxels.push_back(116);
+                    list_of_taxels.push_back(117);list_of_taxels.push_back(118); list_of_taxels.push_back(142);
                     list_of_taxels.push_back(143);
-            }   
+            }
             else if ((geo_center_link_FoR[0]<=-0.024) && (geo_center_link_FoR[0]>=-0.040-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2.0*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>=0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
-                    list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
-                    list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
-                    list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
-            } 
+                    list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);
+                    list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);
+                    list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);
+            }
             else{
-                yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]); 
+                yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]);
             }
             break;
           case SKIN_LEFT_FOREARM:
@@ -2161,14 +2161,14 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 pushTriangleToTaxelList(288,list_of_taxels); //pushes taxel IDs of whole triangle into list_of_taxels, starting from startingTaxelID and skipping 7th and 11th taxels (thermal pads)
                 //triangle 300-311
                 pushTriangleToTaxelList(300,list_of_taxels);
-                //triangle 348-359 
+                //triangle 348-359
                 pushTriangleToTaxelList(348,list_of_taxels);
              }
              else if((geo_center_link_FoR[0]>=-0.0545) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=-0.1288) && (geo_center_link_FoR[1]<=-0.0528) && (geo_center_link_FoR[2]>=-0.0569) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 204:215
                 pushTriangleToTaxelList(204,list_of_taxels);
                 //triangle 336:347
-                pushTriangleToTaxelList(336,list_of_taxels);              
+                pushTriangleToTaxelList(336,list_of_taxels);
              }
              else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0545) && (geo_center_link_FoR[1]>=-0.1288) && (geo_center_link_FoR[1]<=-0.0528) && (geo_center_link_FoR[2]>=-0.0569) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 252:263
@@ -2176,9 +2176,9 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 //triangle 312:323
                 pushTriangleToTaxelList(312,list_of_taxels);
              }
-             
+
               ///////////////////////////////////////////////////////////////////////
-             
+
              //lower patch - big (16 triangles)
              else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=-0.0716) && (geo_center_link_FoR[1]<=0.0) && (geo_center_link_FoR[2]>=0.0281) && (geo_center_link_FoR[2]<=0.0484)){
                 //triangle nr. 12 in CAD, taxel IDs 132:143
@@ -2190,20 +2190,20 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 //triangle 3, 156:167
                 pushTriangleToTaxelList(156,list_of_taxels);
                 //triangle 8, 144:155
-                pushTriangleToTaxelList(144,list_of_taxels);                
+                pushTriangleToTaxelList(144,list_of_taxels);
              }
              else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=-0.1333) && (geo_center_link_FoR[1]<=-0.0716) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0343)){
                 //triangle 4, 24:35
                 pushTriangleToTaxelList(24,list_of_taxels);
                 //triangle 6, 12:23
-                pushTriangleToTaxelList(12,list_of_taxels);             
-             }    
+                pushTriangleToTaxelList(12,list_of_taxels);
+             }
              else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=-0.0716) && (geo_center_link_FoR[1]<=0.0) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0281)){
                 //triangle 10, 0:11
                 pushTriangleToTaxelList(0,list_of_taxels);
                 //triangle 14, 180:191
                 pushTriangleToTaxelList(180,list_of_taxels);
-             }    
+             }
              else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=-0.0716) && (geo_center_link_FoR[1]<=0.0) && (geo_center_link_FoR[2]>=0.0281) && (geo_center_link_FoR[2]<=0.0484)){
                 //triangle 11, 120:131
                 pushTriangleToTaxelList(120,list_of_taxels);
@@ -2214,7 +2214,7 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 //triangle 2, 96:107
                 pushTriangleToTaxelList(96,list_of_taxels);
                 //triangle 7, 108:119
-                pushTriangleToTaxelList(108,list_of_taxels);              
+                pushTriangleToTaxelList(108,list_of_taxels);
              }
              else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=-0.1333) && (geo_center_link_FoR[1]<=-0.0716) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0343)){
                 //triangle 1, 84:95
@@ -2229,7 +2229,7 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 pushTriangleToTaxelList(48,list_of_taxels);
              }
              else{
-                yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]); 
+                yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]);
              }
              break;
         case SKIN_RIGHT_FOREARM: //the y and z axes have opposite directions between left and right forearm FoR
@@ -2239,14 +2239,14 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 pushTriangleToTaxelList(288,list_of_taxels); //pushes taxel IDs of whole triangle into list_of_taxels, starting from startingTaxelID and skipping 7th and 11th taxels (thermal pads)
                 //triangle 300-311
                 pushTriangleToTaxelList(300,list_of_taxels);
-                //triangle 348-359 
+                //triangle 348-359
                 pushTriangleToTaxelList(348,list_of_taxels);
              }
              else if((geo_center_link_FoR[0]>=-0.0545) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=0.0528) && (geo_center_link_FoR[1]<=0.1288) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0569)){
                 //triangle 204:215
                 pushTriangleToTaxelList(204,list_of_taxels);
                 //triangle 336:347
-                pushTriangleToTaxelList(336,list_of_taxels);              
+                pushTriangleToTaxelList(336,list_of_taxels);
              }
              else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0545) && (geo_center_link_FoR[1]>=0.0528) && (geo_center_link_FoR[1]<=0.1288) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0569)){
                 //triangle 252:263
@@ -2254,9 +2254,9 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 //triangle 312:323
                 pushTriangleToTaxelList(312,list_of_taxels);
              }
-             
+
               ///////////////////////////////////////////////////////////////////////
-             
+
              //lower patch - big (16 triangles)
              else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=0.0) && (geo_center_link_FoR[1]<=0.0716) && (geo_center_link_FoR[2]>=-0.0484) && (geo_center_link_FoR[2]<=-0.0281)){
                 //triangle nr. 12 in CAD, taxel IDs 132:143
@@ -2268,20 +2268,20 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 //triangle 3, 156:167
                 pushTriangleToTaxelList(156,list_of_taxels);
                 //triangle 8, 144:155
-                pushTriangleToTaxelList(144,list_of_taxels);                
+                pushTriangleToTaxelList(144,list_of_taxels);
              }
              else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=0.0716) && (geo_center_link_FoR[1]<=0.1333) && (geo_center_link_FoR[2]>=-0.0343) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 4, 24:35
                 pushTriangleToTaxelList(24,list_of_taxels);
                 //triangle 6, 12:23
-                pushTriangleToTaxelList(12,list_of_taxels);             
-             }    
+                pushTriangleToTaxelList(12,list_of_taxels);
+             }
              else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=0.0) && (geo_center_link_FoR[1]<=0.0716) && (geo_center_link_FoR[2]>=-0.0281) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 10, 0:11
                 pushTriangleToTaxelList(0,list_of_taxels);
                 //triangle 14, 180:191
                 pushTriangleToTaxelList(180,list_of_taxels);
-             }    
+             }
              else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=0.0) && (geo_center_link_FoR[1]<=0.0716) && (geo_center_link_FoR[2]>=-0.0484) && (geo_center_link_FoR[2]<=-0.0281)){
                 //triangle 11, 120:131
                 pushTriangleToTaxelList(120,list_of_taxels);
@@ -2292,7 +2292,7 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 //triangle 2, 96:107
                 pushTriangleToTaxelList(96,list_of_taxels);
                 //triangle 7, 108:119
-                pushTriangleToTaxelList(108,list_of_taxels);              
+                pushTriangleToTaxelList(108,list_of_taxels);
              }
              else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=0.0716) && (geo_center_link_FoR[1]<=0.1333) && (geo_center_link_FoR[2]>=-0.0343) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 1, 84:95
@@ -2307,16 +2307,16 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 pushTriangleToTaxelList(48,list_of_taxels);
              }
              else{
-                yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]); 
+                yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]);
              }
-             break;     
-             
-          default:  
-            yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, but no taxel resolution implemented for this skin part. \n",skin_part); 
+             break;
+
+          default:
+            yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, but no taxel resolution implemented for this skin part. \n",skin_part);
     }
-    
+
 //      if (odeinit.verbosity > 2) {
-//          yDebug("OdeSdlSimulation::mapPositionIntoTaxelList: contact at part: %d, coordinates: %f %f %f. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]); 
+//          yDebug("OdeSdlSimulation::mapPositionIntoTaxelList: contact at part: %d, coordinates: %f %f %f. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]);
 //          yDebug("    Taxel list: ");
 //          for (std::vector<unsigned int>::const_iterator it = list_of_taxels.begin() ; it != list_of_taxels.end(); ++it){
 //                 yDebug("%d,",*it);
@@ -2333,7 +2333,7 @@ void OdeSdlSimulation::pushTriangleToTaxelList(const int startingTaxelID,std::ve
     for (i=startingTaxelID;i<startingTaxelID+6;i++){
         list_of_taxels.push_back(i);
     }
-    //skipping 7th and 11th taxel - thermal pads 
+    //skipping 7th and 11th taxel - thermal pads
     for (i = startingTaxelID + 7; i < startingTaxelID + 10; i++){
         list_of_taxels.push_back(i);
     }
@@ -2359,7 +2359,7 @@ void OdeSdlSimulation::mapFingertipIntoTaxelList(const HandPart hand_part,std::v
             for(i=24; i<=35; i++){
                 list_of_taxels.push_back(i);
             }
-            break;    
+            break;
         case LITTLE:
             for(i=36; i<=47; i++){
                 list_of_taxels.push_back(i);
@@ -2369,49 +2369,49 @@ void OdeSdlSimulation::mapFingertipIntoTaxelList(const HandPart hand_part,std::v
             for(i=48; i<=59; i++){
                 list_of_taxels.push_back(i);
             }
-            break;    
-        default:    
+            break;
+        default:
             printf("Warning: OdeSdlSimulation::mapFingertipIntoTaxelList: unexpected HandPart: %d. Pushing fake taxel ID \n",hand_part);
             list_of_taxels.push_back(FAKE_TAXEL_ID);
-        
+
     }
-    
-    
+
+
 }
 
 //Auxiliary function to print class of geom - according to section 9.5 of ODE manual
 std::string OdeSdlSimulation::getGeomClassName(const int geom_class,std::string & s)
 {
   switch(geom_class){
-      case 0: 
+      case 0:
         s = "sphere";
         break;
-      case 1: 
+      case 1:
         s = "box";
         break;
-      case 2: 
+      case 2:
         s = "capsule";
         break;
-      case 3: 
+      case 3:
         s = "cylinder";
         break;
-      case 4: 
+      case 4:
         s = "plane";
-        break;  
-      case 8: 
+        break;
+      case 8:
         s= "triangle mesh";
-        break;  
+        break;
       case 10:
-      case 11:  
+      case 11:
         s = "simple space";
-        break;  
-      case 12:  
+        break;
+      case 12:
         s="hash space";
-        break;  
-      default: 
+        break;
+      default:
         s ="unknown type";
         break;
-    } 
+    }
   return s;
- 
+
 }

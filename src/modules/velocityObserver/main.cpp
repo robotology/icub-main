@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -20,73 +20,73 @@
 @ingroup icub_module
 
 \defgroup velocityObserver velocityObserver
- 
-Estimates the first and second derivatives of incoming data 
-vector through a least-squares algorithm based on an adpative 
+
+Estimates the first and second derivatives of incoming data
+vector through a least-squares algorithm based on an adpative
 window
- 
+
 Copyright (C) 2010 RobotCub Consortium
- 
-Author: Ugo Pattacini 
- 
-Date: first release 24/10/2008 
+
+Author: Ugo Pattacini
+
+Date: first release 24/10/2008
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
 
-This module computes the first derivative (velocity) and the 
-second derivative (acceleration) of vector acquired through an 
-input YARP port and provides them to output YARP ports. The 
-estimation is performed relying on a least-squares algorithm 
-(<a 
-href="http://ieeexplore.ieee.org/iel5/87/19047/00880606.pdf">PDF</a>) 
-which finds the best linear or quadratic regressor upon a 
-certain window of the input samples. The window's length is 
-adaptable, i.e. it varies according the smoothness of the input 
+This module computes the first derivative (velocity) and the
+second derivative (acceleration) of vector acquired through an
+input YARP port and provides them to output YARP ports. The
+estimation is performed relying on a least-squares algorithm
+(<a
+href="http://ieeexplore.ieee.org/iel5/87/19047/00880606.pdf">PDF</a>)
+which finds the best linear or quadratic regressor upon a
+certain window of the input samples. The window's length is
+adaptable, i.e. it varies according the smoothness of the input
 signal. Therefore, the smoother is the input signal the larger
-will be the window and the delay introduced by the computation 
-will be negligible. For fast change in the input signal, the 
-window's length is reduced in order to best capture the 
-derivative and to limit the latency. 
- 
+will be the window and the delay introduced by the computation
+will be negligible. For fast change in the input signal, the
+window's length is reduced in order to best capture the
+derivative and to limit the latency.
+
 Note that no knowledge of the sampling time is required since to
-perform the computation the module relies on the time 
-information stored by the sender within the envelope of the 
-message. If the envelope is not available, then the Time Stamp 
-is the reference time of the machine where the module is running 
-(i.e. the arrival time): of course in this case the computation 
+perform the computation the module relies on the time
+information stored by the sender within the envelope of the
+message. If the envelope is not available, then the Time Stamp
+is the reference time of the machine where the module is running
+(i.e. the arrival time): of course in this case the computation
 will be much less precise due to the variable YARP communication
-latencies. 
- 
-The figure below shows a snapshot of the estimated velocity and 
-acceleration along with a comparison between the proposed 
-algorithm and a simple moving average filter: 
+latencies.
+
+The figure below shows a snapshot of the estimated velocity and
+acceleration along with a comparison between the proposed
+algorithm and a simple moving average filter:
 \image html velocityObserver.jpg
- 
-\section lib_sec Libraries 
-- YARP libraries. 
-- ctrlLib library. 
+
+\section lib_sec Libraries
+- YARP libraries.
+- ctrlLib library.
 
 \section parameters_sec Parameters
---name \e name 
-- The parameter \e name identifies the module's name; all the 
+--name \e name
+- The parameter \e name identifies the module's name; all the
   open ports will be tagged with the prefix <name>/. If not
   specified \e /velObs is assumed.
- 
---lenVel \e N 
-- The parameter \e N identifies the maximum window length for 
+
+--lenVel \e N
+- The parameter \e N identifies the maximum window length for
   buffering the input data (used for the first derivative
   estimation). Therefore, the window on which the least-squares
   algorithm operates on will automatically adapts its length
   from a minimum of 2 to a maximum of N samples. The greater is
   N, the more filtered is the derivative.
- 
---lenAcc \e N 
+
+--lenAcc \e N
 - The same as above but for the second derivative's estimation.
- 
---thrVel \e D 
-- With this option it is possibile to specify the maximum 
+
+--thrVel \e D
+- With this option it is possibile to specify the maximum
   deviation threshold for the algorithm (used for the first derivative
   estimation). During the validation phase, indeed, the window's
   length is considered valid if all the computed values from the
@@ -97,24 +97,24 @@ algorithm and a simple moving average filter:
   one is performed. Therefore, iteration by iteration, the
   window's length can be adapted by only one step change.
 
---thrAcc \e D 
+--thrAcc \e D
 - The same as above but for the second derivative's estimation.
- 
+
 \section portsa_sec Ports Accessed
 The port the service is listening to.
 
 \section portsc_sec Ports Created
- 
-- \e <name>/pos:i (e.g. /velObs/pos:i) receives the input data 
+
+- \e <name>/pos:i (e.g. /velObs/pos:i) receives the input data
   vector.
- 
-- \e <name>/vel:o (e.g. /velObs/vel:o) provides the estimated 
+
+- \e <name>/vel:o (e.g. /velObs/vel:o) provides the estimated
   first derivatives.
 
-- \e <name>/acc:o (e.g. /velObs/acc:o) provides the estimated 
+- \e <name>/acc:o (e.g. /velObs/acc:o) provides the estimated
   second derivatives.
- 
-- \e <name>/rpc remote procedure call port useful to shut down 
+
+- \e <name>/rpc remote procedure call port useful to shut down
   the module remotely by sending to this port the 'quit'
   command.
 
@@ -122,38 +122,38 @@ The port the service is listening to.
 None.
 
 \section out_data_sec Output Data Files
-None. 
- 
+None.
+
 \section conf_file_sec Configuration Files
-None. 
- 
+None.
+
 \section tested_os_sec Tested OS
 Linux and Windows.
 
 \section example_sec Example
-By launching the following command: 
- 
-\code 
-velocityObserver --name /jointVel --lenVel 20 --thrVel 2.0 
-\endcode 
- 
-the module will create the listening port /jointVel/pos:i for 
-the acquisition of data vector coming for instance from one of 
-the icub ports. At the same time it will provide the estimated 
-derivatives to /jointVel/vel:o /jointVel/acc:o ports. Here a 
-value of 20 samples is chosen for the velocity maximum window's 
-length and the velocity maximum permitted tolerance is 2.0; for 
-the acceleration default values are used (use --help option to 
-see). 
- 
-Try now the following: 
- 
-\code 
+By launching the following command:
+
+\code
+velocityObserver --name /jointVel --lenVel 20 --thrVel 2.0
+\endcode
+
+the module will create the listening port /jointVel/pos:i for
+the acquisition of data vector coming for instance from one of
+the icub ports. At the same time it will provide the estimated
+derivatives to /jointVel/vel:o /jointVel/acc:o ports. Here a
+value of 20 samples is chosen for the velocity maximum window's
+length and the velocity maximum permitted tolerance is 2.0; for
+the acceleration default values are used (use --help option to
+see).
+
+Try now the following:
+
+\code
 yarp connect /icub/right_arm/state:o /jointVel/pos:i
-\endcode 
- 
+\endcode
+
 \author Ugo Pattacini
-*/ 
+*/
 
 #include <string>
 #include <iostream>
@@ -194,7 +194,7 @@ private:
 
         // for the estimation the time stamp
         // is required. If not present within the
-        // packet, the actual machine time is 
+        // packet, the actual machine time is
         // attached to it.
         AWPolyElement el(x,info.isValid()?info.getTime():Time::now());
         port_vel.prepare()=linEst->estimate(el);
@@ -209,7 +209,7 @@ private:
         }
         else
             port_vel.unprepare();
-        
+
         if (port_acc.getOutputCount()>0)
         {
             port_acc.setEnvelope(info);
@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
 
         return 0;
     }
-    
+
     if (!yarp.checkNetwork())
     {
         yError()<<"YARP server not available!";

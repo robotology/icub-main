@@ -147,7 +147,7 @@ public:
 
     CamCalibModule();
     ~CamCalibModule();
-    
+
     /** Passes config on to CalibTool */
     virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool close();

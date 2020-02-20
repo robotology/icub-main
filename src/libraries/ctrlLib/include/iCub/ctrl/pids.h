@@ -9,15 +9,15 @@
 */
 
 /**
- * \defgroup PIDs PIDs 
- *  
+ * \defgroup PIDs PIDs
+ *
  * @ingroup ctrlLib
  *
  * Classes for PIDs.
  *
  * \author Ugo Pattacini
  *
- */ 
+ */
 
 #ifndef __PIDS_H__
 #define __PIDS_H__
@@ -41,7 +41,7 @@ namespace ctrl
 /**
 * \ingroup PIDs
 *
-* A class for defining a saturated integrator based on Tustin 
+* A class for defining a saturated integrator based on Tustin
 * formula: \f$ 1/s => T_s/2*(z+1)/(z-1) \f$
 */
 class Integrator
@@ -63,22 +63,22 @@ protected:
 
 public:
     /**
-    * Constructor. 
+    * Constructor.
     * @param _Ts is the integrator sample time.
     * @param y0 is the initial value of the output vector.
-    * @param _lim is a Nx2 matrix describing for each row i the 
+    * @param _lim is a Nx2 matrix describing for each row i the
     *             lower (1st column) and the upper limit (2nd
     *             column) of the ith component:
     *             _lim(i,1)<=output[i]<=_lim(i,2)
-    * @note The saturation here is on by default 
+    * @note The saturation here is on by default
     */
     Integrator(const double _Ts, const yarp::sig::Vector &y0, const yarp::sig::Matrix &_lim);
 
     /**
-    * Constructor. 
+    * Constructor.
     * @param _Ts is the integrator sample time.
-    * @param y0 is the initial value of the output vector. 
-    * @note The saturation here is off by default. 
+    * @param y0 is the initial value of the output vector.
+    * @note The saturation here is off by default.
     */
     Integrator(const double _Ts, const yarp::sig::Vector &y0);
 
@@ -96,7 +96,7 @@ public:
     Integrator &operator=(const Integrator &I) { allocate(I); return *this; }
 
     /**
-    * Executes one-step integration of input vector. 
+    * Executes one-step integration of input vector.
     * To be called each Ts seconds.
     * @param x is the input vector to be integrated.
     * @return the current output vector.
@@ -105,50 +105,50 @@ public:
 
     /**
     * Sets the saturation status.
-    * @param _applySat if true then the saturation is applied 
+    * @param _applySat if true then the saturation is applied
     *                  (initialized as true).
     */
     void setSaturation(bool _applySat);
 
     /**
-    * Returns the current saturation status. 
+    * Returns the current saturation status.
     * @return current saturation status.
     */
     bool getSaturation() { return applySat; }
 
     /**
-    * Sets the sample time. 
+    * Sets the sample time.
     * @param _Ts is the sample time.
     */
     void setTs(const double _Ts);
 
     /**
-    * Sets the output vector constraints matrix. 
+    * Sets the output vector constraints matrix.
     * @param _lim is the constraints matrix.
     */
     void setLim(const yarp::sig::Matrix &_lim);
 
     /**
-    * Returns the sample time. 
+    * Returns the sample time.
     * @return the sample time.
     */
     double getTs() { return Ts; }
 
     /**
-    * Returns the constraints matrix. 
+    * Returns the constraints matrix.
     * @return the constraints matrix.
     */
     const yarp::sig::Matrix& getLim() { return lim; }
 
     /**
-    * Resets the internal state and sets the output vector to the 
-    * given value. 
-    * @param y0 is the new value of output vector. 
+    * Resets the internal state and sets the output vector to the
+    * given value.
+    * @param y0 is the new value of output vector.
     */
     void reset(const yarp::sig::Vector &y0);
 
     /**
-    * Returns the current output vector. 
+    * Returns the current output vector.
     * @return the current output vector.
     */
     const yarp::sig::Vector& get() const { return y; }
@@ -158,33 +158,33 @@ public:
 /**
 * \ingroup PIDs
 *
-* Helper class providing useful methods to deal with pid 
-* options. 
+* Helper class providing useful methods to deal with pid
+* options.
 */
 class helperPID
 {
 public:
     /**
-    * Add the data contained in the specified vector to the 
+    * Add the data contained in the specified vector to the
     * specified bottle, using property-like form (i.e. "key-value" pairs).
     * @param option is the bottle to which add the data
     * @param key is the string representing the key of the vector
     * @param val is the vector containing the data to add
-    * @note The resulting bottle will look like this: 
+    * @note The resulting bottle will look like this:
     * ... (key (value1 value2 ...))
     */
     static void addVectorToOption(yarp::os::Bottle &option, const char *key, const yarp::sig::Vector &val);
 
     /**
-    * Fill the specified vector with the data associated with the 
+    * Fill the specified vector with the data associated with the
     * specified key in the specified property-like bottle.
-    * If the vector size is less than the size of the data found in 
+    * If the vector size is less than the size of the data found in
     * the bottle, the exceeding data will be discarded.
     * @param options is the property-like bottle containing the data
     * @param key is the string representing the key to look for
     * @param val is the vector to fill with the retrieved data
     * @param size is the number of values written in val
-    * @note The input bottle should look like this: 
+    * @note The input bottle should look like this:
     * ((key1 (value11 value12 ...) (key2 (value21 value22 ...) (key3 (value31 value32 ...))
     */
     static bool getVectorFromOption(const yarp::os::Bottle &options, const char *key, yarp::sig::Vector &val, int &size);
@@ -194,12 +194,12 @@ public:
 /**
 * \ingroup PIDs
 *
-* General structure of parallel (non-interactive) PID. 
-*  
+* General structure of parallel (non-interactive) PID.
+*
 * u = sat(P + I + D)
-*  
-* Components expressed in Laplace transform: 
-*  
+*
+* Components expressed in Laplace transform:
+*
 * - \f$ e_p=W_p*ref-fb \f$
 * - \f$ e_i=W_i*ref-fb \f$
 * - \f$ e_d=W_d*ref-fb \f$
@@ -240,19 +240,19 @@ protected:
 
 public:
     /**
-    * Constructor. 
-    * @param _Ts is the block sample time in seconds. 
-    * @param _Kp are the proportional gains. 
-    * @param _Ki are the integral gains. 
-    * @param _Kd are the derivative gains. 
+    * Constructor.
+    * @param _Ts is the block sample time in seconds.
+    * @param _Kp are the proportional gains.
+    * @param _Ki are the integral gains.
+    * @param _Kd are the derivative gains.
     * @param _Wp are the setpoint weigths for proportional part.
     * @param _Wi are the setpoint weigths for integral part.
     * @param _Wd are the setpoint weigths for derivative part.
-    * @param _N  are derivative low-pass filter bandwidth (3 to 20, 
+    * @param _N  are derivative low-pass filter bandwidth (3 to 20,
     *            typ. 10, must be > 0).
     * @param _Tt are anti-windup reset time (0.1 to 1 times the value of
     *            Ti=Kp/Ki, greater than Td).
-    * @param _satLim is the saturation thresholds matrix 
+    * @param _satLim is the saturation thresholds matrix
     *                (min_i=satLim(i,0), max_i=satLim(i,1)).
     */
     parallelPID(const double _Ts,
@@ -262,46 +262,46 @@ public:
 
     /**
     * Computes the PID output.
-    * @param ref the actual reference to track. 
-    * @param fb the actual plant feedback. 
-    * @return the actual PID output.  
+    * @param ref the actual reference to track.
+    * @param fb the actual plant feedback.
+    * @return the actual PID output.
     */
     virtual const yarp::sig::Vector& compute(const yarp::sig::Vector &ref, const yarp::sig::Vector &fb);
 
     /**
-    * Resets the internal state of integral and derivative part. 
-    * @param u0 is the new value of output vector. 
+    * Resets the internal state of integral and derivative part.
+    * @param u0 is the new value of output vector.
     */
     virtual void reset(const yarp::sig::Vector &u0);
 
     /**
     * Returns the current options used by the pid.
-    * @param options is a property-like bottle containing the 
+    * @param options is a property-like bottle containing the
     *                current configuration used by the pid.
-    *  
-    * @note The returned bottle looks like as follows: 
-    * (Kp (1 2 ...)) (Ki (1 2 ...)) (Kd (1 2 ...)) (Wp (...)) ... 
+    *
+    * @note The returned bottle looks like as follows:
+    * (Kp (1 2 ...)) (Ki (1 2 ...)) (Kd (1 2 ...)) (Wp (...)) ...
     * @note the satLim property is returned ordered by rows.
     */
     virtual void getOptions(yarp::os::Bottle &options);
 
     /**
     * Update the options used by the pid.
-    * @param options is a property-like bottle containing the new 
+    * @param options is a property-like bottle containing the new
     *                configuration used by the pid.
-    *  
-    * @note The property parameter should look like as follows: 
-    * (Kp (1 2 ...)) (Ki (1 2 ...)) (Kd (1 2 ...)) (Wp (...)) ... 
-    * @note The vectors dimension at pid creation time is always 
+    *
+    * @note The property parameter should look like as follows:
+    * (Kp (1 2 ...)) (Ki (1 2 ...)) (Kd (1 2 ...)) (Wp (...)) ...
+    * @note The vectors dimension at pid creation time is always
     *       retained.
-    * @note The satLim property must be given ordered by rows. 
-    * @note The special property (reset (u0[0] u0[1] ...)) serves to 
+    * @note The satLim property must be given ordered by rows.
+    * @note The special property (reset (u0[0] u0[1] ...)) serves to
     *       call the reset(u0) method straightaway.
     */
     virtual void setOptions(const yarp::os::Bottle &options);
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     ~parallelPID();
 };
@@ -310,12 +310,12 @@ public:
 /**
 * \ingroup PIDs
 *
-* General structure of series (interactive) PID. 
-*  
+* General structure of series (interactive) PID.
+*
 * u = sat((P + I) * (1 + D) * (ref-fb))
-*  
-* Components expressed in Laplace transform: 
-*  
+*
+* Components expressed in Laplace transform:
+*
 * - \f$ P=K_p \f$
 * - \f$ I=K_p/(T_i*s) \f$
 * - \f$ D=K_d \cdot s/(1+s \cdot T_d/N); \quad [T_d=K_d/K_p] \f$
@@ -332,7 +332,7 @@ protected:
     yarp::sig::Vector Kd;
 
     yarp::sig::Vector N;
-    yarp::sig::Matrix satLim;    
+    yarp::sig::Matrix satLim;
 
     yarp::sig::Vector e;
     yarp::sig::Vector P;
@@ -349,15 +349,15 @@ protected:
 
 public:
     /**
-    * Constructor. 
-    * @param _Ts is the block sample time in seconds. 
-    * @param _Kp are the proportional gains. 
-    * @param _Ti are the integral time constants (so that integral 
+    * Constructor.
+    * @param _Ts is the block sample time in seconds.
+    * @param _Kp are the proportional gains.
+    * @param _Ti are the integral time constants (so that integral
     *            part cannot be switched off).
-    * @param _Kd are the derivative gains. 
-    * @param _N  are derivative low-pass filter bandwidth (3 to 20, 
+    * @param _Kd are the derivative gains.
+    * @param _N  are derivative low-pass filter bandwidth (3 to 20,
     *            typ. 10, must be > 0).
-    * @param _satLim is the saturation thresholds matrix 
+    * @param _satLim is the saturation thresholds matrix
     *                (min_i=satLim(i,0), max_i=satLim(i,1)).
     */
     seriesPID(const double _Ts,
@@ -366,45 +366,45 @@ public:
 
     /**
     * Computes the PID output.
-    * @param ref the actual reference to track. 
-    * @param fb the actual plant feedback. 
-    * @return the actual PID output.  
+    * @param ref the actual reference to track.
+    * @param fb the actual plant feedback.
+    * @return the actual PID output.
     */
     virtual const yarp::sig::Vector& compute(const yarp::sig::Vector &ref, const yarp::sig::Vector &fb);
 
     /**
-    * Resets the internal state of integral and derivative part. 
+    * Resets the internal state of integral and derivative part.
     */
     virtual void reset();
 
     /**
     * Returns the current options used by the pid.
-    * @param options is a property-like bottle containing the 
+    * @param options is a property-like bottle containing the
     *                current configuration used by the pid.
-    *  
-    * @note The returned bottle looks like as follows: 
-    * (Kp (1 2 ...)) (Ti (1 2 ...)) (Kd (1 2 ...)) (N (...)) ... 
+    *
+    * @note The returned bottle looks like as follows:
+    * (Kp (1 2 ...)) (Ti (1 2 ...)) (Kd (1 2 ...)) (N (...)) ...
     * @note The satLim property is returned ordered by rows.
     */
     virtual void getOptions(yarp::os::Bottle &options);
 
     /**
     * Update the options used by the pid.
-    * @param options is a property-like bottle containing the new 
+    * @param options is a property-like bottle containing the new
     *                configuration used by the pid.
-    *  
-    * @note The property parameter should look like as follows: 
-    * (Kp (1 2 ...)) (Ti (1 2 ...)) (Kd (1 2 ...)) (N (...)) ... 
-    * @note The vectors dimension at pid creation time is always 
+    *
+    * @note The property parameter should look like as follows:
+    * (Kp (1 2 ...)) (Ti (1 2 ...)) (Kd (1 2 ...)) (N (...)) ...
+    * @note The vectors dimension at pid creation time is always
     *       retained.
-    * @note The satLim property must be given ordered by rows. 
-    * @note The special property (reset (u0[0] u0[1] ...)) serves to 
-    *       call the reset(u0) method straightaway. 
+    * @note The satLim property must be given ordered by rows.
+    * @note The special property (reset (u0[0] u0[1] ...)) serves to
+    *       call the reset(u0) method straightaway.
     */
     virtual void setOptions(const yarp::os::Bottle &options);
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     ~seriesPID();
 };

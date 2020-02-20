@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2011 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo, Matteo Fumagalli
  * email:  marco.randazzo@iit.it
@@ -38,7 +38,7 @@ using namespace yarp::dev;
 using namespace iCub::ctrl;
 using namespace iCub::iDyn;
 
-enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
+enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED};
 enum{GRAVITY_COMPENSATION_OFF = 0, GRAVITY_COMPENSATION_ON = 1};
 enum{EXTERNAL_TRQ_OFF = 0, EXTERNAL_TRQ_ON = 1};
 
@@ -150,7 +150,7 @@ private:
     Vector ampli_LA, ampli_RA, ampli_LL, ampli_RL, ampli_TO;
     bool isCalibrated;
     bool inertial_enabled;
-    
+
     Vector evalVelUp(const Vector &x);
     Vector evalVelLow(const Vector &x);
     Vector evalAccUp(const Vector &x);
@@ -162,7 +162,7 @@ private:
     void setUpperMeasure();
 
 public:
-    
+
     int gravity_mode;
     int external_mode;
 
@@ -177,7 +177,7 @@ public:
     void run() override;
     void threadRelease() override;
 
-    inline thread_status_enum getThreadStatus() 
+    inline thread_status_enum getThreadStatus()
     {
         return thread_status;
     }

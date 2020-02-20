@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini, Alessandro Roncone
  * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
@@ -69,7 +69,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
 
     // get the length of the half of the eyes baseline
     eyesHalfBaseline=0.5*norm(eyeL->EndEffPose().subVector(0,2)-eyeR->EndEffPose().subVector(0,2));
-    
+
     // read number of joints
     if (drvTorso!=nullptr)
     {
@@ -183,7 +183,7 @@ bool EyePinvRefGen::clearEyes()
 {
     lock_guard<mutex> lck(mtx);
     if (commData->eyesBoundVer>=0.0)
-    {        
+    {
         commData->eyesBoundVer=-1.0;
 
         // reinstate pan bound of the left eye
@@ -352,7 +352,7 @@ void EyePinvRefGen::run()
                 {
                     double L,R;
 
-                    // estimate geometrically the target vergence Vg=L-R                    
+                    // estimate geometrically the target vergence Vg=L-R
                     if (fph[0]>=eyesHalfBaseline)
                     {
                         L=M_PI/2.0-atan2(fph[2],fph[0]+eyesHalfBaseline);
@@ -404,7 +404,7 @@ void EyePinvRefGen::run()
                 commData->set_counterv(zeros((int)qd.length()));
             else
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
-            
+
             // reset eyes controller and integral upon saccades transition on=>off
             if (saccadeUnderWayOld && !commData->saccadeUnderway)
             {
@@ -442,7 +442,7 @@ void EyePinvRefGen::run()
 
 /************************************************************************/
 void EyePinvRefGen::suspend()
-{    
+{
     PeriodicThread::suspend();
     yInfo("Pseudoinverse Reference Generator has been suspended!");
 }
@@ -450,7 +450,7 @@ void EyePinvRefGen::suspend()
 
 /************************************************************************/
 void EyePinvRefGen::resume()
-{    
+{
     PeriodicThread::resume();
     yInfo("Pseudoinverse Reference Generator has been resumed!");
 }
@@ -469,7 +469,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
     eyeL=new iCubEye("left_"+commData->headVersion2String());
     eyeR=new iCubEye("right_"+commData->headVersion2String());
     imu=new iCubInertialSensor(commData->headVersion2String());
-    torsoVel=new AWLinEstimator(16,0.5);    
+    torsoVel=new AWLinEstimator(16,0.5);
 
     // remove constraints on the links: logging purpose
     imu->setAllConstraints(false);
@@ -481,7 +481,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
 
     // Get the chain objects
     chainNeck=neck->asChain();
-    chainEyeL=eyeL->asChain();        
+    chainEyeL=eyeL->asChain();
     chainEyeR=eyeR->asChain();
 
     invNeck=new GazeIpOptMin(*chainNeck,1e-3,1e-3,20);
@@ -573,7 +573,7 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckPitchMin,neckPitchMax);
 
     (*chainNeck)(0).setMin(min_rad);
-    (*chainNeck)(0).setMax(max_rad);    
+    (*chainNeck)(0).setMax(max_rad);
 
     yInfo("neck pitch constrained in [%g,%g] deg",min_deg,max_deg);
 }
@@ -732,7 +732,7 @@ bool Solver::threadInit()
 {
     // Initialization
     Vector fp;
-    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp);    
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp);
 
     // init commData structure
     commData->port_xd->init(fp);
@@ -743,7 +743,7 @@ bool Solver::threadInit()
     commData->set_torso(fbTorso);
     commData->resize_v((int)fbHead.length(),0.0);
     commData->resize_counterv(3,0.0);
-    commData->set_fpFrame(chainNeck->getH());    
+    commData->set_fpFrame(chainNeck->getH());
 
     // use eyes pseudoinverse reference generator
     eyesRefGen->enable();
@@ -781,7 +781,7 @@ void Solver::run()
     // get the current target
     Vector xd=commData->port_xd->get_xdDelayed();
 
-    // update the target straightaway 
+    // update the target straightaway
     commData->set_xd(xd);
 
     // read encoders
@@ -837,7 +837,7 @@ void Solver::run()
         Vector xdUserTol=computeTargetUserTolerance(xd);
         neckPos=invNeck->solve(neckPos,xdUserTol,gDir);
 
-        // update neck pitch,roll,yaw        
+        // update neck pitch,roll,yaw
         commData->set_qd(0,neckPos[0]);
         commData->set_qd(1,neckPos[1]);
         commData->set_qd(2,neckPos[2]);
@@ -886,7 +886,7 @@ void Solver::resume()
     getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
     updateTorsoBlockedJoints(chainNeck,fbTorso);
     updateTorsoBlockedJoints(chainEyeL,fbTorso);
-    updateTorsoBlockedJoints(chainEyeR,fbTorso);        
+    updateTorsoBlockedJoints(chainEyeR,fbTorso);
 
     // update kinematics
     updateAngles();
@@ -896,7 +896,7 @@ void Solver::resume()
     chainEyeL->setAng(nJointsTorso+3,gazePos[0]);                chainEyeR->setAng(nJointsTorso+3,gazePos[0]);
     chainEyeL->setAng(nJointsTorso+4,gazePos[1]+gazePos[2]/2.0); chainEyeR->setAng(nJointsTorso+4,gazePos[1]-gazePos[2]/2.0);
 
-    torsoVel->reset();       
+    torsoVel->reset();
     commData->port_xd->unlock();
 
     PeriodicThread::resume();

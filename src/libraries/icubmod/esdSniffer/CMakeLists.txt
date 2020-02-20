@@ -11,7 +11,7 @@ IF(NOT SKIP_esdsniffer)
 
 
   FIND_PACKAGE(ESDCANAPI)
-  
+
   IF(NOT ESDCANAPI_FOUND)
     MESSAGE(SEND_ERROR "esdSniffer: cannot find esdcan api, turn off device")
   ELSE(NOT ESDCANAPI_FOUND)

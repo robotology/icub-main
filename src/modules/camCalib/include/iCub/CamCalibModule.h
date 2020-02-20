@@ -44,7 +44,7 @@ private:
 
 public:
     CamCalibPort();
-    
+
     void setSaturation(double satVal);
     void setPointers(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *_portImgOut, ICalibTool *_calibTool);
     void setVerbose(const bool sw) { verbose=sw; }
@@ -72,7 +72,7 @@ public:
 
     CamCalibModule();
     ~CamCalibModule();
-    
+
     /** Passes config on to CalibTool */
     virtual bool configure(yarp::os::ResourceFinder &rf);
     virtual bool close();

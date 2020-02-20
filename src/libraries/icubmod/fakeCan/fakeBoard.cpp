@@ -75,7 +75,7 @@ void FakeBoard::run()
                 {
 
                 }
-#endif 
+#endif
 
             outMessages->lock();
             outMessages->push_back(reply);
@@ -89,7 +89,7 @@ void FakeBoard::run()
     inMessages.clear();
     inMessages.unlock();
 
-    
+
     // bcast
     FCMSG reply;
     int c=0;
@@ -108,7 +108,7 @@ void FakeBoard::run()
     reply.data[6]=0;
     reply.data[7]=0;
     reply.len=8;
-      
+
     outMessages->push_back(reply);
 
     //status

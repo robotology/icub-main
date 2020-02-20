@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -33,7 +33,7 @@ public:
 
 #ifdef OLD_RESPONDER
     // will need to move logic from respond to apply asap
-    virtual bool respond(const yarp::os::Bottle &command, 
+    virtual bool respond(const yarp::os::Bottle &command,
                          yarp::os::Bottle &reply);
 #endif
 

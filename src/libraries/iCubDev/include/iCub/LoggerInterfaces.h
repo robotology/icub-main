@@ -1,9 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Lorenzo Natale
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -42,32 +42,32 @@ namespace yarp{
  * @ingroup icub_icubDev
  * Server logger data access reference.
  * It can be created only by yarp::dev::IServerLogger
- * and provides an alternative access to server logger data. 
- * Its use is not mandatory, but it is more efficient than 
+ * and provides an alternative access to server logger data.
+ * Its use is not mandatory, but it is more efficient than
  * using yarp::dev::IServerLogger::log(const std::string &key,const yarp::os::Value &data).
  */
 class yarp::dev::LoggerDataRef
 {
 public:
     /**
-    * Constructor. 
+    * Constructor.
     * Only friend class yarp::dev::IServerLogger can create objects of this class.
     * @param data address of referenced data.
     * @param flag address of the referenced data change flag.
     */
-    LoggerDataRef(yarp::os::Value* data,bool *flag) 
+    LoggerDataRef(yarp::os::Value* data,bool *flag)
         : pData(data),pFlag(flag),pMutex(NULL)
     {
     }
-    
+
     /**
     * Default destructor.
     */
     virtual ~LoggerDataRef(){}
-    
+
     /**
     * Set a mutex reference for data access synchronization.
-    * @param external mutex address from IServerLogger. 
+    * @param external mutex address from IServerLogger.
     */
     void setMutex(std::mutex* pMtx)
     {
@@ -76,7 +76,7 @@ public:
 
     /**
     * Log data to server.
-    * The data are addressed by the key passed to 
+    * The data are addressed by the key passed to
     * yarp::dev::IServerLogger::getDataReference(const std::string &key)
     * when the instance was created.
     * @param data
@@ -116,9 +116,9 @@ public:
 
     /**
     * Log data to server.
-    * @param key value identifier/address 
+    * @param key value identifier/address
     * @param data
-    * @return true/false on success failure (failure is notified if the 
+    * @return true/false on success failure (failure is notified if the
     * format of the message is unknown)
     */
     virtual bool log(const std::string &key,const yarp::os::Value &data)=0;
@@ -126,7 +126,7 @@ public:
     /**
     * Log data to server.
     * @param data a bottle contains the data to log
-    * @return true/false on success failure (failure is notified if the 
+    * @return true/false on success failure (failure is notified if the
     * format of the message is unknown)
     */
     virtual bool log(const yarp::os::Bottle &data)=0;

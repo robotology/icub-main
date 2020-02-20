@@ -66,7 +66,7 @@ using namespace iCub::skinDynLib;
             FoR=eye(4);
             return;
         }
-        
+
         // Set the proper orientation for the touching end-effector
         yarp::sig::Vector x(3,0.0), z(3,0.0), y(3,0.0);
 
@@ -77,7 +77,7 @@ using namespace iCub::skinDynLib;
         }
         y[0] = -z[2]/z[0]; y[2] = 1;
         x = -1*(cross(z,y));
-        
+
         // Let's make them unitary vectors:
         x = x / norm(x);
         y = y / norm(y);
@@ -134,8 +134,8 @@ using namespace iCub::skinDynLib;
         }
 
         Position=_Position;
-        return true;        
-    } 
+        return true;
+    }
 
     bool Taxel::setNormal(const yarp::sig::Vector &_Normal)
     {
@@ -179,7 +179,7 @@ using namespace iCub::skinDynLib;
                     WRFPosition.toString(3,3).c_str(),px.toString(3,3).c_str());
             yDebug("\tFrame of Reference \n%s",FoR.toString(3,3).c_str());
         }
-        else 
+        else
             yDebug("ID %i \tPosition %s \tNormal %s\n", ID,
                     Position.toString(3,3).c_str(), Normal.toString(3,3).c_str());
     }

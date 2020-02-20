@@ -19,7 +19,7 @@ using namespace iCub::contrib;
  *
  * \author Alexandre Bernardino
  *
- * Copyright (C) 2007 Alex Bernardino 
+ * Copyright (C) 2007 Alex Bernardino
  * Recently codified by : Sunila Saqib saqib@mit.edu
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 
     Network yarp;
 
-    //resource finder initialization. 
+    //resource finder initialization.
     ResourceFinder rf;
     rf.setVerbose();
     rf.setDefaultConfigFile("emotions.ini");

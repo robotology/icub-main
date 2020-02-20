@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Lorenzo Natale
 * email:   lorenzo.natale@iit.it
@@ -30,7 +30,7 @@
 
 #include <math.h>
 
-class PidFilter  
+class PidFilter
 {
 private:
     double error_old;       //error at previous step
@@ -41,7 +41,7 @@ private:
     double Sn;              //integal value
 
     //computes the pd portion of the control
-    inline double pd(double error) 
+    inline double pd(double error)
     {
         double ret=Kp*error+Kd*(error-error_old);
         return ret;
@@ -92,7 +92,7 @@ public:
 
     //if saturation occur, redifine integral part
     if (u_tmp > Umax)
-        Sn = Umax - u_pd; 
+        Sn = Umax - u_pd;
     if (u_tmp < -Umax)
         Sn = -Umax - u_pd;
 
@@ -139,7 +139,7 @@ public:
     * @param cutFrequency cut frequency (Hz).
     * @param sampleTime sample time (s).
     * @param y0 initial output.
-    */ 
+    */
     FirstOrderLowPassFilter(const double cutFrequency, const double sampleTime, const double y0){
         fc = cutFrequency;
         Ts = sampleTime;
@@ -148,9 +148,9 @@ public:
     }
 
     /**
-    * Internal state reset. 
+    * Internal state reset.
     * @param y0 new internal state.
-    */ 
+    */
     void init(const double y0)
     {
         y = y0;
@@ -159,22 +159,22 @@ public:
     }
 
     /**
-    * Retrieve the cut frequency of the filter. 
-    * @return the cut frequency (Hz). 
+    * Retrieve the cut frequency of the filter.
+    * @return the cut frequency (Hz).
     */
     double getCutFrequency() { return fc; }
 
     /**
-    * Retrieve the sample time of the filter. 
-    * @return the sample time (s). 
+    * Retrieve the sample time of the filter.
+    * @return the sample time (s).
     */
     double getSampleTime() { return Ts; }
 
     /**
     * Performs filtering on the actual input.
-    * @param u reference to the actual input. 
-    * @return the corresponding output. 
-    */ 
+    * @param u reference to the actual input.
+    * @return the corresponding output.
+    */
     double filt(double u)
     {
         y = (b1*u + b2*uold - a2*yold) / a1;
@@ -185,9 +185,9 @@ public:
 
     /**
     * Return current filter output.
-    * @return the filter output. 
-    */ 
+    * @return the filter output.
+    */
     double output() { return y; }
 };
 
-#endif 
+#endif

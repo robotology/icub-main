@@ -27,14 +27,14 @@ Filter::Filter(const Vector &num, const Vector &den, const Vector &y0)
 {
     b=num;
     a=den;
-    
+
     m=b.length(); n=a.length();
     yAssert((m>0)&&(n>0));
 
     uold.insert(uold.begin(),m-1,zeros((int)y0.length()));
     yold.insert(yold.begin(),n-1,zeros((int)y0.length()));
 
-    init(y0);    
+    init(y0);
 }
 
 
@@ -46,7 +46,7 @@ void Filter::init(const Vector &y0)
     if (uold.size()>0)
         init(y0,uold[0]);
     else    // otherwise use zero
-        init(y0,zeros((int)y0.length()));    
+        init(y0,zeros((int)y0.length()));
 }
 
 
@@ -64,7 +64,7 @@ void Filter::init(const Vector &y0, const Vector &u0)
     double sum_a=0.0;
     for (size_t i=0; i<a.length(); i++)
         sum_a+=a[i];
-    
+
     // if filter DC gain is not zero
     if (fabs(sum_b)>std::numeric_limits<double>::epsilon())
         u_init=(sum_a/sum_b)*y0;
@@ -78,10 +78,10 @@ void Filter::init(const Vector &y0, const Vector &u0)
             y_init=a[0]/(a[0]-sum_a)*y;
         // if sum_a==a[0] then the filter can only be initialized to zero
     }
-    
+
     for (size_t i=0; i<yold.size(); i++)
         yold[i]=y_init;
-    
+
     for (size_t i=0; i<uold.size(); i++)
         uold[i]=u_init;
 }
@@ -142,24 +142,24 @@ const Vector& Filter::filt(const Vector &u)
     yAssert(y.length()==u.length());
     for (size_t j=0; j<y.length(); j++)
         y[j]=b[0]*u[j];
-    
+
     for (size_t i=1; i<m; i++)
         for (size_t j=0; j<y.length(); j++)
             y[j]+=b[i]*uold[i-1][j];
-    
+
     for (size_t i=1; i<n; i++)
         for (size_t j=0; j<y.length(); j++)
             y[j]-=a[i]*yold[i-1][j];
-    
+
     for (size_t j=0; j<y.length(); j++)
         y[j]/=a[0];
-    
+
     uold.push_front(u);
     uold.pop_back();
-    
+
     yold.push_front(y);
     yold.pop_back();
-    
+
     return y;
 }
 
@@ -176,7 +176,7 @@ RateLimiter::RateLimiter(const Vector &rL, const Vector &rU) :
 
 /**********************************************************************/
 void RateLimiter::init(const Vector &u0)
-{ 
+{
     uLim=u0;
 }
 

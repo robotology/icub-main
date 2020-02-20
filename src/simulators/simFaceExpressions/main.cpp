@@ -27,7 +27,7 @@
 
 using namespace yarp::os;
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
     Network yarp;
     if (!yarp.checkNetwork())
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     }
 
         /* create the module */
-    simFaceExp module; 
+    simFaceExp module;
 
     /* prepare and configure the resource finder */
     ResourceFinder rf;
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     rf.setDefaultConfigFile( "general.ini" );       //overridden by --from parameter
     rf.setDefaultContext( "simFaceExpressions" );   //overridden by --context parameter
     rf.configure( argc, argv );
- 
+
     /* run the module: runModule() calls configure first and, if successful, it then runs */
     module.runModule(rf);
 

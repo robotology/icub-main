@@ -25,8 +25,8 @@
     <node>console</node>
     <tag>skinGuiRH</tag>
   </module>
-  
-  
+
+
   <connection>
     <from>/skinManGui/rpc:o</from>
     <to>/skinManager/rpc</to>
@@ -42,7 +42,7 @@
     <to>/skinManGui/info:i</to>
     <protocol>tcp</protocol>
   </connection>
-  
+
   <connection>
     <from>/icub/skin/left_hand_comp</from>
     <to>/skinGui/left_hand:i</to>

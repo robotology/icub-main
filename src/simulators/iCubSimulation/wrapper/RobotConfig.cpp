@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick, Vadim Tikhanoff
 * email:   paulfitz@alum.mit.edu, vadim.tikhanoff@iit.it
@@ -39,7 +39,7 @@ void RobotConfig::setFlags() {
     if (parts == ""){
          parts = getFinder().findFile("general");
     }
-  
+
     Property options;
     options.fromConfigFile(parts.c_str());
 
@@ -73,7 +73,7 @@ void RobotConfig::setFlags() {
     string actLHand = options.findGroup("PARTS").check("left_hand",Value(1),"what did the user select?").asString();
     if (actLHand.length()<1 ) stopConfig("actLHand");//, proceed);
     FLAGIFY(flags,actLHand);
-    
+
     string actRHand = options.findGroup("PARTS").check("right_hand",Value(1),"what did the user select?").asString();
     if (actRHand.length()<1 ) stopConfig("actRHand");//, proceed);
     FLAGIFY(flags,actRHand);
@@ -85,7 +85,7 @@ void RobotConfig::setFlags() {
     string actfixedHip = options.findGroup("PARTS").check("fixed_hip",Value(1),"what did the user select?").asString();
     if (actfixedHip.length()<1 ) stopConfig("actfixedHip");//, proceed);
     FLAGIFY(flags,actfixedHip);
-    
+
     string actSelfCol = options.findGroup("COLLISIONS").check("self_collisions",Value(1),"what did the user select?").asString();
     if (actSelfCol.length()<1 ) stopConfig("actSelfCol");//, proceed);
     FLAGIFY(flags,actSelfCol);
@@ -93,7 +93,7 @@ void RobotConfig::setFlags() {
     string actCoversCol = options.findGroup("COLLISIONS").check("covers_collisions",Value(1),"what did the user select?").asString();
     if (actCoversCol.length()<1 ) stopConfig("actCoversCol");//, proceed);
     FLAGIFY(flags,actCoversCol);
-    
+
     string actVision = options.findGroup("VISION").check("cam",Value(1),"What did the user select?").asString();
     if (actVision.length()<1 ) stopConfig("actVision");//, proceed);
     FLAGIFY(flags,actVision);
@@ -101,7 +101,7 @@ void RobotConfig::setFlags() {
     string actPressure = options.findGroup("SENSORS").check("pressure",Value(1),"What did the user select?").asString();
     if (actPressure.length()<1 ) stopConfig("actPressure");//, proceed);
     FLAGIFY(flags,actPressure);
-    
+
     string actSkinEmul = options.findGroup("SENSORS").check("whole_body_skin_emul",Value(1),"What did the user select?").asString();
     if (actSkinEmul.length()<1 ) stopConfig("actSkinEmul");//, proceed);
     FLAGIFY(flags,actSkinEmul);
@@ -117,11 +117,11 @@ void RobotConfig::setFlags() {
     string actHeadCover = options.findGroup("RENDER").check("head_cover",Value(1),"What did the user select?").asString();
     if (actHeadCover.length()<1 ) stopConfig("actHeadCover");//, proceed);
     FLAGIFY(flags,actHeadCover);
-    
+
     string actLegsCovers = options.findGroup("RENDER").check("legs_covers",Value(1),"What did the user select?").asString();
     if (actLegsCovers.length()<1 ) stopConfig("actLegsCovers");//, proceed);
     FLAGIFY(flags,actLegsCovers);
-    
+
     string actLeftArmCovers = options.findGroup("RENDER").check("left_arm_covers",Value(1),"What did the user select?").asString();
     if (actLeftArmCovers.length()<1 ) stopConfig("actLeftArmCovers");//, proceed);
     FLAGIFY(flags,actLeftArmCovers);
@@ -162,7 +162,7 @@ void RobotConfig::setFlags() {
         "Right arm Covers : " << actRightArmCovers << "\n" <<
         "Torso Cover : " << actTorsoCovers << "\n" <<
         "Screen : " << actScreen << "\n" << "\n";
-        
+
 }
 
 

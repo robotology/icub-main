@@ -30,7 +30,7 @@
 # Small modifications by Lorenzo Natale and Francesco Nori
 
 #
-# 2004/05 Jan Woetzel, Friso, Daniel Grest 
+# 2004/05 Jan Woetzel, Friso, Daniel Grest
 # 2006 complete rewrite by Jan Woetzel
 ##
 # www.mip.informatik.uni-kiel.de/

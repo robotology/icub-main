@@ -126,7 +126,7 @@ public:
                      b1(_net.get_b1()), b2(_net.get_b2())
     {
         pred.clear();
-        error=0.0;        
+        error=0.0;
     }
 
     /****************************************************************/
@@ -164,7 +164,7 @@ public:
                 x_u[k]=max_IW;
             }
         }
-            
+
         for (size_t i=0; i<LW.size(); i++)
         {
             for (size_t j=0; j<LW.front().length(); j++, k++)
@@ -277,7 +277,7 @@ public:
         pred.clear();
         for (size_t i=0; i<in.size(); i++)
         {
-            Vector pred=net.predict(in[i]);            
+            Vector pred=net.predict(in[i]);
             error+=norm2(out[i]-pred);
             this->pred.push_back(pred);
         }
@@ -357,7 +357,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
 
     // enlarge of 10%
     for (size_t i=0; i<inMinMaxX.size(); i++)
-    {   
+    {
         inMinMaxX[i].min-=0.1*fabs(inMinMaxX[i].min);
         inMinMaxX[i].max+=0.1*fabs(inMinMaxX[i].max);
     }
@@ -383,7 +383,7 @@ bool ff2LayNNTrain::train(const unsigned int numHiddenNodes,
 
     // enlarge of 10%
     for (size_t i=0; i<outMinMaxX.size(); i++)
-    {   
+    {
         outMinMaxX[i].min-=0.1*fabs(outMinMaxX[i].min);
         outMinMaxX[i].max+=0.1*fabs(outMinMaxX[i].max);
     }
@@ -410,7 +410,7 @@ bool ff2LayNNTrain::retrain(const deque<Vector> &in, const deque<Vector> &out,
     Ipopt::ApplicationReturnStatus status=CAST_IPOPTAPP(App)->OptimizeTNLP(GetRawPtr(nlp));
 
     error=nlp->get_error();
-    return (status==Ipopt::Solve_Succeeded);    
+    return (status==Ipopt::Solve_Succeeded);
 }
 
 

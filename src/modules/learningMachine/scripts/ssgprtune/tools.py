@@ -15,7 +15,7 @@ import numpy
 
 def strtoidx(s):
     """Converts a string representation of indices to a list."""
-    if s is None: 
+    if s is None:
         return None
 
     cols = []
@@ -35,7 +35,7 @@ def load_array(fname):
         return numpy.loadtxt(fname)
 
 def load_data(filename, input_cols, output_cols):
-    """Loads a dataset of inputs and outputs given lists of indices for inputs 
+    """Loads a dataset of inputs and outputs given lists of indices for inputs
     and outputs from a file."""
     data = load_array(filename)
 
@@ -45,29 +45,29 @@ def load_data(filename, input_cols, output_cols):
     return inputs, outputs
 
 def serialize(fp, *args):
-    """Serializes strings, floats, integers, and arrays into a format 
+    """Serializes strings, floats, integers, and arrays into a format
     understood by the learningMachine framework."""
     for item in args:
-        if type(item) == str:      
+        if type(item) == str:
             fp.write('%s' % item)
-        elif type(item) in [float, numpy.float32, numpy.float64]:  
+        elif type(item) in [float, numpy.float32, numpy.float64]:
             fp.write('%g ' % item)
-        elif type(item) in [int, numpy.int16, numpy.int32, numpy.int64]:    
+        elif type(item) in [int, numpy.int16, numpy.int32, numpy.int64]:
             fp.write('%d ' % item)
         elif type(item) == numpy.ndarray:
             numpy.savetxt(fp, item.flatten()[numpy.newaxis,:], fmt='%.10g', newline=' ')
             serialize(fp, *list(item.shape))
 
 def serialize_preprocessor(filename, preprocessor):
-    """Serializes the feature mapping, or preprocess, to a format understood by 
+    """Serializes the feature mapping, or preprocess, to a format understood by
     the learningMachine framework."""
     with open(filename, 'w') as ppfp:
-        serialize(ppfp, 'SparseSpectrumFeature\n', 
+        serialize(ppfp, 'SparseSpectrumFeature\n',
                         preprocessor.sigma_o, preprocessor.l, preprocessor.W,
                         preprocessor.n, preprocessor.outputdim())
 
 def serialize_machine(filename, machine):
-    """Serializes the machine to a format understood by the learningMachine 
+    """Serializes the machine to a format understood by the learningMachine
     framework."""
 
     # copy upper triangular to lower triangular
@@ -83,7 +83,7 @@ def serialize_machine(filename, machine):
             m = 0
 
 
-        serialize(lfp, 'LinearGPR\n', 
-                       reflect(machine.L), machine.B.T, machine.W.T, machine.sigma_n, m, 
+        serialize(lfp, 'LinearGPR\n',
+                       reflect(machine.L), machine.B.T, machine.W.T, machine.sigma_n, m,
                        machine.mapping.outputdim(), machine.p)
 

@@ -65,7 +65,7 @@ IF (ICUB_SIM_ENABLE_ODESDL)
   else()
     ADD_DEFINITIONS(-DdSINGLE)
   endif()
-  
+
   # If glut is set up, we can turn this on
   ADD_DEFINITIONS(-DUSE_GLUT)
 

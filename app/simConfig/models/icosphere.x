@@ -1,7 +1,7 @@
 xof 0303txt 0032
 
 
-template VertexDuplicationIndices { 
+template VertexDuplicationIndices {
  <b8d65549-d7c9-4995-89cf-53a9a8b031e3>
  DWORD nIndices;
  DWORD nOriginalVertices;

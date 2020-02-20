@@ -20,7 +20,7 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class CanBusVirtualAnalogSensor : public PeriodicThread, public yarp::dev::IVirtualAnalogSensor, public DeviceDriver 
+class CanBusVirtualAnalogSensor : public PeriodicThread, public yarp::dev::IVirtualAnalogSensor, public DeviceDriver
 {
     enum AnalogDataFormat
     {
@@ -44,7 +44,7 @@ protected:
     ICanBufferFactory  *pCanBufferFactory;
     CanBuffer          inBuffer;
     CanBuffer          outBuffer;
-   
+
     std::mutex         mtx;
 
     unsigned int       channelsNum;
@@ -61,7 +61,7 @@ protected:
 public:
     CanBusVirtualAnalogSensor(int period=20) : PeriodicThread((double)period/1000.0)
     {}
-    
+
 
     ~CanBusVirtualAnalogSensor()
     {
@@ -69,12 +69,12 @@ public:
 
     virtual bool open(yarp::os::Searchable& config);
     virtual bool close();
-   
-    
+
+
     //IVirtualAnalogSensor interface
     virtual yarp::dev::VAS_status getVirtualAnalogSensorStatus (int ch);
     virtual int getVirtualAnalogSensorChannels();
-   
+
     virtual bool updateVirtualAnalogSensorMeasure(int ch, double &measure);
     virtual bool updateVirtualAnalogSensorMeasure(yarp::sig::Vector &data);
 

@@ -52,7 +52,7 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     if (!driver.isValid())
     {
         yError() << "Error opening PolyDriver check parameters";
-#ifndef DEBUG_TEST 
+#ifndef DEBUG_TEST
         return false;
 #endif
     }
@@ -62,7 +62,7 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     if (!pSerial)
     {
         yError("Error opening serial driver. Device not available");
-#ifndef DEBUG_TEST 
+#ifndef DEBUG_TEST
         return false;
 #endif
     }

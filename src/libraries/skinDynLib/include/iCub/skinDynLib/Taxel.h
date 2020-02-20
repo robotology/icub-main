@@ -21,13 +21,13 @@
  * useful members.
  *
  * \section intro_sec Description
- * 
+ *
  * \section tested_os_sec Tested OS
- * 
+ *
  * Windows, Linux
  *
  * \author Alessandro Roncone
- * 
+ *
  **/
 
 #ifndef __TAXEL_H__
@@ -45,8 +45,8 @@ namespace iCub
 namespace skinDynLib
 {
 
-/** 
-* @ingroup skinDynLib 
+/**
+* @ingroup skinDynLib
 *
 * Class that encloses everything relate to a Taxel, i.e. the atomic element the iCub skin is composed of.
 * It is empowered by a Position and a Normal (both relative to the body part it belong to), and some more
@@ -118,7 +118,7 @@ class Taxel
      * Gets the Position of the taxel in the limb's FoR
      * @return Vector with the Position of the taxel
      */
-    yarp::sig::Vector getPosition(); 
+    yarp::sig::Vector getPosition();
 
     /**
      * Gets the Normal of the taxel in the limb's FoR
@@ -155,7 +155,7 @@ class Taxel
      * Sets the Position of the taxel in the limb's FoR
      * @return true/false in case of success/failure
      */
-    bool setPosition(const yarp::sig::Vector &_Position); 
+    bool setPosition(const yarp::sig::Vector &_Position);
 
     /**
      * Sets the Normal of the taxel in the limb's FoR

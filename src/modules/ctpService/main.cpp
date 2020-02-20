@@ -5,11 +5,11 @@
  *
  */
 
-/** 
+/**
 \defgroup ctpService constantTimePositionService
- 
-@ingroup icub_module 
- 
+
+@ingroup icub_module
+
 A simple service that allows you to send constant time position
 commands to any of the robot ports.
 
@@ -18,7 +18,7 @@ commands to any of the robot ports.
 Sit silently and waits for incoming commands. Receive position
 commands requests and sends position commands, but it computes
 the reference speeds so that commands are all executed in the same
-time irrespectively of the current position (the service reads 
+time irrespectively of the current position (the service reads
 the current encoders and compute the reference speed accordingly).
 
 \section ports_sec Ports and Messages
@@ -31,10 +31,10 @@ the current encoders and compute the reference speed accordingly).
  - /ctpservice/local/{part}/state:i
  - /ctpservice/local/{part}/command:o
 
-- Output, to interface with the @ref icub_velocityControl 
+- Output, to interface with the @ref icub_velocityControl
   module:
  - /ctpservice/{part}/vc:o
- 
+
 Here {part} is replaced with the robot part (see --part parameter)
 
 ctpservice is a default value that can be replaced with --name.
@@ -45,19 +45,19 @@ Incoming commands are the following:
 
 Execute command. Command will take TIME seconds, the list of position will be sent to the motors
 starting from offset j.
- 
-or 
- 
-[ctpq] [time] TIME (seconds) [off] j [pos] list 
- 
- 
+
+or
+
+[ctpq] [time] TIME (seconds) [off] j [pos] list
+
+
 Queue commands for execution. Command will take TIME seconds, the list of position will be sent to the motors
 starting from offset j
- 
-or 
- 
+
+or
+
 [ctpf] filename (in yarpdatadumper format)
- 
+
 Example:
 This requires 1 second movement of joints 5,6,7 to 10 10 10 respectively:
 [ctpn] [time] 1 [off] 5 [pos] (10 10 10)
@@ -73,18 +73,18 @@ part: prefix for part name (e.g. right_arm)
 
 name: module name (used to form port names)
 
-\section lib_sec Libraries 
-- YARP libraries. 
- 
+\section lib_sec Libraries
+- YARP libraries.
+
 \section tested_os_sec Tested OS
 Windows, Linux
 
 Copyright (C) 2010 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
- 
-Author: Lorenzo Natale 
-*/ 
+
+Author: Lorenzo Natale
+*/
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
@@ -200,7 +200,7 @@ protected:
     IEncoders        *enc;
     Actions actions;
     mutex mtx;
- 
+
     void _send(const ActionItem *x)
     {
         if (!connected)
@@ -233,13 +233,13 @@ protected:
         {
             double q;
 
-           
+
             if (!enc->getEncoder(offset+i,&q))
             {
                  cerr<<"Error: encoders timed out, cannot rely on encoder feedback, aborted"<<endl;
                  return;
             }
-                
+
             disp[i]=x->getCmd()[i]-q;
 
             if (disp[i]<0.0)
@@ -308,7 +308,7 @@ public:
 
         string local=name;
         local+=string("/local/")+string(options.find("part").asString());
-   
+
         drvOptions.put("remote",remote);
         drvOptions.put("local",local);
 
@@ -346,13 +346,13 @@ public:
 
         if (drv->isValid())
             connected=drv->view(mode) &&
-                      drv->view(pos) && 
+                      drv->view(pos) &&
                       drv->view(enc);
         else
             connected=false;
 
         if (!connected)
-        {    
+        {
             delete drv;
             drv=0;
         }
@@ -387,7 +387,7 @@ public:
             return false;
         return true;
     }
-        
+
     void run()
     {
         ActionItem *tmp=posPort->pop();
@@ -411,7 +411,7 @@ private:
     Port           *velPort;
     Port           *velInitPort;
     ResourceFinder *pRF;
-    
+
     ifstream   fin;
     char       line[1024];
     bool       closing;
@@ -424,7 +424,7 @@ private:
     {
 
         if(p->getOutputCount() > 0)
-        {   
+        {
             cout << "***** got a connection" << endl;
             return true;
         }
@@ -458,7 +458,7 @@ private:
             }
             else
                 cont = false;
-        }                
+        }
         if (i==0)
         {
             ret = false;
@@ -495,7 +495,7 @@ private:
     }
 
     bool readLine(Vector &v, double &time)
-    {        
+    {
         fin.getline(&line[0],sizeof(line),'\n');
         string str(line);
 
@@ -515,7 +515,7 @@ private:
                 return true;
             }
             else
-                return false;            
+                return false;
         }
         else
             return false;
@@ -648,7 +648,7 @@ public:
                     unique_lock<mutex> lck(mtx);
                     cv.wait(lck);
                 }
-    
+
                 if (firstRun)
                 {
                     Bottle c,r;
@@ -659,15 +659,15 @@ public:
                     t=0.0;
                     filtElemsCnt=0;
                     firstRun=false;
-                }            
-    
+                }
+
                 if (send)
                 {
                     Vector cmd=formCommand(p1,t);
                     velPort->write(cmd);
                     send=false;
                 }
-    
+
                 if (readLine(p2,time2))
                 {
                     double dt=time2-time1;
@@ -704,7 +704,7 @@ protected:
     VelocityThread  velThread;
 
 public:
-    scriptModule() 
+    scriptModule()
     {
         verbose=true;
     }
@@ -718,7 +718,7 @@ public:
             posPort.sendNow(action);
             reply.addVocab(Vocab::encode("ack"));
         }
-        
+
         return ret;
     }
 
@@ -830,7 +830,7 @@ public:
             cerr<<"Error configuring position controller, check parameters"<<endl;
             return false;
         }
-        
+
         if (!posPort.connect())
         {
             cerr<<"Error cannot conenct to remote ports"<<endl;
@@ -865,7 +865,7 @@ public:
             switch (command.get(0).asVocab())
             {
                 case yarp::os::createVocab('h','e','l','p'):
-                {                    
+                {
                     cout << "Available commands:"          << endl;
                     cout<<"Queue command:\n";
                     cout<<"[ctpq] [time] seconds [off] j [pos] (list)\n";

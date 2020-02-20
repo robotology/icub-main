@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright (C) 2009 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Authors: Andrea Del Prete
  * email:   andrea.delprete@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -27,7 +27,7 @@ static void clean_exit(){
     //wholeBodyRpcPort.interrupt();
 
 	guiRpcPort.close();
-	driftCompMonitorPort.close();    
+	driftCompMonitorPort.close();
     driftCompInfoPort.close();
     //wholeBodyRpcPort.close();
 }
@@ -41,7 +41,7 @@ static void spin_threshold_value_changed(GtkSpinButton *spinbutton, gpointer use
     int safetyThr = gtk_spin_button_get_value_as_int(spinbutton);
     if (safetyThr == currentThreshold)
         return;
-    
+
     // set the threshold
     Bottle b, setReply;
     b.addInt(set_threshold); b.addInt(safetyThr);
@@ -56,7 +56,7 @@ static void spin_threshold_value_changed(GtkSpinButton *spinbutton, gpointer use
         setStatusBarText(msg.str().c_str());
         return;
     }
-    
+
     stringstream msg; msg << "Unable to set the threshold to " << safetyThr;
 	msg<< ".\nSet command reply: "<< setReply.toString().c_str();
 	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);
@@ -83,10 +83,10 @@ static void spin_gain_value_changed(GtkSpinButton *spinbutton, gpointer user_dat
         setStatusBarText(msg.str().c_str());
         return;
     }
-    
+
     stringstream msg; msg << "Unable to set the compensation gain to " << compGain;
 	msg<< ".\nSet command reply: "<< setReply.toString().c_str();
-	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);   
+	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);
     // setting the old value
     gtk_spin_button_set_value(spinbutton, currentCompGain);
 }
@@ -110,10 +110,10 @@ static void spin_cont_gain_value_changed(GtkSpinButton *spinbutton, gpointer use
         setStatusBarText(msg.str().c_str());
         return;
     }
-    
+
     stringstream msg; msg << "Unable to set the contact compensation gain to " << contCompGain;
 	msg<< ".\nSet command reply: "<< setReply.toString().c_str();
-	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);   
+	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);
     // setting the old value
     gtk_spin_button_set_value(spinbutton, currentContCompGain);
 }
@@ -137,10 +137,10 @@ static void spin_max_neigh_dist_value_changed(GtkSpinButton *spinbutton, gpointe
         setStatusBarText(msg.str().c_str());
         return;
     }
-    
+
     stringstream msg; msg << "Unable to set the max neighbor distance to " << maxNeighDist<< " m";
 	msg<< ".\nSet command reply: "<< setReply.toString().c_str();
-	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);   
+	openDialog(msg.str().c_str(), GTK_MESSAGE_ERROR);
     // setting the old value
     gtk_spin_button_set_value(spinbutton, currentMaxNeighDist);
 }
@@ -155,7 +155,7 @@ static gboolean scale_smooth_value_changed(GtkRange* range, GtkScrollType scroll
 	Bottle b, setReply;
 	b.addInt(set_smooth_factor); b.addDouble(smoothFactor);
 	guiRpcPort.write(b, setReply);
-	
+
 	// read the smooth factor
 	Bottle getReply = sendRpcCommand(true, get_smooth_factor);
 	currentSmoothFactor = getReply.get(0).asDouble();
@@ -189,7 +189,7 @@ static gboolean toggle_button_smooth(GtkToggleButton *widget, GdkEvent *ev, gpoi
 			gtk_widget_set_sensitive(GTK_WIDGET(data), true);
 			setStatusBarText("Smooth filter turned on");
 			return false;	// propagate the event further
-		}else{			
+		}else{
 			setStatusBarText(string("Error! Unable to turn the smooth filter on: ") + reply.toString().c_str());
 			return true;	//stop other handlers from being invoked for the event
 		}
@@ -203,7 +203,7 @@ static gboolean toggle_button_smooth(GtkToggleButton *widget, GdkEvent *ev, gpoi
 			gtk_widget_set_sensitive(GTK_WIDGET(data), false);
 			setStatusBarText("Smooth filter turned off");
 			return false;	// propagate the event further
-		}else{			
+		}else{
 			setStatusBarText(string("Error! Unable to turn the smooth filter off: ") + reply.toString().c_str());
 			return true;	//stop other handlers from being invoked for the event
 		}
@@ -286,7 +286,7 @@ static gboolean button_threshold(GtkToggleButton *widget, GdkEvent *ev, gpointer
     for (unsigned int j=0; j<portDim.size(); j++) {
 	    stringstream msg;
 		msg<< "Thresholds for port "<< portNames[j]<< ":\n";
-	    for (unsigned int i=0; i<portDim[j]; i++){            
+	    for (unsigned int i=0; i<portDim[j]; i++){
 		    if (i%12==0){
 			    if (i!=0)
 				    msg<< "\n";
@@ -311,8 +311,8 @@ static void comboPort_changed(GtkComboBox* combo, gpointer data){
     gint newPort2plot=-1;
     GtkTreeIter iter;
     GtkTreeModel* model;
-    if ( gtk_combo_box_get_active_iter(comboPort, &iter)){                    
-        model = gtk_combo_box_get_model(comboPort);         // Obtain data model from combo box.                    
+    if ( gtk_combo_box_get_active_iter(comboPort, &iter)){
+        model = gtk_combo_box_get_model(comboPort);         // Obtain data model from combo box.
         gtk_tree_model_get( model, &iter, 0, &newPort2plot, 1, &portName, -1 ); // Obtain string from model.
     }
     if (newPort2plot!=port2plot){    // port has changed
@@ -331,9 +331,9 @@ static void comboTriangle_changed(GtkComboBox* combo, gpointer data){
     gint newTr2plot=-1;
     GtkTreeIter iter;
     GtkTreeModel* model;
-    if ( gtk_combo_box_get_active_iter(comboTriangle, &iter)){                    
-        model = gtk_combo_box_get_model(comboTriangle);     // Obtain data model from combo box.                    
-        gtk_tree_model_get( model, &iter, 0, &newTr2plot, -1 ); 
+    if ( gtk_combo_box_get_active_iter(comboTriangle, &iter)){
+        model = gtk_combo_box_get_model(comboTriangle);     // Obtain data model from combo box.
+        gtk_tree_model_get( model, &iter, 0, &newTr2plot, -1 );
     }
     if (newTr2plot!=tr2plot){    // triangle has changed
         tr2plot = newTr2plot;
@@ -344,9 +344,9 @@ static void comboTaxel_changed(GtkComboBox* combo, gpointer data){
     gint newTax2plot=-1;
     GtkTreeIter iter;
     GtkTreeModel* model;
-    if ( gtk_combo_box_get_active_iter(comboTaxel, &iter)){                    
-        model = gtk_combo_box_get_model(comboTaxel);     // Obtain data model from combo box.                    
-        gtk_tree_model_get( model, &iter, 0, &newTax2plot, -1 ); 
+    if ( gtk_combo_box_get_active_iter(comboTaxel, &iter)){
+        model = gtk_combo_box_get_model(comboTaxel);     // Obtain data model from combo box.
+        gtk_tree_model_get( model, &iter, 0, &newTax2plot, -1 );
     }
     if (newTax2plot!=tax2plot){    // taxel has changed
         tax2plot = newTax2plot;
@@ -387,7 +387,7 @@ static gint periodic_timeout(gpointer data) {
             }
             const int numTr = numTax/12;
             if (numTax>0){
-                // *** UPDATE TAXEL PLOT (3RD TAB)                
+                // *** UPDATE TAXEL PLOT (3RD TAB)
                 plotSem.lock();
                 for (int i=0; i<currentSampleNum-1; i++) {
                     dataPlot[i] = dataPlot[i+1];
@@ -399,7 +399,7 @@ static gint periodic_timeout(gpointer data) {
                 dataPlot[currentSampleNum-1] = (gfloat)(*b)[index];
                 gtk_curve_set_vector(curveComp, currentSampleNum, &(dataPlot[0]));
                 plotSem.unlock();
-                               
+
 
                 // *** UPDATE DRIFT TREE VIEW (2ND TAB)
                 vector<gfloat> driftPerTr(numTr);
@@ -428,16 +428,16 @@ static gint periodic_timeout(gpointer data) {
 		    gtk_tree_view_set_model(treeBaselines, GTK_TREE_MODEL( treeStoreComp));
 		    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(treeStoreComp), &iterPort);
 		}
-				
+
                 // update the drift list
                 gdouble sumPort, meanPort;
                 stringstream trS, taxS;
                 index=1;
                 int portIndex=0;
                 gdouble meanTr;
-		for (unsigned int i=0; i<portNames.size(); i++){		
+		for (unsigned int i=0; i<portNames.size(); i++){
 		    sumPort = 0;
-		    for (unsigned int j=0; j<portDim[i]/12; j++){						
+		    for (unsigned int j=0; j<portDim[i]/12; j++){
 			meanTr = driftPerTr[portIndex];
 			portIndex++;
 			sumPort += meanTr;
@@ -479,7 +479,7 @@ static gint periodic_timeout(gpointer data) {
         }
         skinErrors = driftCompInfoPort.read(false);
     }
-            
+
     return true;
 }
 
@@ -500,16 +500,16 @@ static void spinSampleNum_value_changed(GtkSpinButton *spinbutton, gpointer user
     int sampleNum = gtk_spin_button_get_value_as_int(spinbutton);
     if (sampleNum==currentSampleNum)
         return;
-    
+
     lock_guard<mutex> lck(plotSem);
     vector<gfloat> newDataPlot(sampleNum);
-    unsigned int data2copy = min(sampleNum, currentSampleNum);                
+    unsigned int data2copy = min(sampleNum, currentSampleNum);
     for (unsigned int i=1;i<=data2copy;i++){
         newDataPlot[sampleNum-i] = dataPlot[currentSampleNum-i];
     }
     dataPlot = newDataPlot;
     currentSampleNum = sampleNum;
-    
+
     // update plot label and limits
     stringstream maxXS; maxXS<< currentSampleNum/currentSampleFreq;
     gtk_label_set_text(lblMaxX, maxXS.str().c_str());

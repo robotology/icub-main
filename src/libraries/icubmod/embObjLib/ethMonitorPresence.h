@@ -28,7 +28,7 @@
 
 
 namespace eth {
-           
+
     class EthMonitorPresence
     {
     public:

@@ -15,21 +15,21 @@
  * Public License for more details
 */
 
-/** 
+/**
  * @defgroup optimization optimization
- * @ingroup icub_libraries 
- *  
+ * @ingroup icub_libraries
+ *
  * Tools designed to deal with optimization tasks.
- *  
+ *
  * @author Ugo Pattacini
- *  
+ *
  * @defgroup GenericAlgorithms Generic Algorithms
  * @ingroup optimization
  *
  * Algorithms of general utility.
- *  
- * @author Ugo Pattacini 
- */ 
+ *
+ * @author Ugo Pattacini
+ */
 
 
 #ifndef __ICUB_OPT_ALGORITHMS_H__
@@ -47,14 +47,14 @@ namespace optimization
 /**
 * \ingroup GenericAlgorithms
 *
-* Find the minimum volume ellipsoide (MVEE) of a set of N 
-* d-dimensional data points. 
-* @param points the set of N d-dimensional data points. 
-* @param tol the tolerance of the algorithm given in the points 
+* Find the minimum volume ellipsoide (MVEE) of a set of N
+* d-dimensional data points.
+* @param points the set of N d-dimensional data points.
+* @param tol the tolerance of the algorithm given in the points
 *            metrics.
-* @param A the dxd matrix of the ellipsoid equation in the 
+* @param A the dxd matrix of the ellipsoid equation in the
 *          center form: (x-c)'*A*(x-c)=1.
-* @param c the d-dimensional vector representing the ellipsoid's 
+* @param c the d-dimensional vector representing the ellipsoid's
 *          center.
 * @return true/false on success/fail.
 */
@@ -63,9 +63,9 @@ bool minVolumeEllipsoid(const std::deque<yarp::sig::Vector> &points,
                         yarp::sig::Vector &c);
 
 }
- 
+
 }
- 
+
 #endif
 
 

@@ -10,7 +10,7 @@ out = amplitude*sin(time*2*pi*frequency)+offset;
 figure(1)
 hold on
 grid on
-plot (time, out) 
+plot (time, out)
 
 fileID = fopen('trajectory.txt','w');
 %A = [time; out];

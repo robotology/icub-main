@@ -143,7 +143,7 @@ extern void eoprot_fun_UPDT_as_psc_status(const EOnv* nv, const eOropdescriptor_
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of static functions 
+// - definition of static functions
 // --------------------------------------------------------------------------------------------------------------------
 
 static void handle_data_analogarray(const EOnv* nv, const eOropdescriptor_t* rd)

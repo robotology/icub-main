@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -165,7 +165,7 @@ protected:
     double       txToken;
     double       rxToken;
     double       txTokenLatchedStopControl;
-    double       txTokenLatchedGoToRpc;    
+    double       txTokenLatchedGoToRpc;
     bool         skipSlvRes;
     bool         syncEventEnabled;
 
@@ -230,7 +230,7 @@ protected:
     void   init();
     void   openPorts();
     void   closePorts();
-    bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);    
+    bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);
     bool   alignJointsBounds();
     double getFeedback(yarp::sig::Vector &_fb);
     void   createController();
@@ -254,7 +254,7 @@ protected:
 
     friend class CartesianCtrlRpcProcessor;
     friend class CartesianCtrlCommandPort;
-    
+
     bool stopControlHelper();
     bool setTrackingModeHelper(const bool f);
     bool setTrajTimeHelper(const double t);

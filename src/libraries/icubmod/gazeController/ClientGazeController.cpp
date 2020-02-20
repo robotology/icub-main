@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -106,7 +106,7 @@ bool ClientGazeController::open(Searchable &config)
 
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
-        
+
     portCmdFp.open(local+"/xd:o");
     portCmdAng.open(local+"/angles:o");
     portCmdMono.open(local+"/mono:o");
@@ -115,7 +115,7 @@ bool ClientGazeController::open(Searchable &config)
     portStateAng.open(local+"/angles:i");
     portStateHead.open(local+"/q:i");
     portEvents.open(local+"/events:i");
-    portRpc.open(local+"/rpc");    
+    portRpc.open(local+"/rpc");
 
     bool ok=true;
     ok&=Network::connect(portRpc.getName(),remote+"/rpc");
@@ -589,7 +589,7 @@ bool ClientGazeController::lookAtStereoPixelsSync(const Vector &pxl,
     payLoad.addDouble(pxl[0]);
     payLoad.addDouble(pxl[1]);
     payLoad.addDouble(pxr[0]);
-    payLoad.addDouble(pxr[1]);    
+    payLoad.addDouble(pxr[1]);
 
     if (!portRpc.write(command,reply))
     {
@@ -809,13 +809,13 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o,
             {
                 x.resize(3);
                 o.resize(bPose->size()-x.length());
-        
+
                 for (size_t i=0; i<x.length(); i++)
                     x[i]=bPose->get(i).asDouble();
-        
+
                 for (size_t i=0; i<o.length(); i++)
                     o[i]=bPose->get(x.length()+i).asDouble();
-        
+
                 if ((reply.size()>2) && (stamp!=NULL))
                 {
                     if (Bottle *bStamp=reply.get(2).asList())
@@ -1199,7 +1199,7 @@ bool ClientGazeController::setNeckTrajTime(const double t)
         yError("unable to get reply from server!");
         return false;
     }
-    
+
     return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
@@ -1220,7 +1220,7 @@ bool ClientGazeController::setEyesTrajTime(const double t)
         yError("unable to get reply from server!");
         return false;
     }
-    
+
     return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
@@ -1241,7 +1241,7 @@ bool ClientGazeController::setVORGain(const double gain)
         yError("unable to get reply from server!");
         return false;
     }
-    
+
     return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
@@ -1262,7 +1262,7 @@ bool ClientGazeController::setOCRGain(const double gain)
         yError("unable to get reply from server!");
         return false;
     }
-    
+
     return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
@@ -1752,7 +1752,7 @@ bool ClientGazeController::stopControl()
         yError("unable to get reply from server!");
         return false;
     }
-    
+
     return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 

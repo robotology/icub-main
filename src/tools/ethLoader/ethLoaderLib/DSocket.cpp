@@ -12,13 +12,13 @@
 //#include <arpa/inet.h>
 
 DSocket::DSocket()
-{ 
+{
     ACE_OS::socket_init(2,2);
-    mSocket=NULL; 
+    mSocket=NULL;
 }
 DSocket::~DSocket()
-{ 
-    Close(); 
+{
+    Close();
     ACE_OS::socket_fini();
 }
 
@@ -108,7 +108,7 @@ ssize_t DSocket::ReceiveFrom(void* data,size_t len,ACE_UINT32 &address,ACE_UINT1
         address=0;
         port=0;
     }
-    
+
     return nrec;
 }
 

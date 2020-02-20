@@ -24,7 +24,7 @@ public:
 
         const double H=sin(DEG2RAD*60.0);
         const double L=2.0*H/9.0;
-     
+
         dGain=gain;
         ilrMirror=lrMirror;
         ilayoutNum=layoutNum;
@@ -74,7 +74,7 @@ public:
         }
 
         // in static definition
-        //dXmin=dYmin= HUGE; 
+        //dXmin=dYmin= HUGE;
         //dXmax=dYmax=-HUGE;
 
         for (int i=0; i<nVerts; ++i)

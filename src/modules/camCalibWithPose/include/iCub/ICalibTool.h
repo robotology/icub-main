@@ -27,12 +27,12 @@ public:
     virtual bool configure (yarp::os::Searchable &config) = 0;
 
     virtual void apply(const yarp::sig::ImageOf<yarp::sig::PixelRgb> & in,
-                       yarp::sig::ImageOf<yarp::sig::PixelRgb> & out) = 0;    
+                       yarp::sig::ImageOf<yarp::sig::PixelRgb> & out) = 0;
 };
 
 
 #endif
 
- 
- 
- 
+
+
+

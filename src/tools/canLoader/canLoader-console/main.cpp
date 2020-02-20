@@ -583,7 +583,7 @@ int myMain( int   argc, char *argv[] )
             ::exit(0);
         }
 
-        //param1 
+        //param1
         if (strcmp(argv[1], "--canDeviceType") != 0)       fatal_error(INVALID_CMD_STRING);
 
         //param 2
@@ -614,7 +614,7 @@ int myMain( int   argc, char *argv[] )
         if        (argc==9 || argc==11)
         {
                 //yInfo("canLoader --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
-                
+
                 if (strcmp(argv[5],"--boardId")!=0 &&
                     strcmp(argv[5],"--discover")!=0)            fatal_error(INVALID_CMD_STRING);
 

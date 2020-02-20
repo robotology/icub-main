@@ -2,7 +2,7 @@
 
 /**
 *
-Connect to the canbus, read messages and dump to file. Based on 
+Connect to the canbus, read messages and dump to file. Based on
 code by Lorenzo Natale adn Alberto Parmiggiani.
 
 \author Unknown
@@ -46,7 +46,7 @@ class SnifferThread: public PeriodicThread
     ICanBus *iCanBus;
     ICanBufferFactory *iBufferFactory;
     CanBuffer messageBuffer;
-    unsigned long int cnt;    
+    unsigned long int cnt;
     FILE *fp;
 
     /* dimension of local buffer, number of recieved messages */
@@ -91,7 +91,7 @@ public:
             sin_frequency[i] = 0;
             sin_amplitude[i] = 0;
         }
-        
+
     }
 
     bool threadInit()
@@ -121,7 +121,7 @@ public:
         driver.view(iCanBus);
         driver.view(iBufferFactory);
 
-        // set the baud rate (0 is defaul for 1Mb/s) 
+        // set the baud rate (0 is defaul for 1Mb/s)
         if (!iCanBus->canSetBaudRate(0))
             fprintf(stderr, "Error setting baud rate\n");
 
@@ -136,11 +136,11 @@ public:
 
     void run()
     {
-        readMessages = 0; 
+        readMessages = 0;
         // read from the Can Bus messages with the id that has been specified
         bool res=iCanBus->canRead(messageBuffer, messages, &readMessages);
-        
-        // parse the messages 
+
+        // parse the messages
         for(int i=0; i<readMessages; i++)
         {
             /*
@@ -164,27 +164,27 @@ public:
             }
             */
 
-            if (messageBuffer[i].getId() == 0x12B) 
+            if (messageBuffer[i].getId() == 0x12B)
             {
                 sin_frequency[0] = (messageBuffer[i].getData()[1]<<8) | messageBuffer[i].getData()[0];
                 sin_amplitude[0] = (messageBuffer[i].getData()[3]<<8) | messageBuffer[i].getData()[2];
                 dutyCycle[0]     = (messageBuffer[i].getData()[5]<<8) | messageBuffer[i].getData()[4];
             }
 
-            if (messageBuffer[i].getId() == 0x12A) 
+            if (messageBuffer[i].getId() == 0x12A)
             {
                 position[0]  = (messageBuffer[i].getData()[1]<<8) | messageBuffer[i].getData()[0];
                 speed[0]     = (messageBuffer[i].getData()[3]<<8) | messageBuffer[i].getData()[2];
                 pid[0]       = (messageBuffer[i].getData()[5]<<8) | messageBuffer[i].getData()[4];
                 torque[0]    = (messageBuffer[i].getData()[7]<<8) | messageBuffer[i].getData()[6];
-            
+
             /*  if (sin_frequency[0]==1000)
                 {
                     this->stop();
                     fclose(fp);
                     exit(0);
                 };*/
-                        
+
                 if(log_start) fprintf(fp,"%d %d %d %d %d %d %d %d\n",cnt,sin_frequency[0],sin_amplitude[0],position[0],speed[0],pid[0],torque[0],dutyCycle[0]);
                 cnt++;
                 if ((cnt % 500) == 0)
@@ -193,16 +193,16 @@ public:
                 }
             }
         }
-    
+
 /*
-            if (cnt==50000) 
+            if (cnt==50000)
             {
                 this->stop();
                 done =true;
             }
 */
-        
-    /*  
+
+    /*
         cout<<setiosflags(ios::fixed)
             <<setw(10)<<"commut:"
             <<setw(8)<<setprecision(3)<<commut[0]
@@ -217,7 +217,7 @@ public:
             <<" kp:"
             <<setw(8)<<setprecision(3)<<kp[0]
             <<"\r";
-        */  
+        */
         /*
         cout<<setiosflags(ios::fixed)
             <<" "
@@ -245,7 +245,7 @@ public:
     }
 };
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
     SnifferThread thread;
     thread.start();

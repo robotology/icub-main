@@ -41,14 +41,14 @@ class yarp::dev::Cfw2CanMessage:public yarp::dev::CanMessage
     {
         msg=0;
     }
-    
+
     virtual ~Cfw2CanMessage()
     {
     }
-     
+
     /**
-      * This operator is defined in a general way, but it will crash if you 
-      * try to assign to a Cfw2CanMessage a CanMessage of a different type. 
+      * This operator is defined in a general way, but it will crash if you
+      * try to assign to a Cfw2CanMessage a CanMessage of a different type.
       * For more information, check https://github.com/robotology/icub-main/pull/82
       */
     virtual CanMessage &operator=(const CanMessage &l);
@@ -78,7 +78,7 @@ class yarp::dev::Cfw2CanMessage:public yarp::dev::CanMessage
         { return (const unsigned char *) msg; }
 
     virtual void setBuffer(unsigned char *b)
-    { 
+    {
         if (b!=0)
             msg=(CFWCAN_MSG *)(b);
     }
@@ -93,7 +93,7 @@ class yarp::dev::Cfw2CanMessage:public yarp::dev::CanMessage
 * | `cfw2can` |
 */
 class yarp::dev::Cfw2Can: public ImplementCanBufferFactory<Cfw2CanMessage, CFWCAN_MSG>,
-            public ICanBus, 
+            public ICanBus,
            /* public ICanBusErrors, */
             public DeviceDriver
 {
@@ -109,8 +109,8 @@ public:
     virtual bool canIdAdd(unsigned int id);
     virtual bool canIdDelete(unsigned int id);
 
-    virtual bool canRead(CanBuffer &msgs, 
-                         unsigned int size, 
+    virtual bool canRead(CanBuffer &msgs,
+                         unsigned int size,
                          unsigned int *read,
                          bool wait=false);
 
@@ -121,7 +121,7 @@ public:
 
     /*ICanBusErrors*/
     // virtual bool canGetErrors(CanErrors &errs);
-    
+
 
     /*Device Driver*/
     virtual bool open(yarp::os::Searchable &par);

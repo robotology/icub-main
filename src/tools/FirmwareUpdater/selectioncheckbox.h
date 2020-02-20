@@ -39,7 +39,7 @@
 class SelectionCheckBox : public QCheckBox
 {
     Q_OBJECT
-    
+
 public:
     SelectionCheckBox(QWidget * = NULL);
     SelectionCheckBox(FirmwareUpdaterCore *core,QTreeWidgetItem *it,QWidget *parent=0);
@@ -51,8 +51,8 @@ public:
 //    bool boardIsEth();
 //    bool boardIsCan();
     void setSelected(bool);
-    
-    
+
+
 
 private:
 //    FirmwareUpdaterCore *core;
@@ -68,7 +68,7 @@ public slots:
 private slots:
     void onSelectionChanged(bool);
 
-    
+
 signals:
     void needChangeSelection(bool);
     void selectedChanged(bool);

@@ -32,7 +32,7 @@
 
 
 namespace eth {
-           
+
     class FakeEthResource : public eth::AbstractEthResource
     {
 

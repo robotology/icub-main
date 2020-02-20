@@ -17,7 +17,7 @@ once it is parsed by Doxygen: \ref exampleApplication\endref
 @ingroup icub_applications
 \defgroup icub_exampleApplication exampleApplication
 
-Place here a short description of the application. This will appear in the list 
+Place here a short description of the application. This will appear in the list
 of the applications.
 
 \section intro_sec Description
@@ -40,19 +40,19 @@ Example:
 This module assumes \ref icub_exampleModule "exampleModule" is already running.
 
 \section modules_sec Instantiated Modules
-List here the modules that are instantiated by this application. This is useful to 
+List here the modules that are instantiated by this application. This is useful to
 browse the documentation of other modules. Example:
 - \ref icub_exampleModule "exampleModule"
 
 \section config_sec Configuration Files
-Provide a comprehensive list of the configuration files. Usually located in ./conf. You 
+Provide a comprehensive list of the configuration files. Usually located in ./conf. You
 do not have to necessarely explain what each file does, as this should be already explained
-in the documentation of each module. Link each file with the relative module it configures so 
+in the documentation of each module. Link each file with the relative module it configures so
 that it is possible to look up the documentation.
- 
+
 \section example_sec How to run the application
 List here xml script(s) that allows running the application.
- 
+
 \author your_name
 
 Copyright (C) 2008 RobotCub Consortium

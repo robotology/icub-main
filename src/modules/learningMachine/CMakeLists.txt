@@ -13,20 +13,20 @@ SET(LM_MERGE_EXEC lmmerge)
 PROJECT(${PROJECTNAME})
 
 # Source code Groups
-SET(LM_MODULE_SRC 
+SET(LM_MODULE_SRC
     src/IMachineLearnerModule.cpp )
-SET(LM_EVENT_SRC 
+SET(LM_EVENT_SRC
     src/DispatcherManager.cpp
-    src/EventDispatcher.cpp 
+    src/EventDispatcher.cpp
     src/IEvent.cpp
-    src/IEventListener.cpp 
+    src/IEventListener.cpp
     src/IPortEventListener.cpp
-    src/PredictEvent.cpp 
+    src/PredictEvent.cpp
     src/PredictEventListener.cpp
-    src/TrainEvent.cpp 
+    src/TrainEvent.cpp
     src/TrainEventListener.cpp )
 
-SET(LM_HEADER 
+SET(LM_HEADER
     include/iCub/learningMachine/DispatcherManager.h
     include/iCub/learningMachine/EventDispatcher.h
     include/iCub/learningMachine/EventListenerCatalogue.h
@@ -45,7 +45,7 @@ SET(LM_HEADER
     include/iCub/learningMachine/TransformModule.h )
 
 # Declare groups of source and header files -- makes things pretty in MSVC.
-SOURCE_GROUP("Source Files" FILES ${LM_MODULE_SRC} 
+SOURCE_GROUP("Source Files" FILES ${LM_MODULE_SRC}
                                   ${LM_EVENT_SRC} )
 SOURCE_GROUP("Header Files" FILES ${LM_HEADER})
 

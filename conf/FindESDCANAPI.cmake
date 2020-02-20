@@ -40,12 +40,12 @@ if(NOT ESDCANAPI_FOUND)
 
     list(APPEND ESDCAN_INC_DIRS ${ESDCANAPI_DIR})
     list(APPEND ESDCAN_INC_DIRS ${CanSdkDir})
-    
+
    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      # 64-bit    
+      # 64-bit
       set(ESDCANAPI_ARCH "amd64")
     else()
-      # 32-bit 
+      # 32-bit
       set(ESDCANAPI_ARCH "i368")
     endif()
 

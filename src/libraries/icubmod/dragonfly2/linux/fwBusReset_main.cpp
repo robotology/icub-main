@@ -23,9 +23,9 @@ int main(int argc,char** argv)
     int wait_msec=10000;
 
     fprintf(stderr,"FireWire bus reset...\n");
-    if (argc>1) wait_msec=atoi(argv[1]);                
+    if (argc>1) wait_msec=atoi(argv[1]);
     CFWCamera_DR2_2::busReset(0,0.001*double(wait_msec));
     fprintf(stderr,"...done.\n");
 
-    return 0;    
+    return 0;
 }

@@ -76,7 +76,7 @@ EthReceiver::EthReceiver(int raterx): PeriodicThread((double)raterx/1000.0)
 //    {
 //        statPrintInterval = 0.0;
 //    }
-#ifdef NETWORK_PERFORMANCE_BENCHMARK 
+#ifdef NETWORK_PERFORMANCE_BENCHMARK
     /* We would like to verify if the receiver thread is ticked(running) every 5 millisecond, with a tollerance of 0.05 millisec.
        the m_perEvtVerifier object after 1 second, prints an istogram with values from 4 to 6 millisec with a step of 0.1 millisec
      */
@@ -171,8 +171,8 @@ void EthReceiver::run()
 #ifdef NETWORK_PERFORMANCE_BENCHMARK
     m_perEvtVerifier.tick(yarp::os::Time::now());
 #endif
-    
-    
+
+
     int flags = 0;
 #ifndef WIN32
     flags |= MSG_DONTWAIT;

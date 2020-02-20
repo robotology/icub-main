@@ -92,31 +92,31 @@ bool embObjMultiEnc::fromConfig(yarp::os::Searchable &_config)
         yError() << "embObjMultiEnc cannot find general group";
         return false;
     }
-    
+
     Bottle jointsbottle = general.findGroup("listofjoints");
     if (jointsbottle.isNull())
     {
         yError() << "embObjMultiEnc cannot find listofjoints param";
         return false;
     }
-          
+
     Bottle encsbottle = general.findGroup("encoderConversionFactor");
     if (encsbottle.isNull())
     {
         yError() << "embObjMultiEnc cannot find encoderConversionFactor param";
         return false;
     }
-     
- 
-    //jointsbottle contains: "listofjoints 0 1 2 3. So the num of joints is jointsbottle->size() -1 " 
-    numofjoints = jointsbottle.size() -1;  
-    
+
+
+    //jointsbottle contains: "listofjoints 0 1 2 3. So the num of joints is jointsbottle->size() -1 "
+    numofjoints = jointsbottle.size() -1;
+
     listofjoints.clear();
     for (int i = 1; i < jointsbottle.size(); i++)  listofjoints.push_back(jointsbottle.get(i).asInt());
 
     yDebug()<< " embObjMultiEnc List of joints: " << numofjoints;
     for(int i=0; i<numofjoints; i++) yDebug() << "pos="<< i << "val="<<  listofjoints[i];
-   
+
     analogdata.resize(numofencperjoint*numofjoints, 0.0);
     encoderConversionFactor.resize(numofencperjoint*numofjoints, 1.0);
 
@@ -129,7 +129,7 @@ bool embObjMultiEnc::fromConfig(yarp::os::Searchable &_config)
 	{
 		encoderConversionFactor[i]=encsbottle.get(i+1).asDouble();
 	}
-         
+
     return true;
 }
 
@@ -150,7 +150,7 @@ embObjMultiEnc::embObjMultiEnc()
     opened = false;
 
     analogdata.resize(0);
-    
+
     numofjoints = default_numofjoints;
     numofencperjoint = default_numofencperjoint;
 
@@ -171,7 +171,7 @@ embObjMultiEnc::embObjMultiEnc()
 
 
 embObjMultiEnc::~embObjMultiEnc()
-{   
+{
     analogdata.resize(0);
 
     if(NULL != parser)
@@ -263,9 +263,9 @@ bool embObjMultiEnc::open(yarp::os::Searchable &config)
 // #else
 //     const eOmn_serv_parameter_t* servparam = NULL;
 // #endif
-// 
+//
 //     //servparam = NULL;
-// 
+//
 //     if(false == res->serviceVerifyActivate(eomn_serv_category_mais, servparam, 5.0))
 //     {
 //         yarp::os::Time::delay(1);
@@ -274,17 +274,17 @@ bool embObjMultiEnc::open(yarp::os::Searchable &config)
 //         cleanup();
 //         return false;
 //     }
-// 
+//
 //     //printServiceConfig();
-// 
-// 
+//
+//
 //     // configure the service: aka, send to the remote board information about the whereabouts of the can boards mais, strain, mtb which offers the service.
 //     // so far nothing to do
-// 
-// 
+//
+//
 //     // configure the sensor(s)
-// 
-// 
+//
+//
 //     if(false == sendConfig2Mais())
 //     {
 //         cleanup();
@@ -324,14 +324,14 @@ bool embObjMultiEnc::open(yarp::os::Searchable &config)
 // bool embObjMultiEnc::sendConfig2Mais(void)
 // {
 //     version with read-back
-// 
+//
 //     eOprotID32_t id32 = eo_prot_ID32dummy;
-// 
+//
 //     -- mais datarate
-// 
+//
 //     uint8_t datarate  = serviceConfig.acquisitionrate;
 //     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
-// 
+//
 //     if(false == res->setRemoteValueUntilVerified(id32, &datarate, sizeof(datarate), 10, 0.010, 0.050, 2))
 //     {
 //         yError() << "FATAL: embObjMais::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
@@ -344,12 +344,12 @@ bool embObjMultiEnc::open(yarp::os::Searchable &config)
 //             yDebug() << "embObjMais::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
 //         }
 //     }
-// 
+//
 //     -- mais tx mode
-// 
+//
 //     eOenum08_t maismode  = eoas_maismode_txdatacontinuously; // use eOas_maismode_t for value BUT USE   for type (their sizes can be different !!)
 //     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
-// 
+//
 //     if(false == res->setRemoteValueUntilVerified(id32, &maismode, sizeof(maismode), 10, 0.010, 0.050, 2))
 //     {
 //         yError() << "FATAL: embObjMais::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais mode in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
@@ -362,9 +362,9 @@ bool embObjMultiEnc::open(yarp::os::Searchable &config)
 //             yDebug() << "embObjMais::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
 //         }
 //     }
-// 
+//
 //     return true;
-// 
+//
 // }
 
 
@@ -407,7 +407,7 @@ bool embObjMultiEnc::initRegulars()
                 }
             }
         }
-   
+
     return true;
 }
 
@@ -523,9 +523,9 @@ eth::iethresType_t embObjMultiEnc::type()
 
 
 bool embObjMultiEnc::update(eOprotID32_t id32, double timestamp, void* rxdata)
-{   
+{
     timestamp = timestamp;
-    
+
     int joint = eoprot_ID2index(id32);
 
     if(false == opened)
@@ -539,9 +539,9 @@ bool embObjMultiEnc::update(eOprotID32_t id32, double timestamp, void* rxdata)
     // and can be treated as a EOarray
 
     eOmeas_position_t* multienc = (eOmeas_position_t*)rxdata;
-    
-    int startindex = joint * numofencperjoint; 
-    
+
+    int startindex = joint * numofencperjoint;
+
     std::lock_guard<std::mutex> lck(mtx);
     for(int i=0; i< numofencperjoint; i++)
     {
@@ -568,14 +568,14 @@ void embObjMultiEnc::printServiceConfig(void)
 //     char loc[20] = {0};
 //     char fir[20] = {0};
 //     char pro[20] = {0};
-// 
+//
 //     const char * boardname = (NULL != res) ? (res->getProperties().boardnameString) : ("NOT-ASSIGNED-YET");
 //     const char * ipv4 = (NULL != res) ? (res->getProperties().ipv4addrString) : ("NOT-ASSIGNED-YET");
-// 
+//
 //     parser->convert(serviceConfig.ethservice.configuration.data.as.mais.canloc, loc, sizeof(loc));
 //     parser->convert(serviceConfig.ethservice.configuration.data.as.mais.version.firmware, fir, sizeof(fir));
 //     parser->convert(serviceConfig.ethservice.configuration.data.as.mais.version.protocol, pro, sizeof(pro));
-// 
+//
 //     yInfo() << "The embObjMais device using BOARD" << boardname << "w/ IP" << ipv4 << "has the following service config:";
 //     yInfo() << "- acquisitionrate =" << serviceConfig.acquisitionrate;
 //    yInfo() << "- MAIS named" << serviceConfig.nameOfMais << "@" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;

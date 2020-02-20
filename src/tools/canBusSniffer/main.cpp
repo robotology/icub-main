@@ -12,7 +12,7 @@ Connect to a canbus network and dump all messages to file.
 
 \section lib_sec Libraries
 
-- YARP libraries. 
+- YARP libraries.
 - A device implementing ICanBus interface (e.g. ecan or pcan).
 
 \section parameters_sec Parameters
@@ -65,7 +65,7 @@ public:
     SnifferThread(std::string dname, int p, int r=SNIFFER_THREAD_RATE): PeriodicThread((double)r/1000.0)
     {
         port=p;
-        devname=dname;   
+        devname=dname;
     }
 
     bool threadInit()
@@ -121,7 +121,7 @@ public:
 #endif
 
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
 
 #ifdef USE_ICUB_MOD
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
         std::cout<<"Usage: --device device_name {ecan|pcan}\n";
         return -1;
     }
-  
+
     SnifferThread thread(p2, port);
 
     if (!thread.start())

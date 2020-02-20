@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -40,11 +40,11 @@ public:
     ManagerState(const yarp::os::Bottle &command,
                  WorldOp& op,
                  WorldResult& result,
-                 WorldManager& manager) : 
-        command(command), 
-        op(op), 
+                 WorldManager& manager) :
+        command(command),
+        op(op),
         result(result),
-        manager(manager) 
+        manager(manager)
     {
         offset = 2;
         failed = false;
@@ -371,14 +371,14 @@ bool doNumber(ManagerState& state) {
     return !state.failed;
 }
 
-bool WorldManager::respond(const yarp::os::Bottle& command, 
+bool WorldManager::respond(const yarp::os::Bottle& command,
                            yarp::os::Bottle& reply) {
     WorldOp op;
     WorldResult result;
     ManagerState state(command,op,result,*this);
     reply.clear();
 
-    op.cmd = (WORLD_OP)command.get(1).asVocab(); 
+    op.cmd = (WORLD_OP)command.get(1).asVocab();
     switch (op.cmd) {
     case WORLD_OP_GET:
         doGet(state);

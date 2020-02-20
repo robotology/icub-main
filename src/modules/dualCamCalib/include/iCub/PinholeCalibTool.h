@@ -39,7 +39,7 @@
 class PinholeCalibTool : public ICalibTool
 {
  private:
-    
+
     CvMat           *_intrinsic_matrix;
     CvMat           *_intrinsic_matrix_scaled;
     CvMat           *_distortion_coeffs;;
@@ -60,7 +60,7 @@ public:
 
     PinholeCalibTool();
     virtual ~PinholeCalibTool();
-    
+
     /** open() passes on to configure()*/
     virtual bool open (yarp::os::Searchable &config);
     virtual bool close ();
@@ -68,16 +68,16 @@ public:
       The PinholeCalibTool expects a configuration file as show below.
       The calibration parameters for a specific camera setup
       can be extracted easily by using the camcalibconf module.\n
-      
+
       fx, fy = focal length (Matlab toolbox: fc) (OpenCV fx, fy)\n
       cx, cy = principal point (Matlab toolbox: cc) (OpenCV cx, cy)\n
-      k1, k2, p1, p2 = distortion (Matlab toolbox: First 4 components of vector kc (4th order only))\n 
+      k1, k2, p1, p2 = distortion (Matlab toolbox: First 4 components of vector kc (4th order only))\n
      (OpenCV:  k1, k2, p1, p2 where k's are radial and p's are tangential distortion coefficients. )\n
-      
+
       Example configuration for a specific camera setup with resolution 320 x 240:\n
 
       [CAMERA_CALIBRATION]\n
-      projection pinhole\n 
+      projection pinhole\n
       w  320\n
       h  240\n
       fx 325.42\n
@@ -88,24 +88,24 @@ public:
       k2 0.2467\n
       p1 -0.00195\n
       p2 0.00185\n
-    */ 
+    */
     virtual bool configure (yarp::os::Searchable &config);
 
     /** Stop module if there is a wrong value */
     void stopConfig( std::string val );
 
   /** Apply calibration, in = rgb image, out = calibrated rgb image.
-    * If necessary the output image is resized to match the size of the 
+    * If necessary the output image is resized to match the size of the
     * input image.
     */
     void apply(const yarp::sig::ImageOf<yarp::sig::PixelRgb> & in,
-               yarp::sig::ImageOf<yarp::sig::PixelRgb> & out);    
-    
+               yarp::sig::ImageOf<yarp::sig::PixelRgb> & out);
+
 };
 
 
 #endif
 
- 
- 
- 
+
+
+

@@ -10,45 +10,45 @@
 
 /**
  * \defgroup iKin iKin
- *  
- * @ingroup icub_libraries 
- *  
+ *
+ * @ingroup icub_libraries
+ *
  * Classes for forward-inverse kinematics of serial-links chains
- * of revolute joints and iCub limbs 
- *  
+ * of revolute joints and iCub limbs
+ *
  * \note <b>SI units adopted</b>: meters for lengths and radians
  *       for angles.
  *
- * \section dep_sec Dependencies 
- * - ctrlLib 
+ * \section dep_sec Dependencies
+ * - ctrlLib
  * - IPOPT: see the <a
  *   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>.
- *  
+ *
  * \note <b>If you're going to use iKin for your work, please
  *       quote it within any resulting publication</b>: <i>
  *       Pattacini U., Modular Cartesian Controllers for
  *       Humanoid Robots: Design and Implementation on the iCub,
  *       Ph.D. Dissertation, RBCS, Istituto Italiano di
  *       Tecnologia, 2011</i>.
- *  
- * \author Ugo Pattacini 
- *  
- * \defgroup iKinFwd iKinFwd 
- *  
- * @ingroup iKin  
  *
- * Classes for forward kinematics of serial-links chains 
+ * \author Ugo Pattacini
+ *
+ * \defgroup iKinFwd iKinFwd
+ *
+ * @ingroup iKin
+ *
+ * Classes for forward kinematics of serial-links chains
  * and iCub limbs
  *
  * Date: first release 16/06/2008
  *
- * \author Ugo Pattacini 
- *  
+ * \author Ugo Pattacini
+ *
  * Copyright (C) 2010 RobotCub Consortium
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
- */ 
+ */
 
 #ifndef __IKINFWD_H__
 #define __IKINFWD_H__
@@ -76,10 +76,10 @@ void notImplemented(const unsigned int verbose);
 /**
 * \ingroup iKinFwd
 *
-* A Base class for defining a Link with standard 
-* Denavit-Hartenberg convention. 
-*  
-* \note This class implements revolute joints only, as they are 
+* A Base class for defining a Link with standard
+* Denavit-Hartenberg convention.
+*
+* \note This class implements revolute joints only, as they are
 *       the unique type of joints used in humanoid robotics.
 */
 class iKinLink
@@ -111,7 +111,7 @@ protected:
     // Default constructor: not implemented.
     iKinLink();
 
-    virtual void clone(const iKinLink &l);    
+    virtual void clone(const iKinLink &l);
     bool         isCumulative()     { return cumulative;          }
     void         block()            { blocked=true;               }
     void         block(double _Ang) { setAng(_Ang); blocked=true; }
@@ -121,10 +121,10 @@ protected:
 
 public:
     /**
-    * Constructor. 
+    * Constructor.
     * @param _A is the Link length.
-    * @param _D is the Link offset. 
-    * @param _Alpha is the Link twist. 
+    * @param _D is the Link offset.
+    * @param _Alpha is the Link twist.
     * @param _Offset is the joint angle offset in [-pi,pi]
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by
     *             default).
@@ -149,7 +149,7 @@ public:
 
     /**
     * Sets the constraint status.
-    * @param _constrained if true the joint angle cannot be set out 
+    * @param _constrained if true the joint angle cannot be set out
     *                     of its limits (initialized as true).
     */
     void setConstraint(bool _constrained) { constrained=_constrained; }
@@ -162,7 +162,7 @@ public:
 
     /**
     * Sets Link verbosity level.
-    * @param _verbose is a integer number which progressively 
+    * @param _verbose is a integer number which progressively
     *                 enables different levels of warning messages.
     *                 The larger this value the more detailed is the
     *                 output.
@@ -188,8 +188,8 @@ public:
     double getA() const { return A; }
 
     /**
-    * Sets the Link length A. 
-    * @param new Link length _A. 
+    * Sets the Link length A.
+    * @param new Link length _A.
     */
     void setA(const double _A) { A=_A; }
 
@@ -200,8 +200,8 @@ public:
     double getD() const { return D; }
 
     /**
-    * Sets the Link offset D. 
-    * @param new Link offset _D. 
+    * Sets the Link offset D.
+    * @param new Link offset _D.
     */
     void setD(const double _D);
 
@@ -212,8 +212,8 @@ public:
     double getAlpha() const { return Alpha; }
 
     /**
-    * Sets the Link twist Alpha. 
-    * @param new Link twist _Alpha. 
+    * Sets the Link twist Alpha.
+    * @param new Link twist _Alpha.
     */
     void setAlpha(const double _Alpha);
 
@@ -224,8 +224,8 @@ public:
     double getOffset() const { return Offset; }
 
     /**
-    * Sets the joint angle offset. 
-    * @param new joint angle offset _Offset. 
+    * Sets the joint angle offset.
+    * @param new joint angle offset _Offset.
     */
     void setOffset(const double _Offset) { Offset=_Offset; }
 
@@ -260,7 +260,7 @@ public:
     double getAng() const { return Ang; }
 
     /**
-    * Sets the joint angle value. 
+    * Sets the joint angle value.
     * @param _Ang new value for joint angle.
     * @return actual joint angle value (constraints are evaluated).
     */
@@ -268,7 +268,7 @@ public:
 
     /**
     * Computes the homogeneous transformation matrix H of the Link.
-    * @param c_override if true avoid accumulating the computation 
+    * @param c_override if true avoid accumulating the computation
     *                   of previous links in the chain, i.e. H=Hn
     *                   and not H=Hn*Hn-1 (false by default)
     * @return a reference to H.
@@ -276,19 +276,19 @@ public:
     yarp::sig::Matrix getH(bool c_override=false);
 
     /**
-    * Same as getH() with specification of new joint angle position. 
-    * @param _Ang is the new joint angle position. 
+    * Same as getH() with specification of new joint angle position.
+    * @param _Ang is the new joint angle position.
     * @param c_override.
-    * @return a reference to H. 
-    * @see getH 
+    * @return a reference to H.
+    * @see getH
     */
     yarp::sig::Matrix getH(double _Ang, bool c_override=false);
 
     /**
-    * Computes the derivative of order n of the homogeneous 
-    * transformation matrix H with respect to the joint angle. 
+    * Computes the derivative of order n of the homogeneous
+    * transformation matrix H with respect to the joint angle.
     * @param n is the order of the derivative (1 by default)
-    * @param c_override if true avoid accumulating the computation 
+    * @param c_override if true avoid accumulating the computation
     *                   of previous links in the chain (false by
     *                   default).
     * @return a reference to derivative of order n.
@@ -296,7 +296,7 @@ public:
     yarp::sig::Matrix getDnH(unsigned int n=1, bool c_override=false);
 
     /**
-    * Default destructor. 
+    * Default destructor.
     */
     virtual ~iKinLink() { }
 
@@ -349,7 +349,7 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A Base class for defining a Serial Link Chain. 
+* A Base class for defining a Serial Link Chain.
 */
 class iKinChain
 {
@@ -381,7 +381,7 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iKinChain();
 
@@ -419,7 +419,7 @@ public:
     iKinLink &operator[](const unsigned int i) { return *allList[i]; }
 
     /**
-    * Returns a reference to the ith Link of the Chain considering 
+    * Returns a reference to the ith Link of the Chain considering
     * only those Links related to DOF.
     * @param i is the Link number within the Chain (in DOF order)
     * @return a reference to the ith Link object.
@@ -427,7 +427,7 @@ public:
     iKinLink &operator()(const unsigned int i) { return *quickList[hash_dof[i]]; }
 
     /**
-    * Adds a Link at the position ith within the Chain. 
+    * Adds a Link at the position ith within the Chain.
     * @param i is the ith position where the Link is to be added.
     * @param l is the Link to be added.
     * @return true if successful (e.g. param i is in range).
@@ -435,8 +435,8 @@ public:
     bool addLink(const unsigned int i, iKinLink &l);
 
     /**
-    * Removes the ith Link from the Chain. 
-    * @param i is the ith position from which the Link is to be 
+    * Removes the ith Link from the Chain.
+    * @param i is the ith position from which the Link is to be
     *          removed.
     * @return true if successful (e.g. param i is in range).
     */
@@ -444,7 +444,7 @@ public:
 
     /**
     * Adds a Link at the bottom of the Chain.
-    * @param l is the Link to be added. 
+    * @param l is the Link to be added.
     * @see operator<<
     */
     void pushLink(iKinLink &l);
@@ -455,16 +455,16 @@ public:
     void clear();
 
     /**
-    * Removes a Link from the bottom of the Chain. 
+    * Removes a Link from the bottom of the Chain.
     * @see operator--()
     */
     void popLink();
 
     /**
     * Blocks the ith Link at the a certain value of its joint angle.
-    * Chain DOF reduced by one. 
-    * @param i is the Link number. 
-    * @param Ang is the value of joint angle to which the Link is 
+    * Chain DOF reduced by one.
+    * @param i is the Link number.
+    * @param Ang is the value of joint angle to which the Link is
     *            blocked.
     * @return true if successful (e.g. param i is in range).
     */
@@ -472,65 +472,65 @@ public:
 
     /**
     * Blocks the ith Link at the current value of its joint angle.
-    * Chain DOF reduced by one. 
-    * @param i is the Link number. 
+    * Chain DOF reduced by one.
+    * @param i is the Link number.
     * @return true if successful (e.g. param i is in range).
     */
     bool blockLink(const unsigned int i) { return blockLink(i,getAng(i)); }
 
     /**
-    * Changes the value of the ith blocked Link. Avoid the overhead 
-    * required for DOFs handling. 
-    * @param i is the Link number. 
-    * @param Ang is the new value of joint angle to which the Link 
+    * Changes the value of the ith blocked Link. Avoid the overhead
+    * required for DOFs handling.
+    * @param i is the Link number.
+    * @param Ang is the new value of joint angle to which the Link
     *            is blocked.
-    * @return true if successful (e.g. param i is in range and the 
+    * @return true if successful (e.g. param i is in range and the
     *         ith Link was already blocked).
     */
     bool setBlockingValue(const unsigned int i, double Ang);
 
     /**
-    * Releases the ith Link. 
+    * Releases the ith Link.
     * Chain DOF augmented by one.
-    * @param i is the Link number. 
+    * @param i is the Link number.
     * @return true if successful (e.g. param i is in range).
     */
     bool releaseLink(const unsigned int i);
 
     /**
     * Queries whether the ith Link is blocked.
-    * @param i is the Link number. 
+    * @param i is the Link number.
     * @return true if blocked && (param i is in range).
     */
     bool isLinkBlocked(const unsigned int i);
 
     /**
     * Sets the constraint status of all chain links.
-    * @param _constrained is the new constraint status. 
+    * @param _constrained is the new constraint status.
     */
     void setAllConstraints(bool _constrained);
 
     /**
     * Sets the constraint status of ith link.
-    * @param _constrained is the new constraint status. 
+    * @param _constrained is the new constraint status.
     */
     void setConstraint(unsigned int i, bool _constrained) { allList[i]->setConstraint(_constrained); }
 
     /**
-    * Returns the constraint status of ith link. 
+    * Returns the constraint status of ith link.
     * @return current constraint status.
     */
     bool getConstraint(unsigned int i) { return allList[i]->getConstraint(); }
 
     /**
     * Sets the verbosity level of all Links belonging to the Chain.
-    * @param _verbose is the verbosity level. 
+    * @param _verbose is the verbosity level.
     */
     void setAllLinkVerbosity(unsigned int _verbose);
 
     /**
     * Sets the verbosity level of the Chain.
-    * @param _verbose is a integer number which progressively 
+    * @param _verbose is a integer number which progressively
     *                 enables different levels of warning messages.
     *                 The larger this value the more detailed is the
     *                 output.
@@ -550,46 +550,46 @@ public:
     unsigned int getN() const { return N; }
 
     /**
-    * Returns the current number of Chain's DOF. 
-    * DOF=N-M, where N=# of Links, M=# of blocked Links. 
+    * Returns the current number of Chain's DOF.
+    * DOF=N-M, where N=# of Links, M=# of blocked Links.
     * @return number of DOF.
     */
     unsigned int getDOF() const { return DOF; }
 
     /**
-    * Returns H0, the rigid roto-translation matrix from the root 
-    * reference frame to the 0th frame. 
+    * Returns H0, the rigid roto-translation matrix from the root
+    * reference frame to the 0th frame.
     * @return H0
     */
     yarp::sig::Matrix getH0() const { return H0; }
 
     /**
-    * Sets H0, the rigid roto-translation matrix from the root 
-    * reference frame to the 0th frame. 
-    * @param H0 
-    * @return true if succeed, false otherwise. 
+    * Sets H0, the rigid roto-translation matrix from the root
+    * reference frame to the 0th frame.
+    * @param H0
+    * @return true if succeed, false otherwise.
     */
     bool setH0(const yarp::sig::Matrix &_H0);
 
     /**
     * Returns HN, the rigid roto-translation matrix from the Nth
-    * frame to the end-effector. 
+    * frame to the end-effector.
     * @return HN
     */
     yarp::sig::Matrix getHN() const { return HN; }
 
     /**
-    * Sets HN, the rigid roto-translation matrix from the Nth frame 
-    * to the end-effector. 
-    * @param HN 
-    * @return true if succeed, false otherwise. 
+    * Sets HN, the rigid roto-translation matrix from the Nth frame
+    * to the end-effector.
+    * @param HN
+    * @return true if succeed, false otherwise.
     */
     bool setHN(const yarp::sig::Matrix &_HN);
 
     /**
     * Sets the free joint angles to values of q[i].
     * @param q is a vector containing values for DOF.
-    * @return the actual DOF values (angles constraints are 
+    * @return the actual DOF values (angles constraints are
     *         evaluated).
     */
     yarp::sig::Vector setAng(const yarp::sig::Vector &q);
@@ -601,85 +601,85 @@ public:
     yarp::sig::Vector getAng();
 
     /**
-    * Sets the ith joint angle. 
-    * @param i is the Link number. 
-    * @param Ang the new angle's value. 
-    * @return current ith joint angle (angle constraint is 
+    * Sets the ith joint angle.
+    * @param i is the Link number.
+    * @param Ang the new angle's value.
+    * @return current ith joint angle (angle constraint is
     *         evaluated).
     */
     double setAng(const unsigned int i, double _Ang);
 
     /**
-    * Returns the current angle of ith joint. 
-    * @param i is the Link number.  
+    * Returns the current angle of ith joint.
+    * @param i is the Link number.
     * @return current ith joint angle.
     */
     double getAng(const unsigned int i);
 
     /**
-    * Returns the rigid roto-translation matrix from the root 
-    * reference frame to the ith frame in Denavit-Hartenberg 
-    * notation. The second parameter if true enables the spannig 
-    * over the full set of links, i.e. the blocked links as well. 
-    * @param i is the Link number. 
-    * @param allLink if true enables the spanning over the full set 
+    * Returns the rigid roto-translation matrix from the root
+    * reference frame to the ith frame in Denavit-Hartenberg
+    * notation. The second parameter if true enables the spannig
+    * over the full set of links, i.e. the blocked links as well.
+    * @param i is the Link number.
+    * @param allLink if true enables the spanning over the full set
     *                of links (false by default).
-    * @return Hi 
+    * @return Hi
     */
     yarp::sig::Matrix getH(const unsigned int i, const bool allLink=false);
 
     /**
-    * Returns the rigid roto-translation matrix from the root 
-    * reference frame to the end-effector frame in 
-    * Denavit-Hartenberg notation (HN is taken into account). 
+    * Returns the rigid roto-translation matrix from the root
+    * reference frame to the end-effector frame in
+    * Denavit-Hartenberg notation (HN is taken into account).
     * @return H(N-1)*HN
     */
     yarp::sig::Matrix getH();
 
     /**
-    * Returns the rigid roto-translation matrix from the root 
-    * reference frame to the end-effector frame in 
-    * Denavit-Hartenberg notation (HN is taken into account). 
-    * @param q is the vector of new DOF values.  
+    * Returns the rigid roto-translation matrix from the root
+    * reference frame to the end-effector frame in
+    * Denavit-Hartenberg notation (HN is taken into account).
+    * @param q is the vector of new DOF values.
     * @return H(N-1)*HN
     */
     yarp::sig::Matrix getH(const yarp::sig::Vector &q);
 
     /**
     * Returns the coordinates of ith Link. Two notations are
-    * provided: the first with Euler Angles (XYZ form=>6x1 output 
-    * vector) and second with axis/angle representation 
-    * (default=>7x1 output vector). 
-    * @param i is the Link number. 
-    * @param axisRep if true returns the axis/angle notation. 
+    * provided: the first with Euler Angles (XYZ form=>6x1 output
+    * vector) and second with axis/angle representation
+    * (default=>7x1 output vector).
+    * @param i is the Link number.
+    * @param axisRep if true returns the axis/angle notation.
     * @return the ith Link Pose.
     */
     yarp::sig::Vector Pose(const unsigned int i, const bool axisRep=true);
 
     /**
-    * Returns the 3D position coordinates of ith Link. 
-    * @param i is the Link number. 
+    * Returns the 3D position coordinates of ith Link.
+    * @param i is the Link number.
     * @return the ith Link Position.
     */
     yarp::sig::Vector Position(const unsigned int i);
 
     /**
-    * Returns the coordinates of end-effector. Two notations are 
-    * provided: the first with Euler Angles (XYZ form=>6x1 output 
-    * vector) and second with axis/angle representation 
-    * (default=>7x1 output vector). 
-    * @param axisRep if true returns the axis/angle notation. 
+    * Returns the coordinates of end-effector. Two notations are
+    * provided: the first with Euler Angles (XYZ form=>6x1 output
+    * vector) and second with axis/angle representation
+    * (default=>7x1 output vector).
+    * @param axisRep if true returns the axis/angle notation.
     * @return the end-effector pose.
     */
     yarp::sig::Vector EndEffPose(const bool axisRep=true);
 
     /**
     * Returns the coordinates of end-effector computed in q. Two
-    * notations are provided: the first with Euler Angles (XYZ 
-    * form=>6x1 output vector) and second with axis/angle 
-    * representation (default=>7x1 output vector). 
-    * @param q is the vector of new DOF values. 
-    * @param axisRep if true returns the axis/angle notation.  
+    * notations are provided: the first with Euler Angles (XYZ
+    * form=>6x1 output vector) and second with axis/angle
+    * representation (default=>7x1 output vector).
+    * @param q is the vector of new DOF values.
+    * @param axisRep if true returns the axis/angle notation.
     * @return the end-effector pose.
     */
     yarp::sig::Vector EndEffPose(const yarp::sig::Vector &q, const bool axisRep=true);
@@ -692,15 +692,15 @@ public:
 
     /**
     * Returns the 3D coordinates of end-effector position computed in q.
-    * @param q is the vector of new DOF values. 
+    * @param q is the vector of new DOF values.
     * @return the end-effector position.
     */
     yarp::sig::Vector EndEffPosition(const yarp::sig::Vector &q);
 
     /**
     * Returns the analitical Jacobian of the ith link.
-    * @param i is the Link number. 
-    * @param col selects the part of the derived homogeneous matrix 
+    * @param i is the Link number.
+    * @param col selects the part of the derived homogeneous matrix
     *            to be put in the upper side of the Jacobian
     *            matrix: 0 => x, 1 => y, 2 => z, 3 => p
     * @return the analitical Jacobian.
@@ -709,7 +709,7 @@ public:
 
     /**
     * Returns the analitical Jacobian of the end-effector.
-    * @param col selects the part of the derived homogeneous matrix 
+    * @param col selects the part of the derived homogeneous matrix
     *            to be put in the upper side of the Jacobian
     *            matrix: 0 => x, 1 => y, 2 => z, 3 => p (default)
     * @return the analitical Jacobian.
@@ -717,10 +717,10 @@ public:
     yarp::sig::Matrix AnaJacobian(unsigned int col=3);
 
     /**
-    * Returns the analitical Jacobian of the end-effector computed 
-    * in q. 
-    * @param q is the vector of new DOF values. 
-    * @param col selects the part of the derived homogeneous matrix 
+    * Returns the analitical Jacobian of the end-effector computed
+    * in q.
+    * @param q is the vector of new DOF values.
+    * @param col selects the part of the derived homogeneous matrix
     *            to be put in the upper side of the Jacobian
     *            matrix: 0 => x, 1 => y, 2 => z, 3 => p (default)
     * @return the analitical Jacobian.
@@ -728,7 +728,7 @@ public:
     yarp::sig::Matrix AnaJacobian(const yarp::sig::Vector &q, unsigned int col=3);
 
     /**
-    * Returns the geometric Jacobian of the ith link. 
+    * Returns the geometric Jacobian of the ith link.
     * @param i is the Link number.
     * @return the 6x(i-1) geometric Jacobian matrix.
     * @note All the links are considered.
@@ -744,62 +744,62 @@ public:
 
     /**
     * Returns the geometric Jacobian of the end-effector computed in
-    * q. 
-    * @param q is the vector of new DOF values. 
+    * q.
+    * @param q is the vector of new DOF values.
     * @return the geometric Jacobian.
     * @note The blocked links are not considered.
     */
     yarp::sig::Matrix GeoJacobian(const yarp::sig::Vector &q);
 
     /**
-    * Returns the 6x1 vector \f$ 
+    * Returns the 6x1 vector \f$
     * \partial{^2}F\left(q\right)/\partial q_i \partial q_j, \f$
-    * where \f$ F\left(q\right) \f$ is the forward kinematic 
-    * function and \f$ \left(q_i,q_j\right) \f$ is the DOF couple. 
-    * @param i is the index of the first DOF. 
+    * where \f$ F\left(q\right) \f$ is the forward kinematic
+    * function and \f$ \left(q_i,q_j\right) \f$ is the DOF couple.
+    * @param i is the index of the first DOF.
     * @param j is the index of the second DOF.
-    * @return the 6x1 vector \f$ 
+    * @return the 6x1 vector \f$
     *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
     *                 \f$
     */
     yarp::sig::Vector Hessian_ij(const unsigned int i, const unsigned int j);
 
     /**
-    * Prepares computation for a successive call to 
-    * fastHessian_ij(). 
+    * Prepares computation for a successive call to
+    * fastHessian_ij().
     * @see fastHessian_ij
     */
     void prepareForHessian();
 
     /**
-    * Returns the 6x1 vector \f$ 
+    * Returns the 6x1 vector \f$
     * \partial{^2}F\left(q\right)/\partial q_i \partial q_j, \f$
-    * where \f$ F\left(q\right) \f$ is the forward kinematic 
-    * function and \f$ \left(q_i,q_j\right) \f$ is the DOF couple. 
-    * <i>Fast Version</i>: to be used in conjunction with 
-    * prepareForHessian(). 
-    * @param i is the index of the first DOF. 
+    * where \f$ F\left(q\right) \f$ is the forward kinematic
+    * function and \f$ \left(q_i,q_j\right) \f$ is the DOF couple.
+    * <i>Fast Version</i>: to be used in conjunction with
+    * prepareForHessian().
+    * @param i is the index of the first DOF.
     * @param j is the index of the second DOF.
-    * @return the 6x1 vector \f$ 
+    * @return the 6x1 vector \f$
     *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
     *                 \f$
-    * @note It is advisable to use this version when successive 
-    * computations with different indexes values are needed. 
+    * @note It is advisable to use this version when successive
+    * computations with different indexes values are needed.
     * @see prepareForHessian
     */
     yarp::sig::Vector fastHessian_ij(const unsigned int i, const unsigned int j);
 
     /**
-    * Returns the 6x1 vector \f$ 
+    * Returns the 6x1 vector \f$
     * \partial{^2}F\left(q\right)/\partial q_i \partial q_j, \f$
-    * where \f$ F\left(q\right) \f$ is the forward kinematic 
-    * function and \f$ \left(q_i,q_j\right) \f$ is the couple of 
-    * links. 
-    * @param lnk is the Link number up to which consider the 
+    * where \f$ F\left(q\right) \f$ is the forward kinematic
+    * function and \f$ \left(q_i,q_j\right) \f$ is the couple of
+    * links.
+    * @param lnk is the Link number up to which consider the
     *            computation.
-    * @param i is the index of the first link. 
+    * @param i is the index of the first link.
     * @param j is the index of the second link.
-    * @return the 6x1 vector \f$ 
+    * @return the 6x1 vector \f$
     *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
     *                 \f$
     */
@@ -807,31 +807,31 @@ public:
                                  const unsigned int j);
 
     /**
-    * Prepares computation for a successive call to 
-    * fastHessian_ij() (link version). 
-    * @param lnk is the Link number up to which consider the 
+    * Prepares computation for a successive call to
+    * fastHessian_ij() (link version).
+    * @param lnk is the Link number up to which consider the
     *            computation.
-    * @see fastHessian_ij 
+    * @see fastHessian_ij
     */
     void prepareForHessian(const unsigned int lnk);
 
     /**
-    * Returns the 6x1 vector \f$ 
+    * Returns the 6x1 vector \f$
     * \partial{^2}F\left(q\right)/\partial q_i \partial q_j, \f$
-    * where \f$ F\left(q\right) \f$ is the forward kinematic 
-    * function and \f$ \left(q_i,q_j\right) \f$ is the couple of 
-    * links. 
-    * <i>Fast Version</i>: to be used in conjunction with 
-    * prepareForHessian(lnk). 
-    * @param lnk is the Link number up to which consider the 
-    *            computation. 
-    * @param i is the index of the first link. 
+    * where \f$ F\left(q\right) \f$ is the forward kinematic
+    * function and \f$ \left(q_i,q_j\right) \f$ is the couple of
+    * links.
+    * <i>Fast Version</i>: to be used in conjunction with
+    * prepareForHessian(lnk).
+    * @param lnk is the Link number up to which consider the
+    *            computation.
+    * @param i is the index of the first link.
     * @param j is the index of the second link.
-    * @return the 6x1 vector \f$ 
+    * @return the 6x1 vector \f$
     *         \partial{^2}F\left(q\right)/\partial q_i \partial q_j.
     *                 \f$
-    * @note It is advisable to use this version when successive 
-    * computations with different indexes values are needed. 
+    * @note It is advisable to use this version when successive
+    * computations with different indexes values are needed.
     * @see prepareForHessian
     */
     yarp::sig::Vector fastHessian_ij(const unsigned int lnk, const unsigned int i,
@@ -840,7 +840,7 @@ public:
     /**
     * Compute the time derivative of the geometric Jacobian.
     * @param dq the joint velocities.
-    * @return the 6xDOF matrix \f$ 
+    * @return the 6xDOF matrix \f$
     *         \partial{^2}F\left(q\right)/\partial t \partial q.
     *                 \f$
     */
@@ -849,17 +849,17 @@ public:
     /**
     * Compute the time derivative of the geometric Jacobian
     * (link version).
-    * @param lnk is the Link number up to which consider the 
-    *            computation. 
+    * @param lnk is the Link number up to which consider the
+    *            computation.
     * @param dq the (lnk-1)x1 joint velocity vector.
-    * @return the 6x(lnk-1) matrix \f$ 
+    * @return the 6x(lnk-1) matrix \f$
     *         \partial{^2}F\left(q\right)/\partial t \partial q.
     *                 \f$
     */
     yarp::sig::Matrix DJacobian(const unsigned int lnk, const yarp::sig::Vector &dq);
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~iKinChain();
 };
@@ -901,13 +901,13 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iKinLimb();
 
     /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
+    * Constructor.
+    * @param _type is a string to discriminate between "left" and
     *              "right" limb
     */
     iKinLimb(const std::string &_type);
@@ -919,75 +919,75 @@ public:
     iKinLimb(const iKinLimb &limb);
 
     /**
-    * Creates a new Limb from a list of properties wherein links 
-    * parameters are specified. 
-    * @param options is the list of links properties. 
+    * Creates a new Limb from a list of properties wherein links
+    * parameters are specified.
+    * @param options is the list of links properties.
     * @see fromLinksProperties
     */
     iKinLimb(const yarp::os::Property &options);
 
     /**
-    * Initializes the Limb from a list of properties wherein links 
-    * parameters are specified. 
-    * @param options is the list of links properties. 
-    *  
-    * @note Available options are: 
-    *  
-    * \b type <string>: specifies the limb handedness [left/right] 
+    * Initializes the Limb from a list of properties wherein links
+    * parameters are specified.
+    * @param options is the list of links properties.
+    *
+    * @note Available options are:
+    *
+    * \b type <string>: specifies the limb handedness [left/right]
     *    (default=right).
-    *  
-    * \b H0 <list of 4x4 doubles (per rows)>: specifies the rigid 
+    *
+    * \b H0 <list of 4x4 doubles (per rows)>: specifies the rigid
     *    roto-translation matrix from the root reference frame to
     *    the 0th frame (default=eye(4,4)).
-    *  
-    * \b HN <list of 4x4 doubles (per rows)>: specifies the rigid 
+    *
+    * \b HN <list of 4x4 doubles (per rows)>: specifies the rigid
     *    roto-translation matrix from the Nth frame to the
     *    end-effector (default=eye(4,4)).
-    *  
+    *
     * \b numLinks <int>: specifies the expected number of links.
-    *  
+    *
     * \b A <double>: specifies the link length [m] (default=0.0).
-    *  
+    *
     * \b D <double>: specifies the link offset [m] (default=0.0).
-    *  
-    * \b alpha <double>: specifies the link twist [deg] 
+    *
+    * \b alpha <double>: specifies the link twist [deg]
     *    (default=0.0).
-    *  
-    * \b offset <double>: specifies the joint angle offset [deg] 
+    *
+    * \b offset <double>: specifies the joint angle offset [deg]
     *    (default=0.0).
-    *  
+    *
     * \b min <double>: specifies the joint angle lower bound [deg]
     *    (default=0.0).
-    *  
-    * \b max <double>: specifies the joint angle upper bound [deg] 
+    *
+    * \b max <double>: specifies the joint angle upper bound [deg]
     *    (default=0.0).
-    *  
-    * \b blocked <double>: blocks the link at the specified value 
+    *
+    * \b blocked <double>: blocks the link at the specified value
     *    [deg] (default=released).
-    *  
-    * @note The list should look like as the following: 
-    *  
-    * @code 
-    * type right 
-    * H0 (1.0 2.0 3.0 ...) 
-    * HN (1.0 2.0 3.0 ...) 
-    * numLinks 4 
-    * link_0 (option1 value1) (option2 value2) ... 
-    * link_1 (option1 value1) ... 
-    * ... 
-    * @endcode 
-    *  
+    *
+    * @note The list should look like as the following:
+    *
+    * @code
+    * type right
+    * H0 (1.0 2.0 3.0 ...)
+    * HN (1.0 2.0 3.0 ...)
+    * numLinks 4
+    * link_0 (option1 value1) (option2 value2) ...
+    * link_1 (option1 value1) ...
+    * ...
+    * @endcode
+    *
     * @note Please note how the link options (e.g. A, D, alpha ...)
     *       are to be given using the group identifiers link_#.
-    *  
-    * @return true iff correctly configured. 
+    *
+    * @return true iff correctly configured.
     */
     bool fromLinksProperties(const yarp::os::Property &options);
 
     /**
     * Provides the links attributes listed in a property object.
-    * @param options is the list of links properties. 
-    * @return true iff successful.  
+    * @param options is the list of links properties.
+    * @return true iff successful.
     */
     bool toLinksProperties(yarp::os::Property &options);
 
@@ -1005,33 +1005,33 @@ public:
     iKinLimb &operator=(const iKinLimb &limb);
 
     /**
-    * Returns a pointer to the Limb seen as Chain object. 
+    * Returns a pointer to the Limb seen as Chain object.
     * Useful to to operate on the Links of Limb.
-    * @return a pointer to a Chain object with the same Links of 
+    * @return a pointer to a Chain object with the same Links of
     *         Limb.
     */
     iKinChain *asChain() { return static_cast<iKinChain*>(this); }
 
     /**
-    * Returns the Limb type as a string. 
+    * Returns the Limb type as a string.
     * @return the type as a string {"left", "right"}.
     */
     std::string getType() const { return type; }
 
     /**
-    * Alignes the Limb joints bounds with current values set aboard 
-    * the robot. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Limb joints bounds with current values set aboard
+    * the robot.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Limb limits.
-    * @return true/false on success/failure. 
-    *  
-    * @note This method is empty in iKinLimb because it's 
-    * limb-specific: see the implementations for iCubLimbs. 
+    * @return true/false on success/failure.
+    *
+    * @note This method is empty in iKinLimb because it's
+    * limb-specific: see the implementations for iCubLimbs.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*>&) { notImplemented(verbose); return true; }
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~iKinLimb();
 };
@@ -1051,23 +1051,23 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubTorso();
 
     /**
-    * Constructor. 
-    * @param _type is a string for specifying different kinematic 
+    * Constructor.
+    * @param _type is a string for specifying different kinematic
     *              versions.
     */
     iCubTorso(const std::string &_type);
 
     /**
     * Alignes the Torso joints bounds with current values set aboard
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Torso limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };
@@ -1087,24 +1087,24 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubArm();
 
     /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
+    * Constructor.
+    * @param _type is a string to discriminate between "left" and
     *              "right" arm. Further available options are
     *              "[left|right]_v[1|1.7|2]".
     */
     iCubArm(const std::string &_type);
 
     /**
-    * Alignes the Arm joints bounds with current values set aboard 
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Arm joints bounds with current values set aboard
+    * the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Torso and the Arm limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };
@@ -1113,10 +1113,10 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the iCub Finger. \n 
-* The outcomes of forward kinematics are relative to the 
-* reference frame attached to the corresponding iCubArm 
-* end-effector. 
+* A class for defining the iCub Finger. \n
+* The outcomes of forward kinematics are relative to the
+* reference frame attached to the corresponding iCubArm
+* end-effector.
 */
 class iCubFinger : public iKinLimb
 {
@@ -1130,21 +1130,21 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubFinger();
 
     /**
-    * Constructor. 
-    * @param _type is a string to discriminate between the finger's 
+    * Constructor.
+    * @param _type is a string to discriminate between the finger's
     *              type which has to be passed in the form
     *              <hand>\_<finger>\_<version>, where
     *              <i>hand</i> accounts for "left"|"right",
     *              <i>finger</i> for
     *              "thumb"|"index"|"middle"|"ring"|"little", and
     *              <i>version</i> for "na"|"a"|"b".
-    *  
-    * @note "na" (i.e. not-applicable) is the default hardware 
+    *
+    * @note "na" (i.e. not-applicable) is the default hardware
     *       version for index, middle, ring and little finger,
     *       whereas "b" is the default for the thumb; "a" and "b"
     *       refer to different mechanical configurations, please see
@@ -1166,28 +1166,28 @@ public:
     iCubFinger &operator=(const iCubFinger &finger);
 
     /**
-    * Alignes the finger joints bounds with current values set 
-    * aboard the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the finger joints bounds with current values set
+    * aboard the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Arm limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 
     /**
-    * Retrieves the vector of actual finger's joint values (to be 
-    * used in conjuction with the iKinLimb methods) from the vector 
-    * of motor encoders. 
-    * @param motorEncoders the vector of motor encoders from which 
+    * Retrieves the vector of actual finger's joint values (to be
+    * used in conjuction with the iKinLimb methods) from the vector
+    * of motor encoders.
+    * @param motorEncoders the vector of motor encoders from which
     *                  to extract the joint values of the finger. It
     *                  can be composed of 16 or 9 elements,
     *                  depending if it comprises the arm encoders as
     *                  well or just the hand encoders.
-    * @param chainJoints the vector containing the joints values to 
+    * @param chainJoints the vector containing the joints values to
     *                    be used with the iKinLimb methods.
-    * @return true/false on success/failure. 
-    *  
-    * @note This method accounts also for the underactuated joints, 
+    * @return true/false on success/failure.
+    *
+    * @note This method accounts also for the underactuated joints,
     *       meaning that the actual number of DOFs of the index, for
     *       example, is 4 and not 3: one for the abduction movement,
     *       one for the proximal movement and 2 coupled movements
@@ -1197,28 +1197,28 @@ public:
                                 yarp::sig::Vector &chainJoints);
 
     /**
-    * Retrieves the vector of actual finger's joint values (to be 
-    * used in conjuction with the iKinLimb methods) from the vector 
-    * of motor encoders and joint encoders. 
-    * @param motorEncoders the vector of motor encoders from which 
+    * Retrieves the vector of actual finger's joint values (to be
+    * used in conjuction with the iKinLimb methods) from the vector
+    * of motor encoders and joint encoders.
+    * @param motorEncoders the vector of motor encoders from which
     *                  to extract the joint values of the finger. It
     *                  can be composed of 16 or 9 elements,
     *                  depending if it comprises the arm encoders as
     *                  well or just the hand encoders.
-    * @param jointEncoders the vector of joint encoders from which 
+    * @param jointEncoders the vector of joint encoders from which
     *                  to extract the joint values of the finger. It
     *                  contains 15 analog numbers accounting for in
     *                  order the proximal and the two distal
     *                  phalanxes of the thumb, index, middle, ring
     *                  and little fingers.
-    * @param chainJoints the vector containing the joints values to 
+    * @param chainJoints the vector containing the joints values to
     *                    be used with the iKinLimb methods expressed
     *                    in degrees.
-    * @param jointEncodersBounds the matrix 15-by-2 containing the 
+    * @param jointEncodersBounds the matrix 15-by-2 containing the
     *                            minimum and maximum bounds of
     *                            analog readings. By default, the
     *                            matrix (255 0; 255 0; ...) is used.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool getChainJoints(const yarp::sig::Vector &motorEncoders,
                                 const yarp::sig::Vector &jointEncoders,
@@ -1241,24 +1241,24 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubLeg();
 
     /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
+    * Constructor.
+    * @param _type is a string to discriminate between "left" and
     *              "right" leg. Further available options are
     *              "[left|right]_v[1|2.5]".
     */
     iCubLeg(const std::string &_type);
 
     /**
-    * Alignes the Leg joints bounds with current values set aboard 
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Leg joints bounds with current values set aboard
+    * the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Leg limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };
@@ -1278,24 +1278,24 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubEye();
 
     /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
+    * Constructor.
+    * @param _type is a string to discriminate between "left" and
     *              "right" eye. Further available options are
     *              "[left|right]_v[1|2|2.5]".
     */
     iCubEye(const std::string &_type);
 
     /**
-    * Alignes the Eye joints bounds with current values set aboard 
-    * the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Eye joints bounds with current values set aboard
+    * the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Torso and the Head limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };
@@ -1304,8 +1304,8 @@ public:
 /**
 * \ingroup iKinFwd
 *
-* A class for defining the iCub Eye with the root reference 
-* frame attached to the neck. 
+* A class for defining the iCub Eye with the root reference
+* frame attached to the neck.
 */
 class iCubEyeNeckRef : public iCubEye
 {
@@ -1314,13 +1314,13 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubEyeNeckRef();
 
     /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
+    * Constructor.
+    * @param _type is a string to discriminate between "left" and
     *              "right" eye. Further available options are
     *              "[left|right]_v[1|2|2.5]".
     */
@@ -1332,7 +1332,7 @@ public:
 * \ingroup iKinFwd
 *
 * A class for describing the kinematic of the straight line
-* coming out from the point located between the eyes. 
+* coming out from the point located between the eyes.
 */
 class iCubHeadCenter : public iCubEye
 {
@@ -1341,13 +1341,13 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubHeadCenter();
 
     /**
-    * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
+    * Constructor.
+    * @param _type is a string to discriminate between "left" and
     *              "right" eye. Further available options are
     *              "[left|right]_v[1|2|2.5]".
     */
@@ -1359,7 +1359,7 @@ public:
 * \ingroup iKinFwd
 *
 * A class for defining the Inertia Sensor Kinematics of the
-* iCub. 
+* iCub.
 */
 class iCubInertialSensor : public iKinLimb
 {
@@ -1370,23 +1370,23 @@ protected:
 
 public:
     /**
-    * Default constructor. 
+    * Default constructor.
     */
     iCubInertialSensor();
 
     /**
-    * Constructor. 
-    * @param _type is a string discriminating among "v[1|2|2.5]" 
+    * Constructor.
+    * @param _type is a string discriminating among "v[1|2|2.5]"
     *              hardware versions.
     */
     iCubInertialSensor(const std::string &_type);
 
     /**
-    * Alignes the Inertial Sensor joints bounds with current values 
-    * set aboard the iCub. 
-    * @param lim is the ordered list of control interfaces that 
+    * Alignes the Inertial Sensor joints bounds with current values
+    * set aboard the iCub.
+    * @param lim is the ordered list of control interfaces that
     *            allows to access the Torso and the Head limits.
-    * @return true/false on success/failure. 
+    * @return true/false on success/failure.
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
 };

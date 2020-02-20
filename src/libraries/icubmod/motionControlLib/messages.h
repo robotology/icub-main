@@ -38,7 +38,7 @@
 //#define MODE_OPENLOOP               icubCanProto_controlmode_openloop
 
 /*
- * this is 8 bits long, MSB is the channel (0 or 1). 
+ * this is 8 bits long, MSB is the channel (0 or 1).
  */
 //#define CAN_NO_MESSAGE              ICUBCANPROTO_POL_MC_CMD__NO_MESSAGE
 //#define CAN_CONTROLLER_RUN          ICUBCANPROTO_POL_MC_CMD__CONTROLLER_RUN
@@ -175,8 +175,8 @@
 #define ERROR_FMT					3			/* format error, command in wrong format */
 #define ERROR_SEND					4			/* can't send answer back */
 
-/* 
- * class 1 messages, broadcast 
+/*
+ * class 1 messages, broadcast
  * when in bcast mode, messages are sent periodically by the controller
  *
  */

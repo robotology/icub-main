@@ -31,7 +31,7 @@
 
 #message(Find OpenGL form iCub package)
 
-# save current CMAKE_MODULE_PATH, disable it 
+# save current CMAKE_MODULE_PATH, disable it
 # to avoid recursive calls to FindGLUT
 set(_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH "")

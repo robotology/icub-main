@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff
 * email:  vadim.tikhanoff@iit.it
@@ -19,7 +19,7 @@
 */
 /**
  * \file rendering.cpp
- * \brief This file deals with setting up the OpenGL and the rendering of objects in the environment 
+ * \brief This file deals with setting up the OpenGL and the rendering of objects in the environment
  * \author Vadim Tikhanoff
  * \date 2008
  * \note Released under GNU GPL v2.0
@@ -74,7 +74,7 @@ bool setup_opengl(ResourceFinder& finder){
     glEnable(GL_LIGHT0);               // OpenGL light
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
-    
+
     glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
@@ -119,7 +119,7 @@ bool setup_opengl(ResourceFinder& finder){
     return true;
 }
 
-void DrawGround(bool wireframe){  
+void DrawGround(bool wireframe){
     glEnable(GL_TEXTURE_2D);
     if (wireframe)
     {
@@ -127,9 +127,9 @@ void DrawGround(bool wireframe){
     for(float i = -500; i <= 500; i += 5)
     {
         glBegin(GL_LINES);
-        glVertex3f(-500, 0, i);     
+        glVertex3f(-500, 0, i);
         glVertex3f(500, 0, i);
-        glVertex3f(i, 0,-500);       
+        glVertex3f(i, 0,-500);
         glVertex3f(i, 0, 500);
         glEnd();
     }
@@ -162,61 +162,61 @@ void drawSkyDome(float x, float y, float z, float width, float height, float len
     x = x - width  / 2;
     y = y - height / 2;
     z = z - length / 2;
-    float skyboxMaterial[]   = {1.0f,1.0f,1.0f,1.0f};   
+    float skyboxMaterial[]   = {1.0f,1.0f,1.0f,1.0f};
     glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
     glRotatef(180,0,0,1);
     // Draw Front side
     glBindTexture(GL_TEXTURE_2D, Texture[6]);
-    glBegin(GL_QUADS); 
+    glBegin(GL_QUADS);
     glMaterialfv(GL_FRONT, GL_AMBIENT, skyboxMaterial);
     glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z+length);
     glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z+length);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y+height, z+length); 
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y+height, z+length);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y,  z+length);
     glEnd();
 
     // Draw Back side
     glBindTexture(GL_TEXTURE_2D,  Texture[5]);
-    glBegin(GL_QUADS);  
+    glBegin(GL_QUADS);
     glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y,  z);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y+height, z); 
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y+height, z);
     glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(x,    y,  z);
     glEnd();
 
     // Draw Left side
     glBindTexture(GL_TEXTURE_2D,  Texture[4]);
-    glBegin(GL_QUADS);  
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z); 
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z+length); 
+    glBegin(GL_QUADS);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z+length);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(x,    y,  z+length);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z);  
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z);
     glEnd();
 
     // Draw Right side
     glBindTexture(GL_TEXTURE_2D,  Texture[3]);
-    glBegin(GL_QUADS);  
+    glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y,  z);
     glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y,  z+length);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y+height, z+length); 
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y+height, z+length);
     glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y+height, z);
     glEnd();
 
     // Draw Up side
     glBindTexture(GL_TEXTURE_2D,  Texture[7]);
-    glBegin(GL_QUADS);  
+    glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(x+width, y+height, z);
-    glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y+height, z+length); 
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(x+width, y+height, z+length);
     glTexCoord2f(1.0f, 1.0f); glVertex3f(x,    y+height, z+length);
     glTexCoord2f(0.0f, 1.0f); glVertex3f(x,    y+height, z);
     glEnd();
 
     // Draw Down side
     glBindTexture(GL_TEXTURE_2D,  Texture[7]);
-    glBegin(GL_QUADS);  
+    glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(x,    y,  z);
     glTexCoord2f(1.0f, 0.0f); glVertex3f(x,    y,  z+length);
-    glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y,  z+length); 
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(x+width, y,  z+length);
     glTexCoord2f(0.0f, 1.0f); glVertex3f(x+width, y,  z);
     glEnd();
 
@@ -224,10 +224,10 @@ void drawSkyDome(float x, float y, float z, float width, float height, float len
 }
 
 void DrawBox(float width, float height, float length, bool wireframe, bool texture, int whichtexture){
-    
+
     glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//blends the texture with the color of the object
-    
-    if (wireframe) 
+
+    if (wireframe)
         mode = GL_LINE_LOOP;
     else mode = GL_QUADS;
 
@@ -235,7 +235,7 @@ void DrawBox(float width, float height, float length, bool wireframe, bool textu
     glScalef(width/2,height/2,length/2);
     if (texture){
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D,Texture[whichtexture]); 
+        glBindTexture(GL_TEXTURE_2D,Texture[whichtexture]);
     }
     else{
         glDisable(GL_TEXTURE_2D);
@@ -323,11 +323,11 @@ void DrawBox(float width, float height, float length, bool wireframe, bool textu
     glPopMatrix();
 
     glDisable(GL_TEXTURE_2D);
-    //glDisable( GL_BLEND ); 
+    //glDisable( GL_BLEND );
 }
 
 void DrawSphere(float radius, bool wireframe, bool texture, int whichtexture){
-    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//makes the texture 
+    glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//makes the texture
     sphere = gluNewQuadric();
     if (texture)
     {
@@ -338,7 +338,7 @@ void DrawSphere(float radius, bool wireframe, bool texture, int whichtexture){
     else
         glDisable(GL_TEXTURE_2D);
 
-    if (wireframe) 
+    if (wireframe)
     {
         gluQuadricDrawStyle(sphere, GLU_LINE);
     }
@@ -368,9 +368,9 @@ void DrawCylinder(float radius, float length, bool wireframe, bool texture, int 
     else
         glDisable(GL_TEXTURE_2D);
 
-    if (wireframe) 
+    if (wireframe)
     {
-        glTranslatef(0,0,-length/2);    
+        glTranslatef(0,0,-length/2);
         gluQuadricDrawStyle(cylinder, GLU_LINE);
     }
     else
@@ -482,7 +482,7 @@ void DrawX (dTriMeshX trim, int whichtexture){
         glVertex3f( trim->Vertices[trim->Indices[i] * 3 + 0],   trim->Vertices[trim->Indices[i] * 3 + 1],  trim->Vertices[trim->Indices[i] * 3 + 2] );//Vertex definition
         i++;
 
-        // Coordinates of the first u,v texture  
+        // Coordinates of the first u,v texture
         glNormal3f( trim->NormCoord[trim->Indices[i] * 3 + 0], trim->NormCoord[trim->Indices[i] * 3 + 1], trim->NormCoord[trim->Indices[i] * 3 + 2 ]);
         glTexCoord2f( trim->MeshCoord[trim->Indices[i] * 2 + 0 ] , trim->MeshCoord[ trim->Indices[i] * 2 + 1] );
         // Coordinates of the second vertex
@@ -502,7 +502,7 @@ void DrawX (dTriMeshX trim, int whichtexture){
 }
 
 void setupTexture(char *filename, int whichtexture){
-    
+
     Texture[whichtexture] = LoadBitmapTERMINAL(filename,  whichtexture);
 }
 
@@ -520,14 +520,14 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     //GLuint texture;
     FILE * file1;
     char temp1;
-    long i;	
+    long i;
     SIMBITMAPINFOHEADER infoheader1;
     //yDebug() << " RENDERING NUMBER TEXTURE " << whichtexture;
     yDebug()  << "Loading texture " <<  " '" << filename << "' ";
-    num_texture++; // The counter of the current texture is increased	
+    num_texture++; // The counter of the current texture is increased
     if( (file1 = fopen(filename, "rb"))==NULL){ yError() << "Cannot load/find texture file "; return (0); }// Open the file for reading
     yDebug() << "......... OK! ";
-    fseek(file1, 18, SEEK_CUR);  // start reading width & height 
+    fseek(file1, 18, SEEK_CUR);  // start reading width & height
 
     size_t ret=0;
     ret=fread(&infoheader1.biWidth, sizeof(int), 1, file1);
@@ -583,19 +583,19 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     //glGenTextures(1, &texture);
    glBindTexture(GL_TEXTURE_2D, whichtexture);// Bind the ID texture specified by the 2nd parameter
 
-    yInfo() << "Finished Binding texture "; 
-    yInfo() << "Finished Setting parameters "; 
+    yInfo() << "Finished Binding texture ";
+    yInfo() << "Finished Setting parameters ";
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // We don't combine the color with the original surface color, use only the texture map.
-    yInfo() << "Finished Setting glTexEnvf "; 
+    yInfo() << "Finished Setting glTexEnvf ";
     // Finally we define the 2d texture
     glTexImage2D(GL_TEXTURE_2D, 0, 3, infoheader1.biWidth, infoheader1.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, infoheader1.data);
     yInfo() << "Finished Setting glTexImage2D ";
 
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, infoheader1.biWidth, infoheader1.biHeight, GL_RGB, GL_UNSIGNED_BYTE, infoheader1.data);
-    
-    yInfo() << "Finished Setting gluBuild2DMipmaps "; 
+
+    yInfo() << "Finished Setting gluBuild2DMipmaps ";
     free(infoheader1.data); // Free the memory we used to load the texture
-    
+
     yInfo() << "Finished creating 3D Model................\n";
     //glDisable(GL_TEXTURE_2D);
     return ( whichtexture ); // Returns the current texture OpenGL ID

@@ -80,7 +80,7 @@ using namespace eth;
 
 // marco.accame: std::mutex is in unlocked state after the constructor completes
 //               that is the same behaviour of the former yarp::os::Semaphore initted w/ value 1
-std::mutex TheEthManager::managerSem {}; 
+std::mutex TheEthManager::managerSem {};
 std::mutex TheEthManager::txSem {};
 std::mutex TheEthManager::rxSem {};
 
@@ -459,7 +459,7 @@ int TheEthManager::releaseResource2(eth::AbstractEthResource* ethresource, IethR
         {
             category = eomn_serv_category_inertials3;
         } break;
-        
+
         default:
         {
             category = eomn_serv_category_none;

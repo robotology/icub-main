@@ -1,7 +1,7 @@
 <application>
 <name>Cameras</name>
 <dependencies>
-</dependencies> 
+</dependencies>
 <module>
       <name>yarpdev</name>
       <parameters> --from camera/dragonfly2_config_left.ini</parameters>
@@ -36,7 +36,7 @@
       <node>icubsrv</node>
       <dependencies>
          <port timeout="10">/icub/cam/right</port>
-      </dependencies>	  
+      </dependencies>
    </module>
 <connection>
   <output>/icub/cam/left</output>

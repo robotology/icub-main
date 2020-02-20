@@ -41,16 +41,16 @@ service fingersTuner_IDL
   * @return true/false on success/failure.
   */
   bool tune(1:string part, 2:Value val);
-  
+
   /**
   * Save the PID parameters on configuration file.
   * @return true/false on success/failure.
   */
-  bool save();  
+  bool save();
 
   /**
   * Quit the module.
   * @return true/false on success/failure.
   */
-  bool quit();  
+  bool quit();
 }

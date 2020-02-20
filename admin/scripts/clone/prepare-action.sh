@@ -20,7 +20,7 @@ else
 	else
 	    echo "echo cp $fname $tname"
 	    echo "cp $fname $tname"
-	fi    
+	fi
 	root=`echo $tname | sed "s|/[^/]*$||"`
 	extra=`echo $tname | sed "s|.*/||"`
 	echo "echo cd $root"

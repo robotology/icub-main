@@ -80,7 +80,7 @@ EmotionInterfaceModule::EmotionInterfaceModule() : emotionInitReport(this) {
 }
 
 bool EmotionInterfaceModule::configure(ResourceFinder& config){
-  
+
     char name[10];
     int i;
 
@@ -99,7 +99,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     _mouthmaskemotions = config.check("bitmask_mouth_emotions", Value(0), "Number of predefined bitmask eyebrow expressions").asInt();
     _auto = config.check("auto");
     _period = config.check("period", Value(10.0), "Period for expression switching in auto mode").asDouble();
-    if(_highlevelemotions == 0) 
+    if(_highlevelemotions == 0)
     {
         _emotion_table = nullptr;
     }
@@ -129,7 +129,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 }
                 //first field - name of the expression
                 std::string n1 = bot.get(1).toString();
-                
+
                 if(n1.length()!=3) //must have length 3
                 {
                     yError("First field of identifier %s has invalid size (must be 3).", name);
@@ -246,7 +246,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     }
 
       // open  ports
-    _inputPort.open(getName("/in")); 
+    _inputPort.open(getName("/in"));
     _outputPort.open(getName("/out"));
     _outputPort.setReporter(emotionInitReport);
     _initEmotionTrigger=0;
@@ -261,7 +261,7 @@ bool EmotionInterfaceModule::close(){
         _inputPort.close();
     if(!_outputPort.isClosed())
         _outputPort.close();
-    
+
     if (_emotion_table != nullptr)
     {
         delete [] _emotion_table;
@@ -272,7 +272,7 @@ bool EmotionInterfaceModule::close(){
 }
 
 bool EmotionInterfaceModule::interruptModule(){
-    
+
     _inputPort.interrupt();
     _outputPort.interrupt();
     return true;
@@ -309,7 +309,7 @@ double EmotionInterfaceModule::getPeriod(){
 }
 
 bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
-        
+
     bool ok = false;
     bool rec = false; // is the command recognized?
 
@@ -400,7 +400,7 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
 
     if (!rec)
         ok = false;
-    
+
     if (!ok) {
         reply.clear();
         reply.addVocab(EMOTION_VOCAB_FAILED);
@@ -409,14 +409,14 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
         reply.addVocab(EMOTION_VOCAB_OK);
 
     return ok;
-}   
+}
 
 //get the index in _emotions_table of a emotion name
 int EmotionInterfaceModule::getIndex(const std::string cmd)
 {
     if(_highlevelemotions == 0)
         return -1;
- 
+
     int i;
     for(i = 0; i < _highlevelemotions; i++)
     {
@@ -426,7 +426,7 @@ int EmotionInterfaceModule::getIndex(const std::string cmd)
 
     if( i == _highlevelemotions ) // no match
        return -1;
-    
+
     return i;
 }
 
@@ -446,12 +446,12 @@ bool EmotionInterfaceModule::writePort(const char* cmd)
 bool EmotionInterfaceModule::setLeftEyebrow(const std::string cmd)
 {
     char cmdbuffer[] = {0,0,0,0};
-    int i; 
+    int i;
     i = getIndex(cmd);
     if(i < 0)
         return false;
 
-    if( _emotion_table[i].leb[0] == '*' || _emotion_table[i].leb[1] == '*') 
+    if( _emotion_table[i].leb[0] == '*' || _emotion_table[i].leb[1] == '*')
         return true;  //leave it in the same state
 
     cmdbuffer[0]= 'L';
@@ -464,12 +464,12 @@ bool EmotionInterfaceModule::setLeftEyebrow(const std::string cmd)
 bool EmotionInterfaceModule::setRightEyebrow(const std::string cmd)
 {
     char cmdbuffer[] = {0,0,0,0};
-    int i; 
+    int i;
     i = getIndex(cmd);
     if(i < 0)
         return false;
 
-    if( _emotion_table[i].reb[0] == '*' || _emotion_table[i].reb[1] == '*') 
+    if( _emotion_table[i].reb[0] == '*' || _emotion_table[i].reb[1] == '*')
         return true;  //leave it in the same state
 
     cmdbuffer[0]= 'R';
@@ -482,12 +482,12 @@ bool EmotionInterfaceModule::setRightEyebrow(const std::string cmd)
 bool EmotionInterfaceModule::setMouth(const std::string cmd)
 {
     char cmdbuffer[] = {0,0,0,0};
-    int i; 
+    int i;
     i = getIndex(cmd);
     if(i < 0)
         return false;
 
-    if( _emotion_table[i].mou[0] == '*' || _emotion_table[i].mou[1] == '*') 
+    if( _emotion_table[i].mou[0] == '*' || _emotion_table[i].mou[1] == '*')
         return true;  //leave it in the same state
 
     cmdbuffer[0]= 'M';
@@ -500,12 +500,12 @@ bool EmotionInterfaceModule::setMouth(const std::string cmd)
 bool EmotionInterfaceModule::setEyelids(const std::string cmd)
 {
     char cmdbuffer[] = {0,0,0,0};
-    int i; 
+    int i;
     i = getIndex(cmd);
     if(i < 0)
         return false;
 
-    if( _emotion_table[i].eli[0] == '*' || _emotion_table[i].eli[1] == '*') 
+    if( _emotion_table[i].eli[0] == '*' || _emotion_table[i].eli[1] == '*')
         return true;  //leave it in the same state
 
     cmdbuffer[0]= 'S';

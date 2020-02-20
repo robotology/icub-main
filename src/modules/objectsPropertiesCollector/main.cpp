@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -20,240 +20,240 @@
 @ingroup icub_module
 
 \defgroup objectsPropertiesCollector objectsPropertiesCollector
- 
-Provides a on-line yarp-oriented database to collect properties 
-of objects that are of interest for your specific application. 
- 
+
+Provides a on-line yarp-oriented database to collect properties
+of objects that are of interest for your specific application.
+
 Copyright (C) 2010 RobotCub Consortium
- 
-Author: Ugo Pattacini 
- 
+
+Author: Ugo Pattacini
+
 Date: first release 06/10/2010
 
-CopyPolicy: Released under the terms of the GNU GPL v2.0. 
- 
-\section intro_sec Description 
- 
-Provides a on-line yarp-oriented database to collect properties 
-such as positions, colors, shapes, grasping points and so on 
-about objects that are of interest for your specific 
-application, i.e. normally real objects that the robot can play 
-with but ideally any kind of objects you can think of. 
-The user can set, get, add, remove items and make queries 
-to the database. \n 
+CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+\section intro_sec Description
+
+Provides a on-line yarp-oriented database to collect properties
+such as positions, colors, shapes, grasping points and so on
+about objects that are of interest for your specific
+application, i.e. normally real objects that the robot can play
+with but ideally any kind of objects you can think of.
+The user can set, get, add, remove items and make queries
+to the database. \n
 Importantly, the module is capable of running in real-time.
 
 \section proto_sec Protocol
- 
-Notation used hereafter to explain available commands: [.] is a 
-Vocab, "." is a string, <.> is a Value (i.e. string, double, 
-int) or a List (so that also complex properties such as images 
-can be attached to the objects). 
- 
-Reserved properties tags: 
- 
-- \e id is used to specify the unique integer identifier 
-assigned to each stored item. 
- 
-- \e lifeTimer specifies the forgetting factor given in seconds, 
-meaning that after \e lifeTimer seconds since its creation, the 
-item is removed automatically from the database. The user can 
+
+Notation used hereafter to explain available commands: [.] is a
+Vocab, "." is a string, <.> is a Value (i.e. string, double,
+int) or a List (so that also complex properties such as images
+can be attached to the objects).
+
+Reserved properties tags:
+
+- \e id is used to specify the unique integer identifier
+assigned to each stored item.
+
+- \e lifeTimer specifies the forgetting factor given in seconds,
+meaning that after \e lifeTimer seconds since its creation, the
+item is removed automatically from the database. The user can
 read this property at run-time, can even modify it or assign it
-to an object after its creation. 
- 
-- \e propSet is used to specify a list of properties over which 
-  execute the given command. 
- 
-The commands sent as bottles to the module port 
-/<moduleName>/rpc are the following: 
- 
+to an object after its creation.
+
+- \e propSet is used to specify a list of properties over which
+  execute the given command.
+
+The commands sent as bottles to the module port
+/<moduleName>/rpc are the following:
+
 <b>add</b> \n
 <i>Format</i>: [add] (("prop0" <val0>) ("prop1" <val1>) ...) \n
-<i>Reply</i>: [nack]; [ack] ("id" <num>) \n 
-<i>Action</i>: a new item is added to the database with the 
-given properties. \n 
+<i>Reply</i>: [nack]; [ack] ("id" <num>) \n
+<i>Action</i>: a new item is added to the database with the
+given properties. \n
 A unique identifier is returned that is used to access the item.
 
 <b>del</b> \n
-<i>Format</i>: [del] (("id" <num>) (propSet ("prop0" "prop1" 
+<i>Format</i>: [del] (("id" <num>) (propSet ("prop0" "prop1"
 ...))) \n
-<i>Reply</i>: [nack]; [ack] \n 
+<i>Reply</i>: [nack]; [ack] \n
 <i>Action</i>: remove from the database the specified properties
-belonging to the item specified with the given identifier. \n 
+belonging to the item specified with the given identifier. \n
 The special command "del ((id <num>))" removes the whole item.\n
-The special command "[del] (all)" clears the current content of 
-the database. 
- 
+The special command "[del] (all)" clears the current content of
+the database.
+
 <b>get</b> \n
-<i>Format</i>: [get] (("id" <num>) (propSet ("prop0" "prop1" 
+<i>Format</i>: [get] (("id" <num>) (propSet ("prop0" "prop1"
 ...))) \n
-<i>Reply</i>: [nack]; [ack] (("prop0" <val0>) ("prop1" <val1>) 
-...) \n 
-<i>Action</i>: return the required properties assigned to the 
-stored item. \n 
-The special command "[get] ((id <num>))" returns all the 
-properties. 
- 
+<i>Reply</i>: [nack]; [ack] (("prop0" <val0>) ("prop1" <val1>)
+...) \n
+<i>Action</i>: return the required properties assigned to the
+stored item. \n
+The special command "[get] ((id <num>))" returns all the
+properties.
+
 <b>set</b> \n
-<i>Format</i>: [set] (("id" <num>) ("prop0" <val0>) ...) \n 
-<i>Reply</i>: [nack]; [ack] \n 
-<i>Action</i>: add/modify properties of the stored item. 
- 
+<i>Format</i>: [set] (("id" <num>) ("prop0" <val0>) ...) \n
+<i>Reply</i>: [nack]; [ack] \n
+<i>Action</i>: add/modify properties of the stored item.
+
 <b>lock</b> \n
-<i>Format</i>: [lock] (("id" <num>)) \n 
-<i>Reply</i>: [nack]; [ack] \n 
-<i>Action</i>: lock the specified item; this way only the port 
+<i>Format</i>: [lock] (("id" <num>)) \n
+<i>Reply</i>: [nack]; [ack] \n
+<i>Action</i>: lock the specified item; this way only the port
 owner can modify it later on through a [set] request.
- 
+
 <b>unlock</b> \n
-<i>Format</i>: [unlock] (("id" <num>)) \n 
-<i>Reply</i>: [nack]; [ack] \n 
+<i>Format</i>: [unlock] (("id" <num>)) \n
+<i>Reply</i>: [nack]; [ack] \n
 <i>Action</i>: unlock the specified item.
- 
+
 <b>owner</b> \n
-<i>Format</i>: [owner] (("id" <num>)) \n 
-<i>Reply</i>: [nack]; [ack] ("owner_name") \n 
+<i>Format</i>: [owner] (("id" <num>)) \n
+<i>Reply</i>: [nack]; [ack] ("owner_name") \n
 <i>Action</i>: ask for the port name of the item owner; a name
 equal to "all" means that the item is not locked by any agent.
- 
+
 <b>time</b> \n
-<i>Format</i>: [time] (("id" <num>)) \n 
-<i>Reply</i>: [nack]; [ack] (<time>) \n 
-<i>Action</i>: retrieve the time elapsed in seconds from the 
-last change occured on the stored item. \n 
-Negative values of <time> indicates that the item has not been 
-modified since it was loaded within the database. 
- 
-<b>dump</b> \n 
-<i>Format</i>: [dump] \n 
-<i>Reply</i>: [ack] \n 
+<i>Format</i>: [time] (("id" <num>)) \n
+<i>Reply</i>: [nack]; [ack] (<time>) \n
+<i>Action</i>: retrieve the time elapsed in seconds from the
+last change occured on the stored item. \n
+Negative values of <time> indicates that the item has not been
+modified since it was loaded within the database.
+
+<b>dump</b> \n
+<i>Format</i>: [dump] \n
+<i>Reply</i>: [ack] \n
 <i>Action</i>: ask the database to dump on the screen all the
-stored items along with their properties. 
- 
-<b>synchronous broadcast</b> \n 
-<i>Format</i>: [sync] [start] <T>/[stop] \n 
-<i>Reply</i>: [nack]; [ack] \n 
-<i>Action</i>: ask the database to start/stop broadcasting its 
-content to a yarp port each <T> seconds. The parameter <T> is 
-optional. 
- 
-<b>asynchronous broadcast</b> \n 
-<i>Format</i>: [async] [on]/[off] \n 
-<i>Reply</i>: [nack]; [ack] \n 
-<i>Action</i>: ask the database to enable/disable the broadcast 
-toward a yarp port whenever a change in the content occurs. 
- 
+stored items along with their properties.
+
+<b>synchronous broadcast</b> \n
+<i>Format</i>: [sync] [start] <T>/[stop] \n
+<i>Reply</i>: [nack]; [ack] \n
+<i>Action</i>: ask the database to start/stop broadcasting its
+content to a yarp port each <T> seconds. The parameter <T> is
+optional.
+
+<b>asynchronous broadcast</b> \n
+<i>Format</i>: [async] [on]/[off] \n
+<i>Reply</i>: [nack]; [ack] \n
+<i>Action</i>: ask the database to enable/disable the broadcast
+toward a yarp port whenever a change in the content occurs.
+
 <b>ask</b> \n
-<i>Format</i>: [ask] (("prop0" "<" <val0>) || ("prop1" ">=" 
-<val1>) ...) \n 
-<i>Reply</i>: [nack]; [ack] ("id" (<num0> <num1> ...)) \n 
-<i>Action</i>: query the database to find all the items whose 
-properties match the conditions given in the command. You can 
-compose multiple conditions using the boolean operators such as 
-"||" for \e or and "&&" for \e and and each condition has to be 
-expressed giving the property name, the value to compare with 
+<i>Format</i>: [ask] (("prop0" "<" <val0>) || ("prop1" ">="
+<val1>) ...) \n
+<i>Reply</i>: [nack]; [ack] ("id" (<num0> <num1> ...)) \n
+<i>Action</i>: query the database to find all the items whose
+properties match the conditions given in the command. You can
+compose multiple conditions using the boolean operators such as
+"||" for \e or and "&&" for \e and and each condition has to be
+expressed giving the property name, the value to compare with
 and the corresponding relational operator (e.g. ">", "<=", "==",
-...).\n 
+...).\n
 Commands such as "[ask] ((prop0) || (prop1))" will query whether
-the properties exist or not. \n The special command "[ask] 
-(all)" returns the whole set of ids present within the database. 
-\n 
-In order to simplify the implementation, nested conditions such 
-as (cond1) && ((cond2) || (cond3)) are not handled; however, 
-this is not a real limitation since nested conditions can be 
-properly expanded: indeed, the previous example can be cast back 
-to (cond1)&&(cond2) || (cond1)&&(cond3). 
- 
-<b>quit</b> \n 
-<i>Format</i>: [quit] \n 
-<i>Reply</i>: [ack] \n 
+the properties exist or not. \n The special command "[ask]
+(all)" returns the whole set of ids present within the database.
+\n
+In order to simplify the implementation, nested conditions such
+as (cond1) && ((cond2) || (cond3)) are not handled; however,
+this is not a real limitation since nested conditions can be
+properly expanded: indeed, the previous example can be cast back
+to (cond1)&&(cond2) || (cond1)&&(cond3).
+
+<b>quit</b> \n
+<i>Format</i>: [quit] \n
+<i>Reply</i>: [ack] \n
 <i>Action</i>: quit the module.
- 
-\section lib_sec Libraries 
-- YARP libraries. 
+
+\section lib_sec Libraries
+- YARP libraries.
 
 \section parameters_sec Parameters
---name \e moduleName 
-- The parameter \e moduleName identifies the module's name; all 
+--name \e moduleName
+- The parameter \e moduleName identifies the module's name; all
   the open ports will be tagged with the prefix /<moduleName>/.
   If not specified \e objectsPropertiesCollector is assumed.
- 
---db \e dbFileName 
-- The parameter \e dbFileName specifies the name of the database 
+
+--db \e dbFileName
+- The parameter \e dbFileName specifies the name of the database
   to load at startup (if already existing) and save at shutdown.
- 
---context \e contextName 
-- To specify the context where to search for the database file; 
+
+--context \e contextName
+- To specify the context where to search for the database file;
   \e objectsPropertiesCollector is the default context.
- 
---no-load-db 
+
+--no-load-db
 - If this options is given then an empty database is started.
- 
+
 --no-save-db
-- If this option is given then the content of database is not 
+- If this option is given then the content of database is not
   saved at shutdown.
- 
---sync-bc <T> 
-- Broadcast the database content each \e T seconds. If not 
+
+--sync-bc <T>
+- Broadcast the database content each \e T seconds. If not
   specified, a period of 1.0 second is assumed.
- 
---async-bc 
-- Broadcast the database content whenever a change occurs. 
- 
---stats 
+
+--async-bc
+- Broadcast the database content whenever a change occurs.
+
+--stats
 - Enable statistics printouts.
- 
+
 \section portsa_sec Ports Accessed
 None.
 
 \section portsc_sec Ports Created
- 
-- \e /<moduleName>/rpc the remote procedure call port used to 
+
+- \e /<moduleName>/rpc the remote procedure call port used to
   send requests to the database and receive replies.
 
-- \e /<moduleName>/broadcast:o the port used to broadcast the 
+- \e /<moduleName>/broadcast:o the port used to broadcast the
   database content in synchronous and asynchronous mode.
- 
+
 - \e /<moduleName>/modify:i the port used to modify the database
   content complying with the data format implemented for the
   broadcast port.
- 
+
 \section in_files_sec Input Data Files
 None.
 
 \section out_data_sec Output Data Files
-None. 
- 
+None.
+
 \section conf_file_sec Configuration Files
-None. 
- 
+None.
+
 \section tested_os_sec Tested OS
 Linux and Windows.
 
-\section reqexample_sec Examples 
- 
-Several examples of the requests you may forward to the 
-database: 
- 
-\code 
-command: [add] ((name ball) (color red) (x 1)) 
-reply: [ack] (id 0) 
- 
-command: [add] ((name octopus) (color blue) (x 2)) 
-reply: [ack] (id 1) 
- 
-command: [set] ((id 1) (x 3)) 
-reply: [ack] 
- 
-command: [get] ((id 1)) 
+\section reqexample_sec Examples
+
+Several examples of the requests you may forward to the
+database:
+
+\code
+command: [add] ((name ball) (color red) (x 1))
+reply: [ack] (id 0)
+
+command: [add] ((name octopus) (color blue) (x 2))
+reply: [ack] (id 1)
+
+command: [set] ((id 1) (x 3))
+reply: [ack]
+
+command: [get] ((id 1))
 reply: [ack] ((name octopus) (color blue) (x 3))
- 
-command: [ask] ((x < 10) && (color == blue)) 
+
+command: [ask] ((x < 10) && (color == blue))
 reply: [ack] (id (1))
-\endcode 
- 
+\endcode
+
 \author Ugo Pattacini
-*/ 
+*/
 
 #include <cstdio>
 #include <cstdarg>
@@ -282,15 +282,15 @@ using namespace yarp::os;
 #define CMD_ASYNC                       createVocab('a','s','y','n')
 #define CMD_QUIT                        createVocab('q','u','i','t')
 #define CMD_BYE                         createVocab('b','y','e')
-                                        
+
 #define REP_ACK                         createVocab('a','c','k')
 #define REP_NACK                        createVocab('n','a','c','k')
 #define REP_UNKNOWN                     createVocab('u','n','k','n')
-                                        
+
 #define OPT_ALL                         createVocab('a','l','l')
 #define OPT_DISABLED                    (-1.0)
 #define OPT_OWNERSHIP_ALL               ("all")
-                                        
+
 #define PROP_ID                         ("id")
 #define PROP_LIFETIMER                  ("lifeTimer")
 #define PROP_SET                        ("propSet")
@@ -707,7 +707,7 @@ public:
     {
         if (content==NULL)
             return false;
-        
+
         if (content->size()==1)
         {
             if (content->get(0).isVocab() || content->get(0).isString())
@@ -907,7 +907,7 @@ public:
     {
         if (content==NULL)
             return false;
-        
+
         if (!content->check(PROP_ID))
         {
             yWarning("%s field not present within the request!",PROP_ID);
@@ -934,7 +934,7 @@ public:
     {
         if (content==NULL)
             return false;
-        
+
         if (!content->check(PROP_ID))
         {
             yWarning("%s field not present within the request!",PROP_ID);
@@ -975,7 +975,7 @@ public:
                 if (content->get(0).asVocab()==OPT_ALL)
                 {
                     response.clear();
-                
+
                     for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
                         response.addInt(it->first);
 
@@ -1202,7 +1202,7 @@ public:
                     reply.addVocab(REP_NACK);
                     break;
                 }
-    
+
                 Bottle *content=command.get(1).asList();
                 if (set(content,agent))
                 {
@@ -1212,7 +1212,7 @@ public:
                 }
                 else
                     reply.addVocab(REP_NACK);
-    
+
                 break;
             }
 

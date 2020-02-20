@@ -25,7 +25,7 @@ public:
 
         const double H=sin(DEG2RAD*60.0);
         const double L=2.0*H/9.0;
-     
+
         dGain=gain;
         ilrMirror=lrMirror;
         ilayoutNum=layoutNum;
@@ -33,12 +33,12 @@ public:
         nTaxels=48;
         m_RadiusOrig=1.8;
 
-  
-		
+
+
 		for (int i=0; i<nTaxels; ++i)
         {
 			dX[0]=15; //not used
-			dY[0]=15; //not used 
+			dY[0]=15; //not used
 		}
 
 
@@ -77,13 +77,13 @@ public:
 		dX[20]=27;    dY[20]=-9;
 		dX[21]=32;    dY[21]=-9;
 		dX[17]=37;    dY[17]=-9;
-		dX[19]=42;    dY[19]=-10.5;	
+		dX[19]=42;    dY[19]=-10.5;
 		dX[22]=38;    dY[22]=-14;
 		dX[18]=43;    dY[18]=-16;
 		dX[13]=47;    dY[13]=-13;
 		dX[12]=47.5;    dY[12]=-18;
 		dX[23]=43.5;    dY[23]=-20; //thermal_pad
-		
+
 		dX[46]=33;    dY[46]=-14.5;
 		dX[47]=28;    dY[47]=-14.5;
 		dX[36]=28;    dY[36]=-19.5;
@@ -96,7 +96,7 @@ public:
 		dX[39]=35;    dY[39]=-29;
 		dX[40]=40;    dY[40]=-29.5;
 		dX[43]=37;    dY[43]=-32.5; //thermal pad
-		
+
 
         for (int i=0; i<nTaxels; ++i)
         {
@@ -116,7 +116,7 @@ public:
         dYv[2]=+50;
         dXv[3]=-25;
         dYv[3]=+50;
-        
+
         for (int i=0; i<nVerts; ++i)
         {
             double x=dXv[i];
@@ -127,7 +127,7 @@ public:
         }
 
         // in static definition
-        //dXmin=dYmin= HUGE; 
+        //dXmin=dYmin= HUGE;
         //dXmax=dYmax=-HUGE;
 
         for (int i=0; i<nVerts; ++i)
@@ -147,14 +147,14 @@ public:
         {
             //drawLine(image,xv[i],yv[i],xv[(i+1)%nVerts],yv[(i+1)%nVerts]);
         }
-        
+
         for (int i=0; i<nTaxels; ++i)
         {
-			if ((i==43) || (i==23) || (i==11) || (i==35) ) 
+			if ((i==43) || (i==23) || (i==11) || (i==35) )
 			{
 				drawCircle(image,x[i],y[i],m_Radius/2);
 			}
-			else  
+			else
             drawCircle(image,x[i],y[i],m_Radius);
         }
     }

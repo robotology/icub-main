@@ -43,13 +43,13 @@ dynContact::dynContact(const BodyPart &_bodyPart, unsigned int _linkNumber, cons
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 dynContact::dynContact(const BodyPart &_bodyPart, unsigned int _linkNumber, const Vector &_CoP, const Vector &_Mu, const Vector &_Fdir){
-    init(_bodyPart, _linkNumber, _CoP, _Mu, _Fdir);    
+    init(_bodyPart, _linkNumber, _CoP, _Mu, _Fdir);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void dynContact::init(const BodyPart &_bodyPart, unsigned int _linkNumber, const Vector &_CoP, const Vector &_Mu, const Vector &_Fdir){
     contactId = ID++;
     setBodyPart(_bodyPart);
-    setLinkNumber(_linkNumber); 
+    setLinkNumber(_linkNumber);
     setCoP(_CoP);
     Mu.resize(3, 0.0);
     Fdir.resize(3, 0.0);
@@ -97,7 +97,7 @@ bool dynContact::isMomentKnown() const{ return muKnown;}
 bool dynContact::isForceDirectionKnown() const{ return fDirKnown;}
 //~~~~~~~~~~~~~~~~~~~~~~
 //   SET methods
-//~~~~~~~~~~~~~~~~~~~~~~    
+//~~~~~~~~~~~~~~~~~~~~~~
 bool dynContact::setForce(const Vector &_F){
     if(!checkVectorDim(_F, 3, "force"))
         return false;
@@ -163,7 +163,7 @@ void dynContact::setBodyPart(BodyPart _bodyPart){
 }
 //~~~~~~~~~~~~~~~~~~~~~~
 //   FIX/UNFIX methods
-//~~~~~~~~~~~~~~~~~~~~~~ 
+//~~~~~~~~~~~~~~~~~~~~~~
 bool dynContact::fixForceDirection(const Vector &_Fdir){
     if(setForceDirection(_Fdir)){
         fDirKnown = true;
@@ -217,12 +217,12 @@ bool dynContact::write(ConnectionWriter& connection) const{
     // list of 3 double, i.e. the moment
     connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
     connection.appendInt(3);
-    for(int i=0;i<3;i++) connection.appendDouble(Mu[i]);  
+    for(int i=0;i<3;i++) connection.appendDouble(Mu[i]);
 
     // if someone is foolish enough to connect in text mode,
     // let them see something readable.
-    connection.convertTextMode();  
-    
+    connection.convertTextMode();
+
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -256,13 +256,13 @@ bool dynContact::read(ConnectionReader& connection){
     if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
         return false;
     for(int i=0;i<3;i++) Mu[i] = connection.expectDouble();
-     
+
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string dynContact::toString(int precision) const{
     stringstream res;
-    res<< "Contact id: "<< contactId<< ", Body part: "<< BodyPart_s[bodyPart]<< ", link: "<< linkNumber<< ", CoP: "<< 
+    res<< "Contact id: "<< contactId<< ", Body part: "<< BodyPart_s[bodyPart]<< ", link: "<< linkNumber<< ", CoP: "<<
         CoP.toString(precision)<< ", F: "<< F.toString(precision)<< ", M: "<< Mu.toString(precision);
     return res.str();
 }

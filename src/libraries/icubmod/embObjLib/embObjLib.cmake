@@ -33,22 +33,22 @@ set(PATH_TO_CALLBACK ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/)
                                 )
 
     set(NVS_EB_SRC_FOLDER       ${PATH_TO_EP_SRC})
-    
-    
+
+
     set(NVS_MC_SRC_FOLDER       ${PROT_FOLDER}/protocol/src/)
     set(NVS_MC_CBK_FOLDER       ${PATH_TO_CALLBACK}/embObjMotionControl/usrcbk/)
-    
+
     set(NVS_MNGMNT_SRC_FOLDER   ${PROT_FOLDER}/protocol/src/)
     set(NVS_CBK_FOLDER          ${PATH_TO_CALLBACK}/embObjLib/protocolCallbacks/)
-    
+
     set(NVS_SENSORS_SRC_FOLDER  ${PROT_FOLDER}/protocol/src/)
     set(NVS_SENSORS_CBK_FOLDER  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/)
-    
-    
+
+
     set(NVS_SKIN_SRC_FOLDER     ${PROT_FOLDER}/protocol/src/)
     set(NVS_SKIN_CBK_FOLDER     ${PATH_TO_CALLBACK}/embObjSkin/usrcbk/)
-    
-    
+
+
     set(EXTRA_FOLDER            ${CMAKE_CURRENT_SOURCE_DIR}/)
     set(TRANSCEIVER_FOLDER      ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/ )
 

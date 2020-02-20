@@ -24,7 +24,7 @@ using namespace iCub::ctrl;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Riccati::Riccati(const Matrix &_A, const Matrix &_B, const Matrix &_V,
-                 const Matrix &_P, const Matrix &_VN, bool verb) 
+                 const Matrix &_P, const Matrix &_VN, bool verb)
 {
     A = _A; At = A.transposed();
     B = _B; Bt = B.transposed();
@@ -55,7 +55,7 @@ void Riccati::setVerbose(bool verb)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix Riccati::L(int step)
 {
-    if(N<0) 
+    if(N<0)
     {
         if (verbose)
             yWarning("Riccati: DARE has not been solved yet.");
@@ -74,7 +74,7 @@ Matrix Riccati::L(int step)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix Riccati::T(int step)
 {
-    if(N<0) 
+    if(N<0)
     {
         if (verbose)
             yError("Riccati: DARE has not been solved yet.");
@@ -119,21 +119,21 @@ void Riccati::solveRiccati(int steps)
     Ti = new Matrix[steps+1];
     Li = new Matrix[steps];
     for(i=0; i<=steps; i++)
-        Ti[i].resize(VN.rows(),VN.cols());		
+        Ti[i].resize(VN.rows(),VN.cols());
     //init TN=VN
     Ti[steps]=VN;
     //compute backward all Ti
     for(i=steps-1; i>=0; i--)
     {
-        lastT=Ti[i+1]; 
+        lastT=Ti[i+1];
         //Ti = V + A' * (Ti+1 - Ti+1 * B * (P + B' * Ti+1 * B)^-1 * B' * Ti+1 )* A;
-        Ti[i] = V + At *(lastT - lastT * B* pinv(P+Bt*lastT*B)*Bt*lastT )* A; 
+        Ti[i] = V + At *(lastT - lastT * B* pinv(P+Bt*lastT*B)*Bt*lastT )* A;
     }
     //compute forward all Li
     for(i=0;i<steps; i++)
     {
         //Li = (P + B' * Ti+1 * B)^-1 * B' * Ti+1 * A
-        Li[i] = pinv(P + Bt*Ti[i+1]*B) *Bt * Ti[i+1] * A;	
+        Li[i] = pinv(P + Bt*Ti[i+1]*B) *Bt * Ti[i+1] * A;
     }
 
     if (verbose)
@@ -144,7 +144,7 @@ void Riccati::solveRiccati(int steps)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector Riccati::doLQcontrol(int step, const Vector &x)
 {
-    if(N<0) 
+    if(N<0)
     {
         if (verbose)
             yError("Riccati: DARE has not been solved yet.");
@@ -165,7 +165,7 @@ Vector Riccati::doLQcontrol(int step, const Vector &x)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void Riccati::doLQcontrol(int step, const Vector &x, Vector &ret)
 {
-    if(N<0) 
+    if(N<0)
     {
         if (verbose)
             yError("Riccati: DARE has not been solved yet.");

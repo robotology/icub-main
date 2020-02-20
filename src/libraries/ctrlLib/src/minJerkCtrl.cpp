@@ -72,7 +72,7 @@ void minJerkVelCtrlForIdealPlant::computeCoeffs()
 Vector minJerkVelCtrlForIdealPlant::computeCmd(const double _T, const Vector &e)
 {
     if (T!=_T)
-    {    
+    {
         T=_T;
         computeCoeffs();
     }
@@ -133,7 +133,7 @@ void minJerkVelCtrlForNonIdealPlant::computeCoeffs()
     double _den_1=2.0*Ts2;
     double _den_2=_den_1*c;
     double _den_3=Ts3*b;
-    double _den_4=3.0*_den_3;    
+    double _den_4=3.0*_den_3;
 
     for (int i=0; i<dim; i++)
     {
@@ -144,7 +144,7 @@ void minJerkVelCtrlForNonIdealPlant::computeCoeffs()
         num[1]=a * (_num_0 + _num_1 - _num_2);
         num[2]=a * (_num_0 - _num_1 - _num_2);
         num[3]=a * (Ts3    - _num_1 + _num_2);
-        
+
         double _den_5=_den_1*Tz[i]*b;
         double _den_6=_den_0*Tz[i]*c;
         double _den_7=8.0*Tz[i];
@@ -169,7 +169,7 @@ void minJerkVelCtrlForNonIdealPlant::computeCoeffs()
 Vector minJerkVelCtrlForNonIdealPlant::computeCmd(const double _T, const Vector &e)
 {
     if (T!=_T)
-    {    
+    {
         T=_T;
         computeCoeffs();
     }
@@ -207,11 +207,11 @@ void minJerkVelCtrlForNonIdealPlant::setPlantParameters(const Property &paramete
     Kp.resize(dim,1.0);
     Tz.resize(dim,0.0);
     Tw.resize(dim,0.0);
-    Zeta.resize(dim,0.0);    
+    Zeta.resize(dim,0.0);
 
     int len=ordering.size()==0?dim:(int)ordering.size();
     for (int i=0; i<len; i++)
-    {        
+    {
         ostringstream entry;
         entry<<entryTag<<"_"<<(ordering.size()==0?i:ordering.get(i).asInt());
         if (parameters.check(entry.str()))
@@ -232,7 +232,7 @@ void minJerkVelCtrlForNonIdealPlant::setPlantParameters(const Property &paramete
             }
         }
     }
-    
+
     computeCoeffs();
 }
 
@@ -243,7 +243,7 @@ void minJerkVelCtrlForNonIdealPlant::getPlantParameters(Property &parameters,
 {
     ostringstream entry;
     for (int i=0; i<dim; i++)
-    {                
+    {
         entry<<"("<<entryTag<<"_"<<i<<" (";
 
         Property prop;
@@ -335,8 +335,8 @@ minJerkBaseGen& minJerkBaseGen::operator=(const minJerkBaseGen &z)
 void minJerkBaseGen::init(const Vector &y0)
 {
     // save initial state y0, so that if setT() or setTs() are called afterwards
-    // the vel and acc filters are initialized with the right value (i.e. y0) 
-    lastRef = pos = y0; 
+    // the vel and acc filters are initialized with the right value (i.e. y0)
+    lastRef = pos = y0;
     if (posFilter!=NULL)
         posFilter->init(y0);
 
@@ -543,7 +543,7 @@ void minJerkRefGen::computeNextValues(const yarp::sig::Vector &y)
 {
     if (posFilter!=NULL)
         pos = posFilter->filt(lastRef);
-    
+
     // rotate pos around lastRef so that it lies along the distance y-lastRef
     /*double n = yarp::math::norm(y-lastRef);
     if(n!=0.0)

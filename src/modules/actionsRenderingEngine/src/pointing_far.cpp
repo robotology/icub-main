@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2017 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -120,7 +120,7 @@ public:
 
     /*********************************************************************/
     void setFingerJoints(const Vector& finger_joints)
-    {        
+    {
         Vector chain_joints;
         finger->getChainJoints(finger_joints,chain_joints);
         finger->setAng(DEG2RAD*chain_joints);
@@ -218,7 +218,7 @@ public:
         Matrix tip=finger_tip->getH();
         Vector tb_dir=tip.getCol(3).subVector(0,2)-fingerBasePos;
         g[0]=dot(pb_dir,tb_dir)/(norm(pb_dir)*norm(tb_dir));
-        
+
         double e=-1.0-tip(2,2);
         g[1]=e*e;
         return true;
@@ -265,7 +265,7 @@ public:
             for (Ipopt::Index i=0; i<n; i++)
                 values[i]=(dot(dpb_dir.getCol(i),tb_dir)+dot(pb_dir,dtb_dir.getCol(i)))/nn-
                           tmp1*(dot(pb_dir,dpb_dir.getCol(i))*tmp2)/tmp3;
-            
+
             double e=-1.0-tip(2,2);
             Matrix dtipZ=finger_tip->AnaJacobian(2);
             for (Ipopt::Index i=0; i<n; i++)
@@ -312,7 +312,7 @@ bool PointingFar::compute(ICartesianControl *iarm, const Property& requirements,
         yError()<<"Target point not provided";
         return false;
     }
-    
+
     Vector point(3,0.0);
     for (int i=0; i<bPoint->size(); i++)
         point[i]=bPoint->get(i).asDouble();
@@ -341,7 +341,7 @@ bool PointingFar::compute(ICartesianControl *iarm, const Property& requirements,
         nlp->setFingerJoints(finger_joints);
     }
 
-    Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));    
+    Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));
     nlp->getResult(q,x);
     return true;
 }
@@ -353,7 +353,7 @@ bool PointingFar::point(ICartesianControl *iarm, const Vector& q, const Vector& 
     if ((q.length()>=10) && (x.length()>=7))
     {
         int context;
-        iarm->storeContext(&context);        
+        iarm->storeContext(&context);
 
         // specify all joints
         Vector dof(10,1.0);

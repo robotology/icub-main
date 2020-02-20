@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -66,7 +66,7 @@ protected:
     const Matrix        &Prj;
 
     Vector min;
-    Vector max;    
+    Vector max;
     Vector x0;
     Vector x;
 
@@ -120,7 +120,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number *x,
                             bool init_z, Ipopt::Number *z_L, Ipopt::Number *z_U,
@@ -131,7 +131,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_f(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
                 Ipopt::Number &obj_value)
@@ -155,7 +155,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
@@ -192,7 +192,7 @@ public:
         Matrix dHdx3=dRx.transposed()*invRy*invRz; dHdx3.setCol(3,dHdx3*p);
         Matrix dHdx4=invRx*dRy.transposed()*invRz; dHdx4.setCol(3,dHdx4*p);
         Matrix dHdx5=invRx*invRy*dRz.transposed(); dHdx5.setCol(3,dHdx5*p);
-        
+
         Matrix dPrjHdx0=Prj*dHdx0;
         Matrix dPrjHdx1=Prj*dHdx1;
         Matrix dPrjHdx2=Prj*dHdx2;
@@ -289,7 +289,7 @@ public:
     {
         return true;
     }
-    
+
 
     /****************************************************************/
     void finalize_solution(Ipopt::SolverReturn status, Ipopt::Index n,

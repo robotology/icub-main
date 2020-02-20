@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010-2011 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Serena Ivaldi, Matteo Fumagalli
 * email:   serena.ivaldi@iit.it, matteo.fumagalli@iit.it
@@ -66,7 +66,7 @@ RigidBodyTransformation::~RigidBodyTransformation()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool RigidBodyTransformation::setRBT(const Matrix &_H)
 {
-    if((_H.cols()==4)&&(_H.rows()==4))      
+    if((_H.cols()==4)&&(_H.rows()==4))
     {
         H=_H;
         return true;
@@ -104,7 +104,7 @@ bool RigidBodyTransformation::setWrench(const Vector &FNode, const Vector &MuNod
     Mu = MuNode;
     // now apply the RBT transformation
     computeWrench();
-    // send the wrench to the limb - the limb knows whether it is on base or on end-eff 
+    // send the wrench to the limb - the limb knows whether it is on base or on end-eff
     return limb->initWrenchNewtonEuler(F,Mu);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -118,19 +118,19 @@ bool RigidBodyTransformation::setWrenchMeasure(iDynSensor *sensor, const Vector 
     return sensor->setSensorMeasures(Fsens,Musens);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix RigidBodyTransformation::getRBT() const          
+Matrix RigidBodyTransformation::getRBT() const
 {
     return H;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix RigidBodyTransformation::getR()                  
+Matrix RigidBodyTransformation::getR()
 {
     return H.submatrix(0,2,0,2);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix RigidBodyTransformation::getR6() const                   
+Matrix RigidBodyTransformation::getR6() const
 {
-    Matrix R(6,6); R.zero();        
+    Matrix R(6,6); R.zero();
     for(int i=0;i<3;i++)
     {
         for(int j=0;j<3;j++)
@@ -142,7 +142,7 @@ Matrix RigidBodyTransformation::getR6() const
     return R;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector RigidBodyTransformation::getr(bool proj) 
+Vector RigidBodyTransformation::getr(bool proj)
 {
     if(proj==false)
         return H.submatrix(0,2,0,3).getCol(3);
@@ -196,7 +196,7 @@ void RigidBodyTransformation::computeKinematic()
 {
     if(this->kinFlow== RBT_NODE_IN)
     {
-        // note: these computations are similar to the Backward ones in 
+        // note: these computations are similar to the Backward ones in
         // OneLinkNewtonEuler: compute AngVel/AngAcc/LinAcc Backward
         // but here are fastened and adapted to the RBT
         // note: w,dw,ddp are already set with the ones coming from the LIMB
@@ -208,9 +208,9 @@ void RigidBodyTransformation::computeKinematic()
         case DYNAMIC_W_ROTOR:
             ddp = getR() * ( ddp - cross(dw,getr(true)) - cross(w,cross(w,getr(true))) ) ;
             w   = getR() * w ;
-            dw  = getR() * dw ; 
+            dw  = getR() * dw ;
             break;
-        case STATIC:    
+        case STATIC:
             w   = 0.0;
             dw  = 0.0;
             ddp = getR() * ddp;
@@ -219,8 +219,8 @@ void RigidBodyTransformation::computeKinematic()
     }
     else
     {
-        // note: these computations are similar to the Forward ones in 
-        // OneLinkNewtonEuler: compute AngVel/AngAcc/LinAcc 
+        // note: these computations are similar to the Forward ones in
+        // OneLinkNewtonEuler: compute AngVel/AngAcc/LinAcc
         // but here are fastened and adapted to the RBT
         // note: w,dw,ddp are already set with the ones coming from the NODE
 
@@ -233,13 +233,13 @@ void RigidBodyTransformation::computeKinematic()
             dw  = getR().transposed() * dw;
             ddp = getR().transposed() * (ddp) + cross(dw,getr(true)) + cross(w,cross(w,getr(true))) ;
             break;
-        case STATIC:    
+        case STATIC:
             w   = 0.0;
             dw  = 0.0;
             ddp =  getR().transposed() * ddp ;
             break;
         }
-    
+
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -247,7 +247,7 @@ void RigidBodyTransformation::computeWrench()
 {
     if(this->wreFlow== RBT_NODE_IN)
     {
-        // note: these computations are similar to the Backward ones in 
+        // note: these computations are similar to the Backward ones in
         // OneLinkNewtonEuler: compute Force/Moment Backward
         // but here are fastened and adapted to the RBT
         // note: no switch(mode) is necessary because all modes have the same formula
@@ -258,15 +258,15 @@ void RigidBodyTransformation::computeWrench()
     }
     else
     {
-        // note: these computations are similar to the Forward ones in 
-        // OneLinkNewtonEuler: compute Force/Moment Forward 
+        // note: these computations are similar to the Forward ones in
+        // OneLinkNewtonEuler: compute Force/Moment Forward
         // but here are fastened and adapted to the RBT
         // note: no switch(mode) is necessary because all modes have the same formula
         // note: F,Mu are already set with the ones coming from the NODE
 
         Mu = getR().transposed() * ( Mu - cross(getr(),getR() * F ));
         F  = getR().transposed() * F ;
-        
+
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -295,14 +295,14 @@ unsigned int RigidBodyTransformation::getDOF() const
     return limb->getDOF();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix RigidBodyTransformation::getH(const unsigned int iLink, const bool allLink)            
-{ 
-    return limb->getH(iLink,allLink);          
+Matrix RigidBodyTransformation::getH(const unsigned int iLink, const bool allLink)
+{
+    return limb->getH(iLink,allLink);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix RigidBodyTransformation::getH()                                                          
-{ 
-    return limb->getH();                   
+Matrix RigidBodyTransformation::getH()
+{
+    return limb->getH();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector RigidBodyTransformation::getEndEffPose(const bool axisRep)
@@ -374,8 +374,8 @@ bool RigidBodyTransformation::setH0(const Matrix &_H0)
     //---------------
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Matrix RigidBodyTransformation::TESTING_computeCOMJacobian(const unsigned int iLink, bool rbtRoto)  
-{ 
+Matrix RigidBodyTransformation::TESTING_computeCOMJacobian(const unsigned int iLink, bool rbtRoto)
+{
     if(rbtRoto==false)
         return limb->TESTING_computeCOMJacobian(iLink);
     else
@@ -383,7 +383,7 @@ Matrix RigidBodyTransformation::TESTING_computeCOMJacobian(const unsigned int iL
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix RigidBodyTransformation::TESTING_computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, bool rbtRoto)
-{ 
+{
    if(rbtRoto==false)
         return limb->TESTING_computeCOMJacobian(iLink, Pn);
     else
@@ -391,7 +391,7 @@ Matrix RigidBodyTransformation::TESTING_computeCOMJacobian(const unsigned int iL
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix RigidBodyTransformation::TESTING_computeCOMJacobian(const unsigned int iLink, const Matrix &Pn, const Matrix &_H0, bool rbtRoto)
-{ 
+{
    if(rbtRoto==false)
         return limb->TESTING_computeCOMJacobian(iLink, Pn, _H0);
     else
@@ -399,7 +399,7 @@ Matrix RigidBodyTransformation::TESTING_computeCOMJacobian(const unsigned int iL
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix RigidBodyTransformation::getHCOM(unsigned int iLink)
-{ 
+{
    return limb->getHCOM(iLink);
 }
 
@@ -411,7 +411,7 @@ Matrix RigidBodyTransformation::getHCOM(unsigned int iLink)
 //      i DYN NODE
 //
 //====================================
-    
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynNode::iDynNode(const NewEulMode _mode)
 {
@@ -444,7 +444,7 @@ void iDynNode::addLimb(iDynLimb *limb, const Matrix &H, const FlowType kinFlow, 
     string infoRbt = limb->getType() + " to node";
     RigidBodyTransformation rbt(limb,H,infoRbt,hasSensor,kinFlow,wreFlow,mode,verbose);
     rbtList.push_back(rbt);
-}    
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Matrix iDynNode::getRBT(unsigned int iLimb) const
 {
@@ -462,18 +462,18 @@ Matrix iDynNode::getRBT(unsigned int iLimb) const
 bool iDynNode::solveKinematics()
 {
     unsigned int inputNode=0;
-    
+
     //first find the limb (one!) which must get the measured kinematics data
     // e.g. the head gets this information from the inertial sensor on the head
     for(unsigned int i=0; i<rbtList.size(); i++)
     {
-        if(rbtList[i].getKinematicFlow()==RBT_NODE_IN)          
+        if(rbtList[i].getKinematicFlow()==RBT_NODE_IN)
         {
             // measures are already set
-            //then compute the kinematics pass in that limb 
+            //then compute the kinematics pass in that limb
             rbtList[i].computeLimbKinematic();
             // and retrieve the kinematics data in the base/end
-            rbtList[i].getKinematic(w,dw,ddp);      
+            rbtList[i].getKinematic(w,dw,ddp);
             //check
             inputNode++;
         }
@@ -494,7 +494,7 @@ bool iDynNode::solveKinematics()
             }
         }
         return true;
-    
+
     }
     else
     {
@@ -511,18 +511,18 @@ bool iDynNode::solveKinematics()
 bool iDynNode::solveKinematics(const Vector &w0, const Vector &dw0, const Vector &ddp0)
 {
     unsigned int inputNode=0;
-    
+
     //first find the limb (one!) which must get the measured kinematics data
     // e.g. the head gets this information from the inertial sensor on the head
     for(unsigned int i=0; i<rbtList.size(); i++)
     {
-        if(rbtList[i].getKinematicFlow()==RBT_NODE_IN)          
+        if(rbtList[i].getKinematicFlow()==RBT_NODE_IN)
         {
             rbtList[i].setKinematicMeasure(w0,dw0,ddp0);
-            //then compute the kinematics pass in that limb 
+            //then compute the kinematics pass in that limb
             rbtList[i].computeLimbKinematic();
             // and retrieve the kinematics data in the base/end
-            rbtList[i].getKinematic(w,dw,ddp);      
+            rbtList[i].getKinematic(w,dw,ddp);
             //check
             inputNode++;
         }
@@ -543,7 +543,7 @@ bool iDynNode::solveKinematics(const Vector &w0, const Vector &dw0, const Vector
             }
         }
         return true;
-    
+
     }
     else
     {
@@ -566,7 +566,7 @@ bool iDynNode::setKinematicMeasure(const Vector &w0, const Vector &dw0, const Ve
         // e.g. the head gets this information from the inertial sensor on the head
         for(unsigned int i=0; i<rbtList.size(); i++)
         {
-            if(rbtList[i].getKinematicFlow()==RBT_NODE_IN)          
+            if(rbtList[i].getKinematicFlow()==RBT_NODE_IN)
             {
                 rbtList[i].setKinematicMeasure(w0,dw0,ddp0);
                 return true;
@@ -597,7 +597,7 @@ bool iDynNode::solveWrench()
     //forces/moments which are necessary for the wrench computation
     for(unsigned int i=0; i<rbtList.size(); i++)
     {
-        if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+        if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
         {
             //compute the wrench pass in that limb
             rbtList[i].computeLimbWrench();
@@ -613,9 +613,9 @@ bool iDynNode::solveWrench()
     // node summation: already performed by each RBT
     // F = F + F[i], Mu = Mu + Mu[i]
 
-    // at least one output node should exist 
-    // however if for testing purposes only one limb is attached to the node, 
-    // we can't avoid the computeWrench phase, but still we must remember that 
+    // at least one output node should exist
+    // however if for testing purposes only one limb is attached to the node,
+    // we can't avoid the computeWrench phase, but still we must remember that
     // it is not correct, because the node must be in balance
     if(outputNode==rbtList.size())
     {
@@ -664,11 +664,11 @@ bool iDynNode::setWrenchMeasure(const Matrix &FM)
 
     //check how many limbs have wrench input
     int inputNode = howManyWrenchInputs(false);
-        
+
     // input (eg measured) wrenches are stored in a 6xN matrix: each column is a 6x1 vector
     // with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
     // the order is assumed coherent with the one built when adding limbs
-    // eg: 
+    // eg:
     // adding limbs: addLimb(limb1), addLimb(limb2), addLimb(limb3)
     // where limb1, limb3 have wrench flow input
     // passing wrenches: Matrix FM(6,2), FM.setcol(0,fm1), FM.setcol(1,fm3)
@@ -697,7 +697,7 @@ bool iDynNode::setWrenchMeasure(const Matrix &FM)
         inputNode = 0;
         for(unsigned int i=0; i<rbtList.size(); i++)
         {
-            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
             {
                 // from the input matrix - read the input wrench
                 FMi = FM.getCol(inputNode);
@@ -713,7 +713,7 @@ bool iDynNode::setWrenchMeasure(const Matrix &FM)
     {
         // default zero values if inputs are wrong sized
         for(unsigned int i=0; i<rbtList.size(); i++)
-            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
                 rbtList[i].setWrenchMeasure(fi,mi);
     }
 
@@ -727,11 +727,11 @@ bool iDynNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
 
     //check how many limbs have wrench input
     int inputNode = howManyWrenchInputs(false);
-        
+
     // input (eg measured) wrenches are stored in two 3xN matrix: each column is a 3x1 vector
     // with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
     // the order is assumed coherent with the one built when adding limbs
-    // eg: 
+    // eg:
     // adding limbs: addLimb(limb1), addLimb(limb2), addLimb(limb3)
     // where limb1, limb3 have wrench flow input
     // passing wrenches: Matrix Fm(3,2), Fm.setcol(0,f1), Fm.setcol(1,f3) and similar for moment
@@ -754,13 +754,13 @@ bool iDynNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
         inputWasOk = false;
     }
 
-    //set the measured/input forces/moments from each limb  
+    //set the measured/input forces/moments from each limb
     if(inputWasOk)
     {
         inputNode = 0;
         for(unsigned int i=0; i<rbtList.size(); i++)
         {
-            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
             {
                 // from the input matrix
                 //set the input wrench in the RBT->limb
@@ -773,9 +773,9 @@ bool iDynNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm)
     {
         // default zero values if inputs are wrong sized
         Vector fi(3), mi(3); fi.zero(); mi.zero();
-        for(unsigned int i=0; i<rbtList.size(); i++)    
-            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
-                rbtList[i].setWrenchMeasure(fi,mi); 
+        for(unsigned int i=0; i<rbtList.size(); i++)
+            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
+                rbtList[i].setWrenchMeasure(fi,mi);
     }
 
     //now that all is set, we can really solveWrench()
@@ -788,7 +788,7 @@ unsigned int iDynNode::howManyWrenchInputs(bool afterAttach) const
 
     //check how many limbs have wrench input
     for(unsigned int i=0; i<rbtList.size(); i++)
-        if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+        if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
             inputNode++;
 
     // if an attach has been done, we already set one wrench measure, so we don't have to do it again
@@ -804,7 +804,7 @@ unsigned int iDynNode::howManyKinematicInputs(bool afterAttach) const
 
     //check how many limbs have kinematic input
     for(unsigned int i=0; i<rbtList.size(); i++)
-        if(rbtList[i].getKinematicFlow()==RBT_NODE_IN)          
+        if(rbtList[i].getKinematicFlow()==RBT_NODE_IN)
             inputNode++;
 
     // if an attach has been done, we already set one kinematic measure, so we don't have to do it again
@@ -864,7 +864,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
     //first check param coherence:
     // - wrong limb index
     if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
-    { 
+    {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,(int)rbtList.size());
         return Matrix(0,0);
     }
@@ -872,7 +872,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
     if( iChainA==iChainB )
     {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %d: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
-        return Matrix(0,0);     
+        return Matrix(0,0);
     }
 
     // params are ok, go on..
@@ -881,7 +881,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
     // the total jacobian matrix
     Matrix J(6,rbtList[iChainA].getDOF() + rbtList[iChainB].getDOF()); J.zero();
     //the vector from the base-link (for the jac.) of limb A to the end-link (for the jac.) of limb B
-    Matrix Pn; 
+    Matrix Pn;
     // the two jacobians
     Matrix J_A; Matrix J_B;
     // from base-link (for the jac.) of limb A to base (for the jac.) of limb B
@@ -892,11 +892,11 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
     // H_A_Node is used to initialize J_B properly
     compute_Pn_HAN(iChainA, dirA, iChainB, dirB, Pn, H_A_Node);
 
-    // now compute jacobian of first and second limb, setting the correct Pn 
+    // now compute jacobian of first and second limb, setting the correct Pn
     // JA
-    J_A = rbtList[iChainA].computeGeoJacobian(Pn,false);            
+    J_A = rbtList[iChainA].computeGeoJacobian(Pn,false);
     // JB
-    // note: set H_A_node as the H0 of the B chain, but does not modify the chain original H0 
+    // note: set H_A_node as the H0 of the B chain, but does not modify the chain original H0
     J_B = rbtList[iChainB].computeGeoJacobian(Pn,H_A_Node,false);
 
     // finally start building the Jacobian J=[J_A|J_B]
@@ -911,7 +911,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
         fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF());
         J.resize(6,JAcols+JBcols);
     }
-    
+
     for(unsigned int r=0; r<6; r++)
     {
         for(c=0;c<JAcols;c++)
@@ -919,7 +919,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
         for(c=0;c<JBcols;c++)
             J(r,JAcols+c)=J_B(r,c);
     }
-    
+
     // now return the jacobian
     return J;
 }
@@ -929,7 +929,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
     //first check param coherence:
     // - wrong limb index
     if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
-    { 
+    {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix.\n",iChainA,iChainB,(int)rbtList.size());
         return Matrix(0,0);
     }
@@ -937,13 +937,13 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
     if( iChainA==iChainB )
     {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %d : same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix.\n",iChainA);
-        return Matrix(0,0);     
+        return Matrix(0,0);
     }
     // - there's not a link with index iLink in that chain
     if( iLinkB >= rbtList[iChainB].getNLinks())
     {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index for chain %d: the selected link %d > %d. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
-        return Matrix(0,0);  
+        return Matrix(0,0);
     }
 
     // params are ok, go on..
@@ -953,7 +953,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
     // the total jacobian matrix
     Matrix J(6,rbtList[iChainA].getDOF() + iLinkB ); J.zero();
     //the vector from the base-link (for the jac.) of limb A to the end-link (for the jac.) of limb B
-    Matrix Pn; 
+    Matrix Pn;
     // the two jacobians
     Matrix J_A; Matrix J_B;
     // from base-link (for the jac.) of limb A to base (for the jac.) of limb B
@@ -964,11 +964,11 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
     // H_A_Node is used to initialize J_B properly
     compute_Pn_HAN(iChainA, dirA, iChainB, iLinkB, dirB, Pn, H_A_Node);
 
-    // now compute jacobian of first and second limb, setting the correct Pn 
+    // now compute jacobian of first and second limb, setting the correct Pn
     // JA
-    J_A = rbtList[iChainA].computeGeoJacobian(Pn,false);            
+    J_A = rbtList[iChainA].computeGeoJacobian(Pn,false);
     // JB
-    // note: set H_A_node as the H0 of the B chain, but does not modify the chain original H0 
+    // note: set H_A_node as the H0 of the B chain, but does not modify the chain original H0
     J_B = rbtList[iChainB].computeGeoJacobian(iLinkB,Pn,H_A_Node,false);
 
     // finally start building the Jacobian J=[J_A|J_B]
@@ -983,7 +983,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
         fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  iLinkB=%d \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
         J.resize(6,JAcols+JBcols);
     }
-    
+
     for(unsigned int r=0; r<6; r++)
     {
         for(c=0;c<JAcols;c++)
@@ -991,7 +991,7 @@ Matrix iDynNode::computeJacobian(unsigned int iChainA, JacobType dirA, unsigned 
         for(c=0;c<JBcols;c++)
             J(r,JAcols+c)=J_B(r,c);
     }
-    
+
     // now return the jacobian
     return J;
 }
@@ -1002,19 +1002,19 @@ void iDynNode::compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int
     // this is used to set the correct reference of vector Pn
     if(dirA==JAC_KIN)
     {
-        // H_A_Node = H_A * RBT_A^T * RBT_B 
+        // H_A_Node = H_A * RBT_A^T * RBT_B
         // note: RBT_A is transposed because we're going in the opposite direction wrt to one of the RBT
         H_A_Node = rbtList[iChainA].getH() * rbtList[iChainA].getRBT().transposed() * rbtList[iChainB].getRBT();
     }
     else //dirA==JAC_IKIN
     {
-        // H_A_Node = H_A^-1 * RBT_A^T * RBT_B 
+        // H_A_Node = H_A^-1 * RBT_A^T * RBT_B
         H_A_Node = SE3inv(rbtList[iChainA].getH()) * rbtList[iChainA].getRBT().transposed() * rbtList[iChainB].getRBT();
     }
 
     if(dirB==JAC_KIN)
     {
-        // Pn = H_A_Node * H_B 
+        // Pn = H_A_Node * H_B
         // Pn is the roto-transf matrix between base (of jac. in limb A) and end (of jac. in limb B)
         // it is needed because the two jacobians must refer to a common Pn
         Pn = H_A_Node * rbtList[iChainB].getH();
@@ -1032,19 +1032,19 @@ void iDynNode::compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int
     // this is used to set the correct reference of vector Pn
     if(dirA==JAC_KIN)
     {
-        // H_A_Node = H_A * RBT_A^T * RBT_B 
+        // H_A_Node = H_A * RBT_A^T * RBT_B
         // note: RBT_A is transposed because we're going in the opposite direction wrt to one of the RBT
         H_A_Node = rbtList[iChainA].getH() * rbtList[iChainA].getRBT().transposed() * rbtList[iChainB].getRBT();
     }
     else //dirA==JAC_IKIN
     {
-        // H_A_Node = H_A^-1 * RBT_A^T * RBT_B 
+        // H_A_Node = H_A^-1 * RBT_A^T * RBT_B
         H_A_Node = SE3inv(rbtList[iChainA].getH()) * rbtList[iChainA].getRBT().transposed() * rbtList[iChainB].getRBT();
     }
 
     if(dirB==JAC_KIN)
     {
-        // Pn = H_A_Node * H_B(iLinkB) 
+        // Pn = H_A_Node * H_B(iLinkB)
         // Pn is the roto-transf matrix between base (of jac. in limb A) and end (of jac. in limb B)
         // it is needed because the two jacobians must refer to a common Pn
         // here for chain B we stop at the iLinkB link
@@ -1064,7 +1064,7 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
     //first check param coherence:
     // - wrong limb index
     if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
-    { 
+    {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,(int)rbtList.size());
         return Vector(0);
     }
@@ -1072,13 +1072,13 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
     if( iChainA==iChainB )
     {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to weird index for chains %d: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
-        return Vector(0);       
+        return Vector(0);
     }
 
     // params are ok, go on..
 
     //the vector from the base-link (for the jac.) of limb A to the end-link (for the jac.) of limb B
-    Matrix Pn, H_A_Node; 
+    Matrix Pn, H_A_Node;
     // the pose vector
     Vector v;
 
@@ -1103,7 +1103,7 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
     else
     {
         v.resize(6);
-        Vector r(3); r.zero();    
+        Vector r(3); r.zero();
         // Euler Angles as XYZ (see dcm2angle.m)
         r[0]=atan2(-Pn(2,1),Pn(2,2));
         r[1]=asin(Pn(2,0));
@@ -1115,7 +1115,7 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
         v[4]=r[1];
         v[5]=r[2];
     }
-    
+
     return v;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1124,7 +1124,7 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
     //first check param coherence:
     // - wrong limb index
     if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
-    { 
+    {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,(int)rbtList.size());
         return Vector(0);
     }
@@ -1132,19 +1132,19 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
     if( iChainA==iChainB )
     {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to weird index for chains %d: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
-        return Vector(0);       
+        return Vector(0);
     }
     // - there's not a link with index iLink in that chain
     if( iLinkB >= rbtList[iChainB].getNLinks())
     {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computePose() due to out of range index for chain %d: the selected link is %d > %d. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
-        return Vector(0);    
+        return Vector(0);
     }
 
     // params are ok, go on..
 
     //the vector from the base-link (for the jac.) of limb A to the end-link (for the jac.) of limb B
-    Matrix Pn, H_A_Node; 
+    Matrix Pn, H_A_Node;
     // the pose vector
     Vector v;
 
@@ -1169,7 +1169,7 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
     else
     {
         v.resize(6);
-        Vector r(3); r.zero();    
+        Vector r(3); r.zero();
         // Euler Angles as XYZ (see dcm2angle.m)
         r[0]=atan2(-Pn(2,1),Pn(2,2));
         r[1]=asin(Pn(2,0));
@@ -1181,7 +1181,7 @@ Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int 
         v[4]=r[1];
         v[5]=r[2];
     }
-    
+
     return v;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1211,7 +1211,7 @@ Matrix iDynNode::TESTING_computeCOMJacobian(unsigned int iChainA, JacobType dirA
     //first check param coherence:
     // - wrong limb index
     if( (iChainA > rbtList.size())||(iChainB > rbtList.size()) )
-    { 
+    {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index: limbs have index %d,%d > %d. Returning a null matrix. \n",iChainA,iChainB,(int)rbtList.size());
         return Matrix(0,0);
     }
@@ -1219,13 +1219,13 @@ Matrix iDynNode::TESTING_computeCOMJacobian(unsigned int iChainA, JacobType dirA
     if( iChainA==iChainB )
     {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to weird index for chains %d: same chains are selected. Please check the indexes or use the method iDynNode::computeJacobian(unsigned int iChain). Returning a null matrix. \n",iChainA);
-        return Matrix(0,0);     
+        return Matrix(0,0);
     }
     // - there's not a link with index iLink in that chain
     if( iLinkB >= rbtList[iChainB].getNLinks())
     {
         if(verbose) fprintf(stderr,"iDynNode: error, could not computeJacobian() due to out of range index for chain %d: the selected link is %d > %d. Returning a null matrix. \n",iChainB,iLinkB,rbtList[iChainB].getNLinks());
-        return Matrix(0,0);  
+        return Matrix(0,0);
     }
 
     // params are ok, go on..
@@ -1235,7 +1235,7 @@ Matrix iDynNode::TESTING_computeCOMJacobian(unsigned int iChainA, JacobType dirA
     // the total jacobian matrix
     Matrix J(6,rbtList[iChainA].getDOF() + iLinkB ); J.zero();
     //the vector from the base-link (for the jac.) of limb A to the end-link (for the jac.) of limb B
-    Matrix Pn; 
+    Matrix Pn;
     // the two jacobians
     Matrix J_A; Matrix J_B;
     // from base-link (for the jac.) of limb A to base (for the jac.) of limb B
@@ -1246,11 +1246,11 @@ Matrix iDynNode::TESTING_computeCOMJacobian(unsigned int iChainA, JacobType dirA
     // Pn consider chain A, chain B until iLinkB, then the COM of iLinkB
     compute_Pn_HAN_COM(iChainA, dirA, iChainB, iLinkB, dirB, Pn, H_A_Node);
 
-    // now compute jacobian of first and second limb, setting the correct Pn 
+    // now compute jacobian of first and second limb, setting the correct Pn
     // JA
-    J_A = rbtList[iChainA].computeGeoJacobian(Pn,false);            
+    J_A = rbtList[iChainA].computeGeoJacobian(Pn,false);
     // JB
-    // note: set H_A_node as the H0 of the B chain, but does not modify the chain original H0 
+    // note: set H_A_node as the H0 of the B chain, but does not modify the chain original H0
     J_B = rbtList[iChainB].TESTING_computeCOMJacobian(iLinkB,Pn,H_A_Node,false);
 
     // finally start building the Jacobian J=[J_A|J_B]
@@ -1265,7 +1265,7 @@ Matrix iDynNode::TESTING_computeCOMJacobian(unsigned int iChainA, JacobType dirA
         fprintf(stderr,"Note:  limb B:  N=%d  DOF=%d  iLinkB=%d \n",rbtList[iChainB].getNLinks(),rbtList[iChainB].getDOF(),iLinkB);
         J.resize(6,JAcols+JBcols);
     }
-    
+
     for(unsigned int r=0; r<6; r++)
     {
         for(c=0;c<JAcols;c++)
@@ -1273,7 +1273,7 @@ Matrix iDynNode::TESTING_computeCOMJacobian(unsigned int iChainA, JacobType dirA
         for(c=0;c<JBcols;c++)
             J(r,JAcols+c)=J_B(r,c);
     }
-    
+
     // now return the jacobian
     return J;
 }
@@ -1284,19 +1284,19 @@ void iDynNode::compute_Pn_HAN_COM(unsigned int iChainA, JacobType dirA, unsigned
     // this is used to set the correct reference of vector Pn
     if(dirA==JAC_KIN)
     {
-        // H_A_Node = H_A * RBT_A^T * RBT_B 
+        // H_A_Node = H_A * RBT_A^T * RBT_B
         // note: RBT_A is transposed because we're going in the opposite direction wrt to one of the RBT
         H_A_Node = rbtList[iChainA].getH() * rbtList[iChainA].getRBT().transposed() * rbtList[iChainB].getRBT();
     }
     else //dirA==JAC_IKIN
     {
-        // H_A_Node = H_A^-1 * RBT_A^T * RBT_B 
+        // H_A_Node = H_A^-1 * RBT_A^T * RBT_B
         H_A_Node = SE3inv(rbtList[iChainA].getH()) * rbtList[iChainA].getRBT().transposed() * rbtList[iChainB].getRBT();
     }
 
     if(dirB==JAC_KIN)
     {
-        // Pn = H_A_Node * H_B(iLinkB) 
+        // Pn = H_A_Node * H_B(iLinkB)
         // Pn is the roto-transf matrix between base (of jac. in limb A) and end (of jac. in limb B)
         // it is needed because the two jacobians must refer to a common Pn
         // here for chain B we stop at the iLinkB link
@@ -1322,7 +1322,7 @@ void iDynNode::compute_Pn_HAN_COM(unsigned int iChainA, JacobType dirA, unsigned
 //      i DYN SENSOR NODE
 //
 //====================================
-    
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 iDynSensorNode::iDynSensorNode(const NewEulMode _mode)
 :iDynNode(_mode)
@@ -1360,7 +1360,7 @@ bool iDynSensorNode::solveWrench()
     //forces/moments which are necessary for the wrench computation
     for(unsigned int i=0; i<rbtList.size(); i++)
     {
-        if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+        if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
         {
             //compute the wrench pass in that limb
             // if there's a sensor, we must use iDynSensor
@@ -1382,9 +1382,9 @@ bool iDynSensorNode::solveWrench()
     // node summation: already performed by each RBT
     // F = F + F[i], Mu = Mu + Mu[i]
 
-    // at least one output node should exist 
-    // however if for testing purposes only one limb is attached to the node, 
-    // we can't avoid the computeWrench phase, but still we must remember that 
+    // at least one output node should exist
+    // however if for testing purposes only one limb is attached to the node,
+    // we can't avoid the computeWrench phase, but still we must remember that
     // it is not correct, because the node must be in balanc
     if(outputNode==rbtList.size())
     {
@@ -1419,11 +1419,11 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM, bool afterAttach)
 
     //check how many limbs have wrench input
     int inputNode = howManyWrenchInputs(afterAttach);
-        
+
     // input (eg measured) wrenches are stored in a 6xN matrix: each column is a 6x1 vector
     // with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
     // the order is assumed coherent with the one built when adding limbs
-    // eg: 
+    // eg:
     // adding limbs: addLimb(limb1), addLimb(limb2), addLimb(limb3)
     // where limb1, limb3 have wrench flow input
     // passing wrenches: Matrix FM(6,2), FM.setcol(0,fm1), FM.setcol(1,fm3)
@@ -1456,7 +1456,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM, bool afterAttach)
         inputNode = 0;
         for(unsigned int i=startLimb; i<rbtList.size(); i++)
         {
-            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
             {
                 // from the input matrix - read the input wrench
                 FMi = FM.getCol(inputNode);
@@ -1477,7 +1477,7 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM, bool afterAttach)
     {
         // default zero values if inputs are wrong sized
         for(unsigned int i=startLimb; i<rbtList.size(); i++)
-            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
             {
                 if(rbtList[i].isSensorized()==true)
                     rbtList[i].setWrenchMeasure(sensorList[i],fi,mi);
@@ -1493,14 +1493,14 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &FM, bool afterAttach)
 bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm, bool afterAttach)
 {
     bool inputWasOk = true;
-    
+
     //check how many limbs have wrench input
     int inputNode = howManyWrenchInputs(afterAttach);
-            
+
     // input (eg measured) wrenches are stored in two 3xN matrix: each column is a 3x1 vector
     // with force/moment; N is the number of columns, ie the number of measured/input wrenches to the limb
     // the order is assumed coherent with the one built when adding limbs
-    // eg: 
+    // eg:
     // adding limbs: addLimb(limb1), addLimb(limb2), addLimb(limb3)
     // where limb1, limb3 have wrench flow input
     // passing wrenches: Matrix Fm(3,2), Fm.setcol(0,f1), Fm.setcol(1,f3) and similar for moment
@@ -1526,13 +1526,13 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm, bool a
     unsigned int startLimb=0;
     if(afterAttach) startLimb=1;
 
-    //set the measured/input forces/moments from each limb  
+    //set the measured/input forces/moments from each limb
     if(inputWasOk)
     {
         inputNode = 0;
         for(unsigned int i=startLimb; i<rbtList.size(); i++)
         {
-            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
             {
                 // from the input matrix
                 //set the input wrench in the RBT->limb
@@ -1550,9 +1550,9 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm, bool a
     {
         // default zero values if inputs are wrong sized
         Vector fi(3), mi(3); fi.zero(); mi.zero();
-        for(unsigned int i=startLimb; i<rbtList.size(); i++)    
-            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
-                rbtList[i].setWrenchMeasure(fi,mi); 
+        for(unsigned int i=startLimb; i<rbtList.size(); i++)
+            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
+                rbtList[i].setWrenchMeasure(fi,mi);
     }
 
     //now that all is set, we can call solveWrench() or update()...
@@ -1562,14 +1562,14 @@ bool iDynSensorNode::setWrenchMeasure(const Matrix &Fm, const Matrix &Mm, bool a
 Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
 {
     unsigned int inputNode = 0;
-    unsigned int outputNode = 0;    
+    unsigned int outputNode = 0;
     unsigned int numSensor = 0;
     bool inputWasOk = true;
     Vector fi(3); fi.zero();
     Vector mi(3); mi.zero();
     Vector FMi(6);FMi.zero();
     Matrix ret;
-    
+
     //reset node wrench
     F.zero(); Mu.zero();
 
@@ -1605,7 +1605,7 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
         inputNode = 0;
         for(unsigned int i=startLimb; i<rbtList.size(); i++)
         {
-            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
             {
                 // from the input matrix - read the input wrench
                 FMi = FM.getCol(inputNode);
@@ -1622,8 +1622,8 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
     {
         // default zero values if inputs are wrong sized
         for(unsigned int i=startLimb; i<rbtList.size(); i++)
-            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
-                rbtList[i].setWrenchMeasure(fi,mi);     
+            if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
+                rbtList[i].setWrenchMeasure(fi,mi);
     }
 
     //first get the forces/moments from each limb
@@ -1631,7 +1631,7 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
     //forces/moments which are necessary for the wrench computation
     for(unsigned int i=0; i<rbtList.size(); i++)
     {
-        if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)         
+        if(rbtList[i].getWrenchFlow()==RBT_NODE_IN)
         {
             //compute the wrench pass in that limb
             // if there's a sensor, it's the same because here we estimate its value
@@ -1649,9 +1649,9 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
     // node summation: already performed by each RBT
     // F = F + F[i], Mu = Mu + Mu[i]
 
-    // at least one output node should exist 
-    // however if for testing purposes only one limb is attached to the node, 
-    // we can't avoid the computeWrench phase, but still we must remember that 
+    // at least one output node should exist
+    // however if for testing purposes only one limb is attached to the node,
+    // we can't avoid the computeWrench phase, but still we must remember that
     // it is not correct, because the node must be in balanc
     if(outputNode==rbtList.size())
     {
@@ -1682,7 +1682,7 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
     {
         //now we can estimate the sensor wrench if there's a sensor
         // if has sensor, compute its wrench
-        if(rbtList[i].isSensorized()==true)             
+        if(rbtList[i].isSensorized()==true)
         {
             sensorList[i]->computeSensorForceMoment();
             numSensor++;
@@ -1695,7 +1695,7 @@ Matrix iDynSensorNode::estimateSensorsWrench(const Matrix &FM, bool afterAttach)
         ret.resize(6,numSensor);
         numSensor=0;
         for(unsigned int i=0; i<rbtList.size(); i++)
-            if(rbtList[i].isSensorized()==true)     
+            if(rbtList[i].isSensorized()==true)
             {
                 ret.setCol(numSensor,sensorList[i]->getSensorForceMoment());
                 numSensor++;
@@ -1709,7 +1709,7 @@ unsigned int iDynSensorNode::howManySensors() const
     unsigned int numSensor = 0;
     for(unsigned int i=0; i<rbtList.size(); i++)
     {
-        if(rbtList[i].isSensorized()==true)             
+        if(rbtList[i].isSensorized()==true)
             numSensor++;
     }
     return numSensor;
@@ -1720,7 +1720,7 @@ unsigned int iDynSensorNode::howManySensors() const
 
 //====================================
 //
-//       iDYN SENSOR TORSO NODE   
+//       iDYN SENSOR TORSO NODE
 //
 //====================================
 
@@ -1839,7 +1839,7 @@ bool iDynSensorTorsoNode::update(const Vector &FM_right, const Vector &FM_left, 
 
     if((FM_right.length()==6)&&(FM_left.length()==6))
     {
-        Matrix FM(6,2); 
+        Matrix FM(6,2);
         FM.setCol(0,FM_right);
         FM.setCol(1,FM_left);
         setWrenchMeasure(FM,true);
@@ -1869,7 +1869,7 @@ Matrix iDynSensorTorsoNode::getForces(const string &limbType)
     else if(limbType==left_name)        return left->getForces();
     else if(limbType==right_name)       return right->getForces();
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return Matrix(0,0);
     }
@@ -1881,7 +1881,7 @@ Matrix iDynSensorTorsoNode::getMoments(const string &limbType)
     else if(limbType==left_name)    return left->getMoments();
     else if(limbType==right_name)   return right->getMoments();
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return Matrix(0,0);
     }
@@ -1893,15 +1893,15 @@ Vector iDynSensorTorsoNode::getTorques(const string &limbType)
     else if(limbType==left_name)    return left->getTorques();
     else if(limbType==right_name)   return right->getTorques();
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return Vector(0);
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynSensorTorsoNode::getTorsoForce() const { return F;}  
+Vector iDynSensorTorsoNode::getTorsoForce() const { return F;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynSensorTorsoNode::getTorsoMoment() const{ return Mu;} 
+Vector iDynSensorTorsoNode::getTorsoMoment() const{ return Mu;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vector iDynSensorTorsoNode::getTorsoAngVel() const{ return w;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1924,7 +1924,7 @@ bool   iDynSensorTorsoNode::computeCOM()
 
     iCub::iDyn::iDynLimb *limb =       0;
     yarp::sig::Matrix    *orig =       0;
-    yarp::sig::Vector    *total_COM  = 0;        
+    yarp::sig::Vector    *total_COM  = 0;
     double               *total_mass = 0;
 
     for (int n=0; n<3; n++)
@@ -1934,19 +1934,19 @@ bool   iDynSensorTorsoNode::computeCOM()
             case 0:
                 limb =        (this->left);
                 orig =       &(this->HLeft);
-                total_COM  = &(total_COM_LF);        
+                total_COM  = &(total_COM_LF);
                 total_mass = &(total_mass_LF);
             break;
             case 1:
                 limb =        (this->right);
                 orig =       &(this->HRight);
-                total_COM  = &(total_COM_RT);        
+                total_COM  = &(total_COM_RT);
                 total_mass = &(total_mass_RT);
             break;
             case 2:
                 limb =        (this->up);
                 orig =       &(this->HUp);
-                total_COM  = &(total_COM_UP);        
+                total_COM  = &(total_COM_UP);
                 total_mass = &(total_mass_UP);
             break;
         }
@@ -1955,8 +1955,8 @@ bool   iDynSensorTorsoNode::computeCOM()
         {
             (*total_mass)=(*total_mass)+limb->getMass(i);
             COM=limb->getCOM(i).getCol(3);
-                yarp::sig::Matrix m = limb->getH(i, true);      
-            (*total_COM) = (*total_COM) + ((*orig) * m * COM) * limb->getMass(i); 
+                yarp::sig::Matrix m = limb->getH(i, true);
+            (*total_COM) = (*total_COM) + ((*orig) * m * COM) * limb->getMass(i);
         }
         if (fabs(*total_mass) > 0.00001)
             {(*total_COM)=(*total_COM)/(*total_mass);  }
@@ -1971,7 +1971,7 @@ bool   iDynSensorTorsoNode::EXPERIMENTAL_computeCOMjacobian()
 {
     iCub::iDyn::iDynLimb *limb =       0;
     yarp::sig::Matrix    *orig =       0;
-    yarp::sig::Matrix    *COM_jacob  = 0;   
+    yarp::sig::Matrix    *COM_jacob  = 0;
     double               *total_mass = 0;
 
 
@@ -1982,19 +1982,19 @@ bool   iDynSensorTorsoNode::EXPERIMENTAL_computeCOMjacobian()
             case 0:
                 limb =        (this->left);
                 orig =       &(this->HLeft);
-                COM_jacob  = &(COM_jacob_LF);     
+                COM_jacob  = &(COM_jacob_LF);
                 total_mass = &(total_mass_LF);
             break;
             case 1:
                 limb =        (this->right);
                 orig =       &(this->HRight);
-                COM_jacob  = &(COM_jacob_RT);    
+                COM_jacob  = &(COM_jacob_RT);
                 total_mass = &(total_mass_RT);
             break;
             case 2:
                 limb =        (this->up);
                 orig =       &(this->HUp);
-                COM_jacob  = &(COM_jacob_UP);        
+                COM_jacob  = &(COM_jacob_UP);
                 total_mass = &(total_mass_UP);
             break;
         }
@@ -2018,16 +2018,16 @@ bool   iDynSensorTorsoNode::EXPERIMENTAL_computeCOMjacobian()
             partial_COM [iLink].resize(4);
             partial_COM [iLink].zero();
 
-            // this is the transformation from the link root to current link iLink 
-            yarp::sig::Matrix m = (*orig) * limb->getH(iLink, true);    
-            
+            // this is the transformation from the link root to current link iLink
+            yarp::sig::Matrix m = (*orig) * limb->getH(iLink, true);
+
             //partial COMs are computed in this block
             for (unsigned int i=iLink; i<limb->getN(); i++)
             {
                 yarp::sig::Matrix m_i = (*orig) * limb->getH(i, true);
                 partial_COM[iLink] =partial_COM[iLink] + m_i * limb->getCOM(i).getCol(3) * limb->getMass(i);
-                partial_mass[iLink]=partial_mass[iLink]+limb->getMass(i);   
-                if(partial_mass[iLink]==0) partial_mass[iLink]=1e-15;          
+                partial_mass[iLink]=partial_mass[iLink]+limb->getMass(i);
+                if(partial_mass[iLink]==0) partial_mass[iLink]=1e-15;
             }
             partial_COM[iLink] = (partial_COM[iLink]/partial_mass[iLink])-intH[iLink].getCol(3);
 
@@ -2037,7 +2037,7 @@ bool   iDynSensorTorsoNode::EXPERIMENTAL_computeCOMjacobian()
             printf ("p-nCOM: %d %+3.3f %+3.3f %+3.3f \n", iLink, partial_COM[iLink](0), partial_COM[iLink](1), partial_COM[iLink](2));
 #endif
             //partial COM jacobian are computed in this block
-            double mass_coeff = partial_mass[iLink]/(*total_mass);                    
+            double mass_coeff = partial_mass[iLink]/(*total_mass);
 
             Vector Z = intH[iLink].subcol(0,2,3);
             Vector w = cross(Z,partial_COM[iLink].subVector(0,2));
@@ -2067,7 +2067,7 @@ Vector iDynSensorTorsoNode::setAng(const string &limbType, const Vector &_q)
     else if(limbType==left_name)    return left->setAng(_q);
     else if(limbType==right_name)   return right->setAng(_q);
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return Vector(0);
     }
@@ -2079,7 +2079,7 @@ Vector iDynSensorTorsoNode::getAng(const string &limbType)
     else if(limbType==left_name)    return left->getAng();
     else if(limbType==right_name)   return right->getAng();
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return Vector(0);
     }
@@ -2091,7 +2091,7 @@ double iDynSensorTorsoNode::setAng(const string &limbType, const unsigned int i,
     else if(limbType==left_name)    return left->setAng(i,_q);
     else if(limbType==right_name)   return right->setAng(i,_q);
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return 0.0;
     }
@@ -2103,7 +2103,7 @@ double iDynSensorTorsoNode::getAng(const string &limbType, const unsigned int i)
     else if(limbType==left_name)    return left->getAng(i);
     else if(limbType==right_name)   return right->getAng(i);
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return 0.0;
     }
@@ -2115,7 +2115,7 @@ Vector iDynSensorTorsoNode::setDAng(const string &limbType, const Vector &_dq)
     else if(limbType==left_name)    return left->setDAng(_dq);
     else if(limbType==right_name)   return right->setDAng(_dq);
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return Vector(0);
     }
@@ -2127,7 +2127,7 @@ Vector iDynSensorTorsoNode::getDAng(const string &limbType)
     else if(limbType==left_name)    return left->getDAng();
     else if(limbType==right_name)   return right->getDAng();
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return Vector(0);
     }
@@ -2139,19 +2139,19 @@ double iDynSensorTorsoNode::setDAng(const string &limbType, const unsigned int i
     else if(limbType==left_name)    return left->setDAng(i,_dq);
     else if(limbType==right_name)   return right->setDAng(i,_dq);
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return 0.0;
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-double iDynSensorTorsoNode::getDAng(const string &limbType, const unsigned int i)    
+double iDynSensorTorsoNode::getDAng(const string &limbType, const unsigned int i)
 {
     if(limbType==up_name)           return up->getDAng(i);
     else if(limbType==left_name)    return left->getDAng(i);
     else if(limbType==right_name)   return right->getDAng(i);
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return 0.0;
     }
@@ -2163,7 +2163,7 @@ Vector iDynSensorTorsoNode::setD2Ang(const string &limbType, const Vector &_ddq)
     else if(limbType==left_name)    return left->setD2Ang(_ddq);
     else if(limbType==right_name)   return right->setD2Ang(_ddq);
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return Vector(0);
     }
@@ -2175,7 +2175,7 @@ Vector iDynSensorTorsoNode::getD2Ang(const string &limbType)
     else if(limbType==left_name)    return left->getD2Ang();
     else if(limbType==right_name)   return right->getD2Ang();
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return Vector(0);
     }
@@ -2187,7 +2187,7 @@ double iDynSensorTorsoNode::setD2Ang(const string &limbType, const unsigned int 
     else if(limbType==left_name)    return left->setD2Ang(i,_ddq);
     else if(limbType==right_name)   return right->setD2Ang(i,_ddq);
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return 0.0;
     }
@@ -2199,7 +2199,7 @@ double iDynSensorTorsoNode::getD2Ang(const string &limbType, const unsigned int 
     else if(limbType==left_name)    return left->getD2Ang(i);
     else if(limbType==right_name)   return right->getD2Ang(i);
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return 0.0;
     }
@@ -2211,7 +2211,7 @@ unsigned int iDynSensorTorsoNode::getNLinks(const string &limbType) const
     else if(limbType==left_name)    return left->getN();
     else if(limbType==right_name)   return right->getN();
     else
-    {       
+    {
         if(verbose) fprintf(stderr,"Node <%s> there's not a limb named %s. Only %s,%s,%s are available. \n",name.c_str(),limbType.c_str(),left_name.c_str(),right_name.c_str(),up_name.c_str());
         return 0;
     }
@@ -2227,7 +2227,7 @@ void iDynSensorTorsoNode::clearContactList()
 
 //====================================
 //
-//          UPPER TORSO   
+//          UPPER TORSO
 //
 //====================================
 
@@ -2259,9 +2259,9 @@ void iCubUpperTorso::build()
     // note position 5 if with torso, 2 without torso
     unsigned int SENSOR_LINK_INDEX = 2;
 
-    leftSensor = new iDynContactSolver(dynamic_cast<iCubArmNoTorsoDyn*>(left), SENSOR_LINK_INDEX, armLeftSensor, 
+    leftSensor = new iDynContactSolver(dynamic_cast<iCubArmNoTorsoDyn*>(left), SENSOR_LINK_INDEX, armLeftSensor,
         "leftArmContactSolver",mode,LEFT_ARM, verbose);
-    rightSensor = new iDynContactSolver(dynamic_cast<iCubArmNoTorsoDyn*>(right), SENSOR_LINK_INDEX, armRightSensor, 
+    rightSensor = new iDynContactSolver(dynamic_cast<iCubArmNoTorsoDyn*>(right), SENSOR_LINK_INDEX, armRightSensor,
         "rightArmContactSolver",mode,RIGHT_ARM, verbose);
 
     HUp.resize(4,4);    HUp.eye();
@@ -2273,7 +2273,7 @@ void iCubUpperTorso::build()
     HLeft(0,0) = cos(theta);    HLeft(0,1) = 0.0;       HLeft(0,2) = sin(theta);    HLeft(0,3) = -24.8786e-3;
     HLeft(1,0) = 0.0;           HLeft(1,1) = 1.0;       HLeft(1,2) = 0.0;           HLeft(1,3) = -50.0000e-3;
     HLeft(2,0) = -sin(theta);   HLeft(2,1) = 0.0;       HLeft(2,2) = cos(theta);    HLeft(2,3) =  -6.0472e-3;
-    HLeft(3,3) = 1.0;   
+    HLeft(3,3) = 1.0;
     HRight(0,0) = -cos(theta);  HRight(0,1) = 0.0;  HRight(0,2) = -sin(theta);  HRight(0,3) = -24.8786e-3;
     HRight(1,0) = 0.0;          HRight(1,1) = -1.0; HRight(1,2) = 0.0;          HRight(1,3) = -50.0000e-3;
     HRight(2,0) = -sin(theta);  HRight(2,1) = 0.0;  HRight(2,2) = cos(theta);   HRight(2,3) =   6.0472e-3;
@@ -2283,11 +2283,11 @@ void iCubUpperTorso::build()
     HLeft(0,0) = cos(theta);    HLeft(0,1) = 0.0;       HLeft(0,2) = sin(theta);    HLeft(0,3) =  0.00294;
     HLeft(1,0) = 0.0;           HLeft(1,1) = 1.0;       HLeft(1,2) = 0.0;           HLeft(1,3) = -0.050;
     HLeft(2,0) = -sin(theta);   HLeft(2,1) = 0.0;       HLeft(2,2) = cos(theta);    HLeft(2,3) = -0.11026;
-    HLeft(3,3) = 1.0;   
+    HLeft(3,3) = 1.0;
     HRight(0,0) = -cos(theta);  HRight(0,1) = 0.0;  HRight(0,2) = -sin(theta);  HRight(0,3) =  0.00294;
     HRight(1,0) = 0.0;          HRight(1,1) = -1.0; HRight(1,2) = 0.0;          HRight(1,3) = -0.050;
     HRight(2,0) = -sin(theta);  HRight(2,1) = 0.0;  HRight(2,2) = cos(theta);   HRight(2,3) =  0.11026;
-    HRight(3,3) = 1.0;   
+    HRight(3,3) = 1.0;
 
     // order: head - right arm - left arm
     addLimb(up,HUp,RBT_NODE_IN,RBT_NODE_IN);
@@ -2308,7 +2308,7 @@ iCubUpperTorso::~iCubUpperTorso()
 
 //====================================
 //
-//          LOWER TORSO   
+//          LOWER TORSO
 //
 //====================================
 
@@ -2331,21 +2331,21 @@ void iCubLowerTorso::build()
     if (tag.legs_version == 2)
     {
         left        = new iCubLegDynV2("left",KINFWD_WREBWD);
-        right       = new iCubLegDynV2("right",KINFWD_WREBWD);      
+        right       = new iCubLegDynV2("right",KINFWD_WREBWD);
 
-        leftSensor = new iDynContactSolver(dynamic_cast<iCubLegDynV2*>(left), SENSOR_LINK_INDEX, legLeftSensor, 
+        leftSensor = new iDynContactSolver(dynamic_cast<iCubLegDynV2*>(left), SENSOR_LINK_INDEX, legLeftSensor,
         "leftLegContactSolver",mode,LEFT_LEG,verbose);
-        rightSensor = new iDynContactSolver(dynamic_cast<iCubLegDynV2*>(right), SENSOR_LINK_INDEX, legRightSensor, 
-        "rightLegContactSolver",mode,RIGHT_LEG,verbose);    
+        rightSensor = new iDynContactSolver(dynamic_cast<iCubLegDynV2*>(right), SENSOR_LINK_INDEX, legRightSensor,
+        "rightLegContactSolver",mode,RIGHT_LEG,verbose);
     }
     else
     {
         left    = new iCubLegDyn("left",KINFWD_WREBWD);
         right   = new iCubLegDyn("right",KINFWD_WREBWD);
 
-        leftSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(left), SENSOR_LINK_INDEX, legLeftSensor, 
+        leftSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(left), SENSOR_LINK_INDEX, legLeftSensor,
         "leftLegContactSolver",mode,LEFT_LEG,verbose);
-        rightSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(right), SENSOR_LINK_INDEX, legRightSensor, 
+        rightSensor = new iDynContactSolver(dynamic_cast<iCubLegDyn*>(right), SENSOR_LINK_INDEX, legRightSensor,
         "rightLegContactSolver",mode,RIGHT_LEG,verbose);
     }
 
@@ -2354,23 +2354,23 @@ void iCubLowerTorso::build()
 
     HUp.resize(4,4);    HUp.zero();
     HUp(0,1)=-1.0;  // 0 -1  0
-    HUp(1,2)=-1.0;  // 0  0 -1 
+    HUp(1,2)=-1.0;  // 0  0 -1
     HUp(2,0)= 1.0;  // 1  0  0
-    HUp(3,3)= 1.0;  
+    HUp(3,3)= 1.0;
 
     HLeft.resize(4,4);  HRight.resize(4,4);
     HLeft.zero();       HRight.zero();
 
     HLeft(0,0)=1.0;         //  1  0  0
-    HLeft(1,2)=1.0;         //  0  0  1  
-    HLeft(2,1)=-1.0;        //  0 -1  0  
-    HLeft(3,3)=1.0;         //  
+    HLeft(1,2)=1.0;         //  0  0  1
+    HLeft(2,1)=-1.0;        //  0 -1  0
+    HLeft(3,3)=1.0;         //
     HLeft(2,3)=-0.1199; HLeft(1,3)=-0.0681;
 
     HRight(0,0)=1.0;        //  1  0  0
-    HRight(1,2)=1.0;        //  0  0  1  
-    HRight(2,1)=-1.0;       //  0 -1  0  
-    HRight(3,3)=1.0;        //  
+    HRight(1,2)=1.0;        //  0  0  1
+    HRight(2,1)=-1.0;       //  0 -1  0
+    HRight(3,3)=1.0;        //
     HRight(2,3)=-0.1199;HRight(1,3)=0.0681;
 
     // order: torso - right leg - left leg
@@ -2392,7 +2392,7 @@ iCubLowerTorso::~iCubLowerTorso()
 
 //====================================
 //
-//          iCUB WHOLE BODY  
+//          iCUB WHOLE BODY
 //
 //====================================
 
@@ -2403,7 +2403,7 @@ iCubWholeBody::iCubWholeBody(version_tag _tag, const NewEulMode mode, unsigned i
     tag = _tag;
     upperTorso = new iCubUpperTorso(tag,mode,verbose);
     lowerTorso = new iCubLowerTorso(tag,mode,verbose);
-    
+
     //now create a connection between upperTorso node and Torso ( lowerTorso->up == Torso )
     Matrix H(4,4);
     H.eye();
@@ -2431,8 +2431,8 @@ void iCubWholeBody::attachLowerTorso(const Vector &FM_right_leg, const Vector &F
     Vector out_ddp; out_ddp.resize(3);
     Vector out_F;   out_F.resize(3);
     Vector out_M;   out_M.resize(3);
-    
-    //kinematics: 
+
+    //kinematics:
     out_w[0]= in_w[0];
     out_w[1]= in_w[1];
     out_w[2]= in_w[2];
@@ -2515,27 +2515,27 @@ bool iCubWholeBody::getCOM(BodyPart which_part, Vector &COM, double & mass)
     yarp::sig::Matrix T0;
     yarp::sig::Matrix T1;
     yarp::sig::Matrix hright;
-    
+
     // hright.resize(4,4);  hright.zero();
     // double theta = CTRL_DEG2RAD * (180.0-15.0);
     // hright(0,0)=1.0;     //  1  0  0
-    // hright(1,2)=1.0;     //  0  0  1  
-    // hright(2,1)=-1.0;    //  0 -1  0  
-    // hright(3,3)=1.0;       
+    // hright(1,2)=1.0;     //  0  0  1
+    // hright(2,1)=-1.0;    //  0 -1  0
+    // hright(3,3)=1.0;
     // hright(2,3)=-0.1199;
     // hright(1,3)=0.0681;
     // yarp::sig::Matrix rot6x6; rot6x6.resize(6,6); rot6x6.zero();
     // rot6x6.setSubmatrix(hright.submatrix(0,2,0,2),0,0);
     // rot6x6.setSubmatrix(hright.submatrix(0,2,0,2),3,3);
 
-    switch (which_part) 
+    switch (which_part)
     {
         case BODY_PART_ALL:
             COM=whole_COM;
             mass=whole_mass;
-            
+
             #ifdef DEBUG_FOOT_COM
-                fprintf(stderr, "Whole COM being computed w.r.t Foot Reference Frame... \n");       
+                fprintf(stderr, "Whole COM being computed w.r.t Foot Reference Frame... \n");
             #endif
 
         break;
@@ -2677,7 +2677,7 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
     //prepare the transformation matrices
     yarp::sig::Matrix T0 = lowerTorso->HUp;
     yarp::sig::Matrix T1 = lowerTorso->up->getH(2,true);
-    
+
     int r=0;
     int ct=0;
     int c=0;
@@ -2708,10 +2708,10 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
         }
 
     Matrix tmp_Jac;
-    tmp_Jac.resize(6,32);   
+    tmp_Jac.resize(6,32);
 
 
-    /*Upper body Jacobian Matrices (arms and head) require a transformation from NECK reference frame to ROOT 
+    /*Upper body Jacobian Matrices (arms and head) require a transformation from NECK reference frame to ROOT
       reference frame. In order to get these velocity transform Jacobians to ROOT we have to multiply each by
       a 6x6 matrix containing the rotational matrix from T0*T1 (Transformation matrix from NECK to ROOT). */
 
@@ -2719,23 +2719,23 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
     Matrix T_ad;
     T_ad.resize(6,6);
     T_ad = adjoint(T0*T1);
-    Matrix RotZero; RotZero.resize(3,3); RotZero.zero(); 
+    Matrix RotZero; RotZero.resize(3,3); RotZero.zero();
     T_ad.setSubmatrix(RotZero,0,3);
 
     tmp_Jac.zero();
-    tmp_Jac.setSubmatrix(T_ad*upperTorso->COM_jacob_LF,0,15); 
+    tmp_Jac.setSubmatrix(T_ad*upperTorso->COM_jacob_LF,0,15);
     Matrix larm = T_ad*upperTorso->COM_jacob_LF;
     COM_Jacob+=tmp_Jac;
 
     tmp_Jac.zero();
-    tmp_Jac.setSubmatrix(T_ad*upperTorso->COM_jacob_RT,0,22); 
+    tmp_Jac.setSubmatrix(T_ad*upperTorso->COM_jacob_RT,0,22);
     Matrix rarm = T_ad*upperTorso->COM_jacob_RT;
     COM_Jacob+=tmp_Jac;
 
     tmp_Jac.zero();
     yarp::sig::Matrix COMHead = upperTorso->COM_jacob_UP;
     tmp_Jac.setSubmatrix(T_ad*COMHead.submatrix(0,5,0,2),0,29);
-    
+
     Matrix mm = T_ad*upperTorso->COM_jacob_UP;
     COM_Jacob+=tmp_Jac;
 
@@ -2744,10 +2744,10 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac)
-{ 
+{
     jac = COM_Jacob;
     Matrix T_rotT0 = adjoint(lowerTorso->HUp);
-    Matrix RotZero; RotZero.resize(3,3); RotZero.zero(); 
+    Matrix RotZero; RotZero.resize(3,3); RotZero.zero();
     T_rotT0.setSubmatrix(RotZero,0,3);
     // T_rotT0 is a similar Transformation matrix for putting the Torso GeoJacobian from its base link
     // reference frame to the ROOT reference frame.
@@ -2755,13 +2755,13 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
 
         Matrix T0 = lowerTorso->HUp;
         Matrix T1 = lowerTorso->up->getH(2,true);
-        Matrix H_T0T1; H_T0T1.resize(4,4); H_T0T1 = T0*T1; 
+        Matrix H_T0T1; H_T0T1.resize(4,4); H_T0T1 = T0*T1;
         Matrix rotT0T1; rotT0T1.resize(3,3); rotT0T1 = H_T0T1.submatrix(0,2,0,2);
-        // Left Arm COM seen from Root RcL i.e. R*NcL where NcL is the COM vector of the left arm w.r.t. Neck       
+        // Left Arm COM seen from Root RcL i.e. R*NcL where NcL is the COM vector of the left arm w.r.t. Neck
         Vector LFcom; LFcom = upperTorso->total_COM_LF;
         Vector RcL = rotT0T1*(LFcom.subVector(0,2));
 
-        // Right Arm COM seen from Root RcR i.e. R*NcR where NcR is the COM vector of the left arm w.r.t. Neck 
+        // Right Arm COM seen from Root RcR i.e. R*NcR where NcR is the COM vector of the left arm w.r.t. Neck
         Vector RTcom; RTcom = upperTorso->total_COM_RT;
         Vector RcR = rotT0T1*(RTcom.subVector(0,2));
 
@@ -2785,13 +2785,13 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         L3.setRow(1,      Jac_Torso.getRow(5)*RcH(0)      +   -1*Jac_Torso.getRow(3)*RcH(2));
         L3.setRow(2,  -1*(Jac_Torso.getRow(4)*RcH(0))     +      Jac_Torso.getRow(3)*RcH(1));
 
-        //Preparing the hright matrix for passing COM Jacobian toRIGHT FOOT REFERENCE FRAME     
-        Matrix hright; 
+        //Preparing the hright matrix for passing COM Jacobian toRIGHT FOOT REFERENCE FRAME
+        Matrix hright;
         hright.resize(4,4); hright.zero();
         hright(0,0)=1.0;        //  1  0  0
-        hright(1,2)=1.0;        //  0  0  1  
-        hright(2,1)=-1.0;       //  0 -1  0  
-        hright(3,3)=1.0;        //  
+        hright(1,2)=1.0;        //  0  0  1
+        hright(2,1)=-1.0;       //  0 -1  0
+        hright(3,3)=1.0;        //
         hright(2,3)=-0.1199;hright(1,3)=0.0681;
 
         Matrix rRf; rRf.resize(6,6); rRf.zero();
@@ -2812,9 +2812,9 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
 #ifdef DEBUG_FOOT_COM
 //DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
 //DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING DEBUGGING
-        
+
         //Transforming the Whole Body (WB) COM Jacobian to the right foot reference frame
-            rTf = lowerTorso->right->getH(); //Here we get rTf 
+            rTf = lowerTorso->right->getH(); //Here we get rTf
             rTf = hright*rTf;                                                   //CHECKED
 
             hright_rot6x6.setSubmatrix(hright.submatrix(0,2,0,2), 0,0);         //CHECKED.
@@ -2824,12 +2824,12 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
             rRf.setSubmatrix(rTf.submatrix(0,2,0,2), 3,3);                      //CHECKED
         //Now we need the geometric Jacobian of the right leg from FOOT to ROOT.
             rJf.setSubmatrix( hright_rot6x6*lowerTorso->right->GeoJacobian(),0,6); //We first get the GeoJacobian from Foot to Root.
-        
+
         //Now we build the H matrix that will be summed up to rJf in order to get fJr.
         //But first we obtain individual elements of H for which we build matrix LL
 
             //ALL LL LINES CHECKED.
-            LL(0,0) = rRf(1,0)*rTf(2,3) - rRf(2,0)*rTf(1,3); 
+            LL(0,0) = rRf(1,0)*rTf(2,3) - rRf(2,0)*rTf(1,3);
             LL(0,1) = rRf(2,0)*rTf(0,3) - rRf(0,0)*rTf(2,3);
             LL(0,2) = rRf(0,0)*rTf(1,3) - rRf(1,0)*rTf(0,3);
 
@@ -2848,7 +2848,7 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
 
         //Now we add up the HH matrix to rRf.transposed()*rJf to fintally obtain fJr.
             fJr = -1*HH - (rRf.transposed())*rJf; //TO BE ADDED TO fLr + fRr * rJw
-    
+
         // Next matrix to fill in is fLr which is a 6x32 matrix filled with zeros except for the columns for the
         // right leg. This matrix will be added to our 'rotated' jac.
         // Thus, we first get fTr
@@ -2858,9 +2858,9 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
 
             fRr.setSubmatrix(fTr.submatrix(0,2,0,2),0,0);                       //CHECKED
             fRr.setSubmatrix(fTr.submatrix(0,2,0,2),3,3);                       //CHECKED
-        // Next we prepare the fLr matrix   
+        // Next we prepare the fLr matrix
             fCw = fTr.submatrix(0,2,0,2)*rCw;                                   //NEEDED LIKE THIS FROM THE EQUATION
-            fLr.setSubrow(-fCw(1)*fJr.getRow(5) + fCw(2)*fJr.getRow(4), 0,6);           
+            fLr.setSubrow(-fCw(1)*fJr.getRow(5) + fCw(2)*fJr.getRow(4), 0,6);
             fLr.setSubrow( fCw(0)*fJr.getRow(5) - fCw(2)*fJr.getRow(3), 1,6);
             fLr.setSubrow(-fCw(0)*fJr.getRow(4) + fCw(1)*fJr.getRow(3), 2,6);
 
@@ -2872,17 +2872,17 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
 
     unsigned int r,c,ct=0;
     double tmp, tmp2; tmp = tmp2 = 0.0;
-    switch (which_part) 
+    switch (which_part)
     {
         case BODY_PART_ALL:
-        for (r=0; r<6; r++) 
+        for (r=0; r<6; r++)
         {
-            ct = 0; 
+            ct = 0;
             tmp = lowerTorso->total_mass_LF /  whole_mass; for (c=0; c<6; c++, ct++) jac(r,ct) *= tmp;
             tmp = lowerTorso->total_mass_RT /  whole_mass; for (c=0; c<6; c++, ct++) jac(r,ct) *= tmp;
             tmp = lowerTorso->total_mass_UP /  whole_mass;
             tmp2 = upperTorso->total_mass_LF/whole_mass + upperTorso->total_mass_RT/whole_mass + upperTorso->total_mass_UP/whole_mass;
-            for (c=0; c<3; c++, ct++){                                                          
+            for (c=0; c<3; c++, ct++){
                 jac(r,ct) *= tmp;
                 jac(r,ct) += tmp2*Jac_Torso(r,c);
                 jac(r,ct) += (upperTorso->total_mass_RT/whole_mass)*L1(r,c) + (upperTorso->total_mass_LF/whole_mass)*L2(r,c) + (upperTorso->total_mass_UP/whole_mass)*L3(r,c);
@@ -2904,13 +2904,13 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
             }
             // whole_COM(0) = -temp_com(2);
             // whole_COM(2) = temp_com(0);
-        #endif 
+        #endif
 
         break;
         case LOWER_BODY_PARTS:
-        for (r=0; r<6; r++) 
+        for (r=0; r<6; r++)
         {
-            ct = 0; 
+            ct = 0;
             tmp = lowerTorso->total_mass_LF /  lower_mass; for (c=0; c<6; c++, ct++) jac(r,ct) *= tmp;
             tmp = lowerTorso->total_mass_RT /  lower_mass; for (c=0; c<6; c++, ct++) jac(r,ct) *= tmp;
             tmp = lowerTorso->total_mass_UP /  lower_mass; for (c=0; c<3; c++, ct++) jac(r,ct) *= tmp;
@@ -2922,9 +2922,9 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
 
         break;
         case UPPER_BODY_PARTS:
-        for (r=0; r<6; r++) 
+        for (r=0; r<6; r++)
         {
-            ct = 0; 
+            ct = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
@@ -2937,9 +2937,9 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         }
         break;
         case LEFT_LEG:
-        for (r=0; r<6; r++) 
+        for (r=0; r<6; r++)
         {
-            ct = 0; 
+            ct = 0;
             //for (c=0; c<6; c++, ct++) jac(r,ct) *= 1;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
@@ -2949,9 +2949,9 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         }
         break;
         case RIGHT_LEG:
-        for (r=0; r<6; r++) 
+        for (r=0; r<6; r++)
         {
-            ct = 0; 
+            ct = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             //for (c=0; c<6; c++, ct++) jac(r,ct) *= 1;
             for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
@@ -2961,9 +2961,9 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         }
         break;
         case TORSO:
-        for (r=0; r<6; r++) 
+        for (r=0; r<6; r++)
         {
-            ct = 0; 
+            ct = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             //for (c=0; c<3; c++, ct++) jac(r,ct) *= 1;
@@ -2973,9 +2973,9 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         }
         break;
         case LEFT_ARM:
-        for (r=0; r<6; r++) 
+        for (r=0; r<6; r++)
         {
-            ct = 0; 
+            ct = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
@@ -2985,9 +2985,9 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         }
         break;
         case RIGHT_ARM:
-        for (r=0; r<6; r++) 
+        for (r=0; r<6; r++)
         {
-            ct = 0; 
+            ct = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
@@ -2997,9 +2997,9 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         }
         break;
         case HEAD:
-        for (r=0; r<6; r++) 
+        for (r=0; r<6; r++)
         {
-            ct = 0; 
+            ct = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<6; c++, ct++) jac(r,ct) = 0;
             for (c=0; c<3; c++, ct++) jac(r,ct) = 0;
@@ -3019,8 +3019,8 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMvelocity(BodyPart which_part, Vector &com
     sw_getcom = 0;
     EXPERIMENTAL_getCOMjacobian(which_part,jac);
     sw_getcom = 1;
-    
-    Vector jvel; 
+
+    Vector jvel;
     getAllVelocities(jvel);
     dq = jvel;
 

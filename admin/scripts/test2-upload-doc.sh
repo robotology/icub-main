@@ -5,7 +5,7 @@
 . ./admin/scripts/doc-config/common.sh
 
 EXPECTED_ARGS=1
- 
+
 if [ $# -ne $EXPECTED_ARGS ];
 then
     echo "Usage: `basename $0` {main/contrib}"

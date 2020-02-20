@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff, Paul Fitzpatrick
 * email:   vadim.tikhanoff@iit.it, paulfitz@alum.mit.edu
@@ -20,25 +20,25 @@
 
 /**
  * @ingroup icub_module
- * 
+ *
  * \defgroup icub_Simulation iCubSimulation
- * 
- * This module is the physics simulator of the iCub robot. 
+ *
+ * This module is the physics simulator of the iCub robot.
  *
  * \image html iCubSim.jpg
  * \image latex robotMotorGui.eps "A window of the iCub Simulator running on Linux" width=15cm
- * 
+ *
  * \section intro_sec Description
- * 
+ *
  *  The module does:
  * -    Has been designed to reproduce, as accurately as possible, the physics and the dynamics of the robot and its environment
- * -   It has been constructed collecting data directly from the robot design specifications in order to achieve an exact replication 
+ * -   It has been constructed collecting data directly from the robot design specifications in order to achieve an exact replication
  * -    The software infrastructure and inter-process communication are as those used to control the physical robot
  *
  * \section lib_sec Libraries
  * YARP
  * ODE
- * SDL 
+ * SDL
  *
  * \section parameters_sec Parameters
  * All the parameters are located in the iCub_parts_activation.ini
@@ -49,19 +49,19 @@
  *
  *  [PARTS]
  *  legs on
- *  torso on 
+ *  torso on
  *  left_arm on
  *  left_hand on
- *  right_arm on 
+ *  right_arm on
  *  right_hand on
  *  head on
  *  fixed_hip on
- *  self_collisions off 
+ *  self_collisions off
  *
  *  [SENSORS]
  *  pressure off
  *  whole_body_skin_emul off
- * 
+ *
  *  [VISION]
  *  cam off
  *
@@ -73,8 +73,8 @@
  *  torso_covers on
  *  left_arm_covers on
  *  right_arm_covers on
- * 
- * 
+ *
+ *
  * \section portsa_sec Ports Accessed
  * No ports are accessed nor needed by the iCub simulator
  *
@@ -107,22 +107,22 @@
  *
  * - /icubSim/face/eyelids : port to control the eyelids
  * - /icubSim/cam/left : streams out the data from the left camera (cartesian format 320x240 )
- * - /icubSim/cam/left/fovea : streams out the data from the left camera (fovea format 128x128 ) 
- * - /icubSim/cam/left/logpolar : streams out the data from the left camera (log polar format 252x152 ) 
+ * - /icubSim/cam/left/fovea : streams out the data from the left camera (fovea format 128x128 )
+ * - /icubSim/cam/left/logpolar : streams out the data from the left camera (log polar format 252x152 )
  * - /icubSim/cam/right : streams out the data from the right camera (cartesian format 320x240 )
- * - /icubSim/cam/right/fovea : streams out the data from the left camera (fovea format 128x128 ) 
- * - /icubSim/cam/right/logpolar : streams out the data from the left camera (log polar format 252x152 ) 
+ * - /icubSim/cam/right/fovea : streams out the data from the left camera (fovea format 128x128 )
+ * - /icubSim/cam/right/logpolar : streams out the data from the left camera (log polar format 252x152 )
  * - /icubSim/cam : streams out the data from the global view
  *
  * - /icubSim/skinManager/skin_events:o
  * - /icubSim/skin/left_arm_comp
- * - /icubSim/skin/right_arm_comp 
+ * - /icubSim/skin/right_arm_comp
  * - /icubSim/skin/left_forearm_comp
- * - /icubSim/skin/right_forearm_comp 
+ * - /icubSim/skin/right_forearm_comp
  * - /icubSim/skin/left_hand_comp
  * - /icubSim/skin/right_hand_comp
  * - /icubSim/skin/torso_comp
- *   
+ *
  * - /icubSim/world : port to manipulate the environment
  * - /icubSim/touch : streams out a sequence the touch sensors for both hands
  * - /icubSim/inertial : streams out a sequence of inertial data taken from the head
@@ -154,7 +154,7 @@
  **/
 
 //\file main.cpp
-//\brief This file is responsible for the initialisation the module and yarp ports. It deals with incoming world commands such as getting information or creating new objects 
+//\brief This file is responsible for the initialisation the module and yarp ports. It deals with incoming world commands such as getting information or creating new objects
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Property.h>
@@ -172,7 +172,7 @@
 
 // Needed on OSX, to hijack main()
 #ifdef ICUB_SIM_ENABLE_ODESDL
-#include "SDL.h" 
+#include "SDL.h"
 #endif
 
 class MainThread : public yarp::os::Thread {
@@ -197,7 +197,7 @@ int main(int argc, char** argv) {
         yError ("could not initialize YARP network (is the nameserver running?)\n");
         return 1;
     }
-    
+
     yarp::os::Property options;
     options.fromCommand(argc,argv);
 

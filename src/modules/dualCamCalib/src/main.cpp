@@ -24,7 +24,7 @@ using namespace yarp::sig;
 
 
 int main(int argc, char *argv[]) {
-     
+
     CalibToolFactories& pool = CalibToolFactories::getPool();
     pool.add(new CalibToolFactoryOf<PinholeCalibTool>("pinhole"));
     pool.add(new CalibToolFactoryOf<SphericalCalibTool>("spherical"));
@@ -35,6 +35,6 @@ int main(int argc, char *argv[]) {
     rf.setDefaultConfigFile("camCalib.ini");    //overridden by --from parameter
     rf.setDefaultContext("cameraCalibration");  //overridden by --context parameter
     rf.configure(argc, argv);
-    CamCalibModule module;      
+    CamCalibModule module;
     return module.runModule(rf);
 }

@@ -67,7 +67,7 @@ public:
 
         double sigma=0.5*5.55*scale;
         int maxRange=int(2.5*sigma);
-        
+
         if (maxRange!=m_maxRange)
         {
             m_maxRange=maxRange;
@@ -109,8 +109,8 @@ public:
     {
         return x>=0?x:-x;
     }
-    
-    int get_nTaxels () 
+
+    int get_nTaxels ()
     {
         return nTaxels;
     }
@@ -269,7 +269,7 @@ public:
         {
             drawLine(image,xv[i],yv[i],xv[(i+1)%nVerts],yv[(i+1)%nVerts]);
         }
-        
+
         for (int i=0; i<nTaxels; ++i)
         {
             drawCircle(image,x[i],y[i],m_Radius);
@@ -327,7 +327,7 @@ protected:
         if (image[bytePos+4]<G4) image[bytePos+4]=G4;
         //if (image[bytePos+5]<B4) image[bytePos+5]=B4;
     }
-    
+
     void drawLine(unsigned char *image,int x0,int y0,int x1,int y1)
     {
         if (x1==x0 && y1==y0) return;
@@ -386,7 +386,7 @@ protected:
     int m_maxRangeLight;
     static int m_maxRange;
     static double *Exponential;
-    
+
     // scaled
     int x[MAX_TAXELS],y[MAX_TAXELS];
     int xv[8],yv[8];

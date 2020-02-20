@@ -2,7 +2,7 @@
 *
 * \defgroup icub_modules_all Software
 *
-* A container for all software in icub-main/src. For clarity 
+* A container for all software in icub-main/src. For clarity
 * this is further divided in groups.
 *
 *
@@ -15,7 +15,7 @@
 * @ingroup icub_modules_all
 *
 *
-* This is the list of iCub modules, i.e. executables 
+* This is the list of iCub modules, i.e. executables
 * in the icub-main/src directory.
 * To add your own module to this list,
 * just add a comment like the following anywhere in your source
@@ -57,13 +57,13 @@
 *
 *
 */
- 
+
 /**
 * \defgroup icub_libraries Libraries
 * @ingroup icub_modules_all
 *
-* This is a list of static libraries. Usually in icub-main/src, 
-* they are collected here in a group to separate them from the 
+* This is a list of static libraries. Usually in icub-main/src,
+* they are collected here in a group to separate them from the
 * executables (in \ref icub_module \endref).
 *
 * To add a new library to this group add this to your code:
@@ -134,7 +134,7 @@
 * @ingroup icub_mod_library
 *
 * YARP devices that contain the routines
-* for calibrating the robot at startup. They are very 
+* for calibrating the robot at startup. They are very
 * iCub specific.
 *
 * To add a module to this group add this in the doxygen block of the device class:
@@ -175,19 +175,19 @@
 *
 * The app directory stores directories which group
 * sets of configuration files and scripts to run
-* a certain group of modules together. Each one 
+* a certain group of modules together. Each one
 * of them is what we call an application. In other
 * words, an application is an instantiation of
 * a set of modules that run at the same time.
 *
-* Some of these applications are iCub capabilities, 
+* Some of these applications are iCub capabilities,
 * others might just be nice demos or experiments.
 *
-* Documentation for each application goes in each 
+* Documentation for each application goes in each
 * directory.
 *
-* Ideally these directories will contain only scripts 
-* and ini/txt files. Use src to store source code. 
+* Ideally these directories will contain only scripts
+* and ini/txt files. Use src to store source code.
 *
 * This file can be edited at src/doc/groups.dox
 */

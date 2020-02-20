@@ -34,7 +34,7 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class SkinMeshThreadPort : public PeriodicThread 
+class SkinMeshThreadPort : public PeriodicThread
 {
 protected:
     static const int MAX_SENSOR_NUM = 128;
@@ -47,7 +47,7 @@ protected:
 
     int sensorsNum;
     bool mbSimpleDraw;
-    
+
     std::vector<unsigned char> defaultColor;
 
     double skinThreshold;

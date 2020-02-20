@@ -37,7 +37,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
     double t=Time::now();
     // execute calibration
     if (portImgOut!=NULL)
-    {        
+    {
         yarp::sig::ImageOf<PixelRgb> &yrpImgOut=portImgOut->prepare();
 
         if (verbose)
@@ -96,7 +96,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
 
 CamCalibModule::CamCalibModule(){
 
-    _calibTool = NULL;  
+    _calibTool = NULL;
 }
 
 CamCalibModule::~CamCalibModule(){
@@ -110,14 +110,14 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     // pass configuration over to bottle
     Bottle botConfig(rf.toString());
-    botConfig.setMonitor(rf.getMonitor());      
+    botConfig.setMonitor(rf.getMonitor());
     // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
     if(botConfig.check("group", valGroup, "Configuration group to load module options from (string)."))
     {
-        string strGroup = valGroup->asString();        
+        string strGroup = valGroup->asString();
         // is group a valid bottle?
-        if (botConfig.check(strGroup)){            
+        if (botConfig.check(strGroup)){
             Bottle &group=botConfig.findGroup(strGroup,"Loading configuration from group " + strGroup);
             botConfig.fromString(group.toString());
         }
@@ -199,20 +199,20 @@ double CamCalibModule::getPeriod() {
   return 1.0;
 }
 
-bool CamCalibModule::respond(const Bottle& command, Bottle& reply) 
+bool CamCalibModule::respond(const Bottle& command, Bottle& reply)
 {
-    reply.clear(); 
+    reply.clear();
 
-    if (command.get(0).asString()=="quit") 
+    if (command.get(0).asString()=="quit")
     {
         reply.addString("quitting");
-        return false;     
+        return false;
     }
     else if (command.get(0).asString()=="sat" || command.get(0).asString()=="saturation")
     {
         double satVal = command.get(1).asDouble();
         _prtImgIn.setSaturation(satVal);
-        
+
         reply.addString("ok");
     }
     else

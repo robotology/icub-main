@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Vadim Tikhanoff
 * email:  vadim.tikhanoff@iit.it
@@ -20,7 +20,7 @@
 
 /**
  * \file iCub.h
- * \brief The iCub header file  
+ * \brief The iCub header file
  * \author Vadim Tikhanoff
  * \date 2007
  * \note Released under GNU GPL v2.0
@@ -43,17 +43,17 @@
 
 #include "EyeLidsController.h"
 
-//these were added for the self-collision and skin emulation 
+//these were added for the self-collision and skin emulation
 #include "iCub/skinDynLib/skinContactList.h"
 #include <iCub/ctrl/math.h>
 #include <yarp/math/Math.h>
-#include <map>  
+#include <map>
 #include <iCub/iKin/iKinFwd.h>
 #include <yarp/sig/Matrix.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4244 4305)  // for VC++, no precision loss complaints
-#endif 
+#endif
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace std;
@@ -62,8 +62,8 @@ using namespace std;
   using namespace iCub::skinDynLib;
   using namespace iCub::ctrl;
 
-class ICubData{ 
-public:	
+class ICubData{
+public:
     //some Object constants....
     #define MAX_CONTACTS 10// maximum number of contact points per body
     #define NUM 10          // max number of objects
@@ -86,11 +86,11 @@ public:
     string   eyeLidsPortName;
 
    dSpaceID    iCub;
-   dSpaceID iCubHeadSpace, iCubTorsoSpace, iCubLeftArmSpace, iCubRightArmSpace, iCubLegsSpace; //these are needed for the iCub self-collisions; 
+   dSpaceID iCubHeadSpace, iCubTorsoSpace, iCubLeftArmSpace, iCubRightArmSpace, iCubLegsSpace; //these are needed for the iCub self-collisions;
    //nevertheless, if actSelfCol == off, then they will all be set to iCub
    std::map<dSpaceID, string> dSpaceNames; //needed for development and testing of self-collisions
-   std::map<dGeomID, string> dGeomNames; 
-   
+   std::map<dGeomID, string> dGeomNames;
+
     dGeomID     geom_cube[1];
 
     dBodyID     inertialBody;
@@ -266,11 +266,11 @@ public:
     Vector          jA_torso[3];
     Vector          jA_leftArm[8];
     Vector          jA_rightArm[8];
-    
+
      //We make these class variables, besides joint position initialization (loadJointPosition()), they will be used repeatedly in the self-collision mode in ODE_process
     iCub::iKin::iCubArm iKinLeftArm, iKinRightArm;
     iCub::iKin::iCubInertialSensor iKinInertialSensor; //needed to get FoR 3 in the kinematics - the first neck joint -  FoR for the skin of the torso
-    
+
     // Preset bottles with empty or full activation of some skin parts that can be sent to a port
     Bottle emptySkinActivationHand;
     Bottle emptySkinActivationForearm;
@@ -279,17 +279,17 @@ public:
     Bottle fullSkinActivationForearm;
     Bottle fullSkinActivationUpperArm;
     Bottle fullSkinActivationTorso;
-    
+
     // rototranslation form robot root to simulation world reference frame and vice versa
     Matrix H_r2w, H_w2r;
-    
+
     ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
             RobotConfig& config);
 
     ~ICubSim();
 
     void resetSpeeds();
-    
+
     /**
     * Set the control action for all the joints, that can be either a velocity
     * command or a torque command, depending on the current control mode.
@@ -302,7 +302,7 @@ public:
     double checkTouchSensor_continuousValued(int bodyToCheck);
     double checkTouchSensor_continuousValued(dBodyID id);
     void draw();
-    
+
     void getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, const dGeomID geomID, SkinPart& skinPart,BodyPart& bodyPart, HandPart& handPart, bool& skinCoverFlag, bool& fingertipFlag);
     static void printPositionOfGeom(dGeomID geomID);
     static void printPositionOfBody(dBodyID bodyID);
@@ -338,7 +338,7 @@ public:
     void initLeftHandJoints();
     void initRightHandJoints();
     void initHeadJoints();
-    
+
     void init_iKin();
     void initSkinActivationBottles();
 };

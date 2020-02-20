@@ -23,7 +23,7 @@ void compute_sp_params(int input_lines, int input_cols,
                        double fx, double fy,
                        double cx, double cy,
                        double k1, double k2,
-                       double p1, double p2, 
+                       double p1, double p2,
                        double *fa, double *fe,
                        double *ca, double *ce);
 

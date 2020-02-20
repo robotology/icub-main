@@ -1,7 +1,7 @@
 # Copyright: 2010 RobotCub Consortium
 # Author: Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# 
+#
 
 project(velocityObserver)
 add_executable(${PROJECT_NAME} main.cpp)

@@ -46,7 +46,7 @@ public:
         mAddress=address;
         mMask=mask;
         mMac=mac;
-        
+
         mProtocolVersion = protocol_version;
         mProtocolCapabilities = protocol_capabilities;
 
@@ -62,7 +62,7 @@ public:
         mReleasedOn = string("N/A");
         mBuiltOn = string("N/A");
 
-        mSuccess=0; 
+        mSuccess=0;
     }
 
 

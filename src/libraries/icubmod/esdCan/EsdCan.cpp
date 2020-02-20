@@ -33,7 +33,7 @@ EsdCan::~EsdCan()
 }
 
 bool EsdCan::canSetBaudRate(unsigned int rate)
-{ 
+{
 // former #if WIN32
 #if 0
     DWORD baud=rate;
@@ -86,7 +86,7 @@ bool EsdCan::canIdDelete(unsigned int id)
 }
 
 bool EsdCan::canRead(CanBuffer &msgs,
-                     unsigned int size, 
+                     unsigned int size,
                      unsigned int *read,
                      bool wait)
 {
@@ -125,7 +125,7 @@ bool EsdCan::canWrite(const CanBuffer &msgs,
     #else
         int32_t lRead=size;
     #endif
-        
+
     CanBuffer &buffer=const_cast<CanBuffer &>(msgs);
     const CMSG *tmp=reinterpret_cast<const CMSG *>(buffer[0].getPointer());
 
@@ -155,16 +155,16 @@ bool EsdCan::open(yarp::os::Searchable &par)
 
                          netId=par.check("CanDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
     if  (netId == -1)    netId=par.check("canDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
-    
+
                            txTimeout=par.check("CanTxTimeout", Value(500), "timeout on transmission [ms]").asInt();
     if  (txTimeout == 500) txTimeout=par.check("canTxTimeout", Value(500), "timeout on transmission [ms]").asInt();
-    
+
                            rxTimeout=par.check("CanRxTimeout", Value(500), "timeout on receive when calling blocking read [ms]").asInt() ;
     if  (rxTimeout == 500) rxTimeout=par.check("canRxTimeout", Value(500), "timeout on receive when calling blocking read [ms]").asInt() ;
 
                                       canTxQueue=par.check("CanTxQueue", Value(TX_QUEUE_SIZE), "length of tx buffer").asInt();
     if  (canTxQueue == TX_QUEUE_SIZE) canTxQueue=par.check("canTxQueue", Value(TX_QUEUE_SIZE), "length of tx buffer").asInt();
-    
+
                                       canRxQueue=par.check("CanRxQueue", Value(RX_QUEUE_SIZE), "length of rx buffer").asInt() ;
     if  (canRxQueue == RX_QUEUE_SIZE) canRxQueue=par.check("canRxQueue", Value(RX_QUEUE_SIZE), "length of rx buffer").asInt() ;
 

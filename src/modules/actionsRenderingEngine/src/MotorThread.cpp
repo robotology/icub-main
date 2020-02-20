@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Carlo Ciliberto, Vadim Tikhanoff
 * email:   carlo.ciliberto@iit.it vadim.tikhanoff@iit.it
@@ -192,7 +192,7 @@ int MotorThread::checkArm(int arm, Vector &xd, const bool applyOffset)
 
     if (applyOffset)
     {
-        xd[0]+=currentKinematicOffset[armInUse][0]; 
+        xd[0]+=currentKinematicOffset[armInUse][0];
         xd[1]+=currentKinematicOffset[armInUse][1];
         xd[2]+=currentKinematicOffset[armInUse][2];
     }
@@ -304,7 +304,7 @@ int MotorThread::setStereoToCartesianMode(const int mode, Bottle &reply)
             break;
         }
     }
-    
+
     //get left offsets
     if(!bKinOffsets.find("left").asList()->check(Vocab::decode(modeS2C)))
     {
@@ -348,7 +348,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
     // if the tartget's cartesian coordinates was specified, use them.
     if(!found && bTarget!=NULL && bTarget->check("cartesian") && bTarget->find("cartesian").asList()->size()>=3)
     {
-        Bottle *bCartesian=bTarget->find("cartesian").asList(); 
+        Bottle *bCartesian=bTarget->find("cartesian").asList();
         xd.clear();
         for(int i=0; i<bCartesian->size(); i++)
             xd.push_back(bCartesian->get(i).asDouble());
@@ -446,7 +446,7 @@ bool MotorThread::loadExplorationPoses(const string &file_name)
             v[j]=b->get(j).asDouble();
         handPoses.push_back(v);
     }
-    
+
     Bottle &tmpHead=optExpl.findGroup("head");
     for(int i=1; i<tmpHead.size(); i++)
     {
@@ -540,7 +540,7 @@ bool MotorThread::stereoToCartesianDisparity(const Vector &stereo, Vector &xd)
     {
         xd.resize(3);
         xd[0]=bX.get(0).asDouble();
-        xd[1]=bX.get(1).asDouble();    
+        xd[1]=bX.get(1).asDouble();
         xd[2]=bX.get(2).asDouble();
     }
 
@@ -620,7 +620,7 @@ bool MotorThread::loadKinematicOffsets()
 
         bKinList.addList();
     }
-    
+
     if (!bKinOffsets.check("right"))
     {
         Bottle &bKinList=bKinOffsets.addList();
@@ -828,7 +828,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         shiftPos[arm].resize(3);
         shiftPos[arm]=0.0;
     }
-    
+
     if (Bottle *pB=b.find("expect_position").asList())
     {
         expectPos[arm].resize(pB->size());
@@ -887,7 +887,7 @@ void MotorThread::close()
 
     //set the system back to velocity mode
     setImpedance(false);
-    
+
     delete drv_head;
     drv_head=NULL;
 
@@ -896,7 +896,7 @@ void MotorThread::close()
 
     delete drv_arm[LEFT];
     drv_arm[LEFT]=NULL;
-    
+
     delete drv_arm[RIGHT];
     drv_arm[RIGHT]=NULL;
 
@@ -1006,10 +1006,10 @@ bool MotorThread::threadInit()
     {
         drv_arm[LEFT]=new PolyDriver;
         if(!drv_arm[LEFT]->open(optLeftArm))
-        {   
+        {
             close();
             return false;
-        }        
+        }
 
         drv_arm[LEFT]->view(ctrl_mode_arm[LEFT]);
         drv_arm[LEFT]->view(int_mode_arm[LEFT]);
@@ -1027,10 +1027,10 @@ bool MotorThread::threadInit()
     {
         drv_arm[RIGHT]=new PolyDriver;
         if(!drv_arm[RIGHT]->open(optRightArm))
-        {   
+        {
             close();
             return false;
-        }        
+        }
 
         drv_arm[RIGHT]->view(ctrl_mode_arm[RIGHT]);
         drv_arm[RIGHT]->view(int_mode_arm[RIGHT]);
@@ -1080,7 +1080,7 @@ bool MotorThread::threadInit()
 
     Bottle &bTs=stereoOpt.addList();
     bTs.addString("Ts");
-    bTs.addDouble(0.05); 
+    bTs.addDouble(0.05);
 
     Bottle &bDominantEye=stereoOpt.addList();
     bDominantEye.addString("dominantEye");
@@ -1189,7 +1189,7 @@ bool MotorThread::threadInit()
     vector<double> torso_stiffness(0),torso_damping(0);
     Bottle *bImpedanceTorsoStiff=bMotor.find("impedence_torso_stiffness").asList();
     Bottle *bImpedanceTorsoDamp=bMotor.find("impedence_torso_damping").asList();
-    
+
     for(int i=0; i<bImpedanceTorsoStiff->size(); i++)
     {
         torso_stiffness.push_back(bImpedanceTorsoStiff->get(i).asDouble());
@@ -1203,7 +1203,7 @@ bool MotorThread::threadInit()
     vector<double> arm_stiffness(0),arm_damping(0);
     Bottle *bImpedanceArmStiff=bMotor.find("impedence_arm_stiffness").asList();
     Bottle *bImpedanceArmDamp=bMotor.find("impedence_arm_damping").asList();
-    
+
     for(int i=0; i<bImpedanceArmStiff->size(); i++)
     {
         arm_stiffness.push_back(bImpedanceArmStiff->get(i).asDouble());
@@ -1331,7 +1331,7 @@ bool MotorThread::threadInit()
     grasp_state=GRASP_STATE_IDLE;
 
     Rand::init();
-    
+
     head_mode=HEAD_MODE_IDLE;
     arm_mode=ARM_MODE_IDLE;
 
@@ -1397,7 +1397,7 @@ void MotorThread::run()
 
                     Vector px(2);
                     px[0]=stereo[2*eye_in_use];
-                    px[1]=stereo[2*eye_in_use+1];                    
+                    px[1]=stereo[2*eye_in_use+1];
                     ctrl_gaze->lookAtMonoPixel(dominant_eye,px,0.4);
                 }
             }
@@ -1433,7 +1433,7 @@ void MotorThread::run()
             force[1]=wrench[1];
             force[2]=wrench[2];
 
-            Vector x,o;        
+            Vector x,o;
             dragger.ctrl->getPose(x,o);
 
             if(Time::now()-dragger.t0 > dragger.samplingRate)
@@ -1480,7 +1480,7 @@ void MotorThread::run()
                     force=0.0;
                 else
                     D/=5.0;
-                
+
                 Vector b=force/dragger.inertia;
                 Vector c=D*dragger.I->get();
                 Vector a=force/dragger.inertia-D*dragger.I->get();
@@ -1522,17 +1522,17 @@ void MotorThread::run()
                     {
                         Vector x,o;
                         action[arm]->getPose(x,o);
-                        
+
                         Vector head_x,head_o;
                         ctrl_gaze->getHeadPose(head_x,head_o);
-                        
+
                         if(fabs(x[1]-head_x[1])<0.2)
                             x[1]=head_x[1]+sign(x[1]-head_x[1])*0.2;
 
                         ICartesianControl *tmp_ctrl;
                         action[arm]->getCartesianIF(tmp_ctrl);
                         x[2]=avoid_table_height[arm];
-                        
+
                         tmp_ctrl->goToPosition(x);
                     }
                 }
@@ -1614,7 +1614,7 @@ bool MotorThread::reach(Bottle &options)
         tmpDisp=reachSideDisp[arm];
     }
     else
-    {        
+    {
         tmpOrient=(checkOptions(options,"take")?
                    reachAboveOrient[arm]:
                    reachAboveCata[arm]);
@@ -1625,7 +1625,7 @@ bool MotorThread::reach(Bottle &options)
     }
 
     restoreContext(arm);
-    
+
     wbdRecalibration();
     if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
         dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->enableContactDetection();
@@ -1702,7 +1702,7 @@ bool MotorThread::powerGrasp(Bottle &options)
     {
         if (Bottle *bApproach=options.find("approach").asList())
         {
-            size_t sz=std::min(approach_data.size(),(size_t)bApproach->size()); 
+            size_t sz=std::min(approach_data.size(),(size_t)bApproach->size());
             for (size_t i=0; i<sz; i++)
                 approach_data[i]=bApproach->get(i).asDouble();
         }
@@ -1750,7 +1750,7 @@ bool MotorThread::push(Bottle &options)
     Vector xd;
     if (!targetToCartesian(options.find("target").asList(),xd))
         return false;
-    arm=checkArm(arm,xd);    
+    arm=checkArm(arm,xd);
 
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
@@ -1842,7 +1842,7 @@ bool MotorThread::point(Bottle &options)
 bool MotorThread::point_far(Bottle &options)
 {
     Vector xd;
-    Bottle *bTarget=options.find("target").asList();    
+    Bottle *bTarget=options.find("target").asList();
     if (!targetToCartesian(bTarget,xd))
         return false;
 
@@ -1859,8 +1859,8 @@ bool MotorThread::point_far(Bottle &options)
     action[arm]->getCartesianIF(iarm);
 
     Property requirements;
-    Bottle point; point.addList().read(xd);    
-    requirements.put("point",point.get(0));    
+    Bottle point; point.addList().read(xd);
+    requirements.put("point",point.get(0));
 
     Bottle pointing_sequence;
     if (action[arm]->getHandSequence("pointing_hand",pointing_sequence))
@@ -1913,13 +1913,13 @@ bool MotorThread::look(Bottle &options)
         if(checkOptions(options,"left") || checkOptions(options,"right"))
             arm=checkOptions(options,"left")?LEFT:RIGHT;
 
-        arm=checkArm(arm);        
-        lookAtHand(options);        
+        arm=checkArm(arm);
+        lookAtHand(options);
     }
     else
     {
         Vector xd;
-        Bottle *bTarget=options.find("target").asList();        
+        Bottle *bTarget=options.find("target").asList();
         if (!targetToCartesian(bTarget,xd))
             return false;
 
@@ -1967,7 +1967,7 @@ bool MotorThread::takeTool(Bottle &options)
     bool contact_detected=false;
     Vector wrench(6);
     double t=Time::now();
-    
+
     while (!contact_detected && (Time::now()-t<5.0))
     {
         if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
@@ -2005,11 +2005,11 @@ bool MotorThread::expect(Bottle &options)
 
     bool f;
     action[arm]->checkActionsDone(f,true);
-    
+
     double force_thresh;
     if (typeid(action).name()==typeid(ActionPrimitivesLayer2).name())
         dynamic_cast<ActionPrimitivesLayer2*>(action[arm])->getExtForceThres(force_thresh);
-    
+
     bool contact_detected=false;
     Vector wrench(6);
     double t=Time::now();
@@ -2022,8 +2022,8 @@ bool MotorThread::expect(Bottle &options)
             contact_detected=true;
 
         Time::delay(0.1);
-    }    
-    
+    }
+
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
@@ -2110,7 +2110,7 @@ bool MotorThread::hand(const Bottle &options, const string &type,
         bool f;
         action[arm]->checkActionsDone(f,true);
         if (holding!=NULL)
-            *holding=isHolding(options); 
+            *holding=isHolding(options);
         return true;
     }
     else
@@ -2184,7 +2184,7 @@ bool MotorThread::changeExecTime(const int arm, const double execTime)
 {
     if (execTime>0.0)
     {
-        default_exec_time=execTime; 
+        default_exec_time=execTime;
         reachingTimeout=std::max(2.0*default_exec_time,4.0);
         if ((arm==LEFT) || (arm==RIGHT))
         {
@@ -2218,7 +2218,7 @@ bool MotorThread::changeExecTime(const int arm, const double execTime)
 }
 
 
-void MotorThread::goWithTorsoUpright(ActionPrimitives *action, 
+void MotorThread::goWithTorsoUpright(ActionPrimitives *action,
                                      const Vector &xin, const Vector &oin)
 {
     ICartesianControl *ctrl;
@@ -2300,7 +2300,7 @@ bool MotorThread::goHome(Bottle &options)
         }
 
         for (size_t i=0; i<2; i++)
-        {            
+        {
             if (exec_arm[i] && (action[which_arm[i]]!=NULL))
             {
                 if (hand_home)
@@ -2424,7 +2424,7 @@ bool MotorThread::drawNear(Bottle &options)
     if (checkOptions(options,"left") ||
         checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
-    
+
     arm=checkArm(arm);
     goWithTorsoUpright(action[arm],drawNearPos[arm],drawNearOrient[arm]);
 
@@ -2510,7 +2510,7 @@ bool MotorThread::calibTable(Bottle &options)
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     arm=checkArm(arm);
-    
+
     Vector deployZone=deployPos[arm];
     deployZone=deployZone+randomDeployOffset();
 
@@ -2578,7 +2578,7 @@ bool MotorThread::calibTable(Bottle &options)
         opcPort.setTableHeight(table_height);
 
         yWarning("########## Table height found: %f",table_height);
-        
+
         //adjust the table height accordingly to a specified tolerance
         table_height+=table_height_tolerance;
     }
@@ -2733,7 +2733,7 @@ bool MotorThread::exploreTorso(Bottle &options)
 
     //random walk!
     while(this->isRunning() && !interrupted && Time::now()-init_walking_time<walking_time)
-    {    
+    {
         //generate next random step
         Vector random_pos=cart_init_pos;
         if (Rand::scalar(0.0,3.0)>2.0)  // 1/3 => lean forward
@@ -2897,7 +2897,7 @@ bool MotorThread::exploreHand(Bottle &options)
             Time::delay(0.05);
         }
     }
-    
+
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
@@ -2907,7 +2907,7 @@ bool MotorThread::exploreHand(Bottle &options)
         action[arm]->unlockActions();
         action[arm]->syncCheckReinstate();
     }
-    
+
     return true;
 }
 
@@ -3045,7 +3045,7 @@ bool MotorThread::imitateAction(Bottle &options)
     restoreContext(arm);
 
     ICartesianControl *ctrl;
-    action[arm]->getCartesianIF(ctrl);    
+    action[arm]->getCartesianIF(ctrl);
 
     Vector newPos;
     ctrl->getDOF(newPos);
@@ -3134,7 +3134,7 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
 
     Bottle look_options;
     look_options.addString("hand");
-    look_options.addString(dragger.arm==LEFT?"left":"right");    
+    look_options.addString(dragger.arm==LEFT?"left":"right");
     look(look_options);
 
     return true;
@@ -3271,7 +3271,7 @@ void MotorThread::update()
         table.resize(4,0.0);
         table[2]=1.0;
         table[3]=-table_height;
-        
+
         //adjust the table height accordingly to a specified tolerance
         table_height+=table_height_tolerance;
     }

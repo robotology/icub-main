@@ -13,7 +13,7 @@
     <tag>skinManGui</tag>
   </module>
 
-  
+
   <module>
     <name>iCubSkinGui</name>
     <!-- Remember to use the proper configuration files (i.e. "_V2.ini" for V2 robots) -->
@@ -75,8 +75,8 @@
     <node>console</node>
     <tag>skinGuiRF</tag>
   </module>
-  
-  
+
+
   <connection>
     <from>/skinManager/skin_events:o</from>
     <to>/wholeBodyDynamics/skin_contacts:i</to>
@@ -97,7 +97,7 @@
     <to>/skinManagerGui/info:i</to>
     <protocol>tcp</protocol>
   </connection>
-  
+
   <connection>
     <from>/icub/skin/left_hand_comp</from>
     <to>/skinGui/left_hand:i</to>
@@ -107,12 +107,12 @@
     <from>/icub/skin/left_forearm_comp</from>
     <to>/skinGui/left_forearm:i</to>
     <protocol>udp</protocol>
-  </connection>  
+  </connection>
   <connection>
     <from>/icub/skin/left_arm_comp</from>
     <to>/skinGui/left_arm:i</to>
     <protocol>udp</protocol>
-  </connection>  
+  </connection>
   <connection>
     <from>/icub/skin/right_hand_comp</from>
     <to>/skinGui/right_hand:i</to>

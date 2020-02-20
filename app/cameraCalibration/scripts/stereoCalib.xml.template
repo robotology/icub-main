@@ -13,7 +13,7 @@
           <stdio>pcNode</stdio>
    <tag>StereoCalib</tag>
    </module>
-   
+
    <module>
       <name>yarpview</name>
       <parameters>--name /viewLeft --synch</parameters>
@@ -27,7 +27,7 @@
       <node>pcNode</node>
         <tag>view2</tag>
    </module>
-   
+
 <connection>
   <output>/stereoCalib/cam/left:o</output>
   <input>/viewLeft</input>

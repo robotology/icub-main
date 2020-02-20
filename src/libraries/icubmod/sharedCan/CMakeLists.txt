@@ -13,7 +13,7 @@ IF (NOT SKIP_sharedcan)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/)
     yarp_add_plugin(shcan SharedCanBus.h SharedCanBus.cpp)
     target_link_libraries(shcan ${YARP_LIBRARIES})
-    
+
     icub_export_plugin(shcan)
 
   yarp_install(TARGETS shcan

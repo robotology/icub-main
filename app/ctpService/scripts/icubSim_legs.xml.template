@@ -1,8 +1,8 @@
 <application>
 <name>ctp service legs</name>
 <dependencies>
-</dependencies> 
-   
+</dependencies>
+
    <module>
       <name>ctpService</name>
       <parameters>--robot icubSim --part right_leg --period 10 --from velocityControlLeg.ini</parameters>

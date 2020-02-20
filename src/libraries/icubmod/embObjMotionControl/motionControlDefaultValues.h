@@ -24,7 +24,7 @@
 
 #ifndef MOTIONCONTROLDEFAULTVALUES
 #define MOTIONCONTROLDEFAULTVALUES
-namespace eomc_defaultValue 
+namespace eomc_defaultValue
 {
     namespace DeadZone
     {

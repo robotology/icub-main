@@ -37,7 +37,7 @@ bool SkinMeshThreadCan::threadInit()
     }
 
     driver.view(pCanBus);
-    
+
     if (!pCanBus)
     {
         fprintf(stderr, "Error opening /ecan device not available\n");
@@ -63,7 +63,7 @@ bool SkinMeshThreadCan::threadInit()
 }
 
 void SkinMeshThreadCan::run()
-{   
+{
     std::lock_guard<std::mutex> lck(mtx);
 
     unsigned int canMessages=0;
@@ -95,8 +95,8 @@ void SkinMeshThreadCan::run()
 
 void SkinMeshThreadCan::threadRelease()
 {
-    printf("Skin Mesh Thread releasing...\n");  
-    if (pCanBufferFactory) 
+    printf("Skin Mesh Thread releasing...\n");
+    if (pCanBufferFactory)
     {
         pCanBufferFactory->destroyBuffer(canBuffer);
     }

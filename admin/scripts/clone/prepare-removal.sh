@@ -17,7 +17,7 @@ else
 	    removable=false  #CVS ONLY
 	else
 	    echo "rm $fname"
-	fi    
+	fi
 	root=`echo $fname | sed "s|/[^/]*$||"`
 	extra=`echo $fname | sed "s|.*/||"`
 	if $removable; then

@@ -13,7 +13,7 @@ IF (NOT SKIP_cfw2can)
   IF (NOT CFW2CANAPI_FOUND)
     MESSAGE("cfw2can: cannot find cfw2canapi, turn off device")
   ELSE (NOT CFW2CANAPI_FOUND)
-  
+
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CFW2CANAPI_INC_DIRS})
 
     yarp_add_plugin(cfw2can Cfw2Can.cpp Cfw2Can.h)

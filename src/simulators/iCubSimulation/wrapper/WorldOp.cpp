@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick, Vadim Tikhanoff
 * email:    paulfitz@alum.mit.edu, vadim.tikhanoff@iit.it
@@ -40,8 +40,8 @@ void show(const WorldOpScalar& x) {
     yDebug("\n");
 }
 
-void show(const WorldOpFlag& x, 
-          const char *yes="True", 
+void show(const WorldOpFlag& x,
+          const char *yes="True",
           const char *no="False") {
     if (!x.valid) {
         yDebug("not set");

@@ -1,6 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Paul Fitzpatrick, Vadim Tikhanoff
 * email:   paulfitz@alum.mit.edu, vadim.tikhanoff@iit.it
@@ -61,7 +61,7 @@ public:
     }
     ~TextureInput(){
         port.close();
-    } 
+    }
     void setName( string module );
     bool open(yarp::os::Searchable& config);
     void apply(unsigned int *textures);

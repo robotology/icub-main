@@ -10,16 +10,16 @@
 
 /**
  * \defgroup adaptWinPolyEstimator Adaptive Window Polynomial Fitting Estimator
- *  
+ *
  * @ingroup ctrlLib
  *
- * Implementation of polynomial fitting through a least-squares 
- * based algorithm on a adpative window (<a 
- * href="https://doi.org/10.1109/87.880606">PDF</a>) 
+ * Implementation of polynomial fitting through a least-squares
+ * based algorithm on a adpative window (<a
+ * href="https://doi.org/10.1109/87.880606">PDF</a>)
  *
  * \author Ugo Pattacini
  *
- */ 
+ */
 
 
 #ifndef __ADAPTWINPOLYESTIMATOR_H__
@@ -50,14 +50,14 @@ public:
 
     /**
     * Default constructor.
-    */ 
+    */
     AWPolyElement() {}
 
     /**
     * Create an element for adaptive polynomial fitting.
     * @param d is the element data vector.
     * @param t is time instant of sampled data.
-    */ 
+    */
     AWPolyElement(const yarp::sig::Vector &d, const double t): data(d), time(t) { }
 };
 
@@ -67,8 +67,8 @@ typedef std::deque<AWPolyElement> AWPolyList;
 /**
 * \ingroup adaptWinPolyEstimator
 *
-* Adaptive window polynomial fitting. 
-* Abstract class. 
+* Adaptive window polynomial fitting.
+* Abstract class.
 */
 class AWPolyEstimator
 {
@@ -87,38 +87,38 @@ protected:
     bool firstRun;
 
     /**
-    * Find the regressor which best fits in least square sense the 
-    * last n data sample couples, or all couples if n==0. 
+    * Find the regressor which best fits in least square sense the
+    * last n data sample couples, or all couples if n==0.
     * @param x vector containing the input data.
     * @param y vector containing the output data.
     * @param n last n data sample couples to fit.
     * @return the regressor's coefficients.
-    */ 
+    */
     virtual yarp::sig::Vector fit(const yarp::sig::Vector &x,
                                   const yarp::sig::Vector &y, const unsigned int n=0);
 
-    /** 
-    * Evaluate regressor at certain point. 
+    /**
+    * Evaluate regressor at certain point.
     * @param x the point.
     * @return regressor evaluated in x.
-    */ 
+    */
     virtual double eval(double x);
 
-    /** 
-    * Return the current estimation. 
-    * @note needs to be defined. 
+    /**
+    * Return the current estimation.
+    * @note needs to be defined.
     * @return esteeme.
-    */ 
+    */
     virtual double getEsteeme() = 0;
 
 public:
     /**
-    * Create a polynomial estimator object of order _order on an 
+    * Create a polynomial estimator object of order _order on an
     * adaptive window of a maximum length _N an threshold _D.
     * @param _order is the order of polynomial fitting.
     * @param _N is the maximum windows length.
     * @param _D is the threshold.
-    */ 
+    */
     AWPolyEstimator(unsigned int _order, unsigned int _N, const double _D);
 
     /**
@@ -135,35 +135,35 @@ public:
 
     /**
     * Return the current windows lengths.
-    * @return the current windows lengths. 
+    * @return the current windows lengths.
     */
     yarp::sig::Vector getWinLen() { return winLen; }
 
     /**
-    * Return the mean squared error (MSE) computed over the current 
+    * Return the mean squared error (MSE) computed over the current
     * windows lengths between the predictions and the real data.
-    * @return the MSE. 
+    * @return the MSE.
     */
     yarp::sig::Vector getMSE() { return mse; }
 
     /**
-    * Execute the algorithm upon the elements list, with the max 
-    * deviation threshold given by D. 
-    * @return the current estimation. 
+    * Execute the algorithm upon the elements list, with the max
+    * deviation threshold given by D.
+    * @return the current estimation.
     */
     yarp::sig::Vector estimate();
 
     /**
-    * Execute the algorithm upon the elements list, with the max 
-    * deviation threshold given by D. 
-    * @param el is the new data of type AWPolyElement. 
-    * @return the current estimation. 
+    * Execute the algorithm upon the elements list, with the max
+    * deviation threshold given by D.
+    * @param el is the new data of type AWPolyElement.
+    * @return the current estimation.
     */
     yarp::sig::Vector estimate(const AWPolyElement &el);
 
     /**
-    * Reinitialize the internal state. 
-    * @note Windows lengths are brought to the maximum value N and 
+    * Reinitialize the internal state.
+    * @note Windows lengths are brought to the maximum value N and
     *       output remains zero as long as fed data size reaches N.
     */
     void reset();
@@ -184,9 +184,9 @@ public:
 class AWLinEstimator : public AWPolyEstimator
 {
 protected:
-    /** 
-     * Redefine method to improve computation just for first-order 
-     * estimator. 
+    /**
+     * Redefine method to improve computation just for first-order
+     * estimator.
      */
     virtual yarp::sig::Vector fit(const yarp::sig::Vector &x,
                                   const yarp::sig::Vector &y, const unsigned int n=0);

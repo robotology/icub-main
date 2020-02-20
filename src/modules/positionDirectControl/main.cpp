@@ -30,13 +30,13 @@ private:
     PolyDriver driver;
     positionDirectControlThread *pThread;
     char partName[255];
-  
+
     Port rpc_port;
 
 public:
     virtual bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply)
     {
-        reply.clear(); 
+        reply.clear();
         if (command.get(0).isString())
         {
             if (command.get(0).asString()=="help")
@@ -54,7 +54,7 @@ public:
         reply.addString("Unknown command");
         return true;
     }
-  
+
     virtual bool configure(yarp::os::ResourceFinder &rf)
     {
         Property options;
@@ -94,15 +94,15 @@ public:
             char tmp[800];
             snprintf(tmp, sizeof(tmp), "/%s/%s/%s/client", moduleName.c_str(), robotName, partName);
             options.put("local",tmp);
-        
+
             snprintf(tmp, sizeof(tmp), "/%s/%s", robotName, partName);
             options.put("remote", tmp);
-        
+
             snprintf(tmp, sizeof(tmp), "/%s/%s/rpc", moduleName.c_str(), partName);
             rpc_port.open(tmp);
-            
+
             options.put("carrier", "tcp");
-            
+
             attach(rpc_port);
         }
         else
@@ -148,7 +148,7 @@ public:
         int period = CONTROL_PERIOD;
         if(options.check("period"))
             period = options.find("period").asInt();
-        
+
         yInfo("control rate is %d ms",period);
 
         pThread=new positionDirectControlThread(period);
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
     Network yarp;
     VelControlModule mod;
     ResourceFinder rf;
-    
+
     rf.configure(argc, argv);
     rf.setVerbose(true);
     if (mod.configure(rf)==false) return 1;

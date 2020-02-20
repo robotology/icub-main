@@ -1,10 +1,10 @@
 """
-This module implements the Sparse Spectrum Gaussian Process for Regression. A 
+This module implements the Sparse Spectrum Gaussian Process for Regression. A
 detailed description of the algorithm can be found in:
 
-  "Sparse Spectrum Gaussian Process Regression." 
-  Miguel Lazaro-Gredilla, Joaquin Quinonero-Candela, Carl Edward Rasmussen, 
-  and Anibal R. Figueiras-Vidal. 
+  "Sparse Spectrum Gaussian Process Regression."
+  Miguel Lazaro-Gredilla, Joaquin Quinonero-Candela, Carl Edward Rasmussen,
+  and Anibal R. Figueiras-Vidal.
   In Journal of Machine Learning Research (JMLR) 2010.
 
 
@@ -28,8 +28,8 @@ inner1d = numpy.core.umath_tests.inner1d
 
 # keep this here till NumPy >=1.4.0 is shipped by default on most distros
 def diag_indices(n,ndim=2):
-    idx = numpy.arange(n) 
-    return (idx,)*ndim 
+    idx = numpy.arange(n)
+    return (idx,)*ndim
 
 
 class NoPrior(object):
@@ -52,7 +52,7 @@ class NoPrior(object):
 class NormalDistribution(object):
     """Normally distributed hyperprior."""
     def __init__(self, mu = 1., sigma = 1.):
-        """Construct a normally distributed hyperprior with mean mu and standard 
+        """Construct a normally distributed hyperprior with mean mu and standard
         deviation sigma."""
         assert sigma > 0.
         self.mu = mu
@@ -77,7 +77,7 @@ class NormalDistribution(object):
 
 class LogNormalDistribution(object):
     def __init__(self, mu = 1., sigma = 1.):
-        """Construct a log-normally distributed hyperprior with mean mu and standard 
+        """Construct a log-normally distributed hyperprior with mean mu and standard
         deviation sigma."""
         assert sigma > 0.
         self.mu = mu
@@ -111,11 +111,11 @@ class LogNormalDistribution(object):
 
 
 class SparseSpectrumFeatures(object):
-    """Sparse Spectrum features approximate a Gaussian kernel in a finite 
+    """Sparse Spectrum features approximate a Gaussian kernel in a finite
     dimensionality by sampling from its normalized Fourier transform."""
     def __init__(self, n, nproj = 50, sigma_o = 0.1, sigma_o_prior = NoPrior(), l = [], l_prior = None, fixed = False):
-        """Construct a Sparse Spectrum feature mapping. The parameter fixed 
-        determines whether the sparse spectrum frequencies are kept fixed or  
+        """Construct a Sparse Spectrum feature mapping. The parameter fixed
+        determines whether the sparse spectrum frequencies are kept fixed or
         will be optimized as well."""
         assert sigma_o >= 0
         assert len(l) == n
@@ -135,13 +135,13 @@ class SparseSpectrumFeatures(object):
         self.rescale()
 
     def rescale(self):
-        """Scales the randomly samples frequencies with respect to the 
+        """Scales the randomly samples frequencies with respect to the
         characteristic length scales."""
         self.W = self.Wf / self.l
 
     def getparams(self):
-        """Returns a concatenation of the parameter sigma, the characteric 
-        length scales, and (if not fixed) the sparse spectrum frequencies in a 
+        """Returns a concatenation of the parameter sigma, the characteric
+        length scales, and (if not fixed) the sparse spectrum frequencies in a
         flat array."""
         if self.fixed:
             return numpy.concatenate(([self.sigma_o], self.l))
@@ -149,9 +149,9 @@ class SparseSpectrumFeatures(object):
             return numpy.concatenate(([self.sigma_o], self.l, self.Wf.T.flatten()))
 
     def setparams(self, params):
-        """Obtains the parameter sigma, the characteristic length scales, and 
-        (if not fixed) the sparse spectrum frequencies in that order from a 
-        flat array.""" 
+        """Obtains the parameter sigma, the characteristic length scales, and
+        (if not fixed) the sparse spectrum frequencies in that order from a
+        flat array."""
         params = numpy.array(params)
         assert params.shape[0] == 1 + self.n or params.shape[0] == 1 + self.n + (self.nproj * self.n)
 
@@ -176,11 +176,11 @@ class SparseSpectrumFeatures(object):
     def outputdim(self):
         """Return the effective output dimension of the feature mapping."""
         return self.nproj * 2
-    
+
     def getpriors(self):
         """Return the hyperpriors."""
         return [self.sigma_o_prior] + self.l_prior
-    
+
     def setpriors(self, priors):
         """Set the hyperpriors."""
         self.sigma_o_prior = priors[0]
@@ -191,7 +191,7 @@ class SparseSpectrumFeatures(object):
         return numpy.array([p.logpdf(x) for p, x in zip(self.getpriors(), self.getparams())])
 
     def priorloggrad(self):
-        """Return the gradient of the log probability of the parameters with 
+        """Return the gradient of the log probability of the parameters with
         respect to the hyperpriors."""
         return numpy.array([p.logpdfgrad(x) for p, x in zip(self.getpriors(), self.getparams())])
 
@@ -202,12 +202,12 @@ class SparseSpectrumFeatures(object):
         return numpy.hstack((f * numpy.cos(Phi), f * numpy.sin(Phi)))
 
     def gradient(self, Xp, X, A1, A2, sigma_n):
-        """Computes the gradient of the log marginal likelihood with respect to 
+        """Computes the gradient of the log marginal likelihood with respect to
         the parameters and precomputed settings from the machine."""
         # This implementation is quite fast though incomprehensible. I've
-        # heavily used numpy's broadcasting in combination with array reshaping. 
+        # heavily used numpy's broadcasting in combination with array reshaping.
         # Additionally, I used the undocumented inner1d generalized ufunc.
-        # I am open to any improvements to the readability of the code if it 
+        # I am open to any improvements to the readability of the code if it
         # does not harm performance.
         grad = numpy.zeros((A1.shape[1], self.getparams().shape[0]))
 
@@ -216,24 +216,24 @@ class SparseSpectrumFeatures(object):
 
         A1Xp = numpy.dot(A1.T, Xp)
         A2Xp = numpy.dot(A2.T, Xp)
-        
+
         m = Xp.shape[0]
 
         # sigma_o gradient
-        grad[:,0] = (((sigma_o2) / self.nproj) * (m * self.nproj) / (sigma_n2) - 
+        grad[:,0] = (((sigma_o2) / self.nproj) * (m * self.nproj) / (sigma_n2) -
                    (inner1d(A1Xp, A1Xp) + inner1d(A2Xp, A2Xp).sum())) / self.sigma_o
-        
+
         B1 = (A1.T[:,numpy.newaxis,:] * A1Xp[:,:self.nproj,numpy.newaxis]) * Xp[:,self.nproj:].T - \
              (A1.T[:,numpy.newaxis,:] * A1Xp[:,self.nproj:,numpy.newaxis]) * Xp[:,:self.nproj].T
         B2 = numpy.dot(A2Xp[:,:self.nproj].T, A2.T) * Xp[:,self.nproj:].T - \
              numpy.dot(A2Xp[:,self.nproj:].T, A2.T) * Xp[:,:self.nproj].T
-        
+
         XB = (numpy.dot(B1, X) + numpy.dot(B2, X)) / self.l
 
-        # length scale gradient        
+        # length scale gradient
         grad[:,1:1+self.n] = inner1d(XB.swapaxes(2,1), -self.W.T)
         #grad[:,1:1+self.n] = -1. * (XB * self.W).sum(axis=1)
-        
+
         if not self.fixed:
             # sparse spectrum frequency gradient
             shape = (A1.shape[1], XB.shape[1]*XB.shape[2])
@@ -258,7 +258,7 @@ class LinearGPR(object):
       Springer-Verlag, 2006.
     """
     def __init__(self, n, p, mapping, sigma_n = 0.1, sigma_n_prior = NoPrior()):
-        """Construct a Linear Gaussian Process for Regression with the specified 
+        """Construct a Linear Gaussian Process for Regression with the specified
         feature mapping."""
         assert sigma_n >= 0.
         assert n > 0
@@ -275,8 +275,8 @@ class LinearGPR(object):
 
 
     def setparams(self, params):
-        """Obtains the parameter sigma and the feature mapping parameters in 
-        that order from a flat array. The machine is reset afterwards.""" 
+        """Obtains the parameter sigma and the feature mapping parameters in
+        that order from a flat array. The machine is reset afterwards."""
         assert len(params) == len(self.getparams())
         params = numpy.array(params)
 
@@ -286,14 +286,14 @@ class LinearGPR(object):
         self.mapping.setparams(params[1:])
 
         self.reset()
-        
+
     def getparams(self):
-        """Returns a concatenation of the sigma parameter and the feature mapping 
+        """Returns a concatenation of the sigma parameter and the feature mapping
         parameters in a flat array."""
         return numpy.concatenate(([self.sigma_n], self.mapping.getparams()))
 
     def guessparams(self, X, Y):
-        """Perform a rudimentary guess of the machine and mapping parameters 
+        """Perform a rudimentary guess of the machine and mapping parameters
         based on the data."""
         self.sigma_n = Y.std(axis=0).max() / 4.
         self.mapping.guessparams(X, Y)
@@ -309,23 +309,23 @@ class LinearGPR(object):
             del self.LPhiY, self.X, self.Phi, self.Y, self.lml
         except AttributeError:
             pass
-        
+
 
     def predict(self, Xstar):
         """Predicts the output for the supplied input data."""
         assert len(Xstar.shape) == 1 or len(Xstar.shape) == 2
-        assert Xstar.shape[-1] == self.n 
+        assert Xstar.shape[-1] == self.n
         if Xstar.ndim == 2:
             Phistar = self.mapping.evaluate(Xstar)
-            
+
             # see Bishop, p. 174, 3.58
             mean = numpy.dot(Phistar, self.W)
 
             # see Bishop, p. 174, 3.59
             # see Rasmussen, p. 30, 2.11
             sigma_n2 = self.sigma_n * self.sigma_n
-        
-            vT, info = scipy.linalg.flapack.dgetrs(self.L, numpy.arange(self.L.shape[0]), 
+
+            vT, info = scipy.linalg.flapack.dgetrs(self.L, numpy.arange(self.L.shape[0]),
                                                    Phistar.T, trans=1, overwrite_b=1)
             assert info == 0, 'scipy.linalg.flapack.dgetrs(L, Phi*)'
 
@@ -364,23 +364,23 @@ class LinearGPR(object):
         assert info == 0, 'scipy.linalg.flapack.dgetrs(L, B)'
 
         # former should be faster, but isn't on small datasets
-        #self.w, info = scipy.linalg.flapack.dgetrs(self.L,numpy.arange(self.L.shape[0]), 
+        #self.w, info = scipy.linalg.flapack.dgetrs(self.L,numpy.arange(self.L.shape[0]),
         #                                           LPhiy, trans=0, overwrite_b=0)
         self.W = scipy.linalg.cho_solve((self.L, self.up), self.B)
 
-        self.lml = -0.5 * ((1. / (sigma_n2)) * (inner1d(self.Y.T, self.Y.T) - inner1d(self.LPhiY.T, self.LPhiY.T)) + 
+        self.lml = -0.5 * ((1. / (sigma_n2)) * (inner1d(self.Y.T, self.Y.T) - inner1d(self.LPhiY.T, self.LPhiY.T)) +
                            (m - n) * numpy.log(sigma_n2) + m * numpy.log(2. * numpy.pi)) - \
                     numpy.log(self.L.diagonal()).sum()
 
     def lmlfunc(self):
-        """Computes the log marginal likelihood given the trained state and the 
+        """Computes the log marginal likelihood given the trained state and the
         hyperpriors."""
         return self.lml.sum() + self.sigma_n_prior.logpdf(self.sigma_n) + \
                self.mapping.priorlogprob().sum()
 
     def lmlgradient(self):
-        """Computes the gradient of the log marginal likelihood given the 
-        trained state and the hyperpriors.""" 
+        """Computes the gradient of the log marginal likelihood given the
+        trained state and the hyperpriors."""
         LPhi, info = scipy.linalg.flapack.dgetrs(self.L,numpy.arange(self.L.shape[0]),
                                                  self.Phi.T, trans=1, overwrite_b=0)
         assert info == 0, 'scipy.linalg.flapack.dgetrs(L, Phi.T)'
@@ -396,11 +396,11 @@ class LinearGPR(object):
         return numpy.concatenate(([grad], mapgrad.sum(axis=0)))
 
 
-    def optimize(self, X, Y, solver = 'ralg', ftol = 1e-4, gtol= 1e-4, contol = 1e-6, 
-                       maxIter = 2500, maxFunEvals = 2500, maxtime = 3600., checkgrad = False, 
+    def optimize(self, X, Y, solver = 'ralg', ftol = 1e-4, gtol= 1e-4, contol = 1e-6,
+                       maxIter = 2500, maxFunEvals = 2500, maxtime = 3600., checkgrad = False,
                        verbose = False):
-        """Minimizes the negative log marginal likelihood. The positivity 
-        constraints of several parameters is enforced by treating these in 
+        """Minimizes the negative log marginal likelihood. The positivity
+        constraints of several parameters is enforced by treating these in
         exponential scale.
 
         Requires: openopt"""
@@ -453,8 +453,8 @@ class LinearGPR(object):
                 sys.stdout.flush()
                 return False
 
-        p = openopt.NLP(f, x0, df = df, iprint = iprint, callback = itercb, 
-                        gtol = gtol, contol = contol, ftol = ftol, 
+        p = openopt.NLP(f, x0, df = df, iprint = iprint, callback = itercb,
+                        gtol = gtol, contol = contol, ftol = ftol,
                         maxIter = maxIter, maxFunEvals = maxFunEvals, maxTime = maxtime)
 
         if checkgrad:
@@ -468,5 +468,5 @@ class LinearGPR(object):
             sys.stdout.write('%40s\r' % '')
             sys.stdout.flush()
 
-        return r 
+        return r
 

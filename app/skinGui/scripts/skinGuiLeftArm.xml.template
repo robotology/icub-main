@@ -13,7 +13,7 @@
     <tag>skinCompGuiLA</tag>
   </module>
 
-  
+
   <module>
     <name>iCubSkinGui</name>
     <parameters>--from left_arm.ini --useCalibration --xpos 0 --ypos 450 --width 800 --height 550</parameters>
@@ -32,8 +32,8 @@
     <node>console</node>
     <tag>skinGuiLH</tag>
   </module>
-  
-  
+
+
   <connection>
     <from>/skinManGuiLeft/rpc:o</from>
     <to>/leftSkinMan/rpc</to>
@@ -54,13 +54,13 @@
     <from>/diagnostics/skin/errors:o</from>
     <to>/skinManager/diagnostics/skin/errors:i</to>
     <protocol>tcp</protocol>
-  </connection>  
+  </connection>
   <connection>
     <from>/skinManager/diagnostics/skin/errors:o</from>
     <to>/skinManagerGui/diagnostics/skin/errors:i</to>
     <protocol>tcp</protocol>
   </connection>
-    
+
   <connection>
     <from>/icub/skin/left_hand_comp</from>
     <to>/skinGui/left_hand:i</to>
@@ -70,10 +70,10 @@
     <from>/icub/skin/left_forearm_comp</from>
     <to>/skinGui/left_forearm:i</to>
     <protocol>udp</protocol>
-  </connection>  
+  </connection>
   <connection>
     <from>/icub/skin/left_arm_comp</from>
     <to>/skinGui/left_arm:i</to>
     <protocol>udp</protocol>
-  </connection>  
+  </connection>
 </application>

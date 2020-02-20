@@ -85,7 +85,7 @@ public:
     { return (const unsigned char *) msg; }
 
     virtual void setBuffer(unsigned char *b)
-    { 
+    {
         if (b!=0)
             msg=(CMSG *)(b);
     }
@@ -100,7 +100,7 @@ public:
  * | `ecan` |
  */
 class yarp::dev::EsdCan: public ImplementCanBufferFactory<EsdCanMessage, CMSG>,
-    public ICanBus, 
+    public ICanBus,
     public DeviceDriver
 {
 private:
@@ -115,8 +115,8 @@ public:
     virtual bool canIdAdd(unsigned int id);
     virtual bool canIdDelete(unsigned int id);
 
-    virtual bool canRead(CanBuffer &msgs, 
-        unsigned int size, 
+    virtual bool canRead(CanBuffer &msgs,
+        unsigned int size,
         unsigned int *read,
         bool wait=false);
 

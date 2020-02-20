@@ -8,7 +8,7 @@
                 <port>/icub/cartesianController/left_arm/state:o</port>
                 <port>/icub/cartesianController/right_arm/state:o</port>
         </dependencies>
-      
+
         <module>
                 <name>SFM</name>
                 <parameters>--use_sgbm</parameters>
@@ -19,7 +19,7 @@
                 <name>depth2kin</name>
                 <node>console</node>
         </module>
-           
+
         <module>
                 <name>yarpview</name>
                 <parameters>--name /calib_viewer --x 0 --y 0 --p 33</parameters>
@@ -31,7 +31,7 @@
                 <parameters>--name /touch_viewer --x 400 --y 0 --out /touch_viewer/out --p 33</parameters>
                 <node>console</node>
         </module>
-  
+
         <connection>
                 <from>/icub/camcalib/left/out</from>
                 <to>/SFM/left:i</to>

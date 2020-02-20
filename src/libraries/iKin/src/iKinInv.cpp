@@ -103,7 +103,7 @@ Vector iKinCtrl::calc_e()
         if (ctrlPose!=IKINCTRL_POSE_XYZ)
         {
             Matrix Des=axis2dcm(x_set.subVector(3,6));
-            Vector ax=dcm2axis(Des*H.transposed()); 
+            Vector ax=dcm2axis(Des*H.transposed());
             e[3]=ax[3]*ax[0];
             e[4]=ax[3]*ax[1];
             e[5]=ax[3]*ax[2];
@@ -183,7 +183,7 @@ void iKinCtrl::watchDog()
     {
         state=IKINCTRL_STATE_DEADLOCK;
         watchDogCnt=0;
-    }    
+    }
 }
 
 
@@ -217,7 +217,7 @@ Vector iKinCtrl::solve(Vector &xd, const double tol_size, const int max_iter,
     while (true)
     {
         iterate(xd,verbose);
-        
+
         if (isInTarget())
         {
             if (exit_code)
@@ -237,7 +237,7 @@ Vector iKinCtrl::solve(Vector &xd, const double tol_size, const int max_iter,
         if (state==IKINCTRL_STATE_DEADLOCK)
         {
             if (exit_code)
-                *exit_code=IKINCTRL_RET_TOLQ;   
+                *exit_code=IKINCTRL_RET_TOLQ;
 
             break;
         }
@@ -248,7 +248,7 @@ Vector iKinCtrl::solve(Vector &xd, const double tol_size, const int max_iter,
             {
                 if (exit_code)
                     *exit_code=IKINCTRL_RET_EXHALT;
-            
+
                 break;
             }
         }
@@ -317,7 +317,7 @@ Vector SteepCtrl::iterate(Vector &xd, const unsigned int verbose)
     {
         iter++;
         q_old=q;
-        
+
         calc_e();
 
         J =chain.GeoJacobian();
@@ -516,9 +516,9 @@ Matrix LMCtrl::pinv(const Matrix &A, const double tol)
 
     Matrix Spinv=zeros(n,n);
     for (int c=0; c<n; c++)
-    {    
+    {
         for (int r=0; r<n; r++)
-        {    
+        {
             if (r==c && Sdiag[c]>tol)
                 Spinv(r,c)=1.0/Sdiag[c];
             else
@@ -546,14 +546,14 @@ double LMCtrl::update_mu()
     {
         double d=dist();
         double ratio=d/dist_old;
-    
+
         if (ratio>1.0)
             mu*=mu_inc;
         else
             mu*=mu_dec;
-    
+
         mu=mu>mu_max ? mu_max : (mu<mu_min ? mu_min : mu);
-    
+
         dist_old=d;
     }
     else
@@ -675,7 +675,7 @@ LMCtrl::~LMCtrl()
 /************************************************************************/
 LMCtrl_GPM::LMCtrl_GPM(iKinChain &c, unsigned int _ctrlPose, double _Ts,
                        double _mu0, double _mu_inc, double _mu_dec,
-                       double _mu_min, double _mu_max, double _sv_thres) : 
+                       double _mu_min, double _mu_max, double _sv_thres) :
                        LMCtrl(c,_ctrlPose,_Ts,_mu0,_mu_inc,_mu_dec,_mu_min,_mu_max,_sv_thres)
 {
     span.resize(dim);
@@ -723,7 +723,7 @@ Vector LMCtrl_GPM::computeGPM()
 
 /************************************************************************/
 MultiRefMinJerkCtrl::MultiRefMinJerkCtrl(iKinChain &c, unsigned int _ctrlPose, double _Ts,
-                                         bool nonIdealPlant) : 
+                                         bool nonIdealPlant) :
                                          iKinCtrl(c,_ctrlPose), Ts(_Ts)
 {
     q_set.resize(dim,0.0);
@@ -839,13 +839,13 @@ Vector MultiRefMinJerkCtrl::iterate(Vector &xd, Vector &qd, Vector *xdot_set,
         }
         else
             _xdot=mjCtrlTask->computeCmd(execTime,e);
-   
+
         J =chain.GeoJacobian();
         Jt=J.transposed();
 
         computeWeight();
 
-        qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(_xdot-J*_qdot)));        
+        qdot=_qdot+W*(Jt*(pinv(Eye6+J*W*Jt)*(_xdot-J*_qdot)));
         xdot=J*qdot;
         q=chain.setAng(I->integrate(qdot));
         x=chain.EndEffPose();
@@ -976,7 +976,7 @@ void MultiRefMinJerkCtrl::setPlantParameters(const Property &parameters,
         if (!chain[i].isBlocked())
             ordering.addInt(i);
 
-    dynamic_cast<minJerkVelCtrlForNonIdealPlant*>(mjCtrlJoint)->setPlantParameters(parameters,entryTag,ordering);    
+    dynamic_cast<minJerkVelCtrlForNonIdealPlant*>(mjCtrlJoint)->setPlantParameters(parameters,entryTag,ordering);
 }
 
 

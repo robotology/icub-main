@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -18,14 +18,14 @@
 
 /**
  * \defgroup functionEncoder Functions Encoding
- *  
+ *
  * @ingroup ctrlLib
  *
  * Classes for encoding functions.
  *
  * \author Ugo Pattacini
  *
- */ 
+ */
 
 #ifndef __FUNCTIONENCODER_H__
 #define __FUNCTIONENCODER_H__
@@ -42,8 +42,8 @@ namespace ctrl
 
 /**
 * \ingroup functionEncoder
-*  
-* Code. 
+*
+* Code.
 */
 struct Code
 {
@@ -63,15 +63,15 @@ class FunctionEncoder
 {
 public:
     /**
-    * Configure the encoder. 
+    * Configure the encoder.
     * @param options encoder's options in form of a Property object.
-    * @return true/false on success/fail. 
+    * @return true/false on success/fail.
     */
     virtual bool setEncoderOptions(const yarp::os::Property &options) = 0;
 
     /**
     * Retrieve the encoder's configuration options.
-    * @return a Property object containing the encoder's options. 
+    * @return a Property object containing the encoder's options.
     */
     virtual yarp::os::Property getEncoderOptions() = 0;
 
@@ -87,18 +87,18 @@ public:
     virtual Code encode(const yarp::sig::Vector &values) = 0;
 
     /**
-    * Compute the approximated value of function in \b x, given the 
-    * code. 
-    * @param code contains the function representation in the 
+    * Compute the approximated value of function in \b x, given the
+    * code.
+    * @param code contains the function representation in the
     *                 vector space.
-    * @param x is the point at which the result is computed. It 
+    * @param x is the point at which the result is computed. It
     *          shall be in [0,1].
-    * @return the decoded function value. 
+    * @return the decoded function value.
     */
     virtual double decode(const Code &code, const double x) = 0;
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~FunctionEncoder() { }
 };
@@ -107,7 +107,7 @@ public:
 /**
 * \ingroup functionEncoder
 *
-* Encode any given function as a set of wavelet coefficients. 
+* Encode any given function as a set of wavelet coefficients.
 * The father wavelet used here is the \b db4.
 */
 class WaveletEncoder : public FunctionEncoder
@@ -127,18 +127,18 @@ protected:
 
 public:
     /**
-    * Constructor. 
+    * Constructor.
     */
     WaveletEncoder();
 
     /**
-    * Configure the encoder. 
+    * Configure the encoder.
     * @param options lets user specify the resolution R to which the
     *                encoding is computed. Accepted options are of
     *                the form ("resolution" <double>).
-    * @return true/false on success/fail. 
-    *  
-    * @note It holds that N=floor(R)+1, where N is the number of 
+    * @return true/false on success/fail.
+    *
+    * @note It holds that N=floor(R)+1, where N is the number of
     *       coefficients of the vector space. Recap that floor(.) is
     *       the round function towards minus infinity.
     */
@@ -146,7 +146,7 @@ public:
 
     /**
     * Retrieve the encoder's configuration options.
-    * @return a Property object containing the encoder options. 
+    * @return a Property object containing the encoder options.
     */
     virtual yarp::os::Property getEncoderOptions();
 
@@ -164,20 +164,20 @@ public:
     virtual Code encode(const yarp::sig::Vector &values);
 
     /**
-    * Compute the approximated value of function in \b x, given the 
-    * input set of wavelet coefficients. 
-    * @param code contains wavelet coefficients vector along with 
+    * Compute the approximated value of function in \b x, given the
+    * input set of wavelet coefficients.
+    * @param code contains wavelet coefficients vector along with
     *               the first initial value f(0).
-    * @param x is the point at which the result is computed. It 
+    * @param x is the point at which the result is computed. It
     *          shall be in [0,1].
-    * @return the decoded function value. 
-    *  
+    * @return the decoded function value.
+    *
     * @note It shall hold that coefficients.length()>=floor(R)+2.
     */
     virtual double decode(const Code &code, const double x);
 
     /**
-    * Destructor. 
+    * Destructor.
     */
     virtual ~WaveletEncoder();
 };

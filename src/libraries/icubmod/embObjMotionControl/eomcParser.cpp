@@ -68,8 +68,8 @@ Parser::~Parser()
 
 bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory)
 {
-    // compila la lista con i tag dei pid per ciascun modo 
-    // di controllo per ciascun giunto 
+    // compila la lista con i tag dei pid per ciascun modo
+    // di controllo per ciascun giunto
     //std::vector<std::string> _positionControlLaw;
     //std::vector<std::string> _velocityControlLaw;
     //std::vector<std::string> _mixedControlLaw;
@@ -81,11 +81,11 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *
     if(!parseControlsGroup(config)) // OK
         return false;
 
-    // legge i pid di corrente per ciascun motore 
+    // legge i pid di corrente per ciascun motore
     // come specificato in _currentControlLaw
     if(!parseSelectedCurrentPid(config, lowLevPidisMandatory, cpids)) // OK
         return false;
-    // legge i pid di velocità per ciascun motore 
+    // legge i pid di velocità per ciascun motore
     // come specificato in _speedControlLaw
     if(!parseSelectedSpeedPid(config, lowLevPidisMandatory, spids)) // OK
         return false;
@@ -142,23 +142,23 @@ bool Parser::parseControlsGroup(yarp::os::Searchable &config) // OK
         return false;
     }
 
-    if (!extractGroup(controlsGroup, xtmp, "positionControl", "Position Control ", _njoints)) 
+    if (!extractGroup(controlsGroup, xtmp, "positionControl", "Position Control ", _njoints))
         return false;
     LOAD_STRINGS(_positionControlLaw, xtmp);
 
-    if (!extractGroup(controlsGroup, xtmp, "velocityControl", "Velocity Control ", _njoints)) 
+    if (!extractGroup(controlsGroup, xtmp, "velocityControl", "Velocity Control ", _njoints))
         return false;
     LOAD_STRINGS(_velocityControlLaw, xtmp);
 
-    if (!extractGroup(controlsGroup, xtmp, "mixedControl", "Mixed Control ", _njoints)) 
+    if (!extractGroup(controlsGroup, xtmp, "mixedControl", "Mixed Control ", _njoints))
         return false;
     LOAD_STRINGS(_mixedControlLaw, xtmp);
 
-    //if (!extractGroup(controlsGroup, xtmp, "posDirectControl", "Position Direct Control ", _njoints)) 
+    //if (!extractGroup(controlsGroup, xtmp, "posDirectControl", "Position Direct Control ", _njoints))
     //    return false;
     //LOAD_STRINGS(_posDirectControlLaw, xtmp);
 
-    //if (!extractGroup(controlsGroup, xtmp, "velDirectControl", "Velocity Direct Control ", _njoints)) 
+    //if (!extractGroup(controlsGroup, xtmp, "velDirectControl", "Velocity Direct Control ", _njoints))
     //    return false;
     //LOAD_STRINGS(_velDirectControlLaw, xtmp);
 
@@ -758,29 +758,29 @@ bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config) // OK
 
 /*
    <group name="2FOC_CUR_CONTROL">
-        <param name="controlLaw">          low_lev_current      </param> 
-        <param name="fbkControlUnits">     machine_units        </param> 
+        <param name="controlLaw">          low_lev_current      </param>
+        <param name="fbkControlUnits">     machine_units        </param>
         <param name="outputControlUnits">  machine_units        </param>
         <param name="cur_kff">                     0         0      </param>
-        <param name="cur_kp">                      8         8      </param>       
-        <param name="cur_kd">                      0         0      </param>       
+        <param name="cur_kp">                      8         8      </param>
+        <param name="cur_kd">                      0         0      </param>
         <param name="cur_ki">                      2         2      </param>
         <param name="cur_shift">                  10        10      </param>
-        <param name="cur_maxOutput">           32000     32000      </param>                 
-        <param name="cur_maxInt">              32000     32000      </param>         
+        <param name="cur_maxOutput">           32000     32000      </param>
+        <param name="cur_maxInt">              32000     32000      </param>
     </group>
-    
+
     <group name="2FOC_VEL_CONTROL">
-        <param name="controlLaw">          low_lev_velocity     </param> 
-        <param name="fbkControlUnits">     machine_units        </param> 
+        <param name="controlLaw">          low_lev_velocity     </param>
+        <param name="fbkControlUnits">     machine_units        </param>
         <param name="outputControlUnits">  machine_units        </param>
         <param name="spd_kff">                     0         0      </param>
-        <param name="spd_kp">                     12        12      </param>       
-        <param name="spd_kd">                      0         0      </param>       
+        <param name="spd_kp">                     12        12      </param>
+        <param name="spd_kd">                      0         0      </param>
         <param name="spd_ki">                     16        16      </param>
         <param name="spd_shift">                  10        10      </param>
-        <param name="spd_maxOutput">           32000     32000      </param>                 
-        <param name="spd_maxInt">              32000     32000      </param>        
+        <param name="spd_maxOutput">           32000     32000      </param>
+        <param name="spd_maxInt">              32000     32000      </param>
     </group>
 */
 
@@ -892,13 +892,13 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
 
     Bottle xtmp;
 
-    if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints)) return false; 
+    if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints)) return false;
     for (int j = 0; j<_njoints; j++) _kbemf[j] = xtmp.get(j + 1).asDouble();
-    
-    if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints)) return false; 
+
+    if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints)) return false;
     for (int j = 0; j<_njoints; j++) _ktau[j] = xtmp.get(j + 1).asDouble();
-    
-    if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints)) return false; 
+
+    if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints)) return false;
     for (int j = 0; j<_njoints; j++) _filterType[j] = xtmp.get(j + 1).asInt();
 
     return true;
@@ -915,7 +915,7 @@ bool Parser::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("ki"), "Pid ki parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxInt"), "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxOutput"), "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    
+
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("shift"), "Pid shift parameter", _njoints))
         for (j = 0; j<_njoints; j++) myPid[j].scale = 0.0;
     else
@@ -928,9 +928,9 @@ bool Parser::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
 
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionUp"), "Pid stictionUp", _njoints))
         for (j = 0; j<_njoints; j++) myPid[j].stiction_up_val = 0.0;
-    else    
+    else
         for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
-    
+
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionDwn"), "Pid stictionDwn", _njoints))
         for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = 0.0;
     else
@@ -940,7 +940,7 @@ bool Parser::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
         for (j=0; j<_njoints; j++) myPid[j].kff = 0.0;
     else
         for (j = 0; j<_njoints; j++) myPid[j].kff = xtmp.get(j + 1).asDouble();
-    
+
     return true;
 }
 */
@@ -970,7 +970,7 @@ bool Parser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, c
 }
 
 bool Parser::parsePid_minJerk_outPwm(Bottle &b_pid, string controlLaw)
-{    
+{
     if (minjerkAlgoMap.find(controlLaw) != minjerkAlgoMap.end()) return true;
 
     Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_pwm);
@@ -1957,7 +1957,7 @@ bool Parser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vec
         }
         axisMap[i-1] = user_joint;
     }
-    
+
 
     if (!extractGroup(general, xtmp, "AxisName", "a list of strings representing the axes names", _njoints))
         return false;
@@ -2156,10 +2156,10 @@ bool Parser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[],
         yWarning() << "embObjMC BOARD " << _boardname << "Missing OTHER_CONTROL_PARAMETERS.DeadZone parameter. I'll use default value. (see documentation for more datails)";
         *found = false;
         return true;
-    }    
+    }
     Bottle xtmp;
     unsigned int i;
-    
+
     // DeadZone
     if (!extractGroup(general, xtmp, "deadZone", "The deadzone of joint", _njoints, false))
     {
@@ -2167,13 +2167,13 @@ bool Parser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[],
         *found = false;
         return true;
     }
- 
+
     *found = true;
     for (i = 1; i < xtmp.size(); i++)
     {
         deadzone[i-1] = xtmp.get(i).asDouble();
     }
-    
+
     return true;
 }
 
