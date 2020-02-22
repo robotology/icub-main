@@ -13,7 +13,8 @@ if (NOT ICUB_FOUND)
     set(_temp_yarp_libs ${YARP_LIBRARIES})
   endif()
 
-  find_package(YARP 3.3.2 REQUIRED COMPONENTS os conf sig dev math gsl)
+  find_package(YCM @YCM_REQUIRED_VERSION@ REQUIRED)
+  find_package(YARP @YARP_REQUIRED_VERSION@ REQUIRED COMPONENTS os conf sig dev math gsl)
 
   include("@CMAKE_BINARY_DIR@/@EXPORT_INCLUDE_FILE@")
   include("@CMAKE_BINARY_DIR@/@EXPORT_CONFIG_FILE@")
