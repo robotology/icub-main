@@ -36,7 +36,6 @@
 #include "iCub/skinDynLib/common.h"
 
 #include <yarp/os/RFModule.h>
-#include <yarp/os/RecursiveMutex.h>
 
 #include <fstream>
 #include <vector>
