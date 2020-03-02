@@ -3,7 +3,6 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 if (NOT ICUB_FOUND)
-
   message(STATUS "Using iCub from install")
 
   set(ICUB_VERSION @ICUB_VERSION@)
@@ -13,8 +12,9 @@ if (NOT ICUB_FOUND)
     set(_temp_yarp_libs ${YARP_LIBRARIES})
   endif()
 
-  find_package(YCM @YCM_REQUIRED_VERSION@ REQUIRED)
-  find_package(YARP @YARP_REQUIRED_VERSION@ REQUIRED COMPONENTS os conf sig dev math gsl)
+  include(CMakeFindDependencyMacro)
+  find_dependency(YCM @YCM_REQUIRED_VERSION@ REQUIRED)
+  find_dependency(YARP @YARP_REQUIRED_VERSION@ REQUIRED COMPONENTS os conf sig dev math gsl)
 
   #set(ICUB_INCLUDE_DIRS "@ICUB_INCLUDE_DIRS@" CACHE INTERNAL "Include directories needed for iCub")
   set(ICUB_MODULE_PATH "@ICUB_MODULE_PATH@" CACHE INTERNAL "iCub cmake scripts directory")
