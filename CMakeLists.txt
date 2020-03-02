@@ -121,20 +121,7 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubExportForInstall.cmake)
 
 ## install cmake scripts
 message(STATUS "Installing cmake scripts")
-set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
-                        FindCFW2CANAPI.cmake
-                        FindESDCANAPI.cmake
-                        FindIPOPT.cmake
-                        FindODE.cmake
-                        FindIPP.cmake
-                        FindQt3.cmake
-                        FindGLUT.cmake
-                        FindOpenGL.cmake
-                        iCubHelpers.cmake
-                        FindLibv4l2.cmake
-                        FindLibv4lconvert.cmake
-                        iCubOptions.cmake)
-                        #iCubFindDependencies.cmake)
+set(ICUB_CMAKE_SCRIPTS iCubHelpers.cmake iCubOptions.cmake)
 
 foreach(conf ${ICUB_CMAKE_SCRIPTS})
   # in YARP we used to copy Find* scripts to the build directory
@@ -161,5 +148,3 @@ add_custom_target(uninstall
 if(ICUB_COMPILE_BINDINGS)
   add_subdirectory(bindings)
 endif()
-
-#############
