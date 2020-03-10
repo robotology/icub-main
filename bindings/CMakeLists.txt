@@ -53,12 +53,10 @@ if(CREATE_PYTHON)
     find_package(Python REQUIRED COMPONENTS Interpreter Development)
     set(CMAKE_SWIG_FLAGS "-Wall;-module;icub;-threads")
 
-    include_directories(SYSTEM ${Python_INCLUDE_DIRS})
     swig_add_library(icub_python
                      LANGUAGE python
                      SOURCES icub.i)
-    target_include_directories(${SWIG_MODULE_icub_python_REAL_NAME} SYSTEM PRIVATE ${Python_INCLUDE_DIRS})
-    target_link_libraries(${SWIG_MODULE_icub_python_REAL_NAME} ${Python_LIBRARIES})
+    target_link_libraries(${SWIG_MODULE_icub_python_REAL_NAME} Python::Python)
     set_target_properties(${SWIG_MODULE_icub_python_REAL_NAME} PROPERTIES OUTPUT_NAME "_icub")
 
     # installation path is determined reliably on most platforms using distutils
