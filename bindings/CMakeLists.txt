@@ -2,12 +2,12 @@
 # Authors: Paul Fitzpatrick
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-cmake_minimum_required(VERSION 2.6.4)
+cmake_minimum_required(VERSION 3.12)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR} ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
 
 # Find YARP for bindings-only builds
-find_package(YARP COMPONENTS conf OS sig dev math gsl REQUIRED)
+find_package(YARP COMPONENTS conf os sig dev math gsl REQUIRED)
 foreach(_component conf os sig dev math gsl)
   get_property(YARP_${_component}_INCLUDE_DIRS TARGET YARP::YARP_${_component} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
   include_directories(${YARP_${_component}_INCLUDE_DIRS})
@@ -50,29 +50,21 @@ endif("${SWIG_VERSION}" VERSION_LESS "${MIN_SWIG_VERSION}")
 set_source_files_properties(icub.i PROPERTIES CPLUSPLUS ON)
 
 if(CREATE_PYTHON)
+    find_package(Python REQUIRED COMPONENTS Interpreter Development)
     set(CMAKE_SWIG_FLAGS "-Wall;-module;icub;-threads")
 
-    set(ICUB_USE_PYTHON_VERSION "" CACHE STRING "Specify python version to use" )
-
-    find_package(PythonInterp ${ICUB_USE_PYTHON_VERSION} REQUIRED)
-    set(ICUB_USE_PYTHON_VERSION_ARGS)
-    if(NOT ICUB_USE_PYTHON_VERSION)
-      set (ICUB_USE_PYTHON_VERSION ${PYTHON_VERSION_STRING})
-    endif()
-    find_package(PythonLibs ${ICUB_USE_PYTHON_VERSION} EXACT)
-
-    include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
+    include_directories(SYSTEM ${Python_INCLUDE_DIRS})
     swig_add_library(icub_python
                      LANGUAGE python
                      SOURCES icub.i)
-    target_include_directories(${SWIG_MODULE_icub_python_REAL_NAME} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIRS})
-    target_link_libraries(${SWIG_MODULE_icub_python_REAL_NAME} ${PYTHON_LIBRARIES})
+    target_include_directories(${SWIG_MODULE_icub_python_REAL_NAME} SYSTEM PRIVATE ${Python_INCLUDE_DIRS})
+    target_link_libraries(${SWIG_MODULE_icub_python_REAL_NAME} ${Python_LIBRARIES})
     set_target_properties(${SWIG_MODULE_icub_python_REAL_NAME} PROPERTIES OUTPUT_NAME "_icub")
 
     # installation path is determined reliably on most platforms using distutils
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils import sysconfig; print(sysconfig.get_python_lib(1,0,prefix=''))"
+    execute_process(COMMAND ${Python_EXECUTABLE} -c "from distutils import sysconfig; print(sysconfig.get_python_lib(1,0,prefix=''))"
                     OUTPUT_VARIABLE PYTHON_INSTDIR
-                    OUTPUT_STRIP_TRAILING_WHITESPACE )
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/icub.py DESTINATION ${PYTHON_INSTDIR})
 
@@ -98,7 +90,7 @@ if(CREATE_PYTHON)
     endif()
 
     install(TARGETS ${SWIG_MODULE_icub_python_REAL_NAME} DESTINATION ${PYTHON_INSTDIR})
-endif(CREATE_PYTHON)
+endif()
 
 if(CREATE_RUBY)
     find_package(Ruby REQUIRED)
@@ -111,7 +103,7 @@ if(CREATE_RUBY)
     target_include_directories(${SWIG_MODULE_icub_ruby_REAL_NAME} SYSTEM PRIVATE ${RUBY_INCLUDE_PATH})
     set_target_properties(${SWIG_MODULE_icub_ruby_REAL_NAME} PROPERTIES OUTPUT_NAME "icub"
                                                                       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/ruby")
-endif(CREATE_RUBY)
+endif()
 
 if(CREATE_JAVA)
     set(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/yarp")
@@ -125,17 +117,10 @@ if(CREATE_JAVA)
                      SOURCES icub.i)
 
     swig_link_libraries(icub_java ${SWIG_YARP_LIBRARIES})
-    #option (CREATE_JAVA_CLASS_FILES "Compile java code with javac" ON)
-    #if(CREATE_JAVA_CLASS_FILES)
-    #  ADD_CUSTOM_COMMAND(TARGET icub
-    #    POST_BUILD
-    #    COMMAND javac -source 1.3 -target 1.3 "icub/*.java"
-    #    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-    #endif()
     if(APPLE)
-        set_target_properties(icub PROPERTIES SUFFIX ".jnilib")
+      set_target_properties(icub PROPERTIES SUFFIX ".jnilib")
     endif(APPLE)
-endif(CREATE_JAVA)
+endif()
 
 if(CREATE_CSHARP)
   SET(CMAKE_SWIG_FLAGS "-Wall;-module;icub")
@@ -145,10 +130,10 @@ if(CREATE_CSHARP)
 
   swig_link_libraries(icub_csharp ${SWIG_YARP_LIBRARIES})
   set_target_properties(${SWIG_MODULE_icub_csharp_REAL_NAME} PROPERTIES OUTPUT_NAME "icub" LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/csharp")
-endif(CREATE_CSHARP)
+endif()
 
-IF (CREATE_LUA)
-  SET(CMAKE_SWIG_FLAGS "-Wall;-module;icub")
+if(CREATE_LUA)
+  set(CMAKE_SWIG_FLAGS "-Wall;-module;icub")
   find_package(Lua REQUIRED)
   include_directories(SYSTEM ${LUA_INCLUDE_DIR})
   swig_add_library(icub_lua
@@ -156,4 +141,4 @@ IF (CREATE_LUA)
                    SOURCES icub.i)
   swig_link_libraries(icub_lua ${LUA_LIBRARY})
   set_target_properties(${SWIG_MODULE_icub_lua_REAL_NAME} PROPERTIES OUTPUT_NAME "icub" LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/lua")
-ENDIF (CREATE_LUA)
+endif()
