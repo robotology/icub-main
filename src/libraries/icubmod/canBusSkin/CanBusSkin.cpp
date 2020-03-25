@@ -6,7 +6,7 @@
 
 #include <CanBusSkin.h>
 
-#include <canProtocolLib/iCubCanProtocol.h>
+#include <iCubCanProtocol.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
