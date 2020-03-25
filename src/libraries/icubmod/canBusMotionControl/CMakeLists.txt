@@ -12,7 +12,6 @@ yarp_prepare_plugin(canmotioncontrol
 if (ENABLE_icubmod_canmotioncontrol)
 
 if(ICUB_HAS_icub_firmware_shared)
-    set(FIRMWARE_SHARED_INC         ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 
 
    if (ICUB_CANPROTOCOL_STRICT)
@@ -26,9 +25,7 @@ if(ICUB_HAS_icub_firmware_shared)
    ADD_DEFINITIONS(-D_REENTRANT)
 
    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} 
-                       ../motionControlLib/
-                       ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS}
-                       ${FIRMWARE_SHARED_INC})
+                       ../motionControlLib/)
 
    SET(folder_source CanBusMotionControl.cpp ThreadTable2.cpp ThreadPool2.cpp)
    SET(folder_header CanBusMotionControl.h ThreadTable2.h ThreadPool2.h)
@@ -37,7 +34,10 @@ if(ICUB_HAS_icub_firmware_shared)
    SOURCE_GROUP("Header Files" FILES ${folder_header})
 
    yarp_add_plugin(canmotioncontrol ${folder_source} ${folder_header})
-   TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES})
+   TARGET_LINK_LIBRARIES(canmotioncontrol ACE::ACE
+                                          iCubDev
+                                          YARP::YARP_os
+                                          icub_firmware_shared::canProtocolLib)
 
    icub_export_plugin(canmotioncontrol)
             yarp_install(TARGETS canmotioncontrol
