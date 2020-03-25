@@ -8,11 +8,11 @@ if (NOT SKIP_canBusInertialMTB)
 
 if(ICUB_HAS_icub_firmware_shared)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 yarp_add_plugin(canBusInertialMTB CanBusInertialMTB.h CanBusInertialMTB.cpp)
-target_link_libraries(canBusInertialMTB ${YARP_LIBRARIES})
+target_link_libraries(canBusInertialMTB YARP::YARP_os
+                                        icub_firmware_shared::canProtocolLib)
 
 icub_export_plugin(canBusInertialMTB)
 
