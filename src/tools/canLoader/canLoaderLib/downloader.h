@@ -79,7 +79,7 @@ void drv_sleep (double time);
 #include "EoBoards.h"
 #include "EoCommon.h"
 
-#include <canProtocolLib/iCubCanProto_types.h>
+#include <iCubCanProto_types.h>
 
 // it forces the use of the new driver2 interface
 #define DOWNLOADER_USE_IDRIVER2
