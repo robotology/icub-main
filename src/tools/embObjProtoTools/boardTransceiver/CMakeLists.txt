@@ -24,10 +24,6 @@ if(board_tranceiver)
 add_definitions(-D_ICUB_CALLBACK_ -DUSE_EOPROT_XML -DEOPROT_CFG_OVERRIDE_CALLBACKS_IN_RUNTIME)
 
 
-
-
-
-include(${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/embObjLib.cmake)
 # Debug messages
 
     
