@@ -7,7 +7,6 @@ yarp_prepare_plugin(embObjSkin CATEGORY device TYPE EmbObjSkin INCLUDE embObjSki
 if (NOT SKIP_embObjSkin)
 
     set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
-    INCLUDE(../embObjLib/embObjLib.cmake)
 
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                    ../skinLib)

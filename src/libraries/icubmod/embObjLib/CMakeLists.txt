@@ -80,6 +80,8 @@ add_library(${PROJECT_NAME} SHARED ${embobj_source} ${embobj_header})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib
                                                 ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/
                                                 ../skinLib)
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+                                                  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
 target_link_libraries(${PROJECT_NAME} YARP::YARP_os
