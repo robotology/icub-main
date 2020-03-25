@@ -143,8 +143,8 @@ This file can be edited at src/myModule/main.cpp.
 #include <stdio.h>
 #include <fcntl.h>
 
-#include <canProtocolLib/iCubCanProtocol.h>
-#include <canProtocolLib/iCubCanProto_types.h>
+#include <iCubCanProtocol.h>
+#include <iCubCanProto_types.h>
 
 cDownloader downloader;
 
