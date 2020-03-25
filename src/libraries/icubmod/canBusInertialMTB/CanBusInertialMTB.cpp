@@ -12,7 +12,7 @@
 #include <cstring>
 #include <string>
 
-#include <canProtocolLib/iCubCanProto_skinMessages.h>
+#include <iCubCanProto_skinMessages.h>
 
 const int    CANBUS_INERTIAL_MTB_CAN_DRIVER_BUFFER_SIZE=2047;
 const double CANBUS_INERTIAL_MTB_TIMEOUT=0.1; //100ms
