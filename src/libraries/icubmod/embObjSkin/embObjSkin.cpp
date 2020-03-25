@@ -21,7 +21,7 @@
 #include "EoProtocolSK.h"
 
 #include "EoSkin.h"
-#include "canProtocolLib/iCubCanProtocol.h"
+#include "iCubCanProtocol.h"
 
 
 #include <ethResource.h>
