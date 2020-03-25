@@ -10,12 +10,10 @@ if (NOT SKIP_embObjSkin)
     INCLUDE(../embObjLib/embObjLib.cmake)
 
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                   ../skinLib
-                   ${iCubDev_INCLUDE_DIRS}
-                   ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
+                   ../skinLib)
 
     yarp_add_plugin(embObjSkin embObjSkin.h embObjSkin.cpp ../skinLib/SkinConfigReader.cpp ../skinLib/SkinDiagnostics.h)
-    target_link_libraries(embObjSkin ethResources ${YARP_LIBRARIES})
+    target_link_libraries(embObjSkin ethResources YARP::YARP_os icub_firmware_shared::canProtocolLib)
     icub_export_plugin(embObjSkin)
  
   yarp_install(TARGETS embObjSkin
