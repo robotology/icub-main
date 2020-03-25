@@ -29,9 +29,6 @@
 #include <stdlib.h> //added for abs
 #include <string.h>
 
-#include <canProtocolLib/iCubCanProtocol.h>
-#include <canProtocolLib/iCubCanProto_types.h>
-
 
 
 
