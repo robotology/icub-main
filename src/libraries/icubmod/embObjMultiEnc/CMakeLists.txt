@@ -11,7 +11,6 @@ IF (NOT SKIP_embObjMultiEnc)
 
 
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
-  INCLUDE(../embObjLib/embObjLib.cmake)
 
 #   message(INFO " embObjMultiEnc - embObj_includes: ${embObj_includes}, ${CMAKE_CURRENT_SOURCE_DIR}/")
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${iCubDev_INCLUDE_DIRS} )

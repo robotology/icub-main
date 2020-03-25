@@ -15,7 +15,6 @@ yarp_prepare_plugin(embObjMotionControl
   endif()
 
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
-  INCLUDE(../embObjLib/embObjLib.cmake)
   
   INCLUDE_DIRECTORIES(SYSTEM ${ACE_INCLUDE_DIRS})
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${iCubDev_INCLUDE_DIRS})
