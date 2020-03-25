@@ -8,11 +8,10 @@ if (NOT SKIP_canBusSkin)
 if(ICUB_HAS_icub_firmware_shared)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ../skinLib/
-                       ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
+                       ../skinLib/)
 
 yarp_add_plugin(canBusSkin CanBusSkin.h CanBusSkin.cpp ../skinLib/SkinConfigReader.cpp ../skinLib/SkinDiagnostics.h)
-target_link_libraries(canBusSkin ${YARP_LIBRARIES} ${ICUB_LIBRARIES})
+target_link_libraries(canBusSkin YARP::YARP_os ${ICUB_LIBRARIES} icub_firmware_shared::canProtocolLib)
 
   yarp_install(TARGETS canBusSkin
                COMPONENT Runtime
