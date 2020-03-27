@@ -54,6 +54,7 @@ source_group("Generated Files" FILES ${FirmwareUpdater_qt_QRC_GEN_SRCS}
                                     ${FirmwareUpdater_qt_UI_GEN_SRCS})
 
 add_executable(FirmwareUpdater-qt WIN32 ${FirmwareUpdater_qt_SRCS}
+                                        ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/embObjLib/FeatureInterface.cpp
                                         ${FirmwareUpdater_qt_HDRS}
                                         ${FirmwareUpdater_qt_QRC_GEN_SRCS}
                                         ${FirmwareUpdater_qt_UI_GEN_SRCS})
