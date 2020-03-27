@@ -12,17 +12,7 @@ include(iCubUseQt5)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-include_directories(${ACE_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../ethLoader/ethLoaderLib)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../canLoader/canLoaderLib)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../strainCalib/strainCalibLib)
-
-include_directories(${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
-include_directories(${icub_firmware_shared_canProtocolLib_INCLUDE_DIR}/canProtocolLib)
-include_directories(${icub_firmware_shared_embobj_INCLUDE_DIR}/embobj/plus/comm-v2/icub/)
-include_directories(${icub_firmware_shared_embobj_INCLUDE_DIR}/embobj/core/core)
 
 
 set(FirmwareUpdater_qt_SRCS changeaddressdialog.cpp
@@ -64,15 +54,13 @@ source_group("Generated Files" FILES ${FirmwareUpdater_qt_QRC_GEN_SRCS}
                                     ${FirmwareUpdater_qt_UI_GEN_SRCS})
 
 add_executable(FirmwareUpdater-qt WIN32 ${FirmwareUpdater_qt_SRCS}
-                                    ${FirmwareUpdater_qt_HDRS}
-                                    ${FirmwareUpdater_qt_QRC_GEN_SRCS}
-                                    ${FirmwareUpdater_qt_UI_GEN_SRCS})
-target_link_libraries(FirmwareUpdater-qt    YARP::YARP_OS
-                                            YARP::YARP_init
+                                        ${FirmwareUpdater_qt_HDRS}
+                                        ${FirmwareUpdater_qt_QRC_GEN_SRCS}
+                                        ${FirmwareUpdater_qt_UI_GEN_SRCS})
+target_link_libraries(FirmwareUpdater-qt    YARP::YARP_init
                                             YARP::YARP_math
                                             YARP::YARP_sig
                                             YARP::YARP_dev
-                                            ${ACE_LIBRARIES}
                                             ethLoaderLib
                                             canLoaderLib
                                             strainCalibLib
