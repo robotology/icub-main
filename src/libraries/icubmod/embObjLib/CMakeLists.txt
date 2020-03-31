@@ -90,6 +90,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CUR
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
 
 target_link_libraries(${PROJECT_NAME} YARP::YARP_os
+                                      YARP::YARP_dev
                                       icub_firmware_shared::embobj
                                       ACE::ACE)
 
