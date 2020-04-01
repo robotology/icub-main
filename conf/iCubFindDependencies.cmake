@@ -31,9 +31,12 @@ message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 # This is a workaround to enable the warning only if
 # icub_firmware_shared was found, but the version is not compatible with
 # the requested one.
-find_package(icub_firmware_shared COMPONENTS canProtocolLib QUIET)
+find_package(icub_firmware_shared QUIET)
 if(icub_firmware_shared_FOUND)
-  find_package(icub_firmware_shared 4.0.7 COMPONENTS canProtocolLib)
+  # icub-firmware-shared 4.0.7 was actually a wrong version exported by icub-firmware-shared <= 1.15
+  if(icub_firmware_shared_VERSION VERSION_GREATER 4 OR icub_firmware_shared_VERSION VERSION_LESS 1.15.100)
+    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected, but at least 1.15.100 is required")
+  endif()
 endif()
 
 find_package(GSL)
