@@ -13,10 +13,10 @@ IF (NOT SKIP_embObjMultiEnc)
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
 
 #   message(INFO " embObjMultiEnc - embObj_includes: ${embObj_includes}, ${CMAKE_CURRENT_SOURCE_DIR}/")
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${iCubDev_INCLUDE_DIRS} )
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
   yarp_add_plugin(embObjMultiEnc embObjMultiEnc.cpp embObjMultiEnc.h)
-  TARGET_LINK_LIBRARIES(embObjMultiEnc ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+  TARGET_LINK_LIBRARIES(embObjMultiEnc ethResources iCubDev)
   icub_export_plugin(embObjMultiEnc)
 
    yarp_install(TARGETS embObjMultiEnc
@@ -26,5 +26,5 @@ IF (NOT SKIP_embObjMultiEnc)
                YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 
-ENDIF (NOT SKIP_embObjMultiEnc)
+ENDIF ()
 
