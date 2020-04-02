@@ -5,11 +5,10 @@
 yarp_prepare_plugin(parametricCalibratorEth CATEGORY device TYPE yarp::dev::parametricCalibratorEth INCLUDE parametricCalibratorEth.h)
 
 if(ENABLE_parametricCalibratorEth)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ${iCubDev_INCLUDE_DIRS})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
     yarp_add_plugin(parametricCalibratorEth parametricCalibratorEth.h parametricCalibratorEth.cpp)
-    target_link_libraries(parametricCalibratorEth ${YARP_LIBRARIES})
+    target_link_libraries(parametricCalibratorEth iCubDev)
     icub_export_plugin(parametricCalibratorEth)
 
   yarp_install(TARGETS parametricCalibratorEth
@@ -18,4 +17,4 @@ if(ENABLE_parametricCalibratorEth)
                ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
                YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
-endif(ENABLE_parametricCalibratorEth)
+endif()
