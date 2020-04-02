@@ -14,11 +14,8 @@ source_group("Header Files" FILES ${folder_header})
 
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC YARP::YARP_os
-                                             YARP::YARP_dev
-                                             ACE::ACE
-                                             ethResources
-                                             icub_firmware_shared::embobj)
+target_link_libraries(${PROJECT_NAME} PUBLIC YARP::YARP_dev
+                                             ethResources)
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
                                                   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
