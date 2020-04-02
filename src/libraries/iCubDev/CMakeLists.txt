@@ -2,8 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-SET(PROJECTNAME iCubDev)
-PROJECT(${PROJECTNAME})
+project(iCubDev)
 
 # Find .cpp and .h files automatically.  This is a bit lazy,
 # and in principle it would be better to list these files manually.
@@ -18,10 +17,13 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Create everything needed to build our executable.
-add_library(${PROJECTNAME} ${folder_source} ${folder_header})
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
+add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                                  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+target_link_libraries(${PROJECT_NAME} YARP::YARP_os
+                                      YARP::YARP_dev)
 
-icub_export_library(${PROJECTNAME} 
+icub_export_library(${PROJECT_NAME}
                     INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include 
                     DESTINATION include/iCub 
                     FILES ${folder_header})
