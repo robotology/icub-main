@@ -6,11 +6,10 @@
 yarp_prepare_plugin(parametricCalibrator CATEGORY device TYPE yarp::dev::parametricCalibrator INCLUDE parametricCalibrator.h)
 
 if(ENABLE_parametricCalibrator)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ${iCubDev_INCLUDE_DIRS})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
     yarp_add_plugin(parametricCalibrator parametricCalibrator.h parametricCalibrator.cpp)
-    target_link_libraries(parametricCalibrator ${YARP_LIBRARIES})
+    target_link_libraries(parametricCalibrator iCubDev)
     icub_export_plugin(parametricCalibrator)
     
   yarp_install(TARGETS parametricCalibrator
