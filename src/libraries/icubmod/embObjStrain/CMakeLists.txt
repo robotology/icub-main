@@ -13,10 +13,10 @@ IF (NOT SKIP_embObjStrain)
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
 
 #   message(INFO " embObjStrain - embObj_includes: ${embObj_includes}, ${CMAKE_CURRENT_SOURCE_DIR}/")
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${iCubDev_INCLUDE_DIRS} )
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
   yarp_add_plugin(embObjStrain embObjStrain.cpp embObjStrain.h)
-  TARGET_LINK_LIBRARIES(embObjStrain ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+  TARGET_LINK_LIBRARIES(embObjStrain ethResources iCubDev)
   icub_export_plugin(embObjStrain)
 
   yarp_install(TARGETS embObjStrain
@@ -25,5 +25,5 @@ IF (NOT SKIP_embObjStrain)
                ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
                YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
-ENDIF (NOT SKIP_embObjStrain)
+ENDIF ()
 
