@@ -16,12 +16,11 @@ yarp_prepare_plugin(embObjMotionControl
 
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
   
-  INCLUDE_DIRECTORIES(SYSTEM ${ACE_INCLUDE_DIRS})
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${iCubDev_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
 #    yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h usrcbk/eOcfg_nvsEP_mc_usrcbk_pippo.c )
     yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h eomcParser.cpp eomcParser.h measuresConverter.cpp measuresConverter.h eomcUtils.h)
-    TARGET_LINK_LIBRARIES(embObjMotionControl ethResources iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+    TARGET_LINK_LIBRARIES(embObjMotionControl ethResources iCubDev)
     icub_export_plugin(embObjMotionControl)
     
       yarp_install(TARGETS embObjMotionControl
@@ -30,5 +29,5 @@ yarp_prepare_plugin(embObjMotionControl
                ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
                YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
         
-ENDIF (NOT SKIP_embObjMotionControl)
+ENDIF ()
 
