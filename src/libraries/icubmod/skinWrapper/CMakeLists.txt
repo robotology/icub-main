@@ -2,18 +2,17 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-SET(PROJECTNAME skinWrapper)
-PROJECT(${PROJECTNAME})
+project(skinWrapper)
 
-yarp_prepare_plugin(${PROJECTNAME} CATEGORY device TYPE skinWrapper INCLUDE ${PROJECTNAME}.h)
+yarp_prepare_plugin(${PROJECT_NAME} CATEGORY device TYPE skinWrapper INCLUDE ${PROJECT_NAME}.h)
 
-IF (NOT SKIP_${PROJECTNAME})
+IF (NOT SKIP_${PROJECT_NAME})
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer)
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${iCubDev_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-  yarp_add_plugin(${PROJECTNAME} ${PROJECTNAME}.cpp ${PROJECTNAME}.h)
-  TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} ${ACE_LIBRARIES})
-  icub_export_plugin(${PROJECTNAME})
+  yarp_add_plugin(${PROJECT_NAME} ${PROJECT_NAME}.cpp ${PROJECT_NAME}.h)
+  TARGET_LINK_LIBRARIES(${PROJECT_NAME} iCubDev ACE::ACE)
+  icub_export_plugin(${PROJECT_NAME})
 
   yarp_install(TARGETS skinWrapper
                COMPONENT Runtime
@@ -21,4 +20,4 @@ IF (NOT SKIP_${PROJECTNAME})
                ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
                YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
-ENDIF (NOT SKIP_${PROJECTNAME})
+ENDIF ()
