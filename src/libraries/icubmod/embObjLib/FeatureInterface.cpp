@@ -24,6 +24,8 @@
 #include <ace/ACE.h>
 #include <ace/config.h>
 #include <ace/Recursive_Thread_Mutex.h>
+#include "EOYtheSystem.h"
+#include "EOYmutex.h"
 
 
 using namespace eth;
@@ -83,12 +85,32 @@ void feat_Initialise(void *handleOfTheEthManager)
     {
         _interface2ethManager = reinterpret_cast<eth::TheEthManager*>(handleOfTheEthManager);
     }
+    if (yarp_time_now_func_ptr == NULL) {
+        yarp_time_now_func_ptr = &feat_yarp_time_now;
+    }
+    if (ace_mutex_new_func_ptr == NULL ) {
+        ace_mutex_new_func_ptr = &ace_mutex_new;
+    }
+    if (ace_mutex_take_func_ptr == NULL) {
+        ace_mutex_take_func_ptr = &ace_mutex_take;
+    }
+    if (ace_mutex_release_func_ptr == NULL) {
+        ace_mutex_release_func_ptr = &ace_mutex_release;
+    }
+    if(ace_mutex_delete_func_ptr == NULL) {
+        ace_mutex_delete_func_ptr = &ace_mutex_delete;
+    }
 }
 
 
 void feat_DeInitialise()
 {
-    _interface2ethManager = NULL;
+    _interface2ethManager       = NULL;
+    yarp_time_now_func_ptr      = NULL;
+    ace_mutex_new_func_ptr      = NULL;
+    ace_mutex_take_func_ptr     = NULL;
+    ace_mutex_release_func_ptr  = NULL;
+    ace_mutex_delete_func_ptr   = NULL;
 }
 
 
