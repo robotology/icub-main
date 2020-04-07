@@ -81,6 +81,13 @@ jobs:
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
+        # icub-firmware-shared
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch devel
+        cd icub-firmware-shared && mkdir -p build && cd build
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
+              -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+        cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         
     - name: Source-based Dependencies [Ubuntu/macOS] 
       if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
@@ -97,6 +104,12 @@ jobs:
         git clone https://github.com/robotology/yarp.git --depth 1 --branch master
         cd yarp && mkdir -p build && cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+        cmake --build . --config ${{ matrix.build_type }} --target install
+        # icub-firmware-shared
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch devel
+        cd icub-firmware-shared && mkdir -p build && cd build
+        cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install 
  
     # ===================
@@ -110,8 +123,19 @@ jobs:
         mkdir -p build
         cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
+              -DICUB_USE_icub_firmware_shared:BOOL=ON -DENABLE_icubmod_serial:BOOL=ON \
+              -DENABLE_icubmod_serialport:BOOL=ON -DENABLE_icubmod_skinWrapper:BOOL=ON \
+              -DENABLE_icubmod_portaudio:BOOL=ON -DENABLE_icubmod_sharedcan:BOOL=ON \
+              -DENABLE_icubmod_canmotioncontrol:BOOL=ON -DENABLE_icubmod_canBusAnalogSensor:BOOL=ON \
+              -DENABLE_icubmod_canBusInertialMTB:BOOL=ON -DENABLE_icubmod_canBusSkin:BOOL=ON \
+              -DENABLE_icubmod_canBusVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_embObjFTsensor:BOOL=ON \
+              -DENABLE_icubmod_embObjIMU:BOOL=ON -DENABLE_icubmod_embObjInertials:BOOL=ON \
+              -DENABLE_icubmod_embObjMais:BOOL=ON -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
+              -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON \
+              -DENABLE_icubmod_embObjVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
+              -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-
+  
     - name: Configure [Ubuntu/macOS]
       if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
       shell: bash
@@ -119,6 +143,17 @@ jobs:
         mkdir -p build
         cd build    
         cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DICUB_USE_icub_firmware_shared:BOOL=ON -DENABLE_icubmod_serial:BOOL=ON \
+              -DENABLE_icubmod_serialport:BOOL=ON -DENABLE_icubmod_skinWrapper:BOOL=ON \
+              -DENABLE_icubmod_portaudio:BOOL=ON -DENABLE_icubmod_sharedcan:BOOL=ON \
+              -DENABLE_icubmod_canmotioncontrol:BOOL=ON -DENABLE_icubmod_canBusAnalogSensor:BOOL=ON \
+              -DENABLE_icubmod_canBusInertialMTB:BOOL=ON -DENABLE_icubmod_canBusSkin:BOOL=ON \
+              -DENABLE_icubmod_canBusVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_embObjFTsensor:BOOL=ON \
+              -DENABLE_icubmod_embObjIMU:BOOL=ON -DENABLE_icubmod_embObjInertials:BOOL=ON \
+              -DENABLE_icubmod_embObjMais:BOOL=ON -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
+              -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON \
+              -DENABLE_icubmod_embObjVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
+              -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
       
     - name: Build
