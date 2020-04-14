@@ -11,7 +11,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                        ../skinLib/)
 
 yarp_add_plugin(canBusSkin CanBusSkin.h CanBusSkin.cpp ../skinLib/SkinConfigReader.cpp ../skinLib/SkinDiagnostics.h)
-target_link_libraries(canBusSkin YARP::YARP_os ${ICUB_LIBRARIES} icub_firmware_shared::canProtocolLib)
+target_link_libraries(canBusSkin YARP::YARP_os
+                                 YARP::YARP_dev
+                                 YARP::YARP_sig
+                                 ${ICUB_LIBRARIES}
+                                 icub_firmware_shared::canProtocolLib)
 
   yarp_install(TARGETS canBusSkin
                COMPONENT Runtime
