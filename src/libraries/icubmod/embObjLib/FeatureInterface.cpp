@@ -73,6 +73,13 @@ using namespace eth;
 
 static eth::TheEthManager *_interface2ethManager = NULL;
 
+static const eOysystem_cfg_t eosys_config_ace =
+{
+    feat_yarp_time_now,
+    {
+        ace_mutex_new, ace_mutex_take, ace_mutex_release, ace_mutex_delete
+    }
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern public functions
@@ -85,34 +92,18 @@ void feat_Initialise(void *handleOfTheEthManager)
     {
         _interface2ethManager = reinterpret_cast<eth::TheEthManager*>(handleOfTheEthManager);
     }
-    if (yarp_time_now_func_ptr == NULL) {
-        yarp_time_now_func_ptr = &feat_yarp_time_now;
-    }
-    if (ace_mutex_new_func_ptr == NULL ) {
-        ace_mutex_new_func_ptr = &ace_mutex_new;
-    }
-    if (ace_mutex_take_func_ptr == NULL) {
-        ace_mutex_take_func_ptr = &ace_mutex_take;
-    }
-    if (ace_mutex_release_func_ptr == NULL) {
-        ace_mutex_release_func_ptr = &ace_mutex_release;
-    }
-    if(ace_mutex_delete_func_ptr == NULL) {
-        ace_mutex_delete_func_ptr = &ace_mutex_delete;
-    }
 }
 
 
 void feat_DeInitialise()
 {
     _interface2ethManager       = NULL;
-    yarp_time_now_func_ptr      = NULL;
-    ace_mutex_new_func_ptr      = NULL;
-    ace_mutex_take_func_ptr     = NULL;
-    ace_mutex_release_func_ptr  = NULL;
-    ace_mutex_delete_func_ptr   = NULL;
 }
 
+const eOysystem_cfg_t * feat_getSYSconfig()
+{
+    return &eosys_config_ace;
+}
 
 eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata)
 {

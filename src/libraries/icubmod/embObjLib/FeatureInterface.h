@@ -24,7 +24,7 @@ extern "C" {
 
 #include "EoCommon.h"
 #include "EoProtocol.h"
-
+#include "EOYtheSystem.h"
 
 
 // - public #define  --------------------------------------------------------------------------------------------------
@@ -40,6 +40,8 @@ extern "C" {
 void feat_Initialise(void *handleOfTheEthManager);
 
 void feat_DeInitialise();
+
+const eOysystem_cfg_t * feat_getSYSconfig();
 
 eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata);
 

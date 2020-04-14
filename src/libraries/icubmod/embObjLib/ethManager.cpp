@@ -205,9 +205,8 @@ void TheEthManager::initEOYsystem(void)
     // marco.accame: in here we init the embOBJ system for YARP.
     eOerrman_cfg_t errmanconfig = {0};
     errmanconfig.extfn.usr_on_error     = embOBJerror;
-    const eOysystem_cfg_t *syscfg       = NULL;
+    const eOysystem_cfg_t *syscfg       = feat_getSYSconfig();
     const eOmempool_cfg_t *mpoolcfg     = NULL;     // uses standard mode
-    //const eOerrman_cfg_t *errmancf      = NULL;     // uses default mode
     eoy_sys_Initialise(syscfg, mpoolcfg, &errmanconfig);
 }
 
