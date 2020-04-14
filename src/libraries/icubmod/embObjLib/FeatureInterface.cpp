@@ -24,6 +24,8 @@
 #include <ace/ACE.h>
 #include <ace/config.h>
 #include <ace/Recursive_Thread_Mutex.h>
+#include "EOYtheSystem.h"
+#include "EOYmutex.h"
 
 
 using namespace eth;
@@ -71,6 +73,13 @@ using namespace eth;
 
 static eth::TheEthManager *_interface2ethManager = NULL;
 
+static const eOysystem_cfg_t eosys_config_ace =
+{
+    feat_yarp_time_now,
+    {
+        ace_mutex_new, ace_mutex_take, ace_mutex_release, ace_mutex_delete
+    }
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern public functions
@@ -88,9 +97,13 @@ void feat_Initialise(void *handleOfTheEthManager)
 
 void feat_DeInitialise()
 {
-    _interface2ethManager = NULL;
+    _interface2ethManager       = NULL;
 }
 
+const eOysystem_cfg_t * feat_getSYSconfig()
+{
+    return &eosys_config_ace;
+}
 
 eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata)
 {

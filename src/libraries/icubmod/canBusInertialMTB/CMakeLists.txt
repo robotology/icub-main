@@ -12,6 +12,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 yarp_add_plugin(canBusInertialMTB CanBusInertialMTB.h CanBusInertialMTB.cpp)
 target_link_libraries(canBusInertialMTB YARP::YARP_os
+                                        YARP::YARP_dev
+                                        YARP::YARP_sig
                                         icub_firmware_shared::canProtocolLib)
 
 icub_export_plugin(canBusInertialMTB)
