@@ -1,0 +1,50 @@
+<application>
+<name>WholeBodyPlayer app</name>
+<dependencies>
+</dependencies>
+    <module>
+        <name>wholeBodyPlayer</name>
+        <parameters>--robot icubSim --parts "(head torso left_arm right_arm)"</parameters>
+        <node>localhost</node>
+        <dependencies>
+            <port> /yarpdataplayer/rpc:i </port>
+            <port> /icubSim/head/state:o </port>
+            <port> /icubSim/torso/state:o </port>
+            <port> /icubSim/left_arm/state:o </port>
+            <port> /icubSim/right_arm/state:o </port>
+        </dependencies>
+    </module>
+    <module>
+        <name>yarpdataplayer</name>
+        <parameters></parameters>
+        <node>localhost</node>
+
+    </module>
+    <module>
+        <name>iCub_SIM</name>
+        <parameters></parameters>
+        <node>localhost</node>
+
+    </module>
+    <connection>
+        <from>/dataplayer/head/state:o</from>
+        <to>/wholeBodyPlayerModule/head/state:i</to>
+        <protocol>udp</protocol>
+    </connection>
+    <connection>
+        <from>/dataplayer/torso/state:o</from>
+        <to>/wholeBodyPlayerModule/torso/state:i</to>
+        <protocol>udp</protocol>
+    </connection>
+    <connection>
+        <from>/dataplayer/left_arm/state:o</from>
+        <to>/wholeBodyPlayerModule/left_arm/state:i</to>
+        <protocol>udp</protocol>
+    </connection>
+    <connection>
+        <from>/dataplayer/right_arm/state:o</from>
+        <to>/wholeBodyPlayerModule/right_arm/state:i</to>
+        <protocol>udp</protocol>
+    </connection>
+
+</application>
