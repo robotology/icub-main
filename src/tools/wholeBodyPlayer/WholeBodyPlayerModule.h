@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2019 Istituto Italiano di Tecnologia (IIT)
+ * Copyright (C) 2006-2020 Istituto Italiano di Tecnologia (IIT)
  * All rights reserved.
  *
  * This software may be modified and distributed under the terms of the
@@ -113,7 +113,7 @@ public:
             for (size_t i=0; i<datum.size(); i++) {
                 m_nextState[i] = datum.get(i).asDouble();
                 if (m_nextState[i]<min[i] || m_nextState[i]> max[i]) {
-                    yWarning()<<"ReplayPort: trying to move joint"<<i<<"of"<<m_partName<<" to "<<m_nextState[i]<<"skipping...";
+                    yWarning()<<"ReplayPort: trying to move joint"<<i<<"of"<<m_partName<<" to "<<m_nextState[i]<<", it exceeds the limits, skipping...";
                     continue;
                 }
                 auto delta = std::fabs(m_nextState[i] - m_currState[i]);
@@ -133,8 +133,6 @@ public:
             if (m_state == state::ok) {
                 m_posDir->setPositions(m_nextState.data());
             }
-//            yDebug()<<"ReplayPort: part"<<m_partName;
-//            yDebug()<<"Desired: "<<m_nextState<<"current:"<<m_currState;
         }
     }
 
