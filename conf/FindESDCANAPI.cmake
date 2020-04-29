@@ -68,8 +68,7 @@ if(NOT ESDCANAPI_FOUND)
     # Find library
     find_library(ESDCANAPI_LIB
                  NAMES "ntcan"
-                 PATHS ${ESDCAN_LIB_DIRS}
-                 NO_DEFAULT_PATH)
+                 PATHS ${ESDCAN_LIB_DIRS})
 
     # Find include file
     find_path(ESDCANAPI_INC_DIRS
