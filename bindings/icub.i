@@ -92,6 +92,7 @@ using namespace yarp::sig;
 // skinDynLib
 %include <iCub/skinDynLib/common.h>
 %include <iCub/skinDynLib/Taxel.h>
+%ignore  iCub::skinDynLib::skinPartBase::recursive_mtx;
 %include <iCub/skinDynLib/skinPart.h>
 %include <iCub/skinDynLib/iCubSkin.h>
 %include <iCub/skinDynLib/dynContact.h>
