@@ -30,10 +30,10 @@ public:
     virtual void drawJoint()
     {
         glColor4f(1.0,1.0,1.0,1.0);
-        glutSolidSphere(20.32,16,16);
+        gluSphere(cyl,20.32,16,16);
         glTranslated(0.0,0.0,20.32);
         glColor4f(0.0,0.0,0.0,1.0);
-        glutSolidSphere(5.08,16,16);
+        gluSphere(cyl,5.08,16,16);
     }
 };
 
