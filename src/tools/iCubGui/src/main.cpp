@@ -152,7 +152,6 @@ int main(int argc, char *argv[])
 #endif
 
     yarp::os::ResourceFinder rf;
-    rf.setVerbose();
     rf.setDefaultContext("iCubGui");
     rf.setDefaultConfigFile("iCubGui.ini");
     rf.configure(argc,argv);

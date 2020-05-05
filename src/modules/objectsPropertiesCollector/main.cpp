@@ -1630,7 +1630,6 @@ int main(int argc, char *argv[])
     Network yarp;
 
     ResourceFinder rf;
-    rf.setVerbose(true);
     rf.setDefaultContext("objectsPropertiesCollector");
     rf.setDefault("db","dataBase.ini");
     rf.configure(argc,argv);

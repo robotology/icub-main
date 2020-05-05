@@ -160,7 +160,6 @@ int main(int argc, char * argv[])
 
     /* prepare and configure the resource finder */
     ResourceFinder rf;
-    rf.setVerbose( true );
     rf.setDefaultConfigFile( "templatePFTracker.ini" ); //overridden by --from parameter
     rf.setDefaultContext( "templatePFTracker" );        //overridden by --context parameter
     rf.configure( argc, argv );

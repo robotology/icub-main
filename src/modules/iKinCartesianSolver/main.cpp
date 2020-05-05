@@ -361,7 +361,6 @@ class SolverModule : public RFModule {
       yInfo() << "Custom Cartesian Solver detected!";
 
       ResourceFinder rf_kin;
-      rf_kin.setVerbose(true);
       rf_kin.setDefaultContext(rf.getContext());
       rf_kin.configure(0, nullptr);
       pathToCustomKinFile = rf_kin.findFileByName(group.find("CustomKinFile").asString());
@@ -418,7 +417,6 @@ int main(int argc, char* argv[]) {
   }
 
   ResourceFinder rf;
-  rf.setVerbose(true);
   rf.setDefaultContext("cartesianSolver");
   rf.setDefaultConfigFile("cartesianSolver.ini");
   rf.configure(argc, argv);

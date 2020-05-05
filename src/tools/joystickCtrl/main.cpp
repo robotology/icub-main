@@ -843,7 +843,6 @@ public:
 int main(int argc, char *argv[])
 {
     ResourceFinder rf;
-    rf.setVerbose(true);
     rf.setDefaultConfigFile("joystickControl.ini");     //overridden by --from parameter
     rf.setDefaultContext("joystickControl");            //overridden by --context parameter
     rf.configure(argc,argv);

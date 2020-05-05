@@ -31,7 +31,6 @@ int main(int argc, char * argv[])
 
    /* prepare and configure the resource finder */
    ResourceFinder rf;
-   rf.setVerbose(false);
    rf.setDefaultConfigFile("skinManAll.ini");          //overridden by --from parameter
    rf.setDefaultContext("skinGui");                     //overridden by --context parameter
    rf.configure(argc, argv);

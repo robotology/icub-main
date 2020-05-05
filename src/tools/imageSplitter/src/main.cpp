@@ -22,7 +22,6 @@ int main(int argc, char * argv[])
    yarp::os::Network yarp;
    ImageSplitter imageSplitter;
    yarp::os::ResourceFinder rf;
-   rf.setVerbose(true);
    rf.configure(argc, argv);
 
    imageSplitter.runModule(rf);

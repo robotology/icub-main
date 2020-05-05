@@ -1426,7 +1426,6 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
                                                          Value("icubSimEyes.ini")).asString().c_str();
 
     ResourceFinder rf_camcalib;
-    rf_camcalib.setVerbose();
     rf_camcalib.setDefaultContext(camcalib_context.c_str());
     rf_camcalib.setDefaultConfigFile(camcalib_file.c_str());
     rf_camcalib.configure(0,NULL);

@@ -248,7 +248,6 @@ bool QtICubSkinGuiPlugin::parseParameters(QStringList params)
 {
     Network yarp;
 
-    rf.setVerbose();
     rf.setDefaultContext("skinGui/skinGui");
     rf.setDefaultConfigFile("left_hand.ini");
 

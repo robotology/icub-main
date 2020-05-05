@@ -1968,7 +1968,6 @@ bool ServerCartesianController::open(Searchable &config)
     else if (optGeneral.check("CustomKinFile"))     // custom kinematics case
     {
         ResourceFinder rf_kin;
-        rf_kin.setVerbose(true);
         if (optGeneral.check("CustomKinContext"))
             rf_kin.setDefaultContext(optGeneral.find("CustomKinContext").asString()); 
         rf_kin.configure(0,NULL);

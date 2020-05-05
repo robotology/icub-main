@@ -347,7 +347,6 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
     
     rf.configure(argc, argv);
-    rf.setVerbose(true);
     if (mod.configure(rf)==false) return 1;
     mod.runModule();
     yInfo("Main returning\n");

@@ -34,7 +34,6 @@ int main(int argc, char *argv[]) {
 
     //resource finder initialization. 
     ResourceFinder rf;
-    rf.setVerbose();
     rf.setDefaultConfigFile("emotions.ini");
     rf.setDefaultContext("faceExpressions");
     rf.setDefault("name", "/emotion");

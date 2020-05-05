@@ -11,7 +11,6 @@ int main(int argc, char *argv[])
     string guiName;
     unsigned int gXpos, gYpos;
 
-    rf.setVerbose(true);
     rf.setDefaultConfigFile("skinManGui.ini");      //overridden by --from parameter
     rf.setDefaultContext("skinGui");                    //overridden by --context parameter
     rf.configure(argc, argv);

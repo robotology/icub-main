@@ -250,7 +250,6 @@ int main(int argc, char *argv[])
     Network yarp;
  
     yarp::os::ResourceFinder rf;
-    rf.setVerbose();
     rf.setDefaultContext("skinGui/skinGui");
     rf.setDefaultConfigFile("left_hand.ini");
     rf.configure(argc,argv);

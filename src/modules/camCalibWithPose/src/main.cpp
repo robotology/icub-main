@@ -148,7 +148,6 @@ int main(int argc, char *argv[]) {
 
     Network yarp;
     ResourceFinder rf;
-    rf.setVerbose(true);
     rf.setDefaultConfigFile("camCalib.ini");    //overridden by --from parameter
     rf.setDefaultContext("cameraCalibration");  //overridden by --context parameter
     rf.configure(argc, argv);

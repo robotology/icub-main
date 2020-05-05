@@ -802,7 +802,6 @@ public:
 int main(int argc, char * argv[])
 {
     ResourceFinder rf;
-    rf.setVerbose(true);
     rf.setDefaultContext("wholeBodyDynamics");
     rf.setDefaultConfigFile("wholeBodyDynamics.ini");
     rf.configure(argc,argv);

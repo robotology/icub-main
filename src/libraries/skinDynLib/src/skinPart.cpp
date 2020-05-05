@@ -124,11 +124,9 @@ using namespace iCub::skinDynLib;
         filename = filename.c_str() ? filename.c_str() + 1 : _filePath.c_str();
 
         yarp::os::ResourceFinder rf;
-        rf.setVerbose(false);
         rf.setDefaultContext("skinGui");            //overridden by --context parameter
         rf.setDefaultConfigFile(_filePath.c_str()); //overridden by --from parameter
         rf.configure(0,NULL);
-        rf.setVerbose(true);
         
         if (rf.check("name"))
         {

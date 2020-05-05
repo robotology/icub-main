@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
 {
     Network yarp;
     ResourceFinder rf;
-    rf.setVerbose(true);
 //    rf.setDefaultConfigFile("board.ini");    //overridden by --from parameter
 //    rf.setDefaultContext("???");           //overridden by --context parameter
     rf.configure(argc, argv);

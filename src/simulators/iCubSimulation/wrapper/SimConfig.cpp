@@ -46,7 +46,6 @@ static string configureFinder(int argc, char *argv[],
                               string &moduleName, int & verbosity,
                               ResourceFinder& finder) {
     //string moduleName;
-    finder.setVerbose();
     finder.setDefaultConfigFile("simulator.ini");
     finder.setDefaultContext("simConfig");
     finder.configure(argc, argv); 

@@ -26,7 +26,6 @@ using namespace iCub::skinDynLib;
         skin.clear();
 
         yarp::os::ResourceFinder skinRF;
-        skinRF.setVerbose(false);
         skinRF.setDefaultContext(_context.c_str());     //overridden by --context parameter
         skinRF.setDefaultConfigFile(_from.c_str());     //overridden by --from parameter
         skinRF.configure(0,NULL);

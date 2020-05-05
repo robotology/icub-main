@@ -689,11 +689,9 @@ bool Compensator::setMaxNeighborDistance(double d){
 
 bool Compensator::setTaxelPosesFromFile(const char *filePath){
     yarp::os::ResourceFinder rf;
-    rf.setVerbose(false);
     rf.setDefaultContext("skinGui");   //overridden by --context parameter
     rf.setDefaultConfigFile(filePath); //overridden by --from parameter
     rf.configure(0,NULL);
-    rf.setVerbose(true);
 
     yarp::os::Bottle &calibration = rf.findGroup("calibration");
     if (calibration.isNull())

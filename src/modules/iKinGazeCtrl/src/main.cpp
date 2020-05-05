@@ -1160,7 +1160,6 @@ public:
 
         if (camerasGroup.check("file"))
         {
-            commData.rf_cameras.setQuiet();
             camerasGroup.check("context")?
             commData.rf_cameras.setDefaultContext(camerasGroup.find("context").asString()):
             commData.rf_cameras.setDefaultContext(rf.getContext());
@@ -1168,7 +1167,6 @@ public:
             commData.rf_cameras.configure(0,nullptr);
         }
 
-        commData.rf_tweak.setQuiet();
         commData.rf_tweak.setDefaultContext(rf.getContext());
         commData.tweakFile=tweakGroup.check("file",Value("tweak.ini")).asString();
         commData.tweakOverwrite=(tweakGroup.check("overwrite",Value("on")).asString()=="on");
@@ -2157,7 +2155,6 @@ public:
 int main(int argc, char *argv[])
 {
     ResourceFinder rf;
-    rf.setVerbose();
     rf.setDefaultContext("iKinGazeCtrl");
     rf.setDefaultConfigFile("config.ini");
     rf.configure(argc,argv);

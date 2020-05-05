@@ -694,7 +694,6 @@ public:
 int main(int argc, char *argv[])
 {
     ResourceFinder rf;
-    rf.setVerbose(true);
     rf.setDefaultContext("ctpService");
     rf.configure(argc,argv);
 

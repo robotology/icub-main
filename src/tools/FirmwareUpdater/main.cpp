@@ -166,10 +166,6 @@ int main(int argc, char *argv[])
 
 
     ResourceFinder rf;
-    if(verbosity >= 1)
-    {
-        rf.setVerbose();
-    }
     rf.setDefaultContext("firmwareUpdater");
     rf.setDefaultConfigFile(iniFile.toLatin1().data());
 

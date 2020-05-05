@@ -39,7 +39,6 @@ int main(int argc, char *argv[])
     Network yarp;
     int c=0;
     ResourceFinder rf;
-    rf.setVerbose(true);
     rf.configure(argc, argv);
     
     BufferedPort<ImageOf<PixelRgb> > input;
