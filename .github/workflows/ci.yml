@@ -62,7 +62,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev swig libopencv-dev qtbase5-dev \
-                                 qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev 
+                                 qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev libpython3-dev swig
         
     - name: Source-based Dependencies [Windows] 
       if: matrix.os == 'windows-latest'
@@ -155,6 +155,12 @@ jobs:
               -DENABLE_icubmod_embObjVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
               -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+    - name: Enable python bindings on Ubuntu 
+      if: matrix.os == 'ubuntu-latest'
+      run: | 
+        cd build
+        # Enable ICUB_COMPILE_BINDINGS in Ubuntu 
+        cmake -DICUB_COMPILE_BINDINGS:BOOL=ON -DCREATE_PYTHON:BOOL=ON .
       
     - name: Build
       shell: bash
