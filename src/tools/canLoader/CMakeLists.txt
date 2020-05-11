@@ -14,12 +14,3 @@ add_subdirectory(canLoaderLib)
 
 message(STATUS " +++ tool compiling canLoader-console")
 add_subdirectory(canLoader-console)
-
-
-if(NOT ICUB_USE_GTK2)
-  message(STATUS "GTK2 not selected, skipping canLoader")
-  return()
-endif()
-
-message(STATUS " +++ tool compiling canLoader")
-add_subdirectory(canLoader)

@@ -9,8 +9,6 @@ source_group("Header Files" FILES ${folder_header})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../ethLoader/ethLoaderLib)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../canLoader/canLoaderLib)
-include_directories(${GTK2_INCLUDE_DIRS})
-
 
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
 
