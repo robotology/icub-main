@@ -46,12 +46,6 @@ find_package(OpenCV)
 find_package(OpenGL)
 find_package(ODE)
 find_package(SDL)
-
-set(GTK2_USE_IMPORTED_TARGETS ON)
-find_package(GTK2 COMPONENTS gtk gtkmm)
-if(WIN32 AND GTK2_FOUND)
-    list(REMOVE_ITEM GTK2_LIBRARIES ${FREETYPE_LIBRARY} ${GTK2_PANGOXFT_LIBRARY})
-endif()
 find_package(ACE)
 find_package(IPOPT)
 find_package(IPP)
@@ -73,39 +67,6 @@ if (OpenCV_FOUND)
 
   set(ICUB_LINK_DIRECTORIES ${ICUB_LINK_DIRECTORIES} ${OpenCV_LIB_DIR})
 endif()
-
-if (GTK2_FOUND)
-
-    message(STATUS "GTK2 version is ${GTK2_MAJOR_VERSION}.${GTK2_MINOR_VERSION}")
-
-    if (NOT GTK2_MAJOR_VERSION)
-        message (STATUS "GTK2 version unknown, assuming 2.8")
-        set(GTK2_MAJOR_VERSION 2)
-        set(GTK2_MINOR_VERSION 8)
-    endif()
-
-   if (GTK2_MAJOR_VERSION GREATER 2 OR GTK2_MAJOR_VERSION EQUAL 2)
-    if (GTK2_MINOR_VERSION GREATER 8 OR GTK2_MINOR_VERSION EQUAL 8)
-
-        if (GTK2_MINOR_VERSION LESS 12)
-                set(ICUB_GTK2_LEGACY true CACHE BOOL "Legacy version of GTK2 detected" FORCE)
-        else()
-                set(ICUB_GTK2_LEGACY false CACHE BOOL "Legacy version of GTK2 detected" FORCE)
-                mark_as_advanced(ICUB_GTK2_LEGACY)
-        endif()
-     endif()
-    endif()
-
-    # check version of GtkMM
-    if (NOT ICUB_GTK2_LEGACY)
-        message(STATUS "GTK2 is at least 2.12")
-   else()
-        message(STATUS "GTK2 is prior to 2.12 (some modules will be skipped)")  
-        message(STATUS "Setting ICUB_GTK2_LEGACY true")
-   endif()
-
-endif()
-
 message(STATUS "I have found the following libraries:")
 
 checkandset_dependency(icub_firmware_shared)
@@ -114,7 +75,6 @@ checkandset_dependency(GLUT)
 checkandset_dependency(OpenGL)
 checkandset_dependency(ODE)
 checkandset_dependency(SDL)
-checkandset_dependency(GTK2)
 checkandset_dependency(ACE)
 checkandset_dependency(IPOPT)
 checkandset_dependency(IPP)
