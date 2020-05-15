@@ -1573,18 +1573,6 @@ void CalibrationWindow::onTimeout()
 
 
 
-//        if (eeprom_saved_status==false) {
-//            /*gtk_widget_modify_bg (save_button, GTK_STATE_NORMAL,      &r_color);
-//                gtk_widget_modify_bg (save_button, GTK_STATE_ACTIVE,      &r_color);
-//                gtk_widget_modify_bg (save_button, GTK_STATE_PRELIGHT,    &r_color);
-//                gtk_widget_modify_bg (save_button, GTK_STATE_SELECTED,    &r_color);
-//                gtk_widget_modify_bg (save_button, GTK_STATE_INSENSITIVE, &r_color);
-//                gtk_button_set_label     (GTK_BUTTON(save_button), "Not saved.\nSave to eeprom?"); */
-//        } else {
-//            //gtk_button_set_label     (GTK_BUTTON(save_button), "Save to eeprom");
-//        }
-
-
         setSerialChanged(serial_number_changed);
 
         // marco.accame: maybe it is better to retrieve only one matrix: the selected one, not all three of them

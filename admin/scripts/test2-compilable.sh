@@ -164,18 +164,6 @@ echo "</TABLE>" >> $main
     else
 	echo "GSL_DIR=$GSL_DIR"
     fi
-
-    if [ "k$GTK_BASEPATH" = "k" ]; then
-	echo "GTK_BASEPATH undefined"
-    else
-	echo "GTK_BASEPATH=$GTK_BASEPATH"
-    fi
-
-    if [ "k$GTKMM_BASEPATH" = "k" ]; then
-	echo "GTKMM_BASEPATH undefined"
-    else
-	echo "GTKMM_BASEPATH=$GTKMM_BASEPATH"
-    fi
     
     if [ "k$IPOPT_DIR" = "k" ]; then
 	echo "IPOPT_DIR undefined"
@@ -192,7 +180,6 @@ echo "</TABLE>" >> $main
     echo "# OPENCV_DIR = where OPENCV was compiled (if not using precompiled debian package)"
     echo "# ODE_DIR = where ode was compiled (if not using precompiled debian package)"
     echo "# SDLDIR = where sdl was compiled (if not using precompiled debian package)"
-    echo "# GTKMM_BASEPATH/GTK_BASEPATH = where gtk/gtkmm was compiled or installed (if not using precompiled debian package)"
     echo "# IPOPT_DIR = where ipopt was installed"
 
     echo "</pre>"

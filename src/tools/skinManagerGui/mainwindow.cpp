@@ -143,7 +143,6 @@ bool MainWindow::initGuiStatus(){
     ui->sliderScaleSmooth->setValue(currentSmoothFactor * 10);
 
     onSmoothValueChanged(currentSmoothFactor * 10);
-    //gtk_adjustment_set_value(scaleSmooth->range.adjustment, currentSmoothFactor);
 
     reply = portThread.sendRpcCommand(true, get_threshold);
     if(reply.isNull() || reply.size()==0 || !reply.get(0).isInt()){
@@ -179,14 +178,12 @@ bool MainWindow::initGuiStatus(){
     }else{
         currentMaxNeighDist = reply.get(0).asDouble();
         ui->spinNeighbor->setValue(currentMaxNeighDist * 100);
-        //gtk_adjustment_set_value(spinMaxNeighDist->adjustment, 1e2*currentMaxNeighDist);
     }
 
     // get module information
     reply = portThread.sendRpcCommand(true, get_info);
     if(reply.isNull() || reply.size()!=3){
         printLog("Error while reading the module information");
-        //gtk_label_set_text(lblInfo, reply.toString().c_str());
         return false;
     }
     stringstream ss;
@@ -203,7 +200,6 @@ bool MainWindow::initGuiStatus(){
         ss<< "\n - "<< portNames[i]<< " ("<< portDim[i]<< " taxels)";
     }
     ui->infoPanel->setPlainText(QString("%1").arg(ss.str().c_str()));
-    //gtk_label_set_text(lblInfo, ss.str().c_str());
 
 
     // check whether the skin calibration is in process
@@ -211,9 +207,6 @@ bool MainWindow::initGuiStatus(){
     if(string(reply.toString().c_str()).compare("yes")==0){
         loadingWidget.start();
         calibratingTimer.start();
-        //gtk_widget_show(GTK_WIDGET(progBarCalib));
-        //g_timeout_add(100, progressbar_calibration, NULL);
-        //gtk_widget_set_sensitive(GTK_WIDGET(btnCalibration), false);
     }
 
     ui->controlsWidget->setEnabled(true);
@@ -439,7 +432,6 @@ void MainWindow::onThreashold()
             msg << int(touchThr.get(index).asDouble())<< ";\t";
             index++;
         }
-        //openDialog(msg.str().c_str(), GTK_MESSAGE_INFO);
         QMessageBox::information(this,"Information",QString("%1").arg(msg.str().c_str()));
     }
 }
@@ -649,54 +641,6 @@ void MainWindow::onUpdateTimer()
                     portItem->setText(3, QString("%L1").arg(meanPort,0,'f',3));
                 }
 
-
-                // TODO
-//                GtkTreeIter iterPort, iterTr, iterTax;
-//                gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(treeStoreComp), &iterPort);
-//                if(!valid){
-//                    // create the drift list
-//                    for(unsigned int i=0; i<portNames.size(); i++){
-//                        gtk_tree_store_append(treeStoreComp, &iterPort, NULL);
-//                        for(unsigned int j=0; j<portDim[i]/12; j++){
-//                            gtk_tree_store_append(treeStoreComp, &iterTr, &iterPort);
-//                            for(int k=0; k<12; k++){
-//                                gtk_tree_store_append(treeStoreComp, &iterTax, &iterTr);
-//                            }
-//                        }
-//                    }
-//                    gtk_tree_view_set_model(treeBaselines, GTK_TREE_MODEL( treeStoreComp));
-//                    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(treeStoreComp), &iterPort);
-//                }
-
-//                // update the drift list
-//                double sumPort, meanPort;
-//                stringstream trS, taxS;
-//                index=1;
-//                int portIndex=0;
-//                double meanTr;
-//                for(unsigned int i=0; i<portNames.size(); i++){
-//                    sumPort = 0;
-//                    for(unsigned int j=0; j<portDim[i]/12; j++){
-//                        meanTr = driftPerTr[portIndex];
-//                        portIndex++;
-//                        sumPort += meanTr;
-//                        trS.str(""); trS<<j;
-
-//                        gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTr, &iterPort, j);
-//                        gtk_tree_store_set((treeStoreComp), &iterTr, 1, trS.str().c_str(), 3, meanTr, -1);
-//                        for(int k=0; k<12; k++){
-//                            double drift = round((*b)(index), 2);
-//                            index++;
-//                            taxS.str(""); taxS<<k;
-//                            if(gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTax, &iterTr, k))
-//                                gtk_tree_store_set((treeStoreComp), &iterTax, 2, taxS.str().c_str(), 3, drift, -1);
-//                        }
-//                    }
-
-//                    meanPort = sumPort/(portDim[i]/12);
-//                    gtk_tree_store_set((treeStoreComp), &iterPort, 0, portNames[i].c_str(), 3, meanPort, -1);
-//                    gtk_tree_model_iter_next(GTK_TREE_MODEL(treeStoreComp), &iterPort);
-//                }
             }
         }
     }
@@ -704,7 +648,6 @@ void MainWindow::onUpdateTimer()
     // check if there are messages on the info port
     Bottle* infoMsg = portThread.driftCompInfoPort->read(false);
     while(infoMsg){
-        //openDialog(infoMsg->toString(), GTK_MESSAGE_INFO);
 
         printLog(infoMsg->toString().c_str());
         infoMsg = portThread.driftCompInfoPort->read(false);

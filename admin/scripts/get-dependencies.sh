@@ -10,7 +10,6 @@ apt-get install libqwt-dev            # QWT for UZH
 apt-get install libgsl0-dev           # math library
 apt-get install libncurses5-dev       # on windows, conio.h -- see simio
 apt-get install libcv-dev             # OpenCV, image processing
-apt-get install libgtk2.0-dev libgtkmm-2.4-dev libglademm-2.4-dev  # GTK/MM GUIs
 apt-get install libsdl1.2-dev         # SDL used by simulator
 apt-get install libv4l-dev            # V4L
 apt-get install libv4lconvert0        # V4L

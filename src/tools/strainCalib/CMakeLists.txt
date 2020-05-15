@@ -12,13 +12,3 @@ endif()
 
 message(STATUS " +++ tool compiling strainCalibLib")
 add_subdirectory(strainCalibLib)
-
-if(NOT ICUB_USE_GTK2)
-  message(STATUS "GTK2 not selected, skipping strainCalibGUI")
-  return()
-endif()
-
-message(STATUS " +++ tool compiling strainCalibGUI")
-add_subdirectory(strainCalibGUI)
-
-

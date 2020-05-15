@@ -16,7 +16,7 @@
 Use this application to download your firmware in DSP boards.
 
 \section intro_sec Description
-CanLoder20 is a YARP/GTK based application that allows the firmware update of the DSP boards of iCub.
+CanLoder20 is a YARP based application that allows the firmware update of the DSP boards of iCub.
 The board types currently supported by the CanLoader application are:
 - MC4     (Motorola 56807 DSP for control of bushed CC motors)
 - BLL     (Motorola 56807 DSP for control of brushless motors)
@@ -37,7 +37,6 @@ The application returns a value that specifies the result of the download.
 
 \section lib_sec Libraries
 YARP libraries.
-GTK libraries.
 
 \section parameters_sec Parameters
 You can use the canLoader application in two ways: using a GUI or by command line.
@@ -199,7 +198,6 @@ bool prompt_version=false;
 static bool compile_ip_addresses(const char* addr)
 {
     ACE_UINT32 ip1,ip2,ip3,ip4;
-    //sscanf(gtk_entry_get_text(GTK_ENTRY(box_ipAddr)),"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
     sscanf(addr,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
     remoteAddr=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
 
@@ -209,7 +207,6 @@ static bool compile_ip_addresses(const char* addr)
 
     if (ret || count<=0)
     {
-        //dialog_message(GTK_MESSAGE_ERROR,"Init driver failed","Could not find network interface");
         return false;
     }
 
@@ -240,18 +237,6 @@ static void start_end_click ()
         if (networkType=="ETH")
         {
             yError() << "ETH not supported yet" ;
-            /*if (!prompt_version)
-            {
-                if (!compile_ip_addresses(gtk_entry_get_text(GTK_ENTRY(box_ipAddr))))
-                {
-                    yError() << "Init driver failed" << "Could not find network interface";
-                    return;
-                }
-            }
-
-            params.put("local", int( localAddr));
-            params.put("remote",int(remoteAddr));
-            params.put("canid",canID);*/
         }
         else
         {
@@ -550,7 +535,7 @@ void fatal_error(int err)
 }
 
 //*********************************************************************************
-// Entry point for the GTK application
+// Entry point for the application
 int myMain( int   argc, char *argv[] )
 {
     networkType="empty";

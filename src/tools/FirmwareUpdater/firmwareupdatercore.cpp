@@ -1021,14 +1021,6 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
             finished = 1;
         }
 
-        //        // Update the progress bar
-        //        if (prompt_version==false && downloader.progress % 50 == 0)
-        //        {
-        //            gtk_progress_bar_set_fraction ((GtkProgressBar*) progress_bar, 0);
-        //            gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), refresh_board_list_model());
-        //            gtk_widget_draw(treeview, NULL);
-        //            gtk_main_iteration_do (false);
-        //        }
     }
     while (finished!=1);
     timer_end= yarp::os::Time::now();

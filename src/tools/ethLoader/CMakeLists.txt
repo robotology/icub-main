@@ -11,14 +11,3 @@ endif()
 
 message(STATUS " +++ tool compiling ethLoaderLib")
 add_subdirectory(ethLoaderLib)
-
-
-if(NOT ICUB_USE_GTK2)
-  message(STATUS "GTK2 not selected, skipping ethLoader")
-  return()
-endif()
-
-message(STATUS " +++ tool compiling ethLoader")
-add_subdirectory(ethLoader)
-
-
