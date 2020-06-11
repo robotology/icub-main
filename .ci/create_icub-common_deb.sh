@@ -27,22 +27,8 @@ COL_WARNING="\e[33m"
 # Defaults
 LOG_FILE=""
 PACKAGE_VERSION=""
-# Always use a revision number >=1
-ICUB_DEBIAN_REVISION_NUMBER="1"
-YCM_PACKAGE="ycm-cmake-modules"
-YCM_PACKAGE_URL_bionic="https://launchpad.net/~robotology/+archive/ubuntu/ppa/+files/${YCM_PACKAGE}_0.11.1-1~ubuntu18.04~robotology1_all.deb"
-YCM_PACKAGE_URL_buster="https://launchpad.net/~robotology/+archive/ubuntu/ppa/+files/${YCM_PACKAGE}_0.11.1-1_all.deb"
-YCM_PACKAGE_URL_focal="https://launchpad.net/~robotology/+archive/ubuntu/ppa/+files/${YCM_PACKAGE}_0.11.1-1_all.deb"
-SUPPORTED_DISTRO_LIST="buster bionic focal"
-SUPPORTED_TARGET_LIST="amd64"
-CMAKE_MIN_REQ_VER="3.12.0"
-ICUB_DEPS_COMMON="libace-dev libc6 python libgsl0-dev libncurses5-dev libsdl1.2-dev subversion git gfortran libxmu-dev libode-dev wget unzip qtbase5-dev qtdeclarative5-dev qtmultimedia5-dev libqt5svg5 libqt5opengl5-dev libopencv-dev freeglut3-dev libtinyxml-dev libblas-dev coinor-libipopt-dev liblapack-dev libmumps-dev qml-module-qtmultimedia qml-module-qtquick-dialogs qml-module-qtquick-controls libedit-dev libeigen3-dev libjpeg-dev libsimbody-dev libxml2-dev libjs-underscore ${YCM_PACKAGE}"
-ICUB_DEPS_bionic="libode6"
-ICUB_DEPS_focal="libode8"
-ICUB_DEPS_buster="libode8"
-ICUB_REPO_URL="https://github.com/robotology/icub-main"
-ICUB_PACKAGE_MAINTAINER="Matteo Brunettini <matteo.brunettini@iit.it>"
-
+VARS_FILE="packages_vars.sh"
+ICUB_DEBIAN_REVISION_NUMBER="1" # Always use a revision number >=1
 # locals
 _WHO_AM_I=$(whoami)
 _EQUIVS_BIN=$(which equivs-build || true)
@@ -62,18 +48,14 @@ print_defs ()
     echo "  log file is $LOG_FILE"
   fi
   echo "Local parameters are"
-  echo "  PLATFORM_HARDWARE is $PLATFORM_HARDWARE"
   echo "  PACKAGE_VERSION is $PACKAGE_VERSION"
   echo "  ICUB_DEBIAN_REVISION_NUMBER is $ICUB_DEBIAN_REVISION_NUMBER"
-  echo "  YCM_PACKAGE is $YCM_PACKAGE"
-  echo "  SUPPORTED_DISTRO_LIST is $SUPPORTED_DISTRO_LIST"
-  echo "  SUPPORTED_TARGET_LIST is $SUPPORTED_TARGET_LIST"
-  echo "  CMAKE_MIN_REQ_VER is $CMAKE_MIN_REQ_VER"
-  echo "  ICUB_DEPS_COMMON is $ICUB_DEPS_COMMON"
-  echo "  ICUB_REPO_URL is $ICUB_REPO_URL"
-  echo "  ICUB_PACKAGE_MAINTAINER is $ICUB_PACKAGE_MAINTAINER"
+  echo "  VARS_FILE is $VARS_FILE"
+  echo "  _WHO_AM_I is $_WHO_AM_I"
   echo "  _EQUIVS_BIN is $_EQUIVS_BIN"
+  echo "  _LSB_BIN is $_LSB_BIN"
   echo "  _PLATFORM_KEY is $_PLATFORM_KEY"
+  echo "  _PLATFORM_HARDWARE is $_PLATFORM_HARDWARE"
   echo "  _CONTROL_FILE is $_CONTROL_FILE "
 }
 
@@ -83,6 +65,7 @@ usage ()
 
   echo "Usage: $0 [options]"
   echo "options are :"
+  echo "  -f VARS_FILE : use file VARS_FILE as variables container file"
   echo "  -V PACKAGE_VERSION : use PACKAGE_VERSION as version for metapackage"
   echo "  -R DEBIAN_REVISION_NUMBER : use DEBIAN_REVISION_NUMBER ad revision for metapackage"
   echo "  -l LOG_FILE : write logs to file LOG_FILE"
@@ -118,9 +101,12 @@ print_version() {
 }
 
 parse_opt() {
-  while getopts hdvl:V:R: opt
+  while getopts hdvl:V:R:f: opt
   do
     case "$opt" in
+    "f")
+      VARS_FILE="$OPTARG"
+      ;;
     "V")
       PACKAGE_VERSION="$OPTARG"
       ;;
@@ -152,6 +138,11 @@ parse_opt() {
 
 init()
 {
+  if [ ! -f "$VARS_FILE" ]; then
+    exit_err "variables container file $VARS_FILE not found"
+  fi
+  source "$VARS_FILE"
+
   check_and_install_deps
 
   _PLATFORM_RELEASE=$(lsb_release -sc)
