@@ -27,7 +27,7 @@ COL_WARNING="\e[33m"
 # Defaults
 LOG_FILE=""
 PACKAGE_VERSION=""
-VARS_FILE="packages_vars.sh"
+VARS_FILE="${SCRIPT_PATH}/packages_vars.sh"
 ICUB_DEBIAN_REVISION_NUMBER="1" # Always use a revision number >=1
 # locals
 _WHO_AM_I=$(whoami)
