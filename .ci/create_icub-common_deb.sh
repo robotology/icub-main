@@ -138,11 +138,12 @@ parse_opt() {
 
 init()
 {
+  env | grep "ICUB"
   if [ ! -f "$VARS_FILE" ]; then
     exit_err "variables container file $VARS_FILE not found"
   fi
   source "$VARS_FILE"
-
+  env | grep "ICUB"
   check_and_install_deps
 
   _PLATFORM_RELEASE=$(lsb_release -sc)
