@@ -194,15 +194,15 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
-    - uses: olegtarasov/get-tag@v2
-        id: tagName
-        with:
-          tagRegex: "foobar-(.*)"  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
-          tagRegexGroup: 1 # Optional. Default is 1.
+    # - uses: olegtarasov/get-tag@v2
+    #     id: tagName
+    #     with:
+    #       tagRegex: "foobar-(.*)"  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
+    #       tagRegexGroup: 1 # Optional. Default is 1.
 
     - name: Generate icub-common metapackage [${{ matrix.docker_image }}]
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
         #_ICUB_VER=$(git describe --tags | grep -o -P '(?<=v).*(?=-)' | grep -o -P '.*(?=-)')
-        ./.ci/create_icub-common_deb.sh -V $GIT_TAG_NAME
+        ./.ci/create_icub-common_deb.sh -V 1.16.0
