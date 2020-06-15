@@ -198,6 +198,7 @@ jobs:
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
+        apt install git
         _ICUB_VER=$(git describe --tags | grep -o -P '(?<=v).*(?=-)' | grep -o -P '.*(?=-)')
         echo "creating Package for ver $_ICUB_VER"
         ./.ci/create_icub-common_deb.sh -V $_ICUB_VER
