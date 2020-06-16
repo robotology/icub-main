@@ -7,6 +7,13 @@ iCub
 
 ![ci](https://github.com/robotology/icub-main/workflows/Continuous%20Integration/badge.svg)
 
+## Maintainers
+This repository is maintained by:
+
+| | |
+|:---:|:---:|
+| [<img src="https://github.com/pattacini.png" width="40">](https://github.com/pattacini) | [@pattacini](https://github.com/pattacini) |
+
 See COPYING and AUTHORS for licensing info, authors and copyright holders.
 
 The iCub manual contains more details about the structure of the 
