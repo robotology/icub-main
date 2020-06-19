@@ -76,6 +76,13 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
     return false;
 }
 
+inline bool NOT_YET_IMPLEMENTED_WARNING(const char *txt)
+{
+    yWarning("%s not yet implemented for CanBusMotionControl\n", txt);
+
+    return false;
+}
+
 inline bool DEPRECATED (const char *txt)
 {
     yError("%s has been deprecated for CanBusMotionControl\n", txt);
@@ -7508,12 +7515,12 @@ return NOT_YET_IMPLEMENTED("getCurrentsRaw");
 
 bool CanBusMotionControl::getCurrentRangeRaw(int j, double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getCurrentRangeRaw");
+    return NOT_YET_IMPLEMENTED_WARNING("getCurrentRangeRaw");
 }
 
 bool CanBusMotionControl::getCurrentRangesRaw(double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getCurrentRangesRaw");
+    return NOT_YET_IMPLEMENTED_WARNING("getCurrentRangesRaw");
 }
 
 bool CanBusMotionControl::setRefCurrentsRaw(const double *t)
