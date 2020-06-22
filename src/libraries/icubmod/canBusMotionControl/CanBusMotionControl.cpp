@@ -1624,7 +1624,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
 
     // Motor pwm limit
-    if (!validate(limits, xtmp, "motorPwmLimit", "a list of motor PWM limits", nj + 1))
+    if (!validate_optional(limits, xtmp, "motorPwmLimit", "a list of motor PWM limits", nj + 1))
     {
         yWarning("motorPwmLimit: Using default motorPwmLimit=1333\n");
         for (i = 1; i<nj + 1; i++)
