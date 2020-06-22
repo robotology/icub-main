@@ -1094,8 +1094,8 @@ public:
     /**
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
-    *              "right" arm. Further available options are
-    *              "[left|right]_v[1|1.7|2]".
+    *              "right" arm. Further available options account
+    *              for different HW versions, e.g. "left_v2".
     */
     iCubArm(const std::string &_type);
 
@@ -1248,8 +1248,8 @@ public:
     /**
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
-    *              "right" leg. Further available options are
-    *              "[left|right]_v[1|2.5]".
+    *              "right" leg. Further available options account
+    *              for different HW versions, e.g. "left_v2".
     */
     iCubLeg(const std::string &_type);
 
@@ -1285,8 +1285,8 @@ public:
     /**
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
-    *              "right" eye. Further available options are
-    *              "[left|right]_v[1|2|2.5]".
+    *              "right" eye. Further available options account
+    *              for different HW versions, e.g. "left_v2".
     */
     iCubEye(const std::string &_type);
 
@@ -1321,8 +1321,8 @@ public:
     /**
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
-    *              "right" eye. Further available options are
-    *              "[left|right]_v[1|2|2.5]".
+    *              "right" eye. Further available options account
+    *              for different HW versions, e.g. "left_v2".
     */
     iCubEyeNeckRef(const std::string &_type);
 };
@@ -1347,9 +1347,8 @@ public:
 
     /**
     * Constructor. 
-    * @param _type is a string to discriminate between "left" and 
-    *              "right" eye. Further available options are
-    *              "[left|right]_v[1|2|2.5]".
+    * @param _type is a string for specifying different kinematic 
+    *              versions.
     */
     iCubHeadCenter(const std::string &_type);
 };
@@ -1376,8 +1375,8 @@ public:
 
     /**
     * Constructor. 
-    * @param _type is a string discriminating among "v[1|2|2.5]" 
-    *              hardware versions.
+    * @param _type is a string for specifying different kinematic 
+    *              versions.
     */
     iCubInertialSensor(const std::string &_type);
 
@@ -1389,6 +1388,34 @@ public:
     * @return true/false on success/failure. 
     */
     virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+};
+
+
+/**
+* \ingroup iKinFwd
+*
+* A class for defining the Kinematics of the Inertial Sensor
+* mounted in the iCub's Waist.
+*/
+class iCubInertialSensorWaist : public iKinLimb
+{
+protected:
+    double version;
+
+    virtual void allocate(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubInertialSensorWaist();
+
+    /**
+    * Constructor. 
+    * @param _type is a string for specifying different kinematic 
+    *              versions.
+    */
+    iCubInertialSensorWaist(const std::string &_type);
 };
 
 }
