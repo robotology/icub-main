@@ -39,18 +39,33 @@ if(ICUB_USE_GSL)
 endif()
 
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+add_library(ICUB::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+                                      PUBLIC_HEADER "${folder_header}")
+
 target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES})
 
+set(CTRLLIB_DEPENDENCIES YARP_os
+                         YARP_sig
+                         YARP_dev
+                         YARP_math)
 if(ICUB_USE_GSL)
   target_link_libraries(${PROJECT_NAME} ${GSL_LIBRARIES})
+  list(APPEND CTRLLIB_DEPENDENCIES YARP_gsl GSL)
 endif()
 
-icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                    DESTINATION include/iCub/ctrl
-                                    FILES ${folder_header})
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}
+        LIBRARY
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        PUBLIC_HEADER
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/iCub/ctrl")
 
+
+icub_install_basic_package_files(${PROJECT_NAME}
+                                 DEPENDENCIES ${CTRLLIB_DEPENDENCIES})
