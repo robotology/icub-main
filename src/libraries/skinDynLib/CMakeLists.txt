@@ -28,15 +28,23 @@ set(folder_header include/iCub/skinDynLib/skinContact.h
                   include/iCub/skinDynLib/iCubSkin.h)
 
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+add_library(ICUB::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 
 target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ctrlLib)
 
-icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                    DEPENDS ctrlLib
-                                    DESTINATION include/iCub/skinDynLib
-                                    FILES ${folder_header})
+set_target_properties(${PROJECT_NAME} PROPERTIES
+                                      PUBLIC_HEADER "${folder_header}")
+
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}
+        LIBRARY
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        PUBLIC_HEADER
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/iCub/skinDynLib")
 
 
+icub_install_basic_package_files(${PROJECT_NAME}
+                                 DEPENDENCIES ctrlLib)
