@@ -28,7 +28,7 @@ install(TARGETS ${PROJECT_NAME}
 
 
 icub_install_basic_package_files(${PROJECT_NAME}
-                                 DEPENDENCIES perceptiveModels
+                                 DEPENDENCIES "perceptiveModels HINTS \"\${CMAKE_CURRENT_LIST_DIR}/..\""
                                               YARP_os
                                               YARP_sig
                                               YARP_dev)

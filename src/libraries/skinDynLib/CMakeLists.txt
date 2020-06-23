@@ -47,4 +47,4 @@ install(TARGETS ${PROJECT_NAME}
 
 
 icub_install_basic_package_files(${PROJECT_NAME}
-                                 DEPENDENCIES ctrlLib)
+                                 DEPENDENCIES "ctrlLib HINTS \"\${CMAKE_CURRENT_LIST_DIR}/..\"")

@@ -26,7 +26,7 @@ set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_
 target_link_libraries(${PROJECT_NAME} ctrlLib
                                       ${IPOPT_LIBRARIES}
                                       ${YARP_LIBRARIES})
-set(OPTIMIZATION_DEPENDENCIES  ctrlLib
+set(OPTIMIZATION_DEPENDENCIES  "ctrlLib HINTS \"\${CMAKE_CURRENT_LIST_DIR}/..\""
                                YARP_os
                                YARP_sig
                                YARP_dev

@@ -42,7 +42,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} ctrlLib ${YARP_LIBRARIES})
 
-set(IKIN_DEPENDENCIES  ctrlLib
+set(IKIN_DEPENDENCIES  "ctrlLib HINTS \"\${CMAKE_CURRENT_LIST_DIR}/..\""
                        YARP_os
                        YARP_sig
                        YARP_dev

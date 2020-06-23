@@ -31,6 +31,12 @@ endif()
 if(TARGET ICUB::optimization)
   list(APPEND ICUB_DEFAULT_FIND_COMPONENTS optimization)
 endif()
+
+foreach(_icub_dep ${ICUB_DEFAULT_FIND_COMPONENTS})
+    list(APPEND _icub_deps "${_icub_dep} HINTS \"\${CMAKE_CURRENT_LIST_DIR}\"
+                                               \"\${CMAKE_CURRENT_LIST_DIR}/..\"")
+endforeach()
+
 set(ICUB_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 install_basic_package_files(ICUB
     VERSION ${${ROOT_PROJECT_NAME}_VERSION}
@@ -40,6 +46,6 @@ install_basic_package_files(ICUB
     EXPORT ${ROOT_PROJECT_NAME}Export
     DEPENDENCIES "YCM  ${YCM_REQUIRED_VERSION}  REQUIRED"
                  "YARP ${YARP_REQUIRED_VERSION} REQUIRED COMPONENTS os conf sig dev math gsl"
-                 ${ICUB_DEFAULT_FIND_COMPONENTS}
+                 ${_icub_deps}
     NAMESPACE ${ROOT_PROJECT_NAME}::
     INCLUDE_FILE ${CMAKE_SOURCE_DIR}/conf/ExtraPackageConfigVars.cmake.in)
