@@ -1,0 +1,56 @@
+# Copyright (C) 2020 Istituto Italiano di Tecnologia (IIT). All rights reserved.
+# This software may be modified and distributed under the terms of the
+# GNU Lesser General Public License v2.1 or any later version.
+
+set(NAME "ICUB")
+
+if(ICUB_FIND_COMPONENTS STREQUAL "")
+  # No components requested.
+  # Search for the main ICUB libraries only.
+  set(ICUB_FIND_COMPONENTS @ICUB_DEFAULT_FIND_COMPONENTS@)
+endif()
+
+foreach(comp ${ICUB_FIND_COMPONENTS})
+    if(${${comp}_FOUND} AND TARGET ${NAME}::${comp})
+        string(CONCAT FOUND_COMPONENTS_LIST ${FOUND_COMPONENTS_LIST} " ${comp}")
+        list(APPEND ICUB_LIBRARIES ${NAME}::${comp})
+        if(NOT TARGET ${comp})
+          add_library(${comp} INTERFACE IMPORTED)
+          target_link_libraries(${comp} INTERFACE ${NAME}::${comp})
+        endif()
+    endif()
+endforeach()
+
+# The call to find_dependency sets the variable ICUB_FOUND.
+foreach(comp ${${NAME}_FIND_COMPONENTS})
+    # Match the component status with the find_dependency exit variable
+    set(${NAME}_${comp}_FOUND ${${comp}_FOUND})
+endforeach()
+
+# Set ICUB_FOUND to true and then check if there are required
+# components that are missing
+set(${NAME}_FOUND TRUE)
+check_required_components(${NAME})
+
+if(${${NAME}_FOUND})
+    message(STATUS "Found ICUB ${${NAME}_VERSION} (Components:${FOUND_COMPONENTS_LIST})")
+endif()
+
+# Print useful info about the outcome
+if(NOT ${NAME}_FIND_QUIETLY)
+    foreach(comp ${${NAME}_FIND_COMPONENTS})
+        # If a component is not found, tell the user its name
+        if((NOT ${NAME}_FIND_REQUIRED_${comp}) AND (NOT ${NAME}_${comp}_FOUND))
+            # status if it is OPTIONAL_COMPONENT
+            message(STATUS "ICUB: OPTIONAL component ${comp} NOT found")
+        elseif(NOT ${NAME}_${comp}_FOUND)
+            # warning if it is REQUIRED
+            message(WARNING "ICUB: REQUIRED component ${comp} NOT found")
+            # Note: find_package will exit with a fatal error but without telling
+            #       what is missing
+        endif()
+    endforeach()
+endif()
+
+unset(NAME)
+unset(FOUND_COMPONENTS_LIST)

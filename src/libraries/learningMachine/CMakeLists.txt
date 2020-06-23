@@ -61,16 +61,30 @@ if(YARP_gsl_FOUND)
       src/Serialization.cpp )
   
   add_library(${LM_LIB} ${LM_MACHINE_SRC} ${LM_TRANSFORMER_SRC} ${LM_SUPPORT_SRC} ${LM_HEADER})
+  add_library(ICUB::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
   target_include_directories(${LM_LIB} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                                               "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
                                               ${GSL_INCLUDE_DIRS})
-  
+
   target_link_libraries(${LM_LIB} PUBLIC  YARP::YARP_os YARP::YARP_sig YARP::YARP_math
                                   PRIVATE YARP::YARP_gsl ${GSL_LIBRARIES})
-  
-  icub_export_library(${LM_LIB} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                DESTINATION include/iCub/learningMachine
-                                FILES ${LM_HEADER})
+  set_target_properties(${PROJECT_NAME} PROPERTIES
+                                        PUBLIC_HEADER "${LM_HEADER}")
+
+  install(TARGETS ${PROJECT_NAME}
+          EXPORT ${PROJECT_NAME}
+          LIBRARY
+              DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+          PUBLIC_HEADER
+              DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/iCub/learningMachine")
+
+
+  icub_install_basic_package_files(${PROJECT_NAME}
+                                   DEPENDENCIES YARP_os
+                                                YARP_sig
+                                                YARP_math
+                                   PRIVATE_DEPENDENCIES YARP_gsl
+                                                        GSL)
 endif()
   

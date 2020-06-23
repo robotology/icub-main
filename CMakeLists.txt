@@ -4,7 +4,9 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-project(iCub)
+set(ROOT_PROJECT_NAME ICUB)
+project(${ROOT_PROJECT_NAME} LANGUAGES C CXX
+                             VERSION 1.16.0)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 14)
@@ -38,8 +40,6 @@ set_property(GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS) # this is populated iCubFi
 set(ICUB_MODULE_PATH ${PROJECT_SOURCE_DIR}/conf)
 set(CMAKE_MODULE_PATH ${ICUB_MODULE_PATH} ${CMAKE_MODULE_PATH})
 
-# get the current version of the iCub build
-include(${PROJECT_SOURCE_DIR}/conf/iCubVersion.cmake)
 
 # add functionalities like icub_add_library/icub_add_executable
 include(${PROJECT_SOURCE_DIR}/conf/iCubHelpers.cmake)
@@ -58,6 +58,34 @@ if(ICUB_DASHBOARD_SUBMIT)
     include (CTest)
 endif()
 
+# To build shared libraries in Windows, we set CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS to TRUE.
+# See https://cmake.org/cmake/help/v3.4/variable/CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS.html
+# See https://blog.kitware.com/create-dlls-on-windows-without-declspec-using-new-cmake-export-all-feature/
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+# Build position independent code.
+# Position Independent Code (PIC) is commonly used for shared libraries so that
+# the same shared library code can be loaded in each program address space in a
+# location where it will not overlap with any other uses of such memory.
+# In particular, this option avoids problems occurring when a process wants to
+# load more than one shared library at the same virtual address.
+# Since shared libraries cannot predict where other shared libraries could be
+# loaded, this is an unavoidable problem with the traditional shared library
+# concept.
+# Generating position-independent code is often the default behavior for most
+# modern compilers.
+# Moreover linking a static library that is not built with PIC from a shared
+# library will fail on some compiler/architecture combinations.
+# Further details on PIC can be found here:
+# https://eli.thegreenplace.net/2011/11/03/position-independent-code-pic-in-shared-libraries/
+option(CMAKE_POSITION_INDEPENDENT_CODE "When compiling static libraries generate position independent code" TRUE)
+# Enable RPATH support for installed binaries and libraries
+include(AddInstallRPATHSupport)
+add_install_rpath_support(BIN_DIRS "${CMAKE_INSTALL_FULL_BINDIR}"
+                          LIB_DIRS "${CMAKE_INSTALL_FULL_LIBDIR}"
+                          INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}"
+                          USE_LINK_PATH)
+
 ### this makes everything go in $ICUB_DIR/lib and $ICUB_DIR/bin
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
@@ -68,14 +96,6 @@ make_directory(${LIBRARY_OUTPUT_PATH})
 make_directory(${EXECUTABLE_OUTPUT_PATH})
 mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 mark_as_advanced(CMAKE_BACKWARDS_COMPATIBILITY)
-
-# clean up:
-# icub-export-build.cmake, icub-export-build-includes.cmake and icub-export-inst-includes.cmake
-# this is a required step because we will append data to these files during the build
-file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build.cmake "")
-file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
-file(WRITE ${CMAKE_BINARY_DIR}/icub-export-inst-includes.cmake "")
-
 # Some options: mostly cache variables
 file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
 set(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE PATH "Prefix directory for installing applications. Read only, set ICUB_ROOT environment variable to affect this setting." FORCE)
@@ -111,14 +131,6 @@ foreach(t ${ICUB_TARGETS})
 endforeach()
 ######################
 
-# export the build tree
-message(STATUS "Now exporting build tree")
-include(${PROJECT_SOURCE_DIR}/conf/iCubExportBuildTree.cmake)
-
-# export the installed project
-message(STATUS "Now exporting for install")
-include(${PROJECT_SOURCE_DIR}/conf/iCubExportForInstall.cmake)
-
 ## install cmake scripts
 message(STATUS "Installing cmake scripts")
 set(ICUB_CMAKE_SCRIPTS iCubHelpers.cmake iCubOptions.cmake)
@@ -131,20 +143,13 @@ foreach(conf ${ICUB_CMAKE_SCRIPTS})
 
   # on the other hand we do need to install Find* script at install time
   install(FILES  conf/${conf} DESTINATION share/iCub/cmake/ COMPONENT Development)
-
 endforeach(conf)
 
-## add the "uninstall" target
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/conf/template/icub-config-uninstall.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake"
-  IMMEDIATE @ONLY)
-
-include(${PROJECT_SOURCE_DIR}/conf/iCubPackage.cmake)
-
-add_custom_target(uninstall
-  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/icub-config-uninstall.cmake")
+# Create the dummy target ICUB and connect all the COMPONENTS
+include(${PROJECT_SOURCE_DIR}/conf/iCubDescribe.cmake)
 
 if(ICUB_COMPILE_BINDINGS)
   add_subdirectory(bindings)
 endif()
+
+include(AddUninstallTarget)

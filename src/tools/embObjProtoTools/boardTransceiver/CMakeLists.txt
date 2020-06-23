@@ -4,11 +4,9 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-# Name of the project must correspond to the class name that needs to be 
+# Name of the project must correspond to the class name that needs to be
 # instantiated by the factory - so embObjLib is not ok
 SET(PROJECTNAME boardTransceiver)
-PROJECT(${PROJECTNAME})
-
 
 option(board_tranceiver "Submit compile tests to cdash" FALSE)
 mark_as_advanced (board_tranceiver)

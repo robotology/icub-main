@@ -21,6 +21,7 @@ set(folder_header include/iCub/perception/sensors.h
                   include/iCub/perception/tactileFingers.h)
 
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header_private} ${folder_header})
+add_library(ICUB::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
@@ -28,9 +29,16 @@ target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_S
 target_link_libraries(${PROJECT_NAME} ctrlLib
                                       learningMachine
                                       ${YARP_LIBRARIES})
+set_target_properties(${PROJECT_NAME} PROPERTIES
+                                      PUBLIC_HEADER "${folder_header}")
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}
+        LIBRARY
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        PUBLIC_HEADER
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/iCub/perception")
 
-icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                    DEPENDS ctrlLib learningMachine
-                                    DESTINATION include/iCub/perception
-                                    FILES ${folder_header})
 
+icub_install_basic_package_files(${PROJECT_NAME}
+                                 DEPENDENCIES ctrlLib
+                                              learningMachine)
