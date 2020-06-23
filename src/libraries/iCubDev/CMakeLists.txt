@@ -18,16 +18,22 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Create everything needed to build our executable.
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+add_library(ICUB::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 target_link_libraries(${PROJECT_NAME} YARP::YARP_os
                                       YARP::YARP_dev)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+                                      PUBLIC_HEADER "${folder_header}")
 
-icub_export_library(${PROJECT_NAME}
-                    INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include 
-                    DESTINATION include/iCub 
-                    FILES ${folder_header})
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}
+        LIBRARY
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        PUBLIC_HEADER
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/iCub")
 
 
-
-
+icub_install_basic_package_files(${PROJECT_NAME}
+                                 DEPENDENCIES YARP_os
+                                              YARP_dev)
