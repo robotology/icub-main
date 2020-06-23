@@ -28,6 +28,7 @@ if(ICUB_USE_IPOPT)
 endif()
 
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+add_library(ICUB::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 if(ICUB_USE_IPOPT)
    target_compile_definitions(${PROJECT_NAME} PRIVATE ${IPOPT_DEFINITIONS})
 endif()
@@ -41,14 +42,28 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} ctrlLib ${YARP_LIBRARIES})
 
+set(IKIN_DEPENDENCIES  ctrlLib
+                       YARP_os
+                       YARP_sig
+                       YARP_dev
+                       YARP_math)
+
 if(ICUB_USE_IPOPT)
    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
    target_link_libraries(${PROJECT_NAME} ${IPOPT_LIBRARIES})
+   list(APPEND IKIN_DEPENDENCIES IPOPT)
 endif()
 
-icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                    DEPENDS ctrlLib
-                                    DESTINATION include/iCub/iKin
-                                    FILES ${folder_header})                                    
+set_target_properties(${PROJECT_NAME} PROPERTIES
+                                      PUBLIC_HEADER "${folder_header}")
+
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}
+        LIBRARY
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        PUBLIC_HEADER
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/iCub/iKin")
 
 
+icub_install_basic_package_files(${PROJECT_NAME}
+                                 DEPENDENCIES ${IKIN_DEPENDENCIES})
