@@ -33,8 +33,7 @@ if(TARGET ICUB::optimization)
 endif()
 
 foreach(_icub_dep ${ICUB_DEFAULT_FIND_COMPONENTS})
-    list(APPEND _icub_deps "${_icub_dep} HINTS \"\${CMAKE_CURRENT_LIST_DIR}\"
-                                               \"\${CMAKE_CURRENT_LIST_DIR}/..\"")
+    list(APPEND _icub_deps "${_icub_dep} HINTS \"\${CMAKE_CURRENT_LIST_DIR}\" \"\${CMAKE_CURRENT_LIST_DIR}/..\"")
 endforeach()
 
 set(ICUB_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")

@@ -42,9 +42,9 @@ install(TARGETS ${PROJECT_NAME}
 
 
 icub_install_basic_package_files(${PROJECT_NAME}
-                                 DEPENDENCIES "iKin HINTS \"\${CMAKE_CURRENT_LIST_DIR}/..\""
-                                              "skinDynLib HINTS \"\${CMAKE_CURRENT_LIST_DIR}/..\""
-                                              YARP_os
+                                 INTERNAL_DEPENDENCIES iKin
+                                                       skinDynLib
+                                 DEPENDENCIES YARP_os
                                               YARP_sig
                                               YARP_dev
                                               YARP_math)

@@ -26,8 +26,7 @@ set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_
 target_link_libraries(${PROJECT_NAME} ctrlLib
                                       ${IPOPT_LIBRARIES}
                                       ${YARP_LIBRARIES})
-set(OPTIMIZATION_DEPENDENCIES  "ctrlLib HINTS \"\${CMAKE_CURRENT_LIST_DIR}/..\""
-                               YARP_os
+set(OPTIMIZATION_DEPENDENCIES  YARP_os
                                YARP_sig
                                YARP_dev
                                YARP_math
@@ -48,4 +47,5 @@ install(TARGETS ${PROJECT_NAME}
 
 
 icub_install_basic_package_files(${PROJECT_NAME}
+                                 INTERNAL_DEPENDENCIES ctrlLib
                                  DEPENDENCIES ${OPTIMIZATION_DEPENDENCIES})
