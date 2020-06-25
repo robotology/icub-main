@@ -37,6 +37,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
                                       PUBLIC_HEADER "${folder_header}")
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}
+        RUNTIME
+          DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        ARCHIVE
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY
             DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         PUBLIC_HEADER
