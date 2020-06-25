@@ -21,6 +21,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}
+        RUNTIME
+          DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        ARCHIVE
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY
           DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         PUBLIC_HEADER
@@ -28,7 +32,7 @@ install(TARGETS ${PROJECT_NAME}
 
 
 icub_install_basic_package_files(${PROJECT_NAME}
-                                 DEPENDENCIES "perceptiveModels HINTS \"\${CMAKE_CURRENT_LIST_DIR}/..\""
-                                              YARP_os
+                                 INTERNAL_DEPENDENCIES perceptiveModels
+                                 DEPENDENCIES YARP_os
                                               YARP_sig
                                               YARP_dev)

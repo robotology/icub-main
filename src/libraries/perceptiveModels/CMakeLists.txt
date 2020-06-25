@@ -33,6 +33,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
                                       PUBLIC_HEADER "${folder_header}")
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}
+        RUNTIME
+          DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        ARCHIVE
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY
           DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         PUBLIC_HEADER
@@ -40,5 +44,5 @@ install(TARGETS ${PROJECT_NAME}
 
 
 icub_install_basic_package_files(${PROJECT_NAME}
-                                 DEPENDENCIES "ctrlLib HINTS \"\${CMAKE_CURRENT_LIST_DIR}/..\""
-                                              "learningMachine HINTS \"\${CMAKE_CURRENT_LIST_DIR}/..\"")
+                                 INTERNAL_DEPENDENCIES ctrlLib
+                                                       learningMachine)
