@@ -20,6 +20,8 @@
 
 // yarp
 #include <yarp/os/all.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/IPositionControl.h>
 #include <yarp/sig/all.h>
 
 using namespace yarp::os;
@@ -95,6 +97,14 @@ private:
     double _lasttime{};
     double _period{};
     int    _initEmotionTrigger{};
+
+    // PolyDriver and interface to command the eyelids in the rfe robots
+    yarp::dev::PolyDriver _poly;
+    yarp::dev::IPositionControl* _iPos{ nullptr };
+    double _min{ 0.0 }, _max{ 0.0 };
+    size_t _joint_eylids{ 0 };
+
+
 
     int getIndex(std::string cmd);
     bool writePort(const char* cmd);
