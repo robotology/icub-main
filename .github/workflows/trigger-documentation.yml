@@ -17,4 +17,4 @@ jobs:
         data: "{\"event_type\":\"build_documentation\",\"client_payload\":{\"repo\":\"icub-main\"}}"
         webhook_url: https://api.github.com/repos/robotology/robotology-documentation/dispatches
         options: "-H \"Content-Type: application/json\""
-        user: "pattacini:${{ secrets.PATTACINI_TRIGGER_ROBOTOLOGY_DOCUMENTATION }}"
+        user: "robotology-bot:${{ secrets.BOT_TRIGGER_ROBOTOLOGY_DOCUMENTATION }}"
