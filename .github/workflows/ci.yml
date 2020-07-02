@@ -38,7 +38,7 @@ jobs:
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
-        echo "::debug::Set $GITHUB_REF"
+        echo "$GITHUB_REF"
         ./.ci/create_icub-common_deb.sh -V ${{ steps.get_version.outputs.VERSION }}
 
     # - name: Upload Release Asset
