@@ -32,17 +32,13 @@ jobs:
 
     - name: Get the version
       id: get_version
-      run: |
-        echo ::set-output name=VERSION_LONG::$(echo $GITHUB_REF)
-        echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+      run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
 
     - name: Generate icub-common metapackage [${{ matrix.docker_image }}]
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
-        echo "VERSION: ${{ steps.get_version.outputs.VERSION }}"
-        echo "VERSION_LONG: ${{ steps.get_version.outputs.VERSION_LONG }}"
-        exit 0
+        echo "building version ${{ steps.get_version.outputs.VERSION }}"
         ./.ci/create_icub-common_deb.sh -V ${{ steps.get_version.outputs.VERSION }}
 
     # - name: Upload Release Asset
