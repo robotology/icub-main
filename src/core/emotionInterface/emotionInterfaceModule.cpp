@@ -551,13 +551,7 @@ bool EmotionInterfaceModule::setEyelids(const std::string cmd)
         return true;  //leave it in the same state
     if (_iPos)
     {
-        std::string percentage_str{ _emotion_table[i].eli[0] };
-        percentage_str += '.';
-        percentage_str += _emotion_table[i].eli[1];
-        auto percentage = std::stod(percentage_str);
-        if(percentage > 1.0)
-            percentage = 1.0;
-        auto target_pos = (1.0 - percentage) * (_max-_min); // because min-> open, max->closed
+        auto target_pos = getEyelidsTarget(_emotion_table[i].eli[0], _emotion_table[i].eli[1]);
         res = _iPos->positionMove(_joint_eylids, target_pos);
     }
     else
@@ -582,8 +576,16 @@ bool EmotionInterfaceModule::setAll(const std::string cmd)
 
 bool EmotionInterfaceModule::setRaw(const std::string cmd)
 {
-    writePort(cmd.c_str());
-    return true;
+    bool res{ true };
+    if (cmd.size() == 3 && cmd.at(0) == 'p' && _iPos)
+    {
+        const auto target_pos = getEyelidsTarget(cmd[1], cmd[2]);
+        res = _iPos->positionMove(_joint_eylids, target_pos);
+    }
+    else {
+        res &= writePort(cmd.c_str());
+    }
+    return res;
 }
 
 bool EmotionInterfaceModule::setColor(const std::string& cmd)
@@ -666,4 +668,15 @@ bool EmotionInterfaceModule::setMask(const Bottle& cmd)
     cmdbuffer += _bitmask_emotion_table[maskMou];
 
     return writePort(cmdbuffer.c_str());
+}
+
+double EmotionInterfaceModule::getEyelidsTarget(const char eli0, const char eli1)
+{
+    std::string percentage_str{ eli0 };
+    percentage_str += '.';
+    percentage_str += eli1;
+    auto percentage = std::stod(percentage_str);
+    if (percentage > 1.0)
+        percentage = 1.0;
+    return (1.0 - percentage) * (_max - _min); // because min-> open, max->closed
 }

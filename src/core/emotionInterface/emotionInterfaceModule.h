@@ -108,6 +108,7 @@ private:
 
     int getIndex(std::string cmd);
     bool writePort(const char* cmd);
+    double getEyelidsTarget(const char eli0, const char eli1);
 
 public:
 
