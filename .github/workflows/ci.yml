@@ -29,12 +29,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
+    - name: Install Deps
+      shell: bash
+      run: |
+        apt install -y git
+        apt install -y lsb-release
 
     - name: Get Latest Tag
       id: get_latest_tag
       uses: WyriHaximus/github-action-get-previous-tag@0.2.0
-
-
+      
     - name: Generate icub-common metapackage [${{ matrix.docker_image }}]
       shell: bash
       run: |
