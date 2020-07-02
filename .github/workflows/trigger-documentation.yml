@@ -11,10 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Webhook
-      uses: zzzze/webhook-trigger@master
+    - name: Repository Dispatch
+      uses: peter-evans/repository-dispatch@v1.1.1
       with:
-        data: "{\"event_type\":\"build_documentation\",\"client_payload\":{\"repo\":\"icub-main\"}}"
-        webhook_url: https://api.github.com/repos/robotology/robotology-documentation/dispatches
-        options: "-H \"Content-Type: application/json\""
-        user: "robotology-bot:${{ secrets.BOT_TRIGGER_ROBOTOLOGY_DOCUMENTATION }}"
+        token: ${{ secrets.BOT_TRIGGER_ROBOTOLOGY_DOCUMENTATION }}
+        repository: robotology/robotology-documentation
+        event-type: build_documentation
+        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+        
