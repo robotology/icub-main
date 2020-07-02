@@ -194,15 +194,23 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
-    # - uses: olegtarasov/get-tag@v2
-    #     id: tagName
-    #     with:
-    #       tagRegex: "foobar-(.*)"  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
-    #       tagRegexGroup: 1 # Optional. Default is 1.
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
 
     - name: Generate icub-common metapackage [${{ matrix.docker_image }}]
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
-        #_ICUB_VER=$(git describe --tags | grep -o -P '(?<=v).*(?=-)' | grep -o -P '.*(?=-)')
-        ./.ci/create_icub-common_deb.sh -V 1.16.0
+        ./.ci/create_icub-common_deb.sh -V ${{ steps.get_version.outputs.VERSION }}
+
+    # - name: Upload Release Asset
+    #   if: github.event_name == 'release'
+    #   uses: actions/upload-release-asset@v1.0.1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+    #   with:
+    #       upload_url: ${{ github.event.release.upload_url }}
+    #       asset_path: packaging/windows/build/installer/idjl-software-installer.exe
+    #       asset_name: idjl-software-installer.exe
+    #       asset_content_type: application/octet-stream
