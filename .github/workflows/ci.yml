@@ -30,16 +30,17 @@ jobs:
     steps:
     - uses: actions/checkout@master
 
-    - name: Get the version
-      id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+    - name: Get Latest Tag
+      id: get_latest_tag
+      uses: WyriHaximus/github-action-get-previous-tag@0.2.0
+
 
     - name: Generate icub-common metapackage [${{ matrix.docker_image }}]
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
-        echo "building version ${{ steps.get_version.outputs.VERSION }}"
-        ./.ci/create_icub-common_deb.sh -V ${{ steps.get_version.outputs.VERSION }}
+        echo "building version ${{ steps.get_latest_tag.outputs.tag }}"
+        ./.ci/create_icub-common_deb.sh -V ${{ steps.get_latest_tag.outputs.tag }}
 
     # - name: Upload Release Asset
     #   if: github.event_name == 'release'
