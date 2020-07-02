@@ -34,7 +34,7 @@ jobs:
       id: get_version
       run: |
         echo ::set-output name=VERSION_LONG::$(echo $GITHUB_REF)
-        echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f )
+        echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
 
     - name: Generate icub-common metapackage [${{ matrix.docker_image }}]
       shell: bash
