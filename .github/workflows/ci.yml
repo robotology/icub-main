@@ -39,6 +39,7 @@ jobs:
       shell: bash
       run: |
         ls -la
+        git describe --tags  --abbrev=0 | sed 's/^v//'
 
     - name: Get Latest Tag
       id: get_latest_tag
