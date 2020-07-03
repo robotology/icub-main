@@ -35,6 +35,8 @@ jobs:
 
     - uses: actions/checkout@master
 
+    - run: git fetch --prune --unshallow
+
     - name : test
       shell: bash
       run: |
