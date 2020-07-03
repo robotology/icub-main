@@ -32,8 +32,13 @@ jobs:
         apt update
         apt install -y git
         apt install -y lsb-release
-        
+
     - uses: actions/checkout@master
+
+    - name : test
+      shell: bash
+      run: |
+        ls -la
 
     - name: Get Latest Tag
       id: get_latest_tag
