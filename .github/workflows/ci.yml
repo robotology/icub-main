@@ -51,8 +51,9 @@ jobs:
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
-        echo "building version ${{ steps.get_latest_tag.outputs.tag }}"
-        ./.ci/create_icub-common_deb.sh -V ${{ steps.get_latest_tag.outputs.tag }}
+        export _VER=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+        echo "building version $_VER"
+        ./.ci/create_icub-common_deb.sh -V $_VER
 
     # - name: Upload Release Asset
     #   if: github.event_name == 'release'
