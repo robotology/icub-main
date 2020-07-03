@@ -26,8 +26,15 @@ jobs:
     container:
       image: ${{ matrix.docker_image }}
     steps:
+    - name: install deps
+      shell: bash
+      run: |
+        apt update
+        apt install -y git
+        apt install -y lsb-release
+        
     - uses: actions/checkout@master
-    
+
     - name: Get Latest Tag
       id: get_latest_tag
       uses: WyriHaximus/github-action-get-previous-tag@0.2.0
