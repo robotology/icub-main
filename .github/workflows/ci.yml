@@ -32,7 +32,6 @@ jobs:
       uses: actions/checkout@master
 
     - name: Generate icub-common metapackage [${{ matrix.docker_image }}]
-      uses: actions/checkout@master
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
