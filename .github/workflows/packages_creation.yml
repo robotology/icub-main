@@ -1,15 +1,9 @@
-name: Continuous Integration
+name: Packages creation
 
 on:
   push:
-  pull_request:
-  schedule:
-  # * is a special character in YAML so you have to quote this string
-  # Execute a "nightly" build at 2 AM UTC
-  - cron:  '0 2 * * *'
-
-env:
-  vcpkg_robotology_TAG: v0.0.3
+  tags:
+    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
 
@@ -37,11 +31,11 @@ jobs:
 
     - run: git fetch --prune --unshallow
 
-    - name : test
-      shell: bash
-      run: |
-        ls -la
-        git describe --tags  --abbrev=0 | sed 's/^v//'
+    # - name : test
+    #   shell: bash
+    #   run: |
+    #     ls -la
+    #     git describe --tags  --abbrev=0 | sed 's/^v//'
 
     - name: Get Latest Tag
       id: get_latest_tag
@@ -55,13 +49,13 @@ jobs:
         echo "building version $_VER"
         ./.ci/create_icub-common_deb.sh -V $_VER
 
-    # - name: Upload Release Asset
-    #   if: github.event_name == 'release'
-    #   uses: actions/upload-release-asset@v1.0.1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-    #   with:
-    #       upload_url: ${{ github.event.release.upload_url }}
-    #       asset_path: packaging/windows/build/installer/idjl-software-installer.exe
-    #       asset_name: idjl-software-installer.exe
-    #       asset_content_type: application/octet-stream
+     # - name: Upload Release Asset
+     #   if: github.event_name == 'release'
+     #   uses: actions/upload-release-asset@v1.0.1
+     #   env:
+     #     GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+     #   with:
+     #       upload_url: ${{ github.event.release.upload_url }}
+     #       asset_path: packaging/windows/build/installer/idjl-software-installer.exe
+     #       asset_name: idjl-software-installer.exe
+     #       asset_content_type: application/octet-stream
