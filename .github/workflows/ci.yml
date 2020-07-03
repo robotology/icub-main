@@ -23,24 +23,16 @@ jobs:
           - "ubuntu:focal"
           - "ubuntu:bionic"
           - "debian:buster"
-
     container:
       image: ${{ matrix.docker_image }}
-
     steps:
-    - uses: actions/checkout@master
-    - name: Install Deps
-      shell: bash
-      run: |
-        apt update 
-        apt install -y git
-        apt install -y lsb-release
-
     - name: Get Latest Tag
       id: get_latest_tag
       uses: WyriHaximus/github-action-get-previous-tag@0.2.0
+      uses: actions/checkout@master
 
     - name: Generate icub-common metapackage [${{ matrix.docker_image }}]
+      uses: actions/checkout@master
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
