@@ -11,6 +11,8 @@
 #include <bitset>
 #include <iomanip>
 #include <yarp/os/ResourceFinder.h>
+#include <yarp/dev/IControlMode.h>
+#include <yarp/dev/IControlLimits.h>
 #include "emotionInterfaceModule.h"
 
 
@@ -244,6 +246,39 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
         }
 
     }
+    
+	yarp::os::Property rcb_face_conf{ {"device",Value("remote_controlboard")},
+                                      {"local", Value(getName("/face/remoteControlBoard"))},
+                                      {"remote",Value("/icub/face")},
+                                      {"part",Value("face")} };
+
+    if (_poly.open(rcb_face_conf))
+    {
+        yarp::dev::IControlMode* iCM{ nullptr };
+        yarp::dev::IControlLimits* iCtrlLim{ nullptr };
+        auto ok = _poly.view(iCM);
+        ok     &= _poly.view(_iPos);
+        ok     &= _poly.view(iCtrlLim);
+        if (iCM)
+            ok &= iCM->setControlMode(_joint_eylids, VOCAB_CM_POSITION);
+        if (iCtrlLim) {
+            ok &= iCtrlLim->getLimits(_joint_eylids, &_min, &_max);
+            _max = _max - 25.0; // safe zone for avoiding hw fault
+        }
+        if (_iPos) {
+            ok &= _iPos->setRefSpeed(_joint_eylids, 50.0); // max velocity that doesn't give problems
+            ok &= _iPos->setRefAcceleration(_joint_eylids,std::numeric_limits<double>::max());
+        }
+        if (!ok)
+        {
+            yError() << "Fail to configure correctly the remote_controlboard";
+            return false;
+        }
+    }
+    else
+    {
+        yWarning() << "Failed to open the remote_controlboard device for commanding the eyelids, you can ignore this warning if your robot doesn't have the rfe board";
+    }
 
       // open  ports
     _inputPort.open(getName("/in")); 
@@ -266,6 +301,12 @@ bool EmotionInterfaceModule::close(){
     {
         delete [] _emotion_table;
         _emotion_table = nullptr;
+    }
+
+    if(_poly.isValid())
+    {
+        _poly.close();
+        _iPos = nullptr;
     }
 
     return true;
@@ -500,19 +541,28 @@ bool EmotionInterfaceModule::setMouth(const std::string cmd)
 bool EmotionInterfaceModule::setEyelids(const std::string cmd)
 {
     char cmdbuffer[] = {0,0,0,0};
-    int i; 
-    i = getIndex(cmd);
+    const auto i = getIndex(cmd);
     if(i < 0)
         return false;
 
+    auto res{ true };
+
     if( _emotion_table[i].eli[0] == '*' || _emotion_table[i].eli[1] == '*') 
         return true;  //leave it in the same state
+    if (_iPos)
+    {
+        auto target_pos = getEyelidsTarget(_emotion_table[i].eli[0], _emotion_table[i].eli[1]);
+        res = _iPos->positionMove(_joint_eylids, target_pos);
+    }
+    else
+    {
+        cmdbuffer[0] = 'S';
+        cmdbuffer[1] = _emotion_table[i].eli[0];
+        cmdbuffer[2] = _emotion_table[i].eli[1];
+        res = writePort(cmdbuffer);
+    }
 
-    cmdbuffer[0]= 'S';
-    cmdbuffer[1]=_emotion_table[i].eli[0];
-    cmdbuffer[2]=_emotion_table[i].eli[1];
-    writePort(cmdbuffer);
-    return true;
+    return res;
 }
 
 bool EmotionInterfaceModule::setAll(const std::string cmd)
@@ -526,8 +576,16 @@ bool EmotionInterfaceModule::setAll(const std::string cmd)
 
 bool EmotionInterfaceModule::setRaw(const std::string cmd)
 {
-    writePort(cmd.c_str());
-    return true;
+    bool res{ true };
+    if (cmd.size() == 3 && cmd.at(0) == 'p' && _iPos)
+    {
+        const auto target_pos = getEyelidsTarget(cmd[1], cmd[2]);
+        res = _iPos->positionMove(_joint_eylids, target_pos);
+    }
+    else {
+        res &= writePort(cmd.c_str());
+    }
+    return res;
 }
 
 bool EmotionInterfaceModule::setColor(const std::string& cmd)
@@ -610,4 +668,15 @@ bool EmotionInterfaceModule::setMask(const Bottle& cmd)
     cmdbuffer += _bitmask_emotion_table[maskMou];
 
     return writePort(cmdbuffer.c_str());
+}
+
+double EmotionInterfaceModule::getEyelidsTarget(const char eli0, const char eli1)
+{
+    std::string percentage_str{ eli0 };
+    percentage_str += '.';
+    percentage_str += eli1;
+    auto percentage = std::stod(percentage_str);
+    if (percentage > 1.0)
+        percentage = 1.0;
+    return (1.0 - percentage) * (_max - _min); // because min-> open, max->closed
 }
