@@ -190,7 +190,7 @@ fini()
     rm "$_CONTROL_FILE"
   fi
 
-  log "$0 ${COL_OK}Package icub-common${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}_${PLATFORM_HARDWARE}.deb CREATED"
+  log "$0 ${COL_OK}Package icub-common_${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}_${PLATFORM_HARDWARE}.deb CREATED"
 }
 
 check_and_install_deps()
