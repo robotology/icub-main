@@ -26,9 +26,8 @@ COL_WARNING="\e[33m"
 
 # Defaults
 LOG_FILE=""
-PACKAGE_VERSION=""
 VARS_FILE="${SCRIPT_PATH}/packages_vars.sh"
-ICUB_DEBIAN_REVISION_NUMBER="1" # Always use a revision number >=1
+
 #Exported vars
 PLATFORM_HARDWARE=""
 PLATFORM_RELEASE=""
@@ -49,8 +48,6 @@ print_defs ()
     echo "  log file is $LOG_FILE"
   fi
   echo "Local parameters are"
-  echo "  PACKAGE_VERSION is $PACKAGE_VERSION"
-  echo "  ICUB_DEBIAN_REVISION_NUMBER is $ICUB_DEBIAN_REVISION_NUMBER"
   echo "  VARS_FILE is $VARS_FILE"
   echo "  _WHO_AM_I is $_WHO_AM_I"
   echo "  _EQUIVS_BIN is $_EQUIVS_BIN"
@@ -107,10 +104,10 @@ parse_opt() {
       VARS_FILE="$OPTARG"
       ;;
     "V")
-      PACKAGE_VERSION="$OPTARG"
+      export ICUB_PACKAGE_VERSION="$OPTARG"
       ;;
     "R")
-      ICUB_DEBIAN_REVISION_NUMBER="$OPTARG"
+      export ICUB_DEBIAN_REVISION_NUMBER="$OPTARG"
       ;;
     "l")
       LOG_FILE="$OPTARG"
@@ -168,7 +165,7 @@ init()
 
   _CONTROL_FILE="icub-common.${PLATFORM_RELEASE}-${PLATFORM_HARDWARE}.control"
 
-  if [ "$PACKAGE_VERSION" == "" ]; then
+  if [ "$ICUB_PACKAGE_VERSION" == "" ]; then
     exit_err "Package version string is empty"
   fi
 
@@ -193,7 +190,7 @@ fini()
     rm "$_CONTROL_FILE"
   fi
 
-  log "$0 ${COL_OK}Package iCub-common${PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}.${PLATFORM_RELEASE}${PLATFORM_HARDWARE}.deb CREATED"
+  log "$0 ${COL_OK}Package iCub-common${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}.${PLATFORM_RELEASE}${PLATFORM_HARDWARE}.deb CREATED"
 }
 
 check_and_install_deps()
@@ -246,7 +243,7 @@ create_control_file()
     fi
   done
   echo "Package: icub-common
-Version: ${PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}
+Version: ${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}
 Section: contrib/science
 Priority: optional
 Architecture: $PLATFORM_HARDWARE
