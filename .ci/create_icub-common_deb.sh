@@ -242,7 +242,7 @@ create_control_file()
       _ICUB_COMMON_DEPENDENCIES="${_ICUB_COMMON_DEPENDENCIES}, $pdep"
     fi
   done
-  echo "Package: iCub-common
+  echo "Package: icub-common
 Version: ${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}
 Section: contrib/science
 Priority: optional
