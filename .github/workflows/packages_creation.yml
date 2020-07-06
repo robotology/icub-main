@@ -45,17 +45,17 @@ jobs:
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
-        export _VER=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
-        echo "building version $_VER"
-        ./.ci/create_icub-common_deb.sh -V $_VER
+        export _PACKAGE_VER=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+        ./.ci/create_icub-common_deb.sh -V $_PACKAGE_VER
+        ls
 
-     # - name: Upload Release Asset
-     #   if: github.event_name == 'release'
-     #   uses: actions/upload-release-asset@v1.0.1
-     #   env:
-     #     GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-     #   with:
-     #       upload_url: ${{ github.event.release.upload_url }}
-     #       asset_path: packaging/windows/build/installer/idjl-software-installer.exe
-     #       asset_name: idjl-software-installer.exe
-     #       asset_content_type: application/octet-stream
+     - name: Upload Release Asset
+       if: github.event_name == 'release'
+       uses: actions/upload-release-asset@v1.0.1
+       env:
+         GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+       with:
+         upload_url: ${{ github.event.release.upload_url }}
+         asset_path: iCub-common${{ env._PACKAGE_VER }}-${{env.ICUB_DEBIAN_REVISION_NUMBER}.${{env.PLATFORM_RELEASE}}${{env.PLATFORM_HARDWARE}}.deb
+         asset_name: iCub-common${{ env._PACKAGE_VER }}-${{env.ICUB_DEBIAN_REVISION_NUMBER}.${{env.PLATFORM_RELEASE}}${{env.PLATFORM_HARDWARE}}.deb
+         asset_content_type: application/octet-stream
