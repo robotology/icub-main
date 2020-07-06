@@ -1,16 +1,16 @@
 #!/bin/bash -e
 #set -x
 # #####################################################
-# SCRIPT NAME: create_icub-common_deb.sh
+# SCRIPT NAME: create_icub-main_deb.sh
 #
-# DESCRIPTION: this script creates the icub-common
-# metapackage
+# DESCRIPTION: this script creates the icub-main
+# package
 #
 # AUTHOR : Matteo Brunettini <matteo.brunettini@iit.it>
 #
-# LATEST MODIFICATION DATE (YYYY-MM-DD): 2020-06-10
+# LATEST MODIFICATION DATE (YYYY-MM-DD): 2020-06-15
 #
-SCRIPT_VERSION="1.0"          # Sets version variable
+SCRIPT_VERSION="1.3"          # Sets version variable
 SCRIPT_TEMPLATE_VERSION="1.2.1" #
 SCRIPT_NAME=$(realpath -s $0)
 SCRIPT_PATH=$(dirname $SCRIPT_NAME)
@@ -28,13 +28,12 @@ COL_WARNING="\e[33m"
 LOG_FILE=""
 VARS_FILE="${SCRIPT_PATH}/packages_vars.sh"
 
-#Exported vars
-PLATFORM_HARDWARE=""
-PLATFORM_RELEASE=""
 # locals
 _WHO_AM_I=$(whoami)
 _EQUIVS_BIN=$(which equivs-build || true)
 _LSB_BIN=$(which lsb_release || true)
+_PLATFORM_KEY=""
+_PLATFORM_HARDWARE=""
 _CONTROL_FILE=""
 # #####################################################
 
@@ -48,10 +47,13 @@ print_defs ()
     echo "  log file is $LOG_FILE"
   fi
   echo "Local parameters are"
+  echo "  ICUB_DEBIAN_REVISION_NUMBER is $ICUB_DEBIAN_REVISION_NUMBER"
   echo "  VARS_FILE is $VARS_FILE"
   echo "  _WHO_AM_I is $_WHO_AM_I"
   echo "  _EQUIVS_BIN is $_EQUIVS_BIN"
   echo "  _LSB_BIN is $_LSB_BIN"
+  echo "  _PLATFORM_KEY is $_PLATFORM_KEY"
+  echo "  _PLATFORM_HARDWARE is $_PLATFORM_HARDWARE"
   echo "  _CONTROL_FILE is $_CONTROL_FILE "
 }
 
@@ -141,31 +143,27 @@ init()
 
   check_and_install_deps
 
-  PLATFORM_RELEASE=$(lsb_release -sc)
-  if [ "$PLATFORM_RELEASE" == "" ]; then
+  _PLATFORM_RELEASE=$(lsb_release -sc)
+  if [ "$_PLATFORM_RELEASE" == "" ]; then
     exit_err "unable to read release key"
   fi
-
-  export $PLATFORM_RELEASE
 
   _MACHINE_TYPE=`uname -m`
   case "$_MACHINE_TYPE" in
     x86_64)
-      PLATFORM_HARDWARE="amd64"
+      _PLATFORM_HARDWARE="amd64"
       ;;
     i?86)
-      PLATFORM_HARDWARE="i386"
+      _PLATFORM_HARDWARE="i386"
       ;;
     *)
       exit_err "invalid platform hardware $_MACHINE_TYPE"
       ;;
   esac
 
-  export $PLATFORM_HARDWARE
+  _CONTROL_FILE="icub-common.${_PLATFORM_RELEASE}-${PLATFORM_HARDWARE}.control"
 
-  _CONTROL_FILE="icub-common.${PLATFORM_RELEASE}-${PLATFORM_HARDWARE}.control"
-
-  if [ "$ICUB_PACKAGE_VERSION" == "" ]; then
+  if [ "$PACKAGE_VERSION" == "" ]; then
     exit_err "Package version string is empty"
   fi
 
@@ -173,15 +171,15 @@ init()
     exit_err "Package revision string is empty"
   fi
 
-  if [[ ! "$SUPPORTED_DISTRO_LIST" =~ "$PLATFORM_RELEASE" ]]; then
-    exit_err "Distro $PLATFORM_RELEASE is not supported, we support only $SUPPORTED_DISTRO_LIST"
+  if [[ ! "$SUPPORTED_DISTRO_LIST" =~ "$_PLATFORM_RELEASE" ]]; then
+    exit_err "Distro $_PLATFORM_RELEASE is not supported, we support only $SUPPORTED_DISTRO_LIST"
   fi
 
-  if [[ ! "$SUPPORTED_TARGET_LIST" =~ "$PLATFORM_HARDWARE" ]]; then
-    exit_err "Distro $PLATFORM_HARDWARE is not supported, we support only $SUPPORTED_TARGET_LIST"
+  if [[ ! "$SUPPORTED_TARGET_LIST" =~ "$_PLATFORM_HARDWARE" ]]; then
+    exit_err "Distro $_PLATFORM_HARDWARE is not supported, we support only $SUPPORTED_TARGET_LIST"
   fi
 
-  log "$0 ${COL_OK}Creating package.."
+  log "$0 ${COL_OK}STARTED"
 }
 
 fini()
@@ -190,7 +188,7 @@ fini()
     rm "$_CONTROL_FILE"
   fi
 
-  log "$0 ${COL_OK}Package icub-common${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}_${PLATFORM_HARDWARE}.deb CREATED"
+  log "$0 ${COL_OK}ENDED"
 }
 
 check_and_install_deps()
@@ -234,7 +232,7 @@ create_control_file()
       _ICUB_COMMON_DEPENDENCIES="${_ICUB_COMMON_DEPENDENCIES}, $dep"
     fi
   done
-  _PLAT_DEPS_TAG="ICUB_DEPS_${PLATFORM_RELEASE}"
+  _PLAT_DEPS_TAG="ICUB_DEPS_${_PLATFORM_RELEASE}"
   for pdep in ${!_PLAT_DEPS_TAG} ; do
     if [ "$_ICUB_COMMON_DEPENDENCIES" == "" ]; then
       _ICUB_COMMON_DEPENDENCIES="$pdep"
@@ -243,10 +241,10 @@ create_control_file()
     fi
   done
   echo "Package: icub-common
-Version: ${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}
+Version: ${PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${_PLATFORM_RELEASE}
 Section: contrib/science
 Priority: optional
-Architecture: $PLATFORM_HARDWARE
+Architecture: $_PLATFORM_HARDWARE
 Depends: $_ICUB_COMMON_DEPENDENCIES, cmake (>=${CMAKE_MIN_REQ_VER})
 Homepage: http://www.icub.org
 Maintainer: ${ICUB_PACKAGE_MAINTAINER}
