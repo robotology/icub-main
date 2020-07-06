@@ -49,7 +49,6 @@ jobs:
         chmod +x ./.ci/create_icub-common_deb.sh
         export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
         ./.ci/create_icub-common_deb.sh
-        ls
 
     - name: Create Release
       if: github.event_name == 'tag'
