@@ -49,7 +49,18 @@ jobs:
         chmod +x ./.ci/create_icub-common_deb.sh
         export _PACKAGE_VER=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
         ./.ci/create_icub-common_deb.sh -V $_PACKAGE_VER
-        ls
+
+    - name: Create Release
+      if: github.event_name == 'tag'
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
 
      - name: Upload Release Asset
        if: github.event_name == 'release'
