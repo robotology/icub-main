@@ -190,7 +190,7 @@ fini()
     rm "$_CONTROL_FILE"
   fi
 
-  log "$0 ${COL_OK}Package iCub-common${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}.${PLATFORM_RELEASE}${PLATFORM_HARDWARE}.deb CREATED"
+  log "$0 ${COL_OK}Package iCub-common${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}_${PLATFORM_HARDWARE}.deb CREATED"
 }
 
 check_and_install_deps()
@@ -242,7 +242,7 @@ create_control_file()
       _ICUB_COMMON_DEPENDENCIES="${_ICUB_COMMON_DEPENDENCIES}, $pdep"
     fi
   done
-  echo "Package: icub-common
+  echo "Package: iCub-common
 Version: ${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}
 Section: contrib/science
 Priority: optional
