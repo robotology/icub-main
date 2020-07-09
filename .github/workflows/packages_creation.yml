@@ -9,21 +9,21 @@ on:
 
 jobs:
 
-  create-release:
-    name: "Release"
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: bin-${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: true
-        prerelease: false
+  # create-release:
+  #   name: "Release"
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #   - name: Create Release
+  #     id: create_release
+  #     uses: actions/create-release@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     with:
+  #       tag_name: bin-${{ github.ref }}
+  #       release_name: Release ${{ github.ref }}
+  #       draft: true
+  #       prerelease: false
 
   simple-build:
     name: '[${{ matrix.os }}@${{ matrix.build_type }}]'
