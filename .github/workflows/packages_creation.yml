@@ -17,20 +17,20 @@ jobs:
         build_type: [Release]
         os: [ubuntu-focal, ubuntu-bionic]
     steps:
-    - name: install deps on ${{ matrix.os }}
+    - name: install deps
       shell: bash
       run: |
         apt update
         apt install -y git
         apt install -y lsb-release
 
-    - uses: actions/checkout@master [${{ matrix.os }}]
+    - uses: actions/checkout@master
 
-    - name: Get Latest Tag [${{ matrix.os }}]
+    - name: Get Latest Tag 
       id: get_latest_tag
       uses: WyriHaximus/github-action-get-previous-tag@0.2.0
 
-    - name: Generate icub-common metapackage [${{ matrix.os }}]
+    - name: Generate icub-common metapackage
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
