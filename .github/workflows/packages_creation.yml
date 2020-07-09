@@ -9,6 +9,61 @@ on:
 
 jobs:
 
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: bin-${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: true
+        prerelease: false
+
+  simple-build:
+    name: '[${{ matrix.os }}@${{ matrix.build_type }}]'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build_type: [Release]
+        os: [ubuntu-focal, ubuntu-bionic]
+        steps:
+        - name: install deps on ${{ matrix.os }}
+          shell: bash
+          run: |
+            apt update
+            apt install -y git
+            apt install -y lsb-release
+
+        - uses: actions/checkout@master [${{ matrix.os }}]
+
+        - name: Get Latest Tag [${{ matrix.os }}]
+          id: get_latest_tag
+          uses: WyriHaximus/github-action-get-previous-tag@0.2.0
+
+        - name: Generate icub-common metapackage [${{ matrix.os }}]
+          shell: bash
+          run: |
+            chmod +x ./.ci/create_icub-common_deb.sh
+            export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+            ./.ci/create_icub-common_deb.sh
+            echo $ICUB_PACKAGE_NAME
+            echo "::set-env name=icub-common-packagename::$ICUB_PACKAGE_NAME"
+
+        - name: Upload Release Asset [${{ matrix.os }}]
+          id: upload-release-asset
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+            asset_path: ./${{ env.icub-common-packagename }}
+            asset_name: ${{ env.icub-common-packagename }}
+            asset_content_type: application/octet-stream
+
   docker-build:
     name: '[packages:@${{ matrix.docker_image }}]'
     runs-on: ubuntu-latest
@@ -16,13 +71,11 @@ jobs:
       fail-fast: false
       matrix:
         docker_image:
-          - "ubuntu:focal"
-          - "ubuntu:bionic"
           - "debian:buster"
     container:
       image: ${{ matrix.docker_image }}
     steps:
-    - name: install deps
+    - name: install deps on {{ matrix.docker_image }}
       shell: bash
       run: |
         apt update
@@ -51,18 +104,6 @@ jobs:
         ./.ci/create_icub-common_deb.sh
         echo $ICUB_PACKAGE_NAME
         echo "::set-env name=icub-common-packagename::$ICUB_PACKAGE_NAME"
-
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: bin-${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: true
-        prerelease: false
 
     - name: Upload Release Asset
       id: upload-release-asset
