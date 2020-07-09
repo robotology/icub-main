@@ -41,4 +41,4 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-      path: ./${{ env.DEBNAME }}
+        path: ${{ env.DEBNAME }}
