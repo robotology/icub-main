@@ -8,7 +8,6 @@ on:
       - master
 
 jobs:
-
   simple-build:
     name: '[${{ matrix.os }}@${{ matrix.build_type }}]'
     runs-on: ${{ matrix.os }}
@@ -16,29 +15,29 @@ jobs:
       matrix:
         build_type: [Release]
         os: [ubuntu-focal, ubuntu-bionic]
-        steps:
-        - name: install deps on ${{ matrix.os }}
-          shell: bash
-          run: |
-            apt update
-            apt install -y git
-            apt install -y lsb-release
+    steps:
+    - name: install deps on ${{ matrix.os }}
+      shell: bash
+      run: |
+        apt update
+        apt install -y git
+        apt install -y lsb-release
 
-        - uses: actions/checkout@master [${{ matrix.os }}]
+    - uses: actions/checkout@master [${{ matrix.os }}]
 
-        - name: Get Latest Tag [${{ matrix.os }}]
-          id: get_latest_tag
-          uses: WyriHaximus/github-action-get-previous-tag@0.2.0
+    - name: Get Latest Tag [${{ matrix.os }}]
+      id: get_latest_tag
+      uses: WyriHaximus/github-action-get-previous-tag@0.2.0
 
-        - name: Generate icub-common metapackage [${{ matrix.os }}]
-          shell: bash
-          run: |
-            chmod +x ./.ci/create_icub-common_deb.sh
-            export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
-            ./.ci/create_icub-common_deb.sh
-            echo $ICUB_PACKAGE_NAME
-            echo "::set-env name=DEBNAME::$ICUB_PACKAGE_NAME"
+    - name: Generate icub-common metapackage [${{ matrix.os }}]
+      shell: bash
+      run: |
+        chmod +x ./.ci/create_icub-common_deb.sh
+        export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+        ./.ci/create_icub-common_deb.sh
+        echo $ICUB_PACKAGE_NAME
+        echo "::set-env name=DEBNAME::$ICUB_PACKAGE_NAME"
 
-        - uses: actions/upload-artifact@v2
-          with:
-          path: path/to/artifact/${{ env.DEBNAME }}
+    - uses: actions/upload-artifact@v2
+      with:
+      path: path/to/artifact/${{ env.DEBNAME }}
