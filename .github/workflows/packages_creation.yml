@@ -49,7 +49,8 @@ jobs:
         chmod +x ./.ci/create_icub-common_deb.sh
         export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
         ./.ci/create_icub-common_deb.sh
-        echo "::set-env name=icub-common-packagename::icub-common_${{ env.ICUB_PACKAGE_VERSION }}-${{ env.ICUB_DEBIAN_REVISION_NUMBER }}~${{ env.PLATFORM_RELEASE }}_${{ env.PLATFORM_HARDWARE }}.deb"
+        echo "::set-env name=icub-common-packagename::${ICUB_PACKAGE_NAME}"
+
 
     - name: Create Release
       id: create_release
