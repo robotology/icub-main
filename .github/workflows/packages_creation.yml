@@ -26,7 +26,7 @@ jobs:
 
     - uses: actions/checkout@master
 
-    - name: Get Latest Tag 
+    - name: Get Latest Tag
       id: get_latest_tag
       uses: WyriHaximus/github-action-get-previous-tag@0.2.0
 
@@ -41,4 +41,4 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-      path: path/to/artifact/${{ env.DEBNAME }}
+      path: ./${{ env.DEBNAME }}
