@@ -27,10 +27,9 @@ COL_WARNING="\e[33m"
 # Defaults
 LOG_FILE=""
 VARS_FILE="${SCRIPT_PATH}/packages_vars.sh"
-
-#Exported vars
 PLATFORM_HARDWARE=""
 PLATFORM_RELEASE=""
+
 # locals
 _WHO_AM_I=$(whoami)
 _EQUIVS_BIN=$(which equivs-build || true)
@@ -104,10 +103,10 @@ parse_opt() {
       VARS_FILE="$OPTARG"
       ;;
     "V")
-      export ICUB_PACKAGE_VERSION="$OPTARG"
+      ICUB_PACKAGE_VERSION="$OPTARG"
       ;;
     "R")
-      export ICUB_DEBIAN_REVISION_NUMBER="$OPTARG"
+      ICUB_DEBIAN_REVISION_NUMBER="$OPTARG"
       ;;
     "l")
       LOG_FILE="$OPTARG"
@@ -146,8 +145,6 @@ init()
     exit_err "unable to read release key"
   fi
 
-  export $PLATFORM_RELEASE
-
   _MACHINE_TYPE=`uname -m`
   case "$_MACHINE_TYPE" in
     x86_64)
@@ -160,8 +157,6 @@ init()
       exit_err "invalid platform hardware $_MACHINE_TYPE"
       ;;
   esac
-
-  export $PLATFORM_HARDWARE
 
   _CONTROL_FILE="icub-common.${PLATFORM_RELEASE}-${PLATFORM_HARDWARE}.control"
 
@@ -190,7 +185,9 @@ fini()
     rm "$_CONTROL_FILE"
   fi
 
-  log "$0 ${COL_OK}Package icub-common_${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}_${PLATFORM_HARDWARE}.deb CREATED"
+  export ICUB_PACKAGE_NAME="icub-common_${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}_${PLATFORM_HARDWARE}.deb"
+
+  log "$0 ${COL_OK}${ICUB_PACKAGE_NAME} CREATED"
 }
 
 check_and_install_deps()
