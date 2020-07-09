@@ -49,6 +49,7 @@ jobs:
         chmod +x ./.ci/create_icub-common_deb.sh
         export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
         ./.ci/create_icub-common_deb.sh
+        echo "::set-env name=icub-common-packagename::icub-common_${{ env.ICUB_PACKAGE_VERSION }}-${{ env.ICUB_DEBIAN_REVISION_NUMBER }}~${{ env.PLATFORM_RELEASE }}_${{ env.PLATFORM_HARDWARE }}.deb"
 
     - name: Create Release
       id: create_release
@@ -68,6 +69,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-        asset_path: ./icub-common_${{ env.ICUB_PACKAGE_VERSION }}-${{ env.ICUB_DEBIAN_REVISION_NUMBER }}~${{ env.PLATFORM_RELEASE }}_${{ env.PLATFORM_HARDWARE }}.deb
-        asset_name: icub-common_${{ env.ICUB_PACKAGE_VERSION }}-${{ env.ICUB_DEBIAN_REVISION_NUMBER }}~${{ env.PLATFORM_RELEASE }}_${{ env.PLATFORM_HARDWARE }}.deb
+        asset_path: ./${{ env.icub-common-packagename }}
+        asset_name: ${{ env.icub-common-packagename }}
         asset_content_type: application/octet-stream
