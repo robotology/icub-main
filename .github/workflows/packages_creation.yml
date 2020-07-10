@@ -22,14 +22,12 @@ jobs:
       id: get_latest_tag
       uses: WyriHaximus/github-action-get-previous-tag@0.2.0
 
-    - name: Set tag var
-      shell: bash
-      run: |
-        export ICUB_PACKAGE_VERSION=$( ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
-        echo $ICUB_PACKAGE_VERSION
-        echo "::set-env name=ICUB_PACKAGE_VERSION::${ICUB_PACKAGE_VERSION}"
+   - name: set package version
+     uses: allenevans/set-env@v1.0.0
+     with:
+       ICUB_PACKAGE_VERSION: $( ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
 
-    - name: Create Release
+   - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
