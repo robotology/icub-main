@@ -40,6 +40,34 @@ jobs:
         draft: true
         prerelease: false
 
+  normal-build:
+    name: '[packages:@ubuntu-20.04]'
+    needs: [preliminary-steps]
+    runs-on: ubuntu-20.4
+    steps:
+    - name: install deps
+      shell: bash
+      run: |
+        apt update
+        apt install -y git
+        apt install -y lsb-release
+
+    - uses: actions/checkout@master
+
+    - name: Generate icub-common metapackage
+      shell: bash
+      run: |
+        chmod +x ./.ci/create_icub-common_deb.sh
+        #export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+        ./.ci/create_icub-common_deb.sh
+        echo $ICUB_PACKAGE_NAME
+        echo "::set-env name=DEBNAME::$ICUB_PACKAGE_NAME"
+
+    - uses: actions/upload-artifact@v2
+      with:
+        path: ${{ env.DEBNAME }}
+
+    
   docker-build:
     name: '[packages:@${{ matrix.docker_image }}]'
     needs: [preliminary-steps]
@@ -62,12 +90,6 @@ jobs:
         apt install -y lsb-release
 
     - uses: actions/checkout@master
-
-    - run: git fetch --prune --unshallow
-
-    - name: Get Latest Tag
-      id: get_latest_tag
-      uses: WyriHaximus/github-action-get-previous-tag@0.2.0
 
     - name: Generate icub-common metapackage
       shell: bash
