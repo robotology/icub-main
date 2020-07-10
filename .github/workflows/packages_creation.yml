@@ -22,9 +22,10 @@ jobs:
 
     - name: Set tag var
       shell: bash
-      run: echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//'
-      env:
-        ICUB_PACKAGE_VERSION: $(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+      run: |
+        export ICUB_PACKAGE_VERSION=$( ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+        echo $ICUB_PACKAGE_VERSION
+        echo "::set-env name=ICUB_PACKAGE_VERSION::${ICUB_PACKAGE_VERSION}"
 
     - name: Create Release
       id: create_release
