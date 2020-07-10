@@ -42,6 +42,7 @@ jobs:
 
   docker-build:
     name: '[packages:@${{ matrix.docker_image }}]'
+    needs: [preliminary-steps]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
