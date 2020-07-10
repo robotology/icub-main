@@ -21,6 +21,8 @@ jobs:
       uses: WyriHaximus/github-action-get-previous-tag@0.2.0
 
     - name: Set tag var
+      shell: bash
+      run: echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//'
       env:
         ICUB_PACKAGE_VERSION: $(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
 
