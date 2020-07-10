@@ -40,6 +40,10 @@ jobs:
         draft: true
         prerelease: false
 
+    - name: test env
+      shell: bash
+      run: echo $ICUB_PACKAGE_VERSION
+
   normal-build:
     name: '[packages:@ubuntu-20.04]'
     needs: [preliminary-steps]
@@ -67,7 +71,7 @@ jobs:
       with:
         path: ${{ env.DEBNAME }}
 
-    
+
   docker-build:
     name: '[packages:@${{ matrix.docker_image }}]'
     needs: [preliminary-steps]
@@ -76,7 +80,6 @@ jobs:
       fail-fast: false
       matrix:
         docker_image:
-          - "ubuntu:focal"
           - "ubuntu:bionic"
           - "debian:buster"
     container:
