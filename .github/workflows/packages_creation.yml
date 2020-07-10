@@ -8,14 +8,45 @@ on:
       - master
 
 jobs:
-  simple-build:
-    name: '[${{ matrix.os }}@${{ matrix.build_type }}]'
-    runs-on: ${{ matrix.os }}
+
+  preliminary-steps:
+    name: "Preliminary"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Get Latest Tag
+      id: get_latest_tag
+      uses: WyriHaximus/github-action-get-previous-tag@0.2.0
+
+    - name: Set tag var
+      env:
+        ICUB_PACKAGE_VERSION: $(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: true
+        prerelease: false
+
+  docker-build:
+    name: '[packages:@${{ matrix.docker_image }}]'
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        build_type: [Release]
-        os: [ubuntu-20.04, ubuntu-18.04]
+        docker_image:
+          - "ubuntu:focal"
+          - "ubuntu:bionic"
+          - "debian:buster"
+    container:
+      image: ${{ matrix.docker_image }}
     steps:
     - name: install deps
       shell: bash
@@ -26,6 +57,8 @@ jobs:
 
     - uses: actions/checkout@master
 
+    - run: git fetch --prune --unshallow
+
     - name: Get Latest Tag
       id: get_latest_tag
       uses: WyriHaximus/github-action-get-previous-tag@0.2.0
@@ -34,7 +67,7 @@ jobs:
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
-        export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+        #export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
         ./.ci/create_icub-common_deb.sh
         echo $ICUB_PACKAGE_NAME
         echo "::set-env name=DEBNAME::$ICUB_PACKAGE_NAME"
