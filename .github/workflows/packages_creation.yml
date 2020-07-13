@@ -75,15 +75,15 @@ jobs:
         echo ::set-env name=ICUB_PACKAGE_NAME::$( echo $ICUB_PACKAGE_NAME )
 
     - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ICUB_PACKAGE_NAME }}
-          asset_name: ${{ ICUB_PACKAGE_NAME }}
-          asset_content_type: application/vnd.debian.binary-package
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./${{ICUB_PACKAGE_NAME }}
+        asset_name: ${{ ICUB_PACKAGE_NAME }}
+        asset_content_type: application/vnd.debian.binary-package
 
 # end job "normal-build"
 # start job "docker-build"
@@ -122,14 +122,14 @@ jobs:
         echo ::set-env name=ICUB_PACKAGE_NAME::$( echo $ICUB_PACKAGE_NAME )
 
      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ ICUB_PACKAGE_NAME }}
-          asset_name: ${{ ICUB_PACKAGE_NAME }}
-          asset_content_type: application/vnd.debian.binary-package
+       id: upload-release-asset
+       uses: actions/upload-release-asset@v1
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       with:
+         upload_url: ${{ steps.create_release.outputs.upload_url }}
+         asset_path: ./${{ ICUB_PACKAGE_NAME }}
+         asset_name: ${{ ICUB_PACKAGE_NAME }}
+         asset_content_type: application/vnd.debian.binary-package
 
 # end job "docker-build"
