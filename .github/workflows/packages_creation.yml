@@ -94,7 +94,9 @@ jobs:
     - name: read upload url
       id: read_upload_url
       shell: bash
-      run: echo ::set-output name=UPLOAD_URL::$( cat $UPLOAD_URL.txt )
+      run: |
+        export UPLOAD_URL=$(cat $UPLOAD_URL.txt)
+        echo ::set-output name=UPLOAD_URL::$( echo $UPLOAD_URL )
 
     - name: Upload Release Asset
       id: upload-release-asset
@@ -122,7 +124,7 @@ jobs:
     container:
       image: ${{ matrix.docker_image }}
     steps:
-      
+
     - name: install deps
       shell: bash
       run: |
