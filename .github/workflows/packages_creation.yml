@@ -62,10 +62,10 @@ jobs:
 
     - uses: actions/checkout@master
 
-    - uses: actions/download-artifact@v2
-      with:
-        name: ICUB_PACKAGE_VERSION.txt
-        path: ./ICUB_PACKAGE_VERSION.txt
+    # - uses: actions/download-artifact@v2
+    #   with:
+    #     name: ICUB_PACKAGE_VERSION.txt
+    #     path: ./ICUB_PACKAGE_VERSION.txt
 
     - name: Generate icub-common metapackage
       shell: bash
@@ -110,10 +110,10 @@ jobs:
 
     - uses: actions/checkout@master
 
-    - uses: actions/download-artifact@v2
-      with:
-        name: ICUB_PACKAGE_VERSION.txt
-        path: ./ICUB_PACKAGE_VERSION.txt
+    # - uses: actions/download-artifact@v2
+    #   with:
+    #     name: ICUB_PACKAGE_VERSION.txt
+    #     path: ./ICUB_PACKAGE_VERSION.txt
 
     - name: Generate icub-common metapackage
       shell: bash
