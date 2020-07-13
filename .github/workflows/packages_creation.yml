@@ -48,7 +48,7 @@ jobs:
     - name: create upload URL file
       shell: bash
       run: |
-        export UPLOAD_URL=$( echo ${{ steps.steps.create_release.outputs.upload_url }} )
+        export UPLOAD_URL=$( echo ${{ steps.create_release.outputs.upload_url }} )
         echo $UPLOAD_URL > UPLOAD_URL.txt
 
     - name: upload url file
