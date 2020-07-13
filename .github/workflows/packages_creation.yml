@@ -143,6 +143,7 @@ jobs:
         chmod +x ./.ci/create_icub-common_deb.sh
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
+        echo echo $ICUB_PACKAGE_NAME
         echo ::set-output name=ICUB_PACKAGE_NAME::$( echo $ICUB_PACKAGE_NAME )
 
     - uses: actions/download-artifact@v2
