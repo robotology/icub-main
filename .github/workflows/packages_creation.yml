@@ -25,7 +25,7 @@ jobs:
     - name: create version file
       shell: bash
       run: |
-        export ICUB_PACKAGE_VERSION=$( ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+        export ICUB_PACKAGE_VERSION=$( echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
         echo $ICUB_PACKAGE_VERSION >> ICUB_PACKAGE_VERSION.txt
 
     - name: upload version file
