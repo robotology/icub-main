@@ -4,8 +4,8 @@ on:
   push:
     tags:
     - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-    branches:
-      - master
+    # branches:
+    #   - master
 
 jobs:
 # start job "preliminary-steps"
@@ -149,7 +149,9 @@ jobs:
     - name: read upload url
       id: read_upload_url
       shell: bash
-      run: echo ::set-output name=UPLOAD_URL::$( cat $UPLOAD_URL.txt )
+      run: |
+        cat UPLOAD_URL.txt
+        echo ::set-output name=UPLOAD_URL::$( cat UPLOAD_URL.txt )
 
     - name: Upload Release Asset
       id: upload-release-asset
