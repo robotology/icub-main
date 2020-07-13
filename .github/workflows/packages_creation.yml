@@ -51,11 +51,11 @@ jobs:
         export UPLOAD_URL=$( echo ${{ steps.steps.create_release.outputs.upload_url }} )
         echo $UPLOAD_URL > UPLOAD_URL.txt
 
-    - name: upload version file
+    - name: upload url file
       uses: actions/upload-artifact@v2
       with:
-        name: ICUB_PACKAGE_VERSION.txt
-        path: ./ICUB_PACKAGE_VERSION.txt
+        name: UPLOAD_URL.txt
+        path: ./UPLOAD_URL.txt
 
 # end job "preliminary-steps"
 # start job "normal-build"
