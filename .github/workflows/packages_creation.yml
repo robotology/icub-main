@@ -75,7 +75,7 @@ jobs:
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
         #export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
-        export ICUB_PACKAGE_VERSION0$(cat ICUB_PACKAGE_VERSION.txt)
+        export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
         echo $ICUB_PACKAGE_NAME >> ICUB_PACKAGE_NAME.txt
 
@@ -107,16 +107,24 @@ jobs:
 
     - uses: actions/checkout@master
 
+    - uses: actions/download-artifact@v2
+      with:
+        name: ICUB_PACKAGE_VERSION.txt
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: ICUB_PACKAGE_NAME.txt
+
     - name: Generate icub-common metapackage
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
-        #export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+        export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
-        echo $ICUB_PACKAGE_NAME
-        echo "::set-env name=DEBNAME::$ICUB_PACKAGE_NAME"
+        echo $ICUB_PACKAGE_NAME >> ICUB_PACKAGE_NAME.txt
 
     - uses: actions/upload-artifact@v2
       with:
-        path: ${{ env.DEBNAME }}
+        name: ICUB_PACKAGE_NAME.txt
+        path: ./ICUB_PACKAGE_NAME.txt
 # end job "docker-build"
