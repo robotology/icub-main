@@ -8,7 +8,7 @@ on:
       - master
 
 jobs:
-
+# start job "preliminary-steps"
   preliminary-steps:
     name: "Preliminary"
     runs-on: ubuntu-latest
@@ -22,12 +22,19 @@ jobs:
       id: get_latest_tag
       uses: WyriHaximus/github-action-get-previous-tag@0.2.0
 
-   - name: set package version
-     uses: allenevans/set-env@v1.0.0
-     with:
-       ICUB_PACKAGE_VERSION: $( ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+    - name: create version file
+      shell: bash
+      run: |
+        export ICUB_PACKAGE_VERSION=$( ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+        echo $ICUB_PACKAGE_VERSION >> ICUB_PACKAGE_VERSION.txt
 
-   - name: Create Release
+    - name: upload version file
+      uses: actions/upload-artifact@v2
+      with:
+        name: ICUB_PACKAGE_VERSION.txt
+        path: ./ICUB_PACKAGE_VERSION.txt
+
+    - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -40,13 +47,16 @@ jobs:
 
     - name: test env
       shell: bash
-      run: echo $ICUB_PACKAGE_VERSION
-
+      run: |
+        cat ICUB_PACKAGE_VERSION.txt
+# end job "preliminary-steps"
+# start job "normal-build"
   normal-build:
     name: '[packages:@ubuntu-20.04]'
     needs: [preliminary-steps]
     runs-on: ubuntu-20.4
     steps:
+
     - name: install deps
       shell: bash
       run: |
@@ -56,23 +66,28 @@ jobs:
 
     - uses: actions/checkout@master
 
+    - uses: actions/download-artifact@v2
+      with:
+        name:  ICUB_PACKAGE_VERSION.txt
+
     - name: Generate icub-common metapackage
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
         #export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
+        export ICUB_PACKAGE_VERSION0$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
-        echo $ICUB_PACKAGE_NAME
-        echo "::set-env name=DEBNAME::$ICUB_PACKAGE_NAME"
+        echo $ICUB_PACKAGE_NAME >> ICUB_PACKAGE_NAME.txt
 
     - uses: actions/upload-artifact@v2
       with:
-        path: ${{ env.DEBNAME }}
-
-
+        name: ICUB_PACKAGE_NAME.txt
+        path: ./ICUB_PACKAGE_NAME.txt
+# end job "normal-build"
+# start job "docker-build"
   docker-build:
     name: '[packages:@${{ matrix.docker_image }}]'
-    needs: [preliminary-steps]
+    needs: [normal-build]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -104,3 +119,4 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: ${{ env.DEBNAME }}
+# end job "docker-build"
