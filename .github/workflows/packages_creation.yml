@@ -73,7 +73,7 @@ jobs:
         #export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
-        echo ""::set-env name={icub-package-name}::{$ICUB_PACKAGE_NAME}
+        echo "::set-env name={icub-package-name}::{$ICUB_PACKAGE_NAME}"
 
      - name: Upload Release Asset
         id: upload-release-asset
@@ -120,7 +120,7 @@ jobs:
         chmod +x ./.ci/create_icub-common_deb.sh
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
-        echo ""::set-env name={icub-package-name}::{$ICUB_PACKAGE_NAME}
+        echo "::set-env name={icub-package-name}::{$ICUB_PACKAGE_NAME}"
 
      - name: Upload Release Asset
         id: upload-release-asset
