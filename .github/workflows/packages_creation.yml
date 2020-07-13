@@ -47,7 +47,7 @@ jobs:
 
     - name: create upload URL file
       shell: bash
-      run: echo ${{ steps.create_release.outputs.upload_url }}L > UPLOAD_URL.txt
+      run: echo ${{ steps.create_release.outputs.upload_url }} > UPLOAD_URL.txt
 
     - name: upload url file
       uses: actions/upload-artifact@v2
@@ -84,18 +84,6 @@ jobs:
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
         echo ::set-output name=ICUB_PACKAGE_NAME::$( cat ICUB_PACKAGE_NAME.txt )
-
-    - name: upload NAME file
-      uses: actions/upload-artifact@v2
-      with:
-        name: ICUB_PACKAGE_NAME.txt
-        path: ./ICUB_PACKAGE_NAME.txt
-
-    - name: test
-      shell: bash
-      run: |
-        echo "upload URL: ${{ steps.read_upload_url.outputs.UPLOAD_URL }}"
-        echo "package name: ${{ steps.package_generation.outputs.ICUB_PACKAGE_NAME }}"
 
     - uses: actions/download-artifact@v2
       with:
