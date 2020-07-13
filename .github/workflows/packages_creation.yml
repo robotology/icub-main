@@ -67,12 +67,13 @@ jobs:
         name: ICUB_PACKAGE_VERSION.txt
 
     - name: Generate icub-common metapackage
+      id: package_generation
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
-        echo ::set-env name=ICUB_PACKAGE_NAME::$( echo $ICUB_PACKAGE_NAME )
+        echo ::set-output name=ICUB_PACKAGE_NAME::$( echo $ICUB_PACKAGE_NAME )
 
     - name: Upload Release Asset
       id: upload-release-asset
@@ -81,8 +82,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./${{ ICUB_PACKAGE_NAME }}
-        asset_name: ${{ ICUB_PACKAGE_NAME }}
+        asset_path: ./${{ steps.package_generation.outputs.ICUB_PACKAGE_NAME }}
+        asset_name: ${{ steps.package_generation.outputs.ICUB_PACKAGE_NAME }}
         asset_content_type: application/vnd.debian.binary-package
 
 # end job "normal-build"
@@ -114,12 +115,13 @@ jobs:
         name: ICUB_PACKAGE_VERSION.txt
 
     - name: Generate icub-common metapackage
+      id: package_generation
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
-        echo ::set-env name=ICUB_PACKAGE_NAME::$( echo $ICUB_PACKAGE_NAME )
+        echo ::set-output name=ICUB_PACKAGE_NAME::$( echo $ICUB_PACKAGE_NAME )
 
     - name: Upload Release Asset
       id: upload-release-asset
@@ -128,8 +130,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./${{ ICUB_PACKAGE_NAME }}
-        asset_name: ${{ ICUB_PACKAGE_NAME }}
+        asset_path: ./${{ steps.package_generation.outputs.ICUB_PACKAGE_NAME }}
+        asset_name: ${{ steps.package_generation.outputs.ICUB_PACKAGE_NAME }}
         asset_content_type: application/vnd.debian.binary-package
 
 # end job "docker-build"
