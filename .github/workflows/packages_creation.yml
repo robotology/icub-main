@@ -47,9 +47,7 @@ jobs:
 
     - name: create upload URL file
       shell: bash
-      run: |
-        export UPLOAD_URL=$( echo ${{ steps.create_release.outputs.upload_url }} )
-        echo $UPLOAD_URL > UPLOAD_URL.txt
+      run: echo ${{ steps.create_release.outputs.upload_url }}L > UPLOAD_URL.txt
 
     - name: upload url file
       uses: actions/upload-artifact@v2
@@ -95,8 +93,8 @@ jobs:
       id: read_upload_url
       shell: bash
       run: |
-        export UPLOAD_URL=$(cat $UPLOAD_URL.txt)
-        echo ::set-output name=UPLOAD_URL::$( echo $UPLOAD_URL )
+        cat $UPLOAD_URL.txt
+        echo ::set-output name=UPLOAD_URL::$( cat UPLOAD_URL.txt )
 
     - name: Upload Release Asset
       id: upload-release-asset
