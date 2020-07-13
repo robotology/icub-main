@@ -48,8 +48,8 @@ jobs:
     - name: create upload URL file
       shell: bash
       run: |
-      export UPLOAD_URL=$( echo ${{ steps.steps.create_release.outputs.upload_url }} )
-      echo $UPLOAD_URL > UPLOAD_URL.txtù
+        export UPLOAD_URL=$( echo ${{ steps.steps.create_release.outputs.upload_url }} )
+        echo $UPLOAD_URL > UPLOAD_URL.txt
 
     - name: upload version file
       uses: actions/upload-artifact@v2
