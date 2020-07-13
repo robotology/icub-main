@@ -45,10 +45,6 @@ jobs:
         draft: true
         prerelease: false
 
-    - name: test env
-      shell: bash
-      run: |
-        cat ICUB_PACKAGE_VERSION.txt
 # end job "preliminary-steps"
 # start job "normal-build"
   normal-build:
@@ -77,12 +73,19 @@ jobs:
         #export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
-        echo $ICUB_PACKAGE_NAME >> ICUB_PACKAGE_NAME.txt
+        echo ""::set-env name={icub-package-name}::{$ICUB_PACKAGE_NAME}
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: ICUB_PACKAGE_NAME.txt
-        path: ./ICUB_PACKAGE_NAME.txt
+     - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./${{ icub-package-name }}
+          asset_name: ${{ icub-package-name }}
+          asset_content_type: application/vnd.debian.binary-package
+
 # end job "normal-build"
 # start job "docker-build"
   docker-build:
@@ -111,20 +114,23 @@ jobs:
       with:
         name: ICUB_PACKAGE_VERSION.txt
 
-    - uses: actions/download-artifact@v2
-      with:
-        name: ICUB_PACKAGE_NAME.txt
-
     - name: Generate icub-common metapackage
       shell: bash
       run: |
         chmod +x ./.ci/create_icub-common_deb.sh
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
-        echo $ICUB_PACKAGE_NAME >> ICUB_PACKAGE_NAME.txt
+        echo ""::set-env name={icub-package-name}::{$ICUB_PACKAGE_NAME}
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: ICUB_PACKAGE_NAME.txt
-        path: ./ICUB_PACKAGE_NAME.txt
+     - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./${{ icub-package-name }}
+          asset_name: ${{ icub-package-name }}
+          asset_content_type: application/vnd.debian.binary-package
+
 # end job "docker-build"
