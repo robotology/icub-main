@@ -62,8 +62,8 @@ jobs:
     needs: [preliminary-steps]
     runs-on: ${{ matrix.os }}
     strategy:
-    matrix:
-      os: [ubuntu-18.04, ubuntu-20.04]
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
     steps:
 
     - name: install deps
