@@ -48,7 +48,7 @@ jobs:
 # end job "preliminary-steps"
 # start job "normal-build"
   normal-build:
-    name: '[packages:@ubuntu-20.04]'
+    name: "[packages:@ubuntu-20.04]"
     needs: [preliminary-steps]
     runs-on: ubuntu-20.4
     steps:
@@ -62,10 +62,10 @@ jobs:
 
     - uses: actions/checkout@master
 
-    # - uses: actions/download-artifact@v2
-    #   with:
-    #     name: ICUB_PACKAGE_VERSION.txt
-    #     path: ./ICUB_PACKAGE_VERSION.txt
+    - uses: actions/download-artifact@v2
+      with:
+        name: ICUB_PACKAGE_VERSION.txt
+        path: ./ICUB_PACKAGE_VERSION.txt
 
     - name: Generate icub-common metapackage
       shell: bash
@@ -81,7 +81,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./${{ICUB_PACKAGE_NAME }}
           asset_name: ${{ ICUB_PACKAGE_NAME }}
           asset_content_type: application/vnd.debian.binary-package
@@ -110,10 +110,10 @@ jobs:
 
     - uses: actions/checkout@master
 
-    # - uses: actions/download-artifact@v2
-    #   with:
-    #     name: ICUB_PACKAGE_VERSION.txt
-    #     path: ./ICUB_PACKAGE_VERSION.txt
+    - uses: actions/download-artifact@v2
+      with:
+        name: ICUB_PACKAGE_VERSION.txt
+        path: ./ICUB_PACKAGE_VERSION.txt
 
     - name: Generate icub-common metapackage
       shell: bash
@@ -129,7 +129,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./${{ ICUB_PACKAGE_NAME }}
           asset_name: ${{ ICUB_PACKAGE_NAME }}
           asset_content_type: application/vnd.debian.binary-package
