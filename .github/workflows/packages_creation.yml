@@ -22,17 +22,17 @@ jobs:
       id: get_latest_tag
       uses: WyriHaximus/github-action-get-previous-tag@0.2.0
 
-    - name: upload version file
-      uses: actions/upload-artifact@v2
-      with:
-        name: UPLOAD_URL.txt
-        path: ./UPLOAD_URL.txt
-
     - name: create version file
       shell: bash
       run: |
         export ICUB_PACKAGE_VERSION=$( echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
         echo $ICUB_PACKAGE_VERSION > ICUB_PACKAGE_VERSION.txt
+
+    - name: upload url file
+      uses: actions/upload-artifact@v2
+      with:
+        name: ICUB_PACKAGE_VERSION.txt
+        path: ./ICUB_PACKAGE_VERSION.txt
 
     - name: Create Release
       id: create_release
