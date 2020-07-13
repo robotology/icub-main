@@ -73,7 +73,7 @@ jobs:
         #export ICUB_PACKAGE_VERSION=$(echo ${{ steps.get_latest_tag.outputs.tag }} | sed 's/^v//' )
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
-        echo "::set-env name=icub-package-name::${ICUB_PACKAGE_NAME}"
+        echo "::set-env name=ICUB_PACKAGE_NAME::$( echo $ICUB_PACKAGE_NAME )"
 
      - name: Upload Release Asset
         id: upload-release-asset
@@ -82,8 +82,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./${{ icub-package-name }}
-          asset_name: ${{ icub-package-name }}
+          asset_path: ./${{ICUB_PACKAGE_NAME }}
+          asset_name: ${{ ICUB_PACKAGE_NAME }}
           asset_content_type: application/vnd.debian.binary-package
 
 # end job "normal-build"
@@ -120,7 +120,7 @@ jobs:
         chmod +x ./.ci/create_icub-common_deb.sh
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
-        echo "::set-env name=icub-package-name::${ICUB_PACKAGE_NAME}"
+        echo "::set-env name=ICUB_PACKAGE_NAME::$( echo $ICUB_PACKAGE_NAME )"
 
      - name: Upload Release Asset
         id: upload-release-asset
@@ -129,8 +129,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./${{ icub-package-name }}
-          asset_name: ${{ icub-package-name }}
+          asset_path: ./${{ ICUB_PACKAGE_NAME }}
+          asset_name: ${{ ICUB_PACKAGE_NAME }}
           asset_content_type: application/vnd.debian.binary-package
 
 # end job "docker-build"
