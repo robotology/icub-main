@@ -186,8 +186,10 @@ fini()
   fi
 
   export ICUB_PACKAGE_NAME="icub-common_${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${PLATFORM_RELEASE}_${PLATFORM_HARDWARE}.deb"
+  pwd
+  ls
   echo $ICUB_PACKAGE_NAME >> ICUB_PACKAGE_NAME.txt
-  log "$0 ${COL_OK}${ICUB_PACKAGE_NAME} CREATED"
+  log "${COL_OK}${ICUB_PACKAGE_NAME} CREATED"
 }
 
 check_and_install_deps()
