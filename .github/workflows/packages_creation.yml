@@ -56,9 +56,9 @@ jobs:
     - name: install deps
       shell: bash
       run: |
-        apt update
-        apt install -y git
-        apt install -y lsb-release
+        sudo apt update
+        sudo apt install -y git
+        sudo apt install -y lsb-release
 
     - uses: actions/checkout@master
 
