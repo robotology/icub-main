@@ -94,7 +94,7 @@ jobs:
     - name: read upload url
       id: read_upload_url
       shell: bash
-      run: echo ::set-output name=UPLOAD_URL::$( echo $UPLOAD_URL )
+      run: echo ::set-output name=UPLOAD_URL::$( cat $UPLOAD_URL.txt )
 
     - name: Upload Release Asset
       id: upload-release-asset
