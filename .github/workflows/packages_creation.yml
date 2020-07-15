@@ -164,6 +164,7 @@ jobs:
 # start job "Cleanup-steps"
   cleanup-steps:
     name: "Cleanup"
+    needs: [docker-build]
     runs-on: ubuntu-latest
 
     steps:
