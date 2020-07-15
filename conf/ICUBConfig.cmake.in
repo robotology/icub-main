@@ -1,5 +1,9 @@
 set(ICUB_VERSION @PACKAGE_VERSION@)
 
+if(DEFINED YARP_LIBRARIES)
+  set(_temp_yarp_libs ${YARP_LIBRARIES})
+endif()
+
 @PACKAGE_INIT@
 
 @PACKAGE_DEPENDENCIES@
@@ -37,3 +41,8 @@ set(ICUB_CONTEXTS_INSTALL_DIR "@ICUB_CONTEXTS_INSTALL_DIR@")
 
 # Add the folder with the CMake files to the CMAKE_MODULE_PATH of the imported target scope
 list(APPEND CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
+
+if(DEFINED _temp_yarp_libs)
+  list(APPEND YARP_LIBRARIES ${_temp_yarp_libs})
+  list(REMOVE_DUPLICATES YARP_LIBRARIES)
+endif()
