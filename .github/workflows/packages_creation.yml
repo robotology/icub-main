@@ -161,3 +161,17 @@ jobs:
         asset_content_type: application/vnd.debian.binary-package
 
 # end job "docker-build"
+# start job "Cleanup-steps"
+  cleanup-steps:
+    name: "Cleanup"
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: |
+            ICUB_PACKAGE_VERSION.txt
+            UPLOAD_URL.txt
+
+# end job "clenup-steps"
