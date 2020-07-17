@@ -1,5 +1,6 @@
 set(ICUB_VERSION @PACKAGE_VERSION@)
 
+# Backup the YARP_LIBRARIES content
 if(DEFINED YARP_LIBRARIES)
   set(_temp_yarp_libs ${YARP_LIBRARIES})
 endif()
@@ -42,7 +43,7 @@ set(ICUB_CONTEXTS_INSTALL_DIR "@ICUB_CONTEXTS_INSTALL_DIR@")
 # Add the folder with the CMake files to the CMAKE_MODULE_PATH of the imported target scope
 list(APPEND CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
 
+# Restore the original value of YARP_LIBRARIES before the find_dependency calls
 if(DEFINED _temp_yarp_libs)
-  list(APPEND YARP_LIBRARIES ${_temp_yarp_libs})
-  list(REMOVE_DUPLICATES YARP_LIBRARIES)
+  set(YARP_LIBRARIES ${_temp_yarp_libs})
 endif()
