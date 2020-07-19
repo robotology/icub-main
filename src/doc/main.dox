@@ -32,18 +32,6 @@ Topics:
   - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
   - Our software architecture, <a href="http://www.yarp.it/">YARP</a>.
 
-This documentation is developed by scanning all source code 
-in icub-main/src and icub-tutorials. If your comments or classes are
-not showing up, try running:
-
-\verbatim
-  cd icub-main
-  doxygen conf/Doxyfile-main-tutorials.txt
-\endverbatim
-
-locally on your repository, to figure out what's going on.
-The output can be browsed at doc/html/index.html.
-
 This page can be edited at \link src/doc/main.dox.
 
 *
