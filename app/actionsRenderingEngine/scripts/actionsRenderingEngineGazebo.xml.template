@@ -1,5 +1,5 @@
 <application>
-<name>ActionsRenderingEngine for iCubSim</name>
+<name>ActionsRenderingEngine for iCub Gazebo</name>
 
         <dependencies>
         </dependencies>
@@ -11,20 +11,16 @@
         </module>
 
         <module>
-                <name>iCub_SIM</name>
-                <dependencies>
-                   <port timeout="20">/yarplogger</port>
-                </dependencies>
+                <name>gazebo</name>
+                <!-- Load here your world -->
+                <parameters></parameters>
                 <environment>YARP_FORWARD_LOG_ENABLE=1</environment>
-                <ensure>
-                   <wait when="stop">10</wait>
-                </ensure>
                 <node>localhost</node>
         </module>
 
         <module>
                 <name>yarprobotinterface</name>
-                <parameters>--context simCartesianControl --config no_legs.xml</parameters>
+                <parameters>--context gazeboCartesianControl --config no_legs.xml</parameters>
                 <dependencies>
                     <port timeout="20">/yarplogger</port>
                     <port timeout="20">/icubSim/torso/state:o</port>
@@ -40,7 +36,7 @@
 
         <module>
                 <name>iKinCartesianSolver</name>
-                <parameters>--context simCartesianControl --part right_arm</parameters>
+                <parameters>--context gazeboCartesianControl --part right_arm</parameters>
                 <dependencies>
                     <port timeout="20">/yarplogger</port>
                     <port timeout="20">/icubSim/torso/state:o</port>
@@ -52,7 +48,7 @@
 
         <module>
                 <name>iKinCartesianSolver</name>
-                <parameters>--context simCartesianControl --part left_arm</parameters>
+                <parameters>--context gazeboCartesianControl --part left_arm</parameters>
                 <dependencies>
                     <port timeout="20">/yarplogger</port>
                     <port timeout="20">/icubSim/torso/state:o</port>
@@ -64,7 +60,7 @@
 
         <module>
                 <name>iKinGazeCtrl</name>
-                <parameters>--from configSim.ini</parameters>
+                <parameters>--context gazeboCartesianControl --from iKinGazeCtrl.ini</parameters>
                 <dependencies>
                     <port timeout="20">/yarplogger</port>
                     <port timeout="20">/icubSim/torso/state:o</port>
@@ -80,7 +76,7 @@
 
         <module>
                 <name>wholeBodyDynamics</name>
-                <parameters>--robot icubSim --autoconnect --dummy_ft --no_legs</parameters>
+                <parameters>--robot icubSim --autoconnect --dummy_ft --headV2 --no_legs</parameters>
                 <dependencies>
                     <port timeout="20">/yarplogger</port>
                     <port timeout="20">/icubSim/head/state:o</port>
@@ -95,7 +91,7 @@
 
         <module>
                 <name>actionsRenderingEngine</name>
-                <parameters>--from sim/config.ini</parameters>
+                <parameters>--from gazebo/config.ini</parameters>
                 <dependencies>
                     <port timeout="20">/yarplogger</port>
                     <port timeout="20">/iKinGazeCtrl/rpc</port>
