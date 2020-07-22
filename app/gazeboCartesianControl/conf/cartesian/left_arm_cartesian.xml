@@ -1,0 +1,52 @@
+<devices robot="icubSim" build="0">
+    <device name="left_arm_cartesian" type="cartesiancontrollerserver">
+        <group name="GENERAL">
+            <param name="ControllerName">icubSim/cartesianController/left_arm</param>
+            <param name="ControllerPeriod">10</param>
+            <param name="SolverNameToConnect">cartesianSolver/left_arm</param>
+            <param name="KinematicPart">arm</param>
+            <param name="KinematicType">left_v2.5</param>
+            <param name="PositionControl">on</param>
+            <param name="MultipleJointsControl">on</param>
+            <param name="NumberOfDrivers">2</param>
+        </group>
+
+        <group name="DRIVER_0">
+            <param name="Key">torso</param>
+            <param name="JointsOrder">reversed</param>
+            <param name="MinAbsVels">(0.5 0.5 0.5)</param>
+        </group>
+
+        <group name="DRIVER_1">
+            <param name="Key">left_arm</param>
+            <param name="JointsOrder">direct</param>
+            <param name="MinAbsVels">(0.5 0.5 0.5 0.5 0.5 0.5 0.5)</param>
+        </group>
+
+        <group name="PLANT_MODEL">
+            <!-- P(s)=(Kp/s)*((1+Tz*s)/(1+2*Zeta*Tw*s+(Tw*s)^2))*exp(-Td*s) -->
+            <param name="plant_compensator">off</param>
+            <param name="smith_predictor">off</param>
+
+            <param name="joint_0">((Kp 1.0) (Tz 0.0) (Tw 0.0) (Zeta 0.0) (Td 0.0))</param>
+            <param name="joint_1">((Kp 1.0) (Tz 0.0) (Tw 0.0) (Zeta 0.0) (Td 0.0))</param>
+            <param name="joint_2">((Kp 1.0) (Tz 0.0) (Tw 0.0) (Zeta 1.0) (Td 0.0))</param>
+            <param name="joint_3">((Kp 1.0) (Tz 0.0) (Tw 0.0) (Zeta 1.0) (Td 0.0))</param>
+            <param name="joint_4">((Kp 1.0) (Tz 0.0) (Tw 0.0) (Zeta 1.0) (Td 0.0))</param>
+            <param name="joint_5">((Kp 1.0) (Tz 0.0) (Tw 0.0) (Zeta 1.0) (Td 0.0))</param>
+            <param name="joint_6">((Kp 1.0) (Tz 0.0) (Tw 0.0) (Zeta 1.0) (Td 0.0))</param>
+            <param name="joint_7">((Kp 1.0) (Tz 0.0) (Tw 0.0) (Zeta 2.0) (Td 0.0))</param>
+            <param name="joint_8">((Kp 1.0) (Tz 0.0) (Tw 0.0) (Zeta 0.0) (Td 0.0))</param>
+            <param name="joint_9">((Kp 1.0) (Tz 0.0) (Tw 0.0) (Zeta 0.0) (Td 0.0))</param>
+        </group>
+
+        <action phase="startup" level="6" type="attach">
+            <paramlist name="networks">
+                <elem name="torso">torso</elem>
+                <elem name="left_arm">left_arm</elem>
+          </paramlist>
+        </action>
+        <action phase="shutdown" level="1" type="detach" />
+
+    </device>
+</devices>
