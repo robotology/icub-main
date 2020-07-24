@@ -1,0 +1,178 @@
+name: Continuous Integration
+
+on:
+  push:
+  pull_request:
+  schedule:
+  # * is a special character in YAML so you have to quote this string
+  # Execute a "nightly" build at 2 AM UTC 
+  - cron:  '0 2 * * *'
+
+env:
+  vcpkg_robotology_TAG: v0.0.3
+  
+jobs:
+  build:
+    name: '[${{ matrix.os }}@${{ matrix.build_type }}]'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build_type: [Release]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+    - uses: actions/checkout@master
+        
+    - name: Environment Variables
+      shell: bash
+      run: env
+      
+    # Remove apt repos that are known to break from time to time 
+    # See https://github.com/actions/virtual-environments/issues/323  
+    - name: Remove broken apt repos [Ubuntu]
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
+        
+    # ============
+    # DEPENDENCIES
+    # ============
+    - name: Dependencies [Windows]
+      if: matrix.os == 'windows-latest'
+      run: |
+        # To avoid spending a huge time compiling vcpkg dependencies, we download a root that comes precompiled with all the ports that we need 
+        choco install -y wget unzip
+        # To avoid problems with non-relocatable packages, we unzip the archive exactly in the same C:/robotology/vcpkg 
+        # that has been used to create the pre-compiled archive
+        cd C:/
+        md C:/robotology
+        md C:/robotology/vcpkg
+        wget https://github.com/robotology/robotology-superbuild-dependencies-vcpkg/releases/download/${env:vcpkg_robotology_TAG}/vcpkg-robotology.zip
+        unzip vcpkg-robotology.zip -d C:/robotology/vcpkg
+        # Overwrite the VCPKG_INSTALLATION_ROOT env variable defined by GitHub Actions to point to our vcpkg
+        echo "::set-env name=VCPKG_INSTALLATION_ROOT::C:/robotology/vcpkg"
+        
+    - name: Dependencies [macOS]
+      if: matrix.os == 'macOS-latest'
+      run: |
+        brew install ace cmake eigen gsl ipopt opencv pkg-config qt5
+    
+    - name: Dependencies [Ubuntu]
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev swig libopencv-dev qtbase5-dev \
+                                 qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev libpython3-dev swig
+        
+    - name: Source-based Dependencies [Windows] 
+      if: matrix.os == 'windows-latest'
+      shell: bash
+      run: |
+        # YCM
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/ycm.git --depth 1 --branch master
+        cd ycm && mkdir -p build && cd build
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+        cmake --build . --config ${{ matrix.build_type }} --target INSTALL 
+        # YARP
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/yarp.git --depth 1 --branch master
+        cd yarp && mkdir -p build && cd build
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DYARP_COMPILE_GUIS:BOOL=OFF \
+              -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+        cmake --build . --config ${{ matrix.build_type }} --target INSTALL
+        # icub-firmware-shared
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch devel
+        cd icub-firmware-shared && mkdir -p build && cd build
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
+              -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+        cmake --build . --config ${{ matrix.build_type }} --target INSTALL
+        
+    - name: Source-based Dependencies [Ubuntu/macOS] 
+      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
+      shell: bash
+      run: |
+        # YCM
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/ycm.git --depth 1 --branch master
+        cd ycm && mkdir -p build && cd build
+        cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+        cmake --build . --config ${{ matrix.build_type }} --target install 
+        # YARP
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/yarp.git --depth 1 --branch master
+        cd yarp && mkdir -p build && cd build
+        cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DYARP_COMPILE_GUIS:BOOL=OFF ..
+        cmake --build . --config ${{ matrix.build_type }} --target install
+        # icub-firmware-shared
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch devel
+        cd icub-firmware-shared && mkdir -p build && cd build
+        cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+        cmake --build . --config ${{ matrix.build_type }} --target install 
+ 
+    # ===================
+    # CMAKE-BASED PROJECT
+    # ===================
+    - name: Configure [Windows]
+      # Use bash also on Windows (otherwise cd, mkdir, ... do not work)
+      if: matrix.os == 'windows-latest'
+      shell: bash
+      run: |
+        mkdir -p build
+        cd build
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
+              -DICUB_USE_icub_firmware_shared:BOOL=ON -DENABLE_icubmod_serial:BOOL=ON \
+              -DENABLE_icubmod_serialport:BOOL=ON -DENABLE_icubmod_skinWrapper:BOOL=ON \
+              -DENABLE_icubmod_portaudio:BOOL=ON -DENABLE_icubmod_sharedcan:BOOL=ON \
+              -DENABLE_icubmod_canmotioncontrol:BOOL=ON -DENABLE_icubmod_canBusAnalogSensor:BOOL=ON \
+              -DENABLE_icubmod_canBusInertialMTB:BOOL=ON -DENABLE_icubmod_canBusSkin:BOOL=ON \
+              -DENABLE_icubmod_canBusVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_embObjFTsensor:BOOL=ON \
+              -DENABLE_icubmod_embObjIMU:BOOL=ON -DENABLE_icubmod_embObjInertials:BOOL=ON \
+              -DENABLE_icubmod_embObjMais:BOOL=ON -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
+              -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON \
+              -DENABLE_icubmod_embObjVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
+              -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+  
+    - name: Configure [Ubuntu/macOS]
+      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
+      shell: bash
+      run: |
+        mkdir -p build
+        cd build    
+        cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DICUB_USE_icub_firmware_shared:BOOL=ON -DENABLE_icubmod_serial:BOOL=ON \
+              -DENABLE_icubmod_serialport:BOOL=ON -DENABLE_icubmod_skinWrapper:BOOL=ON \
+              -DENABLE_icubmod_portaudio:BOOL=ON -DENABLE_icubmod_sharedcan:BOOL=ON \
+              -DENABLE_icubmod_canmotioncontrol:BOOL=ON -DENABLE_icubmod_canBusAnalogSensor:BOOL=ON \
+              -DENABLE_icubmod_canBusInertialMTB:BOOL=ON -DENABLE_icubmod_canBusSkin:BOOL=ON \
+              -DENABLE_icubmod_canBusVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_embObjFTsensor:BOOL=ON \
+              -DENABLE_icubmod_embObjIMU:BOOL=ON -DENABLE_icubmod_embObjInertials:BOOL=ON \
+              -DENABLE_icubmod_embObjMais:BOOL=ON -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
+              -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON \
+              -DENABLE_icubmod_embObjVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
+              -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
+              -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+    - name: Enable python bindings on Ubuntu 
+      if: matrix.os == 'ubuntu-latest'
+      run: | 
+        cd build
+        # Enable ICUB_COMPILE_BINDINGS in Ubuntu 
+        cmake -DICUB_COMPILE_BINDINGS:BOOL=ON -DCREATE_PYTHON:BOOL=ON .
+      
+    - name: Build
+      shell: bash
+      run: |
+        cd build
+        # Fix for using YARP idl generators (that link ACE) in Windows 
+        # See https://github.com/robotology/idyntree/issues/569 for more details
+        export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin:${VCPKG_INSTALLATION_ROOT}/installed/x64-windows/bin
+        cmake --build . --config ${{ matrix.build_type }}
+        
+    - name: Install
+      shell: bash
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }} --target install
