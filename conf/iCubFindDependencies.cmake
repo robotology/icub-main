@@ -35,7 +35,7 @@ find_package(icub_firmware_shared QUIET)
 if(icub_firmware_shared_FOUND)
   # icub-firmware-shared 4.0.7 was actually a wrong version exported by icub-firmware-shared <= 1.15
   if(icub_firmware_shared_VERSION VERSION_GREATER 4 OR icub_firmware_shared_VERSION VERSION_LESS 1.16.100)
-    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected, but at least 1.16.0 is required")
+    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected, but at least 1.16.100 is required")
   endif()
 endif()
 
