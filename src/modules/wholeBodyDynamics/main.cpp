@@ -400,6 +400,13 @@ public:
             icub_type.head_subversion = 6;
         }
 
+        if (rf.check("headV2.7"))
+        {
+            yInfo("'headV2.7' option found. Using icubV2.7 head kinematics.\n");
+            icub_type.head_version = 2;
+            icub_type.head_subversion = 7;
+        }
+
         //----------SPECIAL PARAM TO DEFINE LEGS VERSION--------//
         if(rf.check("legsV2"))
         {
@@ -817,6 +824,8 @@ int main(int argc, char * argv[])
         cout << "\t--autoconnect     automatically connects the module ports to iCubInterface"                                   << endl;
         cout << "\t--no_legs         this option disables the dynamics computation for the legs joints"                          << endl;  
         cout << "\t--headV2          use the model of the headV2"                                                                << endl;
+        cout << "\t--headV2.6        use the model of the headV2.6"                                                              << endl;
+        cout << "\t--headV2.7        use the model of the headV2.7"                                                              << endl;
         cout << "\t--legsV2          use the model of legsV2"                                                                    << endl;
         cout << "\t--no_left_arm     disables the left arm"                                                                      << endl;
         cout << "\t--no_right_arm    disables the right arm"                                                                     << endl;
