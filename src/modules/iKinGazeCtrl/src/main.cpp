@@ -212,7 +212,7 @@ Factors</a>.
 
 --head_version \e ver
 - This option specifies the kinematic structure of the head; the value
-  \e ver is a double in the set {1.0, 2.0, 2.5, 2.6, 3.0}, being 1.0
+  \e ver is a double in the set {1.0, 2.0, 2.5, 2.6, 2.7, 3.0}, being 1.0
   the default version.
 
 --verbose
@@ -1075,6 +1075,7 @@ protected:
         d[fabs(2.0-ver_in)]=2.0;
         d[fabs(2.5-ver_in)]=2.5;
         d[fabs(2.6-ver_in)]=2.6;
+        d[fabs(2.7-ver_in)]=2.7;
         d[fabs(3.0-ver_in)]=3.0;
 
         double ver_out=d.begin()->second;
