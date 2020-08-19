@@ -231,6 +231,13 @@ public:
             icub_type.head_subversion = 6;
         }
 
+        if (rf.check("headV2.7"))
+        {
+            yInfo("'headV2.7' option found. Using icubV2.7 head kinematics.\n");
+            icub_type.head_version = 2;
+            icub_type.head_subversion = 7;
+        }
+
         //------------------CHECK IF LEGS ARE ENABLED-----------//
         if (rf.check("no_legs"))
         {
@@ -524,6 +531,8 @@ int main(int argc, char * argv[])
         yInfo() << "--rate       rate: the period used by the module. default 100ms (not less than 15ms)";
         yInfo() << "--no_legs    this option disables the gravity compensation for the legs joints" ;
         yInfo() << "--headV2     use the model of the headV2";
+        yInfo() << "--headV2.6   use the model of the headV2.6";
+        yInfo() << "--headV2.7   use the model of the headV2.7";
         yInfo() << "--no_left_arm      disables the left arm";
         yInfo() << "--no_right_arm     disables the right arm";
         yInfo() << "--no_legs          disables the legs";
