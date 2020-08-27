@@ -145,7 +145,7 @@ private:
 public:
     dataFilter(BufferedPort<Vector> &_port_filtered_output,
                IThreeAxisGyroscopes* iGyro,
-               IThreeAxisLinearAccelerometers* iAcc): PeriodicThread(0.001),
+               IThreeAxisLinearAccelerometers* iAcc): PeriodicThread(0.01),
                                                       port_filtered_output(_port_filtered_output),
                                                       m_iGyro(iGyro),
                                                       m_iAcc(iAcc)
@@ -626,7 +626,7 @@ public:
         Property masConf {{"device",Value("multipleanalogsensorsclient")},
                           {"local", Value("/"+local_name+"/inertials")},
                           {"remote",Value(remoteInertialName)},
-                          {"timeout",Value(0.04)}};
+                          {"timeout",Value(0.1)}};
 
         if (!dd_MASClient.open(masConf))
         {
