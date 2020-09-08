@@ -60,6 +60,8 @@ ACE_UINT32 ipv4toace(eOipv4addr_t ipv4)
 {
     return ntohl(ipv4);
 }
+
+
 #if defined(WIN32)
 
 #else
@@ -1932,18 +1934,12 @@ bool EthMaintainer::command_changeaddress(eOipv4addr_t ipv4, eOipv4addr_t ipv4ne
         stopit = true;
     }
 
-    // we must have 10.0.1.x, where x is not 0 or 255
-    if((10 != command.address[0]) || (0 != command.address[1]) || (1 != command.address[2]))
+    // 09/2020 davide.tome@iit.it - possible to give 10.X.X.X IP address
+    if(!((10 == command.address[0]) || (0 < command.address[1] < 255) || (0 < command.address[2] < 255) || (0 < command.address[3] < 255)))
     {
         stopit =  true;
     }
-
-    if((0 == command.address[3]) || (255 == command.address[3]))
-    {
-        stopit = true;
-    }
-
-
+    
     if(true == stopit)
     {
         if(_verbose)

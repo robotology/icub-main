@@ -10,6 +10,42 @@ static void updateProgressCallback(float fraction)
     self->updateProgress(fraction);
 }
 
+// 09/2020 davide.tome@iit.it - address and port configurable in firmwareupdater.ini 
+bool FirmwareUpdaterCore::isValidIpAddress(QString addr)
+{
+    QStringList ipFields;
+
+    ipFields = addr.split(".");
+    if(ipFields.count() == 4 && ipFields[3].contains(":")) 
+    {
+        QString address_,port_;
+        int ipv0, ipv1, ipv2, ipv3;
+      
+        address_ = addr.split(":")[0];
+        port_ = ipFields[3].split(":")[1];
+
+        QRegExp re("\\d*");  // a digit (\d), zero or more times (*)
+        if (!re.exactMatch(port_)) return false;
+        for(int k=0; k<4; k++)
+        {
+            if (!re.exactMatch(address_.split(".")[k])) return false;
+        }
+
+        ipv0 = address_.split(".")[0].toInt();
+        ipv1 = address_.split(".")[1].toInt();
+        ipv2 = address_.split(".")[2].toInt();
+        ipv3 = address_.split(".")[3].toInt();
+
+        if(ipv0 == 10 && 0 < ipv1 < 255 && 0 < ipv2 < 255 && 0 < ipv3 < 255 && 0 < port_.toInt() < 255) 
+        {
+            hostIPaddress = EO_COMMON_IPV4ADDR(ipv0, ipv1, ipv2, ipv3);
+            return true;
+        }
+        else return false;
+    }
+    else return false;
+}
+
 FirmwareUpdaterCore::FirmwareUpdaterCore(QObject *parent) : QObject(parent), mutex(QMutex::Recursive)
 {
     self = this;
@@ -18,16 +54,10 @@ FirmwareUpdaterCore::FirmwareUpdaterCore(QObject *parent) : QObject(parent), mut
 bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address, int VerbositY)
 {
     verbosity = VerbositY;
-
+    
     mutex.lock();
-    if(!gMNT.open()){
-        if(verbosity>0) qDebug("Can't open socket, aborting.");
-        mutex.unlock();
-        return false;
-    }
-
+  
     setVerbosity(verbosity);
-
 
     Bottle sensorSetConfig=config.findGroup("DRIVERS").tail();
 
@@ -38,7 +68,6 @@ bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address, in
         QString line = QString("%1").arg(sensorConfig.get(1).asString().c_str());
         if(verbosity>0) qDebug() << type << "-" << line;
 
-
         bool ok;
         int num = QString("%1").arg(line).toInt(&ok);
         if(ok){
@@ -46,7 +75,42 @@ bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address, in
         }else{
             devices.append(QPair<QString,QVariant>(type,line));
         }
+
+
+        // 09/2020 davide.tome@iit.it - address and port configurable in firmwareupdater.ini 
+        if(type == "ETH") {
+        
+            if(isValidIpAddress(line))
+            {
+                port = line.split(":")[1].toInt();
+                qDebug() << "IP address FOUND in .ini file, Using :" << line.split(":")[0];
+                qDebug() << "Port Number FOUND in .ini file, Using :" << line.split(":")[1];
+            } 
+            else 
+            {
+                int ipv0, ipv1, ipv2, ipv3;
+
+                ipv0 = address.split(".")[0].toInt();
+                ipv1 = address.split(".")[1].toInt();
+                ipv2 = address.split(".")[2].toInt();
+                ipv3 = address.split(".")[3].toInt();
+
+                hostIPaddress = EO_COMMON_IPV4ADDR(ipv0, ipv1, ipv2, ipv3);
+
+                qDebug() << "Invalid IP address found in .ini file (format is 10.0.X.Y:Z , 0 < X,Y < 255 , Z port number)";
+                qDebug() << "Skipped , using defaults!";
+            }
+        }
+        
     }
+
+    if(!gMNT.open(hostIPaddress, port))
+    {
+        if(verbosity>0) qDebug("Can't open socket, aborting.");
+        mutex.unlock();
+        return false;
+    }
+
     mutex.unlock();
     return true;
 }
