@@ -30,12 +30,11 @@ Run and execute through \e yarpmanager .
 
 There are two applications:
 
-- Face Expressions (app.xml). This can run out of the box, since it assumes you have a pc104 and a real iCub.
+- Face Expressions (faceExpressions.xml). This can run out of the box, since it assumes you have a pc104 and a real iCub.
+- FaceSim (faceExpressionsSim.xml). This is the equivalent application to be used with the <a href="http://wiki.icub.org/wiki/Simulator_README#FACE_EXPRESSIONS:">robot simulator</a>.
 
-If you are using the simulator edit and customize \e appSim.xml.template .
-
-Now from any machine you can rpc to the port "/icub/face/emotions/in"
-and send high level commands.
+Now from any machine you can rpc to the port "/icub/face/emotions/in" and send high level commands.
+Be aware that some commands are only available on the latest robots mounting the RFE board.
 
 \code
 help         to display this message
@@ -79,11 +78,11 @@ For example (6 9 10 18) means specify which that led 6, 9, 10 and 18 has to be s
 The LEDs on the iCub face mounting the rfe board are arranged as follow:
 \warning Note that the enumeration is 1-based in the image but the bitmasks are 0-based
 
-\image html face_expressions_rfe.png "LEDs of the "new" iCub face expressions."
+\image html face_expressions_rfe.png "Face expressions LEDs of the iCub with RFE board"
 
 \section example_sec Example scripts
 
-Alternatively you can run the following bash scripts:
+Alternatively, you can run the following bash scripts:
 
 \code
 ./cycle.sh: demonstates the face expressions, cycle randomly through a set of expressions.
