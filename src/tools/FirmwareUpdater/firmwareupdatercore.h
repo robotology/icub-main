@@ -59,6 +59,7 @@ public:
 
 private:
     bool compile_ip_addresses(const char* addr,unsigned int *remoteAddr,unsigned int *localAddr);
+    bool isValidIpAddress(QString addr);
 private:
 
     QList < QPair<QString,QVariant> > devices;
@@ -71,6 +72,7 @@ private:
     int currentId;
     QList <sBoard> canBoards;
     int verbosity;
+    eOipv4addr_t hostIPaddress;
 
 signals:
     void updateProgress(float);
