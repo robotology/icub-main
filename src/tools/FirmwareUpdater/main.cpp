@@ -33,7 +33,7 @@ enum action_t
     action_forcemaintenance = 4,
     action_forceapplication = 5,
     action_query = 6,
-    action_loaddatfile = 7 //tumme
+    action_loaddatfile = 7
 };
 
 
@@ -59,7 +59,7 @@ int queryOnSecondLevel_ETHboard(FirmwareUpdaterCore *core, QString device, QStri
 int queryOnSecondLevel_CANboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetCANline, const QString &targetCANaddr);
 int queryCanDevices(QList<sBoard> canBoards, const QString onIPboard, const QString &targetCANline, const QString &targetCANaddr);
 int queryOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QString id, const QString board, const QString &targetCANline, const QString &targetCANaddr);
-int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file,bool eraseEEprom); //tumme
+int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file,bool eraseEEprom);
 
 
 int main(int argc, char *argv[])
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     QCommandLineOption verbosityOption(QStringList() << "x" << "verbosity", "Choose a verbosity level [0, 1]","verbosity","");
     QCommandLineOption verifyOption(QStringList() << "y" << "verify", "Verify FW version [ma.mi / ma.mi.re]. returns 0 if address and FW both match, 1 if board is found but FW does not match, 2 if board is not even found","verify","");
     QCommandLineOption queryOption(QStringList() << "q" << "query", "Queries a given address for its type and FW version [ma.mi / ma.mi.re]. prints a result on stdout. it returns 1 if it does not find a board at address");
-    QCommandLineOption loadDatFileOption(QStringList() << "z" << "load-dat-file", "Loads the calibration .dat file into STRAIN2 eeprom (pass the file.dat with -l or --file option)","",""); //tumme
+    QCommandLineOption loadDatFileOption(QStringList() << "z" << "load-dat-file", "Loads the calibration .dat file into STRAIN2 eeprom (pass the file.dat with -l or --file option)","","");
 
 
     parser.addOption(noGuiOption);
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
     parser.addOption(verbosityOption);
     parser.addOption(verifyOption);
     parser.addOption(queryOption);
-    parser.addOption(loadDatFileOption); //tumme
+    parser.addOption(loadDatFileOption);
 
 
     parser.process(a);
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
         bool forceMaintenance = parser.isSet(ethForceMaintenance);
         bool forceApplication = parser.isSet(ethForceApplication);
         bool eraseEEprom = parser.isSet(eraseEEpromOption);
-        bool loadDatFile = parser.isSet(loadDatFileOption); //tumme
+        bool loadDatFile = parser.isSet(loadDatFileOption);
 
         core.setVerbosity(verbosity);
 
@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        if((loadDatFile) && (action_impossible != action)) //tumme
+        if((loadDatFile) && (action_impossible != action))
         {
             if(action == action_none)
             {
@@ -512,7 +512,7 @@ int main(int argc, char *argv[])
 
             } break;
 
-            case action_loaddatfile: //tumme 
+            case action_loaddatfile:
             {
                 ret = 1;
                 //yDebug() << "loaddatfile";
