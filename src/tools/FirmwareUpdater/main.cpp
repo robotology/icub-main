@@ -6,6 +6,7 @@
 #include <qdebug.h>
 #include <QDir>
 
+
 #include "firmwareupdatercore.h"
 
 #undef UPDATER_RELEASE
@@ -16,6 +17,7 @@
 
 #define MY_ADDR "10.0.1.104"
 #define MY_PORT 3333
+
 
 int verbosity = 1;
 
@@ -30,7 +32,8 @@ enum action_t
     action_program = 3,
     action_forcemaintenance = 4,
     action_forceapplication = 5,
-    action_query = 6
+    action_query = 6,
+    action_loaddatfile = 7 //tumme
 };
 
 
@@ -56,6 +59,8 @@ int queryOnSecondLevel_ETHboard(FirmwareUpdaterCore *core, QString device, QStri
 int queryOnSecondLevel_CANboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetCANline, const QString &targetCANaddr);
 int queryCanDevices(QList<sBoard> canBoards, const QString onIPboard, const QString &targetCANline, const QString &targetCANaddr);
 int queryOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QString id, const QString board, const QString &targetCANline, const QString &targetCANaddr);
+int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file,bool eraseEEprom); //tumme
+
 
 int main(int argc, char *argv[])
 {
@@ -100,7 +105,7 @@ int main(int argc, char *argv[])
     QCommandLineOption verbosityOption(QStringList() << "x" << "verbosity", "Choose a verbosity level [0, 1]","verbosity","");
     QCommandLineOption verifyOption(QStringList() << "y" << "verify", "Verify FW version [ma.mi / ma.mi.re]. returns 0 if address and FW both match, 1 if board is found but FW does not match, 2 if board is not even found","verify","");
     QCommandLineOption queryOption(QStringList() << "q" << "query", "Queries a given address for its type and FW version [ma.mi / ma.mi.re]. prints a result on stdout. it returns 1 if it does not find a board at address");
-//    QCommandLineOption queryOption(QStringList() << "q" << "query", "Queries a given address for its type and FW version [ma.mi / ma.mi.re]. prints a result on stdout. it returns 1 if it does not find a board at address","query","");
+    QCommandLineOption loadDatFileOption(QStringList() << "z" << "load-dat-file", "Loads the calibration .dat file into STRAIN2 eeprom (pass the file.dat with -l or --file option)","",""); //tumme
 
 
     parser.addOption(noGuiOption);
@@ -123,6 +128,8 @@ int main(int argc, char *argv[])
     parser.addOption(verbosityOption);
     parser.addOption(verifyOption);
     parser.addOption(queryOption);
+    parser.addOption(loadDatFileOption); //tumme
+
 
     parser.process(a);
 
@@ -198,6 +205,7 @@ int main(int argc, char *argv[])
         bool forceMaintenance = parser.isSet(ethForceMaintenance);
         bool forceApplication = parser.isSet(ethForceApplication);
         bool eraseEEprom = parser.isSet(eraseEEpromOption);
+        bool loadDatFile = parser.isSet(loadDatFileOption); //tumme
 
         core.setVerbosity(verbosity);
 
@@ -271,6 +279,18 @@ int main(int argc, char *argv[])
             if(action == action_none)
             {
                 action = action_forceapplication;
+            }
+            else
+            {
+                action = action_impossible;
+            }
+        }
+
+        if((loadDatFile) && (action_impossible != action)) //tumme
+        {
+            if(action == action_none)
+            {
+                action = action_loaddatfile;
             }
             else
             {
@@ -492,6 +512,29 @@ int main(int argc, char *argv[])
 
             } break;
 
+            case action_loaddatfile: //tumme 
+            {
+                ret = 1;
+                //yDebug() << "loaddatfile";
+
+                if(device.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a device to be set";
+                }else if(id.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need an id to be set";
+                }else if(file.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a file path to be set";
+                }else{
+                    if(!device.contains("ETH") && canLine.isEmpty()){
+                        if(verbosity >= 1) qDebug() << "Need a can line to be set";
+                    } else if(!device.contains("ETH") && canId.isEmpty()){
+                        if(verbosity >= 1) qDebug() << "Need a can id to be set";
+                    }else{
+                      ret = loadDatFileStrain2(&core,device,id,board,canLine,canId,file,eraseEEprom);
+                    }
+                }
+
+            } break;
+
         };
 
 
@@ -580,6 +623,209 @@ int main(int argc, char *argv[])
 //    }
 //    return 0;
 //}
+
+int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file,bool eraseEEprom)
+{
+    //09-2020 - davide.tome@iit.it
+    //This method is used to load a calibration file into the eeprom of the STRAIN2 using the dedicated CLI option -z/--load-dat-file (and -l/--file option to specify the file to be loaded)
+    // i.e. FirmwareUpdater -g -e SOCKETCAN -i 0 -c 1 -n 13 -z -l calibrationDataSN003.dat
+    // i.e. FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -c 1 -n 13 -z -l calibrationDataSN003.dat
+    
+    QList <sBoard> canBoards;
+    QString retString;
+    int ret;
+    char sn[256];
+    int index = 0;
+    unsigned int CHANNEL_COUNT = 6; 
+    strain2_ampl_regs_t amp_registers[6]; 
+    unsigned int offset[6];
+    unsigned int calib_matrix[3][6][6];
+    int calib_bias[6];
+    unsigned int full_scale_const[3][6];
+    string msg;
+
+
+    if (file==NULL){
+        yError("File not found!\n");
+        return false;
+    }
+    
+
+    if(device.contains("SOCKETCAN"))
+    {
+        if (canId.toInt() <1 || canId.toInt() >= 15){
+        yError("Invalid board address!\n");
+        return false;
+        }
+
+        canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
+        
+        
+    }
+    else if(device.contains("ETH"))
+    {
+        QString result, ret;
+        ret = setBoardToMaintenance(core,device,id,board);
+        if(!core->isBoardInMaintenanceMode(board)){
+            yError("ETH board is not present or not in maintenace mode!!\n");
+            return false;
+        }
+        canBoards = core->getCanBoardsFromEth(board,&result,canLine.toInt(),true);
+    }
+    
+    //Flash the .dat file   
+    if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
+        {
+            int ret = core->getDownloader()->get_serial_no(canLine.toInt(),canId.toInt(),sn);
+            if(canBoards.count() > 0)
+            {
+                int boardtype = canBoards[0].type;
+                int regset = canBoards[0].strainregsetinuse;
+
+                int file_version=0;
+                fstream filestr;
+                filestr.open (file.toLatin1().data(), fstream::in);
+                if (!filestr.is_open()){
+                    yError("Error opening calibration file!\n");
+                    return false;
+                }
+
+                int i=0;
+                char buffer[256];
+
+                //file version
+                filestr.getline (buffer,256);
+                filestr.getline (buffer,256);
+                sscanf (buffer,"%d",&file_version);
+
+
+                if((icubCanProto_boardType__strain2 == boardtype) && (3 != file_version))
+                {
+                    yError("Wrong file. Calibration version not supported for strain2: %d\n", file_version);
+                    return false;
+                }
+                else if((icubCanProto_boardType__strain == boardtype) && (2 != file_version))
+                {
+                    yError("Wrong file. Calibration version not supported: %d\n", file_version);
+                    return false;
+                }
+
+                if(3 == file_version)
+                {
+                    // Board type:
+                    filestr.getline (buffer,256);
+                    filestr.getline (buffer,256);
+                    if(0 != strcmp(buffer, "strain2"))
+                    {
+                        yError("Wrong file. Board type not supported: %s\n", buffer);
+                        return false;
+                    }
+
+                    // Serial number:
+                    filestr.getline (buffer,256);
+                    filestr.getline (buffer,256);
+                    sprintf(sn,"%s", buffer);
+                    core->getDownloader()->strain_set_serial_number(canLine.toInt(),canId.toInt(), sn);
+                    //yDebug() << buffer;
+
+                    // Amplifier registers:
+                    filestr.getline (buffer,256);
+                    for (i=0;i<CHANNEL_COUNT; i++)
+                    {
+                        filestr.getline (buffer,256);
+                        yDebug() << buffer;
+                        unsigned int t08[6] = {0};
+                        sscanf  (buffer,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x", &t08[0], &t08[1], &t08[2], &t08[3], &t08[4], &t08[5]);
+                        for(int j=0; j<6; j++) amp_registers[i].data[j] = t08[j];
+
+                        core->getDownloader()->strain_set_amplifier_regs(canLine.toInt(),canId.toInt(), i, amp_registers[i], regset);
+
+                        // downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, offset[i]);
+                        //core->getDownloader()->strain_set_offset (bus,id, i, offset[i]);
+                        //printf("0X%02x, 0X%02x, 0X%02x, 0X%02x, 0X%02x,0X%02x", amp_registers[i].data[0], amp_registers[i].data[1], amp_registers[i].data[2], amp_registers[i].data[3], amp_registers[i].data[4], amp_registers[i].data[5]);
+                        //fflush(stdout);
+                        drv_sleep(10);
+                    }
+
+                }
+                else
+                {
+
+                    //serial number
+                    filestr.getline (buffer,256);
+                    filestr.getline (buffer,256);
+                    sprintf(sn,"%s", buffer);
+                    core->getDownloader()->strain_set_serial_number(canLine.toInt(),canId.toInt(), sn);
+
+                    //offsets
+                    filestr.getline (buffer,256);
+                    for (i=0;i<CHANNEL_COUNT; i++)
+                    {
+                        filestr.getline (buffer,256);
+                        sscanf  (buffer,"%d",&offset[i]);
+                        // downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, offset[i]);
+                        core->getDownloader()->strain_set_offset (canLine.toInt(),canId.toInt(), i, offset[i], regset);
+                        drv_sleep(200);
+                    }
+                }
+
+                //calibration matrix
+                filestr.getline (buffer,256);
+                for (i=0;i<36; i++){
+                    int ri=i/6;
+                    int ci=i%6;
+                    filestr.getline (buffer,256);
+                    sscanf (buffer,"%x",&calib_matrix[index][ri][ci]);
+                    //printf("%d %x\n", calib_matrix[index][ri][ci],calib_matrix[index][ri][ci]);
+                    core->getDownloader()->strain_set_matrix_rc(canLine.toInt(),canId.toInt(), ri, ci, calib_matrix[index][ri][ci], regset);
+                }
+
+                //matrix gain
+                filestr.getline (buffer,256);
+                filestr.getline (buffer,256);
+                int cc=0;
+                sscanf (buffer,"%d",&cc);
+                core->getDownloader()->strain_set_matrix_gain(canLine.toInt(),canId.toInt(), cc, regset);
+
+                //tare
+                filestr.getline (buffer,256);
+                for (i=0;i<CHANNEL_COUNT; i++){
+                    filestr.getline (buffer,256);
+                    sscanf  (buffer,"%d",&calib_bias[i]);
+                    core->getDownloader()->strain_set_calib_bias(canLine.toInt(),canId.toInt(), i, calib_bias[i], regset);
+                }
+
+                //full scale values
+                filestr.getline (buffer,256);
+                for (i=0;i<CHANNEL_COUNT; i++){
+                    filestr.getline (buffer,256);
+                    sscanf  (buffer,"%d",&full_scale_const[index][i]);
+                    core->getDownloader()->strain_set_full_scale(canLine.toInt(),canId.toInt(), i, full_scale_const[index][i], regset);
+                }
+                filestr.close();
+                filestr.clear();
+
+                core->getDownloader()->strain_save_to_eeprom(canLine.toInt(),canId.toInt(), &msg);
+
+                yInfo() << "Calibration file loaded via CLI!";
+            }
+
+        } else {
+            yError() << "No STRAIN2 board found, stopped!";
+            return false;
+        }
+
+        if(device.contains("ETH")){
+            ret = setBoardToApplication(core,device,id,board);
+            if(core->isBoardInMaintenanceMode(board)){
+            yError("ETH board not switched to application mode!!\n");
+            return false;
+            } else yInfo() << "ETH board ready!";
+        }
+
+    return -1;
+}
+
 
 int setBoardToApplication(FirmwareUpdaterCore *core,QString device,QString id,QString board)
 {
