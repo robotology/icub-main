@@ -35,7 +35,7 @@ enum action_t
     action_query = 6,
     action_loaddatfile = 7,
     action_setstrainsn = 8,
-    action_setstraingains = 9
+    action_setstraingainsoffsets = 9
 };
 
 
@@ -63,7 +63,7 @@ int queryCanDevices(QList<sBoard> canBoards, const QString onIPboard, const QStr
 int queryOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QString id, const QString board, const QString &targetCANline, const QString &targetCANaddr);
 int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file,bool eraseEEprom);
 int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId, QString serialNumber);
-int setStrainGains(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId);
+int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId);
 
 
 int main(int argc, char *argv[])
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     QCommandLineOption queryOption(QStringList() << "q" << "query", "Queries a given address for its type and FW version [ma.mi / ma.mi.re]. prints a result on stdout. it returns 1 if it does not find a board at address");
     QCommandLineOption loadDatFileOption(QStringList() << "z" << "load-dat-file", "Loads the calibration .dat file into STRAIN2 eeprom (pass the file.dat with -l or --file option)","","");
     QCommandLineOption setStrainSnOption(QStringList() << "w" << "set-strain-sn", "Sets the passed serialNumber (i.e. SN001) on STRAIN2","sn","");
-    QCommandLineOption setStrainGainsOption(QStringList() << "j" << "set-strain-gains", "Sets default gains (8,24,24,10,10,24) on STRAIN2","","");
+    QCommandLineOption setStrainGainsOffsetOption(QStringList() << "j" << "set-strain-gains", "Sets default gains (8,24,24,10,10,24) on STRAIN2","","");
 
 
     parser.addOption(noGuiOption);
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
     parser.addOption(queryOption);
     parser.addOption(loadDatFileOption);
     parser.addOption(setStrainSnOption);
-    parser.addOption(setStrainGainsOption);
+    parser.addOption(setStrainGainsOffsetOption);
 
 
 
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
         bool loadDatFile = parser.isSet(loadDatFileOption);
         bool setSn = parser.isSet(setStrainSnOption);
         QString serialNumber = parser.value(setStrainSnOption);
-        bool setGains = parser.isSet(setStrainGainsOption);
+        bool setGains = parser.isSet(setStrainGainsOffsetOption);
 
 
         core.setVerbosity(verbosity);
@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
         {
             if(action == action_none)
             {
-                action = action_setstraingains;
+                action = action_setstraingainsoffsets;
             }
             else
             {
@@ -595,7 +595,7 @@ int main(int argc, char *argv[])
 
             } break;
 
-            case action_setstraingains:
+            case action_setstraingainsoffsets:
             {
                 ret = 1;
                 //yDebug() << "loaddatfile";
@@ -610,7 +610,7 @@ int main(int argc, char *argv[])
                     } else if(!device.contains("ETH") && canId.isEmpty()){
                         if(verbosity >= 1) qDebug() << "Need a can id to be set";
                     }else{
-                      ret = setStrainGains(&core,device,id,board,canLine,canId);
+                      ret = setStrainGainsOffsets(&core,device,id,board,canLine,canId);
                     }
                 }
 
@@ -721,22 +721,24 @@ int main(int argc, char *argv[])
             yarp::os::Time::delay(1.0);
         }
 
-        */     
-int setStrainGains(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId)
+        */   
+         
+int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId)
 {
     QList <sBoard> canBoards;
     QString retString;
     int ret;
-    //char sn[256];
-    int index = 0;
-    
-    strain2_ampl_regs_t amp_registers[6]; 
-    unsigned int offset[6];
-    unsigned int calib_matrix[3][6][6];
-    int calib_bias[6];
-    unsigned int full_scale_const[3][6];
     string msg;
+    std::vector<strain2_ampl_discretegain_t> gains(0);
+    std::vector<int16_t> targets(0);
+    const strain2_ampl_discretegain_t ampsets[6] =
+            {
+                ampl_gain08, ampl_gain24, ampl_gain24,
+                ampl_gain10, ampl_gain10, ampl_gain24
+            };
+    
 
+    for(int i = 0; i < 6; i++){ targets.push_back(0); gains.push_back(ampsets[i]);}
   
     if(device.contains("SOCKETCAN"))
     {
@@ -760,30 +762,25 @@ int setStrainGains(FirmwareUpdaterCore *core,QString device,QString id,QString b
         canBoards = core->getCanBoardsFromEth(board,&result,canLine.toInt(),true);
     }
 
-if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
+        if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
         {
             string error = "e";
-    const strain2_ampl_discretegain_t ampsets[6] =
-        {
-            ampl_gain08, ampl_gain24, ampl_gain24,
-            ampl_gain10, ampl_gain10, ampl_gain24
-        };
-
-        yDebug() << "strain2-amplifier-tuning: STEP-1. imposing gains which are different of each channel";
-
-        for(int channel=0; channel<6; channel++)
-        {
-            yDebug() << "strain2-amplifier-tuning: STEP-1. on channel" << channel << "we impose gain =" << (ampsets[channel]);
-
-            core->getDownloader()->strain_set_amplifier_discretegain(canLine.toInt(), canId.toInt(), channel, ampsets[channel], 0, &error);
-
-            // i wait some time
-            yarp::os::Time::delay(1.0);
-        }
-
-core->getDownloader()->strain_save_to_eeprom(canLine.toInt(),canId.toInt(), &msg);
-yInfo() << "Gains Saved!";
             
+
+            yDebug() << "strain2-amplifier-tuning: STEP-1. imposing gains which are different of each channel";
+
+            //for(int channel=0; channel<6; channel++)
+            //{
+                //yDebug() << "strain2-amplifier-tuning: STEP-1. on channel" << channel << "we impose gain =" << (ampsets[channel]);
+
+                //core->getDownloader()->strain_set_amplifier_discretegain(canLine.toInt(), canId.toInt(), channel, ampsets[channel], 0, &error);
+                core->getDownloader()->strain_calibrate_offset2(canLine.toInt(), canId.toInt(), icubCanProto_boardType__strain2, gains, targets, &msg);
+                // i wait some time
+                yarp::os::Time::delay(1.0);
+            //}
+
+            core->getDownloader()->strain_save_to_eeprom(canLine.toInt(),canId.toInt(), &msg);
+            yInfo() << "Gains Saved! FW version : " << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "." << canBoards[0].appl_vers_build;
 
         } else {
             yError() << "No STRAIN2 board found, stopped!";
@@ -803,14 +800,6 @@ int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString boar
     QList <sBoard> canBoards;
     QString retString;
     int ret;
-    //char sn[256];
-    int index = 0;
-    unsigned int CHANNEL_COUNT = 6; 
-    strain2_ampl_regs_t amp_registers[6]; 
-    unsigned int offset[6];
-    unsigned int calib_matrix[3][6][6];
-    int calib_bias[6];
-    unsigned int full_scale_const[3][6];
     string msg;
 
     QByteArray string = serialNumber.toLatin1();
@@ -824,8 +813,7 @@ int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString boar
         }
 
         canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
-        
-        
+               
     }
     else if(device.contains("ETH"))
     {

@@ -537,6 +537,7 @@ void CalibrationWindow::autoAdjust()
             CustomSpinBox *spin = (CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_TARGET);
             gains.push_back(static_cast<strain2_ampl_discretegain_t>(combo->itemData(combo->currentIndex(),GAINAMPROLE).toInt()));
             targets.push_back(spin->value());
+            yDebug() << gains[i] << " " << targets[i];
         }
 
     }
@@ -565,6 +566,7 @@ void CalibrationWindow::applyParameters()
             int lastOffset = spin->value();
             uint16_t offset = lastOffset; // 32*1024 - 1;
             int g = combo->itemData(combo->currentIndex(),GAINAMPROLE).toInt();
+            yDebug() << "AA";
             strain2_ampl_discretegain_t dg = static_cast<strain2_ampl_discretegain_t>(g);
             float gain = core->getDownloader()->strain_amplifier_discretegain2float(dg);
             if(0 != gain){
