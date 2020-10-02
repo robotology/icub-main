@@ -49,7 +49,7 @@ jobs:
         md C:/robotology/vcpkg
         wget https://github.com/robotology/robotology-superbuild-dependencies-vcpkg/releases/download/${env:vcpkg_robotology_TAG}/vcpkg-robotology.zip
         unzip vcpkg-robotology.zip -d C:/robotology/vcpkg
-        echo "LOCAL_VCPKG_INSTALLATION_ROOT=C:/robotology/vcpkg" >> ${GITHUB_ENV}
+        echo "VCPKG_INSTALLATION_ROOT=C:/robotology/vcpkg" >> ${GITHUB_ENV}
         
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
@@ -71,20 +71,20 @@ jobs:
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/ycm.git --depth 1 --branch master
         cd ycm && mkdir -p build && cd build
-        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${LOCAL_VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL 
         # YARP
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/yarp.git --depth 1 --branch master
         cd yarp && mkdir -p build && cd build
-        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${LOCAL_VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DYARP_COMPILE_GUIS:BOOL=OFF \
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DYARP_COMPILE_GUIS:BOOL=OFF \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         # icub-firmware-shared
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch devel
         cd icub-firmware-shared && mkdir -p build && cd build
-        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${LOCAL_VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         
@@ -121,7 +121,7 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${LOCAL_VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
               -DICUB_USE_icub_firmware_shared:BOOL=ON -DENABLE_icubmod_serial:BOOL=ON \
               -DENABLE_icubmod_serialport:BOOL=ON -DENABLE_icubmod_skinWrapper:BOOL=ON \
               -DENABLE_icubmod_portaudio:BOOL=ON -DENABLE_icubmod_sharedcan:BOOL=ON \
@@ -167,7 +167,7 @@ jobs:
         cd build
         # Fix for using YARP idl generators (that link ACE) in Windows 
         # See https://github.com/robotology/idyntree/issues/569 for more details
-        export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin:${LOCAL_VCPKG_INSTALLATION_ROOT}/installed/x64-windows/bin
+        export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin:${VCPKG_INSTALLATION_ROOT}/installed/x64-windows/bin
         cmake --build . --config ${{ matrix.build_type }}
         
     - name: Install
