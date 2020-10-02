@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
     QCommandLineOption loadDatFileOption(QStringList() << "z" << "load-dat-file", "Loads the calibration .dat file into STRAIN2 eeprom (pass the file.dat with -l or --file option)","","");
     QCommandLineOption setStrainSnOption(QStringList() << "w" << "set-strain-sn", "Sets the passed serialNumber (i.e. SN001) on STRAIN2","sn","");
     QCommandLineOption setStrainGainsOffsetOption(QStringList() << "j" << "set-strain-gains", "Sets default gains (8,24,24,10,10,24) on STRAIN2","","");
-    QCommandLineOption getCanBoardVersionOption(QStringList() << "b" << "get-canboard-version", "Get bootloader and Application versions","saveFile","");
+    QCommandLineOption getCanBoardVersionOption(QStringList() << "b" << "get-canboard-version", "Gets Bootloader or Application version","saveFile","");
 
 
     parser.addOption(noGuiOption);
