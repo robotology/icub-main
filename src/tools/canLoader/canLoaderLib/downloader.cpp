@@ -3747,7 +3747,7 @@ int cDownloader::strain_calibrate_offset2_strain2(int bus, int target_id, const 
     // step 3: eval if the targets are equal or not. if they are all equal we send a single command.
     //         if not we must send one command per channel.
 
-    int16_t singletargetVALUE = targets[1];
+    int16_t singletargetVALUE = targets[0];
     bool singletargetTHEREIS = true;
     for(int channel=1; channel<NUMofCHANNELS; channel++)
     {

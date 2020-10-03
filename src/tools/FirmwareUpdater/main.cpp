@@ -66,7 +66,7 @@ int queryOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QSt
 int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file,bool eraseEEprom);
 int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId, QString serialNumber);
 int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId);
-int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId);
+int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,bool save);
 
 
 int main(int argc, char *argv[])
@@ -615,7 +615,6 @@ int main(int argc, char *argv[])
             {
                 ret = 1;
 
-
                 if(device.isEmpty()){
                     if(verbosity >= 1) qDebug() << "Need a device to be set";
                 }else if(id.isEmpty()){
@@ -635,7 +634,6 @@ int main(int argc, char *argv[])
             case action_getcanboardversion:
             {
                 ret = 1;
-                //yDebug() << "loaddatfile";
 
                 if(device.isEmpty()){
                     if(verbosity >= 1) qDebug() << "Need a device to be set";
@@ -647,7 +645,10 @@ int main(int argc, char *argv[])
                     } else if(!device.contains("ETH") && canId.isEmpty()){
                         if(verbosity >= 1) qDebug() << "Need a can id to be set";
                     }else{
-                      ret = getCanBoardVersion(&core,device,id,board,canLine,canId);
+                      bool save;
+                      if(saveVersion == "y") save = true;
+                      else save = false;
+                      ret = getCanBoardVersion(&core,device,id,board,canLine,canId,save);
                     }
                 }
 
@@ -760,7 +761,7 @@ int main(int argc, char *argv[])
 
         */   
 
-int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId)
+int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,bool save)
 {
     QList <sBoard> canBoards;
     QString retString;
@@ -791,12 +792,37 @@ int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QStri
 
         if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
         {
+            ofstream myfile;
             string prefix = "Application ";
 
-            core->getDownloader()->strain_save_to_eeprom(canLine.toInt(),canId.toInt(), &msg);
-            if(!canBoards[0].applicationisrunning) prefix = " Bootloader ";
-            yInfo() << prefix << " version : " << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "." << canBoards[0].appl_vers_build;
-            yarp::os::Time::delay(1.0);
+            if(!canBoards[0].applicationisrunning && save)
+            {   
+                try{
+                    myfile.open ("versions.txt", std::ios_base::app);
+                    prefix = " Bootloader ";
+                    myfile << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "\n";
+                    myfile.close();
+                    yInfo() << prefix << " version : " << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor;
+                }
+                catch (std::ifstream::failure e) {
+                    yError() << "Exception opening file";
+                    return false;
+                }               
+            }else if(canBoards[0].applicationisrunning && save)
+            {
+                try{
+                    myfile.open ("versions.txt", std::ios_base::app);
+                    prefix = " Application ";
+                    myfile << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "." << canBoards[0].appl_vers_build << "\n";
+                    myfile.close();
+                    yInfo() << prefix << " version : " << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "." << canBoards[0].appl_vers_build;
+                }
+                catch (std::ifstream::failure e) {
+                    yError() << "Exception opening file";
+                    return false;
+                }     
+            }
+            
         } else {
             yError() << "No CAN board found, stopped!";
             return false;
@@ -847,27 +873,27 @@ int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QS
         if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
         {
             string error = "e";
-            
 
             yDebug() << "strain2-amplifier-tuning: STEP-1. imposing gains which are different of each channel";
 
-            //for(int channel=0; channel<6; channel++)
-            //{
-                //yDebug() << "strain2-amplifier-tuning: STEP-1. on channel" << channel << "we impose gain =" << (ampsets[channel]);
-
-                //core->getDownloader()->strain_set_amplifier_discretegain(canLine.toInt(), canId.toInt(), channel, ampsets[channel], 0, &error);
-                core->getDownloader()->strain_calibrate_offset2(canLine.toInt(), canId.toInt(), icubCanProto_boardType__strain2, gains, targets, &msg);
-                // i wait some time
-                yarp::os::Time::delay(1.0);
-            //}
-
+            core->getDownloader()->strain_calibrate_offset2(canLine.toInt(), canId.toInt(), icubCanProto_boardType__strain2, gains, targets, &msg);
+            yarp::os::Time::delay(1.0);
             core->getDownloader()->strain_save_to_eeprom(canLine.toInt(),canId.toInt(), &msg);
-            yInfo() << "Gains Saved! FW version : " << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "." << canBoards[0].appl_vers_build;
+            yInfo() << "Gains Saved!";
 
         } else {
             yError() << "No STRAIN2 board found, stopped!";
             return false;
         }
+
+        if(device.contains("ETH")){
+            ret = setBoardToApplication(core,device,id,board);
+            if(core->isBoardInMaintenanceMode(board)){
+            yError("ETH board not switched to application mode!!\n");
+            return false;
+            } else yInfo() << "ETH board ready!";
+        }
+
    
     return -1;
 }
