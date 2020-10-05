@@ -798,7 +798,7 @@ int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QStri
             if(!canBoards[0].applicationisrunning && save)
             {   
                 try{
-                    myfile.open ("versions.txt", std::ios_base::app);
+                    myfile.open ("firmware-info.txt", std::ios_base::app);
                     prefix = " Bootloader ";
                     myfile << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "\n";
                     myfile.close();
@@ -811,7 +811,7 @@ int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QStri
             }else if(canBoards[0].applicationisrunning && save)
             {
                 try{
-                    myfile.open ("versions.txt", std::ios_base::app);
+                    myfile.open ("firmware-info.txt", std::ios_base::app);
                     prefix = " Application ";
                     myfile << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "." << canBoards[0].appl_vers_build << "\n";
                     myfile.close();
@@ -877,22 +877,46 @@ int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QS
             yDebug() << "strain2-amplifier-tuning: STEP-1. imposing gains which are different of each channel";
 
             core->getDownloader()->strain_calibrate_offset2(canLine.toInt(), canId.toInt(), icubCanProto_boardType__strain2, gains, targets, &msg);
-            yarp::os::Time::delay(1.0);
+            yarp::os::Time::delay(0.2);
             core->getDownloader()->strain_save_to_eeprom(canLine.toInt(),canId.toInt(), &msg);
-            yInfo() << "Gains Saved!";
+            yInfo() << "Gains Saved!"; 
 
         } else {
             yError() << "No STRAIN2 board found, stopped!";
             return false;
         }
 
-        if(device.contains("ETH")){
+        unsigned int adc[6];
+        char tempbuf [250];
+        bool failCh = false;
+
+        for(int i=0; i<6; i++){
+
+            if(i==0)ret  = core->getDownloader()->strain_get_adc (canLine.toInt(),canId.toInt(), i, adc[i], 0, &msg);
+            else  ret  |= core->getDownloader()->strain_get_adc (canLine.toInt(),canId.toInt(), i, adc[i], 0, &msg);
+            
+            unsigned int z = static_cast<int>(adc[i])-32768;
+            sprintf(tempbuf,"%d",z);
+            int t = std::stoi(tempbuf);
+            if(t < -500 || t > 500) failCh = true;
+            yDebug() << i << " " << std::stoi(tempbuf);
+            yarp::os::Time::delay(0.2);
+        }
+
+        if(failCh){
+            yError() << "Strange value on Channels ADC readings...";
+            return false;
+        }else{
+            yInfo() << "Good values in ADC channels reading!";
+        }
+       
+       /*  if(device.contains("ETH")){
             ret = setBoardToApplication(core,device,id,board);
             if(core->isBoardInMaintenanceMode(board)){
             yError("ETH board not switched to application mode!!\n");
             return false;
             } else yInfo() << "ETH board ready!";
-        }
+        } */
 
    
     return -1;
@@ -950,13 +974,13 @@ int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString boar
             return false;
         }
 
-        if(device.contains("ETH")){
+        /* if(device.contains("ETH")){
             ret = setBoardToApplication(core,device,id,board);
             if(core->isBoardInMaintenanceMode(board)){
             yError("ETH board not switched to application mode!!\n");
             return false;
             } else yInfo() << "ETH board ready!";
-        }
+        } */
 
     return -1;
 }
@@ -1152,13 +1176,13 @@ int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
             return false;
         }
 
-        if(device.contains("ETH")){
+        /* if(device.contains("ETH")){
             ret = setBoardToApplication(core,device,id,board);
             if(core->isBoardInMaintenanceMode(board)){
             yError("ETH board not switched to application mode!!\n");
             return false;
             } else yInfo() << "ETH board ready!";
-        }
+        } */
 
     return -1;
 }
