@@ -1230,9 +1230,8 @@ int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
 int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,bool eraseEEprom)
 {
     //09-2020 - davide.tome@iit.it
-    //This method is used to load a calibration file into the eeprom of the STRAIN2 using the dedicated CLI option -z/--load-dat-file (and -l/--file option to specify the file to be loaded)
-    // i.e. FirmwareUpdater -g -e SOCKETCAN -i 0 -c 1 -n 13 -z -l calibrationDataSN003.dat
-    // i.e. FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -c 1 -n 13 -z -l calibrationDataSN003.dat
+    //This method is used to saves the calibration of the STRAIN2 
+    // i.e. FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -c 1 -n 13 -u
     
     QList <sBoard> canBoards;
     QString retString;
@@ -1266,9 +1265,7 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
     int i=0;
     char buffer[256];
 
-yDebug() << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n";
-
-     if(device.contains("SOCKETCAN"))
+    if(device.contains("SOCKETCAN"))
     {
         if (canId.toInt() <1 || canId.toInt() >= 15){
         yError("Invalid board address!\n");
@@ -1276,7 +1273,6 @@ yDebug() << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n";
         }
 
         canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
-        
         
     }
     else if(device.contains("ETH"))
@@ -1295,107 +1291,103 @@ yDebug() << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n";
     {
         core->getDownloader()->strain_get_serial_number(1, 13, serial_no);
 
-    filename += "calibrationData";
-    filename += serial_no;
-    filename += ".dat";
-    fstream filestr;
-    filestr.open (filename.c_str(), fstream::out);
+        filename += "calibrationData";
+        filename += serial_no;
+        filename += ".dat";
+        fstream filestr;
+        filestr.open (filename.c_str(), fstream::out);
 
         for(int i=0; i<6; i++)
-    {            
-        core->getDownloader()->strain_get_amplifier_regs(1, 13, i, amp_registers[i], cDownloader::strain_regset_inuse, &msg);
-        core->getDownloader()->strain_get_amplifier_gain_offset(1, 13, i, amp_gains[i], amp_offsets[i], cDownloader::strain_regset_inuse, &msg);   
-        core->getDownloader()->strain_get_offset (1, 13, i, offset[i], cDownloader::strain_regset_inuse, &msg);  
-    }
+        {            
+            core->getDownloader()->strain_get_amplifier_regs(1, 13, i, amp_registers[i], cDownloader::strain_regset_inuse, &msg);
+            core->getDownloader()->strain_get_amplifier_gain_offset(1, 13, i, amp_gains[i], amp_offsets[i], cDownloader::strain_regset_inuse, &msg);   
+            core->getDownloader()->strain_get_offset (1, 13, i, offset[i], cDownloader::strain_regset_inuse, &msg);  
+        }
 
-    for(int mi=0;mi<1;mi++){
+        for(int mi=0;mi<1;mi++){
 
-        for (int ri=0;ri<CHANNEL_COUNT;ri++){
-            for (int ci=0;ci<CHANNEL_COUNT;ci++){
-                core->getDownloader()->strain_get_matrix_rc(1, 13, ri, ci, matrix[mi][ri][ci], cDownloader::strain_regset_inuse, &msg);
-                core->getDownloader()->strain_get_full_scale(1, 13, ri, full_scale_const[mi][ri], cDownloader::strain_regset_inuse, &msg);
+            for (int ri=0;ri<CHANNEL_COUNT;ri++){
+                for (int ci=0;ci<CHANNEL_COUNT;ci++){
+                    core->getDownloader()->strain_get_matrix_rc(1, 13, ri, ci, matrix[mi][ri][ci], cDownloader::strain_regset_inuse, &msg);
+                    core->getDownloader()->strain_get_full_scale(1, 13, ri, full_scale_const[mi][ri], cDownloader::strain_regset_inuse, &msg);
+                }
             }
         }
-    }
     
-    if(icubCanProto_boardType__strain2 == canBoards[0].type)
-    {
-        // file version
-        filestr<<"File version:"<<endl;
-        filestr<<"3"<<endl;
-        // board type
-        filestr<<"Board type:"<<endl;
-        filestr<<"strain2"<<endl;
-        // serial number
-        filestr<<"Serial number:"<<endl;
-        sprintf (buffer,"%s",serial_no);
-        filestr<<buffer<<endl;
-        // amplifier registers
-        filestr<<"Amplifier registers:"<<endl;
-        for (i=0;i<CHANNEL_COUNT; i++){
-            sprintf (buffer,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
-                    amp_registers[i].data[0], amp_registers[i].data[1], amp_registers[i].data[2],
-                    amp_registers[i].data[3], amp_registers[i].data[4], amp_registers[i].data[5]);
+        if(icubCanProto_boardType__strain2 == canBoards[0].type)
+        {
+            // file version
+            filestr<<"File version:"<<endl;
+            filestr<<"3"<<endl;
+            // board type
+            filestr<<"Board type:"<<endl;
+            filestr<<"strain2"<<endl;
+            // serial number
+            filestr<<"Serial number:"<<endl;
+            sprintf (buffer,"%s",serial_no);
+            filestr<<buffer<<endl;
+            // amplifier registers
+            filestr<<"Amplifier registers:"<<endl;
+            for (i=0;i<CHANNEL_COUNT; i++){
+                sprintf (buffer,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
+                        amp_registers[i].data[0], amp_registers[i].data[1], amp_registers[i].data[2],
+                        amp_registers[i].data[3], amp_registers[i].data[4], amp_registers[i].data[5]);
+                filestr<<buffer<<endl;
+            }
+        }
+        else
+        {
+            //file version
+            filestr<<"File version:"<<endl;
+            filestr<<"2"<<endl;
+
+            //serial number
+            filestr<<"Serial number:"<<endl;
+            sprintf (buffer,"%s",serial_no);
+            filestr<<buffer<<endl;
+
+            //offsets
+            filestr<<"Offsets:"<<endl;
+            for (i=0;i<CHANNEL_COUNT; i++){
+                sprintf (buffer,"%d",offset[i]);
+                filestr<<buffer<<endl;
+            }
+        }
+
+
+
+        //calibration matrix
+        filestr<<"Calibration matrix:"<<endl;
+        for (i=0;i<36; i++){
+            sprintf (buffer,"%x",matrix[index][i/6][i%6]);
             filestr<<buffer<<endl;
         }
-    }
-    else
-    {
-        //file version
-        filestr<<"File version:"<<endl;
-        filestr<<"2"<<endl;
 
-        //serial number
-        filestr<<"Serial number:"<<endl;
-        sprintf (buffer,"%s",serial_no);
+
+        //matrix gain
+        filestr<<"Matrix gain:"<<endl;
+        sprintf (buffer,"%d",calib_const[index]);
         filestr<<buffer<<endl;
 
-        //offsets
-        filestr<<"Offsets:"<<endl;
+
+        //tare
+        filestr<<"Tare:"<<endl;
         for (i=0;i<CHANNEL_COUNT; i++){
-            sprintf (buffer,"%d",offset[i]);
+            sprintf (buffer,"%d",calib_bias[i]);
             filestr<<buffer<<endl;
         }
-    }
 
-
-
-    //calibration matrix
-    filestr<<"Calibration matrix:"<<endl;
-    for (i=0;i<36; i++){
-        sprintf (buffer,"%x",matrix[index][i/6][i%6]);
-        filestr<<buffer<<endl;
-    }
-
-
-    //matrix gain
-    filestr<<"Matrix gain:"<<endl;
-    sprintf (buffer,"%d",calib_const[index]);
-    filestr<<buffer<<endl;
-
-
-    //tare
-    filestr<<"Tare:"<<endl;
-    for (i=0;i<CHANNEL_COUNT; i++){
-        sprintf (buffer,"%d",calib_bias[i]);
-        filestr<<buffer<<endl;
-    }
-
-    //full scale values
-    filestr<<"Full scale values:"<<endl;
-    for (i=0;i<CHANNEL_COUNT; i++){
-        sprintf (buffer,"%d",full_scale_const[index][i]);
-        filestr<<buffer<<endl;
-    }
-
-
-
-    printf ("Calibration file saved!\n");
-    filestr.close();
+        //full scale values
+        filestr<<"Full scale values:"<<endl;
+        for (i=0;i<CHANNEL_COUNT; i++){
+            sprintf (buffer,"%d",full_scale_const[index][i]);
+            filestr<<buffer<<endl;
+        }
         
-    }
+        printf ("Calibration file saved!\n");
+        filestr.close();    
+        }
     
-
     return -1;
 }
 
