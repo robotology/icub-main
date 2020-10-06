@@ -1316,76 +1316,76 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
     
         if(icubCanProto_boardType__strain2 == canBoards[0].type)
         {
-            // file version
-            filestr<<"File version:"<<endl;
-            filestr<<"3"<<endl;
-            // board type
-            filestr<<"Board type:"<<endl;
-            filestr<<"strain2"<<endl;
-            // serial number
-            filestr<<"Serial number:"<<endl;
-            sprintf (buffer,"%s",serial_no);
-            filestr<<buffer<<endl;
-            // amplifier registers
-            filestr<<"Amplifier registers:"<<endl;
-            for (i=0;i<CHANNEL_COUNT; i++){
-                sprintf (buffer,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
-                        amp_registers[i].data[0], amp_registers[i].data[1], amp_registers[i].data[2],
-                        amp_registers[i].data[3], amp_registers[i].data[4], amp_registers[i].data[5]);
+                // file version
+                filestr<<"File version:"<<endl;
+                filestr<<"3"<<endl;
+                // board type
+                filestr<<"Board type:"<<endl;
+                filestr<<"strain2"<<endl;
+                // serial number
+                filestr<<"Serial number:"<<endl;
+                sprintf (buffer,"%s",serial_no);
+                filestr<<buffer<<endl;
+                // amplifier registers
+                filestr<<"Amplifier registers:"<<endl;
+                for (i=0;i<CHANNEL_COUNT; i++){
+                    sprintf (buffer,"0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
+                            amp_registers[i].data[0], amp_registers[i].data[1], amp_registers[i].data[2],
+                            amp_registers[i].data[3], amp_registers[i].data[4], amp_registers[i].data[5]);
+                    filestr<<buffer<<endl;
+                }
+            }
+            else
+            {
+                //file version
+                filestr<<"File version:"<<endl;
+                filestr<<"2"<<endl;
+
+                //serial number
+                filestr<<"Serial number:"<<endl;
+                sprintf (buffer,"%s",serial_no);
+                filestr<<buffer<<endl;
+
+                //offsets
+                filestr<<"Offsets:"<<endl;
+                for (i=0;i<CHANNEL_COUNT; i++){
+                    sprintf (buffer,"%d",offset[i]);
+                    filestr<<buffer<<endl;
+                }
+            }
+
+
+
+            //calibration matrix
+            filestr<<"Calibration matrix:"<<endl;
+            for (i=0;i<36; i++){
+                sprintf (buffer,"%x",matrix[index][i/6][i%6]);
                 filestr<<buffer<<endl;
             }
-        }
-        else
-        {
-            //file version
-            filestr<<"File version:"<<endl;
-            filestr<<"2"<<endl;
 
-            //serial number
-            filestr<<"Serial number:"<<endl;
-            sprintf (buffer,"%s",serial_no);
+
+            //matrix gain
+            filestr<<"Matrix gain:"<<endl;
+            sprintf (buffer,"%d",calib_const[index]);
             filestr<<buffer<<endl;
 
-            //offsets
-            filestr<<"Offsets:"<<endl;
+
+            //tare
+            filestr<<"Tare:"<<endl;
             for (i=0;i<CHANNEL_COUNT; i++){
-                sprintf (buffer,"%d",offset[i]);
+                sprintf (buffer,"%d",calib_bias[i]);
                 filestr<<buffer<<endl;
             }
-        }
 
-
-
-        //calibration matrix
-        filestr<<"Calibration matrix:"<<endl;
-        for (i=0;i<36; i++){
-            sprintf (buffer,"%x",matrix[index][i/6][i%6]);
-            filestr<<buffer<<endl;
-        }
-
-
-        //matrix gain
-        filestr<<"Matrix gain:"<<endl;
-        sprintf (buffer,"%d",calib_const[index]);
-        filestr<<buffer<<endl;
-
-
-        //tare
-        filestr<<"Tare:"<<endl;
-        for (i=0;i<CHANNEL_COUNT; i++){
-            sprintf (buffer,"%d",calib_bias[i]);
-            filestr<<buffer<<endl;
-        }
-
-        //full scale values
-        filestr<<"Full scale values:"<<endl;
-        for (i=0;i<CHANNEL_COUNT; i++){
-            sprintf (buffer,"%d",full_scale_const[index][i]);
-            filestr<<buffer<<endl;
-        }
-        
-        printf ("Calibration file saved!\n");
-        filestr.close();    
+            //full scale values
+            filestr<<"Full scale values:"<<endl;
+            for (i=0;i<CHANNEL_COUNT; i++){
+                sprintf (buffer,"%d",full_scale_const[index][i]);
+                filestr<<buffer<<endl;
+            }
+            
+            yInfo() << "Calibration file saved!";
+            filestr.close();    
         }
     
     return -1;
