@@ -1289,7 +1289,7 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
     //Flash the .dat file   
     if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
     {
-        core->getDownloader()->strain_get_serial_number(1, 13, serial_no);
+        core->getDownloader()->strain_get_serial_number(canLine.toInt(),canId.toInt(), serial_no);
 
         filename += "calibrationData";
         filename += serial_no;
@@ -1299,17 +1299,17 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
 
         for(int i=0; i<6; i++)
         {            
-            core->getDownloader()->strain_get_amplifier_regs(1, 13, i, amp_registers[i], cDownloader::strain_regset_inuse, &msg);
-            core->getDownloader()->strain_get_amplifier_gain_offset(1, 13, i, amp_gains[i], amp_offsets[i], cDownloader::strain_regset_inuse, &msg);   
-            core->getDownloader()->strain_get_offset (1, 13, i, offset[i], cDownloader::strain_regset_inuse, &msg);  
+            core->getDownloader()->strain_get_amplifier_regs(canLine.toInt(),canId.toInt(), i, amp_registers[i], cDownloader::strain_regset_inuse, &msg);
+            core->getDownloader()->strain_get_amplifier_gain_offset(canLine.toInt(),canId.toInt(), i, amp_gains[i], amp_offsets[i], cDownloader::strain_regset_inuse, &msg);   
+            core->getDownloader()->strain_get_offset (canLine.toInt(),canId.toInt(), i, offset[i], cDownloader::strain_regset_inuse, &msg);  
         }
 
         for(int mi=0;mi<1;mi++){
 
             for (int ri=0;ri<CHANNEL_COUNT;ri++){
                 for (int ci=0;ci<CHANNEL_COUNT;ci++){
-                    core->getDownloader()->strain_get_matrix_rc(1, 13, ri, ci, matrix[mi][ri][ci], cDownloader::strain_regset_inuse, &msg);
-                    core->getDownloader()->strain_get_full_scale(1, 13, ri, full_scale_const[mi][ri], cDownloader::strain_regset_inuse, &msg);
+                    core->getDownloader()->strain_get_matrix_rc(canLine.toInt(),canId.toInt(), ri, ci, matrix[mi][ri][ci], cDownloader::strain_regset_inuse, &msg);
+                    core->getDownloader()->strain_get_full_scale(canLine.toInt(),canId.toInt(), ri, full_scale_const[mi][ri], cDownloader::strain_regset_inuse, &msg);
                 }
             }
         }
@@ -1386,6 +1386,9 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
             
             yInfo() << "Calibration file saved!";
             filestr.close();    
+        }  else {
+            yError() << "No STRAIN2 board found, stopped!";
+            return false;
         }
     
     return -1;
