@@ -4,7 +4,6 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 #
 
-
 yarp_prepare_plugin(dragonfly2
                     CATEGORY device
                     TYPE yarp::dev::DragonflyDeviceDriver2Rgb
@@ -20,46 +19,38 @@ yarp_prepare_plugin(dragonfly2raw
                     INCLUDE common/DragonflyDeviceDriver2.h
                     EXTRA_CONFIG WRAPPER=grabberDual)
 
-IF(NOT SKIP_dragonfly2)
-  FIND_PACKAGE(DRAGONFLYAPI)
+if(NOT SKIP_dragonfly2)
+  find_package(DRAGONFLYAPI)
   
-  SET (EXTRA_SOURCES)
-  IF(NOT DRAGONFLYAPI_FOUND)
-	MESSAGE(SEND_ERROR "dragonfly2: dragonfly api not found, turn off device")
-  ELSE(NOT DRAGONFLYAPI_FOUND)
-
-  ADD_DEFINITIONS(-D_REENTRANT)
-
-  if(WIN32)
-	INCLUDE_DIRECTORIES(${DRAGONFLYAPI_INC_DIRS})
-	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/common)
-	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/winnt)
-	SET(EXTRA_SOURCES winnt/FirewireCameraDC1394-DR2_2.h winnt/FirewireCameraDC1394-DR2_2.cpp)
+  set(EXTRA_SOURCES)
+  if(NOT DRAGONFLYAPI_FOUND)
+	  message(SEND_ERROR "dragonfly2: dragonfly api not found, turn off device")
   else()
-    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/common)
-	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/linux)
-	SET(EXTRA_SOURCES linux/FirewireCameraDC1394-DR2_2.h linux/FirewireCameraDC1394-DR2_2.cpp)
-  endif()
+    add_definitions(-D_REENTRANT)
 
-  yarp_add_plugin(dragonfly2 common/DragonflyDeviceDriver2.h common/DragonflyDeviceDriver2.cpp ${EXTRA_SOURCES})
-  target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
-  icub_export_plugin(dragonfly2)
+    if(WIN32)
+	    include_directories(${DRAGONFLYAPI_INC_DIRS})
+	    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+	    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
+	    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/winnt)
+	    set(EXTRA_SOURCES winnt/FirewireCameraDC1394-DR2_2.h winnt/FirewireCameraDC1394-DR2_2.cpp)
+    else()
+      include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+	    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/common)
+	    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/linux)
+	    set(EXTRA_SOURCES linux/FirewireCameraDC1394-DR2_2.h linux/FirewireCameraDC1394-DR2_2.cpp)
+    endif()
+
+    yarp_add_plugin(dragonfly2 common/DragonflyDeviceDriver2.h common/DragonflyDeviceDriver2.cpp ${EXTRA_SOURCES})
+    target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
+    icub_export_plugin(dragonfly2)
   
-          yarp_install(TARGETS dragonfly2
-               COMPONENT Runtime
-               LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
-               ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
-               YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
-
-  if(NOT WIN32)
-    add_executable(firewirebusreset linux/fwBusReset_main.cpp ${EXTRA_SOURCES})
-    target_link_libraries(firewirebusreset ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
-    install(TARGETS firewirebusreset DESTINATION bin) 
+    yarp_install(TARGETS dragonfly2
+                 COMPONENT Runtime
+                 LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+                 ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
+                 YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
   endif()
-
-  ENDIF(NOT DRAGONFLYAPI_FOUND)
-ENDIF(NOT SKIP_dragonfly2)
+endif()
 
     

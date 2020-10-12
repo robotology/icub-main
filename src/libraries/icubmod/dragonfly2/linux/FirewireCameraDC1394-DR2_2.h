@@ -22,7 +22,6 @@
 #include <memory.h>
 #include <mutex>
 #include <dc1394/dc1394.h>
-#include <libraw1394/raw1394.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/os/Log.h>
@@ -78,8 +77,6 @@ public:
     bool CaptureRgb(unsigned char* pBuffer);
 
     bool CaptureRaw(unsigned char* pBuffer);
-
-    static void busReset(int port,double wait_sec);
 
     bool SetVideoMode(dc1394video_mode_t videoMode);
     bool SetF7(int newVideoMode,int newXdim,int newYdim,int newColorCoding,int newSpeed,int x0,int y0);
