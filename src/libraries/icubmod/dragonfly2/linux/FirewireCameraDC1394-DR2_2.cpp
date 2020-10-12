@@ -681,17 +681,6 @@ bool CFWCamera_DR2_2::CaptureRaw(unsigned char* pBuffer)
     return Capture(0,pBuffer,true);
 }
 
-void CFWCamera_DR2_2::busReset(int port,double wait_sec)
-{
-    raw1394handle_t bus_handle=raw1394_new_handle_on_port(port);
-
-    raw1394_reset_bus_new(bus_handle,RAW1394_LONG_RESET);
-
-    yarp::os::Time::delay(wait_sec);
-
-    raw1394_destroy_handle(bus_handle);
-}
-
 bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
 {
     if (!m_pCamera) return false;
