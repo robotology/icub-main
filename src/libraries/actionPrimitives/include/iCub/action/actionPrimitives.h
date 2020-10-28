@@ -36,7 +36,7 @@
  * provides the user a collection of action primitives in task 
  * space and joint space along with an easy way to combine them
  * together forming higher level actions (e.g. grasp(), tap(), 
- * …) in order to eventually execute more sophisticated tasks 
+ * ï¿½) in order to eventually execute more sophisticated tasks 
  * without reference to the motion control details. 
  *  
  * \image html actionPrimitives.jpg 

@@ -995,6 +995,7 @@ bool MotorThread::threadInit()
 
     // open views
     drv_head->view(enc_head);
+    drv_head->view(pos_head);
     drv_torso->view(enc_torso);
     drv_torso->view(pos_torso);
     drv_torso->view(vel_torso);
@@ -1173,6 +1174,9 @@ bool MotorThread::threadInit()
             {
                 string hand_seq_name=bMotor.find("hand_sequences_file").asString();
                 option.put("hand_sequences_file",rf.findFile(hand_seq_name));
+            } else if (pB->get(0).asString()=="poses_file"){
+                string poses_name=bMotor.find("poses_file").asString();
+                option.put("poses_file",rf.findFile(poses_name));
             }
             else
                 option.put(pB->get(0).asString(),pB->get(1));
@@ -1183,6 +1187,10 @@ bool MotorThread::threadInit()
             close();
             return false;
         }
+    }
+
+    if (!configPoses(option.find("poses_file").asString())) {
+        yError() << "Could not read poses file";
     }
 
     //torso impedence values
@@ -1913,20 +1921,19 @@ bool MotorThread::look(Bottle &options)
         if(checkOptions(options,"left") || checkOptions(options,"right"))
             arm=checkOptions(options,"left")?LEFT:RIGHT;
 
-        arm=checkArm(arm);        
-        lookAtHand(options);        
+        arm=checkArm(arm);
+        lookAtHand(options);
     }
     else
     {
         Vector xd;
-        Bottle *bTarget=options.find("target").asList();        
+        Bottle *bTarget=options.find("target").asList();
         if (!targetToCartesian(bTarget,xd))
             return false;
 
         if (options.check("block_eyes"))
         {
             ctrl_gaze->blockEyes(options.find("block_eyes").asDouble());
-            ctrl_gaze->waitMotionDone();
         }
 
         if (checkOptions(options,"fixate"))
@@ -3331,3 +3338,87 @@ void MotorThread::reinstate()
 }
 
 
+/************************************************************************/
+bool MotorThread::configPoses(const string &poses_file)
+{
+    yarp::os::Property poses_options;
+    poses_options.fromConfigFile(rf.findFile(poses_file));
+
+    if(!poses_options.check("torso") || !poses_options.check("right_arm")
+    || !poses_options.check("left_arm") || !poses_options.check("head"))
+        return false;
+
+    Bottle& tags = poses_options.findGroup("tags");
+    Bottle &tmpTorso=poses_options.findGroup("torso");
+    Bottle &tmpRightArm=poses_options.findGroup("right_arm");
+    Bottle &tmpLeftArm=poses_options.findGroup("left_arm");
+    Bottle &tmpHead=poses_options.findGroup("head");
+
+    yAssert(tags.size() == tmpTorso.size() && tmpTorso.size() == tmpHead.size()
+    && tmpHead.size() == tmpRightArm.size() && tmpRightArm.size() == tmpLeftArm.size());
+
+
+    for(int i=1; i<tmpTorso.size(); i++) {
+        Pose pose;
+
+        Bottle *b = tmpTorso.get(i).asList();
+        for (int j = 0; j < b->size(); j++)
+            pose.poss_torso.push_back(b->get(j).asDouble());
+
+        b = tmpRightArm.get(i).asList();
+        for (int j = 0; j < b->size(); j++)
+            pose.poss_right_arm.push_back(b->get(j).asDouble());
+
+        b = tmpLeftArm.get(i).asList();
+        for (int j = 0; j < b->size(); j++)
+            pose.poss_left_arm.push_back(b->get(j).asDouble());
+
+        b = tmpHead.get(i).asList();
+        for (int j = 0; j < b->size(); j++)
+            pose.poss_head.push_back(b->get(j).asDouble());
+
+        pose.tag = tags.get(i).toString();
+        posesMap.insert(std::make_pair(pose.tag, pose));
+    }
+
+    return true;
+}
+
+
+/************************************************************************/
+bool MotorThread::isValidPose(const string &poseKey)
+{
+    map<string, Pose>::iterator itr=posesMap.find(poseKey);
+
+    if (itr!=posesMap.end())
+        return true;
+    else
+        return false;
+}
+
+
+bool MotorThread::goToPose(Bottle &options) {
+    yInfo() << options.toString();
+    if (options.size() < 2) {
+        yInfo() << "Please provide a pose to go to";
+        return false;
+    }
+    const string &key = options.get(1).asString();
+    if (isValidPose(key)) {
+         yInfo() << "Going to pose " << key;
+         Pose pose = posesMap.find(key)->second;
+         pos_arm[RIGHT]->positionMove(pose.poss_right_arm.data());
+         pos_arm[LEFT]->positionMove(pose.poss_left_arm.data());
+         pos_torso->positionMove(pose.poss_torso.data());
+         pos_head->positionMove(pose.poss_head.data());
+         return true;
+     } else {
+        std::stringstream error_msg;
+        error_msg << "The given pose does not correspond to the available ones. Please provide one of the following: ";
+        for (auto &it : posesMap){
+            error_msg << it.first << " ";
+        }
+        yError() << error_msg.str();
+    }
+    return false;
+}

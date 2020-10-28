@@ -109,6 +109,17 @@ struct Dragger
 class MotorThread: public PeriodicThread
 {
 private:
+    struct Pose
+    {
+        std::string       tag;
+        std::vector<double> poss_torso;
+        std::vector<double> poss_right_arm;
+        std::vector<double> poss_left_arm;
+        std::vector<double> poss_head;
+    };
+
+    std::map<std::string, Pose > posesMap;
+
     ResourceFinder                      &rf;
 
     StereoTarget                        &stereo_target;    
@@ -127,6 +138,7 @@ private:
     IGazeControl                        *ctrl_gaze;
         
     IPositionControl                    *pos_torso;
+    IPositionControl                    *pos_head;
     IVelocityControl                    *vel_torso;
     IControlMode                        *ctrl_mode_torso;
     IInteractionMode                    *int_mode_torso;
@@ -231,8 +243,15 @@ private:
     bool restoreContext(ActionPrimitives *action);
     bool deleteContext(ActionPrimitives *action);
 
+    bool addPose(const string &poseKey, const Bottle &pose);
+    bool configPoses(const string &poses_file);
+    bool addPoseWP(const std::string &poseKey, const yarp::sig::Vector &poss,
+                           const yarp::sig::Vector &vels, const yarp::sig::Vector &tols,
+                           const yarp::sig::Vector &thres, const double tmo);
     bool loadExplorationPoses(const string &file_name);
+
     int checkArm(int arm);
+        virtual bool isValidPose(const std::string &poseKey);
     int checkArm(int arm, Vector &xd, const bool applyOffset=true);
     bool checkOptions(const Bottle &options, const string &parameter);
     Vector eye2root(const Vector &out,bool forehead);
@@ -384,6 +403,7 @@ public:
     // basic commands
     bool goUp(Bottle &options, const double h=std::numeric_limits<double>::quiet_NaN());
     bool goHome(Bottle &options);
+    bool goToPose(Bottle& options);
     bool reach(Bottle &options);
     bool powerGrasp(Bottle &options);
     bool push(Bottle &options);

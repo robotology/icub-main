@@ -365,6 +365,7 @@ Windows, Linux
 
 #define CMD_IDLE                    yarp::os::createVocab('i','d','l','e')
 #define CMD_HOME                    yarp::os::createVocab('h','o','m','e')
+#define CMD_GO_TO_POSE              yarp::os::createVocab('g','o','t','o')
 #define CMD_CALIBRATE               yarp::os::createVocab('c','a','l','i')
 #define CMD_EXPLORE                 yarp::os::createVocab('e','x','p','l')
 
@@ -1032,7 +1033,14 @@ public:
                     }
                     //-----------------------------------//
 
-
+                    case CMD_GO_TO_POSE: {
+                        if (motorThr->goToPose(command)) {
+                            reply.addVocab(ACK);
+                        } else {
+                            reply.addVocab(NACK);
+                        }
+                        break;
+                    }
                     case CMD_LEARN_MIL:
                     {
                         string obj_name=command.get(1).asString();
