@@ -948,6 +948,10 @@ bool MotorThread::threadInit()
     double ki=bMotor.check("stereo_ki",Value(0.001)).asDouble();
     double kd=bMotor.check("stereo_kd",Value(0.0)).asDouble();
 
+    double arms_speed=bMotor.check("arms_speed",Value(20.0)).asDouble();
+    double torso_speed=bMotor.check("torso_speed",Value(5.0)).asDouble();
+    double head_speed=bMotor.check("head_speed",Value(5.0)).asDouble();
+
     stereo_track=bMotor.check("stereo_track",Value("on")).asString()=="on";
     dominant_eye=(bMotor.check("dominant_eye",Value("left")).asString()=="left")?LEFT:RIGHT;
 
@@ -1019,7 +1023,7 @@ bool MotorThread::threadInit()
         drv_arm[LEFT]->view(enc_arm[LEFT]);
 
         Vector vels(16),accs(16);
-        vels=20.0; accs=6000.0;
+        vels=arms_speed; accs=6000.0;
         pos_arm[LEFT]->setRefSpeeds(vels.data());
         pos_arm[LEFT]->setRefAccelerations(accs.data());
     }
@@ -1040,17 +1044,22 @@ bool MotorThread::threadInit()
         drv_arm[RIGHT]->view(enc_arm[RIGHT]);
 
         Vector vels(16),accs(16);
-        vels=20.0; accs=6000.0;
+        vels=arms_speed; accs=6000.0;
         pos_arm[RIGHT]->setRefSpeeds(vels.data());
         pos_arm[RIGHT]->setRefAccelerations(accs.data());
     }
 
+    Vector head_vels(6),head_accs(6);
+    head_vels=head_speed; head_accs=6000.0;
+    pos_head->setRefSpeeds(head_vels.data());
+    pos_head->setRefAccelerations(head_accs.data());
+
     drv_ctrl_gaze->view(ctrl_gaze);
 
-    Vector vels(3),accs(3);
-    vels=5.0; accs=6000.0;
-    pos_torso->setRefSpeeds(vels.data());
-    pos_torso->setRefAccelerations(accs.data());
+    Vector torso_vels(3),torso_accs(3);
+    torso_vels=torso_speed; torso_accs=6000.0;
+    pos_torso->setRefSpeeds(torso_vels.data());
+    pos_torso->setRefAccelerations(torso_accs.data());
 
     // initialize the gaze controller
 
@@ -3411,6 +3420,20 @@ bool MotorThread::goToPose(Bottle &options) {
          pos_arm[LEFT]->positionMove(pose.poss_left_arm.data());
          pos_torso->positionMove(pose.poss_torso.data());
          pos_head->positionMove(pose.poss_head.data());
+         bool motionDone = false;
+         double now = Time::now();
+         while (!motionDone && Time::now() - now <= 10){
+             bool test = false;
+             motionDone = true;
+             pos_arm[RIGHT]->checkMotionDone(&test);
+             motionDone &= test;
+             pos_arm[LEFT]->checkMotionDone(&test);
+             motionDone &= test;
+             pos_torso->checkMotionDone(&test);
+             motionDone &= test;
+             pos_head->checkMotionDone(&test);
+             motionDone &= test;
+         }
          return true;
      } else {
         std::stringstream error_msg;
