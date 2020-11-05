@@ -54,9 +54,9 @@ jobs:
     - name: Dependencies [Ubuntu]
       if: matrix.os == 'ubuntu-latest'
       run: |
-        sudo apt-get update
-        sudo apt-get install git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev swig libopencv-dev qtbase5-dev \
-                                 qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev libpython3-dev swig
+        sudo apt update
+        sudo apt install -y git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev swig libopencv-dev qtbase5-dev \
+                            qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev libpython3-dev swig
         
     - name: Source-based Dependencies [Windows] 
       if: matrix.os == 'windows-latest'
