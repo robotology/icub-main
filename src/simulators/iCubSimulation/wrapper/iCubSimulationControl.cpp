@@ -988,8 +988,10 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
         {
             if (njoints == 16)
             {
-                if ( axis == 7 )
-                    next_pos[axis] = limitsMax[axis];
+                if ( axis == 7 ) //fingers abduction
+                    next_pos[axis] = limitsMax[axis]; //add explanation here
+                else
+                    next_pos[axis] = limitsMin[axis];
             }
             else
             {
@@ -1001,8 +1003,10 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
         {
             if (njoints == 16)
             {
-                if ( axis == 7 )
-                    next_pos[axis] = fabs(limitsMax[axis] - limitsMax[axis]);
+                if ( axis == 7 ) //fingers abduction
+                    next_pos[axis] = fabs(limitsMax[axis] - limitsMax[axis]); //add explanation here
+                else
+                    next_pos[axis] = limitsMax[axis];
             }
             else
             {
@@ -2262,8 +2266,10 @@ bool iCubSimulationControl::setPositionRaw(int axis, double ref)
         {
             if (njoints == 16)
             {
-                if ( axis == 7 )
-                    next_pos[axis] = limitsMax[axis];
+                if ( axis == 7 ) //fingers abduction
+                    next_pos[axis] = limitsMax[axis]; //add explanation here
+                else
+                    next_pos[axis] = limitsMin[axis];
             }
             else
             {
@@ -2275,8 +2281,10 @@ bool iCubSimulationControl::setPositionRaw(int axis, double ref)
         {
             if (njoints == 16)
             {
-                if ( axis == 7 )
-                    next_pos[axis] = fabs(limitsMax[axis] - limitsMax[axis]);
+                if ( axis == 7 ) //fingers abduction
+                    next_pos[axis] = fabs(limitsMax[axis] - limitsMax[axis]); //add explanation here
+                else
+                    next_pos[axis] = limitsMax[axis];
             }
             else
             {
