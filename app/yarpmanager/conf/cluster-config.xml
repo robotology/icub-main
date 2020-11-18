@@ -1,11 +1,17 @@
-<cluster name="icub01" user="icub">
+<cluster name="icub02" user="icub">
 
-<nameserver namespace="/root" node="icubsrv"> </nameserver>
+<!-- specify type="yarpserver" or type="yarpserver3" to use the old or new nameserver default behavior is to use yarpserver3 -->
+<nameserver namespace="/icub02" node="icub23" type="yarpserver"> </nameserver>
 
 <!-- specify nodes, if you want to enable display on desktop please specify which desktop to use
 this is usually the value of the DISPLAY variable when logged on -->
-<node display=":0.0">icubsrv</node>
-<node>pc104</node>
+<node>icub-head</node>
+<node>icub-zynq</node>
+<node display=":0.0">icub23</node>
+<node display=":0.0">icub24</node>
+<node>icub-spinnlink</node>
+<node>icub-blade</node>
+<node>icub-cuda</node>
 
 </cluster>
 

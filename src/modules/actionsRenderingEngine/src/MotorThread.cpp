@@ -1005,6 +1005,8 @@ bool MotorThread::threadInit()
     drv_torso->view(vel_torso);
     drv_torso->view(ctrl_mode_torso);
     drv_torso->view(int_mode_torso);
+    drv_head->view(int_mode_head);
+    drv_head->view(ctrl_mode_head);
     drv_torso->view(ctrl_impedance_torso);
 
     if(partUsed=="both_arms" || partUsed=="left_arm")
@@ -3414,12 +3416,27 @@ bool MotorThread::goToPose(Bottle &options) {
     }
     const string &key = options.get(1).asString();
     if (isValidPose(key)) {
+        for (int i = 0; i < 6; ++i) {
+            int_mode_arm[RIGHT]->setInteractionMode(i, VOCAB_IM_STIFF);
+            int_mode_arm[LEFT]->setInteractionMode(i, VOCAB_IM_STIFF);
+            ctrl_mode_arm[RIGHT]->setControlMode(i, VOCAB_CM_POSITION);
+            ctrl_mode_arm[LEFT]->setControlMode(i, VOCAB_CM_POSITION);
+        }
+        for (int i = 0; i < 3; ++i) {
+            int_mode_torso->setInteractionMode(i, VOCAB_IM_STIFF);
+            ctrl_mode_torso->setControlMode(i, VOCAB_CM_POSITION);
+        }
+        for (int i = 0; i < 6; ++i) {
+            int_mode_head->setInteractionMode(i, VOCAB_IM_STIFF);
+            ctrl_mode_head->setControlMode(i, VOCAB_CM_POSITION);
+        }
          yInfo() << "Going to pose " << key;
          Pose pose = posesMap.find(key)->second;
          pos_arm[RIGHT]->positionMove(pose.poss_right_arm.data());
          pos_arm[LEFT]->positionMove(pose.poss_left_arm.data());
          pos_torso->positionMove(pose.poss_torso.data());
          pos_head->positionMove(pose.poss_head.data());
+
          bool motionDone = false;
          double now = Time::now();
          while (!motionDone && Time::now() - now <= 10){

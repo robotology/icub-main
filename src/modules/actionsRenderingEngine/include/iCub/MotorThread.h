@@ -141,7 +141,9 @@ private:
     IPositionControl                    *pos_head;
     IVelocityControl                    *vel_torso;
     IControlMode                        *ctrl_mode_torso;
+    IControlMode                        *ctrl_mode_head;
     IInteractionMode                    *int_mode_torso;
+    IInteractionMode                    *int_mode_head;
     IImpedanceControl                   *ctrl_impedance_torso;
 
     IControlMode                        *ctrl_mode_arm[2];
