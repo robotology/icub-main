@@ -2124,7 +2124,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if (finger=="index")
     {
         chainJoints.resize(4);
-        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
         chainJoints[1]=motorEncoders[offs+4];
         chainJoints[2]=motorEncoders[offs+5]/2.0;
         chainJoints[3]=chainJoints[2];
@@ -2139,7 +2139,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if ((finger=="ring") || (finger=="little"))
     {
         chainJoints.resize(4);
-        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
         chainJoints[1]=motorEncoders[offs+8]/3.0;
         chainJoints[3]=chainJoints[2]=chainJoints[1];
     }
@@ -2188,7 +2188,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if (finger=="index")
     {
         chainJoints.resize(4);
-        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
         for (unsigned int i=1; i<chainJoints.length(); i++)
         {
             double c=0.0;
@@ -2217,7 +2217,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if (finger=="ring")
     {
         chainJoints.resize(4);
-        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
         for (unsigned int i=1; i<chainJoints.length(); i++)
         {
             double c=0.0;
@@ -2232,7 +2232,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if (finger=="little")
     {
         chainJoints.resize(4);
-        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
         for (unsigned int i=1; i<chainJoints.length(); i++)
         {
             double c=0.0;
