@@ -2038,8 +2038,8 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limFinger.getLimits(7,&min,&max))
             return false;
 
-        (*this)[0].setMin(CTRL_DEG2RAD*min);
-        (*this)[0].setMax(CTRL_DEG2RAD*max/3.0);
+        (*this)[0].setMin(0.0);
+        (*this)[0].setMax(CTRL_DEG2RAD*(max-min)/3.0);
 
         if (!limFinger.getLimits(11,&min,&max))
             return false;
@@ -2076,8 +2076,8 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limFinger.getLimits(7,&min,&max))
             return false;
 
-        (*this)[0].setMin(CTRL_DEG2RAD*min);
-        (*this)[0].setMax(CTRL_DEG2RAD*max/3.0);
+        (*this)[0].setMin(0.0);
+        (*this)[0].setMax(CTRL_DEG2RAD*(max-min)/3.0);
 
         if (!limFinger.getLimits(15,&min,&max))
             return false;
