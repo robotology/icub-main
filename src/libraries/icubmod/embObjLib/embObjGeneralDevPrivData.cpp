@@ -10,6 +10,7 @@
 #include <yarp/os/Network.h>
 #include <yarp/os/NetType.h>
 #include "embObjGeneralDevPrivData.h"
+#include <yarp/conf/environment.h>
 
 using namespace yarp::dev;
 
@@ -19,7 +20,7 @@ yarp::dev::embObjDevPrivData::embObjDevPrivData(std::string name):deviceNameType
     res = nullptr;
     behFlags.opened = false;
 
-    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         behFlags.verbosewhenok = (bool)NetType::toInt(tmp);

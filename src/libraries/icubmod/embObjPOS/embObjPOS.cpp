@@ -79,10 +79,14 @@ bool embObjPOS::initialised()
 
 bool embObjPOS::open(yarp::os::Searchable &config)
 {
-    // 1) prepare Eth service verifing if the eth manager is available and parsing info about the eth board.
+    // 1) prepare eth service verifing if the eth manager is available and parsing info about the eth board.
+
+    yInfo() << "embObjPOS::open(): preparing ETH resource";
 
     if(! m_PDdevice.prerareEthService(config, this))
         return false;
+
+    yInfo() << "embObjPOS::open(): browsing xml files which describe the service";
 
     // 2) read stuff from config file
     servConfigPOS_t serviceConfig;
@@ -98,6 +102,8 @@ bool embObjPOS::open(yarp::os::Searchable &config)
     }
 
 
+    yInfo() << "embObjPOS::open(): verify the presence of the board and if its protocol version is correct";
+
     // 4) verify analog sensor protocol and then verify-Activate the POS service
     if(!m_PDdevice.res->verifyEPprotocol(eoprot_endpoint_analogsensors))
     {
@@ -105,6 +111,8 @@ bool embObjPOS::open(yarp::os::Searchable &config)
         return false;
     }
 
+
+    yInfo() << "embObjPOS::open(): verify and activate the POS service";
 
     const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
 
@@ -119,11 +127,15 @@ bool embObjPOS::open(yarp::os::Searchable &config)
     //printServiceConfig();
 
 
+    yInfo() << "embObjPOS::open(): configure the POS service";
+
     if(false == sendConfig2boards(serviceConfig))
     {
         cleanup();
         return false;
     }
+
+    yInfo() << "embObjPOS::open(): impose the network variable which the ETH bord must stream up";
 
     // Set variable to be signaled
     if(false == initRegulars())
@@ -132,6 +144,8 @@ bool embObjPOS::open(yarp::os::Searchable &config)
         return false;
     }
 
+
+    yInfo() << "embObjPOS::open(): start the POS service";
 
     if(!m_PDdevice.res->serviceStart(eomn_serv_category_pos))
     {
@@ -147,10 +161,12 @@ bool embObjPOS::open(yarp::os::Searchable &config)
         }
     }
 
-    //send enable command to pos boards
+    yInfo() << "embObjPOS::open(): start streaming of POS data";
+
     sendStart2boards();
 
     m_PDdevice.setOpen(true);
+
     return true;
 }
 

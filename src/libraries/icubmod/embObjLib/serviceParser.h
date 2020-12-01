@@ -79,6 +79,13 @@ typedef struct
     std::vector<std::string>  idList;
 } servConfigPSC_t;
 
+typedef struct
+{
+    eOmn_serv_parameter_t     ethservice;
+    int                       acquisitionrate;
+    std::vector<std::string>  idList;
+} servConfigPOS_t;
+
 
 #if defined(SERVICE_PARSER_USE_MC)
 typedef struct
@@ -257,6 +264,7 @@ public:
     bool parseService(yarp::os::Searchable &config, servConfigImu_t &imuconfig);
     bool parseService(yarp::os::Searchable &config, servConfigSkin_t &skinconfig);
     bool parseService(yarp::os::Searchable &config, servConfigPSC_t &pscconfig);
+    bool parseService(yarp::os::Searchable &config, servConfigPOS_t &pscconfig);
 #if defined(SERVICE_PARSER_USE_MC)
     bool parseService(yarp::os::Searchable &config, servConfigMC_t &mcconfig);
     bool parseService2(yarp::os::Searchable &config, servConfigMC_t &mcconfig); // the fixed one.

@@ -935,6 +935,13 @@ void HostTransceiver::eoprot_override_as(void)
             EO_INIT(.tag)           eoprot_tag_as_psc_status,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_psc_status
+        },
+        {   // eoprot_tag_as_pos_status: ...
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_pos,
+            EO_INIT(.tag)           eoprot_tag_as_pos_status,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_pos_status
         }
 
 #if 0   // marco.accame: i keep the code just for the debug phase.       
@@ -982,11 +989,11 @@ void HostTransceiver::eoprot_override_sk(void)
     // marco.accame on 22 mar 2016:
     // i want to keep a minimum of callbacks, thus i have cleaned and put comments about what is needed and why
 
-    static const eOprot_callbacks_endpoint_descriptor_t sk_callbacks_descriptor_endp = 
-    { 
-        EO_INIT(.endpoint)          eoprot_endpoint_skin, 
-        EO_INIT(.raminitialise)     NULL
-    };
+//    static const eOprot_callbacks_endpoint_descriptor_t sk_callbacks_descriptor_endp =
+//    {
+//        EO_INIT(.endpoint)          eoprot_endpoint_skin,
+//        EO_INIT(.raminitialise)     NULL
+//    };
     
     static const eOprot_callbacks_variable_descriptor_t sk_callbacks_descriptors_vars[] = 
     { 
