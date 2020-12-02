@@ -1124,6 +1124,7 @@ protected:
     std::string hand;
     std::string finger;
     std::string version;
+    double fingers_abduction_max;
 
     virtual void allocate(const std::string &_type);
     virtual void clone(const iCubFinger &finger);

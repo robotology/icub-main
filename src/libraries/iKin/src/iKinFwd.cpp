@@ -1998,6 +1998,12 @@ void iCubFinger::allocate(const string &_type)
         pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
     }
 
+    if((finger=="index") || (finger=="ring") || (finger=="little"))
+    {
+        // evaluate maximum fingers abduction using the default limits
+        fingers_abduction_max = (*this)[0].getMax()*3.0*CTRL_RAD2DEG;
+    }
+
     setH0(H0);
 }
 
@@ -2038,6 +2044,8 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limFinger.getLimits(7,&min,&max))
             return false;
 
+        fingers_abduction_max = max;
+
         (*this)[0].setMin(0.0);
         (*this)[0].setMax(CTRL_DEG2RAD*(max-min)/3.0);
 
@@ -2075,6 +2083,8 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
     {
         if (!limFinger.getLimits(7,&min,&max))
             return false;
+
+        fingers_abduction_max = max;
 
         (*this)[0].setMin(0.0);
         (*this)[0].setMax(CTRL_DEG2RAD*(max-min)/3.0);
