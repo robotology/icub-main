@@ -1998,7 +1998,7 @@ void iCubFinger::allocate(const string &_type)
         pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
     }
 
-    if((finger=="index") || (finger=="ring") || (finger=="little"))
+    if ((finger=="index") || (finger=="ring") || (finger=="little"))
     {
         // evaluate maximum fingers abduction using the default limits
         fingers_abduction_max = (*this)[0].getMax()*3.0*CTRL_RAD2DEG;
@@ -2820,4 +2820,3 @@ void iCubInertialSensorWaist::allocate(const string &_type)
     H0(3,3)=1.0;
     setH0(H0);
 }
-
