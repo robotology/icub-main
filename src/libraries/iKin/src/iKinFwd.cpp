@@ -1998,6 +1998,12 @@ void iCubFinger::allocate(const string &_type)
         pushLink(new iKinLink(0.0168, 0.0, -M_PI/2.0, 0.0, 0.0, 90.0*CTRL_DEG2RAD));
     }
 
+    if ((finger=="index") || (finger=="ring") || (finger=="little"))
+    {
+        // evaluate maximum fingers abduction using the default limits
+        fingers_abduction_max = (*this)[0].getMax()*3.0*CTRL_RAD2DEG;
+    }
+
     setH0(H0);
 }
 
@@ -2038,8 +2044,10 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limFinger.getLimits(7,&min,&max))
             return false;
 
-        (*this)[0].setMin(CTRL_DEG2RAD*min);
-        (*this)[0].setMax(CTRL_DEG2RAD*max/3.0);
+        fingers_abduction_max = max;
+
+        (*this)[0].setMin(0.0);
+        (*this)[0].setMax(CTRL_DEG2RAD*(max-min)/3.0);
 
         if (!limFinger.getLimits(11,&min,&max))
             return false;
@@ -2076,8 +2084,10 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limFinger.getLimits(7,&min,&max))
             return false;
 
-        (*this)[0].setMin(CTRL_DEG2RAD*min);
-        (*this)[0].setMax(CTRL_DEG2RAD*max/3.0);
+        fingers_abduction_max = max;
+
+        (*this)[0].setMin(0.0);
+        (*this)[0].setMax(CTRL_DEG2RAD*(max-min)/3.0);
 
         if (!limFinger.getLimits(15,&min,&max))
             return false;
@@ -2114,7 +2124,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if (finger=="index")
     {
         chainJoints.resize(4);
-        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
         chainJoints[1]=motorEncoders[offs+4];
         chainJoints[2]=motorEncoders[offs+5]/2.0;
         chainJoints[3]=chainJoints[2];
@@ -2129,7 +2139,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if ((finger=="ring") || (finger=="little"))
     {
         chainJoints.resize(4);
-        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
         chainJoints[1]=motorEncoders[offs+8]/3.0;
         chainJoints[3]=chainJoints[2]=chainJoints[1];
     }
@@ -2178,7 +2188,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if (finger=="index")
     {
         chainJoints.resize(4);
-        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
         for (unsigned int i=1; i<chainJoints.length(); i++)
         {
             double c=0.0;
@@ -2207,7 +2217,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if (finger=="ring")
     {
         chainJoints.resize(4);
-        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
         for (unsigned int i=1; i<chainJoints.length(); i++)
         {
             double c=0.0;
@@ -2222,7 +2232,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if (finger=="little")
     {
         chainJoints.resize(4);
-        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
         for (unsigned int i=1; i<chainJoints.length(); i++)
         {
             double c=0.0;
@@ -2810,4 +2820,3 @@ void iCubInertialSensorWaist::allocate(const string &_type)
     H0(3,3)=1.0;
     setH0(H0);
 }
-
