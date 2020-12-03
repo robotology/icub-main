@@ -43,7 +43,7 @@ set <part> <emotion>  set a specific emotion for a defined part
         the available parts are: mou, eli, leb, reb, all
         the available emotions are: neu, hap, sad, sur, ang, evi, shy, cun
 
-set color <color>     set the color of the led
+set col <color>     set the color of the led
         !! available only for rfe board !!
         the available colors are: black, white, red, lime, blue, yellow, cyan, magenta, silver, gray, maroon, olive, green, purple, teal, navy
 
