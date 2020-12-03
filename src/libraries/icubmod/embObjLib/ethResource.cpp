@@ -12,6 +12,7 @@
 #include <ethManager.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Network.h>
+#include <yarp/conf/environment.h>
 #include <yarp/os/NetType.h>
 
 // embobj
@@ -64,7 +65,7 @@ EthResource::EthResource()
         c_string_handler[i] = NULL;
     }
 
-    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         verbosewhenok = (bool)NetType::toInt(tmp);

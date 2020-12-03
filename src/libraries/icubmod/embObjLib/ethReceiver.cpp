@@ -34,6 +34,7 @@
 
 #include <yarp/os/Network.h>
 #include <yarp/os/NetType.h>
+#include <yarp/conf/environment.h>
 
 //#include <yarp/os/SystemClock.h>
 #include <yarp/os/Log.h>
@@ -110,7 +111,7 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     int len = sizeof(mysize);
 
     // the user can change buffer size by environment variable ETHRECEIVER_BUFFER_SIZE
-    std::string _dgram_buffer_size = NetworkBase::getEnvironment("ETHRECEIVER_BUFFER_SIZE");
+    std::string _dgram_buffer_size = yarp::conf::environment::getEnvironment("ETHRECEIVER_BUFFER_SIZE");
     if (_dgram_buffer_size!="")
         mysize = NetType::toInt(_dgram_buffer_size);
 

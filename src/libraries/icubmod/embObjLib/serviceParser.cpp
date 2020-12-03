@@ -538,8 +538,9 @@ bool ServiceParser::convert(eObrd_protocolversion_t const &prot, char *str, int 
 bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 {
     bool formaterror = false;
-    // so far we check for eomn_serv_AS_mais / strain / inertial only
-    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) && (eomn_serv_AS_inertials3 != type) && (eomn_serv_AS_psc != type))
+    // so far we check for eomn_serv_AS_mais / strain / inertials inertials3 / psc / pos only
+    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) &&
+       (eomn_serv_AS_inertials3 != type) && (eomn_serv_AS_psc != type) && (eomn_serv_AS_pos != type))
     {
         yError() << "ServiceParser::check() is called with wrong type";
         return false;
@@ -648,7 +649,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 return false;
             }
 
-            int tmp = b_PROPERTIES_CANBOARDS_type.size();
+            size_t tmp = b_PROPERTIES_CANBOARDS_type.size();
             int numboards = tmp - 1;    // first position of bottle contains the tag "type"
 
             // check if all other fields have the same size.
@@ -735,7 +736,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 b_PROPERTIES_SENSORS_boardtype.clear();
             }
 
-            int tmp = b_PROPERTIES_SENSORS_id.size();
+            size_t tmp = b_PROPERTIES_SENSORS_id.size();
             int numsensors = tmp - 1;    // first position of bottle contains the tag "id"
 
             // check if all other fields have the same size.
@@ -808,7 +809,8 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             return false;
         }
 
-        int numenabledsensors = b_SETTINGS_enabledSensors.size() - 1;    // first position of bottle contains the tag "enabledSensors"
+        size_t s = b_SETTINGS_enabledSensors.size();
+        size_t numenabledsensors = (0 == s) ? (0) : (s - 1) ;    // first position of bottle contains the tag "enabledSensors"
 
         // the enabled must be <= the sensors.
         if( numenabledsensors > as_service.properties.sensors.size() )
@@ -822,7 +824,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
         as_service.settings.enabledsensors.resize(0);
 
-        for(int i=0; i<numenabledsensors; i++)
+        for(size_t i=0; i<numenabledsensors; i++)
         {
             servAnalogSensor_t founditem;
 
@@ -1017,8 +1019,8 @@ bool ServiceParser::check_skin(Searchable &config)
                 return false;
             }
 
-            int tmp = b_PROPERTIES_CANBOARDS_type.size();
-            int numboards = tmp - 1;    // first position of bottle contains the tag "type"
+            size_t tmp = b_PROPERTIES_CANBOARDS_type.size();
+            size_t numboards = (0 == tmp) ? 0 : (tmp - 1);    // first position of bottle contains the tag "type"
 
             // check if all other fields have the same size.
             if( (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_major.size()) ||
@@ -1487,7 +1489,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
         }
         // if ok, i copy it inside ...
 
-        eOas_inertial_descriptor_t des = {0};
+        eOas_inertial_descriptor_t des = {};
         des.type = type;
         memcpy(&des.on, &sensor.location, sizeof(eObrd_location_t));
 
@@ -1555,21 +1557,21 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
         }
         // if ok, i copy it inside ...
         
-        eOas_inertial3_descriptor_t des = {0};
+        eOas_inertial3_descriptor_t des = {};
         des.typeofsensor = type;
         memcpy(&des.on, &sensor.location, sizeof(eObrd_location_t));
         
         const eObrd_info_t *boardInfo_ptr =  eoas_inertial3_setof_boardinfos_find(boardInfoSet_ptr, eoboards_type2cantype(sensor.boardtype));
         if(nullptr == boardInfo_ptr)//if I did not already insert the borad info with type == sensor.boardtype, now I insert it
         {
-            //first of all I need to find the board info for this board type
-            int b;
-            bool found=false;
+            // first of all I need to find the board info for this board type
+            bool found = false;
+            size_t b = 0;
             for(b=0; b<as_service.properties.canboards.size(); b++)
             {
                 if(as_service.properties.canboards.at(b).type == eoboards_type2cantype(sensor.boardtype))
                 {
-                    found=true;
+                    found = true;
                     break;
                 }
             }
@@ -1578,7 +1580,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
                 yError() << "ServiceParser::parseService(IMU). The sensor " << i << "with type "<<  eoas_sensor2string(static_cast<eOas_sensor_t> (des.typeofsensor)) << "has borad type  " << eoboards_type2string2(sensor.boardtype, false) << " that is not declared in the SERVICE.PROPERTIES.CANBOARDS tag";
                 return false;
             }
-            eObrd_info_t boardInfo = {0};
+            eObrd_info_t boardInfo = {};
             boardInfo.type =  as_service.properties.canboards.at(b).type;
             memcpy(&boardInfo.protocol , &as_service.properties.canboards.at(b).protocol, sizeof(eObrd_protocolversion_t));
             memcpy(&boardInfo.firmware, &as_service.properties.canboards.at(b).firmware, sizeof(eObrd_firmwareversion_t));
@@ -1702,6 +1704,68 @@ bool ServiceParser::parseService(Searchable &config, servConfigPSC_t &pscconfig)
     return true;
 }
 
+
+bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
+{
+    if(false == check_analog(config, eomn_serv_AS_pos))
+    {
+        yError() << "ServiceParser::parseService(POS) has received an invalid SERVICE group for POS";
+        return false;
+    }
+
+
+    // check the num of type of boards. At max we have 1 board type
+
+    if(as_service.properties.canboards.size() > 1)
+    {
+        yError() << "ServiceParser::parseService(POS): too many type board info are configured. The max num is " << 1;
+        return false;
+    }
+
+    if(as_service.settings.enabledsensors.size() > eOas_pos_boards_maxnumber)
+    {
+        yError() << "ServiceParser::parseService(POS): too many enabled sensors are configured. The max num is " << eOas_pos_boards_maxnumber;
+        return false;
+    }
+
+    // reset configuration service
+    memset(&posconfig.ethservice.configuration, 0, sizeof(posconfig.ethservice.configuration));
+
+    // set type of service
+    posconfig.ethservice.configuration.type = eomn_serv_AS_pos;
+
+
+    //get acquisition rate
+    posconfig.acquisitionrate = as_service.settings.acquisitionrate;
+
+    servCanBoard_t *asServBoardInfo_ptr = &as_service.properties.canboards[0];
+    eOmn_serv_config_data_as_pos_t *posBoardConfig_ptr = &posconfig.ethservice.configuration.data.as.pos;
+
+    // get firmware and protocol info
+    posBoardConfig_ptr->version.firmware.major = asServBoardInfo_ptr->firmware.major;
+    posBoardConfig_ptr->version.firmware.minor = asServBoardInfo_ptr->firmware.minor;
+    posBoardConfig_ptr->version.firmware.build = asServBoardInfo_ptr->firmware.build;
+    posBoardConfig_ptr->version.protocol.major = asServBoardInfo_ptr->protocol.major;
+    posBoardConfig_ptr->version.protocol.minor = asServBoardInfo_ptr->protocol.minor;
+
+    for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
+    {
+        servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
+
+        if(eoas_pos_angle != sensor.type)
+        {
+            yWarning() << "ServiceParser::parseService() has detected a wrong pos sensor:" << eoas_sensor2string(sensor.type) << " ...  we drop it";
+            continue;
+        }
+
+        // if ok, i copy it inside ...
+        posBoardConfig_ptr->boardInfo.canloc[i].addr= sensor.location.can.addr;
+        posBoardConfig_ptr->boardInfo.canloc[i].port= sensor.location.can.port;
+
+    }
+
+    return true;
+}
 
 #if defined(SERVICE_PARSER_USE_MC)
 
@@ -2595,8 +2659,8 @@ bool ServiceParser::check_motion(Searchable &config)
             return false;
         }
 
-        int tmp = b_PROPERTIES_CANBOARDS_type.size();
-        int numboards = tmp - 1;    // first position of bottle contains the tag "type"
+        size_t tmp = b_PROPERTIES_CANBOARDS_type.size();
+        size_t numboards = (0 == tmp) ? 0 : (tmp - 1);    // first position of bottle contains the tag "type"
 
         // check if all other fields have the same size.
         if( (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_major.size()) ||
@@ -2614,7 +2678,7 @@ bool ServiceParser::check_motion(Searchable &config)
         mc_service.properties.canboards.resize(0);
 
         formaterror = false;
-        for(int i=0; i<numboards; i++)
+        for(size_t i=0; i<numboards; i++)
         {
             servCanBoard_t item;
 
@@ -3037,7 +3101,7 @@ bool ServiceParser::check_motion(Searchable &config)
         }
         // now the size of the vectors must all be equal
 
-        int tmp = b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.size();
+        size_t tmp = b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.size();
         if( (tmp != b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.size())      ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_type.size())      ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_port.size())      ||
@@ -3056,7 +3120,7 @@ bool ServiceParser::check_motion(Searchable &config)
         }
 
         // ok, we have the number of joints .........
-        mc_service.properties.numofjoints = tmp-1;
+        mc_service.properties.numofjoints = (0 == tmp ) ? (0) : (tmp-1);
 
         // i attempt to parse the vectors inside actuators (type, port), encoder1 (type, port, position) and encoder2 (type, port, position).
 
@@ -3380,7 +3444,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             for(int i=0; i<numofjomos; i++)
             {
-                eOmc_jomo_descriptor_t jomodes = {0};
+                eOmc_jomo_descriptor_t jomodes = {};
 
                 // 1. actuator is on foc: we need the address
                 jomodes.actuator.foc.canloc.port = mc_service.properties.actuators[i].desc.foc.canloc.port;
@@ -3485,7 +3549,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             for(int i=0; i<numofjomos; i++)
             {
-                eOmc_jomo_descriptor_t jomodes = {0};
+                eOmc_jomo_descriptor_t jomodes = {};
 
                 // 1. actuator is on pwm: we need the port
                 jomodes.actuator.pwm.port = mc_service.properties.actuators[i].desc.pwm.port;
@@ -3537,7 +3601,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             for(int i=0; i<numofjomos; i++)
             {
-                eOmc_jomo_descriptor_t jomodes = {0};
+                eOmc_jomo_descriptor_t jomodes = {};
 
                 // 1. actuator is on pwm: we need the port
                 jomodes.actuator.pwm.port = mc_service.properties.actuators[i].desc.pwm.port;
@@ -3575,7 +3639,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             eOmn_serv_config_data_as_psc_t *psc = &data_mc->psc;
 
 
-            for(int i=0; i<mc_service.properties.psclocations.size(); i++)
+            for(size_t i=0; i<mc_service.properties.psclocations.size(); i++)
             {
                 psc->boardInfo.canloc[i].port=mc_service.properties.psclocations[i].port;
                 psc->boardInfo.canloc[i].addr=mc_service.properties.psclocations[i].addr;
@@ -3595,7 +3659,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             for(int i=0; i<numofjomos; i++)
             {
-                eOmc_jomo_descriptor_t jomodes = {0};
+                eOmc_jomo_descriptor_t jomodes = {};
 
                 // 1. actuator is on pwm: we need the port
                 jomodes.actuator.pwm.port = mc_service.properties.actuators[i].desc.pwm.port;
@@ -3667,7 +3731,7 @@ servMC_encoder_t * ServiceParser::getEncoderAtMotor(int index)
 
 }
 
-static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B0;
+//static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B0;
 /*static const eOmn_serv_configuration_t s_serv_config_mc_v3_0B0 =
 {   // eb12 or 0B0
     .type       = eomn_serv_MC_mc4plus,
@@ -3785,7 +3849,7 @@ static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B0;
     }
 };
 */
-static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B9;
+//static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B9;
 /*static const eOmn_serv_configuration_t s_serv_config_mc_v3_0B9=
 {   // eb15 or 0B9
     .type       = eomn_serv_MC_mc4plus,
@@ -3906,7 +3970,7 @@ static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B9;
 
 
 
-static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B1;
+// static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B1 = {};
 /*static const eOmn_serv_configuration_t s_serv_config_mc_v3_0B1 =
 {   // eb13 or 0B1
     .type       = eomn_serv_MC_mc4plus,
@@ -4032,7 +4096,7 @@ static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B1;
     }
 };
 */
-static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B7;
+//static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B7;
 /*static const eOmn_serv_configuration_t s_serv_config_mc_v3_0B7 =
 {   // eb14 or 0B7f
     .type       = eomn_serv_MC_mc4plus,
@@ -4158,13 +4222,16 @@ static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B7;
     &s_serv_config_mc_v3_0B1,       // board ip.3, 0b1, head neck yaw + 3 eyes
     &s_serv_config_mc_v3_0B0
 }*/
+
+static eOmn_serv_configuration_t s_serv_config_mc_v3_0B1 = {};
+
 bool ServiceParser::parseService2(Searchable &config, servConfigMC_t &mcconfig)
 {
     eOmc_arrayof_4jomodescriptors_t *ja = &s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.arrayofjomodescriptors;
     eOmc_4jomo_coupling_t *jc = &s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.jomocoupling;
 
 
-eOq17_14_t m1[][4]    =
+    eOq17_14_t m1[][4]    =
     {   // zero matrix: use matrix embedded in controller and seecetd by boardtype4mccontroller
         { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
         { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
@@ -4172,24 +4239,16 @@ eOq17_14_t m1[][4]    =
         { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
     };
 
-eOq17_14_t  m2[][4]=
-            {   // identical matrix
-                { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
-                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
-                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
-                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
-            };
+    eOq17_14_t  m2[][4]=
+    {   // identical matrix
+        { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+        { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+        { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+        { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+    };
 
 
-
-
-
-
-
-
-
-
-   // s_serv_config_mc_v3_0B1.type       = eomn_serv_MC_mc4plus;
+    //s_serv_config_mc_v3_0B1.type       = eomn_serv_MC_mc4plus;
     //s_serv_config_mc_v3_0B1.filler     = {0, 0, 0};
 
     //s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.boardtype4mccontroller = 6; //emscontroller_board_HEAD_neckyaw_eyes;
@@ -4268,26 +4327,26 @@ eOq17_14_t  m2[][4]=
 
 
 
-memcpy(&jc->joint2motor, &m1, sizeof(m1));
-memcpy(&jc->encoder2joint, &m2, sizeof(m2));
+    memcpy(&jc->joint2motor, &m1, sizeof(m1));
+    memcpy(&jc->encoder2joint, &m2, sizeof(m2));
 
-yError() << "print first m ";
-for(int r=0; r<4; r++)
-{
-    for(int c=0; c<4; c++)
+    yError() << "print first m ";
+    for(int r=0; r<4; r++)
     {
-        yError() << "r=" <<r << "c=" << c << "val=" << m1[r][c];
+        for(int c=0; c<4; c++)
+        {
+            yError() << "r=" <<r << "c=" << c << "val=" << m1[r][c];
+        }
     }
-}
 
-yError() << "print second  m ";
-for(int r=0; r<4; r++)
-{
-    for(int c=0; c<4; c++)
+    yError() << "print second  m ";
+    for(int r=0; r<4; r++)
     {
-        yError() << "r=" <<r << "c=" << c << "val=" << m2[r][c];
+        for(int c=0; c<4; c++)
+        {
+            yError() << "r=" <<r << "c=" << c << "val=" << m2[r][c];
+        }
     }
-}
 
 
 

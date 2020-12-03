@@ -36,6 +36,7 @@
 #include "EoProtocolAS.h"
 
 #include <yarp/os/NetType.h>
+#include <yarp/conf/environment.h>
 
 #ifdef WIN32
 #pragma warning(once:4355)
@@ -136,7 +137,7 @@ embObjMais::embObjMais()
     analogdata.resize(0);
 
 
-    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         verbosewhenok = (bool)NetType::toInt(tmp);
