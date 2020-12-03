@@ -2,7 +2,7 @@
 happy() {
     echo "set $1 hap" | yarp rpc /icub/face/emotions/in
     sleep 0.001
-    echo "set brig green" | yarp rpc /icub/face/emotions/in
+    echo "set brig $2" | yarp rpc /icub/face/emotions/in
 }
 
 neutral() {
@@ -25,7 +25,7 @@ surprised() {
 
 }
 
-while true; do 
+while true; do
     # neutral fade out
     echo "set mask (blue BM_EB1 4) (blue BM_EB1 4) (blue BM_M0 4)" | yarp rpc /icub/face/emotions/in
     sleep 0.5
