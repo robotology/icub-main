@@ -53,7 +53,7 @@ set brig <brig>       set the brightness of the leds
 
 set mask (<col_leb> <m_name_leb> <brig_leb>) (<col_reb> <m_name_reb> <brig_reb>) (<col_mou> <m_name_mou> <brig_mou>) set color, bitmask and brightness for each part(leb, reb, mou)
         !! available only for rfe board !!
-        m_name stands for mask name and the availble bitmasks can be consulted/added in faceExpressions/emotions_rfe.ini
+        m_name stands for mask name and the available bitmasks can be consulted/added in faceExpressions/emotions_rfe.ini
 
 \endcode
 
