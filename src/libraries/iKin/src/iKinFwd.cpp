@@ -2711,8 +2711,8 @@ void iCubInertialSensor::allocate(const string &_type)
         setHN(getHN()*HN);
     }
 
-    // further displacement for v2.6
-    if (getType()=="v2.6")
+    // further displacement for >= 2.6
+    if (version>=2.6)
     {
         Matrix HN=zeros(4,4);
         HN(0,3)=0.0323779;
@@ -2810,4 +2810,3 @@ void iCubInertialSensorWaist::allocate(const string &_type)
     H0(3,3)=1.0;
     setH0(H0);
 }
-
