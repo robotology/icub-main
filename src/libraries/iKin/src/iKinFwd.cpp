@@ -2711,7 +2711,7 @@ void iCubInertialSensor::allocate(const string &_type)
         setHN(getHN()*HN);
     }
 
-    // further displacement for > 2.6
+    // further displacement for >= 2.6
     if (version>=2.6)
     {
         Matrix HN=zeros(4,4);
