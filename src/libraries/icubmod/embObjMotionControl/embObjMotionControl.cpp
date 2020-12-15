@@ -124,16 +124,16 @@ bool embObjMotionControl::alloc(int nj)
     _cacheImpedance = allocAndCheck<eOmc_impedance_t>(nj);
 
 
-     _rotorsLimits.reserve(nj);
-    _jointsLimits.reserve(nj);
-    _currentLimits.reserve(nj);
-    _jsets.reserve(nj);
-    _joint2set.reserve(nj);
-    _timeouts.reserve(nj);
-    _impedance_params.reserve(nj);
-    _axesInfo.reserve(nj);
-    _jointEncs.reserve(nj);
-    _motorEncs.reserve(nj);
+    _rotorsLimits.resize(nj);
+    _jointsLimits.resize(nj);
+    _currentLimits.resize(nj);
+    _jsets.resize(nj);
+    _joint2set.resize(nj);
+    _timeouts.resize(nj);
+    _impedance_params.resize(nj);
+    _axesInfo.resize(nj);
+    _jointEncs.resize(nj);
+    _motorEncs.resize(nj);
     
     //debug purpose
 
