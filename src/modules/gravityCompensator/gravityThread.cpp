@@ -115,15 +115,9 @@ void gravityCompensatorThread::init_upper()
 
     all_q_up.resize(allJnt,0.0);
     all_dq_up.resize(allJnt,0.0);
-    all_d2q_up.resize(allJnt,0.0); 
-    gravity_torques_LA.resize(7); gravity_torques_LA.zero();
-    gravity_torques_RA.resize(7); gravity_torques_RA.zero();
-    exec_torques_LA.resize(7); exec_torques_LA.zero();
-    exec_torques_RA.resize(7); exec_torques_RA.zero();
+    all_d2q_up.resize(allJnt,0.0);
     ampli_LA.resize(7);ampli_LA=1.0;
     ampli_RA.resize(7);ampli_RA=1.0;
-    externalcmd_torques_LA.resize(7);externalcmd_torques_LA.zero();
-    externalcmd_torques_RA.resize(7);externalcmd_torques_RA.zero();
 }
 
 void gravityCompensatorThread::init_lower()
@@ -157,18 +151,9 @@ void gravityCompensatorThread::init_lower()
     all_q_low.resize(allJnt,0.0);
     all_dq_low.resize(allJnt,0.0);
     all_d2q_low.resize(allJnt,0.0);
-    gravity_torques_TO.resize(3); gravity_torques_TO.zero();
-    gravity_torques_LL.resize(6); gravity_torques_LL.zero();
-    gravity_torques_RL.resize(6); gravity_torques_RL.zero();
-    exec_torques_TO.resize(3); exec_torques_TO.zero();
-    exec_torques_LL.resize(6); exec_torques_LL.zero();
-    exec_torques_RL.resize(6); exec_torques_RL.zero();
     ampli_TO.resize(3);ampli_TO=1.0;
     ampli_LL.resize(6);ampli_LL=1.0;
     ampli_RL.resize(6);ampli_RL=1.0;
-    externalcmd_torques_TO.resize(3);externalcmd_torques_TO.zero();
-    externalcmd_torques_LL.resize(6);externalcmd_torques_LL.zero();
-    externalcmd_torques_RL.resize(6);externalcmd_torques_RL.zero();
 
 }
 
@@ -201,8 +186,20 @@ void  gravityCompensatorThread::setUpperMeasure()
     icub->upperTorso->setInertialMeasure(w0,dw0,d2p0);
 }
 
-gravityCompensatorThread::gravityCompensatorThread(string _wholeBodyName, int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type, bool _inertial_enabled) : PeriodicThread((double)_rate/1000.0), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
-{   
+gravityCompensatorThread::gravityCompensatorThread(string _wholeBodyName, int _rate, PolyDriver *_ddLA,
+                                                   PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL,
+                                                   PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type,
+                                                   bool _inertial_enabled) : PeriodicThread((double)_rate/1000.0), ddLA(_ddLA),
+                                                                             ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL),
+                                                                             ddH(_ddH), ddT(_ddT), gravity_torques_LA(7,0.0),
+                                                                             gravity_torques_RA(7,0.0), exec_torques_LA(7,0.0),
+                                                                             exec_torques_RA(7,0.0), externalcmd_torques_LA(7,0.0),
+                                                                             externalcmd_torques_RA(7,0.0), gravity_torques_TO(3,0.0),
+                                                                             gravity_torques_LL(6,0.0), gravity_torques_RL(6,0.0),
+                                                                             exec_torques_TO(3,0.0), exec_torques_LL(6,0.0),
+                                                                             exec_torques_RL(6,0.0), externalcmd_torques_TO(3,0.0),
+                                                                             externalcmd_torques_LL(6,0.0), externalcmd_torques_RL(6,0.0)
+{
     gravity_mode = GRAVITY_COMPENSATION_ON;
     external_mode = EXTERNAL_TRQ_ON;
     wholeBodyName = std::move(_wholeBodyName);
