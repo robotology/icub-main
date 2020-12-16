@@ -16,7 +16,7 @@
 #include "embObjMotionControl.h"
 #include <ethManager.h>
 #include <FeatureInterface.h>
-
+#include <yarp/conf/environment.h>
 
 #include <yarp/os/LogStream.h>
 
@@ -253,7 +253,7 @@ embObjMotionControl::embObjMotionControl() :
     behFlags.useRawEncoderData = false;
     behFlags.pwmIsLimited     = false;
 
-    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
         behFlags.verbosewhenok = (bool)NetType::toInt(tmp);

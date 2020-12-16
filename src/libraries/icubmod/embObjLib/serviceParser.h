@@ -205,22 +205,23 @@ typedef struct
 
     int                                 numofjoints;
     eObrd_ethtype_t                     ethboardtype;
-    std::vector<servCanBoard_t>              canboards;
+    std::vector<servCanBoard_t>         canboards;
 
     eObrd_canlocation_t                 maislocation;
     std::vector<eObrd_canlocation_t>    psclocations;
+    std::vector<eObrd_canlocation_t>    poslocations;
 
     eOmc_mc4shifts_t                    mc4shifts;
-    std::vector<eOmc_mc4broadcast_t>         mc4broadcasts;
-    std::vector<eObrd_canlocation_t>         mc4joints;
+    std::vector<eOmc_mc4broadcast_t>    mc4broadcasts;
+    std::vector<eObrd_canlocation_t>    mc4joints;
 
     //servMC_controller_t                 controller;
 
-    std::vector<servMC_actuator_t>           actuators;
-    std::vector<servMC_encoder_t>            encoder1s;
-    std::vector<servMC_encoder_t>            encoder2s;
+    std::vector<servMC_actuator_t>      actuators;
+    std::vector<servMC_encoder_t>       encoder1s;
+    std::vector<servMC_encoder_t>       encoder2s;
 
-    //std::vector<int>                         joint2set;
+    //std::vector<int>                    joint2set;
     //int                                 numofjointsets;
     //std::vector<eOmc_jointset_configuration_t> jointset_cfgs;
 } servMCproperties_t;
@@ -285,6 +286,9 @@ public:
 
     bool parse_psc(std::string const &fromstring, eObrd_portpsc_t &ppsc, bool &formaterror);
     bool parse_port_psc(std::string const &fromstring, uint8_t &toport, bool &formaterror);
+
+    bool parse_pos(std::string const &fromstring, eObrd_portpos_t &ppos, bool &formaterror);
+    bool parse_port_pos(std::string const &fromstring, uint8_t &toport, bool &formaterror);
 
 #endif
 
