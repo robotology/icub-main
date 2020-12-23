@@ -603,7 +603,12 @@ bool embObjMotionControl::saveCouplingsData(void)
             jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc2pluspsc.jomocoupling);
 
         } break;
-         case eomn_serv_MC_mc4:
+        case eomn_serv_MC_mc4plusfaps:
+        {
+            jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc4plusfaps.jomocoupling);
+
+        } break;
+        case eomn_serv_MC_mc4:
         {
             return true;
         } break;
@@ -4726,7 +4731,8 @@ bool embObjMotionControl::iNeedCouplingsInfo(void)
     if( (mc_serv_type == eomn_serv_MC_foc) ||
         (mc_serv_type == eomn_serv_MC_mc4plus) ||
         (mc_serv_type == eomn_serv_MC_mc4plusmais) ||
-        (mc_serv_type == eomn_serv_MC_mc2pluspsc)
+        (mc_serv_type == eomn_serv_MC_mc2pluspsc) ||
+        (mc_serv_type == eomn_serv_MC_mc4plusfaps)
       )
         return true;
     else
