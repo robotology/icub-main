@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
 
     QCommandLineOption noGuiOption(QStringList() << "g" << "nogui", "The application starts in console mode");
-    //QCommandLineOption strainCalibOption(QStringList() << "k" << "strain-acquisition", "The application starts the STRAIN acquisition mode");
+    QCommandLineOption strainCalibOption(QStringList() << "0" << "strain-acquisition", "The application starts the STRAIN acquisition mode");
     QCommandLineOption adminOption(QStringList() << "a" << "admin", "The application starts in admin mode");
     QCommandLineOption iniFileOption(QStringList() << "f" << "from", "Override the default ini file","config","firmwareupdater.ini");
     QCommandLineOption addressOption(QStringList() << "s" << "address", "Override the default address","address",MY_ADDR);
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
     QCommandLineOption ethCanIdOption(QStringList() << "n" << "can_id", "Select a can id","can_id","");
     QCommandLineOption ethForceMaintenance(QStringList() << "m" << "force-eth-maintenance", "Force the board to go in maintenace mode","");
     QCommandLineOption ethForceApplication(QStringList() << "o" << "force-eth-application", "Force the board to go in application mode","");
-    QCommandLineOption eraseEEpromOption(QStringList() << "p" << "erase_eeprom" << "Erase EEPROM of STRAIN during FW update","");
+    QCommandLineOption eraseEEpromOption(QStringList() << "1" << "erase_eeprom" << "Erase EEPROM of STRAIN during FW update","");
     QCommandLineOption verbosityOption(QStringList() << "x" << "verbosity", "Choose a verbosity level [0, 1]","verbosity","");
     QCommandLineOption verifyOption(QStringList() << "y" << "verify", "Verify FW version [ma.mi / ma.mi.re]. returns 0 if address and FW both match, 1 if board is found but FW does not match, 2 if board is not even found","verify","");
     QCommandLineOption queryOption(QStringList() << "q" << "query", "Queries a given address for its type and FW version [ma.mi / ma.mi.re]. prints a result on stdout. it returns 1 if it does not find a board at address");
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 
 
     parser.addOption(noGuiOption);
-    //parser.addOption(strainCalibOption);
+    parser.addOption(strainCalibOption);
     parser.addOption(adminOption);
     parser.addOption(iniFileOption);
     parser.addOption(addressOption);
