@@ -33,78 +33,13 @@ jobs:
         path: ./ICUB_PACKAGE_VERSION.txt
 
 # end job "preliminary-steps"
-# start job "normal-build"
-  normal-build:
-    name: "[packages:@${{ matrix.os }}]"
-    needs: [preliminary-steps]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
-    steps:
-
-    - name: install deps
-      shell: bash
-      run: |
-        sudo apt update
-        sudo apt install -y git
-        sudo apt install -y lsb-release
-        sudo apt install -y build-essential
-        sudo apt install -y qml-module-qt-labs-folderlistmodel qml-module-qt-labs-settings libopenni2-dev libi2c-dev libv4l-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-tools libgraphviz-dev libqcustomplot-dev
-
-    - uses: actions/checkout@master
-
-    - uses: actions/download-artifact@v2
-      with:
-        name: ICUB_PACKAGE_VERSION.txt
-
-    - name: Generate icub-common metapackage
-      id: package_generation_icub-common
-      shell: bash
-      run: |
-        chmod +x ./.ci/create_icub-common_deb.sh
-        export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
-        ./.ci/create_icub-common_deb.sh
-        echo ::set-output name=ICUB_COMMON_PACKAGE_NAME::$( cat ICUB_COMMON_PACKAGE_NAME.txt )
-
-    - name: Upload Release Asset icub-common
-      uses: actions/upload-release-asset@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./${{ steps.package_generation_icub-common.outputs.ICUB_COMMON_PACKAGE_NAME }}
-        asset_name: ${{ steps.package_generation_icub-common.outputs.ICUB_COMMON_PACKAGE_NAME }}
-        asset_content_type: application/vnd.debian.binary-package
-
-    - name: Generate icub package
-      id: package_generation_icub-main
-      shell: bash
-      run: |
-        chmod +x ./.ci/create_icub-main_deb.sh
-        export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
-        ./.ci/create_icub-main_deb.sh
-        echo ::set-output name=ICUB_MAIN_PACKAGE_NAME::$( cat ICUB_MAIN_PACKAGE_NAME.txt )
-
-
-
-    - name: Upload Release Asset icub-main
-      uses: actions/upload-release-asset@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./${{ steps.package_generation_icub-main.outputs.ICUB_MAIN_PACKAGE_NAME }}
-        asset_name: ${{ steps.package_generation_icub-main.outputs.ICUB_MAIN_PACKAGE_NAME }}
-        asset_content_type: application/vnd.debian.binary-package
-# end job "normal-build"
 # start job "docker-build"
   docker-build:
     name: '[packages:@${{ matrix.docker_image }}]'
-    needs: [normal-build]
+    needs: [preliminary-steps]
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         docker_image:
           - "debian:buster"
@@ -120,9 +55,11 @@ jobs:
         apt update
         apt install -y git
         apt install -y lsb-release
-        apt install -y build-essential wget
+        apt install -y build-essential wget software-properties-common
         apt install -y libsqlite3-dev qml-module-qt-labs-folderlistmodel qml-module-qt-labs-settings libopenni2-dev libi2c-dev libv4l-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav gstreamer1.0-tools libgraphviz-dev libqcustomplot-dev
-
+      env:
+        TZ: Italy/Rome
+        DEBIAN_FRONTEND: noninteractive
     - uses: actions/checkout@master
 
     - uses: actions/download-artifact@v2
@@ -146,21 +83,12 @@ jobs:
         ./.ci/create_icub-main_deb.sh
         echo ::set-output name=ICUB_MAIN_PACKAGE_NAME::$( cat ICUB_MAIN_PACKAGE_NAME.txt )
 
-    - uses: actions/download-artifact@v2
-      with:
-        name: UPLOAD_URL.txt
-
-    - name: read upload url
-      id: read_upload_url
-      shell: bash
-      run: echo ::set-output name=UPLOAD_URL::$( cat UPLOAD_URL.txt )
-
     - name: Upload Release asset icub-common
       uses: actions/upload-release-asset@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.read_upload_url.outputs.UPLOAD_URL }}
+        upload_url: ${{ github.event.release.upload_url }}
         asset_path: ./${{ steps.package_generation_icub-common.outputs.ICUB_COMMON_PACKAGE_NAME }}
         asset_name: ${{ steps.package_generation_icub-common.outputs.ICUB_COMMON_PACKAGE_NAME }}
         asset_content_type: application/vnd.debian.binary-package
@@ -169,7 +97,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.read_upload_url.outputs.UPLOAD_URL }}
+        upload_url: ${{ github.event.release.upload_url }}
         asset_path: ./${{ steps.package_generation_icub-main.outputs.ICUB_MAIN_PACKAGE_NAME }}
         asset_name: ${{ steps.package_generation_icub-main.outputs.ICUB_MAIN_PACKAGE_NAME }}
         asset_content_type: application/vnd.debian.binary-package
@@ -187,6 +115,5 @@ jobs:
         with:
           name: |
             ICUB_PACKAGE_VERSION.txt
-            UPLOAD_URL.txt
 
 # end job "clenup-steps"

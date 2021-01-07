@@ -36,6 +36,7 @@ __PLATFORM_RELEASE=""
 _PLATFORM_HARDWARE=""
 _CONTROL_FILE=""
 ICUB_SCRIPT_DIR=$(pwd)
+ICUB_REPO_URL="https://github.com/robotology/icub-main.git"
 
 
 # #####################################################
@@ -334,13 +335,11 @@ install_deps()
 
 build_icub() {
 
-  #echo "Cloning icub sources from ${ICUB_REPO_URL}"
-  #git clone $ICUB_REPO_URL
-  #if [ "$?" != "0" ]; then
-  #  echo "Error: unable to clone icub repositoy from ${ICUB_REPO_URL}"
-  #  exit 1
-  #fi
+  echo "Cloning icub sources from ${ICUB_REPO_URL}"
+
   cd ${ICUB_SCRIPT_DIR}
+  git clone $ICUB_REPO_URL
+  cd icub-main
   export D_ICUB_ROOT=$(pwd)
   git checkout v$ICUB_PACKAGE_VERSION
   if [ "$?" != "0" ]; then

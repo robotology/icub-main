@@ -28,8 +28,6 @@ ICUB_DEPS_COMMON="libace-dev libboost-filesystem-dev libboost-system-dev libboos
 ICUB_DEPS_bionic="libode6"
 ICUB_DEPS_focal="libode8"
 ICUB_DEPS_buster="libode8"
-#TO BE CHANGED!!!
-ICUB_REPO_URL="https://github.com/Nicogene/icub-main.git"
 ICUB_PACKAGE_MAINTAINER="Matteo Brunettini <matteo.brunettini@iit.it>"
 export ICUB_DEBIAN_REVISION_NUMBER="1" # Always use a revision number >=1
 
