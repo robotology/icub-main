@@ -5,7 +5,7 @@ on:
   pull_request:
   schedule:
   # * is a special character in YAML so you have to quote this string
-  # Execute a "nightly" build at 2 AM UTC 
+  # Execute a "nightly" build at 2 AM UTC
   - cron:  '0 2 * * *'
 
 jobs:
@@ -19,18 +19,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
-        
+
     - name: Environment Variables
       shell: bash
       run: env
-      
-    # Remove apt repos that are known to break from time to time 
-    # See https://github.com/actions/virtual-environments/issues/323  
+
+    # Remove apt repos that are known to break from time to time
+    # See https://github.com/actions/virtual-environments/issues/323
     - name: Remove broken apt repos [Ubuntu]
       if: matrix.os == 'ubuntu-latest'
       run: |
         for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
-        
+
     # ============
     # DEPENDENCIES
     # ============
@@ -45,20 +45,20 @@ jobs:
         wget https://github.com/robotology/robotology-superbuild-dependencies-vcpkg/releases/download/${latest_tag}/vcpkg-robotology.zip
         unzip vcpkg-robotology.zip -d C:/
         echo "VCPKG_INSTALLATION_ROOT=C:/robotology/vcpkg" >> ${GITHUB_ENV}
-        
+
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
       run: |
         brew install ace cmake eigen gsl ipopt opencv pkg-config qt5
-    
+
     - name: Dependencies [Ubuntu]
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt update
         sudo apt install -y git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev swig libopencv-dev qtbase5-dev \
                             qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev libpython3-dev swig
-        
-    - name: Source-based Dependencies [Windows] 
+
+    - name: Source-based Dependencies [Windows]
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
@@ -67,7 +67,7 @@ jobs:
         git clone https://github.com/robotology/ycm.git --depth 1 --branch master
         cd ycm && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-        cmake --build . --config ${{ matrix.build_type }} --target INSTALL 
+        cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         # YARP
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/yarp.git --depth 1 --branch master
@@ -82,8 +82,8 @@ jobs:
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
-        
-    - name: Source-based Dependencies [Ubuntu/macOS] 
+
+    - name: Source-based Dependencies [Ubuntu/macOS]
       if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
       shell: bash
       run: |
@@ -92,7 +92,7 @@ jobs:
         git clone https://github.com/robotology/ycm.git --depth 1 --branch master
         cd ycm && mkdir -p build && cd build
         cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-        cmake --build . --config ${{ matrix.build_type }} --target install 
+        cmake --build . --config ${{ matrix.build_type }} --target install
         # YARP
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/yarp.git --depth 1 --branch master
@@ -104,8 +104,8 @@ jobs:
         git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch devel
         cd icub-firmware-shared && mkdir -p build && cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-        cmake --build . --config ${{ matrix.build_type }} --target install 
- 
+        cmake --build . --config ${{ matrix.build_type }} --target install
+
     # ===================
     # CMAKE-BASED PROJECT
     # ===================
@@ -129,13 +129,13 @@ jobs:
               -DENABLE_icubmod_embObjVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
               -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-  
+
     - name: Configure [Ubuntu/macOS]
       if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
       shell: bash
       run: |
         mkdir -p build
-        cd build    
+        cd build
         cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DICUB_USE_icub_firmware_shared:BOOL=ON -DENABLE_icubmod_serial:BOOL=ON \
               -DENABLE_icubmod_serialport:BOOL=ON -DENABLE_icubmod_skinWrapper:BOOL=ON \
@@ -149,22 +149,22 @@ jobs:
               -DENABLE_icubmod_embObjVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
               -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
-    - name: Enable python bindings on Ubuntu 
+    - name: Enable python bindings on Ubuntu
       if: matrix.os == 'ubuntu-latest'
-      run: | 
+      run: |
         cd build
-        # Enable ICUB_COMPILE_BINDINGS in Ubuntu 
+        # Enable ICUB_COMPILE_BINDINGS in Ubuntu
         cmake -DICUB_COMPILE_BINDINGS:BOOL=ON -DCREATE_PYTHON:BOOL=ON .
-      
+
     - name: Build
       shell: bash
       run: |
         cd build
-        # Fix for using YARP idl generators (that link ACE) in Windows 
+        # Fix for using YARP idl generators (that link ACE) in Windows
         # See https://github.com/robotology/idyntree/issues/569 for more details
         export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin:${VCPKG_INSTALLATION_ROOT}/installed/x64-windows/bin
         cmake --build . --config ${{ matrix.build_type }}
-        
+
     - name: Install
       shell: bash
       run: |
