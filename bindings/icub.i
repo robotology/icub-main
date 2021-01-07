@@ -164,6 +164,7 @@ typedef yarp::os::BufferedPort<iCub::skinDynLib::dynContactList> BufferedPortDyn
 %template(TypedReaderCallbackDynContactList) yarp::os::TypedReaderCallback<iCub::skinDynLib::dynContactList>;
 %template(BufferedPortDynContactList) yarp::os::BufferedPort<iCub::skinDynLib::dynContactList>;
 
+%template(dequeIControlLimitsPtr) std::deque<yarp::dev::IControlLimits*>;
 
 bool init();
 
