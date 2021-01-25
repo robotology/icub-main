@@ -22,7 +22,7 @@ online at: http://wiki.icub.org/wiki/Manual and is the most
 up to date source of information.
 
 Direct link to installation instructions:
-http://wiki.icub.org/wiki/ICub_Software_Installation
+https://icub-tech-iit.github.io/documentation/sw_installation.
 
 ## Contributing
 We accept contributions via [forks and pull-requests](https://guides.github.com/activities/forking).
