@@ -74,7 +74,7 @@ bool skinContact::setNormalDir(const Vector &_normalDir){
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool skinContact::setPressure(double _pressure){
-    if(pressure<=0.0)
+    if(_pressure<0.0)
         return false;
     pressure = _pressure;
     return true;
