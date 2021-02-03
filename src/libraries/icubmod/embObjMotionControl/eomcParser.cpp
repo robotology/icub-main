@@ -85,6 +85,7 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *
     // come specificato in _currentControlLaw
     if(!parseSelectedCurrentPid(config, lowLevPidisMandatory, cpids)) // OK
         return false;
+
     // legge i pid di velocità per ciascun motore 
     // come specificato in _speedControlLaw
     if(!parseSelectedSpeedPid(config, lowLevPidisMandatory, spids)) // OK
