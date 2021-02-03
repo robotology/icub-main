@@ -85,7 +85,7 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *
     // come specificato in _currentControlLaw
     if(!parseSelectedCurrentPid(config, lowLevPidisMandatory, cpids)) // OK
         return false;
-    // legge i pid di velocità per ciascun motore 
+    // legge i pid di velocita per ciascun motore 
     // come specificato in _speedControlLaw
     if(!parseSelectedSpeedPid(config, lowLevPidisMandatory, spids)) // OK
         return false;
@@ -1273,6 +1273,35 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
                tpids[firstjoint].out_PidUnits != tpids[i].out_PidUnits)
             {
                 yError() << "embObjMC BOARD " << _boardname << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
+                return false;
+            }
+        }
+    }
+
+    //Here i would check that all joints have same type units in order to create position helper with correct factor.
+
+    //get first joint with enabled position
+    firstjoint = -1;
+    for(int i=0; i<_njoints; i++)
+    {
+        if(ppids[i].enabled)
+            firstjoint = i;
+    }
+
+    if(firstjoint==-1)
+    {
+        // no joint has position enabed
+        return true;
+    }
+
+    for(int i=firstjoint+1; i<_njoints; i++)
+    {
+        if(ppids[i].enabled)
+        {
+            if(ppids[firstjoint].fbk_PidUnits != ppids[i].fbk_PidUnits ||
+               ppids[firstjoint].out_PidUnits != ppids[i].out_PidUnits)
+            {
+                yError() << "embObjMC BOARD " << _boardname << "all joints with position enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
                 return false;
             }
         }
