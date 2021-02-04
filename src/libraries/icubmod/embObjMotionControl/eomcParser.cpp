@@ -1337,7 +1337,7 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
             if(tpids[firstjoint].fbk_PidUnits != tpids[i].fbk_PidUnits ||
                tpids[firstjoint].out_PidUnits != tpids[i].out_PidUnits)
             {
-                yError() << "embObjMC BOARD " << _boardname << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
+                yError() << "embObjMC BOARD " << _boardname << "all joints with TORQUE enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
                 return false;
             }
         }
@@ -1369,7 +1369,7 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
             if(ppids[firstjoint].fbk_PidUnits != ppids[i].fbk_PidUnits ||
                ppids[firstjoint].out_PidUnits != ppids[i].out_PidUnits)
             {
-                yError() << "embObjMC BOARD " << _boardname << "all joints with position enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
+                yError() << "embObjMC BOARD " << _boardname << "all joints with POSITION enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
                 return false;
             }
         }
