@@ -85,7 +85,7 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *
     // come specificato in _currentControlLaw
     if(!parseSelectedCurrentPid(config, lowLevPidisMandatory, cpids)) // OK
         return false;
-    // legge i pid di velocita per ciascun motore 
+    // legge i pid di velocità per ciascun motore 
     // come specificato in _speedControlLaw
     if(!parseSelectedSpeedPid(config, lowLevPidisMandatory, spids)) // OK
         return false;
@@ -2482,4 +2482,3 @@ void JointsSet::dumpdata(void)
     cout << " param1="<< cfg.constraints.param1 << " param2=" << cfg.constraints.param2 << endl;
 
 }
-
