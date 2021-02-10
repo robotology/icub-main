@@ -242,39 +242,7 @@ bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMan
         }
     }
 
-    //Here i would check that all joints have same type units in order to create current helper with correct factor.
-
-    //get first joint with enabled current
-    int firstjoint = -1;
-    for(int i=0; i<_njoints; i++)
-    {
-        if(pids[i].enabled)
-        {
-            firstjoint = i;
-            break;
-        }
-    }
-
-    if(firstjoint==-1)
-    {
-        // no joint has current enabed
-        return true;
-    }
-
-    for(int i=firstjoint+1; i<_njoints; i++)
-    {
-        if(pids[i].enabled)
-        {
-            if(pids[firstjoint].fbk_PidUnits != pids[i].fbk_PidUnits ||
-               pids[firstjoint].out_PidUnits != pids[i].out_PidUnits)
-            {
-                yError() << "embObjMC BOARD " << _boardname << "all joints with CURRENT enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
-                return false;
-            }
-        }
-    }
-
-    return true;
+    return checkJointTypes(pids, "CURRENT");
 }
 
 bool Parser::parseSelectedSpeedPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids) // OK
@@ -339,39 +307,7 @@ bool Parser::parseSelectedSpeedPid(yarp::os::Searchable &config, bool pidisManda
         }
     }
 
-    //Here i would check that all joints have same type units in order to create speed helper with correct factor.
-
-    //get first joint with enabled speed
-    int firstjoint = -1;
-    for(int i=0; i<_njoints; i++)
-    {
-        if(pids[i].enabled)
-        {
-            firstjoint = i;
-            break;
-        }
-    }
-
-    if(firstjoint==-1)
-    {
-        // no joint has speed enabed
-        return true;
-    }
-
-    for(int i=firstjoint+1; i<_njoints; i++)
-    {
-        if(pids[i].enabled)
-        {
-            if(pids[firstjoint].fbk_PidUnits != pids[i].fbk_PidUnits ||
-               pids[firstjoint].out_PidUnits != pids[i].out_PidUnits)
-            {
-                yError() << "embObjMC BOARD " << _boardname << "all joints with SPEED enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
-                return false;
-            }
-        }
-    }
-
-    return true;
+    return checkJointTypes(pids, "SPEED");
 }
 
 bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config) // OK
@@ -1197,9 +1133,6 @@ bool Parser::parsePid_torque_outVel(Bottle &b_pid, string controlLaw)
     return true;
 }
 
-
-
-
 bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids)
 {
     Pid_Algorithm *minjerkAlgo_ptr = NULL;
@@ -1310,74 +1243,8 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
         //eomc_ctrl_out_type_vel = 2,
         //eomc_ctrl_out_type_cur = 3
 
-
-    //Here i would check that all joints have same type units in order to create torquehelper with correct factor.
-
-    //get first joint with enabled torque
-    int firstjoint = -1;
-    for(int i=0; i<_njoints; i++)
-    {
-        if(tpids[i].enabled)
-        {
-            firstjoint = i;
-            break;
-        }
-    }
-
-    if(firstjoint==-1)
-    {
-        // no joint has torque enabed
-        return true;
-    }
-
-    for(int i=firstjoint+1; i<_njoints; i++)
-    {
-        if(tpids[i].enabled)
-        {
-            if(tpids[firstjoint].fbk_PidUnits != tpids[i].fbk_PidUnits ||
-               tpids[firstjoint].out_PidUnits != tpids[i].out_PidUnits)
-            {
-                yError() << "embObjMC BOARD " << _boardname << "all joints with TORQUE enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
-                return false;
-            }
-        }
-    }
-
-    //Here i would check that all joints have same type units in order to create position helper with correct factor.
-
-    //get first joint with enabled position
-    firstjoint = -1;
-    for(int i=0; i<_njoints; i++)
-    {
-        if(ppids[i].enabled)
-        {
-            firstjoint = i;
-            break;
-        }
-    }
-
-    if(firstjoint==-1)
-    {
-        // no joint has position enabed
-        return true;
-    }
-
-    for(int i=firstjoint+1; i<_njoints; i++)
-    {
-        if(ppids[i].enabled)
-        {
-            if(ppids[firstjoint].fbk_PidUnits != ppids[i].fbk_PidUnits ||
-               ppids[firstjoint].out_PidUnits != ppids[i].out_PidUnits)
-            {
-                yError() << "embObjMC BOARD " << _boardname << "all joints with POSITION enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
-                return false;
-            }
-        }
-    }
-
-    return true;
+    return checkJointTypes(tpids, "TORQUE") && checkJointTypes(ppids, "POSITION");
 }
-
 
 bool Parser::parsePidUnitsType(Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits)
 {
@@ -1434,7 +1301,6 @@ bool Parser::parsePidUnitsType(Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &f
     }
     return true;
 }
-
 
 bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificInfo_t *twofocinfo)
 {
@@ -1576,9 +1442,6 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     return true;
 
 }
-
-
-
 
 bool Parser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &joint2set)
 {
@@ -1836,7 +1699,6 @@ bool Parser::parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLi
     return true;
 }
 
-
 bool Parser::parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLimits_t> &rotorsLimits)
 {
     Bottle &limits=config.findGroup("LIMITS");
@@ -1883,9 +1745,6 @@ bool Parser::parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLi
     return true;
 
 }
-
-
-
 
 bool Parser::parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &couplingInfo)
 {
@@ -1942,7 +1801,6 @@ bool Parser::parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &cou
 
     return true;
 }
-
 
 bool Parser::parseMotioncontrolVersion(yarp::os::Searchable &config, int &version)
 {
@@ -2024,8 +1882,6 @@ bool Parser::parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncod
     return true;
 }
 
-
-
 bool Parser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<axisInfo_t> &axisInfo)
 {
 
@@ -2086,9 +1942,6 @@ bool Parser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vec
 
     return true;
 }
-
-
-
 
 bool Parser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFactor[])
 {
@@ -2153,7 +2006,6 @@ bool Parser::parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToP
 
     return true;
 }
-
 
 bool Parser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor[])
 {
@@ -2274,7 +2126,6 @@ bool Parser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[],
     return true;
 }
 
-
 bool Parser::parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[])
 {
     Bottle general = config.findGroup("GENERAL");
@@ -2299,11 +2150,6 @@ bool Parser::parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpe
     return true;
 
 }
-
-
-
-
-
 
 bool Parser::parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impedanceParameters_t> &impedance)
 {
@@ -2371,8 +2217,6 @@ bool Parser::convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetc
 
     return true;
 }
-
-
 
 bool Parser::convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize)
 {
@@ -2481,4 +2325,40 @@ void JointsSet::dumpdata(void)
 
     cout << " param1="<< cfg.constraints.param1 << " param2=" << cfg.constraints.param2 << endl;
 
+}
+
+bool Parser::checkJointTypes(PidInfo *pids, std::string pid_type)
+{
+    //Here i would check that all joints have same type units in order to create pid_type helper with correct factor.
+
+    //get first joint with enabled pid_type
+    int firstjoint = -1;
+    for(int i=0; i<_njoints; i++)
+    {
+        if(pids[i].enabled)
+        {
+            firstjoint = i;
+            break;
+        }
+    }
+
+    if(firstjoint==-1)
+    {
+        // no joint has current enabed
+        return true;
+    }
+
+    for(int i=firstjoint+1; i<_njoints; i++)
+    {
+        if(pids[i].enabled)
+        {
+            if(pids[firstjoint].fbk_PidUnits != pids[i].fbk_PidUnits ||
+               pids[firstjoint].out_PidUnits != pids[i].out_PidUnits)
+            {
+                yError() << "embObjMC BOARD " << _boardname << "all joints with " << pid_type << " enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
+                return false;
+            }
+        }
+    }
+    return true;
 }
