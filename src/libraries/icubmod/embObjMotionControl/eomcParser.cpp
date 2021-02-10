@@ -2327,7 +2327,7 @@ void JointsSet::dumpdata(void)
 
 }
 
-bool Parser::checkJointTypes(PidInfo *pids, std::string pid_type)
+bool Parser::checkJointTypes(PidInfo *pids, const std::string pid_type)
 {
     //Here i would check that all joints have same type units in order to create pid_type helper with correct factor.
 
