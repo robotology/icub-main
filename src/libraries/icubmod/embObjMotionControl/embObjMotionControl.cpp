@@ -579,7 +579,9 @@ bool embObjMotionControl::updatedJointsetsCfgWithControlInfo()
 
 bool embObjMotionControl::saveCouplingsData(void)
 {
-     eOmc_4jomo_coupling_t *jc_dest;
+    eOmc_4jomo_coupling_t *jc_dest;
+
+    static eOmc_4jomo_coupling_t dummyjomocoupling = {};
 
     switch(serviceConfig.ethservice.configuration.type)
     {
@@ -606,6 +608,11 @@ bool embObjMotionControl::saveCouplingsData(void)
         case eomn_serv_MC_mc4plusfaps:
         {
             jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc4plusfaps.jomocoupling);
+
+        } break;
+        case eomn_serv_MC_mc4pluspmc:
+        {
+            jc_dest = &dummyjomocoupling; // this mode does not have a coupling as it is w/ 7 independent joints
 
         } break;
         case eomn_serv_MC_mc4:
@@ -4733,6 +4740,7 @@ bool embObjMotionControl::iNeedCouplingsInfo(void)
         (mc_serv_type == eomn_serv_MC_mc4plusmais) ||
         (mc_serv_type == eomn_serv_MC_mc2pluspsc) ||
         (mc_serv_type == eomn_serv_MC_mc4plusfaps)
+//        || (mc_serv_type == eomn_serv_MC_mc4pluspmc)
       )
         return true;
     else
