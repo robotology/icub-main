@@ -139,6 +139,7 @@ protected:
     int*    rawButtons;
     int*    rawButtonsOld;
     int*    rawHats;
+    int*    rawHatsOld;
     double* rawAxes;
     double* outAxes;
 
@@ -162,6 +163,7 @@ public:
         rawButtonsOld=0;
         rawAxes=0;
         rawHats=0;
+        rawHatsOld=0;
         outAxes=0;
         joy1=0;
         num_inputs=0;
@@ -505,6 +507,7 @@ public:
 
         rawAxes       = new double [MAX_AXES];
         rawHats       = new int    [MAX_AXES];
+        rawHatsOld    = new int    [MAX_AXES];
         rawButtons    = new int    [MAX_AXES];
         rawButtonsOld = new int    [MAX_AXES];
         outAxes       = new double [MAX_AXES];
@@ -554,6 +557,7 @@ public:
 
         for ( int i=0; i < numHats; ++i )
         {
+            rawHatsOld[i] = rawHats[i];
             rawHats[i] = SDL_JoystickGetHat ( joy1, i );
         }
 
@@ -664,36 +668,51 @@ public:
                 {
                     string action(hat_actions[i]);
                     action += " ";
-                    switch(rawHats[i]) {
-                    case SDL_HAT_UP:
-                        action += "up";
-                        break;
-                    case SDL_HAT_RIGHT:
-                        action += "right";
-                        break;
-                    case SDL_HAT_DOWN:
-                        action += "down";
-                        break;
-                    case SDL_HAT_LEFT:
-                        action += "left";
-                        break;
-                    case SDL_HAT_RIGHTUP:
-                        action += "rightup";
-                        break;
-                    case SDL_HAT_RIGHTDOWN:
-                        action += "rightdown";
-                        break;
-                    case SDL_HAT_LEFTUP:
-                        action += "leftup";
-                        break;
-                    case SDL_HAT_LEFTDOWN:
-                        action += "leftdown";
-                        break;
-                    default:
-                        break;
+                    //if true, the behavior is like a button, one esecution per press
+                    //if false, execution is continuous
+                    bool trigger_mode=true; 
+                    switch(rawHats[i])
+                    {
+                        case SDL_HAT_UP:
+                            action += "up";
+                            break;
+                        case SDL_HAT_RIGHT:
+                            action += "right"; 
+                            break;
+                        case SDL_HAT_DOWN:
+                            action += "down";
+                            break;
+                        case SDL_HAT_LEFT:
+                            action += "left";
+                            break;
+                        case SDL_HAT_RIGHTUP:
+                            action += "rightup";
+                            break;
+                        case SDL_HAT_RIGHTDOWN:
+                            action += "rightdown";
+                            break;
+                        case SDL_HAT_LEFTUP:
+                            action += "leftup";
+                            break;
+                        case SDL_HAT_LEFTDOWN:
+                            action += "leftdown";
+                            break;
+                        default:
+                            break;
                     }
-                    yInfo ("executing script %d: %s\n", i, action.c_str());
-                    int ret = system(action.c_str());
+                    if (trigger_mode)
+                    {
+                        if (rawHatsOld[i]==SDL_HAT_CENTERED)
+                        {
+                            yInfo ("executing script %d: %s\n", i, action.c_str());
+                            int ret = system(action.c_str());
+                        }
+                    }
+                    else
+                    {    
+                        yInfo ("executing script %d: %s\n", i, action.c_str());
+                        int ret = system(action.c_str());
+                    }
                 }
                 else
                 {
@@ -744,6 +763,7 @@ public:
     {    
         if (rawAxes)         delete [] rawAxes;
         if (rawHats)         delete [] rawHats;
+        if (rawHatsOld)      delete [] rawHatsOld;
         if (outAxes)         delete [] outAxes;
         if (rawButtons)      delete [] rawButtons;
         if (inputMax)        delete [] inputMax;
