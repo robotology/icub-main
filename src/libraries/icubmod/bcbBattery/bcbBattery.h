@@ -37,6 +37,7 @@ protected:
     bool verboseEnable;
     bool screenEnable;
     bool debugEnable;
+    bool silenceSyncWarnings;
 
     ResourceFinder      rf;
     PolyDriver          driver;

@@ -71,6 +71,7 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     this->verboseEnable = group_general.check("verbose", Value(0), "enable/disable the verbose mode").asBool();
     this->screenEnable = group_general.check("screen", Value(0), "enable/disable the screen output").asBool();
     this->debugEnable = group_general.check("debug", Value(0), "enable/disable the debug mode").asBool();
+    this->silenceSyncWarnings = group_general.check("silence_sync_warnings", Value(0), "enable/disable the print of warnings in case of sync errors.").asBool();
 
     PeriodicThread::start();
     return true;
@@ -157,8 +158,8 @@ void BcbBattery::run()
             output[5] = pSerial->receiveChar(serial_buff[5]); //charge
             output[6] = pSerial->receiveChar(serial_buff[6]); //charge
             output[7] = pSerial->receiveChar(serial_buff[7]); //status
-            output[8] = pSerial->receiveChar(serial_buff[8]); if (serial_buff[8] != '\r') { yWarning("BcbBattery sync error r");}
-            output[9] = pSerial->receiveChar(serial_buff[9]); if (serial_buff[9] != '\n') { yWarning("BcbBattery sync error n");}
+            output[8] = pSerial->receiveChar(serial_buff[8]); if (serial_buff[8] != '\r' && !silenceSyncWarnings) { yWarning("BcbBattery sync error r");}
+            output[9] = pSerial->receiveChar(serial_buff[9]); if (serial_buff[9] != '\n' && !silenceSyncWarnings) { yWarning("BcbBattery sync error n");}
         }
 
         serial_buff[10] = 0;
