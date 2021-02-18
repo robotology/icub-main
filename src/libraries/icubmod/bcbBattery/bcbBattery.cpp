@@ -39,7 +39,7 @@ bool BcbBattery::open(yarp::os::Searchable& config)
         return false;
     }
 
-    int period=config.find("thread_period").asInt();
+    int period=group_general.find("thread_period").asInt();
     setPeriod((double)period/1000.0);
 
     Property prop;
@@ -52,7 +52,7 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     if (!driver.isValid())
     {
         yError() << "Error opening PolyDriver check parameters";
-#ifndef DEBUG_TEST 
+#ifndef DEBUG_TEST
         return false;
 #endif
     }
@@ -62,7 +62,7 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     if (!pSerial)
     {
         yError("Error opening serial driver. Device not available");
-#ifndef DEBUG_TEST 
+#ifndef DEBUG_TEST
         return false;
 #endif
     }
@@ -78,6 +78,8 @@ bool BcbBattery::open(yarp::os::Searchable& config)
 
 bool BcbBattery::close()
 {
+    lock_guard<mutex> lck(mtx);
+
     //stop the thread
     PeriodicThread::stop();
 
@@ -102,6 +104,14 @@ bool BcbBattery::threadInit()
     {
         bool ret = pSerial->send(&c, 1);
         if (ret == false) { yError("BcbBattery problems starting the transmission"); return false; }
+
+        //empty the buffer
+        char c = 0;
+        int r = 0;
+        do
+        {
+            r = pSerial->receiveChar(c);
+        } while (r != 0);
     }
     else
     {
@@ -125,31 +135,31 @@ void BcbBattery::run()
     }
 
     //read battery data.
-    //if nothing is received, rec=0, the while exits immediately. The string will be not valid, so the parser will skip it and it will leave unchanged the battery status (voltage/current/charge)
-    //if a text line is received, then try to receive more text to empty the buffer. If nothing else is received, serial_buff will be left unchanged from the previous value. The loop will exit and the sting will be parsed.
     serial_buff[0] = 0;
+
+    bool output[10] = {false};
 
     if (pSerial)
     {
-        //empty the buffer
-        char c = 0;
-        int r = 0;
+        size_t i = 0;
         do
         {
-           r = pSerial->receiveChar(c);
-        } while (r != 0);
+            output[0] = pSerial->receiveChar(serial_buff[0]);
+            ++i;
+        } while (((serial_buff[0] != '\0') || !output[0]) && (i < 20));
 
-    search_0:
-        pSerial->receiveChar(serial_buff[8]); if (serial_buff[8] != '\r') { yWarning("BcbBattery sync error r"); goto search_0; }
-        pSerial->receiveChar(serial_buff[9]); if (serial_buff[9] != '\n') { yWarning("BcbBattery sync error n"); goto search_0; }
-        pSerial->receiveChar(serial_buff[0]); if (serial_buff[0] != '\0') {goto search_0; }
-        pSerial->receiveChar(serial_buff[1]); //voltage
-        pSerial->receiveChar(serial_buff[2]); //voltage
-        pSerial->receiveChar(serial_buff[3]); //current
-        pSerial->receiveChar(serial_buff[4]); //current
-        pSerial->receiveChar(serial_buff[5]); //charge
-        pSerial->receiveChar(serial_buff[6]); //charge
-        pSerial->receiveChar(serial_buff[7]); //status
+        if ((serial_buff[0] == '\0') && output[0])
+        {
+            output[1] = pSerial->receiveChar(serial_buff[1]); //voltage
+            output[2] = pSerial->receiveChar(serial_buff[2]); //voltage
+            output[3] = pSerial->receiveChar(serial_buff[3]); //current
+            output[4] = pSerial->receiveChar(serial_buff[4]); //current
+            output[5] = pSerial->receiveChar(serial_buff[5]); //charge
+            output[6] = pSerial->receiveChar(serial_buff[6]); //charge
+            output[7] = pSerial->receiveChar(serial_buff[7]); //status
+            output[8] = pSerial->receiveChar(serial_buff[8]); if (serial_buff[8] != '\r') { yWarning("BcbBattery sync error r");}
+            output[9] = pSerial->receiveChar(serial_buff[9]); if (serial_buff[9] != '\n') { yWarning("BcbBattery sync error n");}
+        }
 
         serial_buff[10] = 0;
     }
@@ -163,13 +173,47 @@ void BcbBattery::run()
     battery_current = 5.0;
     battery_charge = 72.0;
     battery_temperature = 35.0;
-#endif
+#else
 
-    if (verboseEnable) yDebug("BcbBattery::run() serial_buffer is: %s", serial_buff);
-    battery_voltage = (unsigned char) serial_buff[1] * 256 + (unsigned char) serial_buff[2];
-    battery_current = (unsigned char) serial_buff[3] * 256 + (unsigned char) serial_buff[4];
-    battery_charge =  (unsigned char) serial_buff[5] * 256 + (unsigned char) serial_buff[6];
+    if (verboseEnable)
+    {
+        char hexBuffer[31];
+        char decBuffer[41];
+        for (size_t i = 0; i < 10; ++i)
+        {
+            if (output[i])
+            {
+                sprintf(hexBuffer + 3*i,"%02X ", (unsigned int)(serial_buff[i] & 0xFF));
+                sprintf(decBuffer + 4*i,"%03u ", (unsigned int)(serial_buff[i] & 0xFF));
+            }
+            else
+            {
+                sprintf(hexBuffer + 3*i,"-- ");
+                sprintf(decBuffer + 4*i,"--- ");
+            }
+        }
+
+        yDebug("BcbBattery::run() serial_buffer is: (hex) %s, (dec) %s", hexBuffer, decBuffer);
+    }
+
+    if (output[1] && output[2])
+    {
+        battery_voltage = ((unsigned char) serial_buff[1] * 256 + (unsigned char) serial_buff[2])/1000.0;
+    }
+
+    if (output[3] && output[4])
+    {
+        battery_current = ((unsigned char) serial_buff[3] * 256 + (unsigned char) serial_buff[4])/1000.0;
+    }
+
+    if (output[5] && output[6])
+    {
+        battery_charge =  (unsigned char) serial_buff[5] * 256 + (unsigned char) serial_buff[6];
+    }
+
     backpack_status = (unsigned char) serial_buff[7];
+
+#endif
 
     //add checksum verification
     //...
@@ -212,13 +256,14 @@ bool BcbBattery::getBatteryCharge(double &charge)
 bool BcbBattery::getBatteryStatus(Battery_status &status)
 {
     //yError("Not yet implemented");
-    return false;
+    status=Battery_status::BATTERY_OK_IN_USE;
+    return true;
 }
 
 bool BcbBattery::getBatteryTemperature(double &temperature)
 {
     //yError("Not yet implemented");
-    return false;
+    return true;
 }
 
 bool BcbBattery::getBatteryInfo(string &info)
