@@ -19,8 +19,6 @@ using namespace std;
 
 bool BcbBattery::open(yarp::os::Searchable& config)
 {
-    bool correct=true;
-
     //debug
     yDebug("%s\n", config.toString().c_str());
 
@@ -138,18 +136,23 @@ void BcbBattery::run()
     //read battery data.
     serial_buff[0] = 0;
 
-    bool output[10] = {false};
+    int output[10] = {0};
+    bool syncError = false;
 
     if (pSerial)
     {
         size_t i = 0;
+        bool sync0 = false;
+        bool syncr = false;
+        bool syncn = false;
         do
         {
             output[0] = pSerial->receiveChar(serial_buff[0]);
+            sync0 = output[0] && (serial_buff[0] == '\0');
             ++i;
-        } while (((serial_buff[0] != '\0') || !output[0]) && (i < 20));
+        } while (!(sync0) && (i < 20));
 
-        if ((serial_buff[0] == '\0') && output[0])
+        if (sync0)
         {
             output[1] = pSerial->receiveChar(serial_buff[1]); //voltage
             output[2] = pSerial->receiveChar(serial_buff[2]); //voltage
@@ -158,9 +161,37 @@ void BcbBattery::run()
             output[5] = pSerial->receiveChar(serial_buff[5]); //charge
             output[6] = pSerial->receiveChar(serial_buff[6]); //charge
             output[7] = pSerial->receiveChar(serial_buff[7]); //status
-            output[8] = pSerial->receiveChar(serial_buff[8]); if (serial_buff[8] != '\r' && !silenceSyncWarnings) { yWarning("BcbBattery sync error r");}
-            output[9] = pSerial->receiveChar(serial_buff[9]); if (serial_buff[9] != '\n' && !silenceSyncWarnings) { yWarning("BcbBattery sync error n");}
         }
+
+        i = 0;
+        do
+        {
+            output[8] = pSerial->receiveChar(serial_buff[8]);
+            syncr = output[8] && (serial_buff[8] == '\r');
+            if (syncr)
+            {
+                output[9] = pSerial->receiveChar(serial_buff[9]);
+                syncn = output[9] && (serial_buff[9] == '\n');
+
+                if (!syncn)
+                {
+                    if (!syncError && !silenceSyncWarnings)
+                    {
+                        yDebug() << "Sync error (n)";
+                    }
+                    syncError = true;
+                }
+            }
+            else
+            {
+                if (!syncError && !silenceSyncWarnings)
+                {
+                    yDebug() << "Sync error (r)";
+                }
+                syncError = true;
+            }
+            ++i;
+        } while (!(syncn) && (i < 20));
 
         serial_buff[10] = 0;
     }
@@ -197,22 +228,25 @@ void BcbBattery::run()
         yDebug("BcbBattery::run() serial_buffer is: (hex) %s, (dec) %s", hexBuffer, decBuffer);
     }
 
-    if (output[1] && output[2])
+    if (output[1] && output[2] && !syncError)
     {
         battery_voltage = ((unsigned char) serial_buff[1] * 256 + (unsigned char) serial_buff[2])/1000.0;
     }
 
-    if (output[3] && output[4])
+    if (output[3] && output[4] && !syncError)
     {
         battery_current = ((unsigned char) serial_buff[3] * 256 + (unsigned char) serial_buff[4])/1000.0;
     }
 
-    if (output[5] && output[6])
+    if (output[5] && output[6] && !syncError)
     {
         battery_charge =  (unsigned char) serial_buff[5] * 256 + (unsigned char) serial_buff[6];
     }
 
-    backpack_status = (unsigned char) serial_buff[7];
+    if (output[7] && !syncError)
+    {
+        backpack_status = (unsigned char) serial_buff[7];
+    }
 
 #endif
 
@@ -261,7 +295,7 @@ bool BcbBattery::getBatteryStatus(Battery_status &status)
     return true;
 }
 
-bool BcbBattery::getBatteryTemperature(double &temperature)
+bool BcbBattery::getBatteryTemperature(double &)
 {
     //yError("Not yet implemented");
     return true;
