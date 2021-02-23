@@ -2335,7 +2335,7 @@ bool Parser::checkJointTypes(PidInfo *pids, const std::string &pid_type)
     //parse verify if pid type is torque or some other
     if(pid_type == "TORQUE")
     {
-        dynamic_cast<TrqPidInfo*>(pids);
+        TrqPidInfo* pids = dynamic_cast<TrqPidInfo*>(pids);
     }
 
     //get first joint with enabled pid_type
