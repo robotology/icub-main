@@ -2332,6 +2332,12 @@ bool Parser::checkJointTypes(PidInfo *pids, const std::string &pid_type)
 {
     //Here i would check that all joints have same type units in order to create pid_type helper with correct factor.
 
+    //parse verify if pid type is torque or some other
+    if(pid_type == "TORQUE")
+    {
+        dynamic_cast<TrqPidInfo*>(pids);
+    }
+
     //get first joint with enabled pid_type
     int firstjoint = -1;
     for(int i=0; i<_njoints; i++)

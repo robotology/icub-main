@@ -178,7 +178,7 @@ public:
         fbk_PidUnits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
         out_PidUnits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
     }
-    ~PidInfo()
+    virtual ~PidInfo()
     {
         //delete (usernamePidSelected);
     }
