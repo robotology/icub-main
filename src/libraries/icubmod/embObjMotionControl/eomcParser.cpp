@@ -2335,38 +2335,72 @@ bool Parser::checkJointTypes(PidInfo *pids, const std::string &pid_type)
     //parse verify if pid type is torque or some other
     if(pid_type == "TORQUE")
     {
+        // since we are working with a torque pid, we first cast it as such
         TrqPidInfo* pids = dynamic_cast<TrqPidInfo*>(pids);
-    }
 
-    //get first joint with enabled pid_type
-    int firstjoint = -1;
-    for(int i=0; i<_njoints; i++)
-    {
-        if(pids[i].enabled)
+        //get first joint with enabled pid_type
+        int firstjoint = -1;
+        for(int i=0; i<_njoints; i++)
         {
-            firstjoint = i;
-            break;
-        }
-    }
-
-    if(firstjoint==-1)
-    {
-        // no joint has current enabed
-        return true;
-    }
-
-    for(int i=firstjoint+1; i<_njoints; i++)
-    {
-        if(pids[i].enabled)
-        {
-            if(pids[firstjoint].fbk_PidUnits != pids[i].fbk_PidUnits ||
-               pids[firstjoint].out_PidUnits != pids[i].out_PidUnits)
+            if(pids[i].enabled)
             {
-                yError() << "embObjMC BOARD " << _boardname << "all joints with " << pid_type << " enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
-                return false;
+                firstjoint = i;
+                break;
+            }
+        }
+
+        if(firstjoint==-1)
+        {
+            // no joint has current enabed
+            return true;
+        }
+
+        for(int i=firstjoint+1; i<_njoints; i++)
+        {
+            if(pids[i].enabled)
+            {
+                if(pids[firstjoint].fbk_PidUnits != pids[i].fbk_PidUnits ||
+                pids[firstjoint].out_PidUnits != pids[i].out_PidUnits)
+                {
+                    yError() << "embObjMC BOARD " << _boardname << "all joints with " << pid_type << " enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
+                    return false;
+                }
             }
         }
     }
+    else
+    {
+        //get first joint with enabled pid_type
+        int firstjoint = -1;
+        for(int i=0; i<_njoints; i++)
+        {
+            if(pids[i].enabled)
+            {
+                firstjoint = i;
+                break;
+            }
+        }
+
+        if(firstjoint==-1)
+        {
+            // no joint has current enabed
+            return true;
+        }
+
+        for(int i=firstjoint+1; i<_njoints; i++)
+        {
+            if(pids[i].enabled)
+            {
+                if(pids[firstjoint].fbk_PidUnits != pids[i].fbk_PidUnits ||
+                pids[firstjoint].out_PidUnits != pids[i].out_PidUnits)
+                {
+                    yError() << "embObjMC BOARD " << _boardname << "all joints with " << pid_type << " enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
+                    return false;
+                }
+            }
+        }
+    }
+
     return true;
 }
 
