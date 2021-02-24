@@ -2330,79 +2330,68 @@ void JointsSet::dumpdata(void)
 
 bool Parser::checkJointTypes(PidInfo *pids, const std::string &pid_type)
 {
-    //Here i would check that all joints have same type units in order to create pid_type helper with correct factor.
+    //Here we check that all joints have same type units in order to create pid_type helper with correct factor.
 
-    //parse verify if pid type is torque or some other
+    int firstjoint = -1;
+
+    // verify if pid type is torque or some other
     if(pid_type == "TORQUE")
     {
         // since we are working with a torque pid, we first cast it as such
         // this allows the loop to correctly point to the corresponding memory
         TrqPidInfo* trq_pids = (TrqPidInfo*) pids;
 
-        //get first joint with enabled pid_type
-        int firstjoint = -1;
         for(int i=0; i<_njoints; i++)
         {
-            if(trq_pids[i].enabled)
+            // if we already had an enabled PID, compare with current one
+            if(firstjoint != -1 && !checkSinglePid(trq_pids[firstjoint], trq_pids[i], firstjoint, i, pid_type))
+            {
+                return false;
+            }
+            // if we haven't found an enabled PID yet, and this one is enabled, save it
+            if(firstjoint == -1 && trq_pids[i].enabled)
             {
                 firstjoint = i;
-                break;
-            }
-        }
-
-        if(firstjoint==-1)
-        {
-            // no joint has current enabed
-            return true;
-        }
-
-        for(int i=firstjoint+1; i<_njoints; i++)
-        {
-            if(trq_pids[i].enabled)
-            {
-                if(trq_pids[firstjoint].fbk_PidUnits != trq_pids[i].fbk_PidUnits ||
-                trq_pids[firstjoint].out_PidUnits != trq_pids[i].out_PidUnits)
-                {
-                    yError() << "embObjMC BOARD " << _boardname << "all joints with " << pid_type << " enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
-                    return false;
-                }
             }
         }
     }
     else
     {
-        //get first joint with enabled pid_type
-        int firstjoint = -1;
         for(int i=0; i<_njoints; i++)
         {
-            if(pids[i].enabled)
+            // if we already had an enabled PID, compare with current one
+            if(firstjoint != -1 && !checkSinglePid(pids[firstjoint], pids[i], firstjoint, i, pid_type))
+            {
+                return false;
+            }
+            // if we haven't found an enabled PID yet, and this one is enabled, save it
+            if(firstjoint == -1 && pids[i].enabled)
             {
                 firstjoint = i;
-                break;
-            }
-        }
-
-        if(firstjoint==-1)
-        {
-            // no joint has current enabed
-            return true;
-        }
-
-        for(int i=firstjoint+1; i<_njoints; i++)
-        {
-            if(pids[i].enabled)
-            {
-                if(pids[firstjoint].fbk_PidUnits != pids[i].fbk_PidUnits ||
-                pids[firstjoint].out_PidUnits != pids[i].out_PidUnits)
-                {
-                    yError() << "embObjMC BOARD " << _boardname << "all joints with " << pid_type << " enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
-                    return false;
-                }
             }
         }
     }
 
     return true;
 }
+
+bool Parser::checkSinglePid(PidInfo &firstPid, PidInfo &currentPid, const int &firstjoint, const int &currentjoint, const std::string &pid_type)
+{
+    // check if the PID we are checking is enabled
+    if(currentPid.enabled)
+    {
+        // if it has different unit types from the previous enabled PIDs
+        if(firstPid.fbk_PidUnits != currentPid.fbk_PidUnits ||
+        firstPid.out_PidUnits != currentPid.out_PidUnits)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "all joints with " << pid_type << " enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << currentjoint;
+            return false;
+        }
+    }
+    return true;
+}
+
+
+
 
 
