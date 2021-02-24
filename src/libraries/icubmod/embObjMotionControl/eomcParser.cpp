@@ -2336,13 +2336,14 @@ bool Parser::checkJointTypes(PidInfo *pids, const std::string &pid_type)
     if(pid_type == "TORQUE")
     {
         // since we are working with a torque pid, we first cast it as such
-        TrqPidInfo* pids = dynamic_cast<TrqPidInfo*>(pids);
+        // this allows the loop to correctly point to the corresponding memory
+        TrqPidInfo* trq_pids = (TrqPidInfo*) pids;
 
         //get first joint with enabled pid_type
         int firstjoint = -1;
         for(int i=0; i<_njoints; i++)
         {
-            if(pids[i].enabled)
+            if(trq_pids[i].enabled)
             {
                 firstjoint = i;
                 break;
@@ -2357,10 +2358,10 @@ bool Parser::checkJointTypes(PidInfo *pids, const std::string &pid_type)
 
         for(int i=firstjoint+1; i<_njoints; i++)
         {
-            if(pids[i].enabled)
+            if(trq_pids[i].enabled)
             {
-                if(pids[firstjoint].fbk_PidUnits != pids[i].fbk_PidUnits ||
-                pids[firstjoint].out_PidUnits != pids[i].out_PidUnits)
+                if(trq_pids[firstjoint].fbk_PidUnits != trq_pids[i].fbk_PidUnits ||
+                trq_pids[firstjoint].out_PidUnits != trq_pids[i].out_PidUnits)
                 {
                     yError() << "embObjMC BOARD " << _boardname << "all joints with " << pid_type << " enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
                     return false;
