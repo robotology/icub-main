@@ -254,7 +254,7 @@ Version: ${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${_PLATFORM_RELE
 Section: contrib/science
 Priority: optional
 Architecture: $_PLATFORM_HARDWARE
-Depends: icub-common (= ${ICUB_PACKAGE_VERSION}~${_PLATFORM_RELEASE}), yarp (>= ${YARP_REQUIRED_VERSION})
+Depends: icub-common (= ${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${_PLATFORM_RELEASE}), yarp (>= ${YARP_REQUIRED_VERSION})
 Installed-Size:  $SIZE
 Homepage: http://www.icub.org
 Maintainer: ${ICUB_PACKAGE_MAINTAINER}
@@ -268,7 +268,7 @@ Description: Software platform for iCub humanoid robot with simulator.
  interact with the real iCub robot, or with the included simulator." | tee $_CONTROL_FILE
 
   # Build package
-  export ICUB_MAIN_PACKAGE_NAME="iCub${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${_PLATFORM_RELEASE}.deb"
+  export ICUB_MAIN_PACKAGE_NAME="iCub${ICUB_PACKAGE_VERSION}-${ICUB_DEBIAN_REVISION_NUMBER}~${_PLATFORM_RELEASE}_${_PLATFORM_HARDWARE}.deb"
   echo $ICUB_MAIN_PACKAGE_NAME
   cd ${D_ICUB_INSTALL_DIR} && dpkg -b ${D_ICUB_INSTALL_DIR} $ICUB_MAIN_PACKAGE_NAME
   if [ "$?" != "0" ]; then
