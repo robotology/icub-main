@@ -305,14 +305,14 @@ bool BcbBattery::getBatteryCharge(double &charge)
 
 bool BcbBattery::getBatteryStatus(Battery_status &status)
 {
-    //yError("Not yet implemented");
+    //The BCB battery indicator does not provide this info, so we simply return BATTERY_OK_IN_USE
     status=Battery_status::BATTERY_OK_IN_USE;
     return true;
 }
 
 bool BcbBattery::getBatteryTemperature(double &)
 {
-    //yError("Not yet implemented");
+    //The BCB battery indicator does not provide this info, so we simply return true
     return true;
 }
 
