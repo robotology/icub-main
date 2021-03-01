@@ -86,6 +86,13 @@ bool BcbBattery::close()
         //stop the thread
         PeriodicThread::stop();
 
+        char c = 0x00;
+        if (pSerial)
+        {
+            bool ret = pSerial->send(&c, 1);
+            if (ret == false) { yError("BcbBattery problems while stopping the transmission");}
+        }
+
         //stop the driver
         driver.close();
     }
