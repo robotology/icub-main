@@ -71,19 +71,24 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     this->debugEnable = group_general.check("debug", Value(0), "enable/disable the debug mode").asBool();
     this->silenceSyncWarnings = group_general.check("silence_sync_warnings", Value(0), "enable/disable the print of warnings in case of sync errors.").asBool();
 
+    this->isClosing = false;
     PeriodicThread::start();
     return true;
 }
 
 bool BcbBattery::close()
 {
-    lock_guard<mutex> lck(mtx);
+    isClosing = true;
 
-    //stop the thread
-    PeriodicThread::stop();
+    {
+        lock_guard<mutex> lck(mtx);
 
-    //stop the driver
-    driver.close();
+        //stop the thread
+        PeriodicThread::stop();
+
+        //stop the driver
+        driver.close();
+    }
 
     return true;
 }
@@ -150,7 +155,12 @@ void BcbBattery::run()
             output[0] = pSerial->receiveChar(serial_buff[0]);
             sync0 = output[0] && (serial_buff[0] == '\0');
             ++i;
-        } while (!(sync0) && (i < 20));
+        } while (!(sync0) && (i < 20) && !isClosing);
+
+        if (isClosing)
+        {
+            return;
+        }
 
         if (sync0)
         {
@@ -191,7 +201,12 @@ void BcbBattery::run()
                 syncError = true;
             }
             ++i;
-        } while (!(syncn) && (i < 20));
+        } while (!(syncn) && (i < 20) && !isClosing);
+
+        if (isClosing)
+        {
+            return;
+        }
 
         serial_buff[10] = 0;
     }
