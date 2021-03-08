@@ -112,13 +112,13 @@ public:
             m_mutex.lock();
             for (size_t i=0; i<datum.size(); i++) {
                 m_nextState[i] = datum.get(i).asDouble();
-                if ((m_nextState[i]<min[i] || m_nextState[i]> max[i]) && (i < 7)) { // 7 is for ignoring the hands in the limit check
+                if ((m_nextState[i]<min[i] || m_nextState[i]> max[i]) && (!m_isArm || i < 6)) { // 7 is for ignoring the hands in the limit check
                     yWarning()<<"ReplayPort: trying to move joint"<<i<<"of"<<m_partName<<" to "<<m_nextState[i]<<", it exceeds the limits, skipping...";
                     continue;
                 }
                 auto delta = std::fabs(m_nextState[i] - m_currState[i]);
                 ok &= delta < tolerance; // TODO improve the check calculating the distance between the 2 vector !!!
-                if (!ok && !m_simulator && (!m_isArm || i < 7)) { // 7 is for ignoring the hands in the security check
+                if (!ok && !m_simulator && (!m_isArm || i < 6)) { // 7 is for ignoring the hands in the security check
                     yWarning()<<"ReplayPort: joint"<<i<<"of"<<m_partName<<"is too far to the target position";
                     yWarning()<<"Desired: "<<datum.get(i).asDouble()<<"current: "<<m_currState[i]
                     <<"delta: "<<delta<<"Trying to reach "
