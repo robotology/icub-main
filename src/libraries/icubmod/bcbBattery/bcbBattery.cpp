@@ -68,7 +68,6 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     // Other options
     this->verboseEnable = group_general.check("verbose", Value(0), "enable/disable the verbose mode").asBool();
     this->screenEnable = group_general.check("screen", Value(0), "enable/disable the screen output").asBool();
-    this->debugEnable = group_general.check("debug", Value(0), "enable/disable the debug mode").asBool();
     this->silenceSyncWarnings = group_general.check("silence_sync_warnings", Value(0), "enable/disable the print of warnings in case of sync errors.").asBool();
 
     this->isClosing = false;
@@ -106,7 +105,6 @@ bool BcbBattery::threadInit()
     battery_voltage     = 0.0;
     battery_current     = 0.0;
     battery_charge      = 0.0;
-    battery_temperature = 0.0;
     timeStamp = yarp::os::Time::now();
 
     //start the transmission
