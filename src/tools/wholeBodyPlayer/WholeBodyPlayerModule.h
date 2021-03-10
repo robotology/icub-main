@@ -45,6 +45,8 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/RFModule.h>
+#include <yarp/os/RpcClient.h>
+#include <yarp/os/Stamp.h>
 #include <yarp/dev/IPositionDirect.h>
 #include <yarp/dev/IPositionControl.h>
 #include <yarp/dev/IControlMode.h>
@@ -57,7 +59,6 @@
 #include <cmath>
 #include <memory>
 #include <mutex>
-#include <yarp/os/RpcClient.h>
 
 constexpr double tolerance = 5.0; //degrees
 
@@ -106,6 +107,9 @@ public:
     using yarp::os::TypedReaderCallback<yarp::os::Bottle>::onRead;
     void onRead(yarp::os::Bottle& datum) override
     {
+        yarp::os::Stamp ts;
+        this->getEnvelope(ts);
+        yDebug()<<"count"<<ts.getCount()<< "TS" << ts.getTime();
         if (m_state==state::ok && m_posDir && !datum.isNull()) {
 
             bool ok = m_enc->getEncoders(m_currState.data());
