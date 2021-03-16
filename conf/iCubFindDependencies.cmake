@@ -34,7 +34,7 @@ message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 find_package(icub_firmware_shared QUIET)
 if(icub_firmware_shared_FOUND)
   # icub-firmware-shared 4.0.7 was actually a wrong version exported by icub-firmware-shared <= 1.15
-  if(icub_firmware_shared_VERSION VERSION_GREATER 4 OR icub_firmware_shared_VERSION VERSION_LESS 1.18.100)
+  if(icub_firmware_shared_VERSION VERSION_GREATER 4 OR icub_firmware_shared_VERSION VERSION_LESS 1.19.1)
     message(FATAL_ERROR "An old version of icub-firmware-shared has been detected, but at least 1.18.100 is required")
   endif()
 endif()
