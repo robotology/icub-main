@@ -8,6 +8,7 @@
 #define __BCBBATTERY_H__
 
 #include <mutex>
+#include <atomic>
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/dev/IBattery.h>
 #include <yarp/dev/PolyDriver.h>
@@ -23,27 +24,23 @@ class BcbBattery : public PeriodicThread, public yarp::dev::IBattery, public Dev
 protected:
     std::mutex mtx;
 
-    unsigned short     batteryId;
-    short              status;
     double             timeStamp;
-    yarp::sig::Vector  data;
     double             battery_charge;
     double             battery_voltage;
     double             battery_current;
-    double             battery_temperature;
     std::string        battery_info;
     unsigned char      backpack_status;
 
     bool verboseEnable;
     bool screenEnable;
-    bool debugEnable;
+    bool silenceSyncWarnings;
 
     ResourceFinder      rf;
     PolyDriver          driver;
     ISerialDevice       *pSerial;
     char                serial_buff[255];
-    std::string         remoteName;
-    std::string         localName;
+
+    std::atomic<bool> isClosing;
 
 public:
     BcbBattery(int period = 20) : PeriodicThread((double)period/1000.0)
