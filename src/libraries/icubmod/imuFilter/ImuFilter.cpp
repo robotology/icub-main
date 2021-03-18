@@ -178,7 +178,7 @@ bool ImuFilter::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vecto
 {
     if (sens_index != 0)
     {
-        yError() << "imuFilter: sens_index must be equal to 0, since there is  only one sensor in consideration";
+        yError() << "imuFilter: sens_index must be equal to 0 as there exists only one sensor";
         return false;
     }
 
