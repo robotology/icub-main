@@ -110,7 +110,7 @@ void inverseDynamics::init_upper()
     //---------------------PARTS-------------------------//
     // Left_arm variables
     allJnt = 0;
-    int jnt=7;
+    int jnt=16;
     encoders_arm_left.resize(jnt,0.0);
     F_LArm.resize(6,0.0);
     F_iDyn_LArm.resize(6,0.0);
@@ -118,7 +118,7 @@ void inverseDynamics::init_upper()
     allJnt+=jnt;
 
     // Right_arm variables
-    jnt = 7;
+    jnt = 16;
     encoders_arm_right.resize(jnt,0.0);
     F_RArm.resize(6,0.0);
     F_iDyn_RArm.resize(6,0.0);
@@ -126,7 +126,7 @@ void inverseDynamics::init_upper()
     allJnt+=jnt;
 
     // Head variables
-    jnt = 3;
+    jnt = 6;
     encoders_head.resize(jnt,0.0);
     allJnt+=jnt;
 
