@@ -17,10 +17,10 @@ completely broken!
 Topics:
 
  - <a href="http://wiki.icub.org/wiki/ICub_Software_Installation">Software installation</a>.
- - \ref icub_modules_all \endref - most of the software (including \ref icub_module \endref and \ref icub_mod_library \endref)
- - \ref icub_applications \endref - a list of documented applications 
+ - \ref icub_modules_all - most of the software (including \ref icub_module and \ref icub_mod_library)
+ - \ref icub_applications - a list of documented applications 
    (collections of modules)
- - \ref icub_tutorials \endref - a set of tutorials to learn how to use the software
+ - \ref icub_tutorials - a set of tutorials to learn how to use the software
  - The documentation for contributed software is here: <a href="http://wiki.icub.org/iCub/contrib"> Contrib documentation </A> 
  - Programmer's checklist:
   - <a href="http://wiki.icub.org/wiki/Licensing"> Licensing </A> - have you declared your authorship, and rights granted?
