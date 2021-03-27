@@ -4,7 +4,6 @@
 
 add_subdirectory(controlBoardDumper)
 add_subdirectory(simpleClient)
-add_subdirectory(testStereoMatch)
 add_subdirectory(fingersTuner)
 add_subdirectory(imageSplitter)
 add_subdirectory(trajectoryPlayer)
