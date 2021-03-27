@@ -14,7 +14,11 @@ mark_as_advanced(ICUBMAIN_COMPILE_CORE)
 option(ICUBMAIN_COMPILE_TOOLS "Enable icub-main tools." ON)
 mark_as_advanced(ICUBMAIN_COMPILE_TOOLS)
 
-option(ICUBMAIN_COMPILE_SIMULATORS "Enable icub-main simulators." ON)
+if(NOT APPLE)
+  option(ICUBMAIN_COMPILE_SIMULATORS "Enable icub-main simulators." ON)
+else()
+  option(ICUBMAIN_COMPILE_SIMULATORS "Enable icub-main simulators." OFF)
+endif()
 mark_as_advanced(ICUBMAIN_COMPILE_SIMULATORS)
 
 option(ICUBMAIN_COMPILE_MODULES "Enable icub-main modules." ON)
