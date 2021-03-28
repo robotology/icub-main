@@ -37,6 +37,8 @@
 #ifndef __CTRLMATH_H__
 #define __CTRLMATH_H__
 
+#include <cmath>
+
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
@@ -51,17 +53,17 @@ namespace ctrl
 /**
  * The PI constant.
  */
-extern const double CTRL_PI;
+constexpr double CTRL_PI = M_PI;
 
 /**
  * 180/PI.
  */
-extern const double CTRL_RAD2DEG;
+constexpr double CTRL_RAD2DEG = 180.0 / M_PI;
 
 /**
  * PI/180.
  */
-extern const double CTRL_DEG2RAD;
+constexpr double CTRL_DEG2RAD = M_PI / 180.0;
 
 /**
 * \ingroup Maths
