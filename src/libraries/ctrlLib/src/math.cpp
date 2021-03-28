@@ -8,7 +8,6 @@
  * details.
 */
 
-#include <cmath>
 #include <string>
 
 #include <yarp/os/Log.h>
@@ -19,16 +18,6 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
-
-
-/************************************************************************/
-namespace iCub {
-    namespace ctrl {
-        const double CTRL_PI=M_PI;
-        const double CTRL_RAD2DEG=180.0/M_PI;
-        const double CTRL_DEG2RAD=M_PI/180.0;
-    }
-}
 
 
 /************************************************************************/
