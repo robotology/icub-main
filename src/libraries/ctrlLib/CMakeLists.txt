@@ -40,7 +40,7 @@ endif()
 
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
 add_library(ICUB::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
+target_compile_definitions(${PROJECT_NAME} PUBLIC _USE_MATH_DEFINES)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
