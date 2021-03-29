@@ -1,4 +1,0 @@
-== YARP VERSION ==
-
-This snapshot was released with yarp 3.2.0
-
