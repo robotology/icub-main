@@ -32,7 +32,7 @@
 // marco.accame on 20 oct 2014.
 // the objects which use ethResource to communicate with the ethernet boards inside the robot
 // must be derived from this class IethResource.
-// these objects are: embObjMotionControl, embObjSkin, embObjAnalogSensor, embObjVirtualAnalogSensor, and future ones.
+// these objects are: embObjMotionControl, embObjSkin, embObjAnalogSensor, and future ones.
 // these object must implement the virtual functions initialised() and update() so that:
 // - initialised() must return true only if the object is opened (its method open() has returned).
 // - update() takes care of filling private data structures with bytes contained in the relevant ROPs coming from remote boards.
