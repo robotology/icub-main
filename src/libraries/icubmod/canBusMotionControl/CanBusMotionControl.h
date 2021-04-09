@@ -481,7 +481,7 @@ class firmwareVersionHelper
     {
         yInfo("\n");
         yInfo("**********************************\n");
-        yInfo("iCubInterface CAN protocol: %d.%d\n",icub_protocol.major,icub_protocol.minor);
+        yInfo("yarprobotinterface CAN protocol: %d.%d\n",icub_protocol.major,icub_protocol.minor);
         yInfo("Firmware report:\n");
         for (int j=0; j<jointsNum; j++)
         {
@@ -496,10 +496,10 @@ class firmwareVersionHelper
         yWarning("###################################################################################\n");
         yWarning("###################################################################################\n");
         yWarning("\n");
-        yWarning("  iCubInterface detected that your control boards are not running the latest\n");
+        yWarning("  yarprobotinterface detected that your control boards are not running the latest\n");
         yWarning("  available firmware version, although it is still compatible with it.\n");
         yWarning("  Upgrading your iCub firmware to build %d is highly recommended.\n", LAST_BLL_BUILD);
-        yWarning("  For further information please visit: http://wiki.icub.org/wiki/Firmware\n");
+        yWarning("  For further information please visit: https://icub-tech-iit.github.io/documentation/icub_firmware\n");
         yWarning("\n");
         yWarning("###################################################################################\n");
         yWarning("###################################################################################\n");
@@ -511,7 +511,7 @@ class firmwareVersionHelper
         yWarning("#################################################################################################\n");
         yWarning("#################################################################################################\n");
         yWarning("\n");
-        yWarning("  iCubInterface detected that your control boards are running a firmware version\n");
+        yWarning("  yarprobotinterface detected that your control boards are running a firmware version\n");
         yWarning("  which is newer than the recommended version (build %d), although it is still compatible with it.\n", LAST_BLL_BUILD);
         yWarning("  It may also be that you are running an experimental firmware version. \n");
         yWarning("  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.\n");
@@ -527,9 +527,9 @@ class firmwareVersionHelper
         yError("###################################################################################\n");
         yError("\n");
         yError("  It has been detected that your control boards are not using the same\n");
-        yError("  CAN protocol used by iCubinterface. iCubInterface cannot continue.\n");
-        yError("  Please update your system (iCubInterface and/or your control board firmware.\n");
-        yError("  For further information please visit: http://wiki.icub.org/wiki/Firmware\n");
+        yError("  CAN protocol used by yarprobotinterface. yarprobotinterface cannot continue.\n");
+        yError("  Please update your system (yarprobotinterface and/or your control board firmware.\n");
+        yError("  For further information please visit: https://icub-tech-iit.github.io/documentation/icub_firmware\n");
         yError("\n");
         yError("###################################################################################\n");
         yError("###################################################################################\n");
