@@ -1,7 +1,15 @@
-name: Feature Request
+name: ✨ Feature Request
 description: Suggest an idea for this project
 labels: "Type: Enhancement"
 body:
+- type: markdown
+  attributes:
+    value: |
+      ⚠
+      Verify first that your issue is not [already reported on GitHub][issue search].
+      Also test if the latest release and devel branch are affected too.
+
+      [issue search]: https://github.com/robotology/icub-main/search?q=is%3Aissue&type=issues
 - type: textarea
   attributes:
     label: Is your feature request related to a problem?
@@ -10,6 +18,10 @@ body:
   attributes:
     label: The solution you would like to have available
     description: A clear and concise description of what you want us to implement.
+    placeholder: >-
+      I am trying to do X from the devel branch on GitHub and I think that
+      implementing a feature Y would be very helpful for me and every other
+      user because of Z.
   validations:
     required: true
 - type: textarea
