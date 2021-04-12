@@ -3829,7 +3829,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
                 jomodes.encoder1.port = mc_service.properties.encoder1s[i].desc.port;
                 jomodes.encoder1.pos = mc_service.properties.encoder1s[i].desc.pos;
 
-                // 3. encoder2 src/libraries/icubmod/embObjMotionControl/embObjMotionControl.cppis ...
+                // 3. encoder2 is ...
                 jomodes.encoder2.type = mc_service.properties.encoder2s[i].desc.type;
                 jomodes.encoder2.port = mc_service.properties.encoder2s[i].desc.port;
                 jomodes.encoder2.pos = mc_service.properties.encoder2s[i].desc.pos;
