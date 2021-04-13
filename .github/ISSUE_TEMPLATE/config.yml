@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Robotology Community
+  - name: 👨🏻‍💻 Robotology Community
     url: https://github.com/robotology/community/discussions
     about: For general discussions.
-  - name: Robot Maintenance
+  - name: 🤖 Robot Maintenance
     url: https://github.com/robotology/icub-tech-support/issues
     about: To get support for robot maintenance.
