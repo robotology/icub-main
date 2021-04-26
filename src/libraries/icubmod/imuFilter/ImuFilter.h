@@ -174,7 +174,7 @@ class yarp::dev::ImuFilter :  public yarp::os::PeriodicThread,
     double bias_gain{0.0};
     bool verbose{false};
     bool adaptGyroBias{false};
-    double m_period{0.01};
+    int m_period_ms{20};
     double gyroTs{0.0};
     mutable std::mutex m_mutex;
     yarp::os::Stamp stampBias;
