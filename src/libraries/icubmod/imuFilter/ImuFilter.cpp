@@ -136,13 +136,13 @@ bool ImuFilter::open(yarp::os::Searchable& config)
     gyroBias.resize(3,0.0);
     adaptGyroBias=false;
 
-    m_period=config.check("period",Value(0.01)).asDouble()/1000.0;
+    m_period_ms=config.check("period",Value(20)).asInt();
 
     if (name.at(0) != '/')
         name = "/" +name;
     ok &= bPort.open(name+"/bias:o");
 
-    this->setPeriod(m_period);
+    this->setPeriod(m_period_ms / 1000.0);
 
     if (!ok) {
         yError()<<"imuFilter: failed to open the bias port";
