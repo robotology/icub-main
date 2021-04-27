@@ -439,13 +439,13 @@ bool ServiceParser::convert(std::string const &fromstring, eObrd_location_t &loc
         {
             location.extcan.port = (1 == bus) ? (eOcanport1) : (eOcanport2);
             location.extcan.addr = adr;
-            if((0 != sub) && (1 != sub))
+            if((eobrd_caninsideindex_first != sub) && (eobrd_caninsideindex_second != sub) && (eobrd_caninsideindex_third != sub) && (eobrd_caninsideindex_fourth != sub))
             {
-                yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because in CANx:adr:SUB, SUB address must be in range [0, 1]";
+                yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because in CANx:adr:SUB, SUB address must be in range [0, 3]";
                 formaterror = true;
                 return false;
             }
-            location.extcan.index = (0 == sub) ? (eobrd_caninsideindex_first) : (eobrd_caninsideindex_second);
+            location.extcan.index = sub;
         }
 
     }
@@ -2102,6 +2102,7 @@ bool ServiceParser::parse_actuator_port(std::string const &fromstring, eObrd_eth
 
         case eomc_act_foc:
         case eomc_act_mc4:
+        case eomc_act_pmc:
         {
             // read it as a CAN address
             eObrd_location_t loc;
@@ -2124,6 +2125,15 @@ bool ServiceParser::parse_actuator_port(std::string const &fromstring, eObrd_eth
                 if((eobrd_place_can != loc.any.place) && (eobrd_place_extcan != loc.any.place))
                 {
                     yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a eomc_act_foc location because it is not a eobrd_place_extcan or eobrd_place_can";
+                    formaterror = true;
+                    ret = false;
+                }
+            }
+            else if(eomc_act_pmc == type)
+            {
+                if((eobrd_place_can != loc.any.place))
+                {
+                    yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a eomc_act_pmc location";
                     formaterror = true;
                     ret = false;
                 }
@@ -2681,6 +2691,38 @@ bool ServiceParser::check_motion(Searchable &config)
                 itisoksofar = false;
             }
 
+
+        } break;
+
+        case eomn_serv_MC_mc4pluspmc:
+        {
+            // must have: ETHBOARD, CANBOARDS, POS, JOINTMAPPING
+
+            itisoksofar = true;
+
+            if(false == has_PROPERTIES_ETHBOARD)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_CANBOARDS)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_POS)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.POS for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_JOINTMAPPING)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
 
         } break;
 
@@ -3859,6 +3901,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
         } break;
 
+
         case eomn_serv_MC_mc4plusfaps:
         {
             eOmn_serv_config_data_mc_mc4plusfaps_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plusfaps);
@@ -3891,6 +3934,70 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
                 // 1. actuator is on pwm: we need the port
                 jomodes.actuator.pwm.port = mc_service.properties.actuators[i].desc.pwm.port;
+
+                // 2. encoder1 is ...
+                jomodes.encoder1.type = mc_service.properties.encoder1s[i].desc.type;
+                jomodes.encoder1.port = mc_service.properties.encoder1s[i].desc.port;
+                jomodes.encoder1.pos = mc_service.properties.encoder1s[i].desc.pos;
+
+                // 3. encoder2 is ...
+                jomodes.encoder2.type = mc_service.properties.encoder2s[i].desc.type;
+                jomodes.encoder2.port = mc_service.properties.encoder2s[i].desc.port;
+                jomodes.encoder2.pos = mc_service.properties.encoder2s[i].desc.pos;
+
+                eo_array_PushBack(arrayofjomos, &jomodes);
+            }
+
+            // ok, everything is done
+            ret = true;
+
+        } break;
+
+
+        case eomn_serv_MC_mc4pluspmc:
+        {
+            eOmn_serv_config_data_mc_mc4pluspmc_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4pluspmc);
+
+            // 1. ->pos
+            eOmn_serv_config_data_as_pos_t *pos = &data_mc->pos;
+
+            for(size_t i=0; i<mc_service.properties.poslocations.size(); i++)
+            {
+                pos->boardInfo.canloc[i].port = mc_service.properties.poslocations[i].port;
+                pos->boardInfo.canloc[i].addr = mc_service.properties.poslocations[i].addr;
+                pos->boardInfo.canloc[i].insideindex = mc_service.properties.poslocations[i].insideindex;
+            }
+
+
+            pos->version.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
+            pos->version.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
+            pos->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
+            pos->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
+            pos->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
+
+            // 2. ->arrayofjomodescriptors
+            EOarray *arrayofjomos = eo_array_New(7, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayof7jomodescriptors);
+            size_t numofjomos = mc_service.properties.numofjoints;
+
+            for(size_t i=0; i<numofjomos; i++)
+            {
+                eOmc_jomo_descriptor_t jomodes = {};
+
+                // 1. actuator is on pwm for the first 4 and on pmc on trh last 3: we need the port
+                if(mc_service.properties.actuators[i].type == eomc_act_pwm)
+                {
+                    jomodes.actuator.pwm.port = mc_service.properties.actuators[i].desc.pwm.port;
+                }
+                else if(mc_service.properties.actuators[i].type == eomc_act_pmc)
+                {
+                    jomodes.actuator.pmc.canloc.port = mc_service.properties.actuators[i].desc.pmc.canloc.port;
+                    jomodes.actuator.pmc.canloc.addr = mc_service.properties.actuators[i].desc.pmc.canloc.addr;
+                    jomodes.actuator.pmc.canloc.insideindex = mc_service.properties.actuators[i].desc.pmc.canloc.insideindex;
+                }
+                else
+                {
+                    yError() << "ServiceParser::parseService() unknown vatuator value for eomn_serv_MC_mc4pluspmc mode";
+                }
 
                 // 2. encoder1 is ...
                 jomodes.encoder1.type = mc_service.properties.encoder1s[i].desc.type;

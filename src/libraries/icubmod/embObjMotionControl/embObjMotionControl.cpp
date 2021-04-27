@@ -579,7 +579,9 @@ bool embObjMotionControl::updatedJointsetsCfgWithControlInfo()
 
 bool embObjMotionControl::saveCouplingsData(void)
 {
-     eOmc_4jomo_coupling_t *jc_dest;
+    eOmc_4jomo_coupling_t *jc_dest;
+
+    static eOmc_4jomo_coupling_t dummyjomocoupling = {};
 
     switch(serviceConfig.ethservice.configuration.type)
     {
@@ -608,6 +610,11 @@ bool embObjMotionControl::saveCouplingsData(void)
             jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc4plusfaps.jomocoupling);
 
         } break;
+        case eomn_serv_MC_mc4pluspmc:
+        {
+            jc_dest = &dummyjomocoupling; // this mode does not have a coupling as it is w/ 7 independent joints
+
+        } break;
         case eomn_serv_MC_mc4:
         {
             return true;
@@ -622,6 +629,30 @@ bool embObjMotionControl::saveCouplingsData(void)
             return false;
         }
     }
+
+
+    // this mode does not use jointsets but only eOmc_jointset_configuration_t
+    if(eomn_serv_MC_mc4pluspmc == serviceConfig.ethservice.configuration.type)
+    {
+        eOmc_arrayof_7jointsetconfig_t *arrayof7jset = &(serviceConfig.ethservice.configuration.data.mc.mc4pluspmc.arrayof7jointsets);
+        EOarray *array = eo_array_New(7, sizeof(eOmc_jointset_configuration_t), arrayof7jset);
+        // must initialise each entry of array
+
+        //for(size_t s=0; s< _jsets.size(); s++)
+        for(size_t s=0; s<4; s++)
+        {
+            eOmc_jointset_configuration_t* cfg_ptr = _jsets[s].getConfiguration();
+            eo_array_PushBack(array, cfg_ptr);
+        }
+        for(size_t e=0; e<3; e++)
+        {
+            eOmc_jointset_configuration_t cfg = {0};
+            eo_array_PushBack(array, &cfg);
+        }
+
+        return true;
+    }
+
 
     memset(jc_dest, 0, sizeof(eOmc_4jomo_coupling_t));
 
@@ -4733,6 +4764,7 @@ bool embObjMotionControl::iNeedCouplingsInfo(void)
         (mc_serv_type == eomn_serv_MC_mc4plusmais) ||
         (mc_serv_type == eomn_serv_MC_mc2pluspsc) ||
         (mc_serv_type == eomn_serv_MC_mc4plusfaps)
+        || (mc_serv_type == eomn_serv_MC_mc4pluspmc)
       )
         return true;
     else
