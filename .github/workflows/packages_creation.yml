@@ -12,8 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@master
-
+    - uses: actions/checkout@main
     - run: git fetch --prune --unshallow
 
     - name: Get Latest Tag
@@ -60,7 +59,7 @@ jobs:
       env:
         TZ: Italy/Rome
         DEBIAN_FRONTEND: noninteractive
-    - uses: actions/checkout@master
+    - uses: actions/checkout@main
 
     - uses: actions/download-artifact@v2
       with:
@@ -84,7 +83,7 @@ jobs:
         echo ::set-output name=ICUB_MAIN_PACKAGE_NAME::$( cat ICUB_MAIN_PACKAGE_NAME.txt )
 
     - name: Upload Release asset icub-common
-      uses: actions/upload-release-asset@master
+      uses: actions/upload-release-asset@main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -93,7 +92,7 @@ jobs:
         asset_name: ${{ steps.package_generation_icub-common.outputs.ICUB_COMMON_PACKAGE_NAME }}
         asset_content_type: application/vnd.debian.binary-package
     - name: Upload Release asset icub-main
-      uses: actions/upload-release-asset@master
+      uses: actions/upload-release-asset@main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
