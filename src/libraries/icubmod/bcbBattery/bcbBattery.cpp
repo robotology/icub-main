@@ -156,15 +156,15 @@ void batteryReaderThread::run()
     }
 
     //parse battery data
-    std::smatch match;
-    string stringbuf((char*)tmp_buff, recb);
-    bool b = std::regex_search(stringbuf, match, r_exp);
+    std::cmatch cmatch;
+    bool b = std::regex_search((const char*)tmp_buff, (const char*)tmp_buff+recb, cmatch, r_exp);
+
     if (b)
     {
         //get the data
         for (size_t i=0; i< packet_len; i++)
         {
-            packet[i] = match.str().c_str()[i];
+            packet[i] = cmatch.str().c_str()[i];
         }
 
         //add checksum verification.
