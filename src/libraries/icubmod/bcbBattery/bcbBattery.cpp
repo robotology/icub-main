@@ -29,7 +29,7 @@ int test_buffer(unsigned char* tmp_buff, int buff_len)
     (tmp_buff)[03] = '\r';  (tmp_buff)[04] = '\n';  (tmp_buff)[05] = '\0';
     (tmp_buff)[13] = '\r';  (tmp_buff)[14] = '\n';  (tmp_buff)[15] = '\0';
     (tmp_buff)[23] = '\r';  (tmp_buff)[24] = '\n';  (tmp_buff)[25] = '\0';
-    return s.size();
+    return (int)(s.size());
 }
 #endif
 
@@ -71,8 +71,8 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     }
 
     //open the serial interface
-    driver.view(pSerial);
-    if (!pSerial)
+    driver.view(iSerial);
+    if (!iSerial)
     {
         yError("Error opening serial driver. Device not available");
 #ifndef DEBUG_TEST
@@ -81,7 +81,7 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     }
 
     //create the thread
-    batteryReader = new batteryReaderThread(pSerial, (double)period / 1000.0);
+    batteryReader = new batteryReaderThread(iSerial, (double)period / 1000.0);
     // Other options
     batteryReader->verboseEnable = group_general.check("verbose", Value(0), "enable/disable the verbose mode").asBool();
     batteryReader->screenEnable = group_general.check("screen", Value(0), "enable/disable the screen output").asBool();
@@ -95,7 +95,11 @@ bool BcbBattery::open(yarp::os::Searchable& config)
 bool BcbBattery::close()
 {
     //stop the thread
-    batteryReader->stop();
+    if (batteryReader)
+    {
+        batteryReader->stop();
+        delete batteryReader;
+    }
 
     //stop the driver
     driver.close();
@@ -107,7 +111,7 @@ bool batteryReaderThread::threadInit()
 {
     timeStamp = yarp::os::Time::now();
 
-    if (pSerial)
+    if (iSerial)
     {
         yInfo("BcbBattery starting transmission");
         startTransmission();
@@ -116,7 +120,7 @@ bool batteryReaderThread::threadInit()
     else
     {
 #ifndef DEBUG_TEST
-        yError("BcbBattery pSerial == NULL");
+        yError("BcbBattery iSerial == NULL");
         return false;
 #endif
     }
@@ -131,13 +135,13 @@ void batteryReaderThread::run()
 
     //read battery data.
 #ifndef DEBUG_TEST
-    if (pSerial)
+    if (iSerial)
     {
-        recb = pSerial->receiveBytes(tmp_buff, buff_len);
+        recb = iSerial->receiveBytes(tmp_buff, buff_len);
     }
     else
     {
-        yError("BcbBattery pSerial == NULL");
+        yError("BcbBattery iSerial == NULL");
     }
 #else
     recb = test_buffer((unsigned char*)(tmp_buff), buff_len);
@@ -145,10 +149,10 @@ void batteryReaderThread::run()
 
     if (verboseEnable)
     {
-        printf("internal buffer:");
+        snprintf(debugTextBuffer, debugTextBufferSize, "Internal buffer: ");
         for (size_t i = 0; i < recb; i++)
-            printf("%02X ", (unsigned int)(tmp_buff[i] & 0xFF));
-        printf("\n");
+            snprintf(debugTextBuffer+strlen(debugTextBuffer), debugTextBufferSize-strlen(debugTextBuffer), "%02X ", (unsigned int)(tmp_buff[i] & 0xFF));
+        yDebug() << debugTextBuffer;
     }
 
     //parse battery data
@@ -168,17 +172,29 @@ void batteryReaderThread::run()
 
         if (verboseEnable)
         {
-            printf("found:");
-            for (size_t i = 0; i < packet_len; i++)
-                printf("%02X ", (unsigned int)(packet[i] & 0xFF));
-            printf("\n");
+            snprintf(debugTextBuffer, debugTextBufferSize, "Found: ");
+            snprintf(debugTextBuffer + strlen(debugTextBuffer), debugTextBufferSize - strlen(debugTextBuffer), "<%02X> ", (unsigned int)(packet[0] & 0xFF));
+            snprintf(debugTextBuffer + strlen(debugTextBuffer), debugTextBufferSize - strlen(debugTextBuffer), "(%02X %02X) ", (unsigned int)(packet[1] & 0xFF), (unsigned int)(packet[2] & 0xFF));
+            snprintf(debugTextBuffer + strlen(debugTextBuffer), debugTextBufferSize - strlen(debugTextBuffer), "(%02X %02X) ", (unsigned int)(packet[3] & 0xFF), (unsigned int)(packet[4] & 0xFF));
+            snprintf(debugTextBuffer + strlen(debugTextBuffer), debugTextBufferSize - strlen(debugTextBuffer), "(%02X %02X) ", (unsigned int)(packet[5] & 0xFF), (unsigned int)(packet[6] & 0xFF));
+            snprintf(debugTextBuffer + strlen(debugTextBuffer), debugTextBufferSize - strlen(debugTextBuffer), "(%02X) ", (unsigned int)(packet[7] & 0xFF));
+            snprintf(debugTextBuffer + strlen(debugTextBuffer), debugTextBufferSize - strlen(debugTextBuffer), "<%02X %02X>", (unsigned int)(packet[8] & 0xFF), (unsigned int)(packet[9] & 0xFF));
+            yDebug() << debugTextBuffer;
         }
 
-        battery_voltage = ((unsigned char)packet[1] * 256 + (unsigned char)packet[2]) / 1000.0;
-        battery_current = ((unsigned char)packet[3] * 256 + (unsigned char)packet[4]) / 1000.0;
-        battery_charge = ((unsigned char)packet[5] * 256 + (unsigned char)packet[6]);
-        backpack_status = (unsigned char)packet[7];
+        //parse values
+        datamut.lock();
+        battery_voltage  = ((unsigned int)(packet[1])) << 8;
+        battery_voltage += (unsigned char)(packet[2]);
+        battery_voltage /= 1000.0;
+        battery_current = ((unsigned int)(packet[3])) << 8;
+        battery_current += (unsigned char)(packet[4]);
+        battery_current /= 1000.0;
+        battery_charge  = ((unsigned int)(packet[5])) << 8;
+        battery_charge += (unsigned char)(packet[6]);
+        backpack_status = (unsigned int)(packet[7]);
         battery_status = IBattery::Battery_status::BATTERY_OK_IN_USE;
+        datamut.unlock();
     }
     else
     {
@@ -194,34 +210,47 @@ void batteryReaderThread::run()
         timeinfo = localtime(&rawtime);
         char* battery_timestamp = asctime(timeinfo);
         char buff[1024];
-        sprintf(buff, "battery status: %+6.1fA   % 6.1fV   charge:% 6.1f%%    time: %s", battery_current, battery_voltage, battery_charge, battery_timestamp);
+        snprintf(buff, 1024, "%6.1fV %+6.1fA, charge:%6.1f%%,   time: %s", battery_voltage, battery_current, battery_charge, battery_timestamp);
         yDebug("BcbBattery::run() log_buffer is: %s", buff);
     }
 
     //flush the buffer
-    pSerial->flush();
+#ifndef DEBUG_TEST
+    if (iSerial)
+    {
+        iSerial->flush();
+    }
+#endif
 }
 
 bool BcbBattery::getBatteryVoltage(double &voltage)
 {
+    if (!batteryReader) return false;
+    std::lock_guard<std::mutex> lg(batteryReader->datamut);
     voltage = batteryReader->battery_voltage;
     return true;
 }
 
 bool BcbBattery::getBatteryCurrent(double &current)
 {
+    if (!batteryReader) return false;
+    std::lock_guard<std::mutex> lg(batteryReader->datamut);
     current = batteryReader->battery_current;
     return true;
 }
 
 bool BcbBattery::getBatteryCharge(double &charge)
 {
+    if (!batteryReader) return false;
+    std::lock_guard<std::mutex> lg(batteryReader->datamut);
     charge = batteryReader->battery_charge;
     return true;
 }
 
 bool BcbBattery::getBatteryStatus(Battery_status &status)
 {
+    if (!batteryReader) return false;
+    std::lock_guard<std::mutex> lg(batteryReader->datamut);
     status= batteryReader->battery_status;
     return true;
 }
@@ -235,6 +264,8 @@ bool BcbBattery::getBatteryTemperature(double &temperature)
 
 bool BcbBattery::getBatteryInfo(string &info)
 {
+    if (!batteryReader) return false;
+    std::lock_guard<std::mutex> lg(batteryReader->datamut);
     info = batteryReader->battery_info;
     return true;
 }
@@ -246,9 +277,11 @@ void batteryReaderThread::threadRelease()
 
 void batteryReaderThread::startTransmission()
 {
+    if (!iSerial) return;
+
     //start the transmission
     char cmd = 0x01;
-    bool ret = pSerial->send(&cmd, 1);
+    bool ret = iSerial->send(&cmd, 1);
     if (ret == false)
     {
         yError("BcbBattery problems starting the transmission");
@@ -256,15 +289,14 @@ void batteryReaderThread::startTransmission()
     }
 
     //empty the buffer
-    pSerial->flush();
+    iSerial->flush();
 }
 
 void batteryReaderThread::stopTransmission()
 {
-    if (pSerial)
-    {
-        char c = 0x00;
-        bool ret = pSerial->send(&c, 1);
-        if (ret == false) { yError("BcbBattery problems while stopping the transmission"); }
-    }
+    if (!iSerial) return;
+
+    char c = 0x00;
+    bool ret = iSerial->send(&c, 1);
+    if (ret == false) { yError("BcbBattery problems while stopping the transmission"); }
 }
