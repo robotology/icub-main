@@ -29,7 +29,6 @@ class batteryReaderThread : public PeriodicThread
     //configuration options
     bool               verboseEnable = false;
     bool               screenEnable = true;
-    bool               silenceSyncWarnings = false;
 
     //the buffer
     double             timeStamp;

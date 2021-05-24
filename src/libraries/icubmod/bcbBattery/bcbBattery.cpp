@@ -85,7 +85,6 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     // Other options
     batteryReader->verboseEnable = group_general.check("verbose", Value(0), "enable/disable the verbose mode").asBool();
     batteryReader->screenEnable = group_general.check("screen", Value(0), "enable/disable the screen output").asBool();
-    batteryReader->silenceSyncWarnings = group_general.check("silence_sync_warnings", Value(0), "enable/disable the print of warnings in case of sync errors.").asBool();
 
     //start the thread
     batteryReader->start();
