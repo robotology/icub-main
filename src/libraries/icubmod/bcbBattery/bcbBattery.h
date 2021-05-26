@@ -35,7 +35,7 @@ class batteryReaderThread : public PeriodicThread
     static const int   buff_len = 10000;
     unsigned char      tmp_buff[buff_len];
     static const int   packet_len =10;
-    char               packet[packet_len];
+    unsigned char      packet[packet_len];
     std::regex         r_exp;
 
     ISerialDevice*     iSerial = nullptr;
