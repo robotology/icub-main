@@ -55,13 +55,9 @@ class batteryReaderThread : public PeriodicThread
        // \0........\r\n which is not followed by any other occurrence of the same pattern.
        // See for example: https://docs.pexip.com/admin/regex_reference.htm
        //
-       //                         0   1   2   3   4   5   6   7   8    9
-       char c_exp[packet_len +5+ packet_len +1] =
-                               {'\0','.','.','.','.','.','.','.','\r','\n',
-                                 '(','?','!','.','*',
-                                '\0','.','.','.','.','.','.','.','\r','\n',
-                                 ')'};
-       r_exp=std::string(c_exp,26);
+       //                    01234567  8  9*****  01234567  8  9
+       std::string c_exp ("\\0.......\\r\\n(?!.*\\0.......\\r\\n)");
+       r_exp=c_exp;
     }
 
     void startTransmission();
