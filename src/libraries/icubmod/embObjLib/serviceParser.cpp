@@ -3707,6 +3707,8 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
     // ...
 
     mcconfig.ethservice.configuration.type = mc_service.type;
+    mcconfig.ethservice.configuration.diagnosticsmode = mc_service.diagconfig.mode;
+    mcconfig.ethservice.configuration.diagnosticsparam = mc_service.diagconfig.par16;
     
     switch(mc_service.type)
     {
