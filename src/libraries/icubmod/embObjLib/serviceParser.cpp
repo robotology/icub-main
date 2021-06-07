@@ -86,7 +86,7 @@ bool ServiceParser::convert(std::string const &fromstring, eOmn_serv_diagn_mode_
 
     todiagnmode = eomn_string2servicediagnmode(t);
 
-    if(eOmn_serv_diagn_mode_UNKNOWN == todiagnmode)
+    if(eomn_serv_diagn_mode_UNKNOWN == todiagnmode)
     {
         yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOmn_serv_diagn_mode_t";
         formaterror = true;
@@ -3524,7 +3524,7 @@ bool ServiceParser::check_motion(Searchable &config)
 
 
     // add default values. then we may change tem
-    mc_service.diagconfig.mode = eOmn_serv_diagn_mode_NONE;
+    mc_service.diagconfig.mode = eomn_serv_diagn_mode_NONE;
     mc_service.diagconfig.par16 = 0;
 
     if(true == has_PROPERTIES_DIAGNOSTICS)
@@ -3538,7 +3538,7 @@ bool ServiceParser::check_motion(Searchable &config)
             int n_par16 = b_PROPERTIES_DIAGNOSTICS_par16.size() - 1;
             if((1 == n_type) && (1 == n_par16))
             {
-                eOmn_serv_diagn_mode_t dm = eOmn_serv_diagn_mode_NONE;
+                eOmn_serv_diagn_mode_t dm = eomn_serv_diagn_mode_NONE;
                 int par16 = 0;
                 if(false == convert(b_PROPERTIES_DIAGNOSTICS_mode.get(1).asString(), dm, formaterror))
                 {
