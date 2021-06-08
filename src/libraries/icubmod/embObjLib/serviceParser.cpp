@@ -80,6 +80,23 @@ bool ServiceParser::convert(std::string const &fromstring, eOmn_serv_type_t& tos
 
 }
 
+bool ServiceParser::convert(std::string const &fromstring, eOmn_serv_diagn_mode_t &todiagnmode, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    todiagnmode = eomn_string2servicediagnmode(t);
+
+    if(eomn_serv_diagn_mode_UNKNOWN == todiagnmode)
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOmn_serv_diagn_mode_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+
 
 // bool ServiceParser::convert(std::string const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror)
 // {
@@ -2510,6 +2527,11 @@ bool ServiceParser::check_motion(Searchable &config)
     Bottle b_PROPERTIES_JOINTMAPPING = Bottle(b_PROPERTIES.findGroup("JOINTMAPPING"));
     bool has_PROPERTIES_JOINTMAPPING = !b_PROPERTIES_JOINTMAPPING.isNull();
 
+    Bottle b_PROPERTIES_DIAGNOSTICS = Bottle(b_PROPERTIES.findGroup("DIAGNOSTICS"));
+    bool has_PROPERTIES_DIAGNOSTICS = !b_PROPERTIES_DIAGNOSTICS.isNull();
+
+
+
 
 
     bool itisoksofar = false;
@@ -3500,6 +3522,49 @@ bool ServiceParser::check_motion(Searchable &config)
 
     } // has_PROPERTIES_JOINTMAPPING
 
+
+    // add default values. then we may change tem
+    mc_service.diagconfig.mode = eomn_serv_diagn_mode_NONE;
+    mc_service.diagconfig.par16 = 0;
+
+    if(true == has_PROPERTIES_DIAGNOSTICS)
+    {
+        Bottle b_PROPERTIES_DIAGNOSTICS_mode = b_PROPERTIES_DIAGNOSTICS.findGroup("mode");
+        Bottle b_PROPERTIES_DIAGNOSTICS_par16 = b_PROPERTIES_DIAGNOSTICS.findGroup("par16");
+        if(!b_PROPERTIES_DIAGNOSTICS_mode.isNull() && !b_PROPERTIES_DIAGNOSTICS_par16.isNull())
+        {
+            // if we have both of them ... and they contain at least (only) one we get the values
+            int n_type = b_PROPERTIES_DIAGNOSTICS_mode.size() - 1;
+            int n_par16 = b_PROPERTIES_DIAGNOSTICS_par16.size() - 1;
+            if((1 == n_type) && (1 == n_par16))
+            {
+                eOmn_serv_diagn_mode_t dm = eomn_serv_diagn_mode_NONE;
+                int par16 = 0;
+                if(false == convert(b_PROPERTIES_DIAGNOSTICS_mode.get(1).asString(), dm, formaterror))
+                {
+                    yWarning() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.DIAGNOSTICS.mode. Using {eOmn_serv_diagn_mode_NONE, 0}";
+                }
+                else if(!b_PROPERTIES_DIAGNOSTICS_par16.get(1).isInt())
+                {
+                    yWarning() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.DIAGNOSTICS.par16. Using {eOmn_serv_diagn_mode_NONE, 0}";
+                }
+                else
+                {
+                    par16 = b_PROPERTIES_DIAGNOSTICS_par16.get(1).asInt();
+                }
+
+                mc_service.diagconfig.mode = dm;
+                mc_service.diagconfig.par16 = static_cast<uint16_t>(par16);
+
+                yWarning() << "ServiceParser::check_motion() has detected some DIAGNOSTICS config for this MC service: mode = " << eomn_servicediagnmode2string(dm) << ", par16 = " << mc_service.diagconfig.par16;
+
+            }
+
+        }
+
+    } // has_PROPERTIES_DIAGNOSTICS
+
+
     return true;
 }
 
@@ -3642,6 +3707,8 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
     // ...
 
     mcconfig.ethservice.configuration.type = mc_service.type;
+    mcconfig.ethservice.configuration.diagnosticsmode = mc_service.diagconfig.mode;
+    mcconfig.ethservice.configuration.diagnosticsparam = mc_service.diagconfig.par16;
     
     switch(mc_service.type)
     {

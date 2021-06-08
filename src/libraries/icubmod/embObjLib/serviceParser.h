@@ -238,6 +238,7 @@ typedef struct
 typedef struct
 {
     eOmn_serv_type_t            type;
+    eOmn_serv_diagn_cfg_t       diagconfig;
     servMCproperties_t          properties;
     servMCsettings_t            settings;
 } servMCcollector_t;
@@ -293,6 +294,7 @@ public:
 #endif
 
     bool convert(std::string const &fromstring, eOmn_serv_type_t &toservicetype, bool &formaterror);
+    bool convert(std::string const &fromstring, eOmn_serv_diagn_mode_t &todiagnmode, bool &formaterror);
     bool convert(std::string const &fromstring, eObrd_type_t& tobrdtype, bool& formaterror);
     bool convert(std::string const &fromstring, eObrd_cantype_t &tobrdcantype, bool &formaterror);
     bool convert(std::string const &fromstring, eObrd_ethtype_t& tobrdethtype, bool& formaterror);
