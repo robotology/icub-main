@@ -204,7 +204,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     configFy=config.check("verticalFov");
     configPPx=config.check("principalPointX");
     configPPy=config.check("principalPointY");
-    configRet=config.check("retificationMatrix");
+    configRet=config.check("rectificationMatrix");
     configDistM=config.check("distortionModel");
     yarp::os::Bottle bt;
     bt=config.findGroup("cameraDistortionModelGroup");
@@ -242,7 +242,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     intrinsic.put("focalLengthY",config.check("focalLengthY",yarp::os::Value(0.0),"Vertical component of the focal lenght").asDouble());
     intrinsic.put("principalPointX",config.check("principalPointX",yarp::os::Value(0.0),"X coordinate of the principal point").asDouble());
     intrinsic.put("principalPointY",config.check("principalPointY",yarp::os::Value(0.0),"Y coordinate of the principal point").asDouble());
-    intrinsic.put("retificationMatrix",config.check("retificationMatrix",*retM,"Matrix that describes the lens' distortion"));
+    intrinsic.put("rectificationMatrix",config.check("rectificationMatrix",*retM,"Matrix that describes the lens' distortion"));
     intrinsic.put("distortionModel",config.check("distortionModel",yarp::os::Value(""),"Reference to group of parameters describing the distortion model").asString());
     if(bt.isNull())
     {
