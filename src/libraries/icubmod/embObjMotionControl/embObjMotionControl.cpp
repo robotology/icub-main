@@ -385,6 +385,20 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         servparam = NULL;
     }
 
+    // in here ...we open ports where to print AMO data
+    mcdiagnostics.config.mode = serviceConfig.ethservice.configuration.diagnosticsmode;
+    mcdiagnostics.config.par16 = serviceConfig.ethservice.configuration.diagnosticsparam;
+    if(eomn_serv_diagn_mode_MC_AMOyarp == mcdiagnostics.config.mode)
+    {
+        // prepare the ports
+        mcdiagnostics.ports.resize(2);
+        for(size_t i=0; i<mcdiagnostics.ports.size(); i++)
+        {
+            mcdiagnostics.ports[i] = new BufferedPort<Bottle>;
+            mcdiagnostics.ports[i]->open("/amo/" + res->getProperties().boardnameString + "/j" + std::to_string(i));
+        }
+    }
+
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mc, servparam))
     {
@@ -426,6 +440,42 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 
     opened = true;
+
+
+    if(eomn_serv_diagn_mode_MC_AMOyarp == mcdiagnostics.config.mode)
+    {
+        // marco.accame on 10 june 2011.
+        // in here we wait some time so that yarprobotinterface may receive amo streaming before any
+        // further module (e.g., the calibrator) sends an active control mode and starts moving the motor.
+        //
+        // how does it work?
+        //
+        // when the ETH board receives command from res->serviceStart() it enters the control loop and it
+        // waits for a non IDLE control mode etc. but it also starts streaming AMO data. It is the thread
+        // inside EthReceiver whuch process UDP pckets, so a wait inside this current thread will do the job.
+        //
+        // moreover, if mcdiagnostics.config.par16 is > 0, then we also have a mechanism such that the AMO
+        // are streamed in a conditio of the motor not initiaized yet. in such  way we can observe what is
+        // the effect of the configuration of the motor on the AMO reading.
+        //
+        // how does it work?
+        //
+        // it is the function embObjMotionControl::init() which configures the motors by sending messages
+        // with tag eoprot_tag_mc_joint_config.
+        // the ETH board, if it sees eomn_serv_diagn_mode_MC_AMOyarp and par16 > 0, it applies the config of
+        // the motor with a delay of mcdiagnostics.config.par16 milliseconds. so, in here if we wait
+        // the same amount of time, we:
+        // - can read amo values with the motors off,
+        // - we are sure that no other module (e.g., the calibrator) will attempt to move a motor which is
+        //   not yet configured.
+        // I KNOW: IT WOULD BE MUCH BETTER to wait in here until the ETH board tells us that it has configured
+        // the motor (rather then just applying a delay and hoping the ETH boards works fine). but that would
+        // require some effort which for now i prefer to postpone because "l'ottimo e' il nemico del bene"
+        // and we need a quick solution to test icub3.
+
+        SystemClock::delaySystem(0.001*mcdiagnostics.config.par16);
+    }
+
     return true;
 }
 
@@ -1188,6 +1238,14 @@ bool embObjMotionControl::init()
         id32v.push_back(protid);
     }
 
+    if(eomn_serv_diagn_mode_MC_AMOyarp == mcdiagnostics.config.mode)
+    {
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, 0, eoprot_tag_mc_joint_status_debug);
+        id32v.push_back(protid);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, 1, eoprot_tag_mc_joint_status_debug);
+        id32v.push_back(protid);
+    }
+
 
     if(false == res->serviceSetRegulars(eomn_serv_category_mc, id32v))
     {
@@ -1280,6 +1338,7 @@ bool embObjMotionControl::init()
         }
     }
 
+
     //////////////////////////////////////////
     // invia la configurazione dei MOTORI   //
     //////////////////////////////////////////
@@ -1368,6 +1427,22 @@ bool embObjMotionControl::close()
 
     if (_measureConverter)  {delete _measureConverter; _measureConverter=0;}
 
+
+    if(eomn_serv_diagn_mode_MC_AMOyarp == mcdiagnostics.config.mode)
+    {
+        // close the ports
+        for(size_t i=0; i<mcdiagnostics.ports.size(); i++)
+        {
+            mcdiagnostics.ports[i]->close();
+            delete mcdiagnostics.ports[i];
+        }
+        mcdiagnostics.ports.clear();
+
+        mcdiagnostics.config.mode = eomn_serv_diagn_mode_NONE;
+        mcdiagnostics.config.par16 = 0;
+    }
+
+
     // in cleanup, at date of 23feb2016 there is a call to ethManager->releaseResource() which ...
     // send to config all the boards and stops tx and rx treads.
     // thus, in here we cannot call serviceStop(mc) because there will be tx/rx activity only for the first call of ::close().
@@ -1402,9 +1477,9 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
 {
     // use this function to update the values cached in the class using data received by the remote boards via the network callbacks
     // in embObjMotionControl it is updated only the timestamp of the encoders, thuus i dont used rxdata
-    int joint = eoprot_ID2index(id32);
+    size_t joint = eoprot_ID2index(id32);
 
-    rxdata = rxdata;
+    // rxdata = rxdata;
 
     // marco.accame: pay attention using rxdata. the rxdata depends on the id32.
     // now the function update() is called with rxdata of different types.
@@ -1418,6 +1493,33 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
     {   // do it only if we already have opened the device
         std::lock_guard<std::mutex> lck(_mutex);
         _encodersStamp[joint] = timestamp;
+    }
+
+
+    if(eomn_serv_diagn_mode_MC_AMOyarp == mcdiagnostics.config.mode)
+    {
+        eOprotEntity_t ent = eoprot_ID2entity(id32);
+        eOprotTag_t tag = eoprot_ID2tag(id32);
+
+        char str[128] = "boh";
+
+        eoprot_ID2information(id32, str, sizeof(str));
+
+        if((eoprot_entity_mc_joint == ent) && (eoprot_tag_mc_joint_status_debug == tag) && (joint < mcdiagnostics.ports.size()))
+        {
+
+            int32_t *debug32 = reinterpret_cast<int32_t*>(rxdata);
+            // write into relevant port
+
+            Bottle& output = mcdiagnostics.ports[joint]->prepare();
+            output.clear();
+            //output.addString("[yt, amo, reg, pos, pwm, cur]"); // but we must get the joint and the motor as well
+            output.addString("[yt, amo, reg]");
+            output.addDouble(timestamp);
+            output.addInt32(debug32[0]);
+            output.addInt32(debug32[1]);
+            mcdiagnostics.ports[joint]->write();
+        }
     }
 
     return true;
