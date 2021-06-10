@@ -34,6 +34,7 @@ using namespace std;
 #include <mutex>
 //  Yarp stuff
 #include <yarp/os/Bottle.h>
+#include <yarp/os/BufferedPort.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardHelper.h>
@@ -109,6 +110,11 @@ namespace yarp {
 }
 
 
+struct MCdiagnostics
+{
+    eOmn_serv_diagn_cfg_t config;
+    std::vector<BufferedPort<Bottle>*> ports;
+};
 
 using namespace yarp::dev;
 
@@ -184,6 +190,9 @@ private:
     std::mutex                 _mutex;
     
     bool opened; //internal state
+
+    MCdiagnostics mcdiagnostics;
+
 
 
      /////configuartion info (read from xml files)

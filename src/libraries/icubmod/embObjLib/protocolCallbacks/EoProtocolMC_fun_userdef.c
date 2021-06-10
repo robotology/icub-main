@@ -76,6 +76,10 @@ extern void eoprot_fun_UPDT_mc_joint_status_core(const EOnv* nv, const eOropdesc
     feat_manage_motioncontrol_data(eo_nv_GetIP(nv), rd->id32, (void *)rd->data);
 }
 
+extern void eoprot_fun_UPDT_mc_joint_status_debug(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    feat_manage_motioncontrol_data(eo_nv_GetIP(nv), rd->id32, (void *)rd->data);
+}
 
 extern void eoprot_fun_UPDT_mc_motor_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
 {
