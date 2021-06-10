@@ -25,6 +25,15 @@ using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::iKin;
 
+namespace iCub {
+  namespace iKin {
+    constexpr double version_epsilon = 0.001;
+    inline bool is_version(const double v1, const double v2) {
+      return (fabs(v1 - v2) < version_epsilon);
+    }
+  }
+}
+
 
 /************************************************************************/
 void iCub::iKin::notImplemented(const unsigned int verbose)
@@ -2527,6 +2536,13 @@ void iCubEye::allocate(const string &_type)
             pushLink(new iKinLink(        0.0,   -0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(        0.0,      0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
         }
+    }
+
+    if (is_version(version, 2.8))
+    {
+        Matrix HN = yarp::math::eye(4, 4);
+        HN(2, 3) = -0.01;
+        setHN(HN);
     }
 
     blockLink(0,0.0);
