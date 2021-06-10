@@ -1508,16 +1508,22 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
         if((eoprot_entity_mc_joint == ent) && (eoprot_tag_mc_joint_status_debug == tag) && (joint < mcdiagnostics.ports.size()))
         {
 
+            eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_status_core);
+            eOmc_joint_status_core_t  jcore = {};
+
+            res->getLocalValue(id32, &jcore);
+
             int32_t *debug32 = reinterpret_cast<int32_t*>(rxdata);
             // write into relevant port
 
             Bottle& output = mcdiagnostics.ports[joint]->prepare();
             output.clear();
-            //output.addString("[yt, amo, reg, pos, pwm, cur]"); // but we must get the joint and the motor as well
-            output.addString("[yt, amo, reg]");
+            //output.addString("[yt, amo, reg, pos]"); // but we must get the joint and the motor as well
+            output.addString("[yt, amo, reg, pos]");
             output.addDouble(timestamp);
             output.addInt32(debug32[0]);
             output.addInt32(debug32[1]);
+            output.addInt32(jcore.measures.meas_position);
             mcdiagnostics.ports[joint]->write();
         }
     }
