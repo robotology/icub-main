@@ -27,7 +27,7 @@ using namespace iCub::iKin;
 
 namespace iCub {
   namespace iKin {
-    constexpr double version_epsilon = 0.001;
+    constexpr double version_epsilon = 1e-6;
     inline bool is_version(const double v1, const double v2) {
       return (fabs(v1 - v2) < version_epsilon);
     }
