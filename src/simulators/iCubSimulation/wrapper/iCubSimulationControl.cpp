@@ -303,8 +303,8 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         interactionMode[axis] = VOCAB_IM_STIFF;
    }
 
-    ImplementPositionControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementVelocityControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementPositionControl::initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementVelocityControl::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementPidControl::initialize(njoints, axisMap, angleToEncoder, zeros,newtonsToSensor,ampsToSensor, dutycycleToPwm);
     ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementMotorEncoders::initialize(njoints, axisMap, angleToEncoder, zeros);
@@ -312,7 +312,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementAmplifierControl::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlLimits::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor, ampsToSensor, dutycycleToPwm,nullptr,nullptr);
-    ImplementControlMode2::initialize(njoints, axisMap);
+    ImplementControlMode::initialize(njoints, axisMap);
     ImplementInteractionMode::initialize(njoints, axisMap);
     ImplementPositionDirect::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementRemoteVariables::initialize(njoints, axisMap);

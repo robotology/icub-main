@@ -1348,10 +1348,10 @@ bool embObjMotionControl::close()
 {
     yTrace() << " embObjMotionControl::close()";
 
-    ImplementControlMode2::uninitialize();
+    ImplementControlMode::uninitialize();
     ImplementEncodersTimed::uninitialize();
     ImplementMotorEncoders::uninitialize();
-    ImplementPositionControl2::uninitialize();
+    ImplementPositionControl::uninitialize();
     ImplementVelocityControl::uninitialize();
     ImplementPidControl::uninitialize();
     ImplementControlCalibration::uninitialize();
