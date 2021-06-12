@@ -2993,8 +2993,8 @@ bool CanBusMotionControl::close (void)
 
         PeriodicThread::stop ();/// stops the thread first (joins too).
 
-        ImplementPositionControl2::uninitialize();
-        ImplementVelocityControl2::uninitialize();
+        ImplementPositionControl::uninitialize();
+        ImplementVelocityControl::uninitialize();
 
 //        ImplementPositionControl<CanBusMotionControl, IPositionControl>::uninitialize ();
 //        ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::uninitialize();
@@ -3006,7 +3006,7 @@ bool CanBusMotionControl::close (void)
         ImplementAmplifierControl::uninitialize();
         ImplementControlLimits::uninitialize();
 
-        ImplementControlMode2::uninitialize();
+        ImplementControlMode::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementImpedanceControl::uninitialize();
         ImplementPositionDirect::uninitialize();
