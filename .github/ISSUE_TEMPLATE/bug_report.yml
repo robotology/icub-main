@@ -29,7 +29,7 @@ body:
 - type: textarea
   attributes:
     label: Example repository
-    description: If possible, please create an [minimal, reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) of the bug and link it here in the bug report. To this end, you may also consider using a [gist](https://gist.github.com).
+    description: If possible, please create a [minimal, reproducible example](https://stackoverflow.com/help/minimal-reproducible-example) of the bug and link it here in the bug report. To this end, you may also consider using a [gist](https://gist.github.com).
 - type: textarea
   attributes:
     label: Additional context
