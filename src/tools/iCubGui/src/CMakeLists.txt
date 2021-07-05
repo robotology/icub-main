@@ -53,8 +53,7 @@ source_group("Generated Files" FILES ${iCubGui_QRC_GEN_SRCS}
                                      ${iCubGui_UI_GEN_SRCS})
 
 
-include_directories(${GLUT_INCLUDE_DIRS}
-                    ${OpenGL_INCLUDE_DIRS}
+include_directories(${OpenGL_INCLUDE_DIRS}
                     ${Qt5_INCLUDE_DIRS})
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
@@ -68,7 +67,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE ${QT_DEFINITIONS}
                                                    _USE_MATH_DEFINES
                                                    GLUT_NO_LIB_PRAGMA)
 
-target_link_libraries(iCubGui ${GLUT_LIBRARIES}
+target_link_libraries(iCubGui GLUT::GLUT
                               ${OpenGL_LIBRARIES}
                               ${YARP_LIBRARIES}
                               skinDynLib)
