@@ -9,9 +9,9 @@
 # LATEST MODIFICATION DATE (YYYY-MM-DD): 2020-06-11
 #
 YCM_PACKAGE="ycm-cmake-modules"
-YCM_REQUIRED_VERSION="0.12.0"
+YCM_REQUIRED_VERSION="0.13.0"
 YCM_PACKAGE_URL_buster="https://github.com/robotology/ycm/releases/download/v${YCM_REQUIRED_VERSION}/${YCM_PACKAGE}_${YCM_REQUIRED_VERSION}-1.debian10.robotology1_all.deb"
-YCM_PACKAGE_URL_bionic="https://github.com/robotology/ycm/releases/download/v${YCM_REQUIRED_VERSION}/${YCM_PACKAGE}_${YCM_REQUIRED_VERSION}-1.ubuntu18.04.robotology2_all.deb"
+YCM_PACKAGE_URL_bionic="https://github.com/robotology/ycm/releases/download/v${YCM_REQUIRED_VERSION}/${YCM_PACKAGE}_${YCM_REQUIRED_VERSION}-1.ubuntu18.04.robotology1_all.deb"
 YCM_PACKAGE_URL_focal="https://github.com/robotology/ycm/releases/download/v${YCM_REQUIRED_VERSION}/${YCM_PACKAGE}_${YCM_REQUIRED_VERSION}-1.ubuntu20.04.robotology1_all.deb"
 
 YARP_REQUIRED_VERSION="3.4.0"
