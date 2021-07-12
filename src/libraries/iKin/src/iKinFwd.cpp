@@ -1657,7 +1657,13 @@ void iCubArm::allocate(const string &_type)
     Matrix H0(4,4);
     H0.zero();
 
-    if (version<3.0)
+    if (version<2.0) 
+    {
+        H0(0,1)=-1.0;
+        H0(1,2)=-1.0;
+        H0(2,0)=1.0;
+    }
+    else if (version<3.0)
     {
         H0(0,0)=1.0;
         H0(1,2)=-1.0;
@@ -1677,7 +1683,7 @@ void iCubArm::allocate(const string &_type)
     Matrix HN(4,4);
     HN.zero();
 
-    if (version<3.0)
+    if (version>=2.0 && version<3.0)
     {
         HN(0,0)=0.9996;
         HN(0,1)=0.0286;
