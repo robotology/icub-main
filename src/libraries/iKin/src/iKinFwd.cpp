@@ -1663,7 +1663,7 @@ void iCubArm::allocate(const string &_type)
         H0(1,2)=-1.0;
         H0(2,0)=1.0;
     }
-    else if (version<3.0)
+    else if (version>=2.0 && version<3.0)
     {
         H0(0,0)=1.0;
         H0(1,2)=-1.0;
