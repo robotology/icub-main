@@ -1718,7 +1718,7 @@ void iCubArm::allocate(const string &_type)
             pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,            M_PI/2.0, -65.0*CTRL_DEG2RAD,  10.0*CTRL_DEG2RAD));            
             pushLink(new iKinLink(    0.0625,    0.016,       0.0,                M_PI, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
         }
-        if (version>=2.0 && version<3.0) // version 2.x
+        else if (version>=2.0 && version<3.0) // version 2.x
         {
             pushLink(new iKinLink(     0.032,  0.026935,  M_PI/2.0,              M_PI/2.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(       0.0,   -0.0055, -M_PI/2.0,              M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
