@@ -28,17 +28,8 @@ endmacro (checkandset_dependency)
 message(STATUS "Detecting required libraries")
 message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 
-# This is a workaround to enable the warning only if
-# icub_firmware_shared was found, but the version is not compatible with
-# the requested one.
-find_package(icub_firmware_shared QUIET)
-if(icub_firmware_shared_FOUND)
-  # icub-firmware-shared 4.0.7 was actually a wrong version exported by icub-firmware-shared <= 1.15
-  if(icub_firmware_shared_VERSION VERSION_GREATER 4 OR icub_firmware_shared_VERSION VERSION_LESS 1.19.2)
-    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected, but at least 1.18.100 is required")
-  endif()
-endif()
 
+find_package(icub_firmware_shared QUIET)
 find_package(GSL)
 find_package(GLUT)
 find_package(OpenCV)
@@ -78,6 +69,14 @@ checkandset_dependency(ACE)
 checkandset_dependency(IPOPT)
 checkandset_dependency(OpenCV)
 checkandset_dependency(Qt5)
+
+if(icub_firmware_shared_FOUND AND ICUB_USE_icub_firmware_shared)
+  # icub-firmware-shared 4.0.7 was actually a wrong version exported by icub-firmware-shared <= 1.15
+  if(icub_firmware_shared_VERSION VERSION_GREATER 4 OR icub_firmware_shared_VERSION VERSION_LESS 1.19.2)
+    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected, but at least 1.19.2 is required")
+  endif()
+endif()
+
 
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)
