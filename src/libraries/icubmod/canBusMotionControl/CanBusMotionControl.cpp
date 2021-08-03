@@ -3456,6 +3456,7 @@ bool CanBusMotionControl::threadInit()
 
     r._error_status = true;
 
+    errorstring.reserve(errorstringsize);
     previousRun=0;
     averagePeriod=0;
     averageThreadTime=0;
@@ -3583,9 +3584,11 @@ void CanBusMotionControl:: run()
 
             int j=0;
             /// reports board errors
-            char tmp[255];
-            char message[255];
-            sprintf(message, "%s [%d] printing boards infos:\n", canDevName.c_str(), r._networkN);
+            char tmp[255] = {0};
+            errorstring.clear();
+
+            snprintf(tmp, sizeof(tmp), "%s [%d] printing boards infos:\n", canDevName.c_str(), r._networkN);
+            errorstring.append(tmp);
 
             bool errorF=false;
             for (j=0; j<r._njoints ;j++)
@@ -3610,8 +3613,9 @@ void CanBusMotionControl:: run()
                     if ( (r._bcastRecvBuffer[j]._canTxError>0)||(r._bcastRecvBuffer[j]._canRxError>0))
                         {
                             errorF=true;
-                            sprintf(tmp, "Id:%d T:%u R:%u ", addr, r._bcastRecvBuffer[j]._canTxError, r._bcastRecvBuffer[j]._canRxError);
-                            sprintf(message, "%s%s", message, tmp);
+                            snprintf(tmp, sizeof(tmp), "Id:%d T:%u R:%u ", addr, r._bcastRecvBuffer[j]._canTxError, r._bcastRecvBuffer[j]._canRxError);
+                            errorstring.append(tmp);
+
 
                             logJointData(canDevName.c_str(),r._networkN,j,14,yarp::os::Value((int)r._bcastRecvBuffer[j]._canTxError));
                             logJointData(canDevName.c_str(),r._networkN,j,15,yarp::os::Value((int)r._bcastRecvBuffer[j]._canRxError));
@@ -3624,11 +3628,11 @@ void CanBusMotionControl:: run()
                 }
             if (!errorF)
                 {
-                    sprintf(tmp, "None");
-                    sprintf(message, "%s%s", message, tmp);
+                    snprintf(tmp, sizeof(tmp), "None");
+                    errorstring.append(tmp);
                 }
 
-            yDebug("%s\n", message);
+            yDebug("%s\n", errorstring.c_str());
 
             //Check statistics on boards
             for (j=0; j<r._njoints ;j++)
@@ -3899,7 +3903,7 @@ int CanBusMotionControl::from_interactionint_to_interactionvocab (unsigned char 
 }
 
 
-unsigned char CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
+icubCanProto_controlmode_t CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
 {
     switch (modevocab)
     {
@@ -3931,16 +3935,16 @@ unsigned char CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
         return  icubCanProto_controlmode_openloop;
         break;
     case VOCAB_CM_CURRENT:
-        return  VOCAB_CM_UNKNOWN;
+        return  icubCanProto_controlmode_unknownError;
         yError("'VOCAB_CM_CURRENT' error condition detected");
         break;
 
-    case VOCAB_CM_FORCE_IDLE: 
+    case VOCAB_CM_FORCE_IDLE:
         return icubCanProto_controlmode_forceIdle;
         break;
 
     default:
-        return VOCAB_CM_UNKNOWN;
+        return icubCanProto_controlmode_unknownError;
         yError ("'VOCAB_CM_UNKNOWN' error condition detected");
         break;
     }
@@ -4060,8 +4064,8 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
     bool ret = true;
 
-    int v = from_modevocab_to_modeint(mode);
-    if (v==VOCAB_CM_UNKNOWN) return false;
+    icubCanProto_controlmode_t v = from_modevocab_to_modeint(mode);
+    if (v==icubCanProto_controlmode_unknownError) return false;
     _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,v);
 
     int current_mode = VOCAB_CM_UNKNOWN;
@@ -4101,8 +4105,8 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
     {
         if (modes[i] == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
-        int v = from_modevocab_to_modeint(modes[i]);
-        if (v==VOCAB_CM_UNKNOWN) ret = false;
+        icubCanProto_controlmode_t v = from_modevocab_to_modeint(modes[i]);
+        if (v==icubCanProto_controlmode_unknownError) ret = false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,joints[i],v);
 
         int current_mode = VOCAB_CM_UNKNOWN;
@@ -4231,8 +4235,8 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
     {
         if (modes[i] == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
-        int v = from_modevocab_to_modeint(modes[i]);
-        if (v==VOCAB_CM_UNKNOWN) return false;
+        icubCanProto_controlmode_t v = from_modevocab_to_modeint(modes[i]);
+        if (v==icubCanProto_controlmode_unknownError) return false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
 
         int current_mode = VOCAB_CM_UNKNOWN;

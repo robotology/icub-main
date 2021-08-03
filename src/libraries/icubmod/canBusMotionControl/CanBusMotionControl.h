@@ -739,6 +739,8 @@ private:
     os::Stamp stampEncoders;
 
     char _buff[256];
+    std::string errorstring;
+    static constexpr size_t errorstringsize = 512;
 
     std::list<TBR_AnalogSensor *> analogSensors;
 
@@ -1158,7 +1160,7 @@ protected:
     speedEstimationHelper *_speedEstimationHelper;
     axisPositionDirectHelper  *_axisPositionDirectHelper;
 
-    inline unsigned char from_modevocab_to_modeint (int modevocab);
+    inline icubCanProto_controlmode_t from_modevocab_to_modeint (int modevocab);
     inline int from_modeint_to_modevocab (unsigned char modeint);
     inline unsigned char from_interactionvocab_to_interactionint (int interactionvocab);
     inline int from_interactionint_to_interactionvocab (unsigned char interactionint);
