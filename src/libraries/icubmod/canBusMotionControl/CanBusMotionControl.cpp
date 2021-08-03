@@ -3456,6 +3456,7 @@ bool CanBusMotionControl::threadInit()
 
     r._error_status = true;
 
+    errorstring.reserve(errorstringsize);
     previousRun=0;
     averagePeriod=0;
     averageThreadTime=0;
@@ -3583,11 +3584,11 @@ void CanBusMotionControl:: run()
 
             int j=0;
             /// reports board errors
-            std::string stringmessage {};
             char tmp[255] = {0};
+            errorstring.clear();
 
             snprintf(tmp, sizeof(tmp), "%s [%d] printing boards infos:\n", canDevName.c_str(), r._networkN);
-            stringmessage += std::string(tmp);
+            errorstring.append(tmp);
 
             bool errorF=false;
             for (j=0; j<r._njoints ;j++)
@@ -3613,7 +3614,7 @@ void CanBusMotionControl:: run()
                         {
                             errorF=true;
                             snprintf(tmp, sizeof(tmp), "Id:%d T:%u R:%u ", addr, r._bcastRecvBuffer[j]._canTxError, r._bcastRecvBuffer[j]._canRxError);
-                            stringmessage += std::string(tmp);
+                            errorstring.append(tmp);
 
 
                             logJointData(canDevName.c_str(),r._networkN,j,14,yarp::os::Value((int)r._bcastRecvBuffer[j]._canTxError));
@@ -3628,10 +3629,10 @@ void CanBusMotionControl:: run()
             if (!errorF)
                 {
                     snprintf(tmp, sizeof(tmp), "None");
-                    stringmessage += std::string(tmp);
+                    errorstring.append(tmp);
                 }
 
-            yDebug("%s\n", stringmessage.c_str());
+            yDebug("%s\n", errorstring.c_str());
 
             //Check statistics on boards
             for (j=0; j<r._njoints ;j++)

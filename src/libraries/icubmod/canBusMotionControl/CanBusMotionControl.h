@@ -739,6 +739,8 @@ private:
     os::Stamp stampEncoders;
 
     char _buff[256];
+    std::string errorstring;
+    static constexpr size_t errorstringsize = 512;
 
     std::list<TBR_AnalogSensor *> analogSensors;
 
