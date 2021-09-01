@@ -86,7 +86,7 @@ public:
 
         if (nRecv>=mBufferSize)
         {
-            yError("recv buffer overrun (%4d > %4d)", nRecv, mBufferSize);
+            yError("recv buffer overrun (%4d >= %4d)", nRecv, mBufferSize);
             return false;
         }
 
