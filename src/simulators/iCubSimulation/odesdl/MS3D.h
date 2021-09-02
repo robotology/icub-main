@@ -70,8 +70,10 @@
 #	error you must byte-align these structures with the appropriate compiler directives
 #endif
 
-typedef unsigned char byte;
-typedef unsigned short word;
+namespace ms3d {
+  typedef unsigned char byte;
+  typedef unsigned short word;
+}
 
 struct MS3DHeader               // File Header
 {
@@ -81,20 +83,20 @@ struct MS3DHeader               // File Header
 
 struct MS3DVertex               // Vertex info
 {
-    byte m_flags;
+    ms3d::byte m_flags;
     float m_vertex[3];
     char m_boneID;
-    byte m_refCount;
+    ms3d::byte m_refCount;
 } PACK_STRUCT;
 
 struct MS3DTriangle             // Triangle info
 {
-    word m_flags;
-    word m_vertexIndices[3];
+    ms3d::word m_flags;
+    ms3d::word m_vertexIndices[3];
     float m_vertexNormals[3][3];
     float m_s[3], m_t[3];
-    byte m_smoothingGroup;
-    byte m_groupIndex;
+    ms3d::byte m_smoothingGroup;
+    ms3d::byte m_groupIndex;
 } PACK_STRUCT;
 
 struct MS3DMaterial             // Material info
@@ -108,7 +110,7 @@ struct MS3DMaterial             // Material info
     float m_emissive[4];
     float m_shininess;          // 0.0f - 128.0f
     float m_transparency;       // 0.0f - 1.0f
-    byte m_mode;                // 0, 1, 2 (unused now)
+    ms3d::byte m_mode;                // 0, 1, 2 (unused now)
     char m_texture[128];
     char m_alphamap[128];
 } PACK_STRUCT;
