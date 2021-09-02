@@ -116,10 +116,10 @@ bool Model::loadModelData( const char *filename )
     if ( pHeader->m_version < 3 )
         return false; // "Unhandled file version. Only Milkshape3D Version 1.3 and 1.4 is supported." );
 
-    int nVertices = *( word* )pPtr; 
+    int nVertices = *( ms3d::word* )pPtr; 
     m_numVertices = nVertices;
     m_pVertices = new Vertex[nVertices];
-    pPtr += sizeof( word );
+    pPtr += sizeof( ms3d::word );
 
     int i;
     for ( i = 0; i < nVertices; i++ )
@@ -130,10 +130,10 @@ bool Model::loadModelData( const char *filename )
         pPtr += sizeof( MS3DVertex );
     }
 
-    int nTriangles = *( word* )pPtr;
+    int nTriangles = *( ms3d::word* )pPtr;
     m_numTriangles = nTriangles;
     m_pTriangles = new Triangle[nTriangles];
-    pPtr += sizeof( word );
+    pPtr += sizeof( ms3d::word );
 
     for ( i = 0; i < nTriangles; i++ )
     {
@@ -149,22 +149,22 @@ bool Model::loadModelData( const char *filename )
 
 
 
-    int nGroups = *( word* )pPtr;
+    int nGroups = *( ms3d::word* )pPtr;
     m_numMeshes = nGroups;
     m_pMeshes = new Mesh[nGroups];
-    pPtr += sizeof( word );
+    pPtr += sizeof( ms3d::word );
     for ( i = 0; i < nGroups; i++ )
     {
-        pPtr += sizeof( byte );	// flags
+        pPtr += sizeof( ms3d::byte );	// flags
         pPtr += 32;				// name
 
-        word nTriangles = *( word* )pPtr;
-        pPtr += sizeof( word );
+        ms3d::word nTriangles = *( ms3d::word* )pPtr;
+        pPtr += sizeof( ms3d::word );
         int *pTriangleIndices = new int[nTriangles];
         for ( int j = 0; j < nTriangles; j++ )
         {
-            pTriangleIndices[j] = *( word* )pPtr;
-            pPtr += sizeof( word );
+            pTriangleIndices[j] = *( ms3d::word* )pPtr;
+            pPtr += sizeof( ms3d::word );
         }
 
         char materialIndex = *( char* )pPtr;
@@ -175,10 +175,10 @@ bool Model::loadModelData( const char *filename )
         m_pMeshes[i].m_pTriangleIndices = pTriangleIndices;
     }
 
-    int nMaterials = *( word* )pPtr;
+    int nMaterials = *( ms3d::word* )pPtr;
     m_numMaterials = nMaterials;
     m_pMaterials = new Material[nMaterials];
-    pPtr += sizeof( word );
+    pPtr += sizeof( ms3d::word );
     for ( i = 0; i < nMaterials; i++ )
     {
         MS3DMaterial *pMaterial = ( MS3DMaterial* )pPtr;
