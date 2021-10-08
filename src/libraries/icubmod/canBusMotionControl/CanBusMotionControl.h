@@ -1116,7 +1116,7 @@ protected:
 
 protected:
     void *system_resources;
-    std::mutex _mutex;
+    std::recursive_mutex _mutex;
     ICanBus *canController;
 
     bool _writerequested;
