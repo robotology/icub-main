@@ -444,7 +444,7 @@ inline CanBusResources& RES(void *res) { return *(CanBusResources *)res; }
 class TBR_CanBackDoor: public BufferedPort<Bottle>
 {
     CanBusResources *bus;
-    std::mutex *semaphore;
+    std::recursive_mutex *backdoor_mutex;
     TBR_AnalogSensor *ownerSensor;
     bool canEchoEnabled;
 
@@ -454,12 +454,12 @@ public:
         bus=0;
         ownerSensor=0;
         canEchoEnabled=false;
-        semaphore=nullptr;
+        backdoor_mutex=nullptr;
     }
 
-    void setUp(CanBusResources *p, std::mutex *sema, bool echo, TBR_AnalogSensor *owner)
+    void setUp(CanBusResources *p, std::recursive_mutex *mut, bool echo, TBR_AnalogSensor *owner)
     {
-        semaphore=sema;
+        backdoor_mutex=mut;
         bus=p;
         ownerSensor= owner;
         useCallback();
@@ -472,12 +472,12 @@ public:
 
 void TBR_CanBackDoor::onRead(Bottle &b)
 {
-    if (!semaphore)
+    if (!backdoor_mutex)
         return;
 
     double dval[6] = {0,0,0,0,0,0};
 
-    std::lock_guard<std::mutex> lck(*semaphore);
+    std::lock_guard<std::recursive_mutex> lck(*backdoor_mutex);
     //RANDAZ_TODO: parse vector b
     int len = b.size();
     int commandId = b.get(0).asInt();
@@ -3836,7 +3836,7 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
     CanBusResources& r = RES(system_resources);
     int i;
     int temp;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++)
     {
         temp = int(r._bcastRecvBuffer[i]._controlmodeStatus);
@@ -4030,7 +4030,7 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
     DEBUG_FUNC("Calling GET_CONTROL_MODE\n");
     //_readWord16 (CAN_GET_CONTROL_MODE, j, s); 
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     s = r._bcastRecvBuffer[j]._controlmodeStatus;
   
     *v=from_modeint_to_modevocab(s);
@@ -4046,7 +4046,7 @@ bool CanBusMotionControl::getControlModesRaw(const int n_joints, const int *join
 
     CanBusResources& r = RES(system_resources);
     int i;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < n_joints; i++)
     {
         getControlModeRaw(joints[i], &modes[i]);
@@ -4387,7 +4387,7 @@ bool CanBusMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     // *** This method is implementented reading data without sending/receiving data from the Canbus ***
     *min_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_min_stiff(); 
     *max_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_max_stiff(); 
@@ -4466,7 +4466,7 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp)
         return true;
 
     CanBusResources& r = RES(system_resources);
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_IMPEDANCE_PARAMS, axis);
     *((short *)(r._writeBuffer[0].getData()+1)) = S_16(stiff);
@@ -4492,7 +4492,7 @@ bool CanBusMotionControl::setTorqueSource (int axis, char board_id, char board_c
         return true;
 
     CanBusResources& r = RES(system_resources);
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_TORQUE_SOURCE, axis);
     *((char *)(r._writeBuffer[0].getData()+1)) = board_id;
@@ -4519,7 +4519,7 @@ bool CanBusMotionControl::setImpedanceOffsetRaw (int axis, double off)
         return true;
 
     CanBusResources& r = RES(system_resources);
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_IMPEDANCE_OFFSET, axis);
     *((short *)(r._writeBuffer[0].getData()+1)) = S_16(off);
@@ -4854,7 +4854,7 @@ bool CanBusMotionControl::getTorqueRaw (int j, double *trq)
         return false;
 
     int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     *trq = double(r._bcastRecvBuffer[k]._torque);
     return true;
 }
@@ -4894,7 +4894,7 @@ bool CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     // *** This method is implementented reading data without sending/receiving data from the Canbus ***
     *min=0; //set output to zero (default value)
     *max=0; //set output to zero (default value)
@@ -4936,7 +4936,7 @@ bool CanBusMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int 
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     switch (pidtype)
     {
         case VOCAB_PIDTYPE_POSITION:
@@ -4962,7 +4962,7 @@ bool CanBusMotionControl::getTargetPositionRaw(int axis, double *ref)
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     *(ref) = this->_ref_command_positions[axis];
     return true;
 }
@@ -4993,7 +4993,7 @@ bool CanBusMotionControl::getRefVelocityRaw(int axis, double *ref)
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     *(ref) = this->_ref_command_speeds[axis];
     return true;
 }
@@ -5386,7 +5386,7 @@ bool CanBusMotionControl::setDebugParameterRaw(int axis, unsigned int index, dou
 
     
     CanBusResources& r = RES(system_resources);
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_DEBUG_PARAM, axis);
     *((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(index & 0xFF);
@@ -5413,7 +5413,7 @@ bool CanBusMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     switch (pidtype)
     {
         case VOCAB_PIDTYPE_POSITION:
@@ -5481,7 +5481,7 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         return true;
     }
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__POSITION_MOVE, axis);
@@ -5861,7 +5861,7 @@ bool CanBusMotionControl::setFilterTypeRaw (int j, int type)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_TCFILTER_TYPE, axis);
     *((short *)(r._writeBuffer[0].getData()+1)) = S_16(type);
@@ -5880,7 +5880,7 @@ bool CanBusMotionControl::setMotorTorqueParamsRaw (int j, MotorTorqueParameters 
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_MOTOR_PARAMS, axis);
     *((short *)(r._writeBuffer[0].getData()+1)) = S_16(param.bemf);
@@ -5932,7 +5932,7 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         return true;
     }
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
 
     r.startPacket();
 
@@ -6024,7 +6024,7 @@ bool CanBusMotionControl::getEncodersRaw(double *v)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
@@ -6040,7 +6040,7 @@ bool CanBusMotionControl::getEncodersRaw(double *v)
 
 Stamp CanBusMotionControl::getLastInputStamp()
 {
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     Stamp ret=stampEncoders;
     return ret;
 }
@@ -6050,7 +6050,7 @@ bool CanBusMotionControl::getEncoderRaw(int axis, double *v)
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[axis]._position_joint._value);
     return true;
 }
@@ -6059,7 +6059,7 @@ bool CanBusMotionControl::getEncoderSpeedsRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++) {
         int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
         v[i] = (double(r._bcastRecvBuffer[i]._speed_joint)*1000.0)/vel_factor;
@@ -6074,7 +6074,7 @@ bool CanBusMotionControl::getEncoderSpeedRaw(int j, double *v)
     if (!(j >= 0 && j <= r.getJoints()))
         return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Vel_estimator_shift));
     *v = (double(r._bcastRecvBuffer[j]._speed_joint)*1000.0)/vel_factor;
     return true;
@@ -6084,7 +6084,7 @@ bool CanBusMotionControl::getEncoderAccelerationsRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++) {
         int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
         int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Acc_estimator_shift));
@@ -6100,7 +6100,7 @@ bool CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
     if (!(j >= 0 && j <= r.getJoints()))
         return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Vel_estimator_shift));
     int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Acc_estimator_shift));
     *v = (double(r._bcastRecvBuffer[j]._accel_joint)*1000000.0)/(vel_factor*acc_factor);
@@ -6133,7 +6133,7 @@ bool CanBusMotionControl::getMotorEncodersRaw(double *v)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
@@ -6152,7 +6152,7 @@ bool CanBusMotionControl::getMotorEncoderRaw(int m, double *v)
     CanBusResources& r = RES(system_resources);
     if (!(m >= 0 && m <= r.getJoints()))return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[m]._position_rotor._value);
     return true;
 }
@@ -6162,7 +6162,7 @@ bool CanBusMotionControl::getMotorEncodersTimedRaw(double *v, double *t)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
@@ -6182,7 +6182,7 @@ bool CanBusMotionControl::getMotorEncoderTimedRaw(int m, double *v, double *t)
     CanBusResources& r = RES(system_resources);
     if (!(m >= 0 && m <= r.getJoints()))return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[m]._position_rotor._value);
     *t = r._bcastRecvBuffer[m]._position_rotor._stamp;
     return true;
@@ -6216,7 +6216,7 @@ bool CanBusMotionControl::getMotorEncoderSpeedsRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++) {
         int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Vel_estimator_shift));
         v[i] = (double(r._bcastRecvBuffer[i]._speed_rotor._value)*1000.0)/vel_factor;
@@ -6229,7 +6229,7 @@ bool CanBusMotionControl::getMotorEncoderSpeedRaw(int m, double *v)
     CanBusResources& r = RES(system_resources);
     if (!(m >= 0 && m <= r.getJoints()))return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Vel_estimator_shift));
     *v = (double(r._bcastRecvBuffer[m]._speed_rotor._value)*1000.0)/vel_factor;
     return true;
@@ -6239,7 +6239,7 @@ bool CanBusMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
 {
     CanBusResources& r = RES(system_resources);
     int i;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++) {
         int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Vel_estimator_shift));
         int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Acc_estimator_shift));
@@ -6253,7 +6253,7 @@ bool CanBusMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
     CanBusResources& r = RES(system_resources);
     if (!(m >= 0 && m <= r.getJoints()))return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Vel_estimator_shift));
     int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Acc_estimator_shift));
     *acc = (double(r._bcastRecvBuffer[m]._accel_rotor._value)*1000000.0)/(vel_factor*acc_factor);
@@ -6276,7 +6276,7 @@ bool CanBusMotionControl::getCurrentsRaw(double *cs)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++)
     {
         cs[i] = double(r._bcastRecvBuffer[i]._current);
@@ -6291,7 +6291,7 @@ bool CanBusMotionControl::getCurrentRaw(int axis, double *c)
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     *c = double(r._bcastRecvBuffer[axis]._current);
     return true;
 }
@@ -6401,7 +6401,7 @@ bool CanBusMotionControl::setSpeedEstimatorShiftRaw(int axis, double jnt_speed, 
         return false;
     
     CanBusResources& r = RES(system_resources);
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_SPEED_ESTIM_SHIFT, axis);
     *((unsigned char *)(r._writeBuffer[0].getData()+1)) = (unsigned char)(jnt_speed) & 0xFF;
@@ -6452,7 +6452,7 @@ bool CanBusMotionControl::getAmpStatusRaw(int *st)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++)
     {
     //  WARNING
@@ -6468,7 +6468,7 @@ bool CanBusMotionControl::getAmpStatusRaw(int j, int *st)
 {
     CanBusResources& r = RES(system_resources);
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     st[j] = short(r._bcastRecvBuffer[j]._axisStatus);  
     return true;
 }
@@ -6637,7 +6637,7 @@ bool CanBusMotionControl::setVelLimitsRaw(int axis, double min, double max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
         return false;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     _max_vel_jnt_cmd[axis]=max;
     //min not implemented
     return true;
@@ -6647,7 +6647,7 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
         return false;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     *max = _max_vel_jnt_cmd[axis];
     *min = 0;
     return true;
@@ -6777,7 +6777,7 @@ bool CanBusMotionControl::_writeNone (int msg, int axis)
     }
 
     DEBUG_FUNC("Write None msg:%d axis:%d\n", msg, axis);
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (msg, axis);
@@ -6800,7 +6800,7 @@ bool CanBusMotionControl::_writeWord16 (int msg, int axis, short s)
     if (!ENABLED(axis))
         return true;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (msg, axis);
@@ -6824,7 +6824,7 @@ bool CanBusMotionControl::_writeByte8 (int msg, int axis, int value)
     if (!ENABLED(axis))
         return true;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (msg, axis);
@@ -6848,7 +6848,7 @@ bool CanBusMotionControl::_writeDWord (int msg, int axis, int value)
     if (!ENABLED(axis))
         return true;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (msg, axis);
@@ -6877,7 +6877,7 @@ bool CanBusMotionControl::_writeWord16Ex (int msg, int axis, short s1, short s2,
     if (!ENABLED(axis))
         return true;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
 
     r.startPacket();
     r.addMessage (msg, axis);
@@ -6902,7 +6902,7 @@ bool CanBusMotionControl::_writeByteWords16 (int msg, int axis, unsigned char va
     if (!ENABLED(axis))
         return true;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
 
     int id;
     if (!threadPool->getId(id))
@@ -7316,7 +7316,7 @@ bool CanBusMotionControl::getEncodersTimedRaw(double *v, double *t)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
@@ -7336,7 +7336,7 @@ bool CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double *t)
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))return false;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[axis]._position_joint._value);
     *t = r._bcastRecvBuffer[axis]._position_joint._stamp;
     return true;
@@ -7350,7 +7350,7 @@ bool CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::Interaction
     CanBusResources& r = RES(system_resources);
     int temp;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     temp = int(r._bcastRecvBuffer[axis]._interactionmodeStatus);
     *mode=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
     return true;
@@ -7364,7 +7364,7 @@ bool CanBusMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp
 
     CanBusResources& r = RES(system_resources);
     int i;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < n_joints; i++)
     {
         getInteractionModeRaw(joints[i], &modes[i]);
@@ -7378,7 +7378,7 @@ bool CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum*
     CanBusResources& r = RES(system_resources);
     int i;
     int temp;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++)
     {
         temp = int(r._bcastRecvBuffer[i]._interactionmodeStatus);
@@ -7487,7 +7487,7 @@ bool CanBusMotionControl::getDutyCycleRaw(int j, double *v)
     CanBusResources& r = RES(system_resources);
     if (!(j >= 0 && j <= r.getJoints()))
         return false;
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     *(v) = double(r._bcastRecvBuffer[j]._pid_value);
     return true;
 }
@@ -7497,7 +7497,7 @@ bool CanBusMotionControl::getDutyCyclesRaw(double *v)
     CanBusResources& r = RES(system_resources);
     int i;
 
-    std::lock_guard<std::mutex> lck(_mutex);
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
     for (i = 0; i < r.getJoints(); i++)
     {
         v[i] = double(r._bcastRecvBuffer[i]._pid_value);

@@ -80,11 +80,11 @@ service depth2kin_IDL
    /**
    * Store on file the log of system response computed
    * out of the explored set of input-output pairs.
-   * @param type can be "experts" or "calibrator", accounting either
+   * @param type can be `experts` or `calibrator`, accounting either
    * for the response of mixture of available experts or the output
    * of the current calibrator, respectively.
    * @return true/false on success/failure. It returns false also if
-   * "calibrator" is selected and calibration has not been performed yet.
+   * `calibrator` is selected and calibration has not been performed yet.
    *
    * @note Each row of the file will contain the following data: \n
    * \f$ d_x d_y d_z k_x k_y k_z r_x r_y r_z e, \f$ where \f$ d \f$
@@ -165,23 +165,23 @@ service depth2kin_IDL
 
    /**
    * Select the arm to deal with.
-   * @param arm is "left" or "right".
+   * @param arm is `left` or `right`.
    * @return true/false on success/failure.
    */
    bool setArm(1:string arm);
 
    /**
    * Return the current arm.
-   * @return "left" or "right".
+   * @return `left` or `right`.
    */
    string getArm();
 
    /**
    * Set up the calibrator type.
    * @param type can be one of the following: \n
-   * "se3", "se3+scale", "affine", "lssvm".
+   * `se3`, `se3+scale`, `affine`, `lssvm`.
    * @param extrapolation specifies whether the calibrator will be
-   * used for extrapolating data ("true") or not ("false"); if "auto"
+   * used for extrapolating data (`true`) or not (`false`); if `auto`
    * is provided, then automatic choice is taken depending on the type.
    * @return true/false on success/failure.
    */
@@ -197,7 +197,7 @@ service depth2kin_IDL
    * Ask the current calibrator to carry out the calibration.
    * @param rm_outliers if true outliers removal is performed.
    * @return a property containing the output in terms of
-   * calibration errors for each subsystem: "calibrator", "aligner".
+   * calibration errors for each subsystem: `calibrator`, `aligner`.
    */
    Property calibrate(1:bool rm_outliers=true);
 
@@ -211,7 +211,7 @@ service depth2kin_IDL
 
    /**
    * Enable/disable the use of experts for touch test.
-   * @param switch is "on"/"off" to use/not-use the experts.
+   * @param switch is `on`/`off` to use/not-use the experts.
    * @return true/false on success/failure.
    */
    bool setTouchWithExperts(1:string sw);
@@ -219,7 +219,7 @@ service depth2kin_IDL
    /**
    * Return the current status of the switch for experts usage
    * during touch test.
-   * @return "on"/"off" if experts are used/not-used.
+   * @return `on`/`off` if experts are used/not-used.
    */
    string getTouchWithExperts();
 
@@ -234,7 +234,7 @@ service depth2kin_IDL
    /**
    * Retrieve the compensated kinematic point corresponding to the input
    * depth point.
-   * @param arm accounts for "left" or "right" list of experts.
+   * @param arm accounts for `left` or `right` list of experts.
    * @param x the x-coordinate of the depth point.
    * @param y the y-coordinate of the depth point.
    * @param z the z-coordinate of the depth point.
@@ -245,7 +245,7 @@ service depth2kin_IDL
    /**
    * Retrieve the compensated kinematic points corresponding to the input
    * depth points.
-   * @param arm accounts for "left" or "right" list of experts.
+   * @param arm accounts for `left` or `right` list of experts.
    * @param coordinates the 3D coordinates of the depth points.
    * @return the requested points in \ref PointReq format.
    */
@@ -253,22 +253,22 @@ service depth2kin_IDL
 
    /**
    * Set on/off an experiment.
-   * @param exp the experiment ("depth2kin" or "aligneyes") to switch on/off.
-   * @param v is "on" or "off".
+   * @param exp the experiment (`depth2kin` or `aligneyes`) to switch on/off.
+   * @param v is `on` or `off`.
    * @return true/false on success/failure.
    */
    bool setExperiment(1:string exp, 2:string v);
 
    /**
    * Return the current status of the experiment.
-   * @param exp the experiment ("depth2kin" or "aligneyes")
-   * @return "on"/"off".
+   * @param exp the experiment (`depth2kin` or `aligneyes`)
+   * @return `on`/`off`.
    */
    string getExperiment(1:string exp);
 
    /**
    * Retrieve the current extrinsics camera parameters.
-   * @param eye is "left" or "right" camera eye.
+   * @param eye is `left` or `right` camera eye.
    * @return a 6x1 Vector containing the translational and the
    * rotational (in roll-pith-yaw convention) parts of the
    * extrinsics matrix.
@@ -277,7 +277,7 @@ service depth2kin_IDL
 
    /**
    * Reset the extrinsics matrix to default eye matrix.
-   * @param eye is "left" or "right" camera eye.
+   * @param eye is `left` or `right` camera eye.
    * @return true/false on success/failure.
    */
    bool resetExtrinsics(1:string eye);
@@ -356,8 +356,8 @@ service depth2kin_IDL
    /**
    * Return some progress about the ongoing exploration.
    * @return a property that looks like
-   * ("status" ["idle"|"ongoing"]) ("total_points" <int>) ("remaining_points" <int>)
-   * ("calibrator_points" <int>) ("aligner_points" <int>)
+   * (status [idle|ongoing]) (total_points <int>) (remaining_points <int>)
+   * (calibrator_points <int>) (aligner_points <int>)
    */
    Property getExplorationData();
 
@@ -370,7 +370,7 @@ service depth2kin_IDL
    /**
    * Make the robot reach a predefined posture.
    * @param type can be one of the following: \n
-   * "home", "look_hands".
+   * home, look_hands.
    * @return true/false on success/failure.
    */
    bool posture(1:string type);
