@@ -230,7 +230,12 @@ private:
     int *                                   _axisMap;   /** axies map*/
     std::vector<eomc::axisInfo_t>           _axesInfo;
     /////// end configuration info
-
+    // downsampler timer
+    yarp::os::Timer* tm;
+    bool error_position_raw_triggered;
+    uint32_t timer_count_epr_trigger;
+    int downsampler_threshold;
+    std::map<std::string, uint32_t> downsampled_errors;
 
 #ifdef VERIFY_ROP_SETIMPEDANCE
     uint32_t *impedanceSignature;
@@ -261,9 +266,7 @@ private:
     double *_last_position_move_time;           /** time stamp for last received position move command*/    
     eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
     
-    // downsampler timer
-    yarp::os::Timer* tm;
-    int timer_count;
+
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
     Tools:Emb_RensponseTimingVerifier m_responseTimingVerifier;
 #endif

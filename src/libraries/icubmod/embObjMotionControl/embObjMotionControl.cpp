@@ -213,8 +213,11 @@ embObjMotionControl::embObjMotionControl() :
     _axesInfo(0),
     _jointEncs(0),
     _motorEncs(0),
-    timer_count(0)
-    {
+    error_position_raw_triggered(false),
+    downsampler_threshold(5),
+    timer_count_epr_trigger(0),
+    downsampled_errors()
+{
     _gearbox_M2J  = 0;
     _gearbox_E2J  = 0;
     _deadzone     = 0;
@@ -2228,7 +2231,15 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
         (mode != VOCAB_CM_IMPEDANCE_POS) &&
         (mode != VOCAB_CM_IDLE))
     {
-        yError() << "positionMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION mode";
+
+        if (downsampled_errors.end() == downsampled_errors.find("positionMoveRaw")) 
+        {
+            downsampled_errors.insert({"positionMoveRaw", 1});
+        } else
+        {
+            downsampled_errors["positionMoveRaw"] = downsampled_errors["positionMoveRaw"] + 1;
+        }
+        //yError() << "positionMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION mode";
         return true;
     }
 
@@ -5245,8 +5256,13 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
 
 bool embObjMotionControl::downsamplerCallback(const yarp::os::YarpTimerEvent& event)
 {
-    timer_count++;
-    yInfo() << "This is the downsampler debug print n. " << timer_count;
+
+    for (auto & e : downsampled_errors) {
+        if(e.second > 0) {
+            yError() << "This is the downsampler error print n." << e.second;
+            e.second = 0;
+        }
+    }
     return true;
 }
 
