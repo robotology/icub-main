@@ -35,6 +35,7 @@ using namespace std;
 //  Yarp stuff
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Timer.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardHelper.h>
@@ -177,7 +178,7 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ICurrentControlRaw,
     public ImplementCurrentControl,
     public eth::IethResource
-{
+    {
 
 
 private:
@@ -260,7 +261,9 @@ private:
     double *_last_position_move_time;           /** time stamp for last received position move command*/    
     eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
     
-
+    // downsampler timer
+    yarp::os::Timer* tm;
+    int timer_count;
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
     Tools:Emb_RensponseTimingVerifier m_responseTimingVerifier;
 #endif
@@ -608,8 +611,8 @@ public:
     virtual bool getRefCurrentsRaw(double *t) override;
     virtual bool getRefCurrentRaw(int j, double *t) override;
 
+    bool downsamplerCallback(const yarp::os::YarpTimerEvent& event);
     
 };
 
 #endif // include guard
-

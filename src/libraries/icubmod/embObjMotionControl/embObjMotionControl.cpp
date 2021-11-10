@@ -212,8 +212,9 @@ embObjMotionControl::embObjMotionControl() :
     _impedance_params(0),
     _axesInfo(0),
     _jointEncs(0),
-    _motorEncs(0)
-{
+    _motorEncs(0),
+    timer_count(0)
+    {
     _gearbox_M2J  = 0;
     _gearbox_E2J  = 0;
     _deadzone     = 0;
@@ -399,6 +400,12 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         }
     }
 
+    // Initialize the downsampler timer
+    yarp::os::TimerSettings downsampler_timer_data(1);
+    yarp::os::YarpTimerEvent downsampler_timer_event;
+    tm = new yarp::os::Timer(downsampler_timer_data, &embObjMotionControl::downsamplerCallback, this, true);
+
+    tm->start();
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mc, servparam))
     {
@@ -5233,6 +5240,13 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
         return false;
     }
     *mEncTolerance_ptr = motorCfg.rotEncTolerance;
+    return true;
+}
+
+bool embObjMotionControl::downsamplerCallback(const yarp::os::YarpTimerEvent& event)
+{
+    timer_count++;
+    yInfo() << "This is the downsampler debug print n. " << timer_count;
     return true;
 }
 
