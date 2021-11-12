@@ -53,6 +53,8 @@ using namespace std;
 #include "eomcParser.h"
 #include "measuresConverter.h"
 
+#include "mcEventDownsampler.h"
+
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
 #include <PeriodicEventsVerifier.h>
 #endif
@@ -230,12 +232,9 @@ private:
     int *                                   _axisMap;   /** axies map*/
     std::vector<eomc::axisInfo_t>           _axesInfo;
     /////// end configuration info
-    // downsampler timer
-    yarp::os::Timer* tm;
-    bool error_position_raw_triggered;
-    uint32_t timer_count_epr_trigger;
-    int downsampler_threshold;
-    std::map<std::string, uint32_t> downsampled_errors;
+    
+    // event downsampler
+    mced::mcEventDownsampler* event_downsampler;
 
 #ifdef VERIFY_ROP_SETIMPEDANCE
     uint32_t *impedanceSignature;
@@ -262,7 +261,7 @@ private:
     double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
-    #define MAX_POSITION_MOVE_INTERVAL 0.080
+    #define MAX_POSITION_MOVE_INTERVAL 0.0001
     double *_last_position_move_time;           /** time stamp for last received position move command*/    
     eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
     
@@ -613,9 +612,6 @@ public:
     virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t) override;
     virtual bool getRefCurrentsRaw(double *t) override;
     virtual bool getRefCurrentRaw(int j, double *t) override;
-
-    bool downsamplerCallback(const yarp::os::YarpTimerEvent& event);
-    
 };
 
 #endif // include guard

@@ -212,11 +212,7 @@ embObjMotionControl::embObjMotionControl() :
     _impedance_params(0),
     _axesInfo(0),
     _jointEncs(0),
-    _motorEncs(0),
-    error_position_raw_triggered(false),
-    downsampler_threshold(5),
-    timer_count_epr_trigger(0),
-    downsampled_errors()
+    _motorEncs(0)
 {
     _gearbox_M2J  = 0;
     _gearbox_E2J  = 0;
@@ -404,11 +400,10 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
     // Initialize the downsampler timer
-    yarp::os::TimerSettings downsampler_timer_data(1);
-    yarp::os::YarpTimerEvent downsampler_timer_event;
-    tm = new yarp::os::Timer(downsampler_timer_data, &embObjMotionControl::downsamplerCallback, this, true);
-
-    tm->start();
+    
+    event_downsampler = new mced::mcEventDownsampler();
+    event_downsampler->config.period = 0.1;
+    event_downsampler->start(event_downsampler->config);
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mc, servparam))
     {
@@ -1452,7 +1447,7 @@ bool embObjMotionControl::close()
         mcdiagnostics.config.par16 = 0;
     }
 
-
+    delete event_downsampler;
     // in cleanup, at date of 23feb2016 there is a call to ethManager->releaseResource() which ...
     // send to config all the boards and stops tx and rx treads.
     // thus, in here we cannot call serviceStop(mc) because there will be tx/rx activity only for the first call of ::close().
@@ -2231,15 +2226,10 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
         (mode != VOCAB_CM_IMPEDANCE_POS) &&
         (mode != VOCAB_CM_IDLE))
     {
-
-        if (downsampled_errors.end() == downsampled_errors.find("positionMoveRaw")) 
+        if (event_downsampler->canprint())
         {
-            downsampled_errors.insert({"positionMoveRaw", 1});
-        } else
-        {
-            downsampled_errors["positionMoveRaw"] = downsampled_errors["positionMoveRaw"] + 1;
+            yError() << "positionMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION mode";
         }
-        //yError() << "positionMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION mode";
         return true;
     }
 
@@ -5251,18 +5241,6 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
         return false;
     }
     *mEncTolerance_ptr = motorCfg.rotEncTolerance;
-    return true;
-}
-
-bool embObjMotionControl::downsamplerCallback(const yarp::os::YarpTimerEvent& event)
-{
-
-    for (auto & e : downsampled_errors) {
-        if(e.second > 0) {
-            yError() << "This is the downsampler error print n." << e.second;
-            e.second = 0;
-        }
-    }
     return true;
 }
 
