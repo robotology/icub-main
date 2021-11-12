@@ -1,0 +1,60 @@
+
+// - include guard ----------------------------------------------------------------------------------------------------
+
+#ifndef __TICKER_H_
+#define __TICKER_H_
+
+//#include <stdio.h>
+
+#include <string>
+#include <mutex>
+
+#include <stddef.h>
+#include <stdint.h>
+#include <yarp/os/Timer.h>
+#include <yarp/os/all.h>
+
+namespace mced {
+    
+    class mcEventDownsampler
+    {
+    public:
+        
+        // enum class Message { tbd }; 
+        
+        struct Config
+        {
+            double period {0};    // time between two ticks
+ 
+            Config() = default;
+            constexpr Config(double c) : period(c) {} 
+            bool isvalid() const { return 0 != period; }
+        };
+      
+        mcEventDownsampler();
+        ~mcEventDownsampler();            
+        bool start(const Config &config);              
+        bool stop(); 
+        bool canprint();
+        Config config = 0.1;
+        
+    private: 
+        bool step(const yarp::os::YarpTimerEvent &event); // signature di yarp
+        void printreport();
+        yarp::os::Timer* timer {nullptr};    
+
+        // varie
+        bool isdownsampling {false};
+        size_t counter {0};  
+        size_t print_countdown{10};
+        // protezione
+        void *mutex {nullptr};
+        void *fsm {nullptr};
+        void fsmstep(void *fsm);  
+    };
+    
+} // xxx
+
+#endif  // include-guard
+
+// - end-of-file (leave a blank line after)----------------------------------------------------------------------------
