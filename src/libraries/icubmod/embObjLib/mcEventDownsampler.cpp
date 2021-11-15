@@ -9,6 +9,7 @@ namespace mced {
     
     mcEventDownsampler::mcEventDownsampler() 
     {
+        mutex = new std::mutex();
         // mutex ctor   
     };
     
@@ -29,13 +30,19 @@ namespace mced {
     
     bool mcEventDownsampler::canprint()
     {
-        // mutex->lock(?);
+        bool cp = true;
+        mutex->lock();
         // activate something.
         counter++;
-        // boh
-        
-        bool cp = !isdownsampling;
-        // mutex->unlock();
+
+        if(counter - latch_1 > 5)
+        {
+            cp = false;
+        } else {
+            cp = !isdownsampling;
+        }
+
+        mutex->unlock();
         
         return cp;
     }
@@ -55,8 +62,8 @@ namespace mced {
             stop(); 
             // delete timer
         }
-        
-        yarp::os::TimerSettings ts(0.1);
+        expire_time = yarp::os::Time::now();        
+        yarp::os::TimerSettings ts(0.01);
         timer = new yarp::os::Timer(ts, &mcEventDownsampler::step, this, true);
 
 
@@ -73,39 +80,32 @@ namespace mced {
     bool mcEventDownsampler::step(const yarp::os::YarpTimerEvent &event)
     {
         // qui dentro, deve esserci la logica della fsm e ci deve essere accesso ai dati privati della class Ticker
-        // mutex->lock(?);        
+        mutex->lock();        
         //fsmstep(fsm);
-        
 
-        if (counter < 5)
-            isdownsampling = false;
-        
-        if (counter >= 5 && !isdownsampling)
-            isdownsampling = true;
-
-        if (isdownsampling)
+        if (yarp::os::Time::now() - expire_time >= 1)
         {
-            if (print_countdown > 0)
-            {
-                print_countdown--;
-            }
-            else
+            expire_time = yarp::os::Time::now();
+
+            isdownsampling = (counter - latch_1 > 5);
+
+            if (isdownsampling)
             {
                 printreport();
-                print_countdown = 10;
-                counter = 0;
+                latch_2 = counter;
             }
+            latch_1 = counter;
         }
 
         // genera ....
         
-        // mutex->unlock();
+        mutex->unlock();
         return true;
     }
 
     void mcEventDownsampler::printreport()
     {
-        yError() <<  "Detected " << counter << " events on aggregate since the last message";
+        yError() <<  "Detected " << (counter - latch_2) << " events on aggregate since the last message";
     }
     
     void mcEventDownsampler::fsmstep(void *fsm) {}
