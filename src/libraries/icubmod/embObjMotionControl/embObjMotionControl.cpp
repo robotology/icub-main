@@ -402,7 +402,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     // Initialize the downsampler timer
     
     event_downsampler = new mced::mcEventDownsampler();
-    event_downsampler->config.period = 0.1;
+    event_downsampler->config.period = 0.01;
     event_downsampler->start(event_downsampler->config);
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mc, servparam))
@@ -1899,7 +1899,10 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
         (mode != VOCAB_CM_IMPEDANCE_VEL) &&
         (mode != VOCAB_CM_IDLE))
     {
-        yError() << "velocityMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_VELOCITY mode";
+        if(event_downsampler->canprint())
+        {
+            yError() << "velocityMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_VELOCITY mode";
+        }
         return true;
     }
 
@@ -4111,7 +4114,10 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
     if (mode != VOCAB_CM_POSITION_DIRECT &&
         mode != VOCAB_CM_IDLE)
     {
-        yError() << "setReferenceRaw: skipping command because" << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
+        if(event_downsampler->canprint())
+        {
+            yError() << "setReferenceRaw: skipping command because" << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
+        }
         return true;
     }
 

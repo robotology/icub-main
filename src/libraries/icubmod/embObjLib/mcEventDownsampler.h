@@ -20,9 +20,7 @@ namespace mced {
     class mcEventDownsampler
     {
     public:
-        
-        // enum class Message { tbd }; 
-        
+
         struct Config
         {
             double period {0};    // time between two ticks
@@ -39,24 +37,17 @@ namespace mced {
         Config config = 0.1;
         
     private: 
-        bool step(const yarp::os::YarpTimerEvent &event); // signature di yarp
+        bool step(const yarp::os::YarpTimerEvent &event); 
         void printreport();
         yarp::os::Timer* timer {nullptr};    
         double expire_time;
-        // varie
         bool isdownsampling {false};
         size_t counter {0};  // size_t should be enough for the next 5 billion years
         size_t latch_1{0};
         size_t latch_2{0};
-        size_t count_out{0};
-        // protezione
         std::mutex *mutex {nullptr};
-        void *fsm {nullptr};
-        void fsmstep(void *fsm);  
     };
     
-} // xxx
+} // mced
 
 #endif  // include-guard
-
-// - end-of-file (leave a blank line after)----------------------------------------------------------------------------

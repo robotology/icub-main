@@ -6,11 +6,9 @@
 
 namespace mced {
     
-    
     mcEventDownsampler::mcEventDownsampler() 
     {
         mutex = new std::mutex();
-        // mutex ctor   
     };
     
     mcEventDownsampler::~mcEventDownsampler()
@@ -23,36 +21,40 @@ namespace mced {
             delete timer;
             timer = nullptr;
         }
-        // idem per le altre cose    
-        
-        // mutex dtor       
+
+        delete mutex;
     }
     
     bool mcEventDownsampler::canprint()
     {
-        bool cp = true;
         mutex->lock();
-        // activate something.
+        
         counter++;
-
-        if(counter - latch_1 > 5)
-        {
-            cp = false;
-        } else {
-            cp = !isdownsampling;
-        }
+        size_t diff = counter - latch_1;
+        bool cp = !isdownsampling;
 
         mutex->unlock();
-        
-        return cp;
+
+        if(diff > 5)
+        {
+            return false;
+        } 
+        else
+        {
+            return cp;
+        }
     }
     
     bool mcEventDownsampler::stop()
     {
-        // controlli su valore di timer non null, se e'attivo etc....
-        
-        timer->stop();
-        return true;
+
+        if(nullptr != timer)
+        {
+            timer->stop();
+            return true;
+        }
+
+        return false;
     }
     
     bool mcEventDownsampler::start(const Config &config)
@@ -60,33 +62,29 @@ namespace mced {
         if(nullptr != timer)
         {
             stop(); 
-            // delete timer
         }
+
         expire_time = yarp::os::Time::now();        
-        yarp::os::TimerSettings ts(0.01);
-        timer = new yarp::os::Timer(ts, &mcEventDownsampler::step, this, true);
+        yarp::os::TimerSettings ts(config.period);
+        timer = new yarp::os::Timer(ts, &mcEventDownsampler::step, this, true, mutex);
 
-
-        timer->start();
-        // decidere dove costruire mutex. di sicuro deve essere costruito prima di timer
-        // meglio nel ctor
-        // construct timer etc
-        
-        // assegnare step() come callback al timer ....
-        
-        return true;
+        if (timer != nullptr) 
+        {
+            timer->start();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     
     bool mcEventDownsampler::step(const yarp::os::YarpTimerEvent &event)
     {
-        // qui dentro, deve esserci la logica della fsm e ci deve essere accesso ai dati privati della class Ticker
-        mutex->lock();        
-        //fsmstep(fsm);
-
         if (yarp::os::Time::now() - expire_time >= 1)
         {
             expire_time = yarp::os::Time::now();
-
+            
             isdownsampling = (counter - latch_1 > 5);
 
             if (isdownsampling)
@@ -94,12 +92,8 @@ namespace mced {
                 printreport();
                 latch_2 = counter;
             }
-            latch_1 = counter;
+            latch_1 = counter;            
         }
-
-        // genera ....
-        
-        mutex->unlock();
         return true;
     }
 
@@ -107,10 +101,5 @@ namespace mced {
     {
         yError() <<  "Detected " << (counter - latch_2) << " events on aggregate since the last message";
     }
-    
-    void mcEventDownsampler::fsmstep(void *fsm) {}
-        
-} // xxx
-
-
-// - end-of-file (leave a blank line after)----------------------------------------------------------------------------
+            
+} // mced
