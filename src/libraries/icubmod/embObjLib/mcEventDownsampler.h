@@ -10,9 +10,10 @@
 #include <yarp/os/Timer.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/LogComponent.h>
 
 namespace mced {
-    
+
     class mcEventDownsampler
     {
     public:

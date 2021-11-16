@@ -6,6 +6,10 @@
 
 namespace mced {
     
+
+    YARP_LOG_COMPONENT(MC_EVENT_DOWNSAMPLER, "mc.downsampler")
+
+
     mcEventDownsampler::mcEventDownsampler() 
     {
         mutex = new std::mutex();
@@ -99,7 +103,7 @@ namespace mced {
 
     void mcEventDownsampler::printreport()
     {
-        yError() <<  "Detected " << (counter - latch_2) << " events on aggregate since the last message";
+        yCError(MC_EVENT_DOWNSAMPLER) <<  "Detected " << counter - latch_2 << " events on aggregate since the last message";
     }
             
 } // mced
