@@ -7,7 +7,7 @@
 namespace mced {
     
 
-    YARP_LOG_COMPONENT(MC_EVENT_DOWNSAMPLER, "mc.downsampler")
+    YARP_LOG_COMPONENT(MC_EVENT_DOWNSAMPLER, "mc.msgdownsampler.skipped-cmd-wrong-mode")
 
 
     mcEventDownsampler::mcEventDownsampler() 
