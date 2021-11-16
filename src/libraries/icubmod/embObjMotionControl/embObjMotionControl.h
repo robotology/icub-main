@@ -261,7 +261,7 @@ private:
     double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
-    #define MAX_POSITION_MOVE_INTERVAL 0.0001
+    #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/    
     eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
     
