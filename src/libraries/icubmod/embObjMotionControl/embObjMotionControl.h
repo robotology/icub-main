@@ -35,6 +35,7 @@ using namespace std;
 //  Yarp stuff
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Timer.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardHelper.h>
@@ -51,6 +52,8 @@ using namespace std;
 #include "serviceParser.h"
 #include "eomcParser.h"
 #include "measuresConverter.h"
+
+#include "mcEventDownsampler.h"
 
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
 #include <PeriodicEventsVerifier.h>
@@ -177,7 +180,7 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ICurrentControlRaw,
     public ImplementCurrentControl,
     public eth::IethResource
-{
+    {
 
 
 private:
@@ -229,7 +232,9 @@ private:
     int *                                   _axisMap;   /** axies map*/
     std::vector<eomc::axisInfo_t>           _axesInfo;
     /////// end configuration info
-
+    
+    // event downsampler
+    mced::mcEventDownsampler* event_downsampler;
 
 #ifdef VERIFY_ROP_SETIMPEDANCE
     uint32_t *impedanceSignature;
@@ -607,9 +612,6 @@ public:
     virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t) override;
     virtual bool getRefCurrentsRaw(double *t) override;
     virtual bool getRefCurrentRaw(int j, double *t) override;
-
-    
 };
 
 #endif // include guard
-

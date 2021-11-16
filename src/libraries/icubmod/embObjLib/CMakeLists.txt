@@ -40,7 +40,8 @@ set(EXTRA_SOURCE            ${CMAKE_CURRENT_SOURCE_DIR}/hostTransceiver.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/serviceParser.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/theNVmanager.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/embObjGeneralDevPrivData.cpp
-                            )
+                            ${CMAKE_CURRENT_SOURCE_DIR}/mcEventDownsampler.cpp)
+                            
 set(NVS_CBK_SOURCE  ${CMAKE_CURRENT_SOURCE_DIR}/protocolCallbacks/EoProtocolMN_fun_userdef.c
                     ${CMAKE_CURRENT_SOURCE_DIR}/protocolCallbacks/EoProtocolMC_fun_userdef.c
                     ${CMAKE_CURRENT_SOURCE_DIR}/protocolCallbacks/EoProtocolAS_fun_userdef.c
@@ -99,4 +100,3 @@ icub_export_library(${PROJECT_NAME})
 endif(NOT ICUB_HAS_icub_firmware_shared)
 
 endif(ICUB_COMPILE_EMBOBJ_LIBRARY)
-

@@ -399,6 +399,11 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         }
     }
 
+    // Initialize the downsampler timer
+    
+    event_downsampler = new mced::mcEventDownsampler();
+    event_downsampler->config.period = 0.01;
+    event_downsampler->start(event_downsampler->config);
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mc, servparam))
     {
@@ -1445,7 +1450,7 @@ bool embObjMotionControl::close()
         mcdiagnostics.config.par16 = 0;
     }
 
-
+    delete event_downsampler;
     // in cleanup, at date of 23feb2016 there is a call to ethManager->releaseResource() which ...
     // send to config all the boards and stops tx and rx treads.
     // thus, in here we cannot call serviceStop(mc) because there will be tx/rx activity only for the first call of ::close().
@@ -1897,7 +1902,10 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
         (mode != VOCAB_CM_IMPEDANCE_VEL) &&
         (mode != VOCAB_CM_IDLE))
     {
-        yError() << "velocityMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_VELOCITY mode";
+        if(event_downsampler->canprint())
+        {
+            yError() << "velocityMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_VELOCITY mode";
+        }
         return true;
     }
 
@@ -2224,7 +2232,10 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
         (mode != VOCAB_CM_IMPEDANCE_POS) &&
         (mode != VOCAB_CM_IDLE))
     {
-        yError() << "positionMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION mode";
+        if (event_downsampler->canprint())
+        {
+            yError() << "positionMoveRaw: skipping command because " << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION mode";
+        }
         return true;
     }
 
@@ -4106,7 +4117,10 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
     if (mode != VOCAB_CM_POSITION_DIRECT &&
         mode != VOCAB_CM_IDLE)
     {
-        yError() << "setReferenceRaw: skipping command because" << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
+        if(event_downsampler->canprint())
+        {
+            yError() << "setReferenceRaw: skipping command because" << getBoardInfo() << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
+        }
         return true;
     }
 
