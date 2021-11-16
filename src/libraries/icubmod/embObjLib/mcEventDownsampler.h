@@ -24,7 +24,7 @@ namespace mced {
          */
         struct Config
         {
-            double period {0};
+            double period {0.};
             Config() = default;
             constexpr Config(double c) : period(c) {} 
             bool isvalid() const { return 0 != period; }
