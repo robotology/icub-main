@@ -29,6 +29,7 @@ namespace eomc_defaultValue
     namespace DeadZone
     {
         const double jointWithAEA = 0.0494;
+        const double jointWithAEA3 = 0.0; // TODO: fix
         const double jointWithAMO = 0.0055;
     }
 }
