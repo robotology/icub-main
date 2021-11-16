@@ -24,10 +24,8 @@ namespace mced {
          */
         struct Config
         {
-            double period {0.};
-            Config() = default;
-            constexpr Config(double c) : period(c) {} 
-            bool isvalid() const { return 0. != period; }
+            double period {.01};
+            std::string info {""};
         };
       
         /**
@@ -44,10 +42,9 @@ namespace mced {
 
         /**
          * @brief Instantiates the yarp::os::Timer object and starts it.
-         * @param config Structure containing the configuration parameters of the Event Downsampler
          * @return true if the instantiation was successful, false otherwise.
          */
-        bool start(const Config &config);   
+        bool start();   
 
         /**
          * @brief Stops the timer
@@ -61,7 +58,7 @@ namespace mced {
          * @return true if the difference is lower or equal to the threshold, false if it is higher. 
          */
         bool canprint();
-        Config config = 0.1;
+        Config config;
         
     private: 
         /**
