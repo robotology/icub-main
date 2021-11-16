@@ -4,8 +4,6 @@
 #ifndef __TICKER_H_
 #define __TICKER_H_
 
-//#include <stdio.h>
-
 #include <string>
 #include <mutex>
 
@@ -13,7 +11,7 @@
 #include <stdint.h>
 #include <yarp/os/Timer.h>
 #include <yarp/os/Time.h>
-#include <yarp/os/all.h>
+#include <yarp/os/LogStream.h>
 
 namespace mced {
     
