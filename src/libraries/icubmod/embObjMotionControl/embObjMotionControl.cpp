@@ -403,7 +403,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     
     event_downsampler = new mced::mcEventDownsampler();
     event_downsampler->config.period = 0.01;
-    event_downsampler->start(event_downsampler->config);
+    event_downsampler->config.info = getBoardInfo();
+    event_downsampler->start();
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mc, servparam))
     {

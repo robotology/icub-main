@@ -61,7 +61,7 @@ namespace mced {
         return false;
     }
     
-    bool mcEventDownsampler::start(const Config &config)
+    bool mcEventDownsampler::start()
     {
         if(nullptr != timer)
         {
@@ -103,7 +103,7 @@ namespace mced {
 
     void mcEventDownsampler::printreport()
     {
-        yCError(MC_EVENT_DOWNSAMPLER) <<  "Detected " << counter - latch_2 << " events on aggregate since the last message";
+        yCError(MC_EVENT_DOWNSAMPLER) << config.info << "detected" << counter - latch_2 << "events on aggregate since the last message";
     }
             
 } // mced
