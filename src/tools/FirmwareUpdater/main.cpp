@@ -37,7 +37,9 @@ enum action_t
     action_setstrainsn = 8,
     action_setstraingainsoffsets = 9,
     action_getcanboardversion = 10,
-    action_savedatfile = 11
+    action_savedatfile = 11,
+    action_changeCanId = 12
+
 
 };
 
@@ -69,6 +71,7 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
 int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId, QString serialNumber);
 int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId);
 int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,bool save);
+int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString oldCanId,QString newCanId);
 
 
 int main(int argc, char *argv[])
@@ -119,6 +122,7 @@ int main(int argc, char *argv[])
     QCommandLineOption setStrainGainsOffsetOption(QStringList() << "j" << "set-strain-gains", "Sets on STRAIN2 default gains to (8,24,24,10,10,24) , adjust the offset and check if some channel saturates","","");
     QCommandLineOption getCanBoardVersionOption(QStringList() << "b" << "get-canboard-version", "Gets Bootloader or Application version (<saveFile> must be y or n to save or not a file containing fw info)","saveFile","");
     QCommandLineOption saveDatFileOption(QStringList() << "u" << "save-dat-file", "Saves the calibration .dat file from STRAIN2 eeprom","","");
+    QCommandLineOption changeCanIdOption(QStringList() << "ci" << "change-can-id", "changes CAN ID","id-old","id-new");
 
 
     parser.addOption(noGuiOption);
@@ -146,7 +150,7 @@ int main(int argc, char *argv[])
     parser.addOption(setStrainGainsOffsetOption);
     parser.addOption(getCanBoardVersionOption);
     parser.addOption(saveDatFileOption);
-
+    parser.addOption(changeCanIdOption);
 
 
     parser.process(a);
@@ -230,6 +234,9 @@ int main(int argc, char *argv[])
         bool setGains = parser.isSet(setStrainGainsOffsetOption);
         QString saveVersion = parser.value(getCanBoardVersionOption);
         bool getVersion = parser.isSet(getCanBoardVersionOption);
+        QString oldCanId = parser.value(changeCanIdOption);
+        QString newCanId = parser.value(changeCanIdOption);
+
 
         core.setVerbosity(verbosity);
 
@@ -363,6 +370,18 @@ int main(int argc, char *argv[])
             if(action == action_none)
             {
                 action = action_savedatfile;
+            }
+            else
+            {
+                action = action_impossible;
+            }
+        }
+
+        if((saveDatFile) && (action_impossible != action))
+        {
+            if(action == action_none)
+            {
+                action = action_changeCanId;
             }
             else
             {
@@ -553,7 +572,7 @@ int main(int argc, char *argv[])
                 ret = 1;
                 //yDebug() << "forcemaintenance";
 
-                if(device.isEmpty()){
+              if(device.isEmpty()){
                     if(verbosity >= 1) qDebug() << "Need a device to be set";
                 }else if(id.isEmpty()){
                     if(verbosity >= 1) qDebug() << "Need an id to be set";
@@ -691,6 +710,26 @@ int main(int argc, char *argv[])
 
             } break;
 
+            case action_changeCanId:
+            {
+                ret = 1;
+
+                if(device.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a device to be set";
+                }else if(id.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need an id to be set";
+                }else{
+                    if(!device.contains("ETH") && canLine.isEmpty()){
+                        if(verbosity >= 1) qDebug() << "Need a can line to be set";
+                    } else if(!device.contains("ETH") && canId.isEmpty()){
+                        if(verbosity >= 1) qDebug() << "Need a can id to be set";
+                    }else{
+                      ret = changeCanId(&core,device,id,board,canLine,oldCanId,newCanId);
+                    }
+                }
+
+            } break;
+
         };
 #if 0
 // old code now substituted by the switch-case
@@ -797,6 +836,48 @@ int main(int argc, char *argv[])
         }
 
         */   
+int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString oldCanId,QString newCanId)
+{
+    QList <sBoard> canBoards;
+    QString retString;
+    int ret;
+    string msg;
+      
+    if(device.contains("SOCKETCAN"))
+    {
+        if (oldCanId.toInt() <1 || oldCanId.toInt() >= 15){
+        yError("Invalid board address!\n");
+        return false;
+        }
+
+        canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
+        
+        
+    }
+    else if(device.contains("ETH"))
+    {
+        QString result, ret;
+        ret = setBoardToMaintenance(core,device,id,board);
+        if(!core->isBoardInMaintenanceMode(board)){
+            yError("ETH board is not present or not in maintenace mode!!\n");
+            return false;
+        }
+        canBoards = core->getCanBoardsFromEth(board,&result,canLine.toInt(),true);
+    }
+
+        if(canBoards.count() > 0)
+        {
+           
+            yInfo() << "BOARD FOUND!";
+
+            
+        } else {
+            yError() << "No CAN board found, stopped!";
+            return false;
+        }
+   
+    return -1;
+}
 
 int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,bool save)
 {
