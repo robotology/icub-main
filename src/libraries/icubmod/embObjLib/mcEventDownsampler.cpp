@@ -6,9 +6,7 @@
 
 namespace mced {
     
-
-    YARP_LOG_COMPONENT(MC_EVENT_DOWNSAMPLER, "mc.msgdownsampler.skipped-cmd-wrong-mode")
-
+    YARP_LOG_COMPONENT(MC_EVENT_DOWNSAMPLER, "msg-downsampler")
 
     mcEventDownsampler::mcEventDownsampler() 
     {
@@ -89,7 +87,7 @@ namespace mced {
         {
             expire_time = yarp::os::Time::now();
             
-            isdownsampling = (counter - latch_1 > 5);
+            isdownsampling = (counter - latch_1 > config.threshold);
 
             if (isdownsampling)
             {
@@ -103,7 +101,8 @@ namespace mced {
 
     void mcEventDownsampler::printreport()
     {
-        yCError(MC_EVENT_DOWNSAMPLER) << config.info << "detected" << counter - latch_2 << "events on aggregate since the last message";
+        yCError(MC_EVENT_DOWNSAMPLER) << config.subcomponent << config.info << "-"
+                                      << "detected" << counter - latch_2 << "events on aggregate since the last message";
     }
             
 } // mced

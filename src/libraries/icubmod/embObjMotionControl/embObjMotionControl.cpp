@@ -403,6 +403,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     
     event_downsampler = new mced::mcEventDownsampler();
     event_downsampler->config.period = 0.01;
+    event_downsampler->config.threshold = 5;
+    event_downsampler->config.subcomponent = "[mc.skipped-cmd-wrong-mode]";
     event_downsampler->config.info = getBoardInfo();
     event_downsampler->start();
 

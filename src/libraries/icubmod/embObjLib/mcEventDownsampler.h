@@ -25,6 +25,8 @@ namespace mced {
         struct Config
         {
             double period {.01};
+            size_t threshold {10};
+            std::string subcomponent {""};
             std::string info {""};
         };
       
