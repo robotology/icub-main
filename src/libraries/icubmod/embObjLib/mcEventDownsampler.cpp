@@ -6,7 +6,7 @@
 
 namespace mced {
     
-    YARP_LOG_COMPONENT(MC_EVENT_DOWNSAMPLER, "msg-downsampler")
+    YARP_LOG_COMPONENT(EVENT_DOWNSAMPLER, "event-downsampler")
 
     mcEventDownsampler::mcEventDownsampler() 
     {
@@ -101,8 +101,8 @@ namespace mced {
 
     void mcEventDownsampler::printreport()
     {
-        yCError(MC_EVENT_DOWNSAMPLER) << config.subcomponent << config.info << "-"
-                                      << "detected" << counter - latch_2 << "events on aggregate since the last message";
+        yCError(EVENT_DOWNSAMPLER) << config.subcomponent << config.info << "-"
+                                   << "detected" << counter - latch_2 << "events on aggregate since the last message";
     }
             
 } // mced
