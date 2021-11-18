@@ -71,7 +71,7 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
 int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId, QString serialNumber);
 int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId);
 int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,bool save);
-int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString oldCanId,QString newCanId);
+int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canIds);
 
 
 int main(int argc, char *argv[])
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
     QCommandLineOption setStrainGainsOffsetOption(QStringList() << "j" << "set-strain-gains", "Sets on STRAIN2 default gains to (8,24,24,10,10,24) , adjust the offset and check if some channel saturates","","");
     QCommandLineOption getCanBoardVersionOption(QStringList() << "b" << "get-canboard-version", "Gets Bootloader or Application version (<saveFile> must be y or n to save or not a file containing fw info)","saveFile","");
     QCommandLineOption saveDatFileOption(QStringList() << "u" << "save-dat-file", "Saves the calibration .dat file from STRAIN2 eeprom","","");
-    QCommandLineOption changeCanIdOption(QStringList() << "ci" << "change-can-id", "changes CAN ID","id-old","id-new");
+    QCommandLineOption changeCanIdOption(QStringList() << "k" << "change-can-id", "changes CAN ID","id-old,id-new","");
 
 
     parser.addOption(noGuiOption);
@@ -234,8 +234,9 @@ int main(int argc, char *argv[])
         bool setGains = parser.isSet(setStrainGainsOffsetOption);
         QString saveVersion = parser.value(getCanBoardVersionOption);
         bool getVersion = parser.isSet(getCanBoardVersionOption);
-        QString oldCanId = parser.value(changeCanIdOption);
-        QString newCanId = parser.value(changeCanIdOption);
+                bool changeCanID = parser.isSet(changeCanIdOption);
+
+        QString canIdOldNew = parser.value(changeCanIdOption);
 
 
         core.setVerbosity(verbosity);
@@ -377,7 +378,8 @@ int main(int argc, char *argv[])
             }
         }
 
-        if((saveDatFile) && (action_impossible != action))
+       
+        if((changeCanID) && (action_impossible != action))
         {
             if(action == action_none)
             {
@@ -713,7 +715,7 @@ int main(int argc, char *argv[])
             case action_changeCanId:
             {
                 ret = 1;
-
+  qDebug() << "AEIOU";
                 if(device.isEmpty()){
                     if(verbosity >= 1) qDebug() << "Need a device to be set";
                 }else if(id.isEmpty()){
@@ -724,7 +726,8 @@ int main(int argc, char *argv[])
                     } else if(!device.contains("ETH") && canId.isEmpty()){
                         if(verbosity >= 1) qDebug() << "Need a can id to be set";
                     }else{
-                      ret = changeCanId(&core,device,id,board,canLine,oldCanId,newCanId);
+                        qDebug() << "AAAAA";
+                      ret = changeCanId(&core,device,id,board,canLine,canIdOldNew);
                     }
                 }
 
@@ -836,16 +839,21 @@ int main(int argc, char *argv[])
         }
 
         */   
-int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString oldCanId,QString newCanId)
+int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canIds)
 {
     QList <sBoard> canBoards;
     QString retString;
     int ret;
     string msg;
-      
+    QStringList ids;
+
+    ids = canIds.split(",");
+
+    yInfo("AAAAAAAAAA\n");
     if(device.contains("SOCKETCAN"))
     {
-        if (oldCanId.toInt() <1 || oldCanId.toInt() >= 15){
+        
+        if (ids[0].toInt() <1 || ids[0].toInt() >= 15){
         yError("Invalid board address!\n");
         return false;
         }
