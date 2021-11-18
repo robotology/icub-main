@@ -715,7 +715,6 @@ int main(int argc, char *argv[])
             case action_changeCanId:
             {
                 ret = 1;
-  qDebug() << "AEIOU";
                 if(device.isEmpty()){
                     if(verbosity >= 1) qDebug() << "Need a device to be set";
                 }else if(id.isEmpty()){
@@ -726,7 +725,6 @@ int main(int argc, char *argv[])
                     } else if(!device.contains("ETH") && canId.isEmpty()){
                         if(verbosity >= 1) qDebug() << "Need a can id to be set";
                     }else{
-                        qDebug() << "AAAAA";
                       ret = changeCanId(&core,device,id,board,canLine,canIdOldNew);
                     }
                 }
@@ -849,7 +847,6 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
 
     ids = canIds.split(",");
 
-    yInfo("AAAAAAAAAA\n");
     if(device.contains("SOCKETCAN"))
     {
         
@@ -860,7 +857,7 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
 
         canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
         
-        
+        yInfo() << device.toInt();
     }
     else if(device.contains("ETH"))
     {
@@ -877,7 +874,7 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
         {
            
             yInfo() << "BOARD FOUND!";
-
+            core->getDownloader()->change_card_address(0,ids[0].toInt(),ids[1].toInt(),canBoards[0].type);
             
         } else {
             yError() << "No CAN board found, stopped!";
