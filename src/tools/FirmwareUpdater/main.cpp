@@ -839,6 +839,8 @@ int main(int argc, char *argv[])
         */   
 int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canIds)
 {
+    // FirmwareUpdater -g -e SOCKETCAN -i 0 -c 0 -n 1 -k 1,2
+
     QList <sBoard> canBoards;
     QString retString;
     int ret;
@@ -857,7 +859,15 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
 
         canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
         
-        yInfo() << device.toInt();
+        if(canBoards.count() > 0)
+        {
+           
+            yInfo() << "BOARD FOUND!";
+            core->getDownloader()->change_card_address(0,ids[0].toInt(),1,canBoards[0].type);
+        } else {
+            yError() << "No CAN board found, stopped!";
+            return false;
+        }
     }
     else if(device.contains("ETH"))
     {
@@ -868,18 +878,19 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
             return false;
         }
         canBoards = core->getCanBoardsFromEth(board,&result,canLine.toInt(),true);
-    }
-
         if(canBoards.count() > 0)
         {
            
             yInfo() << "BOARD FOUND!";
-            core->getDownloader()->change_card_address(0,ids[0].toInt(),ids[1].toInt(),canBoards[0].type);
-            
+            core->setCanBoardAddress(1,ids[0].toInt(), canBoards[0].type, ids[1], "10.0.1.1", 0, &ret);
         } else {
             yError() << "No CAN board found, stopped!";
             return false;
         }
+    }
+
+        
+       
    
     return -1;
 }
