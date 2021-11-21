@@ -61,7 +61,7 @@ static string configureFinder(int argc, char *argv[],
         yInfo()  << "default module name: " << moduleName;
     }
     if ( finder.check( "verbosity" ) ) {
-        verbosity = finder.find( "verbosity" ).asInt();
+        verbosity = finder.find( "verbosity" ).asInt32();
         yInfo()  << "custom verbosity level: " << verbosity;
     }
     else {    

@@ -210,7 +210,7 @@ bool XSensMTx::open(yarp::os::Searchable &config)
      
 #ifdef WIN32
     par.comPort = config.check ("serial", Value(11),
-        "numeric identifier of comport").asInt();
+        "numeric identifier of comport").asInt32();
 #else
     par.comPortString = config.check("serial",Value("/dev/ttyUSB0"),
                                      "device name of comport").asString().c_str();

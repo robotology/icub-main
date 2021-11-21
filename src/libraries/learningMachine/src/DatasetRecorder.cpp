@@ -76,11 +76,11 @@ std::string DatasetRecorder::getInfo() {
 
 void DatasetRecorder::writeBottle(yarp::os::Bottle& bot) const  {
     bot.addString(this->filename.c_str());
-    bot.addInt(this->precision);
+    bot.addInt32(this->precision);
 }
 
 void DatasetRecorder::readBottle(yarp::os::Bottle& bot) {
-    this->precision = bot.pop().asInt();
+    this->precision = bot.pop().asInt32();
     this->filename = bot.pop().asString().c_str();
 }
 
@@ -103,8 +103,8 @@ bool DatasetRecorder::configure(yarp::os::Searchable& config) {
     }
 
     // set the precision
-    if(config.find("precision").isInt()) {
-        this->precision = config.find("precision").asInt();
+    if(config.find("precision").isInt32()) {
+        this->precision = config.find("precision").asInt32();
         success = true;
     }
 

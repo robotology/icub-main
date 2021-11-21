@@ -277,23 +277,23 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         std::string name(msg->get(idd++).asString().c_str());
         std::string label(cmd=="object_with_label"?msg->get(idd++).asString().c_str():"");
 
-        double dx=msg->get(idd++).asDouble();
-        double dy=msg->get(idd++).asDouble();
-        double dz=msg->get(idd++).asDouble();
+        double dx=msg->get(idd++).asFloat64();
+        double dy=msg->get(idd++).asFloat64();
+        double dz=msg->get(idd++).asFloat64();
 
-        double px=msg->get(idd++).asDouble();
-        double py=msg->get(idd++).asDouble();
-        double pz=msg->get(idd++).asDouble();
+        double px=msg->get(idd++).asFloat64();
+        double py=msg->get(idd++).asFloat64();
+        double pz=msg->get(idd++).asFloat64();
 
-        double rx=msg->get(idd++).asDouble();
-        double ry=msg->get(idd++).asDouble();
-        double rz=msg->get(idd++).asDouble();
+        double rx=msg->get(idd++).asFloat64();
+        double ry=msg->get(idd++).asFloat64();
+        double rz=msg->get(idd++).asFloat64();
 
-        int r=msg->get(idd++).asInt();
-        int g=msg->get(idd++).asInt();
-        int b=msg->get(idd++).asInt();
+        int r=msg->get(idd++).asInt32();
+        int g=msg->get(idd++).asInt32();
+        int b=msg->get(idd++).asInt32();
 
-        double alpha=msg->get(idd++).asDouble();
+        double alpha=msg->get(idd++).asFloat64();
 
         for (int i=0; i<(int)mObjectsRoot.size(); ++i)
         {
@@ -332,15 +332,15 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         std::string name(msg->get(1).asString().c_str());
         std::string label(msg->get(2).asString().c_str());
 
-        int bufflen=msg->get(3).asInt();
-        double persistence=msg->get(4).asDouble();
+        int bufflen=msg->get(3).asInt32();
+        double persistence=msg->get(4).asFloat64();
 
-        int R=msg->get(5).asInt();
-        int G=msg->get(6).asInt();
-        int B=msg->get(7).asInt();
+        int R=msg->get(5).asInt32();
+        int G=msg->get(6).asInt32();
+        int B=msg->get(7).asInt32();
 
-        double alpha=msg->get(8).asDouble();
-        GLfloat width=(GLfloat)msg->get(9).asDouble();
+        double alpha=msg->get(8).asFloat64();
+        GLfloat width=(GLfloat)msg->get(9).asFloat64();
 
         for (int i=0; i<(int)mTrajectoriesRoot.size(); ++i)
         {
@@ -378,9 +378,9 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
     {
         std::string name(msg->get(1).asString().c_str());
 
-        double x=msg->get(2).asDouble();
-        double y=msg->get(3).asDouble();
-        double z=msg->get(4).asDouble();
+        double x=msg->get(2).asFloat64();
+        double y=msg->get(3).asFloat64();
+        double z=msg->get(4).asFloat64();
 
         for (int i=0; i<(int)mTrajectoriesRoot.size(); ++i)
         {

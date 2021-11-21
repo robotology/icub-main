@@ -436,38 +436,38 @@ bool EsdMessageSniffer::open(yarp::os::Searchable& config)
     }
 
     int i;
-    int nj = p.findGroup("GENERAL").find("Joints").asInt();
+    int nj = p.findGroup("GENERAL").find("Joints").asInt32();
     EsdMessageSnifferParameters params(nj);
     params._njoints = nj;
 
     ///// CAN PARAMETERS
     Bottle &xtmp = p.findGroup("CAN").findGroup("CanDeviceNum");
-    params._networkN=xtmp.get(1).asInt();
+    params._networkN=xtmp.get(1).asInt32();
 
     xtmp = p.findGroup("CAN").findGroup("CanMyAddress");
-    params._my_address=xtmp.get(1).asInt();
+    params._my_address=xtmp.get(1).asInt32();
 
     xtmp = p.findGroup("CAN").findGroup("CanPollingInterval");
-    params._polling_interval=xtmp.get(1).asInt();
+    params._polling_interval=xtmp.get(1).asInt32();
 
     xtmp = p.findGroup("CAN").findGroup("CanTimeout");
-    params._timeout=xtmp.get(1).asInt();
+    params._timeout=xtmp.get(1).asInt32();
 
     xtmp = p.findGroup("CAN").findGroup("CanAddresses");
-    for (i = 1; i < xtmp.size(); i++) params._destinations[i-1] = (unsigned char)(xtmp.get(i).asInt());
+    for (i = 1; i < xtmp.size(); i++) params._destinations[i-1] = (unsigned char)(xtmp.get(i).asInt32());
    
     ////// GENERAL
     xtmp = p.findGroup("GENERAL").findGroup("AxisMap");
 	ACE_ASSERT (xtmp.size() == nj+1);
-    for (i = 1; i < xtmp.size(); i++) params._axisMap[i-1] = xtmp.get(i).asInt();
+    for (i = 1; i < xtmp.size(); i++) params._axisMap[i-1] = xtmp.get(i).asInt32();
     xtmp = p.findGroup("GENERAL").findGroup("Encoder");
 	ACE_ASSERT (xtmp.size() == nj+1);
-    for (i = 1; i < xtmp.size(); i++) params._angleToEncoder[i-1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) params._angleToEncoder[i-1] = xtmp.get(i).asFloat64();
     xtmp = p.findGroup("GENERAL").findGroup("Zeros");
 	ACE_ASSERT (xtmp.size() == nj+1);
-    for (i = 1; i < xtmp.size(); i++) params._zeros[i-1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) params._zeros[i-1] = xtmp.get(i).asFloat64();
 
-	if (p.findGroup("GENERAL").find("Verbose").asInt() == 1)
+	if (p.findGroup("GENERAL").find("Verbose").asInt32() == 1)
 	    params._p = ACE_OS::printf;
 	else
 		params._p = NULL;

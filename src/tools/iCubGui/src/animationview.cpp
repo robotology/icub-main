@@ -77,10 +77,10 @@ void AnimationView::init(yarp::os::ResourceFinder& config)
     if (!skinParams.isNull())
     {
         ForceArrow::setParams(
-            skinParams.find("force_gain").asDouble(),
-            skinParams.find("force_thr").asDouble(),
-            skinParams.find("torque_gain").asDouble(),
-            skinParams.find("torque_thr").asDouble()
+            skinParams.find("force_gain").asFloat64(),
+            skinParams.find("force_thr").asFloat64(),
+            skinParams.find("torque_gain").asFloat64(),
+            skinParams.find("torque_thr").asFloat64()
         );
     }
 

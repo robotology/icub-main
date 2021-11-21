@@ -36,6 +36,7 @@
 #include "EoProtocolAS.h"
 
 #include <yarp/os/NetType.h>
+#include <yarp/conf/environment.h>
 
 #ifdef WIN32
 #pragma warning(once:4355)
@@ -347,10 +348,10 @@ embObjInertials::embObjInertials()
 
     opened = false;
 
-    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::get_string("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
-        verbosewhenok = (bool)NetType::toInt(tmp);
+        verbosewhenok = (bool)(yarp::conf::numeric::from_string(tmp, 0U));
     }
     else
     {

@@ -232,7 +232,7 @@ double CalibModule::getMinVer() const
 {
     Bottle info;
     igaze->getInfo(info);
-    return info.find("min_allowed_vergence").asDouble();
+    return info.find("min_allowed_vergence").asFloat64();
 }
 
 
@@ -252,7 +252,7 @@ bool CalibModule::getGazeParams(const string &eye, const string &type, Matrix &M
         int cnt=0;
         for (int r=0; r<M.rows(); r++)
             for (int c=0; c<M.cols(); c++)
-                M(r,c)=pB->get(cnt++).asDouble();
+                M(r,c)=pB->get(cnt++).asFloat64();
 
         return true;
     }
@@ -273,7 +273,7 @@ bool CalibModule::pushExtrinsics(const string &eye, const Matrix &H)
     Bottle &val=ext.addList();
     for (int r=0; r<H.rows(); r++)
         for (int c=0; c<H.cols(); c++)
-            val.addDouble(H(r,c));
+            val.addFloat64(H(r,c));
 
     return igaze->tweakSet(options);
 }
@@ -283,8 +283,8 @@ bool CalibModule::pushExtrinsics(const string &eye, const Matrix &H)
 bool CalibModule::getDepth(const Vector &px, Vector &x, Vector &pxr)
 {
     Bottle cmd,reply;
-    cmd.addInt((int)px[0]);
-    cmd.addInt((int)px[1]);
+    cmd.addInt32((int)px[0]);
+    cmd.addInt32((int)px[1]);
     depthRpcPort.write(cmd,reply);
 
     if (reply.size()<5)
@@ -292,11 +292,11 @@ bool CalibModule::getDepth(const Vector &px, Vector &x, Vector &pxr)
 
     x.resize(3);
     pxr.resize(2);
-    x[0]=reply.get(0).asDouble();
-    x[1]=reply.get(1).asDouble();
-    x[2]=reply.get(2).asDouble();
-    pxr[0]=reply.get(3).asInt();
-    pxr[1]=reply.get(4).asInt();
+    x[0]=reply.get(0).asFloat64();
+    x[1]=reply.get(1).asFloat64();
+    x[2]=reply.get(2).asFloat64();
+    pxr[0]=reply.get(3).asInt32();
+    pxr[1]=reply.get(4).asInt32();
 
     return (norm(x)>0.0);
 }
@@ -892,13 +892,13 @@ bool CalibModule::configure(ResourceFinder &rf)
     string robot=rf.check("robot",Value("icub")).asString();
     string name=rf.check("name",Value("depth2kin")).asString();
     string type=rf.check("type",Value("se3+scale")).asString();
-    test=rf.check("test",Value(-1)).asInt();    
-    max_dist=fabs(rf.check("max_dist",Value(0.25)).asDouble());
-    roi_side=abs(rf.check("roi_side",Value(100)).asInt());
-    block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
-    exploration_wait=fabs(rf.check("exploration_wait",Value(0.5)).asDouble());
-    exploration_intargettol=fabs(rf.check("exploration_intargettol",Value(0.01)).asDouble());
-    touch_intargettol=fabs(rf.check("touch_intargettol",Value(0.001)).asDouble());
+    test=rf.check("test",Value(-1)).asInt32();    
+    max_dist=fabs(rf.check("max_dist",Value(0.25)).asFloat64());
+    roi_side=abs(rf.check("roi_side",Value(100)).asInt32());
+    block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asFloat64());
+    exploration_wait=fabs(rf.check("exploration_wait",Value(0.5)).asFloat64());
+    exploration_intargettol=fabs(rf.check("exploration_intargettol",Value(0.01)).asFloat64());
+    touch_intargettol=fabs(rf.check("touch_intargettol",Value(0.001)).asFloat64());
 
     motorExplorationAsyncStop=false;
     motorExplorationState=motorExplorationStateIdle;
@@ -1774,7 +1774,7 @@ bool CalibModule::updateModule()
     if (Bottle *touchData=touchInPort.read(false))
     {
         if (touchData->size()>=2)
-            touch(touchData->get(0).asInt(),touchData->get(1).asInt());
+            touch(touchData->get(0).asInt32(),touchData->get(1).asInt32());
     }
 
     return !closing;

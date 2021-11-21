@@ -198,26 +198,26 @@ bool dynContact::write(ConnectionWriter& connection) const{
     // - a list of 3 double, i.e. the force
     // - a list of 3 double, i.e. the moment
 
-    connection.appendInt(BOTTLE_TAG_LIST);
-    connection.appendInt(4);
+    connection.appendInt32(BOTTLE_TAG_LIST);
+    connection.appendInt32(4);
     // list of 3 int, i.e. contactId, bodyPart, linkNumber
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_INT);
-    connection.appendInt(3);
-    connection.appendInt(contactId);
-    connection.appendInt(bodyPart);    // left_arm, right_arm, ...
-    connection.appendInt(linkNumber);
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_INT32);
+    connection.appendInt32(3);
+    connection.appendInt32(contactId);
+    connection.appendInt32(bodyPart);    // left_arm, right_arm, ...
+    connection.appendInt32(linkNumber);
     // list of 3 double, i.e. the CoP
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
-    connection.appendInt(3);
-    for(int i=0;i<3;i++) connection.appendDouble(CoP[i]);
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_FLOAT64);
+    connection.appendInt32(3);
+    for(int i=0;i<3;i++) connection.appendFloat64(CoP[i]);
     // list of 3 double, i.e. the force
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
-    connection.appendInt(3);
-    for(int i=0;i<3;i++) connection.appendDouble(F[i]);
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_FLOAT64);
+    connection.appendInt32(3);
+    for(int i=0;i<3;i++) connection.appendFloat64(F[i]);
     // list of 3 double, i.e. the moment
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
-    connection.appendInt(3);
-    for(int i=0;i<3;i++) connection.appendDouble(Mu[i]);  
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_FLOAT64);
+    connection.appendInt32(3);
+    for(int i=0;i<3;i++) connection.appendFloat64(Mu[i]);  
 
     // if someone is foolish enough to connect in text mode,
     // let them see something readable.
@@ -235,27 +235,27 @@ bool dynContact::read(ConnectionReader& connection){
     // - a list of 3 double, i.e. the CoP
     // - a list of 3 double, i.e. the force
     // - a list of 3 double, i.e. the moment
-    if(connection.expectInt()!= BOTTLE_TAG_LIST || connection.expectInt()!=4)
+    if(connection.expectInt32()!= BOTTLE_TAG_LIST || connection.expectInt32()!=4)
         return false;
     // - a list of 3 int, i.e. contactId, bodyPart, linkNumber
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT || connection.expectInt()!=3)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT32 || connection.expectInt32()!=3)
         return false;
-    contactId   = connection.expectInt();
-    bodyPart    = (BodyPart)connection.expectInt();
-    linkNumber  = connection.expectInt();
+    contactId   = connection.expectInt32();
+    bodyPart    = (BodyPart)connection.expectInt32();
+    linkNumber  = connection.expectInt32();
     // - a list of 3 double, i.e. the CoP
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_FLOAT64 || connection.expectInt32()!=3)
         return false;
-    for(int i=0;i<3;i++) CoP[i] = connection.expectDouble();
+    for(int i=0;i<3;i++) CoP[i] = connection.expectFloat64();
     // - a list of 3 double, i.e. the force
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_FLOAT64 || connection.expectInt32()!=3)
         return false;
-    for(int i=0;i<3;i++) F[i] = connection.expectDouble();
+    for(int i=0;i<3;i++) F[i] = connection.expectFloat64();
     setForce(F);
     // - a list of 3 double, i.e. the moment
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_FLOAT64 || connection.expectInt32()!=3)
         return false;
-    for(int i=0;i<3;i++) Mu[i] = connection.expectDouble();
+    for(int i=0;i<3;i++) Mu[i] = connection.expectFloat64();
      
     return !connection.isError();
 }

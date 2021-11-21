@@ -32,7 +32,7 @@ bool WholeBodyPlayerModule::updateModule() {
             response.clear();
             // pause
             ok &= m_rpcPort.write(reqPause, response);
-            if (!ok || response.get(0).asVocab() != VOCAB_OK) {
+            if (!ok || response.get(0).asVocab32() != VOCAB_OK) {
                 yError()<<"wholeBodyPlayer: the port"<<rep.m_replayPort->getName()<<"is closed because the pause request failed.. closing";
                 return false;
             }
@@ -47,7 +47,7 @@ bool WholeBodyPlayerModule::updateModule() {
             // start
             response.clear();
             ok &= m_rpcPort.write(reqPlay, response);
-            if (!ok || response.get(0).asVocab() != VOCAB_OK) {
+            if (!ok || response.get(0).asVocab32() != VOCAB_OK) {
                 yError()<<"wholeBodyPlayer: the port"<<rep.m_replayPort->getName()<<"is closed because the start request failed.. closing";
                 return false;
             }

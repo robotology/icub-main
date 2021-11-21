@@ -1789,7 +1789,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         H0.zero();
         for(int cnt=0; (cnt<bH0->size()) && (cnt<H0.rows()*H0.cols()); cnt++)
         {    
-            H0(i,j)=bH0->get(cnt).asDouble();
+            H0(i,j)=bH0->get(cnt).asFloat64();
             if(++j>=H0.cols())
             {
                 i++;
@@ -1799,7 +1799,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
     }
 
     //number of links
-    int numLinks=option.check("numLinks",Value(0)).asInt();
+    int numLinks=option.check("numLinks",Value(0)).asInt32();
     if(numLinks==0)
     {
         yError("Error: invalid number of links (0) specified! \n");
@@ -1824,16 +1824,16 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         }
 
         //kinematics parameters
-        double A=bLink.check("A",Value(0.0)).asDouble();
-        double D=bLink.check("D",Value(0.0)).asDouble();
-        double alpha=CTRL_DEG2RAD*bLink.check("alpha",Value(0.0)).asDouble();
-        double offset=CTRL_DEG2RAD*bLink.check("offset",Value(0.0)).asDouble();
-        double min=CTRL_DEG2RAD*bLink.check("min",Value(0.0)).asDouble();
-        double max=CTRL_DEG2RAD*bLink.check("max",Value(0.0)).asDouble();
+        double A=bLink.check("A",Value(0.0)).asFloat64();
+        double D=bLink.check("D",Value(0.0)).asFloat64();
+        double alpha=CTRL_DEG2RAD*bLink.check("alpha",Value(0.0)).asFloat64();
+        double offset=CTRL_DEG2RAD*bLink.check("offset",Value(0.0)).asFloat64();
+        double min=CTRL_DEG2RAD*bLink.check("min",Value(0.0)).asFloat64();
+        double max=CTRL_DEG2RAD*bLink.check("max",Value(0.0)).asFloat64();
         
         //dynamic parameters
         //mass
-        double mass=bLink.check("mass",Value(0.0)).asDouble();
+        double mass=bLink.check("mass",Value(0.0)).asFloat64();
         //inertia
         if(Bottle *bI=option.find("Inertia").asList())
         {
@@ -1841,7 +1841,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
             I.zero(); 
             for(int cnt=0; (cnt<bI->size()) && (cnt<I.rows()*I.cols()); cnt++)
             {    
-                I(i,j)=bI->get(cnt).asDouble();
+                I(i,j)=bI->get(cnt).asFloat64();
                 if(++j>=I.cols())
                 {
                     i++;
@@ -1856,7 +1856,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
             HC.zero(); 
             for(int cnt=0; (cnt<bHC->size()) && (cnt<HC.rows()*HC.cols()); cnt++)
             {    
-                HC(i,j)=bHC->get(cnt).asDouble();
+                HC(i,j)=bHC->get(cnt).asFloat64();
                 if(++j>=HC.cols())
                 {
                     i++;
@@ -1869,7 +1869,7 @@ bool iDynLimb::fromLinksProperties(const Property &option)
         pushLink(new iDynLink(mass,HC,I,A,D,alpha,offset,min,max));
 
         if(bLink.check("blocked"))
-            blockLink(iLink,CTRL_DEG2RAD*bLink.find("blocked").asDouble());
+            blockLink(iLink,CTRL_DEG2RAD*bLink.find("blocked").asFloat64());
     }
 
     return configured=true;

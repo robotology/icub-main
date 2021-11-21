@@ -216,7 +216,7 @@ using namespace iCub::skinDynLib;
             
             for (int i = 0; i < getSize(); i++)
             {
-                taxel2Repr.push_back(b.get(i).asInt());
+                taxel2Repr.push_back(b.get(i).asInt32());
             }
             initRepresentativeTaxels();
         }

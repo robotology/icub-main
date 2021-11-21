@@ -190,7 +190,7 @@ private:
         Vector x(sz);
 
         for (unsigned int i=0; i<sz; i++)
-            x[i]=b.get(i).asDouble();
+            x[i]=b.get(i).asFloat64();
 
         // for the estimation the time stamp
         // is required. If not present within the
@@ -251,11 +251,11 @@ public:
     {
         string portName=rf.check("name",Value("/velObs")).asString();
 
-        unsigned int NVel=rf.check("lenVel",Value(16)).asInt();
-        unsigned int NAcc=rf.check("lenAcc",Value(25)).asInt();
+        unsigned int NVel=rf.check("lenVel",Value(16)).asInt32();
+        unsigned int NAcc=rf.check("lenAcc",Value(25)).asInt32();
 
-        double DVel=rf.check("thrVel",Value(1.0)).asDouble();
-        double DAcc=rf.check("thrAcc",Value(1.0)).asDouble();
+        double DVel=rf.check("thrVel",Value(1.0)).asFloat64();
+        double DAcc=rf.check("thrAcc",Value(1.0)).asFloat64();
 
         if (NVel<2)
         {

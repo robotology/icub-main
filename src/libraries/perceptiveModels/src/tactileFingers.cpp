@@ -42,7 +42,7 @@ bool TactileFinger::fromProperty(const Property &options)
 
     name=options.find("name").asString();
     directLogic=(options.check("logic",Value("direct")).asString()=="direct");
-    outputGain=options.check("output_gain",Value(1.0)).asDouble();
+    outputGain=options.check("output_gain",Value(1.0)).asFloat64();
 
     if ((name=="thumb") || (name=="index") || (name=="middle") ||
         (name=="ring")  || (name=="little"))
@@ -106,7 +106,7 @@ bool TactileFinger::getSensorsData(Value &data) const
             return false;
 
         Value val_in; In->second->getOutput(val_in);
-        in[j]=val_in.asDouble();
+        in[j]=val_in.asFloat64();
     }
 
     Property prop;
@@ -136,7 +136,7 @@ bool TactileFinger::extractSensorsData(Vector &in) const
             {
                 in.resize(b2->size()); 
                 for (size_t i=0; i<in.length(); i++)
-                    in[i]=b2->get(i).asDouble();
+                    in[i]=b2->get(i).asFloat64();
 
                 ret=true;
             }
@@ -189,7 +189,7 @@ bool TactileFingersModel::fromProperty(const Property &options)
     robot=options.check("robot",Value("icub")).asString();
     carrier=options.check("carrier",Value("udp")).asString();
     compensation=(options.check("compensation",Value("false")).asString()=="true");
-    verbosity=options.check("verbosity",Value(0)).asInt();
+    verbosity=options.check("verbosity",Value(0)).asInt32();
 
     port->open("/"+name+"/"+type+"_hand:i");
     string skinPortName("/"+robot+"/skin/"+type+"_hand");
@@ -375,11 +375,11 @@ bool TactileFingersModel::getOutput(Value &out) const
         fingers[4].getOutput(val[4]);
         
         Bottle bOut; Bottle &ins=bOut.addList();
-        ins.addDouble(val[0].asDouble());
-        ins.addDouble(val[1].asDouble());
-        ins.addDouble(val[2].asDouble());
-        ins.addDouble(val[3].asDouble());
-        ins.addDouble(val[4].asDouble());
+        ins.addFloat64(val[0].asFloat64());
+        ins.addFloat64(val[1].asFloat64());
+        ins.addFloat64(val[2].asFloat64());
+        ins.addFloat64(val[3].asFloat64());
+        ins.addFloat64(val[4].asFloat64());
 
         out=bOut.get(0);
         return true;

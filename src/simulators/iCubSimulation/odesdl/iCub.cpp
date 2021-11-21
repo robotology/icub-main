@@ -1358,8 +1358,8 @@ bool ICubSim::loadJointPosition(const char *joints_path){
 
         for(int j=0; j<3; j++)
         {
-            jP_leftLeg[5-i][j]=leftJoint->get(j).asDouble();
-            jP_rightLeg[5-i][j]=rightJoint->get(j).asDouble();
+            jP_leftLeg[5-i][j]=leftJoint->get(j).asFloat64();
+            jP_rightLeg[5-i][j]=rightJoint->get(j).asFloat64();
         }
     }
 
@@ -1415,7 +1415,7 @@ bool ICubSim::loadJointPosition(const char *joints_path){
         Bottle *headJoint=bHead.get(i+1).asList();
 
         for(int j=0; j<3; j++)
-            jP_head[i][j]=headJoint->get(j).asDouble();
+            jP_head[i][j]=headJoint->get(j).asFloat64();
     }
 
     /*---- eyes ----*/
@@ -1432,8 +1432,8 @@ bool ICubSim::loadJointPosition(const char *joints_path){
 
         for(int j=0; j<3; j++)
         {
-            jP_leftEye[i][j]=leftJoint->get(j).asDouble();
-            jP_rightEye[i][j]=rightJoint->get(j).asDouble();
+            jP_leftEye[i][j]=leftJoint->get(j).asFloat64();
+            jP_rightEye[i][j]=rightJoint->get(j).asFloat64();
         }
     }
      /*---- inertial ----*/
@@ -1443,7 +1443,7 @@ bool ICubSim::loadJointPosition(const char *joints_path){
 
     for(int j=0; j<3; j++)
     {
-        jP_inertial[j] = inertialJP->get(j).asDouble();
+        jP_inertial[j] = inertialJP->get(j).asFloat64();
     }
     return true;
 }
@@ -4022,7 +4022,7 @@ void ICubSim::initSkinActivationBottles()
      }
      emptySkinActivationHand.clear(); //clear the bottle
      for(i=0;i<COUNT_HAND;i++){
-        emptySkinActivationHand.addDouble(hand_empty[i]);
+        emptySkinActivationHand.addFloat64(hand_empty[i]);
      }  
     
     //init forearm
@@ -4054,8 +4054,8 @@ void ICubSim::initSkinActivationBottles()
     emptySkinActivationForearm.clear();
     fullSkinActivationForearm.clear(); //clear the bottle
     for(i=0;i<COUNT_FOREARM;i++){
-        emptySkinActivationForearm.addDouble(forearm_empty[i]);
-        fullSkinActivationForearm.addDouble(forearm_full[i]);
+        emptySkinActivationForearm.addFloat64(forearm_empty[i]);
+        fullSkinActivationForearm.addFloat64(forearm_full[i]);
     }
     //yDebugg("fullSkinActivationForearm: %s \n",fullSkinActivationForearm.toString().c_str());
     
@@ -4067,8 +4067,8 @@ void ICubSim::initSkinActivationBottles()
     }
     fullSkinActivationUpperArm.clear(); //clear the bottle
     for(i=0;i<COUNT_UPPER_ARM;i++){
-        emptySkinActivationUpperArm.addDouble(upper_arm_empty[i]);
-        fullSkinActivationUpperArm.addDouble(upper_arm_full[i]);
+        emptySkinActivationUpperArm.addFloat64(upper_arm_empty[i]);
+        fullSkinActivationUpperArm.addFloat64(upper_arm_full[i]);
     } 
     
     for(i=0;i<COUNT_TORSO;i++){
@@ -4077,8 +4077,8 @@ void ICubSim::initSkinActivationBottles()
     }
     fullSkinActivationTorso.clear(); //clear the bottle
     for(i=0;i<COUNT_TORSO;i++){
-        emptySkinActivationTorso.addDouble(torso_empty[i]);
-        fullSkinActivationTorso.addDouble(torso_full[i]);
+        emptySkinActivationTorso.addFloat64(torso_empty[i]);
+        fullSkinActivationTorso.addFloat64(torso_full[i]);
     } 
 }    
 

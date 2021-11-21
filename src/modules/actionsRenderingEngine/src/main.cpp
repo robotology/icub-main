@@ -349,69 +349,69 @@ Windows, Linux
 #include <iCub/VisuoThread.h>
 
 
-#define ACK                         yarp::os::createVocab('a','c','k')
-#define NACK                        yarp::os::createVocab('n','a','c','k')
+#define ACK                         yarp::os::createVocab32('a','c','k')
+#define NACK                        yarp::os::createVocab32('n','a','c','k')
 
-#define RPC_HELP                    yarp::os::createVocab('h','e','l','p')
-#define RPC_GET                     yarp::os::createVocab('g','e','t')
-#define RPC_GET_STATUS              yarp::os::createVocab('s','t','a','t')
-#define RPC_IMPEDANCE               yarp::os::createVocab('i','m','p','e')
-#define RPC_S2C_MODE                yarp::os::createVocab('m','o','d','e')
-#define RPC_INTERRUPT               yarp::os::createVocab('i','n','t','e')
-#define RPC_REINSTATE               yarp::os::createVocab('r','e','i','n')
-#define RPC_WAVEING                 yarp::os::createVocab('w','a','v','e')
-#define RPC_ELBOW                   yarp::os::createVocab('e','l','b','o')
-#define RPC_EXECTIME                yarp::os::createVocab('t','i','m','e')
+#define RPC_HELP                    yarp::os::createVocab32('h','e','l','p')
+#define RPC_GET                     yarp::os::createVocab32('g','e','t')
+#define RPC_GET_STATUS              yarp::os::createVocab32('s','t','a','t')
+#define RPC_IMPEDANCE               yarp::os::createVocab32('i','m','p','e')
+#define RPC_S2C_MODE                yarp::os::createVocab32('m','o','d','e')
+#define RPC_INTERRUPT               yarp::os::createVocab32('i','n','t','e')
+#define RPC_REINSTATE               yarp::os::createVocab32('r','e','i','n')
+#define RPC_WAVEING                 yarp::os::createVocab32('w','a','v','e')
+#define RPC_ELBOW                   yarp::os::createVocab32('e','l','b','o')
+#define RPC_EXECTIME                yarp::os::createVocab32('t','i','m','e')
 
-#define CMD_IDLE                    yarp::os::createVocab('i','d','l','e')
-#define CMD_HOME                    yarp::os::createVocab('h','o','m','e')
-#define CMD_CALIBRATE               yarp::os::createVocab('c','a','l','i')
-#define CMD_EXPLORE                 yarp::os::createVocab('e','x','p','l')
+#define CMD_IDLE                    yarp::os::createVocab32('i','d','l','e')
+#define CMD_HOME                    yarp::os::createVocab32('h','o','m','e')
+#define CMD_CALIBRATE               yarp::os::createVocab32('c','a','l','i')
+#define CMD_EXPLORE                 yarp::os::createVocab32('e','x','p','l')
 
-#define CMD_OBSERVE                 yarp::os::createVocab('o','b','s','e')
-#define CMD_DROP                    yarp::os::createVocab('d','r','o','p')
+#define CMD_OBSERVE                 yarp::os::createVocab32('o','b','s','e')
+#define CMD_DROP                    yarp::os::createVocab32('d','r','o','p')
 
-#define CMD_HOLD                    yarp::os::createVocab('h','o','l','d')
+#define CMD_HOLD                    yarp::os::createVocab32('h','o','l','d')
 
-#define CMD_LEARN_MIL               yarp::os::createVocab('l','e','a','r')
+#define CMD_LEARN_MIL               yarp::os::createVocab32('l','e','a','r')
 
-#define CMD_GET                     yarp::os::createVocab('g','e','t')
-#define CMD_TAKE                    yarp::os::createVocab('t','a','k','e')
-#define CMD_GRASP                   yarp::os::createVocab('g','r','a','s')
-#define CMD_TOUCH                   yarp::os::createVocab('t','o','u','c')
-#define CMD_PICK                    yarp::os::createVocab('p','i','c','k')
-#define CMD_PUSH                    yarp::os::createVocab('p','u','s','h')
-#define CMD_POINT                   yarp::os::createVocab('p','o','i','n')
-#define CMD_POINT_FAR               yarp::os::createVocab('p','f','a','r')
-#define CMD_LOOK                    yarp::os::createVocab('l','o','o','k')
-#define CMD_TRACK                   yarp::os::createVocab('t','r','a','c')
-#define CMD_EXPECT                  yarp::os::createVocab('e','x','p','e')
-#define CMD_GIVE                    yarp::os::createVocab('g','i','v','e')
-#define CMD_HAND                    yarp::os::createVocab('h','a','n','d')
-#define CMD_GAZE                    yarp::os::createVocab('r','e','l','e')
+#define CMD_GET                     yarp::os::createVocab32('g','e','t')
+#define CMD_TAKE                    yarp::os::createVocab32('t','a','k','e')
+#define CMD_GRASP                   yarp::os::createVocab32('g','r','a','s')
+#define CMD_TOUCH                   yarp::os::createVocab32('t','o','u','c')
+#define CMD_PICK                    yarp::os::createVocab32('p','i','c','k')
+#define CMD_PUSH                    yarp::os::createVocab32('p','u','s','h')
+#define CMD_POINT                   yarp::os::createVocab32('p','o','i','n')
+#define CMD_POINT_FAR               yarp::os::createVocab32('p','f','a','r')
+#define CMD_LOOK                    yarp::os::createVocab32('l','o','o','k')
+#define CMD_TRACK                   yarp::os::createVocab32('t','r','a','c')
+#define CMD_EXPECT                  yarp::os::createVocab32('e','x','p','e')
+#define CMD_GIVE                    yarp::os::createVocab32('g','i','v','e')
+#define CMD_HAND                    yarp::os::createVocab32('h','a','n','d')
+#define CMD_GAZE                    yarp::os::createVocab32('r','e','l','e')
 
 //commands for tool
-#define CMD_TAKE_TOOL               yarp::os::createVocab('t','a','t','o')
+#define CMD_TAKE_TOOL               yarp::os::createVocab32('t','a','t','o')
 
-#define CMD_ACTION_TEACH            yarp::os::createVocab('t','e','a','c')
-#define CMD_ACTION_IMITATE          yarp::os::createVocab('i','m','i','t')
+#define CMD_ACTION_TEACH            yarp::os::createVocab32('t','e','a','c')
+#define CMD_ACTION_IMITATE          yarp::os::createVocab32('i','m','i','t')
 
 //sub commands: get
-#define GET_S2C                     yarp::os::createVocab('s','2','c')
-#define GET_TABLE                   yarp::os::createVocab('t','a','b','l')
-#define GET_HOLDING                 yarp::os::createVocab('h','o','l','d')
-#define GET_HAND                    yarp::os::createVocab('h','a','n','d')
-#define GET_IMAGE                   yarp::os::createVocab('i','m','a','g')
-#define GET_IDLE                    yarp::os::createVocab('i','d','l','e')
+#define GET_S2C                     yarp::os::createVocab32('s','2','c')
+#define GET_TABLE                   yarp::os::createVocab32('t','a','b','l')
+#define GET_HOLDING                 yarp::os::createVocab32('h','o','l','d')
+#define GET_HAND                    yarp::os::createVocab32('h','a','n','d')
+#define GET_IMAGE                   yarp::os::createVocab32('i','m','a','g')
+#define GET_IDLE                    yarp::os::createVocab32('i','d','l','e')
 
 //sub commands: calib
-#define CALIB_TABLE                 yarp::os::createVocab('t','a','b','l')
-#define CALIB_FINGERS               yarp::os::createVocab('f','i','n','g')
-#define CALIB_KIN_OFFSET            yarp::os::createVocab('k','i','n','e')
+#define CALIB_TABLE                 yarp::os::createVocab32('t','a','b','l')
+#define CALIB_FINGERS               yarp::os::createVocab32('f','i','n','g')
+#define CALIB_KIN_OFFSET            yarp::os::createVocab32('k','i','n','e')
 
 //sub commands: explore
-#define EXPLORE_TORSO               yarp::os::createVocab('t','o','r','s')
-#define EXPLORE_HAND                yarp::os::createVocab('h','a','n','d')
+#define EXPLORE_TORSO               yarp::os::createVocab32('t','o','r','s')
+#define EXPLORE_HAND                yarp::os::createVocab32('h','a','n','d')
 
 
 #define PORT_TAG_CMD                0
@@ -532,7 +532,7 @@ public:
             return true;
         }
 
-        switch(command.get(0).asVocab())
+        switch(command.get(0).asVocab32())
         {
             case RPC_HELP:
             {
@@ -550,7 +550,7 @@ public:
             {
                 if(command.size()>1)
                 {
-                    switch(command.get(1).asVocab())
+                    switch(command.get(1).asVocab32())
                     {
                         case RPC_GET_STATUS:
                         {
@@ -606,7 +606,7 @@ public:
             //set the stereo2cartesian mode
             case RPC_S2C_MODE:
             {
-                motorThr->setStereoToCartesianMode(command.get(1).asVocab(),reply);
+                motorThr->setStereoToCartesianMode(command.get(1).asVocab32(),reply);
                 break;
             }
 
@@ -633,8 +633,8 @@ public:
                 if (command.size()>=4)
                 {
                     string arm=command.get(1).asString();
-                    double height=command.get(2).asDouble();
-                    double weight=command.get(3).asDouble();
+                    double height=command.get(2).asFloat64();
+                    double weight=command.get(3).asFloat64();
 
                     if ((arm=="both") || (arm=="left"))
                         motorThr->changeElbowHeight(LEFT,height,weight);
@@ -654,7 +654,7 @@ public:
             {
                 if (command.size()>1)
                 {
-                    double execTime=command.get(1).asDouble();
+                    double execTime=command.get(1).asFloat64();
                     motorThr->changeExecTime(LEFT,execTime);
                     motorThr->changeExecTime(RIGHT,execTime);
                     reply.addString("execution time updated");
@@ -678,33 +678,33 @@ public:
     {
         if(closing)
         {
-            reply.addVocab(NACK);
+            reply.addVocab32(NACK);
             reply.addString("Sorry. Module closing.");
             return true;
         }
 
         if(command.size()==0)
         {
-            reply.addVocab(NACK);
+            reply.addVocab32(NACK);
             reply.addString("No command received.");
         }
         else if(interrupted)
         {
-            reply.addVocab(NACK);
+            reply.addVocab32(NACK);
             reply.addString("Module currently interrupted. Reinstate for action.");
         }
         else
         {
             if(port_tag==PORT_TAG_GET)
             {
-                if(command.get(0).asVocab()!=CMD_GET)
+                if(command.get(0).asVocab32()!=CMD_GET)
                 {
-                    reply.addVocab(NACK);
+                    reply.addVocab32(NACK);
                     reply.addString("This port can only process [get] commands");
                 }
                 else if(command.size()>1)
                 {
-                    switch(command.get(1).asVocab())
+                    switch(command.get(1).asVocab32())
                     {
                         case GET_S2C:
                         {
@@ -720,10 +720,10 @@ public:
                                     if(motorThr->targetToCartesian(tmp_command.find("target").asList(),xd))
                                     {
                                         for(size_t i=0; i<xd.size(); i++)
-                                            tmp_reply.addDouble(xd[i]);
+                                            tmp_reply.addFloat64(xd[i]);
                                     }
                                     else
-                                        tmp_reply.addVocab(NACK);
+                                        tmp_reply.addVocab32(NACK);
                                 }
                             }
 
@@ -733,9 +733,9 @@ public:
                         {
                             reply.clear();
                             if(idle)
-                                reply.addVocab(ACK);
+                                reply.addVocab32(ACK);
                             else
-                                reply.addVocab(NACK);
+                                reply.addVocab32(NACK);
 
                             break;
                         }
@@ -748,10 +748,10 @@ public:
                             {
                                 Bottle &tmp_reply=reply.addList();
                                 tmp_reply.addString("table_height");
-                                tmp_reply.addDouble(table_height);
+                                tmp_reply.addFloat64(table_height);
                             }
                             else
-                                reply.addVocab(NACK);
+                                reply.addVocab32(NACK);
 
                             break;
                         }
@@ -760,23 +760,23 @@ public:
                         {
                             reply.clear();
                             if(motorThr->isHolding(command))
-                                reply.addVocab(ACK);
+                                reply.addVocab32(ACK);
                             else
-                                reply.addVocab(NACK);
+                                reply.addVocab32(NACK);
 
                             break;
                         }
 
                         case GET_HAND:
                         {
-                            if(command.get(2).asVocab()==GET_IMAGE)
+                            if(command.get(2).asVocab32()==GET_IMAGE)
                             {
                                 reply.clear();
                                 if(!motorThr->getHandImagePosition(reply))
-                                    reply.addVocab(NACK);
+                                    reply.addVocab32(NACK);
                             }
                             else
-                                reply.addVocab(NACK);
+                                reply.addVocab32(NACK);
 
                             break;
                         }
@@ -784,29 +784,29 @@ public:
 
                         default:
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
                     }
                 }
                 else
-                    reply.addVocab(NACK);
+                    reply.addVocab32(NACK);
             }
             else if(port_tag==PORT_TAG_CMD)
             {
-                switch(command.get(0).asVocab())
+                switch(command.get(0).asVocab32())
                 {
                     case CMD_IDLE:
                     {
                         motorThr->setGazeIdle();
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
                         break;
                     }
 
                     case CMD_HOME:
                     {
                         motorThr->goHome(command);
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
 
                         break;
                     }
@@ -815,18 +815,18 @@ public:
                         bool holding;
                         if (motorThr->hand(command,"",&holding))
                         {
-                            reply.addVocab(ACK);
-                            reply.addInt(holding?1:0);
+                            reply.addVocab32(ACK);
+                            reply.addInt32(holding?1:0);
                         }
                         else
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
 
                         break;
                     }
                     case CMD_GAZE:
                     {
                         motorThr->clearIt(command);
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
 
                         break;
                     }
@@ -836,7 +836,7 @@ public:
                     {
                         if(command.size()>1)
                         {
-                            switch(command.get(1).asVocab())
+                            switch(command.get(1).asVocab32())
                             {
                                 case GET_S2C:
                                 {
@@ -848,10 +848,10 @@ public:
                                         {
                                             reply.clear();
                                             for(size_t i=0; i<xd.size(); i++)
-                                                reply.addDouble(xd[i]);
+                                                reply.addFloat64(xd[i]);
                                         }
                                         else
-                                            reply.addVocab(NACK);
+                                            reply.addVocab32(NACK);
                                     }
 
                                     break;
@@ -869,14 +869,14 @@ public:
                     {
                         if(command.size()>1)
                         {
-                            switch(command.get(1).asVocab())
+                            switch(command.get(1).asVocab32())
                             {
                                 case EXPLORE_TORSO:
                                 {
                                     if(motorThr->exploreTorso(command))
-                                        reply.addVocab(ACK);
+                                        reply.addVocab32(ACK);
                                     else
-                                        reply.addVocab(NACK);
+                                        reply.addVocab32(NACK);
 
                                     break;
                                 }
@@ -884,9 +884,9 @@ public:
                                 case EXPLORE_HAND:
                                 {
                                     if(motorThr->exploreHand(command))
-                                        reply.addVocab(ACK);
+                                        reply.addVocab32(ACK);
                                     else
-                                        reply.addVocab(NACK);
+                                        reply.addVocab32(NACK);
 
                                     break;
                                 }
@@ -894,7 +894,7 @@ public:
                                 default:
                                 {
                                     string rep=command.get(1).asString();
-                                    reply.addVocab(NACK);
+                                    reply.addVocab32(NACK);
                                     reply.addString("parameter '"+rep+"' not supported by 'explore' command.");
                                     break;
                                 }
@@ -902,7 +902,7 @@ public:
                         }
                         else
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             reply.addString("explore command needs further parameter (e.g. 'torso')");
                         }
                         break;
@@ -910,15 +910,15 @@ public:
 
                     case CMD_CALIBRATE:
                     {
-                        switch(command.get(1).asVocab())
+                        switch(command.get(1).asVocab32())
                         {
                             case CALIB_TABLE:
                             {
                                 idle = false;
                                 if(motorThr->calibTable(command))
-                                    reply.addVocab(ACK);
+                                    reply.addVocab32(ACK);
                                 else
-                                    reply.addVocab(NACK);
+                                    reply.addVocab32(NACK);
                                 idle = true;
                                 break;
                             }
@@ -926,9 +926,9 @@ public:
                              case CALIB_FINGERS:
                             {
                                 if(motorThr->calibFingers(command))
-                                    reply.addVocab(ACK);
+                                    reply.addVocab32(ACK);
                                 else
-                                    reply.addVocab(NACK);
+                                    reply.addVocab32(NACK);
 
                                 break;
                             }
@@ -942,21 +942,21 @@ public:
                                             visuoThr->getTarget(command.get(3),command);
                                     if (motorThr->startLearningModeKinOffset(command))
                                     {
-                                        reply.addVocab(ACK);
+                                        reply.addVocab32(ACK);
                                         reply.addString("learn kinematic offset mode: on");
                                     }
                                     else
-                                        reply.addVocab(NACK);
+                                        reply.addVocab32(NACK);
                                 }
                                 else if(command.get(2).asString()=="stop")
                                 {
                                     if(motorThr->suspendLearningModeKinOffset(command))
                                     {
-                                        reply.addVocab(ACK);
+                                        reply.addVocab32(ACK);
                                         reply.addString("learn kinematic offset mode: off");
                                     }
                                     else
-                                        reply.addVocab(NACK);
+                                        reply.addVocab32(NACK);
                                 }
 
                                 break;
@@ -979,14 +979,14 @@ public:
 
                             if(!motorThr->startLearningModeAction(command))
                             {
-                                reply.addVocab(NACK);
+                                reply.addVocab32(NACK);
                                 reply.addString("action "+action_name+" already known");
                             }
                             else
                             {
                                 motorThr->setGazeIdle();
                                 motorThr->lookAtHand(command);
-                                reply.addVocab(ACK);
+                                reply.addVocab32(ACK);
                                 reply.addString("start teaching");
                             }
                         }
@@ -996,11 +996,11 @@ public:
                             if(motorThr->suspendLearningModeAction(command))
                             {
                                 motorThr->setGazeIdle();
-                                reply.addVocab(ACK);
+                                reply.addVocab32(ACK);
                                 reply.addString("stop teaching");
                             }
                             else
-                                reply.addVocab(NACK);
+                                reply.addVocab32(NACK);
                         }
 
                         break;
@@ -1018,12 +1018,12 @@ public:
 
                         if(!motorThr->imitateAction(command))
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             reply.addString("action "+action_name+" unknown");
                         }
                         else
                         {
-                            reply.addVocab(ACK);
+                            reply.addVocab32(ACK);
                             reply.addString("action "+action_name+" done");
                         }
                         motorThr->setGazeIdle();
@@ -1059,7 +1059,7 @@ public:
                     {
                         if(!motorThr->isHolding(command))
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             reply.addString("Nothing to observe. Not holding anything");
                             motorThr->release(command);
                             motorThr->goHome(command);
@@ -1069,7 +1069,7 @@ public:
                         motorThr->lookAtHand(command);
                         motorThr->drawNear(command);
 
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
 
                         break;
                     }
@@ -1081,7 +1081,7 @@ public:
                             motorThr->setGazeIdle();
                             motorThr->release(command);
                             motorThr->goHome(command);
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1100,14 +1100,14 @@ public:
                                 motorThr->goHome(b);
                             }
 
-                            reply.addVocab(ACK);
+                            reply.addVocab32(ACK);
                         }
                         else
                         {
                            motorThr->setGazeIdle();
                            motorThr->release(command);
                            motorThr->goHome(command);
-                           reply.addVocab(NACK);
+                           reply.addVocab32(NACK);
                         }
 
                         break;
@@ -1117,7 +1117,7 @@ public:
                     {
                         if(!motorThr->isHolding(command))
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             reply.addString("Nothing to give. Not holding anything");
                             motorThr->release(command);
                             motorThr->goHome(command);
@@ -1129,7 +1129,7 @@ public:
                        motorThr->setGazeIdle();
                        motorThr->release(command);
                        motorThr->goHome(command);
-                       reply.addVocab(NACK);
+                       reply.addVocab32(NACK);
 
                         break;
                     }
@@ -1149,7 +1149,7 @@ public:
                         motorThr->goHome(command);
                         motorThr->setGazeIdle();
 
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
                         idle = true;
                         break;
                     }
@@ -1159,7 +1159,7 @@ public:
                         idle = false;
                         if(command.size()<2)
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1168,7 +1168,7 @@ public:
                         command.addString("pretake_hand");
                         if(!motorThr->reach(command))
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1193,7 +1193,7 @@ public:
                                 }
                             }
 
-                            reply.addVocab(ACK);
+                            reply.addVocab32(ACK);
                         }
                         else
                         {
@@ -1206,7 +1206,7 @@ public:
                                motorThr->goHome(command);
                            }
 
-                           reply.addVocab(NACK);
+                           reply.addVocab32(NACK);
                         }
                         idle = true;
 
@@ -1218,7 +1218,7 @@ public:
                         idle = false;
                         if (command.size()<2)
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1236,7 +1236,7 @@ public:
                                 motorThr->goHome(b);
                             }
 
-                            reply.addVocab(ACK);
+                            reply.addVocab32(ACK);
                         }
                         else
                         {
@@ -1245,7 +1245,7 @@ public:
                             if (!check(command,"still"))
                                 motorThr->goHome(command);
 
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                         }
 
                         idle = true;
@@ -1256,7 +1256,7 @@ public:
                     {
                          if(command.size()<2)
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1265,7 +1265,7 @@ public:
                         command.addString("touch");
                         if(!motorThr->reach(command))
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1276,7 +1276,7 @@ public:
                             motorThr->goHome(command);
                         }
 
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
                         break;
                     }
 
@@ -1284,7 +1284,7 @@ public:
                     {
                         if(command.size()<2)
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1292,7 +1292,7 @@ public:
 
                         if (!motorThr->push(command))
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1303,7 +1303,7 @@ public:
                             motorThr->goHome(command);
                         }
 
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
                         break;
                     }
 
@@ -1311,7 +1311,7 @@ public:
                     {
                         if(command.size()<2)
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1319,7 +1319,7 @@ public:
 
                         if(!motorThr->point(command))
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1329,14 +1329,14 @@ public:
                             motorThr->goHome(command);
                         }
 
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
                         break;
                     }
                     case CMD_POINT_FAR:
                     {
                         if(command.size()<2)
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1344,7 +1344,7 @@ public:
 
                         if(!motorThr->point_far(command))
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1354,14 +1354,14 @@ public:
                             motorThr->goHome(command);
                         }
 
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
                         break;
                     }
                     case CMD_LOOK:
                     {
                         if(command.size()<2)
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
@@ -1370,41 +1370,41 @@ public:
 
                         if(!motorThr->look(command))
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
                         break;
                     }
 
                     case CMD_TRACK:
                     {
-                        if (command.get(1).asVocab()!=Vocab::encode("motion"))
+                        if (command.get(1).asVocab32()!=Vocab32::encode("motion"))
                             visuoThr->getTarget(command.get(1),command);
                         else
                             visuoThr->trackMotion();
 
                         motorThr->track(command);
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
                         break;
                     }
                     case CMD_TAKE_TOOL:
                     {
                         if (command.size()<2)
                         {
-                            reply.addVocab(NACK);
+                            reply.addVocab32(NACK);
                             break;
                         }
 
                         motorThr->takeTool(command);
-                        reply.addVocab(ACK);
+                        reply.addVocab32(ACK);
 
                         break;
                     }
                     default:
                     {
-                        reply.addVocab(NACK);
+                        reply.addVocab32(NACK);
                         break;
                     }
                 }
@@ -1414,7 +1414,7 @@ public:
 
         if(reply.isNull() || reply.size()==0)
         {
-            reply.addVocab(NACK);
+            reply.addVocab32(NACK);
             reply.addString("Random Error");
         }
 

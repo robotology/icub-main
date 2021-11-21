@@ -243,20 +243,20 @@ bool SocketCan::open(yarp::os::Searchable &par)
     int txTimeout=500;
     int rxTimeout=500;
 
-                         netId=par.check("CanDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
-    if  (netId == -1)    netId=par.check("canDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
+                         netId=par.check("CanDeviceNum", Value(-1), "numeric identifier of the can device").asInt32();
+    if  (netId == -1)    netId=par.check("canDeviceNum", Value(-1), "numeric identifier of the can device").asInt32();
     
-                           txTimeout=par.check("CanTxTimeout", Value(500), "timeout on transmission [ms]").asInt();
-    if  (txTimeout == 500) txTimeout=par.check("canTxTimeout", Value(500), "timeout on transmission [ms]").asInt();
+                           txTimeout=par.check("CanTxTimeout", Value(500), "timeout on transmission [ms]").asInt32();
+    if  (txTimeout == 500) txTimeout=par.check("canTxTimeout", Value(500), "timeout on transmission [ms]").asInt32();
     
-                           rxTimeout=par.check("CanRxTimeout", Value(500), "timeout on receive when calling blocking read [ms]").asInt() ;
-    if  (rxTimeout == 500) rxTimeout=par.check("canRxTimeout", Value(500), "timeout on receive when calling blocking read [ms]").asInt() ;
+                           rxTimeout=par.check("CanRxTimeout", Value(500), "timeout on receive when calling blocking read [ms]").asInt32() ;
+    if  (rxTimeout == 500) rxTimeout=par.check("canRxTimeout", Value(500), "timeout on receive when calling blocking read [ms]").asInt32() ;
 
-                                      canTxQueue=par.check("CanTxQueue", Value(TX_QUEUE_SIZE), "length of tx buffer").asInt();
-    if  (canTxQueue == TX_QUEUE_SIZE) canTxQueue=par.check("canTxQueue", Value(TX_QUEUE_SIZE), "length of tx buffer").asInt();
+                                      canTxQueue=par.check("CanTxQueue", Value(TX_QUEUE_SIZE), "length of tx buffer").asInt32();
+    if  (canTxQueue == TX_QUEUE_SIZE) canTxQueue=par.check("canTxQueue", Value(TX_QUEUE_SIZE), "length of tx buffer").asInt32();
     
-                                      canRxQueue=par.check("CanRxQueue", Value(RX_QUEUE_SIZE), "length of rx buffer").asInt() ;
-    if  (canRxQueue == RX_QUEUE_SIZE) canRxQueue=par.check("canRxQueue", Value(RX_QUEUE_SIZE), "length of rx buffer").asInt() ;
+                                      canRxQueue=par.check("CanRxQueue", Value(RX_QUEUE_SIZE), "length of rx buffer").asInt32() ;
+    if  (canRxQueue == RX_QUEUE_SIZE) canRxQueue=par.check("canRxQueue", Value(RX_QUEUE_SIZE), "length of rx buffer").asInt32() ;
 
    int so_timestamping_flags = 0;
    /* Create the socket */

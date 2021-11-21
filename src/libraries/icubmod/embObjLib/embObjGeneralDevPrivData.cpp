@@ -20,10 +20,10 @@ yarp::dev::embObjDevPrivData::embObjDevPrivData(std::string name):deviceNameType
     res = nullptr;
     behFlags.opened = false;
 
-    std::string tmp = yarp::conf::environment::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::get_string("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
-        behFlags.verbosewhenok = (bool)NetType::toInt(tmp);
+        behFlags.verbosewhenok = (bool)(yarp::conf::numeric::from_string(tmp, 0U));
     }
     else
     {

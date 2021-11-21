@@ -82,8 +82,8 @@ public:
     virtual bool configure(yarp::os::Searchable& config) {
         bool success = false;
         // format: set c dbl
-        if(config.find("gamma").isDouble() || config.find("gamma").isInt()) {
-            this->setGamma(config.find("gamma").asDouble());
+        if(config.find("gamma").isFloat64() || config.find("gamma").isInt32()) {
+            this->setGamma(config.find("gamma").asFloat64());
             success = true;
         }
         return success;

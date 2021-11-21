@@ -59,15 +59,15 @@ bool IScaler::fromString(const std::string& str) {
 }
 
 void IScaler::writeBottle(yarp::os::Bottle& bot) {
-    bot.addDouble(this->offset);
-    bot.addDouble(this->scale);
-    bot.addInt((this->updateEnabled ? 1 : 0));
+    bot.addFloat64(this->offset);
+    bot.addFloat64(this->scale);
+    bot.addInt32((this->updateEnabled ? 1 : 0));
 }
 
 void IScaler::readBottle(yarp::os::Bottle& bot) {
-    this->updateEnabled = (bot.pop().asInt() == 1);
-    this->scale = bot.pop().asDouble();
-    this->offset = bot.pop().asDouble();
+    this->updateEnabled = (bot.pop().asInt32() == 1);
+    this->scale = bot.pop().asFloat64();
+    this->offset = bot.pop().asFloat64();
 }
 
 bool IScaler::configure(yarp::os::Searchable& config) {

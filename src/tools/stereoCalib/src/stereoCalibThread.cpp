@@ -21,16 +21,16 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->outNameLeft       +=rf.check("outLeft",Value("/cam/left:o"),"Output image port (string)").asString().c_str();
 
     Bottle stereoCalibOpts=rf.findGroup("STEREO_CALIBRATION_CONFIGURATION");
-    this->boardWidth=  stereoCalibOpts.check("boardWidth", Value(8)).asInt();
-    this->boardHeight= stereoCalibOpts.check("boardHeight", Value(6)).asInt();
-    this->numOfPairs= stereoCalibOpts.check("numberOfPairs", Value(30)).asInt();
-    this->squareSize= (float)stereoCalibOpts.check("boardSize", Value(0.09241)).asDouble();
+    this->boardWidth=  stereoCalibOpts.check("boardWidth", Value(8)).asInt32();
+    this->boardHeight= stereoCalibOpts.check("boardHeight", Value(6)).asInt32();
+    this->numOfPairs= stereoCalibOpts.check("numberOfPairs", Value(30)).asInt32();
+    this->squareSize= (float)stereoCalibOpts.check("boardSize", Value(0.09241)).asFloat64();
     this->boardType=  stereoCalibOpts.check("boardType", Value("CHESSBOARD")).asString();
     this->commandPort=commPort;
     this->imageDir=imageDir;
     this->startCalibration=0;
     this->currentPathDir=rf.getHomeContextPath().c_str();
-    int tmp=stereoCalibOpts.check("MonoCalib", Value(0)).asInt();
+    int tmp=stereoCalibOpts.check("MonoCalib", Value(0)).asInt32();
     this->stereo= tmp?false:true;
     this->camCalibFile=rf.getHomeContextPath().c_str();
     this->standalone = rf.check("standalone");

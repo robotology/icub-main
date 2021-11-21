@@ -41,7 +41,7 @@ public:
         {
             if (command.get(0).asString()=="help")
             {
-                reply.addVocab(Vocab::encode("many"));
+                reply.addVocab32("many");
                 reply.addString("Available commands:");
                 reply.addString("currently nothing");
                 return true;
@@ -127,11 +127,11 @@ public:
         double target_limiter = 1.0; //deg
         if (options.check("joints_limiter"))
         {
-            joints_limiter = options.find("joints_limiter").asDouble();
+            joints_limiter = options.find("joints_limiter").asFloat64();
         }
         if (options.check("target_limiter"))
         {
-            target_limiter = options.find("target_limiter").asDouble();
+            target_limiter = options.find("target_limiter").asFloat64();
         }
 
         yDebug() << "joints_limiter:" << joints_limiter;
@@ -147,7 +147,7 @@ public:
         ///starting the thread
         int period = CONTROL_PERIOD;
         if(options.check("period"))
-            period = options.find("period").asInt();
+            period = options.find("period").asInt32();
         
         yInfo("control rate is %d ms",period);
 

@@ -94,13 +94,13 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     }
 
     int TypeArm = p.findGroup("GENERAL").check("Type",Value(1),
-                                          "what did the user select?").asInt();
+                                          "what did the user select?").asInt32();
 
     int numTOTjoints = p.findGroup("GENERAL").check("TotalJoints",Value(1),
-                                          "Number of total joints").asInt();
+                                          "Number of total joints").asInt32();
 
     double velocity = p.findGroup("GENERAL").check("Vel",Value(1),
-                                          "Default velocity").asDouble();
+                                          "Default velocity").asFloat64();
     _mutex.lock();
     partSelec = TypeArm;
 
@@ -192,37 +192,37 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         yError("AxisMap does not have the right number of entries\n");
         return false;
     }
-    for (int i = 1; i < xtmp.size(); i++) axisMap[i-1] = xtmp.get(i).asInt();
+    for (int i = 1; i < xtmp.size(); i++) axisMap[i-1] = xtmp.get(i).asInt32();
 
     xtmp = p.findGroup("GENERAL").findGroup("Encoder","a list of scales for the encoders");
     if (xtmp.size() != njoints+1) {
         yError("Encoder does not have the right number of entries\n");
         return false;
     }
-    for (int i = 1; i < xtmp.size(); i++) angleToEncoder[i-1] = xtmp.get(i).asDouble();
+    for (int i = 1; i < xtmp.size(); i++) angleToEncoder[i-1] = xtmp.get(i).asFloat64();
 
     xtmp = p.findGroup("GENERAL").findGroup("fullscalePWM", "a list of scales for the fullscalePWM param");
     if (xtmp.size() != njoints + 1) {
         yError("fullscalePWM does not have the right number of entries\n");
         return false;
     }
-    for (int i = 1; i < xtmp.size(); i++) dutycycleToPwm[i - 1] = xtmp.get(i).asDouble()/100.0;
+    for (int i = 1; i < xtmp.size(); i++) dutycycleToPwm[i - 1] = xtmp.get(i).asFloat64()/100.0;
 
     xtmp = p.findGroup("GENERAL").findGroup("ampsToSensor", "a list of scales for the ampsToSensor param");
     if (xtmp.size() != njoints + 1) {
         yError("ampsToSensor does not have the right number of entries\n");
         return false;
     }
-    for (int i = 1; i < xtmp.size(); i++) ampsToSensor[i - 1] = xtmp.get(i).asDouble();
+    for (int i = 1; i < xtmp.size(); i++) ampsToSensor[i - 1] = xtmp.get(i).asFloat64();
 
     xtmp = p.findGroup("GENERAL").findGroup("Zeros","a list of offsets for the zero point");
     if (xtmp.size() != njoints+1) {
         yError("Zeros does not have the right number of entries\n");
         return false;
     }
-    for (int i = 1; i < xtmp.size(); i++) zeros[i-1] = xtmp.get(i).asDouble();
+    for (int i = 1; i < xtmp.size(); i++) zeros[i-1] = xtmp.get(i).asFloat64();
 
-    int mj_size = p.findGroup("GENERAL").check("Kinematic_mj_size",Value(0),"Default velocity").asInt();
+    int mj_size = p.findGroup("GENERAL").check("Kinematic_mj_size",Value(0),"Default velocity").asInt32();
     if (mj_size>0)
     {
          xtmp = p.findGroup("GENERAL").findGroup("Kinematic_mj");
@@ -234,7 +234,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
             for (int r = 0; r < mj_size; r++)
             {
                 int e=r+c*mj_size+1;
-                kinematic_mj[r][c] = xtmp.get(e).asDouble();
+                kinematic_mj[r][c] = xtmp.get(e).asFloat64();
             }
     }
 
@@ -254,7 +254,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
             return false;
         }
     for( int i =1;i<xtmp.size();i++ ) 
-        limitsMax[i-1] = xtmp.get(i).asDouble()*angleToEncoder[i-1];
+        limitsMax[i-1] = xtmp.get(i).asFloat64()*angleToEncoder[i-1];
     
     //max velocity
     for (int i = 1; i < xtmp.size(); i++)
@@ -270,7 +270,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
             return false;
         }
     for(int i =1;i<xtmp.size();i++)
-        limitsMin[i-1] = xtmp.get(i).asDouble()*angleToEncoder[i-1];
+        limitsMin[i-1] = xtmp.get(i).asFloat64()*angleToEncoder[i-1];
 
     xtmp = p.findGroup("LIMITS").findGroup("error_tol","error tolerance during tracking");
     if(xtmp.size() != njoints+1)
@@ -279,7 +279,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
             return false;
         }
     for(int i=1;i<xtmp.size();i++)
-        error_tol[i-1] = xtmp.get(i).asDouble()*angleToEncoder[i-1];
+        error_tol[i-1] = xtmp.get(i).asFloat64()*angleToEncoder[i-1];
 
     for(int axis =0;axis<njoints;axis++)
     {
@@ -1727,47 +1727,47 @@ bool iCubSimulationControl::getRemoteVariableRaw(string key, yarp::os::Bottle& v
     }
     else if (key == "rotor")
     {
-        Bottle& r = val.addList(); for (int i=0; i<njoints; i++) r.addDouble(rotToEncoder[i]); return true;
+        Bottle& r = val.addList(); for (int i=0; i<njoints; i++) r.addFloat64(rotToEncoder[i]); return true;
     }
     else if (key == "gearbox")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addDouble(gearbox[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addFloat64(gearbox[i]); return true;
     }
     else if (key == "zeros")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addDouble(zeros[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addFloat64(zeros[i]); return true;
     }
     else if (key == "hasHallSensor")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt(hasHallSensor[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt32(hasHallSensor[i]); return true;
     }
     else if (key == "hasTempSensor")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt(hasTempSensor[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt32(hasTempSensor[i]); return true;
     }
     else if (key == "hasRotorEncoder")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt(hasRotorEncoder[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt32(hasRotorEncoder[i]); return true;
     }
     else if (key == "rotorIndexOffset")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt(rotorIndexOffset[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt32(rotorIndexOffset[i]); return true;
     }
     else if (key == "motorPoles")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt(motorPoles[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt32(motorPoles[i]); return true;
     }
     else if (key == "pidCurrentKp")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addDouble(current_pid[i].kp); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addFloat64(current_pid[i].kp); return true;
     }
     else if (key == "pidCurrentKi")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addDouble(current_pid[i].ki); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addFloat64(current_pid[i].ki); return true;
     }
     else if (key == "pidCurrentShift")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addDouble(current_pid[i].scale); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addFloat64(current_pid[i].scale); return true;
     }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
@@ -1791,16 +1791,16 @@ bool iCubSimulationControl::setRemoteVariableRaw(string key, const yarp::os::Bot
     else if (key == "rotor")
     {
         for (int i = 0; i < njoints; i++)
-            rotToEncoder[i] = bval->get(i).asDouble();
+            rotToEncoder[i] = bval->get(i).asFloat64();
         return true;
     }
     else if (key == "gearbox")
     {
-        for (int i = 0; i < njoints; i++) gearbox[i] = bval->get(i).asDouble(); return true;
+        for (int i = 0; i < njoints; i++) gearbox[i] = bval->get(i).asFloat64(); return true;
     }
     else if (key == "zeros")
     {
-        for (int i = 0; i < njoints; i++) zeros[i] = bval->get(i).asDouble(); return true;
+        for (int i = 0; i < njoints; i++) zeros[i] = bval->get(i).asFloat64(); return true;
     }
     yWarning("setRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
@@ -2153,7 +2153,7 @@ bool iCubSimulationControl::setControlModeRaw(const int j, const int mode)
         tmp = ControlModes_yarp2iCubSIM(mode);
         if(tmp == MODE_UNKNOWN)
         {
-            yError() << "setControlModeRaw: unknown control mode " << yarp::os::Vocab::decode(mode);
+            yError() << "setControlModeRaw: unknown control mode " << yarp::os::Vocab32::decode(mode);
         }
         else if (controlMode[j] == VOCAB_CM_HW_FAULT && mode != VOCAB_CM_FORCE_IDLE)
         {

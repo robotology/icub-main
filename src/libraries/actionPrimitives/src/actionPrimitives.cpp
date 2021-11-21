@@ -407,7 +407,7 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key)
     {
         Bottle info;
         cartCtrl->getInfo(info);
-        double hwver=info.find("arm_version").asDouble();
+        double hwver=info.find("arm_version").asFloat64();
         map<string,int> remap{{ACTIONPRIM_TORSO_PITCH,0},{ACTIONPRIM_TORSO_ROLL,1},{ACTIONPRIM_TORSO_YAW,2}};
         if (hwver>=3.0)
         {
@@ -432,8 +432,8 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key)
 
             cartCtrl->getLimits(j,&min,&max);
 
-            min=opt.check(minKey,Value(min)).asDouble();
-            max=opt.check(maxKey,Value(max)).asDouble();
+            min=opt.check(minKey,Value(min)).asFloat64();
+            max=opt.check(maxKey,Value(max)).asFloat64();
 
             cartCtrl->setLimits(j,min,max);
             cartCtrl->getLimits(j,&min,&max);
@@ -485,7 +485,7 @@ bool ActionPrimitives::configHandSeq(Property &opt)
             return false;
         }
 
-        int numSequences=bGeneral.find("numSequences").asInt();
+        int numSequences=bGeneral.find("numSequences").asInt32();
 
         // SEQUENCE groups
         for (int i=0; i<numSequences; i++)
@@ -596,12 +596,12 @@ bool ActionPrimitives::open(Property &opt)
     robot=opt.check("robot",Value("icub")).asString();
     local=opt.find("local").asString();
     part=opt.check("part",Value(ACTIONPRIM_DEFAULT_PART)).asString();
-    default_exec_time=opt.check("default_exec_time",Value(ACTIONPRIM_DEFAULT_EXECTIME)).asDouble();
+    default_exec_time=opt.check("default_exec_time",Value(ACTIONPRIM_DEFAULT_EXECTIME)).asFloat64();
     tracking_mode=opt.check("tracking_mode",Value(ACTIONPRIM_DEFAULT_TRACKINGMODE)).asString()=="on"?true:false;
     verbose=opt.check("verbosity",Value(ACTIONPRIM_DEFAULT_VERBOSITY)).asString()=="on"?true:false;    
 
-    int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt();    
-    double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asDouble();
+    int period=opt.check("thread_period",Value(ACTIONPRIM_DEFAULT_PER)).asInt32();    
+    double reach_tol=opt.check("reach_tol",Value(ACTIONPRIM_DEFAULT_REACHTOL)).asFloat64();
 
     // create the model for grasp detection (if any)
     if (!configGraspModel(opt))
@@ -763,7 +763,7 @@ bool ActionPrimitives::isHandSeqEnded()
         // span over fingers
         for (int fng=0; fng<5; fng++)
         {
-            double val=pB->get(fng).asDouble();
+            double val=pB->get(fng).asFloat64();
             double thres=curGraspDetectionThres[fng];
 
             // detect contact on the finger
@@ -1562,7 +1562,7 @@ bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &s
         return false;
     }
 
-    int numWayPoints=sequence.find("numWayPoints").asInt();
+    int numWayPoints=sequence.find("numWayPoints").asInt32();
     bool ret=false;
 
     for (int j=0; j<numWayPoints; j++)
@@ -1611,27 +1611,27 @@ bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &s
         Vector poss(bPoss->size());
 
         for (size_t k=0; k<poss.length(); k++)
-            poss[k]=bPoss->get(k).asDouble();
+            poss[k]=bPoss->get(k).asFloat64();
 
         Bottle *bVels=bWP.find("vels").asList();
         Vector vels(bVels->size());
 
         for (size_t k=0; k<vels.length(); k++)
-            vels[k]=bVels->get(k).asDouble();
+            vels[k]=bVels->get(k).asFloat64();
 
         Bottle *bTols=bWP.find("tols").asList();
         Vector tols(bTols->size());
 
         for (size_t k=0; k<tols.length(); k++)
-            tols[k]=bTols->get(k).asDouble();
+            tols[k]=bTols->get(k).asFloat64();
 
         Bottle *bThres=bWP.find("thres").asList();
         Vector thres(bThres->size());
 
         for (size_t k=0; k<thres.length(); k++)
-            thres[k]=bThres->get(k).asDouble();
+            thres[k]=bThres->get(k).asFloat64();
 
-        double tmo=bWP.find("tmo").asDouble();
+        double tmo=bWP.find("tmo").asFloat64();
 
         if (addHandSeqWP(handSeqKey,poss,vels,tols,thres,tmo))
             ret=true;   // at least one WP has been added
@@ -1695,7 +1695,7 @@ bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequenc
         // numWayPoints part
         Bottle &bNum=sequence.addList();
         bNum.addString("numWayPoints");
-        bNum.addInt((int)handWP.size());
+        bNum.addInt32((int)handWP.size());
         
         // wayPoints parts
         for (unsigned int i=0; i<handWP.size(); i++)
@@ -1711,33 +1711,33 @@ bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequenc
             bPoss.addString("poss");
             Bottle &bPossVects=bPoss.addList();
             for (size_t j=0; j<handWP[i].poss.length(); j++)
-                bPossVects.addDouble(handWP[i].poss[j]);
+                bPossVects.addFloat64(handWP[i].poss[j]);
 
             // vels part
             Bottle &bVels=bWP.addList();
             bVels.addString("vels");
             Bottle &bVelsVects=bVels.addList();
             for (size_t j=0; j<handWP[i].vels.length(); j++)
-                bVelsVects.addDouble(handWP[i].vels[j]);
+                bVelsVects.addFloat64(handWP[i].vels[j]);
 
             // tols part
             Bottle &bTols=bWP.addList();
             bTols.addString("tols");
             Bottle &bTolsVects=bTols.addList();
             for (size_t j=0; j<handWP[i].tols.length(); j++)
-                bTolsVects.addDouble(handWP[i].tols[j]);
+                bTolsVects.addFloat64(handWP[i].tols[j]);
 
             // thres part
             Bottle &bThres=bWP.addList();
             bThres.addString("thres");
             Bottle &bThresVects=bThres.addList();
             for (size_t j=0; j<handWP[i].thres.length(); j++)
-                bThresVects.addDouble(handWP[i].thres[j]);
+                bThresVects.addFloat64(handWP[i].thres[j]);
 
             // tmo part
             Bottle &bTmo=bWP.addList();
             bTmo.addString("tmo");
-            bTmo.addDouble(handWP[i].tmo);
+            bTmo.addFloat64(handWP[i].tmo);
         }       
 
         return true;
@@ -2251,7 +2251,7 @@ bool ActionPrimitivesLayer2::open(Property &opt)
 
     if (configured)
     {
-        ext_force_thres=opt.check("ext_force_thres",Value(std::numeric_limits<double>::max())).asDouble();
+        ext_force_thres=opt.check("ext_force_thres",Value(std::numeric_limits<double>::max())).asFloat64();
         string wbdynStemName=opt.check("wbdyn_stem_name",Value(ACTIONPRIM_DEFAULT_WBDYN_STEMNAME)).asString();
         string wbdynPortName=opt.check("wbdyn_port_name",Value(ACTIONPRIM_DEFAULT_WBDYN_PORTNAME)).asString();
 

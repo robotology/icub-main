@@ -36,6 +36,7 @@
 #include "EoProtocolAS.h"
 
 #include <yarp/os/NetType.h>
+#include <yarp/conf/environment.h>
 
 #ifdef WIN32
 #pragma warning(once:4355)
@@ -93,7 +94,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     }
     else
     {
-        _period = xtmp.get(1).asInt();
+        _period = xtmp.get(1).asInt32();
         yDebug() << "embObjAnalogSensor::fromConfig() detects embObjAnalogSensor Using value of" << _period;
     }
 
@@ -107,7 +108,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     }
     else
     {
-        _channels = xtmp.get(1).asInt();
+        _channels = xtmp.get(1).asInt32();
     }
 
 #if 0
@@ -118,7 +119,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     }
     else
     {
-        _numofsensors = xtmp.get(1).asInt();
+        _numofsensors = xtmp.get(1).asInt32();
     }
 #endif
 
@@ -160,7 +161,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         }
         else
         {
-            format = xtmp.get(1).asInt();
+            format = xtmp.get(1).asInt32();
         }
 
         if((_channels==NUMCHANNEL_STRAIN) && (format==FORMATDATA_STRAIN))
@@ -219,7 +220,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         }
         else
         {
-            _useCalibration = xtmp.get(1).asInt();
+            _useCalibration = xtmp.get(1).asInt32();
         }
     }
 
@@ -251,10 +252,10 @@ embObjAnalogSensor::embObjAnalogSensor(): analogdata(0)
 
     opened = false;
 
-    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::get_string("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
-        verbosewhenok = (bool)NetType::toInt(tmp);
+        verbosewhenok = (bool)yarp::conf::numeric::from_string(tmp, 0U);
     }
     else
     {

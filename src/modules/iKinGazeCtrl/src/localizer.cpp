@@ -527,19 +527,19 @@ void Localizer::handleMonocularInput()
         if (mono->size()>=4)
         {
             string type=mono->get(0).asString();
-            double u=mono->get(1).asDouble();
-            double v=mono->get(2).asDouble();
+            double u=mono->get(1).asFloat64();
+            double v=mono->get(2).asFloat64();
             double z;
 
             bool ok=false;
-            if (mono->get(3).isDouble())
+            if (mono->get(3).isFloat64())
             {
-                z=mono->get(3).asDouble();
+                z=mono->get(3).asFloat64();
                 ok=true;
             }
             else if ((mono->get(3).asString()=="ver") && (mono->size()>=5))
             {
-                double ver=mono->get(4).asDouble();
+                double ver=mono->get(4).asFloat64();
                 z=getDistFromVergence(ver);
                 ok=true;
             }
@@ -567,10 +567,10 @@ void Localizer::handleStereoInput()
         {
             if (stereo->size()>=4)
             {
-                double ul=stereo->get(0).asDouble();
-                double vl=stereo->get(1).asDouble();
-                double ur=stereo->get(2).asDouble();
-                double vr=stereo->get(3).asDouble();
+                double ul=stereo->get(0).asFloat64();
+                double vl=stereo->get(1).asFloat64();
+                double ur=stereo->get(2).asFloat64();
+                double vr=stereo->get(3).asFloat64();
 
                 Vector ref(1), fb(1), fp;
                 double u, v;
@@ -617,9 +617,9 @@ void Localizer::handleAnglesInput()
             Vector ang(3);
         
             string type=angles->get(0).asString();
-            ang[0]=CTRL_DEG2RAD*angles->get(1).asDouble();
-            ang[1]=CTRL_DEG2RAD*angles->get(2).asDouble();
-            ang[2]=CTRL_DEG2RAD*angles->get(3).asDouble();
+            ang[0]=CTRL_DEG2RAD*angles->get(1).asFloat64();
+            ang[1]=CTRL_DEG2RAD*angles->get(2).asFloat64();
+            ang[2]=CTRL_DEG2RAD*angles->get(3).asFloat64();
 
             Vector xd=get3DPoint(type,ang);
             commData->port_xd->set_xd(xd);

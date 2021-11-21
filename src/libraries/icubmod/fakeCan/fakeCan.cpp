@@ -101,7 +101,7 @@ bool FakeCan::open(yarp::os::Searchable &par)
 
     //fprintf(stderr, "%s", par.toString().c_str());
 
-    int njoints=par.findGroup("GENERAL").find("Joints").asInt();
+    int njoints=par.findGroup("GENERAL").find("Joints").asInt32();
     Bottle &can = par.findGroup("CAN");
     Bottle ids=can.findGroup("CanAddresses");
 
@@ -114,7 +114,7 @@ bool FakeCan::open(yarp::os::Searchable &par)
     for(int i=1;i<=njoints/2;i++)
     {
         FakeBoard *tmp=new FakeBoard;
-        int id=ids.get(i).asInt();
+        int id=ids.get(i).asInt32();
         tmp->setId(id);   //just as a test
         tmp->setReplyFifo(&replies);
         tmp->start();

@@ -480,7 +480,7 @@ void TBR_CanBackDoor::onRead(Bottle &b)
     std::lock_guard<std::recursive_mutex> lck(*backdoor_mutex);
     //RANDAZ_TODO: parse vector b
     int len = b.size();
-    int commandId = b.get(0).asInt();
+    int commandId = b.get(0).asInt32();
     int i=0;
 
     static double timePrev=Time::now();
@@ -500,33 +500,33 @@ void TBR_CanBackDoor::onRead(Bottle &b)
     switch (commandId)
     {
         case 1: //shoulder torque message
-            dval[0] = b.get(1).asDouble(); //shoulder 1 pitch
-            dval[1] = b.get(2).asDouble(); //shoulder 2 roll
-            dval[2] = b.get(3).asDouble(); //shoulder 3 yaw
-            dval[3] = b.get(4).asDouble(); //elbow
-            dval[4] = b.get(5).asDouble(); //wrist pronosupination
+            dval[0] = b.get(1).asFloat64(); //shoulder 1 pitch
+            dval[1] = b.get(2).asFloat64(); //shoulder 2 roll
+            dval[2] = b.get(3).asFloat64(); //shoulder 3 yaw
+            dval[3] = b.get(4).asFloat64(); //elbow
+            dval[4] = b.get(5).asFloat64(); //wrist pronosupination
             dval[5] = 0; 
         break;
         case 2: //legs torque message
-            dval[0] = b.get(1).asDouble(); //hip pitch
-            dval[1] = b.get(2).asDouble(); //hip roll
-            dval[2] = b.get(3).asDouble(); //hip yaw
-            dval[3] = b.get(4).asDouble(); //knee
-            dval[4] = b.get(5).asDouble(); //ankle pitch
-            dval[5] = b.get(6).asDouble(); //ankle roll
+            dval[0] = b.get(1).asFloat64(); //hip pitch
+            dval[1] = b.get(2).asFloat64(); //hip roll
+            dval[2] = b.get(3).asFloat64(); //hip yaw
+            dval[3] = b.get(4).asFloat64(); //knee
+            dval[4] = b.get(5).asFloat64(); //ankle pitch
+            dval[5] = b.get(6).asFloat64(); //ankle roll
         break;
         case 3:
-            dval[0] = b.get(6).asDouble(); //wrist yaw
-            dval[1] = b.get(7).asDouble(); //wrist pitch
+            dval[0] = b.get(6).asFloat64(); //wrist yaw
+            dval[1] = b.get(7).asFloat64(); //wrist pitch
             dval[2] = 0;
             dval[3] = 0;
             dval[4] = 0;
             dval[5] = 0; 
         break;
         case 4:
-            dval[0] = b.get(1).asDouble(); //torso yaw (respect gravity)
-            dval[1] = b.get(2).asDouble(); //torso roll (lateral movement)
-            dval[2] = b.get(3).asDouble(); //torso pitch (front-back movement)
+            dval[0] = b.get(1).asFloat64(); //torso yaw (respect gravity)
+            dval[1] = b.get(2).asFloat64(); //torso roll (lateral movement)
+            dval[2] = b.get(3).asFloat64(); //torso pitch (front-back movement)
             dval[3] = 0;
             dval[4] = 0;
             dval[5] = 0; 
@@ -1015,7 +1015,7 @@ bool CanBusMotionControlParameters:: setBroadCastMask(Bottle &list, int MASK)
 {
     if (list.size()==2)
     {
-        if (list.get(1).asInt()==1)
+        if (list.get(1).asInt32()==1)
         {
             for(int j=0;j<_njoints;j++)
                 _broadcast_mask[j]|=(1<<(MASK-1));
@@ -1027,7 +1027,7 @@ bool CanBusMotionControlParameters:: setBroadCastMask(Bottle &list, int MASK)
     {
         for(int k=0;k<_njoints;k++)
         {
-            if ((list.get(k+1).asInt())==1)
+            if ((list.get(k+1).asInt32())==1)
                 {
                     int tmp=_axisMap[k];//remap
                     _broadcast_mask[tmp]|=(1<<(MASK-1));
@@ -1048,20 +1048,20 @@ bool CanBusMotionControlParameters::parsePosPidsGroup_OldFormat(Bottle& pidsGrou
         sprintf(tmp, "Pid%d", j); 
 
         Bottle &xtmp = pidsGroup.findGroup(tmp);
-        myPid[j].kp = xtmp.get(1).asDouble();
-        myPid[j].kd = xtmp.get(2).asDouble();
-        myPid[j].ki = xtmp.get(3).asDouble();
+        myPid[j].kp = xtmp.get(1).asFloat64();
+        myPid[j].kd = xtmp.get(2).asFloat64();
+        myPid[j].ki = xtmp.get(3).asFloat64();
 
-        myPid[j].max_int = xtmp.get(4).asDouble();
-        myPid[j].max_output = xtmp.get(5).asDouble();
+        myPid[j].max_int = xtmp.get(4).asFloat64();
+        myPid[j].max_output = xtmp.get(5).asFloat64();
 
-        myPid[j].scale = xtmp.get(6).asDouble();
-        myPid[j].offset = xtmp.get(7).asDouble();
+        myPid[j].scale = xtmp.get(6).asFloat64();
+        myPid[j].offset = xtmp.get(7).asFloat64();
 
         if (xtmp.size()==10)
         {
-            myPid[j].stiction_up_val = xtmp.get(8).asDouble();
-            myPid[j].stiction_down_val = xtmp.get(9).asDouble();
+            myPid[j].stiction_up_val = xtmp.get(8).asFloat64();
+            myPid[j].stiction_down_val = xtmp.get(9).asFloat64();
         }
     }
     return true;
@@ -1076,20 +1076,20 @@ bool CanBusMotionControlParameters::parseTrqPidsGroup_OldFormat(Bottle& pidsGrou
         sprintf(tmp, "TPid%d", j); 
 
         Bottle &xtmp = pidsGroup.findGroup(tmp);
-        myPid[j].kp = xtmp.get(1).asDouble();
-        myPid[j].kd = xtmp.get(2).asDouble();
-        myPid[j].ki = xtmp.get(3).asDouble();
+        myPid[j].kp = xtmp.get(1).asFloat64();
+        myPid[j].kd = xtmp.get(2).asFloat64();
+        myPid[j].ki = xtmp.get(3).asFloat64();
 
-        myPid[j].max_int = xtmp.get(4).asDouble();
-        myPid[j].max_output = xtmp.get(5).asDouble();
+        myPid[j].max_int = xtmp.get(4).asFloat64();
+        myPid[j].max_output = xtmp.get(5).asFloat64();
 
-        myPid[j].scale = xtmp.get(6).asDouble();
-        myPid[j].offset = xtmp.get(7).asDouble();
+        myPid[j].scale = xtmp.get(6).asFloat64();
+        myPid[j].offset = xtmp.get(7).asFloat64();
 
         if (xtmp.size()==10)
         {
-            myPid[j].stiction_up_val = xtmp.get(8).asDouble();
-            myPid[j].stiction_down_val = xtmp.get(9).asDouble();
+            myPid[j].stiction_up_val = xtmp.get(8).asFloat64();
+            myPid[j].stiction_down_val = xtmp.get(9).asFloat64();
         }
     }
     return true;
@@ -1099,21 +1099,21 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     int j=0;
     Bottle xtmp;
 
-    if (!validate(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "maxOutput", "Pid maxOutput parameter", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints+1))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints+1))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "maxOutput", "Pid maxOutput parameter", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints+1))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints+1))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asFloat64();
 
     //optional kff
     xtmp = pidsGroup.findGroup("kff");         
     if (!xtmp.isNull())
     {
-        for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+        for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asFloat64();
     }
     else
     {
@@ -1127,8 +1127,8 @@ bool CanBusMotionControlParameters::parseImpedanceGroup_NewFormat(Bottle& pidsGr
 {
     int j=0;
     Bottle xtmp;
-    if (!validate(pidsGroup, xtmp, "stiffness", "Pid stiffness parameter", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].stiffness = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "damping", "Pid damping parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) vals[j].damping   = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "stiffness", "Pid stiffness parameter", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].stiffness = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "damping", "Pid damping parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) vals[j].damping   = xtmp.get(j+1).asFloat64();
     return true;
 }
 
@@ -1137,14 +1137,14 @@ bool CanBusMotionControlParameters::parseDebugGroup_NewFormat(Bottle& pidsGroup,
     int j=0;
     Bottle xtmp;
 
-    if (!validate(pidsGroup, xtmp, "debug0", "debug0", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[0] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug1", "debug1", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[1] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug2", "debug2", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[2] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug3", "debug3", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[3] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug4", "debug4", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[4] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug5", "debug5", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[5] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug6", "debug6", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[6] = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "debug7", "debug7", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[7] = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "debug0", "debug0", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[0] = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "debug1", "debug1", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[1] = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "debug2", "debug2", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[2] = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "debug3", "debug3", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[3] = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "debug4", "debug4", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[4] = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "debug5", "debug5", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[5] = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "debug6", "debug6", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[6] = xtmp.get(j+1).asFloat64();
+    if (!validate(pidsGroup, xtmp, "debug7", "debug7", _njoints+1))       return false; for (j=0; j<_njoints; j++) vals[j].data[7] = xtmp.get(j+1).asFloat64();
 
     return true;
 }
@@ -1158,7 +1158,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     std::string dbg_string = p.toString().c_str();
     int i;
     int nj = p.findGroup("GENERAL").check("Joints",Value(1),
-        "Number of degrees of freedom").asInt();
+        "Number of degrees of freedom").asInt32();
     alloc(nj);
 
     // Check useRawEncoderData = do not use calibration data!
@@ -1236,10 +1236,10 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
     if (canGroup.check("CanForcedDeviceNum"))
     {
-        _networkN=canGroup.find("CanForcedDeviceNum").asInt();
+        _networkN=canGroup.find("CanForcedDeviceNum").asInt32();
     }
     else
-        _networkN=canGroup.check("CanDeviceNum",Value(-1), "numeric identifier of device").asInt();
+        _networkN=canGroup.check("CanDeviceNum",Value(-1), "numeric identifier of device").asInt32();
 
     //    yDebug<<can.toString();
     if (_networkN<0)
@@ -1249,26 +1249,26 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     }
 
     _my_address=canGroup.check("CanMyAddress",Value(0),
-                                 "numeric identifier of my address").asInt();
+                                 "numeric identifier of my address").asInt32();
 
     _polling_interval=canGroup.check("CanPollingInterval",Value(20),
-                                        "polling period").asInt();
+                                        "polling period").asInt32();
     
-    _timeout=canGroup.check("CanTimeout",Value(20),"timeout period").asInt();
+    _timeout=canGroup.check("CanTimeout",Value(20),"timeout period").asInt32();
 
-    _txTimeout=canGroup.check("CanTxTimeout", Value(20), "tx timeout").asInt();
-    _rxTimeout=canGroup.check("CanRxTimeout", Value(20), "rx timeout").asInt();
+    _txTimeout=canGroup.check("CanTxTimeout", Value(20), "tx timeout").asInt32();
+    _rxTimeout=canGroup.check("CanRxTimeout", Value(20), "rx timeout").asInt32();
 
     // default values for CanTxQueueSize/CanRxQueueSize should be the 
     // maximum, difficult to pick a correct value, let the driver 
     // decide on this
     if (canGroup.check("CanTxQueueSize"))
-        _txQueueSize=canGroup.find("CanTxQueueSize").asInt();
+        _txQueueSize=canGroup.find("CanTxQueueSize").asInt32();
     else
         _txQueueSize=-1;
 
     if (canGroup.check("CanRxQueueSize"))
-        _rxQueueSize=canGroup.find("CanRxQueueSize").asInt();
+        _rxQueueSize=canGroup.find("CanRxQueueSize").asInt32();
     else
         _rxQueueSize=-1;
 
@@ -1280,7 +1280,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
     }
     for (i = 1; i < canAddresses.size(); i++) {
-        _destinations[i-1] = (unsigned char)(canAddresses.get(i).asInt());
+        _destinations[i-1] = (unsigned char)(canAddresses.get(i).asInt32());
     }
 
     ////// GENERAL
@@ -1291,7 +1291,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
        
     for (i = 1; i < xtmp.size(); i++)
-        _axisMap[i-1] = xtmp.get(i).asInt();
+        _axisMap[i-1] = xtmp.get(i).asInt32();
     
     if (!validate(general, xtmp, "AxisName", "a list of strings representing the axes names", nj + 1))
     { 
@@ -1314,7 +1314,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
     int test = xtmp.size();
     for (i = 1; i < xtmp.size(); i++) 
-        _angleToEncoder[i-1] = xtmp.get(i).asDouble();
+        _angleToEncoder[i-1] = xtmp.get(i).asFloat64();
 
     if (!validate_optional(general, xtmp, "Rotor", "a list of scales for the rotor encoders", nj+1))
         {
@@ -1326,7 +1326,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         {
             int test = xtmp.size();
             for (i = 1; i < xtmp.size(); i++) 
-                _rotToEncoder[i-1] = xtmp.get(i).asDouble();
+                _rotToEncoder[i-1] = xtmp.get(i).asFloat64();
         }
 
     if (!validate(general, xtmp, "fullscalePWM", " list of scales for the fullscalePWM conversion factor", nj + 1))
@@ -1335,7 +1335,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
     }
     for (i = 1; i < xtmp.size(); i++)
-        _dutycycleToPwm[i - 1] = xtmp.get(i).asDouble()/100.0;
+        _dutycycleToPwm[i - 1] = xtmp.get(i).asFloat64()/100.0;
 
     if (!validate(general, xtmp, "ampsToSensor", "a list of scales for the ampsToSensor conversion factor", nj + 1))
     {
@@ -1343,13 +1343,13 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
     }
     for (i = 1; i < xtmp.size(); i++)
-        _ampsToSensor[i - 1] = xtmp.get(i).asDouble();
+        _ampsToSensor[i - 1] = xtmp.get(i).asFloat64();
 
     if (!validate(general, xtmp, "Zeros","a list of offsets for the zero point", nj+1))
         return false;
 
     for (i = 1; i < xtmp.size(); i++) 
-        _zeros[i-1] = xtmp.get(i).asDouble();
+        _zeros[i-1] = xtmp.get(i).asFloat64();
 
     if (useRawJointEncoderData)
     {
@@ -1383,7 +1383,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     }
     else
     {
-        for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
+        for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt32();
     }
     
     if (!validate_optional(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", nj+1))
@@ -1394,7 +1394,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     }
     else
     {
-        for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
+        for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt32();
     }
 
     if (!validate(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", nj+1))
@@ -1405,7 +1405,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     {
         for (i = 1; i < xtmp.size(); i++) 
         {
-                _maxTorque[i-1] = xtmp.get(i).asInt();
+                _maxTorque[i-1] = xtmp.get(i).asInt32();
                 _newtonsToSensor[i-1] = double(0x8000)/double(_maxTorque[i-1]);
         }
     }
@@ -1515,19 +1515,19 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            {
                 xtmp = trqControlGroup.findGroup("kbemf"); 
                 if (!xtmp.isNull())
-                {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asDouble();}
+                {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asFloat64();}
                 else
                 {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; yWarning ("TORQUE_PIDS: 'kbemf' param missing");}
 
                 xtmp = trqControlGroup.findGroup("ktau"); 
                 if (!xtmp.isNull())
-                {for (j=0;j<nj;j++) this->_ktau[j] = xtmp.get(j+1).asDouble();}
+                {for (j=0;j<nj;j++) this->_ktau[j] = xtmp.get(j+1).asFloat64();}
                 else
                 {for (j=0;j<nj;j++) this->_ktau[j] = 1.0; yWarning ("TORQUE_PIDS: 'ktau' param missing");}
                 
                 xtmp = trqControlGroup.findGroup("filterType"); 
                 if (!xtmp.isNull())
-                {for (j=0;j<nj;j++) this->_filterType[j] = xtmp.get(j+1).asInt();}
+                {for (j=0;j<nj;j++) this->_filterType[j] = xtmp.get(j+1).asInt32();}
                 else
                 {for (j=0;j<nj;j++) this->_filterType[j] = 3; yWarning ("TORQUE_PIDS: 'filterType' param missing");}
                 
@@ -1621,7 +1621,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     // motor oveload current
     if (!validate(limits, xtmp, "motorOverloadCurrents","a list of current limits", nj+1))
         return false;
-    for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
+    for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asFloat64();
 
     // Motor pwm limit
     if (!validate_optional(limits, xtmp, "motorPwmLimit", "a list of motor PWM limits", nj + 1))
@@ -1634,7 +1634,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     {
         for (i = 1; i < xtmp.size(); i++)
         {
-            _motorPwmLimits[i - 1] = xtmp.get(i).asDouble();
+            _motorPwmLimits[i - 1] = xtmp.get(i).asFloat64();
             if (_motorPwmLimits[i - 1] < 0)
             {
                 yError() << "motorPwmLimit should be a positive value";
@@ -1654,7 +1654,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     {
         for (i = 1; i<xtmp.size(); i++)
         {
-            _maxJntCmdVelocity[i - 1] = xtmp.get(i).asDouble();
+            _maxJntCmdVelocity[i - 1] = xtmp.get(i).asFloat64();
             if (_maxJntCmdVelocity[i - 1]<0)
             {
                 yError() << "Invalid jntVelMax parameter <0\n";
@@ -1673,7 +1673,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     {
         for(i=1;i<xtmp.size(); i++) 
         {
-            _maxStep[i-1]=xtmp.get(i).asDouble();
+            _maxStep[i-1]=xtmp.get(i).asFloat64();
             if (_maxStep[i-1]<0)
             {
                 yError () << "Invalid MaxPosStep parameter <0\n";
@@ -1685,12 +1685,12 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     // max joint position
     if (!validate(limits, xtmp, "jntPosMax","a list of maximum angles (in degrees)", nj+1))
         return false;
-    for(i=1;i<xtmp.size(); i++) _limitsMax[i-1]=xtmp.get(i).asDouble();
+    for(i=1;i<xtmp.size(); i++) _limitsMax[i-1]=xtmp.get(i).asFloat64();
 
     // min joint position
     if (!validate(limits, xtmp, "jntPosMin","a list of minimum angles (in degrees)", nj+1))
         return false;
-    for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
+    for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asFloat64();
     for (i = 0; i<nj; i++)
     {
         if (_limitsMax[i] < _limitsMin[i])
@@ -1714,7 +1714,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             else
             {
                 for(i=1;i<xtmp.size(); i++) 
-                    _velocityShifts[i-1]=xtmp.get(i).asInt();
+                    _velocityShifts[i-1]=xtmp.get(i).asInt32();
             }
 
             /////// Timeout
@@ -1728,7 +1728,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             else
                 {
                     for(i=1;i<xtmp.size(); i++) 
-                        _velocityTimeout[i-1]=xtmp.get(i).asInt();
+                        _velocityTimeout[i-1]=xtmp.get(i).asInt32();
                 }
 
             /////// Joint Speed Estimation
@@ -1742,7 +1742,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             else
                 {
                     for(i=1;i<xtmp.size(); i++) 
-                        _estim_params[i-1].jnt_Vel_estimator_shift = xtmp.get(i).asInt();
+                        _estim_params[i-1].jnt_Vel_estimator_shift = xtmp.get(i).asInt32();
                 }
 
             /////// Motor Speed Estimation
@@ -1756,7 +1756,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             else
                 {
                     for(i=1;i<xtmp.size(); i++) 
-                        _estim_params[i-1].mot_Vel_estimator_shift = xtmp.get(i).asInt();
+                        _estim_params[i-1].mot_Vel_estimator_shift = xtmp.get(i).asInt32();
                 }
 
             /////// Joint Acceleration Estimation
@@ -1770,7 +1770,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             else
                 {
                     for(i=1;i<xtmp.size(); i++) 
-                        _estim_params[i-1].jnt_Acc_estimator_shift = xtmp.get(i).asInt();
+                        _estim_params[i-1].jnt_Acc_estimator_shift = xtmp.get(i).asInt32();
                 }
 
             /////// Motor Acceleration Estimation
@@ -1784,7 +1784,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             else
                 {
                     for(i=1;i<xtmp.size(); i++) 
-                        _estim_params[i-1].mot_Acc_estimator_shift = xtmp.get(i).asInt();
+                        _estim_params[i-1].mot_Acc_estimator_shift = xtmp.get(i).asInt32();
                 }
 
         }
@@ -2780,17 +2780,17 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
         analogSensor->setDeviceId(deviceid);
 
         bool isVirtualSensor=false;
-        char analogId=analogConfig.find("CanAddress").asInt();
-        char analogFormat=analogConfig.find("Format").asInt();
-        int analogChannels=analogConfig.find("Channels").asInt();
-        int analogCalibration=analogConfig.find("UseCalibration").asInt();
-        //int SensorFullScale=analogConfig.find("FullScale").asInt();
+        char analogId=analogConfig.find("CanAddress").asInt32();
+        char analogFormat=analogConfig.find("Format").asInt32();
+        int analogChannels=analogConfig.find("Channels").asInt32();
+        int analogCalibration=analogConfig.find("UseCalibration").asInt32();
+        //int SensorFullScale=analogConfig.find("FullScale").asInt32();
 
         if (analogConfig.check("PortName"))
         {
             isVirtualSensor = true;
             std::string virtualPortName = analogConfig.find("PortName").asString();
-            bool   canEchoEnabled = analogConfig.find("CanEcho").asInt();
+            bool   canEchoEnabled = analogConfig.find("CanEcho").asInt32();
             analogSensor->backDoor = new TBR_CanBackDoor();
             analogSensor->backDoor->setUp(&res, &_mutex, canEchoEnabled, analogSensor);
             std::string rn("/");
@@ -2815,7 +2815,7 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
 
         if (analogConfig.check("Period"))
         {
-            int period=analogConfig.find("Period").asInt();
+            int period=analogConfig.find("Period").asInt32();
             res.startPacket();
 
             res.startPacket();
@@ -4082,14 +4082,14 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
             ret = true; break;
         }
         yarp::os::Time::delay(0.010);
-        if (timeout >0) yWarning ("setControlModeRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(mode).c_str());
+        if (timeout >0) yWarning ("setControlModeRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(mode).c_str());
         timeout++;
     }
     while (timeout < 10);
     if (timeout>=10)
     {
         ret = false;
-        yError ("100ms Timeout occured in setControlModeRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(mode).c_str());
+        yError ("100ms Timeout occured in setControlModeRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(mode).c_str());
     }
 
     return ret;
@@ -4121,14 +4121,14 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
                 ret = true; break;
             }
             yarp::os::Time::delay(0.010);
-            if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
             timeout++;
         }
         while (timeout < 10);
         if (timeout>=10)
         {
             ret = false;
-            yError ("100ms Timeout occured in setControlModesRaw(M) (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            yError ("100ms Timeout occured in setControlModesRaw(M) (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
         }
     }
 
@@ -4149,12 +4149,12 @@ bool CanBusMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle
     CanBusResources& res = RES(system_resources);
     if (key == "filterType")
     {
-        Bottle& r = val.addList(); for (int i = 0; i< res.getJoints(); i++) { int tmp = 0; getFilterTypeRaw(i, &tmp);  r.addInt(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i< res.getJoints(); i++) { int tmp = 0; getFilterTypeRaw(i, &tmp);  r.addInt32(tmp); }
         return true;
     }
     if (key == "PWMLimit")
     {
-        Bottle& r = val.addList(); for (int i = 0; i< res.getJoints(); i++) { double tmp = 0; getPWMLimitRaw(i, &tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i< res.getJoints(); i++) { double tmp = 0; getPWMLimitRaw(i, &tmp);  r.addFloat64(tmp); }
         return true;
     }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
@@ -4177,7 +4177,7 @@ bool CanBusMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
     {
         for (int i = 0; i < r.getJoints(); i++)
         {
-            int filter_type = val.get(i).asInt();
+            int filter_type = val.get(i).asInt32();
             this->setFilterTypeRaw(i, filter_type);
         }
         return true;
@@ -4186,7 +4186,7 @@ bool CanBusMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
     {
         for (int i = 0; i < r.getJoints(); i++)
         {
-            double limit = val.get(i).asDouble();
+            double limit = val.get(i).asFloat64();
             this->setPWMLimitRaw(i, (int)(limit));
         }
         return true;
@@ -4252,14 +4252,14 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
                 ret = true; break;
             }
             yarp::os::Time::delay(0.010);
-            if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
             timeout++;
         }
         while (timeout < 10);
         if (timeout>=10)
         {
             ret = false;
-            yError ("100ms Timeout occured in setControlModesRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            yError ("100ms Timeout occured in setControlModesRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
         }
     }
 

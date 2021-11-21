@@ -122,12 +122,12 @@ bool ImuFilter::open(yarp::os::Searchable& config)
 
     string name=config.check("name",Value("imuFilter")).asString();
     string robot=config.check("robot",Value("icub")).asString();
-    size_t gyro_order=(size_t)config.check("gyro-order",Value(5)).asInt();
-    size_t mag_order=(size_t)config.check("mag-order",Value(51)).asInt();
+    size_t gyro_order=(size_t)config.check("gyro-order",Value(5)).asInt32();
+    size_t mag_order=(size_t)config.check("mag-order",Value(51)).asInt32();
 
-    mag_vel_thres_up=config.check("mag-vel-thres-up",Value(0.04)).asDouble();
-    mag_vel_thres_down=config.check("mag-vel-thres-down",Value(0.02)).asDouble();
-    bias_gain=config.check("bias-gain",Value(0.001)).asDouble();
+    mag_vel_thres_up=config.check("mag-vel-thres-up",Value(0.04)).asFloat64();
+    mag_vel_thres_down=config.check("mag-vel-thres-down",Value(0.02)).asFloat64();
+    bias_gain=config.check("bias-gain",Value(0.001)).asFloat64();
     verbose=config.check("verbose");
 
     gyroFilt.setOrder(gyro_order);
@@ -136,7 +136,7 @@ bool ImuFilter::open(yarp::os::Searchable& config)
     gyroBias.resize(3,0.0);
     adaptGyroBias=false;
 
-    m_period_ms=config.check("period",Value(20)).asInt();
+    m_period_ms=config.check("period",Value(20)).asInt32();
 
     if (name.at(0) != '/')
         name = "/" +name;

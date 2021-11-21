@@ -71,7 +71,7 @@ void show(const WorldOpName& x) {
 
 void WorldOp::show() const {
     yDebug("Operation:\n");
-    yDebug("  cmd?: %s\n", yarp::os::Vocab::decode(cmd).c_str());
+    yDebug("  cmd?: %s\n", yarp::os::Vocab32::decode(cmd).c_str());
     yDebug("  kind: ");
     ::show(kind);
     yDebug("  name: ");

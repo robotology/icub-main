@@ -198,18 +198,18 @@ void LSSVMLearner::writeBottle(yarp::os::Bottle& bot) {
     // write inputs
     for(unsigned int i = 0; i < this->inputs.size(); i++) {
         for(unsigned int d = 0; d < this->getDomainSize(); d++) {
-            bot.addDouble(this->inputs[i](d));
+            bot.addFloat64(this->inputs[i](d));
         }
     }
-    bot.addInt(this->inputs.size());
+    bot.addInt32(this->inputs.size());
 
     // write outputs
     for(unsigned int i = 0; i < this->outputs.size(); i++) {
         for(unsigned int d = 0; d < this->getCoDomainSize(); d++) {
-            bot.addDouble(this->outputs[i](d));
+            bot.addFloat64(this->outputs[i](d));
         }
     }
-    bot.addInt(this->outputs.size());
+    bot.addInt32(this->outputs.size());
 
     // make sure to call the superclass's method
     this->IFixedSizeLearner::writeBottle(bot);
@@ -220,20 +220,20 @@ void LSSVMLearner::readBottle(yarp::os::Bottle& bot) {
     this->IFixedSizeLearner::readBottle(bot);
 
     // read outputs
-    this->outputs.resize(bot.pop().asInt());
+    this->outputs.resize(bot.pop().asInt32());
     for(int i = this->outputs.size() - 1; i >= 0; i--) {
         this->outputs[i].resize(this->getCoDomainSize());
         for(int d = this->getCoDomainSize() - 1; d >= 0; d--) {
-            this->outputs[i](d) = bot.pop().asDouble();
+            this->outputs[i](d) = bot.pop().asFloat64();
         }
     }
 
     // read inputs
-    this->inputs.resize(bot.pop().asInt());
+    this->inputs.resize(bot.pop().asInt32());
     for(int i = this->inputs.size() - 1; i >= 0; i--) {
         this->inputs[i].resize(this->getDomainSize());
         for(int d = this->getDomainSize() - 1; d >= 0; d--) {
-            this->inputs[i](d) = bot.pop().asDouble();
+            this->inputs[i](d) = bot.pop().asFloat64();
         }
     }
 
@@ -257,10 +257,10 @@ bool LSSVMLearner::configure(yarp::os::Searchable& config) {
     bool success = this->IFixedSizeLearner::configure(config);
 
     // format: set c dbl
-    if(config.find("c").isDouble() || config.find("c").isInt()) {
-        double val = config.find("c").asDouble();
+    if(config.find("c").isFloat64() || config.find("c").isInt32()) {
+        double val = config.find("c").asFloat64();
         if(val > 0) {
-            this->setC(config.find("c").asDouble());
+            this->setC(config.find("c").asFloat64());
             success = true;
         }
     }

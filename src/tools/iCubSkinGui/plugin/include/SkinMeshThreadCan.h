@@ -62,14 +62,14 @@ public:
         }
         netId=7;
         deviceName="cfw2can";
-        cardId=0x300 | (config.find("cardid").asInt() << 4);
-        netId=config.find("CanDeviceNum").asInt();
+        cardId=0x300 | (config.find("cardid").asInt32() << 4);
+        netId=config.find("CanDeviceNum").asInt32();
         deviceName=config.find("CanDeviceName").asString();
         std::string part="/skinGui/";
         part.append(config.find("robotPart").asString());
         part.append(":i");
-        int width =config.find("width" ).asInt();
-        int height=config.find("height").asInt();
+        int width =config.find("width" ).asInt32();
+        int height=config.find("height").asInt32();
         bool useCalibration = config.check("useCalibration");
         if (useCalibration==true) 
         {
@@ -90,13 +90,13 @@ public:
             std::string type(sensorConfig.get(0).asString());
             if (type == "triangle" || type == "fingertip" || type == "fingertip2L" || type == "cer_sh_pdl"  || type == "fingertip2R" || type == "triangle_10pad" || type == "quad16" || type == "palmR" || type == "palmL")
             {
-                int id=sensorConfig.get(1).asInt();
-                double xc=sensorConfig.get(2).asDouble();
-                double yc=sensorConfig.get(3).asDouble();
-                double th=sensorConfig.get(4).asDouble();
-                double gain=sensorConfig.get(5).asDouble();
-                int    lrMirror=sensorConfig.get(6).asInt();
-                int    layoutNum=sensorConfig.get(7).asInt();
+                int id=sensorConfig.get(1).asInt32();
+                double xc=sensorConfig.get(2).asFloat64();
+                double yc=sensorConfig.get(3).asFloat64();
+                double th=sensorConfig.get(4).asFloat64();
+                double gain=sensorConfig.get(5).asFloat64();
+                int    lrMirror=sensorConfig.get(6).asInt32();
+                int    layoutNum=sensorConfig.get(7).asInt32();
 
                 printf("%d %f\n",id,gain);
 

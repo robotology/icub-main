@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     rf.setDefault("calibrationFile","calibration_data.ini");
     rf.configure(argc,argv);
 
-    int test=rf.check("test",Value(-1)).asInt();
+    int test=rf.check("test",Value(-1)).asInt32();
     if (test<0)
     {
         if (!yarp.checkNetwork())

@@ -198,13 +198,13 @@ protected:
         joint<<"joint_"<<i;
         Bottle &bJoint=bGroup.findGroup(joint.str());
 
-        pid.Kp=bJoint.check("Kp",Value(0.0)).asDouble();
-        pid.Ki=bJoint.check("Ki",Value(0.0)).asDouble();
-        pid.Kd=bJoint.check("Kd",Value(0.0)).asDouble();
-        pid.scale=bJoint.check("scale",Value(0.0)).asDouble();
-        pid.st_up=bJoint.check("st_up",Value(0.0)).asDouble();
-        pid.st_down=bJoint.check("st_down",Value(0.0)).asDouble();
-        pid.encs_ratio=bJoint.check("encs_ratio",Value(1.0)).asDouble();
+        pid.Kp=bJoint.check("Kp",Value(0.0)).asFloat64();
+        pid.Ki=bJoint.check("Ki",Value(0.0)).asFloat64();
+        pid.Kd=bJoint.check("Kd",Value(0.0)).asFloat64();
+        pid.scale=bJoint.check("scale",Value(0.0)).asFloat64();
+        pid.st_up=bJoint.check("st_up",Value(0.0)).asFloat64();
+        pid.st_down=bJoint.check("st_down",Value(0.0)).asFloat64();
+        pid.encs_ratio=bJoint.check("encs_ratio",Value(1.0)).asFloat64();
         pid.status=(bJoint.check("status",Value("download")).asString()=="download"?download:upload);
         if (bJoint.check("idling"))
         {
@@ -213,12 +213,12 @@ protected:
                 pid.idling_joints.clear();
                 for (int j=0; j<bIdlingJoints->size(); j++)
                 {
-                    int k=bIdlingJoints->get(j).asInt();
+                    int k=bIdlingJoints->get(j).asInt32();
 
                     int l;
                     for (l=0; l<rJoints.size(); l++)
                     {
-                        if (rJoints.get(l).asInt()==k)
+                        if (rJoints.get(l).asInt32()==k)
                         {
                             pid.idling_joints.push_back(k);
                             break;
@@ -282,7 +282,7 @@ protected:
         designer.startPlantEstimation(pPlantEstimation);
 
         yInfo("Estimating plant for joint %d: max duration = %g seconds",
-              i,pPlantEstimation.find("max_time").asDouble());
+              i,pPlantEstimation.find("max_time").asFloat64());
 
         double t0=Time::now();
         while (!designer.isDone())
@@ -298,8 +298,8 @@ protected:
 
         Property pResults;
         designer.getResults(pResults);
-        double tau=pResults.find("tau_mean").asDouble();
-        double K=pResults.find("K_mean").asDouble();
+        double tau=pResults.find("tau_mean").asFloat64();
+        double K=pResults.find("K_mean").asFloat64();
         yInfo("plant = %g/s * 1/(1+s*%g)",K,tau);
 
         Property pControllerRequirements,pController;
@@ -317,8 +317,8 @@ protected:
 
         designer.tuneController(pControllerRequirements,pController);
         yInfo("tuning results: %s",pController.toString().c_str());
-        double Kp=pController.find("Kp").asDouble();
-        double Ki=pController.find("Ki").asDouble();
+        double Kp=pController.find("Kp").asFloat64();
+        double Ki=pController.find("Ki").asFloat64();
         pid.scale=4.0;
         int scale=(int)pid.scale; int shift=1<<scale;
         double fwKp=floor(Kp*pid.encs_ratio*shift);
@@ -336,7 +336,7 @@ protected:
         designer.startStictionEstimation(pStictionEstimation);
 
         yInfo("Estimating stiction for joint %d: max duration = %g seconds",
-              i,pStictionEstimation.find("max_time").asDouble());
+              i,pStictionEstimation.find("max_time").asFloat64());
 
         t0=Time::now();
         while (!designer.isDone())
@@ -351,8 +351,8 @@ protected:
         }
 
         designer.getResults(pResults);
-        pid.st_up=floor(pResults.find("stiction").asList()->get(0).asDouble());
-        pid.st_down=floor(pResults.find("stiction").asList()->get(1).asDouble());
+        pid.st_up=floor(pResults.find("stiction").asList()->get(0).asFloat64());
+        pid.st_down=floor(pResults.find("stiction").asList()->get(1).asFloat64());
         yInfo("Stiction values: up = %g; down = %g",pid.st_up,pid.st_down);
 
         IControlMode *imod;
@@ -420,7 +420,7 @@ public:
 
         name=bGeneral.check("name",Value("fingersTuner")).asString();
         robot=bGeneral.check("robot",Value("icub")).asString();
-        double ping_robot_tmo=bGeneral.check("ping_robot_tmo",Value(0.0)).asDouble();
+        double ping_robot_tmo=bGeneral.check("ping_robot_tmo",Value(0.0)).asFloat64();
         device=bPart.find("device").asString();
 
         if (Bottle *rj=bGeneral.find("relevantJoints").asList())
@@ -431,7 +431,7 @@ public:
             return false;
         }
 
-        int numAlias=bGeneral.check("numAlias",Value(0)).asInt();
+        int numAlias=bGeneral.check("numAlias",Value(0)).asInt32();
         for (int i=0; i<numAlias; i++)
         {
             ostringstream item;
@@ -446,7 +446,7 @@ public:
 
         for (int i=0; i<rJoints.size(); i++)
         {
-            int j=rJoints.get(i).asInt();
+            int j=rJoints.get(i).asInt32();
             pids[j]=getPidData(bPart,j);
         }
 
@@ -475,8 +475,8 @@ public:
     bool sync(const Value &sel)
     {
         Bottle joints;
-        if (sel.isInt())
-            joints.addInt(sel.asInt());
+        if (sel.isInt32())
+            joints.addInt32(sel.asInt32());
         else if (sel.isString())
         {
             map<string,Bottle>::iterator it=alias.find(sel.asString());
@@ -490,7 +490,7 @@ public:
 
         for (int i=0; i<joints.size(); i++)
         {
-            int j=rJoints.get(i).asInt();
+            int j=rJoints.get(i).asInt32();
             map<int,PidData>::iterator it=pids.find(j);
             if (it==pids.end())
                 continue;
@@ -519,8 +519,8 @@ public:
     bool tune(const Value &sel)
     {
         Bottle joints;
-        if (sel.isInt())
-            joints.addInt(sel.asInt());
+        if (sel.isInt32())
+            joints.addInt32(sel.asInt32());
         else if (sel.isString())
         {
             map<string,Bottle>::iterator it=alias.find(sel.asString());
@@ -534,7 +534,7 @@ public:
 
         for (int i=0; i<joints.size(); i++)
         {
-            int j=joints.get(i).asInt();
+            int j=joints.get(i).asInt32();
             map<int,PidData>::iterator it=pids.find(j);
             if (it==pids.end())
                 continue;
@@ -568,7 +568,7 @@ public:
 
         for (int i=0; i<rJoints.size(); i++)
         {
-            int j=rJoints.get(i).asInt();
+            int j=rJoints.get(i).asInt32();
             PidData &pid=pids[j];
 
             Property prop;

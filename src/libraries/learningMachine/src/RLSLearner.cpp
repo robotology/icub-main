@@ -161,8 +161,8 @@ bool RLSLearner::configure(yarp::os::Searchable& config) {
     bool success = this->IFixedSizeLearner::configure(config);
 
     // format: set lambda val
-    if(config.find("lambda").isDouble() || config.find("lambda").isInt()) {
-        this->setLambda(config.find("lambda").asDouble());
+    if(config.find("lambda").isFloat64() || config.find("lambda").isInt32()) {
+        this->setLambda(config.find("lambda").asFloat64());
         success = true;
     }
 

@@ -60,7 +60,7 @@ void EyeLids::checkPort()
     {
         Bottle *bot = port.read(false);
         if (bot!=NULL){
-        eyeLidsRotation = (float)bot->get(0).asDouble();
+        eyeLidsRotation = (float)bot->get(0).asFloat64();
             yDebug("Message received: %s\n",bot->toString().c_str());
             bot->clear();
         }

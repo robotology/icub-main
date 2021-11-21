@@ -54,32 +54,32 @@ bool PinholeCalibTool::configure (Searchable &config){
 
     _calibImgSize.width = config.check("w",
                                       Value(320),
-                                      "Image width for which calibration parameters were calculated (int)").asInt();
+                                      "Image width for which calibration parameters were calculated (int)").asInt32();
 
     _calibImgSize.height = config.check("h",
                                       Value(240),
-                                      "Image height for which calibration parameters were calculated (int)").asInt();
+                                      "Image height for which calibration parameters were calculated (int)").asInt32();
 
     _drawCenterCross = config.check("drawCenterCross",
                                     Value(0),
-                                    "Draw a cross at calibration center (int [0|1]).").asInt()!=0;
+                                    "Draw a cross at calibration center (int [0|1]).").asInt32()!=0;
 
 
     CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 0) = (float)config.check("fx",
                                                         Value(320.0),
-                                                        "Focal length x (double)").asDouble();
+                                                        "Focal length x (double)").asFloat64();
 
     CV_MAT_ELEM( *_intrinsic_matrix, float, 0, 1) = 0.0f;
     CV_MAT_ELEM( *_intrinsic_matrix, float, 0, 2) = (float)config.check("cx",
                                                         Value(160.0),
-                                                        "Principal point x (double)").asDouble();
+                                                        "Principal point x (double)").asFloat64();
     CV_MAT_ELEM( *_intrinsic_matrix, float, 1, 0) = 0.0f;
     CV_MAT_ELEM( *_intrinsic_matrix, float, 1, 1) = (float)config.check("fy",
                                                         Value(320.0),
-                                                        "Focal length y (double)").asDouble();
+                                                        "Focal length y (double)").asFloat64();
     CV_MAT_ELEM( *_intrinsic_matrix, float, 1, 2) = (float)config.check("cy",
                                                         Value(120.0),
-                                                        "Principal point y (double)").asDouble();
+                                                        "Principal point y (double)").asFloat64();
     CV_MAT_ELEM( *_intrinsic_matrix, float, 2, 0) = 0.0f;
     CV_MAT_ELEM( *_intrinsic_matrix, float, 2, 1) = 0.0f;
     CV_MAT_ELEM( *_intrinsic_matrix, float, 2, 2) = 1.0f;
@@ -99,10 +99,10 @@ bool PinholeCalibTool::configure (Searchable &config){
     if ( !config.check("p2") ) { stopConfig("p2"); return false;}
 
 
-    fprintf(stdout,"fx=%g\n",config.find("fx").asDouble());
-    fprintf(stdout,"fy=%g\n",config.find("fy").asDouble());
-    fprintf(stdout,"cx=%g\n",config.find("cx").asDouble());
-    fprintf(stdout,"cy=%g\n",config.find("cy").asDouble());
+    fprintf(stdout,"fx=%g\n",config.find("fx").asFloat64());
+    fprintf(stdout,"fy=%g\n",config.find("fy").asFloat64());
+    fprintf(stdout,"cx=%g\n",config.find("cx").asFloat64());
+    fprintf(stdout,"cy=%g\n",config.find("cy").asFloat64());
 
 
     // copy to scaled matrix ;)
@@ -119,16 +119,16 @@ bool PinholeCalibTool::configure (Searchable &config){
      /* init the distortion coeffs */
     CV_MAT_ELEM( *_distortion_coeffs, float, 0, 0) = (float)config.check("k1",
                                                         Value(0.0),
-                                                        "Radial distortion 1(double)").asDouble();
+                                                        "Radial distortion 1(double)").asFloat64();
     CV_MAT_ELEM( *_distortion_coeffs, float, 0, 1) = (float)config.check("k2",
                                                         Value(0.0),
-                                                        "Radial distortion 2(double)").asDouble();
+                                                        "Radial distortion 2(double)").asFloat64();
     CV_MAT_ELEM( *_distortion_coeffs, float, 0, 2) = (float)config.check("p1",
                                                         Value(0.0),
-                                                        "Tangential distortion 1(double)").asDouble();
+                                                        "Tangential distortion 1(double)").asFloat64();
     CV_MAT_ELEM( *_distortion_coeffs, float, 0, 3) = (float)config.check("p2",
                                                         Value(0.0),
-                                                        "Tangential distortion 2(double)").asDouble();
+                                                        "Tangential distortion 2(double)").asFloat64();
     _needInit = true;
 
     return true;

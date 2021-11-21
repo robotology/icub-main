@@ -171,7 +171,7 @@ bool WaveletEncoder::setEncoderOptions(const Property &options)
 {
     if (options.check("resolution"))
     {
-        double R=options.find("resolution").asDouble();
+        double R=options.find("resolution").asFloat64();
 
         // apply saturation
         resolution=std::max(0.0,std::min(R,double(WAVELET_LUP_SIZE-1)));

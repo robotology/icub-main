@@ -831,8 +831,8 @@ public:
 
 
         if (opt.check("frequency", val)) {
-            if (val->isDouble() || val->isInt()) {
-                this->setFrequency(val->asDouble());
+            if (val->isFloat64() || val->isInt32()) {
+                this->setFrequency(val->asFloat64());
             }
         }
 
@@ -871,10 +871,10 @@ public:
         bool success = false;
 
         try {
-            switch (cmd.get(0).asVocab()) {
-            case yarp::os::createVocab('h','e','l','p'): // print help information
+            switch (cmd.get(0).asVocab32()) {
+            case yarp::os::createVocab32('h','e','l','p'): // print help information
                             success = true;
-                reply.add(Value::makeVocab("help"));
+                reply.add(Value::makeVocab32("help"));
 
                 reply.addString("Merge module configuration options");
                 reply.addString("  help                  Displays this message");
@@ -882,19 +882,19 @@ public:
                 reply.addString("  freq f                Sampling frequency in Hertz (0 for disabled)");
                 break;
 
-            case yarp::os::createVocab('i','n','f','o'): // print information
+            case yarp::os::createVocab32('i','n','f','o'): // print information
             {
-                reply.add(Value::makeVocab("help"));
+                reply.add(Value::makeVocab32("help"));
                 success = true;
                 reply.addString(this->dataSelector->toString().c_str());
                 break;
             }
 
-            case yarp::os::createVocab('f','r','e','q'): // set sampling frequency
+            case yarp::os::createVocab32('f','r','e','q'): // set sampling frequency
             {
-                if (cmd.size() > 1 && (cmd.get(1).isInt() || cmd.get(1).isDouble())) {
+                if (cmd.size() > 1 && (cmd.get(1).isInt32() || cmd.get(1).isFloat64())) {
                     success = true;
-                    this->setDesiredPeriod(1. / cmd.get(1).asDouble());
+                    this->setDesiredPeriod(1. / cmd.get(1).asFloat64());
                     //reply.addString((std::string("Current frequency: ") + cmd.get(1).toString().c_str()).c_str());
                 }
                 break;

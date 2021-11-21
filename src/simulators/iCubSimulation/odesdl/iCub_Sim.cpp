@@ -672,28 +672,28 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
 
             if (x < 5){ //five fingers 
                 for (int i = 0; i < 12; i++){
-                    reportLeft.addDouble(resultLeft * 255);
-                    reportRight.addDouble(resultRight * 255);
+                    reportLeft.addFloat64(resultLeft * 255);
+                    reportRight.addFloat64(resultRight * 255);
                 }
             }
             if (x == 5){
                 for (int y = 0; y<3; y++){            
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(0.0);
-                        reportRight.addDouble(0.0);
+                        reportLeft.addFloat64(0.0);
+                        reportRight.addFloat64(0.0);
                     }
                 }
                 //these are palm taxels
                 for (int y = 0; y<4; y++){ 
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(resultLeft * 255);
-                        reportRight.addDouble(resultRight * 255);
+                        reportLeft.addFloat64(resultLeft * 255);
+                        reportRight.addFloat64(resultRight * 255);
                     }
                 }
                 for (int y = 0; y<4; y++){ 
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(0.0);
-                        reportRight.addDouble(0.0);
+                        reportLeft.addFloat64(0.0);
+                        reportRight.addFloat64(0.0);
                     }
                 }
             }
@@ -712,27 +712,27 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
             }
             if (x < 5){
                 for (int i = 0; i < 12; i++){
-                    reportLeft.addDouble(resultLeft * 255);
-                    reportRight.addDouble(resultRight * 255);
+                    reportLeft.addFloat64(resultLeft * 255);
+                    reportRight.addFloat64(resultRight * 255);
                 }
             }
             if (x == 5){
                 for (int y = 0; y<3; y++){            
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(0.0);
-                        reportRight.addDouble(0.0);
+                        reportLeft.addFloat64(0.0);
+                        reportRight.addFloat64(0.0);
                     }
                 }
                 for (int y = 0; y<4; y++){ 
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(resultLeft * 255);
-                        reportRight.addDouble(resultRight * 255);
+                        reportLeft.addFloat64(resultLeft * 255);
+                        reportRight.addFloat64(resultRight * 255);
                     }
                 }
                 for (int y = 0; y<4; y++){ 
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(0.0);
-                        reportRight.addDouble(0.0);
+                        reportLeft.addFloat64(0.0);
+                        reportRight.addFloat64(0.0);
                     }
                 }
             }
@@ -752,27 +752,27 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
             
             if (x < 5){
                 for (int i = 0; i < 12; i++){
-                    reportLeft.addDouble(resultLeft * 255);
-                    reportRight.addDouble(resultRight * 255);
+                    reportLeft.addFloat64(resultLeft * 255);
+                    reportRight.addFloat64(resultRight * 255);
                 }
             }
             if (x == 5){
                 for (int y = 0; y<3; y++){            
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(0.0);
-                        reportRight.addDouble(0.0);
+                        reportLeft.addFloat64(0.0);
+                        reportRight.addFloat64(0.0);
                     }
                 }
                 for (int y = 0; y<4; y++){ 
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(resultLeft * 255);
-                        reportRight.addDouble(resultRight * 255);
+                        reportLeft.addFloat64(resultLeft * 255);
+                        reportRight.addFloat64(resultRight * 255);
                     }
                 }
                 for (int y = 0; y<4; y++){ 
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(0.0);
-                        reportRight.addDouble(0.0);
+                        reportLeft.addFloat64(0.0);
+                        reportRight.addFloat64(0.0);
                     }
                 }
             }
@@ -792,27 +792,27 @@ void OdeSdlSimulation::inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& 
             
             if (x < 5){
                 for (int i = 0; i < 12; i++){
-                    reportLeft.addDouble(resultLeft * 255);
-                    reportRight.addDouble(resultRight * 255);
+                    reportLeft.addFloat64(resultLeft * 255);
+                    reportRight.addFloat64(resultRight * 255);
                 }
             }
             if (x == 5){
                 for (int y = 0; y<3; y++){            
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(0.0);
-                        reportRight.addDouble(0.0);
+                        reportLeft.addFloat64(0.0);
+                        reportRight.addFloat64(0.0);
                     }
                 }
                 for (int y = 0; y<4; y++){ 
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(resultLeft * 255);
-                        reportRight.addDouble(resultRight * 255);
+                        reportLeft.addFloat64(resultLeft * 255);
+                        reportRight.addFloat64(resultRight * 255);
                     }
                 }
                 for (int y = 0; y<4; y++){ 
                     for (int i = 0; i < 12; i++){
-                        reportLeft.addDouble(0.0);
-                        reportRight.addDouble(0.0);
+                        reportLeft.addFloat64(0.0);
+                        reportRight.addFloat64(0.0);
                     }
                 }
             }
@@ -942,9 +942,9 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     //yaw = dBodyGetRotation(odeinit._iCub->head)[2];
 
     //Add Euler angles roll pitch yaw
-    inertialReport.addDouble( -yaw * 180/M_PI);// yaw
-    inertialReport.addDouble( -pitch * 180/M_PI);// pitch
-    inertialReport.addDouble( roll * 180/M_PI);// roll 
+    inertialReport.addFloat64( -yaw * 180/M_PI);// yaw
+    inertialReport.addFloat64( -pitch * 180/M_PI);// pitch
+    inertialReport.addFloat64( roll * 180/M_PI);// roll 
 
     /*//in order to calculate linear acceleration (make sure of body) Inertial Measurement Unit IMU
     LinearVel[0] = dBodyGetLinearVel(odeinit._iCub->inertialBody)[0];
@@ -985,19 +985,19 @@ void OdeSdlSimulation::retreiveInertialData(Bottle& inertialReport) {
     grav3[1]=grav2[0]*sin(theta)+grav2[1]*cos(theta);
     grav3[2]=grav2[2];
 
-    inertialReport.addDouble( grav3[0] );
-    inertialReport.addDouble( grav3[1] );
-    inertialReport.addDouble( grav3[2] );
+    inertialReport.addFloat64( grav3[0] );
+    inertialReport.addFloat64( grav3[1] );
+    inertialReport.addFloat64( grav3[2] );
 
     //Add angular velocity
-    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[2]*CTRL_RAD2DEG);
-    inertialReport.addDouble(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[0]*CTRL_RAD2DEG);
-    inertialReport.addDouble( dBodyGetAngularVel(odeinit._iCub->inertialBody)[1]*CTRL_RAD2DEG);
+    inertialReport.addFloat64(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[2]*CTRL_RAD2DEG);
+    inertialReport.addFloat64(-dBodyGetAngularVel(odeinit._iCub->inertialBody)[0]*CTRL_RAD2DEG);
+    inertialReport.addFloat64( dBodyGetAngularVel(odeinit._iCub->inertialBody)[1]*CTRL_RAD2DEG);
         
     //Add magnetic fields
-    inertialReport.addDouble(0.0);
-    inertialReport.addDouble(0.0);
-    inertialReport.addDouble(0.0);
+    inertialReport.addFloat64(0.0);
+    inertialReport.addFloat64(0.0);
+    inertialReport.addFloat64(0.0);
 }
 
 int OdeSdlSimulation::thread_ode(void *unused) {
@@ -1432,21 +1432,21 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
 
     //left
     Bottle &bCalibLeft=rf_camcalib.findGroup("CAMERA_CALIBRATION_LEFT");
-    width_left=bCalibLeft.check("w",Value(320)).asInt();
-    height_left=bCalibLeft.check("h",Value(240)).asInt();
+    width_left=bCalibLeft.check("w",Value(320)).asInt32();
+    height_left=bCalibLeft.check("h",Value(240)).asInt32();
 
     cameraSizeWidth=width_left;
     cameraSizeHeight=height_left;
 
-    double focal_length_left=bCalibLeft.check("fy",Value(257.34)).asDouble();
+    double focal_length_left=bCalibLeft.check("fy",Value(257.34)).asFloat64();
     fov_left=2*atan2((double)height_left,2*focal_length_left)*180.0/M_PI;
 
     //right
     Bottle &bCalibRight=rf_camcalib.findGroup("CAMERA_CALIBRATION_RIGHT");
-    width_right=bCalibRight.check("w",Value(320)).asInt();
-    height_right=bCalibRight.check("h",Value(240)).asInt();
+    width_right=bCalibRight.check("w",Value(320)).asInt32();
+    height_right=bCalibRight.check("h",Value(240)).asInt32();
 
-    double focal_length_right=bCalibRight.check("fy",Value(257.34)).asDouble();
+    double focal_length_right=bCalibRight.check("fy",Value(257.34)).asFloat64();
     fov_right=2*atan2((double)height_right,2*focal_length_right)*180.0/M_PI;
     //--------------------------------------//
 
@@ -1625,7 +1625,7 @@ bool OdeSdlSimulation::checkSync(bool reset) {
 bool OdeSdlSimulation::getTrqData(Bottle data) {
     OdeInit& odeinit = OdeInit::get();
     for (int s=0; s<data.size(); s++){
-        odeinit._iCub->torqueData[s] = data.get(s).asDouble();
+        odeinit._iCub->torqueData[s] = data.get(s).asFloat64();
         //yDebug(stdout,"torques... %lf \n",odeinit._iCub->torqueData[s]);
     }
     return true;
@@ -1869,42 +1869,42 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
                 if (contactICubSkinEmulMap[SKIN_LEFT_HAND].indivTaxelResolution){
                     for (y = 0; y<=59; y++){ 
                         if (contactICubSkinEmulMap[SKIN_LEFT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                            bottleLeftHand.addDouble(255.0); 
+                            bottleLeftHand.addFloat64(255.0); 
                         }
                         else{
-                            bottleLeftHand.addDouble(0.0); 
+                            bottleLeftHand.addFloat64(0.0); 
                         } 
                     }
                 }
                 else{ //we fill them all
                    for (y = 0; y<=59; y++){ 
-                        bottleLeftHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
+                        bottleLeftHand.addFloat64(255); //we ignore the thermal pad positions which should be 0s for now
                 }
                     }
                 //zero padding - the port output: 61-96 zeros; taxel IDs 60-95
                 for (y = 60; y<=95; y++){           
-                        bottleLeftHand.addDouble(0.0);
+                        bottleLeftHand.addFloat64(0.0);
                 }
                 
                 //pam - positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s); 
                     if (contactICubSkinEmulMap[SKIN_LEFT_HAND].indivTaxelResolution){
                     for (y = 96; y<=143; y++){ 
                             if (contactICubSkinEmulMap[SKIN_LEFT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                                bottleLeftHand.addDouble(255.0); 
+                                bottleLeftHand.addFloat64(255.0); 
                             }
                             else{
-                                 bottleLeftHand.addDouble(0.0); 
+                                 bottleLeftHand.addFloat64(0.0); 
                             }
                         }
                     }
                     else{ //we fill the whole palm
                         for (int y = 96; y<=143; y++){ 
-                        bottleLeftHand.addDouble(255.0); //we ignore the thermal pad positions, which should be 0s, for now
+                        bottleLeftHand.addFloat64(255.0); //we ignore the thermal pad positions, which should be 0s, for now
                         }
                     }
                 //filling the rest: 145-192 zeros. IDs: 144-191
                 for (int y = 144; y<=191; y++){ 
-                    bottleLeftHand.addDouble(0.0);
+                    bottleLeftHand.addFloat64(0.0);
                 }
             }
             else{
@@ -1922,42 +1922,42 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
                 if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].indivTaxelResolution){
                     for (y = 0; y<=59; y++){ 
                         if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                            bottleRightHand.addDouble(255.0); 
+                            bottleRightHand.addFloat64(255.0); 
                           }
                           else{
-                            bottleRightHand.addDouble(0.0); 
+                            bottleRightHand.addFloat64(0.0); 
                           } 
                           }
                   }
                 else{ //we fill them all
                    for (y = 0; y<=59; y++){ 
-                        bottleRightHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
+                        bottleRightHand.addFloat64(255); //we ignore the thermal pad positions which should be 0s for now
               }
                   }
                 //zero padding - the port output: 61-96 zeros; taxel IDs 60-95
                 for (y = 60; y<=95; y++){           
-                      bottleRightHand.addDouble(0.0);
+                      bottleRightHand.addFloat64(0.0);
               }
                 
                 //pam - positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s); 
                   if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].indivTaxelResolution){
                     for (y = 96; y<=143; y++){ 
                           if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                                bottleRightHand.addDouble(255.0); 
+                                bottleRightHand.addFloat64(255.0); 
                             }
                             else{
-                                 bottleRightHand.addDouble(0.0); 
+                                 bottleRightHand.addFloat64(0.0); 
                             }
                         }
                   }
                   else{ //we fill the whole palm
                         for (int y = 96; y<=143; y++){ 
-                        bottleRightHand.addDouble(255.0); //we ignore the thermal pad positions, which should be 0s, for now
+                        bottleRightHand.addFloat64(255.0); //we ignore the thermal pad positions, which should be 0s, for now
                         }
                   }                               
                   //filling the rest: 145-192 zeros. IDs: 144-191
                   for (int y = 144; y<=191; y++){ 
-                    bottleRightHand.addDouble(0.0);
+                    bottleRightHand.addFloat64(0.0);
                   }
             }
         else{
@@ -1975,10 +1975,10 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
              if (contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].indivTaxelResolution){
                 for (int y = 0; y<=767; y++){ 
                     if (contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                             bottleLeftArm.addDouble(255.0); 
+                             bottleLeftArm.addFloat64(255.0); 
                     }
                     else{
-                             bottleLeftArm.addDouble(0.0); 
+                             bottleLeftArm.addFloat64(0.0); 
                     }
                 }
              }
@@ -1997,10 +1997,10 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
              if (contactICubSkinEmulMap[SKIN_LEFT_FOREARM].indivTaxelResolution){
                 for (int y = 0; y<=383; y++){ 
                     if (contactICubSkinEmulMap[SKIN_LEFT_FOREARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                             bottleLeftForearm.addDouble(255.0); 
+                             bottleLeftForearm.addFloat64(255.0); 
                     }
                     else{
-                             bottleLeftForearm.addDouble(0.0); 
+                             bottleLeftForearm.addFloat64(0.0); 
                     }
                 }
              }
@@ -2019,10 +2019,10 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
              if (contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].indivTaxelResolution){
                 for (int y = 0; y<=767; y++){ 
                     if (contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                        bottleRightArm.addDouble(255.0); 
+                        bottleRightArm.addFloat64(255.0); 
                     }
                     else{
-                        bottleRightArm.addDouble(0.0); 
+                        bottleRightArm.addFloat64(0.0); 
                     }
                 }
              }
@@ -2041,10 +2041,10 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
              if (contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].indivTaxelResolution){
                 for (int y = 0; y<=383; y++){ 
                     if (contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                             bottleRightForearm.addDouble(255.0); 
+                             bottleRightForearm.addFloat64(255.0); 
                     }
                     else{
-                             bottleRightForearm.addDouble(0.0); 
+                             bottleRightForearm.addFloat64(0.0); 
                     }
                 }
              }
@@ -2063,10 +2063,10 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
              if (contactICubSkinEmulMap[SKIN_FRONT_TORSO].indivTaxelResolution){
                 for (int y = 0; y<=767; y++){ 
                     if (contactICubSkinEmulMap[SKIN_FRONT_TORSO].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                             bottleTorso.addDouble(255.0); 
+                             bottleTorso.addFloat64(255.0); 
                     }
                     else{
-                             bottleTorso.addDouble(0.0); 
+                             bottleTorso.addFloat64(0.0); 
                     }
                 }
              }

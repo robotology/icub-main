@@ -53,27 +53,27 @@
 *
 * // object dimensions in millimiters
 * // (it will be displayed as an ellipsoid with the tag "my_object_name")
-* obj.addDouble(dimX);
-* obj.addDouble(dimY);
-* obj.addDouble(dimZ);
+* obj.addFloat64(dimX);
+* obj.addFloat64(dimY);
+* obj.addFloat64(dimZ);
 *
 * // object position in millimiters
 * // reference frame: X=fwd, Y=left, Z=up
-* obj.addDouble(posX);
-* obj.addDouble(posY);
-* obj.addDouble(posZ);
+* obj.addFloat64(posX);
+* obj.addFloat64(posY);
+* obj.addFloat64(posZ);
 *
 * // object orientation (roll, pitch, yaw) in degrees
-* obj.addDouble(rotX);
-* obj.addDouble(rotY);
-* obj.addDouble(rotZ);
+* obj.addFloat64(rotX);
+* obj.addFloat64(rotY);
+* obj.addFloat64(rotZ);
 *
 * // object color (0-255)
-* obj.addInt(R);
-* obj.addInt(G);
-* obj.addInt(B);
+* obj.addInt32(R);
+* obj.addInt32(G);
+* obj.addInt32(B);
 * // transparency (0.0=invisible 1.0=solid)
-* obj.addDouble(alpha);
+* obj.addFloat64(alpha);
 * \endcode
 *
 * To delete an object:

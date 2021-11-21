@@ -100,7 +100,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     }
 
     std::string str;
-    if (config.findGroup("GENERAL").find("verbose").asInt())
+    if (config.findGroup("GENERAL").find("verbose").asInt32())
     {
         str = config.toString().c_str();
         yTrace() << deviceName.c_str() << str;
@@ -139,12 +139,12 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     int nj = 0;
     if (p.findGroup("GENERAL").check("joints"))
     {
-        nj = p.findGroup("GENERAL").find("joints").asInt();
+        nj = p.findGroup("GENERAL").find("joints").asInt32();
     }
     else if (p.findGroup("GENERAL").check("Joints"))
     {
         // This is needed to be backward compatibile with old iCubInterface
-        nj = p.findGroup("GENERAL").find("Joints").asInt();
+        nj = p.findGroup("GENERAL").find("Joints").asInt32();
     }
     else
     {
@@ -170,43 +170,43 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("calibration1");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration1 params " << xtmp.size() << " " << nj; return false; }
-    for (i = 1; i < xtmp.size(); i++) param1[i - 1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) param1[i - 1] = xtmp.get(i).asFloat64();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration2");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration2 params"; return false; }
-    for (i = 1; i < xtmp.size(); i++) param2[i - 1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) param2[i - 1] = xtmp.get(i).asFloat64();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration3");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration3 params"; return false; }
-    for (i = 1; i < xtmp.size(); i++) param3[i - 1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) param3[i - 1] = xtmp.get(i).asFloat64();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationType");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration3 params"; return false; }
-    for (i = 1; i < xtmp.size(); i++) type[i - 1] = (unsigned char)xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) type[i - 1] = (unsigned char)xtmp.get(i).asFloat64();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupPosition");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of startupPosition params"; return false; }
-    for (i = 1; i < xtmp.size(); i++) zeroPos[i - 1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) zeroPos[i - 1] = xtmp.get(i).asFloat64();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupVelocity");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of startupVelocity params"; return false; }
-    for (i = 1; i < xtmp.size(); i++) zeroVel[i - 1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) zeroVel[i - 1] = xtmp.get(i).asFloat64();
 
     xtmp = p.findGroup("HOME").findGroup("positionHome");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of PositionHome params"; return false; }
-    for (i = 1; i < xtmp.size(); i++) homePos[i - 1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) homePos[i - 1] = xtmp.get(i).asFloat64();
 
     xtmp = p.findGroup("HOME").findGroup("velocityHome");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of VelocityHome params"; return false; }
-    for (i = 1; i < xtmp.size(); i++) homeVel[i - 1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) homeVel[i - 1] = xtmp.get(i).asFloat64();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupMaxPwm");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of startupMaxPwm params"; return false; }
-    for (i = 1; i < xtmp.size(); i++) maxPWM[i - 1] = xtmp.get(i).asInt();
+    for (i = 1; i < xtmp.size(); i++) maxPWM[i - 1] = xtmp.get(i).asInt32();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupPosThreshold");
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupPosThreshold params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asFloat64();
  
     calibJointsString = p.findGroup("CALIB_ORDER");
     int calib_order_size = calibJointsString.size();
@@ -222,7 +222,7 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
 
         for(int j=0; j<set->size(); j++)
         {
-            tmp.push_back(set->get(j).asInt() );
+            tmp.push_back(set->get(j).asInt32() );
         }
         joints.push_back(tmp);
     }
@@ -736,7 +736,7 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
         iPids->getPidOutput(VOCAB_PIDTYPE_POSITION, j, &output);
 
         delta = fabs(angj-zeroPos[j]);
-        yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" ,deviceName.c_str(),j,angj, zeroPos[j],delta, zeroPosThreshold[j], output, yarp::os::Vocab::decode(mode).c_str());
+        yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" ,deviceName.c_str(),j,angj, zeroPos[j],delta, zeroPosThreshold[j], output, yarp::os::Vocab32::decode(mode).c_str());
 
         if (delta < zeroPosThreshold[j] && done)
         {

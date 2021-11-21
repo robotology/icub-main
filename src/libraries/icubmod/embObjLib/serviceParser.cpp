@@ -690,12 +690,12 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 servCanBoard_t item;
 
                 convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
-                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt(), item.protocol.major, formaterror);
-                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt(), item.protocol.minor, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt32(), item.protocol.major, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt32(), item.protocol.minor, formaterror);
 
-                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt(), item.firmware.major, formaterror);
-                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt(), item.firmware.minor, formaterror);
-                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt(), item.firmware.build, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt32(), item.firmware.major, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt32(), item.firmware.minor, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt32(), item.firmware.build, formaterror);
 
                 as_service.properties.canboards.push_back(item);
             }
@@ -836,7 +836,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             return false;
         }
 
-        convert(b_SETTINGS_acquisitionRate.get(1).asInt(), as_service.settings.acquisitionrate, formaterror);
+        convert(b_SETTINGS_acquisitionRate.get(1).asInt32(), as_service.settings.acquisitionrate, formaterror);
 
 
         as_service.settings.enabledsensors.resize(0);
@@ -1062,12 +1062,12 @@ bool ServiceParser::check_skin(Searchable &config)
             sk_service.properties.canboard.clear();
 
             convert(b_PROPERTIES_CANBOARDS_type.get(1).asString(), sk_service.properties.canboard.type, formaterror);
-            convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(1).asInt(), sk_service.properties.canboard.protocol.major, formaterror);
-            convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(1).asInt(), sk_service.properties.canboard.protocol.minor, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(1).asInt32(), sk_service.properties.canboard.protocol.major, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(1).asInt32(), sk_service.properties.canboard.protocol.minor, formaterror);
 
-            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(1).asInt(), sk_service.properties.canboard.firmware.major, formaterror);
-            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(1).asInt(), sk_service.properties.canboard.firmware.minor, formaterror);
-            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(1).asInt(), sk_service.properties.canboard.firmware.build, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(1).asInt32(), sk_service.properties.canboard.firmware.major, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(1).asInt32(), sk_service.properties.canboard.firmware.minor, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(1).asInt32(), sk_service.properties.canboard.firmware.build, formaterror);
 
 
 
@@ -1215,7 +1215,7 @@ bool ServiceParser::check_skin(Searchable &config)
             return false;
         }
 
-        convert(b_SETTINGS_acquisitionRate.get(1).asInt(), sk_service.settings.acquisitionrate, formaterror);
+        convert(b_SETTINGS_acquisitionRate.get(1).asInt32(), sk_service.settings.acquisitionrate, formaterror);
 
 
         sk_service.settings.enabledsensors.resize(0);
@@ -1453,7 +1453,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     }
     else
     {
-        ftconfig.temperatureAcquisitionrate = b_SETTINGS_temp.get(1).asInt();
+        ftconfig.temperatureAcquisitionrate = b_SETTINGS_temp.get(1).asInt32();
         //TODO: chek that the acquisition rate is inside a reasonable range
     }
     
@@ -2870,12 +2870,12 @@ bool ServiceParser::check_motion(Searchable &config)
             servCanBoard_t item;
 
             convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
-            convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt(), item.protocol.major, formaterror);
-            convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt(), item.protocol.minor, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt32(), item.protocol.major, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt32(), item.protocol.minor, formaterror);
 
-            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt(), item.firmware.major, formaterror);
-            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt(), item.firmware.minor, formaterror);
-            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt(), item.firmware.build, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt32(), item.firmware.major, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt32(), item.firmware.minor, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt32(), item.firmware.build, formaterror);
 
             mc_service.properties.canboards.push_back(item);
         }
@@ -3017,11 +3017,11 @@ bool ServiceParser::check_motion(Searchable &config)
         // 1. get values for SHIFTS
 
         uint8_t value = 0;
-        if(true == convert(b_PROPERTIES_MC4_SHIFTS_velocity.get(1).asInt(), value, formaterror))
+        if(true == convert(b_PROPERTIES_MC4_SHIFTS_velocity.get(1).asInt32(), value, formaterror))
         {
             mc_service.properties.mc4shifts.velocity = value;
         }
-        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimJointVelocity.get(1).asInt(), value, formaterror))
+        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimJointVelocity.get(1).asInt32(), value, formaterror))
         {
             if(value > 15)
             {
@@ -3030,7 +3030,7 @@ bool ServiceParser::check_motion(Searchable &config)
             }
             mc_service.properties.mc4shifts.estimJointVelocity = value;
         }
-        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration.get(1).asInt(), value, formaterror))
+        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration.get(1).asInt32(), value, formaterror))
         {
             if(value > 15)
             {
@@ -3039,7 +3039,7 @@ bool ServiceParser::check_motion(Searchable &config)
             }
             mc_service.properties.mc4shifts.estimJointAcceleration = value;
         }
-        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity.get(1).asInt(), value, formaterror))
+        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity.get(1).asInt32(), value, formaterror))
         {
             if(value > 15)
             {
@@ -3048,7 +3048,7 @@ bool ServiceParser::check_motion(Searchable &config)
             }
             mc_service.properties.mc4shifts.estimMotorVelocity = value;
         }
-        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration.get(1).asInt(), value, formaterror))
+        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration.get(1).asInt32(), value, formaterror))
         {
             if(value > 15)
             {
@@ -3457,9 +3457,9 @@ bool ServiceParser::check_motion(Searchable &config)
             }
             enc1.desc.pos = encposition;
 
-            enc1.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.get(i+1).asInt();
+            enc1.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.get(i+1).asInt32();
 
-            enc1.tolerance = b_PROPERTIES_JOINTMAPPING_ENCODER1_tolerance.get(i+1).asDouble();
+            enc1.tolerance = b_PROPERTIES_JOINTMAPPING_ENCODER1_tolerance.get(i+1).asFloat64();
 
 
 
@@ -3511,8 +3511,8 @@ bool ServiceParser::check_motion(Searchable &config)
 
             enc2.desc.pos = encposition;
 
-            enc2.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.get(i+1).asInt();
-            enc2.tolerance = b_PROPERTIES_JOINTMAPPING_ENCODER2_tolerance.get(i+1).asDouble();
+            enc2.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.get(i+1).asInt32();
+            enc2.tolerance = b_PROPERTIES_JOINTMAPPING_ENCODER2_tolerance.get(i+1).asFloat64();
 
 
             // ok, we push act, enc1, enc2
@@ -3547,13 +3547,13 @@ bool ServiceParser::check_motion(Searchable &config)
                 {
                     yWarning() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.DIAGNOSTICS.mode. Using {eOmn_serv_diagn_mode_NONE, 0}";
                 }
-                else if(!b_PROPERTIES_DIAGNOSTICS_par16.get(1).isInt())
+                else if(!b_PROPERTIES_DIAGNOSTICS_par16.get(1).isInt32())
                 {
                     yWarning() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.DIAGNOSTICS.par16. Using {eOmn_serv_diagn_mode_NONE, 0}";
                 }
                 else
                 {
-                    par16 = b_PROPERTIES_DIAGNOSTICS_par16.get(1).asInt();
+                    par16 = b_PROPERTIES_DIAGNOSTICS_par16.get(1).asInt32();
                 }
 
                 mc_service.diagconfig.mode = dm;

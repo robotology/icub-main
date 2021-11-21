@@ -111,14 +111,14 @@ public:
     bool threadInit()
     {
         name=rf.check("name",Value("motionCUT")).asString();
-        coverXratio=rf.check("coverXratio",Value(0.75)).asDouble();
-        coverYratio=rf.check("coverYratio",Value(0.75)).asDouble();
-        nodesStep=rf.check("nodesStep",Value(6)).asInt();
-        winSize=rf.check("winSize",Value(15)).asInt();
-        recogThres=rf.check("recogThres",Value(0.01)).asDouble();
-        adjNodesThres=rf.check("adjNodesThres",Value(4)).asInt();
-        blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt();
-        framesPersistence=rf.check("framesPersistence",Value(3)).asInt();
+        coverXratio=rf.check("coverXratio",Value(0.75)).asFloat64();
+        coverYratio=rf.check("coverYratio",Value(0.75)).asFloat64();
+        nodesStep=rf.check("nodesStep",Value(6)).asInt32();
+        winSize=rf.check("winSize",Value(15)).asInt32();
+        recogThres=rf.check("recogThres",Value(0.01)).asFloat64();
+        adjNodesThres=rf.check("adjNodesThres",Value(4)).asInt32();
+        blobMinSizeThres=rf.check("blobMinSizeThres",Value(10)).asInt32();
+        framesPersistence=rf.check("framesPersistence",Value(3)).asInt32();
         verbosity=rf.check("verbosity");
 
         cropSize=0;
@@ -126,7 +126,7 @@ public:
         {
             Value &vCropSize=rf.find("cropSize");
             if (!vCropSize.isString())
-                cropSize=vCropSize.asInt();
+                cropSize=vCropSize.asInt32();
         }
 
         recogThresAbs=recogThres*((256*winSize*winSize)/100.0);
@@ -254,7 +254,7 @@ public:
 
             Bottle &nodesStepBottle=nodesBottle.addList();
             nodesStepBottle.addString("nodesStep");
-            nodesStepBottle.addInt(nodesStep);
+            nodesStepBottle.addInt32(nodesStep);
 
             // purge the content of variables
             activeNodesIndexSet.clear();
@@ -285,8 +285,8 @@ public:
                     circle(imgMonoOptMat,node,1,Scalar(255),2);
 
                     Bottle &nodeBottle=nodesBottle.addList();
-                    nodeBottle.addInt((int)nodesPrev[i].x);
-                    nodeBottle.addInt((int)nodesPrev[i].y);
+                    nodeBottle.addInt32((int)nodesPrev[i].x);
+                    nodeBottle.addInt32((int)nodesPrev[i].y);
 
                     // update the active nodes set
                     activeNodesIndexSet.insert((int)i);
@@ -325,8 +325,8 @@ public:
                             circle(imgMonoOptMat,node,1,Scalar(255),2);
 
                             Bottle &nodeBottle=nodesBottle.addList();
-                            nodeBottle.addInt((int)nodesPrev[i].x);
-                            nodeBottle.addInt((int)nodesPrev[i].y);
+                            nodeBottle.addInt32((int)nodesPrev[i].x);
+                            nodeBottle.addInt32((int)nodesPrev[i].y);
 
                             // update the active nodes set
                             activeNodesIndexSet.insert((int)i);
@@ -350,9 +350,9 @@ public:
                 Point centroid=Point(blob.centroid.x,blob.centroid.y);
 
                 Bottle &blobBottle=blobsBottle.addList();
-                blobBottle.addInt(centroid.x);
-                blobBottle.addInt(centroid.y);
-                blobBottle.addInt(blob.size);
+                blobBottle.addInt32(centroid.x);
+                blobBottle.addInt32(centroid.y);
+                blobBottle.addInt32(blob.size);
 
                 circle(imgBgrOutMat,centroid,4,Scalar(blueLev,0,redLev),3);
             }
@@ -391,9 +391,9 @@ public:
             if ((cropPort.getOutputCount()>0) && (blobsBottle.size()>0))
             {
                 Bottle &blob=*blobsBottle.get(0).asList();
-                int x=blob.get(0).asInt();
-                int y=blob.get(1).asInt();
-                int d=(cropSize>0)?cropSize:(int)(nodesStep*sqrt((double)blob.get(2).asInt()));
+                int x=blob.get(0).asInt32();
+                int y=blob.get(1).asInt32();
+                int d=(cropSize>0)?cropSize:(int)(nodesStep*sqrt((double)blob.get(2).asInt32()));
                 int d2=d>>1;
 
                 Point tl=Point(std::max(x-d2,0),std::max(y-d2,0));
@@ -522,35 +522,35 @@ public:
 
                 if (subcmd=="winSize")
                 {
-                    winSize=req.get(2).asInt();
+                    winSize=req.get(2).asInt32();
                     reply.addString("ack");
                 }
                 else if (subcmd=="recogThres")
                 {
-                    recogThres=req.get(2).asDouble();
+                    recogThres=req.get(2).asFloat64();
                     recogThresAbs=recogThres*((256*winSize*winSize)/100.0);
                     reply.addString("ack");
                 }
                 else if (subcmd=="adjNodesThres")
                 {
-                    adjNodesThres=req.get(2).asInt();
+                    adjNodesThres=req.get(2).asInt32();
                     reply.addString("ack");
                 }
                 else if (subcmd=="blobMinSizeThres")
                 {
-                    blobMinSizeThres=req.get(2).asInt();
+                    blobMinSizeThres=req.get(2).asInt32();
                     reply.addString("ack");
                 }
                 else if (subcmd=="framesPersistence")
                 {
-                    framesPersistence=req.get(2).asInt();
+                    framesPersistence=req.get(2).asInt32();
                     reply.addString("ack");
                 }
                 else if (subcmd=="cropSize")
                 {
                     Value &vCropSize=req.get(2);
                     if (!vCropSize.isString())
-                        cropSize=vCropSize.asInt();
+                        cropSize=vCropSize.asInt32();
                     else
                         cropSize=0;
 
@@ -577,19 +577,19 @@ public:
                 string subcmd=req.get(1).asString();
 
                 if (subcmd=="winSize")
-                    reply.addInt(winSize);
+                    reply.addInt32(winSize);
                 else if (subcmd=="recogThres")
-                    reply.addDouble(recogThres);
+                    reply.addFloat64(recogThres);
                 else if (subcmd=="adjNodesThres")
-                    reply.addInt(adjNodesThres);
+                    reply.addInt32(adjNodesThres);
                 else if (subcmd=="blobMinSizeThres")
-                    reply.addInt(blobMinSizeThres);
+                    reply.addInt32(blobMinSizeThres);
                 else if (subcmd=="framesPersistence")
-                    reply.addInt(framesPersistence);
+                    reply.addInt32(framesPersistence);
                 else if (subcmd=="cropSize")
                 {
                     if (cropSize>0)
-                        reply.addInt(cropSize);
+                        reply.addInt32(cropSize);
                     else
                         reply.addString("auto");
                 }

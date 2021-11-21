@@ -52,22 +52,22 @@ bool SphericalCalibTool::configure (Searchable &config){
     // Defaults will correspond to a view field of 90 deg.
     _calibImgSize.width = config.check("w",
                                       Value(320),
-                                      "Image width for which calibration parameters were calculated (int)").asInt();
+                                      "Image width for which calibration parameters were calculated (int)").asInt32();
     _calibImgSize.height = config.check("h",
                                       Value(240),
-                                      "Image height for which calibration parameters were calculated (int)").asInt();
+                                      "Image height for which calibration parameters were calculated (int)").asInt32();
     _drawCenterCross = config.check("drawCenterCross",
                                     Value(0),
-                                    "Draw a cross at calibration center (int [0|1]).").asInt()!=0;
+                                    "Draw a cross at calibration center (int [0|1]).").asInt32()!=0;
 
-    _fx = config.check("fx", Value(320.0), "Focal distance (on horizontal pixel size units) (double)").asDouble();
-    _fy = config.check("fy", Value(240.0), "Focal distance (on vertical pixel size units) (double)").asDouble();
-    _cx = config.check("cx", Value(320.0), "Image center (on horizontal pixel size units) (double)").asDouble();
-    _cy = config.check("cy", Value(240.0), "Image center (on vertical pixel size units) (double)").asDouble();
-    _k1 = config.check("k1", Value(0.0), "Radial distortion (first parameter) (double)").asDouble();
-    _k2 = config.check("k2", Value(0.0), "Radial distortion (second parameter) (double)").asDouble();
-    _p1 = config.check("p1", Value(0.0), "Tangential distortion (first parameter) (double)").asDouble();
-    _p2 = config.check("p2", Value(0.0), "Tangential distortion (second parameter) (double)").asDouble();
+    _fx = config.check("fx", Value(320.0), "Focal distance (on horizontal pixel size units) (double)").asFloat64();
+    _fy = config.check("fy", Value(240.0), "Focal distance (on vertical pixel size units) (double)").asFloat64();
+    _cx = config.check("cx", Value(320.0), "Image center (on horizontal pixel size units) (double)").asFloat64();
+    _cy = config.check("cy", Value(240.0), "Image center (on vertical pixel size units) (double)").asFloat64();
+    _k1 = config.check("k1", Value(0.0), "Radial distortion (first parameter) (double)").asFloat64();
+    _k2 = config.check("k2", Value(0.0), "Radial distortion (second parameter) (double)").asFloat64();
+    _p1 = config.check("p1", Value(0.0), "Tangential distortion (first parameter) (double)").asFloat64();
+    _p2 = config.check("p2", Value(0.0), "Tangential distortion (second parameter) (double)").asFloat64();
 
     //check to see if the value is read correctly without caring about the default values.
     if ( !config.check("drawCenterCross") ) { stopConfig("drawCenterCross"); return false; }

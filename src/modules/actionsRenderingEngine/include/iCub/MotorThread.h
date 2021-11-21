@@ -55,9 +55,9 @@
 #define ARM_HOMING_PERIOD           1.5     //[s]
 
 
-#define S2C_HOMOGRAPHY              yarp::os::createVocab('h','o','m','o')
-#define S2C_DISPARITY               yarp::os::createVocab('d','i','s','p')
-#define S2C_NETWORK                 yarp::os::createVocab('n','e','t','w')
+#define S2C_HOMOGRAPHY              yarp::os::createVocab32('h','o','m','o')
+#define S2C_DISPARITY               yarp::os::createVocab32('d','i','s','p')
+#define S2C_NETWORK                 yarp::os::createVocab32('n','e','t','w')
 
 
 using namespace std;
@@ -308,7 +308,7 @@ public:
             if (Bottle *bCartesian=bTarget->find("cartesian").asList())
                 if ((size_t)bCartesian->size()==track_cartesian_target.length())
                     for (size_t i=0; i<track_cartesian_target.length(); i++)
-                        track_cartesian_target[i]=bCartesian->get(i).asDouble();
+                        track_cartesian_target[i]=bCartesian->get(i).asFloat64();
     }
 
 

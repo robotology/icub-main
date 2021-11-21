@@ -48,7 +48,7 @@ void ff2LayNN::setItem(Property &options, const string &tag, const Vector &item)
 {
     Bottle b; Bottle &v=b.addList();
     for (size_t i=0; i<item.length(); i++)
-        v.addDouble(item[i]);
+        v.addFloat64(item[i]);
 
     options.put(tag,b.get(0));
 }
@@ -61,7 +61,7 @@ bool ff2LayNN::getItem(const Property &options, const string &tag, Vector &item)
     {
         item.resize(b->size());
         for (size_t i=0; i<item.length(); i++)
-            item[i]=b->get(i).asDouble();
+            item[i]=b->get(i).asFloat64();
 
         return true;
     }
@@ -116,7 +116,7 @@ bool ff2LayNN::configure(const Property &options)
         !options.check("numOutputNodes"))
         return false;
 
-    int numHiddenNodes=options.find("numHiddenNodes").asInt();
+    int numHiddenNodes=options.find("numHiddenNodes").asInt32();
     for (int i=0; i<numHiddenNodes; i++)
     {
         ostringstream tag;
@@ -132,7 +132,7 @@ bool ff2LayNN::configure(const Property &options)
     if (!getItem(options,"b1",b1))
         return false;
 
-    int numOutputNodes=options.find("numOutputNodes").asInt();
+    int numOutputNodes=options.find("numOutputNodes").asInt32();
     for (int i=0; i<numOutputNodes; i++)
     {
         ostringstream tag;
@@ -148,7 +148,7 @@ bool ff2LayNN::configure(const Property &options)
     if (!getItem(options,"b2",b2))
         return false;
 
-    int numInputNodes=options.find("numInputNodes").asInt();
+    int numInputNodes=options.find("numInputNodes").asInt32();
     for (int i=0; i<numInputNodes; i++)
     {
         ostringstream tagX, tagY;

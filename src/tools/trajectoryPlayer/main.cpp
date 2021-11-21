@@ -123,8 +123,8 @@ public:
 
         Bottle& bot2 = this->port_data_out.prepare();
         bot2.clear();
-        bot2.addInt(actions->action_vector[j].counter);
-        bot2.addDouble(actions->action_vector[j].time);
+        bot2.addInt32(actions->action_vector[j].counter);
+        bot2.addFloat64(actions->action_vector[j].time);
 
         int size = this->actions->action_vector[j].get_n_joints();
         double *ll = actions->action_vector[j].q_joints;
@@ -132,30 +132,30 @@ public:
         bot2.addString("commands:");
         for (int ix=0;ix<size;ix++)
         {
-            bot2.addDouble(ll[ix]);
+            bot2.addFloat64(ll[ix]);
         }
         bot2.addString("encoders:");
         for (int ix=0;ix<size;ix++)
         {
-            bot2.addDouble(encs[ix]);
+            bot2.addFloat64(encs[ix]);
         }
         bot2.addString("outputs:");
         for (int ix=0;ix<size;ix++)
         {
-            bot2.addDouble(outs[ix]);
+            bot2.addFloat64(outs[ix]);
         }
         bot2.addString("optical:");
         for (int ix=0;ix<size;ix++)
         {
-            bot2.addDouble(opts[ix]);
+            bot2.addFloat64(opts[ix]);
         }
         bot2.addString("errors:");
         for (int ix=0;ix<size;ix++)
         {
-            bot2.addDouble(errs[ix]);
+            bot2.addFloat64(errs[ix]);
         }
         bot2.addString("timestamp:");
-        bot2.addDouble(yarp::os::Time::now());
+        bot2.addFloat64(yarp::os::Time::now());
         this->port_data_out.write();
     }
 };
@@ -221,8 +221,8 @@ public:
         //prepare the output command
         Bottle& bot = port_command_out.prepare();
         bot.clear();
-        bot.addInt(actions.action_vector[action_id].counter);
-        bot.addDouble(actions.action_vector[action_id].time);
+        bot.addInt32(actions.action_vector[action_id].counter);
+        bot.addFloat64(actions.action_vector[action_id].time);
         bot.addString(actions.action_vector[action_id].tag.c_str());
         //@@@ you can add stuff here...
 
@@ -253,18 +253,18 @@ public:
         double *ll = actions.action_vector[action_id].q_joints;
         Bottle& bot2 = this->port_command_joints.prepare();
         bot2.clear();
-        bot2.addInt(actions.action_vector[action_id].counter);
-        bot2.addDouble(actions.action_vector[action_id].time);
+        bot2.addInt32(actions.action_vector[action_id].counter);
+        bot2.addFloat64(actions.action_vector[action_id].time);
         int size = this->actions.action_vector[action_id].get_n_joints();
         bot2.addString("commands:");
         for (int ix=0;ix<size;ix++)
         {
-            bot2.addDouble(ll[ix]);
+            bot2.addFloat64(ll[ix]);
         }
         bot2.addString("encoders:");
         for (int ix=0;ix<size;ix++)
         {
-            bot2.addDouble(encs[ix]);
+            bot2.addFloat64(encs[ix]);
         }
         this->port_command_joints.write();
     }
@@ -488,7 +488,7 @@ public:
 
         if (rf.check("period")==true)
         {
-            int period = rf.find("period").asInt();
+            int period = rf.find("period").asInt32();
             yInfo() << "Thread period set to " << period << "ms";
             w_thread.setPeriod((double)period/1000.0);
         }
@@ -502,7 +502,7 @@ public:
             int req_joints = 0; //default value
             if (rf.check("joints")) 
             {
-                req_joints = rf.find("joints").asInt();}
+                req_joints = rf.find("joints").asInt32();}
             else
             {
                 yError() << "Missing parameter 'joints' (number of joints to control)";
@@ -528,7 +528,7 @@ public:
                 if (b->size() != req_joints) { yError() << "invalid size of jointsMap parameter"; return false; }
                 for (int i = 0; i < b->size(); i++)
                 {
-                    robot.joints_map[i] = b->get(i).asInt();
+                    robot.joints_map[i] = b->get(i).asInt32();
                 }
             }
             else
@@ -575,8 +575,8 @@ public:
                         cout << "load" << endl;
                         cout << "forever" << endl;
                         cout << "list" << endl;
-                        reply.addVocab(Vocab::encode("many"));
-                        reply.addVocab(Vocab::encode("ack"));
+                        reply.addVocab32("many");
+                        reply.addVocab32("ack");
                         reply.addString("Available commands:");
                         reply.addString("start");
                         reply.addString("stop");
@@ -598,7 +598,7 @@ public:
                         this->b_thread.attachActions(&w_thread.actions);
                         if (this->b_thread.isRunning()==false) b_thread.start();
 
-                        reply.addVocab(Vocab::encode("ack"));
+                        reply.addVocab32("ack");
                     }
                 else if  (cmdstring == "forever")
                     {
@@ -607,31 +607,31 @@ public:
                         else
                             this->w_thread.actions.current_status = ACTION_RUNNING;
                         w_thread.actions.forever = true;
-                        reply.addVocab(Vocab::encode("ack"));
+                        reply.addVocab32("ack");
                     }
                 else if  (cmdstring == "stop")
                     {
                         this->w_thread.actions.current_status = ACTION_STOP;
                         if (this->b_thread.isRunning()==true) b_thread.askToStop();
 
-                        reply.addVocab(Vocab::encode("ack"));
+                        reply.addVocab32("ack");
                     }
                 else if  (cmdstring == "clear")
                     {
                         this->w_thread.actions.clear();
-                        reply.addVocab(Vocab::encode("ack"));
+                        reply.addVocab32("ack");
                     }
                 else if  (cmdstring == "add")
                     {
                         if(!w_thread.actions.parseCommandLine(command.get(1).asString().c_str(), -1, robot.n_joints))
                         {
                             yError() << "Unable to parse command";
-                            reply.addVocab(Vocab::encode("ERROR Unable to parse file"));
+                            reply.addVocab32("error");
                         }
                         else
                         {
                             yInfo() << "Command added";
-                            reply.addVocab(Vocab::encode("ack"));
+                            reply.addVocab32("ack");
                         }
                     }
                 else if  (cmdstring == "load")
@@ -640,12 +640,12 @@ public:
                         if (!w_thread.actions.openFile(filename, robot.n_joints))
                         {
                             yError() << "Unable to parse file";
-                            reply.addVocab(Vocab::encode("ERROR Unable to parse file"));
+                            reply.addVocab32("error");
                         }
                         else
                         {
                             yInfo() << "File opened";
-                            reply.addVocab(Vocab::encode("ack"));
+                            reply.addVocab32("ack");
                         }
                     }
                 else if  (cmdstring == "reset")
@@ -655,23 +655,23 @@ public:
 
                         if (this->b_thread.isRunning()==true) b_thread.askToStop();
 
-                        reply.addVocab(Vocab::encode("ack"));
+                        reply.addVocab32("ack");
                     }
                 else if  (cmdstring == "list")
                     {
                         this->w_thread.actions.print();
-                        reply.addVocab(Vocab::encode("ack"));
+                        reply.addVocab32("ack");
                     }
                 else
                     {
-                        reply.addVocab(Vocab::encode("nack"));
+                        reply.addVocab32("nack");
                         ret = false;
                     }
             }
         }
         else
         {
-            reply.addVocab(Vocab::encode("nack"));
+            reply.addVocab32("nack");
             ret = false;
         }
 

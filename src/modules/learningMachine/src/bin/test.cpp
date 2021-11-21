@@ -344,12 +344,12 @@ public:
             if(val->isList()) {
                 Bottle* inputs = val->asList();
                 for(int i = 0; i < inputs->size(); i++) {
-                    if(inputs->get(i).isInt()) {
-                        this->dataset.addInputColumn(inputs->get(i).asInt());
+                    if(inputs->get(i).isInt32()) {
+                        this->dataset.addInputColumn(inputs->get(i).asInt32());
                     }
                 }
-            } else if(val->isInt()) {
-                this->dataset.addInputColumn(val->asInt());
+            } else if(val->isInt32()) {
+                this->dataset.addInputColumn(val->asInt32());
             }
         } else {
             this->dataset.addInputColumn(1);
@@ -361,12 +361,12 @@ public:
             if(val->isList()) {
                 Bottle* outputs = val->asList();
                 for(int i = 0; i < outputs->size(); i++) {
-                    if(outputs->get(i).isInt()) {
-                        this->dataset.addOutputColumn(outputs->get(i).asInt());
+                    if(outputs->get(i).isInt32()) {
+                        this->dataset.addOutputColumn(outputs->get(i).asInt32());
                     }
                 }
-            } else if(val->isInt()) {
-                this->dataset.addOutputColumn(val->asInt());
+            } else if(val->isInt32()) {
+                this->dataset.addOutputColumn(val->asInt32());
             }
         } else {
             this->dataset.addOutputColumn(2);
@@ -374,7 +374,7 @@ public:
 
         // check for port specifier: portSuffix
         if(opt.check("frequency", val)) {
-            this->frequency = val->asInt();
+            this->frequency = val->asInt32();
         } else {
             this->frequency = 0;
         }
@@ -408,10 +408,10 @@ public:
         bool success = false;
 
         try {
-            switch(cmd.get(0).asVocab()) {
-                case yarp::os::createVocab('h','e','l','p'): // print help information
+            switch(cmd.get(0).asVocab32()) {
+                case yarp::os::createVocab32('h','e','l','p'): // print help information
                     success = true;
-                    reply.add(Value::makeVocab("help"));
+                    reply.add(Value::makeVocab32("help"));
 
                     reply.addString("Testing module configuration options");
                     reply.addString("  help                  Displays this message");
@@ -424,19 +424,19 @@ public:
                     reply.addString("  open fname            Opens a datafile");
                     reply.addString("  freq f                Sampling frequency in Hertz (0 for disabled)");
                     break;
-                case yarp::os::createVocab('c','o','n','f'): // print the configuration
+                case yarp::os::createVocab32('c','o','n','f'): // print the configuration
                     {
                     success = true;
                     this->printConfig();
                     break;
                     }
 
-                case yarp::os::createVocab('s','k','i','p'): // skip some training sample(s)
+                case yarp::os::createVocab32('s','k','i','p'): // skip some training sample(s)
                     {
                     success = true;
                     int noSamples = 1;
-                    if(cmd.get(1).isInt()) {
-                        noSamples = cmd.get(1).asInt();
+                    if(cmd.get(1).isInt32()) {
+                        noSamples = cmd.get(1).asInt32();
                     }
 
                     for(int i = 0; i < noSamples; i++) {
@@ -448,13 +448,13 @@ public:
                     break;
                     }
 
-                case yarp::os::createVocab('t','r','a','i'): // send training sample(s)
+                case yarp::os::createVocab32('t','r','a','i'): // send training sample(s)
                     {
-                    reply.add(Value::makeVocab("help"));
+                    reply.add(Value::makeVocab32("help"));
                     success = true;
                     int noSamples = 1;
-                    if(cmd.get(1).isInt()) {
-                        noSamples = cmd.get(1).asInt();
+                    if(cmd.get(1).isInt32()) {
+                        noSamples = cmd.get(1).asInt32();
                     }
 
                     //double start = yarp::os::Time::now();
@@ -475,13 +475,13 @@ public:
                     break;
                     }
 
-                case yarp::os::createVocab('p','r','e','d'): // send prediction sample(s)
+                case yarp::os::createVocab32('p','r','e','d'): // send prediction sample(s)
                     {
-                    reply.add(Value::makeVocab("help"));
+                    reply.add(Value::makeVocab32("help"));
                     success = true;
                     int noSamples = 1;
-                    if(cmd.get(1).isInt()) {
-                        noSamples = cmd.get(1).asInt();
+                    if(cmd.get(1).isInt32()) {
+                        noSamples = cmd.get(1).asInt32();
                     }
 
                     // initiate error vector (not completely failsafe!)
@@ -544,13 +544,13 @@ public:
                     break;
                     }
 
-                case yarp::os::createVocab('s','h','o','o'):
+                case yarp::os::createVocab32('s','h','o','o'):
                     {
                     success = true;
                     Vector input;
                     for(int i = 1; i <= cmd.size(); i++) {
-                        if(cmd.get(i).isDouble() || cmd.get(i).isInt()) {
-                            input.push_back(cmd.get(i).asDouble());
+                        if(cmd.get(i).isFloat64() || cmd.get(i).isInt32()) {
+                            input.push_back(cmd.get(i).asFloat64());
                         }
                     }
                     Prediction prediction = this->sendPredictSample(input);
@@ -560,7 +560,7 @@ public:
                     break;
                     }
 
-                case yarp::os::createVocab('o','p','e','n'):
+                case yarp::os::createVocab32('o','p','e','n'):
                     success = true;
                     if(cmd.get(1).isString()) {
                         std::cout << "Open..." << std::endl;
@@ -569,24 +569,24 @@ public:
                     reply.addString((std::string("Opened dataset: ") + cmd.get(1).asString().c_str()).c_str());
                     break;
 
-                case yarp::os::createVocab('r','e','s','e'):
-                case yarp::os::createVocab('r','s','t'):
+                case yarp::os::createVocab32('r','e','s','e'):
+                case yarp::os::createVocab32('r','s','t'):
                     success = true;
                     this->dataset.reset();
                     reply.addString("Dataset reset to beginning");
                     break;
 
-                case yarp::os::createVocab('f','r','e','q'): // set sampling frequency
+                case yarp::os::createVocab32('f','r','e','q'): // set sampling frequency
                     {
-                    if(cmd.size() > 1 && cmd.get(1).isInt()) {
+                    if(cmd.size() > 1 && cmd.get(1).isInt32()) {
                         success = true;
-                        this->frequency = cmd.get(1).asInt();
+                        this->frequency = cmd.get(1).asInt32();
                         reply.addString((std::string("Current frequency: ") + inttostring(this->frequency)).c_str());
                     }
                     break;
                     }
 
-                case yarp::os::createVocab('s','e','t'): // set some configuration options
+                case yarp::os::createVocab32('s','e','t'): // set some configuration options
                     // implement some options
                     break;
 

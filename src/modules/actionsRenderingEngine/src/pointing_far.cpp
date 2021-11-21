@@ -67,7 +67,7 @@ public:
             hand=hand.substr(0,underscore);
 
         // update joints limits
-        for (size_t i=0; i<finger_tip->getN(); i++)
+        for (unsigned int i=0; i<finger_tip->getN(); i++)
         {
             double min,max;
             iarm->getLimits(i,&min,&max);
@@ -134,7 +134,7 @@ public:
     void getResult(Vector &q, Vector &x) const
     {
         q.resize(finger_tip->getN());
-        for (size_t i=0; i<q.length(); i++)
+        for (unsigned int i=0; i<q.length(); i++)
             q[i]=RAD2DEG*finger_tip->getAng(i);
         x=finger_tip->EndEffPose();
     }
@@ -315,7 +315,7 @@ bool PointingFar::compute(ICartesianControl *iarm, const Property& requirements,
     
     Vector point(3,0.0);
     for (int i=0; i<bPoint->size(); i++)
-        point[i]=bPoint->get(i).asDouble();
+        point[i]=bPoint->get(i).asFloat64();
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
     app->Options()->SetNumericValue("tol",0.01);
@@ -337,7 +337,7 @@ bool PointingFar::compute(ICartesianControl *iarm, const Property& requirements,
     {
         Vector finger_joints(bFingerJoints->size());
         for (size_t i=0; i<finger_joints.length(); i++)
-            finger_joints[i]=bFingerJoints->get(i).asDouble();
+            finger_joints[i]=bFingerJoints->get(i).asFloat64();
         nlp->setFingerJoints(finger_joints);
     }
 
@@ -358,7 +358,7 @@ bool PointingFar::point(ICartesianControl *iarm, const Vector& q, const Vector& 
         // specify all joints
         Vector dof(10,1.0);
         iarm->setDOF(dof,dof);
-        for (size_t i=0; i<q.length(); i++)
+        for (unsigned int i=0; i<q.length(); i++)
             iarm->setLimits(i,q[i],q[i]);
 
         double traj;

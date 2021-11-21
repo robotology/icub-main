@@ -56,16 +56,16 @@ int main(int argc, char *argv[])
         height = window->height();
 
         if (Window->check("PosX",val)||Window->check("x",val)){
-            posX = val->asInt();
+            posX = val->asInt32();
         }
         if (Window->check("PosY",val)||Window->check("y",val)){
-                posY = val->asInt();
+                posY = val->asInt32();
         }
         if (Window->check("width",val)){
-            width = val->asInt();
+            width = val->asInt32();
         }
         if (Window->check("height",val)){
-            height = val->asInt();
+            height = val->asInt32();
         }
 
         window->resize(width,height);

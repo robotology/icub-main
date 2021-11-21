@@ -311,9 +311,9 @@ public:
     {
         reply.clear(); 
         
-        if (command.get(0).isInt())
+        if (command.get(0).isInt32())
         {
-            if (command.get(0).asInt()==0)
+            if (command.get(0).asInt32()==0)
             {
                 yInfo("Asking recalibration...\n");
                 if (inv_dyn)
@@ -332,7 +332,7 @@ public:
         {
             if (command.get(0).asString()=="help")
             {
-                reply.addVocab(Vocab::encode("many"));
+                reply.addVocab32("many");
                 reply.addString("Available commands:");
                 reply.addString("calib all");
                 reply.addString("calib arms");
@@ -497,7 +497,7 @@ public:
         int rate = 10;
         if (rf.check("period"))
         {
-            rate = rf.find("period").asInt();
+            rate = rf.find("period").asInt32();
             yInfo("rateThread working at %d ms\n", rate);
         }
         else

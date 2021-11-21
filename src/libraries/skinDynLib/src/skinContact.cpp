@@ -108,42 +108,42 @@ bool skinContact::write(ConnectionWriter& connection) const
     // - a list of N int, i.e. the active taxel ids
     // - a double, i.e. the pressure
 
-    connection.appendInt(BOTTLE_TAG_LIST);
-    connection.appendInt(8);
+    connection.appendInt32(BOTTLE_TAG_LIST);
+    connection.appendInt32(8);
     // list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_INT);
-    connection.appendInt(4);
-    connection.appendInt(contactId);
-    connection.appendInt(bodyPart);    // left_arm, right_arm, ...
-    connection.appendInt(linkNumber);
-    connection.appendInt(skinPart);
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_INT32);
+    connection.appendInt32(4);
+    connection.appendInt32(contactId);
+    connection.appendInt32(bodyPart);    // left_arm, right_arm, ...
+    connection.appendInt32(linkNumber);
+    connection.appendInt32(skinPart);
     // list of 3 double, i.e. the CoP
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
-    connection.appendInt(3);
-    for(int i=0;i<3;i++) connection.appendDouble(CoP[i]);
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_FLOAT64);
+    connection.appendInt32(3);
+    for(int i=0;i<3;i++) connection.appendFloat64(CoP[i]);
     // list of 3 double, i.e. the force
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
-    connection.appendInt(3);
-    for(int i=0;i<3;i++) connection.appendDouble(F[i]);
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_FLOAT64);
+    connection.appendInt32(3);
+    for(int i=0;i<3;i++) connection.appendFloat64(F[i]);
     // list of 3 double, i.e. the moment
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
-    connection.appendInt(3);
-    for(int i=0;i<3;i++) connection.appendDouble(Mu[i]);
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_FLOAT64);
+    connection.appendInt32(3);
+    for(int i=0;i<3;i++) connection.appendFloat64(Mu[i]);
     // - a list of 3 double, i.e. the geometric center
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
-    connection.appendInt(3);
-    for(int i=0;i<3;i++) connection.appendDouble(geoCenter[i]);
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_FLOAT64);
+    connection.appendInt32(3);
+    for(int i=0;i<3;i++) connection.appendFloat64(geoCenter[i]);
     // - a list of 3 double, i.e. the normal direction
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
-    connection.appendInt(3);
-    for(int i=0;i<3;i++) connection.appendDouble(normalDir[i]);
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_FLOAT64);
+    connection.appendInt32(3);
+    for(int i=0;i<3;i++) connection.appendFloat64(normalDir[i]);
     // - a list of N int, i.e. the active taxel ids
-    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_INT);
-    connection.appendInt(activeTaxels);
-    for(unsigned int i=0;i<activeTaxels;i++) connection.appendInt(taxelList[i]);
+    connection.appendInt32(BOTTLE_TAG_LIST + BOTTLE_TAG_INT32);
+    connection.appendInt32(activeTaxels);
+    for(unsigned int i=0;i<activeTaxels;i++) connection.appendInt32(taxelList[i]);
     // - a double, i.e. the pressure
-    connection.appendInt(BOTTLE_TAG_DOUBLE);
-    connection.appendDouble(pressure);
+    connection.appendInt32(BOTTLE_TAG_FLOAT64);
+    connection.appendFloat64(pressure);
 
     // if someone is foolish enough to connect in text mode,
     // let them see something readable.
@@ -165,54 +165,54 @@ bool skinContact::read(ConnectionReader& connection){
     // - a list of 3 double, i.e. the normal direction
     // - a list of N int, i.e. the active taxel ids
     // - a double, i.e. the pressure
-    if(connection.expectInt() != BOTTLE_TAG_LIST || connection.expectInt() != 8)
+    if(connection.expectInt32() != BOTTLE_TAG_LIST || connection.expectInt32() != 8)
         return false;
 
     // - a list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT || connection.expectInt()!=4)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT32 || connection.expectInt32()!=4)
         return false;
-    contactId   = connection.expectInt();
-    bodyPart    = (BodyPart)connection.expectInt();
-    linkNumber  = connection.expectInt();
-    skinPart    = (SkinPart) connection.expectInt();
+    contactId   = connection.expectInt32();
+    bodyPart    = (BodyPart)connection.expectInt32();
+    linkNumber  = connection.expectInt32();
+    skinPart    = (SkinPart) connection.expectInt32();
 
     // - a list of 3 double, i.e. the CoP
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_FLOAT64 || connection.expectInt32()!=3)
         return false;
-    for(int i=0;i<3;i++) CoP[i] = connection.expectDouble();
+    for(int i=0;i<3;i++) CoP[i] = connection.expectFloat64();
 
     // - a list of 3 double, i.e. the force
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_FLOAT64 || connection.expectInt32()!=3)
         return false;
-    for(int i=0;i<3;i++) F[i] = connection.expectDouble();
+    for(int i=0;i<3;i++) F[i] = connection.expectFloat64();
     setForce(F);
 
     // - a list of 3 double, i.e. the moment
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_FLOAT64 || connection.expectInt32()!=3)
         return false;
-    for(int i=0;i<3;i++) Mu[i] = connection.expectDouble();
+    for(int i=0;i<3;i++) Mu[i] = connection.expectFloat64();
 
     // - a list of 3 double, i.e. the geometric center
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_FLOAT64 || connection.expectInt32()!=3)
         return false;
-    for(int i=0;i<3;i++) geoCenter[i]   = connection.expectDouble();
+    for(int i=0;i<3;i++) geoCenter[i]   = connection.expectFloat64();
 
     // - a list of 3 double, i.e. the normal direction
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_FLOAT64 || connection.expectInt32()!=3)
         return false;
-    for(int i=0;i<3;i++) normalDir[i]   = connection.expectDouble();
+    for(int i=0;i<3;i++) normalDir[i]   = connection.expectFloat64();
 
     // - a list of N int, i.e. the active taxel ids
-    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT32)
         return false;
-    activeTaxels                        = connection.expectInt();
+    activeTaxels                        = connection.expectInt32();
     taxelList.resize(activeTaxels);
-    for(unsigned int i=0;i<activeTaxels;i++) taxelList[i] = connection.expectInt();
+    for(unsigned int i=0;i<activeTaxels;i++) taxelList[i] = connection.expectInt32();
 
     // - a double, i.e. the pressure
-    if(connection.expectInt()!=BOTTLE_TAG_DOUBLE)
+    if(connection.expectInt32()!=BOTTLE_TAG_FLOAT64)
         return false;
-    pressure                            = connection.expectDouble();
+    pressure                            = connection.expectFloat64();
 
     return !connection.isError();
 }

@@ -111,7 +111,7 @@ public:
             bool ok = m_enc->getEncoders(m_currState.data());
             m_mutex.lock();
             for (size_t i=0; i<datum.size(); i++) {
-                m_nextState[i] = datum.get(i).asDouble();
+                m_nextState[i] = datum.get(i).asFloat64();
                 if (m_nextState[i]<min[i] || m_nextState[i]> max[i]) {
                     yWarning()<<"ReplayPort: trying to move joint"<<i<<"of"<<m_partName<<" to "<<m_nextState[i]<<", it exceeds the limits, skipping...";
                     continue;
@@ -120,7 +120,7 @@ public:
                 ok &= delta < tolerance; // TODO improve the check calculating the distance between the 2 vector !!!
                 if (!ok && !m_simulator && (!m_isArm || i < 5)) { // 5 is for ignoring the hands in the security check
                     yWarning()<<"ReplayPort: joint"<<i<<"of"<<m_partName<<"is too far to the target position";
-                    yWarning()<<"Desired: "<<datum.get(i).asDouble()<<"current: "<<m_currState[i]
+                    yWarning()<<"Desired: "<<datum.get(i).asFloat64()<<"current: "<<m_currState[i]
                     <<"delta: "<<delta<<"Trying to reach "
                                                                                                         "it in Position Control, "
                                                                                                         "the playback will be paused";

@@ -68,10 +68,10 @@ EthReceiver::EthReceiver(int raterx): PeriodicThread((double)raterx/1000.0)
     yDebug() << "EthReceiver is a PeriodicThread with rxrate =" << rateofthread << "ms";
     // ok, and now i get it from xml file ... if i find it.
 
-//    std::string tmp = NetworkBase::getEnvironment("ETHSTAT_PRINT_INTERVAL");
+//    std::string tmp = yarp::conf::environment::get_string("ETHSTAT_PRINT_INTERVAL");
 //    if (tmp != "")
 //    {
-//        statPrintInterval = (double)NetType::toInt(tmp);
+//        statPrintInterval = (double)yarp::conf::numeric::from_string(tmp, 0.);
 //    }
 //    else
 //    {
@@ -111,9 +111,9 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
     int len = sizeof(mysize);
 
     // the user can change buffer size by environment variable ETHRECEIVER_BUFFER_SIZE
-    std::string _dgram_buffer_size = yarp::conf::environment::getEnvironment("ETHRECEIVER_BUFFER_SIZE");
+    std::string _dgram_buffer_size = yarp::conf::environment::get_string("ETHRECEIVER_BUFFER_SIZE");
     if (_dgram_buffer_size!="")
-        mysize = NetType::toInt(_dgram_buffer_size);
+        mysize = yarp::conf::numeric::from_string(_dgram_buffer_size, 0);
 
     retval = ACE_OS::setsockopt  (sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&mysize, sizeof(mysize));
     if (retval != 0)

@@ -67,17 +67,17 @@ public:
 
     bool consume(WorldOpTriplet& x, const char *msg) {
         if (failed) return false;
-        bool ok0 = (get(offset).isDouble()||get(offset).isInt());
-        bool ok1 = (get(offset+1).isDouble()||get(offset+1).isInt());
-        bool ok2 = (get(offset+2).isDouble()||get(offset+2).isInt());
+        bool ok0 = (get(offset).isFloat64()||get(offset).isInt32());
+        bool ok1 = (get(offset+1).isFloat64()||get(offset+1).isInt32());
+        bool ok2 = (get(offset+2).isFloat64()||get(offset+2).isInt32());
         x.valid = false;
         if (!(ok0&&ok1&&ok2)) {
             fail(msg);
             return false;
         }
-        x.x[0] = get(offset).asDouble();
-        x.x[1] = get(offset+1).asDouble();
-        x.x[2] = get(offset+2).asDouble();
+        x.x[0] = get(offset).asFloat64();
+        x.x[1] = get(offset+1).asFloat64();
+        x.x[2] = get(offset+2).asFloat64();
         x.valid = true;
         offset += 3;
         return true;
@@ -85,13 +85,13 @@ public:
 
     bool consume(WorldOpIndex& x, const char *msg) {
         if (failed) return false;
-        bool ok = (get(offset).isInt());
+        bool ok = (get(offset).isInt32());
         x.valid = false;
         if (!ok) {
             fail(msg);
             return false;
         }
-        x.index = get(offset).asInt();
+        x.index = get(offset).asInt32();
         x.valid = true;
         offset++;
         return true;
@@ -113,13 +113,13 @@ public:
 
     bool consume(WorldOpScalar& x, const char *msg) {
         if (failed) return false;
-        bool ok = (get(offset).isDouble()||get(offset).isInt());
+        bool ok = (get(offset).isFloat64()||get(offset).isInt32());
         x.valid = false;
         if (!ok) {
             fail(msg);
             return false;
         }
-        x.val = get(offset).asDouble();
+        x.val = get(offset).asFloat64();
         x.valid = true;
         offset++;
         return true;
@@ -150,7 +150,7 @@ public:
                ok = false;
         }
         else
-           ok  = (get(offset).isInt());
+           ok  = (get(offset).isInt32());
 
         x.valid = false;
         if (!ok) {
@@ -162,7 +162,7 @@ public:
             x.setting = getBool?true:false;
         }
         else
-            x.setting = get(offset).asInt()?true:false;
+            x.setting = get(offset).asInt32()?true:false;
 
         x.valid = true;
         offset++;
@@ -177,61 +177,61 @@ public:
 
 void consumeKind(ManagerState& state) {
     state.op.kind = WorldOpName(state.command.get(2).asString());
-    int kind = state.command.get(2).asVocab();
+    int kind = state.command.get(2).asVocab32();
     state.offset++;
     bool static_obj = false;
-    //bool mustCollide = state.command.get(2).asVocab()
+    //bool mustCollide = state.command.get(2).asVocab32()
     switch (kind) {
-    case yarp::os::createVocab('s','b','o','x'):
+    case yarp::os::createVocab32('s','b','o','x'):
         static_obj = true;
-    case yarp::os::createVocab('b','o','x'):
+    case yarp::os::createVocab32('b','o','x'):
         state.op.kind = "box";
         state.op.dynamic = WorldOpFlag(!static_obj);
         state.needIndex = true;
         break;
-    case yarp::os::createVocab('s','c','y','l'):
+    case yarp::os::createVocab32('s','c','y','l'):
         static_obj = true;
-    case yarp::os::createVocab('c','y','l'):
+    case yarp::os::createVocab32('c','y','l'):
         state.op.kind = "cyl";
         state.op.dynamic = WorldOpFlag(!static_obj);
         state.needIndex = true;
         break;
-    case yarp::os::createVocab('s','s','p','h'):
+    case yarp::os::createVocab32('s','s','p','h'):
         static_obj = true;
-    case yarp::os::createVocab('s','p','h'):
+    case yarp::os::createVocab32('s','p','h'):
         state.op.kind = "sph";
         state.op.dynamic = WorldOpFlag(!static_obj);
         state.needIndex = true;
         break;
-    case yarp::os::createVocab('s','m','o','d'):
+    case yarp::os::createVocab32('s','m','o','d'):
         static_obj = true;
-    case yarp::os::createVocab('m','o','d','e'):
+    case yarp::os::createVocab32('m','o','d','e'):
         state.op.kind = "model";
         state.op.dynamic = WorldOpFlag(!static_obj);
         state.needIndex = true;
         break;
-    case yarp::os::createVocab('l','h','a','n'):
+    case yarp::os::createVocab32('l','h','a','n'):
         state.op.kind = WorldOpName("hand");
         //state.op.name = WorldOpName("icub_left_hand");
         state.op.index = WorldOpIndex(1);
         state.op.dynamic = WorldOpFlag(true);
         state.op.rightHanded = WorldOpFlag(false);
         break;
-    case yarp::os::createVocab('r','h','a','n'):
+    case yarp::os::createVocab32('r','h','a','n'):
         state.op.kind = WorldOpName("hand");
         //state.op.name = WorldOpName("icub_right_hand");
         state.op.index = WorldOpIndex(2);
         state.op.dynamic = WorldOpFlag(true);
         state.op.rightHanded = WorldOpFlag(true);
         break;
-    case yarp::os::createVocab('m','d','i','r'):
+    case yarp::os::createVocab32('m','d','i','r'):
         state.op.parameter = WorldOpFlag(true);
         break;
-    case yarp::os::createVocab('t','a','b','l'):
-    case yarp::os::createVocab('c','u','b','e'):
-    case yarp::os::createVocab('b','a','l','l'):
-    case yarp::os::createVocab('s','c','r','e'):
-    case yarp::os::createVocab('a','l','l'):
+    case yarp::os::createVocab32('t','a','b','l'):
+    case yarp::os::createVocab32('c','u','b','e'):
+    case yarp::os::createVocab32('b','a','l','l'):
+    case yarp::os::createVocab32('s','c','r','e'):
+    case yarp::os::createVocab32('a','l','l'):
         break;
     default:
         state.failed = true;
@@ -378,7 +378,7 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
     ManagerState state(command,op,result,*this);
     reply.clear();
 
-    op.cmd = (WORLD_OP)command.get(1).asVocab(); 
+    op.cmd = (WORLD_OP)command.get(1).asVocab32(); 
     switch (op.cmd) {
     case WORLD_OP_GET:
         doGet(state);
@@ -413,7 +413,7 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
     state.debug();
     if (!result.success) {
         if (reply.size()==0) {
-            reply.addVocab(yarp::os::createVocab('f','a','i','l'));
+            reply.addVocab32(yarp::os::createVocab32('f','a','i','l'));
         }
         if (state.failed) {
             reply.addString(state.why.c_str());
@@ -427,23 +427,23 @@ bool WorldManager::respond(const yarp::os::Bottle& command,
     } else {
         if (reply.size()==0) {
             if (result.location.isValid()) {
-                reply.addDouble(result.location.get(0));
-                reply.addDouble(result.location.get(1));
-                reply.addDouble(result.location.get(2));
+                reply.addFloat64(result.location.get(0));
+                reply.addFloat64(result.location.get(1));
+                reply.addFloat64(result.location.get(2));
             } else if (result.rotation.isValid()) {
-                reply.addDouble(result.rotation.get(0));
-                reply.addDouble(result.rotation.get(1));
-                reply.addDouble(result.rotation.get(2));
+                reply.addFloat64(result.rotation.get(0));
+                reply.addFloat64(result.rotation.get(1));
+                reply.addFloat64(result.rotation.get(2));
             } else if (result.color.isValid()) {
-                reply.addDouble(result.color.get(0));
-                reply.addDouble(result.color.get(1));
-                reply.addDouble(result.color.get(2));
+                reply.addFloat64(result.color.get(0));
+                reply.addFloat64(result.color.get(1));
+                reply.addFloat64(result.color.get(2));
             } else if (result.count.isValid()) {
-                reply.addInt(result.count.get());
+                reply.addInt32(result.count.get());
             } else if (result.path.isValid()) {
                 reply.addString(result.path.get().c_str());
             } else {
-                reply.addVocab(yarp::os::createVocab('o','k'));
+                reply.addVocab32(yarp::os::createVocab32('o','k'));
             }
         }
     }

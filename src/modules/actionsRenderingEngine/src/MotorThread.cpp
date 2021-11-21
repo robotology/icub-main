@@ -57,11 +57,11 @@ bool MotorThread::checkOptions(const Bottle &options, const string &parameter)
 
 void Dragger::init(Bottle &initializer, double thread_rate)
 {
-    extForceThresh=initializer.check("external_force_thresh",Value(1e9)).asDouble();
-    samplingRate=initializer.check("subsampling_rate",Value(500.0)).asDouble();
+    extForceThresh=initializer.check("external_force_thresh",Value(1e9)).asFloat64();
+    samplingRate=initializer.check("subsampling_rate",Value(500.0)).asFloat64();
 
-    damping=initializer.check("damping",Value(1e9)).asDouble();
-    inertia=initializer.check("inertia",Value(1e9)).asDouble();
+    damping=initializer.check("damping",Value(1e9)).asFloat64();
+    inertia=initializer.check("inertia",Value(1e9)).asFloat64();
 
     Vector zeros3d(3);
     zeros3d=0.0;
@@ -305,32 +305,32 @@ int MotorThread::setStereoToCartesianMode(const int mode, Bottle &reply)
     }
     
     //get left offsets
-    if(!bKinOffsets.find("left").asList()->check(Vocab::decode(modeS2C)))
+    if(!bKinOffsets.find("left").asList()->check(Vocab32::decode(modeS2C)))
     {
         Bottle &bKinMode=bKinOffsets.find("left").asList()->addList();
-        bKinMode.addString(Vocab::decode(modeS2C));
+        bKinMode.addString(Vocab32::decode(modeS2C));
         Bottle &bKinVec=bKinMode.addList();
         for(int i=0; i<3; i++)
-            bKinVec.addDouble(0.0);
+            bKinVec.addFloat64(0.0);
     }
 
-    Bottle *bKinLeft=bKinOffsets.find("left").asList()->find(Vocab::decode(modeS2C)).asList();
+    Bottle *bKinLeft=bKinOffsets.find("left").asList()->find(Vocab32::decode(modeS2C)).asList();
     for(int i=0; i<3; i++)
-        defaultKinematicOffset[LEFT][i]=bKinLeft->get(i).asDouble();
+        defaultKinematicOffset[LEFT][i]=bKinLeft->get(i).asFloat64();
 
     //get left offsets
-    if(!bKinOffsets.find("right").asList()->check(Vocab::decode(modeS2C)))
+    if(!bKinOffsets.find("right").asList()->check(Vocab32::decode(modeS2C)))
     {
         Bottle &bKinMode=bKinOffsets.find("right").asList()->addList();
-        bKinMode.addString(Vocab::decode(modeS2C));
+        bKinMode.addString(Vocab32::decode(modeS2C));
         Bottle &bKinVec=bKinMode.addList();
         for(int i=0; i<3; i++)
-            bKinVec.addDouble(0.0);
+            bKinVec.addFloat64(0.0);
     }
 
-    Bottle *bKinRight=bKinOffsets.find("right").asList()->find(Vocab::decode(modeS2C)).asList();
+    Bottle *bKinRight=bKinOffsets.find("right").asList()->find(Vocab32::decode(modeS2C)).asList();
     for(int i=0; i<3; i++)
-        defaultKinematicOffset[RIGHT][i]=bKinRight->get(i).asDouble();
+        defaultKinematicOffset[RIGHT][i]=bKinRight->get(i).asFloat64();
 
     return modeS2C;
 }
@@ -350,7 +350,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
         Bottle *bCartesian=bTarget->find("cartesian").asList(); 
         xd.clear();
         for(int i=0; i<bCartesian->size(); i++)
-            xd.push_back(bCartesian->get(i).asDouble());
+            xd.push_back(bCartesian->get(i).asFloat64());
         found=true;
     }
 
@@ -367,7 +367,7 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
         {
             Vector stereo;
             for(int i=0; i<bStereo->size(); i++)
-                stereo.push_back(bStereo->get(i).asDouble());
+                stereo.push_back(bStereo->get(i).asFloat64());
 
             found=stereoToCartesian(stereo,xd);
         }
@@ -432,7 +432,7 @@ bool MotorThread::loadExplorationPoses(const string &file_name)
         Bottle *b=tmpTorso.get(i).asList();
         Vector v(b->size());
         for(int j=0; j<b->size(); j++)
-            v[j]=b->get(j).asDouble();
+            v[j]=b->get(j).asFloat64();
         pos_torsoes.push_back(v);
     }
 
@@ -442,7 +442,7 @@ bool MotorThread::loadExplorationPoses(const string &file_name)
         Bottle *b=tmpHand.get(i).asList();
         Vector v(b->size());
         for(int j=0; j<b->size(); j++)
-            v[j]=b->get(j).asDouble();
+            v[j]=b->get(j).asFloat64();
         handPoses.push_back(v);
     }
     
@@ -452,7 +452,7 @@ bool MotorThread::loadExplorationPoses(const string &file_name)
         Bottle *b=tmpHead.get(i).asList();
         Vector v(b->size());
         for(int j=0; j<b->size(); j++)
-            v[j]=b->get(j).asDouble();
+            v[j]=b->get(j).asFloat64();
         headPoses.push_back(v);
     }
 
@@ -525,22 +525,22 @@ bool MotorThread::stereoToCartesianHomography(const Vector &stereo, Vector &xd)
 bool MotorThread::stereoToCartesianDisparity(const Vector &stereo, Vector &xd)
 {
     Bottle bEye;
-    bEye.addDouble(stereo[0]);
-    bEye.addDouble(stereo[1]);
+    bEye.addFloat64(stereo[0]);
+    bEye.addFloat64(stereo[1]);
 
     Bottle bX;
     do
     {
         disparityPort.write(bEye,bX);
     }
-    while(bX.size()==0 || bX.get(2).asDouble()<0.0 );
+    while(bX.size()==0 || bX.get(2).asFloat64()<0.0 );
 
-    if(bX.size()!=0 && bX.get(2).asDouble()>0.0 )
+    if(bX.size()!=0 && bX.get(2).asFloat64()>0.0 )
     {
         xd.resize(3);
-        xd[0]=bX.get(0).asDouble();
-        xd[1]=bX.get(1).asDouble();    
-        xd[2]=bX.get(2).asDouble();
+        xd[0]=bX.get(0).asFloat64();
+        xd[1]=bX.get(1).asFloat64();    
+        xd[2]=bX.get(2).asFloat64();
     }
 
     xd=eye2root(xd,false);
@@ -601,10 +601,10 @@ bool MotorThread::loadKinematicOffsets()
     {
         Bottle &bKinList=bKinOffsets.addList();
         bKinList.addString("table_height");
-        bKinList.addDouble(-0.1);
+        bKinList.addFloat64(-0.1);
     }
 
-    table_height=bKinOffsets.find("table_height").asDouble();
+    table_height=bKinOffsets.find("table_height").asFloat64();
     table.resize(4,0.0);
     table[2]=1.0;
     table[3]=-table_height;
@@ -672,7 +672,7 @@ bool MotorThread::getGeneralOptions(Bottle &b)
 
         homeFix.resize(pB->size()-offs);
         for (size_t i=0; i<homeFix.length(); i++)
-            homeFix[i]=pB->get(offs+i).asDouble();
+            homeFix[i]=pB->get(offs+i).asFloat64();
     }
     else
         return false;
@@ -682,7 +682,7 @@ bool MotorThread::getGeneralOptions(Bottle &b)
         reachAboveDisp.resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            reachAboveDisp[i]=pB->get(i).asDouble();
+            reachAboveDisp[i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -692,7 +692,7 @@ bool MotorThread::getGeneralOptions(Bottle &b)
         graspAboveRelief.resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            graspAboveRelief[i]=pB->get(i).asDouble();
+            graspAboveRelief[i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -702,13 +702,13 @@ bool MotorThread::getGeneralOptions(Bottle &b)
         pushAboveRelief.resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            pushAboveRelief[i]=pB->get(i).asDouble();
+            pushAboveRelief[i]=pB->get(i).asFloat64();
     }
     else
         return false;
 
-    go_up_distance=b.check("go_up",Value(0.1)).asDouble();
-    table_height_tolerance=b.find("table_height_tolerance").asDouble();
+    go_up_distance=b.check("go_up",Value(0.1)).asFloat64();
+    table_height_tolerance=b.find("table_height_tolerance").asFloat64();
 
     return true;
 }
@@ -721,7 +721,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         homePos[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            homePos[arm][i]=pB->get(i).asDouble();
+            homePos[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -731,7 +731,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         homeOrient[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            homeOrient[arm][i]=pB->get(i).asDouble();
+            homeOrient[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -741,7 +741,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         reachSideDisp[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            reachSideDisp[arm][i]=pB->get(i).asDouble();
+            reachSideDisp[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -751,7 +751,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         reachAboveOrient[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            reachAboveOrient[arm][i]=pB->get(i).asDouble();
+            reachAboveOrient[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -761,7 +761,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         reachAboveCata[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            reachAboveCata[arm][i]=pB->get(i).asDouble();
+            reachAboveCata[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -771,7 +771,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         reachSideOrient[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            reachSideOrient[arm][i]=pB->get(i).asDouble();
+            reachSideOrient[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -781,7 +781,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         deployPos[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            deployPos[arm][i]=pB->get(i).asDouble();
+            deployPos[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -790,7 +790,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
     {
         deployOrient[arm].resize(pB->size());
         for (int i=0; i<pB->size(); i++)
-            deployOrient[arm][i]=pB->get(i).asDouble();
+            deployOrient[arm][i]=pB->get(i).asFloat64();
     }
     else
         deployOrient[arm]=reachAboveOrient[arm];
@@ -800,7 +800,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         drawNearPos[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            drawNearPos[arm][i]=pB->get(i).asDouble();
+            drawNearPos[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -810,7 +810,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         drawNearOrient[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            drawNearOrient[arm][i]=pB->get(i).asDouble();
+            drawNearOrient[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -820,7 +820,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         shiftPos[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            shiftPos[arm][i]=pB->get(i).asDouble();
+            shiftPos[arm][i]=pB->get(i).asFloat64();
     }
     else
     {
@@ -833,7 +833,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         expectPos[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            expectPos[arm][i]=pB->get(i).asDouble();
+            expectPos[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -843,7 +843,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         expectOrient[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            expectOrient[arm][i]=pB->get(i).asDouble();
+            expectOrient[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -853,7 +853,7 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         takeToolPos[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            takeToolPos[arm][i]=pB->get(i).asDouble();
+            takeToolPos[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
@@ -863,12 +863,12 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
         takeToolOrient[arm].resize(pB->size());
 
         for (int i=0; i<pB->size(); i++)
-            takeToolOrient[arm][i]=pB->get(i).asDouble();
+            takeToolOrient[arm][i]=pB->get(i).asFloat64();
     }
     else
         return false;
 
-    extForceThresh[arm]=b.check("external_forces_thresh",Value(0.0)).asDouble();
+    extForceThresh[arm]=b.check("external_forces_thresh",Value(0.0)).asFloat64();
 
     string modelFile("grasp_model_");
     modelFile+=(arm==LEFT?"left":"right");
@@ -935,17 +935,17 @@ bool MotorThread::threadInit()
     string name=rf.find("name").asString();
     string robot=bMotor.check("robot",Value("icub")).asString();
     string partUsed=bMotor.check("part_used",Value("both_arms")).asString();
-    int actionprimitives_layer=bMotor.check("actionprimitives_layer",Value(2)).asInt();
-    setPeriod((double)bMotor.check("thread_period",Value(100)).asInt()/1000.0);
+    int actionprimitives_layer=bMotor.check("actionprimitives_layer",Value(2)).asInt32();
+    setPeriod((double)bMotor.check("thread_period",Value(100)).asInt32()/1000.0);
 
     actions_path=bMotor.check("actions",Value("actions")).asString();
 
-    double eyesTrajTime=bMotor.check("eyes_traj_time",Value(1.0)).asDouble();
-    double neckTrajTime=bMotor.check("neck_traj_time",Value(2.0)).asDouble();
+    double eyesTrajTime=bMotor.check("eyes_traj_time",Value(1.0)).asFloat64();
+    double neckTrajTime=bMotor.check("neck_traj_time",Value(2.0)).asFloat64();
 
-    double kp=bMotor.check("stereo_kp",Value(0.001)).asDouble();
-    double ki=bMotor.check("stereo_ki",Value(0.001)).asDouble();
-    double kd=bMotor.check("stereo_kd",Value(0.0)).asDouble();
+    double kp=bMotor.check("stereo_kp",Value(0.001)).asFloat64();
+    double ki=bMotor.check("stereo_ki",Value(0.001)).asFloat64();
+    double kd=bMotor.check("stereo_kd",Value(0.0)).asFloat64();
 
     stereo_track=bMotor.check("stereo_track",Value("on")).asString()=="on";
     dominant_eye=(bMotor.check("dominant_eye",Value("left")).asString()=="left")?LEFT:RIGHT;
@@ -1065,21 +1065,21 @@ bool MotorThread::threadInit()
     Bottle &bKp=stereoOpt.addList();
     bKp.addString("Kp");
     Bottle &bKpVal=bKp.addList();
-    bKpVal.addDouble(kp);
+    bKpVal.addFloat64(kp);
 
     Bottle &bKi=stereoOpt.addList();
     bKi.addString("Ki");
     Bottle &bKiVal=bKi.addList();
-    bKiVal.addDouble(ki);
+    bKiVal.addFloat64(ki);
 
     Bottle &bKd=stereoOpt.addList();
     bKd.addString("Kd");
     Bottle &bKdVal=bKd.addList();
-    bKdVal.addDouble(kd);
+    bKdVal.addFloat64(kd);
 
     Bottle &bTs=stereoOpt.addList();
     bTs.addString("Ts");
-    bTs.addDouble(0.05); 
+    bTs.addFloat64(0.05); 
 
     Bottle &bDominantEye=stereoOpt.addList();
     bDominantEye.addString("dominantEye");
@@ -1090,30 +1090,30 @@ bool MotorThread::threadInit()
     //bind neck pitch and roll;
     if(neckPitchRange!=NULL && neckPitchRange->size()==1)
     {
-        double neckPitchBlock=neckPitchRange->get(0).asDouble();
+        double neckPitchBlock=neckPitchRange->get(0).asFloat64();
         ctrl_gaze->blockNeckPitch(neckPitchBlock);
     }
     else if(neckPitchRange!=NULL && neckPitchRange->size()>1)
     {
-        double neckPitchMin=neckPitchRange->get(0).asDouble();
-        double neckPitchMax=neckPitchRange->get(1).asDouble();
+        double neckPitchMin=neckPitchRange->get(0).asFloat64();
+        double neckPitchMax=neckPitchRange->get(1).asFloat64();
         ctrl_gaze->bindNeckPitch(neckPitchMin,neckPitchMax);
     }
     if(neckRollRange!=NULL && neckRollRange->size()==1)
     {
-        double neckRollBlock=neckRollRange->get(0).asDouble();
+        double neckRollBlock=neckRollRange->get(0).asFloat64();
         ctrl_gaze->blockNeckRoll(neckRollBlock);
     }
     else if(neckRollRange!=NULL && neckRollRange->size()>1)
     {
-        double neckRollMin=neckRollRange->get(0).asDouble();
-        double neckRollMax=neckRollRange->get(1).asDouble();
+        double neckRollMin=neckRollRange->get(0).asFloat64();
+        double neckRollMax=neckRollRange->get(1).asFloat64();
         ctrl_gaze->bindNeckRoll(neckRollMin,neckRollMax);
     }
 
     if (bMotor.check("block_eyes"))
     {
-        ctrl_gaze->blockEyes(bMotor.find("block_eyes").asDouble());
+        ctrl_gaze->blockEyes(bMotor.find("block_eyes").asFloat64());
         ctrl_gaze->waitMotionDone();
     }
 
@@ -1191,8 +1191,8 @@ bool MotorThread::threadInit()
     
     for(int i=0; i<bImpedanceTorsoStiff->size(); i++)
     {
-        torso_stiffness.push_back(bImpedanceTorsoStiff->get(i).asDouble());
-        torso_damping.push_back(bImpedanceTorsoDamp->get(i).asDouble());
+        torso_stiffness.push_back(bImpedanceTorsoStiff->get(i).asFloat64());
+        torso_damping.push_back(bImpedanceTorsoDamp->get(i).asFloat64());
     }
 
     for(int i=0; i<bImpedanceTorsoStiff->size(); i++)
@@ -1205,13 +1205,13 @@ bool MotorThread::threadInit()
     
     for(int i=0; i<bImpedanceArmStiff->size(); i++)
     {
-        arm_stiffness.push_back(bImpedanceArmStiff->get(i).asDouble());
-        arm_damping.push_back(bImpedanceArmDamp->get(i).asDouble());
+        arm_stiffness.push_back(bImpedanceArmStiff->get(i).asFloat64());
+        arm_damping.push_back(bImpedanceArmDamp->get(i).asFloat64());
     }
 
     option.put("local",name);
 
-    default_exec_time=option.check("default_exec_time",Value("3.0")).asDouble();
+    default_exec_time=option.check("default_exec_time",Value("3.0")).asFloat64();
     reachingTimeout=std::max(2.0*default_exec_time,4.0);
 
     string arm_name[]={"left_arm","right_arm"};
@@ -1279,7 +1279,7 @@ bool MotorThread::threadInit()
             int context;
             tmpCtrl->storeContext(&context);
 
-            double armTargetTol=bMotor.check("arm_target_tol",Value(0.01)).asDouble();
+            double armTargetTol=bMotor.check("arm_target_tol",Value(0.01)).asFloat64();
             tmpCtrl->setInTargetTol(armTargetTol);
 
             storeContext(arm);
@@ -1291,8 +1291,8 @@ bool MotorThread::threadInit()
             {
                 if (pB->size()>=2)
                 {
-                    double height=pB->get(0).asDouble();
-                    double weight=pB->get(1).asDouble();
+                    double height=pB->get(0).asFloat64();
+                    double weight=pB->get(1).asFloat64();
                     changeElbowHeight(arm,height,weight);
                 }
             }
@@ -1319,7 +1319,7 @@ bool MotorThread::threadInit()
     }
 
     //set the initial stereo2cartesian mode
-    int starting_modeS2C=bMotor.check("stereoTocartesian_mode",Value("homography")).asVocab();
+    int starting_modeS2C=bMotor.check("stereoTocartesian_mode",Value("homography")).asVocab32();
     setStereoToCartesianMode(starting_modeS2C);
 
     // initializer dragger
@@ -1334,7 +1334,7 @@ bool MotorThread::threadInit()
     head_mode=HEAD_MODE_IDLE;
     arm_mode=ARM_MODE_IDLE;
 
-    random_pos_y=bMotor.check("random_pos_y",Value(0.1)).asDouble();
+    random_pos_y=bMotor.check("random_pos_y",Value(0.1)).asFloat64();
 
     closed=false;
     interrupted=false;
@@ -1442,13 +1442,13 @@ void MotorThread::run()
                 Vector tmp_x=dragger.x0 - x;
 
                 for(size_t i=0; i<tmp_x.size(); i++)
-                    tmp_action.addDouble(tmp_x[i]);
+                    tmp_action.addFloat64(tmp_x[i]);
 
                 for(size_t i=0; i<o.size(); i++)
-                    tmp_action.addDouble(o[i]);
+                    tmp_action.addFloat64(o[i]);
 
                 //here add timestamp to the files
-                //tmp_action.addDouble(dragger.t0);//temporary for the data collection
+                //tmp_action.addFloat64(dragger.t0);//temporary for the data collection
 
                 dragger.t0=Time::now();
             }
@@ -1703,7 +1703,7 @@ bool MotorThread::powerGrasp(Bottle &options)
         {
             size_t sz=std::min(approach_data.size(),(size_t)bApproach->size()); 
             for (size_t i=0; i<sz; i++)
-                approach_data[i]=bApproach->get(i).asDouble();
+                approach_data[i]=bApproach->get(i).asFloat64();
         }
     }
 
@@ -1864,12 +1864,12 @@ bool MotorThread::point_far(Bottle &options)
     Bottle pointing_sequence;
     if (action[arm]->getHandSequence("pointing_hand",pointing_sequence))
     {
-        int numWayPoints=pointing_sequence.find("numWayPoints").asInt();
+        int numWayPoints=pointing_sequence.find("numWayPoints").asInt32();
         ostringstream wp; wp<<"wp_"<<numWayPoints-1;
         Bottle *poss=pointing_sequence.find(wp.str()).asList()->find("poss").asList();
         Vector joints(poss->size());
         for (size_t i=0; i<joints.length(); i++)
-            joints[i]=poss->get(i).asDouble();
+            joints[i]=poss->get(i).asFloat64();
 
         Bottle finger_joints; finger_joints.addList().read(joints);
         requirements.put("finger-joints",finger_joints.get(0));
@@ -1924,7 +1924,7 @@ bool MotorThread::look(Bottle &options)
 
         if (options.check("block_eyes"))
         {
-            ctrl_gaze->blockEyes(options.find("block_eyes").asDouble());
+            ctrl_gaze->blockEyes(options.find("block_eyes").asFloat64());
             ctrl_gaze->waitMotionDone();
         }
 
@@ -2157,15 +2157,15 @@ bool MotorThread::changeElbowHeight(const int arm, const double height,
         Bottle &optTask2=tweakOptions.addList();
         optTask2.addString("task_2");
         Bottle &plTask2=optTask2.addList();
-        plTask2.addInt(6);
+        plTask2.addInt32(6);
         Bottle &posPart=plTask2.addList();
-        posPart.addDouble(0.0);
-        posPart.addDouble(0.0);
-        posPart.addDouble(height);
+        posPart.addFloat64(0.0);
+        posPart.addFloat64(0.0);
+        posPart.addFloat64(height);
         Bottle &weightsPart=plTask2.addList();
-        weightsPart.addDouble(0.0);
-        weightsPart.addDouble(0.0);
-        weightsPart.addDouble(weight);
+        weightsPart.addFloat64(0.0);
+        weightsPart.addFloat64(0.0);
+        weightsPart.addFloat64(weight);
         ret=ctrl->tweakSet(tweakOptions);
 
         deleteContext(arm);
@@ -2476,11 +2476,11 @@ bool MotorThread::getHandImagePosition(Bottle &hand_image_pos)
     ctrl_gaze->getHeadPose(x_head,o_head);
 
     hand_image_pos.clear();
-    hand_image_pos.addDouble(px[LEFT][0]);
-    hand_image_pos.addDouble(px[LEFT][1]);
-    hand_image_pos.addDouble(px[RIGHT][0]);
-    hand_image_pos.addDouble(px[RIGHT][1]);
-    hand_image_pos.addDouble(norm(x_head-x_hand));
+    hand_image_pos.addFloat64(px[LEFT][0]);
+    hand_image_pos.addFloat64(px[LEFT][1]);
+    hand_image_pos.addFloat64(px[RIGHT][0]);
+    hand_image_pos.addFloat64(px[RIGHT][1]);
+    hand_image_pos.addFloat64(norm(x_head-x_hand));
 
     return true;
 }
@@ -2683,7 +2683,7 @@ bool MotorThread::exploreTorso(Bottle &options)
 
     Bottle info;
     ctrl_gaze->getInfo(info);
-    double head_version=info.check("head_version",Value(1.0)).asDouble();
+    double head_version=info.check("head_version",Value(1.0)).asFloat64();
 
     ostringstream type;
     type<<(dominant_eye==LEFT?"left":"right");
@@ -2693,7 +2693,7 @@ bool MotorThread::exploreTorso(Bottle &options)
     iCubEye iKinTorso=iCubEye(type.str());
     iKinTorso.releaseLink(0);   // pitch
     iKinTorso.releaseLink(1);   // roll
-    for (size_t i=2; i<iKinTorso.getN(); i++)
+    for (unsigned int i=2; i<iKinTorso.getN(); i++)
         iKinTorso.blockLink(i,0.0);
 
     //get the torso initial position
@@ -3061,10 +3061,10 @@ bool MotorThread::imitateAction(Bottle &options)
         Bottle *b=actions.get(i).asList();
         Vector x(3),o(4);
         for(int j=0; j<3; j++)
-            x[j]=b->get(j).asDouble();
+            x[j]=b->get(j).asFloat64();
 
         for(int j=0; j<4; j++)
-            o[j]=b->get(j+3).asDouble();
+            o[j]=b->get(j+3).asFloat64();
 
         ctrl->goToPoseSync(init_x-x,o);
         Time::delay(0.1);
@@ -3112,7 +3112,7 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
         {
             size_t n=std::min(x.length(),(size_t)b1->size());
             for (size_t i=0; i<n; i++)
-                x[i]=b1->get(i).asDouble();
+                x[i]=b1->get(i).asFloat64();
             specifiedTarget=true;
         }
     }
@@ -3165,10 +3165,10 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
             //update the offset and save on file
             Bottle bOffset;
             for(int i=0; i<3; i++)
-                bOffset.addDouble(defaultKinematicOffset[dragger.arm][i]);
+                bOffset.addFloat64(defaultKinematicOffset[dragger.arm][i]);
 
             string arm_name=(dragger.arm==LEFT?"left":"right");
-            *bKinOffsets.find(arm_name).asList()->find(Vocab::decode(modeS2C)).asList()=bOffset;
+            *bKinOffsets.find(arm_name).asList()->find(Vocab32::decode(modeS2C)).asList()=bOffset;
 
             saveKinematicOffsets();
         }

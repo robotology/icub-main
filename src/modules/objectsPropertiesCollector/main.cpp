@@ -268,26 +268,26 @@ reply: [ack] (id (1))
 using namespace std;
 using namespace yarp::os;
 
-#define CMD_ADD                         createVocab('a','d','d')
-#define CMD_DEL                         createVocab('d','e','l')
-#define CMD_GET                         createVocab('g','e','t')
-#define CMD_SET                         createVocab('s','e','t')
-#define CMD_LOCK                        createVocab('l','o','c','k')
-#define CMD_UNLOCK                      createVocab('u','n','l','o')
-#define CMD_OWNER                       createVocab('o','w','n','e')
-#define CMD_TIME                        createVocab('t','i','m','e')
-#define CMD_DUMP                        createVocab('d','u','m','p')
-#define CMD_ASK                         createVocab('a','s','k')
-#define CMD_SYNC                        createVocab('s','y','n','c')
-#define CMD_ASYNC                       createVocab('a','s','y','n')
-#define CMD_QUIT                        createVocab('q','u','i','t')
-#define CMD_BYE                         createVocab('b','y','e')
+#define CMD_ADD                         createVocab32('a','d','d')
+#define CMD_DEL                         createVocab32('d','e','l')
+#define CMD_GET                         createVocab32('g','e','t')
+#define CMD_SET                         createVocab32('s','e','t')
+#define CMD_LOCK                        createVocab32('l','o','c','k')
+#define CMD_UNLOCK                      createVocab32('u','n','l','o')
+#define CMD_OWNER                       createVocab32('o','w','n','e')
+#define CMD_TIME                        createVocab32('t','i','m','e')
+#define CMD_DUMP                        createVocab32('d','u','m','p')
+#define CMD_ASK                         createVocab32('a','s','k')
+#define CMD_SYNC                        createVocab32('s','y','n','c')
+#define CMD_ASYNC                       createVocab32('a','s','y','n')
+#define CMD_QUIT                        createVocab32('q','u','i','t')
+#define CMD_BYE                         createVocab32('b','y','e')
                                         
-#define REP_ACK                         createVocab('a','c','k')
-#define REP_NACK                        createVocab('n','a','c','k')
-#define REP_UNKNOWN                     createVocab('u','n','k','n')
+#define REP_ACK                         createVocab32('a','c','k')
+#define REP_NACK                        createVocab32('n','a','c','k')
+#define REP_UNKNOWN                     createVocab32('u','n','k','n')
                                         
-#define OPT_ALL                         createVocab('a','l','l')
+#define OPT_ALL                         createVocab32('a','l','l')
 #define OPT_DISABLED                    (-1.0)
 #define OPT_OWNERSHIP_ALL               ("all")
                                         
@@ -312,10 +312,10 @@ bool alwaysTrue(Value &a, Value &b)
 /************************************************************************/
 bool greater(Value &a, Value &b)
 {
-    if (a.isDouble() && b.isDouble())
-        return (a.asDouble()>b.asDouble());
-    else if (a.isInt() && b.isInt())
-        return (a.asInt()>b.asInt());
+    if (a.isFloat64() && b.isFloat64())
+        return (a.asFloat64()>b.asFloat64());
+    else if (a.isInt32() && b.isInt32())
+        return (a.asInt32()>b.asInt32());
     else
         return false;
 }
@@ -324,10 +324,10 @@ bool greater(Value &a, Value &b)
 /************************************************************************/
 bool greaterEqual(Value &a, Value &b)
 {
-    if (a.isDouble() && b.isDouble())
-        return (a.asDouble()>=b.asDouble());
-    else if (a.isInt() && b.isInt())
-        return (a.asInt()>=b.asInt());
+    if (a.isFloat64() && b.isFloat64())
+        return (a.asFloat64()>=b.asFloat64());
+    else if (a.isInt32() && b.isInt32())
+        return (a.asInt32()>=b.asInt32());
     else
         return false;
 }
@@ -336,10 +336,10 @@ bool greaterEqual(Value &a, Value &b)
 /************************************************************************/
 bool lower(Value &a, Value &b)
 {
-    if (a.isDouble() && b.isDouble())
-        return (a.asDouble()<b.asDouble());
-    else if (a.isInt() && b.isInt())
-        return (a.asInt()<b.asInt());
+    if (a.isFloat64() && b.isFloat64())
+        return (a.asFloat64()<b.asFloat64());
+    else if (a.isInt32() && b.isInt32())
+        return (a.asInt32()<b.asInt32());
     else
         return false;
 }
@@ -348,10 +348,10 @@ bool lower(Value &a, Value &b)
 /************************************************************************/
 bool lowerEqual(Value &a, Value &b)
 {
-    if (a.isDouble() && b.isDouble())
-        return (a.asDouble()<=b.asDouble());
-    else if (a.isInt() && b.isInt())
-        return (a.asInt()<=b.asInt());
+    if (a.isFloat64() && b.isFloat64())
+        return (a.asFloat64()<=b.asFloat64());
+    else if (a.isInt32() && b.isInt32())
+        return (a.asInt32()<=b.asInt32());
     else
         return false;
 }
@@ -360,10 +360,10 @@ bool lowerEqual(Value &a, Value &b)
 /************************************************************************/
 bool equal(Value &a, Value &b)
 {
-    if (a.isDouble() && b.isDouble())
-        return (a.asDouble()==b.asDouble());
-    else if (a.isInt() && b.isInt())
-        return (a.asInt()==b.asInt());
+    if (a.isFloat64() && b.isFloat64())
+        return (a.asFloat64()==b.asFloat64());
+    else if (a.isInt32() && b.isInt32())
+        return (a.asInt32()==b.asInt32());
     else if (a.isString() && b.isString())
     {
         string aStr=a.asString();
@@ -378,10 +378,10 @@ bool equal(Value &a, Value &b)
 /************************************************************************/
 bool notEqual(Value &a, Value &b)
 {
-    if (a.isDouble() && b.isDouble())
-        return (a.asDouble()!=b.asDouble());
-    else if (a.isInt() && b.isInt())
-        return (a.asInt()!=b.asInt());
+    if (a.isFloat64() && b.isFloat64())
+        return (a.asFloat64()!=b.asFloat64());
+    else if (a.isInt32() && b.isInt32())
+        return (a.asInt32()!=b.asInt32());
     else if (a.isString() && b.isString())
     {
         string aStr=a.asString();
@@ -551,7 +551,7 @@ public:
 
         if (rf.check("sync-bc"))
         {
-            setPeriod(rf.check("sync-bc",Value(1.0)).asDouble());
+            setPeriod(rf.check("sync-bc",Value(1.0)).asFloat64());
             start();
         }
 
@@ -613,7 +613,7 @@ public:
                 continue;
             }
 
-            int id=b2->get(1).asInt();
+            int id=b2->get(1).asInt32();
             itemsMap[id].prop=new Property(b3->toString().c_str());
 
             if (idCnt<=id)
@@ -675,7 +675,7 @@ public:
 
                     Bottle &idList=item.addList();
                     idList.addString(PROP_ID);
-                    idList.addInt(it->first);
+                    idList.addInt32(it->first);
                 }
 
                 pBroadcastPort->writeStrict();
@@ -710,9 +710,9 @@ public:
         
         if (content->size()==1)
         {
-            if (content->get(0).isVocab() || content->get(0).isString())
+            if (content->get(0).isVocab32() || content->get(0).isString())
             {
-                if (content->get(0).asVocab()==OPT_ALL)
+                if (content->get(0).asVocab32()==OPT_ALL)
                 {
                     lock_guard<mutex> lck(mtx);
                     clear();
@@ -728,7 +728,7 @@ public:
             return false;
         }
 
-        int id=content->find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt32();
 
         lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -763,7 +763,7 @@ public:
             return false;
         }
 
-        int id=content->find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt32();
 
         lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -806,7 +806,7 @@ public:
             return false;
         }
 
-        int id=content->find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt32();
 
         lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -856,7 +856,7 @@ public:
             return false;
         }
 
-        int id=content->find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt32();
 
         lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -885,7 +885,7 @@ public:
             return false;
         }
 
-        int id=content->find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt32();
 
         lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -914,7 +914,7 @@ public:
             return false;
         }
 
-        int id=content->find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt32();
 
         lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -941,7 +941,7 @@ public:
             return false;
         }
 
-        int id=content->find(PROP_ID).asInt();
+        int id=content->find(PROP_ID).asInt32();
 
         lock_guard<mutex> lck(mtx);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -949,11 +949,11 @@ public:
         {
             response.clear();
             if (it->second.lastUpdate<0.0)
-                response.addDouble(it->second.lastUpdate);
+                response.addFloat64(it->second.lastUpdate);
             else
             {
                 double dt=Time::now()-it->second.lastUpdate;
-                response.addDouble(dt);
+                response.addFloat64(dt);
             }
             return true;
         }
@@ -970,14 +970,14 @@ public:
         lock_guard<mutex> lck(mtx);
         if (content->size()==1)
         {
-            if (content->get(0).isVocab() || content->get(0).isString())
+            if (content->get(0).isVocab32() || content->get(0).isString())
             {
-                if (content->get(0).asVocab()==OPT_ALL)
+                if (content->get(0).asVocab32()==OPT_ALL)
                 {
                     response.clear();
                 
                     for (map<int,Item>::iterator it=itemsMap.begin(); it!=itemsMap.end(); it++)
-                        response.addInt(it->first);
+                        response.addInt32(it->first);
 
                     return true;
                 }
@@ -1067,7 +1067,7 @@ public:
             // do recursion and keep only the item that
             // satisfies the whole list of conditions
             if (recursiveCheck(it->second.prop,condList,opList))
-                response.addInt(it->first);
+                response.addInt32(it->first);
         }
 
         return true;
@@ -1083,7 +1083,7 @@ public:
             Property *pProp=it->second.prop;
             if (pProp->check(PROP_LIFETIMER))
             {
-                double lifeTimer=pProp->find(PROP_LIFETIMER).asDouble()-dt;
+                double lifeTimer=pProp->find(PROP_LIFETIMER).asFloat64()-dt;
                 if (lifeTimer<=0.0)
                 {
                     eraseItem(it);
@@ -1115,12 +1115,12 @@ public:
         string agent=connection.getRemoteContact().getName();
         if (command.size()<1)
         {
-            reply.addVocab(REP_NACK);
+            reply.addVocab32(REP_NACK);
             return;
         }
 
         reply.clear();
-        int cmd=command.get(0).asVocab();
+        int cmd=command.get(0).asVocab32();
         switch(cmd)
         {
             //-----------------
@@ -1128,24 +1128,24 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
 
                 Bottle *content=command.get(1).asList();
                 if (add(content))
                 {
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                     Bottle &b=reply.addList();
                     b.addString(PROP_ID);
-                    b.addInt(idCnt);
+                    b.addInt32(idCnt);
                     idCnt++;
 
                     if (asyncBroadcast)
                         broadcast(BCTAG_ASYNC);
                 }
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
 
                 break;
             }
@@ -1155,19 +1155,19 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
 
                 Bottle *content=command.get(1).asList();
                 if (remove(content))
                 {
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                     if (asyncBroadcast)
                         broadcast(BCTAG_ASYNC);
                 }
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
 
                 break;
             }
@@ -1177,7 +1177,7 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
 
@@ -1185,11 +1185,11 @@ public:
                 Bottle *content=command.get(1).asList();
                 if (get(content,response))
                 {
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                     reply.addList()=response;
                 }
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
 
                 break;
             }
@@ -1199,19 +1199,19 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
     
                 Bottle *content=command.get(1).asList();
                 if (set(content,agent))
                 {
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                     if (asyncBroadcast)
                         broadcast(BCTAG_ASYNC);
                 }
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
     
                 break;
             }
@@ -1221,15 +1221,15 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
 
                 Bottle *content=command.get(1).asList();
                 if (lock(content,agent))
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
 
                 break;
             }
@@ -1239,15 +1239,15 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
 
                 Bottle *content=command.get(1).asList();
                 if (unlock(content,agent))
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
 
                 break;
             }
@@ -1257,7 +1257,7 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
 
@@ -1265,11 +1265,11 @@ public:
                 Bottle *content=command.get(1).asList();
                 if (owner(content,response))
                 {
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                     reply.addList()=response;
                 }
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
 
                 break;
             }
@@ -1279,7 +1279,7 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
 
@@ -1287,11 +1287,11 @@ public:
                 Bottle *content=command.get(1).asList();
                 if (time(content,response))
                 {
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                     reply.addList()=response;
                 }
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
 
                 break;
             }
@@ -1300,7 +1300,7 @@ public:
             case CMD_DUMP:
             {
                 dump();
-                reply.addVocab(REP_ACK);
+                reply.addVocab32(REP_ACK);
                 break;
             }
 
@@ -1309,32 +1309,32 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
 
-                int opt=command.get(1).asVocab();
-                if (opt==Vocab::encode("start"))
+                int opt=command.get(1).asVocab32();
+                if (opt==Vocab32::encode("start"))
                 {
                     if (command.size()>=3)
-                        setPeriod(command.get(2).asDouble());
+                        setPeriod(command.get(2).asFloat64());
 
                     if (!isRunning())
                         start();
                     else if (isSuspended())
                         resume();
 
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                 }
-                else if (opt==Vocab::encode("stop"))
+                else if (opt==Vocab32::encode("stop"))
                 {
                     if (isRunning() && !isSuspended())
                         suspend();
 
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                 }
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
 
                 break;
             }
@@ -1344,23 +1344,23 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
 
-                int opt=command.get(1).asVocab();
-                if (opt==Vocab::encode("on"))
+                int opt=command.get(1).asVocab32();
+                if (opt==Vocab32::encode("on"))
                 {
                     asyncBroadcast=true;
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                 }
-                else if (opt==Vocab::encode("off"))
+                else if (opt==Vocab32::encode("off"))
                 {
                     asyncBroadcast=false;
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                 }
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
 
                 break;
             }
@@ -1370,7 +1370,7 @@ public:
             {
                 if (command.size()<2)
                 {
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
                     break;
                 }
 
@@ -1378,13 +1378,13 @@ public:
                 Bottle *content=command.get(1).asList();
                 if (ask(content,response))
                 {
-                    reply.addVocab(REP_ACK);
+                    reply.addVocab32(REP_ACK);
                     Bottle &b=reply.addList();
                     b.addString(PROP_ID);
                     b.addList()=response;
                 }
                 else
-                    reply.addVocab(REP_NACK);
+                    reply.addVocab32(REP_NACK);
 
                 break;
             }
@@ -1394,7 +1394,7 @@ public:
             case CMD_BYE:
             {
                 quitting=true;
-                reply.addVocab(REP_ACK);
+                reply.addVocab32(REP_ACK);
                 break;
             }
 
@@ -1402,7 +1402,7 @@ public:
             default:
             {
                 yWarning("received unknown command!");
-                reply.addVocab(REP_UNKNOWN);
+                reply.addVocab32(REP_UNKNOWN);
             }
         }
     }
@@ -1433,7 +1433,7 @@ public:
                         {
                             if (idList->get(0).asString()==PROP_ID)
                             {
-                                int id=idList->get(1).asInt();
+                                int id=idList->get(1).asInt32();
                                 itemsMap[id].prop=new Property(item->tail().toString().c_str());
 
                                 if (idCnt<=id)

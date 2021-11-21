@@ -78,15 +78,15 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
 
     Bottle& b = rpyPort.prepare();
     b.clear();
-    b.addDouble(roll);
-    b.addDouble(pitch);
-    b.addDouble(yaw);
-    b.addDouble(backdoorRoll);
-    b.addDouble(backdoorPitch);
-    b.addDouble(backdoorYaw);
-    b.addDouble(backdoorRoll - roll);
-    b.addDouble(backdoorPitch - pitch);
-    b.addDouble(backdoorYaw - yaw);
+    b.addFloat64(roll);
+    b.addFloat64(pitch);
+    b.addFloat64(yaw);
+    b.addFloat64(backdoorRoll);
+    b.addFloat64(backdoorPitch);
+    b.addFloat64(backdoorYaw);
+    b.addFloat64(backdoorRoll - roll);
+    b.addFloat64(backdoorPitch - pitch);
+    b.addFloat64(backdoorYaw - yaw);
     rpyPort.write();
 
 
@@ -279,8 +279,8 @@ bool CamCalibPort::selectBottleFromMap(double time,
     bottle->clear();
     for(int i = 0; i < it_prev->second.size(); ++i) {
         if(i < 3) {
-            double x0 = it_prev->second.get(i).asDouble();
-            double x1 = it_next->second.get(i).asDouble();
+            double x0 = it_prev->second.get(i).asFloat64();
+            double x1 = it_next->second.get(i).asFloat64();
             double t0 = it_prev->first;
             double t1 = it_next->first;
             double tx = time;
@@ -291,8 +291,8 @@ bool CamCalibPort::selectBottleFromMap(double time,
                 xx = x0 + (tx - t0)*(x1 - x0)/(t1 - t0);
             } else {
 
-                double v0 = it_prev->second.get(i+6).asDouble();
-                double v1 = it_next->second.get(i+6).asDouble();
+                double v0 = it_prev->second.get(i+6).asFloat64();
+                double v1 = it_next->second.get(i+6).asFloat64();
                 double a = (v1 - v0) / (t1 - t0);
 
                 if (fabs(v1 - v0) > 30) {
@@ -320,7 +320,7 @@ bool CamCalibPort::selectBottleFromMap(double time,
                 }
             }
 
-            bottle->addDouble(xx);
+            bottle->addFloat64(xx);
         } else {
             bottle->add(it_prev->second.get(i));
         }
@@ -359,21 +359,21 @@ bool CamCalibPort::updatePose(double time)
         }
     }
 
-    double tix = useTorso ? m_curr_t_encs.get(1).asDouble()/180.0*M_PI  : 0; // torso roll
-    double tiy = useTorso ? -m_curr_t_encs.get(2).asDouble()/180.0*M_PI : 0; // torso pitch
-    double tiz = useTorso ? -m_curr_t_encs.get(0).asDouble()/180.0*M_PI : 0; // torso yaw
+    double tix = useTorso ? m_curr_t_encs.get(1).asFloat64()/180.0*M_PI  : 0; // torso roll
+    double tiy = useTorso ? -m_curr_t_encs.get(2).asFloat64()/180.0*M_PI : 0; // torso pitch
+    double tiz = useTorso ? -m_curr_t_encs.get(0).asFloat64()/180.0*M_PI : 0; // torso yaw
 
-    double nix = -m_curr_h_encs.get(1).asDouble()/180.0*M_PI; // neck roll
-    double niy = m_curr_h_encs.get(0).asDouble()/180.0*M_PI;  // neck pitch
-    double niz = m_curr_h_encs.get(2).asDouble()/180.0*M_PI;  // neck yaw
+    double nix = -m_curr_h_encs.get(1).asFloat64()/180.0*M_PI; // neck roll
+    double niy = m_curr_h_encs.get(0).asFloat64()/180.0*M_PI;  // neck pitch
+    double niz = m_curr_h_encs.get(2).asFloat64()/180.0*M_PI;  // neck yaw
 
-    double t =  useEyes ? m_curr_h_encs.get(3).asDouble()/180.0*M_PI : 0; // eye tilt
-    double vs = useEyes ? m_curr_h_encs.get(4).asDouble()/180.0*M_PI : 0; // eye version
-    double vg = useEyes ? m_curr_h_encs.get(5).asDouble()/180.0*M_PI : 0; // eye vergence
+    double t =  useEyes ? m_curr_h_encs.get(3).asFloat64()/180.0*M_PI : 0; // eye tilt
+    double vs = useEyes ? m_curr_h_encs.get(4).asFloat64()/180.0*M_PI : 0; // eye version
+    double vg = useEyes ? m_curr_h_encs.get(5).asFloat64()/180.0*M_PI : 0; // eye vergence
 
-    double imu_x = useIMU ? m_curr_imu.get(0).asDouble()/180.0*M_PI : 0; // imu roll
-    double imu_y = useIMU ? m_curr_imu.get(1).asDouble()/180.0*M_PI : 0; // imu pitch
-    double imu_z = useIMU ? m_curr_imu.get(2).asDouble()/180.0*M_PI : 0; // imu yaw
+    double imu_x = useIMU ? m_curr_imu.get(0).asFloat64()/180.0*M_PI : 0; // imu roll
+    double imu_y = useIMU ? m_curr_imu.get(1).asFloat64()/180.0*M_PI : 0; // imu pitch
+    double imu_z = useIMU ? m_curr_imu.get(2).asFloat64()/180.0*M_PI : 0; // imu yaw
 
 
     // Torso rotation matrix
@@ -530,7 +530,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
     string str = rf.check("name", Value("/camCalib"), "module name (string)").asString();
     setName(str.c_str()); // modulePortName
 
-    double maxDelay = rf.check("maxDelay", Value(0.010), "Max delay between image and encoders").asDouble();
+    double maxDelay = rf.check("maxDelay", Value(0.010), "Max delay between image and encoders").asFloat64();
 
     // pass configuration over to bottle
     Bottle botConfig(rf.toString());
@@ -575,7 +575,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
     if (yarp::os::Network::exists(getName("/conf"))) {
         yWarning() << "port " << getName("/conf") << " already in use";
     }
-    _prtImgIn.setSaturation(rf.check("saturation",Value(1.0)).asDouble());
+    _prtImgIn.setSaturation(rf.check("saturation",Value(1.0)).asFloat64());
     _prtImgIn.open(getName("/in"));
     _prtImgIn.setPointers(&_prtImgOut,_calibTool);
     _prtImgIn.setVerbose(rf.check("verbose"));
@@ -687,16 +687,16 @@ bool CamCalibModule::respond(const Bottle& command, Bottle& reply)
         reply.addString("quitting");
         return false;
     } else if (command.get(0).asString()=="sat" || command.get(0).asString()=="saturation") {
-        double satVal = command.get(1).asDouble();
+        double satVal = command.get(1).asFloat64();
         _prtImgIn.setSaturation(satVal);
 
         reply.addString("ok");
     } else if (command.get(0).asString()=="filt") {
-        _prtImgIn.filter_enable = command.get(1).asInt();
+        _prtImgIn.filter_enable = command.get(1).asInt32();
     } else if (command.get(0).asString()=="cf1") {
-         _prtImgIn.cf1 = command.get(1).asDouble();
+         _prtImgIn.cf1 = command.get(1).asFloat64();
     } else if (command.get(0).asString()=="cf2") {
-        _prtImgIn.cf2 = command.get(1).asDouble();
+        _prtImgIn.cf2 = command.get(1).asFloat64();
     } else {
         yError() << "command not known - type help for more info";
     }
