@@ -37,7 +37,7 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
         return false;
     }
 
-    int period=config.find("period").asInt();
+    int period=config.find("period").asInt32();
     setPeriod((double)period/1000.0);
 
     Property prop;
@@ -46,7 +46,7 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     prop.put("physDevice", config.find("physDevice").asString().c_str());
     prop.put("canTxTimeout", 500);
     prop.put("canRxTimeout", 500);
-    canDeviceNum = config.find("canDeviceNum").asInt();
+    canDeviceNum = config.find("canDeviceNum").asInt32();
     prop.put("canDeviceNum", canDeviceNum);
     prop.put("canMyAddress", 0);
     prop.put("canTxQueueSize", CAN_DRIVER_BUFFER_SIZE);
@@ -77,10 +77,10 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
 
     //set the internal configuration
     //this->isVirtualSensor   = false;
-    this->boardId           = config.find("canAddress").asInt();
-    this->useCalibration    = config.find("useCalibration").asInt();
-    //this->SensorFullScale = config.find("fullScale").asInt();
-    unsigned int tmpFormat  = config.find("format").asInt();
+    this->boardId           = config.find("canAddress").asInt32();
+    this->useCalibration    = config.find("useCalibration").asInt32();
+    //this->SensorFullScale = config.find("fullScale").asInt32();
+    unsigned int tmpFormat  = config.find("format").asInt32();
     if      (tmpFormat == 8)
         this->dataFormat = ANALOG_FORMAT_8_BIT;
     else if (tmpFormat == 16)
@@ -89,7 +89,7 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
         this->dataFormat = ANALOG_FORMAT_ERR;
 
     // Parse diagnostic information
-    if( config.check("diagnostic") && config.find("diagnostic").asInt() == 1)
+    if( config.check("diagnostic") && config.find("diagnostic").asInt32() == 1)
     {
         this->diagnostic = true;
     }
@@ -108,7 +108,7 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     pCanBus->canIdAdd(0x200+(boardId<<4));
 
     //create the data vector:
-    this->channelsNum    = config.find("channels").asInt();
+    this->channelsNum    = config.find("channels").asInt32();
     data.resize(channelsNum);
     data.zero();
     scaleFactor.resize(channelsNum);
@@ -180,7 +180,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
 
     if (analogConfig.check("period"))
     {
-        int period=analogConfig.find("period").asInt();
+        int period=analogConfig.find("period").asInt32();
         CanMessage &msg=outBuffer[0];
         msg.setId(id);
         msg.getData()[0]=0x08;

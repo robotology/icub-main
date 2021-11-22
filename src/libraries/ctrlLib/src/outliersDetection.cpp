@@ -146,8 +146,8 @@ set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &opti
 
     if (options.check("mean") && options.check("std"))
     {
-        mean=options.find("mean").asDouble();
-        stdev=options.find("std").asDouble();
+        mean=options.find("mean").asFloat64();
+        stdev=options.find("std").asFloat64();
     }
     else if (N>0)
     {

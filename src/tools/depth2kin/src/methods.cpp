@@ -132,13 +132,13 @@ bool Calibrator::toProperty(Property &info) const
     Bottle data;
     Bottle &values=data.addList();
     values.addString(spatialCompetence.extrapolation?"true":"false");
-    values.addDouble(spatialCompetence.scale);
-    values.addDouble(spatialCompetence.c[0]);
-    values.addDouble(spatialCompetence.c[1]);
-    values.addDouble(spatialCompetence.c[2]);
+    values.addFloat64(spatialCompetence.scale);
+    values.addFloat64(spatialCompetence.c[0]);
+    values.addFloat64(spatialCompetence.c[1]);
+    values.addFloat64(spatialCompetence.c[2]);
     for (int r=0; r<spatialCompetence.A.rows(); r++)
         for (int c=0; c<spatialCompetence.A.cols(); c++)
-            values.addDouble(spatialCompetence.A(r,c));
+            values.addFloat64(spatialCompetence.A(r,c));
 
     info.put("spatial_competence",data.get(0));
     return true;
@@ -158,14 +158,14 @@ bool Calibrator::fromProperty(const Property &info)
     if (Bottle *values=info.find("spatial_competence").asList())
     {
         spatialCompetence.extrapolation=(values->get(0).asString()=="true");
-        spatialCompetence.scale=values->get(1).asDouble();
-        spatialCompetence.c[0]=values->get(2).asDouble();
-        spatialCompetence.c[1]=values->get(3).asDouble();
-        spatialCompetence.c[2]=values->get(4).asDouble();
+        spatialCompetence.scale=values->get(1).asFloat64();
+        spatialCompetence.c[0]=values->get(2).asFloat64();
+        spatialCompetence.c[1]=values->get(3).asFloat64();
+        spatialCompetence.c[2]=values->get(4).asFloat64();
         int r=0; int c=0;
         for (int i=5; i<values->size(); i++)
         {
-            spatialCompetence.A(r,c)=values->get(i).asDouble();
+            spatialCompetence.A(r,c)=values->get(i).asFloat64();
             if (++c>=spatialCompetence.A.cols())
             {
                 c=0;
@@ -294,10 +294,10 @@ bool MatrixCalibrator::toProperty(Property &info) const
 {
     Bottle data;
     Bottle &values=data.addList();
-    values.addDouble(scale);
+    values.addFloat64(scale);
     for (int r=0; r<H.rows(); r++)
         for (int c=0; c<H.cols(); c++)
-            values.addDouble(H(r,c));
+            values.addFloat64(H(r,c));
 
     info.clear();
     info.put("type",type);
@@ -330,12 +330,12 @@ bool MatrixCalibrator::fromProperty(const Property &info)
     scale=1.0;
     if (Bottle *values=info.find("calibration_data").asList())
     {
-        scale=values->get(0).asDouble();
+        scale=values->get(0).asFloat64();
 
         int r=0; int c=0;        
         for (int i=1; i<values->size(); i++)
         {
-            H(r,c)=values->get(i).asDouble();
+            H(r,c)=values->get(i).asFloat64();
             if (++c>=H.cols())
             {
                 c=0;

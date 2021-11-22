@@ -212,7 +212,7 @@ void VisuoThread::updateLocationsMIL()
         for(int i=0; i<bLocations->get(0).asList()->size(); i++)
         {
             Bottle *b=bLocations->get(0).asList()->get(i).asList();
-            locations[b->get(0).asString()]=cvPoint(b->get(1).asInt(),b->get(2).asInt());
+            locations[b->get(0).asString()]=cvPoint(b->get(1).asInt32(),b->get(2).asInt32());
         }
     }
 }
@@ -244,12 +244,12 @@ void VisuoThread::updateMotionCUT()
         {
             Item item;
             item.t=Time::now();
-            item.size=bMotion[cam]->get(0).asList()->get(2).asDouble();
-            item.p=cvPoint(bMotion[cam]->get(0).asList()->get(0).asInt(),bMotion[cam]->get(0).asList()->get(1).asInt());
+            item.size=bMotion[cam]->get(0).asList()->get(2).asFloat64();
+            item.p=cvPoint(bMotion[cam]->get(0).asList()->get(0).asInt32(),bMotion[cam]->get(0).asList()->get(1).asInt32());
             buffer[cam].push_back(item);
 
-            stereo[2*cam]=bMotion[cam]->get(0).asList()->get(0).asDouble();
-            stereo[2*cam+1]=bMotion[cam]->get(0).asList()->get(1).asDouble();
+            stereo[2*cam]=bMotion[cam]->get(0).asList()->get(0).asFloat64();
+            stereo[2*cam+1]=bMotion[cam]->get(0).asList()->get(1).asFloat64();
         }
 
         // Avoid time unconsistencies
@@ -316,13 +316,13 @@ void VisuoThread::updatePFTracker()
             Bottle v;
             v.clear();
             Bottle &vl=v.addList();
-            vl.addInt(cvRound(stereoTracker.vec[0]));
-            vl.addInt(cvRound(stereoTracker.vec[1]));
-            vl.addInt(stereoTracker.side);
+            vl.addInt32(cvRound(stereoTracker.vec[0]));
+            vl.addInt32(cvRound(stereoTracker.vec[1]));
+            vl.addInt32(stereoTracker.side);
             Bottle &vr=v.addList();
-            vr.addInt(cvRound(stereoTracker.vec[6]));
-            vr.addInt(cvRound(stereoTracker.vec[7]));
-            vr.addInt(stereoTracker.side);
+            vr.addInt32(cvRound(stereoTracker.vec[6]));
+            vr.addInt32(cvRound(stereoTracker.vec[7]));
+            vr.addInt32(stereoTracker.side);
 
             boundMILPort.write(v);
         }
@@ -365,20 +365,20 @@ bool VisuoThread::threadInit()
 
     Bottle bVision=rf.findGroup("vision");
 
-    setPeriod((double)bVision.check("period",Value(20)).asInt()/1000.0);
+    setPeriod((double)bVision.check("period",Value(20)).asInt32()/1000.0);
 
-    minMotionBufSize=bVision.check("minMotionBufSize",Value(10)).asInt();
-    minTrackBufSize=bVision.check("minTrackBufSize",Value(1)).asInt();
-    maxTrackBufSize=bVision.check("maxTrackBufSize",Value(2)).asInt();
-    timeTol=bVision.check("timeTol",Value(0.5)).asDouble();
-    motionStdThresh=bVision.check("motionStdThresh",Value(5.0)).asDouble();
-    speedStdThresh=bVision.check("speedStdThresh",Value(700.0)).asDouble();
-    stereoDistThresh=bVision.check("stereoDistThresh",Value(300.0)).asDouble();
+    minMotionBufSize=bVision.check("minMotionBufSize",Value(10)).asInt32();
+    minTrackBufSize=bVision.check("minTrackBufSize",Value(1)).asInt32();
+    maxTrackBufSize=bVision.check("maxTrackBufSize",Value(2)).asInt32();
+    timeTol=bVision.check("timeTol",Value(0.5)).asFloat64();
+    motionStdThresh=bVision.check("motionStdThresh",Value(5.0)).asFloat64();
+    speedStdThresh=bVision.check("speedStdThresh",Value(700.0)).asFloat64();
+    stereoDistThresh=bVision.check("stereoDistThresh",Value(300.0)).asFloat64();
     dominant_eye=bVision.check("dominant_eye",Value("left")).asString()=="left"?LEFT:RIGHT;
 
-    rawWaitThresh=bVision.check("raw_detection_wait_thresh",Value(15.0)).asDouble();
-    motionWaitThresh=bVision.check("motion_detection_wait_thresh",Value(5.0)).asDouble();
-    objectWaitThresh=bVision.check("object_detection_wait_thresh",Value(5.0)).asDouble();
+    rawWaitThresh=bVision.check("raw_detection_wait_thresh",Value(15.0)).asFloat64();
+    motionWaitThresh=bVision.check("motion_detection_wait_thresh",Value(5.0)).asFloat64();
+    objectWaitThresh=bVision.check("object_detection_wait_thresh",Value(5.0)).asFloat64();
 
     // open ports
     outPort[LEFT].open("/"+name+"/left/img:o");
@@ -455,17 +455,17 @@ bool VisuoThread::getTarget(Value &type, Bottle &options)
         {
             if(list->get(0).asString()=="right")
             {
-                bStereo.addDouble(0.0);
-                bStereo.addDouble(0.0);
-                bStereo.addDouble(list->get(1).asDouble());
-                bStereo.addDouble(list->get(2).asDouble());
+                bStereo.addFloat64(0.0);
+                bStereo.addFloat64(0.0);
+                bStereo.addFloat64(list->get(1).asFloat64());
+                bStereo.addFloat64(list->get(2).asFloat64());
             }
             else if(list->get(0).asString()=="left")
             {
-                bStereo.addDouble(list->get(1).asDouble());
-                bStereo.addDouble(list->get(2).asDouble());
-                bStereo.addDouble(0.0);
-                bStereo.addDouble(0.0);
+                bStereo.addFloat64(list->get(1).asFloat64());
+                bStereo.addFloat64(list->get(2).asFloat64());
+                bStereo.addFloat64(0.0);
+                bStereo.addFloat64(0.0);
             }
             else if(list->get(0).asString()=="cartesian")
             {
@@ -475,7 +475,7 @@ bool VisuoThread::getTarget(Value &type, Bottle &options)
                 Bottle &bCartesian=bNewCartesian.addList();
 
                 for(int i=1; i<list->size(); i++)
-                    bCartesian.addDouble(list->get(i).asDouble());
+                    bCartesian.addFloat64(list->get(i).asFloat64());
             }
             else
             {
@@ -485,22 +485,22 @@ bool VisuoThread::getTarget(Value &type, Bottle &options)
                 Bottle &bCartesian=bNewCartesian.addList();
 
                 for(int i=0; i<list->size(); i++)
-                    bCartesian.addDouble(list->get(i).asDouble());
+                    bCartesian.addFloat64(list->get(i).asFloat64());
             }
 
             ok=true;
         }
         else if(list->size()==2)
         {
-            bStereo.addDouble(list->get(0).asDouble());
-            bStereo.addDouble(list->get(1).asDouble());
-            bStereo.addDouble(0.0);
-            bStereo.addDouble(0.0);
+            bStereo.addFloat64(list->get(0).asFloat64());
+            bStereo.addFloat64(list->get(1).asFloat64());
+            bStereo.addFloat64(0.0);
+            bStereo.addFloat64(0.0);
 
             ok=true;
         }
     }
-    else switch(type.asVocab())
+    else switch(type.asVocab32())
     {
         case PARAM_FIXATION:
         {
@@ -557,7 +557,7 @@ bool VisuoThread::getFixation(Bottle &bStereo)
     imgMutex.unlock();
 
     for(size_t i=0; i<stereo.size(); i++)
-        bStereo.addDouble(stereo[i]);
+        bStereo.addFloat64(stereo[i]);
 
     int side=40;
     startTracker(stereo,side);
@@ -635,7 +635,7 @@ bool VisuoThread::getMotion(Bottle &bStereo)
     }
 
     for(size_t i=0; i<stereo.size(); i++)
-        bStereo.addDouble(stereo[i]);
+        bStereo.addFloat64(stereo[i]);
 
     return ok;
 }
@@ -658,7 +658,7 @@ bool VisuoThread::getTrack(Bottle &bStereo)
     }
 
     for(size_t i=0; i<stereo.size(); i++)
-        bStereo.addDouble(stereo[i]);
+        bStereo.addFloat64(stereo[i]);
 
     tracking=true;
     trackMode=MODE_TRACK_TEMPLATE;
@@ -690,14 +690,14 @@ bool VisuoThread::getRaw(Bottle &bStereo)
 
         if(bL!=NULL)
         {
-            stereo[0]=bL->get(0).asInt();
-            stereo[1]=bL->get(1).asInt();
+            stereo[0]=bL->get(0).asInt32();
+            stereo[1]=bL->get(1).asInt32();
         }
         
         if(bR!=NULL)
         {
-            stereo[2]=bR->get(0).asInt();
-            stereo[3]=bR->get(1).asInt();
+            stereo[2]=bR->get(0).asInt32();
+            stereo[3]=bR->get(1).asInt32();
         }
     }
 
@@ -709,7 +709,7 @@ bool VisuoThread::getRaw(Bottle &bStereo)
     }
 
     for(size_t i=0; i<stereo.size(); i++)
-        bStereo.addDouble(stereo[i]);
+        bStereo.addFloat64(stereo[i]);
 
     return ok;
 }
@@ -741,7 +741,7 @@ bool VisuoThread::getObject(const std::string &object_name, Bottle &bStereo)
     }
 
     for(size_t i=0; i<stereo.size(); i++)
-        bStereo.addDouble(stereo[i]);
+        bStereo.addFloat64(stereo[i]);
 
     return ok;
 }

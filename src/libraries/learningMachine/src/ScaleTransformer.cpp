@@ -187,9 +187,9 @@ bool ScaleTransformer::configure(yarp::os::Searchable &config) {
     if(!config.findGroup("type").isNull()) {
         //success = true;
         yarp::os::Bottle list = config.findGroup("type").tail();
-        if(list.get(0).isInt() && list.get(1).isString()) {
+        if(list.get(0).isInt32() && list.get(1).isString()) {
             // shift index, since internal numbering in vector starts at 0, the user starts at 1
-            this->setAt(list.get(0).asInt() - 1, list.get(1).asString().c_str());
+            this->setAt(list.get(0).asInt32() - 1, list.get(1).asString().c_str());
             success = true;
         } else if(list.get(0).asString() == "all" && list.get(1).isString()) {
             this->setAll(list.get(1).asString().c_str());
@@ -202,9 +202,9 @@ bool ScaleTransformer::configure(yarp::os::Searchable &config) {
         yarp::os::Bottle property;
         yarp::os::Bottle list = config.findGroup("config").tail();
         property.addList() = list.tail();
-        if(list.get(0).isInt()) {
+        if(list.get(0).isInt32()) {
             // format: set config idx key val
-            int i = list.get(0).asInt() - 1;
+            int i = list.get(0).asInt32() - 1;
             success = this->getAt(i)->configure(property);
         } else if(list.get(0).asString() == "all") {
             // format: set config all key val

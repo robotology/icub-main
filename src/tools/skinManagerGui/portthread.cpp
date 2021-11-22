@@ -59,7 +59,7 @@ Bottle PortThread::sendRpcCommand(bool responseExpected, SkinManagerCommand cmd)
 
     // create the bottle
     Bottle b;
-    b.addInt(cmd);
+    b.addInt32(cmd);
     //g_print("Going to send rpc msg: %s\n", b.toString().c_str());
     if(responseExpected){
         guiRpcPort->write(b, resp);

@@ -207,7 +207,7 @@ void getRate(ResourceFinder &rf, int &r)
     else
     {
         Value& rate = rf.find("rate");
-        r = rate.asInt();
+        r = rate.asInt32();
     }
 }
 
@@ -253,7 +253,7 @@ int getUsedJointsMap(ResourceFinder &rf, int n, int* thetaMap)
 
     for (int i = 0; i < n; i++)
     {
-        thetaMap[i] = pJoints->get(i).asInt();
+        thetaMap[i] = pJoints->get(i).asInt32();
     }
     return 1;
 }
@@ -266,7 +266,7 @@ int getNumberConstraints(ResourceFinder &rf, int &n)
         return 0;
     }
     Value& nJoints = rf.find("nConstr");
-    n = nJoints.asInt();
+    n = nJoints.asInt32();
     return 1;
 }
 

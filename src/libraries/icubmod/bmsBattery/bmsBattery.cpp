@@ -39,7 +39,7 @@ bool BmsBattery::open(yarp::os::Searchable& config)
         return false;
     }
 
-    int period=config.find("thread_period").asInt();
+    int period=config.find("thread_period").asInt32();
     setPeriod((double)period/1000.0);
 
     Property prop;

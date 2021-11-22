@@ -67,7 +67,7 @@ public:
 
         if (config.findGroup("CAN").check("sharedCanPeriod"))
         {
-            int sharedCanPeriod = config.findGroup("CAN").find("sharedCanPeriod").asInt();
+            int sharedCanPeriod = config.findGroup("CAN").find("sharedCanPeriod").asInt32();
             int currentCanPeriod = (int)(1000.0 * this->getPeriod());
             if (currentCanPeriod != sharedCanPeriod && currentCanPeriod != DEFAULT_THREAD_PERIOD)
             {
@@ -77,7 +77,7 @@ public:
 
         if (!config.check("canDeviceNum")) return true;
 
-        return mCanDeviceNum==config.find("canDeviceNum").asInt();
+        return mCanDeviceNum==config.find("canDeviceNum").asInt32();
     }
 
     void attachAccessPoint(yarp::dev::CanBusAccessPoint* ap)
@@ -263,7 +263,7 @@ public:
 
         if (config.check("canRxQueueSize"))
         {
-            mBufferSize=config.find("canRxQueueSize").asInt();
+            mBufferSize=config.find("canRxQueueSize").asInt32();
         }
 
         readBufferUnion=theBufferFactory->createBuffer(mBufferSize);
@@ -274,7 +274,7 @@ public:
 
         if (config.check("canDeviceNum"))
         {
-            mCanDeviceNum=config.find("canDeviceNum").asInt();
+            mCanDeviceNum=config.find("canDeviceNum").asInt32();
         }
 
         return started;
@@ -360,7 +360,7 @@ public:
 
         if (config.findGroup("CAN").check("sharedCanPeriod"))
         {
-            int sharedCanPeriod = config.findGroup("CAN").find("sharedCanPeriod").asInt();
+            int sharedCanPeriod = config.findGroup("CAN").find("sharedCanPeriod").asInt32();
             scb->setPeriod((double)sharedCanPeriod/1000.0);
             //yDebug("SharedCanBus [%d] using custom thread period = %dms\n", scb->getCanDeviceNum(), sharedCanPeriod);///TOBEREMOVED
         }

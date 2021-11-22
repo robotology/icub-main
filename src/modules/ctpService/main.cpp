@@ -117,13 +117,13 @@ using namespace yarp::dev;
 using namespace yarp::math;
 using namespace iCub::ctrl;
 
-#define VCTP_TIME       yarp::os::createVocab('t','i','m','e')
-#define VCTP_OFFSET     yarp::os::createVocab('o','f','f')
-#define VCTP_CMD_NOW    yarp::os::createVocab('c','t','p','n')
-#define VCTP_CMD_QUEUE  yarp::os::createVocab('c','t','p','q')
-#define VCTP_CMD_FILE   yarp::os::createVocab('c','t','p','f')
-#define VCTP_POSITION   yarp::os::createVocab('p','o','s')
-#define VCTP_WAIT       yarp::os::createVocab('w','a','i','t')
+#define VCTP_TIME       yarp::os::createVocab32('t','i','m','e')
+#define VCTP_OFFSET     yarp::os::createVocab32('o','f','f')
+#define VCTP_CMD_NOW    yarp::os::createVocab32('c','t','p','n')
+#define VCTP_CMD_QUEUE  yarp::os::createVocab32('c','t','p','q')
+#define VCTP_CMD_FILE   yarp::os::createVocab32('c','t','p','f')
+#define VCTP_POSITION   yarp::os::createVocab32('p','o','s')
+#define VCTP_WAIT       yarp::os::createVocab32('w','a','i','t')
 
 #define VEL_FILT_SIZE   10
 #define VEL_FILT_THRES  1.0
@@ -449,10 +449,10 @@ private:
 
             Bottle c,r;
             c.addString("gain");
-            c.addInt(i);
+            c.addInt32(i);
             if (rf->check(gainStr))
             {
-                c.addDouble(rf->find(gainStr).asDouble());
+                c.addFloat64(rf->find(gainStr).asFloat64());
                 p->write(c,r);
                 i++;
             }
@@ -475,10 +475,10 @@ private:
 
             Bottle c,r;
             c.addString("svel");
-            c.addInt(i);
+            c.addInt32(i);
             if (rf->check(svelStr))
             {
-                c.addDouble(rf->find(svelStr).asDouble());
+                c.addFloat64(rf->find(svelStr).asFloat64());
                 p->write(c,r);
                 i++;
             }
@@ -506,11 +506,11 @@ private:
 
             if (b.size()>2)
             {
-                time=b.get(1).asDouble();
+                time=b.get(1).asFloat64();
                 v.resize(b.size()-2);
 
                 for (size_t i=0; i<v.length(); i++)
-                    v[i]=b.get(i+2).asDouble();
+                    v[i]=b.get(i+2).asFloat64();
 
                 return true;
             }
@@ -716,7 +716,7 @@ public:
         if (ret)
         {
             posPort.sendNow(action);
-            reply.addVocab(Vocab::encode("ack"));
+            reply.addVocab32("ack");
         }
         
         return ret;
@@ -729,7 +729,7 @@ public:
         if (ret)
         {
             posPort.queue(action);
-            reply.addVocab(Vocab::encode("ack"));
+            reply.addVocab32("ack");
         }
         return ret;
     }
@@ -743,11 +743,11 @@ public:
         bool ret = velThread.go(fileName);
         if (ret)
         {
-            reply.addVocab(Vocab::encode("ack"));
+            reply.addVocab32("ack");
         }
         else
         {
-            reply.addVocab(Vocab::encode("nack"));
+            reply.addVocab32("nack");
             reply.addString("Unable to load file");
         }
         return ret;
@@ -756,7 +756,7 @@ public:
     bool handle_wait(const Bottle &cmd, Bottle &reply)
     {
         cerr<<"Warning command not implemented yet"<<endl;
-        reply.addVocab(Vocab::encode("ack"));
+        reply.addVocab32("ack");
         return true;
         //ActionItem *action;
         //bool ret=parseWaitCmd(cmd, reply, &action);
@@ -773,15 +773,15 @@ public:
             return false;
         }
 
-        if (cmd.get(1).asVocab()==VCTP_TIME)
+        if (cmd.get(1).asVocab32()==VCTP_TIME)
         {
-            double time=cmd.get(2).asDouble();
+            double time=cmd.get(2).asFloat64();
             int offset=0;
             Bottle *posCmd=0;
-            if (cmd.get(3).asVocab()==VCTP_OFFSET)
+            if (cmd.get(3).asVocab32()==VCTP_OFFSET)
             {
-                offset=cmd.get(4).asInt();
-                if (cmd.get(5).asVocab()==VCTP_POSITION)
+                offset=cmd.get(4).asInt32();
+                if (cmd.get(5).asVocab32()==VCTP_POSITION)
                 {
                     posCmd=cmd.get(6).asList();
                     if (!posCmd)
@@ -797,7 +797,7 @@ public:
                     *action=new ActionItem;
                     (*action)->getCmd().resize(posCmd->size());
                     for(int k=0;k<posCmd->size();k++)
-                        (*action)->getCmd()[k]=posCmd->get(k).asDouble();
+                        (*action)->getCmd()[k]=posCmd->get(k).asFloat64();
 
                     (*action)->getOffset()=offset;
                     (*action)->getTime()=time;
@@ -862,9 +862,9 @@ public:
         bool ret;
         if (command.size()!=0)
         {
-            switch (command.get(0).asVocab())
+            switch (command.get(0).asVocab32())
             {
-                case yarp::os::createVocab('h','e','l','p'):
+                case yarp::os::createVocab32('h','e','l','p'):
                 {                    
                     cout << "Available commands:"          << endl;
                     cout<<"Queue command:\n";
@@ -873,7 +873,7 @@ public:
                     cout<<"[ctpq] [time] seconds [off] j [pos] (list)\n";
                     cout<<"Load sequence from file:\n";
                     cout<<"[ctpf] filename\n";
-                    reply.addVocab(Vocab::encode("ack"));
+                    reply.addVocab32("ack");
                     return true;
                 }
                 case VCTP_CMD_NOW:
@@ -901,7 +901,7 @@ public:
         }
         else
         {
-            reply.addVocab(Vocab::encode("nack"));
+            reply.addVocab32("nack");
             return false;
         }
     }

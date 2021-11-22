@@ -26,11 +26,11 @@ using namespace iCub::iKin;
 void CartesianHelper::addVectorOption(Bottle &b, const int vcb, const Vector &v)
 {
     Bottle &part=b.addList();
-    part.addVocab(vcb);
+    part.addVocab32(vcb);
     Bottle &vect=part.addList();
 
     for (size_t i=0; i<v.length(); i++)
-        vect.addDouble(v[i]);
+        vect.addFloat64(v[i]);
 }
 
 
@@ -41,10 +41,10 @@ bool CartesianHelper::getDesiredOption(const Bottle &reply, Vector &xdhat,
     if (reply.size()==0)
         return false;
 
-    if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK)
     {
         // xdhat and odhat part
-        if (reply.check(Vocab::decode(IKINSLV_VOCAB_OPT_X)))
+        if (reply.check(Vocab32::decode(IKINSLV_VOCAB_OPT_X)))
         {
             Bottle *xData=getEndEffectorPoseOption(reply);
             if (xData->size()==0)
@@ -52,17 +52,17 @@ bool CartesianHelper::getDesiredOption(const Bottle &reply, Vector &xdhat,
 
             xdhat.resize(3);
             for (size_t i=0; i<xdhat.length(); i++)
-                xdhat[i]=xData->get(i).asDouble();
+                xdhat[i]=xData->get(i).asFloat64();
 
             odhat.resize(4);
             for (size_t i=0; i<odhat.length(); i++)
-                odhat[i]=xData->get(xdhat.length()+i).asDouble();
+                odhat[i]=xData->get(xdhat.length()+i).asFloat64();
         }
         else
             return false;
 
         // qdhat part
-        if (reply.check(Vocab::decode(IKINSLV_VOCAB_OPT_Q)))
+        if (reply.check(Vocab32::decode(IKINSLV_VOCAB_OPT_Q)))
         {
             Bottle *qData=getJointsOption(reply);
             if (qData->size()==0)
@@ -70,7 +70,7 @@ bool CartesianHelper::getDesiredOption(const Bottle &reply, Vector &xdhat,
 
             qdhat.resize(qData->size());
             for (size_t i=0; i<qdhat.length(); i++)
-                qdhat[i]=qData->get(i).asDouble();
+                qdhat[i]=qData->get(i).asFloat64();
         }
         else
             return false;
@@ -114,12 +114,12 @@ void CartesianHelper::addJointsRestWeightsOption(Bottle &b, const Vector &restWe
 void CartesianHelper::addPoseOption(Bottle &b, const unsigned int pose)
 {
     Bottle &posePart=b.addList();
-    posePart.addVocab(IKINSLV_VOCAB_OPT_POSE);
+    posePart.addVocab32(IKINSLV_VOCAB_OPT_POSE);
 
     if (pose==IKINCTRL_POSE_FULL)
-        posePart.addVocab(IKINSLV_VOCAB_VAL_POSE_FULL);
+        posePart.addVocab32(IKINSLV_VOCAB_VAL_POSE_FULL);
     else if (pose==IKINCTRL_POSE_XYZ)
-        posePart.addVocab(IKINSLV_VOCAB_VAL_POSE_XYZ);
+        posePart.addVocab32(IKINSLV_VOCAB_VAL_POSE_XYZ);
 }
 
 
@@ -127,12 +127,12 @@ void CartesianHelper::addPoseOption(Bottle &b, const unsigned int pose)
 void CartesianHelper::addModeOption(Bottle &b, const bool tracking)
 {
     Bottle &modePart=b.addList();
-    modePart.addVocab(IKINSLV_VOCAB_OPT_MODE);
+    modePart.addVocab32(IKINSLV_VOCAB_OPT_MODE);
 
     if (tracking)
-        modePart.addVocab(IKINSLV_VOCAB_VAL_MODE_TRACK);
+        modePart.addVocab32(IKINSLV_VOCAB_VAL_MODE_TRACK);
     else
-        modePart.addVocab(IKINSLV_VOCAB_VAL_MODE_SINGLE);
+        modePart.addVocab32(IKINSLV_VOCAB_VAL_MODE_SINGLE);
 }
 
 
@@ -140,38 +140,38 @@ void CartesianHelper::addModeOption(Bottle &b, const bool tracking)
 void CartesianHelper::addTokenOption(Bottle &b, const double token)
 {
     Bottle &tokenPart=b.addList();
-    tokenPart.addVocab(IKINSLV_VOCAB_OPT_TOKEN);
-    tokenPart.addDouble(token);
+    tokenPart.addVocab32(IKINSLV_VOCAB_OPT_TOKEN);
+    tokenPart.addFloat64(token);
 }
 
 
 /************************************************************************/
 Bottle *CartesianHelper::getTargetOption(const Bottle &b)
 {
-    return b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList();
+    return b.find(Vocab32::decode(IKINSLV_VOCAB_OPT_XD)).asList();
 }
 
 
 /************************************************************************/
 Bottle *CartesianHelper::getEndEffectorPoseOption(const Bottle &b)
 {
-    return b.find(Vocab::decode(IKINSLV_VOCAB_OPT_X)).asList();
+    return b.find(Vocab32::decode(IKINSLV_VOCAB_OPT_X)).asList();
 }
 
 
 /************************************************************************/
 Bottle *CartesianHelper::getJointsOption(const Bottle &b)
 {
-    return b.find(Vocab::decode(IKINSLV_VOCAB_OPT_Q)).asList();
+    return b.find(Vocab32::decode(IKINSLV_VOCAB_OPT_Q)).asList();
 }
 
 
 /************************************************************************/
 bool CartesianHelper::getTokenOption(const Bottle &b, double *token)
 {
-    if (b.check(Vocab::decode(IKINSLV_VOCAB_OPT_TOKEN)) && (token!=NULL))
+    if (b.check(Vocab32::decode(IKINSLV_VOCAB_OPT_TOKEN)) && (token!=NULL))
     {
-        *token=b.find(Vocab::decode(IKINSLV_VOCAB_OPT_TOKEN)).asDouble();
+        *token=b.find(Vocab32::decode(IKINSLV_VOCAB_OPT_TOKEN)).asFloat64();
         return true;
     }
     else

@@ -640,10 +640,10 @@ bool CalibReferenceWithMatchedPoints::setScalingInitialGuess(const double s)
 bool CalibReferenceWithMatchedPoints::setCalibrationOptions(const Property &options)
 {
     if (options.check("max_iter"))
-        max_iter=options.find("max_iter").asInt();
+        max_iter=options.find("max_iter").asInt32();
 
     if (options.check("tol"))
-        tol=options.find("tol").asDouble();
+        tol=options.find("tol").asFloat64();
 
     return true;
 }

@@ -140,7 +140,7 @@ void helperPID::addVectorToOption(Bottle &option, const char *key, const Vector 
     bKey.addString(key);
     Bottle &bKeyContent=bKey.addList();
     for (size_t i=0; i<val.length(); i++)
-        bKeyContent.addDouble(val[i]);
+        bKeyContent.addFloat64(val[i]);
 }
 
 
@@ -157,7 +157,7 @@ bool helperPID::getVectorFromOption(const Bottle &options, const char *key,
 
             size=bSize<len?bSize:len;
             for (int i=0; i<size; i++)
-                val[i]=b->get(i).asDouble();
+                val[i]=b->get(i).asFloat64();
 
             return true;
         }
@@ -281,7 +281,7 @@ void parallelPID::getOptions(Bottle &options)
         
     Bottle &bTs=options.addList();
     bTs.addString("Ts");
-    bTs.addDouble(Ts);
+    bTs.addFloat64(Ts);
 }
 
 
@@ -321,7 +321,7 @@ void parallelPID::setOptions(const Bottle &options)
     
     if (options.check("Ts"))
     {
-        double _Ts=options.find("Ts").asDouble();
+        double _Ts=options.find("Ts").asFloat64();
         if (_Ts>0.0)
         {
             Ts=_Ts;
@@ -493,7 +493,7 @@ void seriesPID::getOptions(Bottle &options)
         
     Bottle &bTs=options.addList();
     bTs.addString("Ts");
-    bTs.addDouble(Ts);
+    bTs.addFloat64(Ts);
 }
 
 
@@ -530,7 +530,7 @@ void seriesPID::setOptions(const Bottle &options)
 
     if (options.check("Ts"))
     {
-        double _Ts=options.find("Ts").asDouble();
+        double _Ts=options.find("Ts").asFloat64();
         if (_Ts>0.0)
         {
             Ts=_Ts;

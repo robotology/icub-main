@@ -53,7 +53,7 @@ bool BcbBattery::open(yarp::os::Searchable& config)
         return false;
     }
 
-    int period=group_general.find("thread_period").asInt();
+    int period=group_general.find("thread_period").asInt32();
 
     Property prop;
     std::string ps = group_serial.toString();

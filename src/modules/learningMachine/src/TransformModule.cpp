@@ -219,9 +219,9 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
     bool success = false;
 
     try {
-        switch(cmd.get(0).asVocab()) {
-            case yarp::os::createVocab('h','e','l','p'): // print help information
-                reply.add(yarp::os::Value::makeVocab("help"));
+        switch(cmd.get(0).asVocab32()) {
+            case yarp::os::createVocab32('h','e','l','p'): // print help information
+                reply.add(yarp::os::Value::makeVocab32("help"));
 
                 reply.addString("Transform module configuration options");
                 reply.addString("  help                  Displays this message");
@@ -235,26 +235,26 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
                 success = true;
                 break;
 
-            case yarp::os::createVocab('c','l','e','a'): // clear the machine
-            case yarp::os::createVocab('c','l','r'):
-            case yarp::os::createVocab('r','e','s','e'):
-            case yarp::os::createVocab('r','s','t'):
+            case yarp::os::createVocab32('c','l','e','a'): // clear the machine
+            case yarp::os::createVocab32('c','l','r'):
+            case yarp::os::createVocab32('r','e','s','e'):
+            case yarp::os::createVocab32('r','s','t'):
                 this->getTransformer().reset();
                 reply.addString("Transformer reset.");
                 success = true;
                 break;
 
-            case yarp::os::createVocab('i','n','f','o'): // information
-            case yarp::os::createVocab('s','t','a','t'): // print statistics
+            case yarp::os::createVocab32('i','n','f','o'): // information
+            case yarp::os::createVocab32('s','t','a','t'): // print statistics
                 { // prevent identifier initialization to cross borders of case
-                reply.add(yarp::os::Value::makeVocab("help"));
+                reply.add(yarp::os::Value::makeVocab32("help"));
                 reply.addString("Transformer Information: ");
                 reply.addString(this->getTransformer().getInfo().c_str());
                 success = true;
                 break;
                 }
 
-            case yarp::os::createVocab('s','e','t'): // set a configuration option for the machine
+            case yarp::os::createVocab32('s','e','t'): // set a configuration option for the machine
                 { // prevent identifier initialization to cross borders of case
                 yarp::os::Bottle property;
                 /*
@@ -273,9 +273,9 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
                 break;
                 }
 
-            case yarp::os::createVocab('l','o','a','d'): // load
+            case yarp::os::createVocab32('l','o','a','d'): // load
                 { // prevent identifier initialization to cross borders of case
-                reply.add(yarp::os::Value::makeVocab("help"));
+                reply.add(yarp::os::Value::makeVocab32("help"));
                 std::string replymsg = std::string("Loading transformer from '") +
                                        cmd.get(1).asString().c_str() + "'... " ;
                 if(!cmd.get(1).isString()) {
@@ -289,9 +289,9 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
                 break;
                 }
 
-            case yarp::os::createVocab('s','a','v','e'): // save
+            case yarp::os::createVocab32('s','a','v','e'): // save
                 { // prevent identifier initialization to cross borders of case
-                reply.add(yarp::os::Value::makeVocab("help"));
+                reply.add(yarp::os::Value::makeVocab32("help"));
                 std::string replymsg = std::string("Saving transformer to '") +
                                        cmd.get(1).asString().c_str() + "'... " ;
                 if(!cmd.get(1).isString()) {
@@ -305,10 +305,10 @@ bool TransformModule::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& rep
                 break;
                 }
 
-            case yarp::os::createVocab('c','m','d'): // cmd
-            case yarp::os::createVocab('c','o','m','m'): // command
+            case yarp::os::createVocab32('c','m','d'): // cmd
+            case yarp::os::createVocab32('c','o','m','m'): // command
                 { // prevent identifier initialization to cross borders of case
-                reply.add(yarp::os::Value::makeVocab("help"));
+                reply.add(yarp::os::Value::makeVocab32("help"));
                 std::string replymsg;
                 if(!cmd.get(1).isString()) {
                     replymsg = "Please supply a valid filename.";

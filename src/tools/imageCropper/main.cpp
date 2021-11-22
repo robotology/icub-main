@@ -51,10 +51,10 @@ int main(int argc, char *argv[])
     size_t start_y = 0;
     size_t width = 0;
     size_t height = 0;
-    if (rf.check("x_off"))  start_x = (size_t) rf.find("x_off").asDouble();
-    if (rf.check("y_off"))  start_y = (size_t) rf.find("y_off").asDouble();
-    if (rf.check("width"))  width    = (size_t)rf.find("width").asDouble();
-    if (rf.check("height")) height  = (size_t)rf.find("height").asDouble();
+    if (rf.check("x_off"))  start_x = (size_t) rf.find("x_off").asFloat64();
+    if (rf.check("y_off"))  start_y = (size_t) rf.find("y_off").asFloat64();
+    if (rf.check("width"))  width    = (size_t)rf.find("width").asFloat64();
+    if (rf.check("height")) height  = (size_t)rf.find("height").asFloat64();
     yDebug("x_off %lu, y_off %lu, width %lu, height %lu", start_x, start_y, width, height);
     if (rf.check("help"))
     {

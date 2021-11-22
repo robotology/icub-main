@@ -143,7 +143,7 @@ protected:
     {
         if (config.check(key))
         {
-            return config.find(key).asInt();
+            return config.find(key).asInt32();
         }
 
         return 0;
@@ -153,7 +153,7 @@ protected:
     {
         if (config.check(key))
         {
-            return config.find(key).asDouble();
+            return config.find(key).asFloat64();
         }
 
         return -1.0;

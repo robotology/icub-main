@@ -201,7 +201,7 @@ public:
         name = "gravityCompensator";    
 
         if (rf.check("period"))
-            rate = rf.find("period").asInt();
+            rate = rf.find("period").asInt32();
         else rate = 20;
 
         if (rf.check("rate"))
@@ -401,9 +401,9 @@ public:
 
     bool respond(const Bottle& command, Bottle& reply) override
     {
-                        reply.addVocab(Vocab::encode("many"));
-                reply.addString("Available commands:");
-                reply.addString("calib all");
+        reply.addVocab32("many");
+        reply.addString("Available commands:");
+        reply.addString("calib all");
 
         Bottle position_bot;
         string helpMessage =  getName() +
@@ -418,7 +418,7 @@ public:
         if (command.get(0).asString()=="help")
         {
             cout << helpMessage;
-            reply.addVocab(Vocab::encode("many"));
+            reply.addVocab32("many");
             reply.addString(" commands are: \n" );
             reply.addString(helpMessage.c_str());
         }

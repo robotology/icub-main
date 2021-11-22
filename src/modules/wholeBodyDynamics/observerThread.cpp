@@ -1169,9 +1169,9 @@ template <class T> void inverseDynamics::broadcastData(T& _values, BufferedPort<
 void inverseDynamics::writeTorque(Vector _values, int _address, BufferedPort<Bottle> *_port)
 {
     Bottle a;
-    a.addInt(_address);
+    a.addInt32(_address);
     for(size_t i=0;i<_values.length();i++)
-        a.addDouble(_values(i));
+        a.addFloat64(_values(i));
     _port->prepare() = a;
     _port->write();
 }

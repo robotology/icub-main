@@ -107,7 +107,7 @@ bool embObjMais::fromConfig(yarp::os::Searchable &_config)
     }
     else
     {
-        _period = xtmp.get(1).asInt();
+        _period = xtmp.get(1).asInt32();
         yDebug() << "embObjMais::fromConfig() detects embObjMais Using value of" << _period;
     }
 
@@ -137,10 +137,10 @@ embObjMais::embObjMais()
     analogdata.resize(0);
 
 
-    std::string tmp = yarp::conf::environment::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::get_string("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
-        verbosewhenok = (bool)NetType::toInt(tmp);
+        verbosewhenok = (bool)(yarp::conf::numeric::from_string(tmp, 0U));
     }
     else
     {

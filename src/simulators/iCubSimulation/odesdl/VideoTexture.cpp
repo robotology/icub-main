@@ -78,7 +78,7 @@ void TextureInput::setName(string name) {
 
 bool TextureInput::open(Searchable& config) {
     textureIndex = config.check("textureIndex",Value(-1),
-                                "texture index").asInt();
+                                "texture index").asInt32();
 
     string texturePort = config.check("port",Value("/texture"),"local port name").asString();
 

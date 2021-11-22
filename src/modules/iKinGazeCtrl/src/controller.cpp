@@ -223,9 +223,9 @@ void Controller::notifyEvent(const string &event, const double checkPoint)
         ev.clear();
 
         ev.addString(event);
-        ev.addDouble(q_stamp);
+        ev.addFloat64(q_stamp);
         if (checkPoint>=0.0)
-            ev.addDouble(checkPoint);
+            ev.addFloat64(checkPoint);
 
         txInfo_event.update(q_stamp);
         port_event.setEnvelope(txInfo_event);
@@ -302,7 +302,7 @@ void Controller::stopLimb(const bool execStopPosition)
             ostringstream ss;
             ss<<"vel_"<<i;
             info.addString(ss.str());
-            info.addDouble(0.0);
+            info.addFloat64(0.0);
         }
 
         port_debug.prepare()=info;
@@ -498,7 +498,7 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
             ostringstream ss;
             ss<<"pos_"<<eyesJoints[i];
             info.addString(ss.str());
-            info.addDouble(ang_[i]);
+            info.addFloat64(ang_[i]);
         }
 
         port_debug.prepare()=info;
@@ -927,7 +927,7 @@ void Controller::run()
                     ostringstream ss;
                     ss<<"pos_"<<i;
                     info.addString(ss.str());
-                    info.addDouble(posdeg[i]);
+                    info.addFloat64(posdeg[i]);
                 }
 
                 j=eyesJoints[0];
@@ -938,7 +938,7 @@ void Controller::run()
                 ostringstream ss;
                 ss<<"vel_"<<i;
                 info.addString(ss.str());
-                info.addDouble(vdeg[i]);
+                info.addFloat64(vdeg[i]);
             }
 
             port_debug.prepare()=info;
@@ -1186,7 +1186,7 @@ Bottle Controller::listMotionOngoingEvents()
 
     Bottle events;
     for (auto motionOngoingEvent : motionOngoingEvents)
-        events.addDouble(motionOngoingEvent);
+        events.addFloat64(motionOngoingEvent);
 
     return events;
 }

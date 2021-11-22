@@ -34,10 +34,10 @@ bool dynContactList::read(ConnectionReader& connection)
 {
     // A dynContactList is represented as a list of list
     // where each list is a skinContact
-    if(connection.expectInt()!=BOTTLE_TAG_LIST)
+    if(connection.expectInt32()!=BOTTLE_TAG_LIST)
         return false;
 
-    int listLength = connection.expectInt();
+    int listLength = connection.expectInt32();
     if(listLength<0)
         return false;
     if(listLength!=size())
@@ -54,8 +54,8 @@ bool dynContactList::write(ConnectionWriter& connection) const
 {
     // A dynContactList is represented as a list of list
     // where each list is a skinContact
-    connection.appendInt(BOTTLE_TAG_LIST);
-    connection.appendInt(size());
+    connection.appendInt32(BOTTLE_TAG_LIST);
+    connection.appendInt32(size());
 
     for(auto it=begin(); it!=end(); it++)
         if(!it->write(connection))

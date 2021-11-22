@@ -53,7 +53,7 @@ bool skinWrapper::open(yarp::os::Searchable &params)
 
     if (params.check("period"))
     {
-        period=params.find("period").asInt();
+        period=params.find("period").asInt32();
     }
     else
     {
@@ -62,7 +62,7 @@ bool skinWrapper::open(yarp::os::Searchable &params)
     }
 
     // Read the list of ports
-    int total_taxels=params.find("total_taxels").asInt();
+    int total_taxels=params.find("total_taxels").asInt32();
     std::string robotName=params.find("robotName").asString().c_str();
     std::string root_name;
     root_name+="/";

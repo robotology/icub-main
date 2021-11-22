@@ -225,9 +225,9 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     else
         configIntrins=false;
     horizontalFov=config.check("horizontalFov",yarp::os::Value(0.0),
-                               "desired horizontal fov of test image").asDouble();
+                               "desired horizontal fov of test image").asFloat64();
     verticalFov=config.check("verticalFov",yarp::os::Value(0.0),
-                               "desired vertical fov of test image").asDouble();
+                               "desired vertical fov of test image").asFloat64();
     if(config.check("mirror"))
     {
         if(!setRgbMirroring(config.check("mirror",
@@ -238,10 +238,10 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         }
     }
 
-    intrinsic.put("focalLengthX",config.check("focalLengthX",yarp::os::Value(0.0),"Horizontal component of the focal lenght").asDouble());
-    intrinsic.put("focalLengthY",config.check("focalLengthY",yarp::os::Value(0.0),"Vertical component of the focal lenght").asDouble());
-    intrinsic.put("principalPointX",config.check("principalPointX",yarp::os::Value(0.0),"X coordinate of the principal point").asDouble());
-    intrinsic.put("principalPointY",config.check("principalPointY",yarp::os::Value(0.0),"Y coordinate of the principal point").asDouble());
+    intrinsic.put("focalLengthX",config.check("focalLengthX",yarp::os::Value(0.0),"Horizontal component of the focal lenght").asFloat64());
+    intrinsic.put("focalLengthY",config.check("focalLengthY",yarp::os::Value(0.0),"Vertical component of the focal lenght").asFloat64());
+    intrinsic.put("principalPointX",config.check("principalPointX",yarp::os::Value(0.0),"X coordinate of the principal point").asFloat64());
+    intrinsic.put("principalPointY",config.check("principalPointY",yarp::os::Value(0.0),"Y coordinate of the principal point").asFloat64());
     intrinsic.put("rectificationMatrix",config.check("rectificationMatrix",*retM,"Matrix that describes the lens' distortion"));
     intrinsic.put("distortionModel",config.check("distortionModel",yarp::os::Value(""),"Reference to group of parameters describing the distortion model").asString());
     if(bt.isNull())
@@ -255,11 +255,11 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     }
     else{
         intrinsic.put("name",bt.check("name",yarp::os::Value(""),"Name of the distortion model, see notes").asString());
-        intrinsic.put("k1",bt.check("k1",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asDouble());
-        intrinsic.put("k2",bt.check("k2",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asDouble());
-        intrinsic.put("k3",bt.check("k3",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asDouble());
-        intrinsic.put("t1",bt.check("t1",yarp::os::Value(0.0),"Tangential distortion of the lens").asDouble());
-        intrinsic.put("t2",bt.check("t2",yarp::os::Value(0.0),"Tangential distortion of the lens").asDouble());
+        intrinsic.put("k1",bt.check("k1",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asFloat64());
+        intrinsic.put("k2",bt.check("k2",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asFloat64());
+        intrinsic.put("k3",bt.check("k3",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asFloat64());
+        intrinsic.put("t1",bt.check("t1",yarp::os::Value(0.0),"Tangential distortion of the lens").asFloat64());
+        intrinsic.put("t2",bt.check("t2",yarp::os::Value(0.0),"Tangential distortion of the lens").asFloat64());
     }
     delete retM;
 
@@ -267,7 +267,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     if(config.check("cpu_affinity")) {
         cpu_set_t set;
         CPU_ZERO(&set);
-        int affinity =  config.find("cpu_affinity").asInt();
+        int affinity =  config.find("cpu_affinity").asInt32();
         CPU_SET(affinity, &set);
         if (sched_setaffinity(getpid(), sizeof(set), &set) == -1) {
             yWarning("failed to set the CPU affinity\n");
@@ -277,7 +277,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     // check for real-time priority
     if(config.check("rt_priority")) {
         struct sched_param sch_param;
-        sch_param.__sched_priority = config.find("rt_priority").asInt();
+        sch_param.__sched_priority = config.find("rt_priority").asInt32();
         if( sched_setscheduler(0, SCHED_FIFO, &sch_param) != 0 ) {
             yWarning("failed to set the real-time priority\n");
         }
@@ -361,7 +361,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     else if (config.check("d"))
     {
         yWarning("--d <unit_number> parameter is deprecated, use --guid <64_bit_global_unique_identifier> instead\n");
-        idCamera=config.find("d").asInt(); 
+        idCamera=config.find("d").asInt32(); 
     }
 
     if (idCamera<0 || idCamera>=m_nNumCameras)
@@ -621,7 +621,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     yarp::os::Bottle& white_balance=config.findGroup("white_balance");
     if (!white_balance.isNull()) 
     {
-        setWhiteBalance(white_balance.get(2).asDouble(),white_balance.get(1).asDouble());
+        setWhiteBalance(white_balance.get(2).asFloat64(),white_balance.get(1).asFloat64());
     }
     setHue(checkDouble(config,"hue"));
     setSaturation(checkDouble(config,"saturation"));
@@ -2283,7 +2283,7 @@ int CFWCamera_DR2_2::checkInt(yarp::os::Searchable& config,const char* key)
 {
     if (config.check(key))
     {
-        return config.find(key).asInt();
+        return config.find(key).asInt32();
     }
 
     return 0;
@@ -2293,7 +2293,7 @@ double CFWCamera_DR2_2::checkDouble(yarp::os::Searchable& config,const char* key
 {
     if (config.check(key))
     {
-        return config.find(key).asDouble();
+        return config.find(key).asFloat64();
     }
 
     return -1.0;

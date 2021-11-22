@@ -153,9 +153,9 @@ bool CompensationThread::threadInit()
                 sendDebugMsg(msg.str());
             }else{
                 FOR_ALL_PORTS(i){
-                    // cout<< "Skin part "<< SkinPart_s[skinPartList->get(i).asInt()]<< endl;
-                    yDebug("Skin part %s",SkinPart_s[skinPartList->get(i).asInt()].c_str());
-                    compensators[i]->setSkinPart((SkinPart)skinPartList->get(i).asInt());
+                    // cout<< "Skin part "<< SkinPart_s[skinPartList->get(i).asInt32()]<< endl;
+                    yDebug("Skin part %s",SkinPart_s[skinPartList->get(i).asInt32()].c_str());
+                    compensators[i]->setSkinPart((SkinPart)skinPartList->get(i).asInt32());
                 }
             }
         }
@@ -171,7 +171,7 @@ bool CompensationThread::threadInit()
                 sendDebugMsg(msg.str());
             }
             else{
-                maxNeighDist = skinEventsConf.check("maxNeighborDist", Value(MAX_NEIGHBOR_DISTANCE)).asDouble();
+                maxNeighDist = skinEventsConf.check("maxNeighborDist", Value(MAX_NEIGHBOR_DISTANCE)).asFloat64();
 
                 yInfo("Max neighbor distance: %f m\n", maxNeighDist);
                 FOR_ALL_PORTS(i){
@@ -399,7 +399,7 @@ Bottle CompensationThread::getInfo(){
             if(!compWorking[i])
                 compName = compName + " (NOT WORKING)";
             portB.addString(compName.c_str());
-            portB.addInt(compensators[i]->getNumTaxels());
+            portB.addInt32(compensators[i]->getNumTaxels());
         }
     }else{
         res.addString("Module initialization has not been completed yet.");

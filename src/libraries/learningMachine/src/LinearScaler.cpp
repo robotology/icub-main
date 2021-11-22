@@ -51,13 +51,13 @@ bool LinearScaler::configure(yarp::os::Searchable& config) {
     bool success = this->IScaler::configure(config);
 
     // set the desired scale (double)
-    if(config.find("scale").isDouble() || config.find("scale").isInt()) {
-        this->setScale(1. / config.find("scale").asDouble());
+    if(config.find("scale").isFloat64() || config.find("scale").isInt32()) {
+        this->setScale(1. / config.find("scale").asFloat64());
         success = true;
     }
     // set the desired offset (double)
-    if(config.find("offset").isDouble() || config.find("offset").isInt()) {
-        this->setOffset(config.find("offset").asDouble());
+    if(config.find("offset").isFloat64() || config.find("offset").isInt32()) {
+        this->setOffset(config.find("offset").asFloat64());
         success = true;
     }
 

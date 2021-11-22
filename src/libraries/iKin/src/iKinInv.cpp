@@ -974,7 +974,7 @@ void MultiRefMinJerkCtrl::setPlantParameters(const Property &parameters,
     Bottle ordering;
     for (unsigned int i=0; i<chain.getN(); i++)
         if (!chain[i].isBlocked())
-            ordering.addInt(i);
+            ordering.addInt32(i);
 
     dynamic_cast<minJerkVelCtrlForNonIdealPlant*>(mjCtrlJoint)->setPlantParameters(parameters,entryTag,ordering);    
 }

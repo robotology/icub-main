@@ -82,7 +82,7 @@ void SmithPredictor::configure(const Property &options, iKinChain &chain)
     for (unsigned int i=0; i<chain.getDOF(); i++)
         tappedDelays.push_back(new deque<double>);
 
-    double Ts=options.check("Ts",Value(0.01)).asDouble();
+    double Ts=options.check("Ts",Value(0.01)).asFloat64();
     Vector y0(chain.getDOF());
     Matrix lim(chain.getDOF(),2);
 
@@ -106,20 +106,20 @@ void SmithPredictor::configure(const Property &options, iKinChain &chain)
                 if (Bottle *params=options.find(entry_str).asList())
                 {
                     if (params->check("Kp"))
-                        Kp[i]=params->find("Kp").asDouble();
+                        Kp[i]=params->find("Kp").asFloat64();
 
                     if (params->check("Tz"))
-                        Tz[i]=params->find("Tz").asDouble();
+                        Tz[i]=params->find("Tz").asFloat64();
 
                     if (params->check("Tw"))
-                        Tw[i]=params->find("Tw").asDouble();
+                        Tw[i]=params->find("Tw").asFloat64();
 
                     if (params->check("Zeta"))
-                        Zeta[i]=params->find("Zeta").asDouble();
+                        Zeta[i]=params->find("Zeta").asFloat64();
 
                     if (params->check("Td"))
                     {
-                        int depth=(int)ceil(params->find("Td").asDouble()/Ts);
+                        int depth=(int)ceil(params->find("Td").asFloat64()/Ts);
                         tappedDelays[i]->assign(depth,y0[i]);
                     }
                 }

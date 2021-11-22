@@ -75,8 +75,8 @@ bool SpringyFinger::fromProperty(const Property &options)
     else
         return false;    
 
-    calibratingVelocity=options.check("calib_vel",Value(defaultCalibVel)).asDouble();
-    outputGain=options.check("output_gain",Value(1.0)).asDouble();
+    calibratingVelocity=options.check("calib_vel",Value(defaultCalibVel)).asFloat64();
+    outputGain=options.check("output_gain",Value(1.0)).asFloat64();
     calibrated=(options.check("calibrated",Value("false")).asString()=="true");
 
     if (options.check("scaler"))
@@ -147,16 +147,16 @@ bool SpringyFinger::getSensorsData(Value &data) const
     Out_1->second->getOutput(val_out[1]);
 
     Vector in(lssvm.getDomainSize());
-    in[0]=val_in.asDouble();
+    in[0]=val_in.asFloat64();
 
     Vector out(lssvm.getCoDomainSize());
-    out[0]=val_out[0].asDouble();
-    out[1]=val_out[1].asDouble();
+    out[0]=val_out[0].asFloat64();
+    out[1]=val_out[1].asFloat64();
 
     if (lssvm.getCoDomainSize()>2)
     {
         Out_2->second->getOutput(val_out[2]);
-        out[2]=val_out[2].asDouble();
+        out[2]=val_out[2].asFloat64();
     }
 
     Property prop;
@@ -189,14 +189,14 @@ bool SpringyFinger::extractSensorsData(Vector &in, Vector &out) const
             {
                 in.resize(b2->size());
                 for (size_t i=0; i<in.length(); i++)
-                    in[i]=b2->get(i).asDouble();
+                    in[i]=b2->get(i).asFloat64();
             }
 
             if (Bottle *b2=b1->find("out").asList())
             {
                 out.resize(b2->size());
                 for (size_t i=0; i<out.length(); i++)
-                    out[i]=b2->get(i).asDouble();
+                    out[i]=b2->get(i).asFloat64();
 
                 ret=true;
             }
@@ -281,7 +281,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     type=options.find("type").asString();
     robot=options.check("robot",Value("icub")).asString();
     carrier=options.check("carrier",Value("udp")).asString();
-    verbosity=options.check("verbosity",Value(0)).asInt();
+    verbosity=options.check("verbosity",Value(0)).asInt32();
 
     string part_motor=string(type+"_arm");
     string part_analog=string(type+"_hand");
@@ -697,11 +697,11 @@ bool SpringyFingersModel::getOutput(Value &out) const
         fingers[4].getOutput(val[4]);
         
         Bottle bOut; Bottle &ins=bOut.addList();
-        ins.addDouble(val[0].asDouble());
-        ins.addDouble(val[1].asDouble());
-        ins.addDouble(val[2].asDouble());
-        ins.addDouble(val[3].asDouble());
-        ins.addDouble(val[4].asDouble());
+        ins.addFloat64(val[0].asFloat64());
+        ins.addFloat64(val[1].asFloat64());
+        ins.addFloat64(val[2].asFloat64());
+        ins.addFloat64(val[3].asFloat64());
+        ins.addFloat64(val[4].asFloat64());
 
         out=bOut.get(0);
         return true;

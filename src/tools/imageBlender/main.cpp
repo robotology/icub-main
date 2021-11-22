@@ -93,12 +93,12 @@ int main(int argc, char *argv[])
     size_t start_ly = 0;
     double alpha1 = 0.5;
     double alpha2 = 0.5;
-    if (rf.check("rx")) start_rx = (size_t) rf.find("rx").asDouble();
-    if (rf.check("ry")) start_ry = (size_t) rf.find("ry").asDouble();
-    if (rf.check("lx")) start_lx = (size_t) rf.find("lx").asDouble();
-    if (rf.check("ly")) start_ly = (size_t) rf.find("ly").asDouble();
-    if (rf.check("alpha1")) alpha1 = rf.find("alpha1").asDouble();
-    if (rf.check("alpha2")) alpha2 = rf.find("alpha2").asDouble();
+    if (rf.check("rx")) start_rx = (size_t) rf.find("rx").asFloat64();
+    if (rf.check("ry")) start_ry = (size_t) rf.find("ry").asFloat64();
+    if (rf.check("lx")) start_lx = (size_t) rf.find("lx").asFloat64();
+    if (rf.check("ly")) start_ly = (size_t) rf.find("ly").asFloat64();
+    if (rf.check("alpha1")) alpha1 = rf.find("alpha1").asFloat64();
+    if (rf.check("alpha2")) alpha2 = rf.find("alpha2").asFloat64();
     yDebug("left offset:%lu,%lu right offset:%lu,%lu, alpha1:%f, alpha2:%f", start_lx, start_ly, start_rx, start_ry, alpha1, alpha2);
     if (rf.check("help"))
     {

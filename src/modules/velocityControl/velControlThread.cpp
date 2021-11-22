@@ -56,14 +56,14 @@ void velControlThread::run()
         int size = bot->size()/2;
         for(int i=0;i<size;i++)
         {
-            int ind = bot->get(2*i).asInt();
+            int ind = bot->get(2*i).asInt32();
             if(ind < VELOCITY_INDEX_OFFSET) 
             {//this is a position command
-                targets(ind) = bot->get(2*i+1).asDouble();
+                targets(ind) = bot->get(2*i+1).asFloat64();
             } 
             else 
             {//this is a velocity command
-                ffVelocities(ind - VELOCITY_INDEX_OFFSET) = bot->get(2*i+1).asDouble();
+                ffVelocities(ind - VELOCITY_INDEX_OFFSET) = bot->get(2*i+1).asFloat64();
             }
             //fprintf(stderr, "for joint *%d, received %f, \t", ind, targets(ind));
         }
@@ -79,7 +79,7 @@ void velControlThread::run()
     if (vec!=NULL)
     {
         for(int k=0;k<nJoints;k++)
-            targets(k)=vec->get(k).asDouble();
+            targets(k)=vec->get(k).asFloat64();
     }
 
     static int count=0;
@@ -282,7 +282,7 @@ void velControlThread::go()
         imod->getControlMode(k, &mode);
         if (mode!=VOCAB_CM_MIXED && mode!=VOCAB_CM_VELOCITY)
         {
-            std::string s = yarp::os::Vocab::decode(mode);
+            std::string s = yarp::os::Vocab32::decode(mode);
             yWarning("Joint (%d) is in mode (%s) and does not accepts velocty commands. You have first to set either VOCAB_CM_VELOCITY or VOCAB_CM_MIXED control mode\n", k, s.c_str());
         }
     }

@@ -253,10 +253,10 @@ embObjMotionControl::embObjMotionControl() :
     behFlags.useRawEncoderData = false;
     behFlags.pwmIsLimited     = false;
 
-    std::string tmp = yarp::conf::environment::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::get_string("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
-        behFlags.verbosewhenok = (bool)NetType::toInt(tmp);
+        behFlags.verbosewhenok = (bool)yarp::conf::numeric::from_string(tmp, 0U);
     }
     else
     {
@@ -493,7 +493,7 @@ int embObjMotionControl::fromConfig_NumOfJoints(yarp::os::Searchable &config)
     //
     //  Read Configuration params from file
     //
-    int jn = config.findGroup("GENERAL").check("Joints", Value(1), "Number of degrees of freedom").asInt();
+    int jn = config.findGroup("GENERAL").check("Joints", Value(1), "Number of degrees of freedom").asInt32();
 
     return(jn);
 }
@@ -1531,7 +1531,7 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
             output.clear();
             //output.addString("[yt, amo, reg, pos]"); // but we must get the joint and the motor as well
             output.addString("[yt, amo, reg, pos]");
-            output.addDouble(timestamp);
+            output.addFloat64(timestamp);
             output.addInt32(debug32[0]);
             output.addInt32(debug32[1]);
             output.addInt32(jcore.measures.meas_position);
@@ -2588,14 +2588,14 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 
     if(!controlModeCommandConvert_yarp2embObj(_mode, controlmodecommand) )
     {
-        yError() << "SetControlMode: received unknown control mode for " << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
+        yError() << "SetControlMode: received unknown control mode for " << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(_mode);
         return false;
     }
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
     if(false == res->setRemoteValue(protid, &controlmodecommand) )
     {
-        yError() << "setControlModeRaw failed for " << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
+        yError() << "setControlModeRaw failed for " << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(_mode);
         return false;
     }
 
@@ -2604,7 +2604,7 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 
     if(false == ret)
     {
-        yError() << "In embObjMotionControl::setControlModeRaw(j=" << j << ", mode=" << yarp::os::Vocab::decode(_mode).c_str() << ") for " << getBoardInfo() << " has failed checkRemoteControlModeStatus()";
+        yError() << "In embObjMotionControl::setControlModeRaw(j=" << j << ", mode=" << yarp::os::Vocab32::decode(_mode).c_str() << ") for " << getBoardInfo() << " has failed checkRemoteControlModeStatus()";
     }
 
     return ret;
@@ -2623,7 +2623,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
 
         if(!controlModeCommandConvert_yarp2embObj(modes[i], controlmodecommand) )
         {
-            yError() << "SetControlModesRaw(): received unknown control mode for " << getBoardInfo() << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
+            yError() << "SetControlModesRaw(): received unknown control mode for " << getBoardInfo() << " joint " << joints[i] << " mode " << Vocab32::decode(modes[i]);
 
             return false;
         }
@@ -2631,7 +2631,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joints[i], eoprot_tag_mc_joint_cmmnds_controlmode);
         if(false == res->setRemoteValue(protid, &controlmodecommand) )
         {
-            yError() << "setControlModesRaw() could not send set<cmmnds_controlmode> for " << getBoardInfo() << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
+            yError() << "setControlModesRaw() could not send set<cmmnds_controlmode> for " << getBoardInfo() << " joint " << joints[i] << " mode " << Vocab32::decode(modes[i]);
 
             return false;
         }
@@ -2639,7 +2639,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         bool tmpresult = checkRemoteControlModeStatus(joints[i], modes[i]);
         if(false == tmpresult)
         {
-            yError() << "setControlModesRaw(const int n_joint, const int *joints, int *modes) could not check with checkRemoteControlModeStatus() for " << getBoardInfo() << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
+            yError() << "setControlModesRaw(const int n_joint, const int *joints, int *modes) could not check with checkRemoteControlModeStatus() for " << getBoardInfo() << " joint " << joints[i] << " mode " << Vocab32::decode(modes[i]);
         }
 
         ret = ret && tmpresult;
@@ -2665,21 +2665,21 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 
         if(!controlModeCommandConvert_yarp2embObj(modes[i], controlmodecommand) )
         {
-            yError() << "SetControlMode: received unknown control mode for" << getBoardInfo() << " joint " << i << " mode " << Vocab::decode(modes[i]);
+            yError() << "SetControlMode: received unknown control mode for" << getBoardInfo() << " joint " << i << " mode " << Vocab32::decode(modes[i]);
             return false;
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, i, eoprot_tag_mc_joint_cmmnds_controlmode);
         if(false == res->setRemoteValue(protid, &controlmodecommand) )
         {
-            yError() << "setControlModesRaw failed for " << getBoardInfo() << " joint " << i << " mode " << Vocab::decode(modes[i]);
+            yError() << "setControlModesRaw failed for " << getBoardInfo() << " joint " << i << " mode " << Vocab32::decode(modes[i]);
             return false;
         }
 
         bool tmpresult = checkRemoteControlModeStatus(i, modes[i]);
         if(false == tmpresult)
         {
-            yError() << "setControlModesRaw(int *modes) could not check with checkRemoteControlModeStatus() for" << getBoardInfo() << " joint " << i << " mode " << Vocab::decode(modes[i]);
+            yError() << "setControlModesRaw(int *modes) could not check with checkRemoteControlModeStatus() for" << getBoardInfo() << " joint " << i << " mode " << Vocab32::decode(modes[i]);
         }
 
         ret = ret && tmpresult;
@@ -3330,89 +3330,89 @@ bool embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle
                 {
                     // matrixJ2M is stored as row major in the  eomc_couplingInfo_t,
                     // and kinematic_mj is returned as a row major serialization as well
-                    ret.addDouble(_couplingInfo.matrixJ2M[4 * r + c]);
+                    ret.addFloat64(_couplingInfo.matrixJ2M[4 * r + c]);
                 }
             }
         }
         else
         {
-            ret.addDouble(0.0);
+            ret.addFloat64(0.0);
         }
         return true;
     }
     else if (key == "encoders")
     {
-        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { r.addDouble(_measureConverter->posA2E(1.0, i)); }
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { r.addFloat64(_measureConverter->posA2E(1.0, i)); }
         return true;
     }
     else if (key == "rotorEncoderResolution")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorEncoderResolutionRaw(i, tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorEncoderResolutionRaw(i, tmp);  r.addFloat64(tmp); }
         return true;
     }
     else if (key == "jointEncoderResolution")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointEncoderResolutionRaw(i, tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointEncoderResolutionRaw(i, tmp);  r.addFloat64(tmp); }
         return true;
     }
     else if (key == "gearbox_M2J")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp=0; getGearboxRatioRaw(i, &tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp=0; getGearboxRatioRaw(i, &tmp);  r.addFloat64(tmp); }
         return true;
     }
     else if (key == "gearbox_E2J")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp=0; getGerabox_E2J(i, &tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp=0; getGerabox_E2J(i, &tmp);  r.addFloat64(tmp); }
         return true;
     }
     else if (key == "hasHallSensor")
     {
-        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { int tmp = 0; getHasHallSensorRaw(i, tmp); r.addInt(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { int tmp = 0; getHasHallSensorRaw(i, tmp); r.addInt32(tmp); }
         return true;
     }
     else if (key == "hasTempSensor")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasTempSensorsRaw(i, tmp); r.addInt(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasTempSensorsRaw(i, tmp); r.addInt32(tmp); }
         return true;
     }
     else if (key == "hasRotorEncoder")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasRotorEncoderRaw(i, tmp); r.addInt(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasRotorEncoderRaw(i, tmp); r.addInt32(tmp); }
         return true;
     }
     else if (key == "hasRotorEncoderIndex")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasRotorEncoderIndexRaw(i, tmp); r.addInt(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasRotorEncoderIndexRaw(i, tmp); r.addInt32(tmp); }
         return true;
     }
     else if (key == "rotorIndexOffset")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorIndexOffsetRaw(i, tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorIndexOffsetRaw(i, tmp);  r.addFloat64(tmp); }
         return true;
     }
     else if (key == "motorPoles")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getMotorPolesRaw(i, tmp); r.addInt(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getMotorPolesRaw(i, tmp); r.addInt32(tmp); }
         return true;
     }
     else if (key == "pidCurrentKp")
     {
-        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.kp); }
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addFloat64(p.kp); }
         return true;
     }
     else if (key == "pidCurrentKi")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.ki); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addFloat64(p.ki); }
         return true;
     }
     else if (key == "pidCurrentShift")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.scale); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addFloat64(p.scale); }
         return true;
     }
     else if (key == "pidCurrentOutput")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addDouble(p.max_output); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p); r.addFloat64(p.max_output); }
         return true;
     }
     else if (key == "jointEncoderType")
@@ -3450,7 +3450,7 @@ bool embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle
     }
     else if (key == "torqueControlFilterType")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { int t; getTorqueControlFilterType(i, t); r.addDouble(t); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { int t; getTorqueControlFilterType(i, t); r.addFloat64(t); }
         return true;
     }
     else if (key == "torqueControlEnabled")
@@ -3459,75 +3459,75 @@ bool embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle
         Bottle& r = val.addList();
         for(int i = 0; i<_njoints; i++)
         {
-            r.addInt((int)_trq_pids[i].enabled );
+            r.addInt32((int)_trq_pids[i].enabled );
         }
         return true;
     }
     else if (key == "PWMLimit")
     {
-        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPWMLimitRaw(i, &tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPWMLimitRaw(i, &tmp);  r.addFloat64(tmp); }
         return true;
     }
     else if (key == "motOverloadCurr")
     {
-        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getMaxCurrentRaw(i, &tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getMaxCurrentRaw(i, &tmp);  r.addFloat64(tmp); }
         return true;
     }
     else if (key == "motNominalCurr")
     {
-        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getNominalCurrentRaw(i, &tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getNominalCurrentRaw(i, &tmp);  r.addFloat64(tmp); }
         return true;
     }
     else if (key == "motPeakCurr")
     {
-        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPeakCurrentRaw(i, &tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPeakCurrentRaw(i, &tmp);  r.addFloat64(tmp); }
         return true;
     }
     else if (key == "PowerSuppVoltage")
     {
-        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPowerSupplyVoltageRaw(i, &tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPowerSupplyVoltageRaw(i, &tmp);  r.addFloat64(tmp); }
         return true;
     }
     else if (key == "rotorMax")
     {
         double tmp1, tmp2;
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp2); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorLimitsRaw(i, &tmp1, &tmp2);  r.addFloat64(tmp2); }
         return true;
     }
     else if (key == "rotorMin")
     {
         double tmp1, tmp2;
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp1); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorLimitsRaw(i, &tmp1, &tmp2);  r.addFloat64(tmp1); }
         return true;
     }
     else if (key == "jointMax")
     {
         double tmp1, tmp2;
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp2); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addFloat64(tmp2); }
         return true;
     }
     else if (key == "jointMin")
     {
         double tmp1, tmp2;
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp1); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addFloat64(tmp1); }
         return true;
     }
     else if (key == "jointEncTolerance")
     {
         double tmp1;
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointEncTolerance(i, &tmp1);  r.addDouble(tmp1); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointEncTolerance(i, &tmp1);  r.addFloat64(tmp1); }
         return true;
     }
     else if (key == "motorEncTolerance")
     {
         double tmp1;
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getMotorEncTolerance(i, &tmp1);  r.addDouble(tmp1); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getMotorEncTolerance(i, &tmp1);  r.addFloat64(tmp1); }
         return true;
     }
     else if (key == "jointDeadZone")
     {
         double tmp1;
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointDeadZoneRaw(i, tmp1);  r.addDouble(tmp1); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointDeadZoneRaw(i, tmp1);  r.addFloat64(tmp1); }
         return true;
     }
     else if (key == "readonly_position_PIDraw")
@@ -3620,17 +3620,17 @@ bool embObjMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
     }
 //     else if (key == "rotor")
 //     {
-//         for (int i = 0; i < _njoints; i++) _rotorEncoderRes[i] = val.get(i).asInt();//this operation has none effect on motor controlelr, so i remove it
+//         for (int i = 0; i < _njoints; i++) _rotorEncoderRes[i] = val.get(i).asInt32();//this operation has none effect on motor controlelr, so i remove it
 //         return true;
 //     }
 //     else if (key == "gearbox_M2J")
 //     {
-//         for (int i = 0; i < _njoints; i++) _gearbox_M2J[i] = val.get(i).asDouble();//this operation has none effect on motor controlelr, so i remove it
+//         for (int i = 0; i < _njoints; i++) _gearbox_M2J[i] = val.get(i).asFloat64();//this operation has none effect on motor controlelr, so i remove it
 //         return true;
 //     }
     else if (key == "PWMLimit")
     {
-        for (int i = 0; i < _njoints; i++) setPWMLimitRaw(i, val.get(i).asDouble());
+        for (int i = 0; i < _njoints; i++) setPWMLimitRaw(i, val.get(i).asFloat64());
         return true;
     }
     //disabled for used safety
@@ -3641,7 +3641,7 @@ bool embObjMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
         for (int i = 0; i < _njoints; i++)
         {
             getLimitsRaw(i, &min, &max);
-            setLimitsRaw(i, min, val.get(i).asDouble());
+            setLimitsRaw(i, min, val.get(i).asFloat64());
         }
         return true;
     }
@@ -3651,7 +3651,7 @@ bool embObjMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
         for (int i = 0; i < _njoints; i++)
         {
             getLimitsRaw(i, &min, &max);
-            setLimitsRaw(i, val.get(i).asDouble(), max);
+            setLimitsRaw(i, val.get(i).asFloat64(), max);
         }
     }
 #endif
@@ -4373,20 +4373,20 @@ bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
     eOenum08_t interactionmodecommand = 0;
 
 
-    //    yDebug() << "received setInteractionModeRaw command (SINGLE) for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
+    //    yDebug() << "received setInteractionModeRaw command (SINGLE) for" << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(_mode);
 
     if (_mode == VOCAB_IM_COMPLIANT && _trq_pids[j].enabled  == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
 
     if(!interactionModeCommandConvert_yarp2embObj(_mode, interactionmodecommand) )
     {
-        yError() << "setInteractionModeRaw: received unknown mode for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
+        yError() << "setInteractionModeRaw: received unknown mode for" << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(_mode);
     }
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
 
     if(false == res->setRemoteValue(protid, &interactionmodecommand) )
     {
-        yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
+        yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(_mode);
         return false;
     }
 
@@ -4399,7 +4399,7 @@ bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
 
     if((false == ret) || (interactionmodecommand != interactionmodestatus))
     {
-    yError() << "check of embObjMotionControl::setInteractionModeRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(_mode);
+    yError() << "check of embObjMotionControl::setInteractionModeRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(_mode);
         return false;
     }
 #endif
@@ -4420,14 +4420,14 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], interactionmodecommand) )
         {
-            yError() << "embObjMotionControl::setInteractionModesRaw(): received unknown interactionMode for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]) << " " << modes[j];
+            yError() << "embObjMotionControl::setInteractionModesRaw(): received unknown interactionMode for" << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(modes[j]) << " " << modes[j];
             return false;
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
         if(false == res->setRemoteValue(protid, &interactionmodecommand) )
         {
-            yError() << "embObjMotionControl::setInteractionModesRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "embObjMotionControl::setInteractionModesRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(modes[j]);
             return false;
         }
 
@@ -4442,17 +4442,17 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
         {
             if(false == ret)
             {
-            yError() << "check of embObjMotionControl::setInteractionModesRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "check of embObjMotionControl::setInteractionModesRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(modes[j]);
                 return false;
             }
 
             int tmp;
             if(interactionModeStatusConvert_embObj2yarp(interactionmodestatus, tmp) )
                 yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " because of interactionMode mismatching \n\tSet " \
-                         << Vocab::decode(modes[j]) << " Got " << Vocab::decode(tmp);
+                         << Vocab32::decode(modes[j]) << " Got " << Vocab32::decode(tmp);
             else
                 yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " because of interactionMode mismatching \n\tSet " \
-                         << Vocab::decode(modes[j]) << " Got an unknown value!";
+                         << Vocab32::decode(modes[j]) << " Got an unknown value!";
             return false;
         }
 #endif
@@ -4477,14 +4477,14 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], interactionmodecommand) )
         {
-            yError() << "setInteractionModeRaw: received unknown interactionMode for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "setInteractionModeRaw: received unknown interactionMode for" << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(modes[j]);
             return false;
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
         if(false == res->setRemoteValue(protid, &interactionmodecommand) )
         {
-            yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(modes[j]);
             return false;
         }
 
@@ -4499,17 +4499,17 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
         {
             if(false == ret)
             {
-            yError() << "check of embObjMotionControl::setInteractionModesRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "check of embObjMotionControl::setInteractionModesRaw() failed for" << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(modes[j]);
                 return false;
             }
 
             int tmp;
             if(interactionModeStatusConvert_embObj2yarp(interactionmodestatus, tmp) )
                 yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " because of interactionMode mismatching \n\tSet " \
-                         << Vocab::decode(modes[j]) << " Got " << Vocab::decode(tmp);
+                         << Vocab32::decode(modes[j]) << " Got " << Vocab32::decode(tmp);
             else
                 yError() << "setInteractionModeRaw failed for" << getBoardInfo() << " joint " << j << " because of interactionMode mismatching \n\tSet " \
-                         << Vocab::decode(modes[j]) << " Got an unknown value!";
+                         << Vocab32::decode(modes[j]) << " Got an unknown value!";
             return false;
         }
 #endif
@@ -4840,7 +4840,7 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
         ret = askRemoteValue(id32, &temp, size);
         if(ret == false)
         {
-            yError ("An error occurred inside embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %s IP %s", joint, yarp::os::Vocab::decode(target_mode).c_str(), res->getProperties().boardnameString.c_str(), res->getProperties().ipv4addrString.c_str());
+            yError ("An error occurred inside embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %s IP %s", joint, yarp::os::Vocab32::decode(target_mode).c_str(), res->getProperties().boardnameString.c_str(), res->getProperties().ipv4addrString.c_str());
             break;
         }
         int current_mode = controlModeStatusConvert_embObj2yarp(temp);
@@ -4864,19 +4864,19 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
         if((yarp::os::Time::now()-timeofstart) > timeout)
         {
             ret = false;
-            yError ("A %f sec timeout occured in embObjMotionControl::checkRemoteControlModeStatus(), BOARD %s IP %s, joint %d, current mode: %s, requested: %s", timeout, res->getProperties().boardnameString.c_str(), res->getProperties().ipv4addrString.c_str(), joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
+            yError ("A %f sec timeout occured in embObjMotionControl::checkRemoteControlModeStatus(), BOARD %s IP %s, joint %d, current mode: %s, requested: %s", timeout, res->getProperties().boardnameString.c_str(), res->getProperties().ipv4addrString.c_str(), joint, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(target_mode).c_str());
             break;
         }
         if(attempt > 0)
         {   // i print the warning only after at least one retry.
-            yWarning ("embObjMotionControl::checkRemoteControlModeStatus() has done %d attempts and will retry again after a %f sec delay. (BOARD %s IP %s, joint %d) -> current mode = %s, requested = %s", attempt+1, delaybetweenqueries, res->getProperties().boardnameString.c_str() , res->getProperties().ipv4addrString.c_str(), joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
+            yWarning ("embObjMotionControl::checkRemoteControlModeStatus() has done %d attempts and will retry again after a %f sec delay. (BOARD %s IP %s, joint %d) -> current mode = %s, requested = %s", attempt+1, delaybetweenqueries, res->getProperties().boardnameString.c_str() , res->getProperties().ipv4addrString.c_str(), joint, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(target_mode).c_str());
         }
         SystemClock::delaySystem(delaybetweenqueries);
     }
 
     if(false == ret)
     {
-        yError("failure of embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %s IP %s after %d attempts and %f seconds", joint, yarp::os::Vocab::decode(target_mode).c_str(), res->getProperties().boardnameString.c_str(), res->getProperties().ipv4addrString.c_str(), attempt, yarp::os::Time::now()-timeofstart);
+        yError("failure of embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %s IP %s after %d attempts and %f seconds", joint, yarp::os::Vocab32::decode(target_mode).c_str(), res->getProperties().boardnameString.c_str(), res->getProperties().ipv4addrString.c_str(), attempt, yarp::os::Time::now()-timeofstart);
     }
 
 

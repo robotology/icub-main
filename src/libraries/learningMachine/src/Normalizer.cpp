@@ -76,13 +76,13 @@ bool Normalizer::configure(yarp::os::Searchable& config) {
     bool success = this->IScaler::configure(config);
 
     // set the desired lower bound (double)
-    if(config.find("lower").isDouble() || config.find("lower").isInt()) {
-        this->setLowerBound(config.find("lower").asDouble());
+    if(config.find("lower").isFloat64() || config.find("lower").isInt32()) {
+        this->setLowerBound(config.find("lower").asFloat64());
         success = true;
     }
     // set the desired upper bound (double)
-    if(config.find("upper").isDouble() || config.find("upper").isInt()) {
-        this->setUpperBound(config.find("upper").asDouble());
+    if(config.find("upper").isFloat64() || config.find("upper").isInt32()) {
+        this->setUpperBound(config.find("upper").asFloat64());
         success = true;
     }
 

@@ -232,7 +232,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         if (config.check("d"))
         {
             //yWarning("WARNING: --d <unit_number> parameter is deprecated, use --guid <64_bit_global_unique_identifier> instead\n");
-            //idCamera=config.find("d").asInt();
+            //idCamera=config.find("d").asInt32();
 
             if (idCamera<0 || idCamera>=m_nNumCameras)
             {
@@ -420,7 +420,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     yarp::os::Bottle& white_balance=config.findGroup("white_balance");
     if (!white_balance.isNull()) 
     {
-        setWhiteBalance(white_balance.get(2).asDouble(),white_balance.get(1).asDouble());
+        setWhiteBalance(white_balance.get(2).asFloat64(),white_balance.get(1).asFloat64());
     }
     setHue(checkDouble(config,"hue"));
     setSaturation(checkDouble(config,"saturation"));

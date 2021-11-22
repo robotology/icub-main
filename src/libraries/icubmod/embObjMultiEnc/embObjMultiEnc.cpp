@@ -39,6 +39,7 @@
 #include "EoProtocolMC.h"
 
 #include <yarp/os/NetType.h>
+#include <yarp/conf/environment.h>
 
 #ifdef WIN32
 #pragma warning(once:4355)
@@ -112,7 +113,7 @@ bool embObjMultiEnc::fromConfig(yarp::os::Searchable &_config)
     numofjoints = jointsbottle.size() -1;  
     
     listofjoints.clear();
-    for (int i = 1; i < jointsbottle.size(); i++)  listofjoints.push_back(jointsbottle.get(i).asInt());
+    for (int i = 1; i < jointsbottle.size(); i++)  listofjoints.push_back(jointsbottle.get(i).asInt32());
 
     yDebug()<< " embObjMultiEnc List of joints: " << numofjoints;
     for(int i=0; i<numofjoints; i++) yDebug() << "pos="<< i << "val="<<  listofjoints[i];
@@ -127,7 +128,7 @@ bool embObjMultiEnc::fromConfig(yarp::os::Searchable &_config)
 	}
 	for (int i=0; i<encsbottle.size()-1; i++)
 	{
-		encoderConversionFactor[i]=encsbottle.get(i+1).asDouble();
+		encoderConversionFactor[i]=encsbottle.get(i+1).asFloat64();
 	}
          
     return true;
@@ -155,10 +156,10 @@ embObjMultiEnc::embObjMultiEnc()
     numofencperjoint = default_numofencperjoint;
 
 
-    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::get_string("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
-        verbosewhenok = (bool)NetType::toInt(tmp);
+        verbosewhenok = (bool)(yarp::conf::numeric::from_string(tmp, 0U));
     }
     else
     {

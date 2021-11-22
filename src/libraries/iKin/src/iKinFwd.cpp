@@ -1367,7 +1367,7 @@ void iKinLimb::getMatrixFromProperties(const Property &options, const string &ta
         H.zero();
         for (int cnt=0; (cnt<bH->size()) && (cnt<H.rows()*H.cols()); cnt++)
         {    
-            H(i,j)=bH->get(cnt).asDouble();
+            H(i,j)=bH->get(cnt).asFloat64();
             if (++j>=H.cols())
             {
                 i++;
@@ -1385,7 +1385,7 @@ void iKinLimb::setMatrixToProperties(Property &options, const string &tag,
     Bottle b; Bottle &l=b.addList();
     for (int r=0; r<H.rows(); r++)
         for (int c=0; c<H.cols(); c++)
-            l.addDouble(H(r,c));
+            l.addFloat64(H(r,c));
 
     options.put(tag,b.get(0));
 }
@@ -1401,7 +1401,7 @@ bool iKinLimb::fromLinksProperties(const Property &options)
     getMatrixFromProperties(options,"H0",H0);
     getMatrixFromProperties(options,"HN",HN);
 
-    int numLinks=options.check("numLinks",Value(0)).asInt();
+    int numLinks=options.check("numLinks",Value(0)).asInt32();
     if (numLinks==0)
     {
         yError("invalid number of links specified!");
@@ -1430,17 +1430,17 @@ bool iKinLimb::fromLinksProperties(const Property &options)
             return false;
         }
 
-        double A=bLink.check("A",Value(0.0)).asDouble();
-        double D=bLink.check("D",Value(0.0)).asDouble();
-        double alpha=CTRL_DEG2RAD*bLink.check("alpha",Value(0.0)).asDouble();
-        double offset=CTRL_DEG2RAD*bLink.check("offset",Value(0.0)).asDouble();
-        double min=CTRL_DEG2RAD*bLink.check("min",Value(-180.0)).asDouble();
-        double max=CTRL_DEG2RAD*bLink.check("max",Value(180.0)).asDouble();
+        double A=bLink.check("A",Value(0.0)).asFloat64();
+        double D=bLink.check("D",Value(0.0)).asFloat64();
+        double alpha=CTRL_DEG2RAD*bLink.check("alpha",Value(0.0)).asFloat64();
+        double offset=CTRL_DEG2RAD*bLink.check("offset",Value(0.0)).asFloat64();
+        double min=CTRL_DEG2RAD*bLink.check("min",Value(-180.0)).asFloat64();
+        double max=CTRL_DEG2RAD*bLink.check("max",Value(180.0)).asFloat64();
 
         pushLink(new iKinLink(A,D,alpha,offset,min,max));
 
         if (bLink.check("blocked"))
-            blockLink(i,CTRL_DEG2RAD*bLink.find("blocked").asDouble());
+            blockLink(i,CTRL_DEG2RAD*bLink.find("blocked").asFloat64());
     }
 
     return true;
@@ -1460,33 +1460,33 @@ bool iKinLimb::toLinksProperties(Property &options)
 
         Bottle &A=link.addList();
         A.addString("A");
-        A.addDouble((*this)[i].getA());
+        A.addFloat64((*this)[i].getA());
 
         Bottle &D=link.addList();
         D.addString("D");
-        D.addDouble((*this)[i].getD());
+        D.addFloat64((*this)[i].getD());
 
         Bottle &alpha=link.addList();
         alpha.addString("alpha");
-        alpha.addDouble(CTRL_RAD2DEG*(*this)[i].getAlpha());
+        alpha.addFloat64(CTRL_RAD2DEG*(*this)[i].getAlpha());
 
         Bottle &offset=link.addList();
         offset.addString("offset");
-        offset.addDouble(CTRL_RAD2DEG*(*this)[i].getOffset());
+        offset.addFloat64(CTRL_RAD2DEG*(*this)[i].getOffset());
 
         Bottle &min=link.addList();
         min.addString("min");
-        min.addDouble(CTRL_RAD2DEG*(*this)[i].getMin());
+        min.addFloat64(CTRL_RAD2DEG*(*this)[i].getMin());
 
         Bottle &max=link.addList();
         max.addString("max");
-        max.addDouble(CTRL_RAD2DEG*(*this)[i].getMax());
+        max.addFloat64(CTRL_RAD2DEG*(*this)[i].getMax());
 
         if ((*this)[i].isBlocked())
         {
             Bottle &blocked=link.addList();
             blocked.addString("blocked");
-            blocked.addDouble(CTRL_RAD2DEG*(*this)[i].getAng());
+            blocked.addFloat64(CTRL_RAD2DEG*(*this)[i].getAng());
         }
     }
 

@@ -158,7 +158,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     {
         yWarning() << "port " << getName("/conf") << " already in use";
     }
-    _prtImgIn.setSaturation(rf.check("saturation",Value(1.0)).asDouble());
+    _prtImgIn.setSaturation(rf.check("saturation",Value(1.0)).asFloat64());
     _prtImgIn.open(getName("/in"));
     _prtImgIn.setPointers(&_prtImgOut,_calibTool);
     _prtImgIn.setVerbose(rf.check("verbose"));
@@ -210,7 +210,7 @@ bool CamCalibModule::respond(const Bottle& command, Bottle& reply)
     }
     else if (command.get(0).asString()=="sat" || command.get(0).asString()=="saturation")
     {
-        double satVal = command.get(1).asDouble();
+        double satVal = command.get(1).asFloat64();
         _prtImgIn.setSaturation(satVal);
         
         reply.addString("ok");

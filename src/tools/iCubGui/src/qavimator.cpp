@@ -64,10 +64,10 @@ qavimator::qavimator(yarp::os::ResourceFinder &config, QWidget *parent) :
         GUI_NAME=std::string("/")+GUI_NAME;
     }
     if (config.check("width")){
-        width=config.find("width").asInt();
+        width=config.find("width").asInt32();
     }
     if (config.check("height")){
-        height=config.find("height").asInt();
+        height=config.find("height").asInt32();
     }
 
     //sanity check
@@ -82,10 +82,10 @@ qavimator::qavimator(yarp::os::ResourceFinder &config, QWidget *parent) :
 
     int xpos=32,ypos=32;
     if (config.check("xpos")){
-        xpos=config.find("xpos").asInt();
+        xpos=config.find("xpos").asInt32();
     }
     if (config.check("ypos")){
-        ypos=config.find("ypos").asInt();
+        ypos=config.find("ypos").asInt32();
     }
     this->move(xpos,ypos);
 

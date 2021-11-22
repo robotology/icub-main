@@ -43,13 +43,13 @@ using namespace yarp::sig;
 using namespace yarp::dev;
 using namespace yarp::math;
 
-#define VCTP_TIME       yarp::os::createVocab('t','i','m','e')
-#define VCTP_OFFSET     yarp::os::createVocab('o','f','f')
-#define VCTP_CMD_NOW    yarp::os::createVocab('c','t','p','n')
-#define VCTP_CMD_QUEUE  yarp::os::createVocab('c','t','p','q')
-#define VCTP_CMD_FILE   yarp::os::createVocab('c','t','p','f')
-#define VCTP_POSITION   yarp::os::createVocab('p','o','s')
-#define VCTP_WAIT       yarp::os::createVocab('w','a','i','t')
+#define VCTP_TIME       yarp::os::createVocab32('t','i','m','e')
+#define VCTP_OFFSET     yarp::os::createVocab32('o','f','f')
+#define VCTP_CMD_NOW    yarp::os::createVocab32('c','t','p','n')
+#define VCTP_CMD_QUEUE  yarp::os::createVocab32('c','t','p','q')
+#define VCTP_CMD_FILE   yarp::os::createVocab32('c','t','p','f')
+#define VCTP_POSITION   yarp::os::createVocab32('p','o','s')
+#define VCTP_WAIT       yarp::os::createVocab32('w','a','i','t')
 
 #define ACTION_IDLE    0
 #define ACTION_START   1

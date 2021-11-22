@@ -112,8 +112,8 @@ bool RandomFeature::configure(yarp::os::Searchable &config) {
     bool success = this->IFixedSizeTransformer::configure(config);
 
     // format: set gamma val
-    if(config.find("gamma").isDouble() || config.find("gamma").isInt()) {
-        this->setGamma(config.find("gamma").asDouble());
+    if(config.find("gamma").isFloat64() || config.find("gamma").isInt32()) {
+        this->setGamma(config.find("gamma").asFloat64());
         success = true;
     }
     return success;

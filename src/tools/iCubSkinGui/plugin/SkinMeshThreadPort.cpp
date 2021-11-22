@@ -48,8 +48,8 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : Periodic
         skin_port_virtual.open(part_virtual);
     }
 
-    int width =config.find("width" ).asInt();
-    int height=config.find("height").asInt();
+    int width =config.find("width" ).asInt32();
+    int height=config.find("height").asInt32();
 
     bool useCalibration = config.check("useCalibration");
     if (useCalibration==true)   yInfo("Using calibrated skin values (0-255)");
@@ -59,15 +59,15 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : Periodic
     unsigned char r=255, g=0, b=0;
     if(color)
     {
-        if(color->size()<3 || !color->get(0).isInt() || !color->get(1).isInt() || !color->get(2).isInt())
+        if(color->size()<3 || !color->get(0).isInt32() || !color->get(1).isInt32() || !color->get(2).isInt32())
         {
             yError("Error while reading the parameter color: three integer values should be specified (%s).", color->toString().c_str());
         }
         else
         {
-            r = color->get(0).asInt();
-            g = color->get(1).asInt();
-            b = color->get(2).asInt();
+            r = color->get(0).asInt32();
+            g = color->get(1).asInt32();
+            b = color->get(2).asInt32();
             yInfo("Using specified color: %d %d %d", r, g, b);
         }
     }
@@ -79,7 +79,7 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : Periodic
     defaultColor.push_back(g);
     defaultColor.push_back(b);
 
-    skinThreshold = config.check("skinThreshold")?config.find("skinThreshold").asDouble():SKIN_THRESHOLD;
+    skinThreshold = config.check("skinThreshold")?config.find("skinThreshold").asFloat64():SKIN_THRESHOLD;
     yDebug("Skin Threshold set to %g", skinThreshold);
 
     yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
@@ -104,13 +104,13 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : Periodic
             type == "cer_sh_td"    ||
             type == "cer_sh_tp")
         {
-            int    id=sensorConfig.get(1).asInt();
-            double xc=sensorConfig.get(2).asDouble();
-            double yc=sensorConfig.get(3).asDouble();
-            double th=sensorConfig.get(4).asDouble();
-            double gain=sensorConfig.get(5).asDouble();
-            int    lrMirror=sensorConfig.get(6).asInt();
-            int    layoutNum=sensorConfig.get(7).asInt();
+            int    id=sensorConfig.get(1).asInt32();
+            double xc=sensorConfig.get(2).asFloat64();
+            double yc=sensorConfig.get(3).asFloat64();
+            double th=sensorConfig.get(4).asFloat64();
+            double gain=sensorConfig.get(5).asFloat64();
+            int    lrMirror=sensorConfig.get(6).asInt32();
+            int    layoutNum=sensorConfig.get(7).asInt32();
 
             yDebug("%s %d %f",type.c_str(),id,gain);
 
@@ -244,7 +244,7 @@ void SkinMeshThreadPort::run()
         skin_value.resize(input->size(),0.0);
         for (int i=0; i<input->size(); i++)
         {
-            skin_value[i]=input->get(i).asDouble();
+            skin_value[i]=input->get(i).asFloat64();
         }
     }
 
@@ -260,12 +260,12 @@ void SkinMeshThreadPort::run()
 
         for (int i=0; i<data_virtual->size(); i++)
         {
-            skin_value_virtual[i] = data_virtual->get(i).asDouble();
+            skin_value_virtual[i] = data_virtual->get(i).asFloat64();
         }
 
         for (int i = 0; i<color_virtual->size(); i++)
         {
-            skin_color_virtual.push_back(color_virtual->get(i).asInt());
+            skin_color_virtual.push_back(color_virtual->get(i).asInt32());
         }
 
         yTrace("Virtual contacts: %s",skin_value_virtual.toString(3,3).c_str());

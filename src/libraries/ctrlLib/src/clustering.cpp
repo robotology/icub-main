@@ -152,8 +152,8 @@ namespace iCub {
 map<size_t,set<size_t>> DBSCAN::cluster(const vector<Vector> &data,
                                         const Property &options)
 {
-    double epsilon=options.check("epsilon",Value(1.0)).asDouble();
-    size_t minpts=(size_t)options.check("minpts",Value(2)).asInt();
+    double epsilon=options.check("epsilon",Value(1.0)).asFloat64();
+    size_t minpts=(size_t)options.check("minpts",Value(2)).asInt32();
     shared_ptr<dbscan::Data_t> augData(new dbscan::Data_t(data,epsilon,minpts));
 
     size_t id=0;

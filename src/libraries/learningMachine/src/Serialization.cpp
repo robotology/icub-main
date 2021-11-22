@@ -23,17 +23,17 @@ namespace learningmachine {
 namespace serialization {
 
 yarp::os::Bottle& operator<<(yarp::os::Bottle &out, int val) {
-    out.addInt(val);
+    out.addInt32(val);
     return out;
 }
 
 yarp::os::Bottle& operator<<(yarp::os::Bottle &out, size_t val) {
-    out.addInt(val);
+    out.addInt32(val);
     return out;
 }
 
 yarp::os::Bottle& operator<<(yarp::os::Bottle &out, double val) {
-    out.addDouble(val);
+    out.addFloat64(val);
     return out;
 }
 
@@ -56,12 +56,12 @@ yarp::os::Bottle& operator<<(yarp::os::Bottle &out, const yarp::sig::Matrix& M) 
 }
 
 yarp::os::Bottle& operator>>(yarp::os::Bottle &in, int& val) {
-    val = in.pop().asInt();
+    val = in.pop().asInt32();
     return in;
 }
 
 yarp::os::Bottle& operator>>(yarp::os::Bottle &in, double& val) {
-    val = in.pop().asDouble();
+    val = in.pop().asFloat64();
     return in;
 }
 

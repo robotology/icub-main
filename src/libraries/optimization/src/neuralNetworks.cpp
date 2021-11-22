@@ -68,8 +68,8 @@ protected:
         {
             if (b->size()>=2)
             {
-                min=b->get(0).asDouble();
-                max=b->get(1).asDouble();
+                min=b->get(0).asFloat64();
+                max=b->get(1).asFloat64();
                 return true;
             }
         }

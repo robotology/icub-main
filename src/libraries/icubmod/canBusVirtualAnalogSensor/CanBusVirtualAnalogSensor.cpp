@@ -38,7 +38,7 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
         return false;
     }
 
-    int period=config.find("period").asInt();
+    int period=config.find("period").asInt32();
     setPeriod((double)period/1000.0);
 
     Property prop;
@@ -47,7 +47,7 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     prop.put("physDevice", config.find("physDevice").asString().c_str());
     prop.put("canTxTimeout", 500);
     prop.put("canRxTimeout", 500);
-    prop.put("canDeviceNum", config.find("canDeviceNum").asInt());
+    prop.put("canDeviceNum", config.find("canDeviceNum").asInt32());
     prop.put("canMyAddress", 0);
     prop.put("canTxQueueSize", CAN_DRIVER_BUFFER_SIZE);
     prop.put("canRxQueueSize", CAN_DRIVER_BUFFER_SIZE);
@@ -77,11 +77,11 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
 
     //set the internal configuration
     //this->isVirtualSensor   = false;
-    this->boardId           = config.find("canAddress").asInt();
-    this->canId             = config.find("canDeviceNum").asInt();
-    this->channelsNum       = config.find("channels").asInt();
-    this->useCalibration    = (config.find("useCalibration").asInt()==1);
-    unsigned int tmpFormat  = config.find("format").asInt();
+    this->boardId           = config.find("canAddress").asInt32();
+    this->canId             = config.find("canDeviceNum").asInt32();
+    this->channelsNum       = config.find("channels").asInt32();
+    this->useCalibration    = (config.find("useCalibration").asInt32()==1);
+    unsigned int tmpFormat  = config.find("format").asInt32();
     if      (tmpFormat == 8)
         this->dataFormat = ANALOG_FORMAT_8_BIT;
     else if (tmpFormat == 16)
@@ -98,13 +98,13 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     pCanBus->canIdAdd(0x200+(boardId<<4));
 
     //create the data vector:
-    int chan=config.find("channels").asInt();
+    int chan=config.find("channels").asInt32();
     data.resize(channelsNum);
     Bottle fullScaleTmp = config.findGroup("fullScale");
     this->scaleFactor.resize(channelsNum);
     for (unsigned int i=0; i<channelsNum; i++)
         {
-            double tmp = fullScaleTmp.get(i+1).asDouble();
+            double tmp = fullScaleTmp.get(i+1).asFloat64();
             this->scaleFactor[i] = tmp;
         }
     
@@ -247,7 +247,7 @@ bool CanBusVirtualAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
 
     if (analogConfig.check("period"))
     {
-        int period=analogConfig.find("period").asInt();
+        int period=analogConfig.find("period").asInt32();
         CanMessage &msg=outBuffer[0];
         msg.setId(id);
         msg.getData()[0]=0x08;

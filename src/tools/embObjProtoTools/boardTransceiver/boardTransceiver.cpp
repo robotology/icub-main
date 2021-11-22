@@ -108,7 +108,7 @@ bool BoardTransceiver::configure(yarp::os::ResourceFinder &rf)
     yDebug() << " I have all params I need!!";
     Bottle parameter1( rf.find("PC104IpAddress").asString() );
 
-    int port      = rf.find("port").asInt();              // .get(1).asInt();
+    int port      = rf.find("port").asInt32();              // .get(1).asInt32();
     strcpy(_fId.PC104ipAddr.string, parameter1.toString().c_str());
     _fId.PC104ipAddr.port = port;
 
@@ -837,12 +837,12 @@ const eOnvset_DEVcfg_t * BoardTransceiver::getNVset_DEVcfg(yarp::os::Searchable 
         else
         {   
             // ok, retrieve the numbers ...  
-            number  = config.find("endpointManagementIsSupported").asInt();              
+            number  = config.find("endpointManagementIsSupported").asInt32();              
             protcfg.ep_management_is_present                = (0 == number) ? (eobool_false) : (eobool_true);
             if(eobool_true == protcfg.ep_management_is_present)
             {
-                protcfg.en_mn_entity_comm_numberof          = config.find("entityMNcommunicationNumberOf").asInt();
-                protcfg.en_mn_entity_appl_numberof          = config.find("entityMNapplicationNumberOf").asInt();  
+                protcfg.en_mn_entity_comm_numberof          = config.find("entityMNcommunicationNumberOf").asInt32();
+                protcfg.en_mn_entity_appl_numberof          = config.find("entityMNapplicationNumberOf").asInt32();  
             }
             else
             {
@@ -874,13 +874,13 @@ const eOnvset_DEVcfg_t * BoardTransceiver::getNVset_DEVcfg(yarp::os::Searchable 
         } 
         else
         {   
-            number  = config.find("endpointMotionControlIsSupported").asInt();              
+            number  = config.find("endpointMotionControlIsSupported").asInt32();              
             protcfg.ep_motioncontrol_is_present             = (0 == number) ? (eobool_false) : (eobool_true);
             if(eobool_true == protcfg.ep_motioncontrol_is_present)
             {
-                protcfg.en_mc_entity_joint_numberof          = config.find("entityMCjointNumberOf").asInt();
-                protcfg.en_mc_entity_motor_numberof          = config.find("entityMCmotorNumberOf").asInt();  
-                protcfg.en_mc_entity_controller_numberof     = config.find("entityMCcontrollerNumberOf").asInt();
+                protcfg.en_mc_entity_joint_numberof          = config.find("entityMCjointNumberOf").asInt32();
+                protcfg.en_mc_entity_motor_numberof          = config.find("entityMCmotorNumberOf").asInt32();  
+                protcfg.en_mc_entity_controller_numberof     = config.find("entityMCcontrollerNumberOf").asInt32();
             }
             else
             {
@@ -914,13 +914,13 @@ const eOnvset_DEVcfg_t * BoardTransceiver::getNVset_DEVcfg(yarp::os::Searchable 
         } 
         else
         {   
-            number  = config.find("endpointAnalogSensorsIsSupported").asInt();              
+            number  = config.find("endpointAnalogSensorsIsSupported").asInt32();              
             protcfg.ep_analogsensors_is_present             = (0 == number) ? (eobool_false) : (eobool_true);
             if(eobool_true == protcfg.ep_analogsensors_is_present)
             {
-                protcfg.en_as_entity_strain_numberof        = config.find("entityASstrainNumberOf").asInt();
-                protcfg.en_as_entity_mais_numberof          = config.find("entityASmaisNumberOf").asInt();  
-                protcfg.en_as_entity_extorque_numberof      = config.find("entityASextorqueNumberOf").asInt();
+                protcfg.en_as_entity_strain_numberof        = config.find("entityASstrainNumberOf").asInt32();
+                protcfg.en_as_entity_mais_numberof          = config.find("entityASmaisNumberOf").asInt32();  
+                protcfg.en_as_entity_extorque_numberof      = config.find("entityASextorqueNumberOf").asInt32();
             }
             else
             {
@@ -951,11 +951,11 @@ const eOnvset_DEVcfg_t * BoardTransceiver::getNVset_DEVcfg(yarp::os::Searchable 
         } 
         else
         {   
-            number  = config.find("endpointSkinIsSupported").asInt();              
+            number  = config.find("endpointSkinIsSupported").asInt32();              
             protcfg.ep_skin_is_present             = (0 == number) ? (eobool_false) : (eobool_true);
             if(eobool_true == protcfg.ep_skin_is_present)
             {
-                protcfg.en_sk_entity_skin_numberof        = config.find("entitySKskinNumberOf").asInt();
+                protcfg.en_sk_entity_skin_numberof        = config.find("entitySKskinNumberOf").asInt32();
             }
             else
             {

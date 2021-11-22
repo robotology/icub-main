@@ -155,21 +155,21 @@ private:
         Bottle &bParamContacts  = bParams.findGroup("CONTACTS");
         Bottle &bParamJoints    = bParams.findGroup("JOINTS");
 
-        p.worldTimestep   = bParamWorld.check("timestep", Value(10)).asInt();
-        p.worldCFM        = bParamWorld.check("worldCFM", Value(0.00001)).asDouble();
-        p.worldERP        = bParamWorld.check("worldERP", Value(0.2)).asDouble();
+        p.worldTimestep   = bParamWorld.check("timestep", Value(10)).asInt32();
+        p.worldCFM        = bParamWorld.check("worldCFM", Value(0.00001)).asFloat64();
+        p.worldERP        = bParamWorld.check("worldERP", Value(0.2)).asFloat64();
         
-        p.maxContactCorrectingVel = bParamContacts.check("maxContactCorrectingVel", Value(1e6)).asDouble();
-        p.contactFrictionCoefficient = bParamContacts.check("contactFrictionCoefficient",Value(1.0)).asDouble();
-        p.contactSurfaceLayer     = bParamContacts.check("contactSurfaceLayer", Value(0.0)).asDouble();
+        p.maxContactCorrectingVel = bParamContacts.check("maxContactCorrectingVel", Value(1e6)).asFloat64();
+        p.contactFrictionCoefficient = bParamContacts.check("contactFrictionCoefficient",Value(1.0)).asFloat64();
+        p.contactSurfaceLayer     = bParamContacts.check("contactSurfaceLayer", Value(0.0)).asFloat64();
 
-        p.fudgeFactor         = bParamJoints.check("fudgeFactor", Value(0.02)).asDouble();
-        p.jointCFM            = bParamJoints.check("jointCFM", Value(1e-5)).asDouble();
-        p.stopCFM             = bParamJoints.check("stopCFM", Value(1e-5)).asDouble();
-        p.stopERP             = bParamJoints.check("stopERP", Value(0.2)).asDouble();
-        p.motorMaxTorque      = bParamJoints.check("motorMaxTorque", Value(1e3)).asDouble();
-        p.motorDryFriction    = bParamJoints.check("motorDryFriction", Value(0.1)).asDouble();
-        p.jointStopBouncyness = bParamJoints.check("jointStopBouncyness", Value(0.1)).asDouble();
+        p.fudgeFactor         = bParamJoints.check("fudgeFactor", Value(0.02)).asFloat64();
+        p.jointCFM            = bParamJoints.check("jointCFM", Value(1e-5)).asFloat64();
+        p.stopCFM             = bParamJoints.check("stopCFM", Value(1e-5)).asFloat64();
+        p.stopERP             = bParamJoints.check("stopERP", Value(0.2)).asFloat64();
+        p.motorMaxTorque      = bParamJoints.check("motorMaxTorque", Value(1e3)).asFloat64();
+        p.motorDryFriction    = bParamJoints.check("motorDryFriction", Value(0.1)).asFloat64();
+        p.jointStopBouncyness = bParamJoints.check("jointStopBouncyness", Value(0.1)).asFloat64();
 
         odeParamRead = true;
     }

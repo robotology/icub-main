@@ -189,7 +189,7 @@ class GenericLinIneqConstr : public iKinLinIneqConstr {
   GenericLinIneqConstr(iKinChain* chain_, Searchable& options) :
       chain(chain_), C_orig(0, chain_->getN()), iKinLinIneqConstr() {
     if (options.check("LIC_num")) {
-      auto LIC_num = options.find("LIC_num").asInt();
+      auto LIC_num = options.find("LIC_num").asInt32();
       if (LIC_num > 0) {
         for (auto i = 0; i < LIC_num; i++) {
           ostringstream tag;
@@ -210,10 +210,10 @@ class GenericLinIneqConstr : public iKinLinIneqConstr {
           }
           C_orig = pile(C_orig, zeros(chain->getN()));
           for (auto i = 0; i < row->size(); i++) {
-            C_orig(C_orig.rows() - 1, i) = row->get(i).asDouble();
+            C_orig(C_orig.rows() - 1, i) = row->get(i).asFloat64();
           }
-          lB_orig = cat(lB_orig, group.check("lB", Value(lowerBoundInf)).asDouble());
-          uB_orig = cat(uB_orig, group.check("uB", Value(upperBoundInf)).asDouble());
+          lB_orig = cat(lB_orig, group.check("lB", Value(lowerBoundInf)).asFloat64());
+          uB_orig = cat(uB_orig, group.check("uB", Value(upperBoundInf)).asFloat64());
         }
 
         yInfo() << "Detected generic linear inequalities constraints";
@@ -282,7 +282,7 @@ class CustomCartesianSolver : public CartesianSolver {
     desc->cns = cns.get();
 
     bool failure = false;
-    desc->num = options.find("NumberOfDrivers").asInt();
+    desc->num = options.find("NumberOfDrivers").asInt32();
     for (int cnt = 0; cnt < desc->num; cnt++) {
       ostringstream str;
       str << "driver_" << cnt;

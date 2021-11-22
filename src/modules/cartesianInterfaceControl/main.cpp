@@ -189,11 +189,11 @@ class CtrlThread : public PeriodicThread {
     iarm->storeContext(&startup_context_id);
 
     // set trajectory time
-    defaultExecTime = rf.check("T", Value(2.0)).asDouble();
+    defaultExecTime = rf.check("T", Value(2.0)).asFloat64();
 
     Bottle info;
     iarm->getInfo(info);
-    double hwver = info.find("arm_version").asDouble();
+    double hwver = info.find("arm_version").asFloat64();
     printf("Detected arm kinematics version %g\n", hwver);
 
     map<string, int> torsoJointsRemap{{ "pitch", 0 }, { "roll", 1 }, { "yaw", 2 }};
@@ -242,7 +242,7 @@ class CtrlThread : public PeriodicThread {
 
     // set cartesian tolerance
     if (rf.check("tol"))
-      iarm->setInTargetTol(rf.find("tol").asDouble());
+      iarm->setInTargetTol(rf.find("tol").asFloat64());
 
     // latch the controller context for our task
     iarm->storeContext(&task_context_id);
@@ -276,11 +276,11 @@ class CtrlThread : public PeriodicThread {
     if (Bottle* b = port_xd.read(false)) {
       if (b->size() >= 3) {
         for (int i = 0; i < 3; i++)
-          xd[i] = b->get(i).asDouble();
+          xd[i] = b->get(i).asFloat64();
 
         if (ctrlCompletePose && (b->size() >= 7)) {
           for (int i = 0; i < 4; i++)
-            od[i] = b->get(3 + i).asDouble();
+            od[i] = b->get(3 + i).asFloat64();
         }
 
         if (reinstateContext)

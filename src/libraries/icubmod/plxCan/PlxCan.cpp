@@ -106,14 +106,14 @@ bool PlxCan::open(yarp::os::Searchable &par)
     int txTimeout=0;
     int rxTimeout=0;
 
-                         netId=par.check("CanDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
-    if  (netId == -1)    netId=par.check("canDeviceNum", Value(-1), "numeric identifier of the can device").asInt();
+                         netId=par.check("CanDeviceNum", Value(-1), "numeric identifier of the can device").asInt32();
+    if  (netId == -1)    netId=par.check("canDeviceNum", Value(-1), "numeric identifier of the can device").asInt32();
     
-                         txTimeout=par.check("CanTxTimeout", Value(0),  "timeout on transmission [ms]").asInt();
-    if  (txTimeout == 0) txTimeout=par.check("canTxTimeout", Value(0),  "timeout on transmission [ms]").asInt();
+                         txTimeout=par.check("CanTxTimeout", Value(0),  "timeout on transmission [ms]").asInt32();
+    if  (txTimeout == 0) txTimeout=par.check("canTxTimeout", Value(0),  "timeout on transmission [ms]").asInt32();
     
-                         rxTimeout=par.check("CanRxTimeout", Value(0), "timeout on receive when calling blocking read [ms]").asInt() ;
-    if  (rxTimeout == 0) rxTimeout=par.check("canRxTimeout", Value(0), "timeout on receive when calling blocking read [ms]").asInt() ;
+                         rxTimeout=par.check("CanRxTimeout", Value(0), "timeout on receive when calling blocking read [ms]").asInt32() ;
+    if  (rxTimeout == 0) rxTimeout=par.check("canRxTimeout", Value(0), "timeout on receive when calling blocking read [ms]").asInt32() ;
 
     int res = plxCanOpen (netId, txQueueSize, rxQueueSize, txTimeout, rxTimeout, handle);
     if (res != NTCAN_SUCCESS)

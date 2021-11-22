@@ -48,8 +48,8 @@ bool SensorEncoders::configure(void *source, const Property &options)
 
     this->source=source;
     name=options.find("name").asString();
-    size=options.find("size").asInt();
-    index=options.find("index").asInt();
+    size=options.find("size").asInt32();
+    index=options.find("index").asInt32();
 
     return configured=true;
 }
@@ -77,7 +77,7 @@ bool SensorPort::configure(void *source, const Property &options)
 
     this->source=source;
     name=options.find("name").asString();
-    index=options.find("index").asInt();
+    index=options.find("index").asInt32();
 
     return configured=true;
 }

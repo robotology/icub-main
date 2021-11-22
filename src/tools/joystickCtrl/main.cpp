@@ -196,7 +196,7 @@ public:
 
         if (rf.findGroup("INPUTS").check("InputsNumber"))
         {
-            num_inputs = rf.findGroup("INPUTS").find("InputsNumber").asInt();
+            num_inputs = rf.findGroup("INPUTS").find("InputsNumber").asInt32();
             inputMax = new double [num_inputs];
             inputMin = new double [num_inputs];
             outputMax = new double [num_inputs];
@@ -217,44 +217,44 @@ public:
         b = rf.findGroup("INPUTS").findGroup("Reverse");
         if (b.size()-1 == num_inputs)
             {
-                for (int i = 1; i < b.size(); i++) reverse[i-1] = b.get(i).asInt();
+                for (int i = 1; i < b.size(); i++) reverse[i-1] = b.get(i).asInt32();
             }
         else {yError ( "Configuration error: invalid number of entries 'Reverse'\n"); return false;}
         b = rf.findGroup("INPUTS").findGroup("InputMax");
         if (b.size()-1 == num_inputs)
             {
-                for (int i = 1; i < b.size(); i++) inputMax[i-1] = b.get(i).asDouble();
+                for (int i = 1; i < b.size(); i++) inputMax[i-1] = b.get(i).asFloat64();
             }
         else {yError ( "Configuration error: invalid number of entries 'InputMax'\n"); return false;}
         b = rf.findGroup("INPUTS").findGroup("InputMin");
         if (b.size()-1 == num_inputs)
             {
-                 for (int i = 1; i < b.size(); i++) inputMin[i-1] = b.get(i).asDouble();
+                 for (int i = 1; i < b.size(); i++) inputMin[i-1] = b.get(i).asFloat64();
             }
         else {yError ( "Configuration error: invalid number of entries 'InputMin'\n"); return false;}
         b = rf.findGroup("INPUTS").findGroup("OutputMax");
         if (b.size()-1 == num_inputs)
             {
-                for (int i = 1; i < b.size(); i++) outputMax[i-1] = b.get(i).asDouble();
+                for (int i = 1; i < b.size(); i++) outputMax[i-1] = b.get(i).asFloat64();
             }
         else {yError ( "Configuration error: invalid number of entries 'OutputMax'\n"); return false;}
         b = rf.findGroup("INPUTS").findGroup("OutputMin");
         if (b.size()-1 == num_inputs)
             {
-                for (int i = 1; i < b.size(); i++) outputMin[i-1] = b.get(i).asDouble();
+                for (int i = 1; i < b.size(); i++) outputMin[i-1] = b.get(i).asFloat64();
             }
         else {yError ( "Configuration error: invalid number of entries 'OutputMin'\n"); return false;}
 
         b = rf.findGroup("INPUTS").findGroup("Deadband");
         if (b.size()-1 == num_inputs)
             {
-                for (int i = 1; i < b.size(); i++) jointDeadband[i-1] = b.get(i).asDouble();
+                for (int i = 1; i < b.size(); i++) jointDeadband[i-1] = b.get(i).asFloat64();
             }
         else {yError ( "Configuration error: invalid number of entries 'Deadband'\n"); return false;}
 
         if (rf.findGroup("OUTPUTS").check("OutputsNumber"))
         {
-            num_outputs = rf.findGroup("OUTPUTS").find("OutputsNumber").asInt();
+            num_outputs = rf.findGroup("OUTPUTS").find("OutputsNumber").asInt32();
             jointProperties = new struct_jointProperties [num_outputs];
         }
         else
@@ -276,15 +276,15 @@ public:
             if (b.get(1).asString()=="polar_r_theta")
             {
                 jointProperties[i].type=JTYPE_POLAR;
-                jointProperties[i].param[0]=b.get(2).asInt();
-                jointProperties[i].param[1]=b.get(3).asInt();
-                jointProperties[i].param[2]=b.get(4).asInt();
+                jointProperties[i].param[0]=b.get(2).asInt32();
+                jointProperties[i].param[1]=b.get(3).asInt32();
+                jointProperties[i].param[2]=b.get(4).asInt32();
             }
             else
             if (b.get(1).asString()=="cartesian_xyz")
             {
                 jointProperties[i].type=JTYPE_CARTESIAN;
-                jointProperties[i].param[0]=b.get(2).asInt();
+                jointProperties[i].param[0]=b.get(2).asInt32();
                 jointProperties[i].param[1]=0;
                 jointProperties[i].param[2]=0;
             }
@@ -292,7 +292,7 @@ public:
             if (b.get(1).asString()=="constant")
             {
                 jointProperties[i].type=JTYPE_CONSTANT;
-                jointProperties[i].param[0]=b.get(2).asInt();
+                jointProperties[i].param[0]=b.get(2).asInt32();
                 jointProperties[i].param[1]=0;
                 jointProperties[i].param[2]=0;
             }
@@ -439,7 +439,7 @@ public:
             // choose between multiple joysticks
             if (rf.findGroup("GENERAL").check("DefaultJoystickNumber"))
             {
-                joy_id = rf.findGroup("GENERAL").find("DefaultJoystickNumber").asInt();
+                joy_id = rf.findGroup("GENERAL").find("DefaultJoystickNumber").asInt32();
                 yInfo ( "Multiple joysticks found, using #%d, as specified in the configuration options\n", joy_id);
             }
             else
@@ -727,15 +727,15 @@ public:
             if ( jointProperties[i].type == JTYPE_STRING)
                 data.addString(jointProperties[i].param_s.c_str());
             else
-                data.addDouble(outAxes[i]);
+                data.addFloat64(outAxes[i]);
         }
         for (int i=0;i<numButtons;i++)
         {
-            buttons_data.addDouble(rawButtons[i]);
+            buttons_data.addFloat64(rawButtons[i]);
         }
         for (int i=0;i<numAxes; i++)
         {
-            axis_data.addDouble(rawAxes[i]);
+            axis_data.addFloat64(rawAxes[i]);
         }
 
         // Sending data on the yarp ports
@@ -824,7 +824,7 @@ public:
         int rateThread = 10;
         if (rf.findGroup("GENERAL").check("rateThread"))
         {
-            rateThread = rf.findGroup("GENERAL").find("rateThread").asInt();
+            rateThread = rf.findGroup("GENERAL").find("rateThread").asInt32();
         }
         else
         {

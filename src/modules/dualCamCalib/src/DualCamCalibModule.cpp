@@ -37,7 +37,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
 
     if (rf.check("fps"))
     {
-        requested_fps=rf.find("fps").asDouble();
+        requested_fps=rf.find("fps").asFloat64();
         yInfo() << "Module will run at " << requested_fps;
     }
     else

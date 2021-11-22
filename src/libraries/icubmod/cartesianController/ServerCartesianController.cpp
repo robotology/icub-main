@@ -83,10 +83,10 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
 {
     if (command.size())
     {
-        if ((command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_GO) && (command.size()>3))
+        if ((command.get(0).asVocab32()==IKINCARTCTRL_VOCAB_CMD_GO) && (command.size()>3))
         {
-            int pose=command.get(1).asVocab();
-            double t=command.get(2).asDouble();
+            int pose=command.get(1).asVocab32();
+            double t=command.get(2).asFloat64();
             Bottle *v=command.get(3).asList();
         
             if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
@@ -95,10 +95,10 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
                 Vector od(v->size()-xd.length());
 
                 for (size_t i=0; i<xd.length(); i++)
-                    xd[i]=v->get(i).asDouble();
+                    xd[i]=v->get(i).asFloat64();
 
                 for (size_t i=0; i<od.length(); i++)
-                    od[i]=v->get(xd.length()+i).asDouble();
+                    od[i]=v->get(xd.length()+i).asFloat64();
 
                 server->goToPose(xd,od,t);
             }
@@ -107,12 +107,12 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
                 Vector xd(v->size());
 
                 for (int i=0; i<v->size(); i++)
-                    xd[i]=v->get(i).asDouble();
+                    xd[i]=v->get(i).asFloat64();
 
                 server->goToPosition(xd,t);
             }
         }
-        else if ((command.get(0).asVocab()==IKINCARTCTRL_VOCAB_CMD_TASKVEL) && (command.size()>1))
+        else if ((command.get(0).asVocab32()==IKINCARTCTRL_VOCAB_CMD_TASKVEL) && (command.size()>1))
         {
             Bottle *v=command.get(1).asList();
 
@@ -120,10 +120,10 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
             Vector odot(v->size()-xdot.length());
 
             for (size_t i=0; i<xdot.length(); i++)
-                xdot[i]=v->get(i).asDouble();
+                xdot[i]=v->get(i).asFloat64();
 
             for (size_t i=0; i<odot.length(); i++)
-                odot[i]=v->get(xdot.length()+i).asDouble();
+                odot[i]=v->get(xdot.length()+i).asFloat64();
 
             server->setTaskVelocities(xdot,odot);
         }
@@ -289,13 +289,13 @@ void ServerCartesianController::closePorts()
 bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
 {
     if (command.size())
-        switch (command.get(0).asVocab())
+        switch (command.get(0).asVocab32())
         {
             //-----------------
             case IKINCARTCTRL_VOCAB_CMD_STOP:
             {
                 stopControl();
-                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                 break;
             }
 
@@ -304,13 +304,13 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             {
                 if (command.size()>3)
                 {
-                    int pose=command.get(1).asVocab();
-                    double t=command.get(2).asDouble();
+                    int pose=command.get(1).asVocab32();
+                    double t=command.get(2).asFloat64();
                     Bottle *v=command.get(3).asList();
                     Vector xd(v->size());
     
                     for (int i=0; i<v->size(); i++)
-                        xd[i]=v->get(i).asDouble();
+                        xd[i]=v->get(i).asFloat64();
 
                     bool ret=false;
 
@@ -334,13 +334,13 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         unique_lock<mutex> lck(mtx_syncEvent);
                         cv_syncEvent.wait(lck);
 
-                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                        reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                     }
                     else
-                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                        reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                 }
                 else
-                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
     
                 break;
             }
@@ -354,7 +354,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 if (!portSlvRpc.write(slvCommand,reply))
                 {
                     yError("%s: unable to get reply from solver!",ctrlName.c_str());
-                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                 }
 
                 break;
@@ -366,11 +366,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 int id;
                 if (storeContext(&id))
                 {
-                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                    reply.addInt(id);
+                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
+                    reply.addInt32(id);
                 }
                 else
-                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                 break;
             }
@@ -380,11 +380,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             {
                 if (command.size()>1)
                 {
-                    int id=command.get(1).asInt();
+                    int id=command.get(1).asInt32();
                     if (restoreContext(id))
-                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                        reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                     else
-                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                        reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                 }
     
                 break;
@@ -397,9 +397,9 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                 {
                     Bottle *ids=command.get(1).asList();
                     if (deleteContexts(ids))
-                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                        reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                     else
-                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                        reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                 }
 
                 break;
@@ -409,7 +409,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             case IKINSLV_VOCAB_CMD_GET:
             {
                 if (command.size()>1)
-                    switch (command.get(1).asVocab())
+                    switch (command.get(1).asVocab32())
                     {
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_MODE:
@@ -417,15 +417,15 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             bool flag;
                             if (getTrackingMode(&flag))
                             {   
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                  
                                 if (flag)
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_VAL_MODE_TRACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_VAL_MODE_TRACK);
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_VAL_MODE_SINGLE);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_VAL_MODE_SINGLE);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -436,15 +436,15 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             bool flag;
                             if (getReferenceMode(&flag))
                             {   
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
 
                                 if (flag)
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_VAL_TRUE);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_VAL_TRUE);
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_VAL_FALSE);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_VAL_FALSE);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -455,11 +455,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             string priority;
                             if (getPosePriority(priority))
                             {   
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 reply.addString(priority);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -470,11 +470,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             double time;
                             if (getTrajTime(&time))
                             {   
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                                reply.addDouble(time);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addFloat64(time);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
     
                             break;
                         }
@@ -485,11 +485,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             double tol;
                             if (getInTargetTol(&tol))
                             {   
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                                reply.addDouble(tol);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addFloat64(tol);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
     
                             break;
                         }
@@ -500,15 +500,15 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             bool flag;
                             if (checkMotionDone(&flag))
                             {   
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
 
                                 if (flag)
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_VAL_TRUE);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_VAL_TRUE);
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_VAL_FALSE);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_VAL_FALSE);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
     
                             break;
                         }
@@ -516,12 +516,12 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_ISSOLVERON:
                         {
-                            reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                            reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
 
                             if (connected)
-                                reply.addVocab(IKINCARTCTRL_VOCAB_VAL_TRUE);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_VAL_TRUE);
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_VAL_FALSE);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_VAL_FALSE);
     
                             break;
                         }
@@ -531,20 +531,20 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         {
                             if (command.size()>2)
                             {
-                                int axis=command.get(2).asInt();
+                                int axis=command.get(2).asInt32();
                                 double min, max;
 
                                 if (getLimits(axis,&min,&max))
                                 {
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                                    reply.addDouble(min);
-                                    reply.addDouble(max);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
+                                    reply.addFloat64(min);
+                                    reply.addFloat64(max);
                                 }
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -555,14 +555,14 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             Vector curDof;
                             if (getDOF(curDof))
                             {
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &dofPart=reply.addList();
                                     
                                 for (size_t i=0; i<curDof.length(); i++)
-                                    dofPart.addInt((int)curDof[i]);
+                                    dofPart.addInt32((int)curDof[i]);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -573,11 +573,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             Vector curRestPos;
                             if (getRestPos(curRestPos))
                             {
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 reply.addList().read(curRestPos);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
     
                             break;
                         }
@@ -588,11 +588,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             Vector curRestWeights;
                             if (getRestWeights(curRestWeights))
                             {
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 reply.addList().read(curRestWeights);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
     
                             break;
                         }
@@ -600,7 +600,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_DES:
                         {
-                            reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                            reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
 
                             Vector q(chainState->getN());
                             int cnt=0;
@@ -625,11 +625,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             Vector qdot;
                             if (getJointsVelocities(qdot))
                             {
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 reply.addList().read(qdot);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
     
                             break;
                         }
@@ -640,17 +640,17 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             Vector xdot, odot;
                             if (getTaskVelocities(xdot,odot))
                             {
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &xdotPart=reply.addList();
     
                                 for (size_t i=0; i<xdot.length(); i++)
-                                    xdotPart.addDouble(xdot[i]);
+                                    xdotPart.addFloat64(xdot[i]);
     
                                 for (size_t i=0; i<odot.length(); i++)
-                                    xdotPart.addDouble(odot[i]);
+                                    xdotPart.addFloat64(odot[i]);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
     
                             break;
                         }
@@ -660,30 +660,30 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         {               
                             if (command.size()>2)
                             {
-                                int axis=command.get(2).asInt();
+                                int axis=command.get(2).asInt32();
                                 Vector x,o;
                                 Stamp stamp;
 
                                 if (getPose(axis,x,o,&stamp))
                                 {
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                     Bottle &posePart=reply.addList();
 
                                     for (size_t i=0; i<x.length(); i++)
-                                        posePart.addDouble(x[i]);
+                                        posePart.addFloat64(x[i]);
 
                                     for (size_t i=0; i<o.length(); i++)
-                                        posePart.addDouble(o[i]);
+                                        posePart.addFloat64(o[i]);
 
                                     Bottle &stampPart=reply.addList();
-                                    stampPart.addInt(stamp.getCount());
-                                    stampPart.addDouble(stamp.getTime());
+                                    stampPart.addInt32(stamp.getCount());
+                                    stampPart.addFloat64(stamp.getTime());
                                 }
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -694,17 +694,17 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             Vector x,o;
                             if (getTipFrame(x,o))
                             {
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &tipPart=reply.addList();
 
                                 for (size_t i=0; i<x.length(); i++)
-                                    tipPart.addDouble(x[i]);
+                                    tipPart.addFloat64(x[i]);
 
                                 for (size_t i=0; i<o.length(); i++)
-                                    tipPart.addDouble(o[i]);
+                                    tipPart.addFloat64(o[i]);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -715,11 +715,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             Bottle info;
                             if (getInfo(info))
                             {   
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 reply.addList()=info;
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -730,21 +730,21 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             Bottle options;
                             if (tweakGet(options))
                             {   
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 reply.addList()=options;
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
 
                         //-----------------
                         default:
-                            reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                            reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                     }
                 else
-                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                 break;
             }
@@ -753,12 +753,12 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             case IKINCARTCTRL_VOCAB_CMD_SET:
             {
                 if (command.size()>2)
-                    switch (command.get(1).asVocab())
+                    switch (command.get(1).asVocab32())
                     {
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_MODE:
                         {                            
-                            int mode=command.get(2).asVocab();
+                            int mode=command.get(2).asVocab32();
                             bool ret=false;
 
                             if (mode==IKINCARTCTRL_VOCAB_VAL_MODE_TRACK)
@@ -767,9 +767,9 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 ret=setTrackingMode(false);
 
                             if (ret)
-                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINSLV_VOCAB_REP_ACK);
                             else
-                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINSLV_VOCAB_REP_NACK);
     
                             break;
                         }
@@ -777,7 +777,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_REFERENCE:
                         {
-                            int mode=command.get(2).asVocab();
+                            int mode=command.get(2).asVocab32();
                             bool ret=false;
 
                             if (mode==IKINCARTCTRL_VOCAB_VAL_TRUE)
@@ -786,9 +786,9 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 ret=setReferenceMode(false);
 
                             if (ret)
-                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINSLV_VOCAB_REP_ACK);
                             else
-                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINSLV_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -798,9 +798,9 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         {
                             string priority=command.get(2).asString();
                             if (setPosePriority(priority))
-                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINSLV_VOCAB_REP_ACK);
                             else
-                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINSLV_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -808,10 +808,10 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TIME:
                         {
-                            if (setTrajTime(command.get(2).asDouble()))
-                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            if (setTrajTime(command.get(2).asFloat64()))
+                                reply.addVocab32(IKINSLV_VOCAB_REP_ACK);
                             else
-                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINSLV_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -819,10 +819,10 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_TOL:
                         {
-                            if (setInTargetTol(command.get(2).asDouble()))
-                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                            if (setInTargetTol(command.get(2).asFloat64()))
+                                reply.addVocab32(IKINSLV_VOCAB_REP_ACK);
                             else
-                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINSLV_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -832,17 +832,17 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                         {                            
                             if (command.size()>4)
                             {
-                                int axis=command.get(2).asInt();
-                                double min=command.get(3).asDouble();
-                                double max=command.get(4).asDouble();
+                                int axis=command.get(2).asInt32();
+                                double min=command.get(3).asFloat64();
+                                double max=command.get(4).asFloat64();
 
                                 if (setLimits(axis,min,max))
-                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                    reply.addVocab32(IKINSLV_VOCAB_REP_ACK);
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
@@ -856,21 +856,21 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 Vector curDof;
 
                                 for (int i=0; i<b->size(); i++)
-                                    newDof[i]=b->get(i).asDouble();
+                                    newDof[i]=b->get(i).asFloat64();
 
                                 if (setDOF(newDof,curDof))
                                 {                                                                        
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                     Bottle &dofPart=reply.addList();
 
                                     for (size_t i=0; i<curDof.length(); i++)
-                                        dofPart.addInt((int)curDof[i]);
+                                        dofPart.addInt32((int)curDof[i]);
                                 }
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);                            
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);                            
 
                             break;
                         }
@@ -884,18 +884,18 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 Vector curRestPos;
     
                                 for (int i=0; i<b->size(); i++)
-                                    newRestPos[i]=b->get(i).asDouble();
+                                    newRestPos[i]=b->get(i).asFloat64();
     
                                 if (setRestPos(newRestPos,curRestPos))
                                 {                                                                        
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                     reply.addList().read(curRestPos);
                                 }
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);                            
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);                            
     
                             break;
                         }
@@ -909,18 +909,18 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 Vector curRestWeights;
     
                                 for (int i=0; i<b->size(); i++)
-                                    newRestWeights[i]=b->get(i).asDouble();
+                                    newRestWeights[i]=b->get(i).asFloat64();
     
                                 if (setRestWeights(newRestWeights,curRestWeights))
                                 {                                                                        
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                     reply.addList().read(curRestWeights);
                                 }
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);                            
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);                            
     
                             break;
                         }
@@ -936,21 +936,21 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                     Vector o(b->size()-x.length());
 
                                     for (size_t i=0; i<x.length(); i++)
-                                        x[i]=b->get(i).asDouble();
+                                        x[i]=b->get(i).asFloat64();
 
                                     for (size_t i=0; i<o.length(); i++)
-                                        o[i]=b->get(i+x.length()).asDouble();
+                                        o[i]=b->get(i+x.length()).asFloat64();
 
                                     if (attachTipFrame(x,o))
-                                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                        reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                     else
-                                        reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                        reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                                 }
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);                            
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);                            
 
                             break;
                         }
@@ -961,22 +961,22 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             if (Bottle *options=command.get(2).asList())
                             {
                                 if (tweakSet(*options))
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 else
-                                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                             }
                             else
-                                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                             break;
                         }
 
                         //-----------------
                         default:
-                            reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                            reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                     }
                 else
-                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                 break;
             }
@@ -985,77 +985,77 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
             case IKINCARTCTRL_VOCAB_CMD_EVENT:
             {
                 if (command.size()>2)
-                    switch (command.get(1).asVocab())
+                    switch (command.get(1).asVocab32())
                     {
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_REGISTER:
                         {
-                            int mode=command.get(2).asVocab();
+                            int mode=command.get(2).asVocab32();
                             if ((mode==IKINCARTCTRL_VOCAB_VAL_EVENT_ONGOING) &&
                                 (command.size()>3))
                             {
-                                double checkPoint=command.get(3).asDouble();
+                                double checkPoint=command.get(3).asFloat64();
                                 if (registerMotionOngoingEvent(checkPoint))
                                 {
-                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                    reply.addVocab32(IKINSLV_VOCAB_REP_ACK);
                                     break;
                                 }
                             }
 
-                            reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                            reply.addVocab32(IKINSLV_VOCAB_REP_NACK);
                             break;
                         }
 
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_UNREGISTER:
                         {
-                            int mode=command.get(2).asVocab();
+                            int mode=command.get(2).asVocab32();
                             if ((mode==IKINCARTCTRL_VOCAB_VAL_EVENT_ONGOING) &&
                                 (command.size()>3))
                             {
-                                double checkPoint=command.get(3).asDouble();
+                                double checkPoint=command.get(3).asFloat64();
                                 if (unregisterMotionOngoingEvent(checkPoint))
                                 {
-                                    reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                    reply.addVocab32(IKINSLV_VOCAB_REP_ACK);
                                     break;
                                 }
                             }
 
-                            reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                            reply.addVocab32(IKINSLV_VOCAB_REP_NACK);
                             break;
                         }
 
                         //-----------------
                         case IKINCARTCTRL_VOCAB_OPT_LIST:
                         {
-                            int mode=command.get(2).asVocab();
+                            int mode=command.get(2).asVocab32();
                             if (mode==IKINCARTCTRL_VOCAB_VAL_EVENT_ONGOING)
                             {
-                                reply.addVocab(IKINSLV_VOCAB_REP_ACK);
+                                reply.addVocab32(IKINSLV_VOCAB_REP_ACK);
                                 reply.addList()=listMotionOngoingEvents();
                             }
                             else
-                                reply.addVocab(IKINSLV_VOCAB_REP_NACK);
+                                reply.addVocab32(IKINSLV_VOCAB_REP_NACK);
 
                             break;
                         }
 
                         //-----------------
                         default:
-                            reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                            reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
                     }
                 else
-                    reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                    reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
                 break;
             }
 
             //-----------------
             default:
-                reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+                reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
         }
     else
-        reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
+        reply.addVocab32(IKINCARTCTRL_VOCAB_REP_NACK);
 
     return true;
 }
@@ -1222,7 +1222,7 @@ bool ServerCartesianController::getNewTarget()
         bool isNew=false;
         Vector _xdes, _qdes;
 
-        if (b1->check(Vocab::decode(IKINSLV_VOCAB_OPT_X)))
+        if (b1->check(Vocab32::decode(IKINSLV_VOCAB_OPT_X)))
         {
             Bottle *b2=getEndEffectorPoseOption(*b1);
             int l1=(int)b2->size();
@@ -1231,13 +1231,13 @@ bool ServerCartesianController::getNewTarget()
             _xdes.resize(len);
 
             for (int i=0; i<len; i++)
-                _xdes[i]=b2->get(i).asDouble();
+                _xdes[i]=b2->get(i).asFloat64();
 
             if (!(_xdes==xdes))
                 isNew=true;
         }
 
-        if (b1->check(Vocab::decode(IKINSLV_VOCAB_OPT_Q)))
+        if (b1->check(Vocab32::decode(IKINSLV_VOCAB_OPT_Q)))
         {
             Bottle *b2=getJointsOption(*b1);
             int l1=(int)b2->size();
@@ -1246,7 +1246,7 @@ bool ServerCartesianController::getNewTarget()
             _qdes.resize(len);
 
             for (int i=0; i<len; i++)
-                _qdes[i]=CTRL_DEG2RAD*b2->get(i).asDouble();
+                _qdes[i]=CTRL_DEG2RAD*b2->get(i).asFloat64();
 
             if (_qdes.length()!=ctrl->get_dim())
             {    
@@ -1374,7 +1374,7 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
             ostringstream ss;
             ss<<lDsc[j].key<<"_"<<joint;
             info.addString(ss.str());
-            info.addDouble(ref);
+            info.addFloat64(ref);
 
             cnt++;
         }
@@ -1427,7 +1427,7 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
             ostringstream ss;
             ss<<lDsc[j].key<<"_"<<joint;
             info.addString(ss.str());
-            info.addDouble(vel);
+            info.addFloat64(vel);
 
             velCmd[cnt]=vel;
             cnt++;
@@ -1473,7 +1473,7 @@ Bottle ServerCartesianController::sendCtrlCmdSingleJointPosition()
             ostringstream ss;
             ss<<lDsc[j].key<<"_"<<joint;
             info.addString(ss.str());
-            info.addDouble(ref);
+            info.addFloat64(ref);
 
             cnt++;
         }
@@ -1518,7 +1518,7 @@ Bottle ServerCartesianController::sendCtrlCmdSingleJointVelocity()
             ostringstream ss;
             ss<<lDsc[j].key<<"_"<<joint;
             info.addString(ss.str());
-            info.addDouble(vel);
+            info.addFloat64(vel);
 
             velCmd[cnt]=vel;
             cnt++;
@@ -1563,7 +1563,7 @@ void ServerCartesianController::stopLimb(const bool execStopPosition)
                 {
                     // vel==0.0 is always achievable
                     lVel[j]->velocityMove(joint,0.0);
-                    info.addDouble(0.0); 
+                    info.addFloat64(0.0); 
                 }
             }
 
@@ -1832,7 +1832,7 @@ bool ServerCartesianController::open(Searchable &config)
 
     if (optGeneral.check("NumberOfDrivers"))
     {
-        numDrv=optGeneral.find("NumberOfDrivers").asInt();
+        numDrv=optGeneral.find("NumberOfDrivers").asInt32();
         if (numDrv<=0)
         {
             yError("NumberOfDrivers shall be positive");
@@ -1857,10 +1857,10 @@ bool ServerCartesianController::open(Searchable &config)
     }
 
     if (optGeneral.check("ControllerPeriod"))
-        setPeriod((double)optGeneral.find("ControllerPeriod").asInt()/1000.0);
+        setPeriod((double)optGeneral.find("ControllerPeriod").asInt32()/1000.0);
 
     taskRefVelPeriodFactor=optGeneral.check("TaskRefVelPeriodFactor",
-                                            Value(CARTCTRL_DEFAULT_TASKVEL_PERFACTOR)).asInt();
+                                            Value(CARTCTRL_DEFAULT_TASKVEL_PERFACTOR)).asInt32();
 
     posDirectEnabled=optGeneral.check("PositionControl",
                                       Value(CARTCTRL_DEFAULT_POSCTRL)).asString()=="on";
@@ -1930,7 +1930,7 @@ bool ServerCartesianController::open(Searchable &config)
 
             for (int j=0; j<pMinAbsVelsBottle->size(); j++)
             {
-                desc.minAbsVels[j]=pMinAbsVelsBottle->get(j).asDouble();
+                desc.minAbsVels[j]=pMinAbsVelsBottle->get(j).asFloat64();
 
                 if (desc.minAbsVels[j]<0.0)
                     desc.minAbsVels[j]=-desc.minAbsVels[j];
@@ -2288,8 +2288,8 @@ bool ServerCartesianController::connectToSolver()
 
         // keep solver and controller status aligned at start-up
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_GET);
-        command.addVocab(IKINSLV_VOCAB_OPT_DOF);
+        command.addVocab32(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_DOF);
 
         // send command to solver and wait for reply
         if (!portSlvRpc.write(command,reply))
@@ -2303,7 +2303,7 @@ bool ServerCartesianController::connectToSolver()
         Bottle *rxDofPart=reply.get(1).asList();
         for (int i=0; i<rxDofPart->size(); i++)
         {
-            if (rxDofPart->get(i).asInt()!=0)
+            if (rxDofPart->get(i).asInt32()!=0)
             {
                 chainState->releaseLink(i);
                 chainPlan->releaseLink(i);
@@ -2372,15 +2372,15 @@ bool ServerCartesianController::setTrackingModeHelper(const bool f)
     if (connected)
     {
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_SET);
-        command.addVocab(IKINSLV_VOCAB_OPT_MODE);
-        command.addVocab(f?IKINSLV_VOCAB_VAL_MODE_TRACK:IKINSLV_VOCAB_VAL_MODE_SINGLE);
+        command.addVocab32(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_MODE);
+        command.addVocab32(f?IKINSLV_VOCAB_VAL_MODE_TRACK:IKINSLV_VOCAB_VAL_MODE_SINGLE);
 
         // send command to solver and wait for reply
         bool ret=false;
         if (!portSlvRpc.write(command,reply))
             yError("%s: unable to get reply from solver!",ctrlName.c_str());         
-        else if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
+        else if (reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK)
         {
             trackingMode=f;
             ret=true;
@@ -2449,13 +2449,13 @@ bool ServerCartesianController::setPosePriority(const string &p)
         lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_SET);
-        command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
-        command.addVocab(p=="position"?IKINSLV_VOCAB_VAL_PRIO_XYZ:IKINSLV_VOCAB_VAL_PRIO_ANG);
+        command.addVocab32(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_PRIO);
+        command.addVocab32(p=="position"?IKINSLV_VOCAB_VAL_PRIO_XYZ:IKINSLV_VOCAB_VAL_PRIO_ANG);
 
         // send command to solver and wait for reply
         if (portSlvRpc.write(command,reply))
-            ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
+            ret=(reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK);
         else
             yError("%s: unable to get reply from solver!",ctrlName.c_str());
     }
@@ -2471,14 +2471,14 @@ bool ServerCartesianController::getPosePriority(string &p)
     if (connected)
     {
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_GET);
-        command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
+        command.addVocab32(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_PRIO);
 
         // send command to solver and wait for reply
         if (portSlvRpc.write(command,reply))
         {
-            if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
-                p=(reply.get(1).asVocab()==IKINSLV_VOCAB_VAL_PRIO_XYZ)?
+            if (ret=(reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK))
+                p=(reply.get(1).asVocab32()==IKINSLV_VOCAB_VAL_PRIO_XYZ)?
                   "position":"orientation";
         }
         else
@@ -2655,7 +2655,7 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
     
-    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    command.addVocab32(IKINSLV_VOCAB_CMD_ASK);
     addVectorOption(command,IKINSLV_VOCAB_OPT_XD,tg);
     addPoseOption(command,IKINCTRL_POSE_FULL);
 
@@ -2688,7 +2688,7 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
 
-    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    command.addVocab32(IKINSLV_VOCAB_CMD_ASK);
     addVectorOption(command,IKINSLV_VOCAB_OPT_XD,tg);
     addVectorOption(command,IKINSLV_VOCAB_OPT_Q,q0);
     addPoseOption(command,IKINCTRL_POSE_FULL);
@@ -2714,7 +2714,7 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     lock_guard<mutex> lck(mtx);
 
     Bottle command, reply;
-    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    command.addVocab32(IKINSLV_VOCAB_CMD_ASK);
     addVectorOption(command,IKINSLV_VOCAB_OPT_XD,xd);
     addPoseOption(command,IKINCTRL_POSE_XYZ);
 
@@ -2740,7 +2740,7 @@ bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &x
     lock_guard<mutex> lck(mtx);
 
     Bottle command, reply;
-    command.addVocab(IKINSLV_VOCAB_CMD_ASK);
+    command.addVocab32(IKINSLV_VOCAB_CMD_ASK);
     addVectorOption(command,IKINSLV_VOCAB_OPT_XD,xd);
     addVectorOption(command,IKINSLV_VOCAB_OPT_Q,q0);
     addPoseOption(command,IKINCTRL_POSE_XYZ);
@@ -2782,11 +2782,11 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_SET);
-        command.addVocab(IKINSLV_VOCAB_OPT_DOF);
+        command.addVocab32(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_DOF);
         Bottle &txDofPart=command.addList();
         for (size_t i=0; i<newDof.length(); i++)
-            txDofPart.addInt((int)newDof[i]);
+            txDofPart.addInt32((int)newDof[i]);
     
         // send command to solver and wait for reply
         bool ret=false;
@@ -2798,7 +2798,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
             curDof.resize((size_t)rxDofPart->size());
             for (int i=0; i<rxDofPart->size(); i++)
             {
-                curDof[i]=rxDofPart->get(i).asInt();
+                curDof[i]=rxDofPart->get(i).asInt32();
                 if (curDof[i]!=0.0)
                 {
                     chainState->releaseLink(i);
@@ -2833,8 +2833,8 @@ bool ServerCartesianController::getRestPos(Vector &curRestPos)
         lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_GET);
-        command.addVocab(IKINSLV_VOCAB_OPT_REST_POS);
+        command.addVocab32(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_REST_POS);
     
         // send command to solver and wait for reply
         bool ret=false;
@@ -2843,7 +2843,7 @@ bool ServerCartesianController::getRestPos(Vector &curRestPos)
             Bottle *rxRestPart=reply.get(1).asList();
             curRestPos.resize(rxRestPart->size());
             for (int i=0; i<rxRestPart->size(); i++)
-                curRestPos[i]=rxRestPart->get(i).asDouble();
+                curRestPos[i]=rxRestPart->get(i).asFloat64();
 
             ret=true;            
         }
@@ -2866,8 +2866,8 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos,
         lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_SET);
-        command.addVocab(IKINSLV_VOCAB_OPT_REST_POS);
+        command.addVocab32(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_REST_POS);
         command.addList().read(newRestPos);
     
         // send command to solver and wait for reply
@@ -2877,7 +2877,7 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos,
             Bottle *rxRestPart=reply.get(1).asList();
             curRestPos.resize(rxRestPart->size());
             for (int i=0; i<rxRestPart->size(); i++)
-                curRestPos[i]=rxRestPart->get(i).asDouble();
+                curRestPos[i]=rxRestPart->get(i).asFloat64();
 
             ret=true;            
         }
@@ -2899,8 +2899,8 @@ bool ServerCartesianController::getRestWeights(Vector &curRestWeights)
         lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_GET);
-        command.addVocab(IKINSLV_VOCAB_OPT_REST_WEIGHTS);
+        command.addVocab32(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_REST_WEIGHTS);
     
         // send command to solver and wait for reply
         bool ret=false;
@@ -2909,7 +2909,7 @@ bool ServerCartesianController::getRestWeights(Vector &curRestWeights)
             Bottle *rxRestPart=reply.get(1).asList();
             curRestWeights.resize(rxRestPart->size());
             for (int i=0; i<rxRestPart->size(); i++)
-                curRestWeights[i]=rxRestPart->get(i).asDouble();
+                curRestWeights[i]=rxRestPart->get(i).asFloat64();
 
             ret=true;            
         }
@@ -2932,8 +2932,8 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
         lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_SET);
-        command.addVocab(IKINSLV_VOCAB_OPT_REST_WEIGHTS);
+        command.addVocab32(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_REST_WEIGHTS);
         command.addList().read(newRestWeights);
     
         // send command to solver and wait for reply
@@ -2943,7 +2943,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
             Bottle *rxRestPart=reply.get(1).asList();
             curRestWeights.resize(rxRestPart->size());
             for (int i=0; i<rxRestPart->size(); i++)
-                curRestWeights[i]=rxRestPart->get(i).asDouble();
+                curRestWeights[i]=rxRestPart->get(i).asFloat64();
 
             ret=true;
         }
@@ -2968,17 +2968,17 @@ bool ServerCartesianController::getLimits(const int axis, double *min,
         if (axis<(int)chainState->getN())
         {
             Bottle command, reply;
-            command.addVocab(IKINSLV_VOCAB_CMD_GET);
-            command.addVocab(IKINSLV_VOCAB_OPT_LIM);
-            command.addInt(axis);
+            command.addVocab32(IKINSLV_VOCAB_CMD_GET);
+            command.addVocab32(IKINSLV_VOCAB_OPT_LIM);
+            command.addInt32(axis);
 
             // send command to solver and wait for reply
             if (!portSlvRpc.write(command,reply))
                 yError("%s: unable to get reply from solver!",ctrlName.c_str());         
-            else if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
+            else if (reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK)
             {
-                *min=reply.get(1).asDouble();
-                *max=reply.get(2).asDouble();                        
+                *min=reply.get(1).asFloat64();
+                *max=reply.get(2).asFloat64();                        
                 ret=true;
             }
         }        
@@ -2998,15 +2998,15 @@ bool ServerCartesianController::setLimits(const int axis, const double min,
         lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_SET);
-        command.addVocab(IKINSLV_VOCAB_OPT_LIM);
-        command.addInt(axis);
-        command.addDouble(min);
-        command.addDouble(max);
+        command.addVocab32(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_LIM);
+        command.addInt32(axis);
+        command.addFloat64(min);
+        command.addFloat64(max);
 
         // send command to solver and wait for reply        
         if (portSlvRpc.write(command,reply))
-            ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
+            ret=(reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK);
         else
             yError("%s: unable to get reply from solver!",ctrlName.c_str());
     }
@@ -3207,21 +3207,21 @@ bool ServerCartesianController::attachTipFrame(const Vector &x, const Vector &o)
         lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_SET);
-        command.addVocab(IKINSLV_VOCAB_OPT_TIP_FRAME);
+        command.addVocab32(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_TIP_FRAME);
         Bottle &txTipPart=command.addList();
 
         for (int i=0; i<3; i++)
-            txTipPart.addDouble(x[i]);
+            txTipPart.addFloat64(x[i]);
 
         for (int i=0; i<4; i++)
-            txTipPart.addDouble(o[i]);
+            txTipPart.addFloat64(o[i]);
 
         // send command to solver and wait for reply
         bool ret=false;
         if (portSlvRpc.write(command,reply))
         {
-            if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
+            if (ret=(reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK))
             {
                 Matrix HN=axis2dcm(o);
                 HN(0,3)=x[0];
@@ -3465,7 +3465,7 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
 
         for (int i=0; i<contextIdList->size(); i++)
         {
-            int id=contextIdList->get(i).asInt();
+            int id=contextIdList->get(i).asInt32();
             map<int,Context>::iterator itr=contextMap.find(id);
             if (itr!=contextMap.end())
                 contextMap.erase(itr);
@@ -3487,7 +3487,7 @@ bool ServerCartesianController::getInfo(Bottle &info)
 
         Bottle &serverVer=info.addList();
         serverVer.addString("server_version");
-        serverVer.addDouble(CARTCTRL_SERVER_VER);
+        serverVer.addFloat64(CARTCTRL_SERVER_VER);
 
         string kinPartStr(kinPart);
         string type=limbState->getType();
@@ -3499,7 +3499,7 @@ bool ServerCartesianController::getInfo(Bottle &info)
 
         Bottle &partVer=info.addList();
         partVer.addString(kinPartStr+"_version");
-        partVer.addDouble(hwVer);
+        partVer.addFloat64(hwVer);
 
         Bottle &partType=info.addList();
         partType.addString(kinPartStr+"_type");
@@ -3534,9 +3534,9 @@ void ServerCartesianController::notifyEvent(const string &event,
         ev.clear();
 
         ev.addString(event);
-        ev.addDouble(time);
+        ev.addFloat64(time);
         if (checkPoint>=0.0)
-            ev.addDouble(checkPoint);
+            ev.addFloat64(checkPoint);
 
         eventInfo.update(time);
         portEvent.setEnvelope(eventInfo);
@@ -3698,7 +3698,7 @@ Bottle ServerCartesianController::listMotionOngoingEvents()
 
     lock_guard<mutex> lck(mtx);
     for (multiset<double>::iterator itr=motionOngoingEvents.begin(); itr!=motionOngoingEvents.end(); itr++)
-        events.addDouble(*itr);
+        events.addFloat64(*itr);
 
     return events;
 }
@@ -3711,13 +3711,13 @@ bool ServerCartesianController::getTask2ndOptions(Value &v)
     if (connected)
     {
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_GET);
-        command.addVocab(IKINSLV_VOCAB_OPT_TASK2);
+        command.addVocab32(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_TASK2);
 
         // send command to solver and wait for reply
         if (portSlvRpc.write(command,reply))
         {
-            if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
+            if (ret=(reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK))
                 v=reply.get(1);
         }
         else
@@ -3737,13 +3737,13 @@ bool ServerCartesianController::setTask2ndOptions(const Value &v)
         lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_SET);
-        command.addVocab(IKINSLV_VOCAB_OPT_TASK2);
+        command.addVocab32(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_TASK2);
         command.add(v);
 
         // send command to solver and wait for reply
         if (portSlvRpc.write(command,reply))
-            ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
+            ret=(reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK);
         else
             yError("%s: unable to get reply from solver!",ctrlName.c_str());
     }
@@ -3759,13 +3759,13 @@ bool ServerCartesianController::getSolverConvergenceOptions(Bottle &options)
     if (connected)
     {
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_GET);
-        command.addVocab(IKINSLV_VOCAB_OPT_CONVERGENCE);
+        command.addVocab32(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_CONVERGENCE);
 
         // send command to solver and wait for reply
         if (portSlvRpc.write(command,reply))
         {
-            if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
+            if (ret=(reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK))
                 options=*reply.get(1).asList();
         }
         else
@@ -3785,13 +3785,13 @@ bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &option
         lock_guard<mutex> lck(mtx);
 
         Bottle command, reply;
-        command.addVocab(IKINSLV_VOCAB_CMD_SET);
-        command.addVocab(IKINSLV_VOCAB_OPT_CONVERGENCE);
+        command.addVocab32(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab32(IKINSLV_VOCAB_OPT_CONVERGENCE);
         command.addList()=options;
 
         // send command to solver and wait for reply
         if (portSlvRpc.write(command,reply))
-            ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
+            ret=(reply.get(0).asVocab32()==IKINSLV_VOCAB_REP_ACK);
         else
             yError("%s: unable to get reply from solver!",ctrlName.c_str());        
     }
@@ -3807,7 +3807,7 @@ bool ServerCartesianController::tweakSet(const Bottle &options)
 
     // straightness
     if (options.check("straightness"))
-        ctrl->set_gamma(options.find("straightness").asDouble());
+        ctrl->set_gamma(options.find("straightness").asFloat64());
 
     // secondary task
     if (options.check("task_2"))
@@ -3835,7 +3835,7 @@ bool ServerCartesianController::tweakGet(Bottle &options)
         // straightness
         Bottle &straightness=options.addList();
         straightness.addString("straightness");
-        straightness.addDouble(ctrl->get_gamma());
+        straightness.addFloat64(ctrl->get_gamma());
 
         // secondary task
         Value v;

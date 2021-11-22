@@ -27,14 +27,14 @@
 
 enum WORLD_OP {
     WORLD_OP_NULL,
-    WORLD_OP_GET =  yarp::os::createVocab('g','e','t'),
-    WORLD_OP_SET =  yarp::os::createVocab('s','e','t'),
-    WORLD_OP_MK =   yarp::os::createVocab('m','k'),
-    WORLD_OP_GRAB = yarp::os::createVocab('g','r','a','b'),
-    WORLD_OP_ROT =  yarp::os::createVocab('r','o','t'),
-    WORLD_OP_DEL =  yarp::os::createVocab('d','e','l'),
-    WORLD_OP_COL =  yarp::os::createVocab('c','o','l'),
-    WORLD_OP_NUM =  yarp::os::createVocab('n','u','m'),
+    WORLD_OP_GET =  yarp::os::createVocab32('g','e','t'),
+    WORLD_OP_SET =  yarp::os::createVocab32('s','e','t'),
+    WORLD_OP_MK =   yarp::os::createVocab32('m','k'),
+    WORLD_OP_GRAB = yarp::os::createVocab32('g','r','a','b'),
+    WORLD_OP_ROT =  yarp::os::createVocab32('r','o','t'),
+    WORLD_OP_DEL =  yarp::os::createVocab32('d','e','l'),
+    WORLD_OP_COL =  yarp::os::createVocab32('c','o','l'),
+    WORLD_OP_NUM =  yarp::os::createVocab32('n','u','m'),
 };
 
 class WorldOpDatum {

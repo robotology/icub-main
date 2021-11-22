@@ -42,11 +42,11 @@ bool simFaceExp::configure(yarp::os::ResourceFinder &rf)
 
     width               = options.check("width",
                         Value(512), 
-                        "mask width").asInt();
+                        "mask width").asInt32();
 
     height              = options.check("height",
                         Value(512), 
-                        "mask height").asInt();
+                        "mask height").asInt32();
 
     maskPath = rf.findFile("mask");
 
@@ -118,7 +118,7 @@ bool simFaceExp::updateModule()
     if ((bot.toString().c_str())[0]=='S')
     {
         bot.clear();
-        bot.addInt((int)eyeLidPos);
+        bot.addInt32((int)eyeLidPos);
         eyeLidsPos.write(bot);
         yInfo("Eye lids position sent: %s\n",bot.toString().c_str());
     }

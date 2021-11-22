@@ -791,25 +791,25 @@ bool Parser::parsePidsGroup2FOC(Bottle& pidsGroup, Pid myPid[])
     Bottle xtmp;
 
     if (!extractGroup(pidsGroup, xtmp, "kff", "kff parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kff = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].kff = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "kp", "kp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kp = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].kp = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "kd", "kd parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kd = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].kd = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "maxOutput", "maxOutput parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "ki", "ki parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].ki = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].ki = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "maxInt", "maxInt parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "shift", "shift parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].scale = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].scale = xtmp.get(j + 1).asFloat64();
 
     return true;
 }
@@ -827,16 +827,16 @@ bool Parser::parsePidsGroupSimple(Bottle& pidsGroup, Pid myPid[])
     Bottle xtmp;
 
     if (!extractGroup(pidsGroup, xtmp, "kff", "kff parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kff = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].kff = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "kp", "kp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kp = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].kp = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "kd", "kd parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kd = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].kd = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "maxOutput", "maxOutput parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j + 1).asFloat64();
 
     return true;
 }
@@ -862,16 +862,16 @@ bool Parser::parsePidsGroupExtended(Bottle& pidsGroup, Pid myPid[])
     Bottle xtmp;
 
     if (!extractGroup(pidsGroup, xtmp, "ki", "ki parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].ki = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].ki = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "maxInt", "maxInt parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "stictionUp", "stictionUp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "stictionDown", "stictionDown parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j + 1).asFloat64();
 
     return true;
 }
@@ -894,13 +894,13 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
     Bottle xtmp;
 
     if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints)) return false; 
-    for (int j = 0; j<_njoints; j++) _kbemf[j] = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) _kbemf[j] = xtmp.get(j + 1).asFloat64();
     
     if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints)) return false; 
-    for (int j = 0; j<_njoints; j++) _ktau[j] = xtmp.get(j + 1).asDouble();
+    for (int j = 0; j<_njoints; j++) _ktau[j] = xtmp.get(j + 1).asFloat64();
     
     if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints)) return false; 
-    for (int j = 0; j<_njoints; j++) _filterType[j] = xtmp.get(j + 1).asInt();
+    for (int j = 0; j<_njoints; j++) _filterType[j] = xtmp.get(j + 1).asInt32();
 
     return true;
 }
@@ -911,36 +911,36 @@ bool Parser::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
     int j=0;
     Bottle xtmp;
 
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kp"), "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kd"), "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("ki"), "Pid ki parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxInt"), "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxOutput"), "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kp"), "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kd"), "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("ki"), "Pid ki parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxInt"), "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxOutput"), "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asFloat64();
     
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("shift"), "Pid shift parameter", _njoints))
         for (j = 0; j<_njoints; j++) myPid[j].scale = 0.0;
     else
-        for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+        for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("ko"), "Pid ko parameter", _njoints))
         for (j = 0; j<_njoints; j++) myPid[j].offset = 0.0;
     else
-        for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+        for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionUp"), "Pid stictionUp", _njoints))
         for (j = 0; j<_njoints; j++) myPid[j].stiction_up_val = 0.0;
     else    
-        for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+        for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asFloat64();
     
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionDwn"), "Pid stictionDwn", _njoints))
         for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = 0.0;
     else
-        for (j = 0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j + 1).asDouble();
+        for (j = 0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp,  prefix + string("kff"), "Pid kff parameter", _njoints))
         for (j=0; j<_njoints; j++) myPid[j].kff = 0.0;
     else
-        for (j = 0; j<_njoints; j++) myPid[j].kff = xtmp.get(j + 1).asDouble();
+        for (j = 0; j<_njoints; j++) myPid[j].kff = xtmp.get(j + 1).asFloat64();
     
     return true;
 }
@@ -1322,7 +1322,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-           twofocinfo[i - 1].hasHallSensor = xtmp.get(i).asInt() != 0;
+           twofocinfo[i - 1].hasHallSensor = xtmp.get(i).asInt32() != 0;
     }
     if (!extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints))
     {
@@ -1331,7 +1331,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].hasTempSensor = xtmp.get(i).asInt() != 0;
+            twofocinfo[i - 1].hasTempSensor = xtmp.get(i).asInt32() != 0;
     }
     if (!extractGroup(focGroup, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
     {
@@ -1341,7 +1341,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     {
 
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].hasRotorEncoder = xtmp.get(i).asInt() != 0;
+            twofocinfo[i - 1].hasRotorEncoder = xtmp.get(i).asInt32() != 0;
     }
     if (!extractGroup(focGroup, xtmp, "HasRotorEncoderIndex", "HasRotorEncoderIndex 0/1 ", _njoints))
     {
@@ -1350,7 +1350,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].hasRotorEncoderIndex = xtmp.get(i).asInt() != 0;
+            twofocinfo[i - 1].hasRotorEncoderIndex = xtmp.get(i).asInt32() != 0;
     }
 
     if (!extractGroup(focGroup, xtmp, "Verbose", "Verbose 0/1 ", _njoints, false))
@@ -1363,7 +1363,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].verbose = xtmp.get(i).asInt() != 0;
+            twofocinfo[i - 1].verbose = xtmp.get(i).asInt32() != 0;
     }
 
 	std::vector<int> AutoCalibration (_njoints);
@@ -1377,7 +1377,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            AutoCalibration[i - 1] = xtmp.get(i).asInt();
+            AutoCalibration[i - 1] = xtmp.get(i).asInt32();
     }
 
 
@@ -1391,7 +1391,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
         {
             if(AutoCalibration[i-1] == 0)
             {
-                twofocinfo[i - 1].rotorIndexOffset = xtmp.get(i).asInt();
+                twofocinfo[i - 1].rotorIndexOffset = xtmp.get(i).asInt32();
                 if (twofocinfo[i - 1].rotorIndexOffset <0 ||  twofocinfo[i - 1].rotorIndexOffset >359)
                 {
                     yError() << "In " << _boardname << "joint " << i-1 << ": rotorIndexOffset should be in [0,359] range." ;
@@ -1425,7 +1425,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].motorPoles = xtmp.get(i).asInt();
+            twofocinfo[i - 1].motorPoles = xtmp.get(i).asInt32();
     }
 
     if (!extractGroup(focGroup, xtmp, "HasSpeedEncoder", "HasSpeedEncoder 0/1 ", _njoints))
@@ -1437,7 +1437,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].hasSpeedEncoder = xtmp.get(i).asInt() != 0;
+            twofocinfo[i - 1].hasSpeedEncoder = xtmp.get(i).asInt32() != 0;
     }
 
     return true;
@@ -1462,7 +1462,7 @@ bool Parser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<Joi
         return  false;
     }
 
-    numofsets = xtmp.get(1).asInt();
+    numofsets = xtmp.get(1).asInt32();
 
     if((0 == numofsets) || (numofsets > _njoints))
     {
@@ -1514,7 +1514,7 @@ bool Parser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<Joi
 
         for (int j = 0; j <numOfJointsInSet; j++)
         {
-            int jointofthisset = b_listofjoints.get(j+1).asInt();
+            int jointofthisset = b_listofjoints.get(j+1).asInt32();
 
             if((jointofthisset< 0) || (jointofthisset>_njoints))
             {
@@ -1546,14 +1546,14 @@ bool Parser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<Joi
         {
             return  false;
         }
-        jsets.at(s).cfg.constraints.param1 = (float)xtmp.get(1).asDouble();
+        jsets.at(s).cfg.constraints.param1 = (float)xtmp.get(1).asFloat64();
 
         //param2
         if(!extractGroup(js_cfg, xtmp, "param2", "param2 of jointset constraint ", 1))
         {
             return  false;
         }
-        jsets.at(s).cfg.constraints.param2 = (float)xtmp.get(1).asDouble();
+        jsets.at(s).cfg.constraints.param2 = (float)xtmp.get(1).asFloat64();
 
 
     }
@@ -1584,7 +1584,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     else
     {
         for(i=1; i<xtmp.size(); i++)
-            timeouts[i-1].velocity = xtmp.get(i).asInt();
+            timeouts[i-1].velocity = xtmp.get(i).asInt32();
     }
 
 
@@ -1609,19 +1609,19 @@ bool Parser::parseCurrentLimits(yarp::os::Searchable &config, std::vector<motorC
     if (!extractGroup(limits, xtmp, "motorOverloadCurrents","a list of current limits", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) currLimits[i-1].overloadCurrent=xtmp.get(i).asDouble();
+        for(i=1; i<xtmp.size(); i++) currLimits[i-1].overloadCurrent=xtmp.get(i).asFloat64();
 
     // nominal current
     if (!extractGroup(limits, xtmp, "motorNominalCurrents","a list of nominal current limits", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) currLimits[i-1].nominalCurrent =xtmp.get(i).asDouble();
+        for(i=1; i<xtmp.size(); i++) currLimits[i-1].nominalCurrent =xtmp.get(i).asFloat64();
 
     // peak current
     if (!extractGroup(limits, xtmp, "motorPeakCurrents","a list of peak current limits", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) currLimits[i-1].peakCurrent=xtmp.get(i).asDouble();
+        for(i=1; i<xtmp.size(); i++) currLimits[i-1].peakCurrent=xtmp.get(i).asFloat64();
 
     return true;
 
@@ -1644,20 +1644,20 @@ bool Parser::parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLi
     if (!extractGroup(limits, xtmp, "jntPosMax","a list of user maximum angles (in degrees)", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posMax = xtmp.get(i).asDouble();
+        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posMax = xtmp.get(i).asFloat64();
 
     // min limit
     if (!extractGroup(limits, xtmp, "jntPosMin","a list of user minimum angles (in degrees)", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posMin = xtmp.get(i).asDouble();
+        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posMin = xtmp.get(i).asFloat64();
 
     // max hardware limit
     if (!extractGroup(limits, xtmp, "hardwareJntPosMax","a list of hardware maximum angles (in degrees)", _njoints))
         return false;
     else
     {
-        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMax = xtmp.get(i).asDouble();
+        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMax = xtmp.get(i).asFloat64();
 
         //check hardware limits are bigger then user limits
         for(i=0; i<(unsigned)_njoints; i++)
@@ -1677,7 +1677,7 @@ bool Parser::parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLi
     }
     else
     {
-        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMin = xtmp.get(i).asDouble();
+        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMin = xtmp.get(i).asFloat64();
 
         //check hardware limits are bigger then user limits
         for(i=0; i<(unsigned)_njoints; i++)
@@ -1695,7 +1695,7 @@ bool Parser::parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLi
     if (!extractGroup(limits, xtmp, "jntVelMax", "a list of maximum velocities for the joints (in degrees/s)", _njoints))
         return false;
     else
-        for (i = 1; i<xtmp.size(); i++)     jointsLimits[i - 1].velMax = xtmp.get(i).asDouble();
+        for (i = 1; i<xtmp.size(); i++)     jointsLimits[i - 1].velMax = xtmp.get(i).asFloat64();
 
     return true;
 }
@@ -1719,7 +1719,7 @@ bool Parser::parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLi
     if (!extractGroup(limits, xtmp, "rotorPosMax","a list of maximum rotor angles (in degrees)", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) rotorsLimits[i-1].posMax = xtmp.get(i).asDouble();
+        for(i=1; i<xtmp.size(); i++) rotorsLimits[i-1].posMax = xtmp.get(i).asFloat64();
 
 
 
@@ -1727,7 +1727,7 @@ bool Parser::parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLi
     if (!extractGroup(limits, xtmp, "rotorPosMin","a list of minimum roto angles (in degrees)", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) rotorsLimits[i-1].posMin = xtmp.get(i).asDouble();
+        for(i=1; i<xtmp.size(); i++) rotorsLimits[i-1].posMin = xtmp.get(i).asFloat64();
 
     // Motor pwm limit
     if (!extractGroup(limits, xtmp, "motorPwmLimit","a list of motor PWM limits", _njoints))
@@ -1735,7 +1735,7 @@ bool Parser::parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLi
     else
         for(i=1; i<xtmp.size(); i++)
         {
-            rotorsLimits[i-1].pwmMax = xtmp.get(i).asDouble();
+            rotorsLimits[i-1].pwmMax = xtmp.get(i).asFloat64();
             if(rotorsLimits[i-1].pwmMax<0)
             {
                 yError() << "motorPwmLimit should be a positive value";
@@ -1805,13 +1805,13 @@ bool Parser::parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &cou
 
 bool Parser::parseMotioncontrolVersion(yarp::os::Searchable &config, int &version)
 {
-    if (!config.findGroup("GENERAL").find("MotioncontrolVersion").isInt())
+    if (!config.findGroup("GENERAL").find("MotioncontrolVersion").isInt32())
     {
         yError() << "Missing MotioncontrolVersion parameter. RobotInterface cannot start. Please contact icub-support@iit.it";
         return false;
     }
 
-    version = config.findGroup("GENERAL").find("MotioncontrolVersion").asInt();
+    version = config.findGroup("GENERAL").find("MotioncontrolVersion").asInt32();
     return true;
 
 }
@@ -1903,7 +1903,7 @@ bool Parser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vec
 
     for (i = 1; i < xtmp.size(); i++)
     {
-        int user_joint =  xtmp.get(i).asInt();
+        int user_joint =  xtmp.get(i).asInt32();
         if(user_joint>= _njoints)
         {
             yError() << "embObjMC BOARD " << _boardname << "In AxisMap param: joint " << i-1 << "has been mapped to not-existing joint ("<< user_joint <<"). Here there are only "<< _njoints <<"joints";
@@ -1964,7 +1964,7 @@ bool Parser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFact
 
     for (i = 1; i < xtmp.size(); i++)
     {
-        tmp_A2E = xtmp.get(i).asDouble();
+        tmp_A2E = xtmp.get(i).asFloat64();
         if (tmp_A2E<0)
         {
             yWarning() << "embObjMC BOARD " << _boardname << "Encoder parameter should be positive!";
@@ -1996,7 +1996,7 @@ bool Parser::parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToP
 
     for (i = 1; i < xtmp.size(); i++)
     {
-        tmpval = xtmp.get(i).asDouble();
+        tmpval = xtmp.get(i).asFloat64();
         if (tmpval<0)
         {
             yError() << "embObjMC BOARD " << _boardname << "fullscalePWM parameter should be positive!";
@@ -2029,7 +2029,7 @@ bool Parser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor
 
     for (i = 1; i < xtmp.size(); i++)
     {
-        tmpval = xtmp.get(i).asDouble();
+        tmpval = xtmp.get(i).asFloat64();
         if (tmpval<0)
         {
             yError() << "embObjMC BOARD " << _boardname << "ampsToSensor parameter should be positive!";
@@ -2061,7 +2061,7 @@ bool Parser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J
 
     for (i = 1; i < xtmp.size(); i++)
     {
-        gearbox_M2J[i-1] = xtmp.get(i).asDouble();
+        gearbox_M2J[i-1] = xtmp.get(i).asFloat64();
         if (gearbox_M2J[i-1]==0)
         {
             yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
@@ -2079,7 +2079,7 @@ bool Parser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J
     int test = xtmp.size();
     for (i = 1; i < xtmp.size(); i++)
     {
-        gearbox_E2J[i-1] = xtmp.get(i).asDouble();
+        gearbox_E2J[i-1] = xtmp.get(i).asFloat64();
         if (gearbox_E2J[i-1]==0)
         {
             yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
@@ -2121,7 +2121,7 @@ bool Parser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[],
     *found = true;
     for (i = 1; i < xtmp.size(); i++)
     {
-        deadzone[i-1] = xtmp.get(i).asDouble();
+        deadzone[i-1] = xtmp.get(i).asFloat64();
     }
     
     return true;
@@ -2145,7 +2145,7 @@ bool Parser::parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpe
 
     for (i = 1; i < xtmp.size(); i++)
     {
-        useMotorSpeedFbk[i-1] = xtmp.get(i).asInt();
+        useMotorSpeedFbk[i-1] = xtmp.get(i).asInt32();
     }
 
     return true;
@@ -2180,13 +2180,13 @@ bool Parser::parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impeda
         return false;
 
     for (j=0; j<_njoints; j++)
-        impedance[j].stiffness = xtmp.get(j+1).asDouble();
+        impedance[j].stiffness = xtmp.get(j+1).asFloat64();
 
     if (!extractGroup(impedanceGroup, xtmp, "damping", "damping parameter", _njoints))
         return false;
 
     for (j=0; j<_njoints; j++)
-        impedance[j].damping = xtmp.get(j+1).asDouble();
+        impedance[j].damping = xtmp.get(j+1).asFloat64();
 
     if(_verbosewhenok)
     {
@@ -2239,7 +2239,7 @@ bool Parser::convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, 
         double item = 0;
 
         // ok, i use the standard converter ... but what if it is not a double format? so far we dont check.
-        item = bottle.get(i+1).asDouble();
+        item = bottle.get(i+1).asFloat64();
         matrix.push_back(item);
     }
 

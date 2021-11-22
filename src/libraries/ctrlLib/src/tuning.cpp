@@ -162,22 +162,22 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
         if (!ok)
             return false;
 
-        joint=options.find("joint").asInt();
-        setPeriod(options.check("Ts",Value(0.01)).asDouble());
+        joint=options.find("joint").asInt32();
+        setPeriod(options.check("Ts",Value(0.01)).asFloat64());
 
-        T=options.check("T",Value(2.0)).asDouble();
-        Kp=options.check("Kp",Value(10.0)).asDouble();
-        Ki=options.check("Ki",Value(250.0)).asDouble();
-        Kd=options.check("Kd",Value(15.0)).asDouble();
-        vel_thres=fabs(options.check("vel_thres",Value(5.0)).asDouble());
-        e_thres=fabs(options.check("e_thres",Value(1.0)).asDouble());
+        T=options.check("T",Value(2.0)).asFloat64();
+        Kp=options.check("Kp",Value(10.0)).asFloat64();
+        Ki=options.check("Ki",Value(250.0)).asFloat64();
+        Kd=options.check("Kd",Value(15.0)).asFloat64();
+        vel_thres=fabs(options.check("vel_thres",Value(5.0)).asFloat64());
+        e_thres=fabs(options.check("e_thres",Value(1.0)).asFloat64());
 
         gamma.resize(2,1.0);
         if (Bottle *pB=options.find("gamma").asList()) 
         {
             size_t len=std::min(gamma.length(),(size_t)pB->size());
             for (size_t i=0; i<len; i++)
-                gamma[i]=pB->get(i).asDouble();
+                gamma[i]=pB->get(i).asFloat64();
         }
 
         stiction.resize(2,0.0);
@@ -185,7 +185,7 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
         {
             size_t len=std::min(stiction.length(),(size_t)pB->size());
             for (size_t i=0; i<len; i++)
-                stiction[i]=pB->get(i).asDouble();
+                stiction[i]=pB->get(i).asFloat64();
         }
 
         return configured=true;
@@ -201,28 +201,28 @@ bool OnlineStictionEstimator::reconfigure(const Property &options)
     if (configured)
     {
         if (options.check("joint"))
-            joint=options.find("joint").asInt();
+            joint=options.find("joint").asInt32();
 
         if (options.check("Ts"))
-            setPeriod(options.find("Ts").asDouble());
+            setPeriod(options.find("Ts").asFloat64());
 
         if (options.check("T"))
-            T=options.find("T").asDouble();
+            T=options.find("T").asFloat64();
 
         if (options.check("Kp"))
-            Kp=options.find("Kp").asDouble();
+            Kp=options.find("Kp").asFloat64();
 
         if (options.check("Ki"))
-            Ki=options.find("Ki").asDouble();
+            Ki=options.find("Ki").asFloat64();
 
         if (options.check("Kd"))
-            Kd=options.find("Kd").asDouble();
+            Kd=options.find("Kd").asFloat64();
 
         if (options.check("vel_thres"))
-            vel_thres=options.find("vel_thres").asDouble();
+            vel_thres=options.find("vel_thres").asFloat64();
 
         if (options.check("e_thres"))
-            e_thres=options.find("e_thres").asDouble();
+            e_thres=options.find("e_thres").asFloat64();
 
         if (options.check("gamma"))
         {
@@ -230,7 +230,7 @@ bool OnlineStictionEstimator::reconfigure(const Property &options)
             {
                 size_t len=std::min(gamma.length(),(size_t)pB->size());
                 for (size_t i=0; i<len; i++)
-                    gamma[i]=pB->get(i).asDouble();
+                    gamma[i]=pB->get(i).asFloat64();
             }
         }
 
@@ -240,7 +240,7 @@ bool OnlineStictionEstimator::reconfigure(const Property &options)
             {
                 size_t len=std::min(stiction.length(),(size_t)pB->size());
                 for (size_t i=0; i<len; i++)
-                    stiction[i]=pB->get(i).asDouble();
+                    stiction[i]=pB->get(i).asFloat64();
             }
         }
 
@@ -482,7 +482,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     if (!optGeneral.check("joint"))
         return false;
 
-    joint=optGeneral.find("joint").asInt();
+    joint=optGeneral.find("joint").asInt32();
     
     if (optGeneral.check("port"))
     {
@@ -509,14 +509,14 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     x_max-=0.1*x_range;
 
     x0.resize(4,0.0);
-    x0[2]=optPlant.check("tau",Value(1.0)).asDouble();
-    x0[3]=optPlant.check("K",Value(1.0)).asDouble();
+    x0[2]=optPlant.check("tau",Value(1.0)).asFloat64();
+    x0[3]=optPlant.check("K",Value(1.0)).asFloat64();
 
-    double Ts=optPlant.check("Ts",Value(0.01)).asDouble();
-    double Q=optPlant.check("Q",Value(1.0)).asDouble();
-    double R=optPlant.check("R",Value(1.0)).asDouble();
-    P0=optPlant.check("P0",Value(1e5)).asDouble();
-    max_pwm=optPlant.check("max_pwm",Value(800)).asDouble();
+    double Ts=optPlant.check("Ts",Value(0.01)).asFloat64();
+    double Q=optPlant.check("Q",Value(1.0)).asFloat64();
+    double R=optPlant.check("R",Value(1.0)).asFloat64();
+    P0=optPlant.check("P0",Value(1e5)).asFloat64();
+    max_pwm=optPlant.check("max_pwm",Value(800)).asFloat64();
 
     setPeriod(Ts);
 
@@ -731,9 +731,9 @@ void OnlineCompensatorDesign::run()
                 info.resize(4);
 
                 info[0]=2.0;
-                info[1]=stiction_info.find("voltage").asDouble();
-                info[2]=stiction_info.find("position").asDouble();
-                info[3]=stiction_info.find("reference").asDouble();
+                info[1]=stiction_info.find("voltage").asFloat64();
+                info[2]=stiction_info.find("position").asFloat64();
+                info[3]=stiction_info.find("reference").asFloat64();
 
                 Vector results;
                 stiction.getResults(results);
@@ -842,10 +842,10 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
         !options.check("type") || !options.check("f_c"))
         return false;
 
-    double tau=options.find("tau").asDouble();
-    double K=options.find("K").asDouble();
+    double tau=options.find("tau").asFloat64();
+    double K=options.find("K").asFloat64();
     string type=options.check("type",Value("PI")).asString();
-    double omega_c=2.0*M_PI*options.find("f_c").asDouble();
+    double omega_c=2.0*M_PI*options.find("f_c").asFloat64();
     double Kp,Ki;
 
     // P design
@@ -859,7 +859,7 @@ bool OnlineCompensatorDesign::tuneController(const Property &options,
     {
         double T_dr=1.0/omega_c;
         if (options.check("T_dr"))
-            T_dr=options.find("T_dr").asDouble();
+            T_dr=options.find("T_dr").asFloat64();
 
         double tau_dr=T_dr/3.0;
         double omega_dr=1.0/tau_dr;
@@ -893,8 +893,8 @@ bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
     if (!configured)
         return false;
 
-    max_time=options.check("max_time",Value(0.0)).asDouble();
-    switch_timeout=options.check("switch_timeout",Value(0.0)).asDouble();
+    max_time=options.check("max_time",Value(0.0)).asFloat64();
+    switch_timeout=options.check("switch_timeout",Value(0.0)).asFloat64();
 
     mode=plant_estimation;
     return PeriodicThread::start();
@@ -907,19 +907,19 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
     if (!configured || !options.check("tau") || !options.check("K"))
         return false;
     
-    max_time=options.check("max_time",Value(0.0)).asDouble();
-    switch_timeout=options.check("switch_timeout",Value(0.0)).asDouble();
-    measure_update_ticks=options.check("measure_update_ticks",Value(100)).asInt();
+    max_time=options.check("max_time",Value(0.0)).asFloat64();
+    switch_timeout=options.check("switch_timeout",Value(0.0)).asFloat64();
+    measure_update_ticks=options.check("measure_update_ticks",Value(100)).asInt32();
 
-    double tau=options.find("tau").asDouble();
-    double K=options.find("K").asDouble();
+    double tau=options.find("tau").asFloat64();
+    double K=options.find("K").asFloat64();
     double Ts=getPeriod();
     double a=1.0/tau;
     double b=K/tau;
 
-    double Q=options.check("Q",Value(1.0)).asDouble();
-    double R=options.check("R",Value(1.0)).asDouble();
-    double P0=options.check("P0",Value(this->P0)).asDouble();
+    double Q=options.check("Q",Value(1.0)).asFloat64();
+    double R=options.check("R",Value(1.0)).asFloat64();
+    double P0=options.check("P0",Value(this->P0)).asFloat64();
 
     // set up the Kalman filter
     double _exp=exp(-Ts*a);
@@ -956,7 +956,7 @@ bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
         return false;
 
     Property opt=options;
-    max_time=opt.check("max_time",Value(0.0)).asDouble();
+    max_time=opt.check("max_time",Value(0.0)).asFloat64();
 
     opt.unput("joint");
     if (!stiction.reconfigure(opt))
@@ -973,15 +973,15 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     if (!configured || !options.check("Kp"))
         return false;
 
-    max_time=options.check("max_time",Value(0.0)).asDouble();
+    max_time=options.check("max_time",Value(0.0)).asFloat64();
 
     ipid->getPid(VOCAB_PIDTYPE_POSITION,joint,&pidOld);
     pidNew=pidOld;
 
     // enforce the correct sign of gains
-    double Kp=options.find("Kp").asDouble();
-    double Ki=options.check("Ki",Value(0.0)).asDouble();
-    double Kd=options.check("Kd",Value(0.0)).asDouble();
+    double Kp=options.find("Kp").asFloat64();
+    double Ki=options.check("Ki",Value(0.0)).asFloat64();
+    double Kd=options.check("Kd",Value(0.0)).asFloat64();
     Kp=(Kp*pidOld.kp>0.0)?Kp:-Kp;
     Ki=(Ki*pidOld.ki>0.0)?Ki:-Ki;
     Kd=(Kd*pidOld.kd>0.0)?Kd:-Kd;
@@ -991,12 +991,12 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     pidNew.setStictionValues(0.0,0.0);
 
     if (options.check("scale"))
-        pidNew.setScale(options.find("scale").asInt());
+        pidNew.setScale(options.find("scale").asInt32());
 
     controller_validation_ref_square=(options.check("ref_type",Value("square")).asString()=="square");
-    controller_validation_ref_period=options.check("ref_period",Value(2.0)).asDouble();
-    controller_validation_ref_sustain_time=options.check("ref_sustain_time",Value(0.0)).asDouble();
-    controller_validation_cycles_to_switch=options.check("cycles_to_switch",Value(1)).asInt();
+    controller_validation_ref_period=options.check("ref_period",Value(2.0)).asFloat64();
+    controller_validation_ref_sustain_time=options.check("ref_sustain_time",Value(0.0)).asFloat64();
+    controller_validation_cycles_to_switch=options.check("cycles_to_switch",Value(1)).asInt32();
     controller_validation_stiction_yarp=(options.check("stiction_compensation",Value("firmware")).asString()!="firmware");
     controller_validation_stiction_up=controller_validation_stiction_down=0.0;
 
@@ -1006,8 +1006,8 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
         {
             if (pB->size()>=2)
             {
-                controller_validation_stiction_up=pB->get(0).asDouble();
-                controller_validation_stiction_down=pB->get(1).asDouble();
+                controller_validation_stiction_up=pB->get(0).asFloat64();
+                controller_validation_stiction_down=pB->get(1).asFloat64();
 
                 if (!controller_validation_stiction_yarp)
                     pidNew.setStictionValues(controller_validation_stiction_up,

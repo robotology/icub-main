@@ -146,26 +146,26 @@ public:
     
         while(cmdSize>0)
             {
-                switch(command.get(index).asVocab())
+                switch(command.get(index).asVocab32())
                 {
-                    case yarp::os::createVocab('s','u','s','p'):
-                        reply.addVocab(Vocab::encode("ack"));
+                    case yarp::os::createVocab32('s','u','s','p'):
+                        reply.addVocab32("ack");
                         vc->halt();
                         cmdSize--;
                         index++;
                     break;
-                    case yarp::os::createVocab('r','u','n'):
-                        reply.addVocab(Vocab::encode("ack"));
+                    case yarp::os::createVocab32('r','u','n'):
+                        reply.addVocab32("ack");
                         vc->go();
                         cmdSize--;
                         index++;
                     break;
                     //this set current position reference
-                    case yarp::os::createVocab('s','e','t'):
+                    case yarp::os::createVocab32('s','e','t'):
                         if (command.size()>=3)
                             {
-                                int i=command.get(index+1).asInt();
-                                double pos=command.get(index+2).asDouble();
+                                int i=command.get(index+1).asInt32();
+                                double pos=command.get(index+2).asFloat64();
                                 vc->setRef(i, pos);
                                 index +=3;
                                 cmdSize-=3;
@@ -176,46 +176,46 @@ public:
                                 index++;
                                 yError("Invalid set message, ignoring\n");
                             }
-                        reply.addVocab(Vocab::encode("ack"));
+                        reply.addVocab32("ack");
                     break;
                     //this set maximum velocity (limiter)
-                    case yarp::os::createVocab('s','v','e','l'):
+                    case yarp::os::createVocab32('s','v','e','l'):
                         if(command.size()>=3)
                             {
-                                int i=command.get(index+1).asInt();
-                                double vel = command.get(index+2).asDouble();
+                                int i=command.get(index+1).asInt32();
+                                double vel = command.get(index+2).asFloat64();
                                 vc->setVel(i,vel);
                                 index += 3;
                                 cmdSize-=3;;
-                                reply.addVocab(Vocab::encode("ack"));
+                                reply.addVocab32("ack");
                             }
                         else
                             {
                                 cmdSize--;
                                 index++;
                                 yError("Invalid set vel message, ignoring\n");
-                                reply.addVocab(Vocab::encode("fail"));
+                                reply.addVocab32("fail");
                             }
                     break;
-                    case yarp::os::createVocab('g','a','i','n'):
+                    case yarp::os::createVocab32('g','a','i','n'):
                         if(command.size()>=3)
                             {
-                                int i=command.get(index+1).asInt();
-                                double gain = command.get(index+2).asDouble();
+                                int i=command.get(index+1).asInt32();
+                                double gain = command.get(index+2).asFloat64();
                                 vc->setGain(i,gain);
                                 index+=3;
                                 cmdSize-=3;
-                                reply.addVocab(Vocab::encode("ack"));
+                                reply.addVocab32("ack");
                             }
                         else
                             {
                                 cmdSize--;
                                 index++;
                                 yError("Invalid set gain message, ignoring\n");
-                                reply.addVocab(Vocab::encode("fail"));
+                                reply.addVocab32("fail");
                             }
                     break;
-                    case yarp::os::createVocab('h','e','l','p'):
+                    case yarp::os::createVocab32('h','e','l','p'):
                         fprintf(stdout,"VelocityControl module, valid commands are:\n");
                         fprintf(stdout,"-   [susp]         suspend the controller (command zero velocity)\n");
                         fprintf(stdout,"-   [run]          start (and resume after being suspended) the controller\n");
@@ -226,8 +226,8 @@ public:
                         fprintf(stdout,"-   [help] to get this help\n");
                         fprintf(stdout,"\n typical commands:\n gain 0 10\n svel 0 10\n run\n set 0 x\n\n");
                         
-                        reply.addVocab(Vocab::encode("many"));
-                        reply.addVocab(Vocab::encode("ack"));
+                        reply.addVocab32("many");
+                        reply.addVocab32("ack");
                         reply.addString("VelocityControl module, valid commands are:");
                         reply.addString("-   [susp]         suspend the controller (command zero velocity)");
                         reply.addString("-   [run]          start (and resume after being suspended) the controller");
@@ -240,7 +240,7 @@ public:
                     break;
                     default:
                         yError("Invalid command, ignoring\n");
-                        reply.addVocab(Vocab::encode("fail"));
+                        reply.addVocab32("fail");
                         //cmdSize--;
                         //index++;
                         //return respond(command, reply); // call default
@@ -301,7 +301,7 @@ public:
         ///we start the thread
         int period = CONTROL_RATE;
         if(options.check("period"))
-            period = options.find("period").asInt();
+            period = options.find("period").asInt32();
         
         yInfo("control rate is %d ms",period);
 

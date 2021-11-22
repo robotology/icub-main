@@ -71,7 +71,7 @@ void xdPort::onRead(Bottle &b)
         
     size_t n=std::min(b.size(),xd.length());
     for (size_t i=0; i<n; i++)
-        xd[i]=b.get(i).asDouble();
+        xd[i]=b.get(i).asFloat64();
 
     isNew=true;
     rx++;
@@ -438,12 +438,12 @@ bool getCamParams(const ResourceFinder &rf, const string &type,
             parType.check("fx") && parType.check("fy") &&
             parType.check("cx") && parType.check("cy"))
         {
-            w=parType.find("w").asInt();
-            h=parType.find("h").asInt();
-            double fx=parType.find("fx").asDouble();
-            double fy=parType.find("fy").asDouble();
-            double cx=parType.find("cx").asDouble();
-            double cy=parType.find("cy").asDouble();
+            w=parType.find("w").asInt32();
+            h=parType.find("h").asInt32();
+            double fx=parType.find("fx").asFloat64();
+            double fy=parType.find("fy").asFloat64();
+            double cx=parType.find("cx").asFloat64();
+            double cy=parType.find("cy").asFloat64();
 
             if (verbose)
             {
@@ -498,7 +498,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
                 Matrix HN(4,4); HN=0.0;
                 for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
                 {
-                    HN(i,j)=bH->get(cnt).asDouble();
+                    HN(i,j)=bH->get(cnt).asFloat64();
                     if (++j>=HN.cols())
                     {
                         i++;

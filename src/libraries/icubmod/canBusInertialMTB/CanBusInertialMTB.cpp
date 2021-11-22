@@ -55,7 +55,7 @@ bool checkRequiredParamIsInt(yarp::os::Searchable& config,
     bool correct = config.check(paramName);
     if( correct )
     {
-        correct = config.find(paramName).isInt();
+        correct = config.find(paramName).isInt32();
     }
 
     if( !correct )
@@ -77,7 +77,7 @@ bool checkRequiredParamIsVectorOfInt(yarp::os::Searchable& config,
         output_vector.resize(ids.size());
         for(int i = 0; i < ids.size(); i++ )
         {
-            output_vector[i] = ids.get(i).asInt();
+            output_vector[i] = ids.get(i).asInt32();
         }
     }
 
@@ -147,7 +147,7 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     int sensorPeriod = CANBUS_INERTIAL_MTB_DEFAULT_SENSOR_PERIOD;
     if (config.check("sensorPeriod"))
     {
-        int int_sensorPeriod = config.find("sensorPeriod").asInt();
+        int int_sensorPeriod = config.find("sensorPeriod").asInt32();
         if( int_sensorPeriod < 1 || int_sensorPeriod > 255 )
         {
             yError("CanBusInertialMTB: sensorPeriod is lower than 1 or bigger then 255\n");
@@ -191,7 +191,7 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     if (config.check("period")==true)
     {
         int period=10;
-        period=config.find("period").asInt();
+        period=config.find("period").asInt32();
         setPeriod((double)period/1000.0);
     }
 
@@ -201,7 +201,7 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     prop.put("physDevice", config.find("physDevice").asString().c_str());
     prop.put("canTxTimeout", 500);
     prop.put("canRxTimeout", 500);
-    prop.put("canDeviceNum", config.find("canDeviceNum").asInt());
+    prop.put("canDeviceNum", config.find("canDeviceNum").asInt32());
     prop.put("canMyAddress", 0);
     prop.put("canTxQueueSize", CANBUS_INERTIAL_MTB_CAN_DRIVER_BUFFER_SIZE);
     prop.put("canRxQueueSize", CANBUS_INERTIAL_MTB_CAN_DRIVER_BUFFER_SIZE);

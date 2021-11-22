@@ -826,22 +826,22 @@ void PARTICLEManager::run()
         {
             //fprintf(stdout,"getting ready to send\n");
             Bottle cmd, reply;
-            cmd.addDouble(targetTemp[0]);
-            cmd.addDouble(targetTemp[1]);
-            cmd.addDouble(targetTemp[6]);
-            cmd.addDouble(targetTemp[7]);
+            cmd.addFloat64(targetTemp[0]);
+            cmd.addFloat64(targetTemp[1]);
+            cmd.addFloat64(targetTemp[6]);
+            cmd.addFloat64(targetTemp[7]);
             fprintf(stdout,"output %lf %lf %lf %lf\n", targetTemp[0], targetTemp[1], targetTemp[6], targetTemp[7]);
             
             disparityPort.write(cmd,reply);
             
             Bottle targets;
-            targets.addDouble(reply.get(0).asDouble());
-            targets.addDouble(reply.get(1).asDouble());
-            targets.addDouble(reply.get(2).asDouble());
-            targets.addDouble(0.0);
-            targets.addDouble(0.0);
-            targets.addDouble(0.0);
-            targets.addDouble(averageTempLeft);
+            targets.addFloat64(reply.get(0).asFloat64());
+            targets.addFloat64(reply.get(1).asFloat64());
+            targets.addFloat64(reply.get(2).asFloat64());
+            targets.addFloat64(0.0);
+            targets.addFloat64(0.0);
+            targets.addFloat64(0.0);
+            targets.addFloat64(averageTempLeft);
             
             target3D.write(targets);
         }

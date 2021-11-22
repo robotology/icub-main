@@ -54,7 +54,7 @@ void positionDirectControlThread::run()
             prev_targets=targets;
             for (unsigned int i=0; i< control_joints; i++)
             {
-                targets[i] = bot->get(i).asDouble();
+                targets[i] = bot->get(i).asFloat64();
             }
         }
         else
@@ -174,9 +174,9 @@ bool positionDirectControlThread::init(PolyDriver *d, std::string moduleName, st
         control_joints_list = new int [control_joints];
         for (unsigned int i=0; i< control_joints; i++)
         {
-            if (jointsList->get(i).isInt() && jointsList->get(i).asInt()>=0)
+            if (jointsList->get(i).isInt32() && jointsList->get(i).asInt32()>=0)
             {
-                control_joints_list[i] = jointsList->get(i).asInt();
+                control_joints_list[i] = jointsList->get(i).asInt32();
             }
             else
             {

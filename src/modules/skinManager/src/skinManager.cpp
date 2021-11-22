@@ -56,22 +56,22 @@ bool skinManager::configure(yarp::os::ResourceFinder &rf) {
 
     /* get some other values from the configuration file */
     int period              = (int)rf.check("period", Value(PERIOD_DEFAULT), 
-       "Period of the thread in ms (positive int)").asInt();
+       "Period of the thread in ms (positive int)").asInt32();
     float minBaseline       = (float)rf.check("minBaseline", Value(MIN_BASELINE_DEFAULT), 
-       "If the baseline reaches this value then, if allowed, a calibration is executed (float in [0,255])").asDouble();
+       "If the baseline reaches this value then, if allowed, a calibration is executed (float in [0,255])").asFloat64();
     float compGain          = (float)rf.check("compensationGain", Value(COMPENSATION_GAIN_DEFAULT), 
-       "Gain of the compensation algorithm (float)").asDouble();
+       "Gain of the compensation algorithm (float)").asFloat64();
     float contCompGain      = (float)rf.check("contactCompensationGain", Value(CONTACT_COMPENSATION_GAIN_DEFAULT), 
-       "Gain of the compensation algorithm during contact (float)").asDouble();
+       "Gain of the compensation algorithm during contact (float)").asFloat64();
     int addThreshold        = (int)rf.check("addThreshold", Value(ADD_THRESHOLD_DEFAULT), 
-       "Value added to all the touch thresholds (positive int)").asInt();
+       "Value added to all the touch thresholds (positive int)").asInt32();
     
     bool zeroUpRawData = rf.check("zeroUpRawData", Value(ZERO_UP_RAW_DATA_DEFAULT),
         "if true the raw data are considered from zero up, otherwise from 255 down (bool)").asBool();
     bool smoothFilter = rf.check("smoothFilter", Value(SMOOTH_FILTER_DEFAULT),
             "if true then the smoothing filter is active (bool)").asBool();
     float smoothFactor      = (float) rf.check("smoothFactor", Value(SMOOTH_FACTOR_DEFAULT), 
-       "Determine the smoothing intensity (float in [0,1])").asDouble();
+       "Determine the smoothing intensity (float in [0,1])").asFloat64();
     bool binarization = rf.check("binarization", Value(BINARIZATION_DEFAULT),
             "if true then the binarization is active (bool)").asBool();
 
@@ -142,9 +142,9 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
 
     SkinManagerCommand com;
     Bottle params;
-    if(command.get(0).isInt()){
+    if(command.get(0).isInt32()){
         // if first value is int then it is the id of the command
-        com = (SkinManagerCommand)command.get(0).asInt();
+        com = (SkinManagerCommand)command.get(0).asInt32();
         yInfo("[rpc] Command received: %s", SkinManagerCommandList[com].c_str());
         params = command.tail();
     }
@@ -159,7 +159,7 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
             return false;
 
         case help:
-            reply.addVocab(Vocab::encode("many"));            // print every string added to the bottle on a new line
+            reply.addVocab32("many");   // print every string added to the bottle on a new line
             reply.addString((string(getName().c_str()) + " commands are: ").c_str());
             for(unsigned int i=0; i< SkinManagerCommandSize; i++){
                 reply.addString( ("- "+SkinManagerCommandList[i]+": "+SkinManagerCommandDesc[i]).c_str() );
@@ -174,7 +174,7 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
             {
             Vector touchThreshold = myThread->getTouchThreshold();
             for(size_t i=0; i< touchThreshold.size(); i++) 
-                reply.addDouble(touchThreshold[i]);
+                reply.addFloat64(touchThreshold[i]);
             return true;
             }
 
@@ -230,109 +230,109 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
 
         case set_smooth_factor:
             {
-            if(params.size()<1 || (!params.get(0).isDouble() && !params.get(0).isInt())){
+            if(params.size()<1 || (!params.get(0).isFloat64() && !params.get(0).isInt32())){
                 reply.addString("New smooth factor value missing or not a number! Smooth factor not updated.");
                 return true;
             }
 
             stringstream temp;
-            if(myThread->setSmoothFactor((float)params.get(0).asDouble())){
-                temp<< "New smooth factor set: "<< params.get(0).asDouble();
+            if(myThread->setSmoothFactor((float)params.get(0).asFloat64())){
+                temp<< "New smooth factor set: "<< params.get(0).asFloat64();
             }
             else{
-                temp<< "ERROR in setting new smooth factor: "<< params.get(0).asDouble();
+                temp<< "ERROR in setting new smooth factor: "<< params.get(0).asFloat64();
             }
             reply.addString( temp.str().c_str());
             return true;
             }
 
         case get_smooth_factor:
-            reply.addDouble(myThread->getSmoothFactor());
+            reply.addFloat64(myThread->getSmoothFactor());
             return true;
 
         case set_threshold:
             {
-            if(params.size()<1 || (!params.get(0).isInt())){
+            if(params.size()<1 || (!params.get(0).isInt32())){
                 reply.addString("New threshold value missing or not an integer! Threshold not updated.");
                 return true;
             }
 
             stringstream temp;
-            if(myThread->setAddThreshold(params.get(0).asInt())){
-                temp<< "New threshold set: "<< params.get(0).asInt();
+            if(myThread->setAddThreshold(params.get(0).asInt32())){
+                temp<< "New threshold set: "<< params.get(0).asInt32();
             }
             else{
-                temp<< "ERROR in setting new threshold: "<< params.get(0).asInt();
+                temp<< "ERROR in setting new threshold: "<< params.get(0).asInt32();
             }
             reply.addString( temp.str().c_str());
             return true;
             }
 
         case get_threshold:
-            reply.addInt(myThread->getAddThreshold());
+            reply.addInt32(myThread->getAddThreshold());
             return true;
 
         case set_gain:
             {
-            if(params.size()<1 || (!params.get(0).isDouble())){
+            if(params.size()<1 || (!params.get(0).isFloat64())){
                 reply.addString("New gain value missing or not a double! Gain not updated.");
                 return true;
             }
 
             stringstream temp;
-            if(myThread->setCompensationGain(params.get(0).asDouble())){
-                temp<< "New gain set: "<< params.get(0).asDouble();
+            if(myThread->setCompensationGain(params.get(0).asFloat64())){
+                temp<< "New gain set: "<< params.get(0).asFloat64();
             }
             else{
-                temp<< "ERROR in setting new gain: "<< params.get(0).asDouble();
+                temp<< "ERROR in setting new gain: "<< params.get(0).asFloat64();
             }
             reply.addString( temp.str().c_str());
             return true;
             }
 
         case get_gain:
-            reply.addDouble(myThread->getCompensationGain());
+            reply.addFloat64(myThread->getCompensationGain());
             return true;
 
         case set_cont_gain:
             {
-            if(params.size()<1 || (!params.get(0).isDouble())){
+            if(params.size()<1 || (!params.get(0).isFloat64())){
                 reply.addString("New gain value missing or not a double! Contact gain not updated.");
                 return true;
             }
 
             stringstream temp;
-            if(myThread->setContactCompensationGain(params.get(0).asDouble())){
-                temp<< "New contact gain set: "<< params.get(0).asDouble();
+            if(myThread->setContactCompensationGain(params.get(0).asFloat64())){
+                temp<< "New contact gain set: "<< params.get(0).asFloat64();
             }
             else{
-                temp<< "ERROR in setting new contact gain: "<< params.get(0).asDouble();
+                temp<< "ERROR in setting new contact gain: "<< params.get(0).asFloat64();
             }
             reply.addString( temp.str().c_str());
             return true;
             }
 
         case get_cont_gain:
-            reply.addDouble(myThread->getContactCompensationGain());
+            reply.addFloat64(myThread->getContactCompensationGain());
             return true;
 
         case get_max_neigh_dist:
-            reply.addDouble(myThread->getMaxNeighborDistance());
+            reply.addFloat64(myThread->getMaxNeighborDistance());
             return true;
 
         case set_max_neigh_dist:
             {
-            if(params.size()<1 || (!params.get(0).isDouble())){
+            if(params.size()<1 || (!params.get(0).isFloat64())){
                 reply.addString("New max neighbor distance value missing or not a double! Not updated.");
                 return true;
             }
 
             stringstream temp;
-            if(myThread->setMaxNeighborDistance(params.get(0).asDouble())){
-                temp<< "New max neighbor distance set: "<< params.get(0).asDouble();
+            if(myThread->setMaxNeighborDistance(params.get(0).asFloat64())){
+                temp<< "New max neighbor distance set: "<< params.get(0).asFloat64();
             }
             else{
-                temp<< "ERROR in setting new max neighbor distance: "<< params.get(0).asDouble();
+                temp<< "ERROR in setting new max neighbor distance: "<< params.get(0).asFloat64();
             }
             reply.addString( temp.str().c_str());
             return true;
@@ -342,40 +342,40 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
             {
                 vector<SkinPart> spl = myThread->getSkinParts();
                 for(vector<SkinPart>::const_iterator it=spl.begin(); it!=spl.end(); it++){
-                    reply.addInt(*it);
+                    reply.addInt32(*it);
                     reply.addString(SkinPart_s[*it].c_str());
                 }
                 return true;
             }
 
         case enable_skin_part:
-            if(!(params.size()>0 && params.get(0).isInt())){
+            if(!(params.size()>0 && params.get(0).isInt32())){
                 reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
                 return true;
             }
-            if(myThread->enableSkinPart((SkinPart)params.get(0).asInt()))
+            if(myThread->enableSkinPart((SkinPart)params.get(0).asInt32()))
                 reply.addString("SkinPart enabled");
             else
                 reply.addString("SkinPart not found");
             return true;
 
         case disable_skin_part:
-            if(!(params.size()>0 && params.get(0).isInt())){
+            if(!(params.size()>0 && params.get(0).isInt32())){
                 reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
                 return true;
             }
-            if(myThread->disableSkinPart((SkinPart)params.get(0).asInt()))
+            if(myThread->disableSkinPart((SkinPart)params.get(0).asInt32()))
                 reply.addString("SkinPart disabled");
             else
                 reply.addString("SkinPart not found");
             return true;
 
         case is_skin_enabled:
-            if(!(params.size()>0 && params.get(0).isInt())){
+            if(!(params.size()>0 && params.get(0).isInt32())){
                 reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
                 return true;
             }
-            if(myThread->isSkinEnabled((SkinPart)params.get(0).asInt()))
+            if(myThread->isSkinEnabled((SkinPart)params.get(0).asInt32()))
                 reply.addString("yes");
             else
                 reply.addString("no");
@@ -390,13 +390,13 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
 
         case get_pose:
             {
-                if(!(params.size()>0 && params.get(0).isInt())){
+                if(!(params.size()>0 && params.get(0).isInt32())){
                     reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
                     return true;
                 }
-                SkinPart sp = (SkinPart) params.get(0).asInt();
-                if(params.size()>1 && params.get(1).isInt()){
-                    unsigned int taxelId = params.get(1).asInt();
+                SkinPart sp = (SkinPart) params.get(0).asInt32();
+                if(params.size()>1 && params.get(1).isInt32()){
+                    unsigned int taxelId = params.get(1).asInt32();
                     Vector res = myThread->getTaxelPose(sp, taxelId);
                     if(res.size()>0)
                         addToBottle(reply, res);
@@ -412,22 +412,22 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
 
         case set_pose:
             {
-                if(!(params.size()>6 && params.get(0).isInt() )){
+                if(!(params.size()>6 && params.get(0).isInt32() )){
                     reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
                     return true;
                 }
-                SkinPart sp = (SkinPart) params.get(0).asInt();
-                if(params.get(1).isInt()){
-                    unsigned int taxelId = params.get(1).asInt();
+                SkinPart sp = (SkinPart) params.get(0).asInt32();
+                if(params.get(1).isInt32()){
+                    unsigned int taxelId = params.get(1).asInt32();
                     Vector pose;
                     if(!bottleToVector(params.tail().tail(), pose)){
                         reply.addString("ERROR while reading the taxel pose");
                         return true;
                     }
                     if(myThread->setTaxelPose(sp, taxelId, pose))
-                        reply.addInt(skin_manager_ok);
+                        reply.addInt32(skin_manager_ok);
                     else{
-                        reply.addInt(skin_manager_error);
+                        reply.addInt32(skin_manager_error);
                         reply.addString("ERROR: pose was not set");
                     }
                 }
@@ -438,9 +438,9 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
                         return true;
                     }
                     if(myThread->setTaxelPoses(sp, poses))
-                        reply.addInt(skin_manager_ok);
+                        reply.addInt32(skin_manager_ok);
                     else{
-                        reply.addInt(skin_manager_error);
+                        reply.addInt32(skin_manager_error);
                         reply.addString("ERROR: pose was not set");
                     }
                 }
@@ -448,13 +448,13 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
             }
         case get_position:
             {
-                if(!(params.size()>0 && params.get(0).isInt())){
+                if(!(params.size()>0 && params.get(0).isInt32())){
                     reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
                     return true;
                 }
-                SkinPart sp = (SkinPart) params.get(0).asInt();
-                if(params.size()>1 && params.get(1).isInt()){
-                    unsigned int taxelId = params.get(1).asInt();
+                SkinPart sp = (SkinPart) params.get(0).asInt32();
+                if(params.size()>1 && params.get(1).isInt32()){
+                    unsigned int taxelId = params.get(1).asInt32();
                     Vector res = myThread->getTaxelPosition(sp, taxelId);
                     if(res.size()>0)
                         addToBottle(reply, res);
@@ -472,22 +472,22 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
             }
         case set_position:
             {
-                if(!(params.size()>3 && params.get(0).isInt() )){
+                if(!(params.size()>3 && params.get(0).isInt32() )){
                     reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
                     return true;
                 }
-                SkinPart sp = (SkinPart) params.get(0).asInt();
-                if(params.get(1).isInt()){
-                    unsigned int taxelId = params.get(1).asInt();
+                SkinPart sp = (SkinPart) params.get(0).asInt32();
+                if(params.get(1).isInt32()){
+                    unsigned int taxelId = params.get(1).asInt32();
                     Vector pose;
                     if(!bottleToVector(params.tail().tail(), pose)){
                         reply.addString("ERROR while reading the taxel position");
                         return true;
                     }
                     if(myThread->setTaxelPosition(sp, taxelId, pose))
-                        reply.addInt(skin_manager_ok);
+                        reply.addInt32(skin_manager_ok);
                     else{
-                        reply.addInt(skin_manager_error);
+                        reply.addInt32(skin_manager_error);
                         reply.addString("ERROR: position was not set");
                     }
                 }
@@ -498,9 +498,9 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
                         return true;
                     }
                     if(myThread->setTaxelPositions(sp, poses))
-                        reply.addInt(skin_manager_ok);
+                        reply.addInt32(skin_manager_ok);
                     else{
-                        reply.addInt(skin_manager_error);
+                        reply.addInt32(skin_manager_error);
                         reply.addString("ERROR: position was not set");
                     }
                 }
@@ -508,15 +508,15 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
             }
         case get_confidence:
             {
-                if(!(params.size()>0 && params.get(0).isInt())){
+                if(!(params.size()>0 && params.get(0).isInt32())){
                     reply.addString(("ERROR: SkinPart is not specified. Params read are: "+string(params.toString().c_str())).c_str());
                     return true;
                 }
-                SkinPart sp = (SkinPart) params.get(0).asInt();
-                if(params.size()>1 && params.get(1).isInt()){
-                    unsigned int taxelId = params.get(1).asInt();
+                SkinPart sp = (SkinPart) params.get(0).asInt32();
+                if(params.size()>1 && params.get(1).isInt32()){
+                    unsigned int taxelId = params.get(1).asInt32();
                     double res = myThread->getPoseConfidence(sp, taxelId);
-                    reply.addDouble(res);
+                    reply.addFloat64(res);
                 }
                 else{
                     Vector res = myThread->getPoseConfidences(sp);
@@ -544,19 +544,19 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
 
 void skinManager::addToBottle(Bottle& b, const Vector& v){
     for(unsigned int i=0; i<v.size(); i++)
-        b.addDouble(v[i]);
+        b.addFloat64(v[i]);
 }
 
 void skinManager::addToBottle(Bottle& b, const vector<Vector>& v){
     for(unsigned int i=0; i<v.size(); i++)
         for(unsigned int j=0; j<v[i].size(); j++)
-            b.addDouble(v[i][j]);
+            b.addFloat64(v[i][j]);
 }
 
 bool skinManager::bottleToVector(const yarp::os::Bottle& b, yarp::sig::Vector& v){
     for(int i=0; i<b.size(); i++)
-        if(b.get(i).isDouble() || b.get(i).isInt())
-            v.push_back(b.get(i).asDouble());
+        if(b.get(i).isFloat64() || b.get(i).isInt32())
+            v.push_back(b.get(i).asFloat64());
         else
             return false;
     return true;

@@ -6,6 +6,7 @@
  *
  */
 
+#include <sstream>
 #include <string>
 #include <cstdlib>
 #include <bitset>
@@ -25,7 +26,7 @@ std::bitset<32> populateBitset(const yarp::os::Bottle& bt)
 {
     std::bitset<32> bitSet{};
     for(size_t i=0; i<bt.size(); i++){
-        bitSet.set(bt.get(i).asInt());
+        bitSet.set(bt.get(i).asInt32());
     }
     return bitSet;
 }
@@ -74,7 +75,7 @@ void printHelp (yarp::os::Bottle& reply) {
                       "\tm_name stands for mask name and the availble bitmasks can be consulted/added in faceExpressions/emotions_rfe.ini\n";
 
     reply.clear();
-    reply.addVocab(Vocab::encode("many"));
+    reply.addVocab32("many");
     reply.addString(helpMessage.c_str());
 }
 
@@ -82,9 +83,6 @@ EmotionInterfaceModule::EmotionInterfaceModule() : emotionInitReport(this) {
 }
 
 bool EmotionInterfaceModule::configure(ResourceFinder& config){
-
-    char name[10];
-    int i;
 
     std::string modName = config.find("name").asString();
     setName(modName.c_str());
@@ -95,12 +93,12 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
         return false;
     }
 
-    _highlevelemotions = config.check("emotions", Value(0), "Number of predefined facial expressions").asInt();
-    _numberOfColors = config.check("colors", Value(0), "Number of predefined colors").asInt();
-    _eyebrowmaskemotions = config.check("bitmask_eyebrow_emotions", Value(0), "Number of predefined bitmask eyebrow expressions").asInt();
-    _mouthmaskemotions = config.check("bitmask_mouth_emotions", Value(0), "Number of predefined bitmask eyebrow expressions").asInt();
+    _highlevelemotions = config.check("emotions", Value(0), "Number of predefined facial expressions").asInt32();
+    _numberOfColors = config.check("colors", Value(0), "Number of predefined colors").asInt32();
+    _eyebrowmaskemotions = config.check("bitmask_eyebrow_emotions", Value(0), "Number of predefined bitmask eyebrow expressions").asInt32();
+    _mouthmaskemotions = config.check("bitmask_mouth_emotions", Value(0), "Number of predefined bitmask eyebrow expressions").asInt32();
     _auto = config.check("auto");
-    _period = config.check("period", Value(10.0), "Period for expression switching in auto mode").asDouble();
+    _period = config.check("period", Value(10.0), "Period for expression switching in auto mode").asFloat64();
     if(_highlevelemotions == 0)
     {
         _emotion_table = nullptr;
@@ -113,12 +111,14 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
             yError("Memory allocation problem\n");
             return false;
         }
-        for(i = 0; i < _highlevelemotions; i++)
+        for(int i = 0; i < _highlevelemotions; i++)
         {
-            sprintf(name,"E%d",i+1);
+            std::ostringstream ss;
+            ss << "E" << i+1;
+            std::string name = ss.str();
             if(!config.check(name))
             {
-                yError("Missing identifier %s.", name);
+                yError("Missing identifier %s.", name.c_str());
                 return false;
             }
             else
@@ -126,7 +126,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 Bottle& bot = config.findGroup(name);
                 if( bot.size() < 6 )
                 {
-                    printf("Invalid parameter list for identifier %s.", name);
+                    printf("Invalid parameter list for identifier %s.", name.c_str());
                     return false;
                 }
                 //first field - name of the expression
@@ -134,7 +134,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
 
                 if(n1.length()!=3) //must have length 3
                 {
-                    yError("First field of identifier %s has invalid size (must be 3).", name);
+                    yError("First field of identifier %s has invalid size (must be 3).", name.c_str());
                     return false;
                 }
                 else
@@ -148,7 +148,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 const char * sfd = n2.c_str();
                 if(n2.length()!=3) //must have length 3
                 {
-                    yError("Second field of identifier %s has invalid size (must be 3).", name);
+                    yError("Second field of identifier %s has invalid size (must be 3).", name.c_str());
                     return false;
                 }
                 else
@@ -160,7 +160,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 std::string n3 = bot.get(3).toString();
                 if(n3.length()!=3) //must have length 3
                 {
-                    yError("Third field of identifier %s has invalid size (must be 3).", name);
+                    yError("Third field of identifier %s has invalid size (must be 3).", name.c_str());
                     return false;
                 }
                 else
@@ -173,7 +173,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 std::string n4 = bot.get(4).toString();
                 if(n4.length()!=3) //must have length 3
                 {
-                    yError("Fourth field of identifier %s has invalid size (must be 3).", name);
+                    yError("Fourth field of identifier %s has invalid size (must be 3).", name.c_str());
                     return false;
                 }
                 else
@@ -186,7 +186,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 std::string n5 = bot.get(5).toString();
                 if(n5.length()!=3) //must have length 3
                 {
-                    yError("Fifth field of identifier %s has invalid size (must be 3).", name);
+                    yError("Fifth field of identifier %s has invalid size (must be 3).", name.c_str());
                     return false;
                 }
                 else
@@ -354,14 +354,14 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
     bool ok = false;
     bool rec = false; // is the command recognized?
 
-    switch (command.get(0).asVocab()) {
+    switch (command.get(0).asVocab32()) {
         case EMOTION_VOCAB_HELP:
             printHelp(reply);
             return true;
         case EMOTION_VOCAB_SET:
             rec = true;
             {
-                switch(command.get(1).asVocab()) {
+                switch(command.get(1).asVocab32()) {
                 case EMOTION_VOCAB_MOUTH:{
                     ok = setMouth(command.get(2).toString());
                     break;
@@ -407,24 +407,24 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
         case EMOTION_VOCAB_GET:
             rec = true;
             /*{
-                reply.addVocab(VOCAB_IS);
+                reply.addVocab32(VOCAB_IS);
                 reply.add(command.get(1));
-                switch(command.get(1).asVocab()) {
+                switch(command.get(1).asVocab32()) {
                 case EGOSPHERE_VOCAB_THRESHOLD_SALIENCE:{
                     float thr = getThresholdSalience();
-                    reply.addDouble((double)thr);
+                    reply.addFloat64((double)thr);
                     ok = true;
                     break;
                 }
                 case EGOSPHERE_VOCAB_OUTPUT:{
                     int v = (int)getOutput();
-                    reply.addInt(v);
+                    reply.addInt32(v);
                     ok = true;
                     break;
                 }
                 case EGOSPHERE_VOCAB_SALIENCE_DECAY:{
                     double rate = getSalienceDecay();
-                    reply.addDouble(rate);
+                    reply.addFloat64(rate);
                     ok = true;
                     break;
                 }
@@ -444,10 +444,10 @@ bool EmotionInterfaceModule::respond(const Bottle &command,Bottle &reply){
 
     if (!ok) {
         reply.clear();
-        reply.addVocab(EMOTION_VOCAB_FAILED);
+        reply.addVocab32(EMOTION_VOCAB_FAILED);
     }
     else
-        reply.addVocab(EMOTION_VOCAB_OK);
+        reply.addVocab32(EMOTION_VOCAB_OK);
 
     return ok;
 }

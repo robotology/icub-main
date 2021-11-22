@@ -41,8 +41,8 @@ std::string Prediction::toString() {
 
 bool Prediction::write(yarp::os::ConnectionWriter& connection) {
     // follows PortablePair implementation
-    connection.appendInt(BOTTLE_TAG_LIST);
-    connection.appendInt(2);
+    connection.appendInt32(BOTTLE_TAG_LIST);
+    connection.appendInt32(2);
 
     bool ok = this->prediction.write(connection);
     if (ok) {
@@ -60,12 +60,12 @@ bool Prediction::read(yarp::os::ConnectionReader& connection) {
     // follows PortablePair implementation
     connection.convertTextMode();
 
-    int header = connection.expectInt();
+    int header = connection.expectInt32();
     if(header != BOTTLE_TAG_LIST) {
         return false;
     }
 
-    int len = connection.expectInt();
+    int len = connection.expectInt32();
     if(len != 2) {
         return false;
     }

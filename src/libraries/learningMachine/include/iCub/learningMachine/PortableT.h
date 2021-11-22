@@ -107,8 +107,8 @@ public:
         if(!this->hasWrapped()) {
             return false;
         }
-        connection.appendInt(BOTTLE_TAG_LIST);
-        connection.appendInt(2);
+        connection.appendInt32(BOTTLE_TAG_LIST);
+        connection.appendInt32(2);
         yarp::os::Bottle nameBottle;
         nameBottle.addString(this->wrapped->getName().c_str());
         nameBottle.write(connection);
@@ -132,8 +132,8 @@ public:
 
         connection.convertTextMode();
         // check headers for the pair (name + actual object serialization)
-        int header = connection.expectInt();
-        int len = connection.expectInt();
+        int header = connection.expectInt32();
+        int len = connection.expectInt32();
         if(header != BOTTLE_TAG_LIST || len != 2) {
             return false;
         }

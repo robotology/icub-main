@@ -44,8 +44,8 @@
 #include <stdio.h> // for printf
 
 // additional vocabs defined for the IDebug interface.
-#define VOCAB_GENERIC_PARAMETER   yarp::os::createVocab('g','e','n','p')
-#define VOCAB_DEBUG_PARAMETER     yarp::os::createVocab('d','b','g','p')
+#define VOCAB_GENERIC_PARAMETER   yarp::os::createVocab32('g','e','n','p')
+#define VOCAB_DEBUG_PARAMETER     yarp::os::createVocab32('d','b','g','p')
 
 /* LATER: is it likely that some of these would move into iCub::dev namespace? */
 namespace yarp{

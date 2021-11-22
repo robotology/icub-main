@@ -27,8 +27,8 @@
 
 #define GAZECTRL_CLIENT_VER     1.2
 #define GAZECTRL_DEFAULT_TMO    0.1     // [s]
-#define GAZECTRL_ACK            Vocab::encode("ack")
-#define GAZECTRL_NACK           Vocab::encode("nack")
+#define GAZECTRL_ACK            Vocab32::encode("ack")
+#define GAZECTRL_NACK           Vocab32::encode("nack")
 
 using namespace std;
 using namespace yarp::os;
@@ -105,7 +105,7 @@ bool ClientGazeController::open(Searchable &config)
     carrier=config.check("carrier",Value("udp")).asString();
 
     if (config.check("timeout"))
-        timeout=config.find("timeout").asDouble();
+        timeout=config.find("timeout").asFloat64();
         
     portCmdFp.open(local+"/xd:o");
     portCmdAng.open(local+"/angles:o");
@@ -125,7 +125,7 @@ bool ClientGazeController::open(Searchable &config)
         getInfoHelper(info);
         if (info.check("server_version"))
         {
-            double server_version=info.find("server_version").asDouble();
+            double server_version=info.find("server_version").asFloat64();
             if (server_version!=GAZECTRL_CLIENT_VER)
             {
                 yError("version mismatch => server(%g) != client(%g); please update accordingly",
@@ -202,7 +202,7 @@ bool ClientGazeController::setTrackingMode(const bool f)
     Bottle command, reply;
     command.addString("set");
     command.addString("track");
-    command.addInt((int)f);
+    command.addInt32((int)f);
 
     if (!portRpc.write(command,reply))
     {
@@ -210,7 +210,7 @@ bool ClientGazeController::setTrackingMode(const bool f)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -230,9 +230,9 @@ bool ClientGazeController::getTrackingMode(bool *f)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        *f=(reply.get(1).asInt()>0);
+        *f=(reply.get(1).asInt32()>0);
         return true;
     }
 
@@ -249,7 +249,7 @@ bool ClientGazeController::setStabilizationMode(const bool f)
     Bottle command, reply;
     command.addString("set");
     command.addString("stab");
-    command.addInt((int)f);
+    command.addInt32((int)f);
 
     if (!portRpc.write(command,reply))
     {
@@ -257,7 +257,7 @@ bool ClientGazeController::setStabilizationMode(const bool f)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -277,9 +277,9 @@ bool ClientGazeController::getStabilizationMode(bool *f)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        *f=(reply.get(1).asInt()>0);
+        *f=(reply.get(1).asInt32()>0);
         return true;
     }
 
@@ -340,9 +340,9 @@ bool ClientGazeController::lookAtFixationPoint(const Vector &fp)
     Bottle &cmd=portCmdFp.prepare();
     cmd.clear();
 
-    cmd.addDouble(fp[0]);
-    cmd.addDouble(fp[1]);
-    cmd.addDouble(fp[2]);
+    cmd.addFloat64(fp[0]);
+    cmd.addFloat64(fp[1]);
+    cmd.addFloat64(fp[2]);
 
     portCmdFp.writeStrict();
     return true;
@@ -359,9 +359,9 @@ bool ClientGazeController::lookAtAbsAngles(const Vector &ang)
     cmd.clear();
 
     cmd.addString("abs");
-    cmd.addDouble(ang[0]);
-    cmd.addDouble(ang[1]);
-    cmd.addDouble(ang[2]);
+    cmd.addFloat64(ang[0]);
+    cmd.addFloat64(ang[1]);
+    cmd.addFloat64(ang[2]);
 
     portCmdAng.writeStrict();
     return true;
@@ -378,9 +378,9 @@ bool ClientGazeController::lookAtRelAngles(const Vector &ang)
     cmd.clear();
 
     cmd.addString("rel");
-    cmd.addDouble(ang[0]);
-    cmd.addDouble(ang[1]);
-    cmd.addDouble(ang[2]);
+    cmd.addFloat64(ang[0]);
+    cmd.addFloat64(ang[1]);
+    cmd.addFloat64(ang[2]);
 
     portCmdAng.writeStrict();
     return true;
@@ -398,9 +398,9 @@ bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px,
     cmd.clear();
 
     cmd.addString((camSel==0)?"left":"right");
-    cmd.addDouble(px[0]);
-    cmd.addDouble(px[1]);
-    cmd.addDouble(z);
+    cmd.addFloat64(px[0]);
+    cmd.addFloat64(px[1]);
+    cmd.addFloat64(z);
 
     portCmdMono.writeStrict();
     return true;
@@ -419,10 +419,10 @@ bool ClientGazeController::lookAtMonoPixelWithVergence(const int camSel,
     cmd.clear();
 
     cmd.addString((camSel==0)?"left":"right");
-    cmd.addDouble(px[0]);
-    cmd.addDouble(px[1]);
+    cmd.addFloat64(px[0]);
+    cmd.addFloat64(px[1]);
     cmd.addString("ver");
-    cmd.addDouble(ver);
+    cmd.addFloat64(ver);
 
     portCmdMono.writeStrict();
     return true;
@@ -438,10 +438,10 @@ bool ClientGazeController::lookAtStereoPixels(const Vector &pxl, const Vector &p
     Bottle &cmd=portCmdStereo.prepare();
     cmd.clear();
 
-    cmd.addDouble(pxl[0]);
-    cmd.addDouble(pxl[1]);
-    cmd.addDouble(pxr[0]);
-    cmd.addDouble(pxr[1]);
+    cmd.addFloat64(pxl[0]);
+    cmd.addFloat64(pxl[1]);
+    cmd.addFloat64(pxr[0]);
+    cmd.addFloat64(pxr[1]);
 
     portCmdStereo.writeStrict();
     return true;
@@ -458,9 +458,9 @@ bool ClientGazeController::lookAtFixationPointSync(const Vector &fp)
     command.addString("look");
     command.addString("3D");
     Bottle &payLoad=command.addList();
-    payLoad.addDouble(fp[0]);
-    payLoad.addDouble(fp[1]);
-    payLoad.addDouble(fp[2]);
+    payLoad.addFloat64(fp[0]);
+    payLoad.addFloat64(fp[1]);
+    payLoad.addFloat64(fp[2]);
 
     if (!portRpc.write(command,reply))
     {
@@ -468,7 +468,7 @@ bool ClientGazeController::lookAtFixationPointSync(const Vector &fp)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -484,7 +484,7 @@ bool ClientGazeController::lookAtAbsAnglesSync(const Vector &ang)
     Bottle &payLoad=command.addList();
     payLoad.addString("abs");
     for (size_t i=0; i<ang.length(); i++)
-        payLoad.addDouble(ang[i]);
+        payLoad.addFloat64(ang[i]);
 
     if (!portRpc.write(command,reply))
     {
@@ -492,7 +492,7 @@ bool ClientGazeController::lookAtAbsAnglesSync(const Vector &ang)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -508,7 +508,7 @@ bool ClientGazeController::lookAtRelAnglesSync(const Vector &ang)
     Bottle &payLoad=command.addList();
     payLoad.addString("rel");
     for (size_t i=0; i<ang.length(); i++)
-        payLoad.addDouble(ang[i]);
+        payLoad.addFloat64(ang[i]);
 
     if (!portRpc.write(command,reply))
     {
@@ -516,7 +516,7 @@ bool ClientGazeController::lookAtRelAnglesSync(const Vector &ang)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -533,9 +533,9 @@ bool ClientGazeController::lookAtMonoPixelSync(const int camSel,
     command.addString("mono");
     Bottle &payLoad=command.addList();
     payLoad.addString((camSel==0)?"left":"right");
-    payLoad.addDouble(px[0]);
-    payLoad.addDouble(px[1]);
-    payLoad.addDouble(z);
+    payLoad.addFloat64(px[0]);
+    payLoad.addFloat64(px[1]);
+    payLoad.addFloat64(z);
 
     if (!portRpc.write(command,reply))
     {
@@ -543,7 +543,7 @@ bool ClientGazeController::lookAtMonoPixelSync(const int camSel,
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -560,10 +560,10 @@ bool ClientGazeController::lookAtMonoPixelWithVergenceSync(const int camSel,
     command.addString("mono");
     Bottle &payLoad=command.addList();
     payLoad.addString((camSel==0)?"left":"right");
-    payLoad.addDouble(px[0]);
-    payLoad.addDouble(px[1]);
+    payLoad.addFloat64(px[0]);
+    payLoad.addFloat64(px[1]);
     payLoad.addString("ver");
-    payLoad.addDouble(ver);
+    payLoad.addFloat64(ver);
 
     if (!portRpc.write(command,reply))
     {
@@ -571,7 +571,7 @@ bool ClientGazeController::lookAtMonoPixelWithVergenceSync(const int camSel,
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -586,10 +586,10 @@ bool ClientGazeController::lookAtStereoPixelsSync(const Vector &pxl,
     command.addString("look");
     command.addString("stereo");
     Bottle &payLoad=command.addList();
-    payLoad.addDouble(pxl[0]);
-    payLoad.addDouble(pxl[1]);
-    payLoad.addDouble(pxr[0]);
-    payLoad.addDouble(pxr[1]);    
+    payLoad.addFloat64(pxl[0]);
+    payLoad.addFloat64(pxl[1]);
+    payLoad.addFloat64(pxr[0]);
+    payLoad.addFloat64(pxr[1]);    
 
     if (!portRpc.write(command,reply))
     {
@@ -597,7 +597,7 @@ bool ClientGazeController::lookAtStereoPixelsSync(const Vector &pxl,
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -617,9 +617,9 @@ bool ClientGazeController::getNeckTrajTime(double *t)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        *t=reply.get(1).asDouble();
+        *t=reply.get(1).asFloat64();
         return true;
     }
 
@@ -643,9 +643,9 @@ bool ClientGazeController::getEyesTrajTime(double *t)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        *t=reply.get(1).asDouble();
+        *t=reply.get(1).asFloat64();
         return true;
     }
 
@@ -669,9 +669,9 @@ bool ClientGazeController::getVORGain(double *gain)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        *gain=reply.get(1).asDouble();
+        *gain=reply.get(1).asFloat64();
         return true;
     }
 
@@ -695,9 +695,9 @@ bool ClientGazeController::getOCRGain(double *gain)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        *gain=reply.get(1).asDouble();
+        *gain=reply.get(1).asFloat64();
         return true;
     }
 
@@ -721,9 +721,9 @@ bool ClientGazeController::getSaccadesMode(bool *f)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        *f=(reply.get(1).asInt()>0);
+        *f=(reply.get(1).asInt32()>0);
         return true;
     }
 
@@ -747,9 +747,9 @@ bool ClientGazeController::getSaccadesInhibitionPeriod(double *period)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        *period=reply.get(1).asDouble();
+        *period=reply.get(1).asFloat64();
         return true;
     }
 
@@ -773,9 +773,9 @@ bool ClientGazeController::getSaccadesActivationAngle(double *angle)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        *angle=reply.get(1).asDouble();
+        *angle=reply.get(1).asFloat64();
         return true;
     }
 
@@ -801,7 +801,7 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o,
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bPose=reply.get(1).asList())
         {
@@ -811,17 +811,17 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o,
                 o.resize(bPose->size()-x.length());
         
                 for (size_t i=0; i<x.length(); i++)
-                    x[i]=bPose->get(i).asDouble();
+                    x[i]=bPose->get(i).asFloat64();
         
                 for (size_t i=0; i<o.length(); i++)
-                    o[i]=bPose->get(x.length()+i).asDouble();
+                    o[i]=bPose->get(x.length()+i).asFloat64();
         
                 if ((reply.size()>2) && (stamp!=NULL))
                 {
                     if (Bottle *bStamp=reply.get(2).asList())
                     {
-                        Stamp tmpStamp(bStamp->get(0).asInt(),
-                                       bStamp->get(1).asDouble());
+                        Stamp tmpStamp(bStamp->get(0).asInt32(),
+                                       bStamp->get(1).asFloat64());
 
                         *stamp=tmpStamp;
                     }
@@ -869,9 +869,9 @@ bool ClientGazeController::get2DPixel(const int camSel, const Vector &x,
     command.addString("2D");
     Bottle &bOpt=command.addList();
     bOpt.addString((camSel==0)?"left":"right");
-    bOpt.addDouble(x[0]);
-    bOpt.addDouble(x[1]);
-    bOpt.addDouble(x[2]);
+    bOpt.addFloat64(x[0]);
+    bOpt.addFloat64(x[1]);
+    bOpt.addFloat64(x[2]);
 
     if (!portRpc.write(command,reply))
     {
@@ -879,13 +879,13 @@ bool ClientGazeController::get2DPixel(const int camSel, const Vector &x,
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bPixel=reply.get(1).asList())
         {
             px.resize(bPixel->size());
             for (size_t i=0; i<px.length(); i++)
-                px[i]=bPixel->get(i).asDouble();
+                px[i]=bPixel->get(i).asFloat64();
 
             return true;
         }
@@ -908,9 +908,9 @@ bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
     command.addString("mono");
     Bottle &bOpt=command.addList();
     bOpt.addString((camSel==0)?"left":"right");
-    bOpt.addDouble(px[0]);
-    bOpt.addDouble(px[1]);
-    bOpt.addDouble(z);
+    bOpt.addFloat64(px[0]);
+    bOpt.addFloat64(px[1]);
+    bOpt.addFloat64(z);
 
     if (!portRpc.write(command,reply))
     {
@@ -918,13 +918,13 @@ bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
             for (size_t i=0; i<x.length(); i++)
-                x[i]=bPoint->get(i).asDouble();
+                x[i]=bPoint->get(i).asFloat64();
 
             return true;
         }
@@ -947,12 +947,12 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
     command.addString("proj");
     Bottle &bOpt=command.addList();
     bOpt.addString((camSel==0)?"left":"right");
-    bOpt.addDouble(px[0]);
-    bOpt.addDouble(px[1]);
-    bOpt.addDouble(plane[0]);
-    bOpt.addDouble(plane[1]);
-    bOpt.addDouble(plane[2]);
-    bOpt.addDouble(plane[3]);
+    bOpt.addFloat64(px[0]);
+    bOpt.addFloat64(px[1]);
+    bOpt.addFloat64(plane[0]);
+    bOpt.addFloat64(plane[1]);
+    bOpt.addFloat64(plane[2]);
+    bOpt.addFloat64(plane[3]);
 
     if (!portRpc.write(command,reply))
     {
@@ -960,13 +960,13 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
             for (size_t i=0; i<x.length(); i++)
-                x[i]=bPoint->get(i).asDouble();
+                x[i]=bPoint->get(i).asFloat64();
 
             return true;
         }
@@ -989,9 +989,9 @@ bool ClientGazeController::get3DPointFromAngles(const int mode, const Vector &an
     command.addString("ang");
     Bottle &bOpt=command.addList();
     bOpt.addString((mode==0)?"abs":"rel");
-    bOpt.addDouble(ang[0]);
-    bOpt.addDouble(ang[1]);
-    bOpt.addDouble(ang[2]);
+    bOpt.addFloat64(ang[0]);
+    bOpt.addFloat64(ang[1]);
+    bOpt.addFloat64(ang[2]);
 
     if (!portRpc.write(command,reply))
     {
@@ -999,13 +999,13 @@ bool ClientGazeController::get3DPointFromAngles(const int mode, const Vector &an
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
             for (size_t i=0; i<x.length(); i++)
-                x[i]=bPoint->get(i).asDouble();
+                x[i]=bPoint->get(i).asFloat64();
 
             return true;
         }
@@ -1025,9 +1025,9 @@ bool ClientGazeController::getAnglesFrom3DPoint(const Vector &x, Vector &ang)
     command.addString("get");
     command.addString("ang");
     Bottle &bOpt=command.addList();
-    bOpt.addDouble(x[0]);
-    bOpt.addDouble(x[1]);
-    bOpt.addDouble(x[2]);
+    bOpt.addFloat64(x[0]);
+    bOpt.addFloat64(x[1]);
+    bOpt.addFloat64(x[2]);
 
     if (!portRpc.write(command,reply))
     {
@@ -1035,13 +1035,13 @@ bool ClientGazeController::getAnglesFrom3DPoint(const Vector &x, Vector &ang)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bAng=reply.get(1).asList())
         {
             ang.resize(bAng->size());
             for (size_t i=0; i<ang.length(); i++)
-                ang[i]=bAng->get(i).asDouble();
+                ang[i]=bAng->get(i).asFloat64();
 
             return true;
         }
@@ -1063,10 +1063,10 @@ bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &p
     command.addString("3D");
     command.addString("stereo");
     Bottle &bOpt=command.addList();
-    bOpt.addDouble(pxl[0]);
-    bOpt.addDouble(pxl[1]);
-    bOpt.addDouble(pxr[0]);
-    bOpt.addDouble(pxr[1]);
+    bOpt.addFloat64(pxl[0]);
+    bOpt.addFloat64(pxl[1]);
+    bOpt.addFloat64(pxr[0]);
+    bOpt.addFloat64(pxr[1]);
 
     if (!portRpc.write(command,reply))
     {
@@ -1074,13 +1074,13 @@ bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &p
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
             for (size_t i=0; i<x.length(); i++)
-                x[i]=bPoint->get(i).asDouble();
+                x[i]=bPoint->get(i).asFloat64();
 
             return true;
         }
@@ -1106,13 +1106,13 @@ bool ClientGazeController::getJointsDesired(Vector &qdes)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bDes=reply.get(1).asList())
         {
             qdes.resize(bDes->size());
             for (size_t i=0; i<qdes.length(); i++)
-                qdes[i]=bDes->get(i).asDouble();
+                qdes[i]=bDes->get(i).asFloat64();
 
             return true;
         }
@@ -1138,13 +1138,13 @@ bool ClientGazeController::getJointsVelocities(Vector &qdot)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bVel=reply.get(1).asList())
         {
             qdot.resize(bVel->size());
             for (size_t i=0; i<qdot.length(); i++)
-                qdot[i]=bVel->get(i).asDouble();
+                qdot[i]=bVel->get(i).asFloat64();
 
             return true;
         }
@@ -1170,7 +1170,7 @@ bool ClientGazeController::getStereoOptions(Bottle &options)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
         if (Bottle *bOpt=reply.get(1).asList())
         {
@@ -1192,7 +1192,7 @@ bool ClientGazeController::setNeckTrajTime(const double t)
     Bottle command, reply;
     command.addString("set");
     command.addString("Tneck");
-    command.addDouble(t);
+    command.addFloat64(t);
 
     if (!portRpc.write(command,reply))
     {
@@ -1200,7 +1200,7 @@ bool ClientGazeController::setNeckTrajTime(const double t)
         return false;
     }
     
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1213,7 +1213,7 @@ bool ClientGazeController::setEyesTrajTime(const double t)
     Bottle command, reply;
     command.addString("set");
     command.addString("Teyes");
-    command.addDouble(t);
+    command.addFloat64(t);
 
     if (!portRpc.write(command,reply))
     {
@@ -1221,7 +1221,7 @@ bool ClientGazeController::setEyesTrajTime(const double t)
         return false;
     }
     
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1234,7 +1234,7 @@ bool ClientGazeController::setVORGain(const double gain)
     Bottle command, reply;
     command.addString("set");
     command.addString("vor");
-    command.addDouble(gain);
+    command.addFloat64(gain);
 
     if (!portRpc.write(command,reply))
     {
@@ -1242,7 +1242,7 @@ bool ClientGazeController::setVORGain(const double gain)
         return false;
     }
     
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1255,7 +1255,7 @@ bool ClientGazeController::setOCRGain(const double gain)
     Bottle command, reply;
     command.addString("set");
     command.addString("ocr");
-    command.addDouble(gain);
+    command.addFloat64(gain);
 
     if (!portRpc.write(command,reply))
     {
@@ -1263,7 +1263,7 @@ bool ClientGazeController::setOCRGain(const double gain)
         return false;
     }
     
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1276,7 +1276,7 @@ bool ClientGazeController::setSaccadesMode(const bool f)
     Bottle command, reply;
     command.addString("set");
     command.addString("sacc");
-    command.addInt((int)f);
+    command.addInt32((int)f);
 
     if (!portRpc.write(command,reply))
     {
@@ -1284,7 +1284,7 @@ bool ClientGazeController::setSaccadesMode(const bool f)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1297,7 +1297,7 @@ bool ClientGazeController::setSaccadesInhibitionPeriod(const double period)
     Bottle command, reply;
     command.addString("set");
     command.addString("sinh");
-    command.addDouble(period);
+    command.addFloat64(period);
 
     if (!portRpc.write(command,reply))
     {
@@ -1305,7 +1305,7 @@ bool ClientGazeController::setSaccadesInhibitionPeriod(const double period)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1318,7 +1318,7 @@ bool ClientGazeController::setSaccadesActivationAngle(const double angle)
     Bottle command, reply;
     command.addString("set");
     command.addString("sact");
-    command.addDouble(angle);
+    command.addFloat64(angle);
 
     if (!portRpc.write(command,reply))
     {
@@ -1326,7 +1326,7 @@ bool ClientGazeController::setSaccadesActivationAngle(const double angle)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1347,7 +1347,7 @@ bool ClientGazeController::setStereoOptions(const Bottle &options)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1361,8 +1361,8 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const double min,
     Bottle command, reply;
     command.addString("bind");
     command.addString(joint);
-    command.addDouble(min);
-    command.addDouble(max);
+    command.addFloat64(min);
+    command.addFloat64(max);
 
     if (!portRpc.write(command,reply))
     {
@@ -1370,7 +1370,7 @@ bool ClientGazeController::blockNeckJoint(const string &joint, const double min,
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1402,10 +1402,10 @@ bool ClientGazeController::getNeckJointRange(const string &joint, double *min,
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>2))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>2))
     {
-        *min=reply.get(1).asDouble();
-        *max=reply.get(2).asDouble();
+        *min=reply.get(1).asFloat64();
+        *max=reply.get(2).asFloat64();
         return true;
     }
 
@@ -1429,7 +1429,7 @@ bool ClientGazeController::clearJoint(const string &joint)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1505,7 +1505,7 @@ bool ClientGazeController::blockEyes(const double ver)
     Bottle command, reply;
     command.addString("bind");
     command.addString("eyes");
-    command.addDouble(ver);
+    command.addFloat64(ver);
 
     if (!portRpc.write(command,reply))
     {
@@ -1513,7 +1513,7 @@ bool ClientGazeController::blockEyes(const double ver)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1565,9 +1565,9 @@ bool ClientGazeController::getBlockedVergence(double *ver)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>2))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>2))
     {
-        *ver=reply.get(1).asDouble();
+        *ver=reply.get(1).asFloat64();
         return true;
     }
 
@@ -1619,9 +1619,9 @@ bool ClientGazeController::getNeckAngleUserTolerance(double *angle)
         return false;
     }
 
-    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    if ((reply.get(0).asVocab32()==GAZECTRL_ACK) && (reply.size()>1))
     {
-        *angle=reply.get(1).asDouble();
+        *angle=reply.get(1).asFloat64();
         return true;
     }
 
@@ -1638,7 +1638,7 @@ bool ClientGazeController::setNeckAngleUserTolerance(const double angle)
     Bottle command, reply;
     command.addString("set");
     command.addString("ntol");
-    command.addDouble(angle);
+    command.addFloat64(angle);
 
     if (!portRpc.write(command,reply))
     {
@@ -1646,7 +1646,7 @@ bool ClientGazeController::setNeckAngleUserTolerance(const double angle)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1666,9 +1666,9 @@ bool ClientGazeController::checkMotionDone(bool *f)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if (reply.get(0).asVocab32()==GAZECTRL_ACK)
     {
-        *f=(reply.get(1).asInt()>0);
+        *f=(reply.get(1).asInt32()>0);
         return true;
     }
     else
@@ -1710,9 +1710,9 @@ bool ClientGazeController::checkSaccadeDone(bool *f)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if (reply.get(0).asVocab32()==GAZECTRL_ACK)
     {
-        *f=(reply.get(1).asInt()>0);
+        *f=(reply.get(1).asInt32()>0);
         return true;
     }
     else
@@ -1753,7 +1753,7 @@ bool ClientGazeController::stopControl()
         return false;
     }
     
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1772,9 +1772,9 @@ bool ClientGazeController::storeContext(int *id)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if (reply.get(0).asVocab32()==GAZECTRL_ACK)
     {
-        contextIdList.insert(*id=reply.get(1).asInt());
+        contextIdList.insert(*id=reply.get(1).asInt32());
         return true;
     }
     else
@@ -1790,7 +1790,7 @@ bool ClientGazeController::restoreContext(const int id)
 
     Bottle command, reply;
     command.addString("rest");
-    command.addInt(id);
+    command.addInt32(id);
 
     if (!portRpc.write(command,reply))
     {
@@ -1798,7 +1798,7 @@ bool ClientGazeController::restoreContext(const int id)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1810,7 +1810,7 @@ bool ClientGazeController::deleteContext(const int id)
 
     Bottle command, reply;
     command.addString("del");
-    command.addList().addInt(id);
+    command.addList().addInt32(id);
 
     if (!portRpc.write(command,reply))
     {
@@ -1818,7 +1818,7 @@ bool ClientGazeController::deleteContext(const int id)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if (reply.get(0).asVocab32()==GAZECTRL_ACK)
     {
         contextIdList.erase(id);
         return true;
@@ -1841,7 +1841,7 @@ bool ClientGazeController::deleteContexts()
     command.addString("del");
     Bottle &ids=command.addList();
     for (set<int>::iterator itr=contextIdList.begin(); itr!=contextIdList.end(); itr++)
-        ids.addInt(*itr);
+        ids.addInt32(*itr);
 
     if (!portRpc.write(command,reply))
     {
@@ -1851,7 +1851,7 @@ bool ClientGazeController::deleteContexts()
 
     contextIdList.clear();
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -1868,7 +1868,7 @@ bool ClientGazeController::getInfoHelper(Bottle &info)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if (reply.get(0).asVocab32()==GAZECTRL_ACK)
     {
         if (reply.size()>1)
         {
@@ -1897,8 +1897,8 @@ bool ClientGazeController::getInfo(Bottle &info)
 void ClientGazeController::eventHandling(Bottle &event)
 {
     string type=event.get(0).asString();
-    double time=event.get(1).asDouble();
-    double checkPoint=(type=="motion-ongoing")?event.get(2).asDouble():-1.0;
+    double time=event.get(1).asFloat64();
+    double checkPoint=(type=="motion-ongoing")?event.get(2).asFloat64():-1.0;
     map<string,GazeEvent*>::iterator itr;
 
     // rise the all-events callback
@@ -1959,7 +1959,7 @@ bool ClientGazeController::registerEvent(GazeEvent &event)
         Bottle command, reply;
         command.addString("register");
         command.addString("ongoing");
-        command.addDouble(checkPoint);
+        command.addFloat64(checkPoint);
 
         if (!portRpc.write(command,reply))
         {
@@ -1967,7 +1967,7 @@ bool ClientGazeController::registerEvent(GazeEvent &event)
             return false;
         }
 
-        if (reply.get(0).asVocab()!=GAZECTRL_ACK)
+        if (reply.get(0).asVocab32()!=GAZECTRL_ACK)
             return false;
 
         ostringstream ss;
@@ -1994,7 +1994,7 @@ bool ClientGazeController::unregisterEvent(GazeEvent &event)
         Bottle command, reply;
         command.addString("unregister");
         command.addString("ongoing");
-        command.addDouble(checkPoint);
+        command.addFloat64(checkPoint);
 
         if (!portRpc.write(command,reply))
         {
@@ -2002,7 +2002,7 @@ bool ClientGazeController::unregisterEvent(GazeEvent &event)
             return false;
         }
 
-        if (reply.get(0).asVocab()!=GAZECTRL_ACK)
+        if (reply.get(0).asVocab32()!=GAZECTRL_ACK)
             return false;
 
         ostringstream ss;
@@ -2032,7 +2032,7 @@ bool ClientGazeController::tweakSet(const Bottle &options)
         return false;
     }
 
-    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+    return (reply.get(0).asVocab32()==GAZECTRL_ACK);
 }
 
 
@@ -2052,7 +2052,7 @@ bool ClientGazeController::tweakGet(Bottle &options)
         return false;
     }
 
-    if (reply.get(0).asVocab()==GAZECTRL_ACK)
+    if (reply.get(0).asVocab32()==GAZECTRL_ACK)
     {
         if (reply.size()>1)
         {

@@ -205,7 +205,7 @@ eDriver2::~eDriver2()
 
 int eDriver2::init(yarp::os::Searchable &config, bool verbose)
 {
-    ACE_UINT32 local=(ACE_UINT32)config.find("local").asInt();
+    ACE_UINT32 local=(ACE_UINT32)config.find("local").asInt32();
 
     _verbose = verbose;
 
@@ -217,9 +217,9 @@ int eDriver2::init(yarp::os::Searchable &config, bool verbose)
         return -1;
     }
 
-    mBoardAddr=(ACE_UINT32)config.find("remote").asInt();
+    mBoardAddr=(ACE_UINT32)config.find("remote").asInt32();
 
-//        mCanBusId=config.check("canid")?config.find("canid").asInt():0;
+//        mCanBusId=config.check("canid")?config.find("canid").asInt32():0;
     ////////////////////////////////////
 
     timestart = yarp::os::Time::now();
@@ -608,7 +608,7 @@ void cDriver::destroyBuffer(yarp::dev::CanBuffer &buff)
 
     int eDriver::init(yarp::os::Searchable &config)
     {
-        ACE_UINT32 local=(ACE_UINT32)config.find("local").asInt();
+        ACE_UINT32 local=(ACE_UINT32)config.find("local").asInt32();
 
         if (!mSocket.create(3334,local))
         {
@@ -616,9 +616,9 @@ void cDriver::destroyBuffer(yarp::dev::CanBuffer &buff)
             return -1;
         }
 
-        mBoardAddr=(ACE_UINT32)config.find("remote").asInt();
+        mBoardAddr=(ACE_UINT32)config.find("remote").asInt32();
 
-        mCanBusId=config.check("canid")?config.find("canid").asInt():0;
+        mCanBusId=config.check("canid")?config.find("canid").asInt32():0;
         ////////////////////////////////////
 
         timestart = yarp::os::Time::now();

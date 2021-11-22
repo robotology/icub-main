@@ -105,7 +105,7 @@ bool ClientCartesianController::open(Searchable &config)
     carrier=config.check("carrier",Value("udp")).asString();
 
     if (config.check("timeout"))
-        timeout=config.find("timeout").asDouble();
+        timeout=config.find("timeout").asFloat64();
     
     portCmd.open(local+"/command:o");
     portState.open(local+"/state:i");
@@ -120,7 +120,7 @@ bool ClientCartesianController::open(Searchable &config)
         getInfoHelper(info);
         if (info.check("server_version"))
         {
-            double server_version=info.find("server_version").asDouble();
+            double server_version=info.find("server_version").asFloat64();
             if (server_version!=CARTCTRL_CLIENT_VER)
             {
                 yError("version mismatch => server(%g) != client(%g); please update accordingly",
@@ -148,8 +148,8 @@ bool ClientCartesianController::open(Searchable &config)
     {
         Bottle command, reply;
     
-        command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-        command.addVocab(IKINCARTCTRL_VOCAB_OPT_ISSOLVERON);
+        command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+        command.addVocab32(IKINCARTCTRL_VOCAB_OPT_ISSOLVERON);
     
         if (!portRpc.write(command,reply))
         {
@@ -158,9 +158,9 @@ bool ClientCartesianController::open(Searchable &config)
             return false;
         }
 
-        if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+        if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
             if (reply.size()>1)
-                if (reply.get(1).asVocab()==IKINCARTCTRL_VOCAB_VAL_TRUE)
+                if (reply.get(1).asVocab32()==IKINCARTCTRL_VOCAB_VAL_TRUE)
                     return connected=true;
 
         yError("unable to connect to solver!");
@@ -209,10 +209,10 @@ bool ClientCartesianController::setTrackingMode(const bool f)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_MODE);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_MODE);
 
-    command.addVocab(f?IKINCARTCTRL_VOCAB_VAL_MODE_TRACK:IKINCARTCTRL_VOCAB_VAL_MODE_SINGLE);
+    command.addVocab32(f?IKINCARTCTRL_VOCAB_VAL_MODE_TRACK:IKINCARTCTRL_VOCAB_VAL_MODE_SINGLE);
 
     if (!portRpc.write(command,reply))
     {
@@ -220,7 +220,7 @@ bool ClientCartesianController::setTrackingMode(const bool f)
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -231,8 +231,8 @@ bool ClientCartesianController::getTrackingMode(bool *f)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_MODE);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_MODE);
 
     if (!portRpc.write(command,reply))
     {
@@ -240,9 +240,9 @@ bool ClientCartesianController::getTrackingMode(bool *f)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
-        int mode=reply.get(1).asVocab();
+        int mode=reply.get(1).asVocab32();
 
         if (mode==IKINCARTCTRL_VOCAB_VAL_MODE_TRACK)
             *f=true;
@@ -265,10 +265,10 @@ bool ClientCartesianController::setReferenceMode(const bool f)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REFERENCE);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_REFERENCE);
 
-    command.addVocab(f?IKINCARTCTRL_VOCAB_VAL_TRUE:IKINCARTCTRL_VOCAB_VAL_FALSE);
+    command.addVocab32(f?IKINCARTCTRL_VOCAB_VAL_TRUE:IKINCARTCTRL_VOCAB_VAL_FALSE);
 
     if (!portRpc.write(command,reply))
     {
@@ -276,7 +276,7 @@ bool ClientCartesianController::setReferenceMode(const bool f)
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -287,8 +287,8 @@ bool ClientCartesianController::getReferenceMode(bool *f)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REFERENCE);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_REFERENCE);
 
     if (!portRpc.write(command,reply))
     {
@@ -296,9 +296,9 @@ bool ClientCartesianController::getReferenceMode(bool *f)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
-        int mode=reply.get(1).asVocab();
+        int mode=reply.get(1).asVocab32();
 
         if (mode==IKINCARTCTRL_VOCAB_VAL_TRUE)
             *f=true;
@@ -321,8 +321,8 @@ bool ClientCartesianController::setPosePriority(const string &p)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_PRIO);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_PRIO);
     command.addString(p);
 
     if (!portRpc.write(command,reply))
@@ -331,7 +331,7 @@ bool ClientCartesianController::setPosePriority(const string &p)
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -342,8 +342,8 @@ bool ClientCartesianController::getPosePriority(string &p)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_PRIO);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_PRIO);
 
     if (!portRpc.write(command,reply))
     {
@@ -351,7 +351,7 @@ bool ClientCartesianController::getPosePriority(string &p)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         p=reply.get(1).asString();
         return true;
@@ -401,9 +401,9 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o,
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_POSE);
-    command.addInt(axis);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_POSE);
+    command.addInt32(axis);
 
     if (!portRpc.write(command,reply))
     {
@@ -411,7 +411,7 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o,
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (Bottle *posePart=reply.get(1).asList())
         {
@@ -419,17 +419,17 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o,
             o.resize(posePart->size()-x.length());
 
             for (size_t i=0; i<x.length(); i++)
-                x[i]=posePart->get(i).asDouble();
+                x[i]=posePart->get(i).asFloat64();
 
             for (size_t i=0; i<o.length(); i++)
-                o[i]=posePart->get(x.length()+i).asDouble();
+                o[i]=posePart->get(x.length()+i).asFloat64();
 
             if ((reply.size()>2) && (stamp!=NULL))
             {
                 if (Bottle *stampPart=reply.get(2).asList())
                 {
-                    Stamp tmpStamp(stampPart->get(0).asInt(),
-                                   stampPart->get(1).asDouble());
+                    Stamp tmpStamp(stampPart->get(0).asInt32(),
+                                   stampPart->get(1).asFloat64());
 
                     *stamp=tmpStamp;
                 }
@@ -453,16 +453,16 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od,
     Bottle &command=portCmd.prepare();
     command.clear();
 
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
-    command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
-    command.addDouble(t);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GO);
+    command.addVocab32(IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+    command.addFloat64(t);
     Bottle &xdesPart=command.addList();
 
     for (int i=0; i<3; i++)
-        xdesPart.addDouble(xd[i]);
+        xdesPart.addFloat64(xd[i]);
 
     for (int i=0; i<4; i++)
-        xdesPart.addDouble(od[i]);    
+        xdesPart.addFloat64(od[i]);    
 
     // send command
     portCmd.writeStrict();
@@ -479,13 +479,13 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
     Bottle &command=portCmd.prepare();
     command.clear();
 
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
-    command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
-    command.addDouble(t);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GO);
+    command.addVocab32(IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+    command.addFloat64(t);
     Bottle &xdesPart=command.addList();
 
     for (int i=0; i<3; i++)
-        xdesPart.addDouble(xd[i]);    
+        xdesPart.addFloat64(xd[i]);    
 
     // send command
     portCmd.writeStrict();
@@ -501,16 +501,16 @@ bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
-    command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
-    command.addDouble(t);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GO);
+    command.addVocab32(IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
+    command.addFloat64(t);
     Bottle &xdesPart=command.addList();
 
     for (int i=0; i<3; i++)
-        xdesPart.addDouble(xd[i]);
+        xdesPart.addFloat64(xd[i]);
 
     for (int i=0; i<4; i++)
-        xdesPart.addDouble(od[i]);
+        xdesPart.addFloat64(od[i]);
 
     if (!portRpc.write(command,reply))
     {
@@ -518,7 +518,7 @@ bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -529,13 +529,13 @@ bool ClientCartesianController::goToPositionSync(const Vector &xd, const double 
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
-    command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
-    command.addDouble(t);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GO);
+    command.addVocab32(IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
+    command.addFloat64(t);
     Bottle &xdesPart=command.addList();
 
     for (int i=0; i<3; i++)
-        xdesPart.addDouble(xd[i]);
+        xdesPart.addFloat64(xd[i]);
 
     if (!portRpc.write(command,reply))
     {
@@ -543,7 +543,7 @@ bool ClientCartesianController::goToPositionSync(const Vector &xd, const double 
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -555,8 +555,8 @@ bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat,
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_DES);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_DES);
 
     if (!portRpc.write(command,reply))
     {
@@ -584,7 +584,7 @@ bool ClientCartesianController::askForPose(const Vector &xd, const Vector &od,
     for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
     
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
     addPoseOption(command,IKINCTRL_POSE_FULL);
 
@@ -614,7 +614,7 @@ bool ClientCartesianController::askForPose(const Vector &q0, const Vector &xd,
     for (size_t i=0; i<od.length(); i++)
         tg[xd.length()+i]=od[i];
 
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
     addPoseOption(command,IKINCTRL_POSE_FULL);
@@ -637,7 +637,7 @@ bool ClientCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
     addPoseOption(command,IKINCTRL_POSE_XYZ);
 
@@ -660,7 +660,7 @@ bool ClientCartesianController::askForPosition(const Vector &q0, const Vector &x
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_ASK);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,xd);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_Q,q0);
     addPoseOption(command,IKINCTRL_POSE_XYZ);
@@ -682,8 +682,8 @@ bool ClientCartesianController::getDOF(Vector &curDof)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_DOF);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_DOF);
 
     if (!portRpc.write(command,reply))
     {
@@ -691,14 +691,14 @@ bool ClientCartesianController::getDOF(Vector &curDof)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (Bottle *dofPart=reply.get(1).asList())
         {
             curDof.resize(dofPart->size());
             
             for (size_t i=0; i<curDof.length(); i++)
-                curDof[i]=dofPart->get(i).asDouble();
+                curDof[i]=dofPart->get(i).asFloat64();
 
             return true;
         }
@@ -715,12 +715,12 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_DOF);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_DOF);
     Bottle &dofPart=command.addList();
 
     for (size_t i=0; i<newDof.length(); i++)
-        dofPart.addInt((int)newDof[i]);
+        dofPart.addInt32((int)newDof[i]);
 
     if (!portRpc.write(command,reply))
     {
@@ -728,14 +728,14 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {        
         if (Bottle *dofPart=reply.get(1).asList())
         {                        
             curDof.resize(dofPart->size());
 
             for (size_t i=0; i<curDof.length(); i++)
-                curDof[i]=dofPart->get(i).asDouble();
+                curDof[i]=dofPart->get(i).asFloat64();
 
             return true;
         }
@@ -752,8 +752,8 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_REST_POS);
 
     if (!portRpc.write(command,reply))
     {
@@ -761,14 +761,14 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (Bottle *restPart=reply.get(1).asList())
         {
             curRestPos.resize(restPart->size());
             
             for (size_t i=0; i<curRestPos.length(); i++)
-                curRestPos[i]=restPart->get(i).asDouble();
+                curRestPos[i]=restPart->get(i).asFloat64();
 
             return true;
         }
@@ -786,8 +786,8 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos,
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_REST_POS);
     command.addList().read(newRestPos);
 
     if (!portRpc.write(command,reply))
@@ -796,13 +796,13 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos,
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {        
         if (Bottle *restPart=reply.get(1).asList())
         {                        
             curRestPos.resize(restPart->size());
             for (size_t i=0; i<curRestPos.length(); i++)
-                curRestPos[i]=restPart->get(i).asDouble();
+                curRestPos[i]=restPart->get(i).asFloat64();
             return true;
         }
     }
@@ -818,8 +818,8 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
 
     if (!portRpc.write(command,reply))
     {
@@ -827,14 +827,14 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (Bottle *restPart=reply.get(1).asList())
         {
             curRestWeights.resize(restPart->size());
             
             for (size_t i=0; i<curRestWeights.length(); i++)
-                curRestWeights[i]=restPart->get(i).asDouble();
+                curRestWeights[i]=restPart->get(i).asFloat64();
 
             return true;
         }
@@ -852,8 +852,8 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
     command.addList().read(newRestWeights);
 
     if (!portRpc.write(command,reply))
@@ -862,13 +862,13 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {        
         if (Bottle *restPart=reply.get(1).asList())
         {                        
             curRestWeights.resize(restPart->size());
             for (size_t i=0; i<curRestWeights.length(); i++)
-                curRestWeights[i]=restPart->get(i).asDouble();
+                curRestWeights[i]=restPart->get(i).asFloat64();
             return true;
         }
     }
@@ -885,9 +885,9 @@ bool ClientCartesianController::getLimits(const int axis, double *min,
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_LIM);
-    command.addInt(axis);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_LIM);
+    command.addInt32(axis);
 
     if (!portRpc.write(command,reply))
     {
@@ -895,12 +895,12 @@ bool ClientCartesianController::getLimits(const int axis, double *min,
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (reply.size()>2)
         {
-            *min=reply.get(1).asDouble();
-            *max=reply.get(2).asDouble();
+            *min=reply.get(1).asFloat64();
+            *max=reply.get(2).asFloat64();
             return true;
         }
     }
@@ -917,11 +917,11 @@ bool ClientCartesianController::setLimits(const int axis, const double min,
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_LIM);
-    command.addInt(axis);
-    command.addDouble(min);
-    command.addDouble(max);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_LIM);
+    command.addInt32(axis);
+    command.addFloat64(min);
+    command.addFloat64(max);
 
     if (!portRpc.write(command,reply))
     {
@@ -929,7 +929,7 @@ bool ClientCartesianController::setLimits(const int axis, const double min,
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -940,8 +940,8 @@ bool ClientCartesianController::getTrajTime(double *t)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TIME);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_TIME);
 
     if (!portRpc.write(command,reply))
     {
@@ -949,11 +949,11 @@ bool ClientCartesianController::getTrajTime(double *t)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (reply.size()>1)
         {
-            *t=reply.get(1).asDouble();
+            *t=reply.get(1).asFloat64();
             return true;
         }
     }
@@ -969,9 +969,9 @@ bool ClientCartesianController::setTrajTime(const double t)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TIME);
-    command.addDouble(t);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_TIME);
+    command.addFloat64(t);
 
     if (!portRpc.write(command,reply))
     {
@@ -979,7 +979,7 @@ bool ClientCartesianController::setTrajTime(const double t)
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -990,8 +990,8 @@ bool ClientCartesianController::getInTargetTol(double *tol)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TOL);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_TOL);
 
     if (!portRpc.write(command,reply))
     {
@@ -999,11 +999,11 @@ bool ClientCartesianController::getInTargetTol(double *tol)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (reply.size()>1)
         {
-            *tol=reply.get(1).asDouble();
+            *tol=reply.get(1).asFloat64();
             return true;
         }
     }
@@ -1019,9 +1019,9 @@ bool ClientCartesianController::setInTargetTol(const double tol)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TOL);
-    command.addDouble(tol);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_TOL);
+    command.addFloat64(tol);
 
     if (!portRpc.write(command,reply))
     {
@@ -1029,7 +1029,7 @@ bool ClientCartesianController::setInTargetTol(const double tol)
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -1040,8 +1040,8 @@ bool ClientCartesianController::getJointsVelocities(Vector &qdot)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_QDOT);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_QDOT);
 
     if (!portRpc.write(command,reply))
     {
@@ -1049,14 +1049,14 @@ bool ClientCartesianController::getJointsVelocities(Vector &qdot)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (Bottle *qdotPart=reply.get(1).asList())
         {
             qdot.resize(qdotPart->size());
 
             for (size_t i=0; i<qdot.length(); i++)
-                qdot[i]=qdotPart->get(i).asDouble();
+                qdot[i]=qdotPart->get(i).asFloat64();
 
             return true;
         }
@@ -1073,8 +1073,8 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_XDOT);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_XDOT);
 
     if (!portRpc.write(command,reply))
     {
@@ -1082,7 +1082,7 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (Bottle *xdotPart=reply.get(1).asList())
         {
@@ -1090,10 +1090,10 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
             odot.resize(xdotPart->size()-xdot.length());
 
             for (size_t i=0; i<xdot.length(); i++)
-                xdot[i]=xdotPart->get(i).asDouble();
+                xdot[i]=xdotPart->get(i).asFloat64();
 
             for (size_t i=0; i<odot.length(); i++)
-                odot[i]=xdotPart->get(xdot.length()+i).asDouble();
+                odot[i]=xdotPart->get(xdot.length()+i).asFloat64();
 
             return true;
         }
@@ -1113,14 +1113,14 @@ bool ClientCartesianController::setTaskVelocities(const Vector &xdot,
     Bottle &command=portCmd.prepare();
     command.clear();
 
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_TASKVEL);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_TASKVEL);
     Bottle &xdotPart=command.addList();
 
     for (int i=0; i<3; i++)
-        xdotPart.addDouble(xdot[i]);
+        xdotPart.addFloat64(xdot[i]);
 
     for (int i=0; i<4; i++)
-        xdotPart.addDouble(odot[i]);
+        xdotPart.addFloat64(odot[i]);
 
     // send command
     portCmd.writeStrict();
@@ -1135,15 +1135,15 @@ bool ClientCartesianController::attachTipFrame(const Vector &x, const Vector &o)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TIP_FRAME);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_TIP_FRAME);
     Bottle &tipPart=command.addList();
 
     for (int i=0; i<3; i++)
-        tipPart.addDouble(x[i]);
+        tipPart.addFloat64(x[i]);
 
     for (int i=0; i<4; i++)
-        tipPart.addDouble(o[i]);
+        tipPart.addFloat64(o[i]);
 
     if (!portRpc.write(command,reply))
     {
@@ -1151,7 +1151,7 @@ bool ClientCartesianController::attachTipFrame(const Vector &x, const Vector &o)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         // mandatory refresh of the local pose (blocking)
         if (Vector *v=portState.read(true))
@@ -1175,8 +1175,8 @@ bool ClientCartesianController::getTipFrame(Vector &x, Vector &o)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TIP_FRAME);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_TIP_FRAME);
 
     if (!portRpc.write(command,reply))
     {
@@ -1184,7 +1184,7 @@ bool ClientCartesianController::getTipFrame(Vector &x, Vector &o)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (Bottle *tipPart=reply.get(1).asList())
         {
@@ -1192,10 +1192,10 @@ bool ClientCartesianController::getTipFrame(Vector &x, Vector &o)
             o.resize(tipPart->size()-x.length());
 
             for (size_t i=0; i<x.length(); i++)
-                x[i]=tipPart->get(i).asDouble();
+                x[i]=tipPart->get(i).asFloat64();
 
             for (size_t i=0; i<o.length(); i++)
-                o[i]=tipPart->get(x.length()+i).asDouble();
+                o[i]=tipPart->get(x.length()+i).asFloat64();
 
             return true;
         }
@@ -1219,8 +1219,8 @@ bool ClientCartesianController::checkMotionDone(bool *f)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_MOTIONDONE);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_MOTIONDONE);
 
     if (!portRpc.write(command,reply))
     {
@@ -1228,11 +1228,11 @@ bool ClientCartesianController::checkMotionDone(bool *f)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (reply.size()>1)
         {
-            int flag=reply.get(1).asVocab();
+            int flag=reply.get(1).asVocab32();
 
             if (flag==IKINCARTCTRL_VOCAB_VAL_TRUE)
                 *f=true;
@@ -1273,7 +1273,7 @@ bool ClientCartesianController::stopControl()
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_STOP);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_STOP);
 
     if (!portRpc.write(command,reply))
     {
@@ -1281,7 +1281,7 @@ bool ClientCartesianController::stopControl()
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -1292,7 +1292,7 @@ bool ClientCartesianController::storeContext(int *id)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_STORE);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_STORE);
 
     if (!portRpc.write(command,reply))
     {
@@ -1300,11 +1300,11 @@ bool ClientCartesianController::storeContext(int *id)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (reply.size()>1)
         {
-            contextIdList.insert(*id=reply.get(1).asInt());
+            contextIdList.insert(*id=reply.get(1).asInt32());
             return true;
         }
     }
@@ -1320,8 +1320,8 @@ bool ClientCartesianController::restoreContext(const int id)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_RESTORE);
-    command.addInt(id);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_RESTORE);
+    command.addInt32(id);
 
     if (!portRpc.write(command,reply))
     {
@@ -1329,7 +1329,7 @@ bool ClientCartesianController::restoreContext(const int id)
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -1340,8 +1340,8 @@ bool ClientCartesianController::deleteContext(const int id)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_DELETE);
-    command.addList().addInt(id);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_DELETE);
+    command.addList().addInt32(id);
 
     if (!portRpc.write(command,reply))
     {
@@ -1349,7 +1349,7 @@ bool ClientCartesianController::deleteContext(const int id)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         contextIdList.erase(id);
         return true;
@@ -1366,10 +1366,10 @@ bool ClientCartesianController::deleteContexts()
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_DELETE);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_DELETE);
     Bottle &ids=command.addList();
     for (set<int>::iterator itr=contextIdList.begin(); itr!=contextIdList.end(); itr++)
-        ids.addInt(*itr);
+        ids.addInt32(*itr);
 
     if (!portRpc.write(command,reply))
     {
@@ -1379,7 +1379,7 @@ bool ClientCartesianController::deleteContexts()
 
     contextIdList.clear();
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -1387,8 +1387,8 @@ bool ClientCartesianController::deleteContexts()
 bool ClientCartesianController::getInfoHelper(Bottle &info)
 {
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_INFO);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_INFO);
 
     if (!portRpc.write(command,reply))
     {
@@ -1396,7 +1396,7 @@ bool ClientCartesianController::getInfoHelper(Bottle &info)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (reply.size()>1)
         {
@@ -1425,8 +1425,8 @@ bool ClientCartesianController::getInfo(Bottle &info)
 void ClientCartesianController::eventHandling(Bottle &event)
 {
     string type=event.get(0).asString();
-    double time=event.get(1).asDouble();
-    double checkPoint=(type=="motion-ongoing")?event.get(2).asDouble():-1.0;
+    double time=event.get(1).asFloat64();
+    double checkPoint=(type=="motion-ongoing")?event.get(2).asFloat64():-1.0;
     map<string,CartesianEvent*>::iterator itr;
 
     // rise the all-events callback
@@ -1485,10 +1485,10 @@ bool ClientCartesianController::registerEvent(CartesianEvent &event)
         double checkPoint=event.cartesianEventParameters.motionOngoingCheckPoint;
 
         Bottle command, reply;
-        command.addVocab(IKINCARTCTRL_VOCAB_CMD_EVENT);
-        command.addVocab(IKINCARTCTRL_VOCAB_OPT_REGISTER);
-        command.addVocab(IKINCARTCTRL_VOCAB_VAL_EVENT_ONGOING);
-        command.addDouble(checkPoint);
+        command.addVocab32(IKINCARTCTRL_VOCAB_CMD_EVENT);
+        command.addVocab32(IKINCARTCTRL_VOCAB_OPT_REGISTER);
+        command.addVocab32(IKINCARTCTRL_VOCAB_VAL_EVENT_ONGOING);
+        command.addFloat64(checkPoint);
 
         if (!portRpc.write(command,reply))
         {
@@ -1496,7 +1496,7 @@ bool ClientCartesianController::registerEvent(CartesianEvent &event)
             return false;
         }
 
-        if (reply.get(0).asVocab()!=IKINCARTCTRL_VOCAB_REP_ACK)
+        if (reply.get(0).asVocab32()!=IKINCARTCTRL_VOCAB_REP_ACK)
             return false;
 
         ostringstream ss;
@@ -1521,10 +1521,10 @@ bool ClientCartesianController::unregisterEvent(CartesianEvent &event)
         double checkPoint=event.cartesianEventParameters.motionOngoingCheckPoint;
 
         Bottle command, reply;
-        command.addVocab(IKINCARTCTRL_VOCAB_CMD_EVENT);
-        command.addVocab(IKINCARTCTRL_VOCAB_OPT_UNREGISTER);
-        command.addVocab(IKINCARTCTRL_VOCAB_VAL_EVENT_ONGOING);
-        command.addDouble(checkPoint);
+        command.addVocab32(IKINCARTCTRL_VOCAB_CMD_EVENT);
+        command.addVocab32(IKINCARTCTRL_VOCAB_OPT_UNREGISTER);
+        command.addVocab32(IKINCARTCTRL_VOCAB_VAL_EVENT_ONGOING);
+        command.addFloat64(checkPoint);
 
         if (!portRpc.write(command,reply))
         {
@@ -1532,7 +1532,7 @@ bool ClientCartesianController::unregisterEvent(CartesianEvent &event)
             return false;
         }
 
-        if (reply.get(0).asVocab()!=IKINCARTCTRL_VOCAB_REP_ACK)
+        if (reply.get(0).asVocab32()!=IKINCARTCTRL_VOCAB_REP_ACK)
             return false;
 
         ostringstream ss;
@@ -1552,8 +1552,8 @@ bool ClientCartesianController::tweakSet(const Bottle &options)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TWEAK);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_SET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_TWEAK);
     command.addList()=options;
 
     if (!portRpc.write(command,reply))
@@ -1562,7 +1562,7 @@ bool ClientCartesianController::tweakSet(const Bottle &options)
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    return (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
@@ -1573,8 +1573,8 @@ bool ClientCartesianController::tweakGet(Bottle &options)
         return false;
 
     Bottle command, reply;
-    command.addVocab(IKINCARTCTRL_VOCAB_CMD_GET);
-    command.addVocab(IKINCARTCTRL_VOCAB_OPT_TWEAK);
+    command.addVocab32(IKINCARTCTRL_VOCAB_CMD_GET);
+    command.addVocab32(IKINCARTCTRL_VOCAB_OPT_TWEAK);
 
     if (!portRpc.write(command,reply))
     {
@@ -1582,7 +1582,7 @@ bool ClientCartesianController::tweakGet(Bottle &options)
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    if (reply.get(0).asVocab32()==IKINCARTCTRL_VOCAB_REP_ACK)
     {
         if (reply.size()>1)
         {

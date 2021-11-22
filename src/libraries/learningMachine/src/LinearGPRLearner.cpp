@@ -171,8 +171,8 @@ bool LinearGPRLearner::configure(yarp::os::Searchable& config) {
     bool success = this->IFixedSizeLearner::configure(config);
 
     // format: set sigma val
-    if(config.find("sigma").isDouble() || config.find("sigma").isInt()) {
-        this->setSigma(config.find("sigma").asDouble());
+    if(config.find("sigma").isFloat64() || config.find("sigma").isInt32()) {
+        this->setSigma(config.find("sigma").asFloat64());
         success = true;
     }
 

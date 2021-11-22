@@ -30,6 +30,7 @@
 #include "EOnv.h"
 
 #include <yarp/os/NetType.h>
+#include <yarp/conf/environment.h>
 
 #include "EoCommon.h"
 
@@ -61,10 +62,10 @@ EmbObjSkin::EmbObjSkin() :  _isDiagnosticPresent(false)
     _skCfg.numOfPatches = 0;
     _skCfg.totalCardsNum = 0;
 
-    std::string tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    std::string tmp = yarp::conf::environment::get_string("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
-        verbosewhenok = (bool)NetType::toInt(tmp);
+        verbosewhenok = (bool)(yarp::conf::numeric::from_string(tmp, 0U));
     }
     else
     {
@@ -293,7 +294,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         if (bPatches.check(tmp))
         {
            _skCfg.numOfPatches++;
-           bPatchList.addInt(i);
+           bPatchList.addInt32(i);
         }
     }
 
@@ -301,7 +302,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     _skCfg. patchInfoList.resize(_skCfg.numOfPatches);
     for(int j=1; j<_skCfg.numOfPatches+1; j++)
     {
-        int id = bPatchList.get(j-1).asInt();
+        int id = bPatchList.get(j-1).asInt32();
         if((id!=1) && (id!=2))
         {
             yError() << "EmbObjSkin::fromConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "expecting at most 2 patches";
@@ -331,7 +332,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 
         for(int j=1; j<xtmp.size(); j++)
         {
-            int addr = xtmp.get(j).asInt();
+            int addr = xtmp.get(j).asInt32();
             _skCfg.totalCardsNum++;
             _skCfg.patchInfoList[i].cardAddrList[j-1] = addr;
         }

@@ -44,7 +44,7 @@ Value iCub::perception::Port::getValue(const int index)
 
     Value ret;
     if ((index>=0) && (index<bottle.size()))
-        ret=Value(bottle.get(index).asDouble());
+        ret=Value(bottle.get(index).asFloat64());
     return ret;
 }
 

@@ -139,44 +139,44 @@ bool MainWindow::initGuiStatus(){
     }
 
     reply = portThread.sendRpcCommand(true, get_smooth_factor);
-    currentSmoothFactor = reply.get(0).asDouble();
+    currentSmoothFactor = reply.get(0).asFloat64();
     ui->sliderScaleSmooth->setValue(currentSmoothFactor * 10);
 
     onSmoothValueChanged(currentSmoothFactor * 10);
 
     reply = portThread.sendRpcCommand(true, get_threshold);
-    if(reply.isNull() || reply.size()==0 || !reply.get(0).isInt()){
+    if(reply.isNull() || reply.size()==0 || !reply.get(0).isInt32()){
         printLog("Error while getting the safety threshold");
         return false;
     }else{
-        currentThreshold = reply.get(0).asInt();
+        currentThreshold = reply.get(0).asInt32();
         ui->spinThreashold->setValue(currentThreshold);
     }
 
     reply = portThread.sendRpcCommand(true, get_gain);
-    if(reply.isNull() || reply.size()==0 || (!reply.get(0).isDouble() && !reply.get(0).isInt())){
+    if(reply.isNull() || reply.size()==0 || (!reply.get(0).isFloat64() && !reply.get(0).isInt32())){
         printLog("Error while getting the compensation gain");
         return false;
     }else{
-        currentCompGain = reply.get(0).asDouble();
+        currentCompGain = reply.get(0).asFloat64();
         ui->spinCompGain->setValue(currentCompGain);
     }
 
     reply = portThread.sendRpcCommand(true,get_cont_gain);
-    if(reply.isNull() || reply.size()==0 || (!reply.get(0).isDouble() && !reply.get(0).isInt())){
+    if(reply.isNull() || reply.size()==0 || (!reply.get(0).isFloat64() && !reply.get(0).isInt32())){
         printLog("Error while getting the contact compensation gain");
         return false;
     }else{
-        currentContCompGain = reply.get(0).asDouble();
+        currentContCompGain = reply.get(0).asFloat64();
         ui->spinCompContactGain->setValue(currentContCompGain);
     }
 
     reply = portThread.sendRpcCommand(true,get_max_neigh_dist);
-    if(reply.isNull() || reply.size()==0 || (!reply.get(0).isDouble() && !reply.get(0).isInt())){
+    if(reply.isNull() || reply.size()==0 || (!reply.get(0).isFloat64() && !reply.get(0).isInt32())){
         printLog("Error while getting the max neighbor distance");
         return false;
     }else{
-        currentMaxNeighDist = reply.get(0).asDouble();
+        currentMaxNeighDist = reply.get(0).asFloat64();
         ui->spinNeighbor->setValue(currentMaxNeighDist * 100);
     }
 
@@ -195,7 +195,7 @@ bool MainWindow::initGuiStatus(){
     //int numTaxels = 0;
     for(unsigned int i=0;i<portDim.size();i++){
         portNames[i] = portList->get(i*2).toString().c_str();
-        portDim[i] = portList->get(i*2+1).asInt();
+        portDim[i] = portList->get(i*2+1).asInt32();
         //numTaxels += portDim[i];
         ss<< "\n - "<< portNames[i]<< " ("<< portDim[i]<< " taxels)";
     }
@@ -249,13 +249,13 @@ void MainWindow::onSpinThresholdChanged(int value)
 
     // set the threshold
     Bottle b, setReply;
-    b.addInt(set_threshold);
-    b.addInt(safetyThr);
+    b.addInt32(set_threshold);
+    b.addInt32(safetyThr);
     portThread.guiRpcPort->write(b, setReply);
 
     // read the threshold
     Bottle getReply = portThread.sendRpcCommand(true, get_threshold);
-    currentThreshold = getReply.get(0).asInt();
+    currentThreshold = getReply.get(0).asInt32();
 
     if(safetyThr==currentThreshold){
         QString msg = QString("Safety threshold changed: %1").arg(safetyThr);
@@ -279,13 +279,13 @@ void MainWindow::onSpinCompGainChanged(double value)
 
     // set the gain
     Bottle b, setReply;
-    b.addInt(set_gain);
-    b.addDouble(compGain);
+    b.addInt32(set_gain);
+    b.addFloat64(compGain);
     portThread.guiRpcPort->write(b, setReply);
 
     // read the gain
     Bottle getReply = portThread.sendRpcCommand(true, get_gain);
-    currentCompGain = getReply.get(0).asDouble();
+    currentCompGain = getReply.get(0).asFloat64();
 
     if(compGain==currentCompGain){
         QString msg = QString("Compensation gain changed: %1").arg(compGain);
@@ -309,13 +309,13 @@ void MainWindow::onSpinCompContactGainChanged(double value)
 
     // set the gain
     Bottle b, setReply;
-    b.addInt(set_cont_gain);
-    b.addDouble(contCompGain);
+    b.addInt32(set_cont_gain);
+    b.addFloat64(contCompGain);
     portThread.guiRpcPort->write(b, setReply);
 
     // read the gain
     Bottle getReply = portThread.sendRpcCommand(true, get_cont_gain);
-    currentContCompGain = getReply.get(0).asDouble();
+    currentContCompGain = getReply.get(0).asFloat64();
 
     if(contCompGain==currentContCompGain){
         QString msg = QString("Contact compensation gain changed: %1").arg(contCompGain);
@@ -341,13 +341,13 @@ void MainWindow::onSpinNeighborChanged(double value)
 
     // set the value
     Bottle b, setReply;
-    b.addInt(set_max_neigh_dist);
-    b.addDouble(maxNeighDist);
+    b.addInt32(set_max_neigh_dist);
+    b.addFloat64(maxNeighDist);
     portThread.guiRpcPort->write(b, setReply);
 
     // read the value
     Bottle getReply = portThread.sendRpcCommand(true, get_max_neigh_dist);
-    currentMaxNeighDist = getReply.get(0).asDouble();
+    currentMaxNeighDist = getReply.get(0).asFloat64();
 
     if(maxNeighDist==currentMaxNeighDist){
         QString msg = QString("Max neighbor distance changed: %1 m").arg(maxNeighDist);
@@ -393,13 +393,13 @@ void MainWindow::changeSmooth(int val)
 
     // set the smooth factor
     Bottle b, setReply;
-    b.addInt(set_smooth_factor);
-    b.addDouble(smoothFactor);
+    b.addInt32(set_smooth_factor);
+    b.addFloat64(smoothFactor);
     portThread.guiRpcPort->write(b, setReply);
 
     // read the smooth factor
     Bottle getReply = portThread.sendRpcCommand(true, get_smooth_factor);
-    currentSmoothFactor = getReply.get(0).asDouble();
+    currentSmoothFactor = getReply.get(0).asFloat64();
     currentSmoothFactor = round(currentSmoothFactor, 1); //double(int((currentSmoothFactor*10)+0.5))/10.0;
 
     if(smoothFactor==currentSmoothFactor){
@@ -429,7 +429,7 @@ void MainWindow::onThreashold()
                 }
                 msg<< "TR"<< i/12<< ":\t";
             }
-            msg << int(touchThr.get(index).asDouble())<< ";\t";
+            msg << int(touchThr.get(index).asFloat64())<< ";\t";
             index++;
         }
         QMessageBox::information(this,"Information",QString("%1").arg(msg.str().c_str()));
@@ -451,7 +451,7 @@ void MainWindow::onSmooth(bool btnState)
     // if the button is off it means it is going to be turned on
     if (btnState){
         Bottle b, setReply;
-        b.addInt(set_smooth_filter);
+        b.addInt32(set_smooth_filter);
         b.addString("on");
         portThread.guiRpcPort->write(b, setReply);
         Bottle reply = portThread.sendRpcCommand(true, get_smooth_filter);
@@ -468,7 +468,7 @@ void MainWindow::onSmooth(bool btnState)
         }
     } else {
         Bottle b, setReply;
-        b.addInt(set_smooth_filter); b.addString("off");
+        b.addInt32(set_smooth_filter); b.addString("off");
         portThread.guiRpcPort->write(b, setReply);
         Bottle reply = portThread.sendRpcCommand(true, get_smooth_filter);
         if(string(reply.toString().c_str()).compare("off") == 0){
@@ -489,7 +489,7 @@ void MainWindow::onBinarization(bool btnState)
 {
     if (btnState){
         Bottle b, setReply;
-        b.addInt(set_binarization);
+        b.addInt32(set_binarization);
         b.addString("on");
         portThread.guiRpcPort->write(b, setReply);
         Bottle reply = portThread.sendRpcCommand(true, get_binarization);
@@ -505,7 +505,7 @@ void MainWindow::onBinarization(bool btnState)
         }
     } else {
         Bottle b, setReply;
-        b.addInt(set_binarization);
+        b.addInt32(set_binarization);
         b.addString("off");
         portThread.guiRpcPort->write(b, setReply);
         Bottle reply = portThread.sendRpcCommand(true, get_binarization);

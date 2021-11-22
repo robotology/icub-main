@@ -160,7 +160,7 @@ void boardDumperThread::run()
     //for (int i = 0; i < numberOfJointsRead; i++)
     //  {
     //    dataRead[i] = data[dataMap[i]];
-    //    bData.addDouble(dataRead[i]);
+    //    bData.addFloat64(dataRead[i]);
     //  }
     //port->write(bData);
 
@@ -176,7 +176,7 @@ void boardDumperThread::run()
         {
             //printf("%.2f \n", data[dataMap[i]]);
             dataRead[i] = data[dataMap[i]];
-            bData.addDouble(dataRead[i]);
+            bData.addFloat64(dataRead[i]);
         }
         
         if (getter->getStamp(stmp)) 

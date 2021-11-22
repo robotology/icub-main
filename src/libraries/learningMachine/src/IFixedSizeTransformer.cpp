@@ -43,13 +43,13 @@ void IFixedSizeTransformer::validateDomainSizes(const yarp::sig::Vector& input, 
 bool IFixedSizeTransformer::configure(yarp::os::Searchable& config) {
     bool success = false;
     // set the domain size (int)
-    if(config.find("dom").isInt()) {
-        this->setDomainSize(config.find("dom").asInt());
+    if(config.find("dom").isInt32()) {
+        this->setDomainSize(config.find("dom").asInt32());
         success = true;
     }
     // set the codomain size (int)
-    if(config.find("cod").isInt()) {
-        this->setCoDomainSize(config.find("cod").asInt());
+    if(config.find("cod").isInt32()) {
+        this->setCoDomainSize(config.find("cod").asInt32());
         success = true;
     }
 
@@ -57,13 +57,13 @@ bool IFixedSizeTransformer::configure(yarp::os::Searchable& config) {
 }
 
 void IFixedSizeTransformer::writeBottle(yarp::os::Bottle& bot) const {
-    bot.addInt(this->getDomainSize());
-    bot.addInt(this->getCoDomainSize());
+    bot.addInt32(this->getDomainSize());
+    bot.addInt32(this->getCoDomainSize());
 }
 
 void IFixedSizeTransformer::readBottle(yarp::os::Bottle& bot) {
-    this->setCoDomainSize(bot.pop().asInt());
-    this->setDomainSize(bot.pop().asInt());
+    this->setCoDomainSize(bot.pop().asInt32());
+    this->setDomainSize(bot.pop().asInt32());
 }
 
 

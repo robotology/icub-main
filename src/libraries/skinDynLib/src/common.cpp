@@ -92,7 +92,7 @@ yarp::sig::Vector iCub::skinDynLib::vectorFromBottle(const yarp::os::Bottle b, i
 
     for (int i = 0; i < size; i++)
     {
-        v[i] = b.get(in).asDouble();
+        v[i] = b.get(in).asFloat64();
         in++;
     }
     return v;
@@ -102,7 +102,7 @@ void iCub::skinDynLib::vectorIntoBottle(const yarp::sig::Vector v, yarp::os::Bot
 {
     for (unsigned int i = 0; i < v.size(); i++)
     {
-        b.addDouble(v[i]);
+        b.addFloat64(v[i]);
     }
 }
 
@@ -115,7 +115,7 @@ yarp::sig::Matrix iCub::skinDynLib::matrixFromBottle(const yarp::os::Bottle b, i
     {
         for (int j = 0; j<c; j++)
         {
-            m(i,j) = b.get(in).asDouble();
+            m(i,j) = b.get(in).asFloat64();
             in++;
         }
     }
@@ -129,6 +129,6 @@ void iCub::skinDynLib::matrixIntoBottle(const yarp::sig::Matrix m, yarp::os::Bot
     
     for (unsigned int i = 0; i < v.size(); i++)
     {
-        b.addDouble(v[i]);
+        b.addFloat64(v[i]);
     }
 }

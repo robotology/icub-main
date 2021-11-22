@@ -81,13 +81,13 @@ bool Standardizer::configure(yarp::os::Searchable& config) {
     bool success = this->IScaler::configure(config);
 
     // set the desired output mean (double)
-    if(config.find("mean").isDouble() || config.find("mean").isInt()) {
-        this->setDesiredMean(config.find("mean").asDouble());
+    if(config.find("mean").isFloat64() || config.find("mean").isInt32()) {
+        this->setDesiredMean(config.find("mean").asFloat64());
         success = true;
     }
     // set the desired output standard deviation (double)
-    if(config.find("std").isDouble() || config.find("std").isInt()) {
-        this->setDesiredStd(config.find("std").asDouble());
+    if(config.find("std").isFloat64() || config.find("std").isInt32()) {
+        this->setDesiredStd(config.find("std").asFloat64());
         success = true;
     }
 

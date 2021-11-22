@@ -144,15 +144,15 @@ bool SparseSpectrumFeature::configure(yarp::os::Searchable &config) {
     bool success = this->IFixedSizeTransformer::configure(config);
 
     // format: set sigma val
-    if(config.find("sigma").isDouble() || config.find("sigma").isInt()) {
-        this->setSigma(config.find("sigma").asDouble());
+    if(config.find("sigma").isFloat64() || config.find("sigma").isInt32()) {
+        this->setSigma(config.find("sigma").asFloat64());
         success = true;
     }
 
     // format: set ell val | set ell (val ... val)
-    if(config.find("ell").isDouble() || config.find("ell").isInt()) {
+    if(config.find("ell").isFloat64() || config.find("ell").isInt32()) {
         yarp::sig::Vector ls = yarp::sig::Vector(this->getDomainSize());
-        ls = config.find("ell").asDouble();
+        ls = config.find("ell").asFloat64();
         this->setEll(ls);
         success = true;
     } else if(config.find("ell").isList()) {
@@ -160,8 +160,8 @@ bool SparseSpectrumFeature::configure(yarp::os::Searchable &config) {
         assert(b != (yarp::os::Bottle*) 0x0);
         yarp::sig::Vector ls(0);
         for(int i = 0; i < b->size(); i++) {
-            if(b->get(i).isDouble() || b->get(i).isInt()) {
-                ls.push_back(b->get(i).asDouble());
+            if(b->get(i).isFloat64() || b->get(i).isInt32()) {
+                ls.push_back(b->get(i).asFloat64());
             }
         }
         this->setEll(ls);

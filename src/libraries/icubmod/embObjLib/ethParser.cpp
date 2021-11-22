@@ -127,7 +127,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, pc104Data &pc104data)
     }
 
     Bottle paramIPaddress(groupPC104.find("PC104IpAddress").asString());
-    uint16_t port = groupPC104.find("PC104IpPort").asInt();              // .get(1).asInt();
+    uint16_t port = groupPC104.find("PC104IpPort").asInt32();              // .get(1).asInt32();
     char strIP[64] = {0};
 
 
@@ -148,7 +148,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, pc104Data &pc104data)
     // txrate
     if(cfgtotal.findGroup("PC104").check("PC104TXrate"))
     {
-        int value = cfgtotal.findGroup("PC104").find("PC104TXrate").asInt();
+        int value = cfgtotal.findGroup("PC104").find("PC104TXrate").asInt32();
         if(value > 0)
         {
             pc104data.txrate = value;
@@ -162,7 +162,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, pc104Data &pc104data)
     // rxrate
     if(cfgtotal.findGroup("PC104").check("PC104RXrate"))
     {
-        int value = cfgtotal.findGroup("PC104").find("PC104RXrate").asInt();
+        int value = cfgtotal.findGroup("PC104").find("PC104RXrate").asInt32();
         if(value > 0)
         {
             pc104data.rxrate = value;
@@ -230,7 +230,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     // IpPort:
     if(true == groupEthBoardProps.check("IpPort"))
     {
-        boarddata.properties.ipv4addressing.port = groupEthBoardProps.find("IpPort").asInt();;
+        boarddata.properties.ipv4addressing.port = groupEthBoardProps.find("IpPort").asInt32();;
     }
     else
     {
@@ -279,7 +279,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     // maxSizeRXpacket:
     if(true == groupEthBoardProps.check("maxSizeRXpacket"))
     {
-        boarddata.properties.maxSizeRXpacket = groupEthBoardProps.find("maxSizeRXpacket").asInt();
+        boarddata.properties.maxSizeRXpacket = groupEthBoardProps.find("maxSizeRXpacket").asInt32();
         //yDebug() << "eth::parser::read() has detected capacityofTXpacket =" << boarddata.properties.maxSizeRXpacket << "for BOARD w/ IP" << boarddata.properties.ipv4string;
     }
     else
@@ -291,7 +291,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     // maxSizeROP:
     if(true == groupEthBoardProps.check("maxSizeROP"))
     {
-        boarddata.properties.maxSizeROP = groupEthBoardProps.find("maxSizeROP").asInt();
+        boarddata.properties.maxSizeROP = groupEthBoardProps.find("maxSizeROP").asInt32();
         //yDebug() << "eth::parser::read() has detected maxSizeOfROP =" << boarddata.properties.maxSizeROP << "for BOARD w/ IP" << boarddata.properties.ipv4string;
     }
     else
@@ -336,7 +336,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
 
         if(true == groupEthBoardSettings_RunningMode.check("period"))
         {
-            int tmp = groupEthBoardSettings_RunningMode.find("period").asInt();
+            int tmp = groupEthBoardSettings_RunningMode.find("period").asInt32();
 
             if(1000 != tmp)
             {
@@ -348,7 +348,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
 
         if(true == groupEthBoardSettings_RunningMode.check("maxTimeOfRXactivity"))
         {
-            int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfRXactivity").asInt();
+            int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfRXactivity").asInt32();
 
             if((tmp < 5) || (tmp > 990))
             {
@@ -361,7 +361,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
 
         if(true == groupEthBoardSettings_RunningMode.check("maxTimeOfDOactivity"))
         {
-            int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfDOactivity").asInt();
+            int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfDOactivity").asInt32();
 
             if((tmp < 5) || (tmp > 990))
             {
@@ -374,7 +374,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
 
         if(true == groupEthBoardSettings_RunningMode.check("maxTimeOfTXactivity"))
         {
-            int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfTXactivity").asInt();
+            int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfTXactivity").asInt32();
 
             if((tmp < 5) || (tmp > 990))
             {
@@ -388,7 +388,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
 
         if(true == groupEthBoardSettings_RunningMode.check("TXrateOfRegularROPs"))
         {
-            int tmp = groupEthBoardSettings_RunningMode.find("TXrateOfRegularROPs").asInt();
+            int tmp = groupEthBoardSettings_RunningMode.find("TXrateOfRegularROPs").asInt32();
 
             if(tmp <=0)
             {
@@ -452,7 +452,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
 
             if(true == groupEthBoardActions_Monitor.check("timeout"))
             {
-                double presenceTimeout = groupEthBoardActions_Monitor.find("timeout").asDouble();
+                double presenceTimeout = groupEthBoardActions_Monitor.find("timeout").asFloat64();
 
                 if(presenceTimeout <= 0)
                 {
@@ -472,7 +472,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
 
             if(true == groupEthBoardActions_Monitor.check("periodOfMissingReport"))
             {
-                double reportMissingPeriod = groupEthBoardActions_Monitor.find("periodOfMissingReport").asDouble();
+                double reportMissingPeriod = groupEthBoardActions_Monitor.find("periodOfMissingReport").asFloat64();
 
                 if(reportMissingPeriod <= 0)
                 {

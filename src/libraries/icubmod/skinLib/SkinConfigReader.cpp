@@ -56,7 +56,7 @@ void SkinConfigReader::setName(char *name)
 //
 //    for(int j=1; j<skCfg->numOfPatches+1; j++)
 //    {
-//       int id = bPatchList.get(j).asInt();
+//       int id = bPatchList.get(j).asInt32();
 //#warning VALE aggiungi questo controllo in embObjskin
 ////       if((id!=1) && (id!=2))
 ////       {
@@ -93,7 +93,7 @@ void SkinConfigReader::setName(char *name)
 //
 //       for(int j=1; j<xtmp.size(); j++)
 //       {
-//           int addr = xtmp.get(j).asInt();
+//           int addr = xtmp.get(j).asInt32();
 //           skCfg->totalCardsNum++;
 //           skCfg->patchInfoList[i].cardAddrList[j-1] = addr;
 //       }
@@ -139,7 +139,7 @@ bool SkinConfigReader::readDefaultBoardCfg(yarp::os::Searchable& config, SkinBoa
         yError() << "skin " << _name << "doesn't find period in defaultCfgBoard group in xml file";
         return false;
     }
-    boardCfg->period = xtmp.get(1).asInt();
+    boardCfg->period = xtmp.get(1).asInt32();
 
     xtmp = boardCfgDefGroup.findGroup("skinType");
     if (xtmp.isNull())
@@ -147,7 +147,7 @@ bool SkinConfigReader::readDefaultBoardCfg(yarp::os::Searchable& config, SkinBoa
         yError() << "skin " << _name << "doesn't find skinType in defaultCfgBoard group in xml file";
         return false;
     }
-    boardCfg->skinType= xtmp.get(1).asInt();
+    boardCfg->skinType= xtmp.get(1).asInt32();
 
     xtmp = boardCfgDefGroup.findGroup("noLoad");
     if (xtmp.isNull())
@@ -155,7 +155,7 @@ bool SkinConfigReader::readDefaultBoardCfg(yarp::os::Searchable& config, SkinBoa
         yError() << "skin " << _name << "doesn't find noLoad in defaultCfgBoard group in xml file";
         return false;
     }
-    boardCfg->noLoad= xtmp.get(1).asInt();
+    boardCfg->noLoad= xtmp.get(1).asInt32();
 
     xtmp = boardCfgDefGroup.findGroup("diagnostic");
     if (xtmp.isNull())
@@ -205,7 +205,7 @@ bool SkinConfigReader::readDefaultTriangleCfg(yarp::os::Searchable& config, Skin
         yError() << "skin " << _name << "doesn't find shift in defaultCfgTriangle group in xml file";
         return false;
     }
-    triangCfg->shift = xtmp.get(1).asInt();
+    triangCfg->shift = xtmp.get(1).asInt32();
 
     xtmp = triangleCfgDefGroup.findGroup("cdcOffset");
     if (xtmp.isNull())
@@ -213,7 +213,7 @@ bool SkinConfigReader::readDefaultTriangleCfg(yarp::os::Searchable& config, Skin
         yError() << "skin " << _name << "doesn't find cdcOffset in defaultCfgTriangle group in xml file";
         return false;
     }
-    triangCfg->cdcOffset = xtmp.get(1).asInt();
+    triangCfg->cdcOffset = xtmp.get(1).asInt32();
     
     return true;
 }
@@ -242,7 +242,7 @@ bool SkinConfigReader::readSpecialBoardCfg(yarp::os::Searchable& config, Special
         return(false);
     }
     
-    numOfSets =  bNumOfset.get(1).asInt();
+    numOfSets =  bNumOfset.get(1).asInt32();
     if(numOfSets > *numofcfg)
     {
         yWarning() << "skin " << _name << "numOfSet is too big. Max is " << *numofcfg;
@@ -264,12 +264,12 @@ bool SkinConfigReader::readSpecialBoardCfg(yarp::os::Searchable& config, Special
             return false;
         }
 
-        boardCfg[j-1].patch          = xtmp.get(1).asInt();
-        boardCfg[j-1].boardAddrStart = xtmp.get(2).asInt();
-        boardCfg[j-1].boardAddrEnd   = xtmp.get(3).asInt();
-        boardCfg[j-1].cfg.period     = xtmp.get(4).asInt();
-        boardCfg[j-1].cfg.skinType   = xtmp.get(5).asInt();
-        boardCfg[j-1].cfg.noLoad     = xtmp.get(6).asInt();
+        boardCfg[j-1].patch          = xtmp.get(1).asInt32();
+        boardCfg[j-1].boardAddrStart = xtmp.get(2).asInt32();
+        boardCfg[j-1].boardAddrEnd   = xtmp.get(3).asInt32();
+        boardCfg[j-1].cfg.period     = xtmp.get(4).asInt32();
+        boardCfg[j-1].cfg.skinType   = xtmp.get(5).asInt32();
+        boardCfg[j-1].cfg.noLoad     = xtmp.get(6).asInt32();
     }
     return true;
 }
@@ -297,7 +297,7 @@ bool SkinConfigReader::readSpecialTriangleCfg(yarp::os::Searchable& config, Spec
         return(false);
     }
 
-    numOfSets =  bNumOfset.get(1).asInt();
+    numOfSets =  bNumOfset.get(1).asInt32();
     if(numOfSets > *numofcfg)
     {
         yWarning() << "skin " << _name << "numOfSets for specialCfgTriangles is too big!! Max is " <<  *numofcfg;
@@ -319,13 +319,13 @@ bool SkinConfigReader::readSpecialTriangleCfg(yarp::os::Searchable& config, Spec
             return false;
         }
 
-        triangleCfg[j-1].patch          = xtmp.get(1).asInt();
-        triangleCfg[j-1].boardAddr      = xtmp.get(2).asInt();
-        triangleCfg[j-1].triangleStart  = xtmp.get(3).asInt();
-        triangleCfg[j-1].triangleEnd    = xtmp.get(4).asInt();
-        triangleCfg[j-1].cfg.enabled    = xtmp.get(5).asInt()==1;
-        triangleCfg[j-1].cfg.shift      = xtmp.get(6).asInt();
-        triangleCfg[j-1].cfg.cdcOffset  = xtmp.get(7).asInt();
+        triangleCfg[j-1].patch          = xtmp.get(1).asInt32();
+        triangleCfg[j-1].boardAddr      = xtmp.get(2).asInt32();
+        triangleCfg[j-1].triangleStart  = xtmp.get(3).asInt32();
+        triangleCfg[j-1].triangleEnd    = xtmp.get(4).asInt32();
+        triangleCfg[j-1].cfg.enabled    = xtmp.get(5).asInt32()==1;
+        triangleCfg[j-1].cfg.shift      = xtmp.get(6).asInt32();
+        triangleCfg[j-1].cfg.cdcOffset  = xtmp.get(7).asInt32();
 
 
 //        //VALE: solo per debug:

@@ -162,7 +162,7 @@ int cDownloader::initdriver(Searchable &config, bool verbose)
 #else
         m_idriver = new eDriver;
 #endif
-        tmp = config.check("canid")?config.find("canid").asInt():CanPacket::everyCANbus;
+        tmp = config.check("canid")?config.find("canid").asInt32():CanPacket::everyCANbus;
         if((1 != tmp) && (2 != tmp))
         {
             tmp = CanPacket::everyCANbus;
@@ -175,7 +175,7 @@ int cDownloader::initdriver(Searchable &config, bool verbose)
 #else
         m_idriver = new cDriver;
 #endif
-        tmp = config.check("canDeviceNum")?config.find("canDeviceNum").asInt():99;
+        tmp = config.check("canDeviceNum")?config.find("canDeviceNum").asInt32():99;
     }
 
     if (0 != (ret = m_idriver->init(config, _verbose)))
