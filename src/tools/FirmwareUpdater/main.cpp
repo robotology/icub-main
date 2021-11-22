@@ -71,7 +71,7 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
 int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId, QString serialNumber);
 int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId);
 int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,bool save);
-int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString ipaddress,QString canIds);
+int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canIds);
 
 
 int main(int argc, char *argv[])
@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
         bool setGains = parser.isSet(setStrainGainsOffsetOption);
         QString saveVersion = parser.value(getCanBoardVersionOption);
         bool getVersion = parser.isSet(getCanBoardVersionOption);
-        bool changeCanID = parser.isSet(changeCanIdOption);
+                bool changeCanID = parser.isSet(changeCanIdOption);
 
         QString canIdOldNew = parser.value(changeCanIdOption);
 
@@ -725,7 +725,7 @@ int main(int argc, char *argv[])
                     } else if(!device.contains("ETH") && canId.isEmpty()){
                         if(verbosity >= 1) qDebug() << "Need a can id to be set";
                     }else{
-                      ret = changeCanId(&core,device,id,board,canLine,board,canIdOldNew);
+                      ret = changeCanId(&core,device,id,board,canLine,canIdOldNew);
                     }
                 }
 
@@ -837,7 +837,7 @@ int main(int argc, char *argv[])
         }
 
         */   
-int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString ipaddress, QString canIds)
+int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canIds)
 {
     // FirmwareUpdater -g -e SOCKETCAN -i 0 -c 0 -n 1 -k 1,2
 
@@ -863,7 +863,7 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
         {
            
             yInfo() << "BOARD FOUND!";
-            core->getDownloader()->change_card_address(0,ids[0].toInt(),ids[1].toInt(),canBoards[0].type);
+            core->getDownloader()->change_card_address(0,ids[0].toInt(),1,canBoards[0].type);
         } else {
             yError() << "No CAN board found, stopped!";
             return false;
@@ -871,7 +871,7 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
     }
     else if(device.contains("ETH"))
     {
-        // FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -c 1 -n 1 -k 1,2
+        // FirmwareUpdater -g -e ETH -i 10.0.1.1 -c 1 -n 1 -k 1,2
 
         QString result, ret;
         ret = setBoardToMaintenance(core,device,id,board);
@@ -882,8 +882,9 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
         canBoards = core->getCanBoardsFromEth(board,&result,canLine.toInt(),true);
         if(canBoards.count() > 0)
         {
+            qDebug() << "DEBUGGGGGGGGGGGGGGGGG " << canBoards[0].type << " " << ids[0] << " " << ids[1];
             core->setSelectedCanBoards(canBoards,"10.0.1.1",-1);
-            core->setCanBoardAddress(canLine.toInt(),ids[0].toInt(),canBoards[0].type,ids[1],ipaddress,-1,&result); 
+            core->setCanBoardAddress(1,ids[0].toInt(),canBoards[0].type,ids[1],"10.0.1.1",-1,&result); 
 
         } else {
             yError() << "No CAN board found, stopped!";
