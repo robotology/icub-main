@@ -839,7 +839,7 @@ int main(int argc, char *argv[])
         */   
 int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canIds)
 {
-    // FirmwareUpdater -g -e SOCKETCAN -i 0 -c 0 -n 1 -k 1,2
+    // FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -c 1 -k 2,1
 
     QList <sBoard> canBoards;
     QString retString;
@@ -874,18 +874,16 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
         // FirmwareUpdater -g -e ETH -i 10.0.1.1 -c 1 -n 1 -k 1,2
 
         QString result, ret;
-        qDebug() << "AAAAAAAAAAAAAAAAAAAAA";
-        ret = setBoardToMaintenance(core,device,id,"10.0.1.1");
-        if(!core->isBoardInMaintenanceMode("10.0.1.1")){
+        ret = setBoardToMaintenance(core,device,id,board);
+        if(!core->isBoardInMaintenanceMode(board)){
             yError("ETH board is not present or not in maintenace mode!!\n");
             return false;
         }
-        canBoards = core->getCanBoardsFromEth("10.0.1.1",&result,canLine.toInt(),true);
+        canBoards = core->getCanBoardsFromEth(board,&result,canLine.toInt(),true);
         if(canBoards.count() > 0)
         {
-            qDebug() << "DEBUGGGGGGGGGGGGGGGGG " << canBoards[0].type << " " << ids[0] << " " << ids[1];
-            core->setSelectedCanBoards(canBoards,"10.0.1.1",-1);
-            core->setCanBoardAddress(1,ids[0].toInt(),canBoards[0].type,ids[1],"10.0.1.1",-1,&result); 
+            core->setSelectedCanBoards(canBoards,board,-1);
+            core->setCanBoardAddress(canLine.toInt(),ids[0].toInt(),canBoards[0].type,ids[1],board,-1,&result); 
 
         } else {
             yError() << "No CAN board found, stopped!";
