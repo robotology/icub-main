@@ -874,12 +874,13 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
         // FirmwareUpdater -g -e ETH -i 10.0.1.1 -c 1 -n 1 -k 1,2
 
         QString result, ret;
-        ret = setBoardToMaintenance(core,device,id,board);
-        if(!core->isBoardInMaintenanceMode(board)){
+        qDebug() << "AAAAAAAAAAAAAAAAAAAAA";
+        ret = setBoardToMaintenance(core,device,id,"10.0.1.1");
+        if(!core->isBoardInMaintenanceMode("10.0.1.1")){
             yError("ETH board is not present or not in maintenace mode!!\n");
             return false;
         }
-        canBoards = core->getCanBoardsFromEth(board,&result,canLine.toInt(),true);
+        canBoards = core->getCanBoardsFromEth("10.0.1.1",&result,canLine.toInt(),true);
         if(canBoards.count() > 0)
         {
             qDebug() << "DEBUGGGGGGGGGGGGGGGGG " << canBoards[0].type << " " << ids[0] << " " << ids[1];
