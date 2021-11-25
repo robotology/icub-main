@@ -843,9 +843,10 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
 
     QList <sBoard> canBoards;
     QString retString;
-    int ret;
+    bool ret;
     string msg;
     QStringList ids;
+    
 
     ids = canIds.split(",");
 
@@ -861,9 +862,10 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
         
         if(canBoards.count() > 0)
         {
-           
-            yInfo() << "BOARD FOUND!";
-            core->getDownloader()->change_card_address(0,ids[0].toInt(),1,canBoards[0].type);
+            ret = core->getDownloader()->change_card_address(0,ids[0].toInt(),1,canBoards[0].type);
+            if(ret) yInfo() << "Cahnge CAN ID Succeded !!!";
+            else yError() << "Cahnge CAN ID Failed !!!";
+
         } else {
             yError() << "No CAN board found, stopped!";
             return false;
@@ -873,7 +875,7 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
     {
         // FirmwareUpdater -g -e ETH -i 10.0.1.1 -c 1 -n 1 -k 1,2
 
-        QString result, ret;
+        QString result;
         ret = setBoardToMaintenance(core,device,id,board);
         if(!core->isBoardInMaintenanceMode(board)){
             yError("ETH board is not present or not in maintenace mode!!\n");
@@ -883,7 +885,9 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
         if(canBoards.count() > 0)
         {
             core->setSelectedCanBoards(canBoards,board,-1);
-            core->setCanBoardAddress(canLine.toInt(),ids[0].toInt(),canBoards[0].type,ids[1],board,-1,&result); 
+            ret = core->setCanBoardAddress(canLine.toInt(),ids[0].toInt(),canBoards[0].type,ids[1],board,-1,&result); 
+            if(ret) yInfo() << "Cahnge CAN ID Succeded !!!";
+            else yError() << "Cahnge CAN ID Failed !!!";
 
         } else {
             yError() << "No CAN board found, stopped!";
