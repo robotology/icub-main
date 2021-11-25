@@ -885,16 +885,18 @@ int changeBoardIp(FirmwareUpdaterCore *core,QString device,QString id,QString bo
     string msg;
 
     QString result;
+
     ret = setBoardToMaintenance(core,device,id,board);
     if(!core->isBoardInMaintenanceMode(board)){
         yError("ETH board is not present or not in maintenace mode!!\n");
         return false;
     }
-
+  
+   EthBoardList ethl = core->getEthBoardList();
+   yInfo() << ethl.size() << " " <<  ethl[0].getIPV4string();
     ret = core->setEthBoardAddress(0, newipaddr);
     if(ret) yInfo() << "Cahnge board IP Succeded !!!";
     else yError() << "Cahnge board IP Failed !!!";
-       
     return -1;
 }
 
