@@ -38,7 +38,8 @@ enum action_t
     action_setstraingainsoffsets = 9,
     action_getcanboardversion = 10,
     action_savedatfile = 11,
-    action_changeCanId = 12
+    action_changeCanId = 12,
+    action_changeBoardIp = 13
 
 
 };
@@ -72,6 +73,7 @@ int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString boar
 int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId);
 int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,bool save);
 int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canIds);
+int changeBoardIp(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString newipaddr);
 
 
 int main(int argc, char *argv[])
@@ -123,6 +125,7 @@ int main(int argc, char *argv[])
     QCommandLineOption getCanBoardVersionOption(QStringList() << "b" << "get-canboard-version", "Gets Bootloader or Application version (<saveFile> must be y or n to save or not a file containing fw info)","saveFile","");
     QCommandLineOption saveDatFileOption(QStringList() << "u" << "save-dat-file", "Saves the calibration .dat file from STRAIN2 eeprom","","");
     QCommandLineOption changeCanIdOption(QStringList() << "k" << "change-can-id", "changes CAN ID","id-old,id-new","");
+    QCommandLineOption changeBoardIpOption(QStringList() << "b" << "change-ip-addr", "changes board IP address","ip-new","");
 
 
     parser.addOption(noGuiOption);
@@ -151,6 +154,7 @@ int main(int argc, char *argv[])
     parser.addOption(getCanBoardVersionOption);
     parser.addOption(saveDatFileOption);
     parser.addOption(changeCanIdOption);
+    parser.addOption(changeBoardIpOption);
 
 
     parser.process(a);
@@ -234,9 +238,13 @@ int main(int argc, char *argv[])
         bool setGains = parser.isSet(setStrainGainsOffsetOption);
         QString saveVersion = parser.value(getCanBoardVersionOption);
         bool getVersion = parser.isSet(getCanBoardVersionOption);
-                bool changeCanID = parser.isSet(changeCanIdOption);
+        bool changeCanID = parser.isSet(changeCanIdOption);
+        bool changeIp = parser.isSet(changeCanIdOption);
+
 
         QString canIdOldNew = parser.value(changeCanIdOption);
+        QString newIp = parser.value(changeBoardIpOption);
+
 
 
         core.setVerbosity(verbosity);
@@ -384,6 +392,18 @@ int main(int argc, char *argv[])
             if(action == action_none)
             {
                 action = action_changeCanId;
+            }
+            else
+            {
+                action = action_impossible;
+            }
+        }
+
+         if((changeIp) && (action_impossible != action))
+        {
+            if(action == action_none)
+            {
+                action = action_changeBoardIp;
             }
             else
             {
@@ -731,6 +751,25 @@ int main(int argc, char *argv[])
 
             } break;
 
+            case action_changeBoardIp:
+            {
+                ret = 1;
+                if(device.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a device to be set";
+                }else if(id.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need an id to be set";
+                }else{
+                    if(!device.contains("ETH") && canLine.isEmpty()){
+                        if(verbosity >= 1) qDebug() << "Need a can line to be set";
+                    } else if(!device.contains("ETH") && canId.isEmpty()){
+                        if(verbosity >= 1) qDebug() << "Need a can id to be set";
+                    }else{
+                      ret = changeBoardIp(&core,device,id,board, newIp);
+                    }
+                }
+
+            } break;
+
         };
 #if 0
 // old code now substituted by the switch-case
@@ -837,6 +876,24 @@ int main(int argc, char *argv[])
         }
 
         */   
+int changeBoardIp(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString newipaddr)
+{
+    // FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -c 1 -k 2,1
+
+    QString retString;
+    bool ret;
+    string msg;
+
+        QString result;
+        ret = setBoardToMaintenance(core,device,id,board);
+        if(!core->isBoardInMaintenanceMode(board)){
+            yError("ETH board is not present or not in maintenace mode!!\n");
+            return false;
+        }
+       
+    return -1;
+}
+
 int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canIds)
 {
     // FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -c 1 -k 2,1
@@ -894,10 +951,7 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
             return false;
         }
     }
-
-        
-       
-   
+  
     return -1;
 }
 
@@ -1917,7 +1971,7 @@ void removeApplicationLock()
     if(!fInfo.exists()){
         return;
     }
-
+    
     QFile f(tempFile);
     f.remove();
 
@@ -1999,6 +2053,7 @@ int verifyOnSecondLevel(FirmwareUpdaterCore *core, QString device, QString id, c
 
     return ret;
 }
+
 
 int verifyOnSecondLevel_ETHboard(FirmwareUpdaterCore *core, QString device, QString id, const QString &targetIPaddr, const QString &targetFWvers)
 {
