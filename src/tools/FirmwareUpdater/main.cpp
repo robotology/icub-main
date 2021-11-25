@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     QCommandLineOption getCanBoardVersionOption(QStringList() << "b" << "get-canboard-version", "Gets Bootloader or Application version (<saveFile> must be y or n to save or not a file containing fw info)","saveFile","");
     QCommandLineOption saveDatFileOption(QStringList() << "u" << "save-dat-file", "Saves the calibration .dat file from STRAIN2 eeprom","","");
     QCommandLineOption changeCanIdOption(QStringList() << "k" << "change-can-id", "changes CAN ID","id-old,id-new","");
-    QCommandLineOption changeBoardIpOption(QStringList() << "b" << "change-ip-addr", "changes board IP address","ip-new","");
+    QCommandLineOption changeBoardIpOption(QStringList() << "2" << "change-ip-addr", "changes board IP address","ip-new","");
 
 
     parser.addOption(noGuiOption);
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
         QString saveVersion = parser.value(getCanBoardVersionOption);
         bool getVersion = parser.isSet(getCanBoardVersionOption);
         bool changeCanID = parser.isSet(changeCanIdOption);
-        bool changeIp = parser.isSet(changeCanIdOption);
+        bool changeIp = parser.isSet(changeBoardIpOption);
 
 
         QString canIdOldNew = parser.value(changeCanIdOption);
