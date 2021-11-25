@@ -878,7 +878,7 @@ int main(int argc, char *argv[])
         */   
 int changeBoardIp(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString newipaddr)
 {
-    // FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -c 1 -k 2,1
+    // FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.7 -2 10.0.1.1
 
     QString retString;
     bool ret;
