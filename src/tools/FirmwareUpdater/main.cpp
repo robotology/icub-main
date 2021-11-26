@@ -876,7 +876,7 @@ int main(int argc, char *argv[])
         */   
 int changeBoardIp(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString newipaddr)
 {
-    // FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.7 -2 10.0.1.1
+    // FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -2 10.0.1.2
 
     QString retString;
     bool ret;
@@ -905,17 +905,13 @@ int changeBoardIp(FirmwareUpdaterCore *core,QString device,QString id,QString bo
 int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId, QString canIdNew)
 {
     // FirmwareUpdater -g -e SOCKETCAN -i 0 -c 0 -n 1 -k 2,1
-    // FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -c 1 -k 2,1
+    // FirmwareUpdater -g -e ETH -i eth1 -t 10.0.1.1 -c 1 -n 1 -k 2
 
     QList <sBoard> canBoards;
     QString retString;
     bool ret;
     int ret1;
     string msg;
-    QStringList ids;
-    
-
-    
 
     if(device.contains("SOCKETCAN"))
     {
@@ -939,7 +935,6 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
     }
     else if(device.contains("ETH"))
     {
-        // FirmwareUpdater -g -e ETH -i 10.0.1.1 -c 1 -n 1 -k 1,2
 
         QString result;
         ret = setBoardToMaintenance(core,device,id,board);
@@ -951,7 +946,7 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
         if(canBoards.count() > 0)
         {
             core->setSelectedCanBoards(canBoards,board,-1);
-            ret = core->setCanBoardAddress(canLine.toInt(),ids[0].toInt(),canBoards[0].type,ids[1],board,-1,&result); 
+            ret = core->setCanBoardAddress(canLine.toInt(),canId.toInt(),canBoards[0].type,canIdNew,board,-1,&result); 
             if(ret) yInfo() << "Cahnge CAN ID Succeded !!!";
             else yError() << "Cahnge CAN ID Failed !!!";
 
