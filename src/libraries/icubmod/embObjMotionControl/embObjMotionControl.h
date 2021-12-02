@@ -612,7 +612,7 @@ public:
     virtual bool getRefCurrentRaw(int j, double *t) override;
 
     // Used in joint faults interface
-    bool getJointFaultsRaw(int j, int *id, std::string& message);
+    bool getJointFaultsRaw(int j, int& id, std::string& message);
 
 };
 
