@@ -196,8 +196,6 @@ private:
 
     MCdiagnostics mcdiagnostics;
 
-
-
      /////configuartion info (read from xml files)
     int                                     _njoints;       /** Number of joints handled by this EMS */
     eomc::behaviour_flags_t                  behFlags;       /** Contains all flags that define the behaviour of this device */
@@ -613,9 +611,8 @@ public:
     virtual bool getRefCurrentsRaw(double *t) override;
     virtual bool getRefCurrentRaw(int j, double *t) override;
 
-
     // Used in joint faults interface
-    bool getJointFaultsRaw(int j, double *id, std::string& message);
+    bool getJointFaultsRaw(int j, int *id, std::string& message);
 
 };
 

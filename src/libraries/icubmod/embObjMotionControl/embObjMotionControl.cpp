@@ -1245,7 +1245,7 @@ bool embObjMotionControl::init()
     {
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, n, eoprot_tag_mc_joint_status_core);
         id32v.push_back(protid);
-        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, n, eoprot_tag_mc_motor_status_basic);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, n, eoprot_tag_mc_motor_status);
         id32v.push_back(protid);
     }
 
@@ -5256,8 +5256,75 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
     return true;
 }
 
-bool embObjMotionControl::getJointFaultsRaw(int j, double *id, std::string& message)
+bool embObjMotionControl::getJointFaultsRaw(int m, int *fault, std::string& message)
 {
+    char const * const MotorFaults[32] = {
+        "External fault asserted",
+        "Undervoltage failure"
+        "Overvoltage failure",
+        "Overcurrent failure",
+        "DHES invalid value",
+        "AS5045 checksum error",
+        "DHES invalid sequence",
+        "CAN invalid protocol",
+        "CAN buffer overrun",
+        "Setpoint expired",
+        "CAN_TXIsPasv",
+        "CAN_RXIsPasv",
+        "CAN_IsWarnTX",
+        "CAN_IsWarnRX",
+        "Unspecified error",
+        "Motor overheating",
+        "ADC calibration failure", 
+        "I2T failure",                     
+        "EMUROM fault",
+        "EMUROM CRC fault",
+        "Encoder fault",
+        "Firmware SPI timing error",
+        "AS5045 calculation error",
+        "Firmware PWM fatal error",
+        "CAN_TXWasPasv",
+        "CAN_RXWasPasv",
+        "CAN_RTRFlagActive",
+        "CAN_WasWarn",
+        "CAN_DLCError",
+        "Silicon revision fault",
+        "Upper position limit reached", 
+        "Lower position limit reached"
+    };
+
+    eOmc_motor_status_t status;
+    
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, 
+                                        eoprot_entity_mc_motor, m, 
+                                        eoprot_tag_mc_motor_status);
+    
+    bool ret = res->getLocalValue(protid, &status);
+
+    message.clear();
+
+    if (!ret)
+    {
+        message = "Could not retrieve the fault state";
+        return false;
+    }
+
+    if(0 == status.fault_state_mask)
+    {
+        *fault = 0;
+        message = "No fault detected";
+        return true;
+    }
+
+    for(uint8_t i = 0; i < 32; ++i)
+    {
+        if(eobool_true == eo_common_word_bitcheck(status.fault_state_mask, i))
+        {
+            *fault = i + 1;
+            message += MotorFaults[i];
+        }
+    }
+
     return true;
 }
 
