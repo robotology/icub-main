@@ -5256,12 +5256,12 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
     return true;
 }
 
-bool embObjMotionControl::getJointFaultsRaw(int m, int& fault, std::string& message)
+bool embObjMotionControl::getLastJointFaultRaw(int m, int& fault, std::string& message)
 {
     char const * const MotorFaults[32] = {
         // B0 L
         "External fault asserted",
-        "Undervoltage failure"
+        "Undervoltage failure",
         "Overvoltage failure",
         "Overcurrent failure",
         // B0 H
@@ -5313,6 +5313,7 @@ bool embObjMotionControl::getJointFaultsRaw(int m, int& fault, std::string& mess
 
     if (!ret)
     {
+        fault = -1;
         message = "Could not retrieve the fault state";
         return false;
     }
