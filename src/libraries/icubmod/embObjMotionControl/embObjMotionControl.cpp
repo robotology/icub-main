@@ -5256,4 +5256,9 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
     return true;
 }
 
+bool embObjMotionControl::getJointFaultsRaw(int j, double *id, std::string& message)
+{
+    return true;
+}
+
 // eof

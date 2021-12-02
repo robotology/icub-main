@@ -612,6 +612,11 @@ public:
     virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t) override;
     virtual bool getRefCurrentsRaw(double *t) override;
     virtual bool getRefCurrentRaw(int j, double *t) override;
+
+
+    // Used in joint faults interface
+    bool getJointFaultsRaw(int j, double *id, std::string& message);
+
 };
 
 #endif // include guard
