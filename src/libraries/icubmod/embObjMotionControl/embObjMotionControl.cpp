@@ -5256,7 +5256,7 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
     return true;
 }
 
-bool embObjMotionControl::getLastJointFaultRaw(int m, int& fault, std::string& message)
+bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& message)
 {
     char const * const MotorFaults[32] = {
         // B0 L
@@ -5304,7 +5304,7 @@ bool embObjMotionControl::getLastJointFaultRaw(int m, int& fault, std::string& m
     eOmc_motor_status_t status;
     
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, 
-                                        eoprot_entity_mc_motor, m, 
+                                        eoprot_entity_mc_motor, j, 
                                         eoprot_tag_mc_motor_status);
     
     bool ret = res->getLocalValue(protid, &status);

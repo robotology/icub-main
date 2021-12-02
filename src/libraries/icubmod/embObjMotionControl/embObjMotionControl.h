@@ -179,7 +179,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementPWMControl,
     public ICurrentControlRaw,
     public ImplementCurrentControl,
-    public eth::IethResource
+    public eth::IethResource,
+    public IJointFaultRaw
     {
 
 
@@ -612,7 +613,7 @@ public:
     virtual bool getRefCurrentRaw(int j, double *t) override;
 
     // Used in joint faults interface
-    bool getLastJointFaultRaw(int j, int& id, std::string& message);
+    virtual bool getLastJointFaultRaw(int j, int& fault, std::string& message) override;
 
 };
 
