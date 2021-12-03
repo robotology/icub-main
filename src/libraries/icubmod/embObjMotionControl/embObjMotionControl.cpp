@@ -202,6 +202,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementAxisInfo(this),
     ImplementPWMControl(this),
     ImplementCurrentControl(this),
+    ImplementJointFault(this),
     SAFETY_THRESHOLD(2.0),
     _rotorsLimits(0),
     _jointsLimits(0),
@@ -321,6 +322,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementAxisInfo::initialize(_njoints, _axisMap);
     ImplementCurrentControl::initialize(_njoints, _axisMap, f.ampsToSensor);
     ImplementPWMControl::initialize(_njoints, _axisMap, f.dutycycleToPWM);
+    ImplementJointFault::initialize(_njoints, _axisMap);
 
     return true;
 
@@ -1435,6 +1437,7 @@ bool embObjMotionControl::close()
     ImplementAxisInfo::uninitialize();
     ImplementCurrentControl::uninitialize();
     ImplementPWMControl::uninitialize();
+    ImplementJointFault::uninitialize();
 
     if (_measureConverter)  {delete _measureConverter; _measureConverter=0;}
 
@@ -5258,6 +5261,9 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
 
 bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& message)
 {
+
+yError() << "Entering getLastJointFaultRaw";
+
     char const * const MotorFaults[32] = {
         // B0 L
         "External fault asserted",
@@ -5301,13 +5307,47 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
         "Lower position limit reached"
     };
 
+    eOmc_joint_status_modes_t j_status;
+    
+    eOprotID32_t j_protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, 
+                                        eoprot_entity_mc_joint, j, 
+                                        eoprot_tag_mc_joint_status_core);
+
+    bool ret = res->getLocalValue(j_protid, &j_status);
+
+    std::string jstr = "";
+    int j_fault = 0;
+    if (!ret)
+    {
+        fault = -1;
+        jstr = "[JOINT] Could not retrieve the fault state";
+    }
+
+    if(0 == j_status.fault_state_mask)
+    {
+        fault = j_status.fault_state_mask;
+        jstr = "[JOINT] No fault detected";
+    }
+
+     if(eobool_true == eo_common_byte_bitcheck(j_status.fault_state_mask, 0))
+    {
+            j_fault = 1;
+            jstr += "[JOINT] Torque fault";
+    }
+
+    if(eobool_true == eo_common_byte_bitcheck(j_status.fault_state_mask, 1))
+    {
+            j_fault = 2;
+            jstr += "[JOINT] Joint limit hit";
+    }
+
     eOmc_motor_status_t status;
     
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, 
                                         eoprot_entity_mc_motor, j, 
                                         eoprot_tag_mc_motor_status);
     
-    bool ret = res->getLocalValue(protid, &status);
+    ret = res->getLocalValue(protid, &status);
 
     message.clear();
 
@@ -5320,9 +5360,9 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
 
     if(0 == status.fault_state_mask)
     {
-        fault = 0;
-        message = "No fault detected";
-        return true;
+        fault = status.fault_state_mask;
+        message = "[MOTOR] No fault detected";
+        //return true;
     }
 
     for(uint8_t i = 0; i < 32; ++i)
@@ -5333,7 +5373,8 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
             message += MotorFaults[i];
         }
     }
-
+    fault = j_fault + fault;
+    message = message + jstr;
     return true;
 }
 

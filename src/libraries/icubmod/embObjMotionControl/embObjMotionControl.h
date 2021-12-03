@@ -42,7 +42,7 @@ using namespace std;
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
 
-
+#include<yarp/dev/ImplementJointFault.h>
 
 
 #include "IethResource.h"
@@ -180,10 +180,9 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ICurrentControlRaw,
     public ImplementCurrentControl,
     public eth::IethResource,
-    public IJointFaultRaw
+    public IJointFaultRaw,
+    public ImplementJointFault
     {
-
-
 private:
 
     eth::TheEthManager*        ethManager;
