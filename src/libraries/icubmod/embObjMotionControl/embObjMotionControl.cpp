@@ -5261,6 +5261,7 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
 
 bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& message)
 {
+    /*
 
     char const * const MotorFaults[32] = {
         // B0 L
@@ -5305,7 +5306,6 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
         "Lower position limit reached"
     };
 
-    /*
 
     eOmc_joint_status_modes_t j_status;
     
@@ -5358,17 +5358,12 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
         return false;
     }
 
-    if(0 == status.fault_state_mask)
-    {
-        fault = status.fault_state_mask;
-        message = "No fault detected";
-        return true;
-    }
+    fault = eoerror_code2value(status.fault_state_mask);
+    message += eoerror_code2string(status.fault_state_mask);
 
-    fault = status.fault_state_mask;
-    message += "Error detected";
+    return true;
 
-    yError() << "Entering getLastJointFaultRaw: error " << fault;
+    // yError() << "Entering getLastJointFaultRaw: error " << fault;
 
     /*     
     for(uint8_t i = 0; i < 32; ++i)
@@ -5380,10 +5375,6 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
         }
     } 
     */
-
-    //fault = j_fault + fault;
-    //message = message + jstr;
-    return true;
 }
 
 // eof

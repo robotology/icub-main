@@ -46,6 +46,7 @@ using namespace std;
 
 
 #include "IethResource.h"
+#include"EoError.h"
 #include <ethManager.h>
 #include <abstractEthResource.h>
 
@@ -54,6 +55,7 @@ using namespace std;
 #include "measuresConverter.h"
 
 #include "mcEventDownsampler.h"
+
 
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
 #include <PeriodicEventsVerifier.h>
