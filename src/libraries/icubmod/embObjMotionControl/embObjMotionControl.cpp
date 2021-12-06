@@ -5262,8 +5262,6 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
 bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& message)
 {
 
-yError() << "Entering getLastJointFaultRaw";
-
     char const * const MotorFaults[32] = {
         // B0 L
         "External fault asserted",
@@ -5307,6 +5305,8 @@ yError() << "Entering getLastJointFaultRaw";
         "Lower position limit reached"
     };
 
+    /*
+
     eOmc_joint_status_modes_t j_status;
     
     eOprotID32_t j_protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, 
@@ -5340,14 +5340,14 @@ yError() << "Entering getLastJointFaultRaw";
             j_fault = 2;
             jstr += "[JOINT] Joint limit hit";
     }
-
+ */
     eOmc_motor_status_t status;
     
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, 
                                         eoprot_entity_mc_motor, j, 
                                         eoprot_tag_mc_motor_status);
     
-    ret = res->getLocalValue(protid, &status);
+    bool ret = res->getLocalValue(protid, &status);
 
     message.clear();
 
@@ -5361,10 +5361,16 @@ yError() << "Entering getLastJointFaultRaw";
     if(0 == status.fault_state_mask)
     {
         fault = status.fault_state_mask;
-        message = "[MOTOR] No fault detected";
-        //return true;
+        message = "No fault detected";
+        return true;
     }
 
+    fault = status.fault_state_mask;
+    message += "Error detected";
+
+    yError() << "Entering getLastJointFaultRaw: error " << fault;
+
+    /*     
     for(uint8_t i = 0; i < 32; ++i)
     {
         if(eobool_true == eo_common_word_bitcheck(status.fault_state_mask, i))
@@ -5372,9 +5378,11 @@ yError() << "Entering getLastJointFaultRaw";
             fault = i + 1;
             message += MotorFaults[i];
         }
-    }
-    fault = j_fault + fault;
-    message = message + jstr;
+    } 
+    */
+
+    //fault = j_fault + fault;
+    //message = message + jstr;
     return true;
 }
 
