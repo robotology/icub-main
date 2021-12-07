@@ -5261,86 +5261,6 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
 
 bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& message)
 {
-    /*
-
-    char const * const MotorFaults[32] = {
-        // B0 L
-        "External fault asserted",
-        "Undervoltage failure",
-        "Overvoltage failure",
-        "Overcurrent failure",
-        // B0 H
-        "DHES invalid value",
-        "AS5045 checksum error",
-        "DHES invalid sequence",
-        "CAN invalid protocol",
-        // B1 L
-        "CAN buffer overrun",
-        "Setpoint expired",
-        "CAN_TXIsPasv",
-        "CAN_RXIsPasv",
-        // B1 H
-        "CAN_IsWarnTX",
-        "CAN_IsWarnRX",
-        "Unspecified error",
-        "Motor overheating",
-        // B2 L
-        "ADC calibration failure", 
-        "I2T failure",                     
-        "EMUROM fault",
-        "EMUROM CRC fault",
-        // B2 H
-        "Encoder fault",
-        "Firmware SPI timing error",
-        "AS5045 calculation error",
-        "Firmware PWM fatal error",
-        // B3 L
-        "CAN_TXWasPasv",
-        "CAN_RXWasPasv",
-        "CAN_RTRFlagActive",
-        "CAN_WasWarn",
-        // B3 H
-        "CAN_DLCError",
-        "Silicon revision fault",
-        "Upper position limit reached", 
-        "Lower position limit reached"
-    };
-
-
-    eOmc_joint_status_modes_t j_status;
-    
-    eOprotID32_t j_protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, 
-                                        eoprot_entity_mc_joint, j, 
-                                        eoprot_tag_mc_joint_status_core);
-
-    bool ret = res->getLocalValue(j_protid, &j_status);
-
-    std::string jstr = "";
-    int j_fault = 0;
-    if (!ret)
-    {
-        fault = -1;
-        jstr = "[JOINT] Could not retrieve the fault state";
-    }
-
-    if(0 == j_status.fault_state_mask)
-    {
-        fault = j_status.fault_state_mask;
-        jstr = "[JOINT] No fault detected";
-    }
-
-     if(eobool_true == eo_common_byte_bitcheck(j_status.fault_state_mask, 0))
-    {
-            j_fault = 1;
-            jstr += "[JOINT] Torque fault";
-    }
-
-    if(eobool_true == eo_common_byte_bitcheck(j_status.fault_state_mask, 1))
-    {
-            j_fault = 2;
-            jstr += "[JOINT] Joint limit hit";
-    }
- */
     eOmc_motor_status_t status;
     
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, 
@@ -5354,27 +5274,14 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
     if (!ret)
     {
         fault = -1;
-        message = "Could not retrieve the fault state";
+        message = "Could not retrieve the fault state.";
         return false;
     }
 
-    fault = eoerror_code2value(status.fault_state_mask);
-    message += eoerror_code2string(status.fault_state_mask);
+    fault = eoerror_code2value(status.mc_fault_state);
+    message = eoerror_code2string(status.mc_fault_state);
 
     return true;
-
-    // yError() << "Entering getLastJointFaultRaw: error " << fault;
-
-    /*     
-    for(uint8_t i = 0; i < 32; ++i)
-    {
-        if(eobool_true == eo_common_word_bitcheck(status.fault_state_mask, i))
-        {
-            fault = i + 1;
-            message += MotorFaults[i];
-        }
-    } 
-    */
 }
 
 // eof
