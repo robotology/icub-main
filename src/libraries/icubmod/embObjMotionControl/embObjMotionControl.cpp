@@ -5278,6 +5278,14 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
         return false;
     }
 
+    if (status.mc_fault_state == eoerror_code_dummy)
+    {
+        fault = 0xffffffffL;
+        message = "No fault detected.";
+
+        return true;
+    }
+
     fault = eoerror_code2value(status.mc_fault_state);
     message = eoerror_code2string(status.mc_fault_state);
 
