@@ -614,6 +614,9 @@ public:
     virtual bool getRefCurrentRaw(int j, double *t) override;
 
     // Used in joint faults interface
+    // Teturns true if it was successful and writes the fault code in the fault parameter 
+    // with the associated string in message. If no fault is detected the fault parameters is set to -1.
+    // Returns false and fault is set to -2 if retrieval was unsuccessful.
     virtual bool getLastJointFaultRaw(int j, int& fault, std::string& message) override;
 
 };

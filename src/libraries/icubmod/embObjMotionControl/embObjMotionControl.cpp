@@ -5271,16 +5271,18 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
 
     message.clear();
 
+    // Set fault state to -2 to avoid ambiguity with eoerror_code_dummy
     if (!ret)
     {
-        fault = -1;
+        fault = -2;
         message = "Could not retrieve the fault state.";
         return false;
     }
 
+    // eoerror_code_dummy is defined in the firmware as 0xffffffffL and evaluates to -1
     if (status.mc_fault_state == eoerror_code_dummy)
     {
-        fault = 0xffffffffL;
+        fault = eoerror_code_dummy;
         message = "No fault detected.";
 
         return true;
