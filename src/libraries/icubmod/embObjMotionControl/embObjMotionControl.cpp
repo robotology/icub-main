@@ -202,6 +202,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementAxisInfo(this),
     ImplementPWMControl(this),
     ImplementCurrentControl(this),
+    ImplementJointFault(this),
     SAFETY_THRESHOLD(2.0),
     _rotorsLimits(0),
     _jointsLimits(0),
@@ -321,6 +322,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementAxisInfo::initialize(_njoints, _axisMap);
     ImplementCurrentControl::initialize(_njoints, _axisMap, f.ampsToSensor);
     ImplementPWMControl::initialize(_njoints, _axisMap, f.dutycycleToPWM);
+    ImplementJointFault::initialize(_njoints, _axisMap);
 
     return true;
 
@@ -1245,7 +1247,7 @@ bool embObjMotionControl::init()
     {
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, n, eoprot_tag_mc_joint_status_core);
         id32v.push_back(protid);
-        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, n, eoprot_tag_mc_motor_status_basic);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, n, eoprot_tag_mc_motor_status);
         id32v.push_back(protid);
     }
 
@@ -1435,6 +1437,7 @@ bool embObjMotionControl::close()
     ImplementAxisInfo::uninitialize();
     ImplementCurrentControl::uninitialize();
     ImplementPWMControl::uninitialize();
+    ImplementJointFault::uninitialize();
 
     if (_measureConverter)  {delete _measureConverter; _measureConverter=0;}
 
@@ -5253,6 +5256,39 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
         return false;
     }
     *mEncTolerance_ptr = motorCfg.rotEncTolerance;
+    return true;
+}
+
+bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& message)
+{
+    eOmc_motor_status_t status;
+    
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, 
+                                        eoprot_entity_mc_motor, j, 
+                                        eoprot_tag_mc_motor_status);
+    
+    bool ret = res->getLocalValue(protid, &status);
+
+    message.clear();
+
+    if (!ret)
+    {
+        fault = -1;
+        message = "Could not retrieve the fault state.";
+        return false;
+    }
+
+    if (status.mc_fault_state == EOERROR_CODE_DUMMY)
+    {
+        fault = EOERROR_CODE_DUMMY;
+        message = "No fault detected.";
+
+        return true;
+    }
+
+    fault = eoerror_code2value(status.mc_fault_state);
+    message = eoerror_code2string(status.mc_fault_state);
+
     return true;
 }
 

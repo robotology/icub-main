@@ -42,10 +42,11 @@ using namespace std;
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
 
-
+#include<yarp/dev/ImplementJointFault.h>
 
 
 #include "IethResource.h"
+#include"EoError.h"
 #include <ethManager.h>
 #include <abstractEthResource.h>
 
@@ -54,6 +55,7 @@ using namespace std;
 #include "measuresConverter.h"
 
 #include "mcEventDownsampler.h"
+
 
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
 #include <PeriodicEventsVerifier.h>
@@ -179,10 +181,10 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementPWMControl,
     public ICurrentControlRaw,
     public ImplementCurrentControl,
-    public eth::IethResource
+    public eth::IethResource,
+    public IJointFaultRaw,
+    public ImplementJointFault
     {
-
-
 private:
 
     eth::TheEthManager*        ethManager;
@@ -195,8 +197,6 @@ private:
     bool opened; //internal state
 
     MCdiagnostics mcdiagnostics;
-
-
 
      /////configuartion info (read from xml files)
     int                                     _njoints;       /** Number of joints handled by this EMS */
@@ -612,6 +612,13 @@ public:
     virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t) override;
     virtual bool getRefCurrentsRaw(double *t) override;
     virtual bool getRefCurrentRaw(int j, double *t) override;
+
+    // Used in joint faults interface
+    // Teturns true if it was successful and writes the fault code in the fault parameter 
+    // with the associated string in message. If no fault is detected the fault parameters is set to -1.
+    // Returns false and fault is set to -2 if retrieval was unsuccessful.
+    virtual bool getLastJointFaultRaw(int j, int& fault, std::string& message) override;
+
 };
 
 #endif // include guard
