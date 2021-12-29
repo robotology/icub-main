@@ -39,7 +39,7 @@ add_executable(skinManagerGui WIN32    ${skinManagerGui_SRCS}
 if(WIN32)
   target_compile_definitions(skinManagerGui PUBLIC _HAS_STD_BYTE=0)
 endif()
-target_link_libraries(skinManagerGui    YARP::YARP_OS
+target_link_libraries(skinManagerGui    YARP::YARP_os
                                         YARP::YARP_init
                                         YARP::YARP_sig
                                         skinDynLib)

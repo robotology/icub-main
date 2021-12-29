@@ -39,7 +39,7 @@ add_executable(frameGrabberGui2 WIN32 ${frameGrabberGui2_SRCS}
                                       ${frameGrabberGui2_HDRS}
                                       ${frameGrabberGui2_QRC_GEN_SRCS}
                                       ${frameGrabberGui2_UI_GEN_SRCS})
-target_link_libraries(frameGrabberGui2    YARP::YARP_OS
+target_link_libraries(frameGrabberGui2    YARP::YARP_os
                                           YARP::YARP_init
                                           YARP::YARP_dev)
 qticub_use_modules(frameGrabberGui2 Widgets

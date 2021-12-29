@@ -44,7 +44,7 @@ set(QtICubSkinGuiPlugin_QMLDIR "robotology/icub/skingui")
 
 add_library(QtICubSkinGuiPlugin MODULE ${QtICubSkinGuiPlugin_SRCS}
                                        ${QtICubSkinGuiPlugin_HDRS})
-target_link_libraries(QtICubSkinGuiPlugin YARP::YARP_OS
+target_link_libraries(QtICubSkinGuiPlugin YARP::YARP_os
                                           YARP::YARP_init
                                           YARP::YARP_sig
                                           YARP::YARP_dev
