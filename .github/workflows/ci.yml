@@ -7,6 +7,7 @@ on:
   # * is a special character in YAML so you have to quote this string
   # Execute a "nightly" build at 2 AM UTC
   - cron:  '0 2 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
