@@ -14,7 +14,7 @@ YCM_PACKAGE_URL_buster="https://github.com/robotology/ycm/releases/download/v${Y
 YCM_PACKAGE_URL_bionic="https://github.com/robotology/ycm/releases/download/v${YCM_REQUIRED_VERSION}/${YCM_PACKAGE}_${YCM_REQUIRED_VERSION}-1.ubuntu18.04.robotology1_all.deb"
 YCM_PACKAGE_URL_focal="https://github.com/robotology/ycm/releases/download/v${YCM_REQUIRED_VERSION}/${YCM_PACKAGE}_${YCM_REQUIRED_VERSION}-1.ubuntu20.04.robotology1_all.deb"
 
-YARP_REQUIRED_VERSION="3.5.1"
+YARP_REQUIRED_VERSION="3.6.0"
 YARP_PACKAGE_URL_buster="https://github.com/robotology/yarp/releases/download/v${YARP_REQUIRED_VERSION}/yarp-${YARP_REQUIRED_VERSION}-2.buster_amd64.deb"
 YARP_PACKAGE_URL_bionic="https://github.com/robotology/yarp/releases/download/v${YARP_REQUIRED_VERSION}/yarp-${YARP_REQUIRED_VERSION}-2.bionic_amd64.deb"
 YARP_PACKAGE_URL_focal="https://github.com/robotology/yarp/releases/download/v${YARP_REQUIRED_VERSION}/yarp-${YARP_REQUIRED_VERSION}-2.focal_amd64.deb"
