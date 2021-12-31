@@ -69,7 +69,6 @@ jobs:
       id: package_generation_icub-common
       shell: bash
       run: |
-        chmod +x ./.ci/create_icub-common_deb.sh
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-common_deb.sh
         echo ::set-output name=ICUB_COMMON_PACKAGE_NAME::$( cat ICUB_COMMON_PACKAGE_NAME.txt )
@@ -77,7 +76,6 @@ jobs:
       id: package_generation_icub-main
       shell: bash
       run: |
-        chmod +x ./.ci/create_icub-main_deb.sh
         export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
         ./.ci/create_icub-main_deb.sh
         echo ::set-output name=ICUB_MAIN_PACKAGE_NAME::$( cat ICUB_MAIN_PACKAGE_NAME.txt )
