@@ -40,7 +40,8 @@ enum action_t
     action_changeCanId = 12,
     action_changeBoardIp = 13,
     action_setstrainft45gainsoffsets = 14,
-    action_setstrainft58gainsoffsets = 15
+    action_setstrainft58gainsoffsets = 15,
+    action_setstraingainsspecificoffsets = 16
 };
 
 enum class SensorModel
@@ -127,8 +128,7 @@ int main(int argc, char *argv[])
     QCommandLineOption loadDatFileOption(QStringList() << "z" << "load-dat-file", "Loads the calibration .dat file into STRAIN2 eeprom (pass the file.dat with -l or --file option)","","");
     QCommandLineOption setStrainSnOption(QStringList() << "w" << "set-strain-sn", "Sets the passed serialNumber (i.e. SN001) on STRAIN2","sn","");
     QCommandLineOption setStrainGainsOffsetOption(QStringList() << "j" << "set-strain-gains", "Sets on STRAIN2 default gains to (8,24,24,10,10,24) , adjust the offset and check if some channel saturates","","");
-    QCommandLineOption setStrainFT45GainsOffsetOption(QStringList() << "4" << "set-workingsensor-ft45", "Sets working sensor on FT45, for adjust the offset and check if some channel saturates","","");
-    QCommandLineOption setStrainFT58GainsOffsetOption(QStringList() << "5" << "set-workingsensor-ft58", "Sets working sensor on FT45 , for adjust the offset and check if some channel saturates","","");
+    QCommandLineOption setStrainGainsSpecificOffsetOption(QStringList() << "3" << "set-strain-gains-specific", "Sets on STRAIN2 default gains to (8,24,24,10,10,24) or to (8,10,10,10,10,10) depending on the sensor type, adjust the offset and check if some channel saturates","xx","");
     QCommandLineOption getCanBoardVersionOption(QStringList() << "b" << "get-canboard-version", "Gets Bootloader or Application version (<saveFile> must be y or n to save or not a file containing fw info)","saveFile","");
     QCommandLineOption saveDatFileOption(QStringList() << "u" << "save-dat-file", "Saves the calibration .dat file from STRAIN2 eeprom","","");
     QCommandLineOption changeCanIdOption(QStringList() << "k" << "change-can-id", "changes CAN ID","id-new","");
@@ -158,8 +158,7 @@ int main(int argc, char *argv[])
     parser.addOption(loadDatFileOption);
     parser.addOption(setStrainSnOption);
     parser.addOption(setStrainGainsOffsetOption);
-    parser.addOption(setStrainFT45GainsOffsetOption);
-    parser.addOption(setStrainFT58GainsOffsetOption);
+    parser.addOption(setStrainGainsSpecificOffsetOption);
     parser.addOption(getCanBoardVersionOption);
     parser.addOption(saveDatFileOption);
     parser.addOption(changeCanIdOption);
@@ -202,10 +201,6 @@ int main(int argc, char *argv[])
         //qDebug() << "Usage: " << argv[0] << " --port n --address xxx.xxx.xxx.xxx\n";
     }
 
-
-
-
-
     ResourceFinder rf;
     rf.setDefaultContext("firmwareUpdater");
     rf.setDefaultConfigFile(iniFile.toLatin1().data());
@@ -233,6 +228,11 @@ int main(int argc, char *argv[])
         QString file = parser.value(fileOption);
         QString canLine = parser.value(ethCanLineOption);
         QString canId = parser.value(ethCanIdOption);
+        QString sensorModel = parser.value(setStrainGainsSpecificOffsetOption);
+
+        if(parser.isSet(setStrainGainsSpecificOffsetOption)){
+            if(verbosity >= 1) qDebug() << "Sensor model:" << sensorModel;
+        }
 
         QString targetFW = parser.value(verifyOption);
 
@@ -244,8 +244,7 @@ int main(int argc, char *argv[])
         bool setSn = parser.isSet(setStrainSnOption);
         QString serialNumber = parser.value(setStrainSnOption);
         bool setGains = parser.isSet(setStrainGainsOffsetOption);
-        bool setGainsFT45 = parser.isSet(setStrainFT45GainsOffsetOption);
-        bool setGainsFT58 = parser.isSet(setStrainFT58GainsOffsetOption);
+        bool setGainsSpecific = parser.isSet(setStrainGainsSpecificOffsetOption);
         QString saveVersion = parser.value(getCanBoardVersionOption);
         bool getVersion = parser.isSet(getCanBoardVersionOption);
         bool changeCanID = parser.isSet(changeCanIdOption);
@@ -371,12 +370,12 @@ int main(int argc, char *argv[])
                 action = action_impossible;
             }
         }
-/*
-	    if((setGainsFT45) && (action_impossible != action))
+
+        if((setGainsSpecific) && (action_impossible != action))
         {
             if(action == action_none)
             {
-                action = action_setstrainft45gainsoffsets;
+                action = action_setstraingainsspecificoffsets;
             }
             else
             {
@@ -384,18 +383,6 @@ int main(int argc, char *argv[])
             }
         }
 
-        if((setGainsFT58) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_setstrainft58gainsoffsets;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-*/
         if((getVersion) && (action_impossible != action))
         {
             if(action == action_none)
@@ -717,7 +704,28 @@ int main(int argc, char *argv[])
                     } else if(!device.contains("ETH") && canId.isEmpty()){
                         if(verbosity >= 1) qDebug() << "Need a can id to be set";
                     }else{
-                        if(setGainsFT58)
+                        ret = setStrainGainsOffsets(&core,device,id,board,canLine,canId,SensorModel::ft45);
+                    }
+                }
+
+            } break;
+
+            case action_setstraingainsspecificoffsets:
+            {
+                ret = 1;
+
+                if(device.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need a device to be set";
+                }else if(id.isEmpty()){
+                    if(verbosity >= 1) qDebug() << "Need an id to be set";
+                }else{
+                    if(!device.contains("ETH") && canLine.isEmpty()){
+                        if(verbosity >= 1) qDebug() << "Need a can line to be set";
+                    } else if(!device.contains("ETH") && canId.isEmpty()){
+                        if(verbosity >= 1) qDebug() << "Need a can id to be set";
+                    }else{
+
+                        if(sensorModel=="FT58")
                         {
                             ret = setStrainGainsOffsets(&core,device,id,board,canLine,canId,SensorModel::ft58);
                         }
