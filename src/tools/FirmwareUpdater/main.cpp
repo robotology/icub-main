@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <qdebug.h>
 #include <QDir>
+#include <iostream>//LUCA
 
 
 #include "firmwareupdatercore.h"
@@ -128,8 +129,8 @@ int main(int argc, char *argv[])
     QCommandLineOption loadDatFileOption(QStringList() << "z" << "load-dat-file", "Loads the calibration .dat file into STRAIN2 eeprom (pass the file.dat with -l or --file option)","","");
     QCommandLineOption setStrainSnOption(QStringList() << "w" << "set-strain-sn", "Sets the passed serialNumber (i.e. SN001) on STRAIN2","sn","");
     QCommandLineOption setStrainGainsOffsetOption(QStringList() << "j" << "set-strain-gains", "Sets on STRAIN2 default gains to (8,24,24,10,10,24) , adjust the offset and check if some channel saturates","","");
-    QCommandLineOption setStrainFT45GainsOffsetOption(QStringList() << "j45" << "set-strain-gains", "Sets on STRAIN2 default gains for FT45 to (8,24,24,10,10,24) , adjust the offset and check if some channel saturates","","");
-    QCommandLineOption setStrainFT58GainsOffsetOption(QStringList() << "j58" << "set-strain-gains", "Sets on STRAIN2 default gains for FT58 to (8,24,24,10,10,24) , adjust the offset and check if some channel saturates","","");
+    QCommandLineOption setStrainFT45GainsOffsetOption(QStringList() << "4" << "set-strain-gains-ft45", "Sets on STRAIN2 default gains for FT45 to (8,24,24,10,10,24) , adjust the offset and check if some channel saturates","","");
+    QCommandLineOption setStrainFT58GainsOffsetOption(QStringList() << "5" << "set-strain-gains-ft58", "Sets on STRAIN2 default gains for FT58 to (8,10,10,10,10,10) , adjust the offset and check if some channel saturates","","");
     QCommandLineOption getCanBoardVersionOption(QStringList() << "b" << "get-canboard-version", "Gets Bootloader or Application version (<saveFile> must be y or n to save or not a file containing fw info)","saveFile","");
     QCommandLineOption saveDatFileOption(QStringList() << "u" << "save-dat-file", "Saves the calibration .dat file from STRAIN2 eeprom","","");
     QCommandLineOption changeCanIdOption(QStringList() << "k" << "change-can-id", "changes CAN ID","id-new","");
@@ -166,7 +167,7 @@ int main(int argc, char *argv[])
     parser.addOption(changeCanIdOption);
     parser.addOption(changeBoardIpOption);
 
-
+    std::cout<<std::endl<<"START-----------------------------"<<std::endl;//LUCA
     parser.process(a);
 
     bool noGui = parser.isSet(noGuiOption);
@@ -1104,6 +1105,8 @@ int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QStri
     return -1;
 }
 
+
+
 int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,SensorModel model)
 {
     //10-2020 - davide.tome@iit.it
@@ -1125,9 +1128,11 @@ int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QS
     if (model == SensorModel::ft45) {
       ampsets = {ampl_gain08, ampl_gain24, ampl_gain24,
                  ampl_gain10, ampl_gain10, ampl_gain24};
+                 std::cout<<std::endl<<"******FT45******"<<std::endl;
     } else {
       ampsets = {ampl_gain08, ampl_gain10, ampl_gain10,
                  ampl_gain10, ampl_gain10, ampl_gain10};
+                 std::cout<<std::endl<<"******FT58******"<<std::endl;
     }
 
     for(int i = 0; i < 6; i++){ targets.push_back(0); gains.push_back(ampsets[i]);}
