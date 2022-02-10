@@ -287,6 +287,10 @@ install_deps()
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | $_SUDO apt-key add -
     $_SUDO apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
     DEBIAN_FRONTEND=noninteractive; $_SUDO apt-get install $APT_OPTIONS cmake
+  elif [ "$_PLATFORM_RELEASE" == "buster" ]; then
+    $_SUDO apt-add-repository 'deb http://deb.debian.org/debian buster-backports main'
+    DEBIAN_FRONTEND=noninteractive;
+    $_SUDO apt-get -y update && $_SUDO apt-get -y install -t buster-backports cmake
   else
     DEBIAN_FRONTEND=noninteractive; $_SUDO apt-get install $APT_OPTIONS cmake
   fi
