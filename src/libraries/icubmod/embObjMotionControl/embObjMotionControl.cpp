@@ -107,6 +107,7 @@ bool embObjMotionControl::alloc(int nj)
     _trq_pids= new eomc::TrqPidInfo [nj];
     _cur_pids= new eomc::PidInfo[nj];
     _spd_pids= new eomc::PidInfo[nj];
+    _extra_pid_params = allocAndCheck<eOmc_FrictionParams_t>(nj);
     _impedance_limits=allocAndCheck<eomc::impedanceLimits_t>(nj);
     checking_motiondone=allocAndCheck<bool>(nj);
     _last_position_move_time=allocAndCheck<double>(nj);
@@ -176,6 +177,9 @@ bool embObjMotionControl::dealloc()
     if (_spd_pids)
         delete[] _spd_pids;
 
+    if(_extra_pid_params)
+        delete[] _extra_pid_params;
+
 
     return true;
 }
@@ -224,6 +228,7 @@ embObjMotionControl::embObjMotionControl() :
     _trq_pids     = NULL;
     _cur_pids     = NULL;
     _spd_pids     = NULL;
+    _extra_pid_params = NULL;
     res           = NULL;
     _njoints      = 0;
     _axisMap      = NULL;
@@ -854,7 +859,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if(iMange2focBoards())
             lowLevPidisMandatory = true;
 
-        if(!_mcparser->parsePids(config, _trj_pids/*, _dir_pids*/, _trq_pids, _cur_pids, _spd_pids, lowLevPidisMandatory))
+        if(!_mcparser->parsePids(config, _trj_pids/*, _dir_pids*/, _trq_pids, _cur_pids, _spd_pids, _extra_pid_params, lowLevPidisMandatory))
             return false;
 
         // 1) verify joint belonging to same set has same control law
@@ -1296,11 +1301,11 @@ bool embObjMotionControl::init()
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         yarp::dev::Pid tmp; 
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_POSITION,_trj_pids[logico].pid, fisico);
-        copyPid_iCub2eo(&tmp,  &jconfig.pidtrajectory);
+        copyPid_iCub2eo(&tmp, _extra_pid_params, &jconfig.pidtrajectory);
         //tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_DIRECT, _dir_pids[logico].pid, fisico);
         //copyPid_iCub2eo(&tmp, &jconfig.piddirect);
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_TORQUE, _trq_pids[logico].pid, fisico);
-        copyPid_iCub2eo(&tmp, &jconfig.pidtorque);
+        copyPid_iCub2eo(&tmp, _extra_pid_params, &jconfig.pidtorque);
 
         //stiffness and damping read in xml file are in Nm/deg and Nm/(Deg/sec), so we need to convert before send to fw.
         jconfig.impedance.damping   = (eOmeas_damping_t) _measureConverter->impN2S(_impedance_params[logico].damping, fisico);
@@ -1385,10 +1390,10 @@ bool embObjMotionControl::init()
         
         yarp::dev::Pid tmp;
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_CURRENT, _cur_pids[logico].pid, fisico);
-        copyPid_iCub2eo(&tmp, &motor_cfg.pidcurrent);
+        copyPid_iCub2eo(&tmp, _extra_pid_params, &motor_cfg.pidcurrent);
                 
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_VELOCITY, _spd_pids[logico].pid, fisico);
-        copyPid_iCub2eo(&tmp, &motor_cfg.pidspeed);
+        copyPid_iCub2eo(&tmp, _extra_pid_params, &motor_cfg.pidspeed);
 
         if (false == res->setcheckRemoteValue(protid, &motor_cfg, 10, 0.010, 0.050))
         {
@@ -1602,7 +1607,7 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
     Pid hwPid = pid;
 
     //printf("helper_setPosPid: kp=%f ki=%f kd=%f\n", hwPid.kp, hwPid.ki, hwPid.kd);
-    copyPid_iCub2eo(&hwPid, &outPid);
+    copyPid_iCub2eo(&hwPid, _extra_pid_params, &outPid); // TODO: fix extra_params
 
     if(false == res->setRemoteValue(protoId, &outPid))
     {
@@ -3874,7 +3879,7 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
 
     //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
 
-    copyPid_iCub2eo(&hwPid, &outPid);
+    copyPid_iCub2eo(&hwPid, _extra_pid_params, &outPid); // TODO: fix extra_params
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
     return res->setRemoteValue(protid, &outPid);
 }
@@ -5098,7 +5103,7 @@ bool embObjMotionControl::helper_setCurPidRaw(int j, const Pid &pid)
             return false;
         }
 
-        copyPid_iCub2eo(&hwPid, &outPid);
+        copyPid_iCub2eo(&hwPid, _extra_pid_params, &outPid); // TODO: fix extra_params
 
         if (false == res->setRemoteValue(protoId, &outPid))
         {
@@ -5123,7 +5128,7 @@ bool embObjMotionControl::helper_setSpdPidRaw(int j, const Pid &pid)
         return false;
     }
 
-    copyPid_iCub2eo(&hwPid, &outPid);
+    copyPid_iCub2eo(&hwPid, _extra_pid_params, &outPid); // TODO: fix extra_params
 
     if (false == res->setRemoteValue(protoId, &outPid))
     {

@@ -1108,6 +1108,10 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     if (!validate(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asFloat64();
     if (!validate(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints+1))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asFloat64();
     if (!validate(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asFloat64();
+    //if (!validate(pidsGroup, xtmp, "coulombUp", "Pid coulombUp", _njoints+1))   return false;   // TODO: fix
+    //if (!validate(pidsGroup, xtmp, "coulombDwn", "Pid coulombDwn", _njoints+1))   return false; // TODO: fix
+    //if (!validate(pidsGroup, xtmp, "viscousUp", "Pid viscousUp", _njoints+1))   return false;   // TODO: fix
+    //if (!validate(pidsGroup, xtmp, "viscousDwn", "Pid viscousDwn", _njoints+1))   return false; // TODO: fix
 
     //optional kff
     xtmp = pidsGroup.findGroup("kff");         

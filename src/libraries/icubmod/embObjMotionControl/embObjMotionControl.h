@@ -228,6 +228,7 @@ private:
     eomc::TrqPidInfo *                      _trq_pids;
     eomc::PidInfo    *                      _cur_pids;
     eomc::PidInfo    *                      _spd_pids;
+    eOmc_FrictionParams_t     *             _extra_pid_params;
 
     int *                                   _axisMap;   /** axies map*/
     std::vector<eomc::axisInfo_t>           _axesInfo;

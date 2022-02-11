@@ -76,6 +76,8 @@ public:
     }
 
     virtual yarp::dev::Pid getPID(int joint) = 0;
+    virtual eOmc_FrictionParams_t getExtraPidParams(int joint) = 0;
+
 };
 
 
@@ -83,22 +85,41 @@ class Pid_Algorithm_simple: public Pid_Algorithm
 {
 public:
     yarp::dev::Pid *pid;
+    eOmc_FrictionParams_t *extraPidParams;
     
     Pid_Algorithm_simple(int nj, eOmc_ctrl_out_type_t ot)
     {
         out_type = ot;
 
         pid = new yarp::dev::Pid[nj];
+        extraPidParams = allocAndCheck<eOmc_FrictionParams_t>(nj);
+
+        // set default values for the extra PID friction parameters
+/*        for(int i=0; i<nj; i++)
+        {
+            extraPidParams[i].coulomb_up_val = 0.0;
+            extraPidParams[i].coulomb_down_val = 0.0;
+            extraPidParams[i].viscous_up_val = 0.0;
+            extraPidParams[i].viscous_down_val = 0.0;
+        }
+        */
+
     };
 
     ~Pid_Algorithm_simple()
     {
         if (pid) delete[] pid;
+        if (extraPidParams) delete[] extraPidParams;
     };
 
     yarp::dev::Pid getPID(int joint) override
     {
         return pid[joint];
+    }
+
+    eOmc_FrictionParams_t getExtraPidParams(int joint)
+    {
+        return extraPidParams[joint];
     }
 };
 
@@ -363,11 +384,11 @@ private:
 
     bool parsePidsGroup2FOC(yarp::os::Bottle& pidsGroup, Pid myPid[]);
     bool parsePidsGroupSimple(yarp::os::Bottle& pidsGroup, Pid myPid[]);
-    bool parsePidsGroupExtended(yarp::os::Bottle& pidsGroup, Pid myPid[]);
-    bool parsePidsGroupDeluxe(yarp::os::Bottle& pidsGroup, Pid myPid[]);
+    bool parsePidsGroupExtended(yarp::os::Bottle& pidsGroup, Pid myPid[], eOmc_FrictionParams_t extraPidParams[]);
+    bool parsePidsGroupDeluxe(yarp::os::Bottle& pidsGroup, Pid myPid[], eOmc_FrictionParams_t extraPidParams[]);
 
     bool parsePidsGroup(yarp::os::Bottle& pidsGroup, yarp::dev::Pid myPid[], std::string prefix);
-    bool getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids);
+    bool getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, eOmc_FrictionParams_t *extraPidParams);
     bool parsePidUnitsType(yarp::os::Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
 
     bool checkJointTypes(PidInfo *pids, const std::string &pid_type);
@@ -399,7 +420,7 @@ public:
     Parser(int numofjoints, std::string boardname);
     ~Parser();
 
-    bool parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory);
+    bool parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, eOmc_FrictionParams_t *extraPidParams, bool lowLevPidisMandatory);
     bool parse2FocGroup(yarp::os::Searchable &config, twofocSpecificInfo_t *twofocinfo);
     //bool parseCurrentPid(yarp::os::Searchable &config, PidInfo *cpids);//deprecated
     bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &jointtoset);
