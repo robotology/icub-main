@@ -587,7 +587,7 @@ bool eth::theNVmanager::Impl::setcheck(eth::HostTransceiver *t, const eOprotID32
 
 
 bool eth::theNVmanager::Impl::check(eth::HostTransceiver *t, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries)
-{    
+{
     if(false == validparameters(t, id32, value))
     {
         return false;

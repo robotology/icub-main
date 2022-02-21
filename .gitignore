@@ -25,3 +25,5 @@ licenses-good.txt
 CMakeSettings.json
 *.txt.user
 .vscode/settings.json
+.vscode/c_cpp_properties.json
+.vscode/launch.json

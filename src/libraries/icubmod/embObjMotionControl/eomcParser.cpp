@@ -52,6 +52,10 @@ yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
     _kbemf=allocAndCheck<double>(_njoints);
     _ktau=allocAndCheck<double>(_njoints);
     _filterType=allocAndCheck<int>(_njoints);
+    _viscousUp=allocAndCheck<double>(_njoints);
+    _viscousDown=allocAndCheck<double>(_njoints);
+    _coulombUp=allocAndCheck<double>(_njoints);
+    _coulombDown=allocAndCheck<double>(_njoints);
 
     minjerkAlgoMap.clear();
     //directAlgoMap.clear();
@@ -63,10 +67,14 @@ Parser::~Parser()
     checkAndDestroy(_kbemf);
     checkAndDestroy(_ktau);
     checkAndDestroy(_filterType);
+    checkAndDestroy(_viscousUp);
+    checkAndDestroy(_viscousDown);
+    checkAndDestroy(_coulombUp);
+    checkAndDestroy(_coulombDown);
 }
 
 
-bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, eOmc_FrictionParams_t *extraPidParams, bool lowLevPidisMandatory)
+bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory)
 {
     // compila la lista con i tag dei pid per ciascun modo 
     // di controllo per ciascun giunto 
@@ -123,7 +131,7 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *
 
 
 
-    if(!getCorrectPidForEachJoint(ppids/*, vpids*/, tpids, extraPidParams))
+    if(!getCorrectPidForEachJoint(ppids/*, vpids*/, tpids))
         return false;
 
 
@@ -841,7 +849,7 @@ bool Parser::parsePidsGroupSimple(Bottle& pidsGroup, Pid myPid[])
     return true;
 }
 
-bool Parser::parsePidsGroupExtended(Bottle& pidsGroup, Pid myPid[], eOmc_FrictionParams_t extraPidParams[])
+bool Parser::parsePidsGroupExtended(Bottle& pidsGroup, Pid myPid[])
 {
     /*
     <param name = "kff">                        1           1         < / param>
@@ -857,10 +865,6 @@ bool Parser::parsePidsGroupExtended(Bottle& pidsGroup, Pid myPid[], eOmc_Frictio
     <param name = "maxInt">                  750        1000          < / param>
     <param name = "stictionUp">                0           0          < / param>
     <param name = "stictionDwn">               0           0          < / param>
-    <param name = "coulombUp">                 0           0          < / param>
-    <param name = "coulombDown">               0           0          < / param>
-    <param name = "viscousUp">                 0           0          < / param>
-    <param name = "viscousDown">               0           0          < / param>
     */
 
     Bottle xtmp;
@@ -877,23 +881,10 @@ bool Parser::parsePidsGroupExtended(Bottle& pidsGroup, Pid myPid[], eOmc_Frictio
     if (!extractGroup(pidsGroup, xtmp, "stictionDown", "stictionDown parameter", _njoints)) return false;
     for (int j = 0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j + 1).asFloat64();
 
-    // TODO: add the rest of the parameters
-    if (!extractGroup(pidsGroup, xtmp, "coulombUp", "coulombUp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) extraPidParams[j].coulomb_up_val = xtmp.get(j + 1).asFloat32();
-
-    if (!extractGroup(pidsGroup, xtmp, "coulombDown", "coulombDown parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) extraPidParams[j].coulomb_down_val = xtmp.get(j + 1).asFloat32();
-
-    if (!extractGroup(pidsGroup, xtmp, "viscousUp", "viscousUp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) extraPidParams[j].viscous_up_val = xtmp.get(j + 1).asFloat32();
-
-    if (!extractGroup(pidsGroup, xtmp, "viscousDown", "viscousDown parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) extraPidParams[j].viscous_down_val = xtmp.get(j + 1).asFloat32();
-
     return true;
 }
 
-bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[], eOmc_FrictionParams_t extraPidParams[])
+bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
 {
     /*
     <param name = "kff">                        1           1         < / param>
@@ -906,18 +897,30 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[], eOmc_FrictionP
     <param name = "stictionDwn">               0           0          < / param>
     */
 
-    if (!parsePidsGroupExtended(pidsGroup, myPid,  extraPidParams)) return false;
+    if (!parsePidsGroupExtended(pidsGroup, myPid)) return false;
 
     Bottle xtmp;
 
-    if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints)) return false; 
+    if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints)) return false;
     for (int j = 0; j<_njoints; j++) _kbemf[j] = xtmp.get(j + 1).asFloat64();
-    
-    if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints)) return false; 
+
+    if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints)) return false;
     for (int j = 0; j<_njoints; j++) _ktau[j] = xtmp.get(j + 1).asFloat64();
-    
-    if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints)) return false; 
+
+    if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints)) return false;
     for (int j = 0; j<_njoints; j++) _filterType[j] = xtmp.get(j + 1).asInt32();
+
+    if (!extractGroup(pidsGroup, xtmp, "viscousUp", "viscousUp parameter", _njoints)) return false;
+    for (int j = 0; j<_njoints; j++) _viscousUp[j] = xtmp.get(j + 1).asFloat64();
+
+    if (!extractGroup(pidsGroup, xtmp, "viscousDown", "viscousDown parameter", _njoints)) return false;
+    for (int j = 0; j<_njoints; j++) _viscousDown[j] = xtmp.get(j + 1).asFloat64();
+
+    if (!extractGroup(pidsGroup, xtmp, "coulombUp", "coulombUp parameter", _njoints)) return false;
+    for (int j = 0; j<_njoints; j++) _coulombUp[j] = xtmp.get(j + 1).asFloat64();
+
+    if (!extractGroup(pidsGroup, xtmp, "coulombDown", "coulombDown parameter", _njoints)) return false;
+    for (int j = 0; j<_njoints; j++) _coulombDown[j] = xtmp.get(j + 1).asFloat64();
 
     return true;
 }
@@ -998,7 +1001,7 @@ bool Parser::parsePid_minJerk_outPwm(Bottle &b_pid, string controlLaw)
     if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
     pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
 
-    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid, pidAlgo_ptr->extraPidParams);
+    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
 
     minjerkAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
 
@@ -1016,7 +1019,7 @@ bool Parser::parsePid_minJerk_outCur(Bottle &b_pid, string controlLaw)
     if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
     pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
 
-    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid, pidAlgo_ptr->extraPidParams);
+    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
 
     minjerkAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
 
@@ -1108,7 +1111,7 @@ bool Parser::parsePid_torque_outPwm(Bottle &b_pid, string controlLaw)
     if(!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
     pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
 
-    parsePidsGroupDeluxe(b_pid, pidAlgo_ptr->pid, pidAlgo_ptr->extraPidParams);
+    parsePidsGroupDeluxe(b_pid, pidAlgo_ptr->pid);
 
     torqueAlgoMap.insert( std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
 
@@ -1126,7 +1129,7 @@ bool Parser::parsePid_torque_outCur(Bottle &b_pid, string controlLaw)
     if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
     pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
 
-    parsePidsGroupDeluxe(b_pid, pidAlgo_ptr->pid, pidAlgo_ptr->extraPidParams);
+    parsePidsGroupDeluxe(b_pid, pidAlgo_ptr->pid);
 
     torqueAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
 
@@ -1144,14 +1147,14 @@ bool Parser::parsePid_torque_outVel(Bottle &b_pid, string controlLaw)
     if(!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
     pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
 
-    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid, pidAlgo_ptr->extraPidParams);
+    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
 
     torqueAlgoMap.insert ( std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr) );
 
     return true;
 }
 
-bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, eOmc_FrictionParams_t *extraPidParams)
+bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids)
 {
     Pid_Algorithm *minjerkAlgo_ptr = NULL;
     //Pid_Algorithm *directAlgo_ptr = NULL;
@@ -1176,7 +1179,7 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
 
         minjerkAlgo_ptr = minjerkAlgoMap[_positionControlLaw[i]];
 
-        ppids[i].pid = minjerkAlgo_ptr->getPID(i); 
+        ppids[i].pid = minjerkAlgo_ptr->getPID(i);
         ppids[i].fbk_PidUnits = minjerkAlgo_ptr->fbk_PidUnits;
         ppids[i].out_PidUnits = minjerkAlgo_ptr->out_PidUnits;
         //ppids[i].controlLaw =  minjerkAlgo_ptr->type;
@@ -1239,7 +1242,6 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
         if (torqueAlgo_ptr)
         {
             tpids[i].pid = torqueAlgo_ptr->getPID(i);
-            extraPidParams[i] = torqueAlgo_ptr->getExtraPidParams(i);
             tpids[i].fbk_PidUnits = torqueAlgo_ptr->fbk_PidUnits;
             tpids[i].out_PidUnits = torqueAlgo_ptr->out_PidUnits;
             //tpids[i].controlLaw = torqueAlgo_ptr->type;
@@ -1248,6 +1250,10 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
             tpids[i].enabled = true;
             tpids[i].kbemf = _kbemf[i];
             tpids[i].ktau = _ktau[i];
+            tpids[i].viscousUp = _viscousUp[i];
+            tpids[i].viscousDown = _viscousDown[i];
+            tpids[i].coulombUp = _coulombUp[i];
+            tpids[i].coulombDown = _coulombDown[i];
             tpids[i].filterType = _filterType[i];
         }
         else

@@ -168,7 +168,7 @@ namespace yarp {
         return false;
     }
     
-    void copyPid_iCub2eo(const Pid *in, eOmc_FrictionParams_t *in_extra, eOmc_PID_t *out)
+    void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
     {
         memset(out, 0, sizeof(eOmc_PID_t));     // marco.accame: it is good thing to clear the out struct before copying. this prevent future members of struct not yet managed to be dirty.
         out->kp = (float) (in->kp);
@@ -181,10 +181,6 @@ namespace yarp {
         out->kff = (float) (in->kff);
         out->stiction_down_val = (float)(in->stiction_down_val);
         out->stiction_up_val = (float)(in->stiction_up_val);
-        out->friction.coulomb_up_val = (float)(in_extra->coulomb_up_val);
-        out->friction.coulomb_down_val = (float)(in_extra->coulomb_down_val);
-        out->friction.viscous_up_val = (float)(in_extra->viscous_up_val);
-        out->friction.viscous_down_val = (float)(in_extra->viscous_down_val);
     }
     
     void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
