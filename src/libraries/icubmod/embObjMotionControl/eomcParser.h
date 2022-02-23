@@ -83,7 +83,7 @@ class Pid_Algorithm_simple: public Pid_Algorithm
 {
 public:
     yarp::dev::Pid *pid;
-
+    
     Pid_Algorithm_simple(int nj, eOmc_ctrl_out_type_t ot)
     {
         out_type = ot;
@@ -173,7 +173,7 @@ public:
     {
         enabled = false;
         //controlLaw = PidAlgo_simple;
-
+        
         out_type = eomc_ctrl_out_type_n_a;
         fbk_PidUnits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
         out_PidUnits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
@@ -346,7 +346,7 @@ private:
 
     //PID parsing functions
     bool parseControlsGroup(yarp::os::Searchable &config);
-
+    
     bool parseSelectedPositionControl(yarp::os::Searchable &config);
     bool parseSelectedVelocityControl(yarp::os::Searchable &config);
     bool parseSelectedMixedControl(yarp::os::Searchable &config);

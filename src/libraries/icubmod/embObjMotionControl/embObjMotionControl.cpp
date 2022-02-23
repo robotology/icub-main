@@ -266,7 +266,7 @@ embObjMotionControl::embObjMotionControl() :
     parser = NULL;
     _mcparser = NULL;
     
-#ifdef NETWORK_PERFORMANCE_BENCHMARK
+#ifdef NETWORK_PERFORMANCE_BENCHMARK 
        /* We would like to verify if the round trimp of request and answer from embedded board is about 3 milliseconds, with a tollerance 0f 0.250 milliseconds.
        The m_responseTimingVerifier object, after 3 seconds, prints an istogram with values from 1 to 10 millisec with a step of 0.5 millisec
     */
@@ -1294,7 +1294,7 @@ bool embObjMotionControl::init()
 
         eOmc_joint_config_t jconfig = {0};
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
-        yarp::dev::Pid tmp;
+        yarp::dev::Pid tmp; 
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_POSITION,_trj_pids[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &jconfig.pidtrajectory);
         //tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_DIRECT, _dir_pids[logico].pid, fisico);
@@ -3878,7 +3878,7 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
 
     //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
 
-    copyPid_iCub2eo(&hwPid, &outPid); // TODO: fix extra_params
+    copyPid_iCub2eo(&hwPid, &outPid);
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
     return res->setRemoteValue(protid, &outPid);
 }
@@ -5112,7 +5112,7 @@ bool embObjMotionControl::helper_setCurPidRaw(int j, const Pid &pid)
             return false;
         }
 
-        copyPid_iCub2eo(&hwPid, &outPid); // TODO: fix extra_params
+        copyPid_iCub2eo(&hwPid, &outPid);
 
         if (false == res->setRemoteValue(protoId, &outPid))
         {
@@ -5137,7 +5137,7 @@ bool embObjMotionControl::helper_setSpdPidRaw(int j, const Pid &pid)
         return false;
     }
 
-    copyPid_iCub2eo(&hwPid, &outPid); // TODO: fix extra_params
+    copyPid_iCub2eo(&hwPid, &outPid);
 
     if (false == res->setRemoteValue(protoId, &outPid))
     {
@@ -5277,8 +5277,8 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
 {
     eOmc_motor_status_t status;
     
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol,
-                                        eoprot_entity_mc_motor, j,
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, 
+                                        eoprot_entity_mc_motor, j, 
                                         eoprot_tag_mc_motor_status);
     
     bool ret = res->getLocalValue(protid, &status);
