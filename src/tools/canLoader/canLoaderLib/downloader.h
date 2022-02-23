@@ -100,10 +100,11 @@ struct strain2_ampl_regs_t
    size_t size() { return 6; }
 };
 
+//Luca
 enum strain2_ampl_discretegain_t
 {
-    ampl_gain48 = 0, ampl_gain36 = 1, ampl_gain24 = 2, ampl_gain20 = 3, ampl_gain16 = 4,
-    ampl_gain10 = 5, ampl_gain08 = 6, ampl_gain06 = 7, ampl_gain04 = 8
+    ampl_gain102 = 0,ampl_gain90,ampl_gain78,ampl_gain56,ampl_gain48, ampl_gain36, ampl_gain24, ampl_gain20, ampl_gain16,
+    ampl_gain10, ampl_gain08, ampl_gain06, ampl_gain04
 };
 
 
@@ -137,8 +138,8 @@ int get_dst_from_id (int id);
 
 int verify_ack(int command, int read_messages);
 
-
-enum { ampl_gain_numberOf = 9 };
+//Luca
+enum { ampl_gain_numberOf = 13 };
 
 
 public:

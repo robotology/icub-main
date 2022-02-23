@@ -507,9 +507,14 @@ struct strain::amplifier::PGA308::Impl
 
     bool load(const DiscreteGain g)
     {
+        //LUCA
         // offset all equal to 32k-1
         static const uint8_t _cfgmap[static_cast<uint8_t>(DiscreteGain::maxnumberof)][6] =
         {
+            {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 102
+            {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 90
+            {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 78
+            {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 56
             {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 48
             {0x00, 0x10, 0x46, 0x2a, 0x80, 0x80},   // gain = 36
             {0x00, 0x40, 0x42, 0x3e, 0x62, 0x7f},   // gain = 24 [or 0x26 instead of 0x42]
@@ -545,9 +550,14 @@ struct strain::amplifier::PGA308::Impl
 
     bool load_step1(const DiscreteGain g)
     {
+        //LUCA
         // offset are not meaningful yet. we just need zdac to be 0x8000 and cfg0.os =  ... boh: 0x20
         static const uint8_t _cfgmap[static_cast<uint8_t>(DiscreteGain::maxnumberof)][6] =
         {
+            {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 102
+            {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 90
+            {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 78
+            {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 56            
             {0x00, 0x40, 0x46, 0x20, 0x00, 0x80},   // gain = 48
             {0x00, 0x10, 0x46, 0x20, 0x00, 0x80},   // gain = 36
             {0x00, 0x40, 0x42, 0x20, 0x00, 0x80},   // gain = 24 [or 0x26 instead of 0x42]
@@ -654,9 +664,10 @@ struct strain::amplifier::PGA308::Impl
 
 namespace strain { namespace amplifier {
 
+    //LUCA
     static const float mapofgains[static_cast<uint8_t>(DiscreteGain::maxnumberof)] =
     {
-        48, 36, 24, 20, 16, 10, 8, 6, 4
+        102,90,78,56,48, 36, 24, 20, 16, 10, 8, 6, 4
     };
 
     Gain convert(const DiscreteGain dg)
