@@ -2001,10 +2001,10 @@ bool iCubSimulationControl::getMotorTorqueParamsRaw(int axis, MotorTorqueParamet
          params->bemf_scale=motor_torque_params[axis].bemf_scale;
          params->ktau=motor_torque_params[axis].ktau;
          params->ktau_scale=motor_torque_params[axis].ktau_scale;
-         params->viscousUp=motor_torque_params[axis].viscousUp;
-         params->viscousDown=motor_torque_params[axis].viscousDown;
-         params->coulombUp=motor_torque_params[axis].coulombUp;
-         params->coulombDown=motor_torque_params[axis].coulombDown;
+         params->viscousPos=motor_torque_params[axis].viscousPos;
+         params->viscousNeg=motor_torque_params[axis].viscousNeg;
+         params->coulombPos=motor_torque_params[axis].coulombPos;
+         params->coulombNeg=motor_torque_params[axis].coulombNeg;
     }
     NOT_YET_IMPLEMENTED("getMotorTorqueParamsRaw");
     return true; //fake
@@ -2018,10 +2018,10 @@ bool iCubSimulationControl::setMotorTorqueParamsRaw(int axis, const MotorTorqueP
         motor_torque_params[axis].bemf_scale=params.bemf_scale;
         motor_torque_params[axis].ktau=params.ktau;
         motor_torque_params[axis].ktau_scale=params.ktau_scale;
-        motor_torque_params[axis].viscousUp=params.viscousUp;
-        motor_torque_params[axis].viscousDown=params.viscousDown;
-        motor_torque_params[axis].coulombUp=params.coulombUp;
-        motor_torque_params[axis].coulombDown=params.coulombDown;
+        motor_torque_params[axis].viscousPos=params.viscousPos;
+        motor_torque_params[axis].viscousNeg=params.viscousNeg;
+        motor_torque_params[axis].coulombPos=params.coulombPos;
+        motor_torque_params[axis].coulombNeg=params.coulombNeg;
     }
     NOT_YET_IMPLEMENTED("setMotorTorqueParamsRaw");
     return true; //fake

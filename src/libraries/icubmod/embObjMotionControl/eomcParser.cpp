@@ -52,10 +52,10 @@ yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
     _kbemf=allocAndCheck<double>(_njoints);
     _ktau=allocAndCheck<double>(_njoints);
     _filterType=allocAndCheck<int>(_njoints);
-    _viscousUp=allocAndCheck<double>(_njoints);
-    _viscousDown=allocAndCheck<double>(_njoints);
-    _coulombUp=allocAndCheck<double>(_njoints);
-    _coulombDown=allocAndCheck<double>(_njoints);
+    _viscousPos=allocAndCheck<double>(_njoints);
+    _viscousNeg=allocAndCheck<double>(_njoints);
+    _coulombPos=allocAndCheck<double>(_njoints);
+    _coulombNeg=allocAndCheck<double>(_njoints);
 
     minjerkAlgoMap.clear();
     //directAlgoMap.clear();
@@ -67,10 +67,10 @@ Parser::~Parser()
     checkAndDestroy(_kbemf);
     checkAndDestroy(_ktau);
     checkAndDestroy(_filterType);
-    checkAndDestroy(_viscousUp);
-    checkAndDestroy(_viscousDown);
-    checkAndDestroy(_coulombUp);
-    checkAndDestroy(_coulombDown);
+    checkAndDestroy(_viscousPos);
+    checkAndDestroy(_viscousNeg);
+    checkAndDestroy(_coulombPos);
+    checkAndDestroy(_coulombNeg);
 }
 
 
@@ -910,17 +910,17 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
     if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints)) return false;
     for (int j = 0; j<_njoints; j++) _filterType[j] = xtmp.get(j + 1).asInt32();
 
-    if (!extractGroup(pidsGroup, xtmp, "viscousUp", "viscousUp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _viscousUp[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "viscousPos", "viscousPos parameter", _njoints)) return false;
+    for (int j = 0; j<_njoints; j++) _viscousPos[j] = xtmp.get(j + 1).asFloat64();
 
-    if (!extractGroup(pidsGroup, xtmp, "viscousDown", "viscousDown parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _viscousDown[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "viscousNeg", "viscousNeg parameter", _njoints)) return false;
+    for (int j = 0; j<_njoints; j++) _viscousNeg[j] = xtmp.get(j + 1).asFloat64();
 
-    if (!extractGroup(pidsGroup, xtmp, "coulombUp", "coulombUp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _coulombUp[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "coulombPos", "coulombPos parameter", _njoints)) return false;
+    for (int j = 0; j<_njoints; j++) _coulombPos[j] = xtmp.get(j + 1).asFloat64();
 
-    if (!extractGroup(pidsGroup, xtmp, "coulombDown", "coulombDown parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _coulombDown[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "coulombNeg", "coulombNeg parameter", _njoints)) return false;
+    for (int j = 0; j<_njoints; j++) _coulombNeg[j] = xtmp.get(j + 1).asFloat64();
 
     return true;
 }
@@ -1250,10 +1250,10 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
             tpids[i].enabled = true;
             tpids[i].kbemf = _kbemf[i];
             tpids[i].ktau = _ktau[i];
-            tpids[i].viscousUp = _viscousUp[i];
-            tpids[i].viscousDown = _viscousDown[i];
-            tpids[i].coulombUp = _coulombUp[i];
-            tpids[i].coulombDown = _coulombDown[i];
+            tpids[i].viscousPos = _viscousPos[i];
+            tpids[i].viscousNeg = _viscousNeg[i];
+            tpids[i].coulombPos = _coulombPos[i];
+            tpids[i].coulombNeg = _coulombNeg[i];
             tpids[i].filterType = _filterType[i];
         }
         else

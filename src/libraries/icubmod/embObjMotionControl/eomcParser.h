@@ -192,10 +192,10 @@ class TrqPidInfo : public PidInfo
 public:
     double kbemf;                             /** back-emf compensation parameter */
     double ktau;                              /** motor torque constant */
-    double viscousUp;
-    double viscousDown;
-    double coulombUp;
-    double coulombDown;
+    double viscousPos;
+    double viscousNeg;
+    double coulombPos;
+    double coulombNeg;
     int    filterType;
 };
 
@@ -335,10 +335,10 @@ private:
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
     int *_filterType;
-    double *_viscousUp;
-    double *_viscousDown;
-    double *_coulombUp;
-    double *_coulombDown;
+    double *_viscousPos;
+    double *_viscousNeg;
+    double *_coulombPos;
+    double *_coulombNeg;
 
 
 
