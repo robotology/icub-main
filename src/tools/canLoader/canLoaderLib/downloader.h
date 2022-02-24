@@ -101,9 +101,9 @@ struct strain2_ampl_regs_t
 };
 
 //Luca
-enum strain2_ampl_discretegain_t
+enum strain2_ampl_discretegain_t:int
 {
-    ampl_gain102 = 0,ampl_gain90,ampl_gain78,ampl_gain56,ampl_gain48, ampl_gain36, ampl_gain24, ampl_gain20, ampl_gain16,
+    ampl_gain256 = 0,ampl_gain128,ampl_gain96,ampl_gain64,ampl_gain48, ampl_gain36, ampl_gain24, ampl_gain20, ampl_gain16,
     ampl_gain10, ampl_gain08, ampl_gain06, ampl_gain04
 };
 

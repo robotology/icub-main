@@ -87,14 +87,14 @@ void CustomComboBox::initItems()
         return;
     }
     //Luca
-    addItem("102,000",102);
-    setItemData(count() - 1,ampl_gain102,GAINAMPROLE);
-    addItem("90,000",90);
-    setItemData(count() - 1,ampl_gain90,GAINAMPROLE);
-    addItem("78,000",78);
-    setItemData(count() - 1,ampl_gain78,GAINAMPROLE);
-    addItem("56,000",56);
-    setItemData(count() - 1,ampl_gain56,GAINAMPROLE);
+    addItem("256,000",256);
+    setItemData(count() - 1,ampl_gain256,GAINAMPROLE);
+    addItem("128,000",128);
+    setItemData(count() - 1,ampl_gain128,GAINAMPROLE);
+    addItem("96,000",96);
+    setItemData(count() - 1,ampl_gain96,GAINAMPROLE);
+    addItem("64,000",64);
+    setItemData(count() - 1,ampl_gain64,GAINAMPROLE);
     addItem("48,000",48);
     setItemData(count() - 1,ampl_gain48,GAINAMPROLE);
     addItem("36,000",36);
@@ -128,10 +128,10 @@ void CustomComboBox::setIndexFromAmpGain(int g)
 
     //LUCA
     switch (g) {
-    case ampl_gain102:
-    case ampl_gain90:
-    case ampl_gain78:
-    case ampl_gain56:
+    case ampl_gain256:
+    case ampl_gain128:
+    case ampl_gain96:
+    case ampl_gain64:
     case ampl_gain48:
     case ampl_gain36:
     case ampl_gain24:
