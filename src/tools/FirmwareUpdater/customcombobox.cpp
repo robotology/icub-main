@@ -86,6 +86,15 @@ void CustomComboBox::initItems()
         mutex.unlock();
         return;
     }
+    //Luca
+    addItem("256,000",256);
+    setItemData(count() - 1,ampl_gain256,GAINAMPROLE);
+    addItem("128,000",128);
+    setItemData(count() - 1,ampl_gain128,GAINAMPROLE);
+    addItem("96,000",96);
+    setItemData(count() - 1,ampl_gain96,GAINAMPROLE);
+    addItem("64,000",64);
+    setItemData(count() - 1,ampl_gain64,GAINAMPROLE);
     addItem("48,000",48);
     setItemData(count() - 1,ampl_gain48,GAINAMPROLE);
     addItem("36,000",36);
@@ -117,34 +126,22 @@ void CustomComboBox::setIndexFromAmpGain(int g)
     int index;
     disconnect(this,SIGNAL(currentIndexChanged(int)),this,SLOT(onCurrentIndexChanged(int)));
 
-
+    //LUCA
     switch (g) {
+    case ampl_gain256:
+    case ampl_gain128:
+    case ampl_gain96:
+    case ampl_gain64:
     case ampl_gain48:
-        index = 0;
-        break;
     case ampl_gain36:
-        index = 1;
-        break;
     case ampl_gain24:
-        index = 2;
-        break;
     case ampl_gain20:
-        index = 3;
-        break;
     case ampl_gain16:
-        index = 4;
-        break;
     case ampl_gain10:
-        index = 5;
-        break;
     case ampl_gain08:
-        index = 6;
-        break;
     case ampl_gain06:
-        index = 7;
-        break;
     case ampl_gain04:
-        index = 8;
+        index = g;
         break;
     default:
         index = 0;

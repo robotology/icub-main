@@ -991,9 +991,10 @@ int cDownloader::strain_get_amplifier_regs(int bus, int target_id, unsigned char
 
 float cDownloader::strain_amplifier_discretegain2float(strain2_ampl_discretegain_t c)
 {
+    //Luca
     static const float mapofgains[ampl_gain_numberOf] =
     {
-        48, 36, 24, 20, 16, 10, 8, 6, 4
+        256 , 128 , 96 , 64 , 48, 36, 24, 20, 16, 10, 8, 6, 4
     };
 
     unsigned int index = static_cast<unsigned int>(c);
@@ -1036,6 +1037,11 @@ int cDownloader::strain_set_amplifier_discretegain(int bus, int target_id, unsig
     // offset all equal to 32k-1
     static const uint8_t _cfg1map[ampl_gain_numberOf][_NUMofREGS] =
     {
+        //Luca
+        {0x00, 0x80, 0x66, 0x06, 0xcb, 0x80},   // gain = 256
+        {0x00, 0x80, 0x56, 0x0c, 0xcb, 0x80},   // gain = 128
+        {0x00, 0x40, 0x56, 0x10, 0x0f, 0x81},   // gain = 96
+        {0x00, 0x80, 0x46, 0x17, 0x6d, 0x7f},   // gain = 64
         {0x00, 0x40, 0x46, 0x1f, 0xb1, 0x7f},   // gain = 48
         {0x00, 0x10, 0x46, 0x2a, 0x80, 0x80},   // gain = 36
         {0x00, 0x40, 0x42, 0x3e, 0x62, 0x7f},   // gain = 24 [or 0x26 instead of 0x42]

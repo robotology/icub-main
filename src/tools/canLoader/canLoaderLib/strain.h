@@ -124,7 +124,8 @@ namespace strain { namespace amplifier {
     // the exact definition of the possible values is possible but very complicated, hence we decide
     // to simplify and allow only a limited number of possible values whcih have shown to be useful.
     // they are the DiscreteGain
-    enum class DiscreteGain { val48 = 0, val36 = 1, val24 = 2, val20 = 3, val16 = 4, val10 = 5, val08 = 6, val06 = 7,  val04 = 8, none = 32, maxnumberof = 9 };
+    //LUCA
+    enum class DiscreteGain { val256 = 0, val128 = 1, val96 = 2, val64 = 3, val48 = 4, val36 = 5, val24 = 6, val20 = 7, val16 = 8, val10 = 9, val08 = 10, val06 = 11,  val04 = 12, none = 32, maxnumberof = 13 };
 
     // with this we convert from the enum to the real value (should you use it in some debug message)
     Gain convert(DiscreteGain dg);
