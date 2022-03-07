@@ -192,6 +192,10 @@ class TrqPidInfo : public PidInfo
 public:
     double kbemf;                             /** back-emf compensation parameter */
     double ktau;                              /** motor torque constant */
+    double viscousPos;
+    double viscousNeg;
+    double coulombPos;
+    double coulombNeg;
     int    filterType;
 };
 
@@ -330,7 +334,11 @@ private:
 
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
-    int * _filterType;
+    int *_filterType;
+    double *_viscousPos;
+    double *_viscousNeg;
+    double *_coulombPos;
+    double *_coulombNeg;
 
 
 
@@ -338,14 +346,14 @@ private:
 
     //PID parsing functions
     bool parseControlsGroup(yarp::os::Searchable &config);
-
+    
     bool parseSelectedPositionControl(yarp::os::Searchable &config);
     bool parseSelectedVelocityControl(yarp::os::Searchable &config);
     bool parseSelectedMixedControl(yarp::os::Searchable &config);
     //bool parseSelectedPosDirectControl(yarp::os::Searchable &config);
     //bool parseSelectedVelDirectControl(yarp::os::Searchable &config);
     bool parseSelectedTorqueControl(yarp::os::Searchable &config);
-    
+
     bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids);
     bool parseSelectedSpeedPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids);
 

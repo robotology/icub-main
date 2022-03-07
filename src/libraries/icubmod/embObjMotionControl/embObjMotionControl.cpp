@@ -1296,7 +1296,7 @@ bool embObjMotionControl::init()
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         yarp::dev::Pid tmp; 
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_POSITION,_trj_pids[logico].pid, fisico);
-        copyPid_iCub2eo(&tmp,  &jconfig.pidtrajectory);
+        copyPid_iCub2eo(&tmp, &jconfig.pidtrajectory);
         //tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_DIRECT, _dir_pids[logico].pid, fisico);
         //copyPid_iCub2eo(&tmp, &jconfig.piddirect);
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_TORQUE, _trq_pids[logico].pid, fisico);
@@ -1329,6 +1329,10 @@ bool embObjMotionControl::init()
         jconfig.motor_params.bemf_scale = 0;
         jconfig.motor_params.ktau_value = _measureConverter->ktau_user2raw(_trq_pids[logico].ktau, fisico);
         jconfig.motor_params.ktau_scale = 0;
+        jconfig.motor_params.friction.viscous_pos_val = _measureConverter->viscousPos_user2raw(_trq_pids[logico].viscousPos, fisico);
+        jconfig.motor_params.friction.viscous_neg_val = _measureConverter->viscousNeg_user2raw(_trq_pids[logico].viscousNeg, fisico);
+        jconfig.motor_params.friction.coulomb_pos_val = _measureConverter->coulombPos_user2raw(_trq_pids[logico].coulombPos, fisico);
+        jconfig.motor_params.friction.coulomb_neg_val = _measureConverter->coulombNeg_user2raw(_trq_pids[logico].coulombNeg, fisico);
 
         jconfig.gearbox_E2J = _gearbox_E2J[logico];
         
@@ -1392,7 +1396,7 @@ bool embObjMotionControl::init()
 
         if (false == res->setcheckRemoteValue(protid, &motor_cfg, 10, 0.010, 0.050))
         {
-            yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for motor config fisico #" << fisico << "in "<< getBoardInfo(); 
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for motor config fisico #" << fisico << "in "<< getBoardInfo();
             return false;
         }
         else
@@ -3598,7 +3602,7 @@ bool embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle
             MotorTorqueParameters params;
             getMotorTorqueParamsRaw(i, &params);
             char buff[1000];
-            snprintf(buff, 1000, "J %d : bemf %+3.3f bemf_scale %+3.3f ktau %+3.3f ktau_scale %+3.3f ", i, params.bemf, params.bemf_scale, params.ktau, params.ktau_scale);
+            snprintf(buff, 1000, "J %d : bemf %+3.3f bemf_scale %+3.3f ktau %+3.3f ktau_scale %+3.3f viscousPos %+3.3f viscousNeg %+3.3f coulombPos %+3.3f coulombNeg %+3.3f", i, params.bemf, params.bemf_scale, params.ktau, params.ktau_scale, params.viscousPos, params.viscousNeg, params.coulombPos, params.coulombNeg);
             r.addString(buff);
         }
         return true;
@@ -4018,7 +4022,12 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     params->bemf_scale = eo_params.bemf_scale;
     params->ktau       = eo_params.ktau_value;
     params->ktau_scale = eo_params.ktau_scale;
-    //printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
+    params->viscousPos = eo_params.friction.viscous_pos_val;
+    params->viscousNeg = eo_params.friction.viscous_neg_val ;
+    params->coulombPos = eo_params.friction.coulomb_pos_val;
+    params->coulombNeg = eo_params.friction.coulomb_neg_val;
+
+    //printf("debug getMotorTorqueParamsRaw %f %f %f %f %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale, params->viscousPos, params->viscousNeg, params->coulombPos, params->coulombNeg);
 
     return true;
 }
@@ -4028,12 +4037,17 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
     eOmc_motor_params_t eo_params = {0};
 
-    //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f\n",j, params.bemf, params.ktau);
+    //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f viscousPos=%f viscousNeg=%f coulombPos=%f coulombNeg=%f\n",j, params.bemf, params.ktau, params.viscousPos, params.viscousNeg, params.coulombPos, params.coulombNeg);
 
     eo_params.bemf_value  = (float)   params.bemf;
     eo_params.bemf_scale  = (uint8_t) params.bemf_scale;
     eo_params.ktau_value  = (float)   params.ktau;
     eo_params.ktau_scale  = (uint8_t) params.ktau_scale;
+    eo_params.friction.viscous_pos_val   = static_cast<float32_t>(params.viscousPos);
+    eo_params.friction.viscous_neg_val = static_cast<float32_t>(params.viscousNeg);
+    eo_params.friction.coulomb_pos_val   = static_cast<float32_t>(params.coulombPos);
+    eo_params.friction.coulomb_neg_val = static_cast<float32_t>(params.coulombNeg);
+
 
     if(false == res->setRemoteValue(id32, &eo_params))
     {
