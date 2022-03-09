@@ -556,7 +556,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 {
     bool formaterror = false;
     // so far we check for eomn_serv_AS_mais / strain / inertials inertials3 / psc / pos only
-    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) &&
+    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_ft != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) &&
        (eomn_serv_AS_inertials3 != type) && (eomn_serv_AS_psc != type) && (eomn_serv_AS_pos != type))
     {
         yError() << "ServiceParser::check() is called with wrong type";
@@ -886,38 +886,11 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     // now we may have one or more sections which are specific of the device ...
 
     // only strain so far.
-
-    if(eomn_serv_AS_strain == type)
-    {
-        Bottle b_STRAIN_SETTINGS = Bottle(b_SERVICE.findGroup("STRAIN_SETTINGS"));
-        if(b_STRAIN_SETTINGS.isNull())
-        {
-            yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS";
-            return false;
-        }
-        else
-        {
-
-            Bottle b_STRAIN_SETTINGS_useCalibration = Bottle(b_STRAIN_SETTINGS.findGroup("useCalibration"));
-            if(b_STRAIN_SETTINGS_useCalibration.isNull())
-            {
-                yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS.useCalibration";
-                return false;
-            }
-
-            formaterror = false;
-            convert(b_STRAIN_SETTINGS_useCalibration.get(1).asString(), as_strain_settings.useCalibration, formaterror);
-
-            if(true == formaterror)
-            {
-                yError() << "ServiceParser::check() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
-                return false;
-            }
-        }
-    }
-
-
-
+    //LUCA
+    if(!CheckSpecificForStrain(b_SERVICE,type,formaterror))
+        return false;
+    if(!CheckSpecificForMultipleFT(b_SERVICE,type,formaterror))
+        return false;
 
     // we we are in here we have the struct filled with all variables ... some validations are still due to the calling device.
     // for instance, if embObjMais
@@ -1401,6 +1374,65 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
     return true;
 }
 
+bool ServiceParser::parseService(Searchable &config, servConfigMultipleFTsensor_t &ftconfig)
+{
+    if(false == check_analog(config, eomn_serv_AS_ft))
+    {
+        yError() << "ServiceParser::parseService() has received an invalid SERVICE group for FT";
+        return false;
+    }
+    
+    // now we extract values ... so far we dont make many checks ... we just assume the vector<> are of size 1.
+    servCanBoard_t thestrain_props = as_service.properties.canboards.at(0);
+    servAnalogSensor_t thestrain_sensor = as_service.settings.enabledsensors.at(0);
+    
+    // first check we do is about thestrain_props.type
+    if(eobrd_cantype_strain2 != thestrain_props.type)
+    {
+        yError() << "ServiceParser::parseService() for embObjFTsensor has detected an invalid type of board. it should be a eobrd_strain2 but is a:" << eoboards_type2string2(eoboards_cantype2type(thestrain_props.type), eobool_false);
+        return false;
+    }
+    
+    ftconfig.acquisitionrate = as_service.settings.acquisitionrate;
+    ftconfig.useCalibration = as_strain_settings.useCalibration;
+    ftconfig.nameOfStrain = thestrain_sensor.id;
+    
+    memset(&ftconfig.ethservice.configuration, 0, sizeof(ftconfig.ethservice.configuration));
+    
+    ftconfig.ethservice.configuration.type = eomn_serv_AS_ft;
+    ftconfig.ethservice.configuration.data.as.strain.boardtype.type = thestrain_props.type;
+    memcpy(&ftconfig.ethservice.configuration.data.as.strain.boardtype.protocol, &thestrain_props.protocol, sizeof(eObrd_protocolversion_t));
+    memcpy(&ftconfig.ethservice.configuration.data.as.strain.boardtype.firmware, &thestrain_props.firmware, sizeof(eObrd_firmwareversion_t));
+    
+    // second check we do is about thestrain_sensor.location
+    if(eobrd_place_can != thestrain_sensor.location.any.place)
+    {
+        yError() << "ServiceParser::parseService() has received an invalid location for strain. it is not a CANx:adr location";
+        return false;
+    }
+    ftconfig.ethservice.configuration.data.as.strain.canloc.port = thestrain_sensor.location.can.port;
+    ftconfig.ethservice.configuration.data.as.strain.canloc.addr = thestrain_sensor.location.can.addr;
+    ftconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eobrd_caninsideindex_none;
+    
+    
+    
+    Bottle b_SERVICE(config.findGroup("SERVICE")); //b_SERVICE and b_SETTINGS could not be null, otherwise parseService function would have returned false
+    Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
+    Bottle b_SETTINGS_temp = Bottle(b_SETTINGS.findGroup("temperature-acquisitionRate"));
+    if(b_SETTINGS_temp.isNull())
+    {
+        yError() << "ServiceParser::parseService() for embObjFTsensor device cannot find SETTINGS.temperature-acquisitionRate";
+        return false;
+    }
+    else
+    {
+        ftconfig.temperatureAcquisitionrate = b_SETTINGS_temp.get(1).asInt32();
+        //TODO: chek that the acquisition rate is inside a reasonable range
+    }
+    
+    return true;
+}
+
 bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftconfig)
 {
     if(false == check_analog(config, eomn_serv_AS_strain))
@@ -1519,7 +1551,6 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
     return true;
 }
 
-
 bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
 {
     if(false == check_analog(config, eomn_serv_AS_inertials3))
@@ -1618,7 +1649,6 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
     
     return true;
 }
-
 
 bool ServiceParser::parseService(Searchable &config, servConfigSkin_t &skinconfig)
 {
@@ -4766,5 +4796,75 @@ bool ServiceParser::parseService2(Searchable &config, servConfigMC_t &mcconfig)
 }
 
 #endif // #if defined(SERVICE_PARSER_USE_MC)
+
+bool ServiceParser::CheckSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror) 
+{
+  if (eomn_serv_AS_ft != type) 
+  {
+    return true;
+  }
+
+  Bottle b_STRAIN_SETTINGS = Bottle(bService.findGroup("STRAIN_SETTINGS"));
+
+  if (b_STRAIN_SETTINGS.isNull()) 
+  {
+    yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS";
+    return false;
+  } 
+  else 
+  {
+    Bottle b_STRAIN_SETTINGS_useCalibration = Bottle(b_STRAIN_SETTINGS.findGroup("useCalibration"));
+    if (b_STRAIN_SETTINGS_useCalibration.isNull()) 
+    {
+      yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS.useCalibration";
+      return false;
+    }
+
+    formaterror = false;
+    convert(b_STRAIN_SETTINGS_useCalibration.get(1).asString(),as_strain_settings.useCalibration, formaterror);
+
+    if (true == formaterror) 
+    {
+      yError() << "ServiceParser::check() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
+      return false;
+    }
+  }
+  return true;
+}
+
+bool ServiceParser::CheckSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror) 
+{
+    if(eomn_serv_AS_strain != type)
+    {
+        return true;
+    }
+
+    Bottle b_STRAIN_SETTINGS = Bottle(bService.findGroup("STRAIN_SETTINGS"));
+    if(b_STRAIN_SETTINGS.isNull())
+    {
+        yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS";
+        return false;
+    }
+    else
+    {
+
+        Bottle b_STRAIN_SETTINGS_useCalibration = Bottle(b_STRAIN_SETTINGS.findGroup("useCalibration"));
+        if(b_STRAIN_SETTINGS_useCalibration.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS.useCalibration";
+            return false;
+        }
+
+        formaterror = false;
+        convert(b_STRAIN_SETTINGS_useCalibration.get(1).asString(), as_strain_settings.useCalibration, formaterror);
+
+        if(true == formaterror)
+        {
+            yError() << "ServiceParser::check() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
+            return false;
+        }
+    }
+    return true;
+}    
 
 // eof

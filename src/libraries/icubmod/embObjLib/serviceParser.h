@@ -9,12 +9,14 @@
 #include <list>
 #include <string>
 
+#include <yarp/os/Bottle.h>
+
 #include "EoBoards.h"
 #include "EoManagement.h"
 #include "EoAnalogSensors.h"
 #include "EoMotionControl.h"
 
-
+using namespace yarp::os;
 
 
 #define SERVICE_PARSER_USE_MC
@@ -45,6 +47,18 @@ typedef struct
     eObrd_cantype_t         boardType;
     int                     temperatureAcquisitionrate;
 } servConfigFTsensor_t;
+
+typedef struct
+{
+    eOmn_serv_parameter_t   ethservice;
+    int                     acquisitionrate;
+    bool                    useCalibration;
+    std::string                  nameOfStrain;
+    eObrd_cantype_t         boardType;
+    int                     temperatureAcquisitionrate;
+} servConfigMultipleFTsensor_t;
+
+
 
 typedef struct
 {
@@ -247,7 +261,6 @@ typedef struct
 
 // todo: add definition of static const array of strings containing the names of boards, sensors, etc.
 
-
 // -- class ServiceParser
 
 class ServiceParser
@@ -262,6 +275,7 @@ public:
     bool parseService(yarp::os::Searchable &config, servConfigMais_t& maisconfig);
     bool parseService(yarp::os::Searchable &config, servConfigStrain_t &strainconfig);
     bool parseService(yarp::os::Searchable &config, servConfigFTsensor_t &ftconfig);
+    bool parseService(yarp::os::Searchable &config, servConfigMultipleFTsensor_t &ftconfig);
     bool parseService(yarp::os::Searchable &config, servConfigInertials_t &inertialsconfig);
     bool parseService(yarp::os::Searchable &config, servConfigImu_t &imuconfig);
     bool parseService(yarp::os::Searchable &config, servConfigSkin_t &skinconfig);
@@ -341,6 +355,8 @@ private:
 
     bool copyjomocouplingInfo(eOmc_4jomo_coupling_t *jc_dest);
 
+    bool CheckSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
+    bool CheckSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
     
     // suggestion: split check_motion() in sub-methods which parse the groups ...
 };
