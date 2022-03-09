@@ -1394,7 +1394,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMultipleFTsensor_
     }
     
     ftconfig.acquisitionrate = as_service.settings.acquisitionrate;
-    ftconfig.useCalibration = as_strain_settings.useCalibration;
+    ftconfig.useCalibration = as_ft_settings.useCalibration;
     ftconfig.nameOfStrain = thestrain_sensor.id;
     
     memset(&ftconfig.ethservice.configuration, 0, sizeof(ftconfig.ethservice.configuration));
@@ -4804,24 +4804,24 @@ bool ServiceParser::CheckSpecificForMultipleFT(const Bottle& bService,eOmn_serv_
     return true;
   }
 
-  Bottle b_STRAIN_SETTINGS = Bottle(bService.findGroup("STRAIN_SETTINGS"));
+  Bottle b_FT_SETTINGS = Bottle(bService.findGroup("FT_SETTINGS"));
 
-  if (b_STRAIN_SETTINGS.isNull()) 
+  if (b_FT_SETTINGS.isNull()) 
   {
-    yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS";
+    yError() << "ServiceParser::check() cannot find FT_SETTINGS-";
     return false;
   } 
   else 
   {
-    Bottle b_STRAIN_SETTINGS_useCalibration = Bottle(b_STRAIN_SETTINGS.findGroup("useCalibration"));
-    if (b_STRAIN_SETTINGS_useCalibration.isNull()) 
+    Bottle b_FT_SETTINGS_useCalibration = Bottle(b_FT_SETTINGS.findGroup("useCalibration"));
+    if (b_FT_SETTINGS_useCalibration.isNull()) 
     {
-      yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS.useCalibration";
+      yError() << "ServiceParser::check() cannot find FT_SETTINGS.useCalibration";
       return false;
     }
 
     formaterror = false;
-    convert(b_STRAIN_SETTINGS_useCalibration.get(1).asString(),as_strain_settings.useCalibration, formaterror);
+    convert(b_FT_SETTINGS_useCalibration.get(1).asString(),as_ft_settings.useCalibration, formaterror);
 
     if (true == formaterror) 
     {

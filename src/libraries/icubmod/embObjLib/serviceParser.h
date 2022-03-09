@@ -171,6 +171,12 @@ typedef struct
     bool                        useCalibration;
 } servASstrainSettings_t;
 
+typedef struct
+{
+    bool                        useCalibration;
+} servASftSettings_t;
+
+
 
 
 typedef struct
@@ -336,7 +342,7 @@ public:
 
     servAScollector_t           as_service;
     servASstrainSettings_t      as_strain_settings;
-
+    servASftSettings_t          as_ft_settings;
     servSKcollector_t           sk_service;
 
 #if defined(SERVICE_PARSER_USE_MC)
@@ -355,8 +361,9 @@ private:
 
     bool copyjomocouplingInfo(eOmc_4jomo_coupling_t *jc_dest);
 
-    bool CheckSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
-    bool CheckSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
+protected:
+    virtual bool CheckSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
+    virtual bool CheckSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
     
     // suggestion: split check_motion() in sub-methods which parse the groups ...
 };
