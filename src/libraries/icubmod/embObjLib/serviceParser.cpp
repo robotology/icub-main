@@ -576,6 +576,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
     // check whether we have the proper type
 
+    //TODO put in function
     if(false == b_SERVICE.check("type"))
     {
         yError() << "ServiceParser::check() cannot find SERVICE.type";
@@ -598,6 +599,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
     // check whether we have the proper groups
 
+    //TODO put in function
     Bottle b_PROPERTIES = Bottle(b_SERVICE.findGroup("PROPERTIES"));
     if(b_PROPERTIES.isNull())
     {
