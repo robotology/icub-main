@@ -364,8 +364,9 @@ private:
 protected:
     virtual bool CheckSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
     virtual bool CheckSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
-    
-    // suggestion: split check_motion() in sub-methods which parse the groups ...
+    virtual bool CheckPropertyCanBoards(const Bottle& bPropertiesCanBoards,bool& formaterror);
+    virtual bool CheckPropertySensors(const Bottle& property,eOmn_serv_type_t type,bool& formaterror);
+    virtual bool CheckSettings(const Bottle& settings,bool& formaterror);
 };
 
 
