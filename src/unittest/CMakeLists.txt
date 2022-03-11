@@ -48,12 +48,11 @@ PRIVATE
 TARGET_LINK_LIBRARIES(ethResources)
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/conf.ini DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-#include(GoogleTest)
-#gtest_discover_tests(${PROJECT_NAME})
-#
-#add_custom_target(run_unit_test ALL
-#    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-#    DEPENDS ${PROJECT_NAME})
+include(GoogleTest)
+gtest_discover_tests(${PROJECT_NAME})
+
+add_custom_target(run_unit_test ALL
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+    DEPENDS ${PROJECT_NAME})
 

@@ -12,48 +12,49 @@
 #include <mutex>
 
 #include "embObjGeneralDevPrivData.h"
-
 #include "serviceParser.h"
 
-namespace yarp {
-    namespace dev {
-        class eo_ftsens_privData;
-    }
+namespace yarp
+{
+namespace dev
+{
+class eo_ftsens_privData;
 }
+}  // namespace yarp
 
 class yarp::dev::eo_ftsens_privData : public yarp::dev::embObjDevPrivData
 {
-public:
-    
-    enum { strain_Channels = 6, strain_FormatData = 16 };
-    
-    std::mutex mtx;
-    std::string devicename;
-    std::vector<double> analogdata;
-    std::vector<double> offset;
-    std::vector<double> scaleFactor;
-    
-    bool scaleFactorIsFilled;
-    bool useCalibValues;
-    double timestampAnalogdata;
-    
-    bool useTemperature;
-    float lastTemperature;
-    double timestampTemperature;
-    
-    
-    eo_ftsens_privData(std::string name);
-    ~eo_ftsens_privData();
-    
-    bool fromConfig(yarp::os::Searchable &config,  servConfigFTsensor_t &serviceConfig);
-    bool initRegulars(servConfigFTsensor_t &serviceConfig);
-    void printServiceConfig(servConfigFTsensor_t &serviceConfig);
-    bool fillScaleFactor(servConfigFTsensor_t &serviceConfig);
-    bool sendConfig2Strain(servConfigFTsensor_t &serviceConfig);
-    bool updateStrainValues(eOprotID32_t id32, double timestamp, void* rxdata);
-    bool fillTemperatureEthServiceInfo(eOmn_serv_parameter_t &ftSrv, eOmn_serv_parameter_t &tempSrv);
-    
+   public:
+	enum
+	{
+		strain_Channels = 6,
+		strain_FormatData = 16
+	};
+
+	std::mutex mtx;
+	std::string devicename;
+	std::vector<double> analogdata;
+	std::vector<double> offset;
+	std::vector<double> scaleFactor;
+
+	bool scaleFactorIsFilled;
+	bool useCalibValues;
+	double timestampAnalogdata;
+
+	bool useTemperature;
+	float lastTemperature;
+	double timestampTemperature;
+
+	eo_ftsens_privData(std::string name);
+	~eo_ftsens_privData();
+
+	bool fromConfig(yarp::os::Searchable &config, servConfigMultipleFTsensor_t &serviceConfig);
+	bool initRegulars(servConfigMultipleFTsensor_t &serviceConfig);
+	void printServiceConfig(servConfigMultipleFTsensor_t &serviceConfig);
+	bool fillScaleFactor(servConfigMultipleFTsensor_t &serviceConfig);
+	bool sendConfig2Strain(servConfigMultipleFTsensor_t &serviceConfig);
+	bool updateStrainValues(eOprotID32_t id32, double timestamp, void *rxdata);
+	bool fillTemperatureEthServiceInfo(eOmn_serv_parameter_t &ftSrv, eOmn_serv_parameter_t &tempSrv);
 };
 
 #endif
-

@@ -582,9 +582,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     }
 
     if(!checkServiceType(b_SERVICE,type,formaterror))
-    {
         return false;
-    }
 
     if(!checkPropertyCanBoards(b_PROPERTIES,formaterror))
         return false;
@@ -4691,90 +4689,87 @@ bool ServiceParser::checkPropertySensors(const Bottle& property,eOmn_serv_type_t
             yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS";
             return false;
         }
-        else
+        Bottle b_PROPERTIES_SENSORS_id = Bottle(b_PROPERTIES_SENSORS.findGroup("id"));
+        if(b_PROPERTIES_SENSORS_id.isNull())
         {
-
-            Bottle b_PROPERTIES_SENSORS_id = Bottle(b_PROPERTIES_SENSORS.findGroup("id"));
-            if(b_PROPERTIES_SENSORS_id.isNull())
+            yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.id";
+            return false;
+        }
+        Bottle b_PROPERTIES_SENSORS_type = Bottle(b_PROPERTIES_SENSORS.findGroup("type"));
+        if(b_PROPERTIES_SENSORS_type.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.type";
+            return false;
+        }
+        Bottle b_PROPERTIES_SENSORS_location = Bottle(b_PROPERTIES_SENSORS.findGroup("location"));
+        if(b_PROPERTIES_SENSORS_location.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.location";
+            return false;
+        }
+        
+        Bottle b_PROPERTIES_SENSORS_boardtype;
+        if(type == eomn_serv_AS_inertials3)
+        {  
+            b_PROPERTIES_SENSORS_boardtype = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
+            if(b_PROPERTIES_SENSORS_boardtype.isNull())
             {
-                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.id";
-                return false;
-            }
-            Bottle b_PROPERTIES_SENSORS_type = Bottle(b_PROPERTIES_SENSORS.findGroup("type"));
-            if(b_PROPERTIES_SENSORS_type.isNull())
-            {
-                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.type";
-                return false;
-            }
-            Bottle b_PROPERTIES_SENSORS_location = Bottle(b_PROPERTIES_SENSORS.findGroup("location"));
-            if(b_PROPERTIES_SENSORS_location.isNull())
-            {
-                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.location";
-                return false;
-            }
-            Bottle b_PROPERTIES_SENSORS_boardtype;
-            if(type == eomn_serv_AS_inertials3)
-            {
-                
-                b_PROPERTIES_SENSORS_boardtype = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
-                if(b_PROPERTIES_SENSORS_boardtype.isNull())
-                {
-                    yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.boardType";
-                    return false;
-                }
-            }
-            else
-            {
-                b_PROPERTIES_SENSORS_boardtype.clear();
-            }
-
-            size_t tmp = b_PROPERTIES_SENSORS_id.size();
-            int numsensors = tmp - 1;    // first position of bottle contains the tag "id"
-
-            // check if all other fields have the same size.
-            if( (tmp != b_PROPERTIES_SENSORS_type.size()) ||
-                (tmp != b_PROPERTIES_SENSORS_location.size()) ||
-                ((type == eomn_serv_AS_inertials3) && (b_PROPERTIES_SENSORS_boardtype.size() != tmp))
-              )
-            {
-                yError() << "ServiceParser::check() in PROPERTIES.SENSORS some param has inconsistent length";
-                return false;
-            }
-
-
-            as_service.properties.sensors.resize(0);
-
-            formaterror = false;
-            for(int i=0; i<numsensors; i++)
-            {
-                servAnalogSensor_t item;
-                item.type = eoas_none;
-                item.location.any.place = eobrd_place_none;
-
-                convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), item.id, formaterror);
-                convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
-                convert(b_PROPERTIES_SENSORS_location.get(i+1).asString(), item.location, formaterror);
-                if(type == eomn_serv_AS_inertials3)
-                {
-                    convert(b_PROPERTIES_SENSORS_boardtype.get(i+1).asString(), item.boardtype, formaterror);
-                }
-                else
-                {
-                    item.boardtype = eobrd_none;
-                }
-
-                as_service.properties.sensors.push_back(item);
-            }
-
-            // in here we could decide to return false if any previous conversion function has returned error
-            // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
-
-            if(true == formaterror)
-            {
-                yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.SENSORS some param has inconsistent length";
+                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.boardType";
                 return false;
             }
         }
+        else
+        {
+            b_PROPERTIES_SENSORS_boardtype.clear();
+        }
+
+        size_t tmp = b_PROPERTIES_SENSORS_id.size();
+        int numsensors = tmp - 1;    // first position of bottle contains the tag "id"
+
+        // check if all other fields have the same size.
+        if( (tmp != b_PROPERTIES_SENSORS_type.size()) ||
+            (tmp != b_PROPERTIES_SENSORS_location.size()) ||
+            ((type == eomn_serv_AS_inertials3) && (b_PROPERTIES_SENSORS_boardtype.size() != tmp))
+            )
+        {
+            yError() << "ServiceParser::check() in PROPERTIES.SENSORS some param has inconsistent length";
+            return false;
+        }
+
+
+        as_service.properties.sensors.resize(0);
+
+        formaterror = false;
+        for(int i=0; i<numsensors; i++)
+        {
+            servAnalogSensor_t item;
+            item.type = eoas_none;
+            item.location.any.place = eobrd_place_none;
+
+            convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), item.id, formaterror);
+            convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
+            convert(b_PROPERTIES_SENSORS_location.get(i+1).asString(), item.location, formaterror);
+            if(type == eomn_serv_AS_inertials3)
+            {
+                convert(b_PROPERTIES_SENSORS_boardtype.get(i+1).asString(), item.boardtype, formaterror);
+            }
+            else
+            {
+                item.boardtype = eobrd_none;
+            }
+
+            as_service.properties.sensors.push_back(item);
+        }
+
+        // in here we could decide to return false if any previous conversion function has returned error
+        // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
+
+        if(true == formaterror)
+        {
+            yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.SENSORS some param has inconsistent length";
+            return false;
+        }
+        
         return true;
 }
 

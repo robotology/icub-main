@@ -95,6 +95,22 @@ TEST(General, check_property_sensors_positive_001)
 
 	EXPECT_TRUE(ret);
     EXPECT_FALSE(error);
+    EXPECT_EQ(1,serviceParser.as_service.properties.sensors.size());
+}
+
+TEST(General, check_property_sensors_positive_002)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(SENSORS (id test_ft_sensor test1_ft_sensor) (type eoas_strain eoas_strain) (location CAN2:13 CAN2:14) )");
+  
+    ServiceParser_mock serviceParser;
+    bool error{false};
+    eOmn_serv_type_t type=eomn_serv_AS_ft;
+    bool ret=serviceParser.checkPropertySensors(bottle,type,error);
+
+	EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    EXPECT_EQ(2,serviceParser.as_service.properties.sensors.size());
 }
 
 TEST(General, check_settings_positive_001)
@@ -112,6 +128,27 @@ TEST(General, check_settings_positive_001)
 
 	EXPECT_TRUE(ret);
     EXPECT_FALSE(error);
+    EXPECT_EQ(1,serviceParser.as_service.settings.enabledsensors.size());
+}
+
+TEST(General, check_settings_positive_002)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(SETTINGS (acquisitionRate 10 20) (enabledSensors fakeId fakeId1) (temperature-acquisitionRate 1000 999) )");
+  
+    ServiceParser_mock serviceParser;
+    bool error{false};
+
+    servAnalogSensor_t toAdd={"fakeId",eoas_ft,{1,2},eobrd_strain2};
+    serviceParser.as_service.properties.sensors.push_back(toAdd);
+    toAdd={"fakeId1",eoas_ft,{1,2},eobrd_strain2};
+    serviceParser.as_service.properties.sensors.push_back(toAdd);
+
+    bool ret=serviceParser.checkSettings(bottle,error);
+
+	EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    EXPECT_EQ(2,serviceParser.as_service.settings.enabledsensors.size());
 }
 
 TEST(General, check_checkservicetype_positive_001)
