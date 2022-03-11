@@ -49,10 +49,10 @@ class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver,
 	virtual int calibrateSensor(const yarp::sig::Vector& value);
 	virtual int calibrateChannel(int ch);
 
-	// IethResource interface
+	// IethResource interface 
 	virtual bool initialised();
 	virtual eth::iethresType_t type();
-	virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
+	virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);// Received data
 
 	// ITemperatureSensors
 	virtual size_t getNrOfTemperatureSensors() const override;

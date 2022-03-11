@@ -111,7 +111,7 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigMultipleFTsensor_t &serviceCo
 	// the reason is that the eoprot_tag_as_strain_status_fullscale contains 3 forces and 3 torques each of 2 bytes. see eOas_strain_status_t in EoAnalogSensors.h
 	eo_array_New(6, 2, &fullscale_values);
 
-	eOprotID32_t id32_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
+	eOprotID32_t id32_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_strain_status_fullscale);
 
 	// at first we impose that the local value of fullscales is zero.
 	// we also force the change because this variable is readonly
@@ -124,7 +124,7 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigMultipleFTsensor_t &serviceCo
 	strainConfig.mode = eoas_strainmode_acquirebutdonttx;
 	strainConfig.signaloncefullscale = eobool_true;
 
-	eOprotID32_t id32_strain_config = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
+	eOprotID32_t id32_strain_config = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_strain_config);
 
 	timeout = 5;
 
@@ -204,16 +204,16 @@ bool eo_ftsens_privData::initRegulars(servConfigMultipleFTsensor_t &serviceConfi
 	// 1) set regulars for ft (strain) service
 	if (true == serviceConfig.useCalibration)
 	{
-		id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_calibratedvalues);
+		id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_strain_status_calibratedvalues);
 	}
 	else
 	{
-		id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_uncalibratedvalues);
+		id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_strain_status_uncalibratedvalues);
 	}
 
 	id32v.push_back(id32);
 
-	if (!serviceSetRegulars(eomn_serv_category_strain, id32v))
+	if (!serviceSetRegulars(eomn_serv_category_ft, id32v))
 		return false;
 
 	// 2) set regulars for temperature service
@@ -259,7 +259,8 @@ bool eo_ftsens_privData::sendConfig2Strain(servConfigMultipleFTsensor_t &service
 
 	// version with read-back
 
-	eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
+	//LUCA TODO
+	eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_strain_config);
 
 	if (false == res->setcheckRemoteValue(id32, &strainConfig, 10, 0.010, 0.050))
 	{

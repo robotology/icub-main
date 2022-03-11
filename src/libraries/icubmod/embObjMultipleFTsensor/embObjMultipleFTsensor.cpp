@@ -145,9 +145,10 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 		return false;
 	}
 
-	if (false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_strain))
+	//TODO LUCA
+	if (false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_ft))
 	{
-		yError() << getBoardInfo() << "open() fails to start service strain";
+		yError() << getBoardInfo() << "open() fails to start service ft";
 		cleanup();
 		return false;
 	}
@@ -155,7 +156,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 	{
 		if (GET_privData(mPriv).isVerbose())
 		{
-			yDebug() << getBoardInfo() << "open() correctly starts as service strain";
+			yDebug() << getBoardInfo() << "open() correctly starts as service ft";
 		}
 	}
 
@@ -213,7 +214,7 @@ bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* r
 
 	switch (entity)
 	{
-		case eoas_entity_strain:
+		case eoas_entity_ft:
 		{
 			ret = updateStrainValues(id32, timestamp, rxdata);
 		}
@@ -308,7 +309,7 @@ bool embObjMultipleFTsensor::updateTemperatureValues(eOprotID32_t id32, double t
 }
 
 // -----------------------------  yarp::dev::IAnalogSensor --------------------------------------
-
+//LUCA
 /*! Read a vector from the sensor.
  * @param out a vector containing the sensor's last readings.
  * @return AS_OK or return code. AS_TIMEOUT if the sensor timed-out.
@@ -344,6 +345,7 @@ int embObjMultipleFTsensor::getChannels()
 	return GET_privData(mPriv).strain_Channels;
 }
 
+//Luca
 int embObjMultipleFTsensor::calibrateSensor()
 {
 	std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
@@ -438,6 +440,7 @@ bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sens_in
 	return true;
 }
 
+//LUCA
 bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
 	if (false == GET_privData(mPriv).isOpen())

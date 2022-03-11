@@ -1096,7 +1096,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMultipleFTsensor_
     // first check we do is about thestrain_props.type
     if(eobrd_cantype_strain2 != thestrain_props.type)
     {
-        yError() << "ServiceParser::parseService() for embObjFTsensor has detected an invalid type of board. it should be a eobrd_strain2 but is a:" << eoboards_type2string2(eoboards_cantype2type(thestrain_props.type), eobool_false);
+        yError() << "ServiceParser::parseService() for embObjMultipleFTsensor has detected an invalid type of board. it should be a eobrd_strain2 but is a:" << eoboards_type2string2(eoboards_cantype2type(thestrain_props.type), eobool_false);
         return false;
     }
     
@@ -1128,7 +1128,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMultipleFTsensor_
     Bottle b_SETTINGS_temp = Bottle(b_SETTINGS.findGroup("temperature-acquisitionRate"));
     if(b_SETTINGS_temp.isNull())
     {
-        yError() << "ServiceParser::parseService() for embObjFTsensor device cannot find SETTINGS.temperature-acquisitionRate";
+        yError() << "ServiceParser::parseService() for embObjMultipleFTsensor device cannot find SETTINGS.temperature-acquisitionRate";
         return false;
     }
     else
