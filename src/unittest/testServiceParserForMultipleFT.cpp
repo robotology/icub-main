@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2022 Istituto Italiano di Tecnologia (IIT)
+ * All rights reserved.
+ * Author: Luca Tricerri
+ * This software may be modified and distributed under the terms of the
+ * BSD-3-Clause license. See the accompanying LICENSE file for details.
+ */
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -15,10 +23,12 @@ using ::testing::Matcher;
 class ServiceParser_mock: public ServiceParser
 {
     public:
-        using ServiceParser::CheckSpecificForMultipleFT;
-        using ServiceParser::CheckPropertyCanBoards;
-        using ServiceParser::CheckPropertySensors;
-        using ServiceParser::CheckSettings;
+        using ServiceParser::checkSpecificForMultipleFT;
+        using ServiceParser::checkPropertyCanBoards;
+        using ServiceParser::checkPropertySensors;
+        using ServiceParser::checkSettings;
+        using ServiceParser::checkServiceType;
+        
         ServiceParser_mock():ServiceParser(){};
 };
 
@@ -28,7 +38,7 @@ TEST(General, base_positive_001)
     ServiceParser_mock serviceParser;
     eOmn_serv_type_t type=eomn_serv_AS_strain;
     bool error{false};
-    bool ret=serviceParser.CheckSpecificForMultipleFT(bottle,type,error);
+    bool ret=serviceParser.checkSpecificForMultipleFT(bottle,type,error);
 
 	EXPECT_TRUE(ret);
 }
@@ -41,7 +51,7 @@ TEST(General, base_positive_002)
     ServiceParser_mock serviceParser;
     eOmn_serv_type_t type=eomn_serv_AS_ft;
     bool error{false};
-    bool ret=serviceParser.CheckSpecificForMultipleFT(bottle,type,error);
+    bool ret=serviceParser.checkSpecificForMultipleFT(bottle,type,error);
 
 	EXPECT_TRUE(ret);
     EXPECT_FALSE(error);
@@ -54,7 +64,7 @@ TEST(General, check_property_canboards_positive_001)
   
     ServiceParser_mock serviceParser;
     bool error{false};
-    bool ret=serviceParser.CheckPropertyCanBoards(bottle,error);
+    bool ret=serviceParser.checkPropertyCanBoards(bottle,error);
 
 	EXPECT_TRUE(ret);
     EXPECT_FALSE(error);
@@ -67,7 +77,7 @@ TEST(General, check_property_canboards_negative_001)
   
     ServiceParser_mock serviceParser;
     bool error{false};
-    bool ret=serviceParser.CheckPropertyCanBoards(bottle,error);
+    bool ret=serviceParser.checkPropertyCanBoards(bottle,error);
 
 	EXPECT_FALSE(ret);
     EXPECT_FALSE(error);
@@ -81,7 +91,7 @@ TEST(General, check_property_sensors_positive_001)
     ServiceParser_mock serviceParser;
     bool error{false};
     eOmn_serv_type_t type=eomn_serv_AS_ft;
-    bool ret=serviceParser.CheckPropertySensors(bottle,type,error);
+    bool ret=serviceParser.checkPropertySensors(bottle,type,error);
 
 	EXPECT_TRUE(ret);
     EXPECT_FALSE(error);
@@ -98,8 +108,51 @@ TEST(General, check_settings_positive_001)
     servAnalogSensor_t toAdd={"fakeId",eoas_ft,{1,2},eobrd_strain2};
     serviceParser.as_service.properties.sensors.push_back(toAdd);
     
-    bool ret=serviceParser.CheckSettings(bottle,error);
+    bool ret=serviceParser.checkSettings(bottle,error);
 
 	EXPECT_TRUE(ret);
     EXPECT_FALSE(error);
 }
+
+TEST(General, check_checkservicetype_positive_001)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(type eomn_serv_AS_ft)"); 
+    bool error{false};
+    ServiceParser_mock serviceParser;
+    eOmn_serv_type_t type=eomn_serv_AS_ft;
+    
+    bool ret=serviceParser.checkServiceType(bottle,type,error);
+
+	EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+}
+
+TEST(General, check_checkservicetype_positive_002)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(type eomn_serv)"); 
+    bool error{false};
+    ServiceParser_mock serviceParser;
+    eOmn_serv_type_t type=eomn_serv_AS_ft;
+    
+    bool ret=serviceParser.checkServiceType(bottle,type,error);
+
+	EXPECT_FALSE(ret);
+    EXPECT_TRUE(error);
+}
+
+TEST(General, check_checkservicetype_negative_001)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(type eomn_serv_AS_strain)"); 
+    bool error{false};
+    ServiceParser_mock serviceParser;
+    eOmn_serv_type_t type=eomn_serv_AS_ft;
+    
+    bool ret=serviceParser.checkServiceType(bottle,type,error);
+
+	EXPECT_FALSE(ret);
+    EXPECT_FALSE(error);
+}
+

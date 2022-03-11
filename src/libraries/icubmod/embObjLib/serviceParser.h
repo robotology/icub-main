@@ -362,11 +362,12 @@ private:
     bool copyjomocouplingInfo(eOmc_4jomo_coupling_t *jc_dest);
 
 protected:
-    virtual bool CheckSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
-    virtual bool CheckSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
-    virtual bool CheckPropertyCanBoards(const Bottle& bPropertiesCanBoards,bool& formaterror);
-    virtual bool CheckPropertySensors(const Bottle& property,eOmn_serv_type_t type,bool& formaterror);
-    virtual bool CheckSettings(const Bottle& settings,bool& formaterror);
+    virtual bool checkSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
+    virtual bool checkSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
+    virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards,bool& formaterror);
+    virtual bool checkPropertySensors(const Bottle& property,eOmn_serv_type_t type,bool& formaterror);
+    virtual bool checkSettings(const Bottle& settings,bool& formaterror);
+    virtual bool checkServiceType(const Bottle& service,eOmn_serv_type_t type,bool& formaterror);
 };
 
 

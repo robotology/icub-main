@@ -574,56 +574,31 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         return false;
     }
 
-    // check whether we have the proper type
-
-    //TODO put in function
-    if(false == b_SERVICE.check("type"))
-    {
-        yError() << "ServiceParser::check() cannot find SERVICE.type";
-        return false;
-    }
-    else
-    {
-        Bottle b_type(b_SERVICE.find("type").asString());
-        if(false == convert(b_type.toString(), as_service.type, formaterror))
-        {
-            yError() << "ServiceParser::check() has found unknown SERVICE.type = " << b_type.toString();
-            return false;
-        }
-        if(type != as_service.type)
-        {
-            yError() << "ServiceParser::check() has found wrong SERVICE.type = " << as_service.type << "it must be" << "TODO: tostring() function";
-            return false;
-        }
-    }
-
-    // check whether we have the proper groups
-
-    //TODO put in function
     Bottle b_PROPERTIES = Bottle(b_SERVICE.findGroup("PROPERTIES"));
     if(b_PROPERTIES.isNull())
     {
         yError() << "ServiceParser::check() cannot find PROPERTIES";
         return false;
     }
-    else
+
+    if(!checkServiceType(b_SERVICE,type,formaterror))
     {
-        if(!CheckPropertyCanBoards(b_PROPERTIES,formaterror))
-            return false;
-
-        if(!CheckPropertySensors(b_PROPERTIES,type,formaterror))
-            return false;
+        return false;
     }
+
+    if(!checkPropertyCanBoards(b_PROPERTIES,formaterror))
+        return false;
+
+    if(!checkPropertySensors(b_PROPERTIES,type,formaterror))
+        return false;
     
-    if(!CheckSettings(b_SERVICE,formaterror))
+    if(!checkSettings(b_SERVICE,formaterror))
         return false;
 
-    // now we may have one or more sections which are specific of the device ...
-
-    // only strain so far.
-    if(!CheckSpecificForStrain(b_SERVICE,type,formaterror))
+    if(!checkSpecificForStrain(b_SERVICE,type,formaterror))
         return false;
-    if(!CheckSpecificForMultipleFT(b_SERVICE,type,formaterror))
+
+    if(!checkSpecificForMultipleFT(b_SERVICE,type,formaterror))
         return false;
 
     // we we are in here we have the struct filled with all variables ... some validations are still due to the calling device.
@@ -4531,7 +4506,7 @@ bool ServiceParser::parseService2(Searchable &config, servConfigMC_t &mcconfig)
 
 #endif // #if defined(SERVICE_PARSER_USE_MC)
 
-bool ServiceParser::CheckSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror) 
+bool ServiceParser::checkSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror) 
 {
   if (eomn_serv_AS_ft != type) 
   {
@@ -4559,14 +4534,14 @@ bool ServiceParser::CheckSpecificForMultipleFT(const Bottle& bService,eOmn_serv_
 
     if (true == formaterror) 
     {
-      yError() << "ServiceParser::check() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
+      yError() << "ServiceParser::check() has detected an illegal format for paramf FT_SETTINGS.useCalibration";
       return false;
     }
   }
   return true;
 }
 
-bool ServiceParser::CheckSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror) 
+bool ServiceParser::checkSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror) 
 {
     if(eomn_serv_AS_strain != type)
     {
@@ -4602,7 +4577,7 @@ bool ServiceParser::CheckSpecificForStrain(const Bottle& bService,eOmn_serv_type
 }    
 
 
-bool ServiceParser::CheckPropertyCanBoards(const Bottle& property,bool& formaterror)
+bool ServiceParser::checkPropertyCanBoards(const Bottle& property,bool& formaterror)
 {
     Bottle b_PROPERTIES_CANBOARDS = Bottle(property.findGroup("CANBOARDS"));
     if(b_PROPERTIES_CANBOARDS.isNull())
@@ -4708,7 +4683,7 @@ bool ServiceParser::CheckPropertyCanBoards(const Bottle& property,bool& formater
     return true;
 }
 
-bool ServiceParser::CheckPropertySensors(const Bottle& property,eOmn_serv_type_t type,bool& formaterror)
+bool ServiceParser::checkPropertySensors(const Bottle& property,eOmn_serv_type_t type,bool& formaterror)
 {
     Bottle b_PROPERTIES_SENSORS = Bottle(property.findGroup("SENSORS"));
         if(b_PROPERTIES_SENSORS.isNull())
@@ -4803,7 +4778,7 @@ bool ServiceParser::CheckPropertySensors(const Bottle& property,eOmn_serv_type_t
         return true;
 }
 
-bool ServiceParser::CheckSettings(const Bottle& service,bool& formaterror)
+bool ServiceParser::checkSettings(const Bottle& service,bool& formaterror)
 {
     Bottle settings = Bottle(service.findGroup("SETTINGS"));
     if(settings.isNull())
@@ -4882,4 +4857,27 @@ bool ServiceParser::CheckSettings(const Bottle& service,bool& formaterror)
     }
     return true;
 }
+
+bool ServiceParser::checkServiceType(const Bottle& service,eOmn_serv_type_t type,bool& formaterror)
+{
+    if(false == service.check("type"))
+    {
+        yError() << "ServiceParser::check() cannot find SERVICE.type";
+        return false;
+    }
+
+    Bottle b_type(service.find("type").asString());
+    if(false == convert(b_type.toString(), as_service.type, formaterror))
+    {
+        yError() << "ServiceParser::check() has found unknown SERVICE.type = " << b_type.toString();
+        return false;
+    }
+    if(type != as_service.type)
+    {
+        yError() << "ServiceParser::check() has found wrong SERVICE.type = " << as_service.type << "it must be" << "TODO: tostring() function";
+        return false;
+    }
+    return true;
+}
+
 // eof
