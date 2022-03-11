@@ -2,60 +2,69 @@
 
 #include <yarp/dev/IAnalogSensor.h>
 
+#include "EOconstarray.h"
+
+
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
+
+AnalogData::AnalogData()
+{
+	analogdata_.resize(strainChannels_, 0.0);
+	offset_.resize(strainChannels_, 0.0);
+}
 
 /*! Read a vector from the sensor.
  * @param out a vector containing the sensor's last readings.
  * @return IAnalogSensor::AS_OK or return code. AS_TIMEOUT if the sensor timed-out.
  **/
-int AnalogData::read(yarp::sig::Vector& out)
+int AnalogData::read(yarp::sig::Vector& out) const
 {
-	// This method gives analogdata to the analogServer
+	// This method gives analogdata_ to the analogServer
 
 	if (false == open_)
 	{
 		return false;
 	}
 
-	std::lock_guard<std::mutex> lck(mutex_);
+	std::shared_lock<std::shared_mutex> lck(mutex_);
 
-	out.resize(analogdata.size());
-	for (size_t k = 0; k < analogdata.size(); k++)
+	out.resize(analogdata_.size());
+	for (size_t k = 0; k < analogdata_.size(); k++)
 	{
-		out[k] = analogdata[k] + offset[k];
+		out[k] = analogdata_[k] + offset_[k];
 	}
 
 	return IAnalogSensor::AS_OK;
 }
 
-bool AnalogData::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+bool AnalogData::getSixAxisForceTorqueSensorMeasure(yarp::sig::Vector& out, double& timestamp) const
 {
 	if (false == open_)
 	{
 		return false;
 	}
 
-	std::lock_guard<std::mutex> lck(mutex_);
+	std::shared_lock<std::shared_mutex> lck(mutex_);
 
-	out.resize(analogdata.size());
-	for (size_t k = 0; k < analogdata.size(); k++)
+	out.resize(analogdata_.size());
+	for (size_t k = 0; k < analogdata_.size(); k++)
 	{
-		out[k] = analogdata[k] + offset[k];
+		out[k] = analogdata_[k] + offset_[k];
 	}
 
-	timestamp = timestampAnalogdata;
+	timestamp = timestampAnalogdata_;
 
 	return true;
 }
 
 int AnalogData::calibrateSensor()
 {
-	std::lock_guard<std::mutex> lck(mutex_);
-	for (size_t i = 0; i < analogdata.size(); i++)
+	std::shared_lock<std::shared_mutex> lck(mutex_);
+	for (size_t i = 0; i < analogdata_.size(); i++)
 	{
-		offset[i] = -analogdata[i];
+		offset_[i] = -analogdata_[i];
 	}
 	return IAnalogSensor::AS_OK;
 }
@@ -70,6 +79,7 @@ bool AnalogData::updateStrainValues(eOprotID32_t id32, double timestamp, void* r
 	// the void* parameter inside this function is a eOas_arrayofupto12bytes_t*
 	// and can be treated as a EOarray
 
+	// eOas_ft_timedvalue_t* array = (eOas_ft_timedvalue_t*)rxdata; LUCA TODO <<<<<<---------use this struct
 	EOarray* array = (EOarray*)rxdata;
 	uint8_t size = eo_array_Size(array);
 	uint8_t itemsize = eo_array_ItemSize(array);  // marco.accame: must be 2, as the code after uses this convention
@@ -78,10 +88,10 @@ bool AnalogData::updateStrainValues(eOprotID32_t id32, double timestamp, void* r
 		return false;
 	}
 
-	// lock analogdata
-	std::lock_guard<std::mutex> lck(mutex_);
-	timestampAnalogdata = yarp::os::Time::now();
-	for (size_t k = 0; k < analogdata.size(); k++)
+	// lock analogdata_
+	std::unique_lock<std::shared_mutex> lck(mutex_);
+	timestampAnalogdata_ = yarp::os::Time::now();
+	for (size_t k = 0; k < analogdata_.size(); k++)
 	{
 		// Get the kth element of the array as a 2 bytes msg
 		char* tmp = (char*)eo_array_At(array, k);
@@ -92,11 +102,11 @@ bool AnalogData::updateStrainValues(eOprotID32_t id32, double timestamp, void* r
 			uint8_t msg[2] = {0};
 			memcpy(msg, tmp, 2);
 			// Got from canBusMotionControl
-			analogdata[k] = (short)(((((unsigned short)(msg[1])) << 8) + msg[0]) - (unsigned short)(0x8000));
+			analogdata_[k] = (short)(((((unsigned short)(msg[1])) << 8) + msg[0]) - (unsigned short)(0x8000));
 
 			if (true == useCalibValues_)
 			{
-				analogdata[k] = analogdata[k] * scaleFactor_[k] / float(0x8000);
+				analogdata_[k] = analogdata_[k] * scaleFactor_[k] / float(0x8000);
 			}
 		}
 	}
@@ -104,6 +114,7 @@ bool AnalogData::updateStrainValues(eOprotID32_t id32, double timestamp, void* r
 	return true;
 }
 
+// DODO REMOVE LUCA
 bool AnalogData::updateTemperatureValues(eOprotID32_t id32, double timestamp, void* rxdata)
 {
 	eOas_temperature_status_t* temp_st = (eOas_temperature_status_t*)rxdata;
@@ -126,15 +137,15 @@ bool AnalogData::updateTemperatureValues(eOprotID32_t id32, double timestamp, vo
 		}
 		else
 		{
-			std::lock_guard<std::mutex> lck(mutex_);
-			lastTemperature = static_cast<float>(data->value);
-			timestampTemperature = yarp::os::Time::now();
+			std::unique_lock<std::shared_mutex> lck(mutex_);
+			lastTemperature_ = static_cast<float>(data->value);
+			timestampTemperature_ = yarp::os::Time::now();
 		}
 	}
 	return true;
 }
 
-void AnalogData::setIsOpen(bool value)
+void AnalogData::setOpen(bool value)
 {
 	open_ = value;
 }
@@ -144,12 +155,47 @@ void AnalogData::setScaleFactor(const std::vector<double>& value)
 	scaleFactor_ = value;
 }
 
-void AnalogData::setUseCalibValues_(bool value)
-{
-	useCalibValues_ = value;
-}
-
-void AnalogData::setBoardInfo(const std::string& value)
+void AnalogData::setBoardInfo(const std::string& value)//TODO fill somewhere LUCA
 {
 	boardInfo_ = value;
+}
+
+bool AnalogData::getTemperatureSensorMeasure(double& out, double& timestamp) const
+{
+	std::shared_lock<std::shared_mutex> lck(mutex_);
+	out = lastTemperature_ / 10.0;  // I need to convert from tenths of degree centigrade to degree centigrade
+	timestamp = timestampTemperature_;
+	return true;
+}
+
+bool AnalogData::getTemperatureSensorMeasure(yarp::sig::Vector& out, double& timestamp) const
+{
+	std::shared_lock<std::shared_mutex> lck(mutex_);
+	out.resize(1);
+	out[0] = lastTemperature_ / 10.0;  // I need to convert from tenths of degree centigrade to degree centigrade
+	timestamp = timestampTemperature_;
+	return true;
+}
+
+bool AnalogData::fromConfig(yarp::os::Searchable &config, servConfigMultipleFTsensor_t &serviceConfig)
+{
+	ServiceParser *parser = new ServiceParser;
+	bool ret = parser->parseService(config, serviceConfig);
+	delete parser;
+
+	if (!ret)
+	{
+		yError() << boardInfo_ << "is missing some configuration parameter. Check logs and your config file.";
+		return false;
+	}
+
+	useCalibValues_ = serviceConfig.useCalibration;
+	if (serviceConfig.temperatureAcquisitionrate > 0)
+		useTemperature_ = true;
+	devicename_ = serviceConfig.nameOfStrain;
+
+	//TODO reenable LUCA
+	//if (isVerbose())
+	//	printServiceConfig(serviceConfig);
+	return ret;
 }

@@ -33,17 +33,12 @@ class yarp::dev::eo_ftsens_privData : public yarp::dev::embObjDevPrivData
 
 	std::mutex mtx;
 	std::string devicename;
-	std::vector<double> analogdata;
-	std::vector<double> offset;
 	std::vector<double> scaleFactor;
 
 	bool scaleFactorIsFilled;
 	bool useCalibValues;
-	double timestampAnalogdata;
 
 	bool useTemperature;
-	float lastTemperature;
-	double timestampTemperature;
 
 	eo_ftsens_privData(std::string name);
 	~eo_ftsens_privData();

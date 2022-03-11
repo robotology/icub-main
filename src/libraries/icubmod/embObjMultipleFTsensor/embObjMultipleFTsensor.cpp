@@ -90,11 +90,15 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 	if (!GET_privData(mPriv).fromConfig(config, serviceConfig))
 		return false;
 
+	if (!analogData_.fromConfig(config, serviceConfig))
+		return false;
+
 	if (!GET_privData(mPriv).res->verifyEPprotocol(eoprot_endpoint_analogsensors))
 	{
 		cleanup();
 		return false;
 	}
+
 
 #if defined(EMBOBJSTRAIN_USESERVICEPARSER)
 
@@ -183,6 +187,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 	}
 
 	GET_privData(mPriv).setOpen(true);
+	analogData_.setOpen(true);
 	return true;
 }
 
@@ -201,7 +206,7 @@ void embObjMultipleFTsensor::cleanup(void)
 }
 
 //-------------------------------  IethResource --------------------------------
-bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* rxdata)
+bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* rxdata) //TODO register this callback
 {
 	bool ret = false;
 
@@ -216,13 +221,13 @@ bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* r
 	{
 		case eoas_entity_ft:
 		{
-			ret = updateStrainValues(id32, timestamp, rxdata);
+			ret = analogData_.updateStrainValues(id32, timestamp, rxdata);
 		}
 		break;
 
 		case eoas_entity_temperature:
 		{
-			ret = updateTemperatureValues(id32, timestamp, rxdata);
+			ret = analogData_.updateTemperatureValues(id32, timestamp, rxdata);
 		}
 		break;
 		default:
@@ -234,80 +239,6 @@ bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* r
 	return ret;
 }
 
-bool embObjMultipleFTsensor::updateStrainValues(eOprotID32_t id32, double timestamp, void* rxdata)
-{
-	id32 = id32;
-	timestamp = timestamp;
-
-	// called by feat_manage_analogsensors_data() which is called by:
-	// eoprot_fun_UPDT_as_strain_status_calibratedvalues() or eoprot_fun_UPDT_as_strain_status_uncalibratedvalues()
-	// the void* parameter inside this function is a eOas_arrayofupto12bytes_t*
-	// and can be treated as a EOarray
-
-	EOarray* array = (EOarray*)rxdata;
-	uint8_t size = eo_array_Size(array);
-	uint8_t itemsize = eo_array_ItemSize(array);  // marco.accame: must be 2, as the code after uses this convention
-	if ((0 == size) || (2 != itemsize))
-	{
-		return false;
-	}
-
-	// lock analogdata
-	std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
-	GET_privData(mPriv).timestampAnalogdata = yarp::os::Time::now();
-	for (size_t k = 0; k < GET_privData(mPriv).analogdata.size(); k++)
-	{
-		// Get the kth element of the array as a 2 bytes msg
-		char* tmp = (char*)eo_array_At(array, k);
-		// marco.accame: i am nervous about iterating for strain_Channels instead of size of array....
-		//               thus i add a protection. if k goes beyond size of array, eo_array_At() returns NULL.
-		if (NULL != tmp)
-		{
-			uint8_t msg[2] = {0};
-			memcpy(msg, tmp, 2);
-			// Got from canBusMotionControl
-			GET_privData(mPriv).analogdata[k] = (short)(((((unsigned short)(msg[1])) << 8) + msg[0]) - (unsigned short)(0x8000));
-
-			if (true == GET_privData(mPriv).useCalibValues)
-			{
-				GET_privData(mPriv).analogdata[k] = GET_privData(mPriv).analogdata[k] * GET_privData(mPriv).scaleFactor[k] / float(0x8000);
-			}
-		}
-	}
-
-	return true;
-}
-
-bool embObjMultipleFTsensor::updateTemperatureValues(eOprotID32_t id32, double timestamp, void* rxdata)
-{
-	eOas_temperature_status_t* temp_st = (eOas_temperature_status_t*)rxdata;
-
-	EOconstarray* arrayofvalues = eo_constarray_Load(reinterpret_cast<const EOarray*>(&(temp_st->arrayofdata)));
-
-	uint8_t numofIntem2update = eo_constarray_Size(arrayofvalues);
-
-	if (numofIntem2update > 1)
-		yError() << getBoardInfo() << "updateTemperature: I expect 1 item, but I received " << numofIntem2update;
-
-	for (int i = 0; i < numofIntem2update; i++)
-	{
-		eOas_temperature_data_t* data = (eOas_temperature_data_t*)eo_constarray_At(arrayofvalues, i);
-		if (data == NULL)
-		{
-			yError() << getBoardInfo() << "update(): I have to update " << numofIntem2update << "items, but the " << i << "-th item is null.";
-			continue;
-			// NOTE: I signal this strange situation with an arror for debug porpouse...maybe we can convert in in warning when the device is stable....
-		}
-		else
-		{
-			std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
-			GET_privData(mPriv).lastTemperature = static_cast<float>(data->value);
-			GET_privData(mPriv).timestampTemperature = yarp::os::Time::now();
-		}
-	}
-	return true;
-}
-
 // -----------------------------  yarp::dev::IAnalogSensor --------------------------------------
 //LUCA
 /*! Read a vector from the sensor.
@@ -316,23 +247,7 @@ bool embObjMultipleFTsensor::updateTemperatureValues(eOprotID32_t id32, double t
  **/
 int embObjMultipleFTsensor::read(yarp::sig::Vector& out)
 {
-	// This method gives analogdata to the analogServer
-
-	if (false == GET_privData(mPriv).isOpen())
-	{
-		return false;
-	}
-
-	std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
-
-	out.resize(GET_privData(mPriv).analogdata.size());
-	for (size_t k = 0; k < GET_privData(mPriv).analogdata.size(); k++)
-	{
-		out[k] = GET_privData(mPriv).analogdata[k] + GET_privData(mPriv).offset[k];
-	}
-
-	return IAnalogSensor::AS_OK;
-	;
+	return analogData_.read(out);
 }
 
 int embObjMultipleFTsensor::getState(int ch)
@@ -348,12 +263,7 @@ int embObjMultipleFTsensor::getChannels()
 //Luca
 int embObjMultipleFTsensor::calibrateSensor()
 {
-	std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
-	for (size_t i = 0; i < GET_privData(mPriv).analogdata.size(); i++)
-	{
-		GET_privData(mPriv).offset[i] = -GET_privData(mPriv).analogdata[i];
-	}
-	return AS_OK;
+	return analogData_.calibrateSensor();
 }
 
 int embObjMultipleFTsensor::calibrateSensor(const yarp::sig::Vector& value)
@@ -401,19 +311,12 @@ bool embObjMultipleFTsensor::getTemperatureSensorFrameName(size_t sens_index, st
 
 bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const
 {
-	std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
-	out = GET_privData(mPriv).lastTemperature / 10.0;  // I need to convert from tenths of degree centigrade to degree centigrade
-	timestamp = GET_privData(mPriv).timestampTemperature;
-	return true;
+	return analogData_.getTemperatureSensorMeasure(out,timestamp);
 }
 
 bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-	std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
-	out.resize(1);
-	out[0] = GET_privData(mPriv).lastTemperature / 10.0;  // I need to convert from tenths of degree centigrade to degree centigrade
-	timestamp = GET_privData(mPriv).timestampTemperature;
-	return true;
+	return analogData_.getTemperatureSensorMeasure(out,timestamp);
 }
 
 //------------------------- ISixAxisForceTorqueSensors -------------------------
@@ -440,25 +343,7 @@ bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sens_in
 	return true;
 }
 
-//LUCA
 bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-	if (false == GET_privData(mPriv).isOpen())
-	{
-		return false;
-	}
-
-	std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
-
-	out.resize(GET_privData(mPriv).analogdata.size());
-	for (size_t k = 0; k < GET_privData(mPriv).analogdata.size(); k++)
-	{
-		out[k] = GET_privData(mPriv).analogdata[k] + GET_privData(mPriv).offset[k];
-	}
-
-	timestamp = GET_privData(mPriv).timestampAnalogdata;
-
-	return true;
+	return analogData_.getSixAxisForceTorqueSensorMeasure(out,timestamp);
 }
-
-// eof

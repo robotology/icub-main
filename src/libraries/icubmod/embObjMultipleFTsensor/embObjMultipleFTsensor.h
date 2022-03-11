@@ -13,6 +13,7 @@
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 
 #include "IethResource.h"
+#include "AnalogData.h"
 
 namespace yarp
 {
@@ -71,6 +72,7 @@ class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver,
 
    private:
 	void* mPriv;
+	AnalogData analogData_;
 
 	void cleanup(void);
 	std::string getBoardInfo(void) const;

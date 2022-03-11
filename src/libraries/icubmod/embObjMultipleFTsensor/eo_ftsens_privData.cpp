@@ -15,17 +15,13 @@ using namespace yarp::os;
 using namespace yarp::dev;
 
 eo_ftsens_privData::eo_ftsens_privData(std::string name)
-	: embObjDevPrivData(name), useCalibValues(false), useTemperature(false), scaleFactorIsFilled(false), lastTemperature(0), timestampTemperature(0.0), timestampAnalogdata(0.0)
+	: embObjDevPrivData(name), useCalibValues(false), useTemperature(false), scaleFactorIsFilled(false)
 {
-	analogdata.resize(strain_Channels, 0.0);
-	offset.resize(strain_Channels, 0.0);
 	scaleFactor.resize(strain_Channels, 1.0);
 }
 
 eo_ftsens_privData::~eo_ftsens_privData()
 {
-	analogdata.resize(0);
-	offset.resize(0);
 	scaleFactor.resize(0);
 }
 
