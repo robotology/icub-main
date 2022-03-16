@@ -28,6 +28,7 @@ class ServiceParser_mock: public ServiceParser
         using ServiceParser::checkPropertySensors;
         using ServiceParser::checkSettings;
         using ServiceParser::checkServiceType;
+        using ServiceParser::checkCanMonitor;
         
         ServiceParser_mock():ServiceParser(){};
 };
@@ -128,7 +129,8 @@ TEST(General, check_settings_positive_001)
 
 	EXPECT_TRUE(ret);
     EXPECT_FALSE(error);
-    EXPECT_EQ(1,serviceParser.as_service.settings.enabledsensors.size());
+    ASSERT_EQ(1,serviceParser.as_service.settings.enabledsensors.size());
+    EXPECT_EQ("fakeId",serviceParser.as_service.settings.enabledsensors.at(0));
 }
 
 TEST(General, check_settings_positive_002)
@@ -148,7 +150,9 @@ TEST(General, check_settings_positive_002)
 
 	EXPECT_TRUE(ret);
     EXPECT_FALSE(error);
-    EXPECT_EQ(2,serviceParser.as_service.settings.enabledsensors.size());
+    ASSERT_EQ(2,serviceParser.as_service.settings.enabledsensors.size());
+    EXPECT_EQ("fakeId",serviceParser.as_service.settings.enabledsensors.at(0));
+    EXPECT_EQ("fakeId1",serviceParser.as_service.settings.enabledsensors.at(1));
 }
 
 TEST(General, check_checkservicetype_positive_001)
@@ -193,3 +197,44 @@ TEST(General, check_checkservicetype_negative_001)
     EXPECT_FALSE(error);
 }
 
+TEST(General, check_checkCanMonitor_positive_001)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(checkrate 100)(reportmode ALL)(periodicreportrate 200)"); 
+    bool error{false};
+    ServiceParser_mock serviceParser;
+    eOmn_serv_type_t type=eomn_serv_AS_ft;
+    
+    bool ret=serviceParser.checkServiceType(bottle,type,error);
+
+	EXPECT_TRUE(ret); 
+
+    eObrd_canmonitor_cfg_t tmp={100,eobrd_canmonitor_reportmode_ALL,200};  
+    EXPECT_EQ(tmp,as_service.properties.config.data.as.ft.canmonitorconfig);
+}
+
+TEST(General, check_checkCanMonitor_negative_001)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(checkrate 100)(reportmode ALL)"); 
+    bool error{false};
+    ServiceParser_mock serviceParser;
+    eOmn_serv_type_t type=eomn_serv_AS_ft;
+    
+    bool ret=serviceParser.checkServiceType(bottle,type,error);
+
+	EXPECT_FALSE(ret); 
+}
+
+TEST(General, check_checkCanMonitor_negative_002)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(checkrate 100)(reportmode xxx)(periodicreportrate 200)"); 
+    bool error{false};
+    ServiceParser_mock serviceParser;
+    eOmn_serv_type_t type=eomn_serv_AS_ft;
+    
+    bool ret=serviceParser.checkServiceType(bottle,type,error);
+
+	EXPECT_FALSE(ret); 
+}

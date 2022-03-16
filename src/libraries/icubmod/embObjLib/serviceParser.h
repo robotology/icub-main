@@ -148,12 +148,13 @@ typedef struct
 {
     std::vector<servCanBoard_t>      canboards;
     std::vector<servAnalogSensor_t>  sensors;
+    eOmn_serv_configuration_t        config;
 } servASproperties_t;
 
 
 typedef struct
 {
-    uint16_t                    acquisitionrate;
+    std::vector<uint16_>             acquisitionrate;
     std::vector<servAnalogSensor_t>  enabledsensors;
 } servASsettings_t;
 
@@ -366,11 +367,17 @@ protected:
     virtual bool checkSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
     virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards,bool& formaterror);
     virtual bool checkPropertySensors(const Bottle& property,eOmn_serv_type_t type,bool& formaterror);
-    virtual bool checkSettings(const Bottle& settings,bool& formaterror);
+    virtual bool checkSettings(const Bottle& settings,eOmn_serv_type_t type,bool& formaterror);
     virtual bool checkServiceType(const Bottle& service,eOmn_serv_type_t type,bool& formaterror);
+    virtual bool checkCanMonitor(const Bottle& service,eOmn_serv_type_t type,bool& formaterror);
+
+private:
+    const std::map<std::string,eObrd_canmonitor_reportmode_t> stringToReport={
+                                                                                {"NEVER",eobrd_canmonitor_reportmode_NEVER},
+                                                                                {"LOSTFOUND",eobrd_canmonitor_reportmode_justLOSTjustFOUND},
+                                                                                {"LOSTFOUNDLOST"},eobrd_canmonitor_reportmode_justLOSTjustFOUNDstillLOST},
+                                                                                {"ALL",eobrd_canmonitor_reportmode_ALL}
+                                                                            };
 };
-
-
-
 #endif
 

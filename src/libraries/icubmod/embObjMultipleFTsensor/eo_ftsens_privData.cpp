@@ -115,10 +115,10 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigMultipleFTsensor_t &serviceCo
 	res->setLocalValue(id32_fullscale, &fullscale_values, overrideROprotection);
 
 	// Prepare analog sensor
-	eOas_strain_config_t strainConfig = {0};
-	strainConfig.datarate = serviceConfig.acquisitionrate;
-	strainConfig.mode = eoas_strainmode_acquirebutdonttx;
-	strainConfig.signaloncefullscale = eobool_true;
+	eOas_strain_config_t ftConfig = {0};
+	ftConfig.datarate = serviceConfig.acquisitionrate;
+	ftConfig.mode = eoas_strainmode_acquirebutdonttx;
+	ftConfig.signaloncefullscale = eobool_true;
 
 	eOprotID32_t id32_strain_config = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_strain_config);
 
@@ -127,7 +127,7 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigMultipleFTsensor_t &serviceCo
 	// wait for response
 	while (!gotFullScaleValues && (timeout != 0))
 	{
-		res->setRemoteValue(id32_strain_config, &strainConfig);
+		res->setRemoteValue(id32_strain_config, &ftConfig);
 		SystemClock::delaySystem(1.0);
 		// read fullscale values
 		res->getLocalValue(id32_fullscale, &fullscale_values);
@@ -234,9 +234,9 @@ void eo_ftsens_privData::printServiceConfig(servConfigMultipleFTsensor_t &servic
 	const char *ipv4 = (NULL != res) ? (res->getProperties().ipv4addrString.c_str()) : ("NOT-ASSIGNED-YET");
 	const char *boardtype = eoboards_type2string2(static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.as.strain.boardtype.type), eobool_true);
 	ServiceParser *parser = new ServiceParser();
-	parser->convert(serviceConfig.ethservice.configuration.data.as.strain.canloc, loc, sizeof(loc));
-	parser->convert(serviceConfig.ethservice.configuration.data.as.strain.boardtype.firmware, fir, sizeof(fir));
-	parser->convert(serviceConfig.ethservice.configuration.data.as.strain.boardtype.protocol, pro, sizeof(pro));
+	parser->convert(serviceConfig.ethservice.configuration.data.as.ft.canloc, loc, sizeof(loc));
+	parser->convert(serviceConfig.ethservice.configuration.data.as.ft.boardtype.firmware, fir, sizeof(fir));
+	parser->convert(serviceConfig.ethservice.configuration.data.as.ft.boardtype.protocol, pro, sizeof(pro));
 
 	yInfo() << "The embObjMultipleFTsensor device using BOARD" << boardname << " w/ IP" << ipv4 << "has the following service config:";
 	yInfo() << "- acquisitionrate =" << serviceConfig.acquisitionrate;
@@ -247,18 +247,18 @@ void eo_ftsens_privData::printServiceConfig(servConfigMultipleFTsensor_t &servic
 
 bool eo_ftsens_privData::sendConfig2Strain(servConfigMultipleFTsensor_t &serviceConfig)
 {
-	eOas_strain_config_t strainConfig = {0};
+	eOas_ft_config_t ftConfig = {0};
 
-	strainConfig.datarate = serviceConfig.acquisitionrate;
-	strainConfig.signaloncefullscale = eobool_false;
-	strainConfig.mode = (true == serviceConfig.useCalibration) ? (eoas_strainmode_txcalibrateddatacontinuously) : (eoas_strainmode_txuncalibrateddatacontinuously);
+	ftConfig.datarate = serviceConfig.acquisitionrate;
+	ftConfig.signaloncefullscale = eobool_false;
+	ftConfig.mode = (true == serviceConfig.useCalibration) ? (eoas_strainmode_txcalibrateddatacontinuously) : (eoas_strainmode_txuncalibrateddatacontinuously);
 
 	// version with read-back
 
 	//LUCA TODO
 	eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_strain_config);
 
-	if (false == res->setcheckRemoteValue(id32, &strainConfig, 10, 0.010, 0.050))
+	if (false == res->setcheckRemoteValue(id32, &ftConfig, 10, 0.010, 0.050))
 	{
 		yError() << getBoardInfo() << "FATAL: sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config ";
 		return false;
@@ -306,11 +306,11 @@ bool eo_ftsens_privData::fillTemperatureEthServiceInfo(eOmn_serv_parameter_t &ft
 
 	EOarray *array = eo_array_New(eOas_temperature_descriptors_maxnumber, sizeof(eOas_temperature_descriptor_t), &(tempSrv.configuration.data.as.temperature.arrayofdescriptor));
 	eOas_temperature_descriptor_t descr = {0};
-	descr.typeofboard = ftSrv.configuration.data.as.strain.boardtype.type;	// eobrd_strain2 ;
+	descr.typeofboard = ftSrv.configuration.data.as.ft.boardtype.type;	// eobrd_strain2 ;
 	descr.typeofsensor = eoas_temperature_t1;
 	descr.on.can.place = eobrd_place_can;
-	descr.on.can.port = ftSrv.configuration.data.as.strain.canloc.port;
-	descr.on.can.addr = ftSrv.configuration.data.as.strain.canloc.addr;
+	descr.on.can.port = ftSrv.configuration.data.as.ft.canloc.port;
+	descr.on.can.addr = ftSrv.configuration.data.as.ft.canloc.addr;
 	eo_array_PushBack(array, &descr);
 
 	eOas_temperature_setof_boardinfos_t *boardInfoSet_ptr = &tempSrv.configuration.data.as.temperature.setofboardinfos;
@@ -322,9 +322,9 @@ bool eo_ftsens_privData::fillTemperatureEthServiceInfo(eOmn_serv_parameter_t &ft
 	}
 
 	eObrd_info_t boardInfo = {0};
-	boardInfo.type = ftSrv.configuration.data.as.strain.boardtype.type;
-	memcpy(&boardInfo.protocol, &(ftSrv.configuration.data.as.strain.boardtype.protocol), sizeof(eObrd_protocolversion_t));
-	memcpy(&boardInfo.firmware, &(ftSrv.configuration.data.as.strain.boardtype.firmware), sizeof(eObrd_firmwareversion_t));
+	boardInfo.type = ftSrv.configuration.data.as.ft.boardtype.type;
+	memcpy(&boardInfo.protocol, &(ftSrv.configuration.data.as.ft.boardtype.protocol), sizeof(eObrd_protocolversion_t));
+	memcpy(&boardInfo.firmware, &(ftSrv.configuration.data.as.ft.boardtype.firmware), sizeof(eObrd_firmwareversion_t));
 	res = eoas_temperature_setof_boardinfos_add(boardInfoSet_ptr, &boardInfo);
 	if (eores_OK != res)
 	{
