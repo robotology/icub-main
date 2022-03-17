@@ -29,7 +29,7 @@
 
 #include <yarp/os/LogStream.h>
 #include "EoAnalogSensors.h"
-
+#include "serviceParserMultipleFt.h"
 
 #include "EoProtocol.h"
 #include "EoProtocolMN.h"
@@ -554,9 +554,16 @@ bool ServiceParser::convert(eObrd_protocolversion_t const &prot, char *str, int 
 
 bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 {
+    if(type==eomn_serv_AS_ft)
+    {
+        yDebug() << "ServiceParser::check() forward to checkAnalogForFt";
+        ServiceParserMultipleFt parserMFt(as_service);
+        return parserMFt.parse(config);
+    }
+
     bool formaterror = false;
     // so far we check for eomn_serv_AS_mais / strain / inertials inertials3 / psc / pos only
-    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_ft != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) &&
+    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) &&
        (eomn_serv_AS_inertials3 != type) && (eomn_serv_AS_psc != type) && (eomn_serv_AS_pos != type))
     {
         yError() << "ServiceParser::check() is called with wrong type";
@@ -565,7 +572,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
     // i parse the global board versions. if section is not found we can safely continue but we have boards.size() equal to zero.
 
-    // format is SERVICE{ type, PROPERTIES{ CANBOARDS, SENSORS }, CANMONITOR, SETTINGS }
+    // format is SERVICE{ type, PROPERTIES{ CANBOARDS, SENSORS }, SETTINGS }
 
     Bottle b_SERVICE(config.findGroup("SERVICE"));
     if(b_SERVICE.isNull())
@@ -574,33 +581,353 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         return false;
     }
 
+    // check whether we have the proper type
+
+    if(false == b_SERVICE.check("type"))
+    {
+        yError() << "ServiceParser::check() cannot find SERVICE.type";
+        return false;
+    }
+    else
+    {
+        Bottle b_type(b_SERVICE.find("type").asString());
+        if(false == convert(b_type.toString(), as_service.type, formaterror))
+        {
+            yError() << "ServiceParser::check() has found unknown SERVICE.type = " << b_type.toString();
+            return false;
+        }
+        if(type != as_service.type)
+        {
+            yError() << "ServiceParser::check() has found wrong SERVICE.type = " << as_service.type << "it must be" << "TODO: tostring() function";
+            return false;
+        }
+    }
+
+    // check whether we have the proper groups
+
     Bottle b_PROPERTIES = Bottle(b_SERVICE.findGroup("PROPERTIES"));
     if(b_PROPERTIES.isNull())
     {
         yError() << "ServiceParser::check() cannot find PROPERTIES";
         return false;
     }
+    else
+    {
+        Bottle b_PROPERTIES_CANBOARDS = Bottle(b_PROPERTIES.findGroup("CANBOARDS"));
+        if(b_PROPERTIES_CANBOARDS.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS";
+            return false;
+        }
+        else
+        {
+            // now get type, PROTOCOL.major/minor, FIRMWARE.major/minor/build and see their sizes. the must be all equal.
+            // for mais and strain and so far for intertials it must be numboards = 1.
 
-    if(!checkServiceType(b_SERVICE,type,formaterror))
-        return false;
+            Bottle b_PROPERTIES_CANBOARDS_type = b_PROPERTIES_CANBOARDS.findGroup("type");
+            if(b_PROPERTIES_CANBOARDS_type.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.type";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL = Bottle(b_PROPERTIES_CANBOARDS.findGroup("PROTOCOL"));
+            if(b_PROPERTIES_CANBOARDS_PROTOCOL.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_major = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("major"));
+            if(b_PROPERTIES_CANBOARDS_PROTOCOL_major.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL.major";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_minor = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("minor"));
+            if(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL.minor";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE = Bottle(b_PROPERTIES_CANBOARDS.findGroup("FIRMWARE"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_major = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("major"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE_major.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.major";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_minor = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("minor"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.minor";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_build = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("build"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE_build.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.build";
+                return false;
+            }
 
-    if(!checkPropertyCanBoards(b_PROPERTIES,formaterror))
-        return false;
+            size_t tmp = b_PROPERTIES_CANBOARDS_type.size();
+            int numboards = tmp - 1;    // first position of bottle contains the tag "type"
 
-    if(!checkPropertySensors(b_PROPERTIES,type,formaterror))
-        return false;
-    
-    if(!checkSettings(b_SERVICE,type,formaterror))
-        return false;
+            // check if all other fields have the same size.
+            if( (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_major.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_minor.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_major.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_minor.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_build.size())
+              )
+            {
+                yError() << "ServiceParser::check() in PROPERTIES.CANBOARDS some param has inconsistent length";
+                return false;
+            }
 
-    if(!checkSpecificForStrain(b_SERVICE,type,formaterror))
-        return false;
 
-    if(!checkSpecificForMultipleFT(b_SERVICE,type,formaterror))
-        return false;
+            as_service.properties.canboards.resize(0);
 
-    if(!checkCanMonitor(b_SERVICE,type,formaterror))
+            formaterror = false;
+            for(int i=0; i<numboards; i++)
+            {
+                servCanBoard_t item;
+
+                convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt32(), item.protocol.major, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt32(), item.protocol.minor, formaterror);
+
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt32(), item.firmware.major, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt32(), item.firmware.minor, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt32(), item.firmware.build, formaterror);
+
+                as_service.properties.canboards.push_back(item);
+            }
+
+            // in here we could decide to return false if any previous conversion function has returned error
+            // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
+
+            if(true == formaterror)
+            {
+                yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.CANBOARDS some param has inconsistent length";
+                return false;
+            }
+        }
+
+        Bottle b_PROPERTIES_SENSORS = Bottle(b_PROPERTIES.findGroup("SENSORS"));
+        if(b_PROPERTIES_SENSORS.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS";
+            return false;
+        }
+        else
+        {
+
+            Bottle b_PROPERTIES_SENSORS_id = Bottle(b_PROPERTIES_SENSORS.findGroup("id"));
+            if(b_PROPERTIES_SENSORS_id.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.id";
+                return false;
+            }
+            Bottle b_PROPERTIES_SENSORS_type = Bottle(b_PROPERTIES_SENSORS.findGroup("type"));
+            if(b_PROPERTIES_SENSORS_type.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.type";
+                return false;
+            }
+            Bottle b_PROPERTIES_SENSORS_location = Bottle(b_PROPERTIES_SENSORS.findGroup("location"));
+            if(b_PROPERTIES_SENSORS_location.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.location";
+                return false;
+            }
+            Bottle b_PROPERTIES_SENSORS_boardtype;
+            if(type == eomn_serv_AS_inertials3)
+            {
+                
+                b_PROPERTIES_SENSORS_boardtype = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
+                if(b_PROPERTIES_SENSORS_boardtype.isNull())
+                {
+                    yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.boardType";
+                    return false;
+                }
+            }
+            else
+            {
+                b_PROPERTIES_SENSORS_boardtype.clear();
+            }
+
+            size_t tmp = b_PROPERTIES_SENSORS_id.size();
+            int numsensors = tmp - 1;    // first position of bottle contains the tag "id"
+
+            // check if all other fields have the same size.
+            if( (tmp != b_PROPERTIES_SENSORS_type.size()) ||
+                (tmp != b_PROPERTIES_SENSORS_location.size()) ||
+                ((type == eomn_serv_AS_inertials3) && (b_PROPERTIES_SENSORS_boardtype.size() != tmp))
+              )
+            {
+                yError() << "ServiceParser::check() in PROPERTIES.SENSORS some param has inconsistent length";
+                return false;
+            }
+
+
+            as_service.properties.sensors.resize(0);
+
+            formaterror = false;
+            for(int i=0; i<numsensors; i++)
+            {
+                servAnalogSensor_t item;
+                item.type = eoas_none;
+                item.location.any.place = eobrd_place_none;
+
+                convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), item.id, formaterror);
+                convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
+                convert(b_PROPERTIES_SENSORS_location.get(i+1).asString(), item.location, formaterror);
+                if(type == eomn_serv_AS_inertials3)
+                {
+                    convert(b_PROPERTIES_SENSORS_boardtype.get(i+1).asString(), item.boardtype, formaterror);
+                }
+                else
+                {
+                    item.boardtype = eobrd_none;
+                }
+
+                as_service.properties.sensors.push_back(item);
+            }
+
+            // in here we could decide to return false if any previous conversion function has returned error
+            // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
+
+            if(true == formaterror)
+            {
+                yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.SENSORS some param has inconsistent length";
+                return false;
+            }
+
+        }
+
+    }
+
+    Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
+    if(b_SETTINGS.isNull())
+    {
+        yError() << "ServiceParser::check() cannot find SETTINGS";
         return false;
+    }
+    else
+    {
+
+        Bottle b_SETTINGS_acquisitionRate = Bottle(b_SETTINGS.findGroup("acquisitionRate"));
+        if(b_SETTINGS_acquisitionRate.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find SETTINGS.acquisitionRate";
+            return false;
+        }
+        Bottle b_SETTINGS_enabledSensors = Bottle(b_SETTINGS.findGroup("enabledSensors"));
+        if(b_SETTINGS_enabledSensors.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find SETTINGS.enabledSensors";
+            return false;
+        }
+
+        size_t s = b_SETTINGS_enabledSensors.size();
+        size_t numenabledsensors = (0 == s) ? (0) : (s - 1) ;    // first position of bottle contains the tag "enabledSensors"
+
+        // the enabled must be <= the sensors.
+        if( numenabledsensors > as_service.properties.sensors.size() )
+        {
+            yError() << "ServiceParser::check() in SETTINGS.enabledSensors there are too many items with respect to supported sensors:" << numenabledsensors << "vs." << as_service.properties.sensors.size();
+            return false;
+        }
+
+        convert(b_SETTINGS_acquisitionRate.get(1).asInt32(), as_service.settings.acquisitionrate, formaterror);
+
+
+        as_service.settings.enabledsensors.resize(0);
+
+        for(size_t i=0; i<numenabledsensors; i++)
+        {
+            servAnalogSensor_t founditem;
+
+            std::string s_enabled_id = b_SETTINGS_enabledSensors.get(i+1).asString();
+//            const char *str = s_enabled_id.c_str();
+//            std::string cpp_str = str;
+
+            // we must now search inside the whole vector<> as_service.properties.sensors if we find an id which matches s_enabled_id ....
+            // if we dont, ... we issue a warning.
+            // if we find, ... we do a pushback of it inside
+            bool found = false;
+            // i decide to use a brute force search ... for now
+            for(size_t n=0; n<as_service.properties.sensors.size(); n++)
+            {
+                servAnalogSensor_t item = as_service.properties.sensors.at(n);
+                //if(item.id == cpp_str)
+                if(item.id == s_enabled_id)
+                {
+                    found = true;
+                    founditem = item;
+                    break;
+                }
+            }
+
+            if(true == found)
+            {
+                as_service.settings.enabledsensors.push_back(founditem);
+            }
+
+        }
+
+        // in here we issue an error if we dont have at least one enabled sensor
+
+        if(0 == as_service.settings.enabledsensors.size())
+        {
+            yError() << "ServiceParser::check() could not find any item in SETTINGS.enabledSensors which matches what in PROPERTIES.SENSORS.id";
+            return false;
+        }
+
+    }
+
+    // now we may have one or more sections which are specific of the device ...
+
+    // only strain so far.
+
+    if(eomn_serv_AS_strain == type)
+    {
+        Bottle b_STRAIN_SETTINGS = Bottle(b_SERVICE.findGroup("STRAIN_SETTINGS"));
+        if(b_STRAIN_SETTINGS.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS";
+            return false;
+        }
+        else
+        {
+
+            Bottle b_STRAIN_SETTINGS_useCalibration = Bottle(b_STRAIN_SETTINGS.findGroup("useCalibration"));
+            if(b_STRAIN_SETTINGS_useCalibration.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS.useCalibration";
+                return false;
+            }
+
+            formaterror = false;
+            convert(b_STRAIN_SETTINGS_useCalibration.get(1).asString(), as_strain_settings.useCalibration, formaterror);
+
+            if(true == formaterror)
+            {
+                yError() << "ServiceParser::check() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
+                return false;
+            }
+        }
+    }
+
+
+
+
+    // we we are in here we have the struct filled with all variables ... some validations are still due to the calling device.
+    // for instance, if embObjMais
 
     return true;
 }
@@ -1144,6 +1471,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     }
     
     ftconfig.acquisitionrate = as_service.settings.acquisitionrate;
+    ftconfig.temperatureAcquisitionrate=as_service.settings.temperatureAcquisitionRate;
     ftconfig.useCalibration = as_strain_settings.useCalibration;
     ftconfig.nameOfStrain = thestrain_sensor.id;
     
@@ -1163,22 +1491,8 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     ftconfig.ethservice.configuration.data.as.strain.canloc.port = thestrain_sensor.location.can.port;
     ftconfig.ethservice.configuration.data.as.strain.canloc.addr = thestrain_sensor.location.can.addr;
     ftconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eobrd_caninsideindex_none;
+    ftconfig.ethservice.configuration.data.as.strain.properties.config.data.as.ft.canmonitorconfig = as_service.canMonitor;
     
-    
-    
-    Bottle b_SERVICE(config.findGroup("SERVICE")); //b_SERVICE and b_SETTINGS could not be null, otherwise parseService function would have returned false
-    Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
-    Bottle b_SETTINGS_temp = Bottle(b_SETTINGS.findGroup("temperature-acquisitionRate"));
-    if(b_SETTINGS_temp.isNull())
-    {
-        yError() << "ServiceParser::parseService() for embObjFTsensor device cannot find SETTINGS.temperature-acquisitionRate";
-        return false;
-    }
-    else
-    {
-        ftconfig.temperatureAcquisitionrate = b_SETTINGS_temp.get(1).asInt32();
-        //TODO: chek that the acquisition rate is inside a reasonable range
-    }
     
     return true;
 }
@@ -1241,6 +1555,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
 
     return true;
 }
+
 
 bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
 {
@@ -1340,6 +1655,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
     
     return true;
 }
+
 
 bool ServiceParser::parseService(Searchable &config, servConfigSkin_t &skinconfig)
 {
@@ -4447,11 +4763,6 @@ bool ServiceParser::parseService2(Searchable &config, servConfigMC_t &mcconfig)
 
 */
 
-
-
-
-
-
     memcpy(&jc->joint2motor, &m1, sizeof(m1));
     memcpy(&jc->encoder2joint, &m2, sizeof(m2));
 
@@ -4487,430 +4798,5 @@ bool ServiceParser::parseService2(Searchable &config, servConfigMC_t &mcconfig)
 }
 
 #endif // #if defined(SERVICE_PARSER_USE_MC)
-
-bool ServiceParser::checkSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror) 
-{
-  if (eomn_serv_AS_ft != type) 
-  {
-    return true;
-  }
-
-  Bottle b_FT_SETTINGS = Bottle(bService.findGroup("FT_SETTINGS"));
-
-  if (b_FT_SETTINGS.isNull()) 
-  {
-    yError() << "ServiceParser::check() cannot find FT_SETTINGS-";
-    return false;
-  } 
-  else 
-  {
-    Bottle b_FT_SETTINGS_useCalibration = Bottle(b_FT_SETTINGS.findGroup("useCalibration"));
-    if (b_FT_SETTINGS_useCalibration.isNull()) 
-    {
-      yError() << "ServiceParser::check() cannot find FT_SETTINGS.useCalibration";
-      return false;
-    }
-
-    formaterror = false;
-    convert(b_FT_SETTINGS_useCalibration.get(1).asString(),as_ft_settings.useCalibration, formaterror);
-
-    if (true == formaterror) 
-    {
-      yError() << "ServiceParser::check() has detected an illegal format for paramf FT_SETTINGS.useCalibration";
-      return false;
-    }
-  }
-  return true;
-}
-
-bool ServiceParser::checkSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror) 
-{
-    if(eomn_serv_AS_strain != type && eomn_serv_AS_ft != type)
-    {
-        return true;
-    }
-
-    Bottle b_STRAIN_SETTINGS = Bottle(bService.findGroup("STRAIN_SETTINGS"));
-    if(b_STRAIN_SETTINGS.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS";
-        return false;
-    }
-    else
-    {
-
-        Bottle b_STRAIN_SETTINGS_useCalibration = Bottle(b_STRAIN_SETTINGS.findGroup("useCalibration"));
-        if(b_STRAIN_SETTINGS_useCalibration.isNull())
-        {
-            yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS.useCalibration";
-            return false;
-        }
-
-        formaterror = false;
-        convert(b_STRAIN_SETTINGS_useCalibration.get(1).asString(), as_strain_settings.useCalibration, formaterror);
-
-        if(true == formaterror)
-        {
-            yError() << "ServiceParser::check() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
-            return false;
-        }
-    }
-    return true;
-}    
-
-
-bool ServiceParser::checkPropertyCanBoards(const Bottle& property,bool& formaterror)
-{
-    Bottle b_PROPERTIES_CANBOARDS = Bottle(property.findGroup("CANBOARDS"));
-    if(b_PROPERTIES_CANBOARDS.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS";
-        return false;
-    }
-
-    // now get type, PROTOCOL.major/minor, FIRMWARE.major/minor/build and see their sizes. the must be all equal.
-    // for mais and strain and so far for intertials it must be numboards = 1.
-    Bottle b_PROPERTIES_CANBOARDS_type = b_PROPERTIES_CANBOARDS.findGroup("type");
-    if(b_PROPERTIES_CANBOARDS_type.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.type";
-        return false;
-    }
-
-    Bottle b_PROPERTIES_CANBOARDS_PROTOCOL = Bottle(b_PROPERTIES_CANBOARDS.findGroup("PROTOCOL"));
-    if(b_PROPERTIES_CANBOARDS_PROTOCOL.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL";
-        return false;
-    }
-    Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_major = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("major"));
-    if(b_PROPERTIES_CANBOARDS_PROTOCOL_major.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL.major";
-        return false;
-    }
-    Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_minor = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("minor"));
-    if(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL.minor";
-        return false;
-    }
-    Bottle b_PROPERTIES_CANBOARDS_FIRMWARE = Bottle(b_PROPERTIES_CANBOARDS.findGroup("FIRMWARE"));
-    if(b_PROPERTIES_CANBOARDS_FIRMWARE.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE";
-        return false;
-    }
-    Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_major = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("major"));
-    if(b_PROPERTIES_CANBOARDS_FIRMWARE_major.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.major";
-        return false;
-    }
-    Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_minor = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("minor"));
-    if(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.minor";
-        return false;
-    }
-    Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_build = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("build"));
-    if(b_PROPERTIES_CANBOARDS_FIRMWARE_build.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.build";
-        return false;
-    }
-
-    size_t tmp = b_PROPERTIES_CANBOARDS_type.size();
-    int numboards = tmp - 1;    // first position of bottle contains the tag "type"
-
-    // check if all other fields have the same size.
-    if( (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_major.size()) ||
-        (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_minor.size()) ||
-        (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_major.size()) ||
-        (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_minor.size()) ||
-        (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_build.size())
-        )
-    {
-        yError() << "ServiceParser::check() in PROPERTIES.CANBOARDS some param has inconsistent length";
-        return false;
-    }
-
-    as_service.properties.canboards.resize(0);
-
-    formaterror = false;
-    for(int i=0; i<numboards; i++)
-    {
-        servCanBoard_t item;
-
-        convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
-        convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt32(), item.protocol.major, formaterror);
-        convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt32(), item.protocol.minor, formaterror);
-
-        convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt32(), item.firmware.major, formaterror);
-        convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt32(), item.firmware.minor, formaterror);
-        convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt32(), item.firmware.build, formaterror);
-
-        as_service.properties.canboards.push_back(item);
-    }
-
-    // in here we could decide to return false if any previous conversion function has returned error
-    // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
-
-    if(true == formaterror)
-    {
-        yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.CANBOARDS some param has inconsistent length";
-        return false;
-    }
-
-    return true;
-}
-
-bool ServiceParser::checkPropertySensors(const Bottle& property,eOmn_serv_type_t type,bool& formaterror)
-{
-    Bottle b_PROPERTIES_SENSORS = Bottle(property.findGroup("SENSORS"));
-    if(b_PROPERTIES_SENSORS.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS";
-        return false;
-    }
-    Bottle b_PROPERTIES_SENSORS_id = Bottle(b_PROPERTIES_SENSORS.findGroup("id"));
-    if(b_PROPERTIES_SENSORS_id.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.id";
-        return false;
-    }
-    Bottle b_PROPERTIES_SENSORS_type = Bottle(b_PROPERTIES_SENSORS.findGroup("type"));
-    if(b_PROPERTIES_SENSORS_type.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.type";
-        return false;
-    }
-    Bottle b_PROPERTIES_SENSORS_location = Bottle(b_PROPERTIES_SENSORS.findGroup("location"));
-    if(b_PROPERTIES_SENSORS_location.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.location";
-        return false;
-    }
-    
-    Bottle b_PROPERTIES_SENSORS_boardtype;
-    if(type == eomn_serv_AS_inertials3)
-    {  
-        b_PROPERTIES_SENSORS_boardtype = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
-        if(b_PROPERTIES_SENSORS_boardtype.isNull())
-        {
-            yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.boardType";
-            return false;
-        }
-    }
-    else
-    {
-        b_PROPERTIES_SENSORS_boardtype.clear();
-    }
-
-    size_t tmp = b_PROPERTIES_SENSORS_id.size();
-    int numsensors = tmp - 1;    // first position of bottle contains the tag "id"
-
-    // check if all other fields have the same size.
-    if( (tmp != b_PROPERTIES_SENSORS_type.size()) ||
-        (tmp != b_PROPERTIES_SENSORS_location.size()) ||
-        ((type == eomn_serv_AS_inertials3) && (b_PROPERTIES_SENSORS_boardtype.size() != tmp))
-        )
-    {
-        yError() << "ServiceParser::check() in PROPERTIES.SENSORS some param has inconsistent length";
-        return false;
-    }
-
-
-    as_service.properties.sensors.resize(0);
-
-    formaterror = false;
-    for(int i=0; i<numsensors; i++)
-    {
-        servAnalogSensor_t item;
-        item.type = eoas_none;
-        item.location.any.place = eobrd_place_none;
-
-        convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), item.id, formaterror);
-        convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
-        convert(b_PROPERTIES_SENSORS_location.get(i+1).asString(), item.location, formaterror);
-        if(type == eomn_serv_AS_inertials3)
-        {
-            convert(b_PROPERTIES_SENSORS_boardtype.get(i+1).asString(), item.boardtype, formaterror);
-        }
-        else
-        {
-            item.boardtype = eobrd_none;
-        }
-
-        as_service.properties.sensors.push_back(item);
-    }
-
-    // in here we could decide to return false if any previous conversion function has returned error
-    // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
-
-    if(true == formaterror)
-    {
-        yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.SENSORS some param has inconsistent length";
-        return false;
-    }
-    
-    return true;
-}
-
-bool ServiceParser::checkSettings(const Bottle& service,eOmn_serv_type_t type,bool& formaterror)
-{
-    Bottle settings = Bottle(service.findGroup("SETTINGS"));
-    if(settings.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find SETTINGS";
-        return false;
-    }
-
-    Bottle b_SETTINGS_acquisitionRate = Bottle(settings.findGroup("acquisitionRate"));
-    if(b_SETTINGS_acquisitionRate.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find SETTINGS.acquisitionRate";
-        return false;
-    }
-    if(eomn_serv_AS_strain != type && eomn_serv_AS_ft != type)
-    {
-        Bottle b_SETTINGS_temp = Bottle(settings.findGroup("temperature-acquisitionRate"));
-        if(b_SETTINGS_temp.isNull())
-        {
-            yError() << "ServiceParser::parseService() for embObjMultipleFTsensor device cannot find SETTINGS.temperature-acquisitionRate";
-            return false;
-        }
-        ftconfig.temperatureAcquisitionrate = b_SETTINGS_temp.get(1).asInt32();
-    }
-
-    Bottle b_SETTINGS_enabledSensors = Bottle(settings.findGroup("enabledSensors"));
-    if(b_SETTINGS_enabledSensors.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find SETTINGS.enabledSensors";
-        return false;
-    }
-    size_t s = b_SETTINGS_enabledSensors.size();
-    size_t numenabledsensors = (0 == s) ? (0) : (s - 1) ;    // first position of bottle contains the tag "enabledSensors"
-
-    // the enabled must be <= the sensors.
-    int tmp=as_service.properties.sensors.size();
-    if( numenabledsensors > as_service.properties.sensors.size() )
-    {
-        yError() << "ServiceParser::check() in SETTINGS.enabledSensors there are too many items with respect to supported sensors:" << numenabledsensors << "vs." << as_service.properties.sensors.size();
-        return false;
-    }
-
-    //TODO check acquisition range
-    convert(b_SETTINGS_acquisitionRate.get(1).asInt32(), as_service.settings.acquisitionrate, formaterror);
-
-
-    as_service.settings.enabledsensors.resize(0);
-    for(size_t i=0; i<numenabledsensors; i++)
-    {
-        servAnalogSensor_t founditem;
-
-        std::string s_enabled_id = b_SETTINGS_enabledSensors.get(i+1).asString();
-    //            const char *str = s_enabled_id.c_str();
-    //            std::string cpp_str = str;
-
-        // we must now search inside the whole vector<> as_service.properties.sensors if we find an id which matches s_enabled_id ....
-        // if we dont, ... we issue a warning.
-        // if we find, ... we do a pushback of it inside
-        bool found = false;
-        // i decide to use a brute force search ... for now
-        for(size_t n=0; n<as_service.properties.sensors.size(); n++)
-        {
-            servAnalogSensor_t item = as_service.properties.sensors.at(n);
-            //if(item.id == cpp_str)
-            if(item.id == s_enabled_id)
-            {
-                found = true;
-                founditem = item;
-                break;
-            }
-        }
-
-        if(true == found)
-        {
-            as_service.settings.enabledsensors.push_back(founditem);
-        }
-
-    }
-
-    // in here we issue an error if we dont have at least one enabled sensor
-
-    if(0 == as_service.settings.enabledsensors.size())
-    {
-        yError() << "ServiceParser::check() could not find any item in SETTINGS.enabledSensors which matches what in PROPERTIES.SENSORS.id";
-        return false;
-    }
-    return true;
-}
-
-bool ServiceParser::checkServiceType(const Bottle& service,eOmn_serv_type_t type,bool& formaterror)
-{
-    if(false == service.check("type"))
-    {
-        yError() << "ServiceParser::check() cannot find SERVICE.type";
-        return false;
-    }
-
-    Bottle b_type(service.find("type").asString());
-    if(false == convert(b_type.toString(), as_service.type, formaterror))
-    {
-        yError() << "ServiceParser::check() has found unknown SERVICE.type = " << b_type.toString();
-        return false;
-    }
-    if(type != as_service.type)
-    {
-        yError() << "ServiceParser::check() has found wrong SERVICE.type = " << as_service.type << "it must be" << "TODO: tostring() function";
-        return false;
-    }
-    return true;
-}
-
-bool ServiceParser::checkCanMonitor(const Bottle& property,eOmn_serv_type_t type,bool& formaterror)
-{
-    if(eomn_serv_AS_ft != type)
-    {
-        return true;
-    }
-
-    Bottle b_CAN_MONITOR = Bottle(property.findGroup("CANMONITOR"));
-    if(b_CAN_MONITOR.isNull())
-    {
-        yError() << "ServiceParser::check() cannot find PROPERTIES.CANMONITOR";
-        return false;
-    }    
-
-    if(false == b_CAN_MONITOR.check("checkrate"))
-    {
-        yError() << "ServiceParser::check() cannot find b_CAN_MONITOR.checkrate";
-        return false;
-    }
-    if(false == b_CAN_MONITOR.check("reportmode"))
-    {
-        yError() << "ServiceParser::check() cannot find b_CAN_MONITOR.reportmode";
-        return false;
-    }
-    if(false == b_CAN_MONITOR.check("periodicreportrate"))
-    {
-        yError() << "ServiceParser::check() cannot find b_CAN_MONITOR.periodicreportrate";
-        return false;
-    }
-    
-    int checkrate=b_CAN_MONITOR.find("checkrate").asInt32());
-    std::string reportmode=b_CAN_MONITOR.find("reportmode").asString());
-    if(stringToReport.find("reportmode")==stringToFind.end())
-    {
-        yError() << "ServiceParser::check() wrong b_CAN_MONITOR.reportmode";
-        return false;
-    }
-    int periodicreportrate=b_CAN_MONITOR.find("periodicreportrate").asInt32());
-
-    as_service.properties.config.data.as.ft.canmonitorconfig={checkrate,stringToReport.at(reportmode),periodicreportrate};
-
-    return true;
-}
 
 // eof

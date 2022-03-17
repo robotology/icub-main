@@ -9,15 +9,11 @@
 #include <list>
 #include <string>
 
-#include <yarp/os/Bottle.h>
 
 #include "EoBoards.h"
 #include "EoManagement.h"
 #include "EoAnalogSensors.h"
 #include "EoMotionControl.h"
-
-using namespace yarp::os;
-
 
 #define SERVICE_PARSER_USE_MC
 
@@ -43,7 +39,7 @@ typedef struct
     eOmn_serv_parameter_t   ethservice;
     int                     acquisitionrate;
     bool                    useCalibration;
-    std::string                  nameOfStrain;
+    std::string             nameOfStrain;
     eObrd_cantype_t         boardType;
     int                     temperatureAcquisitionrate;
 } servConfigFTsensor_t;
@@ -154,16 +150,25 @@ typedef struct
 
 typedef struct
 {
-    std::vector<uint16_>             acquisitionrate;
+    uint16_t                         acquisitionrate;//TODO  Luca should be std::vector<uint16_>
     std::vector<servAnalogSensor_t>  enabledsensors;
+    bool                             useCalibration;//TODO Luca std::vector<bool>
+    uint16_t                         temperatureAcquisitionRate;//TODO  Luca should be std::vector<uint16_>
 } servASsettings_t;
 
+typedef struct 
+{
+    int checkrate;
+    eObrd_canmonitor_reportmode_t reportmode;
+    int periodicreportrate;
+}servAsCanMonitor_t;
 
 typedef struct
 {
     eOmn_serv_type_t            type;
     servASproperties_t          properties;
     servASsettings_t            settings;
+    servAsCanMonitor_t          canMonitor;    
 } servAScollector_t;
 
 
@@ -268,6 +273,7 @@ typedef struct
 
 // todo: add definition of static const array of strings containing the names of boards, sensors, etc.
 
+
 // -- class ServiceParser
 
 class ServiceParser
@@ -343,7 +349,6 @@ public:
 
     servAScollector_t           as_service;
     servASstrainSettings_t      as_strain_settings;
-    servASftSettings_t          as_ft_settings;
     servSKcollector_t           sk_service;
 
 #if defined(SERVICE_PARSER_USE_MC)
@@ -362,22 +367,7 @@ private:
 
     bool copyjomocouplingInfo(eOmc_4jomo_coupling_t *jc_dest);
 
-protected:
-    virtual bool checkSpecificForMultipleFT(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
-    virtual bool checkSpecificForStrain(const Bottle& bService,eOmn_serv_type_t type,bool& formaterror);
-    virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards,bool& formaterror);
-    virtual bool checkPropertySensors(const Bottle& property,eOmn_serv_type_t type,bool& formaterror);
-    virtual bool checkSettings(const Bottle& settings,eOmn_serv_type_t type,bool& formaterror);
-    virtual bool checkServiceType(const Bottle& service,eOmn_serv_type_t type,bool& formaterror);
-    virtual bool checkCanMonitor(const Bottle& service,eOmn_serv_type_t type,bool& formaterror);
 
-private:
-    const std::map<std::string,eObrd_canmonitor_reportmode_t> stringToReport={
-                                                                                {"NEVER",eobrd_canmonitor_reportmode_NEVER},
-                                                                                {"LOSTFOUND",eobrd_canmonitor_reportmode_justLOSTjustFOUND},
-                                                                                {"LOSTFOUNDLOST"},eobrd_canmonitor_reportmode_justLOSTjustFOUNDstillLOST},
-                                                                                {"ALL",eobrd_canmonitor_reportmode_ALL}
-                                                                            };
 };
 #endif
 

@@ -12,7 +12,7 @@
 #include <iostream>
 #include <vector>
 
-#include "serviceParser.h"
+#include "serviceParserMultipleFt.h"
 #include <yarp/os/ResourceFinder.h>
 
 using namespace testing;
@@ -20,10 +20,9 @@ using ::testing::_;
 using ::testing::InvokeArgument;
 using ::testing::Matcher;
 
-class ServiceParser_mock: public ServiceParser
+class ServiceParser_mock: public ServiceParserMultipleFt
 {
     public:
-        using ServiceParser::checkSpecificForMultipleFT;
         using ServiceParser::checkPropertyCanBoards;
         using ServiceParser::checkPropertySensors;
         using ServiceParser::checkSettings;
@@ -32,31 +31,6 @@ class ServiceParser_mock: public ServiceParser
         
         ServiceParser_mock():ServiceParser(){};
 };
-
-TEST(General, base_positive_001)
-{
-    yarp::os::Bottle bottle;
-    ServiceParser_mock serviceParser;
-    eOmn_serv_type_t type=eomn_serv_AS_strain;
-    bool error{false};
-    bool ret=serviceParser.checkSpecificForMultipleFT(bottle,type,error);
-
-	EXPECT_TRUE(ret);
-}
-
-TEST(General, base_positive_002)
-{
-    yarp::os::Bottle bottle;
-    bottle.fromString("(FT_SETTINGS (useCalibration false))");
-  
-    ServiceParser_mock serviceParser;
-    eOmn_serv_type_t type=eomn_serv_AS_ft;
-    bool error{false};
-    bool ret=serviceParser.checkSpecificForMultipleFT(bottle,type,error);
-
-	EXPECT_TRUE(ret);
-    EXPECT_FALSE(error);
-}
 
 TEST(General, check_property_canboards_positive_001)
 {
@@ -117,19 +91,21 @@ TEST(General, check_property_sensors_positive_002)
 TEST(General, check_settings_positive_001)
 {
     yarp::os::Bottle bottle;
-    bottle.fromString("(SETTINGS (acquisitionRate 10) (enabledSensors fakeId) (temperature-acquisitionRate 1000) )");
+    bottle.fromString("(SETTINGS (acquisitionRate 10) (enabledSensors fakeId) (temperature-acquisitionRate 1000) (useCalibration true) )");
   
     ServiceParser_mock serviceParser;
     bool error{false};
 
     servAnalogSensor_t toAdd={"fakeId",eoas_ft,{1,2},eobrd_strain2};
     serviceParser.as_service.properties.sensors.push_back(toAdd);
-    
+    servASsettings_t expectedSettings={10,{toAdd},true,1000};
+
     bool ret=serviceParser.checkSettings(bottle,error);
 
 	EXPECT_TRUE(ret);
     EXPECT_FALSE(error);
     ASSERT_EQ(1,serviceParser.as_service.settings.enabledsensors.size());
+    EXPECT_EQ(expectedSettings,serviceParser.as_service.settings);
     EXPECT_EQ("fakeId",serviceParser.as_service.settings.enabledsensors.at(0));
 }
 
