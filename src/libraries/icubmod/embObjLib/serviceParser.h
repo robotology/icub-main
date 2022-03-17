@@ -51,7 +51,6 @@ typedef struct
     bool                    useCalibration;
     std::string                  nameOfStrain;
     eObrd_cantype_t         boardType;
-    int                     temperatureAcquisitionrate;
 } servConfigMultipleFTsensor_t;
 
 

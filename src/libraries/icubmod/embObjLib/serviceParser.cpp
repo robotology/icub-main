@@ -554,13 +554,6 @@ bool ServiceParser::convert(eObrd_protocolversion_t const &prot, char *str, int 
 
 bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 {
-    if(type==eomn_serv_AS_ft)
-    {
-        yDebug() << "ServiceParser::check() forward to checkAnalogForFt";
-        ServiceParserMultipleFt parserMFt(as_service);
-        return parserMFt.parse(config);
-    }
-
     bool formaterror = false;
     // so far we check for eomn_serv_AS_mais / strain / inertials inertials3 / psc / pos only
     if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) &&
@@ -1410,11 +1403,11 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
 
 bool ServiceParser::parseService(Searchable &config, servConfigMultipleFTsensor_t &ftconfig)
 {
-    if(false == check_analog(config, eomn_serv_AS_ft))
-    {
-        yError() << "ServiceParser::parseService() has received an invalid SERVICE group for FT";
-        return false;
-    }
+    ServiceParserMultipleFt parserMFt(as_service);
+    parserMFt.parse(config);
+    eOmn_serv_config_data_as_ft_t data=parserMFt.toEomn();
+
+    
     
     // now we extract values ... so far we dont make many checks ... we just assume the vector<> are of size 1.
     servCanBoard_t thestrain_props = as_service.properties.canboards.at(0);

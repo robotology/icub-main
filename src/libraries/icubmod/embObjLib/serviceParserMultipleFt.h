@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2022 Istituto Italiano di Tecnologia (IIT)
+ * All rights reserved.
+ * Author: Luca Tricerri
+ * This software may be modified and distributed under the terms of the
+ * BSD-3-Clause license. See the accompanying LICENSE file for details.
+ */
+
 #pragma once
 
 #include <yarp/os/Bottle.h>
@@ -9,11 +17,35 @@ using namespace yarp::os;
 
 class servAScollector_t;
 
+class FtInfo
+{
+   public:
+	int ftAcquisitionRate;
+	int temperatureAcquisitionRate;
+	bool useCalibration;
+	std::string board;
+	std::string location;
+	int majorProtocol;
+	int minorProtocol;
+	int majorFirmware;
+	int minorFirmware;
+	int buildFirmware;
+};
+
+class CanMonitor
+{
+   public:
+	uint8_t checkrate;
+	eObrd_canmonitor_reportmode_t reportmode;
+	uint16_t periodicreportrate;
+};
+
 class ServiceParserMultipleFt
 {
    public:
-	ServiceParserMultipleFt(servAScollector_t& asService);
+	ServiceParserMultipleFt();
 	bool parse(yarp::os::Searchable& config);
+	eOmn_serv_config_data_as_ft_t toEomn() const;
 
    protected:
 	virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards, bool& formaterror);
@@ -28,5 +60,6 @@ class ServiceParserMultipleFt
 																				 {"LOSTFOUNDLOST", eobrd_canmonitor_reportmode_justLOSTjustFOUNDstillLOST},
 																				 {"ALL", eobrd_canmonitor_reportmode_ALL}};
 
-	servAScollector_t& asService_;
+	std::map<std::string, FtInfo> ftInfo_;
+	eOmn_serv_config_data_as_ft_t canMonitor_;
 };
