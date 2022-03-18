@@ -9,11 +9,13 @@
 #include <list>
 #include <string>
 
-
 #include "EoBoards.h"
 #include "EoManagement.h"
 #include "EoAnalogSensors.h"
 #include "EoMotionControl.h"
+
+
+
 
 #define SERVICE_PARSER_USE_MC
 
@@ -143,31 +145,21 @@ typedef struct
 {
     std::vector<servCanBoard_t>      canboards;
     std::vector<servAnalogSensor_t>  sensors;
-    eOmn_serv_configuration_t        config;
 } servASproperties_t;
 
 
 typedef struct
 {
-    uint16_t                         acquisitionrate;//TODO  Luca should be std::vector<uint16_>
+    uint16_t                    acquisitionrate;
     std::vector<servAnalogSensor_t>  enabledsensors;
-    bool                             useCalibration;//TODO Luca std::vector<bool>
-    uint16_t                         temperatureAcquisitionRate;//TODO  Luca should be std::vector<uint16_>
 } servASsettings_t;
 
-typedef struct 
-{
-    int checkrate;
-    eObrd_canmonitor_reportmode_t reportmode;
-    int periodicreportrate;
-}servAsCanMonitor_t;
 
 typedef struct
 {
     eOmn_serv_type_t            type;
     servASproperties_t          properties;
     servASsettings_t            settings;
-    servAsCanMonitor_t          canMonitor;    
 } servAScollector_t;
 
 
@@ -175,12 +167,6 @@ typedef struct
 {
     bool                        useCalibration;
 } servASstrainSettings_t;
-
-typedef struct
-{
-    bool                        useCalibration;
-} servASftSettings_t;
-
 
 
 
@@ -348,7 +334,11 @@ public:
 
     servAScollector_t           as_service;
     servASstrainSettings_t      as_strain_settings;
-    servSKcollector_t           sk_service;
+
+    servSKcollector_t             sk_service;
+    eOmn_serv_config_data_sk_skin_t tmp;
+
+    eOmn_serv_config_data_as_ft_t multipleFt_data;
 
 #if defined(SERVICE_PARSER_USE_MC)
     servMCcollector_t           mc_service;
@@ -366,7 +356,11 @@ private:
 
     bool copyjomocouplingInfo(eOmc_4jomo_coupling_t *jc_dest);
 
-
+    
+    // suggestion: split check_motion() in sub-methods which parse the groups ...
 };
+
+
+
 #endif
 

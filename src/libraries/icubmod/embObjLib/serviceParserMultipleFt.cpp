@@ -8,7 +8,8 @@
 
 #include "serviceParserMultipleFt.h"
 
-#include "serviceParser.h"
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 ServiceParserMultipleFt::ServiceParserMultipleFt()
 {
@@ -37,42 +38,42 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle& property, boo
 		return false;
 	}
 
-	Bottle propertyCanBoardProtocolMajor = Bottle(propertyCanBoardPROTOCOL.findGroup("major"));
+	Bottle propertyCanBoardProtocolMajor = Bottle(propertyCanBoardProtocol.findGroup("major"));
 	if (propertyCanBoardProtocolMajor.isNull())
 	{
 		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL.major";
 		return false;
 	}
 
-	Bottle propertyCanBoardProtocolMinor = Bottle(propertyCanBoardPROTOCOL.findGroup("minor"));
+	Bottle propertyCanBoardProtocolMinor = Bottle(propertyCanBoardProtocol.findGroup("minor"));
 	if (propertyCanBoardProtocolMinor.isNull())
 	{
 		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL.minor";
 		return false;
 	}
 
-	Bottle propertyCanBoardFirmware = Bottle(b_PROPERTIES_CANBOARDS.findGroup("FIRMWARE"));
+	Bottle propertyCanBoardFirmware = Bottle(propertyCanBoard.findGroup("FIRMWARE"));
 	if (propertyCanBoardFirmware.isNull())
 	{
 		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE";
 		return false;
 	}
 
-	Bottle propertyCanBoardFirmwareMajor = Bottle(propertyCanBoardFIRMWARE.findGroup("major"));
+	Bottle propertyCanBoardFirmwareMajor = Bottle(propertyCanBoardFirmware.findGroup("major"));
 	if (propertyCanBoardFirmwareMajor.isNull())
 	{
 		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.major";
 		return false;
 	}
 
-	Bottle propertyCanBoardFirmwareMinor = Bottle(propertyCanBoardFIRMWARE.findGroup("minor"));
+	Bottle propertyCanBoardFirmwareMinor = Bottle(propertyCanBoardFirmware.findGroup("minor"));
 	if (propertyCanBoardFirmwareMinor.isNull())
 	{
 		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.minor";
 		return false;
 	}
 
-	Bottle propertyCanBoardFirmwareBuild = Bottle(propertyCanBoardFIRMWARE.findGroup("build"));
+	Bottle propertyCanBoardFirmwareBuild = Bottle(propertyCanBoardFirmware.findGroup("build"));
 	if (propertyCanBoardFirmwareBuild.isNull())
 	{
 		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.build";
@@ -109,14 +110,14 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle& property, boo
 	size_t size = propertyCanBoardType.size();
 	for (int index = 1; index < size; ++index)
 	{
-		std::string boardType = propertyCanBoardType.get(i).asString();
-		int protocolMajor = propertyCanBoardProtocolMajor.get(i).asInt32();
-		int protocolMinor = propertyCanBoardProtocolMinor.get(i).asInt32();
-		int firmwareMajor = propertyCanBoardFirmwareMajor.get(i).asInt32();
-		int firmwareMinor = propertyCanBoardFirmwareMinor.get(i).asInt32();
-		int firmwareBuild = propertyCanBoardFirmwareBuild.get(i).asInt32();
+		std::string boardType = propertyCanBoardType.get(index).asString();
+		int protocolMajor = propertyCanBoardProtocolMajor.get(index).asInt32();
+		int protocolMinor = propertyCanBoardProtocolMinor.get(index).asInt32();
+		int firmwareMajor = propertyCanBoardFirmwareMajor.get(index).asInt32();
+		int firmwareMinor = propertyCanBoardFirmwareMinor.get(index).asInt32();
+		int firmwareBuild = propertyCanBoardFirmwareBuild.get(index).asInt32();
 
-		for (auto& current : ftInfo_)
+		for (auto& [key, current] : ftInfo_)
 		{
 			if (current.board != boardType)
 				continue;
@@ -161,10 +162,8 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle& property, bool&
 		return false;
 	}
 
-	size_t sensorSize = propertySensorsId.size();
-
 	// CHECK size
-	if (settingsEnabledSensors.size() != propertySensorsBoard.size())
+	if (propertySensorsId.size() != propertySensorsBoard.size())
 	{
 		yError() << "ServiceParserMultipleFt::checkPropertySensors --> board size";
 		return false;
@@ -176,11 +175,11 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle& property, bool&
 	}
 
 	size_t sensorSize = propertySensorsId.size();
-	for (size_t index = 1 /*first is tagname*/; index < sensorSize; i++)
+	for (size_t index = 1 /*first is tagname*/; index < sensorSize; index++)
 	{
-		std::string id = propertySensorsId.get(i).asString();
-		std::string board = propertySensorsBoard.get(i).asString();
-		std::string location = propertySensorsLocation.get(i).asString();
+		std::string id = propertySensorsId.get(index).asString();
+		std::string board = propertySensorsBoard.get(index).asString();
+		std::string location = propertySensorsLocation.get(index).asString();
 
 		if (ftInfo_.find(id) == ftInfo_.end())
 			continue;
@@ -249,12 +248,12 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle& service, bool& formate
 
 	// TODO Luca check acquisition rate
 	size_t enabledSensorSize = settingsEnabledSensors.size();
-	for (size_t index = 1 /*first is tagname*/; index < enabledSensorSize; i++)
+	for (size_t index = 1 /*first is tagname*/; index < enabledSensorSize; index++)
 	{
-		std::string id = settingsEnabledSensors.get(i).asString();
-		int acquisitionRate = settingsAcquisitionRate.get(i).asInt32();
-		int acquisitionTempRate = settingsAcquisitionTempRate.get(i).asInt32();
-		int useCalibration = settingsUseCalibration.get(i).asInt32();
+		std::string id = settingsEnabledSensors.get(index).asString();
+		int acquisitionRate = settingsAcquisitionRate.get(index).asInt32();
+		int acquisitionTempRate = settingsAcquisitionTempRate.get(index).asInt32();
+		int useCalibration = settingsUseCalibration.get(index).asInt32();
 		FtInfo currentSensor{acquisitionRate, acquisitionTempRate, useCalibration};
 		ftInfo_[id] = currentSensor;
 	}
@@ -276,17 +275,12 @@ bool ServiceParserMultipleFt::checkServiceType(const Bottle& service, bool& form
 		yError() << "ServiceParserMultipleFt::check() cannot find SERVICE.type";
 		return false;
 	}
+	std::string serviceType = service.find("type").asString();
+	eOmn_serv_type_t serviceTypeEomn = eomn_string2servicetype(serviceType.c_str());
 
-	Bottle b_type(service.find("type").asString());
-	if (false == convert(b_type.toString(), asService_.type, formaterror))
+	if (eomn_serv_AS_ft != serviceTypeEomn)
 	{
-		yError() << "ServiceParserMultipleFt::check() has found unknown SERVICE.type = " << b_type.toString();
-		return false;
-	}
-	if (eomn_serv_AS_ft != asService_.type)
-	{
-		yError() << "ServiceParserMultipleFt::check() has found wrong SERVICE.type = " << asService_.type << "it must be"
-				 << "TODO: tostring() function";
+		yError() << "ServiceParserMultipleFt::check() has found wrong SERVICE.type = " << serviceType << "it must be eomn_serv_AS_ft";
 		return false;
 	}
 	return true;
@@ -301,44 +295,42 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle& service, bool& forma
 		return false;
 	}
 
-	if (false == canMonitor.check("checkrate"))
+	if (false == canMonitor.check("checkPeriod"))
 	{
 		yError() << "ServiceParserMultipleFt::check() cannot find canMonitor.checkrate";
 		return false;
 	}
-	if (false == canMonitor.check("reportmode"))
+	if (false == canMonitor.check("reportMode"))
 	{
 		yError() << "ServiceParserMultipleFt::check() cannot find canMonitor.reportmode";
 		return false;
 	}
-	if (false == canMonitor.check("periodicreportrate"))
+	if (false == canMonitor.check("ratePeriod"))
 	{
 		yError() << "ServiceParserMultipleFt::check() cannot find canMonitor.periodicreportrate";
 		return false;
 	}
 
-	int checkrate=canMonitor.find("checkrate").asInt32());
-	std::string reportmode=canMonitor.find("reportmode").asString());
-	if (stringToReport.find("reportmode") == stringToFind.end())
+	// TODO check validita valori
+	int checkrate=canMonitor.find("checkrate").asInt32();
+	int periodicreportrate=canMonitor.find("periodicreportrate").asInt32();
+	std::string reportmode=canMonitor.find("reportmode").asString();
+	eObrd_canmonitor_reportmode_t reportmodeEobrd = eoboards_string2reportmode(reportmode.c_str(), false);
+	
+	if (reportmodeEobrd == eobrd_canmonitor_reportmode_unknown)
 	{
 		yError() << "ServiceParserMultipleFt::check() wrong canMonitor.reportmode";
 		return false;
 	}
-	int periodicreportrate=canMonitor.find("periodicreportrate").asInt32());
-
-	canMonitor_ = {checkrate, stringToReport.at(reportmode), periodicreportrate};
+	
+	canMonitor_ = {checkrate, reportmodeEobrd, periodicreportrate};
 
 	return true;
 }
 
-bool ServiceParserMultipleFt::parse(yarp::os::Searchable& config)
+bool ServiceParserMultipleFt::parse(const yarp::os::Searchable& config)
 {
 	bool formaterror = false;
-	if (eomn_serv_AS_ft != type)
-	{
-		yError() << "ServiceParser::checkAlalogForMultipleFT() is called with wrong type";
-		return false;
-	}
 
 	Bottle service(config.findGroup("SERVICE"));
 	if (service.isNull())
@@ -375,10 +367,18 @@ bool ServiceParserMultipleFt::parse(yarp::os::Searchable& config)
 eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
 {
 	eOmn_serv_config_data_as_ft_t out;
-	out.canmonitorconfig={canMonitor_.checkrate,canMonitor_.reportmode,canMonitor_.periodicreportrate};
+	out.canmonitorconfig = {canMonitor_.periodofcheck, canMonitor_.reportmode, canMonitor_.periodofreport};
 
 	for (auto& current : ftInfo_)
 	{
-		//out.arrayofsensors=
+		// out.arrayofsensors=
 	}
+
+	/*
+	EOarray *ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void*)(&servcfg->data.as.ft.arrayofsensors));
+
+	eOas_ft_sensordescriptor_t item {};
+	item.
+	eo_array_PushBack(ar, &item);
+	*/
 }

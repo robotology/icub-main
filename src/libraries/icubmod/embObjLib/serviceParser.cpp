@@ -59,7 +59,7 @@ ServiceParser::ServiceParser()
     as_service.properties.canboards.resize(0);
     as_service.properties.sensors.resize(0);
 
-    as_service.settings.acquisitionrate.resize(0);
+    as_service.settings.acquisitionrate = 0;
     as_service.settings.enabledsensors.resize(0);
 }
 
@@ -1403,12 +1403,14 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
 
 bool ServiceParser::parseService(Searchable &config, servConfigMultipleFTsensor_t &ftconfig)
 {
-    ServiceParserMultipleFt parserMFt(as_service);
+    ServiceParserMultipleFt parserMFt;
     parserMFt.parse(config);
-    eOmn_serv_config_data_as_ft_t data=parserMFt.toEomn();
+    multipleFt_data=parserMFt.toEomn();
+
+    return true;
 
     
-    
+    /*
     // now we extract values ... so far we dont make many checks ... we just assume the vector<> are of size 1.
     servCanBoard_t thestrain_props = as_service.properties.canboards.at(0);
     servAnalogSensor_t thestrain_sensor = as_service.settings.enabledsensors.at(0);
@@ -1441,7 +1443,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMultipleFTsensor_
     ftconfig.ethservice.configuration.data.as.strain.canloc.addr = thestrain_sensor.location.can.addr;
     ftconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eobrd_caninsideindex_none;
     
-    return true;
+    return true;*/
 }
 
 bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftconfig)
@@ -1464,7 +1466,6 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     }
     
     ftconfig.acquisitionrate = as_service.settings.acquisitionrate;
-    ftconfig.temperatureAcquisitionrate=as_service.settings.temperatureAcquisitionRate;
     ftconfig.useCalibration = as_strain_settings.useCalibration;
     ftconfig.nameOfStrain = thestrain_sensor.id;
     
@@ -1484,9 +1485,23 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     ftconfig.ethservice.configuration.data.as.strain.canloc.port = thestrain_sensor.location.can.port;
     ftconfig.ethservice.configuration.data.as.strain.canloc.addr = thestrain_sensor.location.can.addr;
     ftconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eobrd_caninsideindex_none;
-    ftconfig.ethservice.configuration.data.as.strain.properties.config.data.as.ft.canmonitorconfig = as_service.canMonitor;
+
+
     
-    
+    Bottle b_SERVICE(config.findGroup("SERVICE")); //b_SERVICE and b_SETTINGS could not be null, otherwise parseService function would have returned false
+    Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
+    Bottle b_SETTINGS_temp = Bottle(b_SETTINGS.findGroup("temperature-acquisitionRate"));
+    if(b_SETTINGS_temp.isNull())
+    {
+        yError() << "ServiceParser::parseService() for embObjFTsensor device cannot find SETTINGS.temperature-acquisitionRate";
+        return false;
+    }
+    else
+    {
+        ftconfig.temperatureAcquisitionrate = b_SETTINGS_temp.get(1).asInt32();
+        //TODO: chek that the acquisition rate is inside a reasonable range
+    }
+        
     return true;
 }
 

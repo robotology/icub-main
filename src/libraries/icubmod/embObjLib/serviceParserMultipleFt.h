@@ -8,14 +8,17 @@
 
 #pragma once
 
+#include "EoBoards.h"
+#include "EoManagement.h"
+#include "EoAnalogSensors.h"
+#include "EoMotionControl.h"
+
 #include <yarp/os/Bottle.h>
 
 #include <map>
 #include <string>
 
 using namespace yarp::os;
-
-class servAScollector_t;
 
 class FtInfo
 {
@@ -44,7 +47,7 @@ class ServiceParserMultipleFt
 {
    public:
 	ServiceParserMultipleFt();
-	bool parse(yarp::os::Searchable& config);
+	bool parse(const yarp::os::Searchable& config);
 	eOmn_serv_config_data_as_ft_t toEomn() const;
 
    protected:
@@ -55,11 +58,6 @@ class ServiceParserMultipleFt
 	virtual bool checkCanMonitor(const Bottle& service, bool& formaterror);
 
    private:
-	const std::map<std::string, eObrd_canmonitor_reportmode_t> stringToReport = {{"NEVER", eobrd_canmonitor_reportmode_NEVER},
-																				 {"LOSTFOUND", eobrd_canmonitor_reportmode_justLOSTjustFOUND},
-																				 {"LOSTFOUNDLOST", eobrd_canmonitor_reportmode_justLOSTjustFOUNDstillLOST},
-																				 {"ALL", eobrd_canmonitor_reportmode_ALL}};
-
-	std::map<std::string, FtInfo> ftInfo_;
+	std::map<std::string /*sensor id*/, FtInfo> ftInfo_;
 	eOmn_serv_config_data_as_ft_t canMonitor_;
 };
