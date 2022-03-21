@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include "EoBoards.h"
-#include "EoManagement.h"
-#include "EoAnalogSensors.h"
-#include "EoMotionControl.h"
-
 #include <yarp/os/Bottle.h>
 
 #include <map>
 #include <string>
+
+#include "EoAnalogSensors.h"
+#include "EoBoards.h"
+#include "EoManagement.h"
+#include "EoMotionControl.h"
 
 using namespace yarp::os;
 
@@ -26,21 +26,23 @@ class FtInfo
 	int ftAcquisitionRate;
 	int temperatureAcquisitionRate;
 	bool useCalibration;
-	std::string board;
-	std::string location;
-	int majorProtocol;
-	int minorProtocol;
-	int majorFirmware;
-	int minorFirmware;
-	int buildFirmware;
+	std::string board{""};
+	std::string location{""};
+	int majorProtocol{0};
+	int minorProtocol{0};
+	int majorFirmware{0};
+	int minorFirmware{0};
+	int buildFirmware{0};
 };
+bool operator==(const FtInfo& right,const FtInfo& left);
+bool operator!=(const FtInfo& right,const FtInfo& left);
 
 class CanMonitor
 {
    public:
-	uint8_t checkrate;
+	uint8_t checkPeriod;
 	eObrd_canmonitor_reportmode_t reportmode;
-	uint16_t periodicreportrate;
+	uint16_t periodofreport;
 };
 
 class ServiceParserMultipleFt
@@ -57,7 +59,6 @@ class ServiceParserMultipleFt
 	virtual bool checkServiceType(const Bottle& service, bool& formaterror);
 	virtual bool checkCanMonitor(const Bottle& service, bool& formaterror);
 
-   private:
 	std::map<std::string /*sensor id*/, FtInfo> ftInfo_;
-	eOmn_serv_config_data_as_ft_t canMonitor_;
+	eObrd_canmonitor_cfg_t canMonitor_;
 };

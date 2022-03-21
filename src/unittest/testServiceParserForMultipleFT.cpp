@@ -20,18 +20,186 @@ using ::testing::_;
 using ::testing::InvokeArgument;
 using ::testing::Matcher;
 
-class ServiceParser_mock: public ServiceParserMultipleFt
+class ServiceParser_mock : public ServiceParserMultipleFt
 {
-    public:
-        using ServiceParser::checkPropertyCanBoards;
-        using ServiceParser::checkPropertySensors;
-        using ServiceParser::checkSettings;
-        using ServiceParser::checkServiceType;
-        using ServiceParser::checkCanMonitor;
-        
-        ServiceParser_mock():ServiceParser(){};
+public:
+    using ServiceParserMultipleFt::checkCanMonitor;
+    using ServiceParserMultipleFt::checkPropertyCanBoards;
+    using ServiceParserMultipleFt::checkPropertySensors;
+    using ServiceParserMultipleFt::checkServiceType;
+    using ServiceParserMultipleFt::checkSettings;
+    using ServiceParserMultipleFt::ftInfo_;
+
+    ServiceParser_mock() : ServiceParserMultipleFt(){};
 };
 
+TEST(General, check_settings_positive_001)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(SETTINGS (acquisitionRate 10) (enabledSensors fakeId) (temperature-acquisitionRate 1000) (useCalibration true) )");
+
+    ServiceParser_mock serviceParser;
+    bool error{false};
+
+    bool ret = serviceParser.checkSettings(bottle, error);
+
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "", "", 0, 0, 0, 0, 0}}};
+
+    EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
+    EXPECT_EQ(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+}
+
+TEST(General, check_settings_positive_002)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(SETTINGS (acquisitionRate 10 20) (enabledSensors fakeId fakeId1) (temperature-acquisitionRate 1000 999) (useCalibration true false) )");
+
+    ServiceParser_mock serviceParser;
+    bool error{false};
+
+    bool ret = serviceParser.checkSettings(bottle, error);
+
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "", "", 0, 0, 0, 0, 0}}, {"fakeId1", {20, 999, false, "", "", 0, 0, 0, 0, 0}}};
+
+    EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
+    EXPECT_EQ(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+    EXPECT_EQ(expected.at("fakeId1"), serviceParser.ftInfo_.at("fakeId1"));
+}
+
+TEST(General, check_property_sensors_positive_001)
+{
+    ServiceParser_mock serviceParser;
+    yarp::os::Bottle bottle;
+    bottle.fromString("(SENSORS (id fakeId) (board strain2) (location CAN2:13) )");
+    serviceParser.ftInfo_ = {{"fakeId", {10, 1000, true, "", "", 0, 0, 0, 0, 0}}};
+    bool error{false};
+    
+    bool ret=serviceParser.checkPropertySensors(bottle,error);
+
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "strain2", "CAN2:13", 0, 0, 0, 0, 0}}};
+
+	EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
+    EXPECT_EQ(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+}
+
+TEST(General, check_property_sensors_positive_002)
+{
+    ServiceParser_mock serviceParser;
+    yarp::os::Bottle bottle;
+    bottle.fromString("(SENSORS (id fakeId fakeId1) (board strain2 strain2) (location CAN2:13 CAN2:14) )");
+    serviceParser.ftInfo_ = {{"fakeId", {10, 1000, true, "", "", 0, 0, 0, 0, 0}}, {"fakeId1", {20, 999, false, "", "", 0, 0, 0, 0, 0}}};
+    bool error{false};
+    
+    bool ret=serviceParser.checkPropertySensors(bottle,error);
+
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "strain2", "CAN2:13", 0, 0, 0, 0, 0}}, {"fakeId1", {20, 999, false, "strain2", "CAN2:14", 0, 0, 0, 0, 0}}};
+
+	EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
+    EXPECT_EQ(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+    EXPECT_EQ(expected.at("fakeId1"), serviceParser.ftInfo_.at("fakeId1"));
+}
+
+TEST(General, check_property_sensors_positive_003)
+{
+    ServiceParser_mock serviceParser;
+    yarp::os::Bottle bottle;
+    bottle.fromString("(SENSORS (id fakeId fakeId1) (board strain2 strain2) (location CAN2:13 CAN2:14) )");
+    serviceParser.ftInfo_ = {{"fakeId", {10, 1000, true, "", "", 0, 0, 0, 0, 0}}};
+    bool error{false};
+    
+    bool ret=serviceParser.checkPropertySensors(bottle,error);
+
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "strain2", "CAN2:13", 0, 0, 0, 0, 0}}};
+
+	EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
+    EXPECT_EQ(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+}
+
+TEST(General, check_property_sensors_negative_001)
+{
+    ServiceParser_mock serviceParser;
+    yarp::os::Bottle bottle;
+    bottle.fromString("(SENSORS (id fakeId) (board strain2) (location CAN2:14) )");
+    serviceParser.ftInfo_ = {{"fakeId", {10, 1000, true, "", "", 0, 0, 0, 0, 0}}};
+    bool error{false};
+    
+    bool ret=serviceParser.checkPropertySensors(bottle,error);
+
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "strain2", "CAN2:13", 0, 0, 0, 0, 0}}};
+
+	EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
+    EXPECT_NE(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+}
+
+TEST(General, check_property_canboards_positive_001)
+{
+    ServiceParser_mock serviceParser;
+    yarp::os::Bottle bottle;
+    bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
+    serviceParser.ftInfo_ = {{"fakeId", {10, 1000, true, "strain2", "CAN2:13", 0, 0, 0, 0, 0}}};
+    bool error{false};
+    
+    bool ret=serviceParser.checkPropertyCanBoards(bottle,error);
+
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "strain2", "CAN2:13", 2, 3, 4, 5, 6}}};
+
+	EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
+    EXPECT_EQ(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+}
+
+TEST(General, check_property_canboards_positive_002)
+{
+    ServiceParser_mock serviceParser;
+    yarp::os::Bottle bottle;
+    bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
+    serviceParser.ftInfo_ = {{"fakeId", {10, 1000, true, "strain2", "CAN2:13", 0, 0, 0, 0, 0}},{"fakeId1", {10, 1000, true, "strain", "CAN2:13", 0, 0, 0, 0, 0}}};
+    bool error{false};
+    
+    bool ret=serviceParser.checkPropertyCanBoards(bottle,error);
+
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "strain2", "CAN2:13", 2, 3, 4, 5, 6}},{"fakeId1", {10, 1000, true, "strain", "CAN2:13", 0, 0, 0, 0, 0}}};
+
+	EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
+    EXPECT_EQ(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+    EXPECT_EQ(expected.at("fakeId1"), serviceParser.ftInfo_.at("fakeId1"));
+}
+
+TEST(General, check_property_canboards_positive_003)
+{
+    ServiceParser_mock serviceParser;
+    yarp::os::Bottle bottle;
+    bottle.fromString("(CANBOARDS (type strain2 strain) (PROTOCOL (major 2 7) (minor 3 8) ) (FIRMWARE (major 4 9) (minor 5 10) (build 6 11) ) )");
+    serviceParser.ftInfo_ = {{"fakeId", {10, 1000, true, "strain2", "CAN2:13", 0, 0, 0, 0, 0}},{"fakeId1", {10, 1000, true, "strain", "CAN2:13", 0, 0, 0, 0, 0}}};
+    bool error{false};
+    
+    bool ret=serviceParser.checkPropertyCanBoards(bottle,error);
+
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "strain2", "CAN2:13", 2, 3, 4, 5, 6}},{"fakeId1", {10, 1000, true, "strain", "CAN2:13", 7, 8, 9, 10, 11}}};
+
+	EXPECT_TRUE(ret);
+    EXPECT_FALSE(error);
+    ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
+    EXPECT_EQ(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+    EXPECT_EQ(expected.at("fakeId1"), serviceParser.ftInfo_.at("fakeId1"));
+}
+
+#if 0
 TEST(General, check_property_canboards_positive_001)
 {
     yarp::os::Bottle bottle;
@@ -58,78 +226,6 @@ TEST(General, check_property_canboards_negative_001)
     EXPECT_FALSE(error);
 }
 
-TEST(General, check_property_sensors_positive_001)
-{
-    yarp::os::Bottle bottle;
-    bottle.fromString("(SENSORS (id test_ft_sensor) (type eoas_strain) (location CAN2:13) )");
-  
-    ServiceParser_mock serviceParser;
-    bool error{false};
-    eOmn_serv_type_t type=eomn_serv_AS_ft;
-    bool ret=serviceParser.checkPropertySensors(bottle,type,error);
-
-	EXPECT_TRUE(ret);
-    EXPECT_FALSE(error);
-    EXPECT_EQ(1,serviceParser.as_service.properties.sensors.size());
-}
-
-TEST(General, check_property_sensors_positive_002)
-{
-    yarp::os::Bottle bottle;
-    bottle.fromString("(SENSORS (id test_ft_sensor test1_ft_sensor) (type eoas_strain eoas_strain) (location CAN2:13 CAN2:14) )");
-  
-    ServiceParser_mock serviceParser;
-    bool error{false};
-    eOmn_serv_type_t type=eomn_serv_AS_ft;
-    bool ret=serviceParser.checkPropertySensors(bottle,type,error);
-
-	EXPECT_TRUE(ret);
-    EXPECT_FALSE(error);
-    EXPECT_EQ(2,serviceParser.as_service.properties.sensors.size());
-}
-
-TEST(General, check_settings_positive_001)
-{
-    yarp::os::Bottle bottle;
-    bottle.fromString("(SETTINGS (acquisitionRate 10) (enabledSensors fakeId) (temperature-acquisitionRate 1000) (useCalibration true) )");
-  
-    ServiceParser_mock serviceParser;
-    bool error{false};
-
-    servAnalogSensor_t toAdd={"fakeId",eoas_ft,{1,2},eobrd_strain2};
-    serviceParser.as_service.properties.sensors.push_back(toAdd);
-    servASsettings_t expectedSettings={10,{toAdd},true,1000};
-
-    bool ret=serviceParser.checkSettings(bottle,error);
-
-	EXPECT_TRUE(ret);
-    EXPECT_FALSE(error);
-    ASSERT_EQ(1,serviceParser.as_service.settings.enabledsensors.size());
-    EXPECT_EQ(expectedSettings,serviceParser.as_service.settings);
-    EXPECT_EQ("fakeId",serviceParser.as_service.settings.enabledsensors.at(0));
-}
-
-TEST(General, check_settings_positive_002)
-{
-    yarp::os::Bottle bottle;
-    bottle.fromString("(SETTINGS (acquisitionRate 10 20) (enabledSensors fakeId fakeId1) (temperature-acquisitionRate 1000 999) )");
-  
-    ServiceParser_mock serviceParser;
-    bool error{false};
-
-    servAnalogSensor_t toAdd={"fakeId",eoas_ft,{1,2},eobrd_strain2};
-    serviceParser.as_service.properties.sensors.push_back(toAdd);
-    toAdd={"fakeId1",eoas_ft,{1,2},eobrd_strain2};
-    serviceParser.as_service.properties.sensors.push_back(toAdd);
-
-    bool ret=serviceParser.checkSettings(bottle,error);
-
-	EXPECT_TRUE(ret);
-    EXPECT_FALSE(error);
-    ASSERT_EQ(2,serviceParser.as_service.settings.enabledsensors.size());
-    EXPECT_EQ("fakeId",serviceParser.as_service.settings.enabledsensors.at(0));
-    EXPECT_EQ("fakeId1",serviceParser.as_service.settings.enabledsensors.at(1));
-}
 
 TEST(General, check_checkservicetype_positive_001)
 {
@@ -214,3 +310,5 @@ TEST(General, check_checkCanMonitor_negative_002)
 
 	EXPECT_FALSE(ret); 
 }
+
+#endif

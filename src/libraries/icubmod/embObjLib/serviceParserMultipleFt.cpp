@@ -183,10 +183,12 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle& property, bool&
 
 		if (ftInfo_.find(id) == ftInfo_.end())
 			continue;
-		auto currentFt = ftInfo_.at(id);
+		auto& currentFt = ftInfo_.at(id);
 		currentFt.location = location;
 		currentFt.board = board;
 	}
+	
+	//TODO check missing SENSORS for SETTINGS
 
 	return true;
 }
@@ -312,18 +314,18 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle& service, bool& forma
 	}
 
 	// TODO check validita valori
-	int checkrate=canMonitor.find("checkrate").asInt32();
-	int periodicreportrate=canMonitor.find("periodicreportrate").asInt32();
-	std::string reportmode=canMonitor.find("reportmode").asString();
+	int checkPeriod = canMonitor.find("checkPeriod").asInt32();
+	int periodicreportrate = canMonitor.find("periodicreportrate").asInt32();
+	std::string reportmode = canMonitor.find("reportmode").asString();
 	eObrd_canmonitor_reportmode_t reportmodeEobrd = eoboards_string2reportmode(reportmode.c_str(), false);
-	
+
 	if (reportmodeEobrd == eobrd_canmonitor_reportmode_unknown)
 	{
 		yError() << "ServiceParserMultipleFt::check() wrong canMonitor.reportmode";
 		return false;
 	}
-	
-	canMonitor_ = {checkrate, reportmodeEobrd, periodicreportrate};
+
+	canMonitor_ = {checkPeriod, reportmodeEobrd, periodicreportrate};
 
 	return true;
 }
@@ -367,7 +369,7 @@ bool ServiceParserMultipleFt::parse(const yarp::os::Searchable& config)
 eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
 {
 	eOmn_serv_config_data_as_ft_t out;
-	out.canmonitorconfig = {canMonitor_.periodofcheck, canMonitor_.reportmode, canMonitor_.periodofreport};
+	out.canmonitorconfig = canMonitor_;
 
 	for (auto& current : ftInfo_)
 	{
@@ -381,4 +383,34 @@ eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
 	item.
 	eo_array_PushBack(ar, &item);
 	*/
+}
+
+bool operator==(const FtInfo& right,const FtInfo& left)
+{
+	if (right.ftAcquisitionRate != left.ftAcquisitionRate)
+		return false;
+	if (right.temperatureAcquisitionRate != left.temperatureAcquisitionRate)
+		return false;
+	if (right.useCalibration != left.useCalibration)
+		return false;
+	if (right.board != left.board)
+		return false;
+	if (right.location != left.location)
+		return false;
+	if (right.majorProtocol != left.majorProtocol)
+		return false;
+	if (right.minorProtocol != left.minorProtocol)
+		return false;
+	if (right.majorFirmware != left.majorFirmware)
+		return false;
+	if (right.minorFirmware != left.minorFirmware)
+		return false;
+	if (right.buildFirmware != left.buildFirmware)
+		return false;
+	return true;
+};
+
+bool operator!=(const FtInfo& right,const FtInfo& left)
+{
+	return !(right==left);
 }
