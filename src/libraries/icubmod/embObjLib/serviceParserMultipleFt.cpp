@@ -180,15 +180,33 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle& property, bool&
 		std::string id = propertySensorsId.get(index).asString();
 		std::string board = propertySensorsBoard.get(index).asString();
 		std::string location = propertySensorsLocation.get(index).asString();
-
 		if (ftInfo_.find(id) == ftInfo_.end())
 			continue;
 		auto& currentFt = ftInfo_.at(id);
-		currentFt.location = location;
+
+		try
+		{
+			currentFt.port = std::stoi(location.substr(3, 1));
+		}
+		catch (const std::exception& e)
+		{
+			yError() << "ServiceParser::checkPropertySensors() invalid can port";
+			return false;
+		}
+		try
+		{
+			currentFt.address = std::stoi(location.substr(5, location.size() - 5));
+		}
+		catch (const std::exception& e)
+		{
+			yError() << "ServiceParser::checkPropertySensors() invalid can address";
+			return false;
+		}
+
 		currentFt.board = board;
 	}
-	
-	//TODO check missing SENSORS for SETTINGS
+
+	// TODO check missing SENSORS for SETTINGS
 
 	return true;
 }
@@ -250,6 +268,12 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle& service, bool& formate
 
 	// TODO Luca check acquisition rate
 	size_t enabledSensorSize = settingsEnabledSensors.size();
+	if (enabledSensorSize > 4)
+	{
+		yError() << "ServiceParserMultipleFt::checkSettings --> too mutch sensors";
+		return false;
+	}
+
 	for (size_t index = 1 /*first is tagname*/; index < enabledSensorSize; index++)
 	{
 		std::string id = settingsEnabledSensors.get(index).asString();
@@ -302,22 +326,32 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle& service, bool& forma
 		yError() << "ServiceParserMultipleFt::check() cannot find canMonitor.checkrate";
 		return false;
 	}
-	if (false == canMonitor.check("reportMode"))
-	{
-		yError() << "ServiceParserMultipleFt::check() cannot find canMonitor.reportmode";
-		return false;
-	}
 	if (false == canMonitor.check("ratePeriod"))
 	{
 		yError() << "ServiceParserMultipleFt::check() cannot find canMonitor.periodicreportrate";
 		return false;
 	}
+	if (false == canMonitor.check("reportMode"))
+	{
+		yError() << "ServiceParserMultipleFt::check() cannot find canMonitor.reportmode";
+		return false;
+	}
 
 	// TODO check validita valori
-	int checkPeriod = canMonitor.find("checkPeriod").asInt32();
-	int periodicreportrate = canMonitor.find("periodicreportrate").asInt32();
-	std::string reportmode = canMonitor.find("reportmode").asString();
-	eObrd_canmonitor_reportmode_t reportmodeEobrd = eoboards_string2reportmode(reportmode.c_str(), false);
+	int checkPeriod = canMonitor.find("checkPeriod").asInt();
+	if (checkPeriod > 254)
+	{
+		yError() << "ServiceParserMultipleFt::check() wrong canMonitor.checkPeriod too big";
+		return false;
+	}
+	int periodicreportrate = canMonitor.find("ratePeriod").asInt();
+	if (periodicreportrate > 65535)
+	{
+		yError() << "ServiceParserMultipleFt::check() wrong canMonitor.ratePeriod too big";
+		return false;
+	}
+	std::string reportmode = canMonitor.find("reportMode").asString();
+	eObrd_canmonitor_reportmode_t reportmodeEobrd = eoboards_string2reportmode(reportmode.c_str(), true);
 
 	if (reportmodeEobrd == eobrd_canmonitor_reportmode_unknown)
 	{
@@ -371,6 +405,8 @@ eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
 	eOmn_serv_config_data_as_ft_t out;
 	out.canmonitorconfig = canMonitor_;
 
+	// EOarray* ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void*)(&out->data.as.ft.arrayofsensors));
+
 	for (auto& current : ftInfo_)
 	{
 		// out.arrayofsensors=
@@ -385,7 +421,26 @@ eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
 	*/
 }
 
-bool operator==(const FtInfo& right,const FtInfo& left)
+eOas_ft_sensordescriptor_t FtInfo::toEomn() const
+{
+	eOas_ft_sensordescriptor_t out;
+	out.boardinfo.type = eoboards_string2type2(board.c_str(), true);
+	try
+	{
+		out.canloc.port = port;
+		out.canloc.addr = address;
+	}
+	catch (const std::exception& e)
+	{
+		yError() << "ServiceParser::check() invalid can port";
+		return eOas_ft_sensordescriptor_t();
+	}
+
+	out.boardinfo.firmware = {majorFirmware, minorFirmware, buildFirmware};
+	out.boardinfo.protocol = {majorProtocol, minorProtocol};
+}
+
+bool operator==(const FtInfo& right, const FtInfo& left)
 {
 	if (right.ftAcquisitionRate != left.ftAcquisitionRate)
 		return false;
@@ -395,7 +450,9 @@ bool operator==(const FtInfo& right,const FtInfo& left)
 		return false;
 	if (right.board != left.board)
 		return false;
-	if (right.location != left.location)
+	if (right.port != left.port)
+		return false;
+	if (right.address != left.address)
 		return false;
 	if (right.majorProtocol != left.majorProtocol)
 		return false;
@@ -410,7 +467,7 @@ bool operator==(const FtInfo& right,const FtInfo& left)
 	return true;
 };
 
-bool operator!=(const FtInfo& right,const FtInfo& left)
+bool operator!=(const FtInfo& right, const FtInfo& left)
 {
-	return !(right==left);
+	return !(right == left);
 }

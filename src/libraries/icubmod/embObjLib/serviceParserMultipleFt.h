@@ -27,15 +27,18 @@ class FtInfo
 	int temperatureAcquisitionRate;
 	bool useCalibration;
 	std::string board{""};
-	std::string location{""};
+	int port{0};
+	int address{0};
 	int majorProtocol{0};
 	int minorProtocol{0};
 	int majorFirmware{0};
 	int minorFirmware{0};
 	int buildFirmware{0};
+
+	eOas_ft_sensordescriptor_t toEomn() const;
 };
-bool operator==(const FtInfo& right,const FtInfo& left);
-bool operator!=(const FtInfo& right,const FtInfo& left);
+bool operator==(const FtInfo& right, const FtInfo& left);
+bool operator!=(const FtInfo& right, const FtInfo& left);
 
 class CanMonitor
 {
