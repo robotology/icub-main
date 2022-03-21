@@ -405,69 +405,12 @@ eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
 	eOmn_serv_config_data_as_ft_t out;
 	out.canmonitorconfig = canMonitor_;
 
-	// EOarray* ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void*)(&out->data.as.ft.arrayofsensors));
+	EOarray* ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void*)(&(out.arrayofsensors)));
 
-	for (auto& current : ftInfo_)
+	for (const auto& [key, value] : ftInfo_)
 	{
-		// out.arrayofsensors=
+		eOas_ft_sensordescriptor_t item = value.toEomn();
+		eo_array_PushBack(ar, &item);
 	}
-
-	/*
-	EOarray *ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void*)(&servcfg->data.as.ft.arrayofsensors));
-
-	eOas_ft_sensordescriptor_t item {};
-	item.
-	eo_array_PushBack(ar, &item);
-	*/
-}
-
-eOas_ft_sensordescriptor_t FtInfo::toEomn() const
-{
-	eOas_ft_sensordescriptor_t out;
-	out.boardinfo.type = eoboards_string2type2(board.c_str(), true);
-	try
-	{
-		out.canloc.port = port;
-		out.canloc.addr = address;
-	}
-	catch (const std::exception& e)
-	{
-		yError() << "ServiceParser::check() invalid can port";
-		return eOas_ft_sensordescriptor_t();
-	}
-
-	out.boardinfo.firmware = {majorFirmware, minorFirmware, buildFirmware};
-	out.boardinfo.protocol = {majorProtocol, minorProtocol};
-}
-
-bool operator==(const FtInfo& right, const FtInfo& left)
-{
-	if (right.ftAcquisitionRate != left.ftAcquisitionRate)
-		return false;
-	if (right.temperatureAcquisitionRate != left.temperatureAcquisitionRate)
-		return false;
-	if (right.useCalibration != left.useCalibration)
-		return false;
-	if (right.board != left.board)
-		return false;
-	if (right.port != left.port)
-		return false;
-	if (right.address != left.address)
-		return false;
-	if (right.majorProtocol != left.majorProtocol)
-		return false;
-	if (right.minorProtocol != left.minorProtocol)
-		return false;
-	if (right.majorFirmware != left.majorFirmware)
-		return false;
-	if (right.minorFirmware != left.minorFirmware)
-		return false;
-	if (right.buildFirmware != left.buildFirmware)
-		return false;
-	return true;
-};
-
-bool operator!=(const FtInfo& right, const FtInfo& left)
-{
-	return !(right == left);
+	return out;
 }

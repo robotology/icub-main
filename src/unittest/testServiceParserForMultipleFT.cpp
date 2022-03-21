@@ -63,7 +63,7 @@ TEST(General, check_settings_positive_002)
 
     bool ret = serviceParser.checkSettings(bottle, error);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "", 0, 0, 0, 0, 0, 0, 0}}, {"fakeId1", {20, 999, false, "", 0,0, 0, 0, 0, 0, 0}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, true, "", 0, 0, 0, 0, 0, 0, 0}}, {"fakeId1", {20, 999, false, "", 0, 0, 0, 0, 0, 0, 0}}};
 
     EXPECT_TRUE(ret);
     EXPECT_FALSE(error);
@@ -195,6 +195,19 @@ TEST(General, check_property_sensors_negative_001)
     EXPECT_FALSE(error);
     ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
     EXPECT_NE(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+}
+
+TEST(General, check_property_sensors_negative_002)
+{
+    ServiceParser_mock serviceParser;
+    yarp::os::Bottle bottle;
+    bottle.fromString("(SENSORS (id fakeId) (board strain2) (location CANx:15) )");
+    serviceParser.ftInfo_ = {{"fakeId", {10, 1000, true, "", 0, 0, 0, 0, 0, 0, 0}}};
+    bool error{false};
+
+    bool ret = serviceParser.checkPropertySensors(bottle, error);
+
+    EXPECT_FALSE(ret);
 }
 
 TEST(General, check_property_canboards_positive_001)
@@ -340,4 +353,15 @@ TEST(General, check_checkCanMonitor_negative_003)
     bool ret = serviceParser.checkCanMonitor(bottle, error);
 
     EXPECT_FALSE(ret);
+}
+
+TEST(General, toEomn_positive_001)
+{
+    FtInfo info = {10, 1000, true, "strain2", 2, 13, 4, 5, 1, 2, 3};
+
+    eOas_ft_sensordescriptor_t out = info.toEomn();
+
+    eOas_ft_sensordescriptor_t expected = {{eobrd_strain2, {1, 2, 3}, {4, 5}}, {2, 13, eobrd_caninsideindex_first}, 0};
+
+    EXPECT_EQ(expected, out);
 }
