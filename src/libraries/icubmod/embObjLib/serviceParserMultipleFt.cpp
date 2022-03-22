@@ -359,7 +359,7 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle& service, bool& forma
 		return false;
 	}
 
-	canMonitor_ = {checkPeriod, reportmodeEobrd, periodicreportrate};
+	canMonitor_ = {((int8_t)checkPeriod), reportmodeEobrd,((int16_t)periodicreportrate)};
 
 	return true;
 }
@@ -413,4 +413,9 @@ eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
 		eo_array_PushBack(ar, &item);
 	}
 	return out;
+}
+
+std::map<std::string, FtInfo>& ServiceParserMultipleFt::getFtInfo()
+{
+	return ftInfo_;
 }

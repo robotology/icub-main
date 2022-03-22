@@ -43,7 +43,6 @@ class yarp::dev::eo_ftsens_privData : public yarp::dev::embObjDevPrivData
 	eo_ftsens_privData(std::string name);
 	~eo_ftsens_privData();
 
-	bool fromConfig(yarp::os::Searchable &config, servConfigMultipleFTsensor_t &serviceConfig);
 	bool initRegulars(servConfigMultipleFTsensor_t &serviceConfig);
 	void printServiceConfig(servConfigMultipleFTsensor_t &serviceConfig);
 	bool fillScaleFactor(servConfigMultipleFTsensor_t &serviceConfig);

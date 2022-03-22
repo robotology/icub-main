@@ -1,0 +1,14 @@
+# 1. Prerequisite
+
+- Compile as static library `ICUB_SHARED_LIBRARY              OFF`
+- Select UNITTEST flag  ` UNITTEST_COMPILE                 ON`
+
+# 2. Test execution
+
+The test will be executed after the compilation automatically.  
+`WARNING` - If the tests fail, the build process/install may not be completed.
+
+# 3. Test topics
+
+- XML parser for multiple ft sensor
+

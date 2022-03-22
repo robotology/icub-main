@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2022 Istituto Italiano di Tecnologia (IIT)
  * All rights reserved.
  * Author: Luca Tricerri
@@ -9,11 +9,15 @@
 #pragma once
 
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
+#include <yarp/sig/Vector.h>
 
-#include "IethResource.h"
-#include "AnalogData.h"
+#include <shared_mutex>
+#include <string>
+#include <map>
+
+#include "serviceParserMultipleFt.h"
+#include "embObjGeneralDevPrivData.h"
 
 namespace yarp
 {
@@ -23,37 +27,40 @@ class embObjMultipleFTsensor;
 }
 }  // namespace yarp
 
-#define EMBOBJSTRAIN_USESERVICEPARSER
+static constexpr int ftChannels_{6};
+static constexpr int ftMaxNumber_{4};
 
-// -- class embObjMultipleFTsensor
+class FtData
+{
+   public:
+	FtData() : data_(ftChannels_){};
+	yarp::sig::Vector data_;
+	double timeStamp_;
+};
 
-class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver,
-										  public eth::IethResource,
-										  public yarp::dev::IAnalogSensor,
-										  public yarp::dev::ITemperatureSensors,
+class TemperatureData
+{
+   public:
+	double data_;
+	double timeStamp_;
+};
+
+class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver, 
+										  public eth::IethResource, 
+										  public yarp::dev::ITemperatureSensors, 
 										  public yarp::dev::ISixAxisForceTorqueSensors
 {
    public:
 	embObjMultipleFTsensor();
 	~embObjMultipleFTsensor();
 
-	// An open function yarp factory compatible
 	bool open(yarp::os::Searchable& config);
 	bool close();
 
-	// IAnalogSensor interface
-	virtual int read(yarp::sig::Vector& out);
-	virtual int getState(int ch);
-	virtual int getChannels();
-	virtual int calibrateChannel(int ch, double v);
-	virtual int calibrateSensor();
-	virtual int calibrateSensor(const yarp::sig::Vector& value);
-	virtual int calibrateChannel(int ch);
-
-	// IethResource interface 
+	// IethResource interface
 	virtual bool initialised();
 	virtual eth::iethresType_t type();
-	virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);// Received data
+	virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 
 	// ITemperatureSensors
 	virtual size_t getNrOfTemperatureSensors() const override;
@@ -71,15 +78,14 @@ class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver,
 	virtual bool getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
 
    private:
-	void* mPriv;
-	AnalogData analogData_;
+	yarp::dev::embObjDevPrivData m_PDdevice;
+	mutable std::shared_mutex mutex_;
+	std::map<eOprotID32_t, FtData> ftData_;
+	std::map<eOprotID32_t, TemperatureData> temperature_;
 
+   private:
+	bool sendConfig2boards(ServiceParserMultipleFt& parser);
+	bool sendStart2boards(ServiceParserMultipleFt& parser);
+	bool initRegulars(ServiceParserMultipleFt& parser);
 	void cleanup(void);
-	std::string getBoardInfo(void) const;
-	bool updateStrainValues(eOprotID32_t id32, double timestamp, void* rxdata);
-	bool updateTemperatureValues(eOprotID32_t id32, double timestamp, void* rxdata);
-
-	void resetCounters();
-	void getCounters(unsigned int& saturations, unsigned int& errors, unsigned int& timeouts);
-	bool enableTemperatureTransmission(bool enable);
 };

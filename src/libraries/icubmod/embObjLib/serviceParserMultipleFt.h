@@ -35,6 +35,7 @@ class ServiceParserMultipleFt
 	ServiceParserMultipleFt();
 	bool parse(const yarp::os::Searchable& config);
 	eOmn_serv_config_data_as_ft_t toEomn() const;
+	std::map<std::string, FtInfo>& getFtInfo();
 
    protected:
 	virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards, bool& formaterror);

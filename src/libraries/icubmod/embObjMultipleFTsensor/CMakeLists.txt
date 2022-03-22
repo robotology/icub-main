@@ -15,7 +15,7 @@ IF (NOT SKIP_embObjMultipleFTsensor)
 #   message(INFO " embObjMultipleFTsensor - embObj_includes: ${embObj_includes}, ${CMAKE_CURRENT_SOURCE_DIR}/")
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-  yarp_add_plugin(embObjMultipleFTsensor embObjMultipleFTsensor.cpp embObjMultipleFTsensor.h eo_ftsens_privData.cpp eo_ftsens_privData.h AnalogData.cpp AnalogData.h)
+  yarp_add_plugin(embObjMultipleFTsensor embObjMultipleFTsensor.cpp embObjMultipleFTsensor.h)
   TARGET_LINK_LIBRARIES(embObjMultipleFTsensor ethResources)
   icub_export_plugin(embObjMultipleFTsensor)
 

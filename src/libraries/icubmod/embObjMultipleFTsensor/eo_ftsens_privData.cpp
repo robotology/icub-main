@@ -14,8 +14,7 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-eo_ftsens_privData::eo_ftsens_privData(std::string name)
-	: embObjDevPrivData(name), useCalibValues(false), useTemperature(false), scaleFactorIsFilled(false)
+eo_ftsens_privData::eo_ftsens_privData(std::string name) : embObjDevPrivData(name), useCalibValues(false), useTemperature(false), scaleFactorIsFilled(false)
 {
 	scaleFactor.resize(strain_Channels, 1.0);
 }
@@ -25,172 +24,6 @@ eo_ftsens_privData::~eo_ftsens_privData()
 	scaleFactor.resize(0);
 }
 
-bool eo_ftsens_privData::fromConfig(yarp::os::Searchable &_config, servConfigMultipleFTsensor_t &serviceConfig)
-{
-	ServiceParser *parser = new ServiceParser;
-	bool ret = parser->parseService(_config, serviceConfig);
-	delete parser;
-
-	if (!ret)
-	{
-		yError() << getBoardInfo() << "is missing some configuration parameter. Check logs and your config file.";
-		return false;
-	}
-
-	useCalibValues = serviceConfig.useCalibration;
-	if (serviceConfig.temperatureAcquisitionrate > 0)
-		useTemperature = true;
-	devicename = serviceConfig.nameOfStrain;
-
-	if (isVerbose())
-		printServiceConfig(serviceConfig);
-	return ret;
-}
-
-//#warning --> marco.accame: review function embObjMultipleFTsensor::fillScaleFactor() as in comment below
-// it is better to change the behaviour of the function so that: 1. we send the request, 2. we wait for the sig<> and unblock a mutex
-// current implementation relies on a wait of 1 sec and check of non-zero length of an array: smart but not the rigth way to do it.
-
-// EVEN better: in serviceVerifyActivate() we allow the retrieval of a parameter which the ETH board sends back. in such a param it is contained
-// the fullscales values ...
-
-// marco.accame on 09 jan 2018: much better using an ask(id32_fullscale) and making this variable proxied inside the ETH board ...
-
-bool eo_ftsens_privData::fillScaleFactor(servConfigMultipleFTsensor_t &serviceConfig)
-{
-	// if we already have set the scalefactor ...
-	if (true == scaleFactorIsFilled)
-	{
-		return true;
-	}
-
-	// at first we set the scale factors to 1, so that we are sure they have a safe value. it redundant, as we already set it to 1.0
-	for (size_t i = 0; i < scaleFactor.size(); i++)
-	{
-		scaleFactor[i] = 1.0f;
-	}
-
-	// if we dont need calibration we are done
-	if (false == useCalibValues)
-	{
-		if (isVerbose())
-		{
-			yDebug() << getBoardInfo() << "fillScaleFactor(): we DONT use calibration, thus all scale factors are set to 1.0";
-		}
-
-		scaleFactorIsFilled = true;
-		return true;
-	}
-
-	// if we need calibration, then we need to ask the fullscales directly to the strain
-
-	// marco.accame on 11 apr 2014:
-	// added the code under ifdef 1. the reason is that one cannot rely on validity of data structures inside the EOnv, as in protocol v2 the requirement is that
-	// the initialisation is not specialised and is ... all zeros. if the user wants to init to proper values must redefine the relevant INIT funtion.
-	// in this case, the eoprot_fun_INIT_as_strain_status_fullscale().
-	// extern void eoprot_fun_INIT_as_strain_status_fullscale(const EOnv* nv)
-	// {
-	//     eOas_arrayofupto12bytes_t fullscale_values = {0};
-	//     eo_array_New(6, 2, &fullscale_values); // itemsize = 2, capacity = 6
-	//     eo_nv_Set(nv, &fullscale_values, eobool_true, eo_nv_upd_dontdo);
-	// }
-	// moreover, even if properly initted, it is required to set the size to 0 because the size being not 0 is the check of reception of a message.
-
-	bool gotFullScaleValues = false;
-
-	// Check initial size of array...  it should be zero.
-	int timeout, NVsize;
-	EOnv tmpNV;
-	EOnv *p_tmpNV = NULL;
-	eOas_arrayofupto12bytes_t fullscale_values = {0};
-	// force it to be an empty array of itemsize 2 and capacity 6.
-	// the reason is that the eoprot_tag_as_strain_status_fullscale contains 3 forces and 3 torques each of 2 bytes. see eOas_strain_status_t in EoAnalogSensors.h
-	eo_array_New(6, 2, &fullscale_values);
-
-	eOprotID32_t id32_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_strain_status_fullscale);
-
-	// at first we impose that the local value of fullscales is zero.
-	// we also force the change because this variable is readonly
-	const bool overrideROprotection = true;
-	res->setLocalValue(id32_fullscale, &fullscale_values, overrideROprotection);
-
-	// Prepare analog sensor
-	eOas_strain_config_t ftConfig = {0};
-	ftConfig.datarate = serviceConfig.acquisitionrate;
-	ftConfig.mode = eoas_strainmode_acquirebutdonttx;
-	ftConfig.signaloncefullscale = eobool_true;
-
-	eOprotID32_t id32_strain_config = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_strain_config);
-
-	timeout = 5;
-
-	// wait for response
-	while (!gotFullScaleValues && (timeout != 0))
-	{
-		res->setRemoteValue(id32_strain_config, &ftConfig);
-		SystemClock::delaySystem(1.0);
-		// read fullscale values
-		res->getLocalValue(id32_fullscale, &fullscale_values);
-		// If data arrives, size is bigger than zero
-		//#warning --> marco.accame says: to wait for 1 sec and read size is ok. a different way is to ... wait for a semaphore incremented by the reply of the board. think of it!
-		NVsize = eo_array_Size((EOarray *)&fullscale_values);
-
-		if (0 != NVsize)
-		{
-			gotFullScaleValues = true;
-			break;
-		}
-
-		timeout--;
-		if (isVerbose())
-		{
-			yWarning() << getBoardInfo() << "filling ScaleFactor ....";
-		}
-	}
-
-	if ((false == gotFullScaleValues) && (0 == timeout))
-	{
-		yError() << getBoardInfo() << "fillScaleFactor(): ETH Analog sensor: request for calibration parameters timed out ";
-		return false;
-	}
-
-	if ((strain_Channels != NVsize))
-	{
-		yError() << getBoardInfo() << "Analog sensor Calibration data has a different size from channels number in configuration file ";
-		return false;
-	}
-
-	if (gotFullScaleValues)
-	{
-		if (isVerbose())
-		{
-			yWarning() << getBoardInfo() << "fillScaleFactor() detected that already has full scale values";
-			yDebug() << getBoardInfo() << "fillScaleFactor(): Fullscale values are: size=" << eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" << strain_Channels;
-		}
-
-		for (size_t i = 0; i < scaleFactor.size(); i++)
-		{
-			// Get the k-th element of the array as a 2 bytes msg
-			uint8_t *msg = (uint8_t *)eo_array_At((EOarray *)&fullscale_values, i);
-			if (NULL == msg)
-			{
-				yError() << getBoardInfo() << "fillScaleFactor() doesn't receive data for channel " << i;
-				return false;
-			}
-			// Got from CanBusMotionControl... here order of bytes seems inverted with respect to calibratedValues or uncalibratedValues (see callback of can strain messages inside the FW of ETHBOARD)
-			scaleFactor[i] = ((uint16_t)(msg[0] << 8) | msg[1]);
-			// yError() << " scale factor[" << i << "] = " << scaleFactor[i];
-			if (isVerbose())
-			{
-				yDebug() << getBoardInfo() << "fillScaleFactor(): channel " << i << "full scale value " << scaleFactor[i];
-			}
-		}
-
-		scaleFactorIsFilled = true;
-	}
-
-	return scaleFactorIsFilled;
-}
 
 bool eo_ftsens_privData::initRegulars(servConfigMultipleFTsensor_t &serviceConfig)
 {
@@ -255,7 +88,7 @@ bool eo_ftsens_privData::sendConfig2Strain(servConfigMultipleFTsensor_t &service
 
 	// version with read-back
 
-	//LUCA TODO
+	// LUCA TODO
 	eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_strain_config);
 
 	if (false == res->setcheckRemoteValue(id32, &ftConfig, 10, 0.010, 0.050))

@@ -1,9 +1,8 @@
+
 /*
- * Copyright (C) 2022 Istituto Italiano di Tecnologia (IIT)
- * All rights reserved.
- * Author: Luca Tricerri
- * This software may be modified and distributed under the terms of the
- * BSD-3-Clause license. See the accompanying LICENSE file for details.
+ * Copyright (C) 2020 iCub Tech - Istituto Italiano di Tecnologia
+ * Author:  Marco Accame
+ * email:   marco.accame@iit.it
  */
 
 // general purpose stuff.
@@ -13,14 +12,25 @@
 #include <string>
 
 // Yarp Includes
+#include <ace/Log_Msg.h>
+#include <ace/config.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <yarp/os/Time.h>
 
 // specific to this device driver.
-#include "EOconstarray.h"
+#include <embObjMultipleFTsensor.h>
+#include <ethManager.h>
+#include <yarp/os/NetType.h>
+
+#include "EOnv_hid.h"
 #include "EoAnalogSensors.h"
+#include "EoProtocol.h"
 #include "EoProtocolAS.h"
-#include "embObjMultipleFTsensor.h"
-#include "eo_ftsens_privData.h"
+#include "EoProtocolMN.h"
 
 #ifdef WIN32
 #pragma warning(once : 4355)
@@ -30,164 +40,231 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-#define GET_privData(x) (*((static_cast<eo_ftsens_privData*>(x))))
-
-embObjMultipleFTsensor::embObjMultipleFTsensor()
+embObjMultipleFTsensor::embObjMultipleFTsensor() : m_PDdevice("embObjMultipleFTsensor")
 {
-	mPriv = new eo_ftsens_privData("embObjMultipleFTsensor");
 }
 
 embObjMultipleFTsensor::~embObjMultipleFTsensor()
 {
 	close();
-	delete &GET_privData(mPriv);
-}
-
-std::string embObjMultipleFTsensor::getBoardInfo(void) const
-{
-	return GET_privData(mPriv).getBoardInfo();
 }
 
 bool embObjMultipleFTsensor::initialised()
 {
-	return GET_privData(mPriv).isOpen();
+	return m_PDdevice.isOpen();
 }
 
-bool embObjMultipleFTsensor::enableTemperatureTransmission(bool enable)
+bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 {
-	if (GET_privData(mPriv).res == nullptr)
+	// 1) prepare eth service verifing if the eth manager is available and parsing info about the eth board.
+
+	yInfo() << "embObjMultipleFTsensor::open(): preparing ETH resource";
+
+	if (!m_PDdevice.prerareEthService(config, this))
+		return false;
+
+	yInfo() << "embObjMultipleFTsensor::open(): browsing xml files which describe the service";
+
+	// 2) read stuff from config file
+	ServiceParserMultipleFt parser;
+	if (!parser.parse(config))
 	{
-		// This check is necessary because the function is called by destructor and we cannot be sure that open function has been invoked before its deletion.
-		// Please notice that yarp::dev::DriversHelper::load() function creates this object and then destroys it without calls the open().
-		// Here I don't give error neither warning, because the load function is called to load this devicedriver at yarprobotinterface startup, so it is the wanted behaviour.
+		yError() << "embObjMultipleFTsensor missing some configuration parameter. Check logs and your config file.";
 		return false;
 	}
 
-	uint8_t cmd;
-	(enable) ? cmd = 1 : cmd = 0;
+	eOmn_serv_parameter_t ftData;
+	ftData.configuration.data.as.ft = parser.toEomn();
 
-	eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_temperature, 0, eoprot_tag_as_temperature_cmmnds_enable);
-	if (false == GET_privData(mPriv).res->setRemoteValue(id32, &cmd))
+	// 3) prepare data vector
 	{
-		yError() << getBoardInfo() << "fails send command enableTemperatureTransmission(" << enable << ")";
+		//m_data.resize(eOas_pos_data_maxnumber, 0.0);
+	}
+
+	yInfo() << "embObjMultipleFTsensor::open(): verify the presence of the board and if its protocol version is correct";
+
+	// 4) verify analog sensor protocol and then verify-Activate the POS service
+	if (!m_PDdevice.res->verifyEPprotocol(eoprot_endpoint_analogsensors))
+	{
+		cleanup();
 		return false;
+	}
+
+	yInfo() << "embObjMultipleFTsensor::open(): verify and activate the POS service";
+
+	// const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
+
+	if (!m_PDdevice.res->serviceVerifyActivate(eomn_serv_category_ft, &ftData, 5.0))
+	{
+		yError() << m_PDdevice.getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate() ";
+		cleanup();
+		return false;
+	}
+
+	// printServiceConfig();
+
+	yInfo() << "embObjMultipleFTsensor::open(): configure the POS service";
+
+	if (false == sendConfig2boards(parser))
+	{
+		cleanup();
+		return false;
+	}
+
+	yInfo() << "embObjMultipleFTsensor::open(): impose the network variable which the ETH bord must stream up";
+
+	// Set variable to be signaled
+	if (false == initRegulars(parser))
+	{
+		cleanup();
+		return false;
+	}
+
+	yInfo() << "embObjMultipleFTsensor::open(): start the POS service";
+
+	if (!m_PDdevice.res->serviceStart(eomn_serv_category_ft))
+	{
+		yError() << m_PDdevice.getBoardInfo() << "open() fails to start as service.... cannot continue";
+		cleanup();
+		return false;
+	}
+	else
+	{
+		if (m_PDdevice.isVerbose())
+		{
+			yDebug() << m_PDdevice.getBoardInfo() << "open() correctly starts service";
+		}
+	}
+
+	yInfo() << "embObjMultipleFTsensor::open(): start streaming of POS data";
+
+	sendStart2boards(parser);
+
+	m_PDdevice.setOpen(true);
+
+	return true;
+}
+
+bool embObjMultipleFTsensor::sendConfig2boards(ServiceParserMultipleFt& parser)
+{
+	auto& ftInfos = parser.getFtInfo();
+	int index = 0;
+	for (const auto& [id, data] : ftInfos)
+	{
+		eOprotID32_t id32 = eo_prot_ID32dummy;
+		eOas_ft_config_t cfg;
+		cfg.ftperiod = data.ftAcquisitionRate;			 // TODO LUCA check
+		cfg.temperatureperiod = data.ftAcquisitionRate;	 // TODO LUCA check
+		id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, index, eoprot_tag_as_ft_config);
+
+		if (false == m_PDdevice.res->setcheckRemoteValue(id32, &cfg, 10, 0.010, 0.050))
+		{
+			yError() << m_PDdevice.getBoardInfo() << "FATAL error in sendConfig2boards() while try to configure datarate=" << cfg.ftperiod;
+			return false;
+		}
+
+		if (m_PDdevice.isVerbose())
+		{
+			yDebug() << m_PDdevice.getBoardInfo() << ": sendConfig2boards() correctly configured boards with datarate=" << cfg.ftperiod;
+		}
+		++index;
 	}
 	return true;
 }
 
-//----------------------- DeviceDriver -------------------
-
-bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
+bool embObjMultipleFTsensor::sendStart2boards(ServiceParserMultipleFt& parser)
 {
-	// - first thing to do is verify if the eth manager is available then i parse info about the eth board.
+	eOprotID32_t id32 = eo_prot_ID32dummy;
 
-	if (!GET_privData(mPriv).prerareEthService(config, this))
-		return false;
+	uint8_t enable = 1;
 
-	// read stuff from config file
-
-	servConfigMultipleFTsensor_t serviceConfig;
-	if (!GET_privData(mPriv).fromConfig(config, serviceConfig))
-		return false;
-
-	if (!analogData_.fromConfig(config, serviceConfig))
-		return false;
-
-	if (!GET_privData(mPriv).res->verifyEPprotocol(eoprot_endpoint_analogsensors))
+	const auto& ftInfos = parser.getFtInfo();
+	int index = 0;
+	for (const auto& [id, data] : ftInfos)
 	{
-		cleanup();
-		return false;
-	}
+		id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, index, eoprot_tag_as_ft_cmmnds_enable);
 
-
-#if defined(EMBOBJSTRAIN_USESERVICEPARSER)
-
-	// Fill temperature service data in servparamtemp: some of these data are copied from the serviceconfig of ft because both services used tha same board.
-	eOmn_serv_parameter_t servparamtemp;
-	bool ret = GET_privData(mPriv).fillTemperatureEthServiceInfo(serviceConfig.ethservice, servparamtemp);
-	if (!ret)
-		return false;
-
-	const eOmn_serv_parameter_t* servparamtemp_ptr = &servparamtemp;
-	const eOmn_serv_parameter_t* servparamstrain = &serviceConfig.ethservice;
-
-#else
-	const eOmn_serv_parameter_t* servparamstrain = NULL;
-	const eOmn_serv_parameter_t* servparamtemp_ptr = NULL;
-#endif
-
-	if (false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_strain, servparamstrain, 5.0))
-	{
-		yError() << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate()";
-		cleanup();
-		return false;
-	}
-
-	if (false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_temperatures, servparamtemp_ptr, 5.0))
-	{
-		yError() << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate()";
-		cleanup();
-		return false;
-	}
-
-	// we always prepare the fullscales.
-	if (false == GET_privData(mPriv).fillScaleFactor(serviceConfig))
-	{
-		yError() << getBoardInfo() << "open() has failed in calling  embObjMultipleFTsensor::fillScaleFactor()";
-		return false;
-	}
-
-	if (false == GET_privData(mPriv).sendConfig2Strain(serviceConfig))
-	{
-		cleanup();
-		return false;
-	}
-
-	if (false == GET_privData(mPriv).initRegulars(serviceConfig))
-	{
-		cleanup();
-		return false;
-	}
-
-	//TODO LUCA
-	if (false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_ft))
-	{
-		yError() << getBoardInfo() << "open() fails to start service ft";
-		cleanup();
-		return false;
-	}
-	else
-	{
-		if (GET_privData(mPriv).isVerbose())
+		if (false == m_PDdevice.res->setcheckRemoteValue(id32, &enable, 10, 0.010, 0.050))
 		{
-			yDebug() << getBoardInfo() << "open() correctly starts as service ft";
+			yError() << m_PDdevice.getBoardInfo() << "FATAL error in sendStart2boards() while try to enable the boards transmission";
+			return false;
+		}
+
+		if (m_PDdevice.isVerbose())
+		{
+			yDebug() << m_PDdevice.getBoardInfo() << ": sendStart2boards() correctly enabled the boards transmission";
+		}
+		++index;
+	}
+	return true;
+}
+
+bool embObjMultipleFTsensor::initRegulars(ServiceParserMultipleFt& parser)
+{
+	// configure regular rops
+
+	vector<eOprotID32_t> id32v(0);
+	eOprotID32_t id32 = eo_prot_ID32dummy;
+
+	// we need to choose the id32 to put inside the vector
+
+	const auto& ftInfos = parser.getFtInfo();
+	int index = 0;
+	for (const auto& [id, data] : ftInfos)
+	{
+		id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, index, eoprot_tag_as_ft_status_timedvalue);
+		id32v.push_back(id32);
+		++index;
+	}
+
+	// now we send the vector
+
+	if (false == m_PDdevice.res->serviceSetRegulars(eomn_serv_category_pos, id32v))
+	{
+		yError() << m_PDdevice.getBoardInfo() << "initRegulars() fails to add its variables to regulars: cannot proceed any further";
+		return false;
+	}
+
+	if (m_PDdevice.isVerbose())
+	{
+		yDebug() << m_PDdevice.getBoardInfo() << "initRegulars() added" << id32v.size() << "regular rops ";
+		char nvinfo[128];
+		for (size_t r = 0; r < id32v.size(); r++)
+		{
+			uint32_t item = id32v.at(r);
+			eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
+			yDebug() << "\t it added regular rop for" << nvinfo;
 		}
 	}
 
-	if (false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_temperatures))
-	{
-		yError() << getBoardInfo() << "open() fails to start service temperature";
-		cleanup();
-		return false;
-	}
-	else
-	{
-		if (GET_privData(mPriv).isVerbose())
-		{
-			yDebug() << getBoardInfo() << "open() correctly starts as service temperature";
-		}
-	}
+	return true;
+}
 
-	// start the configured sensors. so far, we must keep it in here. later on we can remove this command
-	if (!enableTemperatureTransmission(true))
-	{
-		yError() << getBoardInfo() << "open() fails to enable temperature transmission";
-		cleanup();
-		return false;
-	}
+eth::iethresType_t embObjMultipleFTsensor::type()
+{
+	return eth::iethres_analogpos;
+}
 
-	GET_privData(mPriv).setOpen(true);
-	analogData_.setOpen(true);
+bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* rxdata)
+{
+	// called by feat_manage_analogsensors_data() which is called by:
+	// eoprot_fun_UPDT_as_pos_status
+	if (!m_PDdevice.isOpen())
+		return false;
+
+	eOprotIndex_t eoprotIndex = eoprot_ID2index(id32);
+	eOas_ft_timedvalue_t* data = (eOas_ft_timedvalue_t*)rxdata;
+	
+	std::unique_lock<std::shared_mutex> lck(mutex_);
+
+	for (int index = 0; index < eoas_ft_6axis; ++index)
+	{
+		ftData_[eoprotIndex].data_[index] = data->values[index];
+	}
+	ftData_[eoprotIndex].timeStamp_ = data->age;
+
+	temperature_[eoprotIndex].data_ = data->temperature;
+	temperature_[eoprotIndex].timeStamp_ = data->age;
 	return true;
 }
 
@@ -199,131 +276,36 @@ bool embObjMultipleFTsensor::close()
 
 void embObjMultipleFTsensor::cleanup(void)
 {
-	// disable temperature
-	enableTemperatureTransmission(false);
-
-	GET_privData(mPriv).cleanup(static_cast<eth::IethResource*>(this));
+	m_PDdevice.cleanup(static_cast<eth::IethResource*>(this));
 }
 
-//-------------------------------  IethResource --------------------------------
-bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* rxdata) //TODO register this callback
+bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sensorIndex, yarp::sig::Vector& out, double& timestamp) const
 {
-	bool ret = false;
+	if (!m_PDdevice.isOpen())
+		return false;
 
-	if (false == GET_privData(mPriv).isOpen())
+	std::shared_lock<std::shared_mutex> lck(mutex_);
+
+	if (ftData_.find(sensorIndex) == ftData_.end())
 	{
-		return ret;
-		;
+		yError() << m_PDdevice.getBoardInfo() << "getSixAxisForceTorqueSensorMeasure() fails data for index:" << sensorIndex << " not found";
+		return false;
 	}
-	eOprotEntity_t entity = eoprot_ID2entity(id32);
 
-	switch (entity)
+	FtData sensorData = ftData_.at(sensorIndex).data_;
+
+	out.resize(ftChannels_);
+	for (size_t k = 0; k < ftChannels_; k++)
 	{
-		case eoas_entity_ft:
-		{
-			ret = analogData_.updateStrainValues(id32, timestamp, rxdata);
-		}
-		break;
-
-		case eoas_entity_temperature:
-		{
-			ret = analogData_.updateTemperatureValues(id32, timestamp, rxdata);
-		}
-		break;
-		default:
-		{
-			ret = false;
-			yError() << getBoardInfo() << "update() failed ";
-		}
-	};
-	return ret;
-}
-
-// -----------------------------  yarp::dev::IAnalogSensor --------------------------------------
-//LUCA
-/*! Read a vector from the sensor.
- * @param out a vector containing the sensor's last readings.
- * @return AS_OK or return code. AS_TIMEOUT if the sensor timed-out.
- **/
-int embObjMultipleFTsensor::read(yarp::sig::Vector& out)
-{
-	return analogData_.read(out);
-}
-
-int embObjMultipleFTsensor::getState(int ch)
-{
-	return AS_OK;
-}
-
-int embObjMultipleFTsensor::getChannels()
-{
-	return GET_privData(mPriv).strain_Channels;
-}
-
-//Luca
-int embObjMultipleFTsensor::calibrateSensor()
-{
-	return analogData_.calibrateSensor();
-}
-
-int embObjMultipleFTsensor::calibrateSensor(const yarp::sig::Vector& value)
-{
-	return AS_OK;
-}
-
-int embObjMultipleFTsensor::calibrateChannel(int ch)
-{
-	return AS_OK;
-}
-
-int embObjMultipleFTsensor::calibrateChannel(int ch, double v)
-{
-	return AS_OK;
-}
-
-eth::iethresType_t embObjMultipleFTsensor::type()
-{
-	return eth::iethres_analogstrain;
-}
-
-// ---------------------- ITemperatureSensors --------------------------------------------------------
-size_t embObjMultipleFTsensor::getNrOfTemperatureSensors() const
-{
-	return 1;
-}
-
-yarp::dev::MAS_status embObjMultipleFTsensor::getTemperatureSensorStatus(size_t sens_index) const
-{
-	return yarp::dev::MAS_OK;
-}
-
-bool embObjMultipleFTsensor::getTemperatureSensorName(size_t sens_index, std::string& name) const
-{
-	name = GET_privData(mPriv).devicename;
+		out[k] = sensorData.data_[k] + offset_[k];
+	}
+	timestamp = ftData_.at(sensorIndex).timeStamp_;
 	return true;
 }
-
-bool embObjMultipleFTsensor::getTemperatureSensorFrameName(size_t sens_index, std::string& frameName) const
-{
-	frameName = GET_privData(mPriv).devicename;
-	return true;
-}
-
-bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const
-{
-	return analogData_.getTemperatureSensorMeasure(out,timestamp);
-}
-
-bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
-{
-	return analogData_.getTemperatureSensorMeasure(out,timestamp);
-}
-
-//------------------------- ISixAxisForceTorqueSensors -------------------------
 
 size_t embObjMultipleFTsensor::getNrOfSixAxisForceTorqueSensors() const
 {
-	return 1;
+	return ftData_.size();
 }
 
 yarp::dev::MAS_status embObjMultipleFTsensor::getSixAxisForceTorqueSensorStatus(size_t sens_index) const
@@ -333,17 +315,58 @@ yarp::dev::MAS_status embObjMultipleFTsensor::getSixAxisForceTorqueSensorStatus(
 
 bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorName(size_t sens_index, std::string& name) const
 {
-	name = GET_privData(mPriv).devicename;
+	name = "";	// TODO LUCA
 	return true;
 }
 
 bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string& frameName) const
 {
-	frameName = GET_privData(mPriv).devicename;
+	frameName = "";	 // TODO LUCA
 	return true;
 }
 
-bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+size_t embObjMultipleFTsensor::getNrOfTemperatureSensors() const
 {
-	return analogData_.getSixAxisForceTorqueSensorMeasure(out,timestamp);
+	return temperature_.size();
+}
+
+yarp::dev::MAS_status embObjMultipleFTsensor::getTemperatureSensorStatus(size_t sens_index) const
+{
+	return yarp::dev::MAS_OK;
+}
+
+bool embObjMultipleFTsensor::getTemperatureSensorName(size_t sens_index, std::string& name) const
+{
+	name = "";	// TODO LUCA
+	return true;
+}
+
+bool embObjMultipleFTsensor::getTemperatureSensorFrameName(size_t sens_index, std::string& frameName) const
+{
+	frameName = "";	 // TODO LUCA
+	return true;
+}
+
+bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sensorIndex, double& out, double& timestamp) const
+{
+	if (!m_PDdevice.isOpen())
+		return false;
+
+	std::shared_lock<std::shared_mutex> lck(mutex_);
+
+	if (temperature_.find(sensorIndex) == temperature_.end())
+	{
+		yError() << m_PDdevice.getBoardInfo() << "getTemperatureSensorMeasure() fails data for index:" << sensorIndex << " not found";
+		return false;
+	}
+
+	out = temperature_.at(sensorIndex).data_;
+	timestamp = temperature_.at(sensorIndex).timeStamp_;
+	return true;
+}
+
+bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+{
+	// TODO LUCA
+	return true;
 }
