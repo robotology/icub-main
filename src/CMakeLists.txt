@@ -47,6 +47,8 @@ add_subdirectory(modules)
 endif()
 
 if (UNITTEST_COMPILE)
-add_subdirectory(unittest)
+  if(NOT BUILD_SHARED_LIBS)
+    add_subdirectory(unittest)
+  endif()
 endif()
 
