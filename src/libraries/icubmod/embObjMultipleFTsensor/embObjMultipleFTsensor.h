@@ -78,7 +78,7 @@ class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver,
 	virtual bool getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
 
    private:
-	yarp::dev::embObjDevPrivData m_PDdevice;
+	yarp::dev::embObjDevPrivData device_;
 	mutable std::shared_mutex mutex_;
 	std::map<eOprotID32_t, FtData> ftData_;
 	std::map<eOprotID32_t, TemperatureData> temperature_;
