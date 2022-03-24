@@ -14,6 +14,7 @@
 
 #include <map>
 #include <shared_mutex>
+#include <memory>
 #include <string>
 
 #include "embObjGeneralDevPrivData.h"
@@ -33,8 +34,7 @@ static constexpr int ftMaxNumber_{4};
 class FtData
 {
    public:
-	FtData() : data_(ftChannels_){};
-	yarp::sig::Vector data_;
+	yarp::sig::Vector data_{0,0,0,0,0,0};
 	double timeStamp_;
 };
 
@@ -49,6 +49,7 @@ class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver, public
 {
    public:
 	embObjMultipleFTsensor();
+	embObjMultipleFTsensor(std::shared_ptr<yarp::dev::embObjDevPrivData> device);
 	~embObjMultipleFTsensor();
 
 	bool open(yarp::os::Searchable& config);
@@ -75,13 +76,13 @@ class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver, public
 	virtual bool getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
 
    protected:
-	yarp::dev::embObjDevPrivData device_;
+	std::shared_ptr<yarp::dev::embObjDevPrivData> device_;
 	mutable std::shared_mutex mutex_;
 	std::map<eOprotID32_t, FtData> ftData_;
 	std::map<eOprotID32_t, TemperatureData> temperature_;
 
 	bool sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
 	bool sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
-	bool initRegulars(ServiceParserMultipleFt& parser);
+	bool initRegulars(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
 	void cleanup(void);
 };
