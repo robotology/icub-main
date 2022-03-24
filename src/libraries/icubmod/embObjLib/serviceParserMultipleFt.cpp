@@ -15,7 +15,7 @@ ServiceParserMultipleFt::ServiceParserMultipleFt()
 {
 }
 
-bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle& property, bool& formaterror)
+bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property, bool &formaterror)
 {
 	Bottle propertyCanBoard = Bottle(property.findGroup("CANBOARDS"));
 	if (propertyCanBoard.isNull())
@@ -27,56 +27,64 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle& property, boo
 	Bottle propertyCanBoardType = propertyCanBoard.findGroup("type");
 	if (propertyCanBoardType.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.type";
+		yError() << "ServiceParserMultipleFt::check() cannot find "
+					"PROPERTIES.CANBOARDS.type";
 		return false;
 	}
 
 	Bottle propertyCanBoardProtocol = Bottle(propertyCanBoard.findGroup("PROTOCOL"));
 	if (propertyCanBoardProtocol.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL";
+		yError() << "ServiceParserMultipleFt::check() cannot find "
+					"PROPERTIES.CANBOARDS.PROTOCOL";
 		return false;
 	}
 
 	Bottle propertyCanBoardProtocolMajor = Bottle(propertyCanBoardProtocol.findGroup("major"));
 	if (propertyCanBoardProtocolMajor.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL.major";
+		yError() << "ServiceParserMultipleFt::check() cannot find "
+					"PROPERTIES.CANBOARDS.PROTOCOL.major";
 		return false;
 	}
 
 	Bottle propertyCanBoardProtocolMinor = Bottle(propertyCanBoardProtocol.findGroup("minor"));
 	if (propertyCanBoardProtocolMinor.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL.minor";
+		yError() << "ServiceParserMultipleFt::check() cannot find "
+					"PROPERTIES.CANBOARDS.PROTOCOL.minor";
 		return false;
 	}
 
 	Bottle propertyCanBoardFirmware = Bottle(propertyCanBoard.findGroup("FIRMWARE"));
 	if (propertyCanBoardFirmware.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE";
+		yError() << "ServiceParserMultipleFt::check() cannot find "
+					"PROPERTIES.CANBOARDS.FIRMWARE";
 		return false;
 	}
 
 	Bottle propertyCanBoardFirmwareMajor = Bottle(propertyCanBoardFirmware.findGroup("major"));
 	if (propertyCanBoardFirmwareMajor.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.major";
+		yError() << "ServiceParserMultipleFt::check() cannot find "
+					"PROPERTIES.CANBOARDS.FIRMWARE.major";
 		return false;
 	}
 
 	Bottle propertyCanBoardFirmwareMinor = Bottle(propertyCanBoardFirmware.findGroup("minor"));
 	if (propertyCanBoardFirmwareMinor.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.minor";
+		yError() << "ServiceParserMultipleFt::check() cannot find "
+					"PROPERTIES.CANBOARDS.FIRMWARE.minor";
 		return false;
 	}
 
 	Bottle propertyCanBoardFirmwareBuild = Bottle(propertyCanBoardFirmware.findGroup("build"));
 	if (propertyCanBoardFirmwareBuild.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.build";
+		yError() << "ServiceParserMultipleFt::check() cannot find "
+					"PROPERTIES.CANBOARDS.FIRMWARE.build";
 		return false;
 	}
 
@@ -117,7 +125,7 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle& property, boo
 		int firmwareMinor = propertyCanBoardFirmwareMinor.get(index).asInt32();
 		int firmwareBuild = propertyCanBoardFirmwareBuild.get(index).asInt32();
 
-		for (auto& [key, current] : ftInfo_)
+		for (auto &[key, current] : ftInfo_)
 		{
 			if (current.board != boardType)
 				continue;
@@ -132,33 +140,37 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle& property, boo
 	return true;
 }
 
-bool ServiceParserMultipleFt::checkPropertySensors(const Bottle& property, bool& formaterror)
+bool ServiceParserMultipleFt::checkPropertySensors(const Bottle &property, bool &formaterror)
 {
 	Bottle propertySensors = Bottle(property.findGroup("SENSORS"));
 	if (propertySensors.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::checkPropertySensors() cannot find PROPERTIES.SENSORS";
+		yError() << "ServiceParserMultipleFt::checkPropertySensors() cannot find "
+					"PROPERTIES.SENSORS";
 		return false;
 	}
 
 	Bottle propertySensorsId = Bottle(propertySensors.findGroup("id"));
 	if (propertySensorsId.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::checkPropertySensors() cannot find PROPERTIES.SENSORS.id";
+		yError() << "ServiceParserMultipleFt::checkPropertySensors() cannot find "
+					"PROPERTIES.SENSORS.id";
 		return false;
 	}
 
 	Bottle propertySensorsBoard = Bottle(propertySensors.findGroup("board"));
 	if (propertySensorsBoard.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::checkPropertySensors() cannot find PROPERTIES.SENSORS.type";
+		yError() << "ServiceParserMultipleFt::checkPropertySensors() cannot find "
+					"PROPERTIES.SENSORS.type";
 		return false;
 	}
 
 	Bottle propertySensorsLocation = Bottle(propertySensors.findGroup("location"));
 	if (propertySensorsLocation.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::checkPropertySensors() cannot find PROPERTIES.SENSORS.location";
+		yError() << "ServiceParserMultipleFt::checkPropertySensors() cannot find "
+					"PROPERTIES.SENSORS.location";
 		return false;
 	}
 
@@ -182,13 +194,13 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle& property, bool&
 		std::string location = propertySensorsLocation.get(index).asString();
 		if (ftInfo_.find(id) == ftInfo_.end())
 			continue;
-		auto& currentFt = ftInfo_.at(id);
+		auto &currentFt = ftInfo_.at(id);
 
 		try
 		{
 			currentFt.port = std::stoi(location.substr(3, 1));
 		}
-		catch (const std::exception& e)
+		catch (const std::exception &e)
 		{
 			yError() << "ServiceParser::checkPropertySensors() invalid can port";
 			return false;
@@ -197,7 +209,7 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle& property, bool&
 		{
 			currentFt.address = std::stoi(location.substr(5, location.size() - 5));
 		}
-		catch (const std::exception& e)
+		catch (const std::exception &e)
 		{
 			yError() << "ServiceParser::checkPropertySensors() invalid can address";
 			return false;
@@ -211,7 +223,7 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle& property, bool&
 	return true;
 }
 
-bool ServiceParserMultipleFt::checkSettings(const Bottle& service, bool& formaterror)
+bool ServiceParserMultipleFt::checkSettings(const Bottle &service, bool &formaterror)
 {
 	Bottle settings = Bottle(service.findGroup("SETTINGS"));
 	if (settings.isNull())
@@ -224,28 +236,32 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle& service, bool& formate
 	Bottle settingsAcquisitionRate = Bottle(settings.findGroup("acquisitionRate"));
 	if (settingsAcquisitionRate.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::checkSettings() cannot find SETTINGS.acquisitionRate";
+		yError() << "ServiceParserMultipleFt::checkSettings() cannot find "
+					"SETTINGS.acquisitionRate";
 		return false;
 	}
 
 	Bottle settingsAcquisitionTempRate = Bottle(settings.findGroup("temperature-acquisitionRate"));
 	if (settingsAcquisitionTempRate.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::parseService() for embObjMultipleFTsensor device cannot find SETTINGS.temperature-acquisitionRate";
+		yError() << "ServiceParserMultipleFt::parseService() for embObjMultipleFTsensor "
+					"device cannot find SETTINGS.temperature-acquisitionRate";
 		return false;
 	}
 
 	Bottle settingsUseCalibration = Bottle(settings.findGroup("useCalibration"));
 	if (settingsUseCalibration.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::checkSettings() cannot find FT_SETTINGS.useCalibration";
+		yError() << "ServiceParserMultipleFt::checkSettings() cannot find "
+					"FT_SETTINGS.useCalibration";
 		return false;
 	}
 
 	Bottle settingsEnabledSensors = Bottle(settings.findGroup("enabledSensors"));
 	if (settingsEnabledSensors.isNull())
 	{
-		yError() << "ServiceParserMultipleFt::checkSettings() cannot find SETTINGS.enabledSensors";
+		yError() << "ServiceParserMultipleFt::checkSettings() cannot find "
+					"SETTINGS.enabledSensors";
 		return false;
 	}
 
@@ -257,7 +273,8 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle& service, bool& formate
 	}
 	if (settingsAcquisitionRate.size() != settingsAcquisitionTempRate.size())
 	{
-		yError() << "ServiceParserMultipleFt::checkSettings --> temperature-acquisitionRate size";
+		yError() << "ServiceParserMultipleFt::checkSettings --> "
+					"temperature-acquisitionRate size";
 		return false;
 	}
 	if (settingsAcquisitionTempRate.size() != settingsUseCalibration.size())
@@ -277,10 +294,15 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle& service, bool& formate
 	for (size_t index = 1 /*first is tagname*/; index < enabledSensorSize; index++)
 	{
 		std::string id = settingsEnabledSensors.get(index).asString();
-		int acquisitionRate = settingsAcquisitionRate.get(index).asInt32();
-		int acquisitionTempRate = settingsAcquisitionTempRate.get(index).asInt32();
-		int useCalibration = settingsUseCalibration.get(index).asInt32();
-		FtInfo currentSensor{acquisitionRate, acquisitionTempRate, useCalibration};
+		uint8_t acquisitionRate = (uint8_t)settingsAcquisitionRate.get(index).asInt8();
+		uint8_t acquisitionTempRate = (uint8_t)settingsAcquisitionTempRate.get(index).asInt8();
+		bool useCalibration = settingsUseCalibration.get(index).asBool();
+		eOas_ft_mode_t calib = eoas_ft_mode_calibrated;
+		if (!useCalibration)
+		{
+			calib = eoas_ft_mode_raw;
+		}
+		FtInfo currentSensor{acquisitionRate, acquisitionTempRate, calib};
 		ftInfo_[id] = currentSensor;
 	}
 
@@ -294,7 +316,7 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle& service, bool& formate
 	return true;
 }
 
-bool ServiceParserMultipleFt::checkServiceType(const Bottle& service, bool& formaterror)
+bool ServiceParserMultipleFt::checkServiceType(const Bottle &service, bool &formaterror)
 {
 	if (false == service.check("type"))
 	{
@@ -312,7 +334,7 @@ bool ServiceParserMultipleFt::checkServiceType(const Bottle& service, bool& form
 	return true;
 }
 
-bool ServiceParserMultipleFt::checkCanMonitor(const Bottle& service, bool& formaterror)
+bool ServiceParserMultipleFt::checkCanMonitor(const Bottle &service, bool &formaterror)
 {
 	Bottle canMonitor = Bottle(service.findGroup("CANMONITOR"));
 	if (canMonitor.isNull())
@@ -328,7 +350,8 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle& service, bool& forma
 	}
 	if (false == canMonitor.check("ratePeriod"))
 	{
-		yError() << "ServiceParserMultipleFt::check() cannot find canMonitor.periodicreportrate";
+		yError() << "ServiceParserMultipleFt::check() cannot find "
+					"canMonitor.periodicreportrate";
 		return false;
 	}
 	if (false == canMonitor.check("reportMode"))
@@ -341,13 +364,15 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle& service, bool& forma
 	int checkPeriod = canMonitor.find("checkPeriod").asInt();
 	if (checkPeriod > 254)
 	{
-		yError() << "ServiceParserMultipleFt::check() wrong canMonitor.checkPeriod too big";
+		yError() << "ServiceParserMultipleFt::check() wrong canMonitor.checkPeriod "
+					"too big";
 		return false;
 	}
 	int periodicreportrate = canMonitor.find("ratePeriod").asInt();
 	if (periodicreportrate > 65535)
 	{
-		yError() << "ServiceParserMultipleFt::check() wrong canMonitor.ratePeriod too big";
+		yError() << "ServiceParserMultipleFt::check() wrong canMonitor.ratePeriod "
+					"too big";
 		return false;
 	}
 	std::string reportmode = canMonitor.find("reportMode").asString();
@@ -359,12 +384,12 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle& service, bool& forma
 		return false;
 	}
 
-	canMonitor_ = {((int8_t)checkPeriod), reportmodeEobrd,((int16_t)periodicreportrate)};
+	canMonitor_ = {((int8_t)checkPeriod), reportmodeEobrd, ((int16_t)periodicreportrate)};
 
 	return true;
 }
 
-bool ServiceParserMultipleFt::parse(const yarp::os::Searchable& config)
+bool ServiceParserMultipleFt::parse(const yarp::os::Searchable &config)
 {
 	bool formaterror = false;
 
@@ -405,9 +430,9 @@ eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
 	eOmn_serv_config_data_as_ft_t out;
 	out.canmonitorconfig = canMonitor_;
 
-	EOarray* ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void*)(&(out.arrayofsensors)));
+	EOarray *ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
 
-	for (const auto& [key, value] : ftInfo_)
+	for (const auto &[key, value] : ftInfo_)
 	{
 		eOas_ft_sensordescriptor_t item = value.toEomn();
 		eo_array_PushBack(ar, &item);
@@ -415,7 +440,7 @@ eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
 	return out;
 }
 
-std::map<std::string, FtInfo>& ServiceParserMultipleFt::getFtInfo()
+std::map<std::string, FtInfo> &ServiceParserMultipleFt::getFtInfo()
 {
 	return ftInfo_;
 }

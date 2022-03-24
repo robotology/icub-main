@@ -1,30 +1,19 @@
-
 /*
- * Copyright (C) 2020 iCub Tech - Istituto Italiano di Tecnologia
- * Author:  Marco Accame
- * email:   marco.accame@iit.it
+ * Copyright (C) 2022 Istituto Italiano di Tecnologia (IIT)
+ * All rights reserved.
+ * Author: Luca Tricerri
+ * This software may be modified and distributed under the terms of the
+ * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 
-// general purpose stuff.
-#include <string.h>
+#include <embObjMultipleFTsensor.h>
+#include <ethManager.h>
+
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 #include <iostream>
 #include <string>
-
-// Yarp Includes
-#include <ace/Log_Msg.h>
-#include <ace/config.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/os/Log.h>
-#include <yarp/os/LogStream.h>
-#include <yarp/os/Time.h>
-
-// specific to this device driver.
-#include <embObjMultipleFTsensor.h>
-#include <ethManager.h>
-#include <yarp/os/NetType.h>
 
 #include "EOnv_hid.h"
 #include "EoAnalogSensors.h"
@@ -78,7 +67,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 
 	// 3) prepare data vector
 	{
-		//m_data.resize(eOas_pos_data_maxnumber, 0.0);
+		// m_data.resize(eOas_pos_data_maxnumber, 0.0);
 	}
 
 	yInfo() << "embObjMultipleFTsensor::open(): verify the presence of the board and if its protocol version is correct";
@@ -105,7 +94,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 
 	yInfo() << "embObjMultipleFTsensor::open(): configure the POS service";
 
-	if (false == sendConfig2boards(parser))
+	if (false == sendConfig2boards(parser, device_.res))
 	{
 		cleanup();
 		return false;
@@ -138,14 +127,14 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 
 	yInfo() << "embObjMultipleFTsensor::open(): start streaming of POS data";
 
-	sendStart2boards(parser);
+	sendStart2boards(parser, device_.res);
 
 	device_.setOpen(true);
 
 	return true;
 }
 
-bool embObjMultipleFTsensor::sendConfig2boards(ServiceParserMultipleFt& parser)
+bool embObjMultipleFTsensor::sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
 {
 	auto& ftInfos = parser.getFtInfo();
 	int index = 0;
@@ -153,11 +142,13 @@ bool embObjMultipleFTsensor::sendConfig2boards(ServiceParserMultipleFt& parser)
 	{
 		eOprotID32_t id32 = eo_prot_ID32dummy;
 		eOas_ft_config_t cfg;
-		cfg.ftperiod = data.ftAcquisitionRate;			 // TODO LUCA check
-		cfg.temperatureperiod = data.ftAcquisitionRate;	 // TODO LUCA check
+		cfg.ftperiod = data.ftAcquisitionRate;
+		cfg.temperatureperiod = data.temperatureAcquisitionRate;
+		cfg.mode = data.useCalibration;
+		cfg.calibrationset = 0;	 // TODO LUCA calibration add to xml
 		id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, index, eoprot_tag_as_ft_config);
 
-		if (false == device_.res->setcheckRemoteValue(id32, &cfg, 10, 0.010, 0.050))
+		if (false == deviceRes->setcheckRemoteValue(id32, &cfg, 10, 0.010, 0.050))
 		{
 			yError() << device_.getBoardInfo() << "FATAL error in sendConfig2boards() while try to configure datarate=" << cfg.ftperiod;
 			return false;
@@ -172,7 +163,7 @@ bool embObjMultipleFTsensor::sendConfig2boards(ServiceParserMultipleFt& parser)
 	return true;
 }
 
-bool embObjMultipleFTsensor::sendStart2boards(ServiceParserMultipleFt& parser)
+bool embObjMultipleFTsensor::sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
 {
 	eOprotID32_t id32 = eo_prot_ID32dummy;
 
@@ -184,7 +175,7 @@ bool embObjMultipleFTsensor::sendStart2boards(ServiceParserMultipleFt& parser)
 	{
 		id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, index, eoprot_tag_as_ft_cmmnds_enable);
 
-		if (false == device_.res->setcheckRemoteValue(id32, &enable, 10, 0.010, 0.050))
+		if (false == deviceRes->setcheckRemoteValue(id32, &enable, 10, 0.010, 0.050))
 		{
 			yError() << device_.getBoardInfo() << "FATAL error in sendStart2boards() while try to enable the boards transmission";
 			return false;
@@ -254,7 +245,7 @@ bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* r
 
 	eOprotIndex_t eoprotIndex = eoprot_ID2index(id32);
 	eOas_ft_timedvalue_t* data = (eOas_ft_timedvalue_t*)rxdata;
-	
+
 	std::unique_lock<std::shared_mutex> lck(mutex_);
 
 	for (int index = 0; index < eoas_ft_6axis; ++index)
@@ -297,7 +288,7 @@ bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sensorInd
 	out.resize(ftChannels_);
 	for (size_t k = 0; k < ftChannels_; k++)
 	{
-		out[k] = sensorData.data_[k] /*+ offset_[k]*/;//TODO LUCA manage offset 
+		out[k] = sensorData.data_[k] /*+ offset_[k]*/;	// TODO LUCA manage offset
 	}
 	timestamp = ftData_.at(sensorIndex).timeStamp_;
 	return true;

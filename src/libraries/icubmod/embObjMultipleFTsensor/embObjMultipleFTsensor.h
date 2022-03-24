@@ -12,12 +12,12 @@
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/sig/Vector.h>
 
+#include <map>
 #include <shared_mutex>
 #include <string>
-#include <map>
 
-#include "serviceParserMultipleFt.h"
 #include "embObjGeneralDevPrivData.h"
+#include "serviceParserMultipleFt.h"
 
 namespace yarp
 {
@@ -45,10 +45,7 @@ class TemperatureData
 	double timeStamp_;
 };
 
-class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver, 
-										  public eth::IethResource, 
-										  public yarp::dev::ITemperatureSensors, 
-										  public yarp::dev::ISixAxisForceTorqueSensors
+class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver, public eth::IethResource, public yarp::dev::ITemperatureSensors, public yarp::dev::ISixAxisForceTorqueSensors
 {
    public:
 	embObjMultipleFTsensor();
@@ -77,15 +74,14 @@ class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver,
 	virtual bool getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string& frameName) const override;
 	virtual bool getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
 
-   private:
+   protected:
 	yarp::dev::embObjDevPrivData device_;
 	mutable std::shared_mutex mutex_;
 	std::map<eOprotID32_t, FtData> ftData_;
 	std::map<eOprotID32_t, TemperatureData> temperature_;
 
-   private:
-	bool sendConfig2boards(ServiceParserMultipleFt& parser);
-	bool sendStart2boards(ServiceParserMultipleFt& parser);
+	bool sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
+	bool sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
 	bool initRegulars(ServiceParserMultipleFt& parser);
 	void cleanup(void);
 };

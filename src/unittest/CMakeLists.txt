@@ -35,6 +35,7 @@ target_sources(${PROJECT_NAME}
     PRIVATE
     gtest_main.cc
     testServiceParserForMultipleFT.cpp
+    testDeviceMultipleFTSensors.cpp
   )
 
 target_link_libraries(${PROJECT_NAME}
@@ -43,6 +44,7 @@ PRIVATE
   gtest 
   gmock
   ethResources
+  embObjMultipleFTsensorUT
   YARP::YARP_os
 )
 TARGET_LINK_LIBRARIES(ethResources)
