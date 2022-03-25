@@ -430,7 +430,7 @@ eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
 	eOmn_serv_config_data_as_ft_t out;
 	out.canmonitorconfig = canMonitor_;
 
-	EOarray *ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
+	EOarray *ar = eo_array_New(/*ftInfo_.size() TODO LUCA */eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
 
 	for (const auto &[key, value] : ftInfo_)
 	{

@@ -31,6 +31,7 @@ using namespace yarp::dev;
 
 embObjMultipleFTsensor::embObjMultipleFTsensor()
 {
+	yInfo() << "MultipleFTSensor has been created";
 	device_ = std::make_shared<yarp::dev::embObjDevPrivData>("embObjMultipleFTsensor");
 }
 
@@ -50,68 +51,59 @@ bool embObjMultipleFTsensor::initialised()
 
 bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 {
-	// 1) prepare eth service verifing if the eth manager is available and parsing info about the eth board.
-
 	yInfo() << "embObjMultipleFTsensor::open(): preparing ETH resource";
-
 	if (!device_->prerareEthService(config, this))
 		return false;
 
-	yInfo() << "embObjMultipleFTsensor::open(): browsing xml files which describe the service";
-
-	// 2) read stuff from config file
+	yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensor::open(): browsing xml files which describe the service";
 	ServiceParserMultipleFt parser;
 	if (!parser.parse(config))
 	{
-		yError() << "embObjMultipleFTsensor missing some configuration parameter. Check logs and your config file.";
+		yError() << device_->getBoardInfo() << "open() fails to parse xml... cannot continue ";
 		return false;
 	}
 
-	eOmn_serv_parameter_t ftData;
-	ftData.configuration.data.as.ft = parser.toEomn();
-
-	yInfo() << "embObjMultipleFTsensor::open(): verify the presence of the board and if its protocol version is correct";
-
-	// 4) verify analog sensor protocol and then verify-Activate the FT service
+	yInfo() << device_->getBoardInfo() << "embObjMultipleFTsensor::open(): verify the presence of the board and if its protocol version is correct";
 	if (!device_->res->verifyEPprotocol(eoprot_endpoint_analogsensors))
 	{
+		yError() << device_->getBoardInfo() << "open() fails to verifyEPprotocol... cannot continue ";
 		cleanup();
 		return false;
 	}
 
-	yInfo() << "embObjMultipleFTsensor::open(): verify and activate the FT service";
-
+	yInfo() << device_->getBoardInfo() << "embObjMultipleFTsensor::open(): verify and activate the FT service";
+	eOmn_serv_parameter_t ftData;
+	ftData.configuration.type = eomn_serv_AS_ft;
+	ftData.configuration.diagnosticsmode = eomn_serv_diagn_mode_NONE;
+	ftData.configuration.diagnosticsparam = 0;
+	ftData.configuration.data.as.ft = parser.toEomn();
 	if (!device_->res->serviceVerifyActivate(eomn_serv_category_ft, &ftData, 5.0))
 	{
-		yError() << device_->getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate() ";
+		yError() << device_->getBoardInfo() << "open() fails to serviceVerifyActivate... cannot continue ";
 		cleanup();
 		return false;
 	}
 
-	// printServiceConfig();
-
-	yInfo() << "embObjMultipleFTsensor::open(): configure the FT service";
-
+	yInfo() << device_->getBoardInfo() << "embObjMultipleFTsensor::open(): configure the FT service";
 	if (false == sendConfig2boards(parser, device_->res))
 	{
+		yError() << device_->getBoardInfo() << "open() fails to sendConfig2boards... cannot continue";
 		cleanup();
 		return false;
 	}
 
-	yInfo() << "embObjMultipleFTsensor::open(): impose the network variable which the ETH bord must stream up";
-
-	// Set variable to be signaled
+	yInfo() << device_->getBoardInfo() << "embObjMultipleFTsensor::open(): impose the network variable which the ETH bord must stream up";
 	if (false == initRegulars(parser, device_->res))
 	{
+		yError() << device_->getBoardInfo() << "open() fails to initRegulars... cannot continue";
 		cleanup();
 		return false;
 	}
 
-	yInfo() << "embObjMultipleFTsensor::open(): start the FT service";
-
+	yInfo() << device_->getBoardInfo() << "embObjMultipleFTsensor::open(): start the FT service";
 	if (!device_->res->serviceStart(eomn_serv_category_ft))
 	{
-		yError() << device_->getBoardInfo() << "open() fails to start as service.... cannot continue";
+		yError() << device_->getBoardInfo() << "open() fails to serviceStart... cannot continue";
 		cleanup();
 		return false;
 	}
@@ -123,12 +115,15 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 		}
 	}
 
-	yInfo() << "embObjMultipleFTsensor::open(): start streaming of FT data";
-
-	sendStart2boards(parser, device_->res);
+	yInfo() << device_->getBoardInfo() << "embObjMultipleFTsensor::open(): start streaming of FT data";
+	if (!sendStart2boards(parser, device_->res))
+	{
+		yError() << device_->getBoardInfo() << "open() fails to sendStart2boards... cannot continue";
+		cleanup();
+		return false;
+	}
 
 	device_->setOpen(true);
-
 	return true;
 }
 
@@ -260,7 +255,6 @@ bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* r
 		return false;
 	}
 
-	// todo luca check correct type in eOprotIndex_t
 	eOas_ft_timedvalue_t* data = (eOas_ft_timedvalue_t*)rxdata;
 
 	std::unique_lock<std::shared_mutex> lck(mutex_);
