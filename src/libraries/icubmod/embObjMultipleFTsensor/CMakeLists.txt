@@ -27,15 +27,15 @@ IF (NOT SKIP_embObjMultipleFTsensor)
         ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
         YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
-  # only for Unittest
-  add_library(embObjMultipleFTsensorUT STATIC embObjMultipleFTsensor.cpp embObjMultipleFTsensor.h)    
-  target_link_libraries(embObjMultipleFTsensorUT ethResources
-                                      YARP::YARP_dev
-                                      icub_firmware_shared::embobj
-                                      ACE::ACE)    
-  target_include_directories(embObjMultipleFTsensorUT PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-                            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${LIBRARY_TARGET_NAME}>")
-
+  if (UNITTEST_COMPILE)
+   add_library(embObjMultipleFTsensorUT STATIC embObjMultipleFTsensor.cpp embObjMultipleFTsensor.h)    
+   target_link_libraries(embObjMultipleFTsensorUT ethResources
+                                    YARP::YARP_dev
+                                    icub_firmware_shared::embobj
+                                    ACE::ACE)    
+   target_include_directories(embObjMultipleFTsensorUT PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+                        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${LIBRARY_TARGET_NAME}>")
+  endif()
 
 ENDIF (NOT SKIP_embObjMultipleFTsensor)
 
