@@ -233,19 +233,19 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle &service, bool &formate
 	}
 	formaterror = false;
 
-	Bottle settingsAcquisitionRate = Bottle(settings.findGroup("acquisitionRate"));
-	if (settingsAcquisitionRate.isNull())
+	Bottle settingsFtPeriod = Bottle(settings.findGroup("ftPeriod"));
+	if (settingsFtPeriod.isNull())
 	{
 		yError() << "ServiceParserMultipleFt::checkSettings() cannot find "
-					"SETTINGS.acquisitionRate";
+					"SETTINGS.ftPeriod";
 		return false;
 	}
 
-	Bottle settingsAcquisitionTempRate = Bottle(settings.findGroup("temperature-acquisitionRate"));
-	if (settingsAcquisitionTempRate.isNull())
+	Bottle settingsTemperaturePeriod = Bottle(settings.findGroup("temperaturePeriod"));
+	if (settingsTemperaturePeriod.isNull())
 	{
 		yError() << "ServiceParserMultipleFt::parseService() for embObjMultipleFTsensor "
-					"device cannot find SETTINGS.temperature-acquisitionRate";
+					"device cannot find SETTINGS.temperaturePeriod";
 		return false;
 	}
 
@@ -266,18 +266,18 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle &service, bool &formate
 	}
 
 	// Check size
-	if (settingsEnabledSensors.size() != settingsAcquisitionRate.size())
+	if (settingsEnabledSensors.size() != settingsFtPeriod.size())
 	{
-		yError() << "ServiceParserMultipleFt::checkSettings --> ft-acquisitionRate size";
+		yError() << "ServiceParserMultipleFt::checkSettings --> FtPeriod size";
 		return false;
 	}
-	if (settingsAcquisitionRate.size() != settingsAcquisitionTempRate.size())
+	if (settingsFtPeriod.size() != settingsTemperaturePeriod.size())
 	{
 		yError() << "ServiceParserMultipleFt::checkSettings --> "
-					"temperature-acquisitionRate size";
+					"temperaturePeriod size";
 		return false;
 	}
-	if (settingsAcquisitionTempRate.size() != settingsUseCalibration.size())
+	if (settingsTemperaturePeriod.size() != settingsUseCalibration.size())
 	{
 		yError() << "ServiceParserMultipleFt::checkSettings --> usecalibration size";
 		return false;
@@ -294,8 +294,8 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle &service, bool &formate
 	for (size_t index = 1 /*first is tagname*/; index < enabledSensorSize; index++)
 	{
 		std::string id = settingsEnabledSensors.get(index).asString();
-		uint8_t acquisitionRate = (uint8_t)settingsAcquisitionRate.get(index).asInt8();
-		uint8_t acquisitionTempRate = (uint8_t)settingsAcquisitionTempRate.get(index).asInt8();
+		uint8_t acquisitionRate = (uint8_t)settingsFtPeriod.get(index).asInt8();
+		uint8_t acquisitionTempRate = (uint8_t)settingsTemperaturePeriod.get(index).asInt8();
 		bool useCalibration = settingsUseCalibration.get(index).asBool();
 		eOas_ft_mode_t calib = eoas_ft_mode_calibrated;
 		if (!useCalibration)

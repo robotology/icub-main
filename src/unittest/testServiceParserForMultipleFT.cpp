@@ -24,7 +24,7 @@ using ::testing::Matcher;
 TEST(General, check_settings_positive_001)
 {
     yarp::os::Bottle bottle;
-    bottle.fromString("(SETTINGS (acquisitionRate 10) (enabledSensors fakeId) (temperature-acquisitionRate 100) (useCalibration true) )");
+    bottle.fromString("(SETTINGS (ftPeriod 10) (enabledSensors fakeId) (temperaturePeriod 100) (useCalibration true) )");
 
     ServiceParserMultipleFt_mock serviceParser;
     bool error{false};
@@ -42,7 +42,7 @@ TEST(General, check_settings_positive_001)
 TEST(General, check_settings_positive_002)
 {
     yarp::os::Bottle bottle;
-    bottle.fromString("(SETTINGS (acquisitionRate 10 20) (enabledSensors fakeId fakeId1) (temperature-acquisitionRate 100 200) (useCalibration true false) )");
+    bottle.fromString("(SETTINGS (ftPeriod 10 20) (enabledSensors fakeId fakeId1) (temperaturePeriod 100 200) (useCalibration true false) )");
 
     ServiceParserMultipleFt_mock serviceParser;
     bool error{false};
@@ -61,7 +61,7 @@ TEST(General, check_settings_positive_002)
 TEST(General, check_settings_negative_001)
 {
     yarp::os::Bottle bottle;
-    bottle.fromString("(SETTINGS (acquisitionRate 10 20 30 40 50) (enabledSensors fakeId0 fakeId1 fakeId2 fakeId13 fakeId4 ) (temperature-acquisitionRate 100 200 998 997 996) (useCalibration true false true true true) )");
+    bottle.fromString("(SETTINGS (ftPeriod 10 20 30 40 50) (enabledSensors fakeId0 fakeId1 fakeId2 fakeId13 fakeId4 ) (temperaturePeriod 100 200 998 997 996) (useCalibration true false true true true) )");
 
     ServiceParserMultipleFt_mock serviceParser;
     bool error{false};
@@ -74,7 +74,7 @@ TEST(General, check_settings_negative_001)
 TEST(General, check_settings_negative_002)
 {
     yarp::os::Bottle bottle;
-    bottle.fromString("(SETTINGS (acquisitionRate 10 20 30 40) (enabledSensors fakeId0 fakeId1 fakeId2 fakeId13 fakeId4 ) (temperature-acquisitionRate 100 200 998 997 996) (useCalibration true false true true true) )");
+    bottle.fromString("(SETTINGS (ftPeriod 10 20 30 40) (enabledSensors fakeId0 fakeId1 fakeId2 fakeId13 fakeId4 ) (temperaturePeriod 100 200 998 997 996) (useCalibration true false true true true) )");
 
     ServiceParserMultipleFt_mock serviceParser;
     bool error{false};
@@ -87,7 +87,7 @@ TEST(General, check_settings_negative_002)
 TEST(General, check_settings_negative_003)
 {
     yarp::os::Bottle bottle;
-    bottle.fromString("(SETTINGS (acquisitionRate 10 20 30 40 50) (enabledSensors fakeId0 fakeId1 fakeId2 fakeId13 fakeId4 ) (temperature-acquisitionRate 100 200 998 997) (useCalibration true false true true true) )");
+    bottle.fromString("(SETTINGS (ftPeriod 10 20 30 40 50) (enabledSensors fakeId0 fakeId1 fakeId2 fakeId13 fakeId4 ) (temperaturePeriod 100 200 998 997) (useCalibration true false true true true) )");
 
     ServiceParserMultipleFt_mock serviceParser;
     bool error{false};
@@ -100,7 +100,7 @@ TEST(General, check_settings_negative_003)
 TEST(General, check_settings_negative_004)
 {
     yarp::os::Bottle bottle;
-    bottle.fromString("(SETTINGS (acquisitionRate 10 20 30 40 50) (enabledSensors fakeId0 fakeId1 fakeId2 fakeId13 fakeId4 ) (temperature-acquisitionRate 100 200 998 997 996) (useCalibration true false true true ) )");
+    bottle.fromString("(SETTINGS (ftPeriod 10 20 30 40 50) (enabledSensors fakeId0 fakeId1 fakeId2 fakeId13 fakeId4 ) (temperaturePeriod 100 200 998 997 996) (useCalibration true false true true ) )");
 
     ServiceParserMultipleFt_mock serviceParser;
     bool error{false};
