@@ -343,11 +343,22 @@ TEST(General, check_checkCanMonitor_negative_003)
 
 TEST(General, toEomn_positive_001)
 {
+    FtInfo info = {10, 100, eoas_ft_mode_calibrated, "strain2", 1, 13, 4, 5, 1, 2, 3};
+
+    eOas_ft_sensordescriptor_t out = info.toEomn();
+
+    eOas_ft_sensordescriptor_t expected = {{eobrd_strain2, {1, 2, 3}, {4, 5}}, {0, 13, eobrd_caninsideindex_first}, 0};
+
+    EXPECT_EQ(expected, out);
+}
+
+TEST(General, toEomn_positive_002)
+{
     FtInfo info = {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 4, 5, 1, 2, 3};
 
     eOas_ft_sensordescriptor_t out = info.toEomn();
 
-    eOas_ft_sensordescriptor_t expected = {{eobrd_strain2, {1, 2, 3}, {4, 5}}, {2, 13, eobrd_caninsideindex_first}, 0};
+    eOas_ft_sensordescriptor_t expected = {{eobrd_strain2, {1, 2, 3}, {4, 5}}, {1, 13, eobrd_caninsideindex_first}, 0};
 
     EXPECT_EQ(expected, out);
 }
