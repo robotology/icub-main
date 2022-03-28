@@ -229,8 +229,6 @@ bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* r
 {
 	// todo luca timestamp what is used for?
 
-	// called by feat_manage_analogsensors_data() which is called by:
-
 	if (!device_->isOpen())
 		return false;
 
@@ -367,8 +365,11 @@ bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sensorIndex, dou
 	return true;
 }
 
-bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sensorIndex, yarp::sig::Vector& out, double& timestamp) const
 {
-	// TODO LUCA
+	double value{0};
+	getTemperatureSensorMeasure(sensorIndex, value, timestamp);
+	out.resize(1);
+	out[0] = value;
 	return true;
 }

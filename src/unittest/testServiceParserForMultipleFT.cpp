@@ -347,7 +347,7 @@ TEST(General, toEomn_positive_001)
 
     eOas_ft_sensordescriptor_t out = info.toEomn();
 
-    eOas_ft_sensordescriptor_t expected = {{eobrd_strain2, {1, 2, 3}, {4, 5}}, {0, 13, eobrd_caninsideindex_first}, 0};
+    eOas_ft_sensordescriptor_t expected = {{eobrd_strain2, {1, 2, 3}, {4, 5}}, {0, 13, eobrd_caninsideindex_none}, 0};
 
     EXPECT_EQ(expected, out);
 }
@@ -358,7 +358,7 @@ TEST(General, toEomn_positive_002)
 
     eOas_ft_sensordescriptor_t out = info.toEomn();
 
-    eOas_ft_sensordescriptor_t expected = {{eobrd_strain2, {1, 2, 3}, {4, 5}}, {1, 13, eobrd_caninsideindex_first}, 0};
+    eOas_ft_sensordescriptor_t expected = {{eobrd_strain2, {1, 2, 3}, {4, 5}}, {1, 13, eobrd_caninsideindex_none}, 0};
 
     EXPECT_EQ(expected, out);
 }

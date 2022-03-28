@@ -22,7 +22,7 @@ eOas_ft_sensordescriptor_t FtInfo::toEomn() const
 		else
 			out.canloc.port = eOcanport2;
 		out.canloc.addr = address;
-		out.canloc.insideindex = eobrd_caninsideindex_first;
+		out.canloc.insideindex = eobrd_caninsideindex_none;
 	}
 	catch (const std::exception& e)
 	{

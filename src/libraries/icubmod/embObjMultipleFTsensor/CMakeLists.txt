@@ -33,8 +33,7 @@ IF (NOT SKIP_embObjMultipleFTsensor)
                                     YARP::YARP_dev
                                     icub_firmware_shared::embobj
                                     ACE::ACE)    
-   target_include_directories(embObjMultipleFTsensorUT PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
-                        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${LIBRARY_TARGET_NAME}>")
+   target_include_directories(embObjMultipleFTsensorUT PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   endif()
 
 ENDIF (NOT SKIP_embObjMultipleFTsensor)
