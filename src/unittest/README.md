@@ -1,7 +1,7 @@
 # 1. Prerequisite
 
 - Compile as static library `ICUB_SHARED_LIBRARY              OFF`
-- Select UNITTEST flag  ` UNITTEST_COMPILE                 ON`
+- Select UNITTEST flag  ` BUILD_TESTING                 ON`
 
 # 2. Test execution
 

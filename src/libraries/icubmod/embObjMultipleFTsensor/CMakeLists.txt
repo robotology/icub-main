@@ -27,7 +27,7 @@ IF (NOT SKIP_embObjMultipleFTsensor)
         ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
         YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
-  if (UNITTEST_COMPILE)
+  if (BUILD_TESTING)
    add_library(embObjMultipleFTsensorUT STATIC embObjMultipleFTsensor.cpp embObjMultipleFTsensor.h)    
    target_link_libraries(embObjMultipleFTsensorUT ethResources
                                     YARP::YARP_dev

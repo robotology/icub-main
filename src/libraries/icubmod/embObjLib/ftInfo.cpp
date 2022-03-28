@@ -17,9 +17,12 @@ eOas_ft_sensordescriptor_t FtInfo::toEomn() const
 	out.boardinfo.type = eoboards_string2type2(board.c_str(), true);
 	try
 	{
-		out.canloc.port = port;
+		if (port == 1)
+			out.canloc.port = eOcanport1;
+		else
+			out.canloc.port = eOcanport2;
 		out.canloc.addr = address;
-        out.canloc.insideindex=eobrd_caninsideindex_first;
+		out.canloc.insideindex = eobrd_caninsideindex_first;
 	}
 	catch (const std::exception& e)
 	{
