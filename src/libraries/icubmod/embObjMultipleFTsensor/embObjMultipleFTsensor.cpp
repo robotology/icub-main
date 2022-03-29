@@ -138,7 +138,7 @@ bool embObjMultipleFTsensor::sendConfig2boards(ServiceParserMultipleFt& parser, 
 		cfg.ftperiod = data.ftAcquisitionRate;
 		cfg.temperatureperiod = data.temperatureAcquisitionRate;
 		cfg.mode = data.useCalibration;
-		cfg.calibrationset = 0;	 // TODO LUCA calibration add to xml
+		cfg.calibrationset = 0;
 		id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, index, eoprot_tag_as_ft_config);
 
 		if (false == deviceRes->setcheckRemoteValue(id32, &cfg, 10, 0.010, 0.050))
@@ -152,6 +152,9 @@ bool embObjMultipleFTsensor::sendConfig2boards(ServiceParserMultipleFt& parser, 
 			yDebug() << device_->getBoardInfo() << ": sendConfig2boards() correctly configured boards with datarate=" << cfg.ftperiod;
 		}
 		++index;
+
+		eOprotIndex_t eoprotIndex = eoprot_ID2index(id32);
+		ftSensorsData_[eoprotIndex] = {{0, 0, 0, 0, 0, 0}, 0, id};
 	}
 	return true;
 }
@@ -259,9 +262,9 @@ bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* r
 
 	for (int index = 0; index < eoas_ft_6axis; ++index)
 	{
-		ftData_[eoprotIndex].data_[index] = data->values[index];
+		ftSensorsData_[eoprotIndex].data_[index] = data->values[index];
 	}
-	ftData_[eoprotIndex].timeStamp_ = data->age;
+	ftSensorsData_[eoprotIndex].timeStamp_ = data->age;
 
 	temperature_[eoprotIndex].data_ = data->temperature;
 	temperature_[eoprotIndex].timeStamp_ = data->age;
@@ -286,42 +289,42 @@ bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sensorInd
 
 	std::shared_lock<std::shared_mutex> lck(mutex_);
 
-	if (ftData_.find(sensorIndex) == ftData_.end())
+	if (ftSensorsData_.find(sensorIndex) == ftSensorsData_.end())
 	{
 		yError() << device_->getBoardInfo() << "getSixAxisForceTorqueSensorMeasure() fails data for index:" << sensorIndex << " not found";
 		return false;
 	}
 
-	FtData sensorData = ftData_.at(sensorIndex);
+	FtData sensorData = ftSensorsData_.at(sensorIndex);
 
 	out.resize(ftChannels_);
 	for (size_t k = 0; k < ftChannels_; k++)
 	{
 		out[k] = sensorData.data_[k] /*+ offset_[k]*/;	// TODO LUCA manage offset
 	}
-	timestamp = ftData_.at(sensorIndex).timeStamp_;
+	timestamp = ftSensorsData_.at(sensorIndex).timeStamp_;
 	return true;
 }
 
 size_t embObjMultipleFTsensor::getNrOfSixAxisForceTorqueSensors() const
 {
-	return ftData_.size();
+	return ftSensorsData_.size();
 }
 
-yarp::dev::MAS_status embObjMultipleFTsensor::getSixAxisForceTorqueSensorStatus(size_t sens_index) const
+yarp::dev::MAS_status embObjMultipleFTsensor::getSixAxisForceTorqueSensorStatus(size_t sensorindex) const
 {
 	return yarp::dev::MAS_OK;
 }
 
-bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorName(size_t sens_index, std::string& name) const
+bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorName(size_t sensorindex, std::string& name) const
 {
-	name = "";	// TODO LUCA
+	name = ftSensorsData_.at(sensorindex).sensorName_;
 	return true;
 }
 
-bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string& frameName) const
+bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sensorindex, std::string& frameName) const
 {
-	frameName = "";	 // TODO LUCA
+	frameName = "";	 // Unused
 	return true;
 }
 
@@ -330,20 +333,20 @@ size_t embObjMultipleFTsensor::getNrOfTemperatureSensors() const
 	return temperature_.size();
 }
 
-yarp::dev::MAS_status embObjMultipleFTsensor::getTemperatureSensorStatus(size_t sens_index) const
+yarp::dev::MAS_status embObjMultipleFTsensor::getTemperatureSensorStatus(size_t sensorindex) const
 {
 	return yarp::dev::MAS_OK;
 }
 
-bool embObjMultipleFTsensor::getTemperatureSensorName(size_t sens_index, std::string& name) const
+bool embObjMultipleFTsensor::getTemperatureSensorName(size_t sensorindex, std::string& name) const
 {
-	name = "";	// TODO LUCA
+	name = ftSensorsData_.at(sensorindex).sensorName_;
 	return true;
 }
 
-bool embObjMultipleFTsensor::getTemperatureSensorFrameName(size_t sens_index, std::string& frameName) const
+bool embObjMultipleFTsensor::getTemperatureSensorFrameName(size_t sensorindex, std::string& frameName) const
 {
-	frameName = "";	 // TODO LUCA
+	frameName = "";	 // Unused
 	return true;
 }
 

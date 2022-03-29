@@ -33,6 +33,7 @@ class FtData
    public:
 	yarp::sig::Vector data_{0,0,0,0,0,0};
 	double timeStamp_;
+	std::string sensorName_;
 };
 
 class TemperatureData
@@ -59,23 +60,23 @@ class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver, public
 
 	// ITemperatureSensors
 	virtual size_t getNrOfTemperatureSensors() const override;
-	virtual yarp::dev::MAS_status getTemperatureSensorStatus(size_t sens_index) const override;
-	virtual bool getTemperatureSensorName(size_t sens_index, std::string& name) const override;
-	virtual bool getTemperatureSensorFrameName(size_t sens_index, std::string& frameName) const override;
-	virtual bool getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const override;
-	virtual bool getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+	virtual yarp::dev::MAS_status getTemperatureSensorStatus(size_t sensorindex) const override;
+	virtual bool getTemperatureSensorName(size_t sensorindex, std::string& name) const override;
+	virtual bool getTemperatureSensorFrameName(size_t sensorindex, std::string& frameName) const override;
+	virtual bool getTemperatureSensorMeasure(size_t sensorindex, double& out, double& timestamp) const override;
+	virtual bool getTemperatureSensorMeasure(size_t sensorindex, yarp::sig::Vector& out, double& timestamp) const override;
 
 	// ISixAxisForceTorqueSensors
 	virtual size_t getNrOfSixAxisForceTorqueSensors() const override;
-	virtual yarp::dev::MAS_status getSixAxisForceTorqueSensorStatus(size_t sens_index) const override;
-	virtual bool getSixAxisForceTorqueSensorName(size_t sens_index, std::string& name) const override;
-	virtual bool getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string& frameName) const override;
-	virtual bool getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+	virtual yarp::dev::MAS_status getSixAxisForceTorqueSensorStatus(size_t sensorindex) const override;
+	virtual bool getSixAxisForceTorqueSensorName(size_t sensorindex, std::string& name) const override;
+	virtual bool getSixAxisForceTorqueSensorFrameName(size_t sensorindex, std::string& frameName) const override;
+	virtual bool getSixAxisForceTorqueSensorMeasure(size_t sensorindex, yarp::sig::Vector& out, double& timestamp) const override;
 
    protected:
 	std::shared_ptr<yarp::dev::embObjDevPrivData> device_;
 	mutable std::shared_mutex mutex_;
-	std::map<eOprotID32_t, FtData> ftData_;
+	std::map<eOprotID32_t, FtData> ftSensorsData_;
 	std::map<eOprotID32_t, TemperatureData> temperature_;
 
 	bool sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);

@@ -34,7 +34,7 @@ using namespace yarp::dev;
 class embObjMultipleFTsensor_Mock : public yarp::dev::embObjMultipleFTsensor
 {
    public:
-	using yarp::dev::embObjMultipleFTsensor::ftData_;
+	using yarp::dev::embObjMultipleFTsensor::ftSensorsData_;
 	using yarp::dev::embObjMultipleFTsensor::initRegulars;
 	using yarp::dev::embObjMultipleFTsensor::sendConfig2boards;
 	using yarp::dev::embObjMultipleFTsensor::sendStart2boards;
@@ -185,7 +185,7 @@ TEST(MultiplembObjMultipleFTsensor, update_simple_positive_001)
 	// Test
 	bool ret = device.update(id32First, 1, (void *)&data);
 	EXPECT_TRUE(ret);
-	EXPECT_EQ(expected, device.ftData_[0].data_);
+	EXPECT_EQ(expected, device.ftSensorsData_[0].data_);
 	EXPECT_EQ(3, device.temperature_[0].data_);
 }
 
@@ -204,8 +204,8 @@ TEST(MultiplembObjMultipleFTsensor, update_simple_positive_002)
 	// Test
 	bool ret = device.update(id32First, 1, (void *)&data);
 	EXPECT_TRUE(ret);
-	EXPECT_EQ(expectedEmpty, device.ftData_[0].data_);
-	EXPECT_EQ(expected, device.ftData_[1].data_);
+	EXPECT_EQ(expectedEmpty, device.ftSensorsData_[0].data_);
+	EXPECT_EQ(expected, device.ftSensorsData_[1].data_);
 	EXPECT_EQ(0, device.temperature_[0].data_);
 	EXPECT_EQ(3, device.temperature_[1].data_);
 }
@@ -267,7 +267,7 @@ TEST(MultiplembObjMultipleFTsensor, getNrOfSixAxisForceTorqueSensors_positive_00
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjMultipleFTsensor_Mock device(privateData);
 
-	device.ftData_ = {{{0}, {{1, 2, 3, 4, 5, 6}, 99.49}}};
+	device.ftSensorsData_ = {{{0}, {{1, 2, 3, 4, 5, 6}, 99.49}}};
 
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
 
@@ -287,7 +287,7 @@ TEST(MultiplembObjMultipleFTsensor, getNrOfSixAxisForceTorqueSensors_double_posi
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjMultipleFTsensor_Mock device(privateData);
 
-	device.ftData_ = {{{0}, {{1, 2, 3, 4, 5, 6}, 99.49}},{{1}, {{10, 20, 30, 40, 50, 60}, 99.49}}};
+	device.ftSensorsData_ = {{{0}, {{1, 2, 3, 4, 5, 6}, 99.49}},{{1}, {{10, 20, 30, 40, 50, 60}, 99.49}}};
 
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
 
