@@ -82,17 +82,7 @@ All sensors are logged on the same port.
 
 ```
 
-## 3.2. Raw ADC data or FT data
-
-To log raw data directly from ADC output use the param with the name `useCalibration`
-
-```xml
-<param name="useCalibration">       true        false       true            </param>           
-```
-if `false` raw data are logged from the correspondent sensor.
-
-
-## 3.3. Output format
+## 3.2. Output format
 
 Output example for one sensor:  
 ```
