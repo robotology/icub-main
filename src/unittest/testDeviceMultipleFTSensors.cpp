@@ -38,7 +38,7 @@ class embObjMultipleFTsensor_Mock : public yarp::dev::embObjMultipleFTsensor
 	using yarp::dev::embObjMultipleFTsensor::initRegulars;
 	using yarp::dev::embObjMultipleFTsensor::sendConfig2boards;
 	using yarp::dev::embObjMultipleFTsensor::sendStart2boards;
-	using yarp::dev::embObjMultipleFTsensor::temperature_;
+	using yarp::dev::embObjMultipleFTsensor::temperaturesensordata_;
 	using yarp::dev::embObjMultipleFTsensor::embObjMultipleFTsensor::getSixAxisForceTorqueSensorMeasure;
 	using yarp::dev::embObjMultipleFTsensor::embObjMultipleFTsensor::update;
 
@@ -186,7 +186,7 @@ TEST(MultiplembObjMultipleFTsensor, update_simple_positive_001)
 	bool ret = device.update(id32First, 1, (void *)&data);
 	EXPECT_TRUE(ret);
 	EXPECT_EQ(expected, device.ftSensorsData_[0].data_);
-	EXPECT_EQ(3, device.temperature_[0].data_);
+	EXPECT_EQ(3, device.temperaturesensordata_[0].data_);
 }
 
 TEST(MultiplembObjMultipleFTsensor, update_simple_positive_002)
@@ -206,8 +206,8 @@ TEST(MultiplembObjMultipleFTsensor, update_simple_positive_002)
 	EXPECT_TRUE(ret);
 	EXPECT_EQ(expectedEmpty, device.ftSensorsData_[0].data_);
 	EXPECT_EQ(expected, device.ftSensorsData_[1].data_);
-	EXPECT_EQ(0, device.temperature_[0].data_);
-	EXPECT_EQ(3, device.temperature_[1].data_);
+	EXPECT_EQ(0, device.temperaturesensordata_[0].data_);
+	EXPECT_EQ(3, device.temperaturesensordata_[1].data_);
 }
 
 TEST(MultiplembObjMultipleFTsensor, update_negative_001)
@@ -307,7 +307,7 @@ TEST(MultiplembObjMultipleFTsensor, getNrOfSgetTemperatureSensorMeasure_positive
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjMultipleFTsensor_Mock device(privateData);
 
-	device.temperature_ = {{{0}, {34, 99.49}}};
+	device.temperaturesensordata_ = {{{0}, {34, 99.49}}};
 
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
 

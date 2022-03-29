@@ -218,7 +218,23 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle &property, bool 
 		currentFt.board = board;
 	}
 
-	// TODO check missing SENSORS for SETTINGS
+	// Check missing SENSORS but enabled in SETTINGS
+	for(const auto& [id,data]:ftInfo_)
+	{
+		bool found=false;
+		for(int index=0;index<propertySensorsId.size();++index)
+		{
+			if(id==propertySensorsId.get(index).asString())
+			{
+				found=true;
+			}
+		}
+		if(!found)
+		{
+			yError() << "ServiceParser::checkPropertySensors() try to enable not existing sensor:"<<id;
+			return false;
+		}
+	}
 
 	return true;
 }
@@ -283,7 +299,7 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle &service, bool &formate
 		return false;
 	}
 
-	// TODO Luca check acquisition rate
+	// TODO acquisitionRate and acquisitionTempRate validate value
 	size_t enabledSensorSize = settingsEnabledSensors.size();
 	if (enabledSensorSize > 4)
 	{
@@ -360,7 +376,7 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle &service, bool &forma
 		return false;
 	}
 
-	// TODO luca check validita valori
+	// TODO checkPeriod and periodicreportrate validate value
 	int checkPeriod = canMonitor.find("checkPeriod").asInt32();
 	if (checkPeriod > 254)
 	{

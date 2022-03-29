@@ -25,13 +25,12 @@ namespace yarp::dev
 class embObjMultipleFTsensor;
 }
 
-
 static constexpr int ftChannels_{6};
 
 class FtData
 {
    public:
-	yarp::sig::Vector data_{0,0,0,0,0,0};
+	yarp::sig::Vector data_{0, 0, 0, 0, 0, 0};
 	double timeStamp_;
 	std::string sensorName_;
 };
@@ -47,7 +46,7 @@ class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver, public
 {
    public:
 	embObjMultipleFTsensor();
-	embObjMultipleFTsensor(std::shared_ptr<yarp::dev::embObjDevPrivData> device);
+	embObjMultipleFTsensor(std::shared_ptr<yarp::dev::embObjDevPrivData> device);//For Unittesting only
 	~embObjMultipleFTsensor();
 
 	bool open(yarp::os::Searchable& config);
@@ -77,7 +76,7 @@ class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver, public
 	std::shared_ptr<yarp::dev::embObjDevPrivData> device_;
 	mutable std::shared_mutex mutex_;
 	std::map<eOprotID32_t, FtData> ftSensorsData_;
-	std::map<eOprotID32_t, TemperatureData> temperature_;
+	std::map<eOprotID32_t, TemperatureData> temperaturesensordata_;
 
 	bool sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
 	bool sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
