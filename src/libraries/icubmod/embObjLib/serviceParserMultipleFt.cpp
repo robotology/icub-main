@@ -200,7 +200,7 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle &property, bool 
 		{
 			currentFt.port = std::stoi(location.substr(3, 1));
 		}
-		catch (const std::exception &e)
+		catch (const std::exception &)
 		{
 			yError() << "ServiceParser::checkPropertySensors() invalid can port";
 			return false;
@@ -209,7 +209,7 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle &property, bool 
 		{
 			currentFt.address = std::stoi(location.substr(5, location.size() - 5));
 		}
-		catch (const std::exception &e)
+		catch (const std::exception &)
 		{
 			yError() << "ServiceParser::checkPropertySensors() invalid can address";
 			return false;
@@ -299,7 +299,6 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle &service, bool &formate
 		return false;
 	}
 
-	// TODO acquisitionRate and acquisitionTempRate validate value
 	size_t enabledSensorSize = settingsEnabledSensors.size();
 	if (enabledSensorSize > 4)
 	{
@@ -376,7 +375,6 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle &service, bool &forma
 		return false;
 	}
 
-	// TODO checkPeriod and periodicreportrate validate value
 	int checkPeriod = canMonitor.find("checkPeriod").asInt32();
 	if (checkPeriod > 254)
 	{
@@ -400,7 +398,7 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle &service, bool &forma
 		return false;
 	}
 
-	canMonitor_ = {((int8_t)checkPeriod), reportmodeEobrd, ((int16_t)periodicreportrate)};
+	canMonitor_ = {(uint8_t)checkPeriod, reportmodeEobrd,(uint16_t)periodicreportrate};
 
 	return true;
 }

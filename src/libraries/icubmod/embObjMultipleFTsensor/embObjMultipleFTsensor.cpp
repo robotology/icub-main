@@ -147,6 +147,7 @@ bool embObjMultipleFTsensor::sendConfig2boards(ServiceParserMultipleFt& parser, 
 			return false;
 		}
 
+		
 		if (device_->isVerbose())
 		{
 			yDebug() << device_->getBoardInfo() << " sendConfig2boards() correctly configured boards with ftPeriod=" << cfg.ftperiod;
