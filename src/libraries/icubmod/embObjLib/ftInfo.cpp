@@ -11,28 +11,35 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
-eOas_ft_sensordescriptor_t FtInfo::toEomn() const
+bool FtInfo::toEomn(eOas_ft_sensordescriptor_t& out) const
 {
-	eOas_ft_sensordescriptor_t out;
 	out.boardinfo.type = eoboards_string2type2(board.c_str(), true);
+	out.canloc.addr = address;
+	out.canloc.insideindex = eobrd_caninsideindex_none;
+	out.boardinfo.firmware = {majorFirmware, minorFirmware, buildFirmware};
+	out.boardinfo.protocol = {majorProtocol, minorProtocol};
+
 	try
 	{
 		if (port == 1)
 			out.canloc.port = eOcanport1;
-		else
+		else if (port == 2)
 			out.canloc.port = eOcanport2;
-		out.canloc.addr = address;
-		out.canloc.insideindex = eobrd_caninsideindex_none;
+		else
+		{
+			yError() << "FtInfo::toEomn() invalid can port";
+			out = eOas_ft_sensordescriptor_t();
+			return false;
+		}
 	}
 	catch (const std::exception& e)
 	{
-		yError() << "ServiceParser::check() invalid can port";
-		return eOas_ft_sensordescriptor_t();
+		yError() << "FtInfo::toEomn() invalid can port";
+		out = eOas_ft_sensordescriptor_t();
+		return false;
 	}
 
-	out.boardinfo.firmware = {majorFirmware, minorFirmware, buildFirmware};
-	out.boardinfo.protocol = {majorProtocol, minorProtocol};
-	return out;
+	return true;
 }
 
 bool operator==(const FtInfo& right, const FtInfo& left)

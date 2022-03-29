@@ -1405,7 +1405,8 @@ bool ServiceParser::parseService(Searchable &config, servConfigMultipleFTsensor_
 {
     ServiceParserMultipleFt parserMFt;
     parserMFt.parse(config);
-    multipleFt_data=parserMFt.toEomn();
+    if(!parserMFt.toEomn(multipleFt_data))
+        return false;
 
     return true;
 

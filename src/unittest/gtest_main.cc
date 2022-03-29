@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 {
 	::testing::InitGoogleTest(&argc, argv);
 
-	//::testing::GTEST_FLAG(filter) = "General.toEomn_positive_001";
+	//::testing::GTEST_FLAG(filter) = "General.check_settings_positive_002";
 
 	return RUN_ALL_TESTS();
 

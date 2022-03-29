@@ -76,7 +76,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
 	ftData.configuration.type = eomn_serv_AS_ft;
 	ftData.configuration.diagnosticsmode = eomn_serv_diagn_mode_NONE;
 	ftData.configuration.diagnosticsparam = 0;
-	ftData.configuration.data.as.ft = parser.toEomn();
+	parser.toEomn(ftData.configuration.data.as.ft);
 	if (!device_->res->serviceVerifyActivate(eomn_serv_category_ft, &ftData, 5.0))
 	{
 		yError() << device_->getBoardInfo() << "open() fails to serviceVerifyActivate... cannot continue ";

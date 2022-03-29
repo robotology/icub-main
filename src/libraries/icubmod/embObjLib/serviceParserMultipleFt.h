@@ -34,7 +34,7 @@ class ServiceParserMultipleFt
    public:
 	ServiceParserMultipleFt();
 	bool parse(const yarp::os::Searchable& config);
-	eOmn_serv_config_data_as_ft_t toEomn() const;
+	bool toEomn(eOmn_serv_config_data_as_ft_t& out) const;
 	std::map<std::string, FtInfo>& getFtInfo();
 
    protected:

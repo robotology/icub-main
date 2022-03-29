@@ -20,16 +20,13 @@
 #include "embObjGeneralDevPrivData.h"
 #include "serviceParserMultipleFt.h"
 
-namespace yarp
-{
-namespace dev
+namespace yarp::dev
 {
 class embObjMultipleFTsensor;
 }
-}  // namespace yarp
+
 
 static constexpr int ftChannels_{6};
-static constexpr int ftMaxNumber_{4};
 
 class FtData
 {
@@ -41,7 +38,7 @@ class FtData
 class TemperatureData
 {
    public:
-	double data_;
+	eOmeas_temperature_t data_;
 	double timeStamp_;
 };
 

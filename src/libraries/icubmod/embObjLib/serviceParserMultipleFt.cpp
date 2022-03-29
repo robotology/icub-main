@@ -360,15 +360,15 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle &service, bool &forma
 		return false;
 	}
 
-	// TODO check validita valori
-	int checkPeriod = canMonitor.find("checkPeriod").asInt();
+	// TODO luca check validita valori
+	int checkPeriod = canMonitor.find("checkPeriod").asInt32();
 	if (checkPeriod > 254)
 	{
 		yError() << "ServiceParserMultipleFt::check() wrong canMonitor.checkPeriod "
 					"too big";
 		return false;
 	}
-	int periodicreportrate = canMonitor.find("ratePeriod").asInt();
+	int periodicreportrate = canMonitor.find("ratePeriod").asInt32();
 	if (periodicreportrate > 65535)
 	{
 		yError() << "ServiceParserMultipleFt::check() wrong canMonitor.ratePeriod "
@@ -425,19 +425,23 @@ bool ServiceParserMultipleFt::parse(const yarp::os::Searchable &config)
 	return true;
 }
 
-eOmn_serv_config_data_as_ft_t ServiceParserMultipleFt::toEomn() const
+bool ServiceParserMultipleFt::toEomn(eOmn_serv_config_data_as_ft_t& out) const
 {
-	eOmn_serv_config_data_as_ft_t out;
 	out.canmonitorconfig = canMonitor_;
 
-	EOarray *ar = eo_array_New(/*ftInfo_.size() TODO LUCA */eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
+	EOarray *ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
 
 	for (const auto &[key, value] : ftInfo_)
 	{
-		eOas_ft_sensordescriptor_t item = value.toEomn();
+		eOas_ft_sensordescriptor_t item;
+		if (!value.toEomn(item))
+		{
+			yError() << "ServiceParserMultipleFt::toEomn() wrong data for sensor";
+			return false;
+		}
 		eo_array_PushBack(ar, &item);
 	}
-	return out;
+	return true;
 }
 
 std::map<std::string, FtInfo> &ServiceParserMultipleFt::getFtInfo()
