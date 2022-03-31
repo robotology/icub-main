@@ -11,4 +11,5 @@ The test will be executed after the compilation automatically.
 # 3. Test topics
 
 - XML parser for multiple ft sensor
+- Multiple FT sensors device methods
 

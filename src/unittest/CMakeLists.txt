@@ -21,13 +21,7 @@ include(GoogleTest)
 
 project(unittest LANGUAGES CXX)
 
-enable_testing()
-
 add_executable(${PROJECT_NAME})
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-set(CMAKE_INSTALL_RPATH ./)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 

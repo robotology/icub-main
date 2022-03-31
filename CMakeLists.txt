@@ -20,6 +20,8 @@ set(YARP_REQUIRED_VERSION 3.6.0)
 find_package(YCM ${YCM_REQUIRED_VERSION} REQUIRED)
 find_package(YARP ${YARP_REQUIRED_VERSION} REQUIRED)
 
+enable_testing()
+
 if(YARP_math_FOUND)
   set(ICUB_HAS_YARP TRUE CACHE BOOL "" FORCE)
   message(STATUS "found libYARP_math")

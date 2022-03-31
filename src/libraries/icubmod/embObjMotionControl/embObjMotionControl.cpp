@@ -410,7 +410,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     event_downsampler->config.info = getBoardInfo();
     event_downsampler->start();
 
-    if(false == res->serviceVerifyActivate(eomn_serv_category_mc, servparam))//LUCA <<--------
+    if(false == res->serviceVerifyActivate(eomn_serv_category_mc, servparam))
     {
         yError() << "embObjMotionControl::open() has an error in call of ethResources::serviceVerifyActivate() for" << getBoardInfo();
         cleanup();

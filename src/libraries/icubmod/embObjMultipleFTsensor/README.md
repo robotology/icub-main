@@ -1,5 +1,13 @@
 # 1. General info
-The device's purpose is to make it possible to connect up to 4 FT sensors to a single EMS board.
+The device's purpose is to make it possible to connect up to `4 FT` sensors to a single EMS board.
+
+## 1.1. Prereqisite
+The following modules should be included in the compilation process:
+
+```cmake
+ENABLE_icubmod_canBusAnalogSen   ON
+ENABLE_icubmod_embObjMultipleF   ON
+```
 
 # 2. XML configuration file
 
