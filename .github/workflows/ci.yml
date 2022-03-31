@@ -151,12 +151,6 @@ jobs:
               -DBUILD_TESTING:BOOL=ON \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
     
-    - name: Execute unit test
-      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
-      run: |
-        cd build
-        cmake --build . --config ${{ matrix.build_type }} --target test
-
     - name: Enable python bindings on Ubuntu
       if: matrix.os == 'ubuntu-latest'
       run: |
@@ -172,6 +166,14 @@ jobs:
         # See https://github.com/robotology/idyntree/issues/569 for more details
         export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin:${VCPKG_INSTALLATION_ROOT}/installed/x64-windows/bin
         cmake --build . --config ${{ matrix.build_type }}
+
+    - name: Test
+      shell: bash
+      run: |
+        cd build
+        cmake -DBUILD_TESTING:BOOL=ON .
+        cmake --build . --config ${{ matrix.build_type }}
+        ctest --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Install
       shell: bash
