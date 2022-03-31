@@ -68,6 +68,26 @@ This device should be used with an XML like the following:
 
 ```
 
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
+
+
+<device xmlns:xi="http://www.w3.org/2001/XInclude" name="testFT_wrapper" type="multipleanalogsensorsserver">
+    <param name="period">      10                           </param>
+    <param name="name">       /testFT/ADCs      </param>
+
+    <action phase="startup" level="5" type="attach">
+        <paramlist name="networks">
+            <!-- The param value must match the device name in the corresponding body_part-ebX-jA_B-strain.xml file -->
+            <elem name="FirstStrain"> eb1-j0-strain2-multi </elem>
+        </paramlist>
+    </action>
+
+    <action phase="shutdown" level="5" type="detach" />
+</device>
+```
+
 ## 2.1. Raw ADC data or FT data
 To log raw data directly from ADC output use the param with the name `useCalibration`
 
