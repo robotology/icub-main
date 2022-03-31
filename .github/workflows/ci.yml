@@ -126,7 +126,7 @@ jobs:
               -DENABLE_icubmod_canBusVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_embObjFTsensor:BOOL=ON \
               -DENABLE_icubmod_embObjIMU:BOOL=ON -DENABLE_icubmod_embObjInertials:BOOL=ON \
               -DENABLE_icubmod_embObjMais:BOOL=ON -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
-              -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON -DENABLE_icubmod_embObjMultipleFTsensor:BOOL=ON\
+              -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON -DENABLE_icubmod_embObjMultipleFTsensor:BOOL=ON \
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DBUILD_TESTING:BOOL=ON \              
               -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -146,7 +146,7 @@ jobs:
               -DENABLE_icubmod_canBusVirtualAnalogSensor:BOOL=ON -DENABLE_icubmod_embObjFTsensor:BOOL=ON \
               -DENABLE_icubmod_embObjIMU:BOOL=ON -DENABLE_icubmod_embObjInertials:BOOL=ON \
               -DENABLE_icubmod_embObjMais:BOOL=ON -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
-              -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON -DENABLE_icubmod_embObjMultipleFTsensor:BOOL=ON\
+              -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON -DENABLE_icubmod_embObjMultipleFTsensor:BOOL=ON \
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DBUILD_TESTING:BOOL=ON \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -171,7 +171,6 @@ jobs:
       shell: bash
       run: |
         cd build
-        cmake -DBUILD_TESTING:BOOL=ON .
         cmake --build . --config ${{ matrix.build_type }}
         ctest --output-on-failure -C ${{ matrix.build_type }} .
 

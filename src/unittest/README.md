@@ -5,8 +5,12 @@
 
 # 2. Test execution
 
-The test will be executed after the compilation automatically.  
-`WARNING` - If the tests fail, the build process/install may not be completed.
+The test will be executed with the following:
+
+```bash
+cd build
+make test
+```
 
 # 3. Test topics
 
