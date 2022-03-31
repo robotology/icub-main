@@ -398,7 +398,7 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle &service)
         return false;
     }
     std::string reportmode = canMonitor.find("reportMode").asString();
-    eObrd_canmonitor_reportmode_t reportmodeEobrd = eoboards_string2reportmode(reportmode.c_str(), true);
+    eObrd_canmonitor_reportmode_t reportmodeEobrd = (eObrd_canmonitor_reportmode_t)eoboards_string2reportmode(reportmode.c_str(), 1);
 
     if (reportmodeEobrd == eobrd_canmonitor_reportmode_unknown)
     {

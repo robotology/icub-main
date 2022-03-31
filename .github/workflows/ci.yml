@@ -128,6 +128,7 @@ jobs:
               -DENABLE_icubmod_embObjMais:BOOL=ON -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
               -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON \
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
+              -DBUILD_TESTING:BOOL=ON \              
               -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
     - name: Configure [Ubuntu/macOS]
@@ -147,6 +148,7 @@ jobs:
               -DENABLE_icubmod_embObjMais:BOOL=ON -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
               -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON \
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
+              -DBUILD_TESTING:BOOL=ON \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
     - name: Enable python bindings on Ubuntu
       if: matrix.os == 'ubuntu-latest'
