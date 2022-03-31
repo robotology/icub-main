@@ -13,63 +13,63 @@
 
 bool FtInfo::toEomn(eOas_ft_sensordescriptor_t& out) const
 {
-	out.boardinfo.type = eoboards_string2type2(board.c_str(), true);
-	out.canloc.addr = address;
-	out.canloc.insideindex = eobrd_caninsideindex_none;
-	out.boardinfo.firmware = {majorFirmware, minorFirmware, buildFirmware};
-	out.boardinfo.protocol = {majorProtocol, minorProtocol};
+    out.boardinfo.type = eoboards_string2type2(board.c_str(), true);
+    out.canloc.addr = address;
+    out.canloc.insideindex = eobrd_caninsideindex_none;
+    out.boardinfo.firmware = {(uint8_t)majorFirmware, (uint8_t)minorFirmware, (uint8_t)buildFirmware};
+    out.boardinfo.protocol = {(uint8_t)majorProtocol, (uint8_t)minorProtocol};
 
-	try
-	{
-		if (port == 1)
-			out.canloc.port = eOcanport1;
-		else if (port == 2)
-			out.canloc.port = eOcanport2;
-		else
-		{
-			yError() << "FtInfo::toEomn() invalid can port";
-			out = eOas_ft_sensordescriptor_t();
-			return false;
-		}
-	}
-	catch (const std::exception& e)
-	{
-		yError() << "FtInfo::toEomn() invalid can port";
-		out = eOas_ft_sensordescriptor_t();
-		return false;
-	}
+    try
+    {
+        if (port == 1)
+            out.canloc.port = eOcanport1;
+        else if (port == 2)
+            out.canloc.port = eOcanport2;
+        else
+        {
+            yError() << "FtInfo::toEomn() invalid can port";
+            out = eOas_ft_sensordescriptor_t();
+            return false;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        yError() << "FtInfo::toEomn() invalid can port";
+        out = eOas_ft_sensordescriptor_t();
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 bool operator==(const FtInfo& right, const FtInfo& left)
 {
-	if (right.ftAcquisitionRate != left.ftAcquisitionRate)
-		return false;
-	if (right.temperatureAcquisitionRate != left.temperatureAcquisitionRate)
-		return false;
-	if (right.useCalibration != left.useCalibration)
-		return false;
-	if (right.board != left.board)
-		return false;
-	if (right.port != left.port)
-		return false;
-	if (right.address != left.address)
-		return false;
-	if (right.majorProtocol != left.majorProtocol)
-		return false;
-	if (right.minorProtocol != left.minorProtocol)
-		return false;
-	if (right.majorFirmware != left.majorFirmware)
-		return false;
-	if (right.minorFirmware != left.minorFirmware)
-		return false;
-	if (right.buildFirmware != left.buildFirmware)
-		return false;
-	return true;
+    if (right.ftAcquisitionRate != left.ftAcquisitionRate)
+        return false;
+    if (right.temperatureAcquisitionRate != left.temperatureAcquisitionRate)
+        return false;
+    if (right.useCalibration != left.useCalibration)
+        return false;
+    if (right.board != left.board)
+        return false;
+    if (right.port != left.port)
+        return false;
+    if (right.address != left.address)
+        return false;
+    if (right.majorProtocol != left.majorProtocol)
+        return false;
+    if (right.minorProtocol != left.minorProtocol)
+        return false;
+    if (right.majorFirmware != left.majorFirmware)
+        return false;
+    if (right.minorFirmware != left.minorFirmware)
+        return false;
+    if (right.buildFirmware != left.buildFirmware)
+        return false;
+    return true;
 };
 
 bool operator!=(const FtInfo& right, const FtInfo& left)
 {
-	return !(right == left);
+    return !(right == left);
 }

@@ -29,7 +29,6 @@
 
 #include <yarp/os/LogStream.h>
 #include "EoAnalogSensors.h"
-#include "serviceParserMultipleFt.h"
 
 #include "EoProtocol.h"
 #include "EoProtocolMN.h"
@@ -1397,16 +1396,6 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
     strainconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eobrd_caninsideindex_none;
 
 
-
-    return true;
-}
-
-bool ServiceParser::parseService(Searchable &config, servConfigMultipleFTsensor_t &ftconfig)
-{
-    ServiceParserMultipleFt parserMFt;
-    parserMFt.parse(config);
-    if(!parserMFt.toEomn(multipleFt_data))
-        return false;
 
     return true;
 }

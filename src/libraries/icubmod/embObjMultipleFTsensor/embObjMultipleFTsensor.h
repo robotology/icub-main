@@ -6,7 +6,8 @@
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 
-#pragma once
+#ifndef _EMBOBJMULTIPLEFTSENSORS_H_
+#define _EMBOBJMULTIPLEFTSENSORS_H_
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
@@ -30,56 +31,58 @@ static constexpr int ftChannels_{6};
 class FtData
 {
    public:
-	yarp::sig::Vector data_{0, 0, 0, 0, 0, 0};
-	double timeStamp_;
-	std::string sensorName_;
+    yarp::sig::Vector data_{0, 0, 0, 0, 0, 0};
+    double timeStamp_;
+    std::string sensorName_;
 };
 
 class TemperatureData
 {
    public:
-	eOmeas_temperature_t data_;
-	double timeStamp_;
+    eOmeas_temperature_t data_;
+    double timeStamp_;
 };
 
 class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver, public eth::IethResource, public yarp::dev::ITemperatureSensors, public yarp::dev::ISixAxisForceTorqueSensors
 {
    public:
-	embObjMultipleFTsensor();
-	embObjMultipleFTsensor(std::shared_ptr<yarp::dev::embObjDevPrivData> device);//For Unittesting only
-	~embObjMultipleFTsensor();
+    embObjMultipleFTsensor();
+    embObjMultipleFTsensor(std::shared_ptr<yarp::dev::embObjDevPrivData> device);  // For Unittesting only
+    ~embObjMultipleFTsensor();
 
-	bool open(yarp::os::Searchable& config);
-	bool close();
+    bool open(yarp::os::Searchable& config);
+    bool close();
 
-	// IethResource interface
-	virtual bool initialised();
-	virtual eth::iethresType_t type();
-	virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
+    // IethResource interface
+    virtual bool initialised();
+    virtual eth::iethresType_t type();
+    virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 
-	// ITemperatureSensors
-	virtual size_t getNrOfTemperatureSensors() const override;
-	virtual yarp::dev::MAS_status getTemperatureSensorStatus(size_t sensorindex) const override;
-	virtual bool getTemperatureSensorName(size_t sensorindex, std::string& name) const override;
-	virtual bool getTemperatureSensorFrameName(size_t sensorindex, std::string& frameName) const override;
-	virtual bool getTemperatureSensorMeasure(size_t sensorindex, double& out, double& timestamp) const override;
-	virtual bool getTemperatureSensorMeasure(size_t sensorindex, yarp::sig::Vector& out, double& timestamp) const override;
+    // ITemperatureSensors
+    virtual size_t getNrOfTemperatureSensors() const override;
+    virtual yarp::dev::MAS_status getTemperatureSensorStatus(size_t sensorindex) const override;
+    virtual bool getTemperatureSensorName(size_t sensorindex, std::string& name) const override;
+    virtual bool getTemperatureSensorFrameName(size_t sensorindex, std::string& frameName) const override;
+    virtual bool getTemperatureSensorMeasure(size_t sensorindex, double& out, double& timestamp) const override;
+    virtual bool getTemperatureSensorMeasure(size_t sensorindex, yarp::sig::Vector& out, double& timestamp) const override;
 
-	// ISixAxisForceTorqueSensors
-	virtual size_t getNrOfSixAxisForceTorqueSensors() const override;
-	virtual yarp::dev::MAS_status getSixAxisForceTorqueSensorStatus(size_t sensorindex) const override;
-	virtual bool getSixAxisForceTorqueSensorName(size_t sensorindex, std::string& name) const override;
-	virtual bool getSixAxisForceTorqueSensorFrameName(size_t sensorindex, std::string& frameName) const override;
-	virtual bool getSixAxisForceTorqueSensorMeasure(size_t sensorindex, yarp::sig::Vector& out, double& timestamp) const override;
+    // ISixAxisForceTorqueSensors
+    virtual size_t getNrOfSixAxisForceTorqueSensors() const override;
+    virtual yarp::dev::MAS_status getSixAxisForceTorqueSensorStatus(size_t sensorindex) const override;
+    virtual bool getSixAxisForceTorqueSensorName(size_t sensorindex, std::string& name) const override;
+    virtual bool getSixAxisForceTorqueSensorFrameName(size_t sensorindex, std::string& frameName) const override;
+    virtual bool getSixAxisForceTorqueSensorMeasure(size_t sensorindex, yarp::sig::Vector& out, double& timestamp) const override;
 
    protected:
-	std::shared_ptr<yarp::dev::embObjDevPrivData> device_;
-	mutable std::shared_mutex mutex_;
-	std::map<eOprotID32_t, FtData> ftSensorsData_;
-	std::map<eOprotID32_t, TemperatureData> temperaturesensordata_;
+    std::shared_ptr<yarp::dev::embObjDevPrivData> device_;
+    mutable std::shared_mutex mutex_;
+    std::map<eOprotID32_t, FtData> ftSensorsData_;
+    std::map<eOprotID32_t, TemperatureData> temperaturesensordata_;
 
-	bool sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
-	bool sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
-	bool initRegulars(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
-	void cleanup(void);
+    bool sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
+    bool sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
+    bool initRegulars(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
+    void cleanup(void);
 };
+
+#endif
