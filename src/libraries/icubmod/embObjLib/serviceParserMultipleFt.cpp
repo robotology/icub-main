@@ -406,7 +406,7 @@ bool ServiceParserMultipleFt::checkCanMonitor(const Bottle &service)
         return false;
     }
 
-    canMonitor_ = {(uint8_t)checkPeriod, reportmodeEobrd, (uint16_t)periodicreportrate};
+    canMonitor_ = {(uint8_t)checkPeriod, (uint8_t)reportmodeEobrd, (uint16_t)periodicreportrate};
 
     return true;
 }
