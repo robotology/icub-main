@@ -171,7 +171,6 @@ jobs:
       shell: bash
       run: |
         cd build
-        cmake --build . --config ${{ matrix.build_type }}
         ctest --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Install
