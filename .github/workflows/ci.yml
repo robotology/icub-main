@@ -150,6 +150,13 @@ jobs:
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DBUILD_TESTING:BOOL=ON \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+    
+    - name: Execute unit test
+      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }} --target test
+
     - name: Enable python bindings on Ubuntu
       if: matrix.os == 'ubuntu-latest'
       run: |
