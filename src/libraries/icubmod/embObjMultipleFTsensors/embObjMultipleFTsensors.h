@@ -23,7 +23,7 @@
 
 namespace yarp::dev
 {
-class embObjMultipleFTsensor;
+class embObjMultipleFTsensors;
 }
 
 static constexpr int ftChannels_{6};
@@ -43,12 +43,12 @@ class TemperatureData
     double timeStamp_;
 };
 
-class yarp::dev::embObjMultipleFTsensor : public yarp::dev::DeviceDriver, public eth::IethResource, public yarp::dev::ITemperatureSensors, public yarp::dev::ISixAxisForceTorqueSensors
+class yarp::dev::embObjMultipleFTsensors : public yarp::dev::DeviceDriver, public eth::IethResource, public yarp::dev::ITemperatureSensors, public yarp::dev::ISixAxisForceTorqueSensors
 {
    public:
-    embObjMultipleFTsensor();
-    embObjMultipleFTsensor(std::shared_ptr<yarp::dev::embObjDevPrivData> device);  // For Unittesting only
-    ~embObjMultipleFTsensor();
+    embObjMultipleFTsensors();
+    embObjMultipleFTsensors(std::shared_ptr<yarp::dev::embObjDevPrivData> device);  // For Unittesting only
+    ~embObjMultipleFTsensors();
 
     bool open(yarp::os::Searchable& config);
     bool close();

@@ -9,7 +9,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include <embObjMultipleFTsensor.h>
+#include <embObjMultipleFTsensors.h>
 #include <ethResource.h>
 #include "EoProtocolAS.h"
 
@@ -31,19 +31,19 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class embObjMultipleFTsensor_Mock : public yarp::dev::embObjMultipleFTsensor
+class embObjMultipleFTsensor_Mock : public yarp::dev::embObjMultipleFTsensors
 {
    public:
-	using yarp::dev::embObjMultipleFTsensor::ftSensorsData_;
-	using yarp::dev::embObjMultipleFTsensor::initRegulars;
-	using yarp::dev::embObjMultipleFTsensor::sendConfig2boards;
-	using yarp::dev::embObjMultipleFTsensor::sendStart2boards;
-	using yarp::dev::embObjMultipleFTsensor::temperaturesensordata_;
-	using yarp::dev::embObjMultipleFTsensor::embObjMultipleFTsensor::getSixAxisForceTorqueSensorMeasure;
-	using yarp::dev::embObjMultipleFTsensor::embObjMultipleFTsensor::update;
+	using yarp::dev::embObjMultipleFTsensors::ftSensorsData_;
+	using yarp::dev::embObjMultipleFTsensors::initRegulars;
+	using yarp::dev::embObjMultipleFTsensors::sendConfig2boards;
+	using yarp::dev::embObjMultipleFTsensors::sendStart2boards;
+	using yarp::dev::embObjMultipleFTsensors::temperaturesensordata_;
+	using yarp::dev::embObjMultipleFTsensors::embObjMultipleFTsensors::getSixAxisForceTorqueSensorMeasure;
+	using yarp::dev::embObjMultipleFTsensors::embObjMultipleFTsensors::update;
 
-	embObjMultipleFTsensor_Mock(std::shared_ptr<yarp::dev::embObjDevPrivData> device) : yarp::dev::embObjMultipleFTsensor(device){};
-	embObjMultipleFTsensor_Mock() : yarp::dev::embObjMultipleFTsensor(){};
+	embObjMultipleFTsensor_Mock(std::shared_ptr<yarp::dev::embObjDevPrivData> device) : yarp::dev::embObjMultipleFTsensors(device){};
+	embObjMultipleFTsensor_Mock() : yarp::dev::embObjMultipleFTsensors(){};
 };
 
 class embObjDevPrivData_Mock : public yarp::dev::embObjDevPrivData

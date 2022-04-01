@@ -268,7 +268,7 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle &service)
     Bottle settingsTemperaturePeriod = Bottle(settings.findGroup("temperaturePeriod"));
     if (settingsTemperaturePeriod.isNull())
     {
-        yError() << "ServiceParserMultipleFt::checkSettings() for embObjMultipleFTsensor "
+        yError() << "ServiceParserMultipleFt::checkSettings() for embObjMultipleFTsensors "
                     "device cannot find SETTINGS.temperaturePeriod";
         return false;
     }

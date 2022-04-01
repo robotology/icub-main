@@ -6,7 +6,7 @@
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 
-#include <embObjMultipleFTsensor.h>
+#include <embObjMultipleFTsensors.h>
 #include <ethManager.h>
 
 #include <yarp/os/Log.h>
@@ -29,33 +29,33 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-embObjMultipleFTsensor::embObjMultipleFTsensor()
+embObjMultipleFTsensors::embObjMultipleFTsensors()
 {
     yInfo() << "MultipleFTSensor has been created";
-    device_ = std::make_shared<yarp::dev::embObjDevPrivData>("embObjMultipleFTsensor");
+    device_ = std::make_shared<yarp::dev::embObjDevPrivData>("embObjMultipleFTsensors");
 }
 
-embObjMultipleFTsensor::embObjMultipleFTsensor(std::shared_ptr<yarp::dev::embObjDevPrivData> device) : device_(device)
+embObjMultipleFTsensors::embObjMultipleFTsensors(std::shared_ptr<yarp::dev::embObjDevPrivData> device) : device_(device)
 {
 }
 
-embObjMultipleFTsensor::~embObjMultipleFTsensor()
+embObjMultipleFTsensors::~embObjMultipleFTsensors()
 {
     close();
 }
 
-bool embObjMultipleFTsensor::initialised()
+bool embObjMultipleFTsensors::initialised()
 {
     return device_->isOpen();
 }
 
-bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
+bool embObjMultipleFTsensors::open(yarp::os::Searchable& config)
 {
-    yInfo() << "embObjMultipleFTsensor::open(): preparing ETH resource";
+    yInfo() << "embObjMultipleFTsensors::open(): preparing ETH resource";
     if (!device_->prerareEthService(config, this))
         return false;
 
-    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensor::open(): browsing xml files which describe the service";
+    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensors::open(): browsing xml files which describe the service";
     ServiceParserMultipleFt parser;
     if (!parser.parse(config))
     {
@@ -63,7 +63,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
         return false;
     }
 
-    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensor::open(): verify the presence of the board and if its protocol version is correct";
+    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensors::open(): verify the presence of the board and if its protocol version is correct";
     if (!device_->res->verifyEPprotocol(eoprot_endpoint_analogsensors))
     {
         yError() << device_->getBoardInfo() << " open() fails to verifyEPprotocol... cannot continue ";
@@ -71,7 +71,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
         return false;
     }
 
-    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensor::open(): verify and activate the FT service";
+    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensors::open(): verify and activate the FT service";
     eOmn_serv_parameter_t ftData;
     ftData.configuration.type = eomn_serv_AS_ft;
     ftData.configuration.diagnosticsmode = eomn_serv_diagn_mode_NONE;
@@ -84,7 +84,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
         return false;
     }
 
-    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensor::open(): configure the FT service";
+    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensors::open(): configure the FT service";
     if (false == sendConfig2boards(parser, device_->res))
     {
         yError() << device_->getBoardInfo() << " open() fails to sendConfig2boards... cannot continue";
@@ -92,7 +92,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
         return false;
     }
 
-    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensor::open(): impose the network variable which the ETH bord must stream up";
+    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensors::open(): impose the network variable which the ETH bord must stream up";
     if (false == initRegulars(parser, device_->res))
     {
         yError() << device_->getBoardInfo() << " open() fails to initRegulars... cannot continue";
@@ -100,7 +100,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
         return false;
     }
 
-    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensor::open(): start the FT service";
+    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensors::open(): start the FT service";
     if (!device_->res->serviceStart(eomn_serv_category_ft))
     {
         yError() << device_->getBoardInfo() << " open() fails to serviceStart... cannot continue";
@@ -115,7 +115,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
         }
     }
 
-    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensor::open(): start streaming of FT data";
+    yInfo() << device_->getBoardInfo() << " embObjMultipleFTsensors::open(): start streaming of FT data";
     if (!sendStart2boards(parser, device_->res))
     {
         yError() << device_->getBoardInfo() << " open() fails to sendStart2boards... cannot continue";
@@ -127,7 +127,7 @@ bool embObjMultipleFTsensor::open(yarp::os::Searchable& config)
     return true;
 }
 
-bool embObjMultipleFTsensor::sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
+bool embObjMultipleFTsensors::sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
 {
     auto& ftInfos = parser.getFtInfo();
     int index = 0;
@@ -159,7 +159,7 @@ bool embObjMultipleFTsensor::sendConfig2boards(ServiceParserMultipleFt& parser, 
     return true;
 }
 
-bool embObjMultipleFTsensor::sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
+bool embObjMultipleFTsensors::sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
 {
     eOprotID32_t id32 = eo_prot_ID32dummy;
 
@@ -186,7 +186,7 @@ bool embObjMultipleFTsensor::sendStart2boards(ServiceParserMultipleFt& parser, e
     return true;
 }
 
-bool embObjMultipleFTsensor::initRegulars(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
+bool embObjMultipleFTsensors::initRegulars(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
 {
     // configure regular rops
 
@@ -223,12 +223,12 @@ bool embObjMultipleFTsensor::initRegulars(ServiceParserMultipleFt& parser, eth::
     return true;
 }
 
-eth::iethresType_t embObjMultipleFTsensor::type()
+eth::iethresType_t embObjMultipleFTsensors::type()
 {
     return eth::iethres_analogft;
 }
 
-bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* rxdata)
+bool embObjMultipleFTsensors::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
     if (!device_->isOpen())
         return false;
@@ -269,19 +269,19 @@ bool embObjMultipleFTsensor::update(eOprotID32_t id32, double timestamp, void* r
     return true;
 }
 
-bool embObjMultipleFTsensor::close()
+bool embObjMultipleFTsensors::close()
 {
     yDebug() << device_->getBoardInfo() << " close board";
     cleanup();
     return true;
 }
 
-void embObjMultipleFTsensor::cleanup(void)
+void embObjMultipleFTsensors::cleanup(void)
 {
     device_->cleanup(static_cast<eth::IethResource*>(this));
 }
 
-bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sensorIndex, yarp::sig::Vector& out, double& timestamp) const
+bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorMeasure(size_t sensorIndex, yarp::sig::Vector& out, double& timestamp) const
 {
     if (!device_->isOpen())
         return false;
@@ -305,51 +305,51 @@ bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sensorInd
     return true;
 }
 
-size_t embObjMultipleFTsensor::getNrOfSixAxisForceTorqueSensors() const
+size_t embObjMultipleFTsensors::getNrOfSixAxisForceTorqueSensors() const
 {
     return ftSensorsData_.size();
 }
 
-yarp::dev::MAS_status embObjMultipleFTsensor::getSixAxisForceTorqueSensorStatus(size_t sensorindex) const
+yarp::dev::MAS_status embObjMultipleFTsensors::getSixAxisForceTorqueSensorStatus(size_t sensorindex) const
 {
     return yarp::dev::MAS_OK;
 }
 
-bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorName(size_t sensorindex, std::string& name) const
+bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorName(size_t sensorindex, std::string& name) const
 {
     name = ftSensorsData_.at(sensorindex).sensorName_;
     return true;
 }
 
-bool embObjMultipleFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sensorindex, std::string& frameName) const
+bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorFrameName(size_t sensorindex, std::string& frameName) const
 {
     frameName = "";  // Unused
     return true;
 }
 
-size_t embObjMultipleFTsensor::getNrOfTemperatureSensors() const
+size_t embObjMultipleFTsensors::getNrOfTemperatureSensors() const
 {
     return temperaturesensordata_.size();
 }
 
-yarp::dev::MAS_status embObjMultipleFTsensor::getTemperatureSensorStatus(size_t sensorindex) const
+yarp::dev::MAS_status embObjMultipleFTsensors::getTemperatureSensorStatus(size_t sensorindex) const
 {
     return yarp::dev::MAS_OK;
 }
 
-bool embObjMultipleFTsensor::getTemperatureSensorName(size_t sensorindex, std::string& name) const
+bool embObjMultipleFTsensors::getTemperatureSensorName(size_t sensorindex, std::string& name) const
 {
     name = ftSensorsData_.at(sensorindex).sensorName_;
     return true;
 }
 
-bool embObjMultipleFTsensor::getTemperatureSensorFrameName(size_t sensorindex, std::string& frameName) const
+bool embObjMultipleFTsensors::getTemperatureSensorFrameName(size_t sensorindex, std::string& frameName) const
 {
     frameName = "";  // Unused
     return true;
 }
 
-bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sensorIndex, double& out, double& timestamp) const
+bool embObjMultipleFTsensors::getTemperatureSensorMeasure(size_t sensorIndex, double& out, double& timestamp) const
 {
     if (!device_->isOpen())
         return false;
@@ -367,7 +367,7 @@ bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sensorIndex, dou
     return true;
 }
 
-bool embObjMultipleFTsensor::getTemperatureSensorMeasure(size_t sensorIndex, yarp::sig::Vector& out, double& timestamp) const
+bool embObjMultipleFTsensors::getTemperatureSensorMeasure(size_t sensorIndex, yarp::sig::Vector& out, double& timestamp) const
 {
     double value{0};
     getTemperatureSensorMeasure(sensorIndex, value, timestamp);

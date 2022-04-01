@@ -4,12 +4,12 @@
 # This software may be modified and distributed under the terms of the
 # BSD-3-Clause license. See the accompanying LICENSE file for details.
 
-yarp_prepare_plugin(embObjMultipleFTsensor CATEGORY device
-                                 TYPE yarp::dev::embObjMultipleFTsensor
-                                 INCLUDE embObjMultipleFTsensor.h
+yarp_prepare_plugin(embObjMultipleFTsensors CATEGORY device
+                                 TYPE yarp::dev::embObjMultipleFTsensors
+                                 INCLUDE embObjMultipleFTsensors.h
                                  EXTRA_CONFIG WRAPPER=analogServer)
 
-IF (NOT SKIP_embObjMultipleFTsensor)
+IF (NOT SKIP_embObjMultipleFTsensors)
 
 
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
@@ -17,24 +17,24 @@ IF (NOT SKIP_embObjMultipleFTsensor)
 
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-  yarp_add_plugin(embObjMultipleFTsensor embObjMultipleFTsensor.cpp embObjMultipleFTsensor.h)
-  TARGET_LINK_LIBRARIES(embObjMultipleFTsensor ethResources)
-  icub_export_plugin(embObjMultipleFTsensor)
+  yarp_add_plugin(embObjMultipleFTsensors embObjMultipleFTsensors.cpp embObjMultipleFTsensors.h)
+  TARGET_LINK_LIBRARIES(embObjMultipleFTsensors ethResources)
+  icub_export_plugin(embObjMultipleFTsensors)
 
-  yarp_install(TARGETS embObjMultipleFTsensor
+  yarp_install(TARGETS embObjMultipleFTsensors
         COMPONENT Runtime
         LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
         ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR}
         YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
   if (BUILD_TESTING)
-   add_library(embObjMultipleFTsensorUT STATIC embObjMultipleFTsensor.cpp embObjMultipleFTsensor.h)    
-   target_link_libraries(embObjMultipleFTsensorUT ethResources
+   add_library(embObjMultipleFTsensorsUT STATIC embObjMultipleFTsensors.cpp embObjMultipleFTsensors.h)    
+   target_link_libraries(embObjMultipleFTsensorsUT ethResources
                                     YARP::YARP_dev
                                     icub_firmware_shared::embobj
                                     ACE::ACE)    
-   target_include_directories(embObjMultipleFTsensorUT PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
+   target_include_directories(embObjMultipleFTsensorsUT PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   endif()
 
-ENDIF (NOT SKIP_embObjMultipleFTsensor)
+ENDIF (NOT SKIP_embObjMultipleFTsensors)
 
