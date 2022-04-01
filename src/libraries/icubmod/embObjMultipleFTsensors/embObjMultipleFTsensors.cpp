@@ -31,7 +31,7 @@ using namespace yarp::dev;
 
 embObjMultipleFTsensors::embObjMultipleFTsensors()
 {
-    yInfo() << "MultipleFTSensor has been created";
+    yInfo() << "MultipleFTSensors has been created";
     device_ = std::make_shared<yarp::dev::embObjDevPrivData>("embObjMultipleFTsensors");
 }
 
@@ -49,7 +49,7 @@ bool embObjMultipleFTsensors::initialised()
     return device_->isOpen();
 }
 
-bool embObjMultipleFTsensors::open(yarp::os::Searchable& config)
+bool embObjMultipleFTsensors::open(yarp::os::Searchable &config)
 {
     yInfo() << "embObjMultipleFTsensors::open(): preparing ETH resource";
     if (!device_->prerareEthService(config, this))
@@ -127,11 +127,11 @@ bool embObjMultipleFTsensors::open(yarp::os::Searchable& config)
     return true;
 }
 
-bool embObjMultipleFTsensors::sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
+bool embObjMultipleFTsensors::sendConfig2boards(ServiceParserMultipleFt &parser, eth::AbstractEthResource *deviceRes)
 {
-    auto& ftInfos = parser.getFtInfo();
+    auto &ftInfos = parser.getFtInfo();
     int index = 0;
-    for (const auto& [id, data] : ftInfos)
+    for (const auto &[id, data] : ftInfos)
     {
         eOprotID32_t id32 = eo_prot_ID32dummy;
         eOas_ft_config_t cfg;
@@ -154,20 +154,21 @@ bool embObjMultipleFTsensors::sendConfig2boards(ServiceParserMultipleFt& parser,
         ++index;
 
         eOprotIndex_t eoprotIndex = eoprot_ID2index(id32);
+        std::unique_lock<std::shared_mutex> lck(mutex_);
         ftSensorsData_[eoprotIndex] = {{0, 0, 0, 0, 0, 0}, 0, id};
     }
     return true;
 }
 
-bool embObjMultipleFTsensors::sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
+bool embObjMultipleFTsensors::sendStart2boards(ServiceParserMultipleFt &parser, eth::AbstractEthResource *deviceRes)
 {
     eOprotID32_t id32 = eo_prot_ID32dummy;
 
     uint8_t enable = 1;
 
-    const auto& ftInfos = parser.getFtInfo();
+    const auto &ftInfos = parser.getFtInfo();
     int index = 0;
-    for (const auto& [id, data] : ftInfos)
+    for (const auto &[id, data] : ftInfos)
     {
         id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, index, eoprot_tag_as_ft_cmmnds_enable);
 
@@ -186,16 +187,16 @@ bool embObjMultipleFTsensors::sendStart2boards(ServiceParserMultipleFt& parser, 
     return true;
 }
 
-bool embObjMultipleFTsensors::initRegulars(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes)
+bool embObjMultipleFTsensors::initRegulars(ServiceParserMultipleFt &parser, eth::AbstractEthResource *deviceRes)
 {
     // configure regular rops
 
     vector<eOprotID32_t> id32v;
     eOprotID32_t id32 = eo_prot_ID32dummy;
 
-    const auto& ftInfos = parser.getFtInfo();
+    const auto &ftInfos = parser.getFtInfo();
     int index = 0;
-    for (const auto& [id, data] : ftInfos)
+    for (const auto &[id, data] : ftInfos)
     {
         id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, index, eoprot_tag_as_ft_status_timedvalue);
         id32v.push_back(id32);
@@ -228,7 +229,7 @@ eth::iethresType_t embObjMultipleFTsensors::type()
     return eth::iethres_analogft;
 }
 
-bool embObjMultipleFTsensors::update(eOprotID32_t id32, double timestamp, void* rxdata)
+bool embObjMultipleFTsensors::update(eOprotID32_t id32, double timestamp, void *rxdata)
 {
     if (!device_->isOpen())
         return false;
@@ -254,7 +255,14 @@ bool embObjMultipleFTsensors::update(eOprotID32_t id32, double timestamp, void* 
         return false;
     }
 
-    eOas_ft_timedvalue_t* data = (eOas_ft_timedvalue_t*)rxdata;
+    static double firstTimestamp = yarp::os::Time::now();
+
+    eOas_ft_timedvalue_t *data = (eOas_ft_timedvalue_t *)rxdata;
+
+    if (!checkUpdateTimeout(id32, data->age))
+    {
+        return false;
+    }
 
     std::unique_lock<std::shared_mutex> lck(mutex_);
 
@@ -265,7 +273,8 @@ bool embObjMultipleFTsensors::update(eOprotID32_t id32, double timestamp, void* 
     ftSensorsData_[eoprotIndex].timeStamp_ = data->age;
 
     temperaturesensordata_[eoprotIndex].data_ = data->temperature;
-    temperaturesensordata_[eoprotIndex].timeStamp_ = data->age;
+    double realtime = firstTimestamp + (double)(data->age) / 1000000;
+    temperaturesensordata_[eoprotIndex].timeStamp_ = realtime;
     return true;
 }
 
@@ -278,10 +287,10 @@ bool embObjMultipleFTsensors::close()
 
 void embObjMultipleFTsensors::cleanup(void)
 {
-    device_->cleanup(static_cast<eth::IethResource*>(this));
+    device_->cleanup(static_cast<eth::IethResource *>(this));
 }
 
-bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorMeasure(size_t sensorIndex, yarp::sig::Vector& out, double& timestamp) const
+bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorMeasure(size_t sensorIndex, yarp::sig::Vector &out, double &timestamp) const
 {
     if (!device_->isOpen())
         return false;
@@ -312,16 +321,17 @@ size_t embObjMultipleFTsensors::getNrOfSixAxisForceTorqueSensors() const
 
 yarp::dev::MAS_status embObjMultipleFTsensors::getSixAxisForceTorqueSensorStatus(size_t sensorindex) const
 {
-    return yarp::dev::MAS_OK;
+    return masStatus_;
 }
 
-bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorName(size_t sensorindex, std::string& name) const
+bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorName(size_t sensorindex, std::string &name) const
 {
+    std::shared_lock<std::shared_mutex> lck(mutex_);
     name = ftSensorsData_.at(sensorindex).sensorName_;
     return true;
 }
 
-bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorFrameName(size_t sensorindex, std::string& frameName) const
+bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorFrameName(size_t sensorindex, std::string &frameName) const
 {
     frameName = "";  // Unused
     return true;
@@ -334,22 +344,23 @@ size_t embObjMultipleFTsensors::getNrOfTemperatureSensors() const
 
 yarp::dev::MAS_status embObjMultipleFTsensors::getTemperatureSensorStatus(size_t sensorindex) const
 {
-    return yarp::dev::MAS_OK;
+    return masStatus_;
 }
 
-bool embObjMultipleFTsensors::getTemperatureSensorName(size_t sensorindex, std::string& name) const
+bool embObjMultipleFTsensors::getTemperatureSensorName(size_t sensorindex, std::string &name) const
 {
+    std::shared_lock<std::shared_mutex> lck(mutex_);
     name = ftSensorsData_.at(sensorindex).sensorName_;
     return true;
 }
 
-bool embObjMultipleFTsensors::getTemperatureSensorFrameName(size_t sensorindex, std::string& frameName) const
+bool embObjMultipleFTsensors::getTemperatureSensorFrameName(size_t sensorindex, std::string &frameName) const
 {
     frameName = "";  // Unused
     return true;
 }
 
-bool embObjMultipleFTsensors::getTemperatureSensorMeasure(size_t sensorIndex, double& out, double& timestamp) const
+bool embObjMultipleFTsensors::getTemperatureSensorMeasure(size_t sensorIndex, double &out, double &timestamp) const
 {
     if (!device_->isOpen())
         return false;
@@ -367,11 +378,26 @@ bool embObjMultipleFTsensors::getTemperatureSensorMeasure(size_t sensorIndex, do
     return true;
 }
 
-bool embObjMultipleFTsensors::getTemperatureSensorMeasure(size_t sensorIndex, yarp::sig::Vector& out, double& timestamp) const
+bool embObjMultipleFTsensors::getTemperatureSensorMeasure(size_t sensorIndex, yarp::sig::Vector &out, double &timestamp) const
 {
     double value{0};
     getTemperatureSensorMeasure(sensorIndex, value, timestamp);
     out.resize(1);
     out[0] = value;
+    return true;
+}
+
+bool embObjMultipleFTsensors::checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current)
+{
+    eOabstime_t diff = current - timeoutUpdate_[id32];
+    if (timeoutUpdate_[id32] != 0 && current > timeoutUpdate_[id32] + updateTimeout_)
+    {
+        yError() << device_->getBoardInfo() << " update timeout for index:" << eoprot_ID2index(id32);
+        timeoutUpdate_[id32] = current;
+        masStatus_ = MAS_TIMEOUT;
+        return false;
+    }
+    masStatus_ = MAS_OK;
+    timeoutUpdate_[id32] = current;
     return true;
 }

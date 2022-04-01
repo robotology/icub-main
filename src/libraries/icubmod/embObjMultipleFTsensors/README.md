@@ -14,58 +14,68 @@ ENABLE_icubmod_embObjMultipleF   ON
 This device should be used with an XML like the following:
 
 ```xml
-    <group name="SERVICE">
-        
-        <param name="type"> eomn_serv_AS_ft </param>
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE devices PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
 
-        <group name="PROPERTIES">
 
-            <!-- we can have as many boards as we want, 
-                but now the only good ones are strain and strain2. 
-                use eoas_ft_isboardvalid() to verify -->
-            <group name="CANBOARDS">
-                <param name="type">                 strain2     strain      </param>
+    <device xmlns:xi="http://www.w3.org/2001/XInclude" name="eb1-j0-strain2-multi" type="embObjMultipleFTsensors">
 
-                <group name="PROTOCOL">
-                    <param name="major">            2           1           </param>    
-                    <param name="minor">            0           0           </param>     
-                </group>                    
-                <group name="FIRMWARE">
-                    <param name="major">            2           1           </param>    
-                    <param name="minor">            0           1           </param> 
-                    <param name="build">            9           3           </param>
-                </group>
-            </group>
+        <xi:include href="../../general.xml" />
+
+        <xi:include href="../../hardware/electronics/eb1-j0-eln.xml" />
+
+        <group name="SERVICE">
             
-            <!-- we can have as many sensors as we want. however ... -->
-            <group name="SENSORS">
-                <param name="id">                   l_foot_ft1      l_foot_ft2      l_foot_ft3  </param>
-                <param name="board">                strain2         strain2         strain      </param>
-                <param name="location">             CAN2:13         CAN1:12         CAN2:11     </param>
-            </group>                
+            <param name="type"> eomn_serv_AS_ft </param>
+
+            <group name="PROPERTIES">
+
+                <!-- we can have as many boards as we want, 
+                    but now the only good ones are strain and strain2. 
+                    use eoas_ft_isboardvalid() to verify -->
+                <group name="CANBOARDS">
+                    <param name="type">                 strain2     strain      </param>
+
+                    <group name="PROTOCOL">
+                        <param name="major">            2           1           </param>    
+                        <param name="minor">            0           0           </param>     
+                    </group>                    
+                    <group name="FIRMWARE">
+                        <param name="major">            2           1           </param>    
+                        <param name="minor">            0           1           </param> 
+                        <param name="build">            9           3           </param>
+                    </group>
+                </group>
+                
+                <!-- we can have as many sensors as we want. however ... -->
+                <group name="SENSORS">
+                    <param name="id">                   l_foot_ft1      l_foot_ft2      l_foot_ft3  </param>
+                    <param name="board">                strain2         strain2         strain      </param>
+                    <param name="location">             CAN2:13         CAN1:12         CAN2:11     </param>
+                </group>                
+            
+            </group>
+
+            <!-- we can pick up at max 4 sensors from the above list. 
+                we can specify parameters that are different for each sensor 
+                - ftPeriod is expressed in ms in the range [1, 250]
+                - temperaturePeriod is expressed in ms (but it will be used in seconds).
+                - useCalibration is boolean
+                -->
+            <group name="SETTINGS">        
+                <param name="enabledSensors">       l_foot_ft1  l_foot_ft2  l_foot_ft3      </param>
+                <param name="ftPeriod">             10          10          10              </param>
+                <param name="temperaturePeriod">    1000        1000        0               </param>
+                <param name="useCalibration">       true        false       true            </param>           
+            </group>       
         
+            <group name="CANMONITOR">        
+                <param name="checkPeriod">      100     </param>
+                <param name="reportMode">       ALL     </param>
+                <param name="ratePeriod">       20*1000 </param>
+            </group>    
         </group>
-
-        <!-- we can pick up at max 4 sensors from the above list. 
-            we can specify parameters that are different for each sensor 
-            - ftPeriod is expressed in ms in the range [1, 250]
-            - temperaturePeriod is expressed in ms (but it will be used in seconds).
-            - useCalibration is boolean
-            -->
-        <group name="SETTINGS">        
-            <param name="enabledSensors">       l_foot_ft1  l_foot_ft2  l_foot_ft3      </param>
-            <param name="ftPeriod">             10          10          10              </param>
-            <param name="temperaturePeriod">    1000        1000        0               </param>
-            <param name="useCalibration">       true        false       true            </param>           
-        </group>       
-    
-        <group name="CANMONITOR">        
-            <param name="checkPeriod">      100     </param>
-            <param name="reportMode">       ALL     </param>
-            <param name="ratePeriod">       20*1000 </param>
-        </group>    
-    </group>
-
+    </device>
 ```
 
 ```xml

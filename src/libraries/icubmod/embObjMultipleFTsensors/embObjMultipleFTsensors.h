@@ -78,11 +78,15 @@ class yarp::dev::embObjMultipleFTsensors : public yarp::dev::DeviceDriver, publi
     mutable std::shared_mutex mutex_;
     std::map<eOprotID32_t, FtData> ftSensorsData_;
     std::map<eOprotID32_t, TemperatureData> temperaturesensordata_;
+    std::map<eOprotID32_t, eOabstime_t> timeoutUpdate_;
 
     bool sendConfig2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
     bool sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
     bool initRegulars(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
     void cleanup(void);
+    bool checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current);
+    static constexpr eOabstime_t updateTimeout_{11000};
+    yarp::dev::MAS_status masStatus_{MAS_OK};
 };
 
 #endif
