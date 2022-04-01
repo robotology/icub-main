@@ -38,7 +38,7 @@ PRIVATE
   gmock
   ethResources
   embObjMultipleFTsensorsUT
-  YARP::YARP_os
+  YARP::YARP_init
 )
 TARGET_LINK_LIBRARIES(ethResources)
 

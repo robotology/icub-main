@@ -174,6 +174,7 @@ TEST(MultiplembObjMultipleFTsensor, serviceSetRegulars_simple_positive_001)
 TEST(MultiplembObjMultipleFTsensor, update_simple_positive_001)
 {
 	// Setup
+	yarp::os::Network::init();
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjMultipleFTsensor_Mock device(privateData);
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_ft_status_timedvalue);
@@ -192,6 +193,7 @@ TEST(MultiplembObjMultipleFTsensor, update_simple_positive_001)
 TEST(MultiplembObjMultipleFTsensor, update_simple_positive_002)
 {
 	// Setup
+	yarp::os::Network::init();
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjMultipleFTsensor_Mock device(privateData);
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 1, eoprot_tag_as_ft_status_timedvalue);

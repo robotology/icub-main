@@ -31,8 +31,8 @@ IF (NOT SKIP_embObjMultipleFTsensors)
    add_library(embObjMultipleFTsensorsUT STATIC embObjMultipleFTsensors.cpp embObjMultipleFTsensors.h)    
    target_link_libraries(embObjMultipleFTsensorsUT ethResources
                                     YARP::YARP_dev
-                                    icub_firmware_shared::embobj
-                                    ACE::ACE)    
+                                    icub_firmware_shared::embobj)
+                                        
    target_include_directories(embObjMultipleFTsensorsUT PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   endif()
 
