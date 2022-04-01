@@ -84,9 +84,13 @@ class yarp::dev::embObjMultipleFTsensors : public yarp::dev::DeviceDriver, publi
     bool sendStart2boards(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
     bool initRegulars(ServiceParserMultipleFt& parser, eth::AbstractEthResource* deviceRes);
     void cleanup(void);
+    double calculateBoardTime(eOabstime_t current);
     bool checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current);
     static constexpr eOabstime_t updateTimeout_{11000};
-    yarp::dev::MAS_status masStatus_{MAS_OK};
+    std::vector<yarp::dev::MAS_status> masStatus_{MAS_OK, MAS_OK, MAS_OK, MAS_OK};
+
+    static constexpr bool checkUpdateTimeoutFlag_{false};  // Check timer disabled
+    static constexpr bool useBoardTimeFlag_{true};         // Calculate board time if true otherway use yarp time
 };
 
 #endif

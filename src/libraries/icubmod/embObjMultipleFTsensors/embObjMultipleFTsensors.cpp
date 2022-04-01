@@ -255,10 +255,7 @@ bool embObjMultipleFTsensors::update(eOprotID32_t id32, double timestamp, void *
         return false;
     }
 
-    static double firstTimestamp = yarp::os::Time::now();
-
     eOas_ft_timedvalue_t *data = (eOas_ft_timedvalue_t *)rxdata;
-
     if (!checkUpdateTimeout(id32, data->age))
     {
         return false;
@@ -273,8 +270,7 @@ bool embObjMultipleFTsensors::update(eOprotID32_t id32, double timestamp, void *
     ftSensorsData_[eoprotIndex].timeStamp_ = data->age;
 
     temperaturesensordata_[eoprotIndex].data_ = data->temperature;
-    double realtime = firstTimestamp + (double)(data->age) / 1000000;
-    temperaturesensordata_[eoprotIndex].timeStamp_ = realtime;
+    temperaturesensordata_[eoprotIndex].timeStamp_ = calculateBoardTime(data->age);
     return true;
 }
 
@@ -321,7 +317,7 @@ size_t embObjMultipleFTsensors::getNrOfSixAxisForceTorqueSensors() const
 
 yarp::dev::MAS_status embObjMultipleFTsensors::getSixAxisForceTorqueSensorStatus(size_t sensorindex) const
 {
-    return masStatus_;
+    return masStatus_[sensorindex];
 }
 
 bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorName(size_t sensorindex, std::string &name) const
@@ -344,7 +340,7 @@ size_t embObjMultipleFTsensors::getNrOfTemperatureSensors() const
 
 yarp::dev::MAS_status embObjMultipleFTsensors::getTemperatureSensorStatus(size_t sensorindex) const
 {
-    return masStatus_;
+    return masStatus_[sensorindex];
 }
 
 bool embObjMultipleFTsensors::getTemperatureSensorName(size_t sensorindex, std::string &name) const
@@ -389,15 +385,34 @@ bool embObjMultipleFTsensors::getTemperatureSensorMeasure(size_t sensorIndex, ya
 
 bool embObjMultipleFTsensors::checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current)
 {
+    if (!checkUpdateTimeoutFlag_)
+    {
+        return true;
+    }
+
     eOabstime_t diff = current - timeoutUpdate_[id32];
     if (timeoutUpdate_[id32] != 0 && current > timeoutUpdate_[id32] + updateTimeout_)
     {
         yError() << device_->getBoardInfo() << " update timeout for index:" << eoprot_ID2index(id32);
         timeoutUpdate_[id32] = current;
-        masStatus_ = MAS_TIMEOUT;
+        masStatus_[eoprot_ID2index(id32)] = MAS_TIMEOUT;
         return false;
     }
-    masStatus_ = MAS_OK;
+    masStatus_[eoprot_ID2index(id32)] = MAS_OK;
     timeoutUpdate_[id32] = current;
     return true;
+}
+
+double embObjMultipleFTsensors::calculateBoardTime(eOabstime_t current)
+{
+    if (!useBoardTimeFlag_)
+    {
+        return yarp::os::Time::now();
+    }
+
+    // Simulate real board time
+    static double firstYarpTimestamp = yarp::os::Time::now();
+    static eOabstime_t firstCanTimestamp = current;
+    double realtime = firstYarpTimestamp + (double)(current - firstCanTimestamp) / 1000000;  // Simulate real board time
+    return realtime;
 }
