@@ -41,6 +41,7 @@ class embObjMultipleFTsensor_Mock : public yarp::dev::embObjMultipleFTsensors
 	using yarp::dev::embObjMultipleFTsensors::temperaturesensordata_;
 	using yarp::dev::embObjMultipleFTsensors::embObjMultipleFTsensors::getSixAxisForceTorqueSensorMeasure;
 	using yarp::dev::embObjMultipleFTsensors::embObjMultipleFTsensors::update;
+	using yarp::dev::embObjMultipleFTsensors::embObjMultipleFTsensors::calculateBoardTime;
 
 	embObjMultipleFTsensor_Mock(std::shared_ptr<yarp::dev::embObjDevPrivData> device) : yarp::dev::embObjMultipleFTsensors(device){};
 	embObjMultipleFTsensor_Mock() : yarp::dev::embObjMultipleFTsensors(){};
@@ -66,7 +67,7 @@ TEST(MultiplembObjMultipleFTsensor, sendConfig2boards_simple_positive_001)
 	// Setup
 	embObjMultipleFTsensor_Mock device;
 	ServiceParserMultipleFt_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 200, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+	parser.ftInfo_ = {{"fakeId", {10, 200, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 	EthResource_Mock deviceRes;
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_ft_config);
 
@@ -83,7 +84,7 @@ TEST(MultiplembObjMultipleFTsensor, sendConfig2boards_double_sensor_positive_001
 	// Setup
 	embObjMultipleFTsensor_Mock device;
 	ServiceParserMultipleFt_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}, {"fakeId2", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}, {"fakeId2", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 	EthResource_Mock deviceRes;
 	eOas_ft_config_t cfg = {eoas_ft_mode_calibrated, 10, 0, 100};
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_ft_config);
@@ -104,7 +105,7 @@ TEST(MultiplembObjMultipleFTsensor, sendConfig2boards_simple_negative_001)
 	// Setup
 	embObjMultipleFTsensor_Mock device;
 	ServiceParserMultipleFt_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 	EthResource_Mock deviceRes;
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_ft_config);
 
@@ -120,7 +121,7 @@ TEST(MultiplembObjMultipleFTsensor, sendStart2boards_simple_positive_001)
 	// Setup
 	embObjMultipleFTsensor_Mock device;
 	ServiceParserMultipleFt_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 	EthResource_Mock deviceRes;
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_ft_cmmnds_enable);
 	bool enable = 1;
@@ -138,7 +139,7 @@ TEST(MultiplembObjMultipleFTsensor, sendStart2boards_double_positive_001)
 	// Setup
 	embObjMultipleFTsensor_Mock device;
 	ServiceParserMultipleFt_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 	EthResource_Mock deviceRes;
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_ft_cmmnds_enable);
 	uint32_t id32Second = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 1, eoprot_tag_as_ft_cmmnds_enable);
@@ -158,7 +159,7 @@ TEST(MultiplembObjMultipleFTsensor, serviceSetRegulars_simple_positive_001)
 	// Setup
 	embObjMultipleFTsensor_Mock device;
 	ServiceParserMultipleFt_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 	EthResource_Mock deviceRes;
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 0, eoprot_tag_as_ft_status_timedvalue);
 	uint32_t id32Second = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, 1, eoprot_tag_as_ft_status_timedvalue);
@@ -321,4 +322,23 @@ TEST(MultiplembObjMultipleFTsensor, getNrOfSgetTemperatureSensorMeasure_positive
 	double expected = 34;
 	EXPECT_EQ(expected, data);
     EXPECT_EQ( 99.49, timestamp);
+}
+
+TEST(MultiplembObjMultipleFTsensor, calculateBoardTime_positive_001)
+{
+	// Setup
+	yarp::os::Network::init();
+	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
+	embObjMultipleFTsensor_Mock device(privateData);
+	
+	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
+
+	// Test
+	double data;
+	double timestamp;
+	double first = device.calculateBoardTime(1000000);
+	double second = device.calculateBoardTime(2000000);
+	double diff=second-first;
+
+	EXPECT_TRUE(1.0==diff);
 }

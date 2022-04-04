@@ -120,10 +120,9 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
     {
         std::string boardType = propertyCanBoardType.get(index).asString();
 
-        if (!checkBoardType(boardType))
-        {
+        eObrd_type_t currentBoard = checkBoardType(boardType);
+        if (currentBoard == eobrd_unknown)
             return false;
-        }
 
         int protocolMajor = propertyCanBoardProtocolMajor.get(index).asInt32();
         int protocolMinor = propertyCanBoardProtocolMinor.get(index).asInt32();
@@ -133,7 +132,7 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
 
         for (auto &[key, current] : ftInfo_)
         {
-            if (current.board != boardType)
+            if (current.board != currentBoard)
                 continue;
             current.majorProtocol = protocolMajor;
             current.minorProtocol = protocolMinor;
@@ -197,7 +196,8 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle &property)
     {
         std::string id = propertySensorsId.get(index).asString();
         std::string board = propertySensorsBoard.get(index).asString();
-        if (!checkBoardType(board))
+        eObrd_type_t currentBoard = checkBoardType(board);
+        if (currentBoard == eobrd_unknown)
             return false;
 
         std::string location = propertySensorsLocation.get(index).asString();
@@ -224,7 +224,7 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle &property)
             return false;
         }
 
-        currentFt.board = board;
+        currentFt.board = currentBoard;
     }
 
     // Check missing SENSORS but enabled in SETTINGS
@@ -469,17 +469,17 @@ std::map<std::string, FtInfo> &ServiceParserMultipleFt::getFtInfo()
     return ftInfo_;
 }
 
-bool ServiceParserMultipleFt::checkBoardType(const std::string &boardType)
+eObrd_type_t ServiceParserMultipleFt::checkBoardType(const std::string &boardType)
 {
-    eObrd_type_t type = eoboards_string2type2(boardType.c_str(), true);
+    eObrd_type_t type = eoboards_string2type2(boardType.c_str(), eobool_true);
     if (!eoas_ft_isboardvalid(eoboards_type2cantype(type)))
     {
-        type = eoboards_string2type2(boardType.c_str(), false);
+        type = eoboards_string2type2(boardType.c_str(), eobool_false);
         if (!eoas_ft_isboardvalid(eoboards_type2cantype(type)))
         {
             yError() << "checkBoardType --> unsupported board type:" << boardType;
-            return false;
+            return type;
         }
     }
-    return true;
+    return type;
 }

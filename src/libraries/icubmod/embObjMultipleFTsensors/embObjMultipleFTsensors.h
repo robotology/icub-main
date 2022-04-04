@@ -91,6 +91,9 @@ class yarp::dev::embObjMultipleFTsensors : public yarp::dev::DeviceDriver, publi
 
     static constexpr bool checkUpdateTimeoutFlag_{false};  // Check timer disabled
     static constexpr bool useBoardTimeFlag_{true};         // Calculate board time if true otherway use yarp time
+
+    double firstYarpTimestamp_{0};
+    eOabstime_t firstCanTimestamp_{0};
 };
 
 #endif

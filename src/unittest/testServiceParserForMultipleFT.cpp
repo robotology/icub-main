@@ -30,7 +30,7 @@ TEST(General, check_settings_positive_001)
 
     bool ret = serviceParser.checkSettings(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "none", 0, 0, 0, 0, 0, 0, 0}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 
     EXPECT_TRUE(ret);
 
@@ -47,8 +47,8 @@ TEST(General, check_settings_positive_002)
 
     bool ret = serviceParser.checkSettings(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "none", 0, 0, 0, 0, 0, 0, 0}},
-                                                            {"fakeId1", {20, 200, eoas_ft_mode_raw, "none", 0, 0, 0, 0, 0, 0, 0}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}},
+                                                            {"fakeId1", {20, 200, eoas_ft_mode_raw, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 
     EXPECT_TRUE(ret);
 
@@ -114,11 +114,11 @@ TEST(General, check_property_sensors_positive_001)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(SENSORS (id fakeId) (board strain2) (location CAN2:13) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertySensors(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 0, 0, 0, 0, 0}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}};
 
     EXPECT_TRUE(ret);
 
@@ -131,12 +131,12 @@ TEST(General, check_property_sensors_positive_002)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(SENSORS (id fakeId fakeId1) (board strain2 strain2) (location CAN2:13 CAN2:14) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {20, 200, eoas_ft_mode_raw, "", 2, 14, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {20, 200, eoas_ft_mode_raw, eobrd_unknown, 2, 14, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertySensors(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 0, 0, 0, 0, 0}},
-                                                            {"fakeId1", {20, 200, eoas_ft_mode_raw, "strain2", 2, 14, 0, 0, 0, 0, 0}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}},
+                                                            {"fakeId1", {20, 200, eoas_ft_mode_raw, eobrd_strain2, 2, 14, 0, 0, 0, 0, 0}}};
 
     EXPECT_TRUE(ret);
 
@@ -150,11 +150,11 @@ TEST(General, check_property_sensors_positive_003)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(SENSORS (id fakeId fakeId1) (board strain2 strain2) (location CAN2:13 CAN2:14) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertySensors(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 0, 0, 0, 0, 0}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}};
 
     EXPECT_TRUE(ret);
 
@@ -167,11 +167,11 @@ TEST(General, check_property_sensors_positive_004)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(SENSORS (id fakeId) (board eobrd_strain2) (location CAN2:13) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertySensors(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "eobrd_strain2", 2, 13, 0, 0, 0, 0, 0}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}};
 
     EXPECT_TRUE(ret);
 
@@ -184,11 +184,11 @@ TEST(General, check_property_sensors_positive_005)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(SENSORS (id fakeId) (board eobrd_strain) (location CAN2:13) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertySensors(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "eobrd_strain", 2, 13, 0, 0, 0, 0, 0}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain, 2, 13, 0, 0, 0, 0, 0}}};
 
     EXPECT_TRUE(ret);
 
@@ -201,11 +201,11 @@ TEST(General, check_property_sensors_negative_001)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(SENSORS (id fakeId) (board strain2) (location CAN2:14) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertySensors(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 0, 0, 0, 0, 0}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}};
 
     EXPECT_TRUE(ret);
 
@@ -218,7 +218,7 @@ TEST(General, check_property_sensors_negative_002)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(SENSORS (id fakeId) (board strain2) (location CANx:15) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 0, 0, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertySensors(bottle);
 
@@ -230,7 +230,7 @@ TEST(General, check_property_sensors_negative_003)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(SENSORS (id fakeId fakeId1) (board strain2 strain2) (location CAN2:13 CAN2:14) )");
-    serviceParser.ftInfo_ = {{"notexistent", {10, 100, eoas_ft_mode_calibrated, "", 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {20, 200, eoas_ft_mode_raw, "", 2, 14, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"notexistent", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {20, 200, eoas_ft_mode_raw, eobrd_unknown, 2, 14, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertySensors(bottle);
 
@@ -242,7 +242,7 @@ TEST(General, check_property_sensors_negative_004)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(SENSORS (id fakeId fakeId1) (board wrongBoard strain2) (location CAN2:13 CAN2:14) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "", 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {20, 200, eoas_ft_mode_raw, "", 2, 14, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {20, 200, eoas_ft_mode_raw, eobrd_unknown, 2, 14, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertySensors(bottle);
 
@@ -254,11 +254,11 @@ TEST(General, check_property_canboards_positive_001)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 2, 3, 4, 5, 6}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 2, 3, 4, 5, 6}}};
 
     EXPECT_TRUE(ret);
 
@@ -271,12 +271,12 @@ TEST(General, check_property_canboards_positive_002)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "strain", 2, 13, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_strain, 2, 13, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 2, 3, 4, 5, 6}},
-                                                            {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "strain", 2, 13, 0, 0, 0, 0, 0}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 2, 3, 4, 5, 6}},
+                                                            {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_strain, 2, 13, 0, 0, 0, 0, 0}}};
 
     EXPECT_TRUE(ret);
 
@@ -290,12 +290,12 @@ TEST(General, check_property_canboards_positive_003)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(CANBOARDS (type strain2 strain) (PROTOCOL (major 2 7) (minor 3 8) ) (FIRMWARE (major 4 9) (minor 5 10) (build 6 11) ) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "strain", 2, 13, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_strain, 2, 13, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 2, 3, 4, 5, 6}},
-                                                            {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "strain", 2, 13, 7, 8, 9, 10, 11}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 2, 3, 4, 5, 6}},
+                                                            {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_strain, 2, 13, 7, 8, 9, 10, 11}}};
 
     EXPECT_TRUE(ret);
 
@@ -309,11 +309,11 @@ TEST(General, check_property_canboards_positive_004)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(CANBOARDS (type eobrd_strain2) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "eobrd_strain2", 2, 13, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "eobrd_strain2", 2, 13, 2, 3, 4, 5, 6}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 2, 3, 4, 5, 6}}};
 
     EXPECT_TRUE(ret);
 
@@ -326,12 +326,12 @@ TEST(General, check_property_canboards_negative_001)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(CANBOARDS (type strain2 strain) (PROTOCOL (major 2 7) (minor 3 8) ) (FIRMWARE (major 4 9) (minor 5 10) (build 6 11) ) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "xxx", 2, 13, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 2, 13, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 2, 3, 4, 5, 6}},
-                                                            {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "strain", 2, 13, 7, 8, 9, 10, 11}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 2, 3, 4, 5, 6}},
+                                                            {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_strain, 2, 13, 7, 8, 9, 10, 11}}};
 
     EXPECT_TRUE(ret);
 
@@ -345,12 +345,12 @@ TEST(General, check_property_canboards_negative_002)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(CANBOARDS (type strain2 strain) (PROTOCOL (major 2 7) (minor 3 8) ) (FIRMWARE (major 4 9) (minor 5 10) (build 6 20) ) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "xxx", 2, 13, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 2, 13, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 2, 3, 4, 5, 6}},
-                                                            {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "strain", 2, 13, 7, 8, 9, 10, 11}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 2, 3, 4, 5, 6}},
+                                                            {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_strain, 2, 13, 7, 8, 9, 10, 11}}};
 
     EXPECT_TRUE(ret);
 
@@ -364,12 +364,12 @@ TEST(General, check_property_canboards_negative_003)
     ServiceParserMultipleFt_mock serviceParser;
     yarp::os::Bottle bottle;
     bottle.fromString("(CANBOARDS (type wrongboardname strain) (PROTOCOL (major 2 7) (minor 3 8) ) (FIRMWARE (major 4 9) (minor 5 10) (build 6 20) ) )");
-    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "xxx", 2, 13, 0, 0, 0, 0, 0}}};
+    serviceParser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 2, 13, 0, 0, 0, 0, 0}}};
 
     bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
-    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 2, 3, 4, 5, 6}},
-                                                            {"fakeId1", {10, 100, eoas_ft_mode_calibrated, "strain", 2, 13, 7, 8, 9, 10, 11}}};
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 2, 3, 4, 5, 6}},
+                                                            {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_strain, 2, 13, 7, 8, 9, 10, 11}}};
 
     EXPECT_FALSE(ret);
 }
@@ -427,7 +427,7 @@ TEST(General, check_checkCanMonitor_negative_003)
 
 TEST(General, toEomn_positive_001)
 {
-    FtInfo info = {10, 100, eoas_ft_mode_calibrated, "strain2", 1, 13, 4, 5, 1, 2, 3};
+    FtInfo info = {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 1, 13, 4, 5, 1, 2, 3};
 
     eOas_ft_sensordescriptor_t out;
     bool res = info.toEomn(out);
@@ -440,7 +440,7 @@ TEST(General, toEomn_positive_001)
 
 TEST(General, toEomn_positive_002)
 {
-    FtInfo info = {10, 100, eoas_ft_mode_calibrated, "strain2", 2, 13, 4, 5, 1, 2, 3};
+    FtInfo info = {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 4, 5, 1, 2, 3};
 
     eOas_ft_sensordescriptor_t out;
     bool res = info.toEomn(out);
@@ -453,10 +453,66 @@ TEST(General, toEomn_positive_002)
 
 TEST(General, toEomn_negative_001)
 {
-    FtInfo info = {10, 100, eoas_ft_mode_calibrated, "strain2", 3, 13, 4, 5, 1, 2, 3};
+    FtInfo info = {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 3, 13, 4, 5, 1, 2, 3};
 
     eOas_ft_sensordescriptor_t out;
     bool res = info.toEomn(out);
 
     EXPECT_FALSE(res);
+}
+
+TEST(General, checkBoardType_positive_001)
+{
+    ServiceParserMultipleFt_mock serviceParser;
+
+    eObrd_type_t expected=eobrd_strain2;
+
+    EXPECT_EQ(expected,serviceParser.checkBoardType("strain2"));
+}
+
+TEST(General, checkBoardType_positive_002)
+{
+    ServiceParserMultipleFt_mock serviceParser;
+
+    eObrd_type_t expected=eobrd_strain;
+
+    EXPECT_EQ(expected,serviceParser.checkBoardType("strain"));
+}
+
+
+TEST(General, checkBoardType_positive_003)
+{
+    ServiceParserMultipleFt_mock serviceParser;
+
+    eObrd_type_t expected=eobrd_strain2;
+
+    EXPECT_EQ(expected,serviceParser.checkBoardType("eobrd_strain2"));
+}
+
+
+TEST(General, checkBoardType_positive_004)
+{
+    ServiceParserMultipleFt_mock serviceParser;
+
+    eObrd_type_t expected=eobrd_strain;
+
+    EXPECT_EQ(expected,serviceParser.checkBoardType("eobrd_strain"));
+}
+
+TEST(General, checkBoardType_negative_001)
+{
+    ServiceParserMultipleFt_mock serviceParser;
+
+    eObrd_type_t expected=eobrd_unknown;
+
+    EXPECT_EQ(expected,serviceParser.checkBoardType("amcbldc"));
+}
+
+TEST(General, checkBoardType_negative_002)
+{
+    ServiceParserMultipleFt_mock serviceParser;
+
+    eObrd_type_t expected=eobrd_unknown;
+
+    EXPECT_EQ(expected,serviceParser.checkBoardType(""));
 }

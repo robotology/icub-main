@@ -13,7 +13,7 @@
 
 bool FtInfo::toEomn(eOas_ft_sensordescriptor_t& out) const
 {
-    out.boardinfo.type = eoboards_string2type2(board.c_str(), true);
+    out.boardinfo.type = board;
     out.canloc.addr = address;
     out.canloc.insideindex = eobrd_caninsideindex_none;
     out.boardinfo.firmware = {(uint8_t)majorFirmware, (uint8_t)minorFirmware, (uint8_t)buildFirmware};

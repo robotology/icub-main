@@ -276,7 +276,7 @@ bool embObjMultipleFTsensors::update(eOprotID32_t id32, double timestamp, void *
 
 bool embObjMultipleFTsensors::close()
 {
-    yDebug() << device_->getBoardInfo() << " close board";
+    //yDebug() << device_->getBoardInfo() << " close board";
     cleanup();
     return true;
 }
@@ -411,8 +411,11 @@ double embObjMultipleFTsensors::calculateBoardTime(eOabstime_t current)
     }
 
     // Simulate real board time
-    static double firstYarpTimestamp = yarp::os::Time::now();
-    static eOabstime_t firstCanTimestamp = current;
-    double realtime = firstYarpTimestamp + (double)(current - firstCanTimestamp) / 1000000;  // Simulate real board time
+    if (firstYarpTimestamp_ == 0)
+    {
+        firstYarpTimestamp_ = yarp::os::Time::now();
+        firstCanTimestamp_ = current;
+    }
+    double realtime = firstYarpTimestamp_ + (double)(current - firstCanTimestamp_) / 1000000;  // Simulate real board time
     return realtime;
 }

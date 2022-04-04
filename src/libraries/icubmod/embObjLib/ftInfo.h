@@ -22,7 +22,7 @@ class FtInfo
     uint8_t ftAcquisitionRate{0};
     uint8_t temperatureAcquisitionRate{0};
     eOas_ft_mode_t useCalibration{eoas_ft_mode_calibrated};
-    std::string board{"none"};
+    eObrd_type_t board{eobrd_unknown};
     int port{0};
     int address{0};
     int majorProtocol{0};
