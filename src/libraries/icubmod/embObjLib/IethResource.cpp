@@ -53,7 +53,7 @@ const char * IethResource::names[iethresType_numberof+1] =
 {
     "resManagement", "resAnalogMais", "resAnalogStrain", "resMotionControl",
     "resSkin", "resAnalogVirtual", "resAnalogInertial", "resAnalogmultienc",
-    "resAnalogInertial3", "resAnalogTemperature", "resAnalogPSC", "resAnalogPOS",
+    "resAnalogInertial3", "resAnalogTemperature", "resAnalogPSC", "resAnalogPOS","resAnalogFT",
     "resNONE"
 };
 

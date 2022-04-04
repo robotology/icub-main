@@ -30,7 +30,6 @@
 #include <yarp/os/LogStream.h>
 #include "EoAnalogSensors.h"
 
-
 #include "EoProtocol.h"
 #include "EoProtocolMN.h"
 #include "EoProtocolAS.h"
@@ -1440,8 +1439,8 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     ftconfig.ethservice.configuration.data.as.strain.canloc.port = thestrain_sensor.location.can.port;
     ftconfig.ethservice.configuration.data.as.strain.canloc.addr = thestrain_sensor.location.can.addr;
     ftconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eobrd_caninsideindex_none;
-    
-    
+
+
     
     Bottle b_SERVICE(config.findGroup("SERVICE")); //b_SERVICE and b_SETTINGS could not be null, otherwise parseService function would have returned false
     Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
@@ -1456,7 +1455,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
         ftconfig.temperatureAcquisitionrate = b_SETTINGS_temp.get(1).asInt32();
         //TODO: chek that the acquisition rate is inside a reasonable range
     }
-    
+        
     return true;
 }
 
@@ -4725,11 +4724,6 @@ bool ServiceParser::parseService2(Searchable &config, servConfigMC_t &mcconfig)
 
 
 */
-
-
-
-
-
 
     memcpy(&jc->joint2motor, &m1, sizeof(m1));
     memcpy(&jc->encoder2joint, &m2, sizeof(m2));

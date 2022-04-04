@@ -41,7 +41,7 @@ typedef struct
     eOmn_serv_parameter_t   ethservice;
     int                     acquisitionrate;
     bool                    useCalibration;
-    std::string                  nameOfStrain;
+    std::string             nameOfStrain;
     eObrd_cantype_t         boardType;
     int                     temperatureAcquisitionrate;
 } servConfigFTsensor_t;
@@ -323,7 +323,8 @@ public:
     servAScollector_t           as_service;
     servASstrainSettings_t      as_strain_settings;
 
-    servSKcollector_t           sk_service;
+    servSKcollector_t             sk_service;
+    eOmn_serv_config_data_sk_skin_t tmp;
 
 #if defined(SERVICE_PARSER_USE_MC)
     servMCcollector_t           mc_service;
@@ -344,8 +345,6 @@ private:
     
     // suggestion: split check_motion() in sub-methods which parse the groups ...
 };
-
-
 
 #endif
 

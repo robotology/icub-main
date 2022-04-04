@@ -43,7 +43,7 @@ public:
     inline  eth::TheEthManager* getEthManager()
     {return ethManager;}
     
-    inline bool isOpen() {return behFlags.opened;}
+    inline virtual bool isOpen() const {return behFlags.opened;}
     inline void setOpen(bool flag) {behFlags.opened=flag;}
     inline bool isVerbose() {return behFlags.verbosewhenok;}
     

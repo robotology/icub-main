@@ -24,6 +24,8 @@ mark_as_advanced(ICUBMAIN_COMPILE_SIMULATORS)
 option(ICUBMAIN_COMPILE_MODULES "Enable icub-main modules." ON)
 mark_as_advanced(ICUBMAIN_COMPILE_MODULES)
 
+option(BUILD_TESTING "Enable unittest." OFF)
+
 if (ICUBMAIN_COMPILE_LIBRARIES)
 add_subdirectory(libraries)
 endif()
@@ -44,5 +46,9 @@ if (ICUBMAIN_COMPILE_MODULES)
 add_subdirectory(modules)
 endif()
 
-
+if (BUILD_TESTING)
+  if(NOT BUILD_SHARED_LIBS)
+    add_subdirectory(unittest)
+  endif()
+endif()
 

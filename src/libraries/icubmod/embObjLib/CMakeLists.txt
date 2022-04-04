@@ -38,6 +38,8 @@ set(EXTRA_SOURCE            ${CMAKE_CURRENT_SOURCE_DIR}/hostTransceiver.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/IethResource.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/fakeEthResource.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/serviceParser.cpp
+                            ${CMAKE_CURRENT_SOURCE_DIR}/serviceParserMultipleFt.cpp
+                            ${CMAKE_CURRENT_SOURCE_DIR}/ftInfo.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/theNVmanager.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/embObjGeneralDevPrivData.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/mcEventDownsampler.cpp)
@@ -81,7 +83,7 @@ SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-add_library(${PROJECT_NAME} SHARED ${embobj_source} ${embobj_header})
+add_library(${PROJECT_NAME} ${embobj_source} ${embobj_header})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib
                                                 ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/
