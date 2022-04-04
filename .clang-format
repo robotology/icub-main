@@ -1,5 +1,4 @@
 # Common settings
-BasedOnStyle:  Google
 TabWidth:        4
 IndentWidth:     4
 UseTab:          Never
@@ -9,7 +8,5 @@ Language: Cpp
 
 DisableFormat:   false
 Standard: Cpp11
-BreakBeforeBraces: Allman
-AllowShortIfStatementsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: false
 SortIncludes: false
+
