@@ -276,7 +276,6 @@ bool embObjMultipleFTsensors::update(eOprotID32_t id32, double timestamp, void *
 
 bool embObjMultipleFTsensors::close()
 {
-    //yDebug() << device_->getBoardInfo() << " close board";
     cleanup();
     return true;
 }

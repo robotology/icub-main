@@ -44,7 +44,7 @@ class ServiceParserMultipleFt
     virtual bool checkSettings(const Bottle& settings);
     virtual bool checkServiceType(const Bottle& service);
     virtual bool checkCanMonitor(const Bottle& service);
-	virtual eObrd_type_t checkBoardType(const std::string &boardType);
+    virtual eObrd_type_t checkBoardType(const std::string& boardType);
 
     std::map<std::string /*sensor id*/, FtInfo> ftInfo_;
     eObrd_canmonitor_cfg_t canMonitor_;

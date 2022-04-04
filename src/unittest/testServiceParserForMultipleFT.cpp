@@ -465,54 +465,52 @@ TEST(General, checkBoardType_positive_001)
 {
     ServiceParserMultipleFt_mock serviceParser;
 
-    eObrd_type_t expected=eobrd_strain2;
+    eObrd_type_t expected = eobrd_strain2;
 
-    EXPECT_EQ(expected,serviceParser.checkBoardType("strain2"));
+    EXPECT_EQ(expected, serviceParser.checkBoardType("strain2"));
 }
 
 TEST(General, checkBoardType_positive_002)
 {
     ServiceParserMultipleFt_mock serviceParser;
 
-    eObrd_type_t expected=eobrd_strain;
+    eObrd_type_t expected = eobrd_strain;
 
-    EXPECT_EQ(expected,serviceParser.checkBoardType("strain"));
+    EXPECT_EQ(expected, serviceParser.checkBoardType("strain"));
 }
-
 
 TEST(General, checkBoardType_positive_003)
 {
     ServiceParserMultipleFt_mock serviceParser;
 
-    eObrd_type_t expected=eobrd_strain2;
+    eObrd_type_t expected = eobrd_strain2;
 
-    EXPECT_EQ(expected,serviceParser.checkBoardType("eobrd_strain2"));
+    EXPECT_EQ(expected, serviceParser.checkBoardType("eobrd_strain2"));
 }
-
 
 TEST(General, checkBoardType_positive_004)
 {
     ServiceParserMultipleFt_mock serviceParser;
 
-    eObrd_type_t expected=eobrd_strain;
+    eObrd_type_t expected = eobrd_strain;
 
-    EXPECT_EQ(expected,serviceParser.checkBoardType("eobrd_strain"));
+    EXPECT_EQ(expected, serviceParser.checkBoardType("eobrd_strain"));
 }
 
 TEST(General, checkBoardType_negative_001)
 {
     ServiceParserMultipleFt_mock serviceParser;
 
-    eObrd_type_t expected=eobrd_unknown;
+    eObrd_type_t expected = eobrd_unknown;
 
-    EXPECT_EQ(expected,serviceParser.checkBoardType("amcbldc"));
+    EXPECT_EQ(expected, serviceParser.checkBoardType("amcbldc"));
 }
 
 TEST(General, checkBoardType_negative_002)
 {
     ServiceParserMultipleFt_mock serviceParser;
 
-    eObrd_type_t expected=eobrd_unknown;
+    eObrd_type_t expected = eobrd_unknown;
 
-    EXPECT_EQ(expected,serviceParser.checkBoardType(""));
+    EXPECT_EQ(expected, serviceParser.checkBoardType(""));
 }
