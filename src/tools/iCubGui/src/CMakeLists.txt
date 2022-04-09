@@ -68,6 +68,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE ${QT_DEFINITIONS}
 
 target_link_libraries(iCubGui GLUT::GLUT
                               OpenGL::GL
+                              OpenGL::GLU
                               ${YARP_LIBRARIES}
                               skinDynLib)
 
