@@ -65,13 +65,15 @@ This requires 1 second movement of joints 5,6,7 to 10 10 10 respectively:
 \section parameters_sec Parameters
 Run as:
 
-ctpService --robot robotname --part part (optionally: --name modulename)
+ctpService --robot robotname --part part [--name modulename] [--autochange_control_mode_enable]
 
 robot: name of robot (e.g. icub)
 
 part: prefix for part name (e.g. right_arm)
 
-name: module name (used to form port names)
+name: [optional] module name (used to form port names)
+
+autochange_control_mode_enable: [optional] sets the joints to position mode when trying to execute the command (default off)
 
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -190,6 +192,8 @@ public:
 
 class scriptPosPort
 {
+public:
+    bool autochange_control_mode_enable = false;
 protected:
     bool verbose;
     bool connected;
@@ -200,7 +204,7 @@ protected:
     IEncoders        *enc;
     Actions actions;
     mutex mtx;
- 
+
     void _send(const ActionItem *x)
     {
         if (!connected)
@@ -262,7 +266,11 @@ protected:
             positions.push_back(x->getCmd()[i]);
         }
 
-        mode->setControlModes(disp.length(), joints.data(), modes.data());
+        if (autochange_control_mode_enable)
+        {
+            mode->setControlModes(disp.length(), joints.data(), modes.data());
+        }
+
         yarp::os::Time::delay(0.01);  // give time to update control modes value
         mode->getControlModes(disp.length(), joints.data(), modes.data());
         for (size_t i=0; i<disp.length(); i++)
@@ -833,7 +841,7 @@ public:
         
         if (!posPort.connect())
         {
-            cerr<<"Error cannot conenct to remote ports"<<endl;
+            cerr<<"Error cannot connect to remote ports"<<endl;
             return false;
         }
 
@@ -845,6 +853,13 @@ public:
             cerr<<"Thread did not start, queue will not work"<<endl;
         }
 
+        if (rf.check("autochange_control_mode_enable"))
+        {
+            //This value should be false by default.
+            //Otherwise it can be dangerous to activate idle joints (or in hw fault).
+            //The robot could eventually break something!
+            posPort.autochange_control_mode_enable=true;
+        }
         velPort.open(name+string("/")+rf.find("part").asString()+"/vc:o");
         velInitPort.open(name+string("/")+rf.find("part").asString()+"/vcInit:o");
         velThread.attachVelPort(&velPort);
@@ -870,7 +885,7 @@ public:
                     cout<<"Queue command:\n";
                     cout<<"[ctpq] [time] seconds [off] j [pos] (list)\n";
                     cout<<"New command, execute now (erase queue):\n";
-                    cout<<"[ctpq] [time] seconds [off] j [pos] (list)\n";
+                    cout<<"[ctpn] [time] seconds [off] j [pos] (list)\n";
                     cout<<"Load sequence from file:\n";
                     cout<<"[ctpf] filename\n";
                     reply.addVocab32("ack");
@@ -941,6 +956,7 @@ int main(int argc, char *argv[])
         cout << "\t--part partname: robot part name" << endl;
         cout << "\t--from   fileName: input configuration file" << endl;
         cout << "\t--context dirName: resource finder context"  << endl;
+        cout << "\t--autochange_control_mode_enable: sets the joints to position mode when trying to execute the command (default off)" << endl;
 
         return 0;
     }
