@@ -167,7 +167,6 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }}
 
     - name: Test
-      if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         cd build
