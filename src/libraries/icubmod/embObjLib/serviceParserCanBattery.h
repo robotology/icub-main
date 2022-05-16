@@ -18,25 +18,10 @@
 #include "EoBoards.h"
 #include "EoManagement.h"
 #include "EoMotionControl.h"
-#include "ftInfo.h"
+#include "batteryInfo.h"
 
 using namespace yarp::os;
 
-class BatteryInfo
-{
-   public:
-	uint8_t acquisitionRate{0};
-	eObrd_type_t board{eobrd_unknown};
-	int port{0};
-	int address{0};
-	int majorProtocol{0};
-	int minorProtocol{0};
-	int majorFirmware{0};
-	int minorFirmware{0};
-	int buildFirmware{0};
-
-	bool toEomn(eOas_battery_sensordescriptor_t& out) const;
-};
 
 class ServiceParserCanBattery
 {
@@ -44,7 +29,7 @@ class ServiceParserCanBattery
 	ServiceParserCanBattery();
 	bool parse(const yarp::os::Searchable& config);
 	bool toEomn(eOmn_serv_config_data_as_canbattery_t& out) const;
-	BatteryInfo &getBatteryInfo()
+	BatteryInfo &getBatteryInfo();
 
    protected:
 	virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards);  // OK

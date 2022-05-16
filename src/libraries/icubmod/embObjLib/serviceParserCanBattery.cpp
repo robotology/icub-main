@@ -243,25 +243,20 @@ bool ServiceParserCanBattery::checkSettings(const Bottle &service)
 	}
 
 	// Check size
-	if (settingsEnabledSensors.size() != 1)
-	{
-		yError() << "ServiceParserCanBattery::checkSettings --> FtPeriod size";
+	int tmp=settingsBatteryPeriod.size();
+	std::string s=settingsBatteryPeriod.toString();
+    if (settingsEnabledSensors.size() != 2) {
+        yError() << "ServiceParserCanBattery::checkSettings --> enabledSensors";
 		return false;
-	}
-	if (settingsBatteryPeriod.size() != 1)
+    }
+    if (settingsBatteryPeriod.size() != 2)
 	{
-		yError() << "ServiceParserCanBattery::checkSettings --> "
+		yError() << "ServiceParserCanBattery::checkSettings --> acquisitionRate"
 					"temperaturePeriod size";
 		return false;
 	}
 
-	std::string id = settingsEnabledSensors.get(0).asString();
-	uint8_t acquisitionRate = (uint8_t)settingsBatteryPeriod.get(0).asInt8();
-	eOas_ft_mode_t calib = eoas_ft_mode_calibrated;
-	if (!useCalibration)
-	{
-		calib = eoas_ft_mode_raw;
-	}
+	uint8_t acquisitionRate = (uint8_t)settingsBatteryPeriod.get(1).asInt8();
 	batteryInfo_.acquisitionRate = acquisitionRate;
 	return true;
 }
@@ -276,7 +271,7 @@ bool ServiceParserCanBattery::checkServiceType(const Bottle &service)
 	std::string serviceType = service.find("type").asString();
 	eOmn_serv_type_t serviceTypeEomn = eomn_string2servicetype(serviceType.c_str());
 
-	if (eomn_serv_AS_battery != serviceTypeEomn)
+	if (eomn_serv_AS_canbattery != serviceTypeEomn)
 	{
 		yError() << "ServiceParserCanBattery::check() has found wrong SERVICE.type = " << serviceType << "it must be eomn_serv_AS_ft";
 		return false;
@@ -315,7 +310,7 @@ bool ServiceParserCanBattery::parse(const yarp::os::Searchable &config)
 	return true;
 }
 
-bool ServiceParserCanBattery::toEomn(eOmn_serv_config_data_as_battery_t &out) const
+bool ServiceParserCanBattery::toEomn(eOmn_serv_config_data_as_canbattery_t &out) const
 {
     /*
 	out.canmonitorconfig = canMonitor_;
@@ -354,37 +349,4 @@ eObrd_type_t ServiceParserCanBattery::checkBoardType(const std::string &boardTyp
 		}
 	}*/
 	return type;
-}
-
-
-bool BatteryInfo::toEomn(eOas_battery_sensordescriptor_t& out) const
-{
-    /*
-    out.boardinfo.type = board;
-    out.canloc.addr = address;
-    out.canloc.insideindex = eobrd_caninsideindex_none;
-    out.boardinfo.firmware = {(uint8_t)majorFirmware, (uint8_t)minorFirmware, (uint8_t)buildFirmware};
-    out.boardinfo.protocol = {(uint8_t)majorProtocol, (uint8_t)minorProtocol};
-
-    try
-    {
-        if (port == 1)
-            out.canloc.port = eOcanport1;
-        else if (port == 2)
-            out.canloc.port = eOcanport2;
-        else
-        {
-            yError() << "FtInfo::toEomn() invalid can port";
-            out = eOas_ft_sensordescriptor_t();
-            return false;
-        }
-    }
-    catch (const std::exception& e)
-    {
-        yError() << "FtInfo::toEomn() invalid can port";
-        out = eOas_ft_sensordescriptor_t();
-        return false;
-    }
-    */
-    return true;
 }

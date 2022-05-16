@@ -14,6 +14,9 @@ make test
 
 # 3. Test topics
 
+## 3.1. Multiple FT sensors
 - XML parser for multiple ft sensor
 - Multiple FT sensors device methods
+
+## 3.2. Can battery
 

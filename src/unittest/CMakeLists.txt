@@ -28,8 +28,9 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_sources(${PROJECT_NAME}
     PRIVATE
     gtest_main.cc
-    testServiceParserForMultipleFT.cpp
+    testServiceParserMultipleFT.cpp
     testDeviceMultipleFTSensors.cpp
+    testServiceParserCanBattery.cpp
   )
 
 target_link_libraries(${PROJECT_NAME}
