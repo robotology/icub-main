@@ -27,7 +27,7 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
     Bottle propertyCanBoardType = propertyCanBoard.findGroup("type");
     if (propertyCanBoardType.isNull())
     {
-        yError() << "ServiceParserMultipleFt::check() cannot find "
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards() cannot find "
                     "PROPERTIES.CANBOARDS.type";
         return false;
     }
@@ -35,7 +35,7 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
     Bottle propertyCanBoardProtocol = Bottle(propertyCanBoard.findGroup("PROTOCOL"));
     if (propertyCanBoardProtocol.isNull())
     {
-        yError() << "ServiceParserMultipleFt::check() cannot find "
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards() cannot find "
                     "PROPERTIES.CANBOARDS.PROTOCOL";
         return false;
     }
@@ -43,7 +43,7 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
     Bottle propertyCanBoardProtocolMajor = Bottle(propertyCanBoardProtocol.findGroup("major"));
     if (propertyCanBoardProtocolMajor.isNull())
     {
-        yError() << "ServiceParserMultipleFt::check() cannot find "
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards() cannot find "
                     "PROPERTIES.CANBOARDS.PROTOCOL.major";
         return false;
     }
@@ -51,7 +51,7 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
     Bottle propertyCanBoardProtocolMinor = Bottle(propertyCanBoardProtocol.findGroup("minor"));
     if (propertyCanBoardProtocolMinor.isNull())
     {
-        yError() << "ServiceParserMultipleFt::check() cannot find "
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards() cannot find "
                     "PROPERTIES.CANBOARDS.PROTOCOL.minor";
         return false;
     }
@@ -59,7 +59,7 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
     Bottle propertyCanBoardFirmware = Bottle(propertyCanBoard.findGroup("FIRMWARE"));
     if (propertyCanBoardFirmware.isNull())
     {
-        yError() << "ServiceParserMultipleFt::check() cannot find "
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards() cannot find "
                     "PROPERTIES.CANBOARDS.FIRMWARE";
         return false;
     }
@@ -67,7 +67,7 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
     Bottle propertyCanBoardFirmwareMajor = Bottle(propertyCanBoardFirmware.findGroup("major"));
     if (propertyCanBoardFirmwareMajor.isNull())
     {
-        yError() << "ServiceParserMultipleFt::check() cannot find "
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards() cannot find "
                     "PROPERTIES.CANBOARDS.FIRMWARE.major";
         return false;
     }
@@ -75,7 +75,7 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
     Bottle propertyCanBoardFirmwareMinor = Bottle(propertyCanBoardFirmware.findGroup("minor"));
     if (propertyCanBoardFirmwareMinor.isNull())
     {
-        yError() << "ServiceParserMultipleFt::check() cannot find "
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards() cannot find "
                     "PROPERTIES.CANBOARDS.FIRMWARE.minor";
         return false;
     }
@@ -83,7 +83,7 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
     Bottle propertyCanBoardFirmwareBuild = Bottle(propertyCanBoardFirmware.findGroup("build"));
     if (propertyCanBoardFirmwareBuild.isNull())
     {
-        yError() << "ServiceParserMultipleFt::check() cannot find "
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards() cannot find "
                     "PROPERTIES.CANBOARDS.FIRMWARE.build";
         return false;
     }
@@ -91,27 +91,27 @@ bool ServiceParserMultipleFt::checkPropertyCanBoards(const Bottle &property)
     // Check size
     if (propertyCanBoardType.size() != propertyCanBoardProtocolMajor.size())
     {
-        yError() << "ServiceParserMultipleFt::checkSettings --> protocol major size";
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards --> protocol major size";
         return false;
     }
     if (propertyCanBoardProtocolMajor.size() != propertyCanBoardProtocolMinor.size())
     {
-        yError() << "ServiceParserMultipleFt::checkSettings --> protocol minor size";
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards --> protocol minor size";
         return false;
     }
     if (propertyCanBoardProtocolMinor.size() != propertyCanBoardFirmwareMajor.size())
     {
-        yError() << "ServiceParserMultipleFt::checkSettings --> firmware major size";
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards --> firmware major size";
         return false;
     }
     if (propertyCanBoardFirmwareMajor.size() != propertyCanBoardFirmwareMinor.size())
     {
-        yError() << "ServiceParserMultipleFt::checkSettings --> firmware minor size";
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards --> firmware minor size";
         return false;
     }
     if (propertyCanBoardFirmwareMinor.size() != propertyCanBoardFirmwareBuild.size())
     {
-        yError() << "ServiceParserMultipleFt::checkSettings --> firmware build size";
+        yError() << "ServiceParserMultipleFt::checkPropertyCanBoards --> firmware build size";
         return false;
     }
 
