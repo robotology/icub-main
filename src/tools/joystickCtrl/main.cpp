@@ -337,63 +337,37 @@ public:
 
         //get the list of the commands to be executed with the buttons
         Bottle& exec_comm_bottle = rf.findGroup("BUTTONS_EXECUTE");
-        int joystick_actions_count = 0;
         if (!exec_comm_bottle.isNull())
         {
             yInfo ( "associating the following actions to the buttons: \n");
-            do
-            {
+            for (int iii = 0; iii < 20; iii++){
                 char tmp[80];
-                sprintf(tmp, "button%d", joystick_actions_count); 
+                sprintf(tmp, "button%d", iii); 
                 if (exec_comm_bottle.check(tmp))
                 {
-                    button_actions[joystick_actions_count] = exec_comm_bottle.find(tmp).toString();
-                    printf ("%s %s\n", tmp, button_actions[joystick_actions_count].c_str());
+                    button_actions[iii] = exec_comm_bottle.find(tmp).toString();
+                    printf ("%s %s\n", tmp, button_actions[iii].c_str());
                 }
-                else
-                {
-                    break;
-                }
-                joystick_actions_count++;
             }
-            while (joystick_actions_count<20);
             printf ("\n");
         }
-        if (joystick_actions_count==0)
-        {
-            yInfo ( "no actions specified for the joystick buttons. \n");
-        }
-
 
         //get the list of the commands to be executed with the hats
         Bottle& hats_exec_bottle = rf.findGroup("HATS_EXECUTE");
-        int hats_actions_count = 0;
         if (!hats_exec_bottle.isNull())
         {
             yInfo ( "associating the following actions to the hats: \n");
-            do
-            {
+            for (int iii = 0; iii < 20; iii++){
                 char tmp[80];
-                sprintf(tmp, "hat%d", hats_actions_count);
+                sprintf(tmp, "hat%d", iii);
                 if (hats_exec_bottle.check(tmp))
                 {
-                    hat_actions[hats_actions_count] = hats_exec_bottle.find(tmp).toString();
-                    printf ("%s %s\n", tmp, hat_actions[hats_actions_count].c_str());
+                    hat_actions[iii] = hats_exec_bottle.find(tmp).toString();
+                    printf ("%s %s\n", tmp, hat_actions[iii].c_str());
                 }
-                else
-                {
-                    break;
-                }
-                hats_actions_count++;
             }
-            while (hats_actions_count<20);
             printf ("\n");
         }
-        if (joystick_actions_count==0)
-        {
-            yInfo ( "no actions specified for the joystick hats. \n");
-        }
-
 
         // start SDL subsystem
         //SDL_Init(SDL_INIT_VIDEO);
