@@ -3,12 +3,14 @@ name: Continuous Integration
 on:
   push:
   pull_request:
-    types: ['opened', 'reopened', 'synchronize', 'ready_for_review']  
   schedule:
   # * is a special character in YAML so you have to quote this string
   # Execute a "nightly" build at 2 AM UTC
   - cron:  '0 2 * * *'
   workflow_dispatch:
+
+env:
+  DRAFT_PR: FALSE
 
 jobs:
   build:
@@ -20,14 +22,17 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
-    - name: Skip draft PR
+    - name: Check if triggered by a draft PR
       if: ${{ github.event_name == 'pull_request' }}
       run: |
         if ${{ github.event.pull_request.draft }}; then
-          echo "This PR is still draft"
-          echo "Skipping CI..."
-          exit 1
+          echo "DRAFT_PR=TRUE" >> ${GITHUB_ENV}
+          echo "⚠️ This PR is still draft"
         fi
+
+    - name: If so, cancel the job
+      if: "${{ env.DRAFT_PR == 'TRUE' }}"
+      uses: andymckay/cancel-action@0.2
             
     - uses: actions/checkout@main
 
