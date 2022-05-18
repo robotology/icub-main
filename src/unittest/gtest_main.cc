@@ -13,8 +13,7 @@ int main(int argc, char **argv)
 {
 	::testing::InitGoogleTest(&argc, argv);
 
-	::testing::GTEST_FLAG(filter) = "ServiceParserCanBattery.*";
+	//::testing::GTEST_FLAG(filter) = "MultiplembObjMultipleFTsensor.update_negative_001";
 
 	return RUN_ALL_TESTS();
-
 }

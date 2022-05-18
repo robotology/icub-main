@@ -243,13 +243,14 @@ bool ServiceParserCanBattery::checkSettings(const Bottle &service)
 	}
 
 	// Check size
-	int tmp=settingsBatteryPeriod.size();
-	std::string s=settingsBatteryPeriod.toString();
-    if (settingsEnabledSensors.size() != 2) {
-        yError() << "ServiceParserCanBattery::checkSettings --> enabledSensors";
+	int tmp = settingsBatteryPeriod.size();
+	std::string s = settingsBatteryPeriod.toString();
+	if (settingsEnabledSensors.size() != 2)
+	{
+		yError() << "ServiceParserCanBattery::checkSettings --> enabledSensors";
 		return false;
-    }
-    if (settingsBatteryPeriod.size() != 2)
+	}
+	if (settingsBatteryPeriod.size() != 2)
 	{
 		yError() << "ServiceParserCanBattery::checkSettings --> acquisitionRate"
 					"temperaturePeriod size";
@@ -312,7 +313,7 @@ bool ServiceParserCanBattery::parse(const yarp::os::Searchable &config)
 
 bool ServiceParserCanBattery::toEomn(eOmn_serv_config_data_as_canbattery_t &out) const
 {
-    /* todo luca
+	/* todo luca
 	out.canmonitorconfig = canMonitor_;
 
 	EOarray *ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
@@ -327,7 +328,7 @@ bool ServiceParserCanBattery::toEomn(eOmn_serv_config_data_as_canbattery_t &out)
 		}
 		eo_array_PushBack(ar, &item);
 	}
-    */
+	*/
 	return true;
 }
 
@@ -339,7 +340,8 @@ BatteryInfo &ServiceParserCanBattery::getBatteryInfo()
 eObrd_type_t ServiceParserCanBattery::checkBoardType(const std::string &boardType)
 {
 	eObrd_type_t type = eoboards_string2type2(boardType.c_str(), eobool_true);
-	/*if (!eoas_ft_isboardvalid(eoboards_type2cantype(type)))
+	/* todo luca
+	if (!eoas_ft_isboardvalid(eoboards_type2cantype(type)))
 	{
 		type = eoboards_string2type2(boardType.c_str(), eobool_false);
 		if (!eoas_ft_isboardvalid(eoboards_type2cantype(type)))
@@ -347,6 +349,6 @@ eObrd_type_t ServiceParserCanBattery::checkBoardType(const std::string &boardTyp
 			yError() << "checkBoardType --> unsupported board type:" << boardType;
 			return type;
 		}
-	} todo luca*/
+	} */
 	return type;
 }

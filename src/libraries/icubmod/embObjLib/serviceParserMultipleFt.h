@@ -25,29 +25,29 @@ using namespace yarp::os;
 class CanMonitor
 {
    public:
-    uint8_t checkPeriod;
-    eObrd_canmonitor_reportmode_t reportmode;
-    uint16_t periodofreport;
+	uint8_t checkPeriod;
+	eObrd_canmonitor_reportmode_t reportmode;
+	uint16_t periodofreport;
 };
 
 class ServiceParserMultipleFt
 {
    public:
-    ServiceParserMultipleFt();
-    bool parse(const yarp::os::Searchable& config);
-    bool toEomn(eOmn_serv_config_data_as_ft_t& out) const;
-    std::map<std::string, FtInfo>& getFtInfo();
+	ServiceParserMultipleFt();
+	bool parse(const yarp::os::Searchable& config);
+	bool toEomn(eOmn_serv_config_data_as_ft_t& out) const;
+	std::map<std::string, FtInfo>& getFtInfo();
 
    protected:
-    virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards);
-    virtual bool checkPropertySensors(const Bottle& property);
-    virtual bool checkSettings(const Bottle& settings);
-    virtual bool checkServiceType(const Bottle& service);
-    virtual bool checkCanMonitor(const Bottle& service);
-    virtual eObrd_type_t checkBoardType(const std::string& boardType);
+	virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards);
+	virtual bool checkPropertySensors(const Bottle& property);
+	virtual bool checkSettings(const Bottle& settings);
+	virtual bool checkServiceType(const Bottle& service);
+	virtual bool checkCanMonitor(const Bottle& service);
+	virtual eObrd_type_t checkBoardType(const std::string& boardType);
 
-    std::map<std::string /*sensor id*/, FtInfo> ftInfo_;
-    eObrd_canmonitor_cfg_t canMonitor_;
+	std::map<std::string /*sensor id*/, FtInfo> ftInfo_;
+	eObrd_canmonitor_cfg_t canMonitor_;
 };
 
 #endif

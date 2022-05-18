@@ -22,14 +22,13 @@
 
 using namespace yarp::os;
 
-
 class ServiceParserCanBattery
 {
    public:
 	ServiceParserCanBattery();
 	bool parse(const yarp::os::Searchable& config);
 	bool toEomn(eOmn_serv_config_data_as_canbattery_t& out) const;
-	BatteryInfo &getBatteryInfo();
+	BatteryInfo& getBatteryInfo();
 
    protected:
 	virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards);  // OK
