@@ -89,48 +89,48 @@ bool ServiceParserCanBattery::checkPropertyCanBoards(const Bottle &property)
 	}
 
 	// Check size
-	if (propertyCanBoardType.size() != 1)
+	if (propertyCanBoardType.size() != 2)
 	{
-		yError() << "ServiceParserCanBattery::checkSettings --> protocol type size";
+		yError() << "ServiceParserCanBattery::checkPropertyCanBoards --> protocol type size";
 		return false;
 	}
-	if (propertyCanBoardProtocolMajor.size() != 1)
+	if (propertyCanBoardProtocolMajor.size() != 2)
 	{
-		yError() << "ServiceParserCanBattery::checkSettings --> protocol major size";
+		yError() << "ServiceParserCanBattery::checkPropertyCanBoards --> protocol major size";
 		return false;
 	}
-	if (propertyCanBoardProtocolMinor.size() != 1)
+	if (propertyCanBoardProtocolMinor.size() != 2)
 	{
-		yError() << "ServiceParserCanBattery::checkSettings --> firmware minor size";
+		yError() << "ServiceParserCanBattery::checkPropertyCanBoards --> firmware minor size";
 		return false;
 	}
-	if (propertyCanBoardFirmwareMajor.size() != 1)
+	if (propertyCanBoardFirmwareMajor.size() != 2)
 	{
-		yError() << "ServiceParserCanBattery::checkSettings --> firmware major size";
+		yError() << "ServiceParserCanBattery::checkPropertyCanBoards --> firmware major size";
 		return false;
 	}
-	if (propertyCanBoardFirmwareMinor.size() != 1)
+	if (propertyCanBoardFirmwareMinor.size() != 2)
 	{
-		yError() << "ServiceParserCanBattery::checkSettings --> firmware minor size";
+		yError() << "ServiceParserCanBattery::checkPropertyCanBoards --> firmware minor size";
 		return false;
 	}
-	if (propertyCanBoardFirmwareBuild.size() != 1)
+	if (propertyCanBoardFirmwareBuild.size() != 2)
 	{
-		yError() << "ServiceParserCanBattery::checkSettings --> firmware build size";
+		yError() << "ServiceParserCanBattery::checkPropertyCanBoards --> firmware build size";
 		return false;
 	}
 
-	std::string boardType = propertyCanBoardType.get(0).asString();
+	std::string boardType = propertyCanBoardType.get(1).asString();
 
 	eObrd_type_t currentBoard = checkBoardType(boardType);
 	if (currentBoard == eobrd_unknown)
 		return false;
 
-	batteryInfo_.majorProtocol = propertyCanBoardProtocolMajor.get(0).asInt32();
-	batteryInfo_.minorProtocol = propertyCanBoardProtocolMinor.get(0).asInt32();
-	batteryInfo_.majorFirmware = propertyCanBoardFirmwareMajor.get(0).asInt32();
-	batteryInfo_.minorFirmware = propertyCanBoardFirmwareMinor.get(0).asInt32();
-	batteryInfo_.buildFirmware = propertyCanBoardFirmwareBuild.get(0).asInt32();
+	batteryInfo_.majorProtocol = propertyCanBoardProtocolMajor.get(1).asInt32();
+	batteryInfo_.minorProtocol = propertyCanBoardProtocolMinor.get(1).asInt32();
+	batteryInfo_.majorFirmware = propertyCanBoardFirmwareMajor.get(1).asInt32();
+	batteryInfo_.minorFirmware = propertyCanBoardFirmwareMinor.get(1).asInt32();
+	batteryInfo_.buildFirmware = propertyCanBoardFirmwareBuild.get(1).asInt32();
 
 	return true;
 }
@@ -170,28 +170,28 @@ bool ServiceParserCanBattery::checkPropertySensors(const Bottle &property)
 	}
 
 	// CHECK size
-	if (propertySensorsId.size() != 1)
+	if (propertySensorsId.size() != 2)
 	{
 		yError() << "ServiceParserCanBattery::checkPropertySensors --> id size";
 		return false;
 	}
-	if (propertySensorsBoard.size() != 1)
+	if (propertySensorsBoard.size() != 2)
 	{
 		yError() << "ServiceParserCanBattery::checkPropertySensors --> board size";
 		return false;
 	}
-	if (propertySensorsLocation.size() != 1)
+	if (propertySensorsLocation.size() != 2)
 	{
 		yError() << "ServiceParserCanBattery::checkPropertySensors --> location size";
 		return false;
 	}
 
-	std::string id = propertySensorsId.get(0).asString();
-	std::string board = propertySensorsBoard.get(0).asString();
+	std::string id = propertySensorsId.get(1).asString();
+	std::string board = propertySensorsBoard.get(1).asString();
 	eObrd_type_t currentBoard = checkBoardType(board);
 	if (currentBoard == eobrd_unknown)
 		return false;
-	std::string location = propertySensorsLocation.get(0).asString();
+	std::string location = propertySensorsLocation.get(1).asString();
 
 	try
 	{
@@ -312,7 +312,7 @@ bool ServiceParserCanBattery::parse(const yarp::os::Searchable &config)
 
 bool ServiceParserCanBattery::toEomn(eOmn_serv_config_data_as_canbattery_t &out) const
 {
-    /*
+    /* todo luca
 	out.canmonitorconfig = canMonitor_;
 
 	EOarray *ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
@@ -347,6 +347,6 @@ eObrd_type_t ServiceParserCanBattery::checkBoardType(const std::string &boardTyp
 			yError() << "checkBoardType --> unsupported board type:" << boardType;
 			return type;
 		}
-	}*/
+	} todo luca*/
 	return type;
 }
