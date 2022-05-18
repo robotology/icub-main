@@ -3,6 +3,7 @@ name: Continuous Integration
 on:
   push:
   pull_request:
+    types: ['opened', 'reopened', 'synchronize', 'ready_for_review']  
   schedule:
   # * is a special character in YAML so you have to quote this string
   # Execute a "nightly" build at 2 AM UTC
@@ -19,6 +20,15 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
+    - name: Skip draft PR
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        if ${{ github.event.pull_request.draft }}; then
+          echo "This PR is still draft"
+          echo "Skipping CI..."
+          exit 0
+        fi
+            
     - uses: actions/checkout@main
 
     - name: Environment Variables
