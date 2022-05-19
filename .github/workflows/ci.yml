@@ -24,6 +24,7 @@ jobs:
     steps:
     - name: Check if the job is triggered by a draft PR
       if: ${{ github.event_name == 'pull_request' }}
+      shell: bash
       run: |
         if [ ${{ github.event.pull_request.draft }} == true ]; then
           echo "DRAFT_PR=TRUE" >> ${GITHUB_ENV}
@@ -46,6 +47,7 @@ jobs:
     # See https://github.com/actions/virtual-environments/issues/323
     - name: Remove broken apt repos [Ubuntu]
       if: matrix.os == 'ubuntu-latest'
+      shell: bash
       run: |
         for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
 
@@ -66,11 +68,13 @@ jobs:
 
     - name: Dependencies [macOS]
       if: matrix.os == 'macOS-latest'
+      shell: bash
       run: |
         brew install ace cmake eigen gsl ipopt opencv pkg-config qt5
 
     - name: Dependencies [Ubuntu]
       if: matrix.os == 'ubuntu-latest'
+      shell: bash
       run: |
         sudo apt update
         sudo apt install -y git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev swig libopencv-dev qtbase5-dev \
@@ -165,8 +169,10 @@ jobs:
               -DENABLE_icubmod_embObjSkin:BOOL=ON -DENABLE_icubmod_embObjStrain:BOOL=ON \
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+
     - name: Enable python bindings on Ubuntu
       if: matrix.os == 'ubuntu-latest'
+      shell: bash
       run: |
         cd build
         # Enable ICUB_COMPILE_BINDINGS in Ubuntu
