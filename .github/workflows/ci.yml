@@ -36,7 +36,7 @@ jobs:
       uses: andymckay/cancel-action@0.2
             
     - name: Checkout the code
-    - uses: actions/checkout@main
+      uses: actions/checkout@main
 
     - name: Environment Variables
       shell: bash
