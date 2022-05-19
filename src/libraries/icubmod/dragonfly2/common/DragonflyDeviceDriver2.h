@@ -287,7 +287,7 @@ class yarp::dev::DragonflyDeviceDriver2 :
     public IPreciselyTimed,
     public IFrameGrabber,
     public IFrameGrabberRgb,
-    public IFrameGrabberControls2,
+    public IFrameGrabberControls,
     public IFrameGrabberControlsDC1394,
     public IRgbVisualParams
 {
