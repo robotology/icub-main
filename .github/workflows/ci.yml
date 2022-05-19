@@ -22,18 +22,20 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
-    - name: Check if triggered by a draft PR
+    - name: Check if the job is triggered by a draft PR
       if: ${{ github.event_name == 'pull_request' }}
       run: |
         if ${{ github.event.pull_request.draft }}; then
           echo "DRAFT_PR=TRUE" >> ${GITHUB_ENV}
           echo "⚠️ This PR is still draft"
+          echo "This CI will be skipped"
         fi
 
     - name: If so, cancel the job
       if: "${{ env.DRAFT_PR == 'TRUE' }}"
       uses: andymckay/cancel-action@0.2
             
+    - name: Checkout the code
     - uses: actions/checkout@main
 
     - name: Environment Variables
