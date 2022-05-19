@@ -25,7 +25,7 @@ jobs:
     - name: Check if the job is triggered by a draft PR
       if: ${{ github.event_name == 'pull_request' }}
       run: |
-        if ${{ github.event.pull_request.draft }}; then
+        if [ ${{ github.event.pull_request.draft }} == true ]; then
           echo "DRAFT_PR=TRUE" >> ${GITHUB_ENV}
           echo "⚠️ This PR is still draft"
           echo "This CI will be skipped"
