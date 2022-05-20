@@ -5,7 +5,6 @@
  * This software may be modified and distributed under the terms of the
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
-
 #include "serviceParserCanBattery.h"
 
 #include <yarp/os/Log.h>
@@ -313,22 +312,16 @@ bool ServiceParserCanBattery::parse(const yarp::os::Searchable &config)
 
 bool ServiceParserCanBattery::toEomn(eOmn_serv_config_data_as_canbattery_t &out) const
 {
-	/* todo luca
-	out.canmonitorconfig = canMonitor_;
+	EOarray *ar = eo_array_New(eOas_canbattery_sensors_maxnumber, sizeof(eOas_canbattery_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
 
-	EOarray *ar = eo_array_New(eOas_ft_sensors_maxnumber, sizeof(eOas_ft_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
-
-	for (const auto &[key, value] : ftInfo_)
+	eOas_canbattery_sensordescriptor_t item;
+	if (!batteryInfo_.toEomn(item))
 	{
-		eOas_ft_sensordescriptor_t item;
-		if (!value.toEomn(item))
-		{
-			yError() << "ServiceParserCanBattery::toEomn() wrong data for sensor";
-			return false;
-		}
-		eo_array_PushBack(ar, &item);
+		yError() << "ServiceParserCanBattery::toEomn() wrong data for sensor";
+		return false;
 	}
-	*/
+	eo_array_PushBack(ar, &item);
+
 	return true;
 }
 
@@ -340,15 +333,14 @@ BatteryInfo &ServiceParserCanBattery::getBatteryInfo()
 eObrd_type_t ServiceParserCanBattery::checkBoardType(const std::string &boardType)
 {
 	eObrd_type_t type = eoboards_string2type2(boardType.c_str(), eobool_true);
-	/* todo luca
-	if (!eoas_ft_isboardvalid(eoboards_type2cantype(type)))
+	if (!eoas_canbattery_isboardvalid(eoboards_type2cantype(type)))
 	{
 		type = eoboards_string2type2(boardType.c_str(), eobool_false);
-		if (!eoas_ft_isboardvalid(eoboards_type2cantype(type)))
+		if (!eoas_canbattery_isboardvalid(eoboards_type2cantype(type)))
 		{
 			yError() << "checkBoardType --> unsupported board type:" << boardType;
 			return type;
 		}
-	} */
+	}
 	return type;
 }

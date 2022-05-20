@@ -12,9 +12,6 @@
 #include <string>
 
 #include "EoAnalogSensors.h"
-#include "EoBoards.h"
-#include "EoManagement.h"
-#include "EoMotionControl.h"
 
 class FtInfo
 {

@@ -12,14 +12,6 @@
 #include <string>
 
 #include "EoAnalogSensors.h"
-#include "EoBoards.h"
-#include "EoManagement.h"
-#include "EoMotionControl.h"
-
-class eOas_battery_sensordescriptor_t
-{};
-class eOmn_serv_config_data_as_canbattery_t
-{};
 
 class BatteryInfo
 {
@@ -34,7 +26,7 @@ class BatteryInfo
 	int minorFirmware{0};
 	int buildFirmware{0};
 
-	bool toEomn(eOas_battery_sensordescriptor_t& out) const;
+	bool toEomn(eOas_canbattery_sensordescriptor_t& out) const;
 };
 
 bool operator==(const BatteryInfo& right, const BatteryInfo& left);

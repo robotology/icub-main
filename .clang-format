@@ -1,12 +1,16 @@
 # Common settings
+BasedOnStyle:  Google
 TabWidth:        4
 IndentWidth:     4
-UseTab:          Never
+UseTab:          Always
 ColumnLimit: 200
 
 Language: Cpp
 
+SortIncludes: false
 DisableFormat:   false
 Standard: Cpp11
-SortIncludes: false
+BreakBeforeBraces: Allman
+AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
 

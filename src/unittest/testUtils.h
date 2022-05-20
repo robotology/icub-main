@@ -115,7 +115,6 @@ inline bool operator!=(const eOas_ft_sensordescriptor_t &right, const eOas_ft_se
 {
 	return !(right == left);
 }
-
 inline bool operator!=(const eOas_ft_config_t &right, const eOas_ft_config_t &left)
 {
 	if (right.mode != left.mode)
@@ -127,3 +126,28 @@ inline bool operator!=(const eOas_ft_config_t &right, const eOas_ft_config_t &le
 	if (right.temperatureperiod != left.temperatureperiod)
 		return false;
 }
+
+inline bool operator==(const eOas_canbattery_sensordescriptor_t &right, const eOas_canbattery_sensordescriptor_t &left)
+{
+	if (right.boardinfo.type != left.boardinfo.type)
+		return false;
+	if (right.boardinfo.protocol != left.boardinfo.protocol)
+		return false;
+	if (right.boardinfo.firmware != left.boardinfo.firmware)
+		return false;
+	if (right.canloc != left.canloc)
+		return false;
+
+	return true;
+}
+inline bool operator!=(const eOas_canbattery_sensordescriptor_t &right, const eOas_canbattery_sensordescriptor_t &left)
+{
+	return !(right == left);
+}
+
+inline bool operator!=(const eOas_canbattery_config_t &right, const eOas_canbattery_config_t &left)
+{
+	if (right.period != left.period)
+		return false;
+}
+

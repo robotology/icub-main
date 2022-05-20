@@ -109,12 +109,12 @@ TEST(ServiceParserCanBattery, check_property_sensors_positive_001)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(SENSORS (id fakeId) (board strain2) (location CAN2:13) )");
+	bottle.fromString("(SENSORS (id fakeId) (board canbattery) (location CAN2:13) )");
 	serviceParser.batteryInfo_ = {100, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertySensors(bottle);
 
-	BatteryInfo expected = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	BatteryInfo expected = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	EXPECT_TRUE(ret);
 
@@ -125,7 +125,7 @@ TEST(ServiceParserCanBattery, check_property_sensors_negative_001)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(SENSORS (id fakeId) (xxx strain2) (location CAN2:13) )");
+	bottle.fromString("(SENSORS (id fakeId) (xxx canbattery) (location CAN2:13) )");
 	serviceParser.batteryInfo_ = {100, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertySensors(bottle);
@@ -137,7 +137,7 @@ TEST(ServiceParserCanBattery, check_property_sensors_negative_002)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(SENSORS (id fakeId) (board strain2) (xxx CAN2:13) )");
+	bottle.fromString("(SENSORS (id fakeId) (board canbattery) (xxx CAN2:13) )");
 	serviceParser.batteryInfo_ = {100, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertySensors(bottle);
@@ -149,12 +149,12 @@ TEST(ServiceParserCanBattery, check_property_canboards_positive_001)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
-	serviceParser.batteryInfo_ = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	bottle.fromString("(CANBOARDS (type canbattery) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
+	serviceParser.batteryInfo_ = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
-	BatteryInfo expected = {100, eobrd_strain2, 2, 13, 2, 3, 4, 5, 6};
+	BatteryInfo expected = {100, eobrd_canbattery, 2, 13, 2, 3, 4, 5, 6};
 
 	EXPECT_TRUE(ret);
 
@@ -165,8 +165,8 @@ TEST(ServiceParserCanBattery, check_property_canboards_negative_001)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(CANBOARDS (xxx strain2) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
-	serviceParser.batteryInfo_ = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	bottle.fromString("(CANBOARDS (xxx canbattery) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
+	serviceParser.batteryInfo_ = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
@@ -177,8 +177,8 @@ TEST(ServiceParserCanBattery, check_property_canboards_negative_002)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(CANBOARDS (type strain2) (XXX (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
-	serviceParser.batteryInfo_ = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	bottle.fromString("(CANBOARDS (type canbattery) (XXX (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
+	serviceParser.batteryInfo_ = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
@@ -189,8 +189,8 @@ TEST(ServiceParserCanBattery, check_property_canboards_negative_003)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (xx 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
-	serviceParser.batteryInfo_ = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	bottle.fromString("(CANBOARDS (type canbattery) (PROTOCOL (xx 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
+	serviceParser.batteryInfo_ = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
@@ -201,8 +201,8 @@ TEST(ServiceParserCanBattery, check_property_canboards_negative_004)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (major 2) (xx 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
-	serviceParser.batteryInfo_ = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	bottle.fromString("(CANBOARDS (type canbattery) (PROTOCOL (major 2) (xx 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
+	serviceParser.batteryInfo_ = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
@@ -213,8 +213,8 @@ TEST(ServiceParserCanBattery, check_property_canboards_negative_005)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (major 2) (minor 3) ) (xx (major 4) (minor 5) (build 6) ) )");
-	serviceParser.batteryInfo_ = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	bottle.fromString("(CANBOARDS (type canbattery) (PROTOCOL (major 2) (minor 3) ) (xx (major 4) (minor 5) (build 6) ) )");
+	serviceParser.batteryInfo_ = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
@@ -225,8 +225,8 @@ TEST(ServiceParserCanBattery, check_property_canboards_negative_006)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (xx 4) (minor 5) (build 6) ) )");
-	serviceParser.batteryInfo_ = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	bottle.fromString("(CANBOARDS (type canbattery) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (xx 4) (minor 5) (build 6) ) )");
+	serviceParser.batteryInfo_ = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
@@ -237,8 +237,8 @@ TEST(ServiceParserCanBattery, check_property_canboards_negative_007)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (xx 5) (build 6) ) )");
-	serviceParser.batteryInfo_ = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	bottle.fromString("(CANBOARDS (type canbattery) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (xx 5) (build 6) ) )");
+	serviceParser.batteryInfo_ = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
@@ -248,8 +248,8 @@ TEST(ServiceParserCanBattery, check_property_canboards_negative_008)
 {
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
-	bottle.fromString("(CANBOARDS (type strain2) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (xx 6) ) )");
-	serviceParser.batteryInfo_ = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	bottle.fromString("(CANBOARDS (type canbattery) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (xx 6) ) )");
+	serviceParser.batteryInfo_ = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
@@ -261,41 +261,47 @@ TEST(ServiceParserCanBattery, check_property_canboards_negative_009)
 	ServiceParserCanBattery_mock serviceParser;
 	yarp::os::Bottle bottle;
 	bottle.fromString("(CANBOARDS (type xx) (PROTOCOL (major 2) (minor 3) ) (FIRMWARE (major 4) (minor 5) (build 6) ) )");
-	serviceParser.batteryInfo_ = {100, eobrd_strain2, 2, 13, 0, 0, 0, 0, 0};
+	serviceParser.batteryInfo_ = {100, eobrd_canbattery, 2, 13, 0, 0, 0, 0, 0};
 
 	bool ret = serviceParser.checkPropertyCanBoards(bottle);
 
 	EXPECT_FALSE(ret);
 }
 
-/*
+TEST(ServiceParserCanBattery, checkBoardType_positive_001) {
+	ServiceParserCanBattery_mock serviceParser;
+
+	eObrd_type_t expected = eobrd_canbattery;
+
+	EXPECT_EQ(expected, serviceParser.checkBoardType("canbattery"));
+}
 
 TEST(General, toEomn_positive_001) {
-	FtInfo info = {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 1, 13, 4, 5, 1, 2, 3};
+	BatteryInfo info = {100, eobrd_canbattery, 1, 13, 4, 5, 1, 2, 3};
 
-	eOas_ft_sensordescriptor_t out;
+	eOas_canbattery_sensordescriptor_t out;
 	bool res = info.toEomn(out);
 
-	eOas_ft_sensordescriptor_t expected = {{eobrd_strain2, {1, 2, 3}, {4, 5}}, {0, 13, eobrd_caninsideindex_none}, 0};
+	eOas_canbattery_sensordescriptor_t expected = {{eobrd_canbattery, {1, 2, 3}, {4, 5}}, {eOcanport1, 13, 2}};
 
 	EXPECT_TRUE(res);
 	EXPECT_EQ(expected, out);
 }
-
+/*
 TEST(General, toEomn_positive_002) {
-	FtInfo info = {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 2, 13, 4, 5, 1, 2, 3};
+	FtInfo info = {10, 100, eoas_ft_mode_calibrated, eobrd_canbattery, 2, 13, 4, 5, 1, 2, 3};
 
 	eOas_ft_sensordescriptor_t out;
 	bool res = info.toEomn(out);
 
-	eOas_ft_sensordescriptor_t expected = {{eobrd_strain2, {1, 2, 3}, {4, 5}}, {1, 13, eobrd_caninsideindex_none}, 0};
+	eOas_ft_sensordescriptor_t expected = {{eobrd_canbattery, {1, 2, 3}, {4, 5}}, {1, 13, eobrd_caninsideindex_none}, 0};
 
 	EXPECT_TRUE(res);
 	EXPECT_EQ(expected, out);
 }
 
 TEST(General, toEomn_negative_001) {
-	FtInfo info = {10, 100, eoas_ft_mode_calibrated, eobrd_strain2, 3, 13, 4, 5, 1, 2, 3};
+	FtInfo info = {10, 100, eoas_ft_mode_calibrated, eobrd_canbattery, 3, 13, 4, 5, 1, 2, 3};
 
 	eOas_ft_sensordescriptor_t out;
 	bool res = info.toEomn(out);
@@ -306,9 +312,9 @@ TEST(General, toEomn_negative_001) {
 TEST(General, checkBoardType_positive_001) {
 	ServiceParserMultipleFt_mock serviceParser;
 
-	eObrd_type_t expected = eobrd_strain2;
+	eObrd_type_t expected = eobrd_canbattery;
 
-	EXPECT_EQ(expected, serviceParser.checkBoardType("strain2"));
+	EXPECT_EQ(expected, serviceParser.checkBoardType("canbattery"));
 }
 
 TEST(General, checkBoardType_positive_002) {
@@ -322,9 +328,9 @@ TEST(General, checkBoardType_positive_002) {
 TEST(General, checkBoardType_positive_003) {
 	ServiceParserMultipleFt_mock serviceParser;
 
-	eObrd_type_t expected = eobrd_strain2;
+	eObrd_type_t expected = eobrd_canbattery;
 
-	EXPECT_EQ(expected, serviceParser.checkBoardType("eobrd_strain2"));
+	EXPECT_EQ(expected, serviceParser.checkBoardType("eobrd_canbattery"));
 }
 
 TEST(General, checkBoardType_positive_004) {
