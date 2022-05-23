@@ -276,6 +276,23 @@ TEST(ServiceParserCanBattery, checkBoardType_positive_001) {
 	EXPECT_EQ(expected, serviceParser.checkBoardType("canbattery"));
 }
 
+TEST(ServiceParserCanBattery, checkBoardType_negative_001) {
+	ServiceParserCanBattery_mock serviceParser;
+
+	eObrd_type_t expected = eobrd_canbattery;
+
+	EXPECT_NE(expected, serviceParser.checkBoardType("eobrd_strain2"));
+}
+
+TEST(ServiceParserCanBattery, checkBoardType_negative_002) {
+	ServiceParserCanBattery_mock serviceParser;
+
+	eObrd_type_t expected = eobrd_canbattery;
+
+	EXPECT_NE(expected, serviceParser.checkBoardType(""));
+}
+
+
 TEST(General, toEomn_positive_001) {
 	BatteryInfo info = {100, eobrd_canbattery, 1, 13, 4, 5, 1, 2, 3};
 
@@ -287,73 +304,12 @@ TEST(General, toEomn_positive_001) {
 	EXPECT_TRUE(res);
 	EXPECT_EQ(expected, out);
 }
-/*
-TEST(General, toEomn_positive_002) {
-	FtInfo info = {10, 100, eoas_ft_mode_calibrated, eobrd_canbattery, 2, 13, 4, 5, 1, 2, 3};
-
-	eOas_ft_sensordescriptor_t out;
-	bool res = info.toEomn(out);
-
-	eOas_ft_sensordescriptor_t expected = {{eobrd_canbattery, {1, 2, 3}, {4, 5}}, {1, 13, eobrd_caninsideindex_none}, 0};
-
-	EXPECT_TRUE(res);
-	EXPECT_EQ(expected, out);
-}
 
 TEST(General, toEomn_negative_001) {
-	FtInfo info = {10, 100, eoas_ft_mode_calibrated, eobrd_canbattery, 3, 13, 4, 5, 1, 2, 3};
+	BatteryInfo info = {100, eobrd_canbattery, 5, 13, 4, 5, 1, 2, 3};
 
-	eOas_ft_sensordescriptor_t out;
+	eOas_canbattery_sensordescriptor_t out;
 	bool res = info.toEomn(out);
 
 	EXPECT_FALSE(res);
 }
-
-TEST(General, checkBoardType_positive_001) {
-	ServiceParserMultipleFt_mock serviceParser;
-
-	eObrd_type_t expected = eobrd_canbattery;
-
-	EXPECT_EQ(expected, serviceParser.checkBoardType("canbattery"));
-}
-
-TEST(General, checkBoardType_positive_002) {
-	ServiceParserMultipleFt_mock serviceParser;
-
-	eObrd_type_t expected = eobrd_strain;
-
-	EXPECT_EQ(expected, serviceParser.checkBoardType("strain"));
-}
-
-TEST(General, checkBoardType_positive_003) {
-	ServiceParserMultipleFt_mock serviceParser;
-
-	eObrd_type_t expected = eobrd_canbattery;
-
-	EXPECT_EQ(expected, serviceParser.checkBoardType("eobrd_canbattery"));
-}
-
-TEST(General, checkBoardType_positive_004) {
-	ServiceParserMultipleFt_mock serviceParser;
-
-	eObrd_type_t expected = eobrd_strain;
-
-	EXPECT_EQ(expected, serviceParser.checkBoardType("eobrd_strain"));
-}
-
-TEST(General, checkBoardType_negative_001) {
-	ServiceParserMultipleFt_mock serviceParser;
-
-	eObrd_type_t expected = eobrd_unknown;
-
-	EXPECT_EQ(expected, serviceParser.checkBoardType("amcbldc"));
-}
-
-TEST(General, checkBoardType_negative_002) {
-	ServiceParserMultipleFt_mock serviceParser;
-
-	eObrd_type_t expected = eobrd_unknown;
-
-	EXPECT_EQ(expected, serviceParser.checkBoardType(""));
-}
-*/
