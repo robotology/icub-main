@@ -34,9 +34,10 @@ jobs:
 
     - name: If so, cancel the job
       if: "${{ env.DRAFT_PR == 'TRUE' }}"
-      uses: andymckay/cancel-action@0.2
-      with:
-        token: ${{ secrets.ICUB_MAIN_TOKEN_PATTACINI }}
+      shell: bash
+      run: |
+        echo "CI cancelled!"
+        exit 1
             
     - name: Checkout the code
       uses: actions/checkout@main
