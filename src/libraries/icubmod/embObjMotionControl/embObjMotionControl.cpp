@@ -849,16 +849,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
         if(!_mcparser->parseKalmanFilterParams(config, _kalman_params))
         {
-            // if you don't specify the Kalman Filter parameters for all the joints,
-            // then use the default values for all of them.
-            for(int i=0; i<_njoints; i++)
-            {
-                _kalman_params[i].enabled = false;
-                _kalman_params[i].x0.fill(0.0);
-                _kalman_params[i].Q.fill(0.0);
-                _kalman_params[i].R = 0.0;
-                _kalman_params[i].P0 = 0.0;
-            }
+            return false;
         }
     }
 
