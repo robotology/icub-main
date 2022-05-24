@@ -30,9 +30,15 @@ class embObjCanBatterysensor;
 class CanBatteryData
 {
    public:
-	yarp::sig::Vector data_{0, 0, 0, 0, 0, 0};
-	double timeStamp_;
+	int16_t temperature_{0};  // in steps of 0.1 celsius degree (pos and neg).
+	float32_t voltage_{0};
+	float32_t current_{0};
+	float32_t charge_{0};
+	int8_t status_{0};
+	double timeStamp_{0};
 	std::string sensorName_;
+
+	void decode(eOas_canbattery_timedvalue_t *data, double timestamp);
 };
 
 class yarp::dev::embObjCanBatterysensor : public yarp::dev::DeviceDriver, public eth::IethResource, public yarp::dev::IBattery
@@ -63,24 +69,23 @@ class yarp::dev::embObjCanBatterysensor : public yarp::dev::DeviceDriver, public
 	std::shared_ptr<yarp::dev::embObjDevPrivData> device_;
 	mutable std::shared_mutex mutex_;
 	CanBatteryData canBatteryData_;
-	/*std::map<eOprotID32_t, TemperatureData> temperaturesensordata_;
+	/*std::map<eOprotID32_t, TemperatureData> temperaturesensordata_;*/
 	std::map<eOprotID32_t, eOabstime_t> timeoutUpdate_;
-*/
+
 	bool sendConfig2boards(ServiceParserCanBattery &parser, eth::AbstractEthResource *deviceRes);
 	bool sendStart2boards(ServiceParserCanBattery &parser, eth::AbstractEthResource *deviceRes);
 	bool initRegulars(ServiceParserCanBattery &parser, eth::AbstractEthResource *deviceRes);
-	void cleanup(void); /*
-	 double calculateBoardTime(eOabstime_t current);
-	 bool checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current);
-	 static constexpr eOabstime_t updateTimeout_{11000};
-	 std::vector<yarp::dev::MAS_status> masStatus_{MAS_OK, MAS_OK, MAS_OK, MAS_OK};
+	void cleanup(void);
+	double calculateBoardTime(eOabstime_t current);
+	bool checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current);
+	static constexpr eOabstime_t updateTimeout_{11000};
+	std::vector<yarp::dev::MAS_status> masStatus_{MAS_OK, MAS_OK, MAS_OK, MAS_OK};
 
-	 static constexpr bool checkUpdateTimeoutFlag_{false};  // Check timer disabled
-	 static constexpr bool useBoardTimeFlag_{true};         // Calculate board time if true otherway use yarp time
+	static constexpr bool checkUpdateTimeoutFlag_{false};  // Check timer disabled
+	static constexpr bool useBoardTimeFlag_{true};		   // Calculate board time if true otherway use yarp time
 
-	 double firstYarpTimestamp_{0};
-	 eOabstime_t firstCanTimestamp_{0};
-	 */
+	double firstYarpTimestamp_{0};
+	eOabstime_t firstCanTimestamp_{0};
 };
 
 #endif

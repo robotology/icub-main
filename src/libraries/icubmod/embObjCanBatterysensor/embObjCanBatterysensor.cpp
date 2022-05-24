@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #include "EOnv_hid.h"
 #include "EoAnalogSensors.h"
@@ -29,9 +30,19 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
+void CanBatteryData::decode(eOas_canbattery_timedvalue_t *data, double timestamp)
+{
+	temperature_ = data->temperature;  // in steps of 0.1 celsius degree (pos and neg).
+	voltage_ = data->voltage;
+	current_ = data->current;
+	charge_ = data->charge;
+	status_ = data->status;
+	timeStamp_ = timestamp;
+}
+
 embObjCanBatterysensor::embObjCanBatterysensor()
 {
-	yInfo() << "MultipleFTSensors has been created";
+	yInfo() << "CanBatterySensors has been created";
 	device_ = std::make_shared<yarp::dev::embObjDevPrivData>("embObjCanBatterysensor");
 }
 
@@ -127,32 +138,6 @@ bool embObjCanBatterysensor::open(yarp::os::Searchable &config)
 	return true;
 }
 
-bool embObjCanBatterysensor::getBatteryVoltage(double &voltage)
-{
-	return true;
-}
-bool embObjCanBatterysensor::getBatteryCurrent(double &current)
-{
-	return true;
-}
-bool embObjCanBatterysensor::getBatteryCharge(double &charge)
-{
-	return true;
-}
-bool embObjCanBatterysensor::getBatteryStatus(Battery_status &status)
-{
-	return true;
-}
-bool embObjCanBatterysensor::getBatteryTemperature(double &temperature)
-{
-	return true;
-}
-
-bool embObjCanBatterysensor::getBatteryInfo(std::string &battery_info)
-{
-	return true;
-}
-
 bool embObjCanBatterysensor::sendConfig2boards(ServiceParserCanBattery &parser, eth::AbstractEthResource *deviceRes)
 {
 	auto &canBattery = parser.getBatteryInfo();
@@ -172,10 +157,6 @@ bool embObjCanBatterysensor::sendConfig2boards(ServiceParserCanBattery &parser, 
 	{
 		yDebug() << device_->getBoardInfo() << " sendConfig2boards() correctly configured boards with period=" << cfg.period;
 	}
-
-	eOprotIndex_t eoprotIndex = eoprot_ID2index(id32);
-	std::unique_lock<std::shared_mutex> lck(mutex_);
-	//canBatteryData_ = {0, 0, 0, 0, 0, 0, 0, id};todo luca
 	return true;
 }
 
@@ -233,10 +214,10 @@ bool embObjCanBatterysensor::initRegulars(ServiceParserCanBattery &parser, eth::
 
 	return true;
 }
-/*
+
 eth::iethresType_t embObjCanBatterysensor::type()
 {
-	return eth::iethres_analogft;
+	return eth::iethres_analogcanbattery;
 }
 
 bool embObjCanBatterysensor::update(eOprotID32_t id32, double timestamp, void *rxdata)
@@ -245,42 +226,35 @@ bool embObjCanBatterysensor::update(eOprotID32_t id32, double timestamp, void *r
 		return false;
 
 	eOprotIndex_t eoprotIndex = eoprot_ID2index(id32);
-	if (eoprotIndex > 3)
+	if (eoprotIndex > 1)
 	{
 		yError() << device_->getBoardInfo() << " update() index too big";
 		return false;
 	}
 
 	eOprotEntity_t entity = eoprot_ID2entity(id32);
-	if (entity != eoprot_entity_as_ft)
+	if (entity != eoprot_entity_as_canbattery)
 	{
 		yError() << device_->getBoardInfo() << " update() wrong entity";
 		return false;
 	}
 
 	eOprotTag_t tag = eoprot_ID2tag(id32);
-	if (tag != eoprot_tag_as_ft_status_timedvalue)
+	if (tag != eoprot_tag_as_canbattery_status_timedvalue)
 	{
 		yError() << device_->getBoardInfo() << " update() wrong tag";
 		return false;
 	}
 
-	eOas_ft_timedvalue_t *data = (eOas_ft_timedvalue_t *)rxdata;
+	eOas_canbattery_timedvalue_t *data = (eOas_canbattery_timedvalue_t *)rxdata;
 	if (!checkUpdateTimeout(id32, data->age))
 	{
 		return false;
 	}
 
 	std::unique_lock<std::shared_mutex> lck(mutex_);
+	canBatteryData_.decode(data, timestamp);
 
-	for (int index = 0; index < eoas_ft_6axis; ++index)
-	{
-		ftSensorsData_[eoprotIndex].data_[index] = data->values[index];
-	}
-	ftSensorsData_[eoprotIndex].timeStamp_ = data->age;
-
-	temperaturesensordata_[eoprotIndex].data_ = data->temperature;
-	temperaturesensordata_[eoprotIndex].timeStamp_ = calculateBoardTime(data->age);
 	return true;
 }
 
@@ -289,109 +263,11 @@ bool embObjCanBatterysensor::close()
 	cleanup();
 	return true;
 }
-*/
+
 void embObjCanBatterysensor::cleanup(void)
 {
 	device_->cleanup(static_cast<eth::IethResource *>(this));
 }
-/*
-bool embObjCanBatterysensor::getSixAxisForceTorqueSensorMeasure(size_t sensorIndex, yarp::sig::Vector &out, double &timestamp) const
-{
-	if (!device_->isOpen())
-		return false;
-
-	std::shared_lock<std::shared_mutex> lck(mutex_);
-
-	if (ftSensorsData_.find(sensorIndex) == ftSensorsData_.end())
-	{
-		yError() << device_->getBoardInfo() << " getSixAxisForceTorqueSensorMeasure() fails data for index:" << sensorIndex << " not found";
-		return false;
-	}
-
-	FtData sensorData = ftSensorsData_.at(sensorIndex);
-
-	out.resize(ftChannels_);
-	for (size_t k = 0; k < ftChannels_; k++)
-	{
-		out[k] = sensorData.data_[k];
-	}
-	timestamp = ftSensorsData_.at(sensorIndex).timeStamp_;
-	return true;
-}
-
-size_t embObjCanBatterysensor::getNrOfSixAxisForceTorqueSensors() const
-{
-	return ftSensorsData_.size();
-}
-
-yarp::dev::MAS_status embObjCanBatterysensor::getSixAxisForceTorqueSensorStatus(size_t sensorindex) const
-{
-	return masStatus_[sensorindex];
-}
-
-bool embObjCanBatterysensor::getSixAxisForceTorqueSensorName(size_t sensorindex, std::string &name) const
-{
-	std::shared_lock<std::shared_mutex> lck(mutex_);
-	name = ftSensorsData_.at(sensorindex).sensorName_;
-	return true;
-}
-
-bool embObjCanBatterysensor::getSixAxisForceTorqueSensorFrameName(size_t sensorindex, std::string &frameName) const
-{
-	frameName = "";	 // Unused
-	return true;
-}
-
-size_t embObjCanBatterysensor::getNrOfTemperatureSensors() const
-{
-	return temperaturesensordata_.size();
-}
-
-yarp::dev::MAS_status embObjCanBatterysensor::getTemperatureSensorStatus(size_t sensorindex) const
-{
-	return masStatus_[sensorindex];
-}
-
-bool embObjCanBatterysensor::getTemperatureSensorName(size_t sensorindex, std::string &name) const
-{
-	std::shared_lock<std::shared_mutex> lck(mutex_);
-	name = ftSensorsData_.at(sensorindex).sensorName_;
-	return true;
-}
-
-bool embObjCanBatterysensor::getTemperatureSensorFrameName(size_t sensorindex, std::string &frameName) const
-{
-	frameName = "";	 // Unused
-	return true;
-}
-
-bool embObjCanBatterysensor::getTemperatureSensorMeasure(size_t sensorIndex, double &out, double &timestamp) const
-{
-	if (!device_->isOpen())
-		return false;
-
-	std::shared_lock<std::shared_mutex> lck(mutex_);
-
-	if (temperaturesensordata_.find(sensorIndex) == temperaturesensordata_.end())
-	{
-		yError() << device_->getBoardInfo() << " getTemperatureSensorMeasure() fails data for index:" << sensorIndex << " not found";
-		return false;
-	}
-
-	out = temperaturesensordata_.at(sensorIndex).data_;
-	timestamp = temperaturesensordata_.at(sensorIndex).timeStamp_;
-	return true;
-}
-
-bool embObjCanBatterysensor::getTemperatureSensorMeasure(size_t sensorIndex, yarp::sig::Vector &out, double &timestamp) const
-{
-	double value{0};
-	getTemperatureSensorMeasure(sensorIndex, value, timestamp);
-	out.resize(1);
-	out[0] = value;
-	return true;
-}
-
 bool embObjCanBatterysensor::checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current)
 {
 	if (!checkUpdateTimeoutFlag_)
@@ -428,4 +304,43 @@ double embObjCanBatterysensor::calculateBoardTime(eOabstime_t current)
 	double realtime = firstYarpTimestamp_ + (double)(current - firstCanTimestamp_) / 1000000;  // Simulate real board time
 	return realtime;
 }
-*/
+
+bool embObjCanBatterysensor::getBatteryVoltage(double &voltage)
+{
+	voltage = canBatteryData_.voltage_;
+	return true;
+}
+
+bool embObjCanBatterysensor::getBatteryCurrent(double &current)
+{
+	current = canBatteryData_.current_;
+	return true;
+}
+
+bool embObjCanBatterysensor::getBatteryCharge(double &charge)
+{
+	charge = canBatteryData_.charge_;
+	return true;
+}
+
+bool embObjCanBatterysensor::getBatteryStatus(Battery_status &status)
+{
+	status = static_cast<Battery_status>(canBatteryData_.status_);
+	return true;
+}
+
+bool embObjCanBatterysensor::getBatteryTemperature(double &temperature)
+{
+	temperature = canBatteryData_.temperature_;
+	return true;
+}
+
+bool embObjCanBatterysensor::getBatteryInfo(std::string &battery_info)
+{
+	std::stringstream ss;
+	ss << "{\"temperature\":" << canBatteryData_.temperature_ << ",\"voltage\":" << canBatteryData_.voltage_ << ",\"charge\":" << canBatteryData_.charge_ << ",\"status\":" << canBatteryData_.status_
+	   << ",\"ts\":" << canBatteryData_.timeStamp_ << "}" << std::endl;
+
+	battery_info = ss.str();
+	return true;
+}
