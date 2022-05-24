@@ -24,6 +24,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 #include <map>
 
 //  Yarp stuff
@@ -306,6 +307,15 @@ typedef struct
     impedanceLimits_t limits;
 } impedanceParameters_t;
 
+typedef struct
+{
+    bool enabled;
+    std::array<float32_t, 3> x0;
+    std::array<float32_t, 3> Q;
+    float32_t R;
+    float32_t P0;
+} kalmanFilterParams_t;
+
 //template <class T>
 
 class Parser
@@ -427,6 +437,7 @@ public:
     bool parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[]);
     bool parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impedanceParameters_t> &impedance);
     bool parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found);
+    bool parseKalmanFilterParams(yarp::os::Searchable &config, std::vector<kalmanFilterParams_t> &kalmanFilterParams);
 };
 
 }}}; //close namespaces

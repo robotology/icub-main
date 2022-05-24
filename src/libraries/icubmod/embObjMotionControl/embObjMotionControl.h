@@ -205,6 +205,7 @@ private:
     double *                                _gearbox_M2J;   /** the gearbox ratio motor to joint */
     double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
     double *                                _deadzone;
+    std::vector<eomc::kalmanFilterParams_t> _kalman_params;  /** Kalman filter parameters */
 
     eomc::twofocSpecificInfo_t *            _twofocinfo;
 
