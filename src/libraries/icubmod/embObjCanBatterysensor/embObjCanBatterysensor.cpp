@@ -253,7 +253,7 @@ bool embObjCanBatterysensor::update(eOprotID32_t id32, double timestamp, void *r
 	}
 
 	std::unique_lock<std::shared_mutex> lck(mutex_);
-	canBatteryData_.decode(data, timestamp);
+	canBatteryData_.decode(data, calculateBoardTime(data->age));
 
 	return true;
 }

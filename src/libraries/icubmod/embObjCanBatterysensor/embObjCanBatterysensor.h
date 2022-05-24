@@ -30,7 +30,7 @@ class embObjCanBatterysensor;
 class CanBatteryData
 {
    public:
-	int16_t temperature_{0};  // in steps of 0.1 celsius degree (pos and neg).
+	int16_t temperature_{0};
 	float32_t voltage_{0};
 	float32_t current_{0};
 	float32_t charge_{0};
@@ -57,7 +57,6 @@ class yarp::dev::embObjCanBatterysensor : public yarp::dev::DeviceDriver, public
 	bool update(eOprotID32_t id32, double timestamp, void *rxdata) override;
 
 	// IBattery
-
 	bool getBatteryVoltage(double &voltage) override;
 	bool getBatteryCurrent(double &current) override;
 	bool getBatteryCharge(double &charge) override;
@@ -69,7 +68,6 @@ class yarp::dev::embObjCanBatterysensor : public yarp::dev::DeviceDriver, public
 	std::shared_ptr<yarp::dev::embObjDevPrivData> device_;
 	mutable std::shared_mutex mutex_;
 	CanBatteryData canBatteryData_;
-	/*std::map<eOprotID32_t, TemperatureData> temperaturesensordata_;*/
 	std::map<eOprotID32_t, eOabstime_t> timeoutUpdate_;
 
 	bool sendConfig2boards(ServiceParserCanBattery &parser, eth::AbstractEthResource *deviceRes);
