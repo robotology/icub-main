@@ -39,6 +39,8 @@ class CanBatteryData
 	std::string sensorName_;
 
 	void decode(eOas_canbattery_timedvalue_t *data, double timestamp);
+	bool operator==(const CanBatteryData &other) const;
+	bool operator!=(const CanBatteryData &other) const;
 };
 
 class yarp::dev::embObjCanBatterysensor : public yarp::dev::DeviceDriver, public eth::IethResource, public yarp::dev::IBattery
@@ -64,6 +66,8 @@ class yarp::dev::embObjCanBatterysensor : public yarp::dev::DeviceDriver, public
 	bool getBatteryTemperature(double &temperature) override;
 	bool getBatteryInfo(std::string &battery_info) override;
 
+	virtual double calculateBoardTime(eOabstime_t current);
+
    protected:
 	std::shared_ptr<yarp::dev::embObjDevPrivData> device_;
 	mutable std::shared_mutex mutex_;
@@ -74,7 +78,6 @@ class yarp::dev::embObjCanBatterysensor : public yarp::dev::DeviceDriver, public
 	bool sendStart2boards(ServiceParserCanBattery &parser, eth::AbstractEthResource *deviceRes);
 	bool initRegulars(ServiceParserCanBattery &parser, eth::AbstractEthResource *deviceRes);
 	void cleanup(void);
-	double calculateBoardTime(eOabstime_t current);
 	bool checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current);
 	static constexpr eOabstime_t updateTimeout_{11000};
 	std::vector<yarp::dev::MAS_status> masStatus_{MAS_OK, MAS_OK, MAS_OK, MAS_OK};

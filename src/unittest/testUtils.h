@@ -150,4 +150,3 @@ inline bool operator!=(const eOas_canbattery_config_t &right, const eOas_canbatt
 	if (right.period != left.period)
 		return false;
 }
-

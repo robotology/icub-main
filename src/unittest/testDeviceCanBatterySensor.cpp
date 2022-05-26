@@ -42,6 +42,7 @@ class embObjCanBatterysensor_Mock : public yarp::dev::embObjCanBatterysensor
 
 	embObjCanBatterysensor_Mock(std::shared_ptr<yarp::dev::embObjDevPrivData> device) : yarp::dev::embObjCanBatterysensor(device){};
 	embObjCanBatterysensor_Mock() : yarp::dev::embObjCanBatterysensor(){};
+	MOCK_METHOD(double, calculateBoardTime, (eOabstime_t), (override));
 };
 
 class embObjDevPrivData_Mock : public yarp::dev::embObjDevPrivData
@@ -59,12 +60,13 @@ class EthResource_Mock : public eth::EthResource
 	MOCK_METHOD(bool, serviceSetRegulars, (eOmn_serv_category_t, vector<eOprotID32_t> &, double), (override));
 };
 
-TEST(MultiplembCanBatterysensor, sendConfig2boards_simple_positive_001)
+TEST(CanBatterysensor, sendConfig2boards_simple_positive_001)
 {
 	// Setup
 	embObjCanBatterysensor_Mock device;
 	ServiceParserCanBattery_mock parser;
-	parser.batteryInfo_ = {100, eobrd_canbattery, 0, 0, 0, 0, 0, 0, 0};;
+	parser.batteryInfo_ = {100, eobrd_canbattery, 0, 0, 0, 0, 0, 0, 0};
+
 	EthResource_Mock deviceRes;
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_config);
 
@@ -75,34 +77,13 @@ TEST(MultiplembCanBatterysensor, sendConfig2boards_simple_positive_001)
 
 	EXPECT_TRUE(ret);
 }
-/*
-TEST(MultiplembCanBatterysensor, sendConfig2boards_double_sensor_positive_001)
+
+TEST(CanBatterysensor, sendConfig2boards_simple_negative_001)
 {
 	// Setup
 	embObjCanBatterysensor_Mock device;
 	ServiceParserCanBattery_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}, {"fakeId2", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
-	EthResource_Mock deviceRes;
-	eOas_ft_config_t cfg = {eoas_ft_mode_calibrated, 10, 0, 100};
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_config);
-	uint32_t id32Second = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 1, eoprot_tag_as_canbattery_config);
-
-	// EXPECT_CALL(deviceRes, setcheckRemoteValue(34013184, Pointee(cfg), 10, 0.010, 0.050)).WillOnce(Return(true));
-	// EXPECT_CALL(deviceRes, setcheckRemoteValue(34013440, Pointee(cfg), 10, 0.010, 0.050)).WillOnce(Return(true));
-	EXPECT_CALL(deviceRes, setcheckRemoteValue(id32First, _, 10, 0.010, 0.050)).WillOnce(Return(true));
-	EXPECT_CALL(deviceRes, setcheckRemoteValue(id32Second, _, 10, 0.010, 0.050)).WillOnce(Return(true));
-
-	bool ret = device.sendConfig2boards(parser, &deviceRes);
-
-	EXPECT_TRUE(ret);
-}
-
-TEST(MultiplembCanBatterysensor, sendConfig2boards_simple_negative_001)
-{
-	// Setup
-	embObjCanBatterysensor_Mock device;
-	ServiceParserCanBattery_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
+	parser.batteryInfo_ = {100, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0};
 	EthResource_Mock deviceRes;
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_config);
 
@@ -113,12 +94,12 @@ TEST(MultiplembCanBatterysensor, sendConfig2boards_simple_negative_001)
 	EXPECT_FALSE(ret);
 }
 
-TEST(MultiplembCanBatterysensor, sendStart2boards_simple_positive_001)
+TEST(CanBatterysensor, sendStart2boards_simple_positive_001)
 {
 	// Setup
 	embObjCanBatterysensor_Mock device;
 	ServiceParserCanBattery_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
+	parser.batteryInfo_ = {100, eobrd_canbattery, 0, 0, 0, 0, 0, 0, 0};
 	EthResource_Mock deviceRes;
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_ft_cmmnds_enable);
 	bool enable = 1;
@@ -131,197 +112,115 @@ TEST(MultiplembCanBatterysensor, sendStart2boards_simple_positive_001)
 	EXPECT_TRUE(ret);
 }
 
-TEST(MultiplembCanBatterysensor, sendStart2boards_double_positive_001)
+TEST(CanBatterysensor, sendStart2boards_simple_negative_001)
 {
 	// Setup
 	embObjCanBatterysensor_Mock device;
 	ServiceParserCanBattery_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
+	parser.batteryInfo_ = {100, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0};
 	EthResource_Mock deviceRes;
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_ft_cmmnds_enable);
-	uint32_t id32Second = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 1, eoprot_tag_as_ft_cmmnds_enable);
 	bool enable = 1;
 
 	// EXPECT_CALL(deviceRes, setcheckRemoteValue(id32First, Pointee(enable), 10, 0.010, 0.050)).WillOnce(Return(true));
-	EXPECT_CALL(deviceRes, setcheckRemoteValue(id32First, _, 10, 0.010, 0.050)).WillOnce(Return(true));
-	EXPECT_CALL(deviceRes, setcheckRemoteValue(id32Second, _, 10, 0.010, 0.050)).WillOnce(Return(true));
+	EXPECT_CALL(deviceRes, setcheckRemoteValue(id32First, _, 10, 0.010, 0.050)).WillOnce(Return(false));
 
 	// Test
 	bool ret = device.sendStart2boards(parser, &deviceRes);
-	EXPECT_TRUE(ret);
+	EXPECT_FALSE(ret);
 }
 
-TEST(MultiplembCanBatterysensor, serviceSetRegulars_simple_positive_001)
+TEST(CanBatterysensor, serviceSetRegulars_simple_positive_001)
 {
 	// Setup
 	embObjCanBatterysensor_Mock device;
 	ServiceParserCanBattery_mock parser;
-	parser.ftInfo_ = {{"fakeId", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}, {"fakeId1", {10, 100, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
+	parser.batteryInfo_ = {100, eobrd_canbattery, 0, 0, 0, 0, 0, 0, 0};
 	EthResource_Mock deviceRes;
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_ft_status_timedvalue);
-	uint32_t id32Second = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 1, eoprot_tag_as_ft_status_timedvalue);
-	vector<eOprotID32_t> ids = {id32First, id32Second};
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_status_timedvalue);
+	vector<eOprotID32_t> ids = {id32First};
 
-	EXPECT_CALL(deviceRes, serviceSetRegulars(eomn_serv_category_ft, ids, _)).WillOnce(Return(true));
+	EXPECT_CALL(deviceRes, serviceSetRegulars(eomn_serv_category_canbattery, ids, _)).WillOnce(Return(true));
 
 	// Test
 	bool ret = device.initRegulars(parser, &deviceRes);
 	EXPECT_TRUE(ret);
 }
 
-TEST(MultiplembCanBatterysensor, update_simple_positive_001)
+TEST(CanBatterysensor, serviceSetRegulars_simple_negative_001)
+{
+	// Setup
+	embObjCanBatterysensor_Mock device;
+	ServiceParserCanBattery_mock parser;
+	parser.batteryInfo_ = {100, eobrd_canbattery, 0, 0, 0, 0, 0, 0, 0};
+	EthResource_Mock deviceRes;
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_status_timedvalue);
+	vector<eOprotID32_t> ids = {id32First};
+
+	EXPECT_CALL(deviceRes, serviceSetRegulars(eomn_serv_category_canbattery, ids, _)).WillOnce(Return(false));
+
+	// Test
+	bool ret = device.initRegulars(parser, &deviceRes);
+	EXPECT_FALSE(ret);
+}
+
+TEST(CanBatterysensor, update_simple_positive_001)
 {
 	// Setup
 	yarp::os::Network::init();
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjCanBatterysensor_Mock device(privateData);
 	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_ft_status_timedvalue);
-	eOas_ft_timedvalue_t data = {100, 1, 2, 3, {5, 6, 7, 8, 9, 10}};
-	yarp::sig::Vector expected = {5, 6, 7, 8, 9, 10};
+	eOas_canbattery_timedvalue_t data = {0 /*age*/, 1, 2, 3, 4, 5};
+	CanBatteryData expected = {1, 2, 3, 4, 5, 7, ""};
 
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
+	EXPECT_CALL(device, calculateBoardTime(_)).WillRepeatedly(Return(7));
 
 	// Test
 	bool ret = device.update(id32First, 1, (void *)&data);
 	EXPECT_TRUE(ret);
-	EXPECT_EQ(expected, device.canBatteryData_[0].data_);
-	EXPECT_EQ(3, device.temperaturesensordata_[0].data_);
+	EXPECT_EQ(expected, device.canBatteryData_);
 }
 
-TEST(MultiplembCanBatterysensor, update_simple_positive_002)
+TEST(CanBatterysensor, update_simple_negative_001)
 {
 	// Setup
 	yarp::os::Network::init();
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjCanBatterysensor_Mock device(privateData);
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 1, eoprot_tag_as_ft_status_timedvalue);
-	eOas_ft_timedvalue_t data = {100, 1, 2, 3, {5, 6, 7, 8, 9, 10}};
-	yarp::sig::Vector expected = {5, 6, 7, 8, 9, 10};
-	yarp::sig::Vector expectedEmpty = {0, 0, 0, 0, 0, 0};
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_ft_status_timedvalue);
+	eOas_canbattery_timedvalue_t data = {0 /*age*/, 1, 2, 3, 4, 9};
+	CanBatteryData expected = {1, 2, 3, 4, 5, 7, ""};
 
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
+	EXPECT_CALL(device, calculateBoardTime(_)).WillRepeatedly(Return(7));
 
 	// Test
 	bool ret = device.update(id32First, 1, (void *)&data);
 	EXPECT_TRUE(ret);
-	EXPECT_EQ(expectedEmpty, device.canBatteryData_[0].data_);
-	EXPECT_EQ(expected, device.canBatteryData_[1].data_);
-	EXPECT_EQ(0, device.temperaturesensordata_[0].data_);
-	EXPECT_EQ(3, device.temperaturesensordata_[1].data_);
+	EXPECT_NE(expected, device.canBatteryData_);
 }
 
-TEST(MultiplembCanBatterysensor, update_negative_001)
-{
-	// Setup
-	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
-	embObjCanBatterysensor_Mock device(privateData);
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 4, eoprot_tag_as_ft_status_timedvalue);
-	eOas_ft_timedvalue_t data = {100, 1, 2, 3, {5, 6, 7, 8, 9, 10}};
-	yarp::sig::Vector expected = {5, 6, 7, 8, 9, 10};
-	yarp::sig::Vector expectedEmpty = {0, 0, 0, 0, 0, 0};
-
-	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
-
-	// Test
-	bool ret = device.update(id32First, 1, (void *)&data);
-	EXPECT_FALSE(ret);
-}
-
-TEST(MultiplembCanBatterysensor, update_negative_002)
-{
-	// Setup
-	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
-	embObjCanBatterysensor_Mock device(privateData);
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_pos, 3, eoprot_tag_as_ft_status_timedvalue);
-	eOas_ft_timedvalue_t data = {100, 1, 2, 3, {5, 6, 7, 8, 9, 10}};
-	yarp::sig::Vector expected = {5, 6, 7, 8, 9, 10};
-	yarp::sig::Vector expectedEmpty = {0, 0, 0, 0, 0, 0};
-
-	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
-
-	// Test
-	bool ret = device.update(id32First, 3, (void *)&data);
-	EXPECT_FALSE(ret);
-}
-
-TEST(MultiplembCanBatterysensor, update_negative_003)
-{
-	// Setup
-	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
-	embObjCanBatterysensor_Mock device(privateData);
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 3, eoprot_tag_as_ft_status);
-	eOas_ft_timedvalue_t data = {100, 1, 2, 3, {5, 6, 7, 8, 9, 10}};
-	yarp::sig::Vector expected = {5, 6, 7, 8, 9, 10};
-	yarp::sig::Vector expectedEmpty = {0, 0, 0, 0, 0, 0};
-
-	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
-
-	// Test
-	bool ret = device.update(id32First, 3, (void *)&data);
-	EXPECT_FALSE(ret);
-}
-
-TEST(MultiplembCanBatterysensor, getNrOfSixAxisForceTorqueSensors_positive_001)
+TEST(CanBatterysensor, getBatteryVoltage_positive_001)
 {
 	// Setup
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjCanBatterysensor_Mock device(privateData);
 
-	device.canBatteryData_ = {{{0}, {{1, 2, 3, 4, 5, 6}, 99.49}}};
-
-	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
-
-	// Test
-	yarp::sig::Vector data;
-	double timestamp;
-	bool ret = device.getSixAxisForceTorqueSensorMeasure(0, data, timestamp);
-
-	yarp::sig::Vector expected = {1, 2, 3, 4, 5, 6};
-	EXPECT_EQ(expected, data);
-	EXPECT_EQ(99.49, timestamp);
-}
-
-TEST(MultiplembCanBatterysensor, getNrOfSixAxisForceTorqueSensors_double_positive_001)
-{
-	// Setup
-	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
-	embObjCanBatterysensor_Mock device(privateData);
-
-	device.canBatteryData_ = {{{0}, {{1, 2, 3, 4, 5, 6}, 99.49}}, {{1}, {{10, 20, 30, 40, 50, 60}, 99.49}}};
-
-	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
-
-	// Test
-	yarp::sig::Vector data;
-	double timestamp;
-	bool ret = device.getSixAxisForceTorqueSensorMeasure(1, data, timestamp);
-
-	yarp::sig::Vector expected = {10, 20, 30, 40, 50, 60};
-	EXPECT_EQ(expected, data);
-	EXPECT_EQ(99.49, timestamp);
-}
-
-TEST(MultiplembCanBatterysensor, getNrOfSgetTemperatureSensorMeasure_positive_001)
-{
-	// Setup
-	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
-	embObjCanBatterysensor_Mock device(privateData);
-
-	device.temperaturesensordata_ = {{{0}, {34, 99.49}}};
+	device.canBatteryData_ = {1, 2, 3, 4, 5, 6, ""};
 
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
 
 	// Test
 	double data;
-	double timestamp;
-	bool ret = device.getTemperatureSensorMeasure(0, data, timestamp);
+	bool ret = device.getBatteryVoltage(data);
 
-	double expected = 34;
+	double expected = 2;
 	EXPECT_EQ(expected, data);
-	EXPECT_EQ(99.49, timestamp);
 }
 
-TEST(MultiplembCanBatterysensor, calculateBoardTime_positive_001)
+TEST(CanBatterysensor, calculateBoardTime_positive_001)
 {
 	// Setup
 	yarp::os::Network::init();
@@ -333,10 +232,25 @@ TEST(MultiplembCanBatterysensor, calculateBoardTime_positive_001)
 	// Test
 	double data;
 	double timestamp;
-	double first = device.calculateBoardTime(1000000);
-	double second = device.calculateBoardTime(2000000);
+	double first = device.embObjCanBatterysensor::calculateBoardTime(1000000);
+	double second = device.embObjCanBatterysensor::calculateBoardTime(2000000);
+	double third = device.embObjCanBatterysensor::calculateBoardTime(3000000);
 	double diff = second - first;
 
 	EXPECT_TRUE(1.0 == diff);
+
+	diff = third - first;
+
+	EXPECT_TRUE(2.0 == diff);
 }
-*/
+
+TEST(CanBatterysensor, type)
+{
+	// Setup
+	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
+	embObjCanBatterysensor_Mock device(privateData);
+
+	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
+
+	EXPECT_TRUE(device.type() == eth::iethres_analogcanbattery);
+}

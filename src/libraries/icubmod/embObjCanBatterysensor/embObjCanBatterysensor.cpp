@@ -268,6 +268,7 @@ void embObjCanBatterysensor::cleanup(void)
 {
 	device_->cleanup(static_cast<eth::IethResource *>(this));
 }
+
 bool embObjCanBatterysensor::checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current)
 {
 	if (!checkUpdateTimeoutFlag_)
@@ -343,4 +344,28 @@ bool embObjCanBatterysensor::getBatteryInfo(std::string &battery_info)
 
 	battery_info = ss.str();
 	return true;
+}
+
+bool CanBatteryData::operator==(const CanBatteryData &other) const
+{
+	if (temperature_ != other.temperature_)
+		return false;
+	if (voltage_ != other.voltage_)
+		return false;
+	if (current_ != other.current_)
+		return false;
+	if (charge_ != other.charge_)
+		return false;
+	if (status_ != other.status_)
+		return false;
+	if (timeStamp_ != other.timeStamp_)
+		return false;
+	if (sensorName_ != other.sensorName_)
+		return false;
+	return true;
+}
+
+bool CanBatteryData::operator!=(const CanBatteryData &other) const
+{
+	return !operator==(other);
 }
