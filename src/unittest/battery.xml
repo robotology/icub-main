@@ -2,7 +2,7 @@
 <!DOCTYPE device PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
 
 
-<device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery" type="embObjBattery">
+<device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery" type="embObjCanBatterysensor">
 
     <xi:include href="../../general.xml" />
 
@@ -10,7 +10,7 @@
 
     <group name="SERVICE">
 
-        <param name="type"> eomn_serv_AS_battery </param>
+        <param name="type"> eomn_serv_AS_canbattery </param>
 
         <group name="PROPERTIES">
 
@@ -18,7 +18,7 @@
                  but now the only good ones are strain and strain2. 
                  use eoas_ft_isboardvalid() to verify -->
             <group name="CANBOARDS">
-                <param name="type">                 bat      </param>
+                <param name="type">                 canbattery      </param>
 
                 <group name="PROTOCOL">
                     <param name="major">            0                   </param>
@@ -33,7 +33,7 @@
 
             <group name="SENSORS">
                 <param name="id">                   battery1        </param>
-                <param name="board">                bat             </param>
+                <param name="board">                canbattery             </param>
                 <param name="location">             CAN2:13         </param>
             </group>
 

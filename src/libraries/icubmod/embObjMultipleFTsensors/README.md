@@ -144,3 +144,41 @@ For two sensors:
 8627845987.0 **is the board timestamp for second sensor**  
 (33.0) **is the temperature second sensor**    
 (0.256134033203125 0.66009521484375 -3.583465576171875 0.0064697265625 0.067291259765625 -0.043487548828125) 8627845987.0) **are the FT data second sensor**  
+
+# 4. Debug
+
+## 4.1. Install folder
+If you have already installed robotology-superbuild and you have cloned icub-main (and you are working here) overwrite robotology-superbuild binary like this in your icub-main:
+```bash
+CMAKE_INSTALL_PREFIX             <path_to_robotology>/robotology-superbuild/build/install
+``` 
+
+## 4.2. Visual studio code debugging
+Use the following launch.json
+```json
+    {
+        "name": "App debug multiple ft sensor",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "<absolute path to your robotology>/robotology-superbuild/build/install/bin/yarprobotinterface",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "<absolute path to your config files>/yarprobotinterface-config-multiple",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+            {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            },
+            {
+                "description": "Set Disassembly Flavor to Intel",
+                "text": "-gdb-set disassembly-flavor intel",
+                "ignoreFailures": true
+            }
+        ],
+        "miDebuggerPath": "/usr/bin/gdb",
+    }
+```

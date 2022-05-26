@@ -273,7 +273,7 @@ bool ServiceParserCanBattery::checkServiceType(const Bottle &service)
 
 	if (eomn_serv_AS_canbattery != serviceTypeEomn)
 	{
-		yError() << "ServiceParserCanBattery::check() has found wrong SERVICE.type = " << serviceType << "it must be eomn_serv_AS_ft";
+		yError() << "ServiceParserCanBattery::check() has found wrong SERVICE.type = " << serviceType << "it must be eomn_serv_AS_canbattery";
 		return false;
 	}
 	return true;
