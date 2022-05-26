@@ -283,11 +283,9 @@ install_deps()
   ###------------------- Handle cmake ----------------------###
   echo "Installing CMAKE in the environment"
 
-  if [ "$_PLATFORM_RELEASE" == "bionic" ]; then
-    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | $_SUDO apt-key add -
-    $_SUDO apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
-    DEBIAN_FRONTEND=noninteractive; $_SUDO apt-get install $APT_OPTIONS cmake
-  elif [ "$_PLATFORM_RELEASE" == "buster" ]; then
+  if [ "$_PLATFORM_RELEASE" == "buster" ]; then
+    DEBIAN_FRONTEND=noninteractive;
+    $_SUDO apt-get -y install software-properties-common
     $_SUDO apt-add-repository 'deb http://deb.debian.org/debian buster-backports main'
     DEBIAN_FRONTEND=noninteractive;
     $_SUDO apt-get -y update && $_SUDO apt-get -y install -t buster-backports cmake
@@ -302,8 +300,7 @@ install_deps()
 
 ###------------------- Handle YCM ----------------------###
   echo "Installing YCM package"
-  YCM_URL_TAG="YCM_PACKAGE_URL_${_PLATFORM_RELEASE}"
-  wget ${!YCM_URL_TAG} -O /tmp/ycm.deb
+  wget ${YCM_PACKAGE_URL} -O /tmp/ycm.deb
   DEBIAN_FRONTEND=noninteractive; $_SUDO dpkg --ignore-depends=libjs-sphinxdoc -i /tmp/ycm.deb; $_SUDO apt-get install $APT_OPTIONS -f
 
   if [ "$?" != "0" ]; then
