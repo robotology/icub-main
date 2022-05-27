@@ -56,7 +56,7 @@ struct Tools::Emb_PeriodicEventVerifier::Impl
     void tick(double currentTime)
     {
         
-        uint64_t tnow = static_cast<std::uint64_t>(currentTime);
+        uint64_t tnow = static_cast<std::uint64_t>(currentTime * 1000000);
         uint64_t delta = 0;
         m_perVal.tick(tnow, delta);
         if(true == m_perVal.report())
@@ -151,16 +151,7 @@ Tools::Emb_PeriodicEventVerifier::~Emb_PeriodicEventVerifier()
 
 bool Tools::Emb_PeriodicEventVerifier::init(double period, double tolerance, double min, double max, double step, double reportPeriod)
 {
-    // now transform each parameter expressed in seconds to microseconds
-    uint64_t period_us=period*1000000;
-    uint64_t tolerance_us=tolerance*1000000;
-    uint64_t min_us=min*1000000;
-    uint64_t max_us=max*1000000;
-    uint64_t step_us=step*1000000;
-    uint64_t reportPeriod_us=reportPeriod*1000000;
-    
-    
-    return pImpl->init(period_us, tolerance_us, min_us, max_us, step_us, reportPeriod_us);
+   return pImpl->init(period, tolerance, min, max, step, reportPeriod);
 }
 
 void Tools::Emb_PeriodicEventVerifier::tick(double currentTime)
