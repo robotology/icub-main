@@ -72,15 +72,80 @@ This device should be used with an XML like the following:
 </device>
 ```
 
-luca todo
+And the wrapper:
 
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
+
+
+    <device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery_wrapper" type="multipleanalogsensorsserver">
+        <param name="period">       10                  </param>
+        <param name="name">       /icub/battery      </param>
+        
+        <action phase="startup" level="5" type="attach">
+            <paramlist name="networks">
+            <!-- The param value must match the device name in the corresponding body_part-ebX-jA_B-strain.xml file -->
+                <elem name="FirstStrain">  battery </elem>
+            </paramlist>
+        </action>
+
+        <action phase="shutdown" level="5" type="detach" />
+    </device>
+
+```
 
 # 3. Yarp output
 
 ## 3.1. Ports
 
-todo luca
+As for the wrapper file:
+
+```bash
+/<robot_name>/battery/measures:o 
+/<robot_name>/battery/rpc:o
+
+```
 
 ## 3.2. Output format
 
 todo luca
+
+
+# 4. Debug
+
+## 4.1. Install folder
+If you have already installed robotology-superbuild and you have cloned icub-main (and you are working here) overwrite robotology-superbuild binary like this in your icub-main:
+```bash
+CMAKE_INSTALL_PREFIX             <path_to_robotology>/robotology-superbuild/build/install
+``` 
+
+## 4.2. Visual studio code debugging
+Use the following launch.json
+```json
+    {
+        "name": "App debug battery sensor",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "<absolute path to your robotology>/robotology-superbuild/build/install/bin/yarprobotinterface",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "<absolute path to your config files>/yarprobotinterface-config-multiple",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+            {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            },
+            {
+                "description": "Set Disassembly Flavor to Intel",
+                "text": "-gdb-set disassembly-flavor intel",
+                "ignoreFailures": true
+            }
+        ],
+        "miDebuggerPath": "/usr/bin/gdb",
+    }
+```

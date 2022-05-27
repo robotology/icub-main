@@ -77,11 +77,12 @@ This device should be used with an XML like the following:
         </group>
     </device>
 ```
+And the wrapper:
+
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
-
 
 <device xmlns:xi="http://www.w3.org/2001/XInclude" name="testFT_wrapper" type="multipleanalogsensorsserver">
     <param name="period">      10                           </param>
@@ -113,6 +114,8 @@ if `false` raw data are logged from the correspondent sensor.
 # 3. Yarp output
 
 ## 3.1. Ports
+
+As for the wrapper file.
 
 All sensors are logged on the same port.  
 
