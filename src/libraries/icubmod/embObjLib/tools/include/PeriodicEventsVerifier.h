@@ -16,6 +16,8 @@
 #ifndef _PERIODIC_EVENTS_VERIFIER_H_
 #define _PERIODIC_EVENTS_VERIFIER_H_
 
+#include <string>
+
 //!  In the Tools namespace there are classes useful to check some kinds of performance on robot. 
 /*!
   Currently, the available classes are Emb_PeriodicEventVerifier and Emb_RensponseTimingVerifier: 
@@ -62,11 +64,12 @@ class Tools::Emb_PeriodicEventVerifier
      * \param max is the maximum period you expected [expressed in seconds].
      * \param step is the step of the histogram. [expressed in seconds].
      * \param reportPeriod the class prints the histogram every @reportPeriod seconds. [expressed in seconds].
+     * \param name used in the print of histogram
      * \return true/false on success/failure.
      *
      * \note the number of histogram columns are: ((@max-@min)/@step ) +2 
      */
-        bool init(double period, double tolerance, double min, double max, double step, double reportPeriod);
+        bool init(double period, double tolerance, double min, double max, double step, double reportPeriod, const std::string& name = {});
         
         
     /*!
@@ -112,11 +115,12 @@ class Tools::Emb_RensponseTimingVerifier
         * \param max is the maximum response period you expected [expressed in seconds].
         * \param step is the step of the histogram. [expressed in seconds].
         * \param reportPeriod the class prints the histogram every @reportPeriod seconds. [expressed in seconds].
+        * \param name used in the print of histogram
         * \return true/false on success/failure.
         *
         * \note the number of histogram columns are: ((@max-@min)/@step ) +2 
         */    
-        bool init(double desiredResponseTime, double tolerance, double min, double max, double step, double reportPeriod);
+        bool init(double desiredResponseTime, double tolerance, double min, double max, double step, double reportPeriod, const std::string& name = {});
         
         /*!
         * Adds the current response time to the collection of data of the object.

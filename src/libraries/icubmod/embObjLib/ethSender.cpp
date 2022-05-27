@@ -71,7 +71,7 @@ EthSender::EthSender(int txrate) : PeriodicThread((double)txrate/1000.0)
     */
 
     double txrate_sec=(double)txrate/1000; //txrate is in milliseconds
-    m_perEvtVerifier.init(txrate_sec, 5*txrate_sec/100, 0.0, txrate_sec+0.002, 0.0001, 1);
+    m_perEvtVerifier.init(txrate_sec, 5*txrate_sec/100, 0.0, txrate_sec+0.002, 0.0001, 1, "Sender");
 #endif
 }
 

@@ -82,7 +82,7 @@ EthReceiver::EthReceiver(int raterx): PeriodicThread((double)raterx/1000.0)
        the m_perEvtVerifier object after 1 second, prints an istogram with values from 4 to 6 millisec with a step of 0.1 millisec
      */
     double raterx_sec = (double)raterx/1000;//raterx is in milliseconds
-    m_perEvtVerifier.init(raterx_sec, (raterx_sec/100), raterx_sec-0.001, raterx_sec+0.001, 0.0001, 1);
+    m_perEvtVerifier.init(raterx_sec, (raterx_sec/100), raterx_sec-0.001, raterx_sec+0.001, 0.0001, 1, "Receiver");
 #endif
 }
 
