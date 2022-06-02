@@ -1,0 +1,33 @@
+name: Cancel CI of Draft PR
+
+on:
+  pull_request_target:
+
+jobs:
+  check:
+    name: Check for draft PR
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the code
+      uses: actions/checkout@main
+    
+    - name: Check
+      shell: bash
+      run: |
+        if [ ${{ github.event.pull_request.draft }} == true ]; then
+          echo "⚠️ Detected Draft PR!"
+
+          gh run list --limit 2 --json databaseId --jq '.[] | .databaseId' > ids
+          echo "Current last 2 workflows' ids:"
+          cat ids
+
+          for id in $(cat ids); do
+            if [ "$id" != "${{ github.run_id }}" ]; then
+              echo "Cancelling workflow $id..."
+              gh run cancel $id
+              echo "❌ Workflow cancelled!"
+            fi
+          done
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    

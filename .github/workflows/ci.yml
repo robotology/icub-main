@@ -19,16 +19,6 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
-    - name: Cancel CI triggered by a draft PR
-      if: ${{ github.event_name == 'pull_request' }}
-      shell: bash
-      run: |
-        if [ ${{ github.event.pull_request.draft }} == true ]; then
-          echo "This PR is still draft"
-          echo "⚠️ This CI is cancelled!"
-          exit 1
-        fi
-
     - name: Checkout the code
       uses: actions/checkout@main
 
