@@ -9,9 +9,6 @@ on:
   - cron:  '0 2 * * *'
   workflow_dispatch:
 
-env:
-  DRAFT_PR: FALSE
-
 jobs:
   build:
     name: '[${{ matrix.os }}@${{ matrix.build_type }}]'
@@ -22,26 +19,16 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
-    - name: Check if the job is triggered by a draft PR
+    - name: Cancel CI triggered by a draft PR
       if: ${{ github.event_name == 'pull_request' }}
       shell: bash
       run: |
         if [ ${{ github.event.pull_request.draft }} == true ]; then
-          echo "DRAFT_PR=TRUE" >> ${GITHUB_ENV}
-          echo "⚠️ This PR is still draft"
-          echo "This CI will be skipped"
+          echo "This PR is still draft"
+          echo "⚠️ This CI is cancelled!"
+          exit 1
         fi
 
-    - name: If so, cancel the job
-      if: "${{ env.DRAFT_PR == 'TRUE' }}"
-      shell: bash
-      run: |
-        echo "Cancelling CI..."
-        gh api --method POST -H "Accept: application/vnd.github.v3+json" /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/cancel
-        echo "❌ CI cancelled!"
-      env:
-        GITHUB_TOKEN: ${{ secrets.BOT_CANCEL_WORKFLOW }}
-            
     - name: Checkout the code
       uses: actions/checkout@main
 
