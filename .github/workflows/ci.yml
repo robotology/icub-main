@@ -36,8 +36,11 @@ jobs:
       if: "${{ env.DRAFT_PR == 'TRUE' }}"
       shell: bash
       run: |
-        echo "CI cancelled!"
-        exit 1
+        echo "Cancelling CI..."
+        gh api --method POST -H "Accept: application/vnd.github.v3+json" /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/cancel
+        echo "❌ CI cancelled!"
+      env:
+        GITHUB_TOKEN: ${{ secrets.BOT_CANCEL_WORKFLOW }}
             
     - name: Checkout the code
       uses: actions/checkout@main
