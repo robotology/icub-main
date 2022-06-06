@@ -127,7 +127,7 @@ inline bool operator!=(const eOas_ft_config_t &right, const eOas_ft_config_t &le
 		return false;
 }
 
-inline bool operator==(const eOas_canbattery_sensordescriptor_t &right, const eOas_canbattery_sensordescriptor_t &left)
+inline bool operator==(const eOas_battery_sensordescriptor_t &right, const eOas_battery_sensordescriptor_t &left)
 {
 	if (right.boardinfo.type != left.boardinfo.type)
 		return false;
@@ -140,12 +140,12 @@ inline bool operator==(const eOas_canbattery_sensordescriptor_t &right, const eO
 
 	return true;
 }
-inline bool operator!=(const eOas_canbattery_sensordescriptor_t &right, const eOas_canbattery_sensordescriptor_t &left)
+inline bool operator!=(const eOas_battery_sensordescriptor_t &right, const eOas_battery_sensordescriptor_t &left)
 {
 	return !(right == left);
 }
 
-inline bool operator!=(const eOas_canbattery_config_t &right, const eOas_canbattery_config_t &left)
+inline bool operator!=(const eOas_battery_config_t &right, const eOas_battery_config_t &left)
 {
 	if (right.period != left.period)
 		return false;

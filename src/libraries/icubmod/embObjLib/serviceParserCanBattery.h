@@ -27,7 +27,7 @@ class ServiceParserCanBattery
    public:
 	ServiceParserCanBattery();
 	bool parse(const yarp::os::Searchable& config);
-	bool toEomn(eOmn_serv_config_data_as_canbattery_t& out) const;
+	bool toEomn(eOmn_serv_config_data_as_battery_t& out) const;
 	BatteryInfo& getBatteryInfo();
 
    protected:

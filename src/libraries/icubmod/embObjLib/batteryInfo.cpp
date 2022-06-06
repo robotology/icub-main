@@ -11,7 +11,7 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
-bool BatteryInfo::toEomn(eOas_canbattery_sensordescriptor_t& out) const
+bool BatteryInfo::toEomn(eOas_battery_sensordescriptor_t& out) const
 {
 	out.boardinfo.type = board;
 	out.canloc.addr = address;
@@ -28,14 +28,14 @@ bool BatteryInfo::toEomn(eOas_canbattery_sensordescriptor_t& out) const
 		else
 		{
 			yError() << "BatteryInfo::toEomn() invalid can port";
-			out = eOas_canbattery_sensordescriptor_t();
+			out = eOas_battery_sensordescriptor_t();
 			return false;
 		}
 	}
 	catch (const std::exception& e)
 	{
 		yError() << "BatteryInfo::toEomn() invalid can port";
-		out = eOas_canbattery_sensordescriptor_t();
+		out = eOas_battery_sensordescriptor_t();
 		return false;
 	}
 	return true;

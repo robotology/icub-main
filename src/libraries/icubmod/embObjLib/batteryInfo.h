@@ -26,7 +26,7 @@ class BatteryInfo
 	int minorFirmware{0};
 	int buildFirmware{0};
 
-	bool toEomn(eOas_canbattery_sensordescriptor_t& out) const;
+	bool toEomn(eOas_battery_sensordescriptor_t& out) const;
 };
 
 bool operator==(const BatteryInfo& right, const BatteryInfo& left);

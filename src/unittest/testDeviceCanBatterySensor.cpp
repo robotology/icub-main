@@ -65,10 +65,10 @@ TEST(CanBatterysensor, sendConfig2boards_simple_positive_001)
 	// Setup
 	embObjCanBatterysensor_Mock device;
 	ServiceParserCanBattery_mock parser;
-	parser.batteryInfo_ = {100, eobrd_canbattery, 0, 0, 0, 0, 0, 0, 0};
+	parser.batteryInfo_ = {100, eobrd_bms, 0, 0, 0, 0, 0, 0, 0};
 
 	EthResource_Mock deviceRes;
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_config);
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_battery_config);
 
 	EXPECT_CALL(deviceRes, setcheckRemoteValue(id32First, _, 10, 0.010, 0.050)).WillOnce(Return(true));
 
@@ -85,7 +85,7 @@ TEST(CanBatterysensor, sendConfig2boards_simple_negative_001)
 	ServiceParserCanBattery_mock parser;
 	parser.batteryInfo_ = {100, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0};
 	EthResource_Mock deviceRes;
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_config);
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_battery_config);
 
 	EXPECT_CALL(deviceRes, setcheckRemoteValue(id32First, _, 10, 0.010, 0.050)).WillOnce(Return(false));
 
@@ -99,9 +99,9 @@ TEST(CanBatterysensor, sendStart2boards_simple_positive_001)
 	// Setup
 	embObjCanBatterysensor_Mock device;
 	ServiceParserCanBattery_mock parser;
-	parser.batteryInfo_ = {100, eobrd_canbattery, 0, 0, 0, 0, 0, 0, 0};
+	parser.batteryInfo_ = {100, eobrd_bms, 0, 0, 0, 0, 0, 0, 0};
 	EthResource_Mock deviceRes;
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_ft_cmmnds_enable);
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_ft_cmmnds_enable);
 	bool enable = 1;
 
 	// EXPECT_CALL(deviceRes, setcheckRemoteValue(id32First, Pointee(enable), 10, 0.010, 0.050)).WillOnce(Return(true));
@@ -119,7 +119,7 @@ TEST(CanBatterysensor, sendStart2boards_simple_negative_001)
 	ServiceParserCanBattery_mock parser;
 	parser.batteryInfo_ = {100, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0};
 	EthResource_Mock deviceRes;
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_ft_cmmnds_enable);
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_ft_cmmnds_enable);
 	bool enable = 1;
 
 	// EXPECT_CALL(deviceRes, setcheckRemoteValue(id32First, Pointee(enable), 10, 0.010, 0.050)).WillOnce(Return(true));
@@ -135,12 +135,12 @@ TEST(CanBatterysensor, serviceSetRegulars_simple_positive_001)
 	// Setup
 	embObjCanBatterysensor_Mock device;
 	ServiceParserCanBattery_mock parser;
-	parser.batteryInfo_ = {100, eobrd_canbattery, 0, 0, 0, 0, 0, 0, 0};
+	parser.batteryInfo_ = {100, eobrd_bms, 0, 0, 0, 0, 0, 0, 0};
 	EthResource_Mock deviceRes;
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_status_timedvalue);
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_battery_status_timedvalue);
 	vector<eOprotID32_t> ids = {id32First};
 
-	EXPECT_CALL(deviceRes, serviceSetRegulars(eomn_serv_category_canbattery, ids, _)).WillOnce(Return(true));
+	EXPECT_CALL(deviceRes, serviceSetRegulars(eomn_serv_category_battery, ids, _)).WillOnce(Return(true));
 
 	// Test
 	bool ret = device.initRegulars(parser, &deviceRes);
@@ -152,12 +152,12 @@ TEST(CanBatterysensor, serviceSetRegulars_simple_negative_001)
 	// Setup
 	embObjCanBatterysensor_Mock device;
 	ServiceParserCanBattery_mock parser;
-	parser.batteryInfo_ = {100, eobrd_canbattery, 0, 0, 0, 0, 0, 0, 0};
+	parser.batteryInfo_ = {100, eobrd_bms, 0, 0, 0, 0, 0, 0, 0};
 	EthResource_Mock deviceRes;
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_status_timedvalue);
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_battery_status_timedvalue);
 	vector<eOprotID32_t> ids = {id32First};
 
-	EXPECT_CALL(deviceRes, serviceSetRegulars(eomn_serv_category_canbattery, ids, _)).WillOnce(Return(false));
+	EXPECT_CALL(deviceRes, serviceSetRegulars(eomn_serv_category_battery, ids, _)).WillOnce(Return(false));
 
 	// Test
 	bool ret = device.initRegulars(parser, &deviceRes);
@@ -170,8 +170,8 @@ TEST(CanBatterysensor, update_simple_positive_001)
 	yarp::os::Network::init();
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjCanBatterysensor_Mock device(privateData);
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_ft_status_timedvalue);
-	eOas_canbattery_timedvalue_t data = {0 /*age*/, 1, 2, 3, 4, 5};
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_ft_status_timedvalue);
+	eOas_battery_timedvalue_t data = {0 /*age*/, 1, 2, 3, 4, 5};
 	CanBatteryData expected = {1, 2, 3, 4, 5, 7, ""};
 
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
@@ -189,8 +189,8 @@ TEST(CanBatterysensor, update_simple_negative_001)
 	yarp::os::Network::init();
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjCanBatterysensor_Mock device(privateData);
-	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_ft_status_timedvalue);
-	eOas_canbattery_timedvalue_t data = {0 /*age*/, 1, 2, 3, 4, 9};
+	uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_ft_status_timedvalue);
+	eOas_battery_timedvalue_t data = {0 /*age*/, 1, 2, 3, 4, 9};
 	CanBatteryData expected = {1, 2, 3, 4, 5, 7, ""};
 
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
@@ -252,5 +252,5 @@ TEST(CanBatterysensor, type)
 
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
 
-	EXPECT_TRUE(device.type() == eth::iethres_analogcanbattery);
+	EXPECT_TRUE(device.type() == eth::iethres_analogbattery);
 }

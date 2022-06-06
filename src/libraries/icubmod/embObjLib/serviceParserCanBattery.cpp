@@ -271,9 +271,9 @@ bool ServiceParserCanBattery::checkServiceType(const Bottle &service)
 	std::string serviceType = service.find("type").asString();
 	eOmn_serv_type_t serviceTypeEomn = eomn_string2servicetype(serviceType.c_str());
 
-	if (eomn_serv_AS_canbattery != serviceTypeEomn)
+	if (eomn_serv_AS_battery != serviceTypeEomn)
 	{
-		yError() << "ServiceParserCanBattery::check() has found wrong SERVICE.type = " << serviceType << "it must be eomn_serv_AS_canbattery";
+		yError() << "ServiceParserCanBattery::check() has found wrong SERVICE.type = " << serviceType << "it must be eomn_serv_AS_battery";
 		return false;
 	}
 	return true;
@@ -310,11 +310,11 @@ bool ServiceParserCanBattery::parse(const yarp::os::Searchable &config)
 	return true;
 }
 
-bool ServiceParserCanBattery::toEomn(eOmn_serv_config_data_as_canbattery_t &out) const
+bool ServiceParserCanBattery::toEomn(eOmn_serv_config_data_as_battery_t &out) const
 {
-	EOarray *ar = eo_array_New(eOas_canbattery_sensors_maxnumber, sizeof(eOas_canbattery_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
+	EOarray *ar = eo_array_New(eOas_battery_sensors_maxnumber, sizeof(eOas_battery_sensordescriptor_t), (void *)(&(out.arrayofsensors)));
 
-	eOas_canbattery_sensordescriptor_t item;
+	eOas_battery_sensordescriptor_t item;
 	if (!batteryInfo_.toEomn(item))
 	{
 		yError() << "ServiceParserCanBattery::toEomn() wrong data for sensor";
@@ -333,10 +333,10 @@ BatteryInfo &ServiceParserCanBattery::getBatteryInfo()
 eObrd_type_t ServiceParserCanBattery::checkBoardType(const std::string &boardType)
 {
 	eObrd_type_t type = eoboards_string2type2(boardType.c_str(), eobool_true);
-	if (!eoas_canbattery_isboardvalid(eoboards_type2cantype(type)))
+	if (!eoas_bms_isboardvalid(eoboards_type2cantype(type)))
 	{
 		type = eoboards_string2type2(boardType.c_str(), eobool_false);
-		if (!eoas_canbattery_isboardvalid(eoboards_type2cantype(type)))
+		if (!eoas_bms_isboardvalid(eoboards_type2cantype(type)))
 		{
 			yError() << "checkBoardType --> unsupported board type:" << boardType;
 			return type;

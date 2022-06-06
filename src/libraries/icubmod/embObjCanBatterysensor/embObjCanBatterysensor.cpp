@@ -30,7 +30,7 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-void CanBatteryData::decode(eOas_canbattery_timedvalue_t *data, double timestamp)
+void CanBatteryData::decode(eOas_battery_timedvalue_t *data, double timestamp)
 {
 	temperature_ = data->temperature;  // in steps of 0.1 celsius degree (pos and neg).
 	voltage_ = data->voltage;
@@ -84,11 +84,11 @@ bool embObjCanBatterysensor::open(yarp::os::Searchable &config)
 
 	yInfo() << device_->getBoardInfo() << " embObjCanBatterysensor::open(): verify and activate the FT service";
 	eOmn_serv_parameter_t canBatteryData;
-	canBatteryData.configuration.type = eomn_serv_AS_canbattery;
+	canBatteryData.configuration.type = eomn_serv_AS_battery;
 	canBatteryData.configuration.diagnosticsmode = eomn_serv_diagn_mode_NONE;
 	canBatteryData.configuration.diagnosticsparam = 0;
-	parser.toEomn(canBatteryData.configuration.data.as.canbattery);
-	if (!device_->res->serviceVerifyActivate(eomn_serv_category_canbattery, &canBatteryData, 5.0))
+	parser.toEomn(canBatteryData.configuration.data.as.battery);
+	if (!device_->res->serviceVerifyActivate(eomn_serv_category_battery, &canBatteryData, 5.0))
 	{
 		yError() << device_->getBoardInfo() << " open() fails to serviceVerifyActivate... cannot continue ";
 		cleanup();
@@ -112,7 +112,7 @@ bool embObjCanBatterysensor::open(yarp::os::Searchable &config)
 	}
 
 	yInfo() << device_->getBoardInfo() << " embObjCanBatterysensor::open(): start the FT service";
-	if (!device_->res->serviceStart(eomn_serv_category_canbattery))
+	if (!device_->res->serviceStart(eomn_serv_category_battery))
 	{
 		yError() << device_->getBoardInfo() << " open() fails to serviceStart... cannot continue";
 		cleanup();
@@ -143,9 +143,9 @@ bool embObjCanBatterysensor::sendConfig2boards(ServiceParserCanBattery &parser, 
 	auto &canBattery = parser.getBatteryInfo();
 
 	eOprotID32_t id32 = eo_prot_ID32dummy;
-	eOas_canbattery_config_t cfg;
+	eOas_battery_config_t cfg;
 	cfg.period = canBattery.acquisitionRate;
-	id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_config);
+	id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_battery_config);
 
 	if (false == deviceRes->setcheckRemoteValue(id32, &cfg, 10, 0.010, 0.050))
 	{
@@ -168,7 +168,7 @@ bool embObjCanBatterysensor::sendStart2boards(ServiceParserCanBattery &parser, e
 
 	const auto &batteryInfos = parser.getBatteryInfo();
 
-	id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_cmmnds_enable);
+	id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_battery_cmmnds_enable);
 
 	if (false == deviceRes->setcheckRemoteValue(id32, &enable, 10, 0.010, 0.050))
 	{
@@ -191,10 +191,10 @@ bool embObjCanBatterysensor::initRegulars(ServiceParserCanBattery &parser, eth::
 	eOprotID32_t id32 = eo_prot_ID32dummy;
 
 	const auto &batteryInfos = parser.getBatteryInfo();
-	id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_canbattery, 0, eoprot_tag_as_canbattery_status_timedvalue);
+	id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_battery_status_timedvalue);
 	id32v.push_back(id32);
 
-	if (false == deviceRes->serviceSetRegulars(eomn_serv_category_canbattery, id32v))
+	if (false == deviceRes->serviceSetRegulars(eomn_serv_category_battery, id32v))
 	{
 		yError() << device_->getBoardInfo() << " initRegulars() fails to add its variables to regulars: cannot proceed any further";
 		return false;
@@ -217,7 +217,7 @@ bool embObjCanBatterysensor::initRegulars(ServiceParserCanBattery &parser, eth::
 
 eth::iethresType_t embObjCanBatterysensor::type()
 {
-	return eth::iethres_analogcanbattery;
+	return eth::iethres_analogbattery;
 }
 
 bool embObjCanBatterysensor::update(eOprotID32_t id32, double timestamp, void *rxdata)
@@ -233,20 +233,20 @@ bool embObjCanBatterysensor::update(eOprotID32_t id32, double timestamp, void *r
 	}
 
 	eOprotEntity_t entity = eoprot_ID2entity(id32);
-	if (entity != eoprot_entity_as_canbattery)
+	if (entity != eoprot_entity_as_battery)
 	{
 		yError() << device_->getBoardInfo() << " update() wrong entity";
 		return false;
 	}
 
 	eOprotTag_t tag = eoprot_ID2tag(id32);
-	if (tag != eoprot_tag_as_canbattery_status_timedvalue)
+	if (tag != eoprot_tag_as_battery_status_timedvalue)
 	{
 		yError() << device_->getBoardInfo() << " update() wrong tag";
 		return false;
 	}
 
-	eOas_canbattery_timedvalue_t *data = (eOas_canbattery_timedvalue_t *)rxdata;
+	eOas_battery_timedvalue_t *data = (eOas_battery_timedvalue_t *)rxdata;
 	if (!checkUpdateTimeout(id32, data->age))
 	{
 		return false;

@@ -38,7 +38,7 @@ class CanBatteryData
 	double timeStamp_{0};
 	std::string sensorName_;
 
-	void decode(eOas_canbattery_timedvalue_t *data, double timestamp);
+	void decode(eOas_battery_timedvalue_t *data, double timestamp);
 	bool operator==(const CanBatteryData &other) const;
 	bool operator!=(const CanBatteryData &other) const;
 };

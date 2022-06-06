@@ -26,7 +26,7 @@ This device should be used with an XML like the following:
 
     <group name="SERVICE">
 
-        <param name="type"> eomn_serv_AS_canbattery </param>
+        <param name="type"> eomn_serv_AS_battery </param>
 
         <group name="PROPERTIES">
 
@@ -34,7 +34,7 @@ This device should be used with an XML like the following:
                  but now the only good ones are strain and strain2. 
                  use eoas_ft_isboardvalid() to verify -->
             <group name="CANBOARDS">
-                <param name="type">                 canbattery      </param>
+                <param name="type">                 bms      </param>
 
                 <group name="PROTOCOL">
                     <param name="major">            0                   </param>
@@ -49,7 +49,7 @@ This device should be used with an XML like the following:
 
             <group name="SENSORS">
                 <param name="id">                   battery1        </param>
-                <param name="board">                canbattery             </param>
+                <param name="board">                bms             </param>
                 <param name="location">             CAN2:13         </param>
             </group>
 

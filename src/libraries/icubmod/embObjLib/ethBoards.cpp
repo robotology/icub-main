@@ -377,8 +377,8 @@ eth::IethResource* eth::EthBoards::get_interface(eOipv4addr_t ipv4, eOprotID32_t
                 type = iethres_analogpos;
             else if(eoprot_entity_as_ft == en)
                 type = iethres_analogft;   
-            else if(eoprot_entity_as_canbattery == en)
-                type = iethres_analogcanbattery;                
+            else if(eoprot_entity_as_battery == en)
+                type = iethres_analogbattery;                
             else
                 type = iethres_none;
         } break;
