@@ -17,15 +17,32 @@ jobs:
         if [ ${{ github.event.pull_request.draft }} == true ]; then
           echo "⚠️ Detected Draft PR!"
 
-          gh run list --limit 2 --json databaseId --jq '.[] | .databaseId' > ids
-          echo "Current last 2 workflows' ids:"
-          cat ids
+          # Retrieve id and head sha of ongoing workflow runs
+          gh run list --workflow "Continuous Integration" \
+                      --json event,status,databaseId,headSha \
+                      --jq '.[] | select((.event==\"pull_request\") and (.status==\"queued\") and (.status==\"in_progress\")) | [.databaseId, .headSha] | @tsv' > workflow_runs.txt
 
-          for id in $(cat ids); do
-            if [ "$id" != "${{ github.run_id }}" ]; then
-              echo "Cancelling workflow $id..."
-              gh run cancel $id
-              echo "❌ Workflow cancelled!"
+          echo "Ongoing workflow runs: ID and HEAD-SHA"
+          cat workflow_runs.txt
+
+          # Retrieve head sha of Draft PRs
+          gh pr list --json isDraft,commits --jq '.[] | select(.isDraft) | .commits | last | .oid' > draft_prs.txt
+          echo "Head-sha of Draft PRs"
+          cat draft_prs.txt
+
+          # Check ongoing workflow runs against Draft PRs
+          for run in $(cat workflow_runs.txt); do
+            run_id = $(echo ${run} | cut -d' ' -f1)
+            run_sha = $(echo ${run} | cut -d' ' -f2)
+            # Skip this workflow run
+            if [ "${run_id}" != "${{ github.run_id }}" ]; then
+              for pr_sha in $(cat draft_prs.txt); do
+                if [ "${run_sha}" == "${pr_sha}" ]; then
+                  echo "Cancelling workflow ${run_id}..."
+                  gh run cancel ${run_id}
+                  echo "❌ Workflow cancelled!"
+                fi
+              done
             fi
           done
         fi
