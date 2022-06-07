@@ -39,7 +39,7 @@ jobs:
             if [ "${run_id}" != "${{ github.run_id }}" ]; then
               for pr_sha in $(cat draft_prs.txt); do
                 if [ "${run_sha}" == "${pr_sha}" ]; then
-                  echo "Cancelling workflow ${run_id}..."
+                  echo "Cancelling workflow run ${run_id}..."
                   gh run cancel ${run_id}
                   echo "❌ Workflow cancelled!"
                 fi
