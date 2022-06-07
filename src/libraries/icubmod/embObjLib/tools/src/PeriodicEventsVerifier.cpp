@@ -30,14 +30,14 @@ struct Tools::Emb_PeriodicEventVerifier::Impl
 {
 
     embot::tools::PeriodValidator m_perVal;
-
+    std::string name;
 
     Impl()
     {
 
     }
 
-    bool init(double period, double tolerance, double min, double max, double step, double reportPeriod)
+    bool init(double period, double tolerance, double min, double max, double step, double reportPeriod, const std::string& name = {})
     {
         // now transform each parameter expressed in seconds to microseconds
         uint64_t period_us=period*1000000;
@@ -46,7 +46,7 @@ struct Tools::Emb_PeriodicEventVerifier::Impl
         uint64_t max_us=max*1000000;
         uint32_t step_us=step*1000000;
         uint64_t reportPeriod_us=reportPeriod*1000000;
-        
+        this->name=name;
         
         return m_perVal.init({period_us, period_us+tolerance_us,  reportPeriod_us, 
                         {min_us, max_us, step_us}});
@@ -56,7 +56,7 @@ struct Tools::Emb_PeriodicEventVerifier::Impl
     void tick(double currentTime)
     {
         
-        uint64_t tnow = static_cast<std::uint64_t>(currentTime);
+        uint64_t tnow = static_cast<std::uint64_t>(currentTime * 1000000);
         uint64_t delta = 0;
         m_perVal.tick(tnow, delta);
         if(true == m_perVal.report())
@@ -65,15 +65,15 @@ struct Tools::Emb_PeriodicEventVerifier::Impl
             m_perVal.histogram()->probabilitydensityfunction(vect_prob);
             uint32_t min = m_perVal.histogram()->getconfig()->min;
             uint32_t step = m_perVal.histogram()->getconfig()->step;
-            yWarning() << "---------- PRINT HISTO RECEIVER ---------------";
+            yWarning() << "---------- PRINT HISTO" << name << "---------------";
             for(int i=0; i<vect_prob.size(); i++)
             {
                 if(vect_prob[i]==0)
                     continue;
 
-                yWarning() << "-- histo RX [" << min+step*i << "]="<< vect_prob[i];
+                yWarning() << "-- histo" << name << "[" << min+step*i << "]="<< vect_prob[i];
             }
-            yWarning() << "---------- END PRINT HISTO RECEIVER ---------------";
+            yWarning() << "---------- END PRINT HISTO" << name << "---------------";
             m_perVal.reset();
         }
 
@@ -84,13 +84,13 @@ struct Tools::Emb_PeriodicEventVerifier::Impl
 struct Tools::Emb_RensponseTimingVerifier::Impl
 {
     embot::tools::RoundTripValidator m_roundTripVal;
-
+    std::string name;
 
     Impl()
     {
     }
 
-    bool init(double desiredResponseTime, double tolerance, double min, double max, double step, double reportPeriod)
+    bool init(double desiredResponseTime, double tolerance, double min, double max, double step, double reportPeriod, const std::string& name = {})
     {
 
         // now transform each parameter expressed in seconds to microseconds
@@ -100,7 +100,7 @@ struct Tools::Emb_RensponseTimingVerifier::Impl
         uint64_t max_us=max*1000000;
         uint32_t step_us=step*1000000;
         uint64_t reportPeriod_us=reportPeriod*1000000;
-        
+        this->name = name;
         return m_roundTripVal.init({desiredResponseTime_us, desiredResponseTime_us+tolerance_us, reportPeriod_us,  
                                    {min_us, max_us, step_us}}); 
     }
@@ -120,14 +120,14 @@ struct Tools::Emb_RensponseTimingVerifier::Impl
             m_roundTripVal.histogram()->probabilitydensityfunction(vect_prob);
             uint32_t min = m_roundTripVal.histogram()->getconfig()->min;
             uint32_t step = m_roundTripVal.histogram()->getconfig()->step;
-            yInfo() << "---------- PRINT HISTO GETPID ---------------";
+            yInfo() << "---------- PRINT HISTO" << name << "---------------";
             for(int i=0; i<vect_prob.size(); i++)
             {
                 if(vect_prob[i]==0)
                     continue;
                 yInfo() << "-- histo PID [" << min+step*i << "]="<< vect_prob[i];
             }
-            yInfo() << "---------- END PRINT HISTO GETPID ---------------";
+            yInfo() << "---------- END PRINT HISTO" << name << "---------------";
             m_roundTripVal.reset();
         }
     }
@@ -149,18 +149,9 @@ Tools::Emb_PeriodicEventVerifier::~Emb_PeriodicEventVerifier()
 }
 
 
-bool Tools::Emb_PeriodicEventVerifier::init(double period, double tolerance, double min, double max, double step, double reportPeriod)
+bool Tools::Emb_PeriodicEventVerifier::init(double period, double tolerance, double min, double max, double step, double reportPeriod, const std::string& name)
 {
-    // now transform each parameter expressed in seconds to microseconds
-    uint64_t period_us=period*1000000;
-    uint64_t tolerance_us=tolerance*1000000;
-    uint64_t min_us=min*1000000;
-    uint64_t max_us=max*1000000;
-    uint64_t step_us=step*1000000;
-    uint64_t reportPeriod_us=reportPeriod*1000000;
-    
-    
-    return pImpl->init(period_us, tolerance_us, min_us, max_us, step_us, reportPeriod_us);
+   return pImpl->init(period, tolerance, min, max, step, reportPeriod, name);
 }
 
 void Tools::Emb_PeriodicEventVerifier::tick(double currentTime)
@@ -178,9 +169,9 @@ Tools::Emb_RensponseTimingVerifier::~Emb_RensponseTimingVerifier()
 }
 
 
-bool Tools::Emb_RensponseTimingVerifier::init(double desiredResponseTime, double tolerance, double min, double max, double step, double reportPeriod)
+bool Tools::Emb_RensponseTimingVerifier::init(double desiredResponseTime, double tolerance, double min, double max, double step, double reportPeriod, const std::string& name)
 {
-    return pImpl->init(desiredResponseTime, tolerance, min, max, step, reportPeriod);
+    return pImpl->init(desiredResponseTime, tolerance, min, max, step, reportPeriod, name);
 }
 
 

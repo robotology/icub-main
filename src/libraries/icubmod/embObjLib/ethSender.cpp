@@ -69,8 +69,9 @@ EthSender::EthSender(int txrate) : PeriodicThread((double)txrate/1000.0)
     /* We would like to verify if the receiver thread is ticked(running) every 1 millisecond, with a tollerance of 0.05 millisec.
        The m_perEvtVerifier object after 1 second, prints an istogram with values from 0 to 3 millisec with a step of 0.1 millisec
     */
-    //m_perEvtVerifier.init(0.001, 0.00005, 0.0, 0.003, 0.0001, 1);
-    m_perEvtVerifier.init(txrate, 5*txrate/100, 0.0, txrate+0.002, 0.0001, 1);
+
+    double txrate_sec=(double)txrate/1000; //txrate is in milliseconds
+    m_perEvtVerifier.init(txrate_sec, 5*txrate_sec/100, 0.0, txrate_sec+0.002, 0.0001, 1, "Sender");
 #endif
 }
 

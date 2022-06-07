@@ -58,6 +58,8 @@ mark_as_advanced(NETWORK_PERFORMANCE_BENCHMARK)
 
 if(NETWORK_PERFORMANCE_BENCHMARK)
 
+add_definitions(-DNETWORK_PERFORMANCE_BENCHMARK)
+
 set(TOOLS_FOLDER    ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 set(TOOLS_HEADER    ${TOOLS_FOLDER}/include/PeriodicEventsVerifier.h)
 set(TOOLS_SOURCE    ${TOOLS_FOLDER}/src/PeriodicEventsVerifier.cpp 
