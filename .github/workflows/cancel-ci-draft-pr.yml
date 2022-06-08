@@ -17,7 +17,7 @@ jobs:
     - name: Check workflow run
       shell: bash
       run: |
-        if [ "${{ github.event.workflow_run.event }}" == "pull_request" ]; then
+        if [[ "${{ github.event.workflow_run.event }}" == "pull_request" || "${{ github.event.workflow_run.event }}" == "pull_request_target" ]]; then
           
           echo "🔘 Detected pull_request event; start processing..."
           echo ""
