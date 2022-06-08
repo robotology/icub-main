@@ -18,41 +18,42 @@ jobs:
       shell: bash
       run: |
         if [ "${{ github.event.workflow_run.event }}" == "pull_request" ]; then
-          echo "Detected pull_request event; start processing..."
-          echo "Retrieve id and head sha of ongoing workflow runs..."
-          gh run list --workflow "Continuous Integration" \
-                      --json event,status,databaseId,headSha \
-                      --jq '.[] | select((.event=="pull_request") and (.status!="completed")) | [.databaseId, .headSha] | @tsv' > workflow_runs.txt
-
-          echo "Ongoing workflow runs id and head-sha:"
-          cat workflow_runs.txt
+          
+          echo "🔘 Detected pull_request event; start processing..."
           echo ""
 
-          echo "Retrieve head sha of Draft PRs..."
+          run_id=${{ github.event.workflow_run.id }}
+          run_sha=${{ github.event.workflow_run.head_sha }}
+          echo "Workflow run id: ${run_id}"
+          echo "Workflow run head_sha: ${run_sha}"
+          echo ""
+
+          echo "🔘 Retrieve head_sha of Draft PRs..."
           gh pr list --json isDraft,commits --jq '.[] | select(.isDraft) | .commits | last | .oid' > draft_prs.txt
-          echo "Draft PRs head-sha:"
+          echo "Draft PRs head_sha:"
           cat draft_prs.txt
           echo ""
 
-          echo "Check ongoing workflow runs against Draft PRs..."
-          while read -r run; do
-            run_id=$(echo ${run} | cut -d' ' -f1)
-            run_sha=$(echo ${run} | cut -d' ' -f2)
-            echo "Checking workflow run with id = ${run_id} and head-sha = ${run_sha}..."
-            for pr_sha in $(cat draft_prs.txt); do
-              echo "  ...against pr_sha = ${pr_sha}"
-              if [ "${run_sha}" == "${pr_sha}" ]; then
-                echo "  ⚠️ Detected workflow run associated to a Draft PR!"
-                echo "  Cancelling workflow run ${run_id}..."
-                gh run cancel ${run_id}
-                echo "  ❌ Workflow run cancelled!"
-              else
-                echo "  ✅ No Draft PR associated to this workflow run"  
-              fi
-            done
-          done < workflow_runs.txt
+          for pr_sha in $(cat draft_prs.txt); do
+            echo "🔘 Check workflow run against Draft PR with head_sha = ${pr_sha}..."
+        
+            if [ "${run_sha}" == "${pr_sha}" ]; then
+              echo "  ⚠️ Workflow run is associated to a Draft PR!"
+              echo "  Cancelling workflow run ${run_id}..."
+              gh run cancel ${run_id}
+              echo "  ❌ Workflow run cancelled!"
+              exit 0
+            else
+              echo "  ✅ Done"
+            fi
+
+            echo "✅ No Draft PR associated to this workflow run"
+          done
+        
         else
-          echo "No pull_request event detected; skipping..."  
+        
+          echo "✅ No pull_request event detected; skipping..."  
+        
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    
