@@ -72,7 +72,7 @@ This device should be used with an XML like the following:
             <group name="CANMONITOR">        
                 <param name="checkPeriod">      100     </param>
                 <param name="reportMode">       ALL     </param>
-                <param name="ratePeriod">       20*1000 </param>
+                <param name="ratePeriod">       20000   </param>
             </group>    
         </group>
     </device>
