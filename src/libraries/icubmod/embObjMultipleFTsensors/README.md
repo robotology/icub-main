@@ -64,15 +64,15 @@ This device should be used with an XML like the following:
                 -->
             <group name="SETTINGS">        
                 <param name="enabledSensors">       l_foot_ft1  l_foot_ft2  l_foot_ft3      </param>
-                <param name="ftPeriod">             10          10          10              </param>
-                <param name="temperaturePeriod">    1000        1000        0               </param>
+                <param name="ftPeriod">             10          10          10              </param> <!-- msec -->
+                <param name="temperaturePeriod">    1000        1000        0               </param> <!-- msec -->
                 <param name="useCalibration">       true        false       true            </param>           
             </group>       
         
             <group name="CANMONITOR">        
-                <param name="checkPeriod">      100     </param>
+                <param name="checkPeriod">      100     </param>  <!-- msec -->
                 <param name="reportMode">       ALL     </param>
-                <param name="ratePeriod">       20000   </param>
+                <param name="ratePeriod">       20000   </param>  <!-- msec -->
             </group>    
         </group>
     </device>
@@ -97,6 +97,8 @@ This device should be used with an XML like the following:
     <action phase="shutdown" level="5" type="detach" />
 </device>
 ```
+
+`Note that all the times are expressed in milliseconds.`
 
 ## 2.1. Raw ADC data or FT data
 To log raw data directly from ADC output use the param with the name `useCalibration`
