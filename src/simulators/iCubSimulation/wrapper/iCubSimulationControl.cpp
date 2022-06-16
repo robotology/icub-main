@@ -186,15 +186,9 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     /*   GENERAL           */
     ///////////////////////// 
 
-    Bottle& xtmp = p.findGroup("GENERAL").findGroup("AxisMap","a list of reordered indices for the axes");
-    
-    if (xtmp.size() != njoints+1) {
-        yError("AxisMap does not have the right number of entries\n");
-        return false;
-    }
-    for (int i = 1; i < xtmp.size(); i++) axisMap[i-1] = xtmp.get(i).asInt32();
+    for (int i = 0; i < njoints; i++) axisMap[i] = i;
 
-    xtmp = p.findGroup("GENERAL").findGroup("Encoder","a list of scales for the encoders");
+    Bottle& xtmp = p.findGroup("GENERAL").findGroup("Encoder","a list of scales for the encoders");
     if (xtmp.size() != njoints+1) {
         yError("Encoder does not have the right number of entries\n");
         return false;
