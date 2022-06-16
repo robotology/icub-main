@@ -6,7 +6,7 @@ yarp_prepare_plugin(embObjMotionControl
     CATEGORY device
     TYPE yarp::dev::embObjMotionControl
     INCLUDE embObjMotionControl.h
-    EXTRA_CONFIG WRAPPER=controlboardwrapper2)
+    EXTRA_CONFIG WRAPPER=controlBoard_nws_yarp)
 
  IF (NOT SKIP_embObjMotionControl)
 

@@ -436,7 +436,7 @@ bool SimulatorModule::initSimulatorModule()
         //start left arm device driver
         iCubLArm = createPart("left_arm");
         desc.device_name = moduleName+"/left_arm";
-        desc.device_type = "controlboardwrapper2";
+        desc.device_type = "controlBoard_nws_yarp";
         if (idesc) idesc->registerDevice(desc);
     }
 
@@ -444,7 +444,7 @@ bool SimulatorModule::initSimulatorModule()
         //start right arm device driver
         iCubRArm = createPart("right_arm");
         desc.device_name = moduleName + "/right_arm";
-        desc.device_type = "controlboardwrapper2";
+        desc.device_type = "controlBoard_nws_yarp";
         if (idesc) idesc->registerDevice(desc);
     }
 
@@ -452,7 +452,7 @@ bool SimulatorModule::initSimulatorModule()
         //start head device driver
         iCubHead = createPart("head");
         desc.device_name = moduleName + "/head";
-        desc.device_type = "controlboardwrapper2";
+        desc.device_type = "controlBoard_nws_yarp";
         if (idesc) idesc->registerDevice(desc);
     }
 
@@ -460,7 +460,7 @@ bool SimulatorModule::initSimulatorModule()
         //start left leg device driver
         iCubLLeg = createPart("left_leg");
         desc.device_name = moduleName + "/left_leg";
-        desc.device_type = "controlboardwrapper2";
+        desc.device_type = "controlBoard_nws_yarp";
         if (idesc) idesc->registerDevice(desc);
     }
 
@@ -468,14 +468,14 @@ bool SimulatorModule::initSimulatorModule()
         //start right leg device driver
         iCubRLeg = createPart("right_leg");
         desc.device_name = moduleName + "/right_leg";
-        desc.device_type = "controlboardwrapper2";
+        desc.device_type = "controlBoard_nws_yarp";
         if (idesc) idesc->registerDevice(desc);
     }
     if (robot_flags.actTorso) {
         //start torso device driver
         iCubTorso = createPart("torso");
         desc.device_name = moduleName + "/torso";
-        desc.device_type = "controlboardwrapper2";
+        desc.device_type = "controlBoard_nws_yarp";
         if (idesc) idesc->registerDevice(desc);
     }
 

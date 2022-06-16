@@ -2,12 +2,11 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-
 yarp_prepare_plugin(canmotioncontrol
     CATEGORY device
     TYPE yarp::dev::CanBusMotionControl
     INCLUDE CanBusMotionControl.h
-    EXTRA_CONFIG WRAPPER=controlboardwrapper2)
+    EXTRA_CONFIG WRAPPER=controlBoard_nws_yarp)
 
 if (ENABLE_icubmod_canmotioncontrol)
 
