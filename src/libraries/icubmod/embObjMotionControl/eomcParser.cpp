@@ -2151,6 +2151,105 @@ bool Parser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[],
     return true;
 }
 
+bool Parser::parseKalmanFilterParams(yarp::os::Searchable &config, std::vector<kalmanFilterParams_t> &kalmanFilterParams)
+{
+    Bottle general = config.findGroup("KALMAN_FILTER");
+    if (general.isNull())
+    {
+        yWarning() << "embObjMC BOARD " << _boardname << "Missing KALMAN_FILTER group. Kalman Filter will be disabled by default.";
+
+        // if you don't specify the Kalman Filter group disable the kalmam filter for all the joints.
+        for(int j=0; j<_njoints; j++)
+        {
+            kalmanFilterParams[j].enabled = false;
+            kalmanFilterParams[j].x0.fill(0.0);
+            kalmanFilterParams[j].Q.fill(0.0);
+            kalmanFilterParams[j].R = 0.0;
+            kalmanFilterParams[j].P0 = 0.0;
+        }
+        return true;
+    }
+    else
+    {    
+        Bottle xtmp;
+        
+        // kalmanFilterEnabled
+        if (!extractGroup(general, xtmp, "kalmanFilterEnabled", "kalman filter of joint: ", _njoints, true))
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Missing kalmanFilterEnabled parameter. It will be disabled by default.";
+            return false;
+        }
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].enabled = xtmp.get(j + 1).asBool();
+
+        // x0_0
+        if (!extractGroup(general, xtmp, "x0", "Initial state x0 of kalman filter of joint: ", _njoints, true))
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Missing initial state x0 parameter. Kalman Filter will be disabled by default.";
+            return false;
+        }
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].x0.at(0) = xtmp.get(j + 1).asFloat32();
+
+        // x0_1
+        if (!extractGroup(general, xtmp, "x1", "Initial state x1 of kalman filter of joint: ", _njoints, true))
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Missing initial state x1 parameter. Kalman Filter will be disabled by default.";
+            return false;
+        }
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].x0.at(1) = xtmp.get(j + 1).asFloat32();
+
+        // x0_2
+        if (!extractGroup(general, xtmp, "x2", "Initial state x2 of kalman filter of joint: ", _njoints, true))
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Missing initial state x2 parameter. Kalman Filter will be disabled by default.";
+            return false;
+        }
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].x0.at(2) = xtmp.get(j + 1).asFloat32();
+
+        // Q0
+        if (!extractGroup(general, xtmp, "Q0", "Process Q0 noise covariance matrix of kalman filter of joint: ", _njoints, true))
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Missing Q0 parameter. Kalman Filter will be disabled by default.";
+            return false;
+        }
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].Q.at(0) = xtmp.get(j + 1).asFloat32();
+
+        // Q1
+        if (!extractGroup(general, xtmp, "Q1", "Process Q1 noise covariance matrix of kalman filter of joint: ", _njoints, true))
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Missing Q1 parameter. Kalman Filter will be disabled by default.";
+            return false;
+        }
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].Q.at(1) = xtmp.get(j + 1).asFloat32();
+
+        // Q2
+        if (!extractGroup(general, xtmp, "Q2", "Process Q2 noise covariance matrix of kalman filter of joint: ", _njoints, true))
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Missing Q2 parameter. Kalman Filter will be disabled by default.";
+            return false;
+        }
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].Q.at(2) = xtmp.get(j + 1).asFloat32();
+
+        // R
+        if (!extractGroup(general, xtmp, "R", "Measurement noise covariance matrix of kalman filter for joint: ", _njoints, true))
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Missing R scalar parameter. Kalman Filter will be disabled by default.";
+            return false;
+        }
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].R = xtmp.get(j + 1).asFloat32();
+
+        // P0
+        if (!extractGroup(general, xtmp, "P0", "Initial state estimation error covariance matrix of kalman filter of joint: ", _njoints, true))
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Missing P0 scalar parameter. Kalman Filter will be disabled by default.";
+            return false;
+        }
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].P0 = xtmp.get(j + 1).asFloat32();
+    }
+    
+    return true;
+}
+
+
 bool Parser::parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[])
 {
     Bottle general = config.findGroup("GENERAL");

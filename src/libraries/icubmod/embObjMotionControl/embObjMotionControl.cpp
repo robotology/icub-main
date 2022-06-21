@@ -134,6 +134,7 @@ bool embObjMotionControl::alloc(int nj)
     _axesInfo.resize(nj);
     _jointEncs.resize(nj);
     _motorEncs.resize(nj);
+    _kalman_params.resize(nj);
     
     //debug purpose
 
@@ -213,7 +214,8 @@ embObjMotionControl::embObjMotionControl() :
     _impedance_params(0),
     _axesInfo(0),
     _jointEncs(0),
-    _motorEncs(0)
+    _motorEncs(0),
+    _kalman_params(0)
 {
     _gearbox_M2J  = 0;
     _gearbox_E2J  = 0;
@@ -844,6 +846,11 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         {
             updateDeadZoneWithDefaultValues();
         }
+
+        if(!_mcparser->parseKalmanFilterParams(config, _kalman_params))
+        {
+            return false;
+        }
     }
 
 
@@ -1340,6 +1347,11 @@ bool embObjMotionControl::init()
 
         jconfig.tcfiltertype=_trq_pids[logico].filterType;
 
+        jconfig.kalman_params.enabled = _kalman_params[logico].enabled;
+        for(int i=0; i<_kalman_params[logico].x0.size(); i++) jconfig.kalman_params.x0[i] = _kalman_params[logico].x0.at(i);
+        for(int i=0; i<_kalman_params[logico].Q.size(); i++) jconfig.kalman_params.Q[i] = _kalman_params[logico].Q.at(i);
+        jconfig.kalman_params.R = _kalman_params[logico].R;
+        jconfig.kalman_params.P0 = _kalman_params[logico].P0;
 
         if(false == res->setcheckRemoteValue(protid, &jconfig, 10, 0.010, 0.050))
         {
