@@ -318,7 +318,7 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle &service)
     {
         std::string id = settingsEnabledSensors.get(index).asString();
         uint8_t acquisitionRate = (uint8_t)settingsFtPeriod.get(index).asInt8();
-        uint8_t acquisitionTempRate = (uint8_t)settingsTemperaturePeriod.get(index).asInt8();
+        uint32_t acquisitionTempRate = (uint32_t)settingsTemperaturePeriod.get(index).asInt32();
         bool useCalibration = settingsUseCalibration.get(index).asBool();
         eOas_ft_mode_t calib = eoas_ft_mode_calibrated;
         if (!useCalibration)

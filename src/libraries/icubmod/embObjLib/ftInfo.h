@@ -20,7 +20,7 @@ class FtInfo
 {
    public:
     uint8_t ftAcquisitionRate{0};
-    uint8_t temperatureAcquisitionRate{0};
+    uint32_t temperatureAcquisitionRate{0};
     eOas_ft_mode_t useCalibration{eoas_ft_mode_calibrated};
     eObrd_type_t board{eobrd_unknown};
     int port{0};
