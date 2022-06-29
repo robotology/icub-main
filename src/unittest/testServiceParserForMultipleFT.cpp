@@ -57,6 +57,25 @@ TEST(General, check_settings_positive_002)
     EXPECT_EQ(expected.at("fakeId1"), serviceParser.ftInfo_.at("fakeId1"));
 }
 
+TEST(General, check_settings_positive_003)
+{
+    yarp::os::Bottle bottle;
+    bottle.fromString("(SETTINGS (ftPeriod 10 20) (enabledSensors fakeId fakeId1) (temperaturePeriod 1000 2000) (useCalibration true false) )");
+
+    ServiceParserMultipleFt_mock serviceParser;
+
+    bool ret = serviceParser.checkSettings(bottle);
+
+    std::map<std::string /*sensor id*/, FtInfo> expected = {{"fakeId", {10, 1000, eoas_ft_mode_calibrated, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}},
+                                                            {"fakeId1", {20, 2000, eoas_ft_mode_raw, eobrd_unknown, 0, 0, 0, 0, 0, 0, 0}}};
+
+    EXPECT_TRUE(ret);
+
+    ASSERT_EQ(expected.size(), serviceParser.ftInfo_.size());
+    EXPECT_EQ(expected.at("fakeId"), serviceParser.ftInfo_.at("fakeId"));
+    EXPECT_EQ(expected.at("fakeId1"), serviceParser.ftInfo_.at("fakeId1"));
+}
+
 TEST(General, check_settings_negative_001)
 {
     yarp::os::Bottle bottle;

@@ -136,7 +136,7 @@ bool embObjMultipleFTsensors::sendConfig2boards(ServiceParserMultipleFt &parser,
         eOprotID32_t id32 = eo_prot_ID32dummy;
         eOas_ft_config_t cfg;
         cfg.ftperiod = data.ftAcquisitionRate;
-        cfg.temperatureperiod = data.temperatureAcquisitionRate;
+        cfg.temperatureperiod = data.temperatureAcquisitionRate/1000;
         cfg.mode = data.useCalibration;
         cfg.calibrationset = 0;
         id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, index, eoprot_tag_as_ft_config);
