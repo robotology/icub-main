@@ -67,6 +67,8 @@ static void handle_data_pos(const EOnv* nv, const eOropdescriptor_t* rd);
 
 static void handle_data_ft(const EOnv* nv, const eOropdescriptor_t* rd);
 
+static void handle_data_battery(const EOnv* nv, const eOropdescriptor_t* rd);
+
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
@@ -161,6 +163,13 @@ extern void eoprot_fun_UPDT_as_ft_status_timedvalue(const EOnv* nv, const eOropd
     }
 }
 
+extern void eoprot_fun_UPDT_as_battery_status_timedvalue(const EOnv* nv, const eOropdescriptor_t* rd)
+{ 
+    if(eo_ropcode_sig == rd->ropcode)
+    {
+        handle_data_battery(nv, rd);
+    }
+}
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -213,6 +222,12 @@ static void handle_data_ft(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     eOas_ft_status_t *ftstatus  = (eOas_ft_status_t*)rd->data;
     feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)ftstatus);
+}
+
+static void handle_data_battery(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    eOas_battery_status_t *batterystatus  = (eOas_battery_status_t*)rd->data;
+    feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)batterystatus);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
