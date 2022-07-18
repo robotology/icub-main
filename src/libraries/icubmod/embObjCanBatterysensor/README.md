@@ -11,18 +11,40 @@ ENABLE_icubmod_embObjCanBattery   ON
 
 # 2. XML configuration file
 
-This device should be used with an XML like the following:
+This device should be used with XMLs like the following:
 
+The root xml:
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
+
+    <robot name="testFT" build="1" portprefix="icub" xmlns:xi="http://www.w3.org/2001/XInclude">
+        <params>
+    <xi:include href="hardware/electronics/pc104.xml" />
+        </params>
+        
+    <devices>
+ 
+ 
+    <!-- ANALOG SENSOR CANBATTERY -->
+    <xi:include href="wrappers/CanBattery/testCanBattery_wrapper.xml" /> 	
+    <xi:include href="hardware/CanBattery/eb1-j0-strain2-canbattery.xml" /> 
+  
+      
+    </devices>
+</robot> 
+```
+
+The device XML in `hardware\CanBattery` (refer to the root XML file):
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE device PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
 
-
-<device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery" type="embObjCanBatterysensor">
+<device xmlns:xi="http://www.w3.org/2001/XInclude" name="eb1-j0-strain2-canbattery" type="embObjCanBatterysensor">
 
     <xi:include href="../../general.xml" />
 
-    <xi:include href="../../hardware/electronics/face-eb22-j0_1-eln.xml" />
+    <xi:include href="../../hardware/electronics/eb1-j0-eln.xml" />
 
     <group name="SERVICE">
 
@@ -72,28 +94,32 @@ This device should be used with an XML like the following:
 </device>
 ```
 
-And the wrapper:
+And the XML wrapper in `.\wrappers\CanBattery` (refer to the root XML file)::
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
 
 
-    <device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery_wrapper" type="multipleanalogsensorsserver">
+    <device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery_wrapper" type="batteryWrapper">
         <param name="period">       10                  </param>
         <param name="name">       /icub/battery      </param>
         
         <action phase="startup" level="5" type="attach">
             <paramlist name="networks">
             <!-- The param value must match the device name in the corresponding body_part-ebX-jA_B-strain.xml file -->
-                <elem name="FirstStrain">  battery </elem>
+                <elem name="battery">  eb1-j0-strain2-canbattery </elem>
             </paramlist>
         </action>
 
         <action phase="shutdown" level="5" type="detach" />
     </device>
-
 ```
+
+Important note:  
+`<elem name="battery">  eb1-j0-strain2-canbattery </elem>`
+should contains the device name `eb1-j0-strain2-canbattery` of the device file.
+ 
 
 # 3. Yarp output
 
@@ -102,14 +128,20 @@ And the wrapper:
 As for the wrapper file:
 
 ```bash
-/<robot_name>/battery/measures:o 
+/<robot_name>/battery/data:o 
 /<robot_name>/battery/rpc:o
 
 ```
 
 ## 3.2. Output format
 
-todo luca
+The output from bash commend
+```bash
+ yarp read ... /icub/battery/data:o
+```
+
+`0.400000005960464477539 0.300000011920928955078 80.0 31.0 0`  
+`voltage -- current -- charge -- temperature -- status`
 
 
 # 4. Debug
@@ -124,28 +156,28 @@ CMAKE_INSTALL_PREFIX             <path_to_robotology>/robotology-superbuild/buil
 Use the following launch.json
 ```json
     {
-        "name": "App debug battery sensor",
-        "type": "cppdbg",
-        "request": "launch",
-        "program": "<absolute path to your robotology>/robotology-superbuild/build/install/bin/yarprobotinterface",
-        "args": [],
-        "stopAtEntry": false,
-        "cwd": "<absolute path to your config files>/yarprobotinterface-config-multiple",
-        "environment": [],
-        "externalConsole": false,
-        "MIMode": "gdb",
-        "setupCommands": [
-            {
-                "description": "Enable pretty-printing for gdb",
-                "text": "-enable-pretty-printing",
-                "ignoreFailures": true
-            },
-            {
-                "description": "Set Disassembly Flavor to Intel",
-                "text": "-gdb-set disassembly-flavor intel",
-                "ignoreFailures": true
-            }
-        ],
-        "miDebuggerPath": "/usr/bin/gdb",
-    }
+            "name": "App debug battery sensor",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "<robotology-path>/robotology-superbuild/build/install/bin/yarprobotinterface",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "<xmlconfig-files>/yarprobotinterface-config-canbattery",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb",
+        }
 ```
