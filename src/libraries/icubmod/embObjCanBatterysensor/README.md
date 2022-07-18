@@ -1,7 +1,8 @@
 # 1. General info
-The device's purpose is to make it possible to connect up to `1 CanBattery` sensor to a single EMS board.
+The device's purpose is to make it possible to connect up to the `CanBattery` sensor to a single EMS board.
+This device works with the `bms` board. Note that the board can not be programmed for different message rates.
 
-## 1.1. Prereqisite
+## 1.1. Prerequisite
 The following modules should be included in the compilation process:
 
 ```cmake
@@ -12,7 +13,7 @@ ENABLE_icubmod_embObjCanBattery   ON
 
 This device should be used with XMLs like the following:
 
-The root xml:
+The root XML:
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE robot PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
@@ -26,7 +27,7 @@ The root xml:
  
  
     <!-- ANALOG SENSOR CANBATTERY -->
-    <xi:include href="wrappers/CanBattery/testCanBattery_wrapper.xml" /> 	
+    <xi:include href="wrappers/CanBattery/testCanBattery_wrapper.xml" />    
     <xi:include href="hardware/CanBattery/eb1-j0-strain2-canbattery.xml" /> 
   
       
@@ -145,7 +146,7 @@ CMAKE_INSTALL_PREFIX             <path_to_robotology>/robotology-superbuild/buil
 
 ## 4.2. Visual studio code debugging
 Use the following launch.json
-```json
+```JSON
     {
             "name": "App debug battery sensor",
             "type": "cppdbg",
