@@ -5,7 +5,6 @@ The device's purpose is to make it possible to connect up to `1 CanBattery` sens
 The following modules should be included in the compilation process:
 
 ```cmake
-ENABLE_icubmod_canBusAnalogSen   ON
 ENABLE_icubmod_embObjCanBattery   ON
 ```
 
@@ -52,9 +51,6 @@ The device XML in `hardware\CanBattery` (refer to the root XML file):
 
         <group name="PROPERTIES">
 
-            <!-- we can have as many boards as we want, 
-                 but now the only good ones are strain and strain2. 
-                 use eoas_ft_isboardvalid() to verify -->
             <group name="CANBOARDS">
                 <param name="type">                 bms      </param>
 
@@ -77,12 +73,7 @@ The device XML in `hardware\CanBattery` (refer to the root XML file):
 
         </group>
 
-        <!-- we can pick up at max 4 sensors from the above list. 
-             we can specify parameters which are different for each sensor 
-             ft rate is in ms in range [1, 250]
-             temperature rate is in ms but must be transformed in seconds.
-             use calibration is boolean
-             -->
+
         <group name="SETTINGS">
             <param name="enabledSensors">            battery1        </param>
             <param name="acquisitionRate">           1000            </param>   <!-- msec -->
@@ -181,3 +172,6 @@ Use the following launch.json
             "miDebuggerPath": "/usr/bin/gdb",
         }
 ```
+
+# 5. Unittest 
+The device has a set of unittest.
