@@ -94,7 +94,7 @@ And the XML wrapper in `.\wrappers\CanBattery` (refer to the root XML file)::
 
 
     <device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery_wrapper" type="batteryWrapper">
-        <param name="period">       10                  </param>
+        <param name="period">       1                  </param> 
         <param name="name">       /icub/battery      </param>
         
         <action phase="startup" level="5" type="attach">

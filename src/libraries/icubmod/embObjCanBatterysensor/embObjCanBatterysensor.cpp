@@ -224,7 +224,6 @@ bool embObjCanBatterysensor::update(eOprotID32_t id32, double timestamp, void *r
 {
 	if (!device_->isOpen())
 		return false;
-
 	eOprotIndex_t eoprotIndex = eoprot_ID2index(id32);
 	if (eoprotIndex > 1)
 	{
@@ -308,6 +307,7 @@ double embObjCanBatterysensor::calculateBoardTime(eOabstime_t current)
 
 bool embObjCanBatterysensor::getBatteryVoltage(double &voltage)
 {
+		std::cout << "xx"<<std::endl;
 	voltage = canBatteryData_.voltage_;
 	return true;
 }
