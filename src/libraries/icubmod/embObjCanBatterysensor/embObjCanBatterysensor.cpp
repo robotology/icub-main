@@ -307,7 +307,6 @@ double embObjCanBatterysensor::calculateBoardTime(eOabstime_t current)
 
 bool embObjCanBatterysensor::getBatteryVoltage(double &voltage)
 {
-		std::cout << "xx"<<std::endl;
 	voltage = canBatteryData_.voltage_;
 	return true;
 }
