@@ -40,7 +40,7 @@ PRIVATE
   gmock
   ethResources
   embObjMultipleFTsensorsUT
-  embObjCanBatterysensorUT
+  embObjBatteryUT
   YARP::YARP_init
 )
 

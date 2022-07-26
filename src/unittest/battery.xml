@@ -2,7 +2,7 @@
 <!DOCTYPE device PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
 
 
-<device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery" type="embObjCanBatterysensor">
+<device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery" type="embObjBattery">
 
     <xi:include href="../../general.xml" />
 

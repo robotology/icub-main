@@ -25,19 +25,19 @@ using namespace yarp::os;
 class ServiceParserCanBattery
 {
    public:
-	ServiceParserCanBattery();
-	bool parse(const yarp::os::Searchable& config);
-	bool toEomn(eOmn_serv_config_data_as_battery_t& out) const;
-	BatteryInfo& getBatteryInfo();
+    ServiceParserCanBattery();
+    bool parse(const yarp::os::Searchable& config);
+    bool toEomn(eOmn_serv_config_data_as_battery_t& out) const;
+    BatteryInfo& getBatteryInfo();
 
    protected:
-	virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards);  // OK
-	virtual bool checkPropertySensors(const Bottle& property);				  // OK
-	virtual bool checkSettings(const Bottle& settings);						  // OK
-	virtual bool checkServiceType(const Bottle& service);					  // OK
-	virtual eObrd_type_t checkBoardType(const std::string& boardType);
+    virtual bool checkPropertyCanBoards(const Bottle& bPropertiesCanBoards);  // OK
+    virtual bool checkPropertySensors(const Bottle& property);                // OK
+    virtual bool checkSettings(const Bottle& settings);                       // OK
+    virtual bool checkServiceType(const Bottle& service);                     // OK
+    virtual eObrd_type_t checkBoardType(const std::string& boardType);
 
-	BatteryInfo batteryInfo_;
+    BatteryInfo batteryInfo_;
 };
 
 #endif

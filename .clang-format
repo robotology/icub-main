@@ -2,7 +2,7 @@
 BasedOnStyle:  Google
 TabWidth:        4
 IndentWidth:     4
-UseTab:          Always
+UseTab:          Never
 ColumnLimit: 200
 
 Language: Cpp

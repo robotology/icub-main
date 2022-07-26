@@ -16,17 +16,17 @@
 class BatteryInfo
 {
    public:
-	uint8_t acquisitionRate{0};
-	eObrd_type_t board{eobrd_unknown};
-	int port{0};
-	int address{0};
-	int majorProtocol{0};
-	int minorProtocol{0};
-	int majorFirmware{0};
-	int minorFirmware{0};
-	int buildFirmware{0};
+    uint8_t acquisitionRate{0};
+    eObrd_type_t board{eobrd_unknown};
+    int port{0};
+    int address{0};
+    int majorProtocol{0};
+    int minorProtocol{0};
+    int majorFirmware{0};
+    int minorFirmware{0};
+    int buildFirmware{0};
 
-	bool toEomn(eOas_battery_sensordescriptor_t& out) const;
+    bool toEomn(eOas_battery_sensordescriptor_t& out) const;
 };
 
 bool operator==(const BatteryInfo& right, const BatteryInfo& left);

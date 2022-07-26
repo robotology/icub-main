@@ -40,7 +40,7 @@ The device XML in `hardware\CanBattery` (refer to the root XML file):
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE device PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
 
-<device xmlns:xi="http://www.w3.org/2001/XInclude" name="eb1-j0-strain2-canbattery" type="embObjCanBatterysensor">
+<device xmlns:xi="http://www.w3.org/2001/XInclude" name="eb1-j0-strain2-canbattery" type="embObjBattery">
 
     <xi:include href="../../general.xml" />
 

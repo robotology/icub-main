@@ -12,7 +12,7 @@
 
 #include "EoProtocolAS.h"
 #include "testUtils.h"
-#include "embObjCanBatterysensor.h"
+#include "embObjBattery.h"
 
 using ::testing::_;
 using ::testing::An;
@@ -30,18 +30,18 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class embObjCanBatterysensor_Mock : public yarp::dev::embObjCanBatterysensor
+class embObjCanBatterysensor_Mock : public yarp::dev::embObjBattery
 {
    public:
-	using yarp::dev::embObjCanBatterysensor::canBatteryData_;
-	using yarp::dev::embObjCanBatterysensor::initRegulars;
-	using yarp::dev::embObjCanBatterysensor::sendConfig2boards;
-	using yarp::dev::embObjCanBatterysensor::sendStart2boards;
-	using yarp::dev::embObjCanBatterysensor::embObjCanBatterysensor::calculateBoardTime;
-	using yarp::dev::embObjCanBatterysensor::embObjCanBatterysensor::update;
+	using yarp::dev::embObjBattery::canBatteryData_;
+	using yarp::dev::embObjBattery::initRegulars;
+	using yarp::dev::embObjBattery::sendConfig2boards;
+	using yarp::dev::embObjBattery::sendStart2boards;
+	using yarp::dev::embObjBattery::embObjBattery::calculateBoardTime;
+	using yarp::dev::embObjBattery::embObjBattery::update;
 
-	embObjCanBatterysensor_Mock(std::shared_ptr<yarp::dev::embObjDevPrivData> device) : yarp::dev::embObjCanBatterysensor(device){};
-	embObjCanBatterysensor_Mock() : yarp::dev::embObjCanBatterysensor(){};
+	embObjCanBatterysensor_Mock(std::shared_ptr<yarp::dev::embObjDevPrivData> device) : yarp::dev::embObjBattery(device){};
+	embObjCanBatterysensor_Mock() : yarp::dev::embObjBattery(){};
 	MOCK_METHOD(double, calculateBoardTime, (eOabstime_t), (override));
 };
 
@@ -232,9 +232,9 @@ TEST(CanBatterysensor, calculateBoardTime_positive_001)
 	// Test
 	double data;
 	double timestamp;
-	double first = device.embObjCanBatterysensor::calculateBoardTime(1000000);
-	double second = device.embObjCanBatterysensor::calculateBoardTime(2000000);
-	double third = device.embObjCanBatterysensor::calculateBoardTime(3000000);
+	double first = device.embObjBattery::calculateBoardTime(1000000);
+	double second = device.embObjBattery::calculateBoardTime(2000000);
+	double third = device.embObjBattery::calculateBoardTime(3000000);
 	double diff = second - first;
 
 	EXPECT_TRUE(1.0 == diff);
