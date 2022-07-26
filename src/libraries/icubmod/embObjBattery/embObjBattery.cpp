@@ -32,7 +32,7 @@ using namespace yarp::dev;
 
 void CanBatteryData::decode(eOas_battery_timedvalue_t *data, double timestamp)
 {
-    temperature_ = data->temperature;  // in steps of 0.1 celsius degree (pos and neg).
+    temperature_ = data->temperature / 10;  // in steps of 0.1 celsius degree (pos and neg).
     voltage_ = data->voltage;
     current_ = data->current;
     charge_ = data->charge;
@@ -143,7 +143,7 @@ bool embObjBattery::sendConfig2boards(ServiceParserCanBattery &parser, eth::Abst
     auto &canBattery = parser.getBatteryInfo();
 
     eOprotID32_t id32 = eo_prot_ID32dummy;
-    eOas_battery_config_t cfg;
+    eOas_battery_config_t cfg{0, 0};
     cfg.period = canBattery.acquisitionRate;
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_battery_config);
 
