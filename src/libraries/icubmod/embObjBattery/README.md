@@ -132,9 +132,14 @@ The output from bash commend
  yarp read ... /icub/battery/data:o
 ```
 
-`0.400000005960464477539 0.300000011920928955078 80.0 31.0 0`  
+`40 3.300000011920928955078 80.0 31.0 0`  
 `voltage -- current -- charge -- temperature -- status`
 
+Voltage in Volt
+Current in Amper
+Charge in percent
+Temperature in degree Celtius
+Status not used for now
 
 # 4. Debug
 
@@ -175,4 +180,7 @@ Use the following launch.json
 ```
 
 # 5. Unittest 
-The device has a set of unittest.
+The device has a set of unittest that can be activated with:
+```
+BUILD_TESTING                    ON
+```
