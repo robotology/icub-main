@@ -8,7 +8,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include <embObjMultipleFTsensors.h>
+#include "embObjMultipleFTsensors.h"
 #include <ethResource.h>
 
 #include "EoProtocolAS.h"
