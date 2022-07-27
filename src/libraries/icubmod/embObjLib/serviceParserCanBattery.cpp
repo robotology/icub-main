@@ -333,10 +333,10 @@ BatteryInfo &ServiceParserCanBattery::getBatteryInfo()
 eObrd_type_t ServiceParserCanBattery::checkBoardType(const std::string &boardType)
 {
     eObrd_type_t type = eoboards_string2type2(boardType.c_str(), eobool_true);
-    if (!eoas_bms_isboardvalid(eoboards_type2cantype(type)))
+    if (!eoas_battery_isboardvalid(eoboards_type2cantype(type)))
     {
         type = eoboards_string2type2(boardType.c_str(), eobool_false);
-        if (!eoas_bms_isboardvalid(eoboards_type2cantype(type)))
+        if (!eoas_battery_isboardvalid(eoboards_type2cantype(type)))
         {
             yError() << "checkBoardType --> unsupported board type:" << boardType;
             return type;

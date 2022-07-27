@@ -72,8 +72,8 @@ checkandset_dependency(Qt5)
 
 if(icub_firmware_shared_FOUND AND ICUB_USE_icub_firmware_shared)
   # icub-firmware-shared 4.0.7 was actually a wrong version exported by icub-firmware-shared <= 1.15
-  if(icub_firmware_shared_VERSION VERSION_GREATER 4 OR icub_firmware_shared_VERSION VERSION_LESS 1.25.1)
-    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected, but at least 1.25.1 is required")
+  if(icub_firmware_shared_VERSION VERSION_GREATER 4 OR icub_firmware_shared_VERSION VERSION_LESS 1.26.0)
+    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected, but at least 1.26.0 is required")
   endif()
 endif()
 
