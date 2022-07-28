@@ -141,15 +141,20 @@ Charge in percent
 Temperature in degree Celtius
 Status not used for now
 
-# 4. Debug
+# 4. Battery client
+To receive data from the device you should use the iBattery interface.
+See a complete example here:
+https://github.com/robotology/yarp/tree/master/src/yarpbatterygui
 
-## 4.1. Install folder
+# 5. Debug
+
+## 5.1. Install folder
 If you have already installed robotology-superbuild and you have cloned icub-main (and you are working here) overwrite robotology-superbuild binary like this in your icub-main:
 ```bash
 CMAKE_INSTALL_PREFIX             <path_to_robotology>/robotology-superbuild/build/install
 ``` 
 
-## 4.2. Visual studio code debugging
+## 5.2. Visual studio code debugging
 Use the following launch.json
 ```JSON
     {
@@ -179,7 +184,7 @@ Use the following launch.json
         }
 ```
 
-# 5. Unittest 
+# 6. Unittest 
 The device has a set of unittest that can be activated with:
 ```
 BUILD_TESTING                    ON
