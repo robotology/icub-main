@@ -5,14 +5,13 @@
  * This software may be modified and distributed under the terms of the
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
-
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include <embObjMultipleFTsensors.h>
+#include "embObjMultipleFTsensors.h"
 #include <ethResource.h>
-#include "EoProtocolAS.h"
 
+#include "EoProtocolAS.h"
 #include "testUtils.h"
 
 using ::testing::_;
@@ -39,9 +38,9 @@ class embObjMultipleFTsensor_Mock : public yarp::dev::embObjMultipleFTsensors
 	using yarp::dev::embObjMultipleFTsensors::sendConfig2boards;
 	using yarp::dev::embObjMultipleFTsensors::sendStart2boards;
 	using yarp::dev::embObjMultipleFTsensors::temperaturesensordata_;
+	using yarp::dev::embObjMultipleFTsensors::embObjMultipleFTsensors::calculateBoardTime;
 	using yarp::dev::embObjMultipleFTsensors::embObjMultipleFTsensors::getSixAxisForceTorqueSensorMeasure;
 	using yarp::dev::embObjMultipleFTsensors::embObjMultipleFTsensors::update;
-	using yarp::dev::embObjMultipleFTsensors::embObjMultipleFTsensors::calculateBoardTime;
 
 	embObjMultipleFTsensor_Mock(std::shared_ptr<yarp::dev::embObjDevPrivData> device) : yarp::dev::embObjMultipleFTsensors(device){};
 	embObjMultipleFTsensor_Mock() : yarp::dev::embObjMultipleFTsensors(){};
@@ -281,7 +280,7 @@ TEST(MultiplembObjMultipleFTsensor, getNrOfSixAxisForceTorqueSensors_positive_00
 
 	yarp::sig::Vector expected = {1, 2, 3, 4, 5, 6};
 	EXPECT_EQ(expected, data);
-    EXPECT_EQ( 99.49, timestamp);
+	EXPECT_EQ(99.49, timestamp);
 }
 
 TEST(MultiplembObjMultipleFTsensor, getNrOfSixAxisForceTorqueSensors_double_positive_001)
@@ -290,7 +289,7 @@ TEST(MultiplembObjMultipleFTsensor, getNrOfSixAxisForceTorqueSensors_double_posi
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjMultipleFTsensor_Mock device(privateData);
 
-	device.ftSensorsData_ = {{{0}, {{1, 2, 3, 4, 5, 6}, 99.49}},{{1}, {{10, 20, 30, 40, 50, 60}, 99.49}}};
+	device.ftSensorsData_ = {{{0}, {{1, 2, 3, 4, 5, 6}, 99.49}}, {{1}, {{10, 20, 30, 40, 50, 60}, 99.49}}};
 
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
 
@@ -301,7 +300,7 @@ TEST(MultiplembObjMultipleFTsensor, getNrOfSixAxisForceTorqueSensors_double_posi
 
 	yarp::sig::Vector expected = {10, 20, 30, 40, 50, 60};
 	EXPECT_EQ(expected, data);
-    EXPECT_EQ( 99.49, timestamp);
+	EXPECT_EQ(99.49, timestamp);
 }
 
 TEST(MultiplembObjMultipleFTsensor, getNrOfSgetTemperatureSensorMeasure_positive_001)
@@ -321,7 +320,7 @@ TEST(MultiplembObjMultipleFTsensor, getNrOfSgetTemperatureSensorMeasure_positive
 
 	double expected = 34;
 	EXPECT_EQ(expected, data);
-    EXPECT_EQ( 99.49, timestamp);
+	EXPECT_EQ(99.49, timestamp);
 }
 
 TEST(MultiplembObjMultipleFTsensor, calculateBoardTime_positive_001)
@@ -330,7 +329,7 @@ TEST(MultiplembObjMultipleFTsensor, calculateBoardTime_positive_001)
 	yarp::os::Network::init();
 	std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
 	embObjMultipleFTsensor_Mock device(privateData);
-	
+
 	EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
 
 	// Test
@@ -338,7 +337,7 @@ TEST(MultiplembObjMultipleFTsensor, calculateBoardTime_positive_001)
 	double timestamp;
 	double first = device.calculateBoardTime(1000000);
 	double second = device.calculateBoardTime(2000000);
-	double diff=second-first;
+	double diff = second - first;
 
-	EXPECT_TRUE(1.0==diff);
+	EXPECT_TRUE(1.0 == diff);
 }

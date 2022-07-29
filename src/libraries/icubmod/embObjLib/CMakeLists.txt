@@ -39,7 +39,9 @@ set(EXTRA_SOURCE            ${CMAKE_CURRENT_SOURCE_DIR}/hostTransceiver.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/fakeEthResource.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/serviceParser.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/serviceParserMultipleFt.cpp
+                            ${CMAKE_CURRENT_SOURCE_DIR}/serviceParserCanBattery.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/ftInfo.cpp
+                            ${CMAKE_CURRENT_SOURCE_DIR}/batteryInfo.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/theNVmanager.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/embObjGeneralDevPrivData.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/mcEventDownsampler.cpp)

@@ -28,8 +28,10 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_sources(${PROJECT_NAME}
     PRIVATE
     gtest_main.cc
-    testServiceParserForMultipleFT.cpp
+    testServiceParserMultipleFT.cpp
     testDeviceMultipleFTSensors.cpp
+    testServiceParserCanBattery.cpp
+    testDeviceCanBatterySensor.cpp
   )
 
 target_link_libraries(${PROJECT_NAME}
@@ -38,6 +40,7 @@ PRIVATE
   gmock
   ethResources
   embObjMultipleFTsensorsUT
+  embObjBatteryUT
   YARP::YARP_init
 )
 
@@ -52,4 +55,3 @@ install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 #add_custom_target(run_unit_test ALL
 #    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
 #    DEPENDS ${PROJECT_NAME})
-
