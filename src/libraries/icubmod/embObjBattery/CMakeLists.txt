@@ -9,16 +9,17 @@ yarp_prepare_plugin(embObjBattery CATEGORY device
                                  INCLUDE embObjBattery.h
                                  EXTRA_CONFIG WRAPPER=analogServer)
 
-IF (NOT SKIP_embObjCanBatterysensor)
+if (NOT SKIP_embObjBattery)
 
 
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
 
 
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
   yarp_add_plugin(embObjBattery embObjBattery.cpp embObjBattery.h)
-  TARGET_LINK_LIBRARIES(embObjBattery ethResources)
+  target_link_libraries(embObjBattery ethResources
+                        YARP::YARP_os YARP::YARP_dev YARP::YARP_sig)
   icub_export_plugin(embObjBattery)
 
   yarp_install(TARGETS embObjBattery
@@ -28,13 +29,13 @@ IF (NOT SKIP_embObjCanBatterysensor)
         YARP_INI DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
   if (BUILD_TESTING)
-   add_library(embObjBatteryUT STATIC embObjBattery.cpp embObjBattery.h)    
-   target_link_libraries(embObjBatteryUT ethResources
-                                    YARP::YARP_dev
-                                    icub_firmware_shared::embobj)
+   add_library(embObjBatteryUT STATIC embObjBattery.cpp embObjBattery.h)
+    target_link_libraries(embObjBatteryUT ethResources
+                          YARP::YARP_os YARP::YARP_dev YARP::YARP_sig
+                          icub_firmware_shared::embobj)
                                         
    target_include_directories(embObjBatteryUT PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   endif()
-
-ENDIF (NOT SKIP_embObjCanBatterysensor)
+  
+endif()
 
