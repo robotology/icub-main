@@ -9,7 +9,7 @@ yarp_prepare_plugin(embObjBattery CATEGORY device
                                  INCLUDE embObjBattery.h
                                  EXTRA_CONFIG WRAPPER=analogServer)
 
-IF (NOT SKIP_embObjCanBatterysensor)
+IF (NOT SKIP_embObjBattery)
 
 
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
@@ -35,6 +35,6 @@ IF (NOT SKIP_embObjCanBatterysensor)
                                         
    target_include_directories(embObjBatteryUT PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   endif()
-
-ENDIF (NOT SKIP_embObjCanBatterysensor)
+  
+ENDIF(NOT SKIP_embObjBattery)
 
