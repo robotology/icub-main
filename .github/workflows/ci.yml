@@ -125,7 +125,9 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
+        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
+              -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DICUB_USE_icub_firmware_shared:BOOL=ON \
               -DENABLE_icubmod_serial:BOOL=ON \
               -DENABLE_icubmod_serialport:BOOL=ON \
@@ -148,7 +150,6 @@ jobs:
               -DENABLE_icubmod_embObjMultipleFTsensors:BOOL=ON \
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
               -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
     - name: Configure [Ubuntu/macOS]
@@ -157,7 +158,8 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+        cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DICUB_USE_icub_firmware_shared:BOOL=ON \
               -DENABLE_icubmod_serial:BOOL=ON \
               -DENABLE_icubmod_serialport:BOOL=ON \
