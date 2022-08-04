@@ -204,7 +204,7 @@ jobs:
       shell: bash
       run: |
         cd build
-        ctest --output-on-failure -C ${{ matrix.build_type }} .
+        ctest run_unit_test --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Install
       shell: bash
