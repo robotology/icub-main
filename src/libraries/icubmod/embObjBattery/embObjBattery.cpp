@@ -15,6 +15,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <cmath>
 
 #include "EOnv_hid.h"
 #include "EoAnalogSensors.h"
@@ -33,7 +34,7 @@ using namespace yarp::dev;
 void CanBatteryData::decode(eOas_battery_timedvalue_t *data, double timestamp)
 {
     temperature_ = data->temperature / 10;  // in steps of 0.1 celsius degree (pos and neg).
-    voltage_ = data->voltage;
+    voltage_ = std::trunc(10 * data->voltage) / 10; 
     current_ = data->current;
     charge_ = data->charge;
     status_ = data->status;
@@ -348,7 +349,7 @@ bool CanBatteryData::operator==(const CanBatteryData &other) const
 {
     if (temperature_ != other.temperature_)
         return false;
-    if (voltage_ != other.voltage_)
+    if ((int)(voltage_*10) != (int)(other.voltage_*10)) //Only one digit after dot
         return false;
     if (current_ != other.current_)
         return false;

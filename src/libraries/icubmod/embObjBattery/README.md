@@ -158,6 +158,9 @@ CMAKE_INSTALL_PREFIX             <path_to_robotology>/robotology-superbuild/buil
 Use the following launch.json
 ```JSON
     {
+    "version": "0.2.0",
+    "configurations": [
+    {
             "name": "App debug battery sensor",
             "type": "cppdbg",
             "request": "launch",
@@ -181,8 +184,36 @@ Use the following launch.json
                 }
             ],
             "miDebuggerPath": "/usr/bin/gdb",
-        }
+        },
+        {
+        "name": "UT debug battery sensor",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "/home/triccyx/Documents/robotology-superbuild/build/install/bin/unittest",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "/home/triccyx/Documents/robotology-superbuild/build/install/bin",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+            {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            },
+            {
+                "description": "Set Disassembly Flavor to Intel",
+                "text": "-gdb-set disassembly-flavor intel",
+                "ignoreFailures": true
+            }
+        ],
+        "miDebuggerPath": "/usr/bin/gdb",
+    }
+    ]
+}
 ```
+Also select as build type DEBUG
 
 # 6. Unittest 
 The device has a set of unittest that can be activated with:
