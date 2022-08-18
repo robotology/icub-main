@@ -2209,6 +2209,7 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
         case eobrd_cantype_mtb4w:
         case eobrd_cantype_pmc:
         case eobrd_cantype_amcbldc:
+        case eobrd_cantype_mtb4c:
         {
             boardisMC = false;
             txBuffer[0].setId(EOCANPROT_D_CREATE_CANID(ICUBCANPROTO_CLASS_POLLING_ANALOGSENSOR, 0, target_id));
@@ -2432,8 +2433,12 @@ int cDownloader::change_card_address(int bus, int target_id, int new_id, int boa
         case icubCanProto_boardType__sg3:
         case icubCanProto_boardType__psc:
         case icubCanProto_boardType__mtb4w:
+        case icubCanProto_boardType__mtb4c:
         case eobrd_cantype_pmc:
         case eobrd_cantype_amcbldc:
+
+
+        
             txBuffer[0].setId((0x02 << 8) + (ID_MASTER << 4) + target_id);
             txBuffer[0].setLen(2);
             txBuffer[0].getData()[0]= ICUBCANPROTO_POL_MC_CMD__SET_BOARD_ID;
@@ -2778,6 +2783,7 @@ int cDownloader::startscheda(int bus, int board_pid, bool board_eeprom, int boar
     case icubCanProto_boardType__sg3:
     case icubCanProto_boardType__psc:
     case icubCanProto_boardType__mtb4w:
+    case icubCanProto_boardType__mtb4c:
     case eobrd_cantype_pmc:
     case eobrd_cantype_amcbldc:
     case icubCanProto_boardType__unknown:
@@ -3259,6 +3265,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
                        (icubCanProto_boardType__psc == board_type) || (icubCanProto_boardType__mtb4w == board_type) ||
                        (icubCanProto_boardType__pmc == board_type) 
                        || (icubCanProto_boardType__amcbldc == board_type)
+                       || (icubCanProto_boardType__mtb4c == board_type)
                       )
                     {   // it is ok
                     }
@@ -3499,6 +3506,7 @@ int cDownloader::download_file(int bus, int board_pid, int download_type, bool b
                         case icubCanProto_boardType__sg3:
                         case icubCanProto_boardType__psc:
                         case icubCanProto_boardType__mtb4w:
+                        case icubCanProto_boardType__mtb4c:
                         case icubCanProto_boardType__pmc:
                         case icubCanProto_boardType__amcbldc:
                              ret = download_hexintel_line(buffer, strlen(buffer), bus, board_pid, board_eeprom, download_type);
