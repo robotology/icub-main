@@ -16,6 +16,8 @@ jobs:
     - name: Get Latest Release Info
       id: latest_release_info
       uses: jossef/action-latest-release-info@v1.2.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: create version file
       shell: bash
