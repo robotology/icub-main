@@ -12,7 +12,7 @@ YCM_PACKAGE="ycm-cmake-modules"
 YCM_REQUIRED_VERSION="0.14.1"
 YCM_PACKAGE_URL="https://github.com/robotology/ycm/releases/download/v${YCM_REQUIRED_VERSION}/${YCM_PACKAGE}-${YCM_REQUIRED_VERSION}-all.deb"
 
-YARP_REQUIRED_VERSION="3.7.0"
+YARP_REQUIRED_VERSION="3.7.1"
 YARP_PACKAGE_URL_buster="https://github.com/robotology/yarp/releases/download/v${YARP_REQUIRED_VERSION}/yarp-${YARP_REQUIRED_VERSION}-2.buster_amd64.deb"
 YARP_PACKAGE_URL_focal="https://github.com/robotology/yarp/releases/download/v${YARP_REQUIRED_VERSION}/yarp-${YARP_REQUIRED_VERSION}-2.focal_amd64.deb"
 YARP_PACKAGE_URL_jammy="https://github.com/robotology/yarp/releases/download/v${YARP_REQUIRED_VERSION}/yarp-${YARP_REQUIRED_VERSION}-2.jammy_amd64.deb"
