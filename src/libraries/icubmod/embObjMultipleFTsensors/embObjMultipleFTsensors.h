@@ -34,6 +34,7 @@ class FtData
     yarp::sig::Vector data_{0, 0, 0, 0, 0, 0};
     double timeStamp_;
     std::string sensorName_;
+    std::string frameName_;
 };
 
 class TemperatureData
