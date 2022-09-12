@@ -11,6 +11,9 @@ jobs:
     name: Check for draft PR
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout the code
+      uses: actions/checkout@main
+    
     - name: Check workflow run
       shell: bash
       run: |
