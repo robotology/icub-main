@@ -736,6 +736,11 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.location";
                 return false;
             }
+            Bottle b_PROPERTIES_SENSORS_frameName = Bottle(b_PROPERTIES_SENSORS.findGroup("framename"));
+            if(b_PROPERTIES_SENSORS_frameName.isNull())
+            {
+                yWarning() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.framename";
+            }
             Bottle b_PROPERTIES_SENSORS_boardtype;
             if(type == eomn_serv_AS_inertials3)
             {
@@ -778,6 +783,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), item.id, formaterror);
                 convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
                 convert(b_PROPERTIES_SENSORS_location.get(i+1).asString(), item.location, formaterror);
+                convert(b_PROPERTIES_SENSORS_frameName.get(i+1).asString(), item.frameName, formaterror);
                 if(type == eomn_serv_AS_inertials3)
                 {
                     convert(b_PROPERTIES_SENSORS_boardtype.get(i+1).asString(), item.boardtype, formaterror);
