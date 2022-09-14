@@ -44,6 +44,7 @@ typedef struct
     std::string             nameOfStrain;
     eObrd_cantype_t         boardType;
     int                     temperatureAcquisitionrate;
+    std::string             frameName;
 } servConfigFTsensor_t;
 
 typedef struct
@@ -127,6 +128,7 @@ typedef struct
     eOas_sensor_t               type;
     eObrd_location_t            location;
     eObrd_type_t                boardtype;
+    std::string                 frameName;
 } servAnalogSensor_t;
 
 

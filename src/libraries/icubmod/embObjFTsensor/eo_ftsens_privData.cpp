@@ -53,6 +53,7 @@ bool eo_ftsens_privData::fromConfig(yarp::os::Searchable &_config, servConfigFTs
     if(serviceConfig.temperatureAcquisitionrate > 0)
         useTemperature = true;
     devicename = serviceConfig.nameOfStrain;
+    frameName = serviceConfig.frameName;
     
     if(isVerbose())
         printServiceConfig(serviceConfig);
