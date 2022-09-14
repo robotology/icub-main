@@ -558,7 +558,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) &&
        (eomn_serv_AS_inertials3 != type) && (eomn_serv_AS_psc != type) && (eomn_serv_AS_pos != type))
     {
-        yError() << "ServiceParser::check() is called with wrong type";
+        yError() << "ServiceParser::check_analog() is called with wrong type";
         return false;
     }
 
@@ -569,7 +569,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     Bottle b_SERVICE(config.findGroup("SERVICE"));
     if(b_SERVICE.isNull())
     {
-        yError() << "ServiceParser::check() cannot find SERVICE group";
+        yError() << "ServiceParser::check_analog() cannot find SERVICE group";
         return false;
     }
 
@@ -577,7 +577,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
     if(false == b_SERVICE.check("type"))
     {
-        yError() << "ServiceParser::check() cannot find SERVICE.type";
+        yError() << "ServiceParser::check_analog() cannot find SERVICE.type";
         return false;
     }
     else
@@ -585,12 +585,12 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         Bottle b_type(b_SERVICE.find("type").asString());
         if(false == convert(b_type.toString(), as_service.type, formaterror))
         {
-            yError() << "ServiceParser::check() has found unknown SERVICE.type = " << b_type.toString();
+            yError() << "ServiceParser::check_analog() has found unknown SERVICE.type = " << b_type.toString();
             return false;
         }
         if(type != as_service.type)
         {
-            yError() << "ServiceParser::check() has found wrong SERVICE.type = " << as_service.type << "it must be" << "TODO: tostring() function";
+            yError() << "ServiceParser::check_analog() has found wrong SERVICE.type = " << as_service.type << "it must be" << "TODO: tostring() function";
             return false;
         }
     }
@@ -600,7 +600,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     Bottle b_PROPERTIES = Bottle(b_SERVICE.findGroup("PROPERTIES"));
     if(b_PROPERTIES.isNull())
     {
-        yError() << "ServiceParser::check() cannot find PROPERTIES";
+        yError() << "ServiceParser::check_analog() cannot find PROPERTIES";
         return false;
     }
     else
@@ -676,7 +676,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_build.size())
               )
             {
-                yError() << "ServiceParser::check() in PROPERTIES.CANBOARDS some param has inconsistent length";
+                yError() << "ServiceParser::check_analog() in PROPERTIES.CANBOARDS some param has inconsistent length";
                 return false;
             }
 
@@ -704,7 +704,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
             if(true == formaterror)
             {
-                yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.CANBOARDS some param has inconsistent length";
+                yError() << "ServiceParser::check_analog() has detected an illegal format for some of the params of PROPERTIES.CANBOARDS some param has inconsistent length";
                 return false;
             }
         }
@@ -712,7 +712,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         Bottle b_PROPERTIES_SENSORS = Bottle(b_PROPERTIES.findGroup("SENSORS"));
         if(b_PROPERTIES_SENSORS.isNull())
         {
-            yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS";
+            yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS";
             return false;
         }
         else
@@ -721,25 +721,25 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             Bottle b_PROPERTIES_SENSORS_id = Bottle(b_PROPERTIES_SENSORS.findGroup("id"));
             if(b_PROPERTIES_SENSORS_id.isNull())
             {
-                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.id";
+                yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.id";
                 return false;
             }
             Bottle b_PROPERTIES_SENSORS_type = Bottle(b_PROPERTIES_SENSORS.findGroup("type"));
             if(b_PROPERTIES_SENSORS_type.isNull())
             {
-                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.type";
+                yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.type";
                 return false;
             }
             Bottle b_PROPERTIES_SENSORS_location = Bottle(b_PROPERTIES_SENSORS.findGroup("location"));
             if(b_PROPERTIES_SENSORS_location.isNull())
             {
-                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.location";
+                yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.location";
                 return false;
             }
             Bottle b_PROPERTIES_SENSORS_frameName = Bottle(b_PROPERTIES_SENSORS.findGroup("framename"));
-            if(b_PROPERTIES_SENSORS_frameName.isNull())
+            if(b_PROPERTIES_SENSORS_frameName.isNull() && eoas_string2sensor(b_PROPERTIES_SENSORS_type.get(1).asString().c_str())==eoas_strain)
             {
-                yWarning() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.framename";
+                yWarning() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.framename";
             }
             Bottle b_PROPERTIES_SENSORS_boardtype;
             if(type == eomn_serv_AS_inertials3)
@@ -748,7 +748,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 b_PROPERTIES_SENSORS_boardtype = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
                 if(b_PROPERTIES_SENSORS_boardtype.isNull())
                 {
-                    yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.boardType";
+                    yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.boardType";
                     return false;
                 }
             }
@@ -766,7 +766,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 ((type == eomn_serv_AS_inertials3) && (b_PROPERTIES_SENSORS_boardtype.size() != tmp))
               )
             {
-                yError() << "ServiceParser::check() in PROPERTIES.SENSORS some param has inconsistent length";
+                yError() << "ServiceParser::check_analog() xx in PROPERTIES.SENSORS some param has inconsistent length";
                 return false;
             }
 
@@ -783,7 +783,10 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), item.id, formaterror);
                 convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
                 convert(b_PROPERTIES_SENSORS_location.get(i+1).asString(), item.location, formaterror);
-                convert(b_PROPERTIES_SENSORS_frameName.get(i+1).asString(), item.frameName, formaterror);
+                if(!b_PROPERTIES_SENSORS_frameName.isNull())
+                {
+                   convert(b_PROPERTIES_SENSORS_frameName.get(i+1).asString(), item.frameName, formaterror);
+                }
                 if(type == eomn_serv_AS_inertials3)
                 {
                     convert(b_PROPERTIES_SENSORS_boardtype.get(i+1).asString(), item.boardtype, formaterror);
@@ -801,7 +804,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
             if(true == formaterror)
             {
-                yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.SENSORS some param has inconsistent length";
+                yError() << "ServiceParser::check_analog() has detected an illegal format for some of the params of PROPERTIES.SENSORS some param has inconsistent length";
                 return false;
             }
 
@@ -812,7 +815,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
     if(b_SETTINGS.isNull())
     {
-        yError() << "ServiceParser::check() cannot find SETTINGS";
+        yError() << "ServiceParser::check_analog() cannot find SETTINGS";
         return false;
     }
     else
@@ -821,13 +824,13 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         Bottle b_SETTINGS_acquisitionRate = Bottle(b_SETTINGS.findGroup("acquisitionRate"));
         if(b_SETTINGS_acquisitionRate.isNull())
         {
-            yError() << "ServiceParser::check() cannot find SETTINGS.acquisitionRate";
+            yError() << "ServiceParser::check_analog() cannot find SETTINGS.acquisitionRate";
             return false;
         }
         Bottle b_SETTINGS_enabledSensors = Bottle(b_SETTINGS.findGroup("enabledSensors"));
         if(b_SETTINGS_enabledSensors.isNull())
         {
-            yError() << "ServiceParser::check() cannot find SETTINGS.enabledSensors";
+            yError() << "ServiceParser::check_analog() cannot find SETTINGS.enabledSensors";
             return false;
         }
 
@@ -837,7 +840,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         // the enabled must be <= the sensors.
         if( numenabledsensors > as_service.properties.sensors.size() )
         {
-            yError() << "ServiceParser::check() in SETTINGS.enabledSensors there are too many items with respect to supported sensors:" << numenabledsensors << "vs." << as_service.properties.sensors.size();
+            yError() << "ServiceParser::check_analog() in SETTINGS.enabledSensors there are too many items with respect to supported sensors:" << numenabledsensors << "vs." << as_service.properties.sensors.size();
             return false;
         }
 
@@ -882,7 +885,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
         if(0 == as_service.settings.enabledsensors.size())
         {
-            yError() << "ServiceParser::check() could not find any item in SETTINGS.enabledSensors which matches what in PROPERTIES.SENSORS.id";
+            yError() << "ServiceParser::check_analog() could not find any item in SETTINGS.enabledSensors which matches what in PROPERTIES.SENSORS.id";
             return false;
         }
 
@@ -897,7 +900,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         Bottle b_STRAIN_SETTINGS = Bottle(b_SERVICE.findGroup("STRAIN_SETTINGS"));
         if(b_STRAIN_SETTINGS.isNull())
         {
-            yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS";
+            yError() << "ServiceParser::check_analog() cannot find STRAIN_SETTINGS";
             return false;
         }
         else
@@ -906,7 +909,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             Bottle b_STRAIN_SETTINGS_useCalibration = Bottle(b_STRAIN_SETTINGS.findGroup("useCalibration"));
             if(b_STRAIN_SETTINGS_useCalibration.isNull())
             {
-                yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS.useCalibration";
+                yError() << "ServiceParser::check_analog() cannot find STRAIN_SETTINGS.useCalibration";
                 return false;
             }
 
@@ -915,7 +918,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
             if(true == formaterror)
             {
-                yError() << "ServiceParser::check() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
+                yError() << "ServiceParser::check_analog() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
                 return false;
             }
         }
@@ -1428,6 +1431,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     ftconfig.acquisitionrate = as_service.settings.acquisitionrate;
     ftconfig.useCalibration = as_strain_settings.useCalibration;
     ftconfig.nameOfStrain = thestrain_sensor.id;
+    ftconfig.frameName = thestrain_sensor.frameName;
     
     memset(&ftconfig.ethservice.configuration, 0, sizeof(ftconfig.ethservice.configuration));
     
