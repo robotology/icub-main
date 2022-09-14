@@ -910,17 +910,42 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
     if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints)) return false; 
     for (int j = 0; j<_njoints; j++) _filterType[j] = xtmp.get(j + 1).asInt32();
 
-    if (!extractGroup(pidsGroup, xtmp, "viscousPos", "viscousPos parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _viscousPos[j] = xtmp.get(j + 1).asFloat64();
+    // Friction parameters
+    if (!extractGroup(pidsGroup, xtmp, "viscousPos", "viscousPos parameter", _njoints, false)) 
+    {
+        for (int j = 0; j<_njoints; j++) _viscousPos[j] = 0;
+    }
+    else
+    {
+        for (int j = 0; j<_njoints; j++) _viscousPos[j] = xtmp.get(j + 1).asFloat64();
+    }
 
-    if (!extractGroup(pidsGroup, xtmp, "viscousNeg", "viscousNeg parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _viscousNeg[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "viscousNeg", "viscousNeg parameter", _njoints, false)) 
+    {
+        for (int j = 0; j<_njoints; j++) _viscousNeg[j] = 0;
+    }
+    else
+    {
+        for (int j = 0; j<_njoints; j++) _viscousNeg[j] = xtmp.get(j + 1).asFloat64();
+    }
 
-    if (!extractGroup(pidsGroup, xtmp, "coulombPos", "coulombPos parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _coulombPos[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "coulombPos", "coulombPos parameter", _njoints, false))
+    {
+        for (int j = 0; j<_njoints; j++) _coulombPos[j] = 0;
+    }
+    else
+    {
+        for (int j = 0; j<_njoints; j++) _coulombPos[j] = xtmp.get(j + 1).asFloat64();
+    }
 
-    if (!extractGroup(pidsGroup, xtmp, "coulombNeg", "coulombNeg parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _coulombNeg[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "coulombNeg", "coulombNeg parameter", _njoints, false))
+    {
+        for (int j = 0; j<_njoints; j++) _coulombNeg[j] = 0;
+    }
+    else
+    {
+        for (int j = 0; j<_njoints; j++) _coulombNeg[j] = xtmp.get(j + 1).asFloat64();
+    }
 
     return true;
 }
