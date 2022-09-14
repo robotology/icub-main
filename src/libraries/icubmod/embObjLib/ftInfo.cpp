@@ -66,6 +66,8 @@ bool operator==(const FtInfo& right, const FtInfo& left)
         return false;
     if (right.buildFirmware != left.buildFirmware)
         return false;
+    if (right.frameName != left.frameName)
+        return false;        
     return true;
 };
 
