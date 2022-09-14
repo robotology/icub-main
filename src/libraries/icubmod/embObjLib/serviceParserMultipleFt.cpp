@@ -331,7 +331,7 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle &service)
     size_t enabledSensorSize = settingsEnabledSensors.size();
     if (enabledSensorSize > 4)
     {
-        yError() << "ServiceParserMultipleFt::checkSettings --> too mutch sensors";
+        yError() << "ServiceParserMultipleFt::checkSettings --> too many sensors";
         return false;
     }
 
