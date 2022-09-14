@@ -136,7 +136,7 @@ bool embObjMultipleFTsensors::sendConfig2boards(ServiceParserMultipleFt &parser,
         eOprotID32_t id32 = eo_prot_ID32dummy;
         eOas_ft_config_t cfg;
         cfg.ftperiod = data.ftAcquisitionRate;
-        cfg.temperatureperiod = data.temperatureAcquisitionRate/1000;
+        cfg.temperatureperiod = data.temperatureAcquisitionRate / 1000;
         cfg.mode = data.useCalibration;
         cfg.calibrationset = 0;
         id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_ft, index, eoprot_tag_as_ft_config);
@@ -155,7 +155,7 @@ bool embObjMultipleFTsensors::sendConfig2boards(ServiceParserMultipleFt &parser,
 
         eOprotIndex_t eoprotIndex = eoprot_ID2index(id32);
         std::unique_lock<std::shared_mutex> lck(mutex_);
-        ftSensorsData_[eoprotIndex] = {{0, 0, 0, 0, 0, 0}, 0, id};
+        ftSensorsData_[eoprotIndex] = {{0, 0, 0, 0, 0, 0}, 0, id,data.frameName};
     }
     return true;
 }
@@ -328,7 +328,8 @@ bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorName(size_t sensorindex
 
 bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorFrameName(size_t sensorindex, std::string &frameName) const
 {
-    frameName = "";  // Unused
+    std::shared_lock<std::shared_mutex> lck(mutex_);
+    frameName = ftSensorsData_.at(sensorindex).frameName_;
     return true;
 }
 
@@ -351,7 +352,8 @@ bool embObjMultipleFTsensors::getTemperatureSensorName(size_t sensorindex, std::
 
 bool embObjMultipleFTsensors::getTemperatureSensorFrameName(size_t sensorindex, std::string &frameName) const
 {
-    frameName = "";  // Unused
+    std::shared_lock<std::shared_mutex> lck(mutex_);
+    frameName = ftSensorsData_.at(sensorindex).frameName_;
     return true;
 }
 
@@ -368,7 +370,7 @@ bool embObjMultipleFTsensors::getTemperatureSensorMeasure(size_t sensorIndex, do
         return false;
     }
 
-    out = temperaturesensordata_.at(sensorIndex).data_;
+    out = 0.1 * temperaturesensordata_.at(sensorIndex).data_;
     timestamp = temperaturesensordata_.at(sensorIndex).timeStamp_;
     return true;
 }
