@@ -370,7 +370,7 @@ bool embObjMultipleFTsensors::getTemperatureSensorMeasure(size_t sensorIndex, do
         return false;
     }
 
-    out = temperaturesensordata_.at(sensorIndex).data_;
+    out = 0.1 * temperaturesensordata_.at(sensorIndex).data_;
     timestamp = temperaturesensordata_.at(sensorIndex).timeStamp_;
     return true;
 }
