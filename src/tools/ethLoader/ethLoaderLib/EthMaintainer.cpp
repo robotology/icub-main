@@ -1176,10 +1176,20 @@ EthBoardList EthMaintainer::discover(bool clearbeforediscovery, int numberofdisc
     cmd->opc = uprot_OPC_LEGACY_SCAN;
     cmd->opc2 = uprot_OPC_DISCOVER;
     cmd->jump2updater = (true == forceUpdatingMode) ? (1) : (0);
-
+#define ETH_MAINTAINER_DISCOVER_UNICASTMODE
     for(int i=0; i<numberofdiscoveries; i++)
     {
+#if defined(ETH_MAINTAINER_DISCOVER_UNICASTMODE)
+        eOipv4addr_t adr = EO_COMMON_IPV4ADDR(10, 0, 1, 99);
+        sendCommand(adr, cmd, sizeof(eOuprot_cmd_DISCOVER_t), list2use);
+        for(int i=1; i<=32; i++)
+        {
+            adr = EO_COMMON_IPV4ADDR(10, 0, 1, i);
+            sendCommand(adr, cmd, sizeof(eOuprot_cmd_DISCOVER_t), list2use);
+        }
+#else
         sendCommand(ipv4Broadcast, cmd, sizeof(eOuprot_cmd_DISCOVER_t), list2use);
+#endif
 
         processDiscoveryReplies2(*list2use, waittimeout);
     }
