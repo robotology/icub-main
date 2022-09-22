@@ -1764,16 +1764,65 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
     //get acquisition rate
     posconfig.acquisitionrate = as_service.settings.acquisitionrate;
 
-    servCanBoard_t *asServBoardInfo_ptr = &as_service.properties.canboards[0];
-    eOmn_serv_config_data_as_pos_t *posBoardConfig_ptr = &posconfig.ethservice.configuration.data.as.pos;
+    servCanBoard_t *boards = &as_service.properties.canboards[0];
+    eOmn_serv_config_data_as_pos_t *pos = &posconfig.ethservice.configuration.data.as.pos;
 
     // get firmware and protocol info
-    posBoardConfig_ptr->version.firmware.major = asServBoardInfo_ptr->firmware.major;
-    posBoardConfig_ptr->version.firmware.minor = asServBoardInfo_ptr->firmware.minor;
-    posBoardConfig_ptr->version.firmware.build = asServBoardInfo_ptr->firmware.build;
-    posBoardConfig_ptr->version.protocol.major = asServBoardInfo_ptr->protocol.major;
-    posBoardConfig_ptr->version.protocol.minor = asServBoardInfo_ptr->protocol.minor;
+    for(size_t b=0; b<eOas_pos_boards_maxnumber; b++)
+    {
+        pos->config.boardconfig[b].boardinfo.type = eobrd_cantype_mtb4fap; // as_service.settings.enabledsensors[b].boardtype;
+        pos->config.boardconfig[b].boardinfo.firmware.major = boards->firmware.major;
+        pos->config.boardconfig[b].boardinfo.firmware.minor = boards->firmware.minor;
+        pos->config.boardconfig[b].boardinfo.firmware.build = boards->firmware.build;
+        pos->config.boardconfig[b].boardinfo.protocol.major = boards->protocol.major;
+        pos->config.boardconfig[b].boardinfo.protocol.minor = boards->protocol.minor;
 
+        pos->config.boardconfig[b].canloc.addr = as_service.settings.enabledsensors[b].location.can.addr;
+        pos->config.boardconfig[b].canloc.port = as_service.settings.enabledsensors[b].location.can.port;
+#define TESTFAP
+
+#if defined(TESTFAP)
+        for(size_t s=0; s<eOas_pos_sensorsinboard_maxnumber; s++)
+        {
+            if(s<3)
+            {
+                pos->config.boardconfig[b].sensors[s].id = s;
+                pos->config.boardconfig[b].sensors[s].type = 0;  // decideg
+                pos->config.boardconfig[b].sensors[s].label = s+6; // for now
+                pos->config.boardconfig[b].sensors[s].enabled = 1;
+                pos->config.boardconfig[b].sensors[s].invertdirection = 0;
+                pos->config.boardconfig[b].sensors[s].rotation = 0; // rot later on
+                pos->config.boardconfig[b].sensors[s].zero = 0;
+            }
+            else
+            {
+                pos->config.boardconfig[b].sensors[s].id = s;
+                pos->config.boardconfig[b].sensors[s].type = 14;  // none
+                pos->config.boardconfig[b].sensors[s].label = 0; // for now
+                pos->config.boardconfig[b].sensors[s].enabled = 0;
+                pos->config.boardconfig[b].sensors[s].invertdirection = 0;
+                pos->config.boardconfig[b].sensors[s].rotation = 0; // rot later on
+                pos->config.boardconfig[b].sensors[s].zero = 0;
+            }
+        }
+#else
+        for(size_t s=0; s<eOas_pos_sensorsinboard_maxnumber; s++)
+        {
+            pos->config.boardconfig[b].sensors[s].id = s;
+            pos->config.boardconfig[b].sensors[s].type = 0;  // decideg
+            pos->config.boardconfig[b].sensors[s].label = s; // for now
+            pos->config.boardconfig[b].sensors[s].enabled = 1;
+            pos->config.boardconfig[b].sensors[s].invertdirection = 0;
+            pos->config.boardconfig[b].sensors[s].rotation = 0; // rot later on
+            pos->config.boardconfig[b].sensors[s].zero = 0;
+        }
+#endif
+    }
+
+
+
+
+#if 0
     for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
     {
         servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
@@ -1785,10 +1834,16 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
         }
 
         // if ok, i copy it inside ...
-        posBoardConfig_ptr->boardInfo.canloc[i].addr= sensor.location.can.addr;
-        posBoardConfig_ptr->boardInfo.canloc[i].port= sensor.location.can.port;
+//        pos->config.boardconfig[i].boardinfo.firmware.major = asServBoardInfo_ptr->firmware.major;
+//        pos->config.boardconfig[i].boardinfo.firmware.minor = asServBoardInfo_ptr->firmware.minor;
+//        pos->config.boardconfig[i].boardinfo.firmware.build = asServBoardInfo_ptr->firmware.build;
+//        pos->config.boardconfig[i].boardinfo.protocol.major = asServBoardInfo_ptr->protocol.major;
+//        pos->config.boardconfig[i].boardinfo.protocol.minor = asServBoardInfo_ptr->protocol.minor;
+//        pos->config.boardconfig[i].canloc.addr= sensor.location.can.addr;
+//        pos->config.boardconfig[i].canloc.port= sensor.location.can.port;
 
     }
+#endif
 
     return true;
 }
@@ -3974,21 +4029,46 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             // 1. ->pos
             eOmn_serv_config_data_as_pos_t *pos = &data_mc->pos;
 
+            // get firmware and protocol info
+            for(size_t b=0; b<eOas_pos_boards_maxnumber; b++)
+            {
+                pos->config.boardconfig[b].boardinfo.type = mc_service.properties.canboards[b].type;
+                pos->config.boardconfig[b].boardinfo.firmware.major = mc_service.properties.canboards[b].firmware.major;
+                pos->config.boardconfig[b].boardinfo.firmware.minor = mc_service.properties.canboards[b].firmware.minor;
+                pos->config.boardconfig[b].boardinfo.firmware.build = mc_service.properties.canboards[b].firmware.build;
+                pos->config.boardconfig[b].boardinfo.protocol.major = mc_service.properties.canboards[b].protocol.major;
+                pos->config.boardconfig[b].boardinfo.protocol.minor = mc_service.properties.canboards[b].protocol.minor;
 
+                pos->config.boardconfig[b].canloc.addr = mc_service.properties.poslocations[b].addr;
+                pos->config.boardconfig[b].canloc.port = mc_service.properties.poslocations[b].port;
+
+                for(size_t s=0; s<eOas_pos_sensorsinboard_maxnumber; s++)
+                {
+                    pos->config.boardconfig[b].sensors[s].id = s;
+                    pos->config.boardconfig[b].sensors[s].type = 0;  // decideg
+                    pos->config.boardconfig[b].sensors[s].label = s; // for now
+                    pos->config.boardconfig[b].sensors[s].enabled = 1;
+                    pos->config.boardconfig[b].sensors[s].invertdirection = 0;
+                    pos->config.boardconfig[b].sensors[s].rotation = 0; // rot later on
+                    pos->config.boardconfig[b].sensors[s].zero = 0;
+                }
+            }
+
+#if 0
             for(size_t i=0; i<mc_service.properties.poslocations.size(); i++)
             {
-                pos->boardInfo.canloc[i].port = mc_service.properties.poslocations[i].port;
-                pos->boardInfo.canloc[i].addr = mc_service.properties.poslocations[i].addr;
-                pos->boardInfo.canloc[i].insideindex = mc_service.properties.poslocations[i].insideindex;
+                pos->config.boardconfig[0].canloc.port = mc_service.properties.poslocations[i].port;
+                pos->config.boardconfig[0].canloc.addr = mc_service.properties.poslocations[i].addr;
+                pos->config.boardconfig[0].canloc.insideindex = mc_service.properties.poslocations[i].insideindex;
             }
 
 
-            pos->version.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
-            pos->version.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
-            pos->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
-            pos->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
-            pos->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
-
+            pos->config.boardconfig[0].boardinfo.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
+            pos->config.boardconfig[0].boardinfo.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
+            pos->config.boardconfig[0].boardinfo.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
+            pos->config.boardconfig[0].boardinfo.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
+            pos->config.boardconfig[0].boardinfo.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
+#endif
             // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
             size_t numofjomos = mc_service.properties.numofjoints;
@@ -4028,17 +4108,17 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             for(size_t i=0; i<mc_service.properties.poslocations.size(); i++)
             {
-                pos->boardInfo.canloc[i].port = mc_service.properties.poslocations[i].port;
-                pos->boardInfo.canloc[i].addr = mc_service.properties.poslocations[i].addr;
-                pos->boardInfo.canloc[i].insideindex = mc_service.properties.poslocations[i].insideindex;
+                pos->config.boardconfig[0].canloc.port = mc_service.properties.poslocations[i].port;
+                pos->config.boardconfig[0].canloc.addr = mc_service.properties.poslocations[i].addr;
+                pos->config.boardconfig[0].canloc.insideindex = mc_service.properties.poslocations[i].insideindex;
             }
 
 
-            pos->version.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
-            pos->version.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
-            pos->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
-            pos->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
-            pos->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
+            pos->config.boardconfig[0].boardinfo.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
+            pos->config.boardconfig[0].boardinfo.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
+            pos->config.boardconfig[0].boardinfo.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
+            pos->config.boardconfig[0].boardinfo.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
+            pos->config.boardconfig[0].boardinfo.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
 
             // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(7, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayof7jomodescriptors);
