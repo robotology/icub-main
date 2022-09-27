@@ -339,5 +339,5 @@ TEST(MultiplembObjMultipleFTsensor, calculateBoardTime_positive_001)
 	double second = device.calculateBoardTime(2000000);
 	double diff = second - first;
 
-	EXPECT_TRUE(1.0 == diff);
+	EXPECT_DOUBLE_EQ(1.0,diff);
 }
