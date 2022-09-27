@@ -45,9 +45,6 @@ PRIVATE
 )
 
 #install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(TARGETS ${PROJECT_NAME} COMPONENT utilities DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-
 
 #
 # Auto test execution during the build
