@@ -150,6 +150,8 @@ jobs:
               -DENABLE_icubmod_embObjMultipleFTsensors:BOOL=ON \
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
               -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
+              -DBUILD_TESTING:BOOL=ON \
+              -DICUB_SHARED_LIBRARY=OFF \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
     - name: Configure [Ubuntu/macOS]
@@ -206,10 +208,12 @@ jobs:
       shell: bash
       run: |
         cd build
+        export PATH=$PATH:${GITHUB_WORKSPACE}/install/lib/yarp:${GITHUB_WORKSPACE}/install/bin:${GITHUB_WORKSPACE}/install
         ctest run_unit_test --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Install
       shell: bash
       run: |
         cd build
+        export PATH=$PATH:${GITHUB_WORKSPACE}/install/lib/yarp:${GITHUB_WORKSPACE}/install/bin:${GITHUB_WORKSPACE}/install
         cmake --build . --config ${{ matrix.build_type }} --target install
