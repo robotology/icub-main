@@ -190,7 +190,8 @@ jobs:
       shell: bash
       run: |
         cd build
-        export PATH=$PATH:${GITHUB_WORKSPACE}/install/lib
+        dir ${GITHUB_WORKSPACE}/install/bin
+        export PATH=$PATH:${GITHUB_WORKSPACE}/install/lib/yarp:${GITHUB_WORKSPACE}/install/bin:${GITHUB_WORKSPACE}/install
         ctest run_unit_test --output-on-failure -C ${{ matrix.build_type }} .
 
     - name: Install
