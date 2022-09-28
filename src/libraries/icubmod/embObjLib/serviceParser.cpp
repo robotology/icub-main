@@ -1800,9 +1800,6 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
 bool ServiceParser::parse_encoder_port(std::string const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror)
 {
     const char *t = fromstring.c_str();
-
-    yInfo() << "ServiceParser::parse_encoder_port(): ===========================> " << eomc_encoder2string(type, false);
-
     bool ret = false;
     switch(type)
     {
@@ -1822,6 +1819,7 @@ bool ServiceParser::parse_encoder_port(std::string const &fromstring, eObrd_etht
 
         case eomc_enc_aea:
         case eomc_enc_aea3:
+        case eomc_enc_aksim2:
         case eomc_enc_amo:
         case eomc_enc_qenc:
         case eomc_enc_spichainof2:
