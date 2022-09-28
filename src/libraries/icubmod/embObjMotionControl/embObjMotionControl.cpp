@@ -1072,8 +1072,10 @@ void embObjMotionControl::updateDeadZoneWithDefaultValues(void)
                 _deadzone[i] = eomc_defaultValue::DeadZone::jointWithAEA;// 0.0494;
                 break;
             case eomc_enc_aea3:
-                _deadzone[i] = eomc_defaultValue::DeadZone::jointWithAEA3;// TODO: temporary equal to 0.0 (fixit!)
+                _deadzone[i] = eomc_defaultValue::DeadZone::jointWithAEA3;// TODO: temporary equal to 0.0
                 break;
+            case eomc_enc_aksim2:
+                _deadzone[i] = eomc_defaultValue::DeadZone::jointWithAKSIM2;
             case eomc_enc_amo:
                 _deadzone[i] = eomc_defaultValue::DeadZone::jointWithAMO;//  0.0055;
                 break;
