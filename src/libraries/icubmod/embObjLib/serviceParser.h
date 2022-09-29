@@ -88,6 +88,14 @@ typedef struct
 } servConfigPOS_t;
 
 
+typedef struct
+{
+    eOmn_serv_parameter_t     ethservice;
+    int                       acquisitionrate;
+    std::vector<std::string>  idList;
+} servConfigPOS2_t;
+
+
 #if defined(SERVICE_PARSER_USE_MC)
 typedef struct
 {
@@ -121,15 +129,43 @@ struct servConfigSkin_t
 };
 
 
-
-typedef struct
+struct servAnalogPOScalibration_t
 {
-    std::string                 id;
-    eOas_sensor_t               type;
-    eObrd_location_t            location;
-    eObrd_type_t                boardtype;
-    std::string                 frameName;
-} servAnalogSensor_t;
+    eoas_pos_TYPE_t type {eoas_pos_TYPE_none};
+    eoas_pos_ROT_t rotation {eoas_pos_ROT_zero};
+    float offset {0.0};
+    bool invertdirection {false};
+    void clear()
+    {
+        type = eoas_pos_TYPE_none; rotation = eoas_pos_ROT_zero; offset = 0.0; invertdirection = false;
+    }
+};
+
+struct servAnalogPOSspecific_t
+{
+    eObrd_portpos_t port {eobrd_portpos_none};
+    eObrd_connector_t connector {eobrd_conn_none};
+    servAnalogPOScalibration_t calibration {};
+    void clear()
+    {
+        port = eobrd_portpos_none; connector = eobrd_conn_none; calibration.clear();
+    }
+};
+
+struct servAnalogSensor_t
+{
+    std::string                 id {""};
+    eOas_sensor_t               type {eoas_none};
+    eObrd_location_t            location {{eobrd_place_none, 0}};
+    eObrd_type_t                boardtype {eobrd_none};
+    std::string                 frameName {""};
+    servAnalogPOSspecific_t     pos {};
+    void clear()
+    {
+        id.clear(); type = eoas_none; location.any.place = eobrd_place_none;
+        boardtype = eobrd_none; frameName.clear(); pos.clear();
+    }
+};
 
 
 typedef struct
@@ -269,6 +305,7 @@ public:
     bool parseService(yarp::os::Searchable &config, servConfigSkin_t &skinconfig);
     bool parseService(yarp::os::Searchable &config, servConfigPSC_t &pscconfig);
     bool parseService(yarp::os::Searchable &config, servConfigPOS_t &pscconfig);
+    bool parseService(yarp::os::Searchable &config, servConfigPOS2_t &pscconfig);
 #if defined(SERVICE_PARSER_USE_MC)
     bool parseService(yarp::os::Searchable &config, servConfigMC_t &mcconfig);
     bool parseService2(yarp::os::Searchable &config, servConfigMC_t &mcconfig); // the fixed one.
@@ -281,7 +318,7 @@ public:
     bool parse_connector(const std::string &fromstring, eObrd_connector_t &toconnector, bool &formaterror);
     bool parse_mais(std::string const &fromstring, eObrd_portmais_t &pmais, bool &formaterror);
 
-    bool parse_port_conn(std::string const &fromstring, eObrd_ethtype_t const ethboard, uint8_t &toport, bool &formaterror);
+    bool parse_port_conn(std::string const &fromstring, eObrd_type_t const board, uint8_t &toport, bool &formaterror);
     bool parse_port_mais(std::string const &fromstring, uint8_t &toport, bool &formaterror);
 
     bool parse_actuator_port(std::string const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror);
@@ -290,8 +327,10 @@ public:
     bool parse_psc(std::string const &fromstring, eObrd_portpsc_t &ppsc, bool &formaterror);
     bool parse_port_psc(std::string const &fromstring, uint8_t &toport, bool &formaterror);
 
-    bool parse_pos(std::string const &fromstring, eObrd_portpos_t &ppos, bool &formaterror);
+    bool parse_POS_port(std::string const &fromstring, eObrd_portpos_t &ppos, bool &formaterror);
     bool parse_port_pos(std::string const &fromstring, uint8_t &toport, bool &formaterror);
+
+    bool parse_POS_connector(std::string const &fromstring, const eObrd_type_t brd, eObrd_connector_t &conn, bool &formaterror);
 
 #endif
 
