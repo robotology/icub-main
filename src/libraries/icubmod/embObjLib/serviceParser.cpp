@@ -1963,16 +1963,16 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS2_t &posconfig
     // get firmware and protocol info
     for(size_t b=0; b<eOas_pos_boards_maxnumber; b++)
     {
-        servAnalogSensor_t snsr = as_service.settings.enabledsensors[b];
-        pos->config.boardconfig[b].boardinfo.type = snsr.boardtype;
+        servAnalogSensor_t snsr0 = as_service.settings.enabledsensors[0];
+        pos->config.boardconfig[b].boardinfo.type = snsr0.boardtype;
         pos->config.boardconfig[b].boardinfo.firmware.major = board->firmware.major;
         pos->config.boardconfig[b].boardinfo.firmware.minor = board->firmware.minor;
         pos->config.boardconfig[b].boardinfo.firmware.build = board->firmware.build;
         pos->config.boardconfig[b].boardinfo.protocol.major = board->protocol.major;
         pos->config.boardconfig[b].boardinfo.protocol.minor = board->protocol.minor;
 
-        pos->config.boardconfig[b].canloc.addr = snsr.location.can.addr;
-        pos->config.boardconfig[b].canloc.port = snsr.location.can.port;
+        pos->config.boardconfig[b].canloc.addr = snsr0.location.can.addr;
+        pos->config.boardconfig[b].canloc.port = snsr0.location.can.port;
 //#define TESTFAP2
 
 #if defined(TESTFAP2)
@@ -2000,8 +2000,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS2_t &posconfig
             }
         }
 #else
-        for(size_t s=0; s<eOas_pos_sensorsinboard_maxnumber; s++)
+        for(size_t s=0; s<as_service.settings.enabledsensors.size(); s++)
         {
+            servAnalogSensor_t snsr = as_service.settings.enabledsensors[s];
             pos->config.boardconfig[b].sensors[s].connector = snsr.pos.connector;
             pos->config.boardconfig[b].sensors[s].type = snsr.pos.calibration.type;
             pos->config.boardconfig[b].sensors[s].port = snsr.pos.port;

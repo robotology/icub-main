@@ -66,8 +66,8 @@ private:
 
 private:
 
-    bool fromConfig(yarp::os::Searchable &config, servConfigPOS_t &serviceConfig);
-    bool sendConfig2boards(servConfigPOS_t &serviceConfig);
+    bool fromConfig(yarp::os::Searchable &config, servConfigPOS2_t &serviceConfig);
+    bool sendConfig2boards(servConfigPOS2_t &serviceConfig);
     bool sendStart2boards(void);
     bool initRegulars(void);
     void cleanup(void);
