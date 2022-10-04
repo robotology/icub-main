@@ -212,7 +212,7 @@ typedef struct
     int  motorPoles;
     bool hasSpeedEncoder ; //facoltativo
     bool verbose;
-} twofocSpecificInfo_t;
+} focBasedSpecificInfo_t;
 
 
 class JointsSet
@@ -418,7 +418,7 @@ public:
     ~Parser();
 
     bool parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory);
-    bool parse2FocGroup(yarp::os::Searchable &config, twofocSpecificInfo_t *twofocinfo);
+    bool parseFocGroup(yarp::os::Searchable &config, focBasedSpecificInfo_t *foc_based_info, std::string groupName);
     //bool parseCurrentPid(yarp::os::Searchable &config, PidInfo *cpids);//deprecated
     bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &jointtoset);
     bool parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts, int defaultVelocityTimeout);

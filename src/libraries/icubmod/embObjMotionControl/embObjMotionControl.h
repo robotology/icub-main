@@ -207,7 +207,7 @@ private:
     double *                                _deadzone;
     std::vector<eomc::kalmanFilterParams_t> _kalman_params;  /** Kalman filter parameters */
 
-    eomc::twofocSpecificInfo_t *            _twofocinfo;
+    eomc::focBasedSpecificInfo_t *            _foc_based_info;
 
     std::vector<eomc::encoder_t>            _jointEncs;
     std::vector<eomc::encoder_t>            _motorEncs;
@@ -294,7 +294,6 @@ private:
     bool isVelocityControlEnabled(int joint);
 
     bool iNeedCouplingsInfo(void); //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
-    bool iMange2focBoards(void);
 
     bool getJointConfiguration(int joint, eOmc_joint_config_t *jntCfg_ptr);
     bool getMotorConfiguration(int axis, eOmc_motor_config_t *motCfg_ptr);
