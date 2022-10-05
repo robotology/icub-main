@@ -35,16 +35,17 @@ The root XML:
 </robot> 
 ```
 
-The device XML in `hardware\CanBattery` (refer to the root XML file):
+The device XML in `hardware\canBattery` (refer to the root XML file):
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE device PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
 
-<device xmlns:xi="http://www.w3.org/2001/XInclude" name="eb1-j0-strain2-canbattery" type="embObjBattery">
+<device xmlns:xi="http://www.w3.org/2001/XInclude" name="canbattery" type="embObjBattery">
 
     <xi:include href="../../general.xml" />
 
-    <xi:include href="../../hardware/electronics/eb1-j0-eln.xml" />
+    <!-- This value must match the net board name in the corresponding hardware/electronics/... file -->
+    <xi:include href="../electronics/left_arm-eb1-j0_1-eln.xml" />
 
     <group name="SERVICE">
 
@@ -86,32 +87,25 @@ The device XML in `hardware\CanBattery` (refer to the root XML file):
 </device>
 ```
 
-And the XML wrapper in `.\wrappers\CanBattery` (refer to the root XML file)::
+And the XML wrapper in `.\wrappers\canBattery` (refer to the root XML file)::
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
+<device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery_wrapper" type="batteryWrapper">
+    <param name="period">       1                  </param> 
+    <param name="name">       /icub/battery      </param>
 
+    <action phase="startup" level="5" type="attach">
+        <paramlist name="networks">
+        <!-- This value must match the device name in the corresponding hardware/battery/canBattery.xml file -->
+            <elem name="battery">  canbattery </elem>
+        </paramlist>
+    </action>
 
-    <device xmlns:xi="http://www.w3.org/2001/XInclude" name="battery_wrapper" type="batteryWrapper">
-        <param name="period">       1                  </param> 
-        <param name="name">       /icub/battery      </param>
-        
-        <action phase="startup" level="5" type="attach">
-            <paramlist name="networks">
-            <!-- The param value must match the device name in the corresponding body_part-ebX-jA_B-strain.xml file -->
-                <elem name="battery">  eb1-j0-strain2-canbattery </elem>
-            </paramlist>
-        </action>
-
-        <action phase="shutdown" level="5" type="detach" />
-    </device>
+    <action phase="shutdown" level="5" type="detach" />
+</device>
 ```
-
-Important note:  
-`<elem name="battery">  eb1-j0-strain2-canbattery </elem>`
-should contains the device name `eb1-j0-strain2-canbattery` of the device file.
- 
 
 # 3. Yarp output
 
