@@ -3482,12 +3482,6 @@ bool ServiceParser::check_motion(Searchable &config)
                 yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.type not valid for item" << i;
                 return false;
             }
-//             //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
-//             if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
-//             {
-//                 enctype = eomc_enc_none;
-//             }
-
 
             enc2.desc.type = enctype;
 
@@ -3506,15 +3500,6 @@ bool ServiceParser::check_motion(Searchable &config)
                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.position not valid for item" << i;
                 return false;
             }
-//              //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
-//             if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
-//             {
-//                  enc2.desc.pos = eomc_pos_none;
-//             }
-//             else
-//             {
-//                  enc2.desc.pos = encposition;
-//             }
 
             enc2.desc.pos = encposition;
 
@@ -3732,6 +3717,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             data_mc->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
             data_mc->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
             data_mc->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
+
+            // we assume that all can boards have the same type for each joint
+            data_mc->type = mc_service.properties.canboards.at(0).type;
 
             // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);

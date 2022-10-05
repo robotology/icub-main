@@ -101,7 +101,7 @@ bool embObjMotionControl::alloc(int nj)
     _gearbox_M2J = allocAndCheck<double>(nj);
     _gearbox_E2J = allocAndCheck<double>(nj);
     _deadzone = allocAndCheck<double>(nj);
-    _twofocinfo=allocAndCheck<eomc::twofocSpecificInfo_t>(nj);
+    _foc_based_info=allocAndCheck<eomc::focBasedSpecificInfo_t>(nj);
     _trj_pids= new eomc::PidInfo[nj];
     //_dir_pids= new eomc::PidInfo[nj];
     _trq_pids= new eomc::TrqPidInfo [nj];
@@ -159,7 +159,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_enabledAmp);
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
-    checkAndDestroy(_twofocinfo);
+    checkAndDestroy(_foc_based_info);
 
 
     if(_trj_pids)
@@ -230,7 +230,7 @@ embObjMotionControl::embObjMotionControl() :
     _njoints      = 0;
     _axisMap      = NULL;
     _encodersStamp = NULL;
-    _twofocinfo = NULL;
+    _foc_based_info = NULL;
     _cacheImpedance   = NULL;
     _impedance_limits = NULL;
     _ref_accs         = NULL;
@@ -858,8 +858,10 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     {
         bool lowLevPidisMandatory = false;
 
-        if(iMange2focBoards())
+        if(serviceConfig.ethservice.configuration.type == eomn_serv_MC_foc)
+        {
             lowLevPidisMandatory = true;
+        }
 
         if(!_mcparser->parsePids(config, _trj_pids/*, _dir_pids*/, _trq_pids, _cur_pids, _spd_pids, lowLevPidisMandatory))
             return false;
@@ -967,10 +969,11 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             return false;
     }
 
-    /////// [2FOC]
-    if(iMange2focBoards())
+    /////// [2FOC] or [AMCBLDC]
+    if(serviceConfig.ethservice.configuration.type == eomn_serv_MC_foc)
     {
-        if(!_mcparser->parse2FocGroup(config, _twofocinfo))
+        std::string groupName = (static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.mc.foc_based.type) == eobrd_cantype_foc) ? "2FOC" : "AMCBLDC";
+        if(!_mcparser->parseFocGroup(config, _foc_based_info, groupName))
             return false;
     }
 
@@ -1388,14 +1391,14 @@ bool embObjMotionControl::init()
         motor_cfg.gearbox_M2J = _gearbox_M2J[logico];
         motor_cfg.rotorEncoderResolution = _motorEncs[logico].resolution;
         motor_cfg.rotEncTolerance = _motorEncs[logico].tolerance;
-        motor_cfg.hasHallSensor = _twofocinfo[logico].hasHallSensor;
-        motor_cfg.hasRotorEncoder = _twofocinfo[logico].hasRotorEncoder;
-        motor_cfg.hasTempSensor = _twofocinfo[logico].hasTempSensor;
-        motor_cfg.hasRotorEncoderIndex = _twofocinfo[logico].hasRotorEncoderIndex;
-        motor_cfg.hasSpeedEncoder = _twofocinfo[logico].hasSpeedEncoder;
-        motor_cfg.verbose = _twofocinfo[logico].verbose;
-        motor_cfg.motorPoles = _twofocinfo[logico].motorPoles;
-        motor_cfg.rotorIndexOffset = _twofocinfo[logico].rotorIndexOffset;
+        motor_cfg.hasHallSensor = _foc_based_info[logico].hasHallSensor;
+        motor_cfg.hasRotorEncoder = _foc_based_info[logico].hasRotorEncoder;
+        motor_cfg.hasTempSensor = _foc_based_info[logico].hasTempSensor;
+        motor_cfg.hasRotorEncoderIndex = _foc_based_info[logico].hasRotorEncoderIndex;
+        motor_cfg.hasSpeedEncoder = _foc_based_info[logico].hasSpeedEncoder;
+        motor_cfg.verbose = _foc_based_info[logico].verbose;
+        motor_cfg.motorPoles = _foc_based_info[logico].motorPoles;
+        motor_cfg.rotorIndexOffset = _foc_based_info[logico].rotorIndexOffset;
         motor_cfg.rotorEncoderType = _motorEncs[logico].type;
         motor_cfg.pwmLimit =_rotorsLimits[logico].pwmMax;
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
@@ -4925,14 +4928,6 @@ bool embObjMotionControl::iNeedCouplingsInfo(void)
         (mc_serv_type == eomn_serv_MC_mc4plusfaps)
         || (mc_serv_type == eomn_serv_MC_mc4pluspmc)
       )
-        return true;
-    else
-        return false;
-}
-
-bool embObjMotionControl::iMange2focBoards(void)
-{
-    if ((eOmn_serv_type_t)serviceConfig.ethservice.configuration.type == eomn_serv_MC_foc)
         return true;
     else
         return false;
