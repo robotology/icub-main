@@ -45,14 +45,14 @@ jobs:
       run: |
         export ICUB_PACKAGE_VERSION=$( echo ${{ steps.latest_release_info.outputs.tag_name }} | sed 's/^v//' )
         ./.ci/create_icub-common_deb.sh
-        echo ::set-output name=ICUB_COMMON_PACKAGE_NAME::$( cat ICUB_COMMON_PACKAGE_NAME.txt )
+        echo "ICUB_COMMON_PACKAGE_NAME=$( cat ICUB_COMMON_PACKAGE_NAME.txt )" >> $GITHUB_OUTPUT
     - name: Generate icub package
       id: package_generation_icub-main
       shell: bash
       run: |
         export ICUB_PACKAGE_VERSION=$( echo ${{ steps.latest_release_info.outputs.tag_name }} | sed 's/^v//' )
         ./.ci/create_icub-main_deb.sh
-        echo ::set-output name=ICUB_MAIN_PACKAGE_NAME::$( cat ICUB_MAIN_PACKAGE_NAME.txt )
+        echo "ICUB_MAIN_PACKAGE_NAME=$( cat ICUB_MAIN_PACKAGE_NAME.txt )" >> $GITHUB_OUTPUT
 
     - name: Upload Release asset icub-common
       uses: actions/upload-release-asset@main
