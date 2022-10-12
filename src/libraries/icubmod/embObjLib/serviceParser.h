@@ -331,6 +331,8 @@ public:
     bool parse_port_pos(std::string const &fromstring, uint8_t &toport, bool &formaterror);
 
     bool parse_POS_connector(std::string const &fromstring, const eObrd_type_t brd, eObrd_connector_t &conn, bool &formaterror);
+    bool parse_POS_CALIB_rotation(std::string const &fromstring, eoas_pos_ROT_t &rot, bool &formaterror);
+    bool parse_POS_CALIB_type(std::string const &fromstring, eoas_pos_TYPE_t &type, bool &formaterror);
 
 #endif
 
