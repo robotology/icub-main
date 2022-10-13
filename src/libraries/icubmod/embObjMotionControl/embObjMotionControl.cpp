@@ -972,7 +972,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     /////// [2FOC] or [AMCBLDC]
     if(serviceConfig.ethservice.configuration.type == eomn_serv_MC_foc)
     {
-        std::string groupName = (static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.mc.foc_based.type) == eobrd_cantype_foc) ? "2FOC" : "AMCBLDC";
+        std::string groupName = (static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.mc.foc_based.type) == eobrd_foc) ? "2FOC" : "AMCBLDC";
         if(!_mcparser->parseFocGroup(config, _foc_based_info, groupName))
             return false;
     }

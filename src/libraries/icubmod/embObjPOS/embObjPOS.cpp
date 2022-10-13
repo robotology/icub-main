@@ -47,7 +47,7 @@ using namespace yarp::dev;
 
 
 
-bool embObjPOS::fromConfig(yarp::os::Searchable &config, servConfigPOS2_t &serviceConfig)
+bool embObjPOS::fromConfig(yarp::os::Searchable &config, servConfigPOS_t &serviceConfig)
 {
     ServiceParser parser;
     if(false == parser.parseService(config, serviceConfig))
@@ -89,7 +89,7 @@ bool embObjPOS::open(yarp::os::Searchable &config)
     yInfo() << "embObjPOS::open(): browsing xml files which describe the service";
 
     // 2) read stuff from config file
-    servConfigPOS2_t serviceConfig;
+    servConfigPOS_t serviceConfig;
     if(!fromConfig(config, serviceConfig))
     {
         yError() << "embObjPOS missing some configuration parameter. Check logs and your config file.";
@@ -171,7 +171,7 @@ bool embObjPOS::open(yarp::os::Searchable &config)
 }
 
 
-bool embObjPOS::sendConfig2boards(servConfigPOS2_t &serviceConfig)
+bool embObjPOS::sendConfig2boards(servConfigPOS_t &serviceConfig)
 {
     eOprotID32_t id32 = eo_prot_ID32dummy;
 

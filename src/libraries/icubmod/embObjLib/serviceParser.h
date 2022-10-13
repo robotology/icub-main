@@ -9,6 +9,8 @@
 #include <list>
 #include <string>
 
+#include <yarp/os/Searchable.h>
+
 #include "EoBoards.h"
 #include "EoManagement.h"
 #include "EoAnalogSensors.h"
@@ -80,20 +82,13 @@ typedef struct
     std::vector<std::string>  idList;
 } servConfigPSC_t;
 
+
 typedef struct
 {
     eOmn_serv_parameter_t     ethservice;
     int                       acquisitionrate;
     std::vector<std::string>  idList;
 } servConfigPOS_t;
-
-
-typedef struct
-{
-    eOmn_serv_parameter_t     ethservice;
-    int                       acquisitionrate;
-    std::vector<std::string>  idList;
-} servConfigPOS2_t;
 
 
 #if defined(SERVICE_PARSER_USE_MC)
@@ -305,7 +300,6 @@ public:
     bool parseService(yarp::os::Searchable &config, servConfigSkin_t &skinconfig);
     bool parseService(yarp::os::Searchable &config, servConfigPSC_t &pscconfig);
     bool parseService(yarp::os::Searchable &config, servConfigPOS_t &pscconfig);
-    bool parseService(yarp::os::Searchable &config, servConfigPOS2_t &pscconfig);
 #if defined(SERVICE_PARSER_USE_MC)
     bool parseService(yarp::os::Searchable &config, servConfigMC_t &mcconfig);
     bool parseService2(yarp::os::Searchable &config, servConfigMC_t &mcconfig); // the fixed one.

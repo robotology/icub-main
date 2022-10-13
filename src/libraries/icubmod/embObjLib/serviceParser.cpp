@@ -1846,123 +1846,6 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
     }
 
 
-    // check the num of type of boards. At max we have 1 board type
-
-    if(as_service.properties.canboards.size() > 1)
-    {
-        yError() << "ServiceParser::parseService(POS): too many type board info are configured. The max num is " << 1;
-        return false;
-    }
-
-    if(as_service.settings.enabledsensors.size() > eOas_pos_boards_maxnumber)
-    {
-        yError() << "ServiceParser::parseService(POS): too many enabled sensors are configured. The max num is " << eOas_pos_boards_maxnumber;
-        return false;
-    }
-
-    // reset configuration service
-    memset(&posconfig.ethservice.configuration, 0, sizeof(posconfig.ethservice.configuration));
-
-    // set type of service
-    posconfig.ethservice.configuration.type = eomn_serv_AS_pos;
-
-
-    //get acquisition rate
-    posconfig.acquisitionrate = as_service.settings.acquisitionrate;
-
-    servCanBoard_t *boards = &as_service.properties.canboards[0];
-    eOmn_serv_config_data_as_pos_t *pos = &posconfig.ethservice.configuration.data.as.pos;
-
-    // get firmware and protocol info
-    for(size_t b=0; b<eOas_pos_boards_maxnumber; b++)
-    {
-        pos->config.boardconfig[b].boardinfo.type = eobrd_cantype_mtb4fap; // as_service.settings.enabledsensors[b].boardtype;
-        pos->config.boardconfig[b].boardinfo.firmware.major = boards->firmware.major;
-        pos->config.boardconfig[b].boardinfo.firmware.minor = boards->firmware.minor;
-        pos->config.boardconfig[b].boardinfo.firmware.build = boards->firmware.build;
-        pos->config.boardconfig[b].boardinfo.protocol.major = boards->protocol.major;
-        pos->config.boardconfig[b].boardinfo.protocol.minor = boards->protocol.minor;
-
-        pos->config.boardconfig[b].canloc.addr = as_service.settings.enabledsensors[b].location.can.addr;
-        pos->config.boardconfig[b].canloc.port = as_service.settings.enabledsensors[b].location.can.port;
-#define TESTFAP
-
-#if defined(TESTFAP)
-        for(size_t s=0; s<eOas_pos_sensorsinboard_maxnumber; s++)
-        {
-            if(s<3)
-            {
-                pos->config.boardconfig[b].sensors[s].connector = s;
-                pos->config.boardconfig[b].sensors[s].type = eoas_pos_TYPE_decideg;
-                pos->config.boardconfig[b].sensors[s].port = static_cast<eObrd_portpos_t>(s);
-                pos->config.boardconfig[b].sensors[s].enabled = 1;
-                pos->config.boardconfig[b].sensors[s].invertdirection = 0;
-                pos->config.boardconfig[b].sensors[s].rotation = eoas_pos_ROT_zero;
-                pos->config.boardconfig[b].sensors[s].zero = 0;
-            }
-            else
-            {
-                pos->config.boardconfig[b].sensors[s].connector = s;
-                pos->config.boardconfig[b].sensors[s].type = eoas_pos_TYPE_none;
-                pos->config.boardconfig[b].sensors[s].port = 0; // for now
-                pos->config.boardconfig[b].sensors[s].enabled = 0;
-                pos->config.boardconfig[b].sensors[s].invertdirection = 0;
-                pos->config.boardconfig[b].sensors[s].rotation = eoas_pos_ROT_zero;
-                pos->config.boardconfig[b].sensors[s].zero = 0;
-            }
-        }
-#else
-        for(size_t s=0; s<eOas_pos_sensorsinboard_maxnumber; s++)
-        {
-            pos->config.boardconfig[b].sensors[s].connector = s;
-            pos->config.boardconfig[b].sensors[s].type = eoas_pos_TYPE_decideg;
-            pos->config.boardconfig[b].sensors[s].port = static_cast<eObrd_portpos_t>(s);
-            pos->config.boardconfig[b].sensors[s].enabled = 1;
-            pos->config.boardconfig[b].sensors[s].invertdirection = 0;
-            pos->config.boardconfig[b].sensors[s].rotation = eoas_pos_ROT_zero;
-            pos->config.boardconfig[b].sensors[s].zero = 0;
-        }
-#endif
-    }
-
-
-
-
-#if 0
-    for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
-    {
-        servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
-
-        if(eoas_pos_angle != sensor.type)
-        {
-            yWarning() << "ServiceParser::parseService() has detected a wrong pos sensor:" << eoas_sensor2string(sensor.type) << " ...  we drop it";
-            continue;
-        }
-
-        // if ok, i copy it inside ...
-//        pos->config.boardconfig[i].boardinfo.firmware.major = asServBoardInfo_ptr->firmware.major;
-//        pos->config.boardconfig[i].boardinfo.firmware.minor = asServBoardInfo_ptr->firmware.minor;
-//        pos->config.boardconfig[i].boardinfo.firmware.build = asServBoardInfo_ptr->firmware.build;
-//        pos->config.boardconfig[i].boardinfo.protocol.major = asServBoardInfo_ptr->protocol.major;
-//        pos->config.boardconfig[i].boardinfo.protocol.minor = asServBoardInfo_ptr->protocol.minor;
-//        pos->config.boardconfig[i].canloc.addr= sensor.location.can.addr;
-//        pos->config.boardconfig[i].canloc.port= sensor.location.can.port;
-
-    }
-#endif
-
-    return true;
-}
-
-bool ServiceParser::parseService(Searchable &config, servConfigPOS2_t &posconfig)
-{
-    if(false == check_analog(config, eomn_serv_AS_pos))
-    {
-        yError() << "ServiceParser::parseService(POS) has received an invalid SERVICE group for POS";
-        return false;
-    }
-
-
 //    // check the num of type of boards. At max we have 2 board types. they must be eitehr mtb4fap or pmc
 //    if(as_service.properties.canboards.size() > 2)
 //    {
@@ -2061,7 +1944,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS2_t &posconfig
             pos->config.boardconfig[b].sensors[s].enabled = 1;
             pos->config.boardconfig[b].sensors[s].invertdirection = snsr.pos.calibration.invertdirection;
             pos->config.boardconfig[b].sensors[s].rotation = snsr.pos.calibration.rotation;
-            pos->config.boardconfig[b].sensors[s].zero = static_cast<int16_t>(10 * snsr.pos.calibration.offset);
+            pos->config.boardconfig[b].sensors[s].offset = static_cast<int16_t>(10 * snsr.pos.calibration.offset);
         }
 
     }
@@ -4354,7 +4237,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
                     pos->config.boardconfig[b].sensors[s].enabled = 1;
                     pos->config.boardconfig[b].sensors[s].invertdirection = 0;
                     pos->config.boardconfig[b].sensors[s].rotation = eoas_pos_ROT_zero;
-                    pos->config.boardconfig[b].sensors[s].zero = 0;
+                    pos->config.boardconfig[b].sensors[s].offset = 0;
                 }
             }
 
