@@ -85,6 +85,9 @@ jobs:
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         # icub-firmware-shared
+        ehco "${{ github.event_name }}"
+        echo "${{ github.ref }}"
+        echo "${{ github.head_ref }}"
         if [ "${{ github.event_name }}" == "schedule" || "${{ github.ref }}" == "refs/heads/master" || "${{ github.head_ref }}" == "refs/heads/master" ]; then
           icubfwshared_branch = "master"
         else
