@@ -95,7 +95,7 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         # icub-firmware-shared
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${env.icubfwshared_branch}
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icubfwshared_branch }}
         cd icub-firmware-shared && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -119,7 +119,7 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }} --target install
         # icub-firmware-shared
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${env.icubfwshared_branch}
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icubfwshared_branch }}
         cd icub-firmware-shared && mkdir -p build && cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install
