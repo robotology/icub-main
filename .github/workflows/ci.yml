@@ -67,6 +67,15 @@ jobs:
         sudo apt install -y git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev libopencv-dev qtbase5-dev \
                             qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev libpython3-dev swig
 
+    - name: Determine icub-firmware-shared branch
+      shell: bash
+      run: |
+        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.ref }}" == "refs/heads/master" || "${{ github.head_ref }}" == "refs/heads/master" ]]; then
+          echo "icubfwshared_branch=master" >> $GITHUB_ENV
+        else
+          echo "icubfwshared_branch=devel" >> $GITHUB_ENV
+        fi
+
     - name: Source-based Dependencies [Windows]
       if: matrix.os == 'windows-latest'
       shell: bash
@@ -86,7 +95,7 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         # icub-firmware-shared
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch devel
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icubfwshared_branch }}
         cd icub-firmware-shared && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -110,7 +119,7 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }} --target install
         # icub-firmware-shared
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch devel
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icubfwshared_branch }}
         cd icub-firmware-shared && mkdir -p build && cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install
@@ -150,6 +159,8 @@ jobs:
               -DENABLE_icubmod_embObjMultipleFTsensors:BOOL=ON \
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
               -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
+              -DBUILD_TESTING:BOOL=ON \
+              -DICUB_SHARED_LIBRARY=OFF \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
     - name: Configure [Ubuntu/macOS]
@@ -193,14 +204,25 @@ jobs:
         # Enable ICUB_COMPILE_BINDINGS in Ubuntu
         cmake -DICUB_COMPILE_BINDINGS:BOOL=ON -DCREATE_PYTHON:BOOL=ON .
 
+    - name: Extend Path
+      shell: bash
+      run: |
+        echo "${{ github.workspace }}/install/bin" >> $GITHUB_PATH
+        echo "${{ github.workspace }}/install/lib/yarp" >> $GITHUB_PATH
+        # Fix for using YARP idl generators (that link ACE) in Windows (https://github.com/robotology/idyntree/issues/569)
+        echo "${VCPKG_INSTALLATION_ROOT}/installed/x64-windows/bin" >> $GITHUB_PATH
+
     - name: Build
       shell: bash
       run: |
         cd build
-        # Fix for using YARP idl generators (that link ACE) in Windows
-        # See https://github.com/robotology/idyntree/issues/569 for more details
-        export PATH=$PATH:${GITHUB_WORKSPACE}/install/bin:${VCPKG_INSTALLATION_ROOT}/installed/x64-windows/bin
         cmake --build . --config ${{ matrix.build_type }}
+
+    - name: Install
+      shell: bash
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }} --target install
 
     - name: Test
       shell: bash
@@ -208,8 +230,3 @@ jobs:
         cd build
         ctest run_unit_test --output-on-failure -C ${{ matrix.build_type }} .
 
-    - name: Install
-      shell: bash
-      run: |
-        cd build
-        cmake --build . --config ${{ matrix.build_type }} --target install

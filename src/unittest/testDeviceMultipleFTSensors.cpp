@@ -318,8 +318,8 @@ TEST(MultiplembObjMultipleFTsensor, getNrOfSgetTemperatureSensorMeasure_positive
 	double timestamp;
 	bool ret = device.getTemperatureSensorMeasure(0, data, timestamp);
 
-	double expected = 34;
-	EXPECT_EQ(expected, data);
+	double expected = 3.4;
+	EXPECT_DOUBLE_EQ(expected, data);
 	EXPECT_EQ(99.49, timestamp);
 }
 
@@ -339,5 +339,5 @@ TEST(MultiplembObjMultipleFTsensor, calculateBoardTime_positive_001)
 	double second = device.calculateBoardTime(2000000);
 	double diff = second - first;
 
-	EXPECT_TRUE(1.0 == diff);
+	EXPECT_DOUBLE_EQ(1.0,diff);
 }

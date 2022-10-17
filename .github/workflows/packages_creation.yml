@@ -4,36 +4,10 @@ on:
   workflow_dispatch:
 
 jobs:
-# start job "preliminary-steps"
-  preliminary-steps:
-    name: "Preliminary"
-    runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@main
-    - run: git fetch --prune --unshallow
-
-    - name: Get Latest Release Info
-      id: latest_release_info
-      uses: jossef/action-latest-release-info@v1.2.0
-
-    - name: create version file
-      shell: bash
-      run: |
-        export ICUB_PACKAGE_VERSION=$( echo ${{ steps.latest_release_info.outputs.tag_name }} | sed 's/^v//' )
-        echo $ICUB_PACKAGE_VERSION > ICUB_PACKAGE_VERSION.txt
-
-    - name: upload url file
-      uses: actions/upload-artifact@v2
-      with:
-        name: ICUB_PACKAGE_VERSION.txt
-        path: ./ICUB_PACKAGE_VERSION.txt
-
-# end job "preliminary-steps"
 # start job "docker-build"
   docker-build:
     name: '[packages:@${{ matrix.docker_image }}]'
-    needs: [preliminary-steps]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -58,25 +32,27 @@ jobs:
         TZ: Italy/Rome
         DEBIAN_FRONTEND: noninteractive
     - uses: actions/checkout@main
-
-    - uses: actions/download-artifact@v2
-      with:
-        name: ICUB_PACKAGE_VERSION.txt
+    
+    - name: Get Latest Release Info
+      id: latest_release_info
+      uses: jossef/action-latest-release-info@v1.2.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Generate icub-common metapackage
       id: package_generation_icub-common
       shell: bash
       run: |
-        export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
+        export ICUB_PACKAGE_VERSION=$( echo ${{ steps.latest_release_info.outputs.tag_name }} | sed 's/^v//' )
         ./.ci/create_icub-common_deb.sh
-        echo ::set-output name=ICUB_COMMON_PACKAGE_NAME::$( cat ICUB_COMMON_PACKAGE_NAME.txt )
+        echo "ICUB_COMMON_PACKAGE_NAME=$( cat ICUB_COMMON_PACKAGE_NAME.txt )" >> $GITHUB_OUTPUT
     - name: Generate icub package
       id: package_generation_icub-main
       shell: bash
       run: |
-        export ICUB_PACKAGE_VERSION=$(cat ICUB_PACKAGE_VERSION.txt)
+        export ICUB_PACKAGE_VERSION=$( echo ${{ steps.latest_release_info.outputs.tag_name }} | sed 's/^v//' )
         ./.ci/create_icub-main_deb.sh
-        echo ::set-output name=ICUB_MAIN_PACKAGE_NAME::$( cat ICUB_MAIN_PACKAGE_NAME.txt )
+        echo "ICUB_MAIN_PACKAGE_NAME=$( cat ICUB_MAIN_PACKAGE_NAME.txt )" >> $GITHUB_OUTPUT
 
     - name: Upload Release asset icub-common
       uses: actions/upload-release-asset@main

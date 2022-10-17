@@ -40,6 +40,7 @@ public:
     bool useTemperature;
     float lastTemperature;
     double timestampTemperature;
+    std::string frameName;
     
     
     eo_ftsens_privData(std::string name);

@@ -412,7 +412,7 @@ bool embObjFTsensor::getTemperatureSensorName(size_t sens_index, std::string &na
 
 bool embObjFTsensor::getTemperatureSensorFrameName(size_t sens_index, std::string &frameName) const
 {
-    frameName = GET_privData(mPriv).devicename;
+    frameName = GET_privData(mPriv).frameName;
     return true;
 }
 
@@ -453,7 +453,7 @@ bool embObjFTsensor::getSixAxisForceTorqueSensorName(size_t sens_index, std::str
 
 bool embObjFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string &frameName) const
 {
-    frameName = GET_privData(mPriv).devicename;
+    frameName = GET_privData(mPriv).frameName;
     return true;
 }
 

@@ -179,6 +179,13 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle &property)
         return false;
     }
 
+    Bottle propertySensorsFrameName = Bottle(propertySensors.findGroup("framename"));
+    if (propertySensorsFrameName.isNull())
+    {
+        yWarning() << "ServiceParserMultipleFt::checkPropertySensors() cannot find "
+                      "PROPERTIES.SENSORS.frameName";
+    }
+
     // CHECK size
     if (propertySensorsId.size() != propertySensorsBoard.size())
     {
@@ -189,6 +196,14 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle &property)
     {
         yError() << "ServiceParserMultipleFt::checkPropertySensors --> location size";
         return false;
+    }
+    if (!propertySensorsFrameName.isNull())
+    {
+        if (propertySensorsLocation.size() != propertySensorsFrameName.size())
+        {
+            yError() << "ServiceParserMultipleFt::checkPropertySensors --> framename size";
+            return false;
+        }
     }
 
     size_t sensorSize = propertySensorsId.size();
@@ -201,6 +216,11 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle &property)
             return false;
 
         std::string location = propertySensorsLocation.get(index).asString();
+        std::string frameName;
+        if (!propertySensorsFrameName.isNull())
+        {
+            frameName = propertySensorsFrameName.get(index).asString();
+        }
         if (ftInfo_.find(id) == ftInfo_.end())
             continue;
         auto &currentFt = ftInfo_.at(id);
@@ -225,6 +245,7 @@ bool ServiceParserMultipleFt::checkPropertySensors(const Bottle &property)
         }
 
         currentFt.board = currentBoard;
+        currentFt.frameName = frameName;
     }
 
     // Check missing SENSORS but enabled in SETTINGS
@@ -310,7 +331,7 @@ bool ServiceParserMultipleFt::checkSettings(const Bottle &service)
     size_t enabledSensorSize = settingsEnabledSensors.size();
     if (enabledSensorSize > 4)
     {
-        yError() << "ServiceParserMultipleFt::checkSettings --> too mutch sensors";
+        yError() << "ServiceParserMultipleFt::checkSettings --> too many sensors";
         return false;
     }
 

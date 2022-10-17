@@ -910,17 +910,42 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
     if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints)) return false; 
     for (int j = 0; j<_njoints; j++) _filterType[j] = xtmp.get(j + 1).asInt32();
 
-    if (!extractGroup(pidsGroup, xtmp, "viscousPos", "viscousPos parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _viscousPos[j] = xtmp.get(j + 1).asFloat64();
+    // Friction parameters
+    if (!extractGroup(pidsGroup, xtmp, "viscousPos", "viscousPos parameter", _njoints, false)) 
+    {
+        for (int j = 0; j<_njoints; j++) _viscousPos[j] = 0;
+    }
+    else
+    {
+        for (int j = 0; j<_njoints; j++) _viscousPos[j] = xtmp.get(j + 1).asFloat64();
+    }
 
-    if (!extractGroup(pidsGroup, xtmp, "viscousNeg", "viscousNeg parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _viscousNeg[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "viscousNeg", "viscousNeg parameter", _njoints, false)) 
+    {
+        for (int j = 0; j<_njoints; j++) _viscousNeg[j] = 0;
+    }
+    else
+    {
+        for (int j = 0; j<_njoints; j++) _viscousNeg[j] = xtmp.get(j + 1).asFloat64();
+    }
 
-    if (!extractGroup(pidsGroup, xtmp, "coulombPos", "coulombPos parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _coulombPos[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "coulombPos", "coulombPos parameter", _njoints, false))
+    {
+        for (int j = 0; j<_njoints; j++) _coulombPos[j] = 0;
+    }
+    else
+    {
+        for (int j = 0; j<_njoints; j++) _coulombPos[j] = xtmp.get(j + 1).asFloat64();
+    }
 
-    if (!extractGroup(pidsGroup, xtmp, "coulombNeg", "coulombNeg parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) _coulombNeg[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "coulombNeg", "coulombNeg parameter", _njoints, false))
+    {
+        for (int j = 0; j<_njoints; j++) _coulombNeg[j] = 0;
+    }
+    else
+    {
+        for (int j = 0; j<_njoints; j++) _coulombNeg[j] = xtmp.get(j + 1).asFloat64();
+    }
 
     return true;
 }
@@ -1327,12 +1352,12 @@ bool Parser::parsePidUnitsType(Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &f
     return true;
 }
 
-bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificInfo_t *twofocinfo)
+bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificInfo_t *foc_based_info, std::string groupName)
 {
-     Bottle &focGroup=config.findGroup("2FOC");
+     Bottle &focGroup=config.findGroup(groupName);
      if (focGroup.isNull() )
      {
-        yError() << "embObjMC BOARD " << _boardname << " detected that Group 2FOC is not found in configuration file";
+        yError() << "embObjMC BOARD " << _boardname << " detected that Group " << groupName << " is not found in configuration file";
         return false;
      }
 
@@ -1346,7 +1371,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-           twofocinfo[i - 1].hasHallSensor = xtmp.get(i).asInt32() != 0;
+           foc_based_info[i - 1].hasHallSensor = xtmp.get(i).asInt32() != 0;
     }
     if (!extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints))
     {
@@ -1355,7 +1380,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].hasTempSensor = xtmp.get(i).asInt32() != 0;
+            foc_based_info[i - 1].hasTempSensor = xtmp.get(i).asInt32() != 0;
     }
     if (!extractGroup(focGroup, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
     {
@@ -1365,7 +1390,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     {
 
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].hasRotorEncoder = xtmp.get(i).asInt32() != 0;
+            foc_based_info[i - 1].hasRotorEncoder = xtmp.get(i).asInt32() != 0;
     }
     if (!extractGroup(focGroup, xtmp, "HasRotorEncoderIndex", "HasRotorEncoderIndex 0/1 ", _njoints))
     {
@@ -1374,27 +1399,27 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].hasRotorEncoderIndex = xtmp.get(i).asInt32() != 0;
+            foc_based_info[i - 1].hasRotorEncoderIndex = xtmp.get(i).asInt32() != 0;
     }
 
     if (!extractGroup(focGroup, xtmp, "Verbose", "Verbose 0/1 ", _njoints, false))
     {
         //return false;
-        yWarning() << "In " << _boardname << " there isn't 2FOC.Verbose filed. For default it is enabled" ;
+        yWarning() << "In " << _boardname << " there isn't " << groupName << ". Verbose filed. For default it is enabled" ;
         for (i = 0; i < (unsigned)_njoints; i++)
-            twofocinfo[i].verbose = 1;
+            foc_based_info[i].verbose = 1;
     }
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].verbose = xtmp.get(i).asInt32() != 0;
+            foc_based_info[i - 1].verbose = xtmp.get(i).asInt32() != 0;
     }
 
 	std::vector<int> AutoCalibration (_njoints);
     if (!extractGroup(focGroup, xtmp, "AutoCalibration", "AutoCalibration 0/1 ", _njoints, false))
     {
         //return false;
-        yWarning() << "In " << _boardname << " there isn't 2FOC.AutoCalibration filed. For default it is disabled" ;
+        yWarning() << "In " << _boardname << " there isn't " << groupName << ". AutoCalibration filed. For default it is disabled" ;
         for (i = 0; i < (unsigned)_njoints; i++)
             AutoCalibration[i] = 0;
     }
@@ -1415,8 +1440,8 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
         {
             if(AutoCalibration[i-1] == 0)
             {
-                twofocinfo[i - 1].rotorIndexOffset = xtmp.get(i).asInt32();
-                if (twofocinfo[i - 1].rotorIndexOffset <0 ||  twofocinfo[i - 1].rotorIndexOffset >359)
+                foc_based_info[i - 1].rotorIndexOffset = xtmp.get(i).asInt32();
+                if (foc_based_info[i - 1].rotorIndexOffset <0 ||  foc_based_info[i - 1].rotorIndexOffset >359)
                 {
                     yError() << "In " << _boardname << "joint " << i-1 << ": rotorIndexOffset should be in [0,359] range." ;
                     return false;
@@ -1425,7 +1450,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
             else
             {
                 yWarning() <<  "In " << _boardname << "joint " << i-1 << ": motor autocalibration is enabled!!! ATTENTION!!!" ;
-                twofocinfo[i - 1].rotorIndexOffset = -1;
+                foc_based_info[i - 1].rotorIndexOffset = -1;
             }
         }
     }
@@ -1434,7 +1459,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     //Now I verify if rotor encoder hasn't index, then  rotor offset must be zero.
     for (i = 0; i < (unsigned)_njoints; i++)
     {
-        if((0 == twofocinfo[i].hasRotorEncoderIndex) && (0 != twofocinfo[i].rotorIndexOffset))
+        if((0 == foc_based_info[i].hasRotorEncoderIndex) && (0 != foc_based_info[i].rotorIndexOffset))
         {
             yError() << "In " << _boardname << "joint " << i << ": inconsistent configuration: if rotor encoder hasn't index then its offset should be 0." ;
             return false;
@@ -1449,7 +1474,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].motorPoles = xtmp.get(i).asInt32();
+            foc_based_info[i - 1].motorPoles = xtmp.get(i).asInt32();
     }
 
     if (!extractGroup(focGroup, xtmp, "HasSpeedEncoder", "HasSpeedEncoder 0/1 ", _njoints))
@@ -1461,7 +1486,7 @@ bool Parser::parse2FocGroup(yarp::os::Searchable &config, eomc::twofocSpecificIn
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].hasSpeedEncoder = xtmp.get(i).asInt32() != 0;
+            foc_based_info[i - 1].hasSpeedEncoder = xtmp.get(i).asInt32() != 0;
     }
 
     return true;

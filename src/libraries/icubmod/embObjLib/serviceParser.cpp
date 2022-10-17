@@ -558,7 +558,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) &&
        (eomn_serv_AS_inertials3 != type) && (eomn_serv_AS_psc != type) && (eomn_serv_AS_pos != type))
     {
-        yError() << "ServiceParser::check() is called with wrong type";
+        yError() << "ServiceParser::check_analog() is called with wrong type";
         return false;
     }
 
@@ -569,7 +569,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     Bottle b_SERVICE(config.findGroup("SERVICE"));
     if(b_SERVICE.isNull())
     {
-        yError() << "ServiceParser::check() cannot find SERVICE group";
+        yError() << "ServiceParser::check_analog() cannot find SERVICE group";
         return false;
     }
 
@@ -577,7 +577,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
     if(false == b_SERVICE.check("type"))
     {
-        yError() << "ServiceParser::check() cannot find SERVICE.type";
+        yError() << "ServiceParser::check_analog() cannot find SERVICE.type";
         return false;
     }
     else
@@ -585,12 +585,12 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         Bottle b_type(b_SERVICE.find("type").asString());
         if(false == convert(b_type.toString(), as_service.type, formaterror))
         {
-            yError() << "ServiceParser::check() has found unknown SERVICE.type = " << b_type.toString();
+            yError() << "ServiceParser::check_analog() has found unknown SERVICE.type = " << b_type.toString();
             return false;
         }
         if(type != as_service.type)
         {
-            yError() << "ServiceParser::check() has found wrong SERVICE.type = " << as_service.type << "it must be" << "TODO: tostring() function";
+            yError() << "ServiceParser::check_analog() has found wrong SERVICE.type = " << as_service.type << "it must be" << "TODO: tostring() function";
             return false;
         }
     }
@@ -600,7 +600,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     Bottle b_PROPERTIES = Bottle(b_SERVICE.findGroup("PROPERTIES"));
     if(b_PROPERTIES.isNull())
     {
-        yError() << "ServiceParser::check() cannot find PROPERTIES";
+        yError() << "ServiceParser::check_analog() cannot find PROPERTIES";
         return false;
     }
     else
@@ -676,7 +676,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_build.size())
               )
             {
-                yError() << "ServiceParser::check() in PROPERTIES.CANBOARDS some param has inconsistent length";
+                yError() << "ServiceParser::check_analog() in PROPERTIES.CANBOARDS some param has inconsistent length";
                 return false;
             }
 
@@ -704,7 +704,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
             if(true == formaterror)
             {
-                yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.CANBOARDS some param has inconsistent length";
+                yError() << "ServiceParser::check_analog() has detected an illegal format for some of the params of PROPERTIES.CANBOARDS some param has inconsistent length";
                 return false;
             }
         }
@@ -712,7 +712,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         Bottle b_PROPERTIES_SENSORS = Bottle(b_PROPERTIES.findGroup("SENSORS"));
         if(b_PROPERTIES_SENSORS.isNull())
         {
-            yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS";
+            yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS";
             return false;
         }
         else
@@ -721,35 +721,108 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             Bottle b_PROPERTIES_SENSORS_id = Bottle(b_PROPERTIES_SENSORS.findGroup("id"));
             if(b_PROPERTIES_SENSORS_id.isNull())
             {
-                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.id";
+                yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.id";
                 return false;
             }
             Bottle b_PROPERTIES_SENSORS_type = Bottle(b_PROPERTIES_SENSORS.findGroup("type"));
             if(b_PROPERTIES_SENSORS_type.isNull())
             {
-                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.type";
+                yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.type";
                 return false;
             }
             Bottle b_PROPERTIES_SENSORS_location = Bottle(b_PROPERTIES_SENSORS.findGroup("location"));
             if(b_PROPERTIES_SENSORS_location.isNull())
             {
-                yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.location";
+                yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.location";
                 return false;
             }
-            Bottle b_PROPERTIES_SENSORS_boardtype;
-            if(type == eomn_serv_AS_inertials3)
+            Bottle b_PROPERTIES_SENSORS_frameName = Bottle(b_PROPERTIES_SENSORS.findGroup("framename"));
+            if(b_PROPERTIES_SENSORS_frameName.isNull() && eoas_string2sensor(b_PROPERTIES_SENSORS_type.get(1).asString().c_str())==eoas_strain)
+            {
+                yWarning() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.framename";
+            }
+            Bottle b_PROPERTIES_SENSORS_boardType;
+            if((eomn_serv_AS_inertials3 == type) || (eomn_serv_AS_pos == type))
             {
                 
-                b_PROPERTIES_SENSORS_boardtype = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
-                if(b_PROPERTIES_SENSORS_boardtype.isNull())
+                b_PROPERTIES_SENSORS_boardType = Bottle(b_PROPERTIES_SENSORS.findGroup("boardType"));
+                if(b_PROPERTIES_SENSORS_boardType.isNull())
                 {
-                    yError() << "ServiceParser::check() cannot find PROPERTIES.SENSORS.boardType";
+                    yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.boardType";
                     return false;
                 }
             }
             else
             {
-                b_PROPERTIES_SENSORS_boardtype.clear();
+                b_PROPERTIES_SENSORS_boardType.clear();
+            }
+
+            Bottle b_PROPERTIES_SENSORS_pos_port;
+            Bottle b_PROPERTIES_SENSORS_pos_connector;
+            Bottle b_PROPERTIES_SENSORS_pos_CALIBRATION;
+            Bottle b_PROPERTIES_SENSORS_pos_CALIBRATION_type;
+            Bottle b_PROPERTIES_SENSORS_pos_CALIBRATION_rotation;
+            Bottle b_PROPERTIES_SENSORS_pos_CALIBRATION_offset;
+            Bottle b_PROPERTIES_SENSORS_pos_CALIBRATION_invertDirection;
+
+            // add params proper only of POS
+            if(type == eomn_serv_AS_pos)
+            {
+                b_PROPERTIES_SENSORS_pos_port = Bottle(b_PROPERTIES_SENSORS.findGroup("port"));
+                if(b_PROPERTIES_SENSORS_pos_port.isNull())
+                {
+                    yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.port";
+                    return false;
+                }
+
+                b_PROPERTIES_SENSORS_pos_connector = Bottle(b_PROPERTIES_SENSORS.findGroup("connector"));
+                if(b_PROPERTIES_SENSORS_pos_connector.isNull())
+                {
+                    yError() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.connector";
+                    return false;
+                }
+
+                b_PROPERTIES_SENSORS_pos_CALIBRATION = Bottle(b_PROPERTIES_SENSORS.findGroup("CALIBRATION"));
+                if(b_PROPERTIES_SENSORS_pos_CALIBRATION.isNull())
+                {
+                    yWarning() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.CALIBRATION. Using neutral values (ROT:zero, 0.0, false)";
+                }
+                else
+                {
+                    b_PROPERTIES_SENSORS_pos_CALIBRATION_type = Bottle(b_PROPERTIES_SENSORS_pos_CALIBRATION.findGroup("type"));
+                    if(b_PROPERTIES_SENSORS_pos_CALIBRATION_type.isNull())
+                    {
+                        yWarning() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.CALIBRATION.type. Using value TYPE::decideg";
+                    }
+
+                    b_PROPERTIES_SENSORS_pos_CALIBRATION_rotation = Bottle(b_PROPERTIES_SENSORS_pos_CALIBRATION.findGroup("rotation"));
+                    if(b_PROPERTIES_SENSORS_pos_CALIBRATION_rotation.isNull())
+                    {
+                        yWarning() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.CALIBRATION.rotation. Using value ROT::zero";
+                    }
+                    b_PROPERTIES_SENSORS_pos_CALIBRATION_offset = Bottle(b_PROPERTIES_SENSORS_pos_CALIBRATION.findGroup("offset"));
+                    if(b_PROPERTIES_SENSORS_pos_CALIBRATION_offset.isNull())
+                    {
+                        yWarning() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.CALIBRATION.offset. Using value 0.0";
+                    }
+                    b_PROPERTIES_SENSORS_pos_CALIBRATION_invertDirection = Bottle(b_PROPERTIES_SENSORS_pos_CALIBRATION.findGroup("invertDirection"));
+                    if(b_PROPERTIES_SENSORS_pos_CALIBRATION_invertDirection.isNull())
+                    {
+                        yWarning() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.CALIBRATION.invertDirection. Using value false";
+                    }
+                }
+
+
+            }
+            else
+            {
+                b_PROPERTIES_SENSORS_pos_port.clear();
+                b_PROPERTIES_SENSORS_pos_connector.clear();
+                b_PROPERTIES_SENSORS_pos_CALIBRATION.clear();
+                b_PROPERTIES_SENSORS_pos_CALIBRATION_type.clear();
+                b_PROPERTIES_SENSORS_pos_CALIBRATION_rotation.clear();
+                b_PROPERTIES_SENSORS_pos_CALIBRATION_offset.clear();
+                b_PROPERTIES_SENSORS_pos_CALIBRATION_invertDirection.clear();
             }
 
             size_t tmp = b_PROPERTIES_SENSORS_id.size();
@@ -758,10 +831,10 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             // check if all other fields have the same size.
             if( (tmp != b_PROPERTIES_SENSORS_type.size()) ||
                 (tmp != b_PROPERTIES_SENSORS_location.size()) ||
-                ((type == eomn_serv_AS_inertials3) && (b_PROPERTIES_SENSORS_boardtype.size() != tmp))
+                (((eomn_serv_AS_inertials3 == type) || (eomn_serv_AS_pos == type)) && (b_PROPERTIES_SENSORS_boardType.size() != tmp))
               )
             {
-                yError() << "ServiceParser::check() in PROPERTIES.SENSORS some param has inconsistent length";
+                yError() << "ServiceParser::check_analog() xx in PROPERTIES.SENSORS some param has inconsistent length";
                 return false;
             }
 
@@ -771,20 +844,62 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             formaterror = false;
             for(int i=0; i<numsensors; i++)
             {
-                servAnalogSensor_t item;
-                item.type = eoas_none;
-                item.location.any.place = eobrd_place_none;
+                servAnalogSensor_t item {};
+                item.clear();
 
                 convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), item.id, formaterror);
                 convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
                 convert(b_PROPERTIES_SENSORS_location.get(i+1).asString(), item.location, formaterror);
-                if(type == eomn_serv_AS_inertials3)
+                if(!b_PROPERTIES_SENSORS_frameName.isNull())
                 {
-                    convert(b_PROPERTIES_SENSORS_boardtype.get(i+1).asString(), item.boardtype, formaterror);
+                   convert(b_PROPERTIES_SENSORS_frameName.get(i+1).asString(), item.frameName, formaterror);
                 }
-                else
+                if((eomn_serv_AS_inertials3 == type) || (eomn_serv_AS_pos == type))
                 {
-                    item.boardtype = eobrd_none;
+                    convert(b_PROPERTIES_SENSORS_boardType.get(i+1).asString(), item.boardtype, formaterror);
+                }
+
+                if(eomn_serv_AS_pos == type)
+                {
+                    // part which is present only in POS service
+                    parse_POS_port(b_PROPERTIES_SENSORS_pos_port.get(i+1).asString(), item.pos.port, formaterror);
+                    parse_POS_connector(b_PROPERTIES_SENSORS_pos_connector.get(i+1).asString(), item.boardtype, item.pos.connector, formaterror);
+
+                    bool wehaveCALIBRATION = b_PROPERTIES_SENSORS_pos_CALIBRATION.isNull() ? false : true;
+
+                    item.pos.calibration.clear();
+                    item.pos.calibration.type = eoas_pos_TYPE_decideg;
+
+                    if(wehaveCALIBRATION)
+                    {
+                        // then we need to parse four values: type, rotation, offset, invertDirection
+
+                        // type 
+                        if(false == b_PROPERTIES_SENSORS_pos_CALIBRATION_type.isNull())
+                        {
+                            parse_POS_CALIB_type(b_PROPERTIES_SENSORS_pos_CALIBRATION_type.get(i+1).asString(), item.pos.calibration.type, formaterror);
+                        }
+
+                        // rotation
+                        if(false == b_PROPERTIES_SENSORS_pos_CALIBRATION_rotation.isNull())
+                        {
+                            parse_POS_CALIB_rotation(b_PROPERTIES_SENSORS_pos_CALIBRATION_rotation.get(i+1).asString(), item.pos.calibration.rotation, formaterror);
+                        }
+
+                        // offset
+                        if(false == b_PROPERTIES_SENSORS_pos_CALIBRATION_offset.isNull())
+                        {
+                            item.pos.calibration.offset = b_PROPERTIES_SENSORS_pos_CALIBRATION_offset.get(i+1).asFloat32();
+                        }
+
+                        // invertdirection
+                        if(false == b_PROPERTIES_SENSORS_pos_CALIBRATION_invertDirection.isNull())
+                        {
+                            item.pos.calibration.invertdirection = b_PROPERTIES_SENSORS_pos_CALIBRATION_invertDirection.get(i+1).asBool();
+                        }
+
+                    }
+
                 }
 
                 as_service.properties.sensors.push_back(item);
@@ -795,7 +910,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
             if(true == formaterror)
             {
-                yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.SENSORS some param has inconsistent length";
+                yError() << "ServiceParser::check_analog() has detected an illegal format for some of the params of PROPERTIES.SENSORS some param has inconsistent length";
                 return false;
             }
 
@@ -806,7 +921,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
     if(b_SETTINGS.isNull())
     {
-        yError() << "ServiceParser::check() cannot find SETTINGS";
+        yError() << "ServiceParser::check_analog() cannot find SETTINGS";
         return false;
     }
     else
@@ -815,13 +930,13 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         Bottle b_SETTINGS_acquisitionRate = Bottle(b_SETTINGS.findGroup("acquisitionRate"));
         if(b_SETTINGS_acquisitionRate.isNull())
         {
-            yError() << "ServiceParser::check() cannot find SETTINGS.acquisitionRate";
+            yError() << "ServiceParser::check_analog() cannot find SETTINGS.acquisitionRate";
             return false;
         }
         Bottle b_SETTINGS_enabledSensors = Bottle(b_SETTINGS.findGroup("enabledSensors"));
         if(b_SETTINGS_enabledSensors.isNull())
         {
-            yError() << "ServiceParser::check() cannot find SETTINGS.enabledSensors";
+            yError() << "ServiceParser::check_analog() cannot find SETTINGS.enabledSensors";
             return false;
         }
 
@@ -831,7 +946,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         // the enabled must be <= the sensors.
         if( numenabledsensors > as_service.properties.sensors.size() )
         {
-            yError() << "ServiceParser::check() in SETTINGS.enabledSensors there are too many items with respect to supported sensors:" << numenabledsensors << "vs." << as_service.properties.sensors.size();
+            yError() << "ServiceParser::check_analog() in SETTINGS.enabledSensors there are too many items with respect to supported sensors:" << numenabledsensors << "vs." << as_service.properties.sensors.size();
             return false;
         }
 
@@ -876,7 +991,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
         if(0 == as_service.settings.enabledsensors.size())
         {
-            yError() << "ServiceParser::check() could not find any item in SETTINGS.enabledSensors which matches what in PROPERTIES.SENSORS.id";
+            yError() << "ServiceParser::check_analog() could not find any item in SETTINGS.enabledSensors which matches what in PROPERTIES.SENSORS.id";
             return false;
         }
 
@@ -891,7 +1006,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         Bottle b_STRAIN_SETTINGS = Bottle(b_SERVICE.findGroup("STRAIN_SETTINGS"));
         if(b_STRAIN_SETTINGS.isNull())
         {
-            yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS";
+            yError() << "ServiceParser::check_analog() cannot find STRAIN_SETTINGS";
             return false;
         }
         else
@@ -900,7 +1015,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             Bottle b_STRAIN_SETTINGS_useCalibration = Bottle(b_STRAIN_SETTINGS.findGroup("useCalibration"));
             if(b_STRAIN_SETTINGS_useCalibration.isNull())
             {
-                yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS.useCalibration";
+                yError() << "ServiceParser::check_analog() cannot find STRAIN_SETTINGS.useCalibration";
                 return false;
             }
 
@@ -909,7 +1024,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
             if(true == formaterror)
             {
-                yError() << "ServiceParser::check() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
+                yError() << "ServiceParser::check_analog() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
                 return false;
             }
         }
@@ -1422,6 +1537,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     ftconfig.acquisitionrate = as_service.settings.acquisitionrate;
     ftconfig.useCalibration = as_strain_settings.useCalibration;
     ftconfig.nameOfStrain = thestrain_sensor.id;
+    ftconfig.frameName = thestrain_sensor.frameName;
     
     memset(&ftconfig.ethservice.configuration, 0, sizeof(ftconfig.ethservice.configuration));
     
@@ -1730,17 +1846,67 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
     }
 
 
-    // check the num of type of boards. At max we have 1 board type
+//    // check the num of type of boards. At max we have 2 board types. they must be eitehr mtb4fap or pmc
+//    if(as_service.properties.canboards.size() > 2)
+//    {
+//        yError() << "ServiceParser::parseService(POS): too many type board info are configured. The max num is " << eOas_pos_boards_maxnumber;
+//        return false;
+//    }
 
-    if(as_service.properties.canboards.size() > 1)
+    if(as_service.settings.enabledsensors.size() > eOas_pos_sensorsinboard_maxnumber)
     {
-        yError() << "ServiceParser::parseService(POS): too many type board info are configured. The max num is " << 1;
+        yError() << "ServiceParser::parseService(POS): too many enabled sensors are configured. The max num is " << eOas_pos_sensorsinboard_maxnumber;
         return false;
     }
 
-    if(as_service.settings.enabledsensors.size() > eOas_pos_boards_maxnumber)
+    // check that the enabledsensors have a board type which is the same for all of them and on the same location
+
+    eObrd_type_t boardtype = eobrd_none;
+    eObrd_location_t location = {};
+    for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
     {
-        yError() << "ServiceParser::parseService(POS): too many enabled sensors are configured. The max num is " << eOas_pos_boards_maxnumber;
+        if(eobrd_none == boardtype)
+        {
+            boardtype = as_service.settings.enabledsensors[i].boardtype;
+            location = as_service.settings.enabledsensors[i].location;
+            if((eobrd_mtb4fap == boardtype) || (eobrd_pmc == boardtype))
+            {
+                // ok
+            }
+            else
+            {
+                yError() << "ServiceParser::parseService(POS): sensors must have the boardtype either mtb4fap or pmc. See SENSORS::boardType values";
+                return false;
+            }
+
+        }
+
+        if(boardtype != as_service.settings.enabledsensors[i].boardtype)
+        {
+            yError() << "ServiceParser::parseService(POS): all sensors must have the same boardtype. See SENSORS::boardType values";
+            return false;
+        }
+
+        if((location.can.port != as_service.settings.enabledsensors[i].location.can.port) || (location.can.addr != as_service.settings.enabledsensors[i].location.can.addr))
+        {
+            yError() << "ServiceParser::parseService(POS): all sensors must have the same can location. See SENSORS::location values";
+            return false;
+        }
+    }
+
+    // look for the boardtype inside the as_service.properties.canboards
+    servCanBoard_t *board = nullptr;
+    for(size_t i=0; i<as_service.properties.canboards.size(); i++)
+    {
+        if(static_cast<eObrd_cantype_t>(boardtype) == as_service.properties.canboards[i].type)
+        {
+            board = &as_service.properties.canboards[0];
+        }
+    }
+
+    if(nullptr == board)
+    {
+        yError() << "ServiceParser::parseService(POS): cannot find the boardtype " << eoboards_type2string2(boardtype, eobool_true) << " of SENSORS::boardType inside CANBOARDS::type";
         return false;
     }
 
@@ -1754,35 +1920,37 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
     //get acquisition rate
     posconfig.acquisitionrate = as_service.settings.acquisitionrate;
 
-    servCanBoard_t *asServBoardInfo_ptr = &as_service.properties.canboards[0];
-    eOmn_serv_config_data_as_pos_t *posBoardConfig_ptr = &posconfig.ethservice.configuration.data.as.pos;
 
     // get firmware and protocol info
-    posBoardConfig_ptr->version.firmware.major = asServBoardInfo_ptr->firmware.major;
-    posBoardConfig_ptr->version.firmware.minor = asServBoardInfo_ptr->firmware.minor;
-    posBoardConfig_ptr->version.firmware.build = asServBoardInfo_ptr->firmware.build;
-    posBoardConfig_ptr->version.protocol.major = asServBoardInfo_ptr->protocol.major;
-    posBoardConfig_ptr->version.protocol.minor = asServBoardInfo_ptr->protocol.minor;
-
-    for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
+    eOmn_serv_config_data_as_pos_t *pos = &posconfig.ethservice.configuration.data.as.pos;
+    for(size_t b=0; b<eOas_pos_boards_maxnumber; b++)
     {
-        servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
+        pos->config.boardconfig[b].boardinfo.type = boardtype;
+        pos->config.boardconfig[b].boardinfo.firmware.major = board->firmware.major;
+        pos->config.boardconfig[b].boardinfo.firmware.minor = board->firmware.minor;
+        pos->config.boardconfig[b].boardinfo.firmware.build = board->firmware.build;
+        pos->config.boardconfig[b].boardinfo.protocol.major = board->protocol.major;
+        pos->config.boardconfig[b].boardinfo.protocol.minor = board->protocol.minor;
 
-        if(eoas_pos_angle != sensor.type)
+        pos->config.boardconfig[b].canloc.addr = location.can.addr;
+        pos->config.boardconfig[b].canloc.port = location.can.port;
+
+        for(size_t s=0; s<as_service.settings.enabledsensors.size(); s++)
         {
-            yWarning() << "ServiceParser::parseService() has detected a wrong pos sensor:" << eoas_sensor2string(sensor.type) << " ...  we drop it";
-            continue;
+            servAnalogSensor_t snsr = as_service.settings.enabledsensors[s];
+            pos->config.boardconfig[b].sensors[s].connector = snsr.pos.connector;
+            pos->config.boardconfig[b].sensors[s].type = snsr.pos.calibration.type;
+            pos->config.boardconfig[b].sensors[s].port = snsr.pos.port;
+            pos->config.boardconfig[b].sensors[s].enabled = 1;
+            pos->config.boardconfig[b].sensors[s].invertdirection = snsr.pos.calibration.invertdirection;
+            pos->config.boardconfig[b].sensors[s].rotation = snsr.pos.calibration.rotation;
+            pos->config.boardconfig[b].sensors[s].offset = static_cast<int16_t>(10 * snsr.pos.calibration.offset);
         }
-
-        // if ok, i copy it inside ...
-        posBoardConfig_ptr->boardInfo.canloc[i].addr= sensor.location.can.addr;
-        posBoardConfig_ptr->boardInfo.canloc[i].port= sensor.location.can.port;
 
     }
 
     return true;
 }
-
 
 #if defined(SERVICE_PARSER_USE_MC)
 
@@ -1790,9 +1958,6 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
 bool ServiceParser::parse_encoder_port(std::string const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror)
 {
     const char *t = fromstring.c_str();
-
-    yInfo() << "ServiceParser::parse_encoder_port(): ===========================> " << eomc_encoder2string(type, false);
-
     bool ret = false;
     switch(type)
     {
@@ -1812,6 +1977,7 @@ bool ServiceParser::parse_encoder_port(std::string const &fromstring, eObrd_etht
 
         case eomc_enc_aea:
         case eomc_enc_aea3:
+        case eomc_enc_aksim2:
         case eomc_enc_amo:
         case eomc_enc_qenc:
         case eomc_enc_spichainof2:
@@ -1819,7 +1985,7 @@ bool ServiceParser::parse_encoder_port(std::string const &fromstring, eObrd_etht
         case eomc_enc_spichainof3:
         {
             uint8_t toport1 = eobrd_port_unknown;
-            bool result = parse_port_conn(fromstring, ethboard, toport1, formaterror);
+            bool result = parse_port_conn(fromstring, static_cast<eObrd_type_t>(ethboard), toport1, formaterror);
 
             if(false == result)
             {
@@ -1923,7 +2089,7 @@ bool ServiceParser::parse_encoder_port(std::string const &fromstring, eObrd_etht
 }
 
 
-bool ServiceParser::parse_port_conn(std::string const &fromstring, eObrd_ethtype_t const ethboard, uint8_t &toport, bool &formaterror)
+bool ServiceParser::parse_port_conn(std::string const &fromstring, eObrd_type_t const board, uint8_t &toport, bool &formaterror)
 {
     const char *t = fromstring.c_str();
     bool ret = false;
@@ -1940,7 +2106,7 @@ bool ServiceParser::parse_port_conn(std::string const &fromstring, eObrd_ethtype
     }
     else
     {
-        eObrd_port_t port = eoboards_connector2port(conn, eoboards_ethtype2type(ethboard));
+        eObrd_port_t port = eoboards_connector2port(conn, board);
         if(eobrd_port_unknown == port)
         {
             yWarning() << "ServiceParser::parse_port_conn():" << t << "does not convert to a legal port for connector" << eoboards_connector2string(conn, eobool_false) << "and parsed board";
@@ -2011,16 +2177,16 @@ bool ServiceParser::parse_port_psc(std::string const &fromstring, uint8_t &topor
 
 bool ServiceParser::parse_port_pos(std::string const &fromstring, uint8_t &toport, bool &formaterror)
 {
-    const char *t = fromstring.c_str();
+//    const char *t = fromstring.c_str();
     bool ret = false;
 
     // format of string is POS:hand_thumb or :hand_index or :hand_medium or :hand_pinky
     eObrd_portpos_t ppos = eobrd_portpos_unknown;
-    bool result = parse_pos(fromstring, ppos, formaterror);
+    bool result = parse_POS_port(fromstring, ppos, formaterror);
 
     if(false == result)
     {
-        yWarning() << "ServiceParser::parse_port_pos():" << t << "is not a legal string for a port pos";
+        yWarning() << "ServiceParser::parse_port_pos():" << fromstring << "is not a legal string for a port pos";
         formaterror = true;
         ret = false;
     }
@@ -2032,6 +2198,8 @@ bool ServiceParser::parse_port_pos(std::string const &fromstring, uint8_t &topor
 
     return ret;
 }
+
+
 
 
 //bool ServiceParser::parse_mais(std::string const &fromstring, eObrd_portmais_t &pmais, bool &formaterror)
@@ -2103,7 +2271,7 @@ bool ServiceParser::parse_actuator_port(std::string const &fromstring, eObrd_eth
         {
 
             uint8_t toport = eobrd_port_unknown;
-            bool result = parse_port_conn(fromstring, ethboard, toport, formaterror);
+            bool result = parse_port_conn(fromstring, static_cast<eObrd_type_t>(ethboard), toport, formaterror);
 
             if(false == result)
             {
@@ -2375,8 +2543,7 @@ bool ServiceParser::parse_psc(const std::string &fromstring, eObrd_portpsc_t &to
     return true;
 }
 
-
-bool ServiceParser::parse_pos(const std::string &fromstring, eObrd_portpos_t &toportpos, bool &formaterror)
+bool ServiceParser::parse_POS_port(const std::string &fromstring, eObrd_portpos_t &toportpos, bool &formaterror)
 {
     // parses POS:hand_thumb or :hand_index or :hand_medium or :hand_pinky
 
@@ -2402,7 +2569,7 @@ bool ServiceParser::parse_pos(const std::string &fromstring, eObrd_portpos_t &to
 
     if(eobrd_portpos_unknown == toportpos)
     {
-        yWarning() << "ServiceParser::parse_pos(): " << t << " is not a legal string for eObrd_portpos_t";
+        yWarning() << "ServiceParser::parse_POS_port(): " << t << " is not a legal string for eObrd_portpos_t";
         formaterror = true;
         return false;
     }
@@ -2410,6 +2577,89 @@ bool ServiceParser::parse_pos(const std::string &fromstring, eObrd_portpos_t &to
     return true;
 }
 
+
+
+bool ServiceParser::parse_POS_CALIB_type(std::string const &fromstring, eoas_pos_TYPE_t &type, bool &formaterror)
+{
+    const char *tt = fromstring.c_str();
+    char prefix[16] = {0};
+    sscanf(tt, "%5c", prefix);
+
+    if(0 != strcmp(prefix, "TYPE:"))
+    {
+        yWarning() << "ServiceParser::convert():" << tt << "is not a legal string for eoas_pos_TYPE_t because it must begin with TYPE:";
+        formaterror = true;
+        return false;
+    }
+
+    // ok, now i remove the first 5 characters "TYPE:" and parse the second section .... it can be extended or compact
+    const char *t = &tt[5];
+
+    eObool_t usecompactstring = eobool_false;
+    type = eoas_string2postype(t, usecompactstring);
+
+    if(eoas_pos_TYPE_unknown == type)
+    {   // attempting to retrieve the compact form
+        usecompactstring = eobool_true;
+        type = eoas_string2postype(t, usecompactstring);
+    }
+
+    if(eoas_pos_TYPE_unknown == type)
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eoas_pos_TYPE_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool ServiceParser::parse_POS_CALIB_rotation(std::string const &fromstring, eoas_pos_ROT_t &rot, bool &formaterror)
+{
+    const char *tt = fromstring.c_str();
+    char prefix[16] = {0};
+    sscanf(tt, "%4c", prefix);
+
+    if(0 != strcmp(prefix, "ROT:"))
+    {
+        yWarning() << "ServiceParser::convert():" << tt << "is not a legal string for eoas_pos_ROT_t because it must begin with ROT:";
+        formaterror = true;
+        return false;
+    }
+
+    // ok, now i remove the first 4 characters "ROT:" and parse the second section .... it can be extended or compact
+    const char *t = &tt[4];
+
+    eObool_t usecompactstring = eobool_false;
+    rot = eoas_string2posrot(t, usecompactstring);
+
+    yDebug() << t << " yyyyyyyyyyyyyyyyyyy " << rot;
+
+
+    if(eoas_pos_ROT_unknown == rot)
+    {   // attempting to retrieve the compact form
+        usecompactstring = eobool_true;
+        rot = eoas_string2posrot(t, usecompactstring);
+        yDebug() << t << " xxxxxxxxxxxxxxxxxxx " << rot;
+    }
+
+    if(eoas_pos_ROT_unknown == rot)
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eoas_pos_ROT_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool ServiceParser::parse_POS_connector(std::string const &fromstring, const eObrd_type_t brd, eObrd_connector_t &conn, bool &formaterror)
+{
+    uint8_t tmp {0};
+    bool r = parse_port_conn(fromstring, brd, tmp, formaterror);
+    conn = r ? static_cast<eObrd_connector_t>(tmp) : eobrd_conn_unknown;
+    return r;
+}
 
 bool ServiceParser::convert(std::string const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror)
 {
@@ -3474,12 +3724,6 @@ bool ServiceParser::check_motion(Searchable &config)
                 yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.type not valid for item" << i;
                 return false;
             }
-//             //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
-//             if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
-//             {
-//                 enctype = eomc_enc_none;
-//             }
-
 
             enc2.desc.type = enctype;
 
@@ -3498,15 +3742,6 @@ bool ServiceParser::check_motion(Searchable &config)
                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.position not valid for item" << i;
                 return false;
             }
-//              //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
-//             if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
-//             {
-//                  enc2.desc.pos = eomc_pos_none;
-//             }
-//             else
-//             {
-//                  enc2.desc.pos = encposition;
-//             }
 
             enc2.desc.pos = encposition;
 
@@ -3724,6 +3959,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             data_mc->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
             data_mc->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
             data_mc->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
+
+            // we assume that all can boards have the same type for each joint
+            data_mc->type = mc_service.properties.canboards.at(0).type;
 
             // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
@@ -3978,21 +4216,46 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             // 1. ->pos
             eOmn_serv_config_data_as_pos_t *pos = &data_mc->pos;
 
+            // get firmware and protocol info
+            for(size_t b=0; b<eOas_pos_boards_maxnumber; b++)
+            {
+                pos->config.boardconfig[b].boardinfo.type = mc_service.properties.canboards[b].type;
+                pos->config.boardconfig[b].boardinfo.firmware.major = mc_service.properties.canboards[b].firmware.major;
+                pos->config.boardconfig[b].boardinfo.firmware.minor = mc_service.properties.canboards[b].firmware.minor;
+                pos->config.boardconfig[b].boardinfo.firmware.build = mc_service.properties.canboards[b].firmware.build;
+                pos->config.boardconfig[b].boardinfo.protocol.major = mc_service.properties.canboards[b].protocol.major;
+                pos->config.boardconfig[b].boardinfo.protocol.minor = mc_service.properties.canboards[b].protocol.minor;
 
+                pos->config.boardconfig[b].canloc.addr = mc_service.properties.poslocations[b].addr;
+                pos->config.boardconfig[b].canloc.port = mc_service.properties.poslocations[b].port;
+
+                for(size_t s=0; s<eOas_pos_sensorsinboard_maxnumber; s++)
+                {
+                    pos->config.boardconfig[b].sensors[s].connector = s;
+                    pos->config.boardconfig[b].sensors[s].type = eoas_pos_TYPE_decideg;
+                    pos->config.boardconfig[b].sensors[s].port = static_cast<eObrd_portpos_t>(s);
+                    pos->config.boardconfig[b].sensors[s].enabled = 1;
+                    pos->config.boardconfig[b].sensors[s].invertdirection = 0;
+                    pos->config.boardconfig[b].sensors[s].rotation = eoas_pos_ROT_zero;
+                    pos->config.boardconfig[b].sensors[s].offset = 0;
+                }
+            }
+
+#if 0
             for(size_t i=0; i<mc_service.properties.poslocations.size(); i++)
             {
-                pos->boardInfo.canloc[i].port = mc_service.properties.poslocations[i].port;
-                pos->boardInfo.canloc[i].addr = mc_service.properties.poslocations[i].addr;
-                pos->boardInfo.canloc[i].insideindex = mc_service.properties.poslocations[i].insideindex;
+                pos->config.boardconfig[0].canloc.port = mc_service.properties.poslocations[i].port;
+                pos->config.boardconfig[0].canloc.addr = mc_service.properties.poslocations[i].addr;
+                pos->config.boardconfig[0].canloc.insideindex = mc_service.properties.poslocations[i].insideindex;
             }
 
 
-            pos->version.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
-            pos->version.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
-            pos->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
-            pos->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
-            pos->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
-
+            pos->config.boardconfig[0].boardinfo.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
+            pos->config.boardconfig[0].boardinfo.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
+            pos->config.boardconfig[0].boardinfo.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
+            pos->config.boardconfig[0].boardinfo.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
+            pos->config.boardconfig[0].boardinfo.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
+#endif
             // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
             size_t numofjomos = mc_service.properties.numofjoints;
@@ -4032,17 +4295,17 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             for(size_t i=0; i<mc_service.properties.poslocations.size(); i++)
             {
-                pos->boardInfo.canloc[i].port = mc_service.properties.poslocations[i].port;
-                pos->boardInfo.canloc[i].addr = mc_service.properties.poslocations[i].addr;
-                pos->boardInfo.canloc[i].insideindex = mc_service.properties.poslocations[i].insideindex;
+                pos->config.boardconfig[0].canloc.port = mc_service.properties.poslocations[i].port;
+                pos->config.boardconfig[0].canloc.addr = mc_service.properties.poslocations[i].addr;
+                pos->config.boardconfig[0].canloc.insideindex = mc_service.properties.poslocations[i].insideindex;
             }
 
 
-            pos->version.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
-            pos->version.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
-            pos->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
-            pos->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
-            pos->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
+            pos->config.boardconfig[0].boardinfo.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
+            pos->config.boardconfig[0].boardinfo.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
+            pos->config.boardconfig[0].boardinfo.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
+            pos->config.boardconfig[0].boardinfo.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
+            pos->config.boardconfig[0].boardinfo.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
 
             // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(7, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayof7jomodescriptors);

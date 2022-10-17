@@ -27,6 +27,7 @@ class FtInfo
     int majorFirmware{0};
     int minorFirmware{0};
     int buildFirmware{0};
+    std::string frameName{""};
 
     bool toEomn(eOas_ft_sensordescriptor_t& out) const;
 };
