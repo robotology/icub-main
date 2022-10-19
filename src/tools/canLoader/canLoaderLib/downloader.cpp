@@ -1705,7 +1705,7 @@ int cDownloader::strain_calibrate_offset2  (int bus, int target_id, icubCanProto
 
         return strain_calibrate_offset2_strain1(bus, target_id, i16, errorstring);
     }
-    else if(icubCanProto_boardType__strain2 == boardtype)
+    else if(icubCanProto_boardType__strain2 == boardtype || icubCanProto_boardType__strain2c == boardtype)
     {
         return strain_calibrate_offset2_strain2(bus, target_id, gains, targets, errorstring);
     }
@@ -1734,14 +1734,14 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 #define STRAIN2_USE_NEW_MODE
 
 #if !defined(STRAIN2_USE_NEW_MODE)
-    if(icubCanProto_boardType__strain2 == boardtype)
+    if(icubCanProto_boardType__strain2 == boardtype || icubCanProto_boardType__strain2c == boardtype)
     {
         daclimit = 0xffff;
         dacstep = 16;
         tolerance = 64;
     }
 #else
-    if(icubCanProto_boardType__strain2 == boardtype)
+    if(icubCanProto_boardType__strain2 == boardtype || icubCanProto_boardType__strain2c == boardtype)
     {
         yDebug() << "strain2-amplifier-tuning: see the various STEP-x";
 
@@ -2210,6 +2210,8 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
         case eobrd_cantype_pmc:
         case eobrd_cantype_amcbldc:
         case eobrd_cantype_mtb4c:
+        case eobrd_cantype_strain2c:
+        case eobrd_cantype_mtb4fap:
         {
             boardisMC = false;
             txBuffer[0].setId(EOCANPROT_D_CREATE_CANID(ICUBCANPROTO_CLASS_POLLING_ANALOGSENSOR, 0, target_id));
@@ -2436,8 +2438,8 @@ int cDownloader::change_card_address(int bus, int target_id, int new_id, int boa
         case icubCanProto_boardType__mtb4c:
         case eobrd_cantype_pmc:
         case eobrd_cantype_amcbldc:
-
-
+        case eobrd_cantype_strain2c:
+        case eobrd_cantype_mtb4fap:
         
             txBuffer[0].setId((0x02 << 8) + (ID_MASTER << 4) + target_id);
             txBuffer[0].setLen(2);
@@ -2681,7 +2683,7 @@ int cDownloader::initschede()
         {
             board_list[i].strainregsetinuse = board_list[i].strainregsetatboot = 1;
         }
-        else if(board_list[i].type==icubCanProto_boardType__strain2)
+        else if(board_list[i].type==icubCanProto_boardType__strain2 || board_list[i].type==icubCanProto_boardType__strain2c)
         {
             this->strain_get_regulationset(board_list[i].bus, board_list[i].pid, board_list[i].strainregsetinuse, strain_regsetmode_temporary);
             this->strain_get_regulationset(board_list[i].bus, board_list[i].pid, board_list[i].strainregsetatboot, strain_regsetmode_permanent);
@@ -2786,6 +2788,7 @@ int cDownloader::startscheda(int bus, int board_pid, bool board_eeprom, int boar
     case icubCanProto_boardType__mtb4c:
     case eobrd_cantype_pmc:
     case eobrd_cantype_amcbldc:
+    case eobrd_cantype_strain2c:
     case icubCanProto_boardType__unknown:
     {
         // Send command
@@ -3266,6 +3269,8 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
                        (icubCanProto_boardType__pmc == board_type) 
                        || (icubCanProto_boardType__amcbldc == board_type)
                        || (icubCanProto_boardType__mtb4c == board_type)
+                       || (icubCanProto_boardType__mtb4fap == board_type)
+                       || (icubCanProto_boardType__strain2c == board_type) 
                       )
                     {   // it is ok
                     }
@@ -3509,6 +3514,7 @@ int cDownloader::download_file(int bus, int board_pid, int download_type, bool b
                         case icubCanProto_boardType__mtb4c:
                         case icubCanProto_boardType__pmc:
                         case icubCanProto_boardType__amcbldc:
+                        case icubCanProto_boardType__strain2c:
                              ret = download_hexintel_line(buffer, strlen(buffer), bus, board_pid, board_eeprom, download_type);
 
                         break;
