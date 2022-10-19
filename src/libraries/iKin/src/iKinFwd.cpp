@@ -2538,10 +2538,16 @@ void iCubEye::allocate(const string &_type)
         }
     }
 
-    if (is_version(version, 2.8))
+    if (is_version(version, 2.8)) // event driven cameras virtual image plane
     {
         Matrix HN = yarp::math::eye(4, 4);
         HN(2, 3) = -0.01;
+        setHN(HN);
+    }
+    else if (is_version(version, 2.10)) // Basler 4k cameras image plane
+    {
+        Matrix HN = yarp::math::eye(4, 4);
+        HN(2, 3) = -3.25e-3;
         setHN(HN);
     }
 
