@@ -225,7 +225,7 @@ Matrix iKinLink::getDnH(unsigned int n, bool c_override)
             DnH(0,1)=-C*c_theta*c_alpha;
             DnH(0,2)=C*c_theta*s_alpha;
             DnH(0,3)=-C*s_theta*A;
-    
+
             DnH(1,0)=C*c_theta;
             DnH(1,1)=-C*s_theta*c_alpha;
             DnH(1,2)=C*s_theta*s_alpha;
@@ -275,7 +275,7 @@ void iKinChain::clone(const iKinChain &c)
     DOF      =c.DOF;
     H0       =c.H0;
     HN       =c.HN;
-    curr_q   =c.curr_q;    
+    curr_q   =c.curr_q;
     verbose  =c.verbose;
     hess_J   =c.hess_J;
     hess_Jlnk=c.hess_Jlnk;
@@ -437,15 +437,15 @@ bool iKinChain::setBlockingValue(const unsigned int i, double Ang)
                 for (j=i-1; j>=0; j--)
                     if (!allList[j]->isBlocked())
                         break;
-                
+
                 for (++j; j<=(int)i; j++)
                     H*=allList[j]->getH(true);
-    
+
                 for (; j<(int)N && !allList[j]->isCumulative(); j++)
                     H*=allList[j]->getH(true);
-    
+
                 allList[j]->addCumH(H);
-            } 
+            }
 
             return true;
         }
@@ -478,7 +478,7 @@ bool iKinChain::releaseLink(const unsigned int i)
         return true;
     }
     else
-    {    
+    {
         if (verbose)
             yError("releaseLink() failed due to out of range index: %d>=%d",i,N);
 
@@ -493,7 +493,7 @@ bool iKinChain::isLinkBlocked(const unsigned int i)
     if (i<N)
         return allList[i]->isBlocked();
     else
-    {    
+    {
         if (verbose)
             yError("isLinkBlocked() failed due to out of range index: %d>=%d",i,N);
 
@@ -536,7 +536,7 @@ void iKinChain::build()
         if (allList[i]->isBlocked())
         {
             if (i==N-1)
-            {    
+            {
                 allList[i]->addCumH(H);
                 quickList.push_back(allList[i]);
             }
@@ -1219,7 +1219,7 @@ Matrix iKinChain::DJacobian(const Vector &dq)
         for (unsigned int j=0; j<=i; j++)  // j: row
         {
             dqj=dq[j];
-            
+
             a=J(4,j)*J(2,i)-J(5,j)*J(1,i);
             b=J(5,j)*J(0,i)-J(3,j)*J(2,i);
             c=J(3,j)*J(1,i)-J(4,j)*J(0,i);
@@ -1229,7 +1229,7 @@ Matrix iKinChain::DJacobian(const Vector &dq)
             dJ(3,i)+=dqj*(J(4,j)*J(5,i)-J(5,j)*J(4,i));
             dJ(4,i)+=dqj*(J(5,j)*J(3,i)-J(3,j)*J(5,i));
             dJ(5,i)+=dqj*(J(3,j)*J(4,i)-J(4,j)*J(3,i));
-            
+
             if (i!=j)
             {
                 dqi     =dq[i];
@@ -1267,7 +1267,7 @@ Matrix iKinChain::DJacobian(const unsigned int lnk, const Vector &dq)
         for (unsigned int j=0; j<=i; j++)  // j: row
         {
             dqj=dq[j];
-            
+
             a=J(4,j)*J(2,i)-J(5,j)*J(1,i);
             b=J(5,j)*J(0,i)-J(3,j)*J(2,i);
             c=J(3,j)*J(1,i)-J(4,j)*J(0,i);
@@ -1277,7 +1277,7 @@ Matrix iKinChain::DJacobian(const unsigned int lnk, const Vector &dq)
             dJ(3,i)+=dqj*(J(4,j)*J(5,i)-J(5,j)*J(4,i));
             dJ(4,i)+=dqj*(J(5,j)*J(3,i)-J(3,j)*J(5,i));
             dJ(5,i)+=dqj*(J(3,j)*J(4,i)-J(4,j)*J(3,i));
-            
+
             if (i!=j)
             {
                 dqi     =dq[i];
@@ -1366,7 +1366,7 @@ void iKinLimb::getMatrixFromProperties(const Property &options, const string &ta
 
         H.zero();
         for (int cnt=0; (cnt<bH->size()) && (cnt<H.rows()*H.cols()); cnt++)
-        {    
+        {
             H(i,j)=bH->get(cnt).asFloat64();
             if (++j>=H.cols())
             {
@@ -1394,7 +1394,7 @@ void iKinLimb::setMatrixToProperties(Property &options, const string &tag,
 /************************************************************************/
 bool iKinLimb::fromLinksProperties(const Property &options)
 {
-    dispose();    
+    dispose();
 
     type=options.check("type",Value("right")).asString();
 
@@ -1613,7 +1613,7 @@ bool iCubTorso::alignJointsBounds(const deque<IControlLimits*> &lim)
     double min, max;
 
     for (iTorso=0; iTorso<3; iTorso++)
-    {   
+    {
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
@@ -1724,7 +1724,7 @@ void iCubArm::allocate(const string &_type)
 
         if (version<3.0)
         {
-            pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD)); 
+            pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(       0.0,  -0.0055,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
             pushLink(new iKinLink( 0.0233647,  -0.1433, -M_PI/2.0,  105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(       0.0,  0.10774, -M_PI/2.0,            M_PI/2.0, -95.5*CTRL_DEG2RAD,   5.0*CTRL_DEG2RAD));
@@ -1776,7 +1776,7 @@ bool iCubArm::alignJointsBounds(const deque<IControlLimits*> &lim)
     double min, max;
 
     for (iTorso=0; iTorso<3; iTorso++)
-    {   
+    {
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
@@ -1793,7 +1793,7 @@ bool iCubArm::alignJointsBounds(const deque<IControlLimits*> &lim)
     }
 
     for (iArm=0; iArm<getN()-iTorso; iArm++)
-    {   
+    {
         if (!limArm.getLimits(iArm,&min,&max))
             return false;
 
@@ -1865,7 +1865,7 @@ void iCubFinger::allocate(const string &_type)
             version="na";
     }
     else
-    {        
+    {
         hand="right";
         finger="index";
         version="na";
@@ -1900,7 +1900,7 @@ void iCubFinger::allocate(const string &_type)
         {
             H0(2,1)=-H0(2,1);
             H0(0,2)=-H0(0,2);
-            H0(1,2)=-H0(1,2);            
+            H0(1,2)=-H0(1,2);
             H0(2,3)=-H0(2,3);
 
             pushLink(new iKinLink(   0.0,     0.0,  M_PI/2.0, 0.0, 10.0*CTRL_DEG2RAD, 90.0*CTRL_DEG2RAD));
@@ -1952,7 +1952,7 @@ void iCubFinger::allocate(const string &_type)
         if (hand=="left")
         {
             H0(2,1)=-H0(2,1);
-            H0(1,2)=-H0(1,2);            
+            H0(1,2)=-H0(1,2);
             H0(2,3)=-H0(2,3);
         }
 
@@ -2121,7 +2121,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
         return false;
 
     int offs=(motorEncoders.length()==16?7:0);
-    
+
     if (finger=="thumb")
     {
         chainJoints.resize(4);
@@ -2178,7 +2178,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
         for (size_t r=0; r<jointEncoders.length(); r++)
             bounds(r,0)=255.0;
     }
-    
+
     if (finger=="thumb")
     {
         chainJoints.resize(4);
@@ -2401,7 +2401,7 @@ bool iCubLeg::alignJointsBounds(const deque<IControlLimits*> &lim)
     double min, max;
 
     for (iLeg=0; iLeg<getN(); iLeg++)
-    {   
+    {
         if (!limLeg.getLimits(iLeg,&min,&max))
             return false;
 
@@ -2538,10 +2538,16 @@ void iCubEye::allocate(const string &_type)
         }
     }
 
-    if (is_version(version, 2.8))
+    if (is_version(version, 2.8)) // event driven cameras virtual image plane
     {
         Matrix HN = yarp::math::eye(4, 4);
         HN(2, 3) = -0.01;
+        setHN(HN);
+    }
+    else if (is_version(version, 2.10)) // Basler 4k cameras image plane
+    {
+        Matrix HN = yarp::math::eye(4, 4);
+        HN(2, 3) = -5.4e-3;
         setHN(HN);
     }
 
@@ -2565,7 +2571,7 @@ bool iCubEye::alignJointsBounds(const deque<IControlLimits*> &lim)
     double min, max;
 
     for (iTorso=0; iTorso<3; iTorso++)
-    {   
+    {
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
@@ -2582,7 +2588,7 @@ bool iCubEye::alignJointsBounds(const deque<IControlLimits*> &lim)
     }
 
     for (iHead=0; iHead<getN()-iTorso; iHead++)
-    {   
+    {
         if (!limHead.getLimits(iHead,&min,&max))
             return false;
 
@@ -2700,7 +2706,7 @@ void iCubInertialSensor::allocate(const string &_type)
         pushLink(new iKinLink(    0.0, -0.2233, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
         pushLink(new iKinLink( 0.0095,     0.0,  M_PI/2.0,  M_PI/2.0, -40.0*CTRL_DEG2RAD, 30.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0,     0.0, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
-        pushLink(new iKinLink( 0.0185,  0.1108, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));    
+        pushLink(new iKinLink( 0.0185,  0.1108, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
     }
     else  // version>=3.0
     {
@@ -2767,7 +2773,7 @@ bool iCubInertialSensor::alignJointsBounds(const deque<IControlLimits*> &lim)
     double min, max;
 
     for (iTorso=0; iTorso<3; iTorso++)
-    {   
+    {
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
@@ -2785,7 +2791,7 @@ bool iCubInertialSensor::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     // only the neck
     for (iHead=0; iHead<3; iHead++)
-    {   
+    {
         if (!limHead.getLimits(iHead,&min,&max))
             return false;
 
@@ -2821,7 +2827,7 @@ void iCubInertialSensorWaist::allocate(const string &_type)
 
     Matrix H0(4,4);
     H0.zero();
-    
+
     H0(0,1)=-0.5;
     H0(0,2)=0.866025;
     H0(0,3)=0.0906529;
