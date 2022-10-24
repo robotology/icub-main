@@ -1079,6 +1079,7 @@ protected:
         d[fabs(2.8-ver_in)]=2.8;
         d[fabs(2.10-ver_in)]=2.10;
         d[fabs(3.0-ver_in)]=3.0;
+        d[fabs(3.1-ver_in)]=3.1;
 
         double ver_out=d.begin()->second;
         if (ver_out!=ver_in)
