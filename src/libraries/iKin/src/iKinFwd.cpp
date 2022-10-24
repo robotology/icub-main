@@ -2544,7 +2544,7 @@ void iCubEye::allocate(const string &_type)
         HN(2, 3) = -0.01;
         setHN(HN);
     }
-    else if (is_version(version, 2.10)) // Basler 4k cameras image plane
+    else if (is_version(version, 2.10) || is_version(version, 3.1)) // Basler 4k cameras image plane
     {
         Matrix HN = yarp::math::eye(4, 4);
         HN(2, 3) = -5.4e-3;
