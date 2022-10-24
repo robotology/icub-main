@@ -1040,12 +1040,124 @@ public:
 /**
 * \ingroup iKinFwd
 *
+* A class for defining the versions of the iCub limbs.
+*/
+class iKinLimbVersion
+{
+protected:
+    unsigned long int major;
+    unsigned long int minor;
+
+public:
+    /**
+    * Default Constructor. 
+    */
+    iKinLimbVersion();
+
+    /**
+    * Constructor. 
+    * @param version is a string for specifying different 
+    *              kinematics, e.g., "1.23".
+    */
+    iKinLimbVersion(const std::string &version);
+
+    /**
+    * Constructor. 
+    * @param major the major version. 
+    * @param minor the mninor version. 
+    */
+    iKinLimbVersion(const unsigned long int major, const unsigned long int minor);
+
+    /**
+    * Copy Constructor. 
+    */
+    iKinLimbVersion(const iKinLimbVersion& v);
+
+    /**
+    * Return the major version.
+    * @return the major version. 
+    */
+    unsigned long int get_major() const;
+
+    /**
+    * Return the minor version.
+    * @return the minor version. 
+    */
+    unsigned long int get_minor() const;
+
+    /**
+     * Return the version string.
+     * @return the version string. 
+     */
+    std::string get_version() const;
+
+    /**
+    * Overloaded assignment operator.
+    * @param v the version to be assigned. 
+    * @return . 
+    */
+    iKinLimbVersion& operator=(const iKinLimbVersion& v);
+
+    /**
+    * Overloaded < operator.
+    * @param v the version to compare with. 
+    * @return true iff < v. 
+    */
+    bool operator<(const iKinLimbVersion& v) const;
+
+    /**
+    * Overloaded <= operator.
+    * @param v the version to compare with. 
+    * @return true iff <= v. 
+    */
+    bool operator<=(const iKinLimbVersion& v) const;
+
+    /**
+    * Overloaded == operator.
+    * @param v the version to compare with. 
+    * @return true iff == v. 
+    */
+    bool operator==(const iKinLimbVersion& v) const;
+
+     /**
+    * Overloaded != operator.
+    * @param v the version to compare with. 
+    * @return true iff != v. 
+    */
+    bool operator!=(const iKinLimbVersion& v) const;
+
+    /**
+    * Overloaded >=</=> operator.
+    * @param v the version to compare with. 
+    * @return true iff >= v. 
+    */
+    bool operator>=(const iKinLimbVersion& v) const;
+
+   /**
+    * Overloaded > operator.
+    * @param v the version to compare with. 
+    * @return true iff > v. 
+    */
+    bool operator>(const iKinLimbVersion& v) const;
+
+    /**
+    * Overloaded - operator.
+    * @param v the version to compare with. 
+    * @return the distance from v.
+    */
+    iKinLimbVersion operator-(const iKinLimbVersion& v) const;
+};
+
+
+/**
+* \ingroup iKinFwd
+*
 * A class for defining the iCub Torso.
 */
 class iCubTorso : public iKinLimb
 {
 protected:
-    double version;
+    iKinLimbVersion version;
 
     virtual void allocate(const std::string &_type);
 
@@ -1081,7 +1193,7 @@ public:
 class iCubArm : public iKinLimb
 {
 protected:
-    double version;
+    iKinLimbVersion version;
 
     virtual void allocate(const std::string &_type);
 
@@ -1236,7 +1348,7 @@ public:
 class iCubLeg : public iKinLimb
 {
 protected:
-    double version;
+    iKinLimbVersion version;
 
     virtual void allocate(const std::string &_type);
 
@@ -1273,7 +1385,7 @@ public:
 class iCubEye : public iKinLimb
 {
 protected:
-    double version;
+    iKinLimbVersion version;
 
     virtual void allocate(const std::string &_type);
 
@@ -1364,7 +1476,7 @@ public:
 class iCubInertialSensor : public iKinLimb
 {
 protected:
-    double version;
+    iKinLimbVersion version;
 
     virtual void allocate(const std::string &_type);
 
@@ -1401,7 +1513,7 @@ public:
 class iCubInertialSensorWaist : public iKinLimb
 {
 protected:
-    double version;
+    iKinLimbVersion version;
 
     virtual void allocate(const std::string &_type);
 

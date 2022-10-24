@@ -13,7 +13,7 @@ add_library(ICUB::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 
-target_link_libraries(${PROJECT_NAME} perceptiveModels ${YARP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} iKin perceptiveModels ${YARP_LIBRARIES})
 
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

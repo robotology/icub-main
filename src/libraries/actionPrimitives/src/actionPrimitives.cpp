@@ -27,6 +27,7 @@
 #include <yarp/math/Rand.h>
 
 #include <iCub/ctrl/math.h>
+#include <iCub/iKin/iKinFwd.h>
 #include <iCub/perception/springyFingers.h>
 #include <iCub/perception/tactileFingers.h>
 #include <iCub/action/actionPrimitives.h>
@@ -57,6 +58,7 @@ using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
+using namespace iCub::iKin;
 using namespace iCub::perception;
 using namespace iCub::action;
 
@@ -407,9 +409,9 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key)
     {
         Bottle info;
         cartCtrl->getInfo(info);
-        double hwver=info.find("arm_version").asFloat64();
+        iKinLimbVersion hwver(info.find("arm_version").asString());
         map<string,int> remap{{ACTIONPRIM_TORSO_PITCH,0},{ACTIONPRIM_TORSO_ROLL,1},{ACTIONPRIM_TORSO_YAW,2}};
-        if (hwver>=3.0)
+        if (hwver>=iKinLimbVersion("3.0"))
         {
             remap[ACTIONPRIM_TORSO_ROLL]=0;
             remap[ACTIONPRIM_TORSO_PITCH]=1;

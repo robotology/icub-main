@@ -578,7 +578,7 @@ Windows, Linux
 #include <iCub/solver.h>
 #include <iCub/controller.h>
 
-#define GAZECTRL_SERVER_VER     1.2
+#define GAZECTRL_SERVER_VER     "2.0"
 
 using namespace std;
 using namespace yarp::os;
@@ -765,11 +765,11 @@ protected:
 
         Bottle &serverVer=info.addList();
         serverVer.addString("server_version");
-        serverVer.addFloat64(GAZECTRL_SERVER_VER);
+        serverVer.addString(GAZECTRL_SERVER_VER);
 
         Bottle &headVer=info.addList();
         headVer.addString("head_version");
-        headVer.addFloat64(commData.head_version);
+        headVer.addString(commData.head_version.get_version());
 
         Bottle &minVer=info.addList();
         minVer.addString("min_allowed_vergence");
@@ -1067,25 +1067,25 @@ protected:
     }
 
     /************************************************************************/
-    double constrainHeadVersion(const double ver_in)
+    iKinLimbVersion constrainHeadVersion(const iKinLimbVersion &ver_in)
     {
         // std::map<k,v> is ordered based on std::less<k>
-        map<double,double> d;
-        d[fabs(1.0-ver_in)]=1.0;
-        d[fabs(2.0-ver_in)]=2.0;
-        d[fabs(2.5-ver_in)]=2.5;
-        d[fabs(2.6-ver_in)]=2.6;
-        d[fabs(2.7-ver_in)]=2.7;
-        d[fabs(2.8-ver_in)]=2.8;
-        d[fabs(2.10-ver_in)]=2.10;
-        d[fabs(3.0-ver_in)]=3.0;
-        d[fabs(3.1-ver_in)]=3.1;
+        map<iKinLimbVersion,iKinLimbVersion> d;
+        d[iKinLimbVersion("1.0")-ver_in]=iKinLimbVersion("1.0");
+        d[iKinLimbVersion("2.0")-ver_in]=iKinLimbVersion("2.0");
+        d[iKinLimbVersion("2.5")-ver_in]=iKinLimbVersion("2.5");
+        d[iKinLimbVersion("2.6")-ver_in]=iKinLimbVersion("2.6");
+        d[iKinLimbVersion("2.7")-ver_in]=iKinLimbVersion("2.7");
+        d[iKinLimbVersion("2.8")-ver_in]=iKinLimbVersion("2.8");
+        d[iKinLimbVersion("2.10")-ver_in]=iKinLimbVersion("2.10");
+        d[iKinLimbVersion("3.0")-ver_in]=iKinLimbVersion("3.0");
+        d[iKinLimbVersion("3.1")-ver_in]=iKinLimbVersion("3.1");
 
-        double ver_out=d.begin()->second;
+        auto ver_out=d.begin()->second;
         if (ver_out!=ver_in)
         {
-            yWarning("Unknown \"head_version\" %g requested => used \"head_version\" %g instead",
-                     ver_in,ver_out);
+            yWarning("Unknown \"head_version\" %s requested => used \"head_version\" %s instead",
+                     ver_in.get_version().c_str(),ver_out.get_version().c_str());
         }
 
         return ver_out;
@@ -1142,7 +1142,7 @@ public:
         commData.robotName=rf.check("robot",Value("icub")).asString();
         commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-20.0)).asFloat64();
         commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asFloat64();
-        commData.head_version=constrainHeadVersion(rf.check("head_version",Value(1.0)).asFloat64());
+        commData.head_version=constrainHeadVersion(iKinLimbVersion(rf.check("head_version",Value("1.0")).asString()));
         commData.verbose=rf.check("verbose");
         commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
@@ -1177,7 +1177,7 @@ public:
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,nullptr);
 
-        yInfo("Controller configured for head version %g",commData.head_version);
+        yInfo("Controller configured for head version %s",commData.head_version.get_version().c_str());
 
         commData.localStemName="/"+ctrlName;
         string remoteHeadName="/"+commData.robotName+"/"+headName;

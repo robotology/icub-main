@@ -2683,11 +2683,11 @@ bool MotorThread::exploreTorso(Bottle &options)
 
     Bottle info;
     ctrl_gaze->getInfo(info);
-    double head_version=info.check("head_version",Value(1.0)).asFloat64();
+    iKinLimbVersion head_version(info.check("head_version",Value("1.0")).asString());
 
     ostringstream type;
     type<<(dominant_eye==LEFT?"left":"right");
-    if (head_version==2.0)
+    if (head_version==iKinLimbVersion("2.0"))
         type<<"_v2";
 
     iCubEye iKinTorso=iCubEye(type.str());

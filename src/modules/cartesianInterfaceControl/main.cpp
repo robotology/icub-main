@@ -129,6 +129,8 @@ Windows, Linux
 #include <yarp/dev/CartesianControl.h>
 #include <yarp/dev/PolyDriver.h>
 
+#include <iCub/iKin/iKinFwd.h>
+
 #define MAX_TORSO_PITCH     30.0    // [deg]
 #define EXECTIME_THRESDIST  0.3     // [m]
 #define PRINT_STATUS_PER    1.0     // [s]
@@ -138,6 +140,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
+using namespace iCub::iKin;
 
 
 /************************************************************************/
@@ -193,11 +196,11 @@ class CtrlThread : public PeriodicThread {
 
     Bottle info;
     iarm->getInfo(info);
-    double hwver = info.find("arm_version").asFloat64();
-    printf("Detected arm kinematics version %g\n", hwver);
+    iKinLimbVersion hwver(info.find("arm_version").asString());
+    printf("Detected arm kinematics version %s\n", hwver.get_version().c_str());
 
     map<string, int> torsoJointsRemap{{ "pitch", 0 }, { "roll", 1 }, { "yaw", 2 }};
-    if (hwver >= 3.0) {
+    if (hwver >= iKinLimbVersion("3.0")) {
       torsoJointsRemap["roll"] = 0;
       torsoJointsRemap["pitch"] = 1;
     }
