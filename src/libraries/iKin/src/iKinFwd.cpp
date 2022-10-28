@@ -1665,8 +1665,10 @@ bool iKinLimbVersion::operator>=(const iKinLimbVersion& v) const
 iKinLimbVersion iKinLimbVersion::operator-(const iKinLimbVersion& v) const
 {
    unsigned long int m1=(major>v.major)?major-v.major:v.major-major;
-   unsigned long int m2=(minor>v.minor)?minor-v.minor:v.minor-minor;
-   return iKinLimbVersion(m1,m2);
+   unsigned long int m2=0L;
+   if (m1==0L)
+       m2=(minor>v.minor)?minor-v.minor:v.minor-minor;
+   return iKinLimbVersion(m1, m2);
 }
 
 
