@@ -17,9 +17,9 @@
 */
 
 /**
-\defgroup iKinGazeCtrl iKinGazeCtrl
-
 @ingroup icub_module
+
+\defgroup iKinGazeCtrl iKinGazeCtrl
 
 Gaze controller based on iKin.
 
@@ -212,8 +212,7 @@ Factors</a>.
 
 --head_version \e ver
 - This option specifies the kinematic structure of the head; the value
-  \e ver is a double in the set {1.0, 2.0, 2.5, 2.6, 2.7, 3.0}, being 1.0
-  the default version.
+  \e ver is a string (e.g., "1.0", "2.0"), being "1.0" the default.
 
 --verbose
 - Enable some output print-out.
@@ -432,7 +431,7 @@ following ports:
       target with stereo input.
     - [get] [info]: returns (enclosed in a list) a property-like
       bottle containing useful information, such as the
-      "head_version" (e.g. 1.0, 2.0, ...), the
+      "head_version" (e.g. "1.0", "2.0", ...), the
       "min_allowed_vergence" (in degrees), a list of the
       available "events", the intrinsic and extrinsic camera
       parameters used.

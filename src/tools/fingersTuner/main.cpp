@@ -16,8 +16,9 @@
 */
 
 /**
-\defgroup icub_fingersTuner Fingers PID Tuner
 @ingroup icub_tools
+
+\defgroup icub_fingersTuner Fingers PID Tuner
 
 A module that provides tuning capabilities of the low-level PID
 controllers for the robot's fingers.
@@ -67,7 +68,8 @@ in the first case it is asked the module at startup to store locally the PIDs
 values available onboard the robot, while in the second case the local
 configuration values will be uploaded to the robot. \n
 The option <b>idling</b> allows putting in idle specific coupled joints that
-should be not controlled in position during the tuning of the joint under subject.
+should be not controlled in position during the tuning of the joint under
+subject.
 
 \section portsif_sec Ports Interface
 The interface to this module is implemented through

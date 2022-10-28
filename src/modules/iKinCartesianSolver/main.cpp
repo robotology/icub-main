@@ -16,63 +16,63 @@
  * Public License for more details
 */
 
-/** 
-\defgroup iKinCartesianSolver iKinCartesianSolver 
- 
-@ingroup icub_module  
- 
-Just a container which runs the \ref iKinSlv "Cartesian Solver" 
-taking parameters from a configuration file. 
- 
+/**
+@ingroup icub_module
+
+\defgroup iKinCartesianSolver iKinCartesianSolver
+
+Just a container which runs the \ref iKinSlv "Cartesian Solver"
+taking parameters from a configuration file.
+
 Copyright (C) 2010 RobotCub Consortium
- 
-Author: Ugo Pattacini 
+
+Author: Ugo Pattacini
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-\section intro_sec Description 
-See \ref iKinSlv "Cartesian Solver" for documentation. 
- 
-\section lib_sec Libraries 
-- YARP libraries. 
-- \ref iKin "iKin" library (it requires IPOPT: see the 
+\section intro_sec Description
+See \ref iKinSlv "Cartesian Solver" for documentation.
+
+\section lib_sec Libraries
+- YARP libraries.
+- \ref iKin "iKin" library (it requires IPOPT: see the
   <a
   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>).
 
 \section parameters_sec Parameters
 --part \e type [mandatory]
-- select the part to run. \e type is the group name within the 
+- select the part to run. \e type is the group name within the
   configuration file (e.g. left_arm, right_arm, ...).
 
 --context \e directory [optional]
 - allow specifying a different path where to search the
-  configuration file (beware of the  
-  <a href="http://www.yarp.it/yarp_data_dirs.html">context  
-  search policy</a>).  
- 
---from \e file [optional]
-- allow specifying a different configuration file from the 
-  default one which is \e cartesianSolver.ini.
- 
-\section portsa_sec Ports Accessed
- 
-All ports which allow the access to motor interface shall be 
-previously open. 
+  configuration file (beware of the
+  <a href="http://www.yarp.it/yarp_data_dirs.html">context
+  search policy</a>).
 
-\section portsc_sec Ports Created 
- 
+--from \e file [optional]
+- allow specifying a different configuration file from the
+  default one which is \e cartesianSolver.ini.
+
+\section portsa_sec Ports Accessed
+
+All ports which allow the access to motor interface shall be
+previously open.
+
+\section portsc_sec Ports Created
+
 - /<solverName>/in : for requests in streaming mode.
 - /<solverName>/rpc : for requests and replies.
-- /<solverName>/out : for output streaming. 
- 
+- /<solverName>/out : for output streaming.
+
 \note for a detailed description, see \ref iKinSlv.
- 
+
 \section conf_file_sec Configuration Files
- 
-Here's how the configuration file will look like for the 
-specific icub part left_arm: 
- 
-\code 
+
+Here's how the configuration file will look like for the
+specific icub part left_arm:
+
+\code
 [left_arm]
 robot          icub
 name           cartesianSolver/left_arm
@@ -80,40 +80,40 @@ type           left
 period         20
 dof            (0 0 0 1 1 1 1 1 1 1)
 rest_pos       (0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)
-rest_weights   (1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0) 
+rest_weights   (1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)
 pose           full
 mode           shot
 verbosity      off
 maxIter        200
 tol            0.001
-interPoints    off 
-ping_robot_tmo 20.0 
-\endcode 
- 
-Here's how the configuration file will look like for a custom 
-robot part: 
- 
-\code 
+interPoints    off
+ping_robot_tmo 20.0
+\endcode
+
+Here's how the configuration file will look like for a custom
+robot part:
+
+\code
 [left_arm]
 robot           my-robot
-name            cartesianSolver/left_arm 
+name            cartesianSolver/left_arm
 type            left
 period          20
 dof             (1 1 1 1 1 1 1)
 rest_pos        (0.0 0.0 0.0 0.0 0.0 0.0 0.0)
-rest_weights    (0.0 0.0 0.0 0.0 0.0 0.0 0.0) 
+rest_weights    (0.0 0.0 0.0 0.0 0.0 0.0 0.0)
 pose            full
 mode            shot
 verbosity       off
 maxIter         200
 tol             0.001
-interPoints     off 
-ping_robot_tmo  20.0 
- 
-CustomKinFile   cartesian/kinematics.ini 
-NumberOfDrivers 1 
+interPoints     off
+ping_robot_tmo  20.0
+
+CustomKinFile   cartesian/kinematics.ini
+NumberOfDrivers 1
 driver_0        (Key left_arm) (JointsOrder direct)
-  
+
 LIC_num         7
 LIC_0           (C (1.71 -1.71    0.0  0.0 0.0 0.0 0.0)) (lB -6.051)
 LIC_1           (C (1.71 -1.71  -1.71  0.0 0.0 0.0 0.0)) (lB -6.397) (uB 1.962)
@@ -122,11 +122,11 @@ LIC_3           (C ( 0.0   1.0 0.0427  0.0 0.0 0.0 0.0)) (lB  0.461)
 LIC_4           (C ( 0.0   1.0    0.0  0.0 0.0 0.0 0.0))             (uB 1.745)
 LIC_5           (C ( 0.0   0.0    0.0  2.5 1.0 0.0 0.0))             (uB 5.280)
 LIC_6           (C ( 0.0   0.0    0.0 -2.5 1.0 0.0 0.0)) (lB -5.280)
-\endcode 
- 
+\endcode
+
 \note for a detailed description of options, see \ref iKinSlv
       "Cartesian Solver".
- 
+
 \section tested_os_sec Tested OS
 Windows, Linux
 
