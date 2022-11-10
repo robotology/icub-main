@@ -31,7 +31,7 @@ Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
 {
     iCubHeadCenter eyeC("right_v"+commData->head_version.get_version());
     eyeL=new iCubEye("left_v"+commData->head_version.get_version());
-    eyeR=new iCubEye("rightv_"+commData->head_version.get_version());
+    eyeR=new iCubEye("right_v"+commData->head_version.get_version());
 
     // remove constraints on the links
     // we use the chains for logging purpose

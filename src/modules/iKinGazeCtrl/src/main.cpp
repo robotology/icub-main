@@ -212,7 +212,7 @@ Factors</a>.
 
 --head_version \e ver
 - This option specifies the kinematic structure of the head; the value
-  \e ver is a string (e.g., "1.0", "2.0"), being "1.0" the default.
+  \e ver is a string (e.g., "v1.0", "v2.0"), being "v1.0" the default.
 
 --verbose
 - Enable some output print-out.
@@ -564,6 +564,8 @@ Windows, Linux
 #include <mutex>
 #include <cmath>
 #include <algorithm>
+#include <cctype>
+#include <string>
 #include <fstream>
 #include <iomanip>
 #include <map>
@@ -1138,10 +1140,17 @@ public:
         min_abs_vel=CTRL_DEG2RAD*fabs(rf.check("min_abs_vel",Value(0.0)).asFloat64());
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asFloat64();
 
+        auto head_version=rf.check("head_version",Value("v1.0")).asString();
+        if ((head_version.length()<2) || (tolower(head_version[0])!='v'))
+        {
+            yWarning("Unrecognized \"head_version\" %s; going with default version",head_version.c_str());
+            head_version="v1.0";
+        }
+        commData.head_version = constrainHeadVersion(iKinLimbVersion(head_version.substr(1)));
+
         commData.robotName=rf.check("robot",Value("icub")).asString();
         commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-20.0)).asFloat64();
         commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asFloat64();
-        commData.head_version=constrainHeadVersion(iKinLimbVersion(rf.check("head_version",Value("1.0")).asString()));
         commData.verbose=rf.check("verbose");
         commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
