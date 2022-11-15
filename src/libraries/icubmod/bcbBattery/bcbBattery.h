@@ -11,7 +11,7 @@
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/dev/IBattery.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/SerialInterfaces.h>
+#include <yarp/dev/ISerialDevice.h>
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/sig/Vector.h>
 #include <regex>
