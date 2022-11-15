@@ -18,7 +18,7 @@
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/CanBusInterface.h>
-#include <yarp/dev/PreciselyTimed.h>
+#include <yarp/dev/IPreciselyTimed.h>
 #include <yarp/os/PeriodicThread.h>
 #include <string>
 #include <list>

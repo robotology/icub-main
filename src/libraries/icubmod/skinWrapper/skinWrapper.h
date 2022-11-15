@@ -21,11 +21,11 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Property.h>
 
-#include <yarp/dev/GenericSensorInterfaces.h>
+#include <yarp/dev/IGenericSensor.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/PolyDriverList.h>
-#include <yarp/dev/Wrapper.h>
+#include <yarp/dev/IMultipleWrapper.h>
 
 //#include <list>
 #include <vector>
@@ -37,7 +37,6 @@
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Stamp.h>
-#include <yarp/dev/Wrapper.h>
 
 #include <yarp/os/LogStream.h>
 

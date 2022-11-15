@@ -20,7 +20,7 @@
 #include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/PreciselyTimed.h>
+#include <yarp/dev/IPreciselyTimed.h>
 #include <yarp/dev/IVisualParams.h>
 
 namespace yarp {
