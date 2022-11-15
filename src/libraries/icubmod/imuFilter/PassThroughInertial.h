@@ -3,7 +3,7 @@
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
-#include <yarp/dev/Wrapper.h>
+#include <yarp/dev/IMultipleWrapper.h>
 #include <yarp/dev/PolyDriver.h>
 
 
