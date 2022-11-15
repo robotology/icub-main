@@ -70,7 +70,7 @@ jobs:
     - name: Determine icub-firmware-shared branch
       shell: bash
       run: |
-        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.ref }}" == "refs/heads/master" || "${{ github.head_ref }}" == "refs/heads/master" ]]; then
+        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.ref }}" == "refs/heads/master" || "${{ github.base_ref }}" == "master" || "${{ github.head_ref }}" == "master" ]]; then
           echo "icubfwshared_branch=master" >> $GITHUB_ENV
         else
           echo "icubfwshared_branch=devel" >> $GITHUB_ENV

@@ -29,7 +29,7 @@
 
 #include <yarp/sig/Vector.h>
 
-//#include <yarp/dev/GenericSensorInterfaces.h>
+//#include <yarp/dev/IGenericSensor.h>
 //#include <yarp/dev/ControlBoardInterfaces.h>
 //#include <yarp/dev/PolyDriver.h>
 
