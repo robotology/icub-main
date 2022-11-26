@@ -10,10 +10,9 @@
 
 class fingersTuner_IDL;
 
-
 /**
  * fingersTuner_IDL
- * IDL Interface to \ref fingersTuner services.
+ * IDL Interface to \ref icub_fingersTuner services.
  */
 class fingersTuner_IDL : public yarp::os::Wire {
 public:

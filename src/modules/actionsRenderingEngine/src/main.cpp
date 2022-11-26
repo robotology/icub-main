@@ -34,7 +34,7 @@ information according to the current "stereo to cartesian" modality chosen:
 -- homography: which assumes that the target point lies on a table and exploits
 homography to obtain the relative 3D cartesian coordinates.
 
--- disparity: which uses the \ref StereoDisparity module to obtain the 3D cartesian
+-- disparity: which uses the StereoDisparity module to obtain the 3D cartesian
 estimate of the 2D target.
 
 -- network: which uses a previously trained neural network structure to predict the

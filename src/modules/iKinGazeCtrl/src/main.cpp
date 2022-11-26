@@ -155,7 +155,7 @@ Factors</a>.
 
 --imu::source_port_name \e name
 - Allow specifying a different source port for the IMU data
-  (see IMU filtering tools such as e.g. \ref imuFilter).
+  (see IMU filtering tools such as e.g. imuFilter).
 
 --imu::stabilization_gain \e gain
 - Specify the integral gain (in [1/s]) used for gaze
@@ -301,7 +301,6 @@ following ports:
 - \e /<ctrlName>/q:o returns the actual joints configuration
   during movement (Vector of 9 double). The order for torso
   angles is the one defined by kinematic chain.
-  Useful in conjunction with the \ref iKinGazeView "viewer".
   Units in degrees.
 
 - \e /<ctrlName>/angles:o returns the current azimuth/elevation

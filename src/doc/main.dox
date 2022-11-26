@@ -32,7 +32,7 @@ Topics:
   - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
   - Our software architecture, <a href="http://www.yarp.it/">YARP</a>.
 
-This page can be edited at \link src/doc/main.dox.
+This page can be edited at src/doc/main.dox.
 
 *
 */

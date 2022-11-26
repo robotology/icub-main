@@ -46,8 +46,7 @@ module.
 (possible values are 20 or 10).
 
 \section portsa_sec Ports Accessed
-It assumes \ref icub_iCubInterface runs. It accesses velocity and 
-encoder ports created by iCubInterface.
+It accesses ports created when the robot is launched.
 
 \section portsc_sec Ports Created
 The module instantiates a control_board device, which opens the

@@ -13,8 +13,8 @@
  *
  * 
  * \section int_sec Instantiated Modules
- * - \ref yarpscope --context fingertipsPortScope --xml FingertipsPortScopeConf-LeftHandAll.xml 
- * - \ref yarpscope --context fingertipsPortScope --xml FingertipsPortScopeConf-RightHandAll.xml 
+ * - yarpscope --context fingertipsPortScope --xml FingertipsPortScopeConf-LeftHandAll.xml 
+ * - yarpscope --context fingertipsPortScope --xml FingertipsPortScopeConf-RightHandAll.xml 
  *
  * 
  * \section howto How to run the Application
