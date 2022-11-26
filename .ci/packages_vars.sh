@@ -32,7 +32,6 @@ export ICUB_DEBIAN_REVISION_NUMBER="1" # Always use a revision number >=1
 ICUB_CMAKE_OPTIONS="\
  -DCMAKE_BUILD_TYPE=Release \
  -DICUB_USE_SDL=ON \
- -DICUB_USE_ODE=ON \
  -DIPOPT_DIR=/usr \
  -DICUB_USE_IPOPT=ON \
  -DICUB_USE_GLUT=ON \
