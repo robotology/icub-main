@@ -78,10 +78,14 @@ jobs:
     - name: Determine icub-firmware-shared required branch
       shell: bash
       run: |
-        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.ref }}" == "refs/heads/master" || "${{ github.base_ref }}" == "master" || "${{ github.head_ref }}" == "master" ]]; then
-          echo "icubfwshared_branch=master" >> $GITHUB_ENV
+        grep -m 1 icub_firmware_shared_VERSION conf/iCubFindDependencies.cmake | sed "s/[^0-9.]//g" >> icub_firmware_shared_VERSION.txt
+        gh --repo robotology/icub-firmware-shared release list >> icub_firmware_shared_RELEASES.txt
+        if grep -q $(cat icub_firmware_shared_VERSION.txt) icub_firmware_shared_RELEASES.txt; then
+          echo "icub_firmware_shared_branch=v$(cat icub_firmware_shared_VERSION.txt)" >> $GITHUB_ENV
+        elif [[ "${{ github.event_name }}" == "schedule" || "${{ github.ref }}" == "refs/heads/master" || "${{ github.base_ref }}" == "master" || "${{ github.head_ref }}" == "master" ]]; then
+          echo "icub_firmware_shared_branch=master" >> $GITHUB_ENV
         else
-          echo "icubfwshared_branch=devel" >> $GITHUB_ENV
+          echo "icub_firmware_shared_branch=devel" >> $GITHUB_ENV
         fi
 
     - name: Source-based Dependencies [Windows]
@@ -103,7 +107,7 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         # icub-firmware-shared
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icubfwshared_branch }}
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icub_firmware_shared_branch }}
         cd icub-firmware-shared && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -127,7 +131,7 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }} --target install
         # icub-firmware-shared
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icubfwshared_branch }}
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icub_firmware_shared_branch }}
         cd icub-firmware-shared && mkdir -p build && cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install
