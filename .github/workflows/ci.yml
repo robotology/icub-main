@@ -87,6 +87,8 @@ jobs:
         else
           echo "icub_firmware_shared_branch=devel" >> $GITHUB_ENV
         fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
 
     - name: Source-based Dependencies [Windows]
       if: matrix.os == 'windows-latest'
