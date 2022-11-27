@@ -4,36 +4,33 @@
 # Based on code from yarp.
 
 macro(checkandset_dependency package)
-    if (${package}_FOUND)
-        set(ICUB_HAS_${package} TRUE CACHE BOOL "Package ${package} found" FORCE)
-        set(ICUB_USE_${package} TRUE CACHE BOOL "Use package ${package}")
-        message(STATUS "${package}: found")
-    else (${package}_FOUND)
-        set(ICUB_HAS_${package} FALSE CACHE BOOL "" FORCE)
-        set(ICUB_USE_${package} FALSE CACHE BOOL "Use package ${package}")
-        message(STATUS "${package}: NOT found")
-    endif (${package}_FOUND)
-    mark_as_advanced(ICUB_HAS_${package})
+  if(${package}_FOUND)
+    set(ICUB_HAS_${package} TRUE CACHE BOOL "Package ${package} found" FORCE)
+    set(ICUB_USE_${package} TRUE CACHE BOOL "Use package ${package}")
+    message(STATUS "${package}: found")
+  else()
+    set(ICUB_HAS_${package} FALSE CACHE BOOL "" FORCE)
+    set(ICUB_USE_${package} FALSE CACHE BOOL "Use package ${package}")
+    message(STATUS "${package}: NOT found")
+  endif()
+  mark_as_advanced(ICUB_HAS_${package})
 
-    if (NOT ${package}_FOUND AND ICUB_USE_${package})
-        message(WARNING "You requested to use the package ${package}, but it is unavailable (or was not found). This might lead to compile errors, we recommend you turn off the ICUB_USE_${package} flag.")
-    endif (NOT ${package}_FOUND AND ICUB_USE_${package})
+  if(NOT ${package}_FOUND AND ICUB_USE_${package})
+    message(WARNING "You requested to use the package ${package}, but it is unavailable (or was not found). This might lead to build errors. Thus, we recommend that you turn off the ICUB_USE_${package} flag.")
+  endif()
 
-    #store all dependency flags for later export
-    set_property(GLOBAL APPEND PROPERTY ICUB_DEPENDENCIES_FLAGS ICUB_USE_${package})
-
-endmacro (checkandset_dependency)
+  #store all dependency flags for later export
+  set_property(GLOBAL APPEND PROPERTY ICUB_DEPENDENCIES_FLAGS ICUB_USE_${package})
+endmacro()
 
 
 message(STATUS "Detecting required libraries")
 message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 
-
 find_package(icub_firmware_shared QUIET)
 find_package(GSL)
 find_package(GLUT)
 find_package(OpenCV)
-
 find_package(OpenGL)
 find_package(ODE)
 find_package(SDL)
@@ -42,7 +39,6 @@ find_package(IPOPT)
 find_package(Qt5 COMPONENTS Core Widgets OpenGL Quick Qml Concurrent PrintSupport QUIET)
 
 message(STATUS "OpenCV version is ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR}")
-
 if (OpenCV_FOUND)
   # check version of openCV
   if (OpenCV_VERSION_MAJOR GREATER 1)
@@ -76,7 +72,7 @@ if(icub_firmware_shared_FOUND AND ICUB_USE_icub_firmware_shared)
   endif()
 endif()
 
-if (YARP_HAS_LIBMATH)
-    set(ICUB_HAS_YARPMATH true)
-    message(STATUS "found yarp math library")
-endif (YARP_HAS_LIBMATH)
+if(YARP_HAS_LIBMATH)
+  set(ICUB_HAS_YARPMATH true)
+  message(STATUS "found yarp math library")
+endif()

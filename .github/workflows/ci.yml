@@ -67,15 +67,22 @@ jobs:
         sudo apt install -y git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev libopencv-dev qtbase5-dev \
                             qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev libpython3-dev swig
 
-    - name: Determine YCM, YARP, and icub-firmware-shared required versions
+    - name: Determine YCM and YARP required versions
       shell: bash
       run: |
         grep -m 1 YCM_REQUIRED_VERSION CMakeLists.txt | sed "s/[^0-9.]//g" >> YCM_VERSION.txt
         grep -m 1 YARP_REQUIRED_VERSION CMakeLists.txt | sed "s/[^0-9.]//g" >> YARP_VERSION.txt
-        grep -m 1 icub_firmware_shared_VERSION conf/iCubFindDependencies.cmake | sed "s/[^0-9.]//g" >> icub_firmware_shared_VERSION.txt
         echo "ycm_version=$(cat YCM_VERSION.txt)" >> $GITHUB_ENV
         echo "yarp_version=$(cat YARP_VERSION.txt)" >> $GITHUB_ENV
-        echo "icub_firmware_shared_version=$(cat icub_firmware_shared_VERSION.txt)" >> $GITHUB_ENV
+
+    - name: Determine icub-firmware-shared required branch
+      shell: bash
+      run: |
+        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.ref }}" == "refs/heads/master" || "${{ github.base_ref }}" == "master" || "${{ github.head_ref }}" == "master" ]]; then
+          echo "icubfwshared_branch=master" >> $GITHUB_ENV
+        else
+          echo "icubfwshared_branch=devel" >> $GITHUB_ENV
+        fi
 
     - name: Source-based Dependencies [Windows]
       if: matrix.os == 'windows-latest'
@@ -96,7 +103,7 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         # icub-firmware-shared
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch v${{ env.icub_firmware_shared_version }}
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icubfwshared_branch }}
         cd icub-firmware-shared && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -120,7 +127,7 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }} --target install
         # icub-firmware-shared
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch v${{ env.icub_firmware_shared_version }}
+        git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icubfwshared_branch }}
         cd icub-firmware-shared && mkdir -p build && cd build
         cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install
@@ -230,4 +237,3 @@ jobs:
       run: |
         cd build
         ctest run_unit_test --output-on-failure -C ${{ matrix.build_type }} .
-
