@@ -28,7 +28,7 @@ and writes the compensated values on output ports.
 The module can manage many input ports at the same time (see parameter "inputPorts").
 For each input port the compensated tactile data are written on the corresponding output port (see parameter "outputPorts").
 Optionally, the module also can apply a smoothing filter (low pass filter) and/or a binarization filter to the data.
-The \ref icub_skinManagerGui can be used to control and monitor an instance of the skinManager module.
+The skinManagerGui can be used to control and monitor an instance of the skinManager module.
 If the 3d position of the tactile sensors is provided, then this module computes the skinContacts (see library skinDynLib),
  which can be used by \ref wholeBodyDynamics to compute the contact forces.
 
@@ -143,11 +143,11 @@ will be accessed.
 - Every port specified in the "outputPorts" parameter: outputs a yarp::sig::Vector containing the compensated tactile data.
 - "/"+moduleName+"/monitor:o": \n 
     outputs a yarp::os::Bottle containing streaming information regarding the compensation status 
-    (used to communicate with the \ref icub_skinManagerGui). The first value is the data frequency, while
+    (used to communicate with the skinManagerGui). The first value is the data frequency, while
     all the following ones represent the drift compensated so far for each taxel.
 - "/"+moduleName+"/info:o": \n 
     outputs a yarp::os::Bottle containing occasional information regarding the compensation status 
-    such as warning or error messages (used to communicate with the \ref icub_skinManagerGui). Possible messages may regard 
+    such as warning or error messages (used to communicate with the skinManagerGui). Possible messages may regard 
     an error in the sensor reading or an excessive drift of the baseline of a taxel.\n
 - "/"+moduleName+"/skin_events:o": \n
     outputs a iCub::skinDynLib::skinContactList containing the list of contacts.
@@ -155,7 +155,7 @@ will be accessed.
 <b>Input ports</b>
 - For each port specified in the "inputPorts" parameter a local port is created with the name
   "/"+moduleName+index+"/input", where "index" is an increasing counter starting from 0.
-- "/"+moduleName+"/rpc:i": input port to control the module (alternatively the \ref icub_skinManagerGui can be used). 
+- "/"+moduleName+"/rpc:i": input port to control the module (alternatively the skinManagerGui can be used). 
     This port accepts a yarp::os::yarp::os::Bottle that contains one of these commands:
     - "calib": force the sensor calibration
     - "get touch thr": return a yarp::os::yarp::os::Bottle containing the 95 percentile values of the tactile sensors

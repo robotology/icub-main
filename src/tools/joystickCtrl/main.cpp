@@ -16,58 +16,61 @@
  * Public License for more details
 */
 
-/** 
-\defgroup joystickCtrl joystickCtrl
- 
+/**
 @ingroup icub_tools
- 
+
+\defgroup joystickCtrl joystickCtrl
+
 A configurable tool to send on a yarp port the data retrieved from a joystick.
- 
+
 Copyright (C) 2010 RobotCub Consortium
- 
+
 Author: Marco Randazzo
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
- 
+
 This module reads the axis data from a connected joystick and
-outputs them on a yarp port. The format of the output can be specified using a configuration file.
- 
-\section lib_sec Libraries 
-- YARP libraries. 
+outputs them on a yarp port. The format of the output can be specified using a
+configuration file.
+
+\section lib_sec Libraries
+- YARP libraries.
 - SDL libraries.
 
 \section parameters_sec Parameters
-The only used parameter is the name of the configuration file. The configuration file name can be specified using --from \e file 
-You can also use the \e --context option to change the current context (e.g. the directory where to search the configuration file).
- 
+The only used parameter is the name of the configuration file. The configuration
+file name can be specified using --from \e file You can also use the \e
+--context option to change the current context (e.g. the directory where to
+search the configuration file).
+
 \section portsa_sec Ports Accessed
-None. 
- 
-\section portsc_sec Ports Created 
+None.
+
+\section portsc_sec Ports Created
 The module creates the port /joystickCtrl:o used to transmit the joystick data.
-The output of the port consists in a sequence of <n> doubles (<n> depending on the number of axes specified
-in the configuration file) containing the readings.
+The output of the port consists in a sequence of <n> doubles (<n> depending on
+the number of axes specified in the configuration file) containing the readings.
 The port /joystickCtrl/axis:o contains the axis output only (raw data).
 The port /joystickCtrl/buttons:o contains the buttons output only (raw data).
 
 \section in_files_sec Input Data Files
 None.
 
-\section out_data_sec Output Data Files 
-None. 
- 
+\section out_data_sec Output Data Files
+None.
+
 \section conf_file_sec Configuration Files
-A description of the available configuration options can be 
-found in the example files located under joystickControl 
-context. 
- 
+A description of the available configuration options can be
+found in the example files located under joystickControl
+context.
+
 \section tested_os_sec Tested OS
 Windows, Linux
 
 \author Marco Randazzo
-*/ 
+*/
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>

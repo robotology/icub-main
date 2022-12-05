@@ -19,7 +19,6 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
-#include <sstream>
 
 #include <iCub/utils.h>
 #include <iCub/solver.h>
@@ -157,7 +156,7 @@ ExchangeData::ExchangeData()
 
     robotName="";
     localStemName="";
-    head_version=1.0;
+    head_version=iKinLimbVersion("1.0");
     tweakOverwrite=true;
     tweakFile="";
     iGyro = nullptr;
@@ -375,13 +374,6 @@ std::pair<Vector,bool>  ExchangeData::get_accel() {
     return ret; // RVO
 }
 
-/************************************************************************/
-string ExchangeData::headVersion2String()
-{
-    ostringstream str;
-    str<<"v"<<head_version;
-    return str.str();
-}
 
 /************************************************************************/
 bool GazeComponent::getExtrinsicsMatrix(const string &type, Matrix &M)
@@ -555,7 +547,7 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
         {   
             if (lims->getLimits(i,&min,&max))
             {
-                if (commData->head_version<3.0)
+                if (commData->head_version<iKinLimbVersion("3.0"))
                 {
                     (*chain)[nJointsTorso-1-i].setMin(CTRL_DEG2RAD*min);
                     (*chain)[nJointsTorso-1-i].setMax(CTRL_DEG2RAD*max);
@@ -657,7 +649,7 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
         if (encs->getEncodersTimed(fb.data(),stamps.data()))
         {
             for (int i=0; i<nJointsTorso; i++)
-                fbTorso[i]=CTRL_DEG2RAD*((commData->head_version<3.0)?fb[nJointsTorso-1-i]:fb[i]);
+                fbTorso[i]=CTRL_DEG2RAD*((commData->head_version<iKinLimbVersion("3.0"))?fb[nJointsTorso-1-i]:fb[i]);
         }
         else
             ret=false;

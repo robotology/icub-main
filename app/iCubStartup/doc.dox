@@ -16,7 +16,7 @@ gaze control as well as the dynamics computed for the whole body.
 - \ref wholeBodyDynamics
 - \ref gravityCompensator
 - \ref icub_fingersTuner
-- \ref imuFilter
+- imuFilter
 
 \section howto How to run the Application
 Customize the file ./scripts/*.template for your specific platform.

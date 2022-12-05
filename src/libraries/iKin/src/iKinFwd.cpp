@@ -9,6 +9,7 @@
 */
 
 #include <cstdlib>
+#include <cstdio>
 #include <sstream>
 #include <cmath>
 #include <algorithm>
@@ -24,15 +25,6 @@ using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
 using namespace iCub::iKin;
-
-namespace iCub {
-  namespace iKin {
-    constexpr double version_epsilon = 1e-6;
-    inline bool is_version(const double v1, const double v2) {
-      return (fabs(v1 - v2) < version_epsilon);
-    }
-  }
-}
 
 
 /************************************************************************/
@@ -1551,6 +1543,136 @@ void iKinLimb::dispose()
 
 
 /************************************************************************/
+iKinLimbVersion::iKinLimbVersion() : major(0), minor(0)
+{
+}
+
+
+/************************************************************************/
+iKinLimbVersion::iKinLimbVersion(const string &version)
+{
+    size_t point=version.find('.');
+    if ((point!=string::npos) && (point!=version.length()-1))
+    {
+        major=strtoul(version.substr(0,point).c_str(),NULL,0);
+        minor=strtoul(version.substr(point+1).c_str(),NULL,0);
+    }
+    else
+    {
+        major=strtoul(version.c_str(),NULL,0);
+        minor=0U;
+    }
+}
+
+
+/************************************************************************/
+iKinLimbVersion::iKinLimbVersion(const unsigned long int major,
+                                 const unsigned long int minor)
+{
+    this->major=major;
+    this->minor=minor;
+}
+
+
+/************************************************************************/
+iKinLimbVersion::iKinLimbVersion(const iKinLimbVersion& v)
+{
+    major=v.major;
+    minor=v.minor;
+}
+
+
+/************************************************************************/
+unsigned long int iKinLimbVersion::get_major() const
+{
+    return major;
+}
+
+
+/************************************************************************/
+unsigned long int iKinLimbVersion::get_minor() const
+{
+    return minor;
+}
+
+
+/************************************************************************/
+string iKinLimbVersion::get_version() const
+{
+    ostringstream version;
+    version<<major<<"."<<minor;
+    return version.str();
+}
+
+
+/************************************************************************/
+iKinLimbVersion& iKinLimbVersion::operator=(const iKinLimbVersion& v)
+{
+    major=v.major;
+    minor=v.minor;
+    return *this;
+}
+
+
+/************************************************************************/
+bool iKinLimbVersion::operator<(const iKinLimbVersion& v) const
+{
+    if (major<v.major)
+        return true;
+    else if (major==v.major)
+        return minor<v.minor;
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool iKinLimbVersion::operator>(const iKinLimbVersion& v) const
+{
+   return !(*this<v);
+}
+
+
+/************************************************************************/
+bool iKinLimbVersion::operator==(const iKinLimbVersion& v) const
+{
+   return (major==v.major) && (minor==v.minor);
+}
+
+
+/************************************************************************/
+bool iKinLimbVersion::operator!=(const iKinLimbVersion& v) const
+{
+   return !(*this==v);
+}
+
+
+/************************************************************************/
+bool iKinLimbVersion::operator<=(const iKinLimbVersion& v) const
+{
+    return (*this<v) || (*this==v);
+}
+
+
+/************************************************************************/
+bool iKinLimbVersion::operator>=(const iKinLimbVersion& v) const
+{
+    return (*this>v) || (*this==v);
+}
+
+
+/************************************************************************/
+iKinLimbVersion iKinLimbVersion::operator-(const iKinLimbVersion& v) const
+{
+   unsigned long int m1=(major>v.major)?major-v.major:v.major-major;
+   unsigned long int m2=0L;
+   if (m1==0L)
+       m2=(minor>v.minor)?minor-v.minor:v.minor-minor;
+   return iKinLimbVersion(m1, m2);
+}
+
+
+/************************************************************************/
 iCubTorso::iCubTorso() : iKinLimb(string("v1"))
 {
     allocate(getType());
@@ -1568,15 +1690,15 @@ iCubTorso::iCubTorso(const string &_type) : iKinLimb(_type)
 void iCubTorso::allocate(const string &_type)
 {
     if (getType().size()>1)
-        version=strtod(getType().substr(1).c_str(),NULL);
+        version=iKinLimbVersion(getType().substr(1));
     else
-        version=1.0;
+        version=iKinLimbVersion("1.0");
 
     Matrix H0(4,4);
     H0.zero();
     H0(3,3)=1.0;
 
-    if (version<3.0)
+    if (version<iKinLimbVersion("3.0"))
     {
         H0(0,1)=-1.0;
         H0(1,2)=-1.0;
@@ -1617,7 +1739,7 @@ bool iCubTorso::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
-        if (version<3.0)
+        if (version<iKinLimbVersion("3.0"))
         {
             (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
             (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
@@ -1655,18 +1777,18 @@ void iCubArm::allocate(const string &_type)
     if (underscore!=string::npos)
     {
         arm=getType().substr(0,underscore);
-        version=strtod(getType().substr(underscore+2).c_str(),NULL);
+        version=iKinLimbVersion(getType().substr(underscore+2));
     }
     else
     {
         arm=getType();
-        version=1.0;
+        version=iKinLimbVersion("1.0");
     }
 
     Matrix H0(4,4);
     H0.zero();
 
-    if (version<3.0)
+    if (version<iKinLimbVersion("3.0"))
     {
         H0(0,1)=-1.0;
         H0(1,2)=-1.0;
@@ -1684,7 +1806,7 @@ void iCubArm::allocate(const string &_type)
 
     if (arm=="right")
     {
-        if (version<3.0)
+        if (version<iKinLimbVersion("3.0"))
         {
             pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(       0.0,  -0.0055,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
@@ -1693,12 +1815,12 @@ void iCubArm::allocate(const string &_type)
             pushLink(new iKinLink(       0.0,      0.0, -M_PI/2.0,           -M_PI/2.0,   0.0*CTRL_DEG2RAD, 160.8*CTRL_DEG2RAD));
             pushLink(new iKinLink(    -0.015, -0.15228, -M_PI/2.0, -105.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(     0.015,      0.0,  M_PI/2.0,                 0.0,   5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD));
-        if (version<1.7)
+        if (version<iKinLimbVersion("1.7"))
             pushLink(new iKinLink(       0.0,  -0.1373,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
         else
             pushLink(new iKinLink(       0.0,  -0.1413,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,            M_PI/2.0, -65.0*CTRL_DEG2RAD,  10.0*CTRL_DEG2RAD));
-        if (version<2.0)
+        if (version<iKinLimbVersion("2.0"))
             pushLink(new iKinLink(    0.0625,    0.016,       0.0,                M_PI, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
         else
             pushLink(new iKinLink(    0.0625,  0.02598,       0.0,                M_PI, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
@@ -1722,7 +1844,7 @@ void iCubArm::allocate(const string &_type)
         if (arm!="left")
             type.replace(0,underscore,"left");
 
-        if (version<3.0)
+        if (version<iKinLimbVersion("3.0"))
         {
             pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(       0.0,  -0.0055,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
@@ -1731,12 +1853,12 @@ void iCubArm::allocate(const string &_type)
             pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,           -M_PI/2.0,   0.0*CTRL_DEG2RAD, 160.8*CTRL_DEG2RAD));
             pushLink(new iKinLink(     0.015,  0.15228, -M_PI/2.0,   75.0*CTRL_DEG2RAD, -37.0*CTRL_DEG2RAD, 100.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(    -0.015,      0.0,  M_PI/2.0,                 0.0,   5.5*CTRL_DEG2RAD, 106.0*CTRL_DEG2RAD));
-        if (version<1.7)
+        if (version<iKinLimbVersion("1.7"))
             pushLink(new iKinLink(       0.0,   0.1373,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
         else
             pushLink(new iKinLink(       0.0,   0.1413,  M_PI/2.0,           -M_PI/2.0, -50.0*CTRL_DEG2RAD,  50.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(       0.0,      0.0,  M_PI/2.0,            M_PI/2.0, -65.0*CTRL_DEG2RAD,  10.0*CTRL_DEG2RAD));
-        if (version<2.0)
+        if (version<iKinLimbVersion("2.0"))
             pushLink(new iKinLink(    0.0625,   -0.016,       0.0,                 0.0, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
         else
             pushLink(new iKinLink(    0.0625, -0.02598,       0.0,                 0.0, -25.0*CTRL_DEG2RAD,  25.0*CTRL_DEG2RAD));
@@ -1780,7 +1902,7 @@ bool iCubArm::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
-        if (version<3.0)
+        if (version<iKinLimbVersion("3.0"))
         {
             (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
             (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
@@ -2282,12 +2404,12 @@ void iCubLeg::allocate(const string &_type)
     if (underscore!=string::npos)
     {
         leg=getType().substr(0,underscore);
-        version=strtod(getType().substr(underscore+2).c_str(),NULL);
+        version=iKinLimbVersion(getType().substr(underscore+2));
     }
     else
     {
         leg=getType();
-        version=1.0;
+        version=iKinLimbVersion("1.0");
     }
 
     Matrix H0(4,4);
@@ -2300,7 +2422,7 @@ void iCubLeg::allocate(const string &_type)
 
     if (leg=="right")
     {
-        if (version<2.0)
+        if (version<iKinLimbVersion("2.0"))
         {
             H0(1,3)=0.0681;
 
@@ -2311,7 +2433,7 @@ void iCubLeg::allocate(const string &_type)
             pushLink(new iKinLink(   0.0,     0.0,  M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(-0.041,     0.0,      M_PI,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD));
         }
-        else if (version<3.0)
+        else if (version<iKinLimbVersion("3.0"))
         {
             H0(1,3)=0.0681;
 
@@ -2343,7 +2465,7 @@ void iCubLeg::allocate(const string &_type)
     }
     else  // left
     {
-        if (version<2.0)
+        if (version<iKinLimbVersion("2.0"))
         {
             H0(1,3)=-0.0681;
 
@@ -2354,7 +2476,7 @@ void iCubLeg::allocate(const string &_type)
             pushLink(new iKinLink(   0.0,     0.0, -M_PI/2.0,       0.0,  -42.0*CTRL_DEG2RAD,  21.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(-0.041,     0.0,       0.0,       0.0,  -24.0*CTRL_DEG2RAD,  24.0*CTRL_DEG2RAD));
         }
-        else if (version<3.0)
+        else if (version<iKinLimbVersion("3.0"))
         {
             H0(1,3)=-0.0681;
 
@@ -2435,12 +2557,12 @@ void iCubEye::allocate(const string &_type)
     if (underscore!=string::npos)
     {
         eye=getType().substr(0,underscore);
-        version=strtod(getType().substr(underscore+2).c_str(),NULL);
+        version=iKinLimbVersion(getType().substr(underscore+2));
     }
     else
     {
         eye=getType();
-        version=1.0;
+        version=iKinLimbVersion("1.0");
     }
 
     Matrix H0(4,4);
@@ -2453,7 +2575,7 @@ void iCubEye::allocate(const string &_type)
 
     if (eye=="right")
     {
-        if (version<2.0)
+        if (version<iKinLimbVersion("2.0"))
         {
             pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
@@ -2464,7 +2586,7 @@ void iCubEye::allocate(const string &_type)
             pushLink(new iKinLink(    0.0,   0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(    0.0,     0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
         }
-        else if (version<3.0)
+        else if (version<iKinLimbVersion("3.0"))
         {
             pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
@@ -2496,7 +2618,7 @@ void iCubEye::allocate(const string &_type)
     }
     else  // left
     {
-        if (version<2.0)
+        if (version<iKinLimbVersion("2.0"))
         {
             pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
@@ -2507,7 +2629,7 @@ void iCubEye::allocate(const string &_type)
             pushLink(new iKinLink(    0.0,  -0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(    0.0,     0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
         }
-        else if (version<3.0)
+        else if (version<iKinLimbVersion("3.0"))
         {
             pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
             pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
@@ -2538,16 +2660,19 @@ void iCubEye::allocate(const string &_type)
         }
     }
 
-    if (is_version(version, 2.8)) // event driven cameras virtual image plane
+    // event driven cameras virtual image plane
+    if (version==iKinLimbVersion("2.8"))
     {
-        Matrix HN = yarp::math::eye(4, 4);
-        HN(2, 3) = -0.01;
+        Matrix HN=yarp::math::eye(4, 4);
+        HN(2, 3)=-0.01;
         setHN(HN);
     }
-    else if (is_version(version, 2.10) || is_version(version, 3.1)) // Basler 4k cameras image plane
+    // Basler 4k cameras image plane
+    else if ((version==iKinLimbVersion("2.10")) ||
+             (version==iKinLimbVersion("3.1")))
     {
-        Matrix HN = yarp::math::eye(4, 4);
-        HN(2, 3) = -5.4e-3;
+        Matrix HN=yarp::math::eye(4, 4);
+        HN(2, 3)=-5.4e-3;
         setHN(HN);
     }
 
@@ -2575,7 +2700,7 @@ bool iCubEye::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
-        if (version<3.0)
+        if (version<iKinLimbVersion("3.0"))
         {
             (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
             (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
@@ -2673,15 +2798,15 @@ iCubInertialSensor::iCubInertialSensor(const string &_type) : iKinLimb(_type)
 void iCubInertialSensor::allocate(const string &_type)
 {
     if (getType().size()>1)
-        version=strtod(getType().substr(1).c_str(),NULL);
+        version=iKinLimbVersion(getType().substr(1));
     else
-        version=1.0;
+        version=iKinLimbVersion("1.0");
 
     Matrix H0(4,4);
     H0.zero();
     H0(3,3)=1.0;
 
-    if (version<2.0)
+    if (version<iKinLimbVersion("2.0"))
     {
         H0(0,1)=-1.0;
         H0(1,2)=-1.0;
@@ -2695,7 +2820,7 @@ void iCubInertialSensor::allocate(const string &_type)
         pushLink(new iKinLink(    0.0,   0.001, -M_PI/2.0, -M_PI/2.0, -70.0*CTRL_DEG2RAD, 60.0*CTRL_DEG2RAD));
         pushLink(new iKinLink( 0.0225,  0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
     }
-    else if (version<3.0)
+    else if (version<iKinLimbVersion("3.0"))
     {
         H0(0,1)=-1.0;
         H0(1,2)=-1.0;
@@ -2734,7 +2859,7 @@ void iCubInertialSensor::allocate(const string &_type)
     HN(3,3)=1.0;
     setHN(HN);
 
-    if (version>2.0)
+    if (version>iKinLimbVersion("2.0"))
     {
         Matrix HN=eye(4,4);
         HN(0,3)=0.0087;
@@ -2744,7 +2869,7 @@ void iCubInertialSensor::allocate(const string &_type)
     }
 
     // further displacement for >= 2.6
-    if (version>=2.6)
+    if (version>=iKinLimbVersion("2.6"))
     {
         Matrix HN=zeros(4,4);
         HN(0,3)=0.0323779;
@@ -2777,7 +2902,7 @@ bool iCubInertialSensor::alignJointsBounds(const deque<IControlLimits*> &lim)
         if (!limTorso.getLimits(iTorso,&min,&max))
             return false;
 
-        if (version<3.0)
+        if (version<iKinLimbVersion("3.0"))
         {
             (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
             (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
@@ -2821,9 +2946,9 @@ iCubInertialSensorWaist::iCubInertialSensorWaist(const string &_type) : iKinLimb
 void iCubInertialSensorWaist::allocate(const string &_type)
 {
     if (getType().size()>1)
-        version=strtod(getType().substr(1).c_str(),NULL);
+        version=iKinLimbVersion(getType().substr(1));
     else
-        version=2.7;
+        version=iKinLimbVersion("2.7");
 
     Matrix H0(4,4);
     H0.zero();

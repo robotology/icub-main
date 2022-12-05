@@ -25,7 +25,7 @@
 #include <yarp/math/Math.h>
 #include "ClientGazeController.h"
 
-#define GAZECTRL_CLIENT_VER     1.2
+#define GAZECTRL_CLIENT_VER     "2.0"
 #define GAZECTRL_DEFAULT_TMO    0.1     // [s]
 #define GAZECTRL_ACK            Vocab32::encode("ack")
 #define GAZECTRL_NACK           Vocab32::encode("nack")
@@ -125,11 +125,11 @@ bool ClientGazeController::open(Searchable &config)
         getInfoHelper(info);
         if (info.check("server_version"))
         {
-            double server_version=info.find("server_version").asFloat64();
+            string server_version=info.find("server_version").asString();
             if (server_version!=GAZECTRL_CLIENT_VER)
             {
-                yError("version mismatch => server(%g) != client(%g); please update accordingly",
-                       server_version,GAZECTRL_CLIENT_VER);
+                yError("version mismatch => server(%s) != client(%s); please update accordingly",
+                       server_version.c_str(),GAZECTRL_CLIENT_VER);
                 close();
                 return false;
             }

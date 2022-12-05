@@ -17,9 +17,9 @@
 */
 
 /**
-\defgroup iKinGazeCtrl iKinGazeCtrl
-
 @ingroup icub_module
+
+\defgroup iKinGazeCtrl iKinGazeCtrl
 
 Gaze controller based on iKin.
 
@@ -155,7 +155,7 @@ Factors</a>.
 
 --imu::source_port_name \e name
 - Allow specifying a different source port for the IMU data
-  (see IMU filtering tools such as e.g. \ref imuFilter).
+  (see IMU filtering tools such as e.g. imuFilter).
 
 --imu::stabilization_gain \e gain
 - Specify the integral gain (in [1/s]) used for gaze
@@ -212,8 +212,7 @@ Factors</a>.
 
 --head_version \e ver
 - This option specifies the kinematic structure of the head; the value
-  \e ver is a double in the set {1.0, 2.0, 2.5, 2.6, 2.7, 3.0}, being 1.0
-  the default version.
+  \e ver is a string (e.g., "v1.0", "v2.0"), being "v1.0" the default.
 
 --verbose
 - Enable some output print-out.
@@ -302,7 +301,6 @@ following ports:
 - \e /<ctrlName>/q:o returns the actual joints configuration
   during movement (Vector of 9 double). The order for torso
   angles is the one defined by kinematic chain.
-  Useful in conjunction with the \ref iKinGazeView "viewer".
   Units in degrees.
 
 - \e /<ctrlName>/angles:o returns the current azimuth/elevation
@@ -432,7 +430,7 @@ following ports:
       target with stereo input.
     - [get] [info]: returns (enclosed in a list) a property-like
       bottle containing useful information, such as the
-      "head_version" (e.g. 1.0, 2.0, ...), the
+      "head_version" (e.g. "1.0", "2.0", ...), the
       "min_allowed_vergence" (in degrees), a list of the
       available "events", the intrinsic and extrinsic camera
       parameters used.
@@ -565,6 +563,8 @@ Windows, Linux
 #include <mutex>
 #include <cmath>
 #include <algorithm>
+#include <cctype>
+#include <string>
 #include <fstream>
 #include <iomanip>
 #include <map>
@@ -578,7 +578,7 @@ Windows, Linux
 #include <iCub/solver.h>
 #include <iCub/controller.h>
 
-#define GAZECTRL_SERVER_VER     1.2
+#define GAZECTRL_SERVER_VER     "2.0"
 
 using namespace std;
 using namespace yarp::os;
@@ -765,11 +765,11 @@ protected:
 
         Bottle &serverVer=info.addList();
         serverVer.addString("server_version");
-        serverVer.addFloat64(GAZECTRL_SERVER_VER);
+        serverVer.addString(GAZECTRL_SERVER_VER);
 
         Bottle &headVer=info.addList();
         headVer.addString("head_version");
-        headVer.addFloat64(commData.head_version);
+        headVer.addString(commData.head_version.get_version());
 
         Bottle &minVer=info.addList();
         minVer.addString("min_allowed_vergence");
@@ -1067,25 +1067,25 @@ protected:
     }
 
     /************************************************************************/
-    double constrainHeadVersion(const double ver_in)
+    iKinLimbVersion constrainHeadVersion(const iKinLimbVersion &ver_in)
     {
         // std::map<k,v> is ordered based on std::less<k>
-        map<double,double> d;
-        d[fabs(1.0-ver_in)]=1.0;
-        d[fabs(2.0-ver_in)]=2.0;
-        d[fabs(2.5-ver_in)]=2.5;
-        d[fabs(2.6-ver_in)]=2.6;
-        d[fabs(2.7-ver_in)]=2.7;
-        d[fabs(2.8-ver_in)]=2.8;
-        d[fabs(2.10-ver_in)]=2.10;
-        d[fabs(3.0-ver_in)]=3.0;
-        d[fabs(3.1-ver_in)]=3.1;
+        map<iKinLimbVersion,iKinLimbVersion> d;
+        d[iKinLimbVersion("1.0")-ver_in]=iKinLimbVersion("1.0");
+        d[iKinLimbVersion("2.0")-ver_in]=iKinLimbVersion("2.0");
+        d[iKinLimbVersion("2.5")-ver_in]=iKinLimbVersion("2.5");
+        d[iKinLimbVersion("2.6")-ver_in]=iKinLimbVersion("2.6");
+        d[iKinLimbVersion("2.7")-ver_in]=iKinLimbVersion("2.7");
+        d[iKinLimbVersion("2.8")-ver_in]=iKinLimbVersion("2.8");
+        d[iKinLimbVersion("2.10")-ver_in]=iKinLimbVersion("2.10");
+        d[iKinLimbVersion("3.0")-ver_in]=iKinLimbVersion("3.0");
+        d[iKinLimbVersion("3.1")-ver_in]=iKinLimbVersion("3.1");
 
-        double ver_out=d.begin()->second;
+        auto ver_out=d.begin()->second;
         if (ver_out!=ver_in)
         {
-            yWarning("Unknown \"head_version\" %g requested => used \"head_version\" %g instead",
-                     ver_in,ver_out);
+            yWarning("Unknown \"head_version\" %s requested => used \"head_version\" %s instead",
+                     ver_in.get_version().c_str(),ver_out.get_version().c_str());
         }
 
         return ver_out;
@@ -1139,10 +1139,17 @@ public:
         min_abs_vel=CTRL_DEG2RAD*fabs(rf.check("min_abs_vel",Value(0.0)).asFloat64());
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asFloat64();
 
+        auto head_version=rf.check("head_version",Value("v1.0")).asString();
+        if ((head_version.length()<2) || (tolower(head_version[0])!='v'))
+        {
+            yWarning("Unrecognized \"head_version\" %s; going with default version",head_version.c_str());
+            head_version="v1.0";
+        }
+        commData.head_version = constrainHeadVersion(iKinLimbVersion(head_version.substr(1)));
+
         commData.robotName=rf.check("robot",Value("icub")).asString();
         commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-20.0)).asFloat64();
         commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asFloat64();
-        commData.head_version=constrainHeadVersion(rf.check("head_version",Value(1.0)).asFloat64());
         commData.verbose=rf.check("verbose");
         commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
@@ -1177,7 +1184,7 @@ public:
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,nullptr);
 
-        yInfo("Controller configured for head version %g",commData.head_version);
+        yInfo("Controller configured for head version %s",commData.head_version.get_version().c_str());
 
         commData.localStemName="/"+ctrlName;
         string remoteHeadName="/"+commData.robotName+"/"+headName;

@@ -988,5 +988,3 @@ MultiRefMinJerkCtrl::~MultiRefMinJerkCtrl()
     delete I;
 }
 
-
-

@@ -5,11 +5,11 @@
  *
  */
 
-/** 
+/**
+@ingroup icub_module
+
 \defgroup ctpService constantTimePositionService
- 
-@ingroup icub_module 
- 
+
 A simple service that allows you to send constant time position
 commands to any of the robot ports.
 
@@ -18,7 +18,7 @@ commands to any of the robot ports.
 Sit silently and waits for incoming commands. Receive position
 commands requests and sends position commands, but it computes
 the reference speeds so that commands are all executed in the same
-time irrespectively of the current position (the service reads 
+time irrespectively of the current position (the service reads
 the current encoders and compute the reference speed accordingly).
 
 \section ports_sec Ports and Messages
@@ -31,10 +31,10 @@ the current encoders and compute the reference speed accordingly).
  - /ctpservice/local/{part}/state:i
  - /ctpservice/local/{part}/command:o
 
-- Output, to interface with the @ref icub_velocityControl 
+- Output, to interface with the @ref icub_velocityControl
   module:
  - /ctpservice/{part}/vc:o
- 
+
 Here {part} is replaced with the robot part (see --part parameter)
 
 ctpservice is a default value that can be replaced with --name.
@@ -43,21 +43,21 @@ Incoming commands are the following:
 
 [ctpn] [time] TIME(seconds) [off] j [pos] list
 
-Execute command. Command will take TIME seconds, the list of position will be sent to the motors
-starting from offset j.
- 
-or 
- 
-[ctpq] [time] TIME (seconds) [off] j [pos] list 
- 
- 
-Queue commands for execution. Command will take TIME seconds, the list of position will be sent to the motors
-starting from offset j
- 
-or 
- 
+Execute command. Command will take TIME seconds, the list of position will be
+sent to the motors starting from offset j.
+
+or
+
+[ctpq] [time] TIME (seconds) [off] j [pos] list
+
+
+Queue commands for execution. Command will take TIME seconds, the list of
+position will be sent to the motors starting from offset j
+
+or
+
 [ctpf] filename (in yarpdatadumper format)
- 
+
 Example:
 This requires 1 second movement of joints 5,6,7 to 10 10 10 respectively:
 [ctpn] [time] 1 [off] 5 [pos] (10 10 10)
@@ -65,7 +65,8 @@ This requires 1 second movement of joints 5,6,7 to 10 10 10 respectively:
 \section parameters_sec Parameters
 Run as:
 
-ctpService --robot robotname --part part [--name modulename] [--autochange_control_mode_enable]
+ctpService --robot robotname --part part [--name modulename]
+[--autochange_control_mode_enable]
 
 robot: name of robot (e.g. icub)
 
@@ -73,20 +74,21 @@ part: prefix for part name (e.g. right_arm)
 
 name: [optional] module name (used to form port names)
 
-autochange_control_mode_enable: [optional] sets the joints to position mode when trying to execute the command (default off)
+autochange_control_mode_enable: [optional] sets the joints to position mode when
+trying to execute the command (default off)
 
-\section lib_sec Libraries 
-- YARP libraries. 
- 
+\section lib_sec Libraries
+- YARP libraries.
+
 \section tested_os_sec Tested OS
 Windows, Linux
 
 Copyright (C) 2010 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
- 
-Author: Lorenzo Natale 
-*/ 
+
+Author: Lorenzo Natale
+*/
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>

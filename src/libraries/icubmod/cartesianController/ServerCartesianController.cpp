@@ -30,7 +30,7 @@
 
 #include <iCub/iKin/iKinVocabs.h>
 
-#define CARTCTRL_SERVER_VER                 1.1
+#define CARTCTRL_SERVER_VER                 "2.0"
 #define CARTCTRL_DEFAULT_PER                0.01    // [s]
 #define CARTCTRL_DEFAULT_TASKVEL_PERFACTOR  4
 #define CARTCTRL_DEFAULT_TOL                1e-2
@@ -3487,19 +3487,19 @@ bool ServerCartesianController::getInfo(Bottle &info)
 
         Bottle &serverVer=info.addList();
         serverVer.addString("server_version");
-        serverVer.addFloat64(CARTCTRL_SERVER_VER);
+        serverVer.addString(CARTCTRL_SERVER_VER);
 
         string kinPartStr(kinPart);
         string type=limbState->getType();
 
         size_t pos=type.find("_v");
-        double hwVer=1.0;
+        iKinLimbVersion hwVer("1.0");
         if (pos!=string::npos)
-            hwVer=strtod(type.substr(pos+2).c_str(),NULL);        
+            hwVer=iKinLimbVersion(type.substr(pos+2));
 
         Bottle &partVer=info.addList();
         partVer.addString(kinPartStr+"_version");
-        partVer.addFloat64(hwVer);
+        partVer.addString(hwVer.get_version());
 
         Bottle &partType=info.addList();
         partType.addString(kinPartStr+"_type");

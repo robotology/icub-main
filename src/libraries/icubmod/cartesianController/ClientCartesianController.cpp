@@ -29,7 +29,7 @@
 
 #include <iCub/iKin/iKinInv.h>
 
-#define CARTCTRL_CLIENT_VER     1.1
+#define CARTCTRL_CLIENT_VER     "2.0"
 #define CARTCTRL_DEFAULT_TMO    0.1 // [s]
 
 using namespace std;
@@ -120,11 +120,11 @@ bool ClientCartesianController::open(Searchable &config)
         getInfoHelper(info);
         if (info.check("server_version"))
         {
-            double server_version=info.find("server_version").asFloat64();
+            string server_version=info.find("server_version").asString();
             if (server_version!=CARTCTRL_CLIENT_VER)
             {
-                yError("version mismatch => server(%g) != client(%g); please update accordingly",
-                       server_version,CARTCTRL_CLIENT_VER);
+                yError("version mismatch => server(%s) != client(%s); please update accordingly",
+                       server_version.c_str(),CARTCTRL_CLIENT_VER);
                 close();
                 return false;
             }

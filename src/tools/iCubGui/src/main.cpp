@@ -12,110 +12,110 @@
  */
 
 /**
-*
-* \defgroup icub_gui iCubGui
-* @ingroup icub_guis
-*
-*
-* A gui that shows the full state of the robot. At the moment
-* encoders and inertial sensors.
-*
-*
-* \section intro_sec Description
-*
-* Display a kinematic model of the robot from the encoders. It also
-* shows a representation of the output of the inertial sensor.
-*
-* \image html icubgui-merged.jpg "Screenshots: iCubGui running on Linux"
-* \image latex icubgui1.eps "Screenshots: iCubGui running on Linux" width=10cm
-*
-* \section visobj_sec Vision objects
-*
-* iCubGui can also display data blobs from vision modules, representing them as
-* 3D ellipsoids characterized by name, dimensions, color, transparency, position
-* and orientation. Objects in iCubGui are managed by a port specified in the
-* iCubGui.ini configuration file with the tag \e objport, as follows:
-*
-* \code
-* robot /icubSim
-* geometry skeleton.ini
-* objport /iCubGui/objects
-* \endcode
-*
-* To add an object to the display object list, send to iCubGui a bottle
-* composed as following on the port specified in iCubGui.ini:
-*
-* \code
-* yarp::os::Bottle obj;
-*
-* obj.addString("object"); // command to add/update an object
-* obj.addString("my_object_name");
-*
-* // object dimensions in millimiters
-* // (it will be displayed as an ellipsoid with the tag "my_object_name")
-* obj.addFloat64(dimX);
-* obj.addFloat64(dimY);
-* obj.addFloat64(dimZ);
-*
-* // object position in millimiters
-* // reference frame: X=fwd, Y=left, Z=up
-* obj.addFloat64(posX);
-* obj.addFloat64(posY);
-* obj.addFloat64(posZ);
-*
-* // object orientation (roll, pitch, yaw) in degrees
-* obj.addFloat64(rotX);
-* obj.addFloat64(rotY);
-* obj.addFloat64(rotZ);
-*
-* // object color (0-255)
-* obj.addInt32(R);
-* obj.addInt32(G);
-* obj.addInt32(B);
-* // transparency (0.0=invisible 1.0=solid)
-* obj.addFloat64(alpha);
-* \endcode
-*
-* To delete an object:
-*
-* \code
-* yarp::os::Bottle obj;
-*
-* obj.addString("delete");
-* obj.addString("my_object_name");
-* \endcode
-*
-* To reset the object list:
-*
-* \code
-* yarp::os::Bottle obj;
-*
-* obj.addString("reset");
-* \endcode
-*
-* \section lib_sec Libraries
-*  - YARP
-*  - Qt5, glut, opengl.
-*
-* \section parameters_sec Parameters
-* None.
-*
-* \section portsa_sec Ports Accessed
-*
-* Needs access to all the robot interfaces and ports (from iCubInterface).
-*
-* \section tested_os_sec Tested OS
-*
-* Linux and Windows.
-*
-* \author Alessandro Scalzo
-*
-* Copyright (C) 2009 RobotCub Consortium
-*
-* CopyPolicy: Released under the terms of the GNU GPL v2.0.
-*
-* This file can be edited at src/gui/iCubGui/src/main.cpp.
-*/
+ * @ingroup icub_guis
+ * 
+ * \defgroup icub_gui iCubGui
+ *
+ *
+ * A gui that shows the full state of the robot. At the moment
+ * encoders and inertial sensors.
+ *
+ *
+ * \section intro_sec Description
+ *
+ * Display a kinematic model of the robot from the encoders. It also
+ * shows a representation of the output of the inertial sensor.
+ *
+ * \image html icubgui-merged.jpg "Screenshots: iCubGui running on Linux"
+ * \image latex icubgui1.eps "Screenshots: iCubGui running on Linux" width=10cm
+ *
+ * \section visobj_sec Vision objects
+ *
+ * iCubGui can also display data blobs from vision modules, representing them as
+ * 3D ellipsoids characterized by name, dimensions, color, transparency,
+ * position and orientation. Objects in iCubGui are managed by a port specified
+ * in the iCubGui.ini configuration file with the tag \e objport, as follows:
+ *
+ * \code
+ * robot /icubSim
+ * geometry skeleton.ini
+ * objport /iCubGui/objects
+ * \endcode
+ *
+ * To add an object to the display object list, send to iCubGui a bottle
+ * composed as following on the port specified in iCubGui.ini:
+ *
+ * \code
+ * yarp::os::Bottle obj;
+ *
+ * obj.addString("object"); // command to add/update an object
+ * obj.addString("my_object_name");
+ *
+ * // object dimensions in millimiters
+ * // (it will be displayed as an ellipsoid with the tag "my_object_name")
+ * obj.addFloat64(dimX);
+ * obj.addFloat64(dimY);
+ * obj.addFloat64(dimZ);
+ *
+ * // object position in millimiters
+ * // reference frame: X=fwd, Y=left, Z=up
+ * obj.addFloat64(posX);
+ * obj.addFloat64(posY);
+ * obj.addFloat64(posZ);
+ *
+ * // object orientation (roll, pitch, yaw) in degrees
+ * obj.addFloat64(rotX);
+ * obj.addFloat64(rotY);
+ * obj.addFloat64(rotZ);
+ *
+ * // object color (0-255)
+ * obj.addInt32(R);
+ * obj.addInt32(G);
+ * obj.addInt32(B);
+ * // transparency (0.0=invisible 1.0=solid)
+ * obj.addFloat64(alpha);
+ * \endcode
+ *
+ * To delete an object:
+ *
+ * \code
+ * yarp::os::Bottle obj;
+ *
+ * obj.addString("delete");
+ * obj.addString("my_object_name");
+ * \endcode
+ *
+ * To reset the object list:
+ *
+ * \code
+ * yarp::os::Bottle obj;
+ *
+ * obj.addString("reset");
+ * \endcode
+ *
+ * \section lib_sec Libraries
+ *  - YARP
+ *  - Qt5, glut, opengl.
+ *
+ * \section parameters_sec Parameters
+ * None.
+ *
+ * \section portsa_sec Ports Accessed
+ *
+ * Needs access to all the robot interfaces and ports (from iCubInterface).
+ *
+ * \section tested_os_sec Tested OS
+ *
+ * Linux and Windows.
+ *
+ * \author Alessandro Scalzo
+ *
+ * Copyright (C) 2009 RobotCub Consortium
+ *
+ * CopyPolicy: Released under the terms of the GNU GPL v2.0.
+ *
+ * This file can be edited at src/gui/iCubGui/src/main.cpp.
+ */
 
 #include <signal.h>
 

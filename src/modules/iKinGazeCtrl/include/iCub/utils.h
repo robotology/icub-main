@@ -131,8 +131,6 @@ public:
     std::pair<Vector,bool>  get_gyro();
     std::pair<Vector,bool>  get_accel();
 
-    string  headVersion2String();
-
     // data members that do not need protection
     xdPort         *port_xd;
     string          robotName;
@@ -142,7 +140,7 @@ public:
     double          eyesBoundVer;
     double          gyro_noise_threshold;
     double          stabilizationGain;
-    double          head_version;
+    iKinLimbVersion head_version;
     double          saccadesInhibitionPeriod;
     double          saccadesActivationAngle;
     int             neckSolveCnt;

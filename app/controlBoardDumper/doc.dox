@@ -8,7 +8,7 @@ voltages, currents, tracking errors).
 
 
 \section dep_sec Dependencies
-Assumes \ref icub_iCubInterface is running.
+Assumes the robot is running.
 
 \section int_sec Instantiated Modules
 - \ref icub_controlBoardDumper 
