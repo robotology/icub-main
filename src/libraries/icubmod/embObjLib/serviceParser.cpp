@@ -1528,7 +1528,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     servAnalogSensor_t thestrain_sensor = as_service.settings.enabledsensors.at(0);
     
     // first check we do is about thestrain_props.type
-    if(eobrd_cantype_strain2 != thestrain_props.type || eobrd_cantype_strain2c != thestrain_props.type)
+    if((eobrd_cantype_strain2 != thestrain_props.type) && (eobrd_cantype_strain2c != thestrain_props.type))
     {
         yError() << "ServiceParser::parseService() for embObjFTsensor has detected an invalid type of board. it should be a eobrd_strain2 or a eobrd_strain2c but is a:" << eoboards_type2string2(eoboards_cantype2type(thestrain_props.type), eobool_false);
         return false;
