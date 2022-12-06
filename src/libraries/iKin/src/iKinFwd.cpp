@@ -1543,7 +1543,7 @@ void iKinLimb::dispose()
 
 
 /************************************************************************/
-iKinLimbVersion::iKinLimbVersion() : major(0), minor(0)
+iKinLimbVersion::iKinLimbVersion() : v_major(0), v_minor(0)
 {
 }
 
@@ -1554,45 +1554,45 @@ iKinLimbVersion::iKinLimbVersion(const string &version)
     size_t point=version.find('.');
     if ((point!=string::npos) && (point!=version.length()-1))
     {
-        major=strtoul(version.substr(0,point).c_str(),NULL,0);
-        minor=strtoul(version.substr(point+1).c_str(),NULL,0);
+        v_major=strtoul(version.substr(0,point).c_str(),NULL,0);
+        v_minor=strtoul(version.substr(point+1).c_str(),NULL,0);
     }
     else
     {
-        major=strtoul(version.c_str(),NULL,0);
-        minor=0U;
+        v_major=strtoul(version.c_str(),NULL,0);
+        v_minor=0U;
     }
 }
 
 
 /************************************************************************/
-iKinLimbVersion::iKinLimbVersion(const unsigned long int major,
-                                 const unsigned long int minor)
+iKinLimbVersion::iKinLimbVersion(const unsigned long int v_major,
+                                 const unsigned long int v_minor)
 {
-    this->major=major;
-    this->minor=minor;
+    this->v_major=v_major;
+    this->v_minor=v_minor;
 }
 
 
 /************************************************************************/
 iKinLimbVersion::iKinLimbVersion(const iKinLimbVersion& v)
 {
-    major=v.major;
-    minor=v.minor;
+    v_major=v.v_major;
+    v_minor=v.v_minor;
 }
 
 
 /************************************************************************/
 unsigned long int iKinLimbVersion::get_major() const
 {
-    return major;
+    return v_major;
 }
 
 
 /************************************************************************/
 unsigned long int iKinLimbVersion::get_minor() const
 {
-    return minor;
+    return v_minor;
 }
 
 
@@ -1600,7 +1600,7 @@ unsigned long int iKinLimbVersion::get_minor() const
 string iKinLimbVersion::get_version() const
 {
     ostringstream version;
-    version<<major<<"."<<minor;
+    version<<v_major<<"."<<v_minor;
     return version.str();
 }
 
@@ -1608,8 +1608,8 @@ string iKinLimbVersion::get_version() const
 /************************************************************************/
 iKinLimbVersion& iKinLimbVersion::operator=(const iKinLimbVersion& v)
 {
-    major=v.major;
-    minor=v.minor;
+    v_major=v.v_major;
+    v_minor=v.v_minor;
     return *this;
 }
 
@@ -1617,10 +1617,10 @@ iKinLimbVersion& iKinLimbVersion::operator=(const iKinLimbVersion& v)
 /************************************************************************/
 bool iKinLimbVersion::operator<(const iKinLimbVersion& v) const
 {
-    if (major<v.major)
+    if (v_major<v.v_major)
         return true;
-    else if (major==v.major)
-        return minor<v.minor;
+    else if (v_major==v.v_major)
+        return v_minor<v.v_minor;
     else
         return false;
 }
@@ -1636,7 +1636,7 @@ bool iKinLimbVersion::operator>(const iKinLimbVersion& v) const
 /************************************************************************/
 bool iKinLimbVersion::operator==(const iKinLimbVersion& v) const
 {
-   return (major==v.major) && (minor==v.minor);
+   return (v_major==v.v_major) && (v_minor==v.v_minor);
 }
 
 
@@ -1664,10 +1664,10 @@ bool iKinLimbVersion::operator>=(const iKinLimbVersion& v) const
 /************************************************************************/
 iKinLimbVersion iKinLimbVersion::operator-(const iKinLimbVersion& v) const
 {
-   unsigned long int m1=(major>v.major)?major-v.major:v.major-major;
+   unsigned long int m1=(v_major>v.v_major)?v_major-v.v_major:v.v_major-v_major;
    unsigned long int m2=0L;
    if (m1==0L)
-       m2=(minor>v.minor)?minor-v.minor:v.minor-minor;
+       m2=(v_minor>v.v_minor)?v_minor-v.v_minor:v.v_minor-v_minor;
    return iKinLimbVersion(m1, m2);
 }
 

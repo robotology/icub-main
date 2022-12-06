@@ -1045,8 +1045,8 @@ public:
 class iKinLimbVersion
 {
 protected:
-    unsigned long int major;
-    unsigned long int minor;
+    unsigned long int v_major;
+    unsigned long int v_minor;
 
 public:
     /**
@@ -1063,10 +1063,10 @@ public:
 
     /**
     * Constructor. 
-    * @param major the major version. 
-    * @param minor the mninor version. 
+    * @param v_major the major version. 
+    * @param v_minor the mninor version. 
     */
-    iKinLimbVersion(const unsigned long int major, const unsigned long int minor);
+    iKinLimbVersion(const unsigned long int v_major, const unsigned long int v_minor);
 
     /**
     * Copy Constructor. 
