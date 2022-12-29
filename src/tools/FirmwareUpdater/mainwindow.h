@@ -112,6 +112,7 @@ private slots:
     void onChangeInfo(bool);
     void onSelectionCheckDestroy(QObject*);
     void onChangeAddress(bool);
+    void onEraseApplication(bool);
     void onRestartBoards(bool click);
 
     //void onRestartBoards5Secs(bool click);

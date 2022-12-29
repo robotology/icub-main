@@ -12,6 +12,9 @@
 
 using namespace yarp::os;
 
+#define DEFAULT_IP_ADDRESS "10.0.1.104"
+#define DEFAULT_IP_PORT 3333
+
 class FirmwareUpdaterCore : public QObject
 {
     Q_OBJECT
@@ -53,7 +56,8 @@ public:
     bool goToMaintenance();
     bool eraseEthEprom();
     void eraseCanEprom();
-    QString getProcessFromUint(uint8_t id);
+    QString getProcessFromUint(uint8_t id, bool isMultiCore = false);
+
     cDownloader *getDownloader();
 
 

@@ -97,8 +97,14 @@ bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address, in
 
                 hostIPaddress = EO_COMMON_IPV4ADDR(ipv0, ipv1, ipv2, ipv3);
 
-                qDebug() << "Invalid IP address found in .ini file (format is 10.0.X.Y:Z , 0 < X,Y < 255 , Z port number)";
-                qDebug() << "Skipped , using defaults!";
+                qDebug() << "Missing or invalid IP address found in .ini file (format is 10.0.X.Y:Z , 0 < X,Y < 255 , Z port number)";
+                qDebug() << "Skipped, using defaults:";
+                if(verbosity >= 1)
+                {
+                    qInfo() << "  - IP address:" << DEFAULT_IP_ADDRESS;
+                    qInfo() << "  - IP port:   " << DEFAULT_IP_PORT;
+                }
+
             }
         }
         
@@ -314,15 +320,17 @@ boardInfo2_t FirmwareUpdaterCore::getMoreDetails(int boardNum,QString *infoStrin
 
 }
 
-QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id)
+QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id, bool isMultiCore)
 {
     switch (id) {
     case uprot_proc_Loader:
         return "eLoader";
     case uprot_proc_Updater:
         return "eUpdater";
-    case uprot_proc_Application:
-        return "eApplication";
+    case uprot_proc_Application00:
+        return isMultiCore ? "eApplication_core_0" : "eApplication";
+    case uprot_proc_Application01:
+        return "eApplication_core_1";
     case uprot_proc_ApplPROGupdater:
         return "eApplPROGupdater";
     default:

@@ -668,11 +668,12 @@ string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double w
 
     while(mSocket.ReceiveFrom(rxipv4addr, rxipv4port, mRxBuffer, sizeof(mRxBuffer), waittimeout*1000.0) > 0)
     {
-        eOuprot_cmd_DISCOVER_REPLY_t * disc = (eOuprot_cmd_DISCOVER_REPLY_t*) mRxBuffer;
-        eOuprot_cmd_LEGACY_SCAN_REPLY_t * scan = (eOuprot_cmd_LEGACY_SCAN_REPLY_t*) mRxBuffer;
+        eOuprot_cmd_DISCOVER_REPLY2_t * disc2 = reinterpret_cast<eOuprot_cmd_DISCOVER_REPLY2_t*>(mRxBuffer);
+        eOuprot_cmd_DISCOVER_REPLY_t * disc = reinterpret_cast<eOuprot_cmd_DISCOVER_REPLY_t*>(mRxBuffer);
+        eOuprot_cmd_LEGACY_SCAN_REPLY_t * scan = reinterpret_cast<eOuprot_cmd_LEGACY_SCAN_REPLY_t*> (mRxBuffer);
 
         string ipv4rxstring = ipv4tostring(rxipv4addr);
-
+        
         if(uprot_OPC_DISCOVER == disc->reply.opc)
         {
             // the board has replied with the new protocol.
@@ -715,7 +716,7 @@ string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double w
 
                 if(_verbose)
                 {
-                    printf("EthMaintainer::processDiscoveryReplies2() has found board @ %s: %s w/ %s v %d.%d running protocol v %d w/ capabilities = 0x%x. mainteinance = %s\n",
+                    printf("EthMaintainer::processDiscoveryReplies2() has found a board @ %s: %s w/ %s v%d.%d running protocol v%d w/ capabilities = 0x%x. mainteinance = %s\n",
                             ipv4rxstring.c_str(),
                             eoboards_type2string2((eObrd_type_t)disc->boardtype, eobool_true),
                             eouprot_process2string((eOuprot_process_t)disc->processes.runningnow),
@@ -798,6 +799,56 @@ string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double w
                 }
             }
         }
+        if(uprot_OPC_DISCOVER2 == disc2->discoveryreply.reply.opc)
+        {
+            // the board has replied with the new multi-application-processes protocol.
+
+            if(rxipv4addr != myIPV4addr)
+            {
+                boardInfo2_t binfo;
+
+                // the protococol version and capabilities are properties of the running process.
+                binfo.protversion = disc2->discoveryreply.reply.protversion;
+                binfo.capabilities = disc2->discoveryreply.capabilities;
+
+                memcpy(&binfo.macaddress, disc2->discoveryreply.mac48, 6);
+                binfo.boardtype = (eObrd_ethtype_t)disc2->discoveryreply.boardtype;
+                binfo.applicationdetails = disc2->discoveryreply.unused[0];
+
+                memcpy(&binfo.processes, &disc2->discoveryreply.processes, sizeof(eOuprot_proctable_t));
+                memcpy(binfo.boardinfo32, disc2->discoveryreply.boardinfo32, sizeof(binfo.boardinfo32));
+                memcpy(binfo.extraprocesses, disc2->extraprocs, sizeof(eOuprot_procinfo_t));
+
+                binfo.maintenanceIsActive = (eUpdater == binfo.processes.runningnow) ? true : false;
+
+                uint8_t index = eouprot_process2index((eOuprot_process_t)disc2->discoveryreply.processes.runningnow);
+
+                binfo.versionOfRunning.major = binfo.processes.info[index].version.major;
+                binfo.versionOfRunning.minor = binfo.processes.info[index].version.minor;
+
+                binfo.moreinfostring = prepareMoreInfoText(disc2, ipv4rxstring.c_str());
+
+                boardlist.add(binfo, rxipv4addr);
+
+                // now we add into the string
+                info += binfo.moreinfostring;
+
+                if(_verbose)
+                {
+                    printf("EthMaintainer::processDiscoveryReplies2() has a found board @ %s: %s w/ %s v%d.%d running protocol v%d w/ capabilities = 0x%x. mainteinance = %s\n",
+                            ipv4rxstring.c_str(),
+                            eoboards_type2string2((eObrd_type_t)disc2->discoveryreply.boardtype, eobool_true),
+                            eouprot_process2string((eOuprot_process_t)disc2->discoveryreply.processes.runningnow),
+                            disc2->discoveryreply.processes.info[index].version.major,
+                            disc2->discoveryreply.processes.info[index].version.minor,
+                            disc2->discoveryreply.reply.protversion,
+                            disc2->discoveryreply.capabilities,
+                            (binfo.maintenanceIsActive) ? ("ON") : ("OFF")
+                           );
+                    fflush(stdout);
+                }
+            }
+        }
     }
 
     return info;
@@ -815,8 +866,8 @@ std::string EthMaintainer::processMoreInfoReplies(EthBoardList &boardlist)
 
     while(mSocket.ReceiveFrom(rxipv4addr, rxipv4port, mRxBuffer, sizeof(mRxBuffer), 500) > 0)
     {
-        eOuprot_cmd_MOREINFO_REPLY_t *moreinfo = (eOuprot_cmd_MOREINFO_REPLY_t*) mRxBuffer;
-        eOuprot_cmd_LEGACY_PROCS_REPLY_t *procs = (eOuprot_cmd_LEGACY_PROCS_REPLY_t*) mRxBuffer;
+        eOuprot_cmd_MOREINFO_REPLY_t *moreinfo = reinterpret_cast<eOuprot_cmd_MOREINFO_REPLY_t*>(mRxBuffer);
+        eOuprot_cmd_LEGACY_PROCS_REPLY_t *procs = reinterpret_cast<eOuprot_cmd_LEGACY_PROCS_REPLY_t*>(mRxBuffer);
 
         string ipv4rxstring = ipv4tostring(rxipv4addr);
 
@@ -912,8 +963,6 @@ std::string EthMaintainer::processMoreInfoReplies(EthBoardList &boardlist)
                     printf("\n\n");
 
                 }
-
-
             }
         }
         else if(uprot_OPC_LEGACY_PROCS == procs->opc)
@@ -1066,6 +1115,112 @@ std::string EthMaintainer::prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY_t * di
     return info;
 }
 
+std::string EthMaintainer::prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY2_t * disc, const char *ipv4rxaddr_string)
+{
+    std::string info;
+
+    char tmp[512] = {0};
+
+
+    boardInfo2_t binfo;
+
+    binfo.reset();
+
+
+    binfo.protversion = disc->discoveryreply.reply.protversion;
+    binfo.capabilities = disc->discoveryreply.capabilities;
+    memcpy(&binfo.macaddress, disc->discoveryreply.mac48, 6);
+    binfo.boardtype = (eObrd_ethtype_t)disc->discoveryreply.boardtype;
+    binfo.applicationdetails = disc->discoveryreply.unused[0];
+    memcpy(&binfo.processes, &disc->discoveryreply.processes, sizeof(eOuprot_proctable_t));
+    memcpy(binfo.boardinfo32, disc->discoveryreply.boardinfo32, sizeof(binfo.boardinfo32));
+    memcpy(binfo.extraprocesses, disc->extraprocs, sizeof(eOuprot_procinfo_t));
+
+    binfo.maintenanceIsActive = false;
+    if(eUpdater == binfo.processes.runningnow)
+    {
+        binfo.maintenanceIsActive = true;
+    }
+
+    uint8_t index = eouprot_process2index((eOuprot_process_t)disc->discoveryreply.processes.runningnow);
+
+    binfo.versionOfRunning.major = binfo.processes.info[index].version.major;
+    binfo.versionOfRunning.minor = binfo.processes.info[index].version.minor;
+
+
+
+    char status[64] = "normal";
+    if(true == binfo.maintenanceIsActive)
+    {
+        snprintf(status, sizeof(status), "maintenance");
+    }
+    else
+    {
+        snprintf(status, sizeof(status), "normal");
+    }
+
+    char mac_string[64] = "00-00-00-00-00-00";
+    snprintf(mac_string, sizeof(mac_string), "%02X-%02X-%02X-%02X-%02X-%02X",
+                        (uint8_t)(binfo.macaddress >> 40) & 0xff,
+                        (uint8_t)(binfo.macaddress >> 32) & 0xff,
+                        (uint8_t)(binfo.macaddress >> 24) & 0xff,
+                        (uint8_t)(binfo.macaddress >> 16) & 0xff,
+                        (uint8_t)(binfo.macaddress >> 8 ) & 0xff,
+                        (uint8_t)(binfo.macaddress      ) & 0xff
+            );
+
+
+    snprintf(tmp, sizeof(tmp), "BOARD: \n- type: %s \n- mac: %s \n- ip: %s \n- status: %s",
+                eoboards_type2string2((eObrd_type_t)binfo.boardtype, eobool_true),
+                mac_string,
+                ipv4rxaddr_string,
+                status);
+    info += tmp;
+
+    snprintf(tmp, sizeof(tmp), "\n\nBOOTSTRAP PROCESSES:"
+           );
+    info += tmp;
+
+    snprintf(tmp, sizeof(tmp), "\n- startup: %s, \n- default: %s, \n- running: %s.",
+                eouprot_process2string((eOuprot_process_t)binfo.processes.startup),
+                eouprot_process2string((eOuprot_process_t)binfo.processes.def2run),
+                eouprot_process2string((eOuprot_process_t)binfo.processes.runningnow)
+           );
+    info += tmp;
+
+    snprintf(tmp, sizeof(tmp), "\n\nPROPS OF THE %d PROCESSES:",
+                binfo.processes.numberofthem
+           );
+    info += tmp;
+
+    for(int n=0; n<binfo.processes.numberofthem; n++)
+    {
+        char strdate[24] = {0};
+        char builton[24] = {0};
+        constexpr uint8_t maxNumberOfProcessesOnSingleCore {3};
+        
+        // When "n" is in [0,3) we are considering the standard single core processes (loader, updater, application)
+        // if n >= 3 we are using a multi-core board un one o more processes
+        eOuprot_procinfo_t pInfo = (n < maxNumberOfProcessesOnSingleCore) ? binfo.processes.info[n] : binfo.extraprocesses[n];
+
+        eo_common_date_to_string(pInfo.date, strdate, sizeof(strdate));
+        eo_common_date_to_string(pInfo.compilationdate, builton, sizeof(builton));
+        snprintf(tmp, sizeof(tmp), "\n- proc-%d: \n  type: %s \n  version: %d.%d, \n  dated: %s, \n  built on: %s, \n  rom: [%d, %d) kb",
+            n,
+            eouprot_process2string((eOuprot_process_t)binfo.processes.info[n].type),
+            pInfo.version.major, pInfo.version.minor,
+            strdate,
+            builton,
+            pInfo.rom_addr_kb, pInfo.rom_addr_kb + pInfo.rom_size_kb
+            );
+
+        info += tmp;
+
+    }
+    info += "\n\n";
+
+    return info;
+}
 
 
 std::string EthMaintainer::getMoreInfoText(eOuprot_cmd_MOREINFO_REPLY_t *moreinfo, char *ipaddr)
