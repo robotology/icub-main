@@ -799,7 +799,7 @@ string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double w
                 }
             }
         }
-        if(uprot_OPC_DISCOVER2 == disc2->discoveryreply.reply.opc)
+        else if(uprot_OPC_DISCOVER2 == disc2->discoveryreply.reply.opc)
         {
             // the board has replied with the new multi-application-processes protocol.
 

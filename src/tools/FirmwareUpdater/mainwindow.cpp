@@ -1009,27 +1009,30 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
     infoTreeWidget->addTopLevelItem(propertiesNode);
 
     constexpr uint8_t maxNumberOfProcessesOnSingleCore {3};
-
-    QString type;
-    switch (info.boardtype) {
-    case eobrd_ethtype_ems4:
-        type = "ems";
-        break;
-    case eobrd_ethtype_mc4plus:
-        type = "mc4plus";
-        break;
-    case eobrd_ethtype_mc2plus:
-        type = "mc2plus";
-        break;
-    case eobrd_ethtype_none:
-        type = "none";
-        break;
-    case eobrd_ethtype_unknown:
-        type = "unknown";
-        break;
-    default:
-        break;
-    }
+    
+    QString type = eoboards_type2string(eoboards_ethtype2type(info.boardtype));
+    // switch (info.boardtype) {
+    // case eobrd_ethtype_amc:
+    //     type = "amc";
+    //     break;
+    // case eobrd_ethtype_ems4:
+    //     type = "ems";
+    //     break;
+    // case eobrd_ethtype_mc4plus:
+    //     type = "mc4plus";
+    //     break;
+    // case eobrd_ethtype_mc2plus:
+    //     type = "mc2plus";
+    //     break;
+    // case eobrd_ethtype_none:
+    //     type = "none";
+    //     break;
+    // case eobrd_ethtype_unknown:
+    //     type = "unknown";
+    //     break;
+    // default:
+    //     break;
+    // }
 
     QTreeWidgetItem *typeNode = new QTreeWidgetItem(boardNode, QStringList() << "Type" << type);
     boardNode->addChild(typeNode);
@@ -1093,7 +1096,7 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
     boardNode->addChild(statusNode);
 
     /*******************************************************************************/
-    bool isMulticore = info.processes.numberofthem > maxNumberOfProcessesOnSingleCore;
+    bool isMulticore = (eoboards_type2numberofcores(eoboards_ethtype2type(info.boardtype))) > 1 ? true : false;
     QTreeWidgetItem *startUpNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Startup" << core->getProcessFromUint(info.processes.startup, isMulticore));
     bootStrapNode->addChild(startUpNode);
     bootStrapNode->setExpanded(true);
