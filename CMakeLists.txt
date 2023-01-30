@@ -128,14 +128,6 @@ add_subdirectory(app)
 # Create everything needed to build our executables.
 add_subdirectory(src)
 
-########### propagate version info to targets
-get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
-foreach(t ${ICUB_TARGETS})
-  set_target_properties(${t} PROPERTIES VERSION ${ICUB_GENERIC_VERSION}
-                        SOVERSION ${ICUB_GENERIC_SOVERSION})
-endforeach()
-######################
-
 ## install cmake scripts
 message(STATUS "Installing cmake scripts")
 set(ICUB_CMAKE_SCRIPTS iCubHelpers.cmake iCubOptions.cmake)
