@@ -136,7 +136,12 @@ void SensorsData::init(servConfigImu_t &servCfg, string error_string)
             if(des->typeofsensor < eoas_sensors_numberof)
             {
                 sensorInfo_t newSensor;
-                newSensor.name = servCfg.id[i];
+                if (servCfg.sensorName[i].empty()) {
+                    newSensor.name = servCfg.id[i];
+                }
+                else {
+                    newSensor.name = servCfg.sensorName[i];
+                }
                 newSensor.framename = newSensor.name;
                 if(des->typeofsensor == eoas_imu_qua)
                     newSensor.values.resize(4);
