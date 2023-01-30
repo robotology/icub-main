@@ -15,7 +15,7 @@ on:
 
 jobs:
   build:
-    name: '[${{ matrix.os }}@${{ matrix.build_type }}]'
+    name: '[${{ matrix.os }}@${{ matrix.build_type }}@BUILD_SHARED_LIBS:${{ matrix.build_shared_libs }}]'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
