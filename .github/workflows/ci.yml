@@ -152,7 +152,7 @@ jobs:
         cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \ \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DBUILD_SHARED_LIBS:BOOL=${{ matrix.build_shared_libs }} \
               -DICUB_USE_icub_firmware_shared:BOOL=ON \
               -DENABLE_icubmod_serial:BOOL=ON \
