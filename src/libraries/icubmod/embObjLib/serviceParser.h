@@ -71,6 +71,7 @@ typedef struct
     int                                 acquisitionrate;
     std::vector<eOas_inertial3_descriptor_t> inertials; //TODO to remove because information is already stored!
     std::vector<std::string>                      id;
+    std::vector<std::string>            sensorName;
     imuConvFactors_t                    convFactors;
 } servConfigImu_t;
 
@@ -154,11 +155,12 @@ struct servAnalogSensor_t
     eObrd_location_t            location {{eobrd_place_none, 0}};
     eObrd_type_t                boardtype {eobrd_none};
     std::string                 frameName {""};
+    std::string                 sensorName {""};
     servAnalogPOSspecific_t     pos {};
     void clear()
     {
         id.clear(); type = eoas_none; location.any.place = eobrd_place_none;
-        boardtype = eobrd_none; frameName.clear(); pos.clear();
+        boardtype = eobrd_none; frameName.clear(); sensorName.clear(); pos.clear();
     }
 };
 
@@ -379,7 +381,7 @@ private:
 
     bool copyjomocouplingInfo(eOmc_4jomo_coupling_t *jc_dest);
 
-    
+
     // suggestion: split check_motion() in sub-methods which parse the groups ...
 };
 
