@@ -15,12 +15,13 @@ on:
 
 jobs:
   build:
-    name: '[${{ matrix.os }}@${{ matrix.build_type }}]'
+    name: '[${{ matrix.os }}@${{ matrix.build_type }}@BUILD_SHARED_LIBS:${{ matrix.build_shared_libs }}]'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         build_type: [Release]
         os: [ubuntu-latest, windows-latest, macOS-latest]
+        build_shared_libs: [ON, OFF]
 
     steps:
     - name: Checkout the code
@@ -152,6 +153,7 @@ jobs:
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
               -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DBUILD_SHARED_LIBS:BOOL=${{ matrix.build_shared_libs }} \
               -DICUB_USE_icub_firmware_shared:BOOL=ON \
               -DENABLE_icubmod_serial:BOOL=ON \
               -DENABLE_icubmod_serialport:BOOL=ON \
@@ -186,6 +188,7 @@ jobs:
         cd build
         cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
               -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DBUILD_SHARED_LIBS:BOOL=${{ matrix.build_shared_libs }} \
               -DICUB_USE_icub_firmware_shared:BOOL=ON \
               -DENABLE_icubmod_serial:BOOL=ON \
               -DENABLE_icubmod_serialport:BOOL=ON \
