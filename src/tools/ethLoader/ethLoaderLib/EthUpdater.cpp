@@ -22,6 +22,7 @@ const int EthUpdater::partition_UPDATER = uprot_partitionUPDATER;
 #define PRINT_DEBUG_INFO_ON_TERMINAL
 
 
+// TODO: check here if it is called and when (it seems that it's never called)
 int EthUpdater::cmdDiscover()
 {
     mBoardList.empty();
@@ -48,10 +49,13 @@ int EthUpdater::cmdDiscover()
         char ipaddr[20];
         snprintf(ipaddr, sizeof(ipaddr), "%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
 
+        // if I received the extended reply I'll pass throughout it
+
+
+        // otherwise process it as usual
         if(uprot_OPC_DISCOVER == disc->reply.opc)
         {
             // the board has replied with the new protocol.
-
             if (rxAddress != mMyAddress)
             {
                 boardInfo_t binfo = {0};

@@ -31,13 +31,13 @@ public:
  int  appl_vers_build;      // the build number of the version of the sw it is running (former ...). not meaningful for bootloader
  int  prot_vers_major;      // the major number of the can protocol of the application. not meaningful for bootloader
  int  prot_vers_minor;      // the minor number of the can protocol of the application. not meaningful for bootloader
- char serial [50];          // only for strain
+ char serial [50] = {""};   // only for strain
  int  strainregsetinuse;    // only for strain
  int  strainregsetatboot;   // only for strain
  int  status;
  bool selected;
  bool eeprom;
- char add_info [50];    // but can protocol supports upt to 32 bytes
+ char add_info [50] = {""}; // but can protocol supports upt to 32 bytes
 };
 
 //*****************************************************************/

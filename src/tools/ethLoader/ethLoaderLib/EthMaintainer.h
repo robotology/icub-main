@@ -224,6 +224,7 @@ protected:
     // it forms the string returned by cmdGetMoreInfo() by formatting the field
     // eOuprot_cmd_MOREINFO_REPLY_t::discover sent by the remote board. the formatting can hence be defined in here.
     std::string prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY_t * disc, const char *ipv4string);
+    std::string prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY2_t * disc, const char *ipv4string);
 
     // it forms the string returned by cmdGetMoreInfo() just copying the field
     // eOuprot_cmd_MOREINFO_REPLY_t::description[] inside the UDP packet as filled by the remote board.

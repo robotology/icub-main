@@ -157,6 +157,7 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
     connect(ui->btnCahngeInfo,SIGNAL(clicked(bool)),this,SLOT(onChangeInfo(bool)));
     connect(ui->btnChangeIp,SIGNAL(clicked(bool)),this,SLOT(onChangeAddress(bool)));
     connect(ui->btnChangeCanAddr,SIGNAL(clicked(bool)),this,SLOT(onChangeAddress(bool)));
+    connect(ui->btnEraseApplication,SIGNAL(clicked(bool)),this,SLOT(onEraseApplication(bool)));
     connect(ui->btnRestart,SIGNAL(clicked(bool)),this,SLOT(onRestartBoards(bool)));
     //connect(ui->btnRestartSecs,SIGNAL(clicked(bool)),this,SLOT(onRestartBoards5Secs(bool)));
     connect(ui->btnCalibrate,SIGNAL(clicked(bool)),this,SLOT(onCalibrate(bool)));
@@ -716,6 +717,12 @@ void MainWindow::onChangeAddress(bool click)
     }
 }
 
+void MainWindow::onEraseApplication(bool click)
+{
+    // TODO: work in progress
+    std::cout << "Erase application button clicked! Functionality not yet implemented." << std::endl;
+}
+
 void MainWindow::onChangeInfo(bool click)
 {
     if(selectedNodes.count() != 1){
@@ -1001,26 +1008,31 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
     infoTreeWidget->addTopLevelItem(bootStrapNode);
     infoTreeWidget->addTopLevelItem(propertiesNode);
 
-    QString type;
-    switch (info.boardtype) {
-    case eobrd_ethtype_ems4:
-        type = "ems";
-        break;
-    case eobrd_ethtype_mc4plus:
-        type = "mc4plus";
-        break;
-    case eobrd_ethtype_mc2plus:
-        type = "mc2plus";
-        break;
-    case eobrd_ethtype_none:
-        type = "none";
-        break;
-    case eobrd_ethtype_unknown:
-        type = "unknown";
-        break;
-    default:
-        break;
-    }
+    constexpr uint8_t maxNumberOfProcessesOnSingleCore {3};
+    
+    QString type = eoboards_type2string(eoboards_ethtype2type(info.boardtype));
+    // switch (info.boardtype) {
+    // case eobrd_ethtype_amc:
+    //     type = "amc";
+    //     break;
+    // case eobrd_ethtype_ems4:
+    //     type = "ems";
+    //     break;
+    // case eobrd_ethtype_mc4plus:
+    //     type = "mc4plus";
+    //     break;
+    // case eobrd_ethtype_mc2plus:
+    //     type = "mc2plus";
+    //     break;
+    // case eobrd_ethtype_none:
+    //     type = "none";
+    //     break;
+    // case eobrd_ethtype_unknown:
+    //     type = "unknown";
+    //     break;
+    // default:
+    //     break;
+    // }
 
     QTreeWidgetItem *typeNode = new QTreeWidgetItem(boardNode, QStringList() << "Type" << type);
     boardNode->addChild(typeNode);
@@ -1084,48 +1096,53 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
     boardNode->addChild(statusNode);
 
     /*******************************************************************************/
-
-    QTreeWidgetItem *startUpNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Startup" << core->getProcessFromUint(info.processes.startup));
+    bool isMulticore = (eoboards_type2numberofcores(eoboards_ethtype2type(info.boardtype))) > 1 ? true : false;
+    QTreeWidgetItem *startUpNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Startup" << core->getProcessFromUint(info.processes.startup, isMulticore));
     bootStrapNode->addChild(startUpNode);
     bootStrapNode->setExpanded(true);
 
-    QTreeWidgetItem *defaultNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Default" << core->getProcessFromUint(info.processes.def2run));
+    QTreeWidgetItem *defaultNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Default" << core->getProcessFromUint(info.processes.def2run, isMulticore));
     bootStrapNode->addChild(defaultNode);
 
-    QTreeWidgetItem *runningNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Running" << core->getProcessFromUint(info.processes.runningnow));
+    QTreeWidgetItem *runningNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Running" << core->getProcessFromUint(info.processes.runningnow, isMulticore));
     bootStrapNode->addChild(runningNode);
 
     /*******************************************************************************/
 
-
     propertiesNode->setExpanded(true);
-    for(int i= 0; i<(int)info.processes.numberofthem;i++){
+    for(uint8_t i= 0; i < info.processes.numberofthem; i++){
+        eOuprot_procinfo_t pinfo;
+        if(i < maxNumberOfProcessesOnSingleCore)
+        {
+            pinfo = info.processes.info[i];
+        }
+        else
+        {
+            pinfo = info.extraprocesses[i-maxNumberOfProcessesOnSingleCore];
+        }
+        
         QTreeWidgetItem *processNode = new QTreeWidgetItem(propertiesNode, QStringList() << QString("Process %1").arg(i));
         propertiesNode->addChild(processNode);
         processNode->setExpanded(true);
 
-        QTreeWidgetItem *processType = new QTreeWidgetItem(processNode, QStringList() << "Type" << core->getProcessFromUint(info.processes.info[i].type));
+        QTreeWidgetItem *processType = new QTreeWidgetItem(processNode, QStringList() << "Type" << core->getProcessFromUint(pinfo.type, isMulticore));
         processNode->addChild(processType);
 
-        QTreeWidgetItem *processVersion = new QTreeWidgetItem(processNode, QStringList() << "Version" << QString("%1.%2").arg(info.processes.info[i].version.major).arg(info.processes.info[i].version.minor));
+        QTreeWidgetItem *processVersion = new QTreeWidgetItem(processNode, QStringList() << "Version" << QString("%1.%2").arg(pinfo.version.major).arg(pinfo.version.minor));
         processNode->addChild(processVersion);
 
-        QTreeWidgetItem *processDate = new QTreeWidgetItem(processNode, QStringList() << "Date" << QDateTime(QDate(info.processes.info[i].date.year,info.processes.info[i].date.month,info.processes.info[i].date.day),
-                                                                                                             QTime(info.processes.info[i].date.hour,info.processes.info[i].date.min)).toString("yyyy/MM/dd - hh:mm"));
+        QTreeWidgetItem *processDate = new QTreeWidgetItem(processNode, QStringList() << "Date" << QDateTime(QDate(pinfo.date.year,pinfo.date.month,pinfo.date.day),
+                                                                                                             QTime(pinfo.date.hour,pinfo.date.min)).toString("yyyy/MM/dd - hh:mm"));
         processNode->addChild(processDate);
 
-        QTreeWidgetItem *processBuilt = new QTreeWidgetItem(processNode, QStringList() << "Built On" << QDateTime(QDate(info.processes.info[i].compilationdate.year,info.processes.info[i].compilationdate.month,info.processes.info[i].compilationdate.day),
-                                                                                                      QTime(info.processes.info[i].compilationdate.hour,info.processes.info[i].compilationdate.min)).toString("yyyy/MM/dd - hh:mm"));
+        QTreeWidgetItem *processBuilt = new QTreeWidgetItem(processNode, QStringList() << "Built On" << QDateTime(QDate(pinfo.compilationdate.year,pinfo.compilationdate.month,pinfo.compilationdate.day),
+                                                                                                      QTime(pinfo.compilationdate.hour,pinfo.compilationdate.min)).toString("yyyy/MM/dd - hh:mm"));
         processNode->addChild(processBuilt);
 
-        QTreeWidgetItem *processRom= new QTreeWidgetItem(processNode, QStringList() << "ROM" << QString("[%1, %1+%2) kb").arg(info.processes.info[i].rom_addr_kb).arg(info.processes.info[i].rom_size_kb));
+        std::string processStorageName = (i < maxNumberOfProcessesOnSingleCore) ? "ROM" : "FLASH";
+        QTreeWidgetItem *processRom= new QTreeWidgetItem(processNode, QStringList() << processStorageName.c_str() << QString("[%1, %1+%2) kb").arg(pinfo.rom_addr_kb).arg(pinfo.rom_size_kb));
         processNode->addChild(processRom);
-
-
-
     }
-
-
 }
 
 
@@ -1274,6 +1291,7 @@ void MainWindow::onConnect()
             }
             else{
                 QMessageBox msgBox;
+                msgBox.setIcon(QMessageBox::Warning);
                 if(it->text(PROCESS).contains("eApplPROGupdater" ))
                 {
                     msgBox.setText("The executing process is the " + sss + " which does not allow CAN discovery but only the programming of the eUpdater. You have to put the board in maintenance mode");
@@ -1349,6 +1367,7 @@ void MainWindow::checkEnableButtons()
         ui->btnCahngeInfo->setEnabled(false);
         ui->btnCalibrate->setEnabled(false);
         ui->btnChangeCanAddr->setEnabled(false);
+        ui->btnEraseApplication->setEnabled(false);
         ui->btnChangeIp->setEnabled(false);
         ui->btnEraseEeprom->setEnabled(false);
         ui->btnJumpUpdater->setEnabled(false);
@@ -1379,6 +1398,7 @@ void MainWindow::checkEnableButtons()
             ui->btnCalibrate->setEnabled(false);
 
             ui->btnChangeCanAddr->setEnabled(false);
+            ui->btnEraseApplication->setEnabled(false);
             ui->btnCahngeInfo->setEnabled(false);
 
             ui->btnChangeIp->setEnabled(false);
@@ -1420,6 +1440,7 @@ void MainWindow::checkEnableButtons()
             //ui->btnRestartSecs->setEnabled(true);
             if(canUploadApp){
                 ui->btnUploadApp->setEnabled(true);
+                ui->btnEraseApplication->setEnabled(true);                
             }else{
                 ui->btnUploadApp->setEnabled(false);
             }
@@ -1470,6 +1491,7 @@ void MainWindow::checkEnableButtons()
             }
         }else{
             ui->btnChangeCanAddr->setEnabled(false);
+            ui->btnEraseApplication->setEnabled(false);
             ui->btnCahngeInfo->setEnabled(false);
             ui->btnCalibrate->setEnabled(false);
             ui->btnEraseEeprom->setEnabled(false);
@@ -1485,6 +1507,7 @@ void MainWindow::checkEnableButtons()
         ui->btnGoToApplication->setEnabled(false);
         ui->btnGoToMaintenance->setEnabled(false);
         ui->btnUploadApp->setEnabled(true);
+        ui->btnEraseApplication->setEnabled(true);
         ui->btnUploadLoader->setEnabled(false);
         ui->btnUploadUpdater->setEnabled(false);
         ui->actionSel->setEnabled(true);

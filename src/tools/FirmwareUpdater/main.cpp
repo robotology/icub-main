@@ -14,10 +14,6 @@
 #include <Windows.h>
 #endif
 
-#define MY_ADDR "10.0.1.104"
-#define MY_PORT 3333
-
-
 int verbosity = 1;
 
 using namespace yarp::os;
@@ -81,6 +77,7 @@ int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QStri
 int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId, QString canIdNew);
 int changeBoardIp(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString newipaddr);
 
+void checkForAction(bool &actionIsValid, action_t const &actionValue, action_t &actionResult);
 
 int main(int argc, char *argv[])
 {
@@ -109,7 +106,7 @@ int main(int argc, char *argv[])
     QCommandLineOption strainCalibOption(QStringList() << "0" << "strain-acquisition", "The application starts the STRAIN acquisition mode");
     QCommandLineOption adminOption(QStringList() << "a" << "admin", "The application starts in admin mode");
     QCommandLineOption iniFileOption(QStringList() << "f" << "from", "Override the default ini file","config","firmwareupdater.ini");
-    QCommandLineOption addressOption(QStringList() << "s" << "address", "Override the default address","address",MY_ADDR);
+    QCommandLineOption addressOption(QStringList() << "s" << "address", "Override the default address","address",DEFAULT_IP_ADDRESS);
     QCommandLineOption portOption(QStringList() << "p" << "port", "Override the default port","port","3333");
     QCommandLineOption discoverOption(QStringList() << "d" << "discover", "Discover devices");
     QCommandLineOption deviceOption(QStringList() << "e" << "device", "Choose Device (i.e. ETH or CFW2_CAN, ESD_CAN...)","device","");
@@ -170,9 +167,9 @@ int main(int argc, char *argv[])
     bool adminMode = parser.isSet(adminOption);
     //bool strainCalibMode = parser.isSet(strainCalibOption);
     QString iniFile = parser.value(iniFileOption);
-    QString address = MY_ADDR;
+    QString address = DEFAULT_IP_ADDRESS;
     bool bPrintUsage=false;
-    int port = MY_PORT;
+    int port = DEFAULT_IP_PORT;
 
     if(parser.isSet(verbosityOption))
     {
@@ -184,16 +181,12 @@ int main(int argc, char *argv[])
     if(parser.isSet(addressOption)){
         address = parser.value(addressOption);
     }else{
-        if(verbosity >= 1) qDebug() << "Using default address " << MY_ADDR;
-        //yDebug() << "Using default address " << MY_ADDR;
         bPrintUsage=true;
     }
 
     if(parser.isSet(portOption)){
         port = parser.value(portOption).toInt();
     }else{
-        if(verbosity >= 1) qDebug() << "Using default port " << MY_PORT;
-        //yDebug() << "Using default port " << MY_PORT;
         bPrintUsage=true;
     }
 
@@ -261,176 +254,21 @@ int main(int argc, char *argv[])
         action_t action = action_none;
 
         // check mutual exclusive actions: discover or query or verify or program or forceapplication or forcemaintenance
-        // to do: move code into functions
 
-        if((discover) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_discover;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((query) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_query;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((verify) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_verify;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((program) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_program;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((forceMaintenance) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_forcemaintenance;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((forceApplication) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_forceapplication;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((loadDatFile) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_loaddatfile;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((setSn) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_setstrainsn;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((setGains) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_setstraingainsoffsets;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((setGainsSpecific) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_setstraingainsspecificoffsets;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((getVersion) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_getcanboardversion;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-        if((saveDatFile) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_savedatfile;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-       
-        if((changeCanID) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_changeCanId;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
-
-         if((changeIp) && (action_impossible != action))
-        {
-            if(action == action_none)
-            {
-                action = action_changeBoardIp;
-            }
-            else
-            {
-                action = action_impossible;
-            }
-        }
+        checkForAction(discover, action_discover, action);
+        checkForAction(query, action_query, action);
+        checkForAction(verify, action_verify, action);
+        checkForAction(program, action_program, action);
+        checkForAction(forceMaintenance, action_forcemaintenance, action);
+        checkForAction(forceApplication, action_forceapplication, action);
+        checkForAction(loadDatFile, action_loaddatfile, action);
+        checkForAction(setSn, action_setstrainsn, action);
+        checkForAction(setGains, action_setstraingainsoffsets, action);
+        checkForAction(setGainsSpecific, action_setstraingainsspecificoffsets, action);
+        checkForAction(getVersion, action_getcanboardversion, action);
+        checkForAction(saveDatFile, action_savedatfile, action);
+        checkForAction(changeCanID, action_changeCanId, action);
+        checkForAction(changeIp, action_changeBoardIp, action);
 
         // now use a switch case
 
@@ -891,6 +729,21 @@ int main(int argc, char *argv[])
 
 /**************************************************/
 
+void checkForAction(bool &actionIsValid, action_t const &actionValue, action_t &actionResult)
+{
+    if((actionIsValid) && (action_impossible != actionResult))
+    {
+        if(actionResult == action_none)
+        {
+            actionResult = actionValue;
+        }
+        else
+        {
+            actionResult = action_impossible;
+        }
+    }
+}
+
 //int eraseEthEEprom(FirmwareUpdaterCore *core,QString device,QString id,QString board)
 //{
 //    int boards = core->connectTo(device,id);
@@ -959,7 +812,6 @@ int changeCanId(FirmwareUpdaterCore *core,QString device,QString id,QString boar
     QList <sBoard> canBoards;
     QString retString;
     bool ret;
-    int ret1;
     string msg;
 
     if(device.contains("SOCKETCAN"))
@@ -1012,7 +864,6 @@ int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QStri
 {
     QList <sBoard> canBoards;
     QString retString;
-    int ret;
     string msg;
       
     if(device.contains("SOCKETCAN"))
@@ -1037,43 +888,43 @@ int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QStri
         canBoards = core->getCanBoardsFromEth(board,&result,canLine.toInt(),true);
     }
 
-        if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
-        {
-            ofstream myfile;
-            string prefix = "Application ";
+    if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
+    {
+        ofstream myfile;
+        string prefix = "Application ";
 
-            if(!canBoards[0].applicationisrunning && save)
-            {   
-                try{
-                    myfile.open ("firmware-info.txt", std::ios_base::app);
-                    prefix = " Bootloader ";
-                    myfile << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "\n";
-                    myfile.close();
-                    yInfo() << prefix << " version : " << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor;
-                }
-                catch (std::ifstream::failure e) {
-                    yError() << "Exception opening file";
-                    return false;
-                }               
-            }else if(canBoards[0].applicationisrunning && save)
-            {
-                try{
-                    myfile.open ("firmware-info.txt", std::ios_base::app);
-                    prefix = " Application ";
-                    myfile << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "." << canBoards[0].appl_vers_build << "\n";
-                    myfile.close();
-                    yInfo() << prefix << " version : " << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "." << canBoards[0].appl_vers_build;
-                }
-                catch (std::ifstream::failure e) {
-                    yError() << "Exception opening file";
-                    return false;
-                }     
+        if(!canBoards[0].applicationisrunning && save)
+        {   
+            try{
+                myfile.open ("firmware-info.txt", std::ios_base::app);
+                prefix = " Bootloader ";
+                myfile << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "\n";
+                myfile.close();
+                yInfo() << prefix << " version : " << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor;
             }
-            
-        } else {
-            yError() << "No CAN board found, stopped!";
-            return false;
+            catch (std::ifstream::failure e) {
+                yError() << "Exception opening file";
+                return false;
+            }               
+        }else if(canBoards[0].applicationisrunning && save)
+        {
+            try{
+                myfile.open ("firmware-info.txt", std::ios_base::app);
+                prefix = " Application ";
+                myfile << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "." << canBoards[0].appl_vers_build << "\n";
+                myfile.close();
+                yInfo() << prefix << " version : " << canBoards[0].appl_vers_major << "." << canBoards[0].appl_vers_minor << "." << canBoards[0].appl_vers_build;
+            }
+            catch (std::ifstream::failure e) {
+                yError() << "Exception opening file";
+                return false;
+            }
         }
+        
+    } else {
+        yError() << "No CAN board found, stopped!";
+        return false;
+    }
    
     return -1;
 }
@@ -1189,7 +1040,6 @@ int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString boar
     
     QList <sBoard> canBoards;
     QString retString;
-    int ret;
     string msg;
 
     QByteArray string = serialNumber.toLatin1();
@@ -1252,7 +1102,6 @@ int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
     
     QList <sBoard> canBoards;
     QString retString;
-    int ret;
     char sn[256];
     int index = 0;
     unsigned int CHANNEL_COUNT = 6; 
@@ -1309,7 +1158,7 @@ int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
                     return false;
                 }
 
-                int i=0;
+                unsigned int i=0;
                 char buffer[256];
 
                 //file version
@@ -1453,18 +1302,14 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
     
     QList <sBoard> canBoards;
     QString retString;
-    int ret;
-    char sn[256];
     unsigned int CHANNEL_COUNT = 6; 
     strain2_ampl_regs_t amp_registers[6]; 
     unsigned int offset[6];
-    unsigned int calib_matrix[3][6][6];
     int calib_bias[6];
     float amp_gains[6];
     uint16_t amp_offsets[6];
     unsigned int full_scale_const[3][6];
     unsigned int matrix[3][6][6];
-    unsigned int full_scale_calib[3][6];
     unsigned int calib_const[3];
     char serial_no[8];
     string msg;
@@ -1480,7 +1325,7 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
     std::string filename;
 
     
-    int i=0;
+    unsigned int i=0;
     char buffer[256];
 
     if(device.contains("SOCKETCAN"))
@@ -1524,8 +1369,8 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
 
         for(int mi=0;mi<1;mi++){
 
-            for (int ri=0;ri<CHANNEL_COUNT;ri++){
-                for (int ci=0;ci<CHANNEL_COUNT;ci++){
+            for (unsigned int ri=0; ri < CHANNEL_COUNT; ri++){
+                for (unsigned int ci=0;ci<CHANNEL_COUNT;ci++){
                     core->getDownloader()->strain_get_matrix_rc(canLine.toInt(),canId.toInt(), ri, ci, matrix[mi][ri][ci], cDownloader::strain_regset_inuse, &msg);
                     core->getDownloader()->strain_get_full_scale(canLine.toInt(),canId.toInt(), ri, full_scale_const[mi][ri], cDownloader::strain_regset_inuse, &msg);
                 }

@@ -44,6 +44,7 @@ struct boardInfo2_t
     eOversion_t         versionOfRunning;   // we keep this info (which for protversion is also inside processes.info[processes.runningnow].version) because ...
                                             // in the case of protversion 0 we dont have any info about which process is running now.
     string              moreinfostring;
+    eOuprot_procinfo_t  extraprocesses[2];  // this buffer is used to to transport the information related to the extraprocesses running multi-core processors
 
     boardInfo2_t()
     {
@@ -68,6 +69,7 @@ struct boardInfo2_t
         maintenanceIsActive = false;
         versionOfRunning.major = versionOfRunning.minor = 0;
         moreinfostring.clear();
+        extraprocesses[0].type = extraprocesses[1].type = uprot_proc_None;
     }
 };
 
