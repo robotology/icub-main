@@ -65,8 +65,8 @@ checkandset_dependency(OpenCV)
 checkandset_dependency(Qt5)
 
 if(icub_firmware_shared_FOUND AND ICUB_USE_icub_firmware_shared)
-  if(icub_firmware_shared_VERSION VERSION_LESS 1.30.0)
-    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected: at least 1.30.0 is required")
+  if(icub_firmware_shared_VERSION VERSION_LESS 1.31.0)
+    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected: at least 1.31.0 is required")
   endif()
 endif()
 
