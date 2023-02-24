@@ -5,14 +5,15 @@
 # binary packages
 #
 # AUTHOR : Matteo Brunettini <matteo.brunettini@iit.it>
+#          Nicolo' Genesio <nicolo.genesio@iit.it>
 #
-# LATEST MODIFICATION DATE (YYYY-MM-DD): 2020-06-11
+# LATEST MODIFICATION DATE (YYYY-MM-DD): 2023-02-24
 #
 YCM_PACKAGE="ycm-cmake-modules"
-YCM_REQUIRED_VERSION="0.14.2"
+YCM_REQUIRED_VERSION="0.15.1"
 YCM_PACKAGE_URL="https://github.com/robotology/ycm/releases/download/v${YCM_REQUIRED_VERSION}/${YCM_PACKAGE}-${YCM_REQUIRED_VERSION}-all.deb"
 
-YARP_REQUIRED_VERSION="3.7.2"
+YARP_REQUIRED_VERSION="3.8.0"
 YARP_PACKAGE_URL_buster="https://github.com/robotology/yarp/releases/download/v${YARP_REQUIRED_VERSION}/yarp-${YARP_REQUIRED_VERSION}-2.buster_amd64.deb"
 YARP_PACKAGE_URL_focal="https://github.com/robotology/yarp/releases/download/v${YARP_REQUIRED_VERSION}/yarp-${YARP_REQUIRED_VERSION}-2.focal_amd64.deb"
 YARP_PACKAGE_URL_jammy="https://github.com/robotology/yarp/releases/download/v${YARP_REQUIRED_VERSION}/yarp-${YARP_REQUIRED_VERSION}-2.jammy_amd64.deb"
