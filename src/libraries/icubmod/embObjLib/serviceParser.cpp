@@ -1856,7 +1856,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
     }
 
 
-//    // check the num of type of boards. At max we have 2 board types. they must be eitehr mtb4fap or pmc
+//    // check the num and of type of boards. at max we have 2 board types. they must be: mtb4c or mtb4 (or mtb4fap / pmc)
 //    if(as_service.properties.canboards.size() > 2)
 //    {
 //        yError() << "ServiceParser::parseService(POS): too many type board info are configured. The max num is " << eOas_pos_boards_maxnumber;
@@ -1879,13 +1879,14 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
         {
             boardtype = as_service.settings.enabledsensors[i].boardtype;
             location = as_service.settings.enabledsensors[i].location;
-            if((eobrd_mtb4fap == boardtype) || (eobrd_pmc == boardtype))
+            bool validBoardForPOS = (eobrd_mtb4 == boardtype) || (eobrd_mtb4c == boardtype) || (eobrd_mtb4fap == boardtype) || (eobrd_pmc == boardtype);
+            if(validBoardForPOS)
             {
                 // ok
             }
             else
             {
-                yError() << "ServiceParser::parseService(POS): sensors must have the boardtype either mtb4fap or pmc. See SENSORS::boardType values";
+                yError() << "ServiceParser::parseService(POS): sensors must have the correct boardtype (mtb4, mtb4c, mtb4fap or pmc).";
                 return false;
             }
 
