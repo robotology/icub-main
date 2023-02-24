@@ -1880,7 +1880,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
             boardtype = as_service.settings.enabledsensors[i].boardtype;
             location = as_service.settings.enabledsensors[i].location;
             bool validBoardForPOS = (eobrd_mtb4 == boardtype) || (eobrd_mtb4c == boardtype) || (eobrd_mtb4fap == boardtype) || (eobrd_pmc == boardtype);
-            if(validBoardsForPOS)
+            if(validBoardForPOS)
             {
                 // ok
             }
