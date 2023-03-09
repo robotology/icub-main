@@ -2087,6 +2087,29 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type13.rawValueAtZeroPos2     = (int32_t)S_32(params.param3);
         calib.params.type13.rawValueAtZeroPos3     = (int32_t)S_32(params.param4);
         break;
+    
+    case eomc_calibration_type14_qenc_hard_stop_and_fap:
+        calib.params.type14.pwmlimit               = (int32_t)S_32(params.param1);
+        calib.params.type14.final_pos              = (int32_t)S_32(params.param2);
+        calib.params.type14.invertdirection        = (uint8_t)U_32(params.param3);
+
+        eoas_pos_ROT_t rotationparam;
+        if(!convertCalib14RotationParam(params.param4, rotationparam))
+        {
+            yError() << "Error in param4 of calibartion type 14 for joint " << j << "Admitted values are: 0.0, 180.0, 90.0, -90.0";
+            return false;
+        }
+        calib.params.type14.rotation               = (uint8_t)rotationparam;
+        calib.params.type14.offset                 = (int32_t)S_32(params.param5);
+        calib.params.type14.calibrationZero        = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
+
+        yDebug() << "***** calib.params.type14.pwmlimit = " <<calib.params.type14.pwmlimit;
+        yDebug() << "***** calib.params.type14.final_pos = " <<calib.params.type14.final_pos;
+        yDebug() << "***** calib.params.type14.invertdirection = " <<calib.params.type14.invertdirection;
+        yDebug() << "***** calib.params.type14.rotation = " <<calib.params.type14.rotation;
+        yDebug() << "***** calib.params.type14.offset = " <<calib.params.type14.offset;
+        yDebug() << "***** calib.params.type14.calibrationZero = " <<calib.params.type14.calibrationZero;
+        break;
 
     default:
         yError() << "Calibration type unknown!! (embObjMotionControl)\n";
@@ -2103,6 +2126,19 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
     _calibrated[j] = true;
 
     return true;
+}
+bool embObjMotionControl::convertCalib14RotationParam(double calib_param4, eoas_pos_ROT_t & rotationparam)
+{
+    if(calib_param4 == 0.0)
+        {rotationparam = eoas_pos_ROT_zero; return true;}
+    if(calib_param4 == 180.0)
+        {rotationparam = eoas_pos_ROT_plus180; return true;}
+    if(calib_param4 == 90.0)
+        {rotationparam = eoas_pos_ROT_plus090; return true;}
+    if(calib_param4 == -90.0)
+        {rotationparam = eoas_pos_ROT_minus090; return true;}
+    
+    return false;
 }
 
 bool embObjMotionControl::calibrateAxisWithParamsRaw(int j, unsigned int type, double p1, double p2, double p3)

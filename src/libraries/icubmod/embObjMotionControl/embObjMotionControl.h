@@ -342,6 +342,8 @@ private:
     bool helper_setSpdPidRaw(int j, const Pid &pid);
     bool helper_getSpdPidRaw(int j, Pid *pid);
     bool helper_getSpdPidsRaw(Pid *pid);
+
+    bool convertCalib14RotationParam(double calib_param4, eoas_pos_ROT_t & rotationparam);
     
 public:
 
