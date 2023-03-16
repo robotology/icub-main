@@ -65,7 +65,6 @@
                     <port timeout="20">/yarplogger</port>
                     <port timeout="20">/icubSim/torso/state:o</port>
                     <port timeout="20">/icubSim/head/state:o</port>
-                    <port timeout="20">/icubSim/inertial</port>
                 </dependencies>
                 <environment>YARP_FORWARD_LOG_ENABLE=1</environment>
                 <ensure>
@@ -83,7 +82,7 @@
                     <port timeout="20">/icubSim/torso/state:o</port>
                     <port timeout="20">/icubSim/right_arm/state:o</port>
                     <port timeout="20">/icubSim/left_arm/state:o</port>
-                    <port timeout="20">/icubSim/inertial</port>
+                    <port timeout="20">/icubSim/head/inertials/measures:o</port>
                 </dependencies>
                 <environment>YARP_FORWARD_LOG_ENABLE=1</environment>
                 <node>localhost</node>
