@@ -2211,7 +2211,6 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
         case eobrd_cantype_amcbldc:
         case eobrd_cantype_mtb4c:
         case eobrd_cantype_strain2c:
-        case eobrd_cantype_mtb4fap:
         {
             boardisMC = false;
             txBuffer[0].setId(EOCANPROT_D_CREATE_CANID(ICUBCANPROTO_CLASS_POLLING_ANALOGSENSOR, 0, target_id));
@@ -2439,7 +2438,6 @@ int cDownloader::change_card_address(int bus, int target_id, int new_id, int boa
         case eobrd_cantype_pmc:
         case eobrd_cantype_amcbldc:
         case eobrd_cantype_strain2c:
-        case eobrd_cantype_mtb4fap:
         
             txBuffer[0].setId((0x02 << 8) + (ID_MASTER << 4) + target_id);
             txBuffer[0].setLen(2);
@@ -3269,7 +3267,6 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
                        (icubCanProto_boardType__pmc == board_type) 
                        || (icubCanProto_boardType__amcbldc == board_type)
                        || (icubCanProto_boardType__mtb4c == board_type)
-                       || (icubCanProto_boardType__mtb4fap == board_type)
                        || (icubCanProto_boardType__strain2c == board_type) 
                       )
                     {   // it is ok
