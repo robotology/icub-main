@@ -192,6 +192,7 @@ void ServerCartesianController::init()
     limbState=limbPlan=NULL;
     chainState=chainPlan=NULL;
     ctrl=NULL;
+    taskRefVelTargetGen=NULL;
 
     portCmd     =NULL;
     rpcProcessor=NULL;
