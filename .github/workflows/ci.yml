@@ -131,13 +131,13 @@ jobs:
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/yarp.git --depth 1 --branch v${{ env.yarp_version }}
         cd yarp && mkdir -p build && cd build
-        cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DYARP_COMPILE_GUIS:BOOL=OFF ..
+        cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DYARP_COMPILE_GUIS:BOOL=OFF ..
         cmake --build . --config ${{ matrix.build_type }} --target install
         # icub-firmware-shared
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/robotology/icub-firmware-shared.git --depth 1 --branch ${{ env.icub_firmware_shared_branch }}
         cd icub-firmware-shared && mkdir -p build && cd build
-        cmake  -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
+        cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install
 
     # ===================
@@ -152,13 +152,9 @@ jobs:
         cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DBUILD_SHARED_LIBS:BOOL=${{ matrix.build_shared_libs }} \
               -DICUB_USE_icub_firmware_shared:BOOL=ON \
-              -DENABLE_icubmod_serial:BOOL=ON \
-              -DENABLE_icubmod_serialport:BOOL=ON \
               -DENABLE_icubmod_skinWrapper:BOOL=ON \
-              -DENABLE_icubmod_portaudio:BOOL=ON \
               -DENABLE_icubmod_sharedcan:BOOL=ON \
               -DENABLE_icubmod_canmotioncontrol:BOOL=ON \
               -DENABLE_icubmod_canBusAnalogSensor:BOOL=ON \
@@ -187,13 +183,9 @@ jobs:
         mkdir -p build
         cd build
         cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
-              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DBUILD_SHARED_LIBS:BOOL=${{ matrix.build_shared_libs }} \
               -DICUB_USE_icub_firmware_shared:BOOL=ON \
-              -DENABLE_icubmod_serial:BOOL=ON \
-              -DENABLE_icubmod_serialport:BOOL=ON \
               -DENABLE_icubmod_skinWrapper:BOOL=ON \
-              -DENABLE_icubmod_portaudio:BOOL=ON \
               -DENABLE_icubmod_sharedcan:BOOL=ON \
               -DENABLE_icubmod_canmotioncontrol:BOOL=ON \
               -DENABLE_icubmod_canBusAnalogSensor:BOOL=ON \
