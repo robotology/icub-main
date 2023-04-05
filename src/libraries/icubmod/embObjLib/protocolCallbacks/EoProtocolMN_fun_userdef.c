@@ -225,15 +225,11 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     {
         s_process_CANPRINT(infobasic, extra, nv, rd);
     }
-    else if(eoerror_category_Config == category)
-    {
-        s_process_category_Config(infobasic, extra, nv, rd);
-    }
     else
     {
-        s_process_category_Default(infobasic, extra, nv, rd);
+        feat_manage_diagnostic(infobasic, extra, nv, rd);
     }
-
+    
 }
 
 

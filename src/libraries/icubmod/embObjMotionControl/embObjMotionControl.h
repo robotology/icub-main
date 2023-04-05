@@ -358,6 +358,7 @@ public:
     virtual bool initialised();
     virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
+    virtual bool getEntityName(uint32_t entityId, std::string &entityName);
 
     /////////   PID INTERFACE   /////////
     virtual bool setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid) override;

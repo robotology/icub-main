@@ -69,6 +69,12 @@ const char * IethResource::stringOfType()
     return names[t];
 }
 
+bool IethResource::getEntityName(uint32_t entityId, std::string &entityName)
+{
+    entityName.clear();
+    return true;
+}
+
 
 // - end-of-file (leave a blank line after)----------------------------------------------------------------------------
 

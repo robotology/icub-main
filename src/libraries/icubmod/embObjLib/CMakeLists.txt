@@ -44,7 +44,10 @@ set(EXTRA_SOURCE            ${CMAKE_CURRENT_SOURCE_DIR}/hostTransceiver.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/batteryInfo.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/theNVmanager.cpp
                             ${CMAKE_CURRENT_SOURCE_DIR}/embObjGeneralDevPrivData.cpp
-                            ${CMAKE_CURRENT_SOURCE_DIR}/mcEventDownsampler.cpp)
+                            ${CMAKE_CURRENT_SOURCE_DIR}/mcEventDownsampler.cpp
+			    ${CMAKE_CURRENT_SOURCE_DIR}/diagnosticInfoFormatter.cpp
+			    ${CMAKE_CURRENT_SOURCE_DIR}/diagnosticInfoParsers.cpp
+			    ${CMAKE_CURRENT_SOURCE_DIR}/diagnosticInfo.cpp)
                             
 set(NVS_CBK_SOURCE  ${CMAKE_CURRENT_SOURCE_DIR}/protocolCallbacks/EoProtocolMN_fun_userdef.c
                     ${CMAKE_CURRENT_SOURCE_DIR}/protocolCallbacks/EoProtocolMC_fun_userdef.c

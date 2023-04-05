@@ -27,6 +27,7 @@
 
 
 #include "EoProtocol.h"
+#include <string>
 
 
 // marco.accame on 20 oct 2014.
@@ -91,6 +92,13 @@ namespace eth {
 
     public:
             const char * stringOfType();
+            /* the entityName there will be the name of the entity, or it can be an empty string if the enity han't name
+            The entity could be:
+              - axis in case the ethResource type is iethres_motioncontrol
+              - sensor id in case of, skin, mais and strain 
+              The defiult value is an empty string 
+              return false in case of error, like entityId is not present. Aniway the entity name is initialize to empty string.*/
+            virtual bool getEntityName(uint32_t entityId, std::string &entityName);
 
     private:
             static const char * names[iethresType_numberof+1];

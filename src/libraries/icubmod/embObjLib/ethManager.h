@@ -129,6 +129,8 @@ namespace eth {
 
         IethResource* getInterface(eOipv4addr_t ipv4, eOprotID32_t id32);
 
+        IethResource* getInterface(eOipv4addr_t ipv4, iethresType_t type);
+
         int getNumberOfResources(void);
 
         const string & getName(eOipv4addr_t ipv4);

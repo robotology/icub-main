@@ -75,6 +75,8 @@ void feat_PrintError(char *string);
 
 void feat_PrintFatal(char *string);
 
+void feat_manage_diagnostic(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd);
+
 
 void* ace_mutex_new(void);
 
