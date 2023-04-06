@@ -4,12 +4,12 @@
 </dependencies>
    <module>
       <name>yarpdev</name>
-      <parameters> --from camera/dragonfly2_config_left_320_240.ini --split true</parameters>
+      <parameters> --from camera/dragonfly2_config_left_320_240.ini </parameters>
 	  <node>pc104</node>
    </module>
       <module>
       <name>yarpdev</name>
-      <parameters> --from camera/dragonfly2_config_right_320_240.ini --split true</parameters>
+      <parameters> --from camera/dragonfly2_config_right_320_240.ini </parameters>
 	  <node>pc104</node>
    </module>
     <module>
