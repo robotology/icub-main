@@ -16,7 +16,7 @@ if (NOT SKIP_xsensmtx)
                              MTComm.h
                              XSensMTx.cpp
                              XSensMTx.h)
-    target_link_libraries(xsensmtx PRIVATE YARP::YARP_OS
+    target_link_libraries(xsensmtx PRIVATE YARP::YARP_os
                                            YARP::YARP_sig
                                            YARP::YARP_dev)
     yarp_install(TARGETS xsensmtx
