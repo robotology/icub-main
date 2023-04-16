@@ -72,16 +72,16 @@ jobs:
     - name: Determine YCM and YARP required versions
       shell: bash
       run: |
-        grep -m 1 YCM_REQUIRED_VERSION CMakeLists.txt | sed "s/[^0-9.]//g" >> YCM_VERSION.txt
-        grep -m 1 YARP_REQUIRED_VERSION CMakeLists.txt | sed "s/[^0-9.]//g" >> YARP_VERSION.txt
+        grep -m 1 YCM_REQUIRED_VERSION CMakeLists.txt | sed "s/[^0-9.]//g" > YCM_VERSION.txt
+        grep -m 1 YARP_REQUIRED_VERSION CMakeLists.txt | sed "s/[^0-9.]//g" > YARP_VERSION.txt
         echo "ycm_version=$(cat YCM_VERSION.txt)" >> $GITHUB_ENV
         echo "yarp_version=$(cat YARP_VERSION.txt)" >> $GITHUB_ENV
 
     - name: Determine icub-firmware-shared required branch
       shell: bash
       run: |
-        grep -m 1 icub_firmware_shared_VERSION conf/iCubFindDependencies.cmake | sed "s/[^0-9.]//g" >> icub_firmware_shared_VERSION.txt
-        gh --repo robotology/icub-firmware-shared release list >> icub_firmware_shared_RELEASES.txt
+        grep -m 1 icub_firmware_shared_VERSION conf/iCubFindDependencies.cmake | sed "s/[^0-9.]//g" > icub_firmware_shared_VERSION.txt
+        gh --repo robotology/icub-firmware-shared release list > icub_firmware_shared_RELEASES.txt
         if grep -q $(cat icub_firmware_shared_VERSION.txt) icub_firmware_shared_RELEASES.txt; then
           echo "icub_firmware_shared_branch=v$(cat icub_firmware_shared_VERSION.txt)" >> $GITHUB_ENV
         elif [[ "${{ github.event_name }}" == "schedule" || "${{ github.ref }}" == "refs/heads/master" || "${{ github.base_ref }}" == "master" || "${{ github.head_ref }}" == "master" ]]; then
