@@ -111,7 +111,8 @@ private:
     bool goToStartupPosition(int j);
     bool checkCalibrateJointEnded(std::list<int> set);
     bool checkGoneToZeroThreshold(int j);
-    bool checkHwFault(int j);
+    bool checkHwFault(); 
+
 
     yarp::dev::PolyDriver *dev2calibrate;
     yarp::dev::IControlCalibration *iCalibrate;
