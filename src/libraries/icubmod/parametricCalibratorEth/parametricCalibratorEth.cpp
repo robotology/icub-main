@@ -563,15 +563,10 @@ bool parametricCalibratorEth::calibrate()
         while(lit != lend)
         {
             calibJoints.push_back(*lit);
+            calibJointsString.addInt32(*lit);
             lit++;
         }
         Bit++;
-    }
-
-    //before starting the calibration, checks for joints in hardware fault, and clears them if the user set the clearHwFaultBeforeCalibration option
-    for (int i=0; i<totJointsToCalibrate; i++)
-    {
-        checkHwFault(i);
     }
 
     yDebug() << deviceName << ": Joints calibration order:" << calibJointsString.toString();
@@ -581,6 +576,10 @@ bool parametricCalibratorEth::calibrate()
         yError() << deviceName << ": too much axis to calibrate for this part..." << totJointsToCalibrate << " bigger than " << n_joints;
         return false;
     }
+
+    //before starting the calibration, checks for joints in hardware fault, and clears them if the user set the clearHwFaultBeforeCalibration option
+    if(!checkHwFault())
+        return false;
 
     if (totJointsToCalibrate < n_joints)
     {
@@ -840,44 +839,41 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
     return calibration_ok;
 }
 
-bool parametricCalibratorEth::checkHwFault(int j)
+bool parametricCalibratorEth::checkHwFault()
 {
-    if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
+    for(auto j : calibJoints)
     {
-        yError("%s cannot perform 'check hardware fault' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
-        return false;
-    }
-
-    int mode=0;
-    iControlMode->getControlMode(j,&mode);
-    if (mode == VOCAB_CM_HW_FAULT)
-    {
-        if (clearHwFault)
+        int mode=0;
+        iControlMode->getControlMode(j,&mode);
+        if (mode == VOCAB_CM_HW_FAULT)
         {
-            iControlMode->setControlMode(j,VOCAB_CM_FORCE_IDLE);
-            yWarning() << deviceName <<": detected an hardware fault on joint " << j << ". An attempt will be made to clear it.";
-            Time::delay(0.02f);
-            iControlMode->getControlMode(j,&mode);
-            if (mode == VOCAB_CM_HW_FAULT)
+            if (clearHwFault)
             {
-                yError() << deviceName <<": unable to clear the hardware fault detected on joint " << j << " before starting the calibration procedure!";
-                return false;
-            }
-            else if (mode == VOCAB_CM_IDLE)
-            {
-                yWarning() << deviceName <<": hardware fault on joint " << j << " successfully cleared.";
-                return true;
+                iControlMode->setControlMode(j,VOCAB_CM_FORCE_IDLE);
+                yWarning() << deviceName <<": detected an hardware fault on joint " << j << ". An attempt will be made to clear it.";
+                Time::delay(0.02f);
+                iControlMode->getControlMode(j,&mode);
+                if (mode == VOCAB_CM_HW_FAULT)
+                {
+                    yError() << deviceName <<": unable to clear the hardware fault detected on joint " << j << " before starting the calibration procedure!";
+                    return false;
+                }
+                else if (mode == VOCAB_CM_IDLE)
+                {
+                    yWarning() << deviceName <<": hardware fault on joint " << j << " successfully cleared.";
+                    return true;
+                }
+                else
+                {
+                    yError() << deviceName <<": an unknown error occured while trying the hardware fault on joint " << j ;
+                    return false;
+                }
             }
             else
             {
-                yError() << deviceName <<": an unknown error occured while trying the hardware fault on joint " << j ;
+                yError() << deviceName <<": detected an hardware fault on joint " << j << " before starting the calibration procedure!";
                 return false;
             }
-        }
-        else
-        {
-            yError() << deviceName <<": detected an hardware fault on joint " << j << " before starting the calibration procedure!";
-            return false;
         }
     }
     return true;
