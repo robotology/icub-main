@@ -28,6 +28,8 @@
 #include "include/Fingertip.h"
 #include "include/Fingertip2Left.h"
 #include "include/Fingertip2Right.h"
+#include "include/Fingertip3Left.h"
+#include "include/Fingertip3Right.h"
 #include "include/Triangle_10pad.h"
 #include "include/CER_SH_PDL.h"
 
