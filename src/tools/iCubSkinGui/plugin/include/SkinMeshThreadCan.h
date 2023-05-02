@@ -26,6 +26,8 @@
 #include "include/Fingertip.h"
 #include "include/Fingertip2Left.h"
 #include "include/Fingertip2Right.h"
+#include "include/Fingertip3Left.h"
+#include "include/Fingertip3Right.h"
 #include "include/CER_SH_PDL.h"
 
 using namespace yarp::os;
@@ -88,7 +90,7 @@ public:
             yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
             std::string type(sensorConfig.get(0).asString());
-            if (type == "triangle" || type == "fingertip" || type == "fingertip2L" || type == "cer_sh_pdl"  || type == "fingertip2R" || type == "triangle_10pad" || type == "quad16" || type == "palmR" || type == "palmL")
+            if (type == "triangle" || type == "fingertip" || type == "fingertip2L" || type == "cer_sh_pdl"  || type == "fingertip2R" || type == "triangle_10pad" || type == "quad16" || type == "palmR" || type == "palmL" || type == "fingertip3R" || type == "fingertip3L")
             {
                 int id=sensorConfig.get(1).asInt32();
                 double xc=sensorConfig.get(2).asFloat64();
@@ -124,6 +126,10 @@ public:
                         {
                             sensor[id]=new Fingertip2L(xc,yc,th,gain,layoutNum,lrMirror);
                         }
+                        if (type=="fingertip3L")
+                        {
+                            sensor[id]=new Fingertip3L(xc,yc,th,gain,layoutNum,lrMirror);
+                        }
                         if (type == "cer_sh_pdl")
                         {
                             sensor[id] = new CER_SH_PDL(xc, yc, th, gain, layoutNum, lrMirror);
@@ -131,6 +137,10 @@ public:
                         if (type=="fingertip2R")
                         {
                             sensor[id]=new Fingertip2R(xc,yc,th,gain,layoutNum,lrMirror);
+                        }
+                        if (type=="fingertip3R")
+                        {
+                            sensor[id]=new Fingertip3R(xc,yc,th,gain,layoutNum,lrMirror);
                         }
                         if (type=="quad16")
                         {
