@@ -1089,6 +1089,7 @@ void embObjMotionControl::updateDeadZoneWithDefaultValues(void)
             case eomc_enc_hallmotor:
             case eomc_enc_spichainof2:
             case eomc_enc_spichainof3:
+            case eomc_enc_mrie:
             default:
                 _deadzone[i] = 0.0;
             
