@@ -101,7 +101,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, pc104Data &pc104data)
 
     if(!pc104data.embBoardsConnected)
     {
-        yError() << "ATTENTION: NO EMBEDDED BOARDS CONNECTED. YOU ARE IN DEBUG MODE";
+        yDebug() << "ATTENTION: NO EMBEDDED BOARDS CONNECTED. YOU ARE IN DEBUG MODE";
     }
 
     // localaddress
