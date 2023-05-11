@@ -335,7 +335,7 @@ bool embObjMultipleFTsensors::getSixAxisForceTorqueSensorFrameName(size_t sensor
 
 size_t embObjMultipleFTsensors::getNrOfTemperatureSensors() const
 {
-    return temperaturesensordata_.size();
+    return ftSensorsData_.size();
 }
 
 yarp::dev::MAS_status embObjMultipleFTsensors::getTemperatureSensorStatus(size_t sensorindex) const
