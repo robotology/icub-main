@@ -8,7 +8,7 @@ yarp_prepare_plugin(dragonfly2
                     CATEGORY device
                     TYPE yarp::dev::DragonflyDeviceDriver2Rgb
                     INCLUDE common/DragonflyDeviceDriver2.h
-                    EXTRA_CONFIG WRAPPER=grabberDual)
+                    EXTRA_CONFIG WRAPPER=frameGrabber_nws_yarp)
 
 # dragonfly2raw is always enabled when dragonfly2 is enabled
 # This is a workaround to enable the creation of the additional source files and to hide the entry in ccmake
@@ -17,7 +17,7 @@ yarp_prepare_plugin(dragonfly2raw
                     CATEGORY device
                     TYPE yarp::dev::DragonflyDeviceDriver2Raw
                     INCLUDE common/DragonflyDeviceDriver2.h
-                    EXTRA_CONFIG WRAPPER=grabberDual)
+                    EXTRA_CONFIG WRAPPER=frameGrabber_nws_yarp)
 
 if(NOT SKIP_dragonfly2)
   if(WIN32)
