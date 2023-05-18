@@ -2,7 +2,7 @@
 <name>Face Expressions</name>
 <module>
       <name>yarpdev</name>
-      <parameters>--name /icub/face/raw --device serial --subdevice serialport --context faceExpressions --from serialport.ini</parameters>
+      <parameters>--name /icub/face/raw --device serialPort_nws_yarp --subdevice serialport --context faceExpressions --from serialport.ini</parameters>
 	  <node>pc104</node>
 	<tag>face_device</tag>
    </module>
