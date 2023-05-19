@@ -38,23 +38,23 @@ eo_ftsens_privData::~eo_ftsens_privData()
 
 bool eo_ftsens_privData::fromConfig(yarp::os::Searchable &_config, servConfigFTsensor_t &serviceConfig)
 {
-    
+
     ServiceParser* parser = new ServiceParser;
     bool ret = parser->parseService(_config, serviceConfig);
     delete parser;
-    
+
     if(!ret)
     {
         yError() << getBoardInfo() << "is missing some configuration parameter. Check logs and your config file.";
         return false;
     }
-    
+
     useCalibValues = serviceConfig.useCalibration;
     if(serviceConfig.temperatureAcquisitionrate > 0)
         useTemperature = true;
     devicename = serviceConfig.nameOfStrain;
     frameName = serviceConfig.frameName;
-    
+
     if(isVerbose())
         printServiceConfig(serviceConfig);
     return ret;
@@ -79,13 +79,13 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
     {
         return true;
     }
-    
+
     // at first we set the scale factors to 1, so that we are sure they have a safe value. it redundant, as we already set it to 1.0
     for(size_t i = 0; i<scaleFactor.size(); i++)
     {
         scaleFactor[i] = 1.0f;
     }
-    
+
     // if we dont need calibration we are done
     if(false == useCalibValues)
     {
@@ -93,14 +93,14 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
         {
             yDebug() << getBoardInfo() << "fillScaleFactor(): we DONT use calibration, thus all scale factors are set to 1.0";
         }
-        
+
         scaleFactorIsFilled = true;
         return true;
     }
-    
+
     // if we need calibration, then we need to ask the fullscales directly to the strain
-    
-    
+
+
     // marco.accame on 11 apr 2014:
     // added the code under ifdef 1. the reason is that one cannot rely on validity of data structures inside the EOnv, as in protocol v2 the requirement is that
     // the initialisation is not specialised and is ... all zeros. if the user wants to init to proper values must redefine the relevant INIT funtion.
@@ -109,42 +109,42 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
     // {
     //     eOas_arrayofupto12bytes_t fullscale_values = {0};
     //     eo_array_New(6, 2, &fullscale_values); // itemsize = 2, capacity = 6
-    //     eo_nv_Set(nv, &fullscale_values, eobool_true, eo_nv_upd_dontdo);    
+    //     eo_nv_Set(nv, &fullscale_values, eobool_true, eo_nv_upd_dontdo);
     // }
     // moreover, even if properly initted, it is required to set the size to 0 because the size being not 0 is the check of reception of a message.
-    
-    
+
+
     bool gotFullScaleValues = false;
-    
-    
+
+
     // Check initial size of array...  it should be zero.
     int timeout, NVsize;
     EOnv tmpNV;
     EOnv *p_tmpNV = NULL;
     eOas_arrayofupto12bytes_t fullscale_values = {0};
-    // force it to be an empty array of itemsize 2 and capacity 6. 
+    // force it to be an empty array of itemsize 2 and capacity 6.
     // the reason is that the eoprot_tag_as_strain_status_fullscale contains 3 forces and 3 torques each of 2 bytes. see eOas_strain_status_t in EoAnalogSensors.h
     eo_array_New(6, 2, &fullscale_values);
-    
+
     eOprotID32_t id32_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
-    
-    
+
+
     // at first we impose that the local value of fullscales is zero.
     // we also force the change because this variable is readonly
     const bool overrideROprotection = true;
     res->setLocalValue(id32_fullscale, &fullscale_values, overrideROprotection);
-    
-    
+
+
     // Prepare analog sensor
     eOas_strain_config_t strainConfig = {0};
     strainConfig.datarate               = serviceConfig.acquisitionrate;
     strainConfig.mode                   = eoas_strainmode_acquirebutdonttx;
     strainConfig.signaloncefullscale    = eobool_true;
-    
+
     eOprotID32_t id32_strain_config = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
-    
+
     timeout = 5;
-    
+
     // wait for response
     while(!gotFullScaleValues && (timeout != 0))
     {
@@ -155,33 +155,33 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
         // If data arrives, size is bigger than zero
         //#warning --> marco.accame says: to wait for 1 sec and read size is ok. a different way is to ... wait for a semaphore incremented by the reply of the board. think of it!
         NVsize = eo_array_Size((EOarray *)&fullscale_values);
-        
+
         if(0 != NVsize)
         {
             gotFullScaleValues = true;
             break;
         }
-        
+
         timeout--;
         if(isVerbose())
         {
             yWarning() << getBoardInfo() << "filling ScaleFactor ....";
         }
     }
-    
+
     if((false == gotFullScaleValues) && (0 == timeout))
     {
         yError() << getBoardInfo()  << "fillScaleFactor(): ETH Analog sensor: request for calibration parameters timed out ";
         return false;
     }
-    
+
     if((strain_Channels != NVsize))
     {
         yError()  << getBoardInfo() << "Analog sensor Calibration data has a different size from channels number in configuration file ";
         return false;
     }
-    
-    
+
+
     if(gotFullScaleValues)
     {
         if(isVerbose())
@@ -189,7 +189,7 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
             yWarning() << getBoardInfo() << "fillScaleFactor() detected that already has full scale values";
             yDebug()   << getBoardInfo() << "fillScaleFactor(): Fullscale values are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  strain_Channels;
         }
-        
+
         for (size_t i = 0; i<scaleFactor.size(); i++)
         {
             // Get the k-th element of the array as a 2 bytes msg
@@ -207,10 +207,10 @@ bool eo_ftsens_privData::fillScaleFactor(servConfigFTsensor_t &serviceConfig)
                 yDebug() << getBoardInfo() << "fillScaleFactor(): channel " << i << "full scale value " << scaleFactor[i];
             }
         }
-        
+
         scaleFactorIsFilled = true;
     }
-    
+
     return scaleFactorIsFilled;
 }
 
@@ -250,7 +250,7 @@ bool eo_ftsens_privData::initRegulars(servConfigFTsensor_t &serviceConfig)
 
 
 void eo_ftsens_privData::printServiceConfig(servConfigFTsensor_t &serviceConfig)
-{    
+{
     char loc[20] = {0};
     char fir[20] = {0};
     char pro[20] = {0};
@@ -261,7 +261,7 @@ void eo_ftsens_privData::printServiceConfig(servConfigFTsensor_t &serviceConfig)
     parser->convert(serviceConfig.ethservice.configuration.data.as.strain.canloc, loc, sizeof(loc));
     parser->convert(serviceConfig.ethservice.configuration.data.as.strain.boardtype.firmware, fir, sizeof(fir));
     parser->convert(serviceConfig.ethservice.configuration.data.as.strain.boardtype.protocol, pro, sizeof(pro));
-    
+
     yInfo() << "The embObjFTsensor device using BOARD" << boardname << " w/ IP" << ipv4 << "has the following service config:";
     yInfo() << "- acquisitionrate =" << serviceConfig.acquisitionrate;
     yInfo() << "- useCalibration =" << serviceConfig.useCalibration;
@@ -272,15 +272,15 @@ void eo_ftsens_privData::printServiceConfig(servConfigFTsensor_t &serviceConfig)
 bool eo_ftsens_privData::sendConfig2Strain(servConfigFTsensor_t &serviceConfig)
 {
     eOas_strain_config_t strainConfig = {0};
-    
+
     strainConfig.datarate = serviceConfig.acquisitionrate;
     strainConfig.signaloncefullscale = eobool_false;
     strainConfig.mode = (true == serviceConfig.useCalibration) ? (eoas_strainmode_txcalibrateddatacontinuously) : (eoas_strainmode_txuncalibrateddatacontinuously);
-    
+
     // version with read-back
-    
+
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
-    
+
     if(false == res->setcheckRemoteValue(id32, &strainConfig, 10, 0.010, 0.050))
     {
         yError() << getBoardInfo() << "FATAL: sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config ";
@@ -293,11 +293,11 @@ bool eo_ftsens_privData::sendConfig2Strain(servConfigFTsensor_t &serviceConfig)
             yDebug() << getBoardInfo() << "sendConfig2Strain() correctly configured strain coinfig ";
         }
     }
-    
-    //configure the service of temperature 
+
+    //configure the service of temperature
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_temperature, 0, eoprot_tag_as_temperature_config);
-    
-    
+
+
     eOas_temperature_config_t tempconfig = {0};
     if(serviceConfig.temperatureAcquisitionrate > 0)
     {

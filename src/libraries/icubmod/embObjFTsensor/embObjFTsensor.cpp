@@ -95,7 +95,7 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
         return false;
 
     // read stuff from config file
-    
+
     servConfigFTsensor_t serviceConfig;
     if(!GET_privData(mPriv).fromConfig(config, serviceConfig))
         return false;
@@ -111,9 +111,11 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
 
     //Fill temperature service data in servparamtemp: some of these data are copied from the serviceconfig of ft because both services used tha same board.
     eOmn_serv_parameter_t servparamtemp;
-    bool ret = GET_privData(mPriv).fillTemperatureEthServiceInfo(serviceConfig.ethservice, servparamtemp);
-    if(!ret)
-        return false;
+    if (GET_privData(mPriv).useTemperature) {
+        bool ret = GET_privData(mPriv).fillTemperatureEthServiceInfo(serviceConfig.ethservice, servparamtemp);
+        if(!ret)
+            return false;
+    }
 
     const eOmn_serv_parameter_t* servparamtemp_ptr = &servparamtemp;
     const eOmn_serv_parameter_t* servparamstrain = &serviceConfig.ethservice;
@@ -129,12 +131,13 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
         cleanup();
         return false;
     }
-
-    if(false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_temperatures, servparamtemp_ptr, 5.0))
-    {
-        yError() << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate()";
-        cleanup();
-        return false;
+    if (GET_privData(mPriv).useTemperature) {
+        if(false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_temperatures, servparamtemp_ptr, 5.0))
+        {
+            yError() << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate()";
+            cleanup();
+            return false;
+        }
     }
 
     // we always prepare the fullscales.
@@ -170,27 +173,25 @@ bool embObjFTsensor::open(yarp::os::Searchable &config)
             yDebug()  << getBoardInfo() << "open() correctly starts as service strain";
         }
     }
-
-    if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_temperatures))
-    {
-        yError() << getBoardInfo() << "open() fails to start service temperature";
-        cleanup();
-        return false;
-    }
-    else
-    {
-        if(GET_privData(mPriv).isVerbose())
+    if (GET_privData(mPriv).useTemperature) {
+        if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_temperatures))
+        {
+            yError() << getBoardInfo() << "open() fails to start service temperature";
+            cleanup();
+            return false;
+        }
+        else if(GET_privData(mPriv).isVerbose())
         {
             yDebug()  << getBoardInfo() << "open() correctly starts as service temperature";
         }
-    }
 
-    // start the configured sensors. so far, we must keep it in here. later on we can remove this command
-    if(!enableTemperatureTransmission(true))
-    {
-        yError() << getBoardInfo() << "open() fails to enable temperature transmission";
-        cleanup();
-        return false;
+        // start the configured sensors. so far, we must keep it in here. later on we can remove this command
+        if(!enableTemperatureTransmission(true))
+        {
+            yError() << getBoardInfo() << "open() fails to enable temperature transmission";
+            cleanup();
+            return false;
+        }
     }
 
     GET_privData(mPriv).setOpen(true);
@@ -206,8 +207,10 @@ bool embObjFTsensor::close()
 void embObjFTsensor::cleanup(void)
 {
 
-    // disable temperature
-    enableTemperatureTransmission(false);
+    if (GET_privData(mPriv).useTemperature) {
+        // disable temperature
+        enableTemperatureTransmission(false);
+    }
 
     GET_privData(mPriv).cleanup(static_cast <eth::IethResource*> (this));
 }
@@ -396,7 +399,7 @@ eth::iethresType_t embObjFTsensor::type()
 // ---------------------- ITemperatureSensors --------------------------------------------------------
 size_t embObjFTsensor::getNrOfTemperatureSensors() const
 {
-    return 1;
+    return GET_privData(mPriv).useTemperature ? 1 : 0;
 }
 
 yarp::dev::MAS_status embObjFTsensor::getTemperatureSensorStatus(size_t sens_index) const
