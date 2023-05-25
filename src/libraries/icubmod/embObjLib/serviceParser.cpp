@@ -2076,7 +2076,7 @@ bool ServiceParser::parse_encoder_port(std::string const &fromstring, eObrd_etht
 
             if(len > 15)
             {
-                yWarning() << "SServiceParser::parse_encoder_port():" << t << "is not a legal string for a encoder port because it is too long with size =" << len;
+                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for a encoder port because it is too long with size =" << len;
                 formaterror = true;
                 return false;
             }
