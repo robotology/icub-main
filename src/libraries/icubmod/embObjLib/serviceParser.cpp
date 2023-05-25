@@ -1537,7 +1537,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     servAnalogSensor_t thestrain_sensor = as_service.settings.enabledsensors.at(0);
 
     // first check we do is about thestrain_props.type
-    if((eobrd_cantype_strain2 != thestrain_props.type) && (eobrd_cantype_strain2c != thestrain_props.type))
+    if( (eobrd_cantype_strain != thestrain_props.type) && (eobrd_cantype_strain2 != thestrain_props.type) && (eobrd_cantype_strain2c != thestrain_props.type))
     {
         yError() << "ServiceParser::parseService() for embObjFTsensor has detected an invalid type of board. it should be a eobrd_strain2 or a eobrd_strain2c but is a:" << eoboards_type2string2(eoboards_cantype2type(thestrain_props.type), eobool_false);
         return false;
@@ -1570,10 +1570,17 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
     Bottle b_SERVICE(config.findGroup("SERVICE")); //b_SERVICE and b_SETTINGS could not be null, otherwise parseService function would have returned false
     Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
     Bottle b_SETTINGS_temp = Bottle(b_SETTINGS.findGroup("temperature-acquisitionRate"));
+    // Only strain2 and strain2c has temperature sensors.
     if(b_SETTINGS_temp.isNull())
     {
-        yError() << "ServiceParser::parseService() for embObjFTsensor device cannot find SETTINGS.temperature-acquisitionRate";
-        return false;
+        if (eobrd_cantype_strain != thestrain_props.type) {
+            yError() << "ServiceParser::parseService() for embObjFTsensor device cannot find SETTINGS.temperature-acquisitionRate";
+            return false;
+        }
+        else {
+            // If set to -1, embObjFTSensor disable the temperature.
+            ftconfig.temperatureAcquisitionrate = -1;
+        }
     }
     else
     {
