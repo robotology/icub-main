@@ -4,7 +4,7 @@
 </dependencies>
     <module>
         <name>wholeBodyPlayer</name>
-        <parameters>--robot icubSim --parts "(head torso left_arm right_arm)"</parameters>
+        <parameters>--robot icub --parts "(head torso left_arm right_arm)"</parameters>
         <node>localhost</node>
         <dependencies>
             <port> /yarpdataplayer/rpc:i </port>
@@ -16,12 +16,6 @@
     </module>
     <module>
         <name>yarpdataplayer</name>
-        <parameters></parameters>
-        <node>localhost</node>
-
-    </module>
-    <module>
-        <name>iCub_SIM</name>
         <parameters></parameters>
         <node>localhost</node>
 
