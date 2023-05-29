@@ -17,10 +17,12 @@
 // May 06, readapted for YARP2 by nat
 
 #include <yarp/os/Bottle.h>
-#include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IPreciselyTimed.h>
+#include <yarp/dev/IFrameGrabberControls.h>
+#include <yarp/dev/IFrameGrabberControlsDC1394.h>
+#include <yarp/dev/IFrameGrabberImage.h>
 #include <yarp/dev/IVisualParams.h>
 
 namespace yarp {
@@ -33,7 +35,7 @@ namespace yarp {
 }
 
 /**
-* \file FirewireCamera.h device driver for managing the 
+* \file FirewireCamera.h device driver for managing the
 * IEEE-1394-DR2 Camera
 */
 
@@ -285,8 +287,6 @@ This file can be edited at /src/libraries/icubmod/dragonfly2/common/DragonflyDev
 class yarp::dev::DragonflyDeviceDriver2 :
     public DeviceDriver,
     public IPreciselyTimed,
-    public IFrameGrabber,
-    public IFrameGrabberRgb,
     public IFrameGrabberControls,
     public IFrameGrabberControlsDC1394,
     public IRgbVisualParams
@@ -320,39 +320,6 @@ public:
     virtual bool close(void);
 
     /**
-    * Implements FrameGrabber basic interface.
-    * @param buffer the pointer to the array to store the last frame.
-    * @return returns true/false on success/failure.
-    */
-    virtual bool getRawBuffer(unsigned char *buffer);
-
-    /**
-    * Implements the Frame grabber basic interface.
-    * @return the size of the raw buffer (for the Dragonfly
-    * camera this is 1x640x480).
-    */
-    virtual int getRawBufferSize();
-
-    /**
-    * Implements FrameGrabber basic interface.
-    */
-    virtual int height() const;
-
-    /**
-    * Implements FrameGrabber basic interface.
-    */
-    virtual int width() const;
-
-    /** 
-    * FrameGrabber bgr interface, returns the last acquired frame as
-    * a buffer of bgr triplets. A demosaicking method is applied to 
-    * reconstuct the color from the Bayer pattern of the sensor.
-    * @param buffer pointer to the array that will contain the last frame.
-    * @return true/false upon success/failure
-    */
-    virtual bool getRgbBuffer(unsigned char *buffer);
-
-    /** 
     * Implements the IPreciselyTimed interface.
     * @return the yarp::os::Stamp of the last image acquired
     */
@@ -360,7 +327,7 @@ public:
 
     /**
     * Set Brightness.
-    * @param v normalized image brightness [0.0 : 1.0]. 
+    * @param v normalized image brightness [0.0 : 1.0].
     * @return true/false upon success/failure
     */
     virtual bool setBrightness(double v);
@@ -371,7 +338,7 @@ public:
     */
     virtual bool setExposure(double v);
     /**
-    * Set Sharpness. 
+    * Set Sharpness.
     * @param v normalized image sharpness [0.0 : 1.0].
     * @return true/false upon success/failure
     */
@@ -391,7 +358,7 @@ public:
     virtual bool setHue(double v);
     /**
     * Set Saturation.
-    * @param v normalized image saturation [0.0 : 1.0]. 
+    * @param v normalized image saturation [0.0 : 1.0].
     * @return true/false upon success/failure
     */
     virtual bool setSaturation(double v);
@@ -400,7 +367,7 @@ public:
     * @param v normalized image gamma [0.0 : 1.0].
     * @return true/false upon success/failure
     */
-    virtual bool setGamma(double v);		
+    virtual bool setGamma(double v);
     /**
     * Set Shutter.
     * @param v normalized camera shutter time [0.0 : 1.0].
@@ -408,13 +375,13 @@ public:
     */
     virtual bool setShutter(double v);
     /**
-    * Set Gain. 
+    * Set Gain.
     * @param v normalized camera gain [0.0 : 1.0].
     * @return true/false upon success/failure
     */
     virtual bool setGain(double v);
     /**
-    * Set Iris. 
+    * Set Iris.
     * @param v normalized camera iris [0.0 : 1.0].
     * @return true/false upon success/failure
     */
@@ -433,12 +400,12 @@ public:
     * Get Exposure.
     * @return normalized image exposure [0.0 : 1.0].
     */
-    virtual double getExposure();    
+    virtual double getExposure();
     /**
     * Get Sharpness.
     * @return normalized image sharpness [0.0 : 1.0].
     */
-    virtual double getSharpness();    
+    virtual double getSharpness();
     /**
     * Get White Balance.
     * @param blue normalized blue balance [0.0 : 1.0].
@@ -516,7 +483,7 @@ public:
     * Get feature value.
     * @param feature feature ID
     * @return normalized feature value [0.0 : 1.0].
-    */	
+    */
     virtual double getFeatureDC1394(int feature);
 
     /**
@@ -549,7 +516,7 @@ public:
     * Has feature Manual mode?
     * @param feature feature ID.
     * @return true=YES, false=NO.
-    */	
+    */
     virtual bool hasManualDC1394(int feature);
     /**
     * Has feature Manual mode?
@@ -588,7 +555,7 @@ public:
     *			mask|=1<<(modes.modes[m]-DC1394_VIDEO_MODE_MIN);
     *
     * 0=160x120 YUV444, 1=320x240 YUV422, 2=640x480 YUV411, 3=640x480 YUV422, 4=640x480 RGB8, 5=640x480 MONO8,
-    * 6=640x480 MONO16,7=800x600 YUV422, 8=800x600 RGB8, 9=800x600_MONO8, 10=1024x768 YUV422, 11=1024x768 RGB8, 12=1024x768 MONO8, 
+    * 6=640x480 MONO16,7=800x600 YUV422, 8=800x600 RGB8, 9=800x600_MONO8, 10=1024x768 YUV422, 11=1024x768 RGB8, 12=1024x768 MONO8,
     * 13=800x600 MONO16, 14=1024x768 MONO16, 15=1280x960 YUV422, 16=1280x960 RGB8, 17=1280x960_MONO8, 18=1600x1200 YUV422, 19=1600x1200 RGB8,
     * 20=1600x1200 MONO8, 21=1280x960 MONO16, 22=1600x1200_MONO16, 23=EXIF, 24=FORMAT7 0, 25=FORMAT7 1, 26=FORMAT7 2, 27=FORMAT7 3,
     * 28=FORMAT7 4, 29=FORMAT7 5, 30=FORMAT7 6, 31=FORMAT7 7
@@ -598,7 +565,7 @@ public:
     /**
     * Get camera acquisition mode.
     * @return video mode ID: 0=160x120 YUV444, 1=320x240 YUV422, 2=640x480 YUV411, 3=640x480 YUV422, 4=640x480 RGB8, 5=640x480 MONO8,
-    * 6=640x480 MONO16,7=800x600 YUV422, 8=800x600 RGB8, 9=800x600_MONO8, 10=1024x768 YUV422, 11=1024x768 RGB8, 12=1024x768 MONO8, 
+    * 6=640x480 MONO16,7=800x600 YUV422, 8=800x600 RGB8, 9=800x600_MONO8, 10=1024x768 YUV422, 11=1024x768 RGB8, 12=1024x768 MONO8,
     * 13=800x600 MONO16, 14=1024x768 MONO16, 15=1280x960 YUV422, 16=1280x960 RGB8, 17=1280x960_MONO8, 18=1600x1200 YUV422, 19=1600x1200 RGB8,
     * 20=1600x1200 MONO8, 21=1280x960 MONO16, 22=1600x1200_MONO16, 23=EXIF, 24=FORMAT7 0, 25=FORMAT7 1, 26=FORMAT7 2, 27=FORMAT7 3,
     * 28=FORMAT7 4, 29=FORMAT7 5, 30=FORMAT7 6, 31=FORMAT7 7
@@ -607,7 +574,7 @@ public:
     /**
     * Set camera acquisition mode.
     * @param video_mode ID: 0=160x120 YUV444, 1=320x240 YUV422, 2=640x480 YUV411, 3=640x480 YUV422, 4=640x480 RGB8, 5=640x480 MONO8,
-    * 6=640x480 MONO16,7=800x600 YUV422, 8=800x600 RGB8, 9=800x600_MONO8, 10=1024x768 YUV422, 11=1024x768 RGB8, 12=1024x768 MONO8, 
+    * 6=640x480 MONO16,7=800x600 YUV422, 8=800x600 RGB8, 9=800x600_MONO8, 10=1024x768 YUV422, 11=1024x768 RGB8, 12=1024x768 MONO8,
     * 13=800x600 MONO16, 14=1024x768 MONO16, 15=1280x960 YUV422, 16=1280x960 RGB8, 17=1280x960_MONO8, 18=1600x1200 YUV422, 19=1600x1200 RGB8,
     * 20=1600x1200 MONO8, 21=1280x960 MONO16, 22=1600x1200_MONO16, 23=EXIF, 24=FORMAT7 0, 25=FORMAT7 1, 26=FORMAT7 2, 27=FORMAT7 3,
     * 28=FORMAT7 4, 29=FORMAT7 5, 30=FORMAT7 6, 31=FORMAT7 7
@@ -695,7 +662,7 @@ public:
     */
     virtual bool getWhiteBalanceDC1394(double &b, double &r);
 
-    /** 
+    /**
     * Get maximum image dimensions in Format 7 mode.
     * @param xdim maximum width
     * @param ydim maximum height
@@ -707,7 +674,7 @@ public:
     */
     virtual bool getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep);
 
-    /** 
+    /**
     * Get image dimensions in Format 7 mode.
     * @param xdim image width
     * @param ydim image height
@@ -716,7 +683,7 @@ public:
     * @return true/false upon success/failure
     */
     virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);
-    /** 
+    /**
     * Set image dimensions in Format 7 mode.
     * @param xdim image width
     * @param ydim image height
@@ -736,7 +703,7 @@ public:
     * Get Operation Mode.
     * @return true=1394b false=LEGACY
     */
-    virtual bool getOperationModeDC1394(); 
+    virtual bool getOperationModeDC1394();
 
     /**
     * Set image transmission ON/OFF.
@@ -754,7 +721,7 @@ public:
 
     /**
     * Set feature commands propagation ON/OFF.
-    * All the cameras on the same Firewire bus can be adjusted at once setting broadcast ON. In this way, they will share the feature settings. 
+    * All the cameras on the same Firewire bus can be adjusted at once setting broadcast ON. In this way, they will share the feature settings.
     * @param onoff true=ON false=OFF
     * @return true/false upon success/failure
     */
@@ -782,13 +749,13 @@ public:
     */
     virtual bool setCaptureDC1394(bool bON);
 
-    /** 
+    /**
     * Get Firewire communication packet size.
     * In Format7 mode the framerate depends from packet size.
     * @return bytes per packet
     */
     virtual unsigned int getBytesPerPacketDC1394();
-    /** 
+    /**
     * Set Firewire communication packet size.
     * In Format7 mode the framerate depends from packet size.
     * @param bpp bytes per packet
@@ -913,7 +880,7 @@ protected:
 * |:-----------------:|
 * | `dragonfly2` |
 */
-class yarp::dev::DragonflyDeviceDriver2Rgb : 
+class yarp::dev::DragonflyDeviceDriver2Rgb :
     public yarp::dev::DragonflyDeviceDriver2,
     public IFrameGrabberImage,
     public IFrameGrabberImageRaw
@@ -933,9 +900,9 @@ public:
     */
     virtual ~DragonflyDeviceDriver2Rgb(){}
 
-    /** 
+    /**
     * FrameGrabber image interface, returns the last acquired frame as
-    * an rgb image. A demosaicking method is applied to 
+    * an rgb image. A demosaicking method is applied to
     * reconstuct the color from the Bayer pattern of the sensor.
     * @param image that will store the last frame.
     * @return true/false upon success/failure
@@ -950,13 +917,13 @@ public:
         */
     bool getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image);
 
-    /** 
+    /**
      * Return the height of each frame.
      * @return image height
      */
     virtual int height() const;
 
-    /** 
+    /**
      * Return the width of each frame.
      * @return image width
      */
@@ -992,22 +959,22 @@ public:
     */
     virtual ~DragonflyDeviceDriver2Raw(){}
 
-    /** 
+    /**
     * FrameGrabber image interface, returns the last acquired frame as
-    * an rgb image. A demosaicking method is applied to 
+    * an rgb image. A demosaicking method is applied to
     * reconstuct the color from the Bayer pattern of the sensor.
     * @param image that will store the last frame.
     * @return true/false upon success/failure
     */
     bool getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image);
 
-    /** 
+    /**
      * Return the height of each frame.
      * @return image height
      */
     virtual int height() const;
 
-    /** 
+    /**
      * Return the width of each frame.
      * @return image width
      */

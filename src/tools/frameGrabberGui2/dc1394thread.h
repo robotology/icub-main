@@ -2,7 +2,8 @@
 #define DC1394THREAD_H
 
 #include <QThread>
-#include <yarp/dev/FrameGrabberInterfaces.h>
+#include <yarp/dev/IFrameGrabberControls.h>
+#include <yarp/dev/IFrameGrabberControlsDC1394.h>
 #include <yarp/dev/PolyDriver.h>
 #include <QMutex>
 #include <QWaitCondition>

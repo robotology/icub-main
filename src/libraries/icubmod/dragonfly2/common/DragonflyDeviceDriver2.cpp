@@ -11,7 +11,6 @@
 
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
@@ -24,7 +23,7 @@ using namespace yarp::dev;
 inline CFWCamera_DR2_2* RES(void *res) { return (CFWCamera_DR2_2*)res; }
 ////////////////////////////////////////////////////////////////////////
 
-bool DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image) 
+bool DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image)
 {
     return RES(system_resources)->CaptureImage(image);
 }
@@ -44,7 +43,7 @@ int DragonflyDeviceDriver2Rgb::height () const
 	return RES(system_resources)->height();
 }
 
-bool DragonflyDeviceDriver2Raw::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image) 
+bool DragonflyDeviceDriver2Raw::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
 {
     return RES(system_resources)->CaptureImage(image);
 }
@@ -96,7 +95,7 @@ bool DragonflyDeviceDriver2::open(yarp::os::Searchable& config)
 		fprintf(stderr,"DragonflyDeviceDriver2: can't open camera\n");
 		return false;
 	}
-	
+
     return true;
 }
 
@@ -111,34 +110,9 @@ bool DragonflyDeviceDriver2::close(void)
 	return false;
 }
 
-bool DragonflyDeviceDriver2::getRawBuffer(unsigned char *buff)
-{
-    return RES(system_resources)->CaptureRaw(buff);
-}
-
-bool DragonflyDeviceDriver2::getRgbBuffer(unsigned char *buff)
-{
-    return RES(system_resources)->CaptureRgb(buff);
-}
-
 yarp::os::Stamp DragonflyDeviceDriver2::getLastInputStamp()
 {
 	return RES(system_resources)->getLastInputStamp();
-}
-
-int DragonflyDeviceDriver2::getRawBufferSize()
-{
-    return RES(system_resources)->getRawBufferSize();
-}
-
-int DragonflyDeviceDriver2::width () const
-{
-	return RES(system_resources)->width();
-}
-
-int DragonflyDeviceDriver2::height () const
-{
-	return RES(system_resources)->height();
 }
 
 // SET
