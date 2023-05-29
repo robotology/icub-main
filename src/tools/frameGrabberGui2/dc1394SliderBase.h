@@ -3,7 +3,8 @@
 
 #include <QWidget>
 #include <mainwindow.h>
-#include <yarp/dev/FrameGrabberInterfaces.h>
+#include <yarp/dev/IFrameGrabberControls.h>
+#include <yarp/dev/IFrameGrabberControlsDC1394.h>
 
 
 #define SLIDER      0
