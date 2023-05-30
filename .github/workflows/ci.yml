@@ -170,7 +170,6 @@ jobs:
               -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
               -DENABLE_icubmod_embObjBattery:BOOL=ON \
               -DENABLE_icubmod_embObjSkin:BOOL=ON \
-              -DENABLE_icubmod_embObjStrain:BOOL=ON \
               -DENABLE_icubmod_embObjMultipleFTsensors:BOOL=ON \
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
               -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
@@ -201,7 +200,6 @@ jobs:
               -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
               -DENABLE_icubmod_embObjBattery:BOOL=ON \
               -DENABLE_icubmod_embObjSkin:BOOL=ON \
-              -DENABLE_icubmod_embObjStrain:BOOL=ON \
               -DENABLE_icubmod_embObjMultipleFTsensors:BOOL=ON \
               -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
               -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
