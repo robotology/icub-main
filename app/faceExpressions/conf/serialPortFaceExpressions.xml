@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
+
+<robot name="iCubFaceExpressions" build="2" portprefix="/icub" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <devices>
+        
+        <device name="serialportDevice" type="serialport">
+            <param name="comport"> /dev/ttyACM0 </param>
+            <param name="baudrate"> 9600 </param>
+            <param name="xonlim"> 0 </param>
+            <param name="xofflim"> 0 </param>
+            <param name="readmincharacters">  1 </param>
+            <param name="readtimeoutmsec">  0 </param>
+            <param name="parityenb">  0 </param>
+            <param name="paritymode">  EVEN </param>
+            <param name="ctsenb">  0 </param>
+            <param name="rtsenb">  0 </param>
+            <param name="xinenb">  0 </param>
+            <param name="xoutenb">  0 </param>
+            <param name="modem">  0 </param>
+            <param name="rcvenb">  0 </param>
+            <param name="dsrenb"> 0 </param>
+            <param name="dtrdisable">  0 </param>
+            <param name="databits">  7 </param>
+            <param name="stopbits">  1 </param>
+        </device>
+
+        <device name="serialPort_nws_yarpDevice" type="serialPort_nws_yarp">
+            <param name="name"> /icub/face/raw </param>
+            <action phase="startup" level="5" type="attach">
+                <paramlist name="networks">
+                    <elem name="serialnet"> serialportDevice </elem>
+                </paramlist>
+            </action>
+            <action phase="shutdown" level="5" type="detach" />
+        </device>
+        
+    </devices>
+</robot>
