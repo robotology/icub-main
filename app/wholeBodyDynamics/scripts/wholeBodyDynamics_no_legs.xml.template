@@ -29,16 +29,6 @@
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/icub/left_arm/analog:o</from>
-                <to>/wholeBodyDynamics/left_arm/FT:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
-                <from>/icub/right_arm/analog:o</from>
-                <to>/wholeBodyDynamics/right_arm/FT:i</to>
-                <protocol>udp</protocol>
-        </connection>
-        <connection>
                 <from>/wholeBodyDynamics/left_arm/Torques:o</from>
                 <to>/icub/joint_vsens/left_arm:i</to>
                 <protocol>udp</protocol>

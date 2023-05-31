@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2011 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo, Matteo Fumagalli
  * email:  marco.randazzo@iit.it
@@ -44,7 +44,7 @@ using namespace std;
 #define TEST_LEG_SENSOR
 #define MEASURE_FROM_FOOT
 double lpf_ord1_3hz(double input, int j)
-{ 
+{
     if (j<0 || j>= MAX_JN)
     {
         cout<<"Received an invalid joint index to filter"<<endl;
@@ -53,9 +53,9 @@ double lpf_ord1_3hz(double input, int j)
 
     static double xv[MAX_FILTER_ORDER][MAX_JN];
     static double yv[MAX_FILTER_ORDER][MAX_JN];
-    xv[0][j] = xv[1][j] ; 
+    xv[0][j] = xv[1][j] ;
     xv[1][j] = input / 1.157889499e+01;
-    yv[0][j] = yv[1][j] ; 
+    yv[0][j] = yv[1][j] ;
     yv[1][j] =   (xv[0][j]  + xv[1][j] ) + (  0.8272719460 * yv[0][j] );
     return (yv[1][j]);
 }
@@ -133,7 +133,7 @@ void inverseDynamics::init_upper()
     current_status.all_q_up.resize(allJnt,0.0);
     current_status.all_dq_up.resize(allJnt,0.0);
     current_status.all_d2q_up.resize(allJnt,0.0);
-    F_sens_up.zero(); 
+    F_sens_up.zero();
     FM_sens_up.resize(6,2); FM_sens_up.zero();
 }
 
@@ -250,7 +250,16 @@ void inverseDynamics::setStiffMode()
      }
 }
 
-inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, version_tag _icub_type, bool _autoconnect) : PeriodicThread((double)_rate/1000.0), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), icub_type(_icub_type), local_name(_local_name), zero_sens_tolerance (1e-12)
+inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR,
+                                 PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR,
+                                 PolyDriver *_ddT, string _robot_name, string _local_name,
+                                 version_tag _icub_type, bool _autoconnect,
+                                 ISixAxisForceTorqueSensors* m_left_arm_FT, ISixAxisForceTorqueSensors* m_right_arm_FT,
+                                 ISixAxisForceTorqueSensors* m_left_leg_FT, ISixAxisForceTorqueSensors* m_right_leg_FT):
+                                 PeriodicThread((double)_rate/1000.0), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL),
+                                 ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), icub_type(_icub_type), local_name(_local_name),
+                                 zero_sens_tolerance (1e-12), m_left_arm_FT(m_left_arm_FT), m_right_arm_FT(m_right_arm_FT),
+                                 m_left_leg_FT(m_left_leg_FT), m_right_leg_FT(m_right_leg_FT)
 {
     status_queue_size = 10;
     autoconnect = _autoconnect;
@@ -290,12 +299,6 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     //---------------------PORT--------------------------//
 
     port_inertial_thread=new BufferedPort<Vector>;
-    port_ft_arm_left=new BufferedPort<Vector>;
-    port_ft_arm_right=new BufferedPort<Vector>;
-    port_ft_leg_left=new BufferedPort<Vector>;
-    port_ft_leg_right=new BufferedPort<Vector>;
-    port_ft_foot_left=new BufferedPort<Vector>;
-    port_ft_foot_right=new BufferedPort<Vector>;
     port_RATorques = new BufferedPort<Bottle>;
     port_LATorques = new BufferedPort<Bottle>;
     port_RLTorques = new BufferedPort<Bottle>;
@@ -349,12 +352,6 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_root_position_vec = new BufferedPort<Vector>;
 
     port_inertial_thread->open(string("/"+local_name+"/inertial:i").c_str());
-    port_ft_arm_left->open(string("/"+local_name+"/left_arm/FT:i").c_str());
-    port_ft_arm_right->open(string("/"+local_name+"/right_arm/FT:i").c_str());
-    port_ft_leg_left->open(string("/"+local_name+"/left_leg/FT:i").c_str());
-    port_ft_leg_right->open(string("/"+local_name+"/right_leg/FT:i").c_str());
-    port_ft_foot_left->open(string("/"+local_name+"/left_foot/FT:i").c_str());
-    port_ft_foot_right->open(string("/"+local_name+"/right_foot/FT:i").c_str());
     port_RATorques->open(string("/"+local_name+"/right_arm/Torques:o").c_str());
     port_LATorques->open(string("/"+local_name+"/left_arm/Torques:o").c_str());
     port_RLTorques->open(string("/"+local_name+"/right_leg/Torques:o").c_str());
@@ -363,24 +360,24 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_LWTorques->open(string("/"+local_name+"/left_wrist/Torques:o").c_str());
     port_TOTorques->open(string("/"+local_name+"/torso/Torques:o").c_str());
     port_HDTorques->open(string("/"+local_name+"/head/Torques:o").c_str());
-    port_external_wrench_RA->open(string("/"+local_name+"/right_arm/endEffectorWrench:o").c_str()); 
-    port_external_wrench_LA->open(string("/"+local_name+"/left_arm/endEffectorWrench:o").c_str()); 
-    port_external_wrench_RL->open(string("/"+local_name+"/right_leg/endEffectorWrench:o").c_str()); 
-    port_external_wrench_LL->open(string("/"+local_name+"/left_leg/endEffectorWrench:o").c_str()); 
-    port_external_wrench_RF->open(string("/"+local_name+"/right_foot/endEffectorWrench:o").c_str()); 
-    port_external_wrench_LF->open(string("/"+local_name+"/left_foot/endEffectorWrench:o").c_str()); 
+    port_external_wrench_RA->open(string("/"+local_name+"/right_arm/endEffectorWrench:o").c_str());
+    port_external_wrench_LA->open(string("/"+local_name+"/left_arm/endEffectorWrench:o").c_str());
+    port_external_wrench_RL->open(string("/"+local_name+"/right_leg/endEffectorWrench:o").c_str());
+    port_external_wrench_LL->open(string("/"+local_name+"/left_leg/endEffectorWrench:o").c_str());
+    port_external_wrench_RF->open(string("/"+local_name+"/right_foot/endEffectorWrench:o").c_str());
+    port_external_wrench_LF->open(string("/"+local_name+"/left_foot/endEffectorWrench:o").c_str());
 #ifdef TEST_LEG_SENSOR
-    port_sensor_wrench_RL->open(string("/"+local_name+"/right_leg/sensorWrench:o").c_str()); 
-    port_sensor_wrench_LL->open(string("/"+local_name+"/left_leg/sensorWrench:o").c_str()); 
-    port_model_wrench_RL->open(string("/"+local_name+"/right_leg/modelWrench:o").c_str()); 
-    port_model_wrench_LL->open(string("/"+local_name+"/left_leg/modelWrench:o").c_str()); 
+    port_sensor_wrench_RL->open(string("/"+local_name+"/right_leg/sensorWrench:o").c_str());
+    port_sensor_wrench_LL->open(string("/"+local_name+"/left_leg/sensorWrench:o").c_str());
+    port_model_wrench_RL->open(string("/"+local_name+"/right_leg/modelWrench:o").c_str());
+    port_model_wrench_LL->open(string("/"+local_name+"/left_leg/modelWrench:o").c_str());
 #endif
-    port_external_cartesian_wrench_RA->open(string("/"+local_name+"/right_arm/cartesianEndEffectorWrench:o").c_str()); 
-    port_external_cartesian_wrench_LA->open(string("/"+local_name+"/left_arm/cartesianEndEffectorWrench:o").c_str()); 
-    port_external_cartesian_wrench_RL->open(string("/"+local_name+"/right_leg/cartesianEndEffectorWrench:o").c_str()); 
-    port_external_cartesian_wrench_LL->open(string("/"+local_name+"/left_leg/cartesianEndEffectorWrench:o").c_str()); 
-    port_external_cartesian_wrench_RF->open(string("/"+local_name+"/right_foot/cartesianEndEffectorWrench:o").c_str()); 
-    port_external_cartesian_wrench_LF->open(string("/"+local_name+"/left_foot/cartesianEndEffectorWrench:o").c_str()); 
+    port_external_cartesian_wrench_RA->open(string("/"+local_name+"/right_arm/cartesianEndEffectorWrench:o").c_str());
+    port_external_cartesian_wrench_LA->open(string("/"+local_name+"/left_arm/cartesianEndEffectorWrench:o").c_str());
+    port_external_cartesian_wrench_RL->open(string("/"+local_name+"/right_leg/cartesianEndEffectorWrench:o").c_str());
+    port_external_cartesian_wrench_LL->open(string("/"+local_name+"/left_leg/cartesianEndEffectorWrench:o").c_str());
+    port_external_cartesian_wrench_RF->open(string("/"+local_name+"/right_foot/cartesianEndEffectorWrench:o").c_str());
+    port_external_cartesian_wrench_LF->open(string("/"+local_name+"/left_foot/cartesianEndEffectorWrench:o").c_str());
     port_external_wrench_TO->open(string("/"+local_name+"/torso/Wrench:o").c_str());
     port_com_all->open(string("/"+local_name+"/com:o").c_str());
     port_com_lb->open (string("/"+local_name+"/lower_body/com:o").c_str());
@@ -411,14 +408,8 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     if (autoconnect)
     {
         //from iCub to wholeBodyDynamics
-        Network::connect(string("/"+local_name+"/filtered/inertial:o").c_str(),string("/"+local_name+"/inertial:i").c_str(),"tcp",false);			
+        Network::connect(string("/"+local_name+"/filtered/inertial:o").c_str(),string("/"+local_name+"/inertial:i").c_str(),"tcp",false);
         Network::connect(string("/"+robot_name+"/inertial").c_str(),           string("/"+local_name+"/unfiltered/inertial:i").c_str(),"tcp",false);
-        Network::connect(string("/"+robot_name+"/left_arm/analog:o").c_str(),  string("/"+local_name+"/left_arm/FT:i").c_str(),"tcp",false);
-        Network::connect(string("/"+robot_name+"/right_arm/analog:o").c_str(), string("/"+local_name+"/right_arm/FT:i").c_str(),"tcp",false);
-        Network::connect(string("/"+robot_name+"/left_leg/analog:o").c_str(),  string("/"+local_name+"/left_leg/FT:i").c_str(),"tcp",false);
-        Network::connect(string("/"+robot_name+"/right_leg/analog:o").c_str(), string("/"+local_name+"/right_leg/FT:i").c_str(),"tcp",false);
-        Network::connect(string("/"+robot_name+"/left_foot/analog:o").c_str(),  string("/"+local_name+"/left_foot/FT:i").c_str(),"tcp",false);
-        Network::connect(string("/"+robot_name+"/right_foot/analog:o").c_str(), string("/"+local_name+"/right_foot/FT:i").c_str(),"tcp",false);  
         //from wholeBodyDynamics to iCub (mandatory)
         Network::connect(string("/"+local_name+"/left_arm/Torques:o").c_str(), string("/"+robot_name+"/joint_vsens/left_arm:i").c_str(),"tcp",false);
         Network::connect(string("/"+local_name+"/right_arm/Torques:o").c_str(),string("/"+robot_name+"/joint_vsens/right_arm:i").c_str(),"tcp",false);
@@ -463,11 +454,11 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     F_ext_cartesian_left_arm.resize(6,0.0);
     F_ext_cartesian_right_arm.resize(6,0.0);
     F_ext_left_leg.resize(6,0.0);
-    F_ext_right_leg.resize(6,0.0); 
+    F_ext_right_leg.resize(6,0.0);
     F_ext_cartesian_left_leg.resize(6,0.0);
     F_ext_cartesian_right_leg.resize(6,0.0);
     F_ext_left_foot.resize(6,0.0);
-    F_ext_right_foot.resize(6,0.0); 
+    F_ext_right_foot.resize(6,0.0);
     F_ext_cartesian_left_foot.resize(6,0.0);
     F_ext_cartesian_right_foot.resize(6,0.0);
     com_jac.resize(6,32);
@@ -574,7 +565,7 @@ void inverseDynamics::run()
     if (current_status.iCub_not_moving)
     {
         not_moving_status.push_front(current_status);
-        if (not_moving_status.size()>status_queue_size) 
+        if (not_moving_status.size()>status_queue_size)
             {
                 not_moving_status.pop_back();
                 if (auto_drift_comp) yDebug ("drift_comp: buffer full\n"); //@@@DEBUG
@@ -712,12 +703,12 @@ void inverseDynamics::run()
 
     rTf = (icub->lowerTorso->getHRight()) * rTf*lastRotTrans;           //Until the world reference frame
     fTr.setSubmatrix(rTf.submatrix(0,2,0,2).transposed(), 0, 0);         //CHECKED
-    fTr.setSubcol(-1*fTr.submatrix(0,2,0,2)*rTf.subcol(0,3,3), 0, 3);    //CHECKED    
+    fTr.setSubcol(-1*fTr.submatrix(0,2,0,2)*rTf.subcol(0,3,3), 0, 3);    //CHECKED
     fTr(3,3) = 1;
 
-    //filling distance from root projection onto the floor to the right foot. 
+    //filling distance from root projection onto the floor to the right foot.
     lastRotTrans(1,3)=-rTf(1,3);
-    lastRotTrans(2,3)= -rTf(0,3); 
+    lastRotTrans(2,3)= -rTf(0,3);
 
 
     if (com_enabled)
@@ -811,14 +802,14 @@ void inverseDynamics::run()
 	right_leg_contact.setLinkNumber(5);
 	right_leg_contact.setBodyPart(iCub::skinDynLib::RIGHT_LEG);
 	right_leg_contact.setForceMoment(F_ext_right_leg);
-	
+
 	if (!add_legs_once)
 	{
 		skinContacts.push_back(left_leg_contact);
 		skinContacts.push_back(right_leg_contact);
 		add_legs_once = true;
 	}
-	
+
 	bool skin_lleg_found = false;
 	bool skin_rleg_found = false;
 	for(unsigned int j=0; j<skinContacts.size(); j++)
@@ -834,9 +825,9 @@ void inverseDynamics::run()
 			skin_rleg_found = true;
 		}
 	}
-	if (!skin_rleg_found) {skinContacts.push_back(right_leg_contact);} 
-    if (!skin_lleg_found) {skinContacts.push_back(left_leg_contact);} 
-    
+	if (!skin_rleg_found) {skinContacts.push_back(right_leg_contact);}
+    if (!skin_lleg_found) {skinContacts.push_back(left_leg_contact);}
+
 	//*********************************************** add the legs contacts JUST TEMP FIX!! *******************
 
     F_ext_cartesian_left_arm = F_ext_cartesian_right_arm = zeros(6);
@@ -910,10 +901,10 @@ void inverseDynamics::run()
     yarp::sig::Matrix r1 = yarp::math::euler2dcm(angles);
     yarp::sig::Matrix ilhl = yarp::math::SE3inv(lhl);
     yarp::sig::Matrix foot_root_mat = r1*ilhl;
-    
+
     yarp::sig::Vector foot_tmp = yarp::math::dcm2rpy(foot_root_mat);
     //yDebug ("before\n %s\n", foot_root_mat.toString().c_str());
-    yarp::sig::Vector foot_root_vec (6,0.0); 
+    yarp::sig::Vector foot_root_vec (6,0.0);
     foot_root_vec[3] = foot_root_mat[0][3]*1000;
     foot_root_vec[4] = foot_root_mat[1][3]*1000;
     foot_root_vec[5] = foot_root_mat[2][3]*1000;
@@ -1070,23 +1061,23 @@ void inverseDynamics::threadRelease()
     closePort(port_external_cartesian_wrench_LA);
     yInfo( "Closing external_wrench_RL port\n");
     closePort(port_external_wrench_RL);
-    yInfo( "Closing external_wrench_LL port\n");	
+    yInfo( "Closing external_wrench_LL port\n");
     closePort(port_external_wrench_LL);
     yInfo( "Closing cartesian_external_wrench_RL port\n");
     closePort(port_external_cartesian_wrench_RL);
-    yInfo( "Closing cartesian_external_wrench_LL port\n");	
+    yInfo( "Closing cartesian_external_wrench_LL port\n");
     closePort(port_external_cartesian_wrench_LL);
     yInfo( "Closing external_wrench_RF port\n");
     closePort(port_external_wrench_RF);
-    yInfo( "Closing external_wrench_LF port\n");	
+    yInfo( "Closing external_wrench_LF port\n");
     closePort(port_external_wrench_LF);
     yInfo( "Closing cartesian_external_wrench_RF port\n");
     closePort(port_external_cartesian_wrench_RF);
-    yInfo( "Closing cartesian_external_wrench_LF port\n");	
+    yInfo( "Closing cartesian_external_wrench_LF port\n");
     closePort(port_external_cartesian_wrench_LF);
-    yInfo( "Closing external_wrench_TO port\n");	
+    yInfo( "Closing external_wrench_TO port\n");
     closePort(port_external_wrench_TO);
-    yInfo( "Closing COM ports\n");	
+    yInfo( "Closing COM ports\n");
     closePort(port_com_all);
     closePort(port_com_lb);
     closePort(port_com_ub);
@@ -1100,18 +1091,6 @@ void inverseDynamics::threadRelease()
 
     yInfo( "Closing inertial port\n");
     closePort(port_inertial_thread);
-    yInfo( "Closing ft_arm_right port\n");
-    closePort(port_ft_arm_right);
-    yInfo( "Closing ft_arm_left port\n");
-    closePort(port_ft_arm_left);
-    yInfo( "Closing ft_leg_right port\n");
-    closePort(port_ft_leg_right);
-    yInfo( "Closing ft_leg_left port\n");
-    closePort(port_ft_leg_left);
-    yInfo( "Closing ft_foot_right port\n");
-    closePort(port_ft_foot_right);
-    yInfo( "Closing ft_foot_left port\n");
-    closePort(port_ft_foot_left);
     yInfo( "Closing skin_contacts port\n");
     closePort(port_skin_contacts);
     yInfo( "Closing monitor port\n");
@@ -1142,7 +1121,7 @@ void inverseDynamics::threadRelease()
 
     if (icub)      {delete icub; icub=0;}
     if (icub_sens) {delete icub_sens; icub=0;}
-}   
+}
 
 void inverseDynamics::closePort(Contactable *_port)
 {
@@ -1252,19 +1231,15 @@ void inverseDynamics::calibrateOffset(calib_enum calib_code)
 bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 {
     bool b = true;
-    
+
     // arms
     if (ddAL)
     {
-        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to left arm sensor...");
         if (!dummy_ft)
         {
-            tmp = port_ft_arm_left->read(waitMeasure);
-            if (tmp != nullptr)
-            {
-                current_status.ft_arm_left  = *tmp;
-            }
+            double timestamp;
+            m_left_arm_FT->getSixAxisForceTorqueSensorMeasure(0, current_status.ft_arm_left, timestamp);
         }
         else
         {
@@ -1275,15 +1250,11 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
 
     if (ddAR)
     {
-        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to right arm sensor...");
-        if (!dummy_ft)   
+        if (!dummy_ft)
         {
-            tmp = port_ft_arm_right->read(waitMeasure);
-            if (tmp != nullptr)
-            {
-                current_status.ft_arm_right = *tmp;
-            }
+            double timestamp;
+            m_right_arm_FT->getSixAxisForceTorqueSensorMeasure(0, current_status.ft_arm_right, timestamp);
         }
         else
         {
@@ -1297,78 +1268,37 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     // legs
     if (ddLL)
     {
-        Vector* tmp= nullptr;
         if (waitMeasure) yInfo("Trying to connect to left leg sensor...");
         if (!dummy_ft)
         {
-            tmp = port_ft_leg_left->read(waitMeasure);
-            if (tmp != nullptr)
-            {
-                current_status.ft_leg_left  = *tmp;
-            }
+            double timestamp;
+            m_left_leg_FT->getSixAxisForceTorqueSensorMeasure(0, current_status.ft_leg_left, timestamp);
+            m_left_leg_FT->getSixAxisForceTorqueSensorMeasure(1, current_status.ft_foot_left, timestamp);
         }
         else
         {
             current_status.ft_leg_left.zero();
-        }
-        if (waitMeasure) yInfo("done. \n");
-    }
-    if (ddLR)
-    {
-        Vector* tmp= nullptr;
-        if (waitMeasure) yInfo("Trying to connect to right leg sensor...");
-        if (!dummy_ft)
-        {
-            tmp = port_ft_leg_right->read(waitMeasure);
-            if (tmp != nullptr)
-            {
-                current_status.ft_leg_right = *tmp;
-            }
-        }
-        else
-        {
-            current_status.ft_leg_right.zero();
-        }
-        if (waitMeasure) yInfo("done. \n");
-    }
-
-    // feet
-    if (ddLL)
-    {
-        Vector* tmp= nullptr;
-        if (waitMeasure) yInfo("Trying to connect to left foot sensor...");
-        if (!dummy_ft)
-        {
-            tmp = port_ft_foot_left->read(false); //not all the robot versions have the FT sensors installed in the feet
-            if (tmp != nullptr)
-            {
-                current_status.ft_foot_left  = *tmp;
-            }
-        }
-        else
-        {
             current_status.ft_foot_left.zero();
         }
         if (waitMeasure) yInfo("done. \n");
     }
     if (ddLR)
     {
-        Vector* tmp= nullptr;
-        if (waitMeasure) yInfo("Trying to connect to right foot sensor...");
+        if (waitMeasure) yInfo("Trying to connect to right leg sensor...");
         if (!dummy_ft)
         {
-            tmp = port_ft_foot_right->read(false); //not all the robot versions have the FT sensors installed in the feet
-            if (tmp != nullptr)
-            {
-                current_status.ft_foot_right = *tmp;
-            }
+            double timestamp;
+            m_right_leg_FT->getSixAxisForceTorqueSensorMeasure(0, current_status.ft_leg_right, timestamp);
+            m_right_leg_FT->getSixAxisForceTorqueSensorMeasure(1, current_status.ft_foot_right, timestamp);
         }
         else
         {
+            current_status.ft_leg_right.zero();
             current_status.ft_foot_right.zero();
         }
         if (waitMeasure) yInfo("done. \n");
     }
+
 
     b &= getLowerEncodersSpeedAndAcceleration();
     setLowerMeasure(_init);
@@ -1562,7 +1492,7 @@ void inverseDynamics::addSkinContacts()
             }
             return;
         }
-        
+
         map<BodyPart, skinContactList> contactsPerBp = scl->splitPerBodyPart();
         // if there are more than 1 contact and less than 10 taxels are active then suppose zero moment
         for(auto & it : contactsPerBp)
@@ -1595,10 +1525,10 @@ void inverseDynamics::sendMonitorData()
     temp = icub->upperTorso->getAngVel() * CTRL_RAD2DEG;            // w upper node
     for(int i=0;i<3;i++) monitorData.push_back(temp(i));
     temp = icub->upperTorso->getAngAcc() * CTRL_RAD2DEG;            // dw upper node
-    for(int i=0;i<3;i++) monitorData.push_back(temp(i));    
+    for(int i=0;i<3;i++) monitorData.push_back(temp(i));
     monitorData.push_back(norm(icub->upperTorso->getLinAcc()));     // lin acc norm upper node
     monitorData.push_back(norm(icub->upperTorso->getTorsoForce())); // force norm upper node
-    monitorData.push_back(norm(icub->upperTorso->getTorsoMoment()));// moment norm upper node    
+    monitorData.push_back(norm(icub->upperTorso->getTorsoMoment()));// moment norm upper node
     for(size_t i=0;i<3;i++){                                           // w torso
         temp = icub->lowerTorso->up->getAngVel(i) * CTRL_RAD2DEG;
         for(double j : temp) monitorData.push_back(j);
@@ -1619,7 +1549,7 @@ void inverseDynamics::sendMonitorData()
             monitorData.push_back(temp(j));
     }
     for(int i=0;i<3;i++)                                            // norm of moments head
-        monitorData.push_back(norm(icub->upperTorso->up->getMoment(i)));    
+        monitorData.push_back(norm(icub->upperTorso->up->getMoment(i)));
     port_monitor->prepare()             = monitorData;
     port_monitor->write();
 }

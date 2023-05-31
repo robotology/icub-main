@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2011 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo, Matteo Fumagalli
  * email:  marco.randazzo@iit.it
@@ -20,96 +20,96 @@
 @ingroup icub_module
 
 \defgroup wholeBodyDynamics wholeBodyDynamics
- 
+
 Estimates the external forces and torques acting at the end effector
 through a model based estimation of the robot dynamics
- 
+
 \author Matteo Fumagalli, Marco Randazzo
- 
+
 \section intro_sec Description
 
 This module estimates the external wrench acting at the end
-effector of the iCub limbs, through a model based compensation 
-of the 6-axis force/torque (FT) sensor's measurements, which are 
-acquired through an input YARP port and provides them to an 
+effector of the iCub limbs, through a model based compensation
+of the 6-axis force/torque (FT) sensor's measurements, which are
+acquired through an input YARP port and provides them to an
 output YARP ports.
-The estimation is perfomed relying on rigid body dynamics using CAD 
-parameters. 
+The estimation is perfomed relying on rigid body dynamics using CAD
+parameters.
 The intrinsic offsets of the sensors, which are due to the stresses
-generated during mounting, are defined by the first FT data. In the 
-future it will also be given the possibility to set the offsets of 
+generated during mounting, are defined by the first FT data. In the
+future it will also be given the possibility to set the offsets of
 the sensors.
-The model of the sensor measurements considers a fixed base, with z-axis 
-pointing upwards. The estimation of the external wrench applied at the 
+The model of the sensor measurements considers a fixed base, with z-axis
+pointing upwards. The estimation of the external wrench applied at the
 end-effector of the limb has the same orientation of the fixed base frame.
 For further information about the use of this module and of the iCub force control interface, please refer to the force control page:
 http://wiki.icub.org/wiki/Force_Control
- 
-\section lib_sec Libraries 
-- YARP libraries. 
-- ctrlLib library. 
+
+\section lib_sec Libraries
+- YARP libraries.
+- ctrlLib library.
 - iKin library.
-- iDyn library.  
+- iDyn library.
 
 \section parameters_sec Parameters
 
---robot \e name 
+--robot \e name
 - The parameter \e name identifies the robot name. If not specified
-  \e icub is assumed. 
+  \e icub is assumed.
 
 --imuPortName
 - The parameter identifies the prefix of the multipleanalogsensorsserver
   to be attached to for retreiving inertial data.
   The default value is /<robot>/head/inertials.
 
---rate \e r 
+--rate \e r
 - The parameter \e r identifies the rate the thread will work. If not
-  specified \e 10ms is assumed. 
+  specified \e 10ms is assumed.
 
---no_legs   
+--no_legs
 - this option disables the dynamics computation for the legs joints
 
 \section portsa_sec Ports Accessed
 The port the service is listening to.
 
 \section portsc_sec Ports Created
- 
-- \e <name>/<part>/FT:i (e.g. /wholeBodyDynamics/right_arm/FT:i) 
+
+- \e <name>/<part>/FT:i (e.g. /wholeBodyDynamics/right_arm/FT:i)
   receives the input data vector.
- 
+
 \section in_files_sec Input Data Files
 None.
 
 \section out_data_sec Output Data Files
-None. 
- 
+None.
+
 \section conf_file_sec Configuration Files
 None
- 
+
 \section tested_os_sec Tested OS
 Linux and Windows.
 
 \section example_sec Example
-By launching the following command: 
- 
-\code 
-wholeBodyDynamics --rate 10  
-\endcode 
- 
-the module will create the listening port 
-/wholeBodyDynamics/right_arm/FT:i for the acquisition of data 
-vector coming for istance from the right arm analog port. 
- 
-Try now the following: 
- 
-\code 
+By launching the following command:
+
+\code
+wholeBodyDynamics --rate 10
+\endcode
+
+the module will create the listening port
+/wholeBodyDynamics/right_arm/FT:i for the acquisition of data
+vector coming for istance from the right arm analog port.
+
+Try now the following:
+
+\code
 yarp connect /icub/right_arm/analog:o /wholeBodyDynamics/right_arm/FT:i
-\endcode 
- 
+\endcode
+
 \author Matteo Fumagalli
 
 This file can be edited at src/wholeBodyDynamics/main.cpp.
-*/ 
+*/
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
@@ -225,6 +225,10 @@ private:
     inverseDynamics *inv_dyn;
     IThreeAxisLinearAccelerometers* m_iAcc{nullptr};
     IThreeAxisGyroscopes* m_iGyro{nullptr};
+    ISixAxisForceTorqueSensors* m_left_arm_FT{nullptr};
+    ISixAxisForceTorqueSensors* m_right_arm_FT{nullptr};
+    ISixAxisForceTorqueSensors* m_left_leg_FT{nullptr};
+    ISixAxisForceTorqueSensors* m_right_leg_FT{nullptr};
 
     PolyDriver *dd_left_arm;
     PolyDriver *dd_right_arm;
@@ -232,7 +236,11 @@ private:
     PolyDriver *dd_left_leg;
     PolyDriver *dd_right_leg;
     PolyDriver *dd_torso;
-    PolyDriver  dd_MASClient;
+    PolyDriver  dd_head_inertial_MASClient;
+    PolyDriver  dd_left_arm_FT_MASClient;
+    PolyDriver  dd_right_arm_FT_MASClient;
+    PolyDriver  dd_left_leg_FT_MASClient;
+    PolyDriver  dd_right_leg_FT_MASClient;
 
 public:
     wholeBodyDynamics()
@@ -280,7 +288,7 @@ public:
 
             //check if the driver is connected
             if (connected) break;
-        
+
             //check if the timeout (60s) is expired
             if (current_time-start_time > 60.0)
             {
@@ -309,8 +317,8 @@ public:
 
     bool respond(const Bottle& command, Bottle& reply) override
     {
-        reply.clear(); 
-        
+        reply.clear();
+
         if (command.get(0).isInt32())
         {
             if (command.get(0).asInt32()==0)
@@ -319,7 +327,7 @@ public:
                 if (inv_dyn)
                 {
                     inv_dyn->suspend();
-                    inv_dyn->calibrateOffset(); 
+                    inv_dyn->calibrateOffset();
                     inv_dyn->resume();
                 }
                 yInfo("Recalibration complete.\n");
@@ -422,7 +430,7 @@ public:
              autoconnect = true;
         }
         else
-        { 
+        {
               autoconnect = false;
         }
 
@@ -561,6 +569,23 @@ public:
 
         if (left_arm_enabled)
         {
+            Property mas_left_arm_FT_conf {{"device",Value("multipleanalogsensorsclient")},
+                                           {"local", Value("/"+local_name+"/left_arm/FT")},
+                                           {"remote",Value("/"+robot_name+"/left_arm/FT")},
+                                           {"timeout",Value(0.1)}};
+
+            if (!dd_left_arm_FT_MASClient.open(mas_left_arm_FT_conf))
+            {
+                yError("Unable to open the left_arm FT MAS client...quitting\n");
+                return false;
+            }
+
+            if (!dd_left_arm_FT_MASClient.view(m_left_arm_FT))
+            {
+                yError("View of one of the MAS interfaces for left_arm required failed...quitting\n");
+                return false;
+            }
+
             OptionsLeftArm.put("device","remote_controlboard");
             OptionsLeftArm.put("local","/"+local_name+"/left_arm/client");
             OptionsLeftArm.put("remote","/"+robot_name+"/left_arm");
@@ -571,9 +596,25 @@ public:
                 return false;
             }
         }
-        
+
         if (right_arm_enabled)
         {
+            Property mas_right_arm_FT_conf {{"device",Value("multipleanalogsensorsclient")},
+                                           {"local", Value("/"+local_name+"/right_arm/FT")},
+                                           {"remote",Value("/"+robot_name+"/right_arm/FT")},
+                                           {"timeout",Value(0.1)}};
+
+            if (!dd_right_arm_FT_MASClient.open(mas_right_arm_FT_conf))
+            {
+                yError("Unable to open the right_arm FT MAS client...quitting\n");
+                return false;
+            }
+
+            if (!dd_right_arm_FT_MASClient.view(m_right_arm_FT))
+            {
+                yError("View of one of the MAS interfaces for right_arm required failed...quitting\n");
+                return false;
+            }
             OptionsRightArm.put("device","remote_controlboard");
             OptionsRightArm.put("local","/"+local_name+"/right_arm/client");
             OptionsRightArm.put("remote","/"+robot_name+"/right_arm");
@@ -587,6 +628,38 @@ public:
 
         if (legs_enabled)
         {
+            Property mas_left_leg_FT_conf {{"device",Value("multipleanalogsensorsclient")},
+                                           {"local", Value("/"+local_name+"/left_leg/FT")},
+                                           {"remote",Value("/"+robot_name+"/left_leg/FT")},
+                                           {"timeout",Value(0.1)}};
+
+            if (!dd_left_leg_FT_MASClient.open(mas_left_leg_FT_conf))
+            {
+                yError("Unable to open the left_leg FT MAS client...quitting\n");
+                return false;
+            }
+
+            if (!dd_left_leg_FT_MASClient.view(m_left_leg_FT))
+            {
+                yError("View of one of the MAS interfaces for left_leg required failed...quitting\n");
+                return false;
+            }
+            Property mas_right_leg_FT_conf {{"device",Value("multipleanalogsensorsclient")},
+                                           {"local", Value("/"+local_name+"/right_leg/FT")},
+                                           {"remote",Value("/"+robot_name+"/right_leg/FT")},
+                                           {"timeout",Value(0.1)}};
+
+            if (!dd_right_leg_FT_MASClient.open(mas_right_leg_FT_conf))
+            {
+                yError("Unable to open the right_leg FT MAS client...quitting\n");
+                return false;
+            }
+
+            if (!dd_right_leg_FT_MASClient.view(m_right_leg_FT))
+            {
+                yError("View of one of the MAS interfaces for right_leg required failed...quitting\n");
+                return false;
+            }
             OptionsLeftLeg.put("device","remote_controlboard");
             OptionsLeftLeg.put("local","/"+local_name+"/left_leg/client");
             OptionsLeftLeg.put("remote","/"+robot_name+"/left_leg");
@@ -623,47 +696,34 @@ public:
                 yInfo("device driver created\n");
         }
 
-        Property masConf {{"device",Value("multipleanalogsensorsclient")},
-                          {"local", Value("/"+local_name+"/inertials")},
-                          {"remote",Value(remoteInertialName)},
-                          {"timeout",Value(0.1)}};
+        Property mas_head_inertial_conf {{"device",Value("multipleanalogsensorsclient")},
+                                         {"local", Value("/"+local_name+"/inertials")},
+                                         {"remote",Value(remoteInertialName)},
+                                         {"timeout",Value(0.1)}};
 
-        if (!dd_MASClient.open(masConf))
+        if (!dd_head_inertial_MASClient.open(mas_head_inertial_conf))
         {
-            yError("unable to open the MAS client...quitting\n");
+            yError("unable to open the head inertial MAS client...quitting\n");
             return false;
         }
 
-        if(!dd_MASClient.view(m_iAcc) || !dd_MASClient.view(m_iGyro))
+        if(!dd_head_inertial_MASClient.view(m_iAcc) || !dd_head_inertial_MASClient.view(m_iGyro))
         {
             yError("view of one of the MAS interfaces required failed...quitting\n");
             return false;
         }
 
-        //--------------------CHECK FT SENSOR------------------------
-        if (!dummy_ft)
-        {
-            if ((dd_left_arm  && !Network::exists("/" + robot_name + "/left_arm/analog:o"))  ||
-                (dd_right_arm && !Network::exists("/" + robot_name + "/right_arm/analog:o")) ||
-                (dd_left_leg  && !Network::exists("/" + robot_name + "/left_leg/analog:o"))  ||
-                (dd_right_leg && !Network::exists("/" + robot_name + "/right_leg/analog:o")) )
-                {     
-                    yError("Unable to detect the presence of F/T sensors in your iCub...quitting\n");
-                    return false;
-                }
-        }     
-
         //---------------OPEN RPC PORT--------------------//
         string rpcPortName = "/"+local_name+"/rpc:i";
         rpcPort.open(rpcPortName);
-        attach(rpcPort);                  
+        attach(rpcPort);
 
         //---------------OPEN INERTIAL PORTS--------------------//
         port_filtered_output.open("/"+local_name+"/filtered/inertial:o");
         inertialFilter = new dataFilter(port_filtered_output, m_iGyro, m_iAcc);
 
         //--------------------------THREAD--------------------------
-        inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, icub_type, autoconnect);
+        inv_dyn = new inverseDynamics(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, robot_name, local_name, icub_type, autoconnect, m_left_arm_FT, m_right_arm_FT, m_left_leg_FT, m_right_leg_FT);
         inv_dyn->com_enabled=com_enabled;
         inv_dyn->auto_drift_comp=auto_drift_comp;
         inv_dyn->com_vel_enabled=com_vel_enabled;
@@ -684,7 +744,7 @@ public:
     bool close() override
     {
         //The order of execution of the following closures is important, do not change it.
-        yInfo("Closing wholeBodyDynamics module... \n");     
+        yInfo("Closing wholeBodyDynamics module... \n");
 
         if (inv_dyn)
           {
@@ -694,9 +754,9 @@ public:
                 yInfo("Setting the icub in stiff mode\n");
                 inv_dyn->setStiffMode();
             }
-            yInfo("Stopping the inv_dyn thread...");     
+            yInfo("Stopping the inv_dyn thread...");
             inv_dyn->stop();
-            yInfo("inv_dyn thread stopped\n");     
+            yInfo("inv_dyn thread stopped\n");
             delete inv_dyn;
             inv_dyn=nullptr;
           }
@@ -707,33 +767,35 @@ public:
             inertialFilter->stop();
             delete inertialFilter;
             inertialFilter=nullptr;
-            dd_MASClient.close();
+            dd_head_inertial_MASClient.close();
         }
 
-        yInfo("Closing the filtered inertial output port \n");     
+        yInfo("Closing the filtered inertial output port \n");
         port_filtered_output.interrupt();
         port_filtered_output.close();
 
-        yInfo("Closing the rpc port \n");     
+        yInfo("Closing the rpc port \n");
         rpcPort.close();
 
         if (dd_left_arm)
         {
-            yInfo("Closing dd_left_arm \n");     
+            yInfo("Closing dd_left_arm \n");
+            dd_left_arm_FT_MASClient.close();
             dd_left_arm->close();
             delete dd_left_arm;
             dd_left_arm=nullptr;
         }
         if (dd_right_arm)
         {
-            yInfo("Closing dd_right_arm \n");     
+            yInfo("Closing dd_right_arm \n");
+            dd_right_arm_FT_MASClient.close();
             dd_right_arm->close();
             delete dd_right_arm;
             dd_right_arm=nullptr;
         }
         if (dd_head)
         {
-            yInfo("Closing dd_head \n");     
+            yInfo("Closing dd_head \n");
             dd_head->close();
             delete dd_head;
             dd_head=nullptr;
@@ -741,27 +803,29 @@ public:
 
         if (dd_left_leg)
         {
-            yInfo("Closing dd_left_leg \n");     
+            yInfo("Closing dd_left_leg \n");
+            dd_left_leg_FT_MASClient.close();
             dd_left_leg->close();
             delete dd_left_leg;
             dd_left_leg=nullptr;
         }
         if (dd_right_leg)
         {
-            yInfo("Closing dd_right_leg \n");     
+            yInfo("Closing dd_right_leg \n");
+            dd_right_leg_FT_MASClient.close();
             dd_right_leg->close();
             delete dd_right_leg;
             dd_right_leg=nullptr;
         }
         if (dd_torso)
         {
-            yInfo("Closing dd_torso \n");     
+            yInfo("Closing dd_torso \n");
             dd_torso->close();
             delete dd_torso;
             dd_torso=nullptr;
         }
 
-        yInfo("wholeBodyDynamics module was closed successfully! \n");     
+        yInfo("wholeBodyDynamics module was closed successfully! \n");
         return true;
     }
 
@@ -798,10 +862,10 @@ public:
         }
         else
         {
-            yInfo("wholeBodyDynamics module was closed successfully! \n");    
+            yInfo("wholeBodyDynamics module was closed successfully! \n");
             return true;
         }
-            
+
     }
 };
 
@@ -822,7 +886,7 @@ int main(int argc, char * argv[])
         cout << "\t--robot      robot: the robot name. default: iCub"                                                            << endl;
         cout << "\t--local      name: the prefix of the ports opened by the module. defualt: wholeBodyDynamics"                  << endl;
         cout << "\t--autoconnect     automatically connects the module ports to iCubInterface"                                   << endl;
-        cout << "\t--no_legs         this option disables the dynamics computation for the legs joints"                          << endl;  
+        cout << "\t--no_legs         this option disables the dynamics computation for the legs joints"                          << endl;
         cout << "\t--headV2          use the model of the headV2"                                                                << endl;
         cout << "\t--headV2.6        use the model of the headV2.6"                                                              << endl;
         cout << "\t--headV2.7        use the model of the headV2.7"                                                              << endl;
