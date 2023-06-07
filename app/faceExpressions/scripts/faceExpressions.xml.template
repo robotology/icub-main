@@ -2,7 +2,7 @@
 <name>Face Expressions</name>
 <module>
       <name>yarprobotinterface</name>
-      <parameters>--config serialPortFaceExpressions.xml</parameters>
+      <parameters>--context faceExpressions --config serialPortFaceExpressions.xml</parameters>
 	  <node>pc104</node>
 	<tag>face_device</tag>
    </module>
