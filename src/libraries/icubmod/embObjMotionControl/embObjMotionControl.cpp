@@ -2093,14 +2093,20 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type14.pwmlimit               = (int32_t)S_32(params.param1);
         calib.params.type14.final_pos              = (int32_t)S_32(params.param2);
         calib.params.type14.invertdirection        = (uint8_t)U_32(params.param3);
+        calib.params.type14.rotation               = (int32_t)S_32(params.param4);
 
-        eoas_pos_ROT_t rotationparam;
-        if(!convertCalib14RotationParam(params.param4, rotationparam))
+        if (calib.params.type14.invertdirection != 0 && calib.params.type14.invertdirection != 1)
         {
-            yError() << "Error in param4 of calibartion type 14 for joint " << j << "Admitted values are: 0.0, 180.0, 90.0, -90.0";
+            yError() << "Error in param3 of calibartion type 14 for joint " << j << "Admitted values are: 0=FALSE and 1=TRUE";
             return false;
         }
-        calib.params.type14.rotation               = (uint8_t)rotationparam;
+        
+
+        if(!checkCalib14RotationParam(calib.params.type14.rotation))
+        {
+            yError() << "Error in param4 of calibartion type 14 for joint " << j << "Admitted values are: 0, 32768, 16384, -16384 [0, 180, 90, -90] in iCubDegree";
+            return false;
+        }
         calib.params.type14.offset                 = (int32_t)S_32(params.param5);
         calib.params.type14.calibrationZero        = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
 
@@ -2128,17 +2134,19 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
 
     return true;
 }
-bool embObjMotionControl::convertCalib14RotationParam(double calib_param4, eoas_pos_ROT_t & rotationparam)
+
+bool embObjMotionControl::checkCalib14RotationParam(int32_t calib_param4)
 {
-    if(calib_param4 == 0.0)
-        {rotationparam = eoas_pos_ROT_zero; return true;}
-    if(calib_param4 == 180.0)
-        {rotationparam = eoas_pos_ROT_plus180; return true;}
-    if(calib_param4 == 90.0)
-        {rotationparam = eoas_pos_ROT_plus090; return true;}
-    if(calib_param4 == -90.0)
-        {rotationparam = eoas_pos_ROT_minus090; return true;}
+    eOmc_calib14_ROT_t urotation = eomc_int2calib14_ROT(calib_param4);
     
+    if (urotation == eOmc_calib14_ROT_zero || 
+        urotation == eOmc_calib14_ROT_plus180 ||
+        urotation == eOmc_calib14_ROT_plus090 ||
+        urotation == eOmc_calib14_ROT_minus090)
+    {
+        return true;
+    }
+
     return false;
 }
 
