@@ -9,12 +9,12 @@
  *
  * @ingroup icub_tools
  * \defgroup wholeBodyPlayer wholeBodyPlayer
- * A module to replay the encoder data coming from yarpdataplayer(http://yarp.it/yarpdataplayer.html).
+ * A module to replay the encoder data coming from yarpdataplayer (https://yarp.it/latest/group__yarpdataplayer.html).
  *
  * \section disclaimer Disclaimer
  * \warning This software has been fully tested only on simulators, it is in a beta state for the use on the real robots.
  * \section intro_sec Description
- * This module opens a remote_controlboard (http://yarp.it/classyarp_1_1dev_1_1RemoteControlBoard.html) for each <part>
+ * This module opens a remote_controlboard (https://yarp.it/latest/classRemoteControlBoard.html) for each <part>
  * and commands it in position direct control to specific positions received by the input port related to the part.
  *
  * The position direct control ensure a more reliable repeatability of the movement but on the other hand can be
