@@ -26,13 +26,14 @@ void DefaultParser::parseInfo()
 {
     char str[512] = {0};
     uint8_t *p64 = (uint8_t*)&(m_dnginfo.param64);
-    snprintf(str, sizeof(str), " src %s, adr %d,(code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s %s",
+    snprintf(str, sizeof(str), " src %s, adr %d,(code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s %s %s",
                                 m_dnginfo.baseInfo.sourceCANPortStr.c_str(),
                                 m_dnginfo.baseInfo.sourceCANBoardAddr,
                                 m_dnginfo.errorCode,
                                 m_dnginfo.param16,
                                 p64[7], p64[6], p64[5], p64[4], p64[3], p64[2], p64[1], p64[0],
                                 eoerror_code2string(m_dnginfo.errorCode),
+                                eoerror_code2rulesstring(m_dnginfo.errorCode),
                                 m_dnginfo.extraMessage.c_str()
                                 );
     m_dnginfo.baseInfo.finalMessage.clear();
@@ -52,6 +53,7 @@ void ConfigParser::parseInfo()
 {
     char str[512] = {0};
     eOerror_value_t value = eoerror_code2value(m_dnginfo.errorCode);
+    
     m_dnginfo.baseInfo.finalMessage.clear();
 
     switch(value)
