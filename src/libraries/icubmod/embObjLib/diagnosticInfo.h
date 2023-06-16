@@ -35,9 +35,9 @@ class Diagnostic::EmbeddedInfo
 {
 public:
     std::string                   sourceBoardIpAddrStr; // is the ipv4 address, in string, of the board that sends the diagnostic information 
-    std::string                   sourceBoardName; // is the name of  the board that sends the diagnostic information
+    std::string                   sourceBoardName; // is the name of the board that sends the diagnostic information
     std::string                   sourceCANPortStr; // if the diagnostic info si sent by a board on CAN, this field contains the CAN port expressed in string
-    uint8_t                       sourceCANBoardAddr; // if the diagnostic info si sent by a board on CAN, this field contains the CAN address of the board
+    uint8_t                       sourceCANBoardAddr; // if the diagnostic info is sent by a board on CAN, this field contains the CAN address of the board
     std::string                   finalMessage; // contains the final diagostic message after the parsering
     Diagnostic::SeverityOfError   severity; // is the severity of the message
     Diagnostic::TimeOfInfo        timeOfInfo; //it is the time of the board when it sent the message

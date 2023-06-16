@@ -1096,8 +1096,8 @@ void SysParser::parseInfo()
 
         }break;
 
-        case eoerror_value_SYS_canservices_boards_lostcontact: //TODO: make a specific message.need some translation from enum to string
-        case eoerror_value_SYS_canservices_boards_retrievedcontact://TODO: make a specific message.need some translation from enum to string
+        case eoerror_value_SYS_canservices_boards_lostcontact: //TODO: DONE (see eomn_servicecategory2string) make a specific message.need some translation from enum to string
+        case eoerror_value_SYS_canservices_boards_retrievedcontact://TODO: DONE  (see eomn_servicecategory2string) make a specific message.need some translation from enum to string
         {
             eOmn_serv_category_t serv_category = m_dnginfo.param16;
             uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
@@ -1109,6 +1109,71 @@ void SysParser::parseInfo()
                 lostMaskcan1, lostMaskcan2
             );
 
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
+/**
+ * {eoerror_value_SYS_canservices_monitor_regularcontact, "SYS: a service has verified that the TX of its CAN boards is regular. In sourceaddress the eOmn_serv_category_t, in par64 LS 32 bits the bit mask of boards (CAN1 in MS 16 bits and CAN2 in LS 16 bits)"},
+    {eoerror_value_SYS_canservices_monitor_lostcontact,  "SYS: a service has detected that some CAN boards have stopped transmission. In sourceaddress the eOmn_serv_category_t, in par64 LS 32 bits the bit mask of lost board (CAN1 in MS 16 bits and CAN2 in LS 16 bits), in in par64 MS 32 bits the time in ms since last contact"},
+    {eoerror_value_SYS_canservices_monitor_stillnocontact,  "SYS: a service has detected that some CAN boards are still not transmitting. In sourceaddress the eOmn_serv_category_t, in par64 LS 32 bits the bit mask of lost board (CAN1 in MS 16 bits and CAN2 in LS 16 bits), in in par64 MS 32 bits the total disappearence time in ms"},
+    {eoerror_value_SYS_canservices_monitor_retrievedcontact, "SYS: a service has recovered all CAN boards that were not transmitting. In sourceaddress the eOmn_serv_category_t)"}
+
+*/
+        case eoerror_value_SYS_canservices_monitor_retrievedcontact: //TODO: make a specific message.need some translation from enum to string
+        {
+            eOmn_serv_category_t serv_category = m_dnginfo.baseInfo.sourceCANBoardAddr;
+            snprintf(str, sizeof(str), "%s Type of service category is %u.",
+                m_dnginfo.baseMessage.c_str(),
+                eomn_servicecategory2string(serv_category)
+            );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
+        case eoerror_value_SYS_canservices_monitor_regularcontact: //TODO: make a specific message.need some translation from enum to string
+        {
+            eOmn_serv_category_t serv_category = m_dnginfo.baseInfo.sourceCANBoardAddr;
+            uint16_t maskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
+            uint16_t maskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
+            snprintf(str, sizeof(str), "%s Type of service category is %u. CAN boards are on (can1map, can2map) = (0x%.4x, 0x%.4x)",
+                m_dnginfo.baseMessage.c_str(),
+                eomn_servicecategory2string(serv_category),
+                maskcan1,
+                maskcan2
+            );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
+        case eoerror_value_SYS_canservices_monitor_lostcontact: //TODO: make a specific message.need some translation from enum to string
+        {
+            eOmn_serv_category_t serv_category = m_dnginfo.baseInfo.sourceCANBoardAddr;
+            uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
+            uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
+            uint64_t timeLastContact = (m_dnginfo.param64 & 0xffff000000000000) >> 48;
+
+            snprintf(str, sizeof(str), "%s Type of service category is %u. Lost CAN boards are on (can1map, can2map) = (0x%.4x, 0x%.4x). Time since last contact: %d",
+                m_dnginfo.baseMessage.c_str(),
+                eomn_servicecategory2string(serv_category),
+                lostMaskcan1,
+                lostMaskcan2,
+                timeLastContact
+            );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
+        case eoerror_value_SYS_canservices_monitor_stillnocontact://TODO: make a specific message.need some translation from enum to string
+        {
+            eOmn_serv_category_t serv_category = m_dnginfo.baseInfo.sourceCANBoardAddr;
+            uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
+            uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
+            uint64_t totDisappTime = (m_dnginfo.param64 & 0xffff000000000000) >> 48;
+
+            snprintf(str, sizeof(str), "%s Type of service category is %u. Lost CAN boards are on (can1map, can2map) = (0x%.4x, 0x%.4x). Total disappearance time: %d",
+                m_dnginfo.baseMessage.c_str(),
+                eomn_servicecategory2string(serv_category),
+                lostMaskcan1,
+                lostMaskcan2,
+                totDisappTime
+            );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
 
@@ -1136,10 +1201,6 @@ void SysParser::parseInfo()
         case eoerror_value_SYS_canservices_boards_searched:
         case eoerror_value_SYS_canservices_boards_found:
         case eoerror_value_SYS_transceiver_rxinvalidframe_error:
-        case eoerror_value_SYS_canservices_monitor_regularcontact: //TODO: make a specific message.need some translation from enum to string
-        case eoerror_value_SYS_canservices_monitor_lostcontact: //TODO: make a specific message.need some translation from enum to string
-        case eoerror_value_SYS_canservices_monitor_stillnocontact://TODO: make a specific message.need some translation from enum to string
-        case eoerror_value_SYS_canservices_monitor_retrievedcontact: //TODO: make a specific message.need some translation from enum to string
         {
             snprintf(str, sizeof(str), " %s", m_dnginfo.baseMessage.c_str());
             m_dnginfo.baseInfo.finalMessage.append(str);
