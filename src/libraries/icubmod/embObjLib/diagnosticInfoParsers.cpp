@@ -293,7 +293,10 @@ void ConfigParser::parseInfo()
                 m_dnginfo.baseInfo.finalMessage.append(str);
             }
 
-            snprintf(str, sizeof(str), "Missing can boards on (can1map, can2map) = (0x%.4x, 0x%.4x) and found but incompatible can boards on (can1map, can2map) = (0x%.4x, 0x%.4x)");
+            snprintf(str, sizeof(str), "Missing can boards on (can1map, can2map) = (0x%.4x, 0x%.4x) and found but incompatible can boards on (can1map, can2map) = (0x%.4x, 0x%.4x)",
+                missMaskcan1, missMaskcan2,
+                incompMaskcan1, incompMaskcan2
+            );
 
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
@@ -320,6 +323,7 @@ void ConfigParser::parseInfo()
                 appl.major, appl.minor,
                 strain
             );
+            m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
 
         case eoerror_value_CFG_mais_ok:
@@ -1092,6 +1096,22 @@ void SysParser::parseInfo()
 
         }break;
 
+        case eoerror_value_SYS_canservices_boards_lostcontact: //TODO: make a specific message.need some translation from enum to string
+        case eoerror_value_SYS_canservices_boards_retrievedcontact://TODO: make a specific message.need some translation from enum to string
+        {
+            eOmn_serv_category_t serv_category = m_dnginfo.param16;
+            uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
+            uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
+
+            snprintf(str, sizeof(str), "%s Type of service category is %u. Lost can boards on (can1map, can2map) = (0x%.4x, 0x%.4x)",
+                m_dnginfo.baseMessage.c_str(),
+                eomn_servicecategory2string(serv_category),
+                lostMaskcan1, lostMaskcan2
+            );
+
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
 
         case eoerror_value_SYS_unspecified:            
         case eoerror_value_SYS_tobedecided:            
@@ -1116,8 +1136,6 @@ void SysParser::parseInfo()
         case eoerror_value_SYS_canservices_boards_searched:
         case eoerror_value_SYS_canservices_boards_found:
         case eoerror_value_SYS_transceiver_rxinvalidframe_error:
-        case eoerror_value_SYS_canservices_boards_lostcontact: //TODO: make a specific message.need some translation from enum to string
-        case eoerror_value_SYS_canservices_boards_retrievedcontact://TODO: make a specific message.need some translation from enum to string
         case eoerror_value_SYS_canservices_monitor_regularcontact: //TODO: make a specific message.need some translation from enum to string
         case eoerror_value_SYS_canservices_monitor_lostcontact: //TODO: make a specific message.need some translation from enum to string
         case eoerror_value_SYS_canservices_monitor_stillnocontact://TODO: make a specific message.need some translation from enum to string
