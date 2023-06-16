@@ -206,8 +206,6 @@ void ConfigParser::parseInfo()
                                         );
             m_dnginfo.baseInfo.finalMessage.append(str);
 
-
-
             for(i=1; i<15; i++)
             {
                 uint64_t val = (invalidmask >> (4*i)) & 0x0f;
@@ -219,7 +217,8 @@ void ConfigParser::parseInfo()
                                                 ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
                                                 ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
                                                 ((val & 0x4) == 0x4) ? (wrongprot) : (empty)
-                                                );
+                    );
+
                     m_dnginfo.baseInfo.finalMessage.append(str);
                     n++;
 
@@ -460,7 +459,7 @@ void ConfigParser::parseInfo()
 
                 if(secondary_enc_with_error) 
                 {
-                    primary_error_code = ( (errorenc2 & (0xf <<i)) >> 4*i);
+                    secondary_error_code = ( (errorenc2 & (0xf <<i)) >> 4*i);
                     m_entityNameProvider.getAxisName(i, m_dnginfo.baseInfo.axisName);
                     snprintf(str, sizeof(str), " joint %d (%s) has error on secodary encoder (code=%d)", 
                             i, m_dnginfo.baseInfo.axisName.c_str(), secondary_error_code); //TODO: get a string instead of a code
@@ -1102,14 +1101,31 @@ void SysParser::parseInfo()
             eOmn_serv_category_t serv_category = m_dnginfo.param16;
             uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
             uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
+            char lostCanBoards1[64] = {0};
+            char lostCanBoards2[64] = {0};
 
-            snprintf(str, sizeof(str), "%s Type of service category is %u. Lost can boards on (can1map, can2map) = (0x%.4x, 0x%.4x)",
+            for(i=1; i<15; i++)
+            {
+                if ( (lostMaskcan1 & (1<<i)) == (1<<i))
+                {
+                    snprintf(lostCanBoards1, sizeof(lostCanBoards1), "%d ", i);
+                }
+
+                if ( (lostMaskcan2 & (1<<i)) == (1<<i))
+                {
+                    snprintf(lostCanBoards2, sizeof(lostCanBoards2), "%d ", i);
+                }
+            }
+
+
+            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost can boards on (can1map, can2map) = ([ %s ], [ %s ] )",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category),
-                lostMaskcan1, lostMaskcan2
+                lostCanBoards1, lostCanBoards2
             );
 
             m_dnginfo.baseInfo.finalMessage.append(str);
+            
         } break;
 
 /**
@@ -1122,7 +1138,7 @@ void SysParser::parseInfo()
         case eoerror_value_SYS_canservices_monitor_retrievedcontact: //TODO: make a specific message.need some translation from enum to string
         {
             eOmn_serv_category_t serv_category = m_dnginfo.baseInfo.sourceCANBoardAddr;
-            snprintf(str, sizeof(str), "%s Type of service category is %u.",
+            snprintf(str, sizeof(str), "%s Type of service category is %s.",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category)
             );
@@ -1132,13 +1148,29 @@ void SysParser::parseInfo()
         case eoerror_value_SYS_canservices_monitor_regularcontact: //TODO: make a specific message.need some translation from enum to string
         {
             eOmn_serv_category_t serv_category = m_dnginfo.baseInfo.sourceCANBoardAddr;
-            uint16_t maskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
-            uint16_t maskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
-            snprintf(str, sizeof(str), "%s Type of service category is %u. CAN boards are on (can1map, can2map) = (0x%.4x, 0x%.4x)",
+            uint16_t foundMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
+            uint16_t foundMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
+            char foundCanBoards1[64] = {0};
+            char foundCanBoards2[64] = {0};
+
+            for(i=1; i<15; i++)
+            {
+                if ( (foundMaskcan1 & (1<<i)) == (1<<i))
+                {
+                    snprintf(foundCanBoards1, sizeof(foundCanBoards1), "%d ", i);
+                }
+
+                if ( (foundMaskcan2 & (1<<i)) == (1<<i))
+                {
+                    snprintf(foundCanBoards2, sizeof(foundCanBoards2), "%d ", i);
+                }
+            }
+
+            snprintf(str, sizeof(str), "%s Type of service category is %s. CAN boards are on (can1map, can2map) = ([ %s ], [ %s ])",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category),
-                maskcan1,
-                maskcan2
+                foundMaskcan1,
+                foundMaskcan2
             );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
@@ -1149,12 +1181,27 @@ void SysParser::parseInfo()
             uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
             uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
             uint64_t timeLastContact = (m_dnginfo.param64 & 0xffff000000000000) >> 48;
+            char lostCanBoards1[64] = {0};
+            char lostCanBoards2[64] = {0};
 
-            snprintf(str, sizeof(str), "%s Type of service category is %u. Lost CAN boards are on (can1map, can2map) = (0x%.4x, 0x%.4x). Time since last contact: %d",
+            for(i=1; i<15; i++)
+            {
+                if ( (lostMaskcan1 & (1<<i)) == (1<<i))
+                {
+                    snprintf(lostCanBoards1, sizeof(lostCanBoards1), "%d ", i);
+                }
+
+                if ( (lostMaskcan2 & (1<<i)) == (1<<i))
+                {
+                    snprintf(lostCanBoards2, sizeof(lostCanBoards2), "%d ", i);
+                }
+            }
+
+            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ], [ %s ]). Time since last contact: %d",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category),
-                lostMaskcan1,
-                lostMaskcan2,
+                lostCanBoards1,
+                lostCanBoards2,
                 timeLastContact
             );
             m_dnginfo.baseInfo.finalMessage.append(str);
@@ -1167,11 +1214,30 @@ void SysParser::parseInfo()
             uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
             uint64_t totDisappTime = (m_dnginfo.param64 & 0xffff000000000000) >> 48;
 
-            snprintf(str, sizeof(str), "%s Type of service category is %u. Lost CAN boards are on (can1map, can2map) = (0x%.4x, 0x%.4x). Total disappearance time: %d",
+            char lostCanBoards1[64] = {0};
+            char lostCanBoards2[64] = {0};
+
+            for(i=1; i<15; i++)
+            {
+                if ( (lostMaskcan1 & (1<<i)) == (1<<i))
+                {
+                    snprintf(lostCanBoards1, sizeof(lostCanBoards1), "%d ", i);
+                }
+            }
+
+            for(i=1; i<15; i++)
+            {
+                if ( (lostMaskcan2 & (1<<i)) == (1<<i))
+                {
+                    snprintf(lostCanBoards2, sizeof(lostCanBoards2), "%d ", i);
+                }
+            }
+
+            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ] , [ %s ]). Total disappearance time: %d",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category),
-                lostMaskcan1,
-                lostMaskcan2,
+                lostCanBoards1,
+                lostCanBoards2,
                 totDisappTime
             );
             m_dnginfo.baseInfo.finalMessage.append(str);
