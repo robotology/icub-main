@@ -810,6 +810,7 @@ void SysParser::parseInfo()
 
         case eoerror_value_SYS_ctrloop_execoverflowRX:
         {
+            // TODO: check if time to show is TX. Shouldn't be RX in this case?
             snprintf(str, sizeof(str), " %s RX execution time %d[usec]. Latest previous execution times of TX, RX, DO, TX %ld[usec]", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, m_dnginfo.param64);
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
@@ -822,11 +823,10 @@ void SysParser::parseInfo()
 
         case eoerror_value_SYS_ctrloop_execoverflowTX:
         {
-            snprintf(str, sizeof(str), " %s TX execution time %d[usec]. Latest previous execution times of TX, RX, DO %ld[usec]. Num of frames in tx queue: CAN1 is %d, CAN2 is %d ",
-                    m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, 
-                    (m_dnginfo.param64&0x0000ffffffffffff),
-                    (int16_t)((m_dnginfo.param64&0x00ff000000000000)>>48),
-                    (int16_t)((m_dnginfo.param64&0xff00000000000000)>>56) );
+            // TODO: ask suggested the usec time (last parsed value is just one value, not 4) --> do I need to mask it or printing just par64 as int does the job?
+            snprintf(str, sizeof(str), " %s TX execution time %d[usec]. Latest previous execution times of TX, RX, DO %ld[usec]",
+                    m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, m_dnginfo.param64
+            );
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
@@ -1125,7 +1125,7 @@ void SysParser::parseInfo()
             );
 
             m_dnginfo.baseInfo.finalMessage.append(str);
-            
+
         } break;
 
 /**
@@ -1197,7 +1197,7 @@ void SysParser::parseInfo()
                 }
             }
 
-            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ], [ %s ]). Time since last contact: %d",
+            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ], [ %s ]). Time since last contact: %d [ms]",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category),
                 lostCanBoards1,
@@ -1233,7 +1233,7 @@ void SysParser::parseInfo()
                 }
             }
 
-            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ] , [ %s ]). Total disappearance time: %d",
+            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ] , [ %s ]). Total disappearance time: %d [ms]",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category),
                 lostCanBoards1,
