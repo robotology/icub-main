@@ -72,6 +72,12 @@ bool InfoFormatter::getDiagnosticInfo(EmbeddedInfo &info)
 
         case eoerror_category_ETHmonitor: parser_ptr = std::make_unique<EthMonitorParser>(dnginfo, entityNameProvider); break;
 
+        case eoerror_category_Skin: parser_ptr = std::make_unique<SkinParser>(dnginfo, entityNameProvider); break;
+
+        case eoerror_category_InertialSensor: parser_ptr = std::make_unique<InertialSensorParser>(dnginfo, entityNameProvider); break;
+
+        case eoerror_category_AnalogSensor: parser_ptr = std::make_unique<AnalogSensorParser>(dnginfo, entityNameProvider); break;
+
         default:                      parser_ptr = std::make_unique<DefaultParser>(dnginfo, entityNameProvider); break;
     };
 
