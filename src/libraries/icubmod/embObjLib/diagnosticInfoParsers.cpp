@@ -1108,12 +1108,14 @@ void SysParser::parseInfo()
             {
                 if ( (lostMaskcan1 & (1<<i)) == (1<<i))
                 {
-                    snprintf(lostCanBoards1, sizeof(lostCanBoards1), "%d ", i);
+                    strcat(lostCanBoards1,  std::to_string(i));
+                    strcat(lostCanBoards1, " ");
                 }
 
                 if ( (lostMaskcan2 & (1<<i)) == (1<<i))
                 {
-                    snprintf(lostCanBoards2, sizeof(lostCanBoards2), "%d ", i);
+                    strcat(lostCanBoards2,  std::to_string(i));
+                    strcat(lostCanBoards2, " ");
                 }
             }
 
@@ -1157,12 +1159,14 @@ void SysParser::parseInfo()
             {
                 if ( (foundMaskcan1 & (1<<i)) == (1<<i))
                 {
-                    snprintf(foundCanBoards1, sizeof(foundCanBoards1), "%d ", i);
+                    strcat(foundCanBoards1,  std::to_string(i));
+                    strcat(foundCanBoards1, " ");
                 }
 
                 if ( (foundMaskcan2 & (1<<i)) == (1<<i))
                 {
-                    snprintf(foundCanBoards2, sizeof(foundCanBoards2), "%d ", i);
+                    strcat(foundCanBoards2,  std::to_string(i));
+                    strcat(foundCanBoards2, " ");
                 }
             }
 
@@ -1188,12 +1192,14 @@ void SysParser::parseInfo()
             {
                 if ( (lostMaskcan1 & (1<<i)) == (1<<i))
                 {
-                    snprintf(lostCanBoards1, sizeof(lostCanBoards1), "%d ", i);
+                    strcat(lostCanBoards1, std::to_string(i));
+                    strcat(lostCanBoards1, " ");
                 }
 
                 if ( (lostMaskcan2 & (1<<i)) == (1<<i))
                 {
-                    snprintf(lostCanBoards2, sizeof(lostCanBoards2), "%d ", i);
+                    strcat(lostCanBoards2, std::to_string(i));
+                    strcat(lostCanBoards2, " ");
                 }
             }
 
@@ -1221,15 +1227,14 @@ void SysParser::parseInfo()
             {
                 if ( (lostMaskcan1 & (1<<i)) == (1<<i))
                 {
-                    snprintf(lostCanBoards1, sizeof(lostCanBoards1), "%d ", i);
+                    strcat(lostCanBoards1, std::to_string(i));
+                    strcat(lostCanBoards1, " ");
                 }
-            }
 
-            for(i=1; i<15; i++)
-            {
                 if ( (lostMaskcan2 & (1<<i)) == (1<<i))
                 {
-                    snprintf(lostCanBoards2, sizeof(lostCanBoards2), "%d ", i);
+                    strcat(lostCanBoards2, std::to_string(i));
+                    strcat(lostCanBoards2, " ");
                 }
             }
 
