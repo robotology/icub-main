@@ -569,21 +569,24 @@ public:
 
         if (left_arm_enabled)
         {
-            Property mas_left_arm_FT_conf {{"device",Value("multipleanalogsensorsclient")},
-                                           {"local", Value("/"+local_name+"/left_arm/FT")},
-                                           {"remote",Value("/"+robot_name+"/left_arm/FT")},
-                                           {"timeout",Value(0.1)}};
+            if (!dummy_ft) {
+                Property mas_left_arm_FT_conf {{"device",Value("multipleanalogsensorsclient")},
+                                              {"local", Value("/"+local_name+"/left_arm/FT")},
+                                              {"remote",Value("/"+robot_name+"/left_arm/FT")},
+                                              {"timeout",Value(0.1)}};
 
-            if (!dd_left_arm_FT_MASClient.open(mas_left_arm_FT_conf))
-            {
-                yError("Unable to open the left_arm FT MAS client...quitting\n");
-                return false;
-            }
+                if (!dd_left_arm_FT_MASClient.open(mas_left_arm_FT_conf))
+                {
+                    yError("Unable to open the left_arm FT MAS client...quitting\n");
+                    return false;
+                }
 
-            if (!dd_left_arm_FT_MASClient.view(m_left_arm_FT))
-            {
-                yError("View of one of the MAS interfaces for left_arm required failed...quitting\n");
-                return false;
+
+                if (!dd_left_arm_FT_MASClient.view(m_left_arm_FT))
+                {
+                    yError("View of one of the MAS interfaces for left_arm required failed...quitting\n");
+                    return false;
+                }
             }
 
             OptionsLeftArm.put("device","remote_controlboard");
@@ -599,21 +602,23 @@ public:
 
         if (right_arm_enabled)
         {
-            Property mas_right_arm_FT_conf {{"device",Value("multipleanalogsensorsclient")},
-                                           {"local", Value("/"+local_name+"/right_arm/FT")},
-                                           {"remote",Value("/"+robot_name+"/right_arm/FT")},
-                                           {"timeout",Value(0.1)}};
+            if (!dummy_ft) {
+                Property mas_right_arm_FT_conf {{"device",Value("multipleanalogsensorsclient")},
+                                                {"local", Value("/"+local_name+"/right_arm/FT")},
+                                                {"remote",Value("/"+robot_name+"/right_arm/FT")},
+                                                {"timeout",Value(0.1)}};
 
-            if (!dd_right_arm_FT_MASClient.open(mas_right_arm_FT_conf))
-            {
-                yError("Unable to open the right_arm FT MAS client...quitting\n");
-                return false;
-            }
+                if (!dd_right_arm_FT_MASClient.open(mas_right_arm_FT_conf))
+                {
+                    yError("Unable to open the right_arm FT MAS client...quitting\n");
+                    return false;
+                }
 
-            if (!dd_right_arm_FT_MASClient.view(m_right_arm_FT))
-            {
-                yError("View of one of the MAS interfaces for right_arm required failed...quitting\n");
-                return false;
+                if (!dd_right_arm_FT_MASClient.view(m_right_arm_FT))
+                {
+                    yError("View of one of the MAS interfaces for right_arm required failed...quitting\n");
+                    return false;
+                }
             }
             OptionsRightArm.put("device","remote_controlboard");
             OptionsRightArm.put("local","/"+local_name+"/right_arm/client");
@@ -628,37 +633,39 @@ public:
 
         if (legs_enabled)
         {
-            Property mas_left_leg_FT_conf {{"device",Value("multipleanalogsensorsclient")},
-                                           {"local", Value("/"+local_name+"/left_leg/FT")},
-                                           {"remote",Value("/"+robot_name+"/left_leg/FT")},
-                                           {"timeout",Value(0.1)}};
+            if (!dummy_ft) {
+                Property mas_left_leg_FT_conf {{"device",Value("multipleanalogsensorsclient")},
+                                               {"local", Value("/"+local_name+"/left_leg/FT")},
+                                               {"remote",Value("/"+robot_name+"/left_leg/FT")},
+                                               {"timeout",Value(0.1)}};
 
-            if (!dd_left_leg_FT_MASClient.open(mas_left_leg_FT_conf))
-            {
-                yError("Unable to open the left_leg FT MAS client...quitting\n");
-                return false;
-            }
+                if (!dd_left_leg_FT_MASClient.open(mas_left_leg_FT_conf))
+                {
+                    yError("Unable to open the left_leg FT MAS client...quitting\n");
+                    return false;
+                }
 
-            if (!dd_left_leg_FT_MASClient.view(m_left_leg_FT))
-            {
-                yError("View of one of the MAS interfaces for left_leg required failed...quitting\n");
-                return false;
-            }
-            Property mas_right_leg_FT_conf {{"device",Value("multipleanalogsensorsclient")},
-                                           {"local", Value("/"+local_name+"/right_leg/FT")},
-                                           {"remote",Value("/"+robot_name+"/right_leg/FT")},
-                                           {"timeout",Value(0.1)}};
+                if (!dd_left_leg_FT_MASClient.view(m_left_leg_FT))
+                {
+                    yError("View of one of the MAS interfaces for left_leg required failed...quitting\n");
+                    return false;
+                }
+                Property mas_right_leg_FT_conf {{"device",Value("multipleanalogsensorsclient")},
+                                            {"local", Value("/"+local_name+"/right_leg/FT")},
+                                            {"remote",Value("/"+robot_name+"/right_leg/FT")},
+                                            {"timeout",Value(0.1)}};
 
-            if (!dd_right_leg_FT_MASClient.open(mas_right_leg_FT_conf))
-            {
-                yError("Unable to open the right_leg FT MAS client...quitting\n");
-                return false;
-            }
+                if (!dd_right_leg_FT_MASClient.open(mas_right_leg_FT_conf))
+                {
+                    yError("Unable to open the right_leg FT MAS client...quitting\n");
+                    return false;
+                }
 
-            if (!dd_right_leg_FT_MASClient.view(m_right_leg_FT))
-            {
-                yError("View of one of the MAS interfaces for right_leg required failed...quitting\n");
-                return false;
+                if (!dd_right_leg_FT_MASClient.view(m_right_leg_FT))
+                {
+                    yError("View of one of the MAS interfaces for right_leg required failed...quitting\n");
+                    return false;
+                }
             }
             OptionsLeftLeg.put("device","remote_controlboard");
             OptionsLeftLeg.put("local","/"+local_name+"/left_leg/client");
