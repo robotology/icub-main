@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         build_type: [Release]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, windows-latest]
         build_shared_libs: [ON, OFF]
 
     steps:
@@ -54,12 +54,6 @@ jobs:
         "VCPKG_INSTALLATION_ROOT=C:/robotology/vcpkg" >> $env:GITHUB_ENV
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-
-    - name: Dependencies [macOS]
-      if: matrix.os == 'macOS-latest'
-      shell: bash
-      run: |
-        brew install ace cmake eigen gsl ipopt opencv pkg-config qt5
 
     - name: Dependencies [Ubuntu]
       if: matrix.os == 'ubuntu-latest'
@@ -119,8 +113,8 @@ jobs:
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
 
-    - name: Source-based Dependencies [Ubuntu/macOS]
-      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
+    - name: Source-based Dependencies [Ubuntu]
+      if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         # YCM
@@ -177,8 +171,8 @@ jobs:
               -DICUB_SHARED_LIBRARY=OFF \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
-    - name: Configure [Ubuntu/macOS]
-      if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
+    - name: Configure [Ubuntu]
+      if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         mkdir -p build
