@@ -268,6 +268,7 @@ bool embObjMultipleFTsensors::update(eOprotID32_t id32, double timestamp, void *
         ftSensorsData_[eoprotIndex].data_[index] = data->values[index];
     }
     ftSensorsData_[eoprotIndex].timeStamp_ = data->age;
+    masStatus_[eoprotIndex] = MAS_OK;
 
     temperaturesensordata_[eoprotIndex].data_ = data->temperature;
     temperaturesensordata_[eoprotIndex].timeStamp_ = calculateBoardTime(data->age);
@@ -399,7 +400,6 @@ bool embObjMultipleFTsensors::checkUpdateTimeout(eOprotID32_t id32, eOabstime_t 
         masStatus_[eoprot_ID2index(id32)] = MAS_TIMEOUT;
         return false;
     }
-    masStatus_[eoprot_ID2index(id32)] = MAS_OK;
     timeoutUpdate_[id32] = current;
     return true;
 }
