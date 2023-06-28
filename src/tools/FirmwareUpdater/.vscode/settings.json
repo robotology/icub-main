@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.m": "matlab",
+        "condition_variable": "cpp"
+    }
+}

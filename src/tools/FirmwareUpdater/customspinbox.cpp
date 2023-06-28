@@ -3,7 +3,7 @@
 CustomSpinBox::CustomSpinBox(icubCanProto_boardType_t boardType,QWidget *parent) : QSpinBox(parent)
 {
     setMinimum(0);
-    if(boardType == icubCanProto_boardType__strain2){
+    if(boardType == icubCanProto_boardType__strain2 || boardType == icubCanProto_boardType__strain2c){
         setMaximum(0xFFFF);
     } else {
         setMaximum(0x3FF);
