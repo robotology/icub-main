@@ -986,17 +986,10 @@ int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QS
 
             yDebug() << "strain2-amplifier-tuning: STEP-1. imposing gains which are different of each channel";
 
-            #warning TODO cannot pass canBoards[0].type because the type conversion is invalid
+            core->getDownloader()->strain_calibrate_offset2(canLine.toInt(), canId.toInt(), 
+                                                            static_cast<icubCanProto_boardType_t>(canBoards[0].type), 
+                                                            gains, targets, &msg);
 
-            if(icubCanProto_boardType__strain2 == canBoards[0].type) 
-            {
-                core->getDownloader()->strain_calibrate_offset2(canLine.toInt(), canId.toInt(), icubCanProto_boardType__strain2, gains, targets, &msg);
-            }
-            else
-            {
-                core->getDownloader()->strain_calibrate_offset2(canLine.toInt(), canId.toInt(), icubCanProto_boardType__strain2c, gains, targets, &msg);
-            } 
-            
             yarp::os::Time::delay(0.2);
             core->getDownloader()->strain_save_to_eeprom(canLine.toInt(),canId.toInt(), &msg);
             yInfo() << "Gains Saved!"; 
