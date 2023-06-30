@@ -404,7 +404,7 @@ void CalibrationWindow::onParametersClear(bool click)
     for(int i=0; i<CHANNEL_COUNT;i++){
         CustomComboBox *combo = ((CustomComboBox*)ui->tableParamters->cellWidget(i,COL_GAIN));
 
-        if(icubCanProto_boardType__strain2 == boardtype)
+        if(icubCanProto_boardType__strain2 == boardtype || icubCanProto_boardType__strain2c == boardtype)
         {
             combo->setIndexFromAmpGain(defaultStrain2AmplGains[i]);
             ((CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET))->setValue(defaultStrain2AmplOffsets[i]);
@@ -560,7 +560,7 @@ void CalibrationWindow::applyParameters()
         QComboBox *combo = (QComboBox*)ui->tableParamters->cellWidget(i,COL_GAIN);
         CustomSpinBox *spin = (CustomSpinBox*)ui->tableParamters->cellWidget(i,COL_OFFSET);
 
-        if(icubCanProto_boardType__strain2 == boardtype)
+        if(icubCanProto_boardType__strain2 == boardtype || icubCanProto_boardType__strain2c == boardtype)
         {
             int lastOffset = spin->value();
             uint16_t offset = lastOffset; // 32*1024 - 1;
@@ -625,7 +625,7 @@ void CalibrationWindow::Clear_AllRegulations()
     mutex.lock();
 
     const bool alsoserialnumber = true;
-    if((icubCanProto_boardType__strain2 == boardtype))
+    if((icubCanProto_boardType__strain2 == boardtype) || (icubCanProto_boardType__strain2c == boardtype))
     {
         SetDefaultRegulationSet(cDownloader::strain_regset_one, alsoserialnumber);
         SetDefaultRegulationSet(cDownloader::strain_regset_two);
@@ -859,7 +859,7 @@ void CalibrationWindow::saveCalibrationFile(QString filePath)
     char buffer[256];
 
 
-    if(icubCanProto_boardType__strain2 == boardtype)
+    if((icubCanProto_boardType__strain2 == boardtype || icubCanProto_boardType__strain2c == boardtype))
     {
         // file version
         filestr<<"File version:"<<endl;
@@ -1479,7 +1479,7 @@ void CalibrationWindow::onTimeout()
 
 #else
 
-        if(icubCanProto_boardType__strain2 == boardtype)
+        if((icubCanProto_boardType__strain2 == boardtype) || (icubCanProto_boardType__strain2c == boardtype))
         {
             int regsetInUseTMP = cDownloader::strain_regset_one;
 
@@ -1730,7 +1730,7 @@ void CalibrationWindow::onTimeout()
 
         for (int i=0;i<CHANNEL_COUNT;i++){
 
-            if(icubCanProto_boardType__strain2 == boardtype)
+            if((icubCanProto_boardType__strain2 == boardtype) || (icubCanProto_boardType__strain2c == boardtype))
             {
                 core->getDownloader()->strain_get_amplifier_regs(core->getDownloader()->board_list[selected].bus,
                                                                  core->getDownloader()->board_list[selected].pid, i,
@@ -1918,7 +1918,7 @@ bool CalibrationWindow::calibration_load_v3 (char* filename, int selected_bus, i
     sscanf (buffer,"%d",&file_version);
 
 
-    if((icubCanProto_boardType__strain2 == boardtype) && (3 != file_version))
+    if( ( (icubCanProto_boardType__strain2 == boardtype) || (icubCanProto_boardType__strain2c == boardtype) ) && (3 != file_version))
     {
         yError("Wrong file. Calibration version not supported for strain2: %d\n", file_version);
         appendLogMsg("Wrong file. Calibration version not supported for strain2");
@@ -2285,7 +2285,7 @@ bool CalibrationWindow::SetDefaultRegulationSet(int regset, bool alsoserialnumbe
         core->getDownloader()->strain_set_serial_number(bus,id, my_serial_no);
     }
 
-    if((icubCanProto_boardType__strain2 == boardtype))
+    if((icubCanProto_boardType__strain2 == boardtype) || (icubCanProto_boardType__strain2c == boardtype))
     {
         // amplifier registers:
         for (i=0;i<CHANNEL_COUNT; i++)
