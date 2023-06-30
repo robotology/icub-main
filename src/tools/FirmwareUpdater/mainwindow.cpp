@@ -1233,7 +1233,7 @@ void MainWindow::onAppendInfo(sBoard canboard)
     QTreeWidgetItem *inf = new QTreeWidgetItem(boardNode, QStringList() << "Info" << str);
     boardNode->addChild(inf);
 
-    if((eobrd_strain == canboard.type) || (eobrd_strain2 == canboard.type))
+    if((eobrd_strain == canboard.type) || (eobrd_strain2 == canboard.type) || (eobrd_strain2c == canboard.type))
     {
         QTreeWidgetItem *sn = new QTreeWidgetItem(boardNode, QStringList() << "Serial Number" << canboard.serial);
         boardNode->addChild(sn);
@@ -1471,12 +1471,12 @@ void MainWindow::checkEnableButtons()
             ui->btnCahngeInfo->setEnabled(true);
 
             sBoard canBoard = ((EthTreeWidgetItem*)selectedNodes.first()->getParentNode())->getCanBoard(selectedNodes.first()->getIndexOfBoard());
-            if(/*core->strainCalibMode && */(canBoard.type == icubCanProto_boardType__strain) || (canBoard.type == icubCanProto_boardType__strain2)){
+            if(/*core->strainCalibMode && */(canBoard.type == icubCanProto_boardType__strain) || (canBoard.type == icubCanProto_boardType__strain2) || (canBoard.type == icubCanProto_boardType__strain2c)){
                 ui->btnStrainCalib->setEnabled(true);
             }else{
                 ui->btnStrainCalib->setEnabled(false);
             }
-            if(((canBoard.type == icubCanProto_boardType__strain) || (canBoard.type == icubCanProto_boardType__strain2) || (canBoard.type == icubCanProto_boardType__6sg)) && (canBoard.status == BOARD_RUNNING) ){
+            if(((canBoard.type == icubCanProto_boardType__strain) || (canBoard.type == icubCanProto_boardType__strain2) || (canBoard.type == icubCanProto_boardType__strain2c) || (canBoard.type == icubCanProto_boardType__6sg)) && (canBoard.status == BOARD_RUNNING) ){
                 sgboardtype = static_cast<icubCanProto_boardType_t>(canBoard.type);
                 ui->btnCalibrate->setEnabled(true);
                 //ui->btnEraseEeprom->setEnabled(true);

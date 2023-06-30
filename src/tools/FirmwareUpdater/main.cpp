@@ -888,7 +888,7 @@ int getCanBoardVersion(FirmwareUpdaterCore *core,QString device,QString id,QStri
         canBoards = core->getCanBoardsFromEth(board,&result,canLine.toInt(),true);
     }
 
-    if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
+    if(canBoards.count() > 0 && ( (icubCanProto_boardType__strain2 == canBoards[0].type) || (icubCanProto_boardType__strain2c == canBoards[0].type) ) )
     {
         ofstream myfile;
         string prefix = "Application ";
@@ -980,13 +980,16 @@ int setStrainGainsOffsets(FirmwareUpdaterCore *core,QString device,QString id,QS
         canBoards = core->getCanBoardsFromEth(board,&result,canLine.toInt(),true);
     }
 
-        if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
+        if(canBoards.count() > 0 && ( (icubCanProto_boardType__strain2 == canBoards[0].type) || (icubCanProto_boardType__strain2c == canBoards[0].type) ) )
         {
             string error = "e";
 
             yDebug() << "strain2-amplifier-tuning: STEP-1. imposing gains which are different of each channel";
 
-            core->getDownloader()->strain_calibrate_offset2(canLine.toInt(), canId.toInt(), icubCanProto_boardType__strain2, gains, targets, &msg);
+            core->getDownloader()->strain_calibrate_offset2(canLine.toInt(), canId.toInt(), 
+                                                            static_cast<icubCanProto_boardType_t>(canBoards[0].type), 
+                                                            gains, targets, &msg);
+
             yarp::os::Time::delay(0.2);
             core->getDownloader()->strain_save_to_eeprom(canLine.toInt(),canId.toInt(), &msg);
             yInfo() << "Gains Saved!"; 
@@ -1067,7 +1070,7 @@ int setStrainSn(FirmwareUpdaterCore *core,QString device,QString id,QString boar
     }
     
 
-    if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
+    if(canBoards.count() > 0 && ( (icubCanProto_boardType__strain2 == canBoards[0].type) || (icubCanProto_boardType__strain2c == canBoards[0].type) ) )
         {
             
             
@@ -1142,7 +1145,7 @@ int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
     }
     
     //Flash the .dat file   
-    if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
+    if(canBoards.count() > 0 && ( (icubCanProto_boardType__strain2 == canBoards[0].type) || (icubCanProto_boardType__strain2c == canBoards[0].type) ) )
         {
             int ret = core->getDownloader()->get_serial_no(canLine.toInt(),canId.toInt(),sn);
             if(canBoards.count() > 0)
@@ -1167,7 +1170,7 @@ int loadDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
                 sscanf (buffer,"%d",&file_version);
 
 
-                if((icubCanProto_boardType__strain2 == boardtype) && (3 != file_version))
+                if( ( (icubCanProto_boardType__strain2 == boardtype) ||  (icubCanProto_boardType__strain2c == boardtype) ) && (3 != file_version))
                 {
                     yError("Wrong file. Calibration version not supported for strain2: %d\n", file_version);
                     return false;
@@ -1350,7 +1353,7 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
     }
     
     //Flash the .dat file   
-    if(canBoards.count() > 0 && icubCanProto_boardType__strain2 == canBoards[0].type)
+    if(canBoards.count() > 0 && ( (icubCanProto_boardType__strain2 == canBoards[0].type) || (icubCanProto_boardType__strain2c == canBoards[0].type) ) )
     {
         core->getDownloader()->strain_get_serial_number(canLine.toInt(),canId.toInt(), serial_no);
 
@@ -1377,7 +1380,7 @@ int saveDatFileStrain2(FirmwareUpdaterCore *core,QString device,QString id,QStri
             }
         }
     
-        if(icubCanProto_boardType__strain2 == canBoards[0].type)
+        if(icubCanProto_boardType__strain2 == canBoards[0].type || icubCanProto_boardType__strain2c == canBoards[0].type)
         {
                 // file version
                 filestr<<"File version:"<<endl;
