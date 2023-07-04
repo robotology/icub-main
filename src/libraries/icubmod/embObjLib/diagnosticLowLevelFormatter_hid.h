@@ -88,6 +88,8 @@ public:
 protected:
     Diagnostic::LowLevel::AuxEmbeddedInfo &m_dnginfo;
     Diagnostic::LowLevel::EntityNameProvider &m_entityNameProvider;
+    
+    void printBaseInfo();
 };
 
 class Diagnostic::LowLevel::ConfigParser : public Diagnostic::LowLevel::DefaultParser
