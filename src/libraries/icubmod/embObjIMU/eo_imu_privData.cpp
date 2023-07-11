@@ -18,7 +18,7 @@ using namespace yarp::dev;
 
 PositionMaps::PositionMaps()
 {
-    memset(positionmap, 0xff, sizeof(positionmap));
+    memset(canpositionmap, 0xff, sizeof(canpositionmap));
 }
 
 PositionMaps::~PositionMaps(void) {;}
@@ -43,12 +43,13 @@ bool PositionMaps::init(servConfigImu_t &servCfg)
             {
                 if(des->on.any.place == eobrd_place_can)
                 {
-                    positionmap[des->typeofsensor][des->on.can.port][des->on.can.addr] = numberof[des->typeofsensor];
+                    canpositionmap[des->typeofsensor][des->on.can.port][des->on.can.addr] = numberof[des->typeofsensor];
                     numberof[des->typeofsensor]++;
                 }
                 else if(des->on.any.place == eobrd_place_eth)
                 {
-                    // must manage the case of gyro on ems
+                    ethpositionmap[des->typeofsensor] = numberof[des->typeofsensor];
+                    numberof[des->typeofsensor]++;
                 }
             }
         }
@@ -70,15 +71,24 @@ bool PositionMaps::getIndex(const eOas_inertial3_data_t* data, uint8_t& index, e
     {   // it is not a valid index
         return false;
     }
-
-    index = positionmap[data->typeofsensor][canbus][canaddress];
-
     type = static_cast<eOas_sensor_t>(data->typeofsensor);
+
+    if(type == eoas_gyros_st_l3g4200d || eoas_accel_st_lis3x == type) {
+        index = ethpositionmap[data->typeofsensor];
+    }
+    else {
+        index = canpositionmap[data->typeofsensor][canbus][canaddress];
+    }
+
     return (0xff == index) ? false : true;
 }
 
 bool PositionMaps::getIndex(eOas_sensor_t type, uint8_t canbus, uint8_t canaddress, uint8_t& index)
 {
+    // It is the ems, it is an eth board
+    if(type == eoas_gyros_st_l3g4200d || eoas_accel_st_lis3x == type) {
+        return false;
+    }
     if(canbus >= eOcanports_number)
     {
         return false;
@@ -87,7 +97,7 @@ bool PositionMaps::getIndex(eOas_sensor_t type, uint8_t canbus, uint8_t canaddre
     if(canaddress > 0x0f)
         return false;
 
-    index = positionmap[type][canbus][canaddress];
+    index = canpositionmap[type][canbus][canaddress];
     return (0xff == index) ? false : true;
 }
 
@@ -96,7 +106,11 @@ bool PositionMaps::getCanAddress(const eOas_inertial3_data_t *data, uint8_t &can
 {
     if(nullptr == data)
         return false;
-
+    auto type = static_cast<eOas_sensor_t>(data->typeofsensor);
+    // It is the ems, it is an eth board
+    if (eoas_gyros_st_l3g4200d == type || eoas_accel_st_lis3x == type) {
+        return false;
+    }
     canbus = data->id >> 4;
 
     if(canbus >= eOcanports_number)
@@ -221,23 +235,23 @@ bool SensorsData::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::
             case eoas_imu_acc:
             {
                 for(int i=0; i<out.size(); i++)
-                    out[i] = measConverter.convertAcc_raw2metric(out[i]);
+                    out[i] = measConverters[sens_index].convertAcc_raw2metric(out[i]);
             }break;
 
             case  eoas_imu_mag:
             {    for(int i=0; i<out.size(); i++)
-                out[i] = measConverter.convertMag_raw2metric(out[i]);
+                out[i] = measConverters[sens_index].convertMag_raw2metric(out[i]);
             }break;
 
             case eoas_imu_gyr:
             {    for(int i=0; i<out.size(); i++)
-                out[i] = measConverter.convertGyr_raw2metric(out[i]);
+                out[i] = measConverters[sens_index].convertGyr_raw2metric(out[i]);
             }break;
 
             case eoas_imu_eul:
             {
                 for(int i=0; i<out.size(); i++)
-                    out[i] = measConverter.convertEul_raw2metric(out[i]);
+                    out[i] = measConverters[sens_index].convertEul_raw2metric(out[i]);
             }
 
             default: break;

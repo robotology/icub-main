@@ -1698,7 +1698,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
 
         //TODO: temperature???
         if( (eoas_imu_acc != type) && (eoas_imu_mag != type) && (eoas_imu_gyr != type) && (eoas_imu_eul != type) &&
-            (eoas_imu_qua != type) && (eoas_imu_lia != type) && (eoas_imu_grv != type) && (eoas_imu_status != type) )
+            (eoas_imu_qua != type) && (eoas_imu_lia != type) && (eoas_imu_grv != type) && (eoas_imu_status != type) &&
+            (eoas_accel_mtb_int != type) && (eoas_accel_mtb_ext != type) && (eoas_gyros_mtb_ext != type) &&
+            (eoas_gyros_st_l3g4200d != type) && (eoas_accel_st_lis3x != type))
         {
             yWarning() << "ServiceParser::parseService() has detected a wrong inertial sensor:" << eoas_sensor2string(type) << " ...  we drop it";
             continue;
