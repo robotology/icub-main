@@ -101,7 +101,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     for (int i=0; i<servCfg.id.size(); i++) {
         auto type = static_cast<eOas_sensor_t>(servCfg.inertials[i].typeofsensor);
         if ((eoas_accel_mtb_int == type) || (eoas_accel_mtb_ext == type) || (eoas_gyros_mtb_ext == type) ||
-            (eoas_gyros_st_l3g4200d == type) || (eoas_accel_st_lis3x == type)) {
+            (eoas_gyros_st_l3g4200d == type)) {
             servCfg.convFactors.accFactor = 1.0; // For now let's keep 1.0
             servCfg.convFactors.magFactor = 1.0;
             servCfg.convFactors.gyrFactor = 1.0;

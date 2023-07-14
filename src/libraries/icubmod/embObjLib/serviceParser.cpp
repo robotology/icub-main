@@ -1700,7 +1700,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
         if( (eoas_imu_acc != type) && (eoas_imu_mag != type) && (eoas_imu_gyr != type) && (eoas_imu_eul != type) &&
             (eoas_imu_qua != type) && (eoas_imu_lia != type) && (eoas_imu_grv != type) && (eoas_imu_status != type) &&
             (eoas_accel_mtb_int != type) && (eoas_accel_mtb_ext != type) && (eoas_gyros_mtb_ext != type) &&
-            (eoas_gyros_st_l3g4200d != type) && (eoas_accel_st_lis3x != type))
+            (eoas_gyros_st_l3g4200d != type))
         {
             yWarning() << "ServiceParser::parseService() has detected a wrong inertial sensor:" << eoas_sensor2string(type) << " ...  we drop it";
             continue;
@@ -1712,7 +1712,8 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
         memcpy(&des.on, &sensor.location, sizeof(eObrd_location_t));
 
         const eObrd_info_t *boardInfo_ptr =  eoas_inertial3_setof_boardinfos_find(boardInfoSet_ptr, eoboards_type2cantype(sensor.boardtype));
-        if(nullptr == boardInfo_ptr)//if I did not already insert the borad info with type == sensor.boardtype, now I insert it
+        if(nullptr == boardInfo_ptr && sensor.boardtype != eobrd_ems4) // If the sensor is an ems, it does not make sense to find it in can boards
+        //if I did not already insert the borad info with type == sensor.boardtype, now I insert it
         {
             // first of all I need to find the board info for this board type
             bool found = false;
@@ -1727,7 +1728,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
             }
             if(!found)
             {
-                yError() << "ServiceParser::parseService(IMU). The sensor " << i << "with type "<<  eoas_sensor2string(static_cast<eOas_sensor_t> (des.typeofsensor)) << "has borad type  " << eoboards_type2string2(sensor.boardtype, false) << " that is not declared in the SERVICE.PROPERTIES.CANBOARDS tag";
+                yError() << "ServiceParser::parseService(IMU). The sensor " << sensor.boardtype << "with type "<<  eoas_sensor2string(static_cast<eOas_sensor_t> (des.typeofsensor)) << "has borad type  " << eoboards_type2string2(sensor.boardtype, false) << " that is not declared in the SERVICE.PROPERTIES.CANBOARDS tag";
                 return false;
             }
             eObrd_info_t boardInfo = {};

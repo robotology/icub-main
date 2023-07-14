@@ -73,7 +73,7 @@ bool PositionMaps::getIndex(const eOas_inertial3_data_t* data, uint8_t& index, e
     }
     type = static_cast<eOas_sensor_t>(data->typeofsensor);
 
-    if(type == eoas_gyros_st_l3g4200d || eoas_accel_st_lis3x == type) {
+    if(type == eoas_gyros_st_l3g4200d) {
         index = ethpositionmap[data->typeofsensor];
     }
     else {
@@ -86,7 +86,7 @@ bool PositionMaps::getIndex(const eOas_inertial3_data_t* data, uint8_t& index, e
 bool PositionMaps::getIndex(eOas_sensor_t type, uint8_t canbus, uint8_t canaddress, uint8_t& index)
 {
     // It is the ems, it is an eth board
-    if(type == eoas_gyros_st_l3g4200d || eoas_accel_st_lis3x == type) {
+    if(type == eoas_gyros_st_l3g4200d) {
         return false;
     }
     if(canbus >= eOcanports_number)
@@ -108,7 +108,7 @@ bool PositionMaps::getCanAddress(const eOas_inertial3_data_t *data, uint8_t &can
         return false;
     auto type = static_cast<eOas_sensor_t>(data->typeofsensor);
     // It is the ems, it is an eth board
-    if (eoas_gyros_st_l3g4200d == type || eoas_accel_st_lis3x == type) {
+    if (eoas_gyros_st_l3g4200d == type) {
         return false;
     }
     canbus = data->id >> 4;
