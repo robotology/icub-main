@@ -28,14 +28,14 @@ void DC1394Thread::run()
     // create usb thread
 
     yarp::os::Property config;
-    config.put("device", "remote_grabber");
+    config.put("device", "frameGrabber_nwc_yarp");
     config.put("remote",rem.toLatin1().data());
     config.put("local",loc.toLatin1().data());
 
     bool opened = grabberControl->open(config);
     if(!opened)
     {
-        yError() << "Cannot open remote_grabber device.";
+        yError() << "Cannot open frameGrabber_nwc_yarp device.";
         // TODO: What to do here??
     }
 
