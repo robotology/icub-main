@@ -64,15 +64,15 @@ bool PositionMaps::init(servConfigImu_t &servCfg)
 bool PositionMaps::getIndex(const eOas_inertial3_data_t* data, uint8_t& index, eOas_sensor_t& type)
 {
     uint8_t canbus, canaddress;
-    if(!getCanAddress(data, canbus, canaddress))
-        return false;
-
+    type = static_cast<eOas_sensor_t>(data->typeofsensor);
+    if (type != eoas_gyros_st_l3g4200d) {
+        if (!getCanAddress(data, canbus, canaddress))
+            return false;
+    }
     if(data->typeofsensor >= eoas_sensors_numberof)
     {   // it is not a valid index
         return false;
     }
-    type = static_cast<eOas_sensor_t>(data->typeofsensor);
-
     if(type == eoas_gyros_st_l3g4200d) {
         index = ethpositionmap[data->typeofsensor];
     }
