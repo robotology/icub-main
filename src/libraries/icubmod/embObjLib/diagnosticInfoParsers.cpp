@@ -204,7 +204,7 @@ void ConfigParser::parseInfo()
             const char *wrongprot = "WRONG PROTOCOL VERSION";
             const char *wrongappl = "WRONG APPLICATION VERSION";
 
-            snprintf(str, sizeof(str), "%s %d invalid %s boards in %s:",
+            snprintf(str, sizeof(str), "%s %d invalid %s boards in %s:\n",
                                         m_dnginfo.baseMessage.c_str(),
                                         numofinvalid,
                                         canboardname,
@@ -217,9 +217,8 @@ void ConfigParser::parseInfo()
                 uint64_t val = (invalidmask >> (4*i)) & 0x0f;
                 if(0 != val)
                 {
-                    snprintf(str, sizeof(str), "%d of %d: wrong %s BOARD %s:%s:%d because it has: %s %s %s",
+                    snprintf(str, sizeof(str), "\t %d of %d: wrong %s because it has: %s%s%s \n",
                                                 n, numofinvalid, canboardname,
-                                                m_dnginfo.baseInfo.sourceBoardIpAddrStr.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), i,
                                                 ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
                                                 ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
                                                 ((val & 0x4) == 0x4) ? (wrongprot) : (empty)
