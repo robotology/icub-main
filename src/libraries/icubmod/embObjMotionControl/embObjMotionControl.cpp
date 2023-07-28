@@ -1503,7 +1503,7 @@ void embObjMotionControl::cleanup(void)
 }
 
 
-
+ //////////////// IethResource INTERFACE
 eth::iethresType_t embObjMotionControl::type()
 {
     return eth::iethres_motioncontrol;
@@ -1567,6 +1567,20 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
     return true;
 }
 
+
+bool embObjMotionControl::getEntityName(uint32_t entityId, std::string &entityName)
+{
+    bool ret = getAxisNameRaw(entityId, entityName);
+
+    //since getAxisNameRaw set "ERROR" in entityName when an error occurred,
+    //while this function has to return an empty string, I reset the entityName string
+    if(!ret)
+    {
+        entityName.clear();
+    }
+    return ret;
+
+}
 
 ///////////// PID INTERFACE
 bool embObjMotionControl::setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid)

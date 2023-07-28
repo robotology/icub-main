@@ -27,6 +27,8 @@
 #include "EOYtheSystem.h"
 #include "EOYmutex.h"
 
+#include "diagnosticLowLevelFormatter.h"
+
 
 using namespace eth;
 
@@ -336,6 +338,21 @@ void feat_PrintError(char *string)
 void feat_PrintFatal(char *string)
 {
     yError("EMS received the following FATAL error: %s", string);
+}
+
+
+void feat_manage_diagnostic(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if(NULL == _interface2ethManager)
+    {
+        yError("the diagnostic service can not start. The interface to the eth manager is not working.");
+        return;
+    }
+    Diagnostic::LowLevel::InfoFormatter dngFormatter(_interface2ethManager, infobasic, extra, nv, rd);
+
+    Diagnostic::EmbeddedInfo info;
+    dngFormatter.getDiagnosticInfo(info);
+    info.printMessage();
 }
 
 

@@ -524,6 +524,13 @@ IethResource* TheEthManager::getInterface(eOipv4addr_t ipv4, eOprotID32_t id32)
 }
 
 
+IethResource* TheEthManager::getInterface(eOipv4addr_t ipv4, iethresType_t type)
+{
+    IethResource *interfacePointer = ethBoards->get_interface(ipv4, type);
+
+    return interfacePointer;
+}
+
 double TheEthManager::getLifeTime(void)
 {
     return(yarp::os::Time::now() - startUpTime);
