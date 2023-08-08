@@ -578,8 +578,13 @@ bool parametricCalibratorEth::calibrate()
     }
 
     //before starting the calibration, checks for joints in hardware fault, and clears them if the user set the clearHwFaultBeforeCalibration option
-    if(!checkHwFault())
-        return false;
+    // if(!checkHwFault())
+    //     return false;
+    checkHwFault();         //TODO: reset the commented part --> TEMPORARY FIX necessary in order to avoid hw limit exceeded at YRI restart. Now error is almost inevitable w/ MAIS sensors because of error in position reading
+                            // as things now, even if the calibration seems fine for finger at restart the MAIS loose the set calibration on some fingers
+                            // the problem is that at every restrat the error could verify for a different joint and this things is almost aleatory and not repetable
+                            // Therefore, while we are working for releasing the hard fix, which will set the joint in NOT_CONFIGURED at restart of YRI, it is needed to DO NOT return even if a hw fault is found at restart
+                            // so that the joint can recalibrate at restart
 
     if (totJointsToCalibrate < n_joints)
     {
