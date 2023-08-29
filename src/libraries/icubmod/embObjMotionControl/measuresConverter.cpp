@@ -17,7 +17,6 @@ measureConvFactors::measureConvFactors(int numofjoints)
     dutycycleToPWM   = new double [numofjoints];
     ampsToSensor     = new double [numofjoints];
     newtonsToSensor  = new double [numofjoints];
-    bemf2raw         = new double [numofjoints];
     ktau2raw         = new double [numofjoints];
 }
 
@@ -27,7 +26,6 @@ measureConvFactors::~measureConvFactors()
     if (dutycycleToPWM)   delete [] dutycycleToPWM;
     if (ampsToSensor)     delete [] ampsToSensor;
     if (newtonsToSensor)  delete [] newtonsToSensor;
-    if (bemf2raw)         delete [] bemf2raw;
     if (ktau2raw)         delete [] ktau2raw;
 
     angleToEncoder = nullptr;
@@ -35,6 +33,5 @@ measureConvFactors::~measureConvFactors()
     ampsToSensor = nullptr;
     newtonsToSensor  = nullptr;
     ktau2raw = nullptr;
-    bemf2raw = nullptr;
 }
 

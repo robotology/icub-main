@@ -316,7 +316,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementVelocityControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementControlLimits::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
-    ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM, f.bemf2raw, f.ktau2raw);
+    ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM, f.ktau2raw);
     ImplementPositionDirect::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementInteractionMode::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementMotor::initialize(_njoints, _axisMap);
@@ -887,7 +887,6 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     {
         measConvFactors.newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
 
-        measConvFactors.bemf2raw[i] = measConvFactors.newtonsToSensor[i] / measConvFactors.angleToEncoder[i];
         if (_trq_pids->out_PidUnits == yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT)
         {
             measConvFactors.ktau2raw[i] = measConvFactors.dutycycleToPWM[i] / measConvFactors.newtonsToSensor[i];
@@ -903,7 +902,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     }
 
     ///////////////INIT INTERFACES
-    _measureConverter = new ControlBoardHelper(_njoints, _axisMap, measConvFactors.angleToEncoder, NULL, measConvFactors.newtonsToSensor, measConvFactors.ampsToSensor, nullptr, measConvFactors.dutycycleToPWM , measConvFactors.bemf2raw, measConvFactors.ktau2raw);
+    _measureConverter = new ControlBoardHelper(_njoints, _axisMap, measConvFactors.angleToEncoder, NULL, measConvFactors.newtonsToSensor, measConvFactors.ampsToSensor, nullptr, measConvFactors.dutycycleToPWM , measConvFactors.ktau2raw);
     _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, _trj_pids->fbk_PidUnits, _trj_pids->out_PidUnits);
     //_measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_DIRECT, _dir_pids->fbk_PidUnits, _dir_pids->out_PidUnits);
     _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE,   _trq_pids->fbk_PidUnits, _trq_pids->out_PidUnits);
@@ -1338,8 +1337,6 @@ bool embObjMotionControl::init()
         jconfig.jntEncoderType = _jointEncs[logico].type;
         jconfig.jntEncTolerance = _jointEncs[logico].tolerance;
 
-        jconfig.motor_params.bemf_value = _measureConverter->bemf_user2raw(_trq_pids[logico].kbemf, fisico);
-        jconfig.motor_params.bemf_scale = 0;
         jconfig.motor_params.ktau_value = _measureConverter->ktau_user2raw(_trq_pids[logico].ktau, fisico);
         jconfig.motor_params.ktau_scale = 0;
         jconfig.motor_params.friction.viscous_pos_val = _measureConverter->viscousPos_user2raw(_trq_pids[logico].viscousPos, fisico);
@@ -3679,7 +3676,7 @@ bool embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle
             MotorTorqueParameters params;
             getMotorTorqueParamsRaw(i, &params);
             char buff[1000];
-            snprintf(buff, 1000, "J %d : bemf %+3.3f bemf_scale %+3.3f ktau %+3.3f ktau_scale %+3.3f viscousPos %+3.3f viscousNeg %+3.3f coulombPos %+3.3f coulombNeg %+3.3f velocityThres %+3.3f", i, params.bemf, params.bemf_scale, params.ktau, params.ktau_scale, params.viscousPos, params.viscousNeg, params.coulombPos, params.coulombNeg, params.velocityThres);
+            snprintf(buff, 1000, "J %d : ktau %+3.3f ktau_scale %+3.3f viscousPos %+3.3f viscousNeg %+3.3f coulombPos %+3.3f coulombNeg %+3.3f velocityThres %+3.3f", i, params.ktau, params.ktau_scale, params.viscousPos, params.viscousNeg, params.coulombPos, params.coulombNeg, params.velocityThres);
             r.addString(buff);
         }
         return true;
@@ -4095,8 +4092,6 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     if(! askRemoteValue(protoid, &eo_params, size))
         return false;
 
-    params->bemf =       eo_params.bemf_value;
-    params->bemf_scale = eo_params.bemf_scale;
     params->ktau       = eo_params.ktau_value;
     params->ktau_scale = eo_params.ktau_scale;
     params->viscousPos = eo_params.friction.viscous_pos_val;
@@ -4105,7 +4100,7 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     params->coulombNeg = eo_params.friction.coulomb_neg_val;
     params->velocityThres  = eo_params.friction.velocityThres_val;
 
-    //printf("debug getMotorTorqueParamsRaw %f %f %f %f %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale, params->viscousPos, params->viscousNeg, params->coulombPos, params->coulombNeg, params->threshold);
+    //printf("debug getMotorTorqueParamsRaw %f %f %f %f %f %f %f %f\n", params->ktau,params->ktau_scale, params->viscousPos, params->viscousNeg, params->coulombPos, params->coulombNeg, params->threshold);
 
     return true;
 }
@@ -4115,10 +4110,8 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
     eOmc_motor_params_t eo_params = {0};
 
-    //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f viscousPos=%f viscousNeg=%f coulombPos=%f coulombNeg=%f\n",j, params.bemf, params.ktau, params.viscousPos, params.viscousNeg, params.coulombPos, params.coulombNeg, params.threshold);
+    //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f viscousPos=%f viscousNeg=%f coulombPos=%f coulombNeg=%f\n",j, params.ktau, params.viscousPos, params.viscousNeg, params.coulombPos, params.coulombNeg, params.threshold);
 
-    eo_params.bemf_value  = (float)   params.bemf;
-    eo_params.bemf_scale  = (uint8_t) params.bemf_scale;
     eo_params.ktau_value  = (float)   params.ktau;
     eo_params.ktau_scale  = (uint8_t) params.ktau_scale;
     eo_params.friction.viscous_pos_val = static_cast<float32_t>(params.viscousPos);

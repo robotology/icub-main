@@ -50,7 +50,6 @@ public:
     double* dutycycleToPWM;
     double* ampsToSensor;
     double* newtonsToSensor;
-    double* bemf2raw;
     double* ktau2raw;
 
     measureConvFactors(int numofjoints);

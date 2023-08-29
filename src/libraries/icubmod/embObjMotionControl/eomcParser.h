@@ -191,7 +191,6 @@ public:
 class TrqPidInfo : public PidInfo
 {
 public:
-    double kbemf;                             /** back-emf compensation parameter */
     double ktau;                              /** motor torque constant */
     double viscousPos;
     double viscousNeg;
@@ -343,7 +342,6 @@ private:
     std::vector<std::string> _currentControlLaw;
     std::vector<std::string> _speedControlLaw;
 
-    double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
     int *_filterType;
     double *_viscousPos;

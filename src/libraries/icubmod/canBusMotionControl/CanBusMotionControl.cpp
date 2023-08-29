@@ -1463,9 +1463,6 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            }
            else
            {
-                xtmp = trqPidsGroup.findGroup("kbemf"); 
-                {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; }
-
                 xtmp = trqPidsGroup.findGroup("ktau"); 
                 {for (j=0;j<nj;j++) this->_ktau[j] = 1; }
                 
@@ -1488,9 +1485,6 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             }
             else
             {
-                xtmp = trqPidsGroup.findGroup("kbemf"); 
-                {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; }
-
                 xtmp = trqPidsGroup.findGroup("ktau"); 
                 {for (j=0;j<nj;j++) this->_ktau[j] = 1; }
             
@@ -1513,12 +1507,6 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            }
            else
            {
-                xtmp = trqControlGroup.findGroup("kbemf"); 
-                if (!xtmp.isNull())
-                {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asFloat64();}
-                else
-                {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; yWarning ("TORQUE_PIDS: 'kbemf' param missing");}
-
                 xtmp = trqControlGroup.findGroup("ktau"); 
                 if (!xtmp.isNull())
                 {for (j=0;j<nj;j++) this->_ktau[j] = xtmp.get(j+1).asFloat64();}
@@ -1898,7 +1886,6 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _impedance_params=0;
     _impedance_limits=0;
     _estim_params=0;
-    _bemfGain=0;
     _ktau=0;
     _axisName = 0;
     _axisType = 0;
@@ -1932,7 +1919,6 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _newtonsToSensor=allocAndCheck<double>(nj);
     _ampsToSensor = allocAndCheck<double>(nj);
     _dutycycleToPwm = allocAndCheck<double>(nj);
-    _bemfGain=allocAndCheck<double>(nj);
     _ktau=allocAndCheck<double>(nj);
     _maxStep=allocAndCheck<double>(nj);
     _maxJntCmdVelocity = allocAndCheck<double>(nj);
@@ -1999,7 +1985,6 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<double>(_newtonsToSensor);
     checkAndDestroy<double>(_ampsToSensor);
     checkAndDestroy<double>(_dutycycleToPwm);
-    checkAndDestroy<double>(_bemfGain);
     checkAndDestroy<double>(_ktau);
     checkAndDestroy<double>(_maxStep);
     checkAndDestroy<double>(_maxJntCmdVelocity);
@@ -2581,7 +2566,6 @@ bool CanBusMotionControl::open (Searchable &config)
         for (int i=0; i<p._njoints; i++)
         {
             MotorTorqueParameters ps;
-            ps.bemf = p._bemfGain[i];
             this->setMotorTorqueParams(i,ps);
 
             yarp::os::Time::delay(0.002);
@@ -5824,11 +5808,10 @@ bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParamete
         return false;
     }
 
-    param->bemf = *((short *)(m->getData()+1)); //1&2
-    param->bemf_scale = 0;
-    param->ktau = *((short *)(m->getData()+4)); //4&5 
+    // in accordance with what is written in CanBusMotionControl::setMotorTorqueParamsRaw we get the first 2 bytes of the message (ktau)
+    param->ktau = *((short *)(m->getData()+1)); //1&2
     param->ktau_scale = 0;
-    //7 dummy
+
     return true;
 }
 
@@ -5883,11 +5866,9 @@ bool CanBusMotionControl::setMotorTorqueParamsRaw (int j, MotorTorqueParameters 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_MOTOR_PARAMS, axis);
-    *((short *)(r._writeBuffer[0].getData()+1)) = S_16(param.bemf);
-    *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = (unsigned char) (param.bemf_scale);
-    *((short *)(r._writeBuffer[0].getData()+4)) = S_16(param.ktau);
-    *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = (unsigned char) (param.ktau_scale);
-    *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = (unsigned char) (0);
+    *((short *)(r._writeBuffer[0].getData()+1)) = S_16(param.ktau);
+    *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = (unsigned char) (param.ktau_scale);
+    *((unsigned char  *)(r._writeBuffer[0].getData()+4)) = (unsigned char) (0);
     r._writeBuffer[0].setLen(8);
     r.writePacket();
     return true;

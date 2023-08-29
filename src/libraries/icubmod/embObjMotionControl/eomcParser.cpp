@@ -49,7 +49,6 @@ yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
     _currentControlLaw.resize(0);
     _speedControlLaw.resize(0);
 
-    _kbemf=allocAndCheck<double>(_njoints);
     _ktau=allocAndCheck<double>(_njoints);
     _filterType=allocAndCheck<int>(_njoints);
     _viscousPos=allocAndCheck<double>(_njoints);
@@ -65,7 +64,6 @@ yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
 
 Parser::~Parser()
 {
-    checkAndDestroy(_kbemf);
     checkAndDestroy(_ktau);
     checkAndDestroy(_filterType);
     checkAndDestroy(_viscousPos);
@@ -902,9 +900,6 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
     if (!parsePidsGroupExtended(pidsGroup, myPid)) return false;
 
     Bottle xtmp;
-
-    // if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints, false)) return false; 
-    // for (int j = 0; j<_njoints; j++) _kbemf[j] = xtmp.get(j + 1).asFloat64();
     
     if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints)) return false; 
     for (int j = 0; j<_njoints; j++) _ktau[j] = xtmp.get(j + 1).asFloat64();
@@ -1290,7 +1285,6 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
             tpids[i].out_type = torqueAlgo_ptr->out_type;
             tpids[i].usernamePidSelected = _torqueControlLaw[i];
             tpids[i].enabled = true;
-            tpids[i].kbemf = _kbemf[i];
             tpids[i].ktau = _ktau[i];
             tpids[i].viscousPos = _viscousPos[i];
             tpids[i].viscousNeg = _viscousNeg[i];
