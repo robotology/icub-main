@@ -56,6 +56,7 @@ yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
     _viscousNeg=allocAndCheck<double>(_njoints);
     _coulombPos=allocAndCheck<double>(_njoints);
     _coulombNeg=allocAndCheck<double>(_njoints);
+    _velocityThres=allocAndCheck<double>(_njoints);
 
     minjerkAlgoMap.clear();
     //directAlgoMap.clear();
@@ -71,6 +72,7 @@ Parser::~Parser()
     checkAndDestroy(_viscousNeg);
     checkAndDestroy(_coulombPos);
     checkAndDestroy(_coulombNeg);
+    checkAndDestroy(_velocityThres);
 }
 
 
@@ -901,8 +903,8 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
 
     Bottle xtmp;
 
-    if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints)) return false; 
-    for (int j = 0; j<_njoints; j++) _kbemf[j] = xtmp.get(j + 1).asFloat64();
+    // if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints, false)) return false; 
+    // for (int j = 0; j<_njoints; j++) _kbemf[j] = xtmp.get(j + 1).asFloat64();
     
     if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints)) return false; 
     for (int j = 0; j<_njoints; j++) _ktau[j] = xtmp.get(j + 1).asFloat64();
@@ -946,6 +948,21 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
     {
         for (int j = 0; j<_njoints; j++) _coulombNeg[j] = xtmp.get(j + 1).asFloat64();
     }
+
+    if (!extractGroup(pidsGroup, xtmp, "velocityThres", "velocity threshold parameter for torque control", _njoints, false))
+    {
+        for (int j = 0; j<_njoints; j++) _velocityThres[j] = 0;
+    }
+    else
+    {
+        for (int j = 0; j<_njoints; j++) 
+        {
+            _velocityThres[j] = xtmp.get(j + 1).asFloat64();
+            std::cout << "_velocityThres[" << j << "] = " << _velocityThres[j] << std::endl;
+        }
+
+    }
+
 
     return true;
 }
@@ -1279,6 +1296,7 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
             tpids[i].viscousNeg = _viscousNeg[i];
             tpids[i].coulombPos = _coulombPos[i];
             tpids[i].coulombNeg = _coulombNeg[i];
+            tpids[i].velocityThres = _velocityThres[i];
             tpids[i].filterType = _filterType[i];
         }
         else
