@@ -7,6 +7,7 @@
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/os/PeriodicThread.h>
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <string>
 #include <list>
 #include <mutex>
@@ -38,7 +39,8 @@ namespace yarp {
 
 class yarp::dev::embObjMais:            public yarp::dev::IAnalogSensor,
                                         public yarp::dev::DeviceDriver,
-                                        public eth::IethResource
+                                        public eth::IethResource,
+                                        public yarp::dev::IEncoderArrays
 {
 
 public:
@@ -62,6 +64,13 @@ public:
     virtual int calibrateSensor();
     virtual int calibrateSensor(const yarp::sig::Vector& value);
     virtual int calibrateChannel(int ch);
+
+    // IEncoderArrays interface
+    virtual size_t getNrOfEncoderArrays() const override;
+    virtual yarp::dev::MAS_status getEncoderArrayStatus(size_t sens_index) const override;
+    virtual bool getEncoderArrayName(size_t sens_index, std::string &name) const override;
+    virtual bool getEncoderArrayMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+    virtual size_t getEncoderArraySize(size_t sens_index) const override;
 
     // IethResource interface
     virtual bool initialised();
@@ -91,7 +100,7 @@ private:
 
     std::mutex mtx;
 
-    vector<double> analogdata;
+    yarp::sig::Vector analogdata;
 
     short status;
     double timeStamp;
