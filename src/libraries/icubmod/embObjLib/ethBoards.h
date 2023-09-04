@@ -96,8 +96,16 @@ namespace eth {
 
         // private variables
 
-        static const string defaultnames[EthBoards::maxEthBoards];
-        static const string errorname[1];
+        inline static const string defaultnames[EthBoards::maxEthBoards] = {"noname-in-xml-board.1", "noname-in-xml-board.2", "noname-in-xml-board.3", "noname-in-xml-board.4",
+                "noname-in-xml-board.5", "noname-in-xml-board.6", "noname-in-xml-board.7", "noname-in-xml-board.8",
+                "noname-in-xml-board.9", "noname-in-xml-board.10", "noname-in-xml-board.11", "noname-in-xml-board.12",
+                "noname-in-xml-board.13", "noname-in-xml-board.14", "noname-in-xml-board.15", "noname-in-xml-board.16",
+                "noname-in-xml-board.17", "noname-in-xml-board.18", "noname-in-xml-board.19", "noname-in-xml-board.20",
+                "noname-in-xml-board.21", "noname-in-xml-board.22", "noname-in-xml-board.23", "noname-in-xml-board.24",
+                "noname-in-xml-board.25", "noname-in-xml-board.26", "noname-in-xml-board.27", "noname-in-xml-board.28",
+                "noname-in-xml-board.29", "noname-in-xml-board.30", "noname-in-xml-board.31", "noname-in-xml-board.32"};
+                
+        inline static const string errorname[1] = {"wrong-unknown-board"};
 
         int sizeofLUT;
         ethboardProperties_t LUT[EthBoards::maxEthBoards];
