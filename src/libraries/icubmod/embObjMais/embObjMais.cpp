@@ -153,7 +153,7 @@ embObjMais::embObjMais()
 
 
 embObjMais::~embObjMais()
-{   
+{
     analogdata.resize(0);
 
     if(NULL != parser)
@@ -421,7 +421,7 @@ bool embObjMais::initRegulars()
             }
         }
     }
-   
+
     return true;
 }
 
@@ -530,6 +530,35 @@ int embObjMais::calibrateChannel(int ch, double v)
 }
 
 
+size_t embObjMais::getNrOfEncoderArrays() const {
+    return 1;
+}
+
+yarp::dev::MAS_status embObjMais::getEncoderArrayStatus(size_t sens_index) const {
+if (sens_index >= 1) return yarp::dev::MAS_UNKNOWN;
+    return yarp::dev::MAS_OK;
+}
+
+bool embObjMais::getEncoderArrayName(size_t sens_index, std::string &name) const {
+    if (sens_index >= 1) return false;
+    name = serviceConfig.nameOfMais;
+    return true;
+}
+
+bool embObjMais::getEncoderArrayMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const {
+    if (sens_index >= 1) return false;
+    timestamp = this->timeStamp;
+    out.resize(analogdata.size());
+    out = analogdata;
+    return true;
+}
+
+size_t embObjMais::getEncoderArraySize(size_t sens_index) const {
+    if (sens_index >= 1) return 0;
+    return analogdata.size();
+}
+
+
 eth::iethresType_t embObjMais::type()
 {
     return eth::iethres_analogmais;
@@ -537,9 +566,9 @@ eth::iethresType_t embObjMais::type()
 
 
 bool embObjMais::update(eOprotID32_t id32, double timestamp, void* rxdata)
-{   
+{
     id32 = id32;
-    timestamp = timestamp;
+    this->timeStamp = timestamp;
 
     if(false == opened)
     {
