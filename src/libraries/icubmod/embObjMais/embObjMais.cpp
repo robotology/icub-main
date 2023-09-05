@@ -568,7 +568,7 @@ eth::iethresType_t embObjMais::type()
 bool embObjMais::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
     id32 = id32;
-    timestamp = timestamp;
+    this->timeStamp = timestamp;
 
     if(false == opened)
     {
