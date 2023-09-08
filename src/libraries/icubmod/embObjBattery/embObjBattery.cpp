@@ -16,6 +16,7 @@
 #include <string>
 #include <sstream>
 #include <cmath>
+#include <array>
 
 #include "EOnv_hid.h"
 #include "EoProtocol.h"
@@ -316,7 +317,7 @@ bool embObjBattery::checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current)
 bool embObjBattery::updateStatusStringStream(const uint32_t &currStatus, const uint32_t &prevStatus, bool isFirstLoop)
 {
     // Initialize the first time the static map
-    static const std::array<std::pair<eOas_battery_alarm_status_t, std::string>, eoas_battery_alarm_status_numberof> s_boards_map_of_battery_alarm_status = 
+    static const std::array<std::pair<eOas_battery_alarm_status_t, std::string>, eoas_battery_alarm_status_numberof> s_boards_map_of_battery_alarm_status =
     {
         {{eoas_bms_general_alarm_lowvoltage, "eoas_bms_general_alarm_lowvoltage"},
         {eoas_bms_general_alarm_highvoltage, "eoas_bms_general_alarm_highvoltage"},
@@ -404,7 +405,7 @@ bool embObjBattery::updateStatusStringStream(const uint32_t &currStatus, const u
             }
             ++map_pos;
         }
-        
+
     }
 
     return true;
