@@ -19,7 +19,8 @@ if (NOT SKIP_embObjBattery)
 
   yarp_add_plugin(embObjBattery embObjBattery.cpp embObjBattery.h)
   target_link_libraries(embObjBattery ethResources
-                        YARP::YARP_os YARP::YARP_dev YARP::YARP_sig)
+                        YARP::YARP_os YARP::YARP_dev YARP::YARP_sig
+                        icub_firmware_shared::embot)
   icub_export_plugin(embObjBattery)
 
   yarp_install(TARGETS embObjBattery
@@ -32,10 +33,11 @@ if (NOT SKIP_embObjBattery)
    add_library(embObjBatteryUT STATIC embObjBattery.cpp embObjBattery.h)
     target_link_libraries(embObjBatteryUT ethResources
                           YARP::YARP_os YARP::YARP_dev YARP::YARP_sig
-                          icub_firmware_shared::embobj)
-                                        
+                          icub_firmware_shared::embobj
+                          icub_firmware_shared::embot)
+
    target_include_directories(embObjBatteryUT PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>")
   endif()
-  
+
 endif()
 
