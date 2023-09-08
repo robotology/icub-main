@@ -171,8 +171,8 @@ TEST(CanBatterysensor, update_simple_positive_001)
     std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
     embObjCanBatterysensor_Mock device(privateData);
     uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_ft_status_timedvalue);
-    eOas_battery_timedvalue_t data = {0 /*age*/, 10 /*temperature in dec C*/, 2, 3, 4, 5, 6};
-    CanBatteryData expected = {1, 4, 5, 6, 2, 7, ""};
+    eOas_battery_timedvalue_t data = {0 /*age*/, 10 /*temperature in dec C*/, 0, 2, 3, 4, 5, 0};
+    CanBatteryData expected = {1, 3, 4, 5, 2, 2, 7, ""};
 
     EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
     EXPECT_CALL(device, calculateBoardTime(_)).WillRepeatedly(Return(7));
@@ -190,8 +190,8 @@ TEST(CanBatterysensor, update_simple_positive_trunk_voltage_001)
     std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
     embObjCanBatterysensor_Mock device(privateData);
     uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_ft_status_timedvalue);
-    eOas_battery_timedvalue_t data = {0 /*age*/, 10 /*temperature in dec C*/, 2, 3, 4.123, 5, 6};
-    CanBatteryData expected = {1, 4.1, 5, 6, 2, 7, ""};
+    eOas_battery_timedvalue_t data = {0 /*age*/, 10 /*temperature in dec C*/, 0, 2, 3, 4.123, 5, 0};
+    CanBatteryData expected = {1, 3, 4.123, 5, 2, 2, 7, ""};
 
     EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
     EXPECT_CALL(device, calculateBoardTime(_)).WillRepeatedly(Return(7));
@@ -210,7 +210,7 @@ TEST(CanBatterysensor, update_simple_negative_001)
     embObjCanBatterysensor_Mock device(privateData);
     uint32_t id32First = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_battery, 0, eoprot_tag_as_ft_status_timedvalue);
     eOas_battery_timedvalue_t data = {0 /*age*/, 10 /*temperature in dec C*/, 2, 3, 4, 9};
-    CanBatteryData expected = {1, 2, 3, 4, 5, 7, ""};
+    CanBatteryData expected = {1, 2, 3, 4, 5, 0, 7, ""};
 
     EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
     EXPECT_CALL(device, calculateBoardTime(_)).WillRepeatedly(Return(7));
@@ -227,7 +227,7 @@ TEST(CanBatterysensor, getBatteryVoltage_positive_001)
     std::shared_ptr<embObjDevPrivData_Mock> privateData = std::make_shared<embObjDevPrivData_Mock>("test");
     embObjCanBatterysensor_Mock device(privateData);
 
-    device.canBatteryData_ = {1, 2, 3, 4, 5, 6, ""};
+    device.canBatteryData_ = {1, 2, 3, 4, 5, 0, 6, ""};
 
     EXPECT_CALL(*privateData, isOpen()).WillRepeatedly(Return(true));
 

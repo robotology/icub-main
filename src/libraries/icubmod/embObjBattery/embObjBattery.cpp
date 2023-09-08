@@ -16,12 +16,15 @@
 #include <string>
 #include <sstream>
 #include <cmath>
+#include <array>
 
 #include "EOnv_hid.h"
-#include "EoAnalogSensors.h"
 #include "EoProtocol.h"
 #include "EoProtocolAS.h"
 #include "EoProtocolMN.h"
+#include "EoAnalogSensors.h"
+
+#include "embot_core_binary.h"
 
 #ifdef WIN32
 #pragma warning(once : 4355)
@@ -34,7 +37,7 @@ using namespace yarp::dev;
 void CanBatteryData::decode(eOas_battery_timedvalue_t *data, double timestamp)
 {
     temperature_ = data->temperature / 10;  // in steps of 0.1 celsius degree (pos and neg).
-    voltage_ = std::trunc(10 * data->voltage) / 10; 
+    voltage_ = std::trunc(10 * data->voltage) / 10;
     current_ = data->current;
     charge_ = data->charge;
     status_ = data->status;
@@ -251,6 +254,29 @@ bool embObjBattery::update(eOprotID32_t id32, double timestamp, void *rxdata)
         return false;
     }
 
+    if (!isPastFirstPrint && (data->age == 0))
+    {
+        yDebug("CAN DATA NOT YET AVAILABLE");
+        isPastFirstPrint = true;
+    }
+    else if (!isCanDataAvailable && (data->age != 0))
+    {
+        if (updateStatusStringStream(data->status, canBatteryData_.prevStatus_, true))
+        {
+            yDebug() << "First Status are:\n" << statusStreamBMS.str() << statusStreamBAT.str() << "\n";
+        }
+        canBatteryData_.prevStatus_ = data->status;
+        isCanDataAvailable = true;
+    }
+    else if (data->status != canBatteryData_.prevStatus_)
+    {
+        if (updateStatusStringStream(data->status, canBatteryData_.prevStatus_, false))
+        {
+            yDebug() << "Status changed to:\n" << statusStreamBMS.str() << statusStreamBAT.str() << "\n";
+        }
+        canBatteryData_.prevStatus_ = data->status;
+    }
+
     std::unique_lock<std::shared_mutex> lck(mutex_);
     canBatteryData_.decode(data, calculateBoardTime(data->age));
 
@@ -288,6 +314,103 @@ bool embObjBattery::checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current)
     return true;
 }
 
+bool embObjBattery::updateStatusStringStream(const uint32_t &currStatus, const uint32_t &prevStatus, bool isFirstLoop)
+{
+    // Initialize the first time the static map
+    static const std::array<std::pair<eOas_battery_alarm_status_t, std::string>, eoas_battery_alarm_status_numberof> s_boards_map_of_battery_alarm_status =
+    {
+        {{eoas_bms_general_alarm_lowvoltage, "eoas_bms_general_alarm_lowvoltage"},
+        {eoas_bms_general_alarm_highvoltage, "eoas_bms_general_alarm_highvoltage"},
+        {eoas_bms_general_alarm_overcurrent_discharge, "eoas_bms_general_alarm_overcurrent_discharge"},
+        {eoas_bms_general_alarm_overcurrent_charge, "eoas_bms_general_alarm_overcurrent_charge"},
+        {eoas_bms_general_alarm_lowSOC, "eoas_bms_general_alarm_lowSOC"},
+        {eoas_bms_general_alarm_lowtemperature, "eoas_bms_general_alarm_lowtemperature"},
+        {eoas_bms_general_alarm_hightemperature, "eoas_bms_general_alarm_hightemperature"},
+        {eoas_bat_status_hsm_mosfet_broken, "eoas_bat_status_hsm_mosfet_broken"},
+        {eoas_bat_status_hsm_mosfet_normal, "eoas_bat_status_hsm_mosfet_normal"},
+        {eoas_bat_status_hsm_overcurrent_overvoltage, "eoas_bat_status_hsm_overcurrent_overvoltage"},
+        {eoas_bat_status_hsm_normal, "eoas_bat_status_hsm_normal"},
+        {eoas_bat_status_hsm_voltage_power_good, "eoas_bat_status_hsm_voltage_power_good"},
+        {eoas_bat_status_hsm_voltage_not_guaranteed, "eoas_bat_status_hsm_voltage_not_guaranteed"},
+        {eoas_bat_status_hsm_status_on, "eoas_bat_status_hsm_status_on"},
+        {eoas_bat_status_hsm_status_off, "eoas_bat_status_hsm_status_off"},
+        {eoas_bat_status_motor_regulator_overcurrent, "eoas_bat_status_motor_regulator_overcurrent"},
+        {eoas_bat_status_motor_regulator_normal, "eoas_bat_status_motor_regulator_normal"},
+        {eoas_bat_status_motor_on, "eoas_bat_status_motor_on"},
+        {eoas_bat_status_motor_off, "eoas_bat_status_motor_off"},
+        {eoas_bat_status_board_regulator_overcurrent, "eoas_bat_status_board_regulator_overcurrent"},
+        {eoas_bat_status_board_regulator_normal, "eoas_bat_status_board_regulator_normal"},
+        {eoas_bat_status_board_on, "eoas_bat_status_board_on"},
+        {eoas_bat_status_board_off, "eoas_bat_status_board_off"},
+        {eoas_bat_status_btn_2_start_up_phase, "eoas_bat_status_btn_2_start_up_phase"},
+        {eoas_bat_status_btn_2_stable_op, "eoas_bat_status_btn_2_stable_op"},
+        {eoas_bat_status_btn_1_start_up_phase, "eoas_bat_status_btn_1_start_up_phase"},
+        {eoas_bat_status_btn_1_stable_op, "eoas_bat_status_btn_1_stable_op"}}
+    };
+
+    // Clear buffer for BAT and BMS
+    statusStreamBMS.str("");
+    statusStreamBAT.str("");
+
+    bool isBmsSignatureBit = embot::core::binary::bit::check(currStatus, 0);
+
+    if(isBmsSignatureBit)
+    {
+        // And add header string
+        statusStreamBMS << "STATUS_BMS:" << "\n";
+        if (!(embot::core::binary::mask::check(currStatus, static_cast<uint32_t>(0x0000ffff))))
+        {
+            statusStreamBMS << "\tNo Faults. All Alarms Bit Down\n";
+        }
+        else
+        {
+            for (uint8_t i = 1; i < eoas_bms_alarm_numberof; i++)
+            {
+                std::string tmpString = (embot::core::binary::bit::check(currStatus, i)) ?  (s_boards_map_of_battery_alarm_status.at(i)).second : "";
+
+                if (tmpString != "")
+                {
+                    statusStreamBMS << "\t" << tmpString << "\n";
+                }
+            }
+        }
+    }
+    else
+    {
+        uint8_t map_pos = 0;
+        statusStreamBAT << "STATUS_BAT:" << "\n";
+
+        for (const auto& [k,v] : s_boards_map_of_battery_alarm_status)
+        {
+            std::string tmpString = "";
+            uint8_t bit_pos = (uint8_t)k;
+
+            if (bit_pos > eoas_bms_alarm_numberof && bit_pos < eoas_battery_alarm_status_numberof)
+            {
+                if (isFirstLoop)
+                {
+                    tmpString = embot::core::binary::bit::check(currStatus, bit_pos) ? v : (s_boards_map_of_battery_alarm_status.at(map_pos+1)).second;
+                }
+                else
+                {
+                    if (embot::core::binary::bit::check(currStatus, bit_pos) != embot::core::binary::bit::check(prevStatus, bit_pos))
+                    {
+                        tmpString = embot::core::binary::bit::check(currStatus, bit_pos) ? v : (s_boards_map_of_battery_alarm_status.at(map_pos+1)).second;
+                    }
+                }
+                if (tmpString != "")
+                {
+                    statusStreamBAT << "\t" << tmpString << "\n";
+                }
+            }
+            ++map_pos;
+        }
+
+    }
+
+    return true;
+}
+
 double embObjBattery::calculateBoardTime(eOabstime_t current)
 {
     if (!useBoardTimeFlag_)
@@ -313,7 +436,7 @@ bool embObjBattery::getBatteryVoltage(double &voltage)
 
 bool embObjBattery::getBatteryCurrent(double &current)
 {
-    current = canBatteryData_.current_;
+    current = (canBatteryData_.current_ != 0) ? canBatteryData_.current_ : NAN;
     return true;
 }
 
@@ -331,7 +454,7 @@ bool embObjBattery::getBatteryStatus(Battery_status &status)
 
 bool embObjBattery::getBatteryTemperature(double &temperature)
 {
-    temperature = canBatteryData_.temperature_;
+    temperature = (canBatteryData_.temperature_ != 0) ? canBatteryData_.temperature_ : NAN;
     return true;
 }
 
@@ -349,7 +472,7 @@ bool CanBatteryData::operator==(const CanBatteryData &other) const
 {
     if (temperature_ != other.temperature_)
         return false;
-    if ((int)(voltage_*10) != (int)(other.voltage_*10)) //Only one digit after dot
+    if ((int)(voltage_ * 10) != (int)(other.voltage_ * 10))  // Only one digit after dot
         return false;
     if (current_ != other.current_)
         return false;
