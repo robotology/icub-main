@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.12)
 
 set(ROOT_PROJECT_NAME ICUB)
 project(${ROOT_PROJECT_NAME} LANGUAGES C CXX
-                             VERSION 2.2.1)
+                             VERSION 2.3.0)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 14)
