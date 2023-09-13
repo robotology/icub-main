@@ -387,7 +387,7 @@ public:
         {
             g_comp->external_mode = EXTERNAL_TRQ_ON;
         }
-        if (rf.check("external_on"))
+        if (rf.check("external_off"))
         {
             g_comp->external_mode = EXTERNAL_TRQ_OFF;
         }
@@ -409,7 +409,7 @@ public:
         string helpMessage =  getName() +
                             " commands are: \n" +  
                             "help         to display this message\n" + 
-                            "gravity_on   to enabl e the gravity compensation \n" + 
+                            "gravity_on   to enable the gravity compensation \n" + 
                             "gravity_off  to disbale the gravity compensation \n" +
                             "external_on  to enable the external input torque \n" +
                             "external_off to disable the external input torque \n";
