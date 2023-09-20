@@ -208,13 +208,13 @@ private:
     std::string robot;
     std::string carrier;    
 
-    SensorEncoders  sensEncs[5];
-    SensorPort      sensPort[12];
-    SpringyFinger   fingers[5];
+    SensorEncoders      sensEncs[5];
+    SensorEncoderArrays sensEncArrays[12];
+    SpringyFinger       fingers[5];
     bool configured;
 
-    yarp::os::BufferedPort<yarp::os::Bottle> *port;
-    yarp::dev::PolyDriver                     driver;
+    yarp::dev::PolyDriver drvEncs;
+    yarp::dev::PolyDriver drvMAIS;
 
     std::mutex mtx;
 

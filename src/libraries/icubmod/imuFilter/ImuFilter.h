@@ -55,7 +55,7 @@ namespace yarp {
 
 This device driver applies filtering to remove gyro bias. \n
 At startup it tries to attach directly to the IMU devcice of the specified robot
-or through a MultipleAnalogSensorClient(using the subdevice mechanism).
+or through a MultipleAnalogSensorsClient(using the subdevice mechanism).
 
 \section parameters_sec Parameters
 
