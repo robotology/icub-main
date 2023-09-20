@@ -36,7 +36,7 @@ bool PassThroughInertial::open(yarp::os::Searchable& config) //TODO: still to be
         auto subdeviceName = config.find("subdevice").asString();
         yarp::os::Property masClientProp;
         masClientProp.fromString(config.toString());
-        masClientProp.put("device", subdeviceName); // "multipleanalogsensorclient"
+        masClientProp.put("device", subdeviceName); // "multipleanalogsensorsclient"
         masClientProp.put("local", config.find("proxy_local").asString());
         masClientProp.put("remote", config.find("proxy_remote").asString());
 

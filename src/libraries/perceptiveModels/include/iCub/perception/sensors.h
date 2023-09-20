@@ -161,7 +161,7 @@ public:
 /**
 * @ingroup percmod_Implementations 
 *  
-* This class implements the reading of motor joints encoders. 
+* This class implements the reading of joints encoders. 
 */
 class SensorEncoders : public Sensor
 {
@@ -185,7 +185,44 @@ public:
 
     /**
     * Retrieve the sensor joint value.
-    * @param in a value containing the current joint position.
+    * @param in a value containing the encoder value.
+    * @return true/false on success/failure.
+    */
+    bool getOutput(yarp::os::Value &in) const;
+};
+
+
+/**
+* @ingroup percmod_Implementations 
+*  
+* This class implements the reading of encoders through
+* MultipleAnalogSensors (MAS) interfaces.
+*/
+class SensorEncoderArrays : public Sensor
+{
+protected:
+    int num_arrays;
+    int index_array;
+    int index_element;
+
+public:
+    /**
+    * Configure the sensor. 
+    * @param source a pointer to the yarp::dev::IEncoderArrays
+    *               interface.
+    * @param options a Property containing the configuration 
+    *                parameters. Available options are:\n
+    * <b>name</b>: the name of the sensor.\n 
+    * <b>num_arrays</b>: the number of available arrays.\n
+    * <b>index_array</b>: the index of the array to be sensed.
+    * <b>index_element</b>: the index of the element of the array.
+    * @return true/false on success/failure.
+    */
+    bool configure(void *source, const yarp::os::Property &options);
+
+    /**
+    * Retrieve the sensor encoder value.
+    * @param in a value containing the encoder value.
     * @return true/false on success/failure.
     */
     bool getOutput(yarp::os::Value &in) const;

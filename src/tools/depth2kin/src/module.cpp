@@ -551,8 +551,9 @@ void CalibModule::prepareRobot()
     iencs->getEncoders(encs.data());
     poss=encs.subVector(i0,nEncs-1);
 
-    Vector analogs;
-    ianalog->read(analogs);
+    double stamp;
+    Vector analogs(iencarray->getEncoderArraySize(0));
+    iencarray->getEncoderArrayMeasure(0,analogs,stamp);
 
     Vector joints;
     iCubFinger finger=this->finger;
@@ -952,17 +953,17 @@ bool CalibModule::configure(ResourceFinder &rf)
     if (!drvArmR.open(optionArmR))
         yWarning("Position right_arm controller not available!");
 
-    Property optionAnalogL("(device analogsensorclient)");
-    optionAnalogL.put("remote","/"+robot+"/left_hand/analog:o");
-    optionAnalogL.put("local","/"+name+"/analog/left");
-    if (!drvAnalogL.open(optionAnalogL))
-        yWarning("Analog left_hand sensor not available!");
+    Property optionMAIS_L("(device multipleanalogsensorsclient)");
+    optionMAIS_L.put("remote","/"+robot+"/left_hand/MAIS");
+    optionMAIS_L.put("local","/"+name+"/MAIS/left");
+    if (!drvMAIS_L.open(optionMAIS_L))
+        yWarning("MAIS left_hand sensor not available!");
 
-    Property optionAnalogR("(device analogsensorclient)");
-    optionAnalogR.put("remote","/"+robot+"/right_hand/analog:o");
-    optionAnalogR.put("local","/"+name+"/analog/right");
-    if (!drvAnalogR.open(optionAnalogR))
-        yWarning("Analog right_hand sensor not available!");
+    Property optionMAIS_R("(device multipleanalogsensorsclient)");
+    optionMAIS_R.put("remote","/"+robot+"/right_hand/MAIS");
+    optionMAIS_R.put("local","/"+name+"/MAIS/right");
+    if (!drvMAIS_R.open(optionMAIS_R))
+        yWarning("MAIS right_hand sensor not available!");
 
     Property optionCartL("(device cartesiancontrollerclient)");
     optionCartL.put("remote","/"+robot+"/cartesianController/left_arm");
@@ -983,8 +984,8 @@ bool CalibModule::configure(ResourceFinder &rf)
         yWarning("Gaze controller not available!");
     
     // set up some global vars
-    useArmL=(drvArmL.isValid() && drvAnalogL.isValid() && drvCartL.isValid());
-    useArmR=(drvArmR.isValid() && drvAnalogR.isValid() && drvCartR.isValid());
+    useArmL=(drvArmL.isValid() && drvMAIS_L.isValid() && drvCartL.isValid());
+    useArmR=(drvArmR.isValid() && drvMAIS_R.isValid() && drvCartR.isValid());
     selectArmEnabled=(useArmL && useArmR);
 
     // quitting condition
@@ -1005,7 +1006,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     (arm=="left")?drvArmL.view(iencs):drvArmR.view(iencs);
     (arm=="left")?drvArmL.view(iposs):drvArmR.view(iposs);
     (arm=="left")?drvArmL.view(ilim):drvArmR.view(ilim);
-    (arm=="left")?drvAnalogL.view(ianalog):drvAnalogR.view(ianalog);
+    (arm=="left")?drvMAIS_L.view(iencarray):drvMAIS_R.view(iencarray);
     (arm=="left")?drvCartL.view(iarm):drvCartR.view(iarm);    
     drvGaze.view(igaze);
     iencs->getAxes(&nEncs);
@@ -1368,7 +1369,7 @@ bool CalibModule::setArm(const string &arm)
     (arm=="left")?drvCartL.view(iarm):drvCartR.view(iarm);
     (arm=="left")?drvArmL.view(iencs):drvArmR.view(iencs);
     (arm=="left")?drvArmL.view(iposs):drvArmR.view(iposs);
-    (arm=="left")?drvAnalogL.view(ianalog):drvAnalogR.view(ianalog);
+    (arm=="left")?drvMAIS_L.view(iencarray):drvMAIS_R.view(iencarray);
     finger=iCubFinger(arm+"_index");
     return true;
 }
@@ -1799,11 +1800,11 @@ void CalibModule::terminate()
     if (drvArmR.isValid())
         drvArmR.close();
 
-    if (drvAnalogL.isValid())
-        drvAnalogL.close();
+    if (drvMAIS_L.isValid())
+        drvMAIS_L.close();
 
-    if (drvAnalogR.isValid())
-        drvAnalogR.close();
+    if (drvMAIS_R.isValid())
+        drvMAIS_R.close();
 
     if (drvCartL.isValid())
         drvCartL.close();

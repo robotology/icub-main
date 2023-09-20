@@ -260,7 +260,6 @@ bool SpringyFinger::calibrate(const Property &options)
 /************************************************************************/
 SpringyFingersModel::SpringyFingersModel()
 {
-    port=new iCub::perception::Port;
     configured=false;
 }
 
@@ -286,26 +285,28 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     string part_motor=string(type+"_arm");
     string part_analog=string(type+"_hand");
 
-    Property prop;
-    prop.put("device","remote_controlboard");
-    prop.put("remote","/"+robot+"/"+part_motor);
-    prop.put("local","/"+name+"/"+part_motor);
-    if (!driver.open(prop))
+    Property propEncs;
+    propEncs.put("device","remote_controlboard");
+    propEncs.put("remote","/"+robot+"/"+part_motor);
+    propEncs.put("local","/"+name+"/"+part_motor);
+    if (!drvEncs.open(propEncs))
         return false;
-    
-    port->open("/"+name+"/"+part_analog+"/analog:i");
-    string analogPortName("/"+robot+"/"+part_analog+"/analog:o");
-    if (!Network::connect(analogPortName,port->getName(),carrier))
+
+    Property propMAIS;
+    propMAIS.put("device","multipleanalogsensorsclient");
+    propMAIS.put("remote","/"+robot+"/"+part_analog+"/MAIS");
+    propMAIS.put("local","/"+name+"/"+part_analog+"/MAIS");
+    if (!drvMAIS.open(propMAIS))
     {
-        printMessage(log::error,1,"unable to connect to %s",analogPortName.c_str());
+        printMessage(log::error,1,"unable to connect to %s",propMAIS.find("remote").asString().c_str());
         close();
         return false;
     }
-
-    IEncoders *ienc; driver.view(ienc);
+    
+    printMessage(log::info,1,"configuring joint encoders sensors ...");    
+    IEncoders *ienc; drvEncs.view(ienc);
     int nAxes; ienc->getAxes(&nAxes);
 
-    printMessage(log::info,1,"configuring interface-based sensors ...");
     Property propGen;
     propGen.put("name","In_0");
     propGen.put("size",nAxes);
@@ -324,33 +325,39 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     sensors_ok&=sensEncs[3].configure(pEncs,propRing);
     sensors_ok&=sensEncs[4].configure(pEncs,propLittle);
 
-    printMessage(log::info,1,"configuring port-based sensors ...");
-    Property thumb_mp(  "(name Out_0) (index 1)" );
-    Property thumb_ip(  "(name Out_1) (index 2)" );
-    Property index_mp(  "(name Out_0) (index 4)" );
-    Property index_ip(  "(name Out_1) (index 5)" );
-    Property middle_mp( "(name Out_0) (index 7)" );
-    Property middle_ip( "(name Out_1) (index 8)" );
-    Property ring_mp(   "(name Out_0) (index 9)" );
-    Property ring_pip(  "(name Out_1) (index 10)");
-    Property ring_dip(  "(name Out_2) (index 11)");
-    Property little_mp( "(name Out_0) (index 12)");
-    Property little_pip("(name Out_1) (index 13)");
-    Property little_dip("(name Out_2) (index 14)");
+    printMessage(log::info,1,"configuring analog encoders sensors ...");
+    IEncoderArrays *iencarray; drvMAIS.view(iencarray);
 
-    void *pPort=static_cast<void*>(port);
-    sensors_ok&=sensPort[0].configure(pPort,thumb_mp);
-    sensors_ok&=sensPort[1].configure(pPort,thumb_ip);
-    sensors_ok&=sensPort[2].configure(pPort,index_mp);
-    sensors_ok&=sensPort[3].configure(pPort,index_ip);
-    sensors_ok&=sensPort[4].configure(pPort,middle_mp);
-    sensors_ok&=sensPort[5].configure(pPort,middle_ip);
-    sensors_ok&=sensPort[6].configure(pPort,ring_mp);
-    sensors_ok&=sensPort[7].configure(pPort,ring_pip);
-    sensors_ok&=sensPort[8].configure(pPort,ring_dip);
-    sensors_ok&=sensPort[9].configure(pPort,little_mp);
-    sensors_ok&=sensPort[10].configure(pPort,little_pip);
-    sensors_ok&=sensPort[11].configure(pPort,little_dip);
+    propGen.clear();
+    propGen.put("num_arrays",(int)iencarray->getNrOfEncoderArrays());
+    propGen.put("index_array",0);
+
+    Property thumb_mp=propGen;   thumb_mp.put(  "name","Out_0");   thumb_mp.put("index_element","1");
+    Property thumb_ip=propGen;   thumb_ip.put(  "name","Out_1");   thumb_ip.put("index_element","2");
+    Property index_mp=propGen;   index_mp.put(  "name","Out_0");   index_mp.put("index_element","4");
+    Property index_ip=propGen;   index_ip.put(  "name","Out_1");   index_ip.put("index_element","5");
+    Property middle_mp=propGen;  middle_mp.put( "name","Out_0");  middle_mp.put("index_element","7");
+    Property middle_ip=propGen;  middle_ip.put( "name","Out_1");  middle_ip.put("index_element","8");
+    Property ring_mp=propGen;    ring_mp.put(   "name","Out_0");    ring_mp.put("index_element","9");
+    Property ring_pip=propGen;   ring_pip.put(  "name","Out_1");   ring_pip.put("index_element","10");
+    Property ring_dip=propGen;   ring_dip.put(  "name","Out_2");   ring_dip.put("index_element","11");
+    Property little_mp=propGen;  little_mp.put( "name","Out_0");  little_mp.put("index_element","12");
+    Property little_pip=propGen; little_pip.put("name","Out_1"); little_pip.put("index_element","13");
+    Property little_dip=propGen; little_dip.put("name","Out_2"); little_dip.put("index_element","14");
+
+    void *pEncArrays=static_cast<void*>(iencarray);
+    sensors_ok&=sensEncArrays[0].configure(pEncArrays,thumb_mp);
+    sensors_ok&=sensEncArrays[1].configure(pEncArrays,thumb_ip);
+    sensors_ok&=sensEncArrays[2].configure(pEncArrays,index_mp);
+    sensors_ok&=sensEncArrays[3].configure(pEncArrays,index_ip);
+    sensors_ok&=sensEncArrays[4].configure(pEncArrays,middle_mp);
+    sensors_ok&=sensEncArrays[5].configure(pEncArrays,middle_ip);
+    sensors_ok&=sensEncArrays[6].configure(pEncArrays,ring_mp);
+    sensors_ok&=sensEncArrays[7].configure(pEncArrays,ring_pip);
+    sensors_ok&=sensEncArrays[8].configure(pEncArrays,ring_dip);
+    sensors_ok&=sensEncArrays[9].configure(pEncArrays,little_mp);
+    sensors_ok&=sensEncArrays[10].configure(pEncArrays,little_pip);
+    sensors_ok&=sensEncArrays[11].configure(pEncArrays,little_dip);
 
     if (!sensors_ok)
     {
@@ -382,26 +389,26 @@ bool SpringyFingersModel::fromProperty(const Property &options)
 
     printMessage(log::info,1,"attaching sensors to fingers ...");
     fingers[0].attachSensor(sensEncs[0]);
-    fingers[0].attachSensor(sensPort[0]);
-    fingers[0].attachSensor(sensPort[1]);
+    fingers[0].attachSensor(sensEncArrays[0]);
+    fingers[0].attachSensor(sensEncArrays[1]);
 
     fingers[1].attachSensor(sensEncs[1]);
-    fingers[1].attachSensor(sensPort[2]);
-    fingers[1].attachSensor(sensPort[3]);
+    fingers[1].attachSensor(sensEncArrays[2]);
+    fingers[1].attachSensor(sensEncArrays[3]);
 
     fingers[2].attachSensor(sensEncs[2]);
-    fingers[2].attachSensor(sensPort[4]);
-    fingers[2].attachSensor(sensPort[5]);
+    fingers[2].attachSensor(sensEncArrays[4]);
+    fingers[2].attachSensor(sensEncArrays[5]);
 
     fingers[3].attachSensor(sensEncs[3]);
-    fingers[3].attachSensor(sensPort[6]);
-    fingers[3].attachSensor(sensPort[7]);
-    fingers[3].attachSensor(sensPort[8]);
+    fingers[3].attachSensor(sensEncArrays[6]);
+    fingers[3].attachSensor(sensEncArrays[7]);
+    fingers[3].attachSensor(sensEncArrays[8]);
 
     fingers[4].attachSensor(sensEncs[4]);
-    fingers[4].attachSensor(sensPort[9]);
-    fingers[4].attachSensor(sensPort[10]);
-    fingers[4].attachSensor(sensPort[11]);
+    fingers[4].attachSensor(sensEncArrays[9]);
+    fingers[4].attachSensor(sensEncArrays[10]);
+    fingers[4].attachSensor(sensEncArrays[11]);
 
     attachNode(fingers[0]);
     attachNode(fingers[1]);
@@ -506,10 +513,10 @@ bool SpringyFingersModel::calibrate(const Property &options)
             return false;
         }
 
-        IControlMode     *imod; driver.view(imod);
-        IControlLimits   *ilim; driver.view(ilim);
-        IEncoders        *ienc; driver.view(ienc);
-        IPositionControl *ipos; driver.view(ipos);
+        IControlMode     *imod; drvEncs.view(imod);
+        IControlLimits   *ilim; drvEncs.view(ilim);
+        IEncoders        *ienc; drvEncs.view(ienc);
+        IPositionControl *ipos; drvEncs.view(ipos);
 
         int nAxes; ienc->getAxes(&nAxes);
         Vector qmin(nAxes),qmax(nAxes),vel(nAxes),acc(nAxes);
@@ -726,9 +733,9 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
     double timeout=2.0*(_max-_min)/finger.getCalibVel();
 
     mtx.lock();
-    IControlMode     *imod; driver.view(imod);
-    IEncoders        *ienc; driver.view(ienc);
-    IPositionControl *ipos; driver.view(ipos);
+    IControlMode     *imod; drvEncs.view(imod);
+    IEncoders        *ienc; drvEncs.view(ienc);
+    IPositionControl *ipos; drvEncs.view(ipos);
     mtx.unlock();
 
     // workaround
@@ -812,11 +819,11 @@ void SpringyFingersModel::close()
 {
     printMessage(log::info,1,"closing ...");
 
-    if (driver.isValid())
-        driver.close();
+    if (drvEncs.isValid())
+        drvEncs.close();
 
-    if (!port->isClosed())
-        port->close();
+    if (drvMAIS.isValid())
+        drvMAIS.close();
 
     nodes.clear();
 
@@ -828,7 +835,6 @@ void SpringyFingersModel::close()
 SpringyFingersModel::~SpringyFingersModel()
 {
     close();
-    delete port;
 }
 
 

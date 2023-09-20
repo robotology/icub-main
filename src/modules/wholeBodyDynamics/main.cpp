@@ -96,16 +96,6 @@ By launching the following command:
 wholeBodyDynamics --rate 10
 \endcode
 
-the module will create the listening port
-/wholeBodyDynamics/right_arm/FT:i for the acquisition of data
-vector coming for istance from the right arm analog port.
-
-Try now the following:
-
-\code
-yarp connect /icub/right_arm/analog:o /wholeBodyDynamics/right_arm/FT:i
-\endcode
-
 \author Matteo Fumagalli
 
 This file can be edited at src/wholeBodyDynamics/main.cpp.
