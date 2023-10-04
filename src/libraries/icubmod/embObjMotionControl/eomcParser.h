@@ -440,6 +440,8 @@ public:
     bool parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impedanceParameters_t> &impedance);
     bool parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found);
     bool parseKalmanFilterParams(yarp::os::Searchable &config, std::vector<kalmanFilterParams_t> &kalmanFilterParams);
+
+    bool parseTemperatureLimits();
 };
 
 }}}; //close namespaces

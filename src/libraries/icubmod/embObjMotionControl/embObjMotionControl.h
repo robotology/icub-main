@@ -513,6 +513,7 @@ public:
     virtual bool getPWMLimitRaw(int j, double* val) override;
     virtual bool setPWMLimitRaw(int j, const double val) override;
     virtual bool getPowerSupplyVoltageRaw(int j, double* val) override;
+
     /////////////// END AMPLIFIER INTERFACE
 
     // virtual analog sensor
