@@ -32,8 +32,8 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::dev::eomc;
 
-
-
+static constexpr double _temperatureFactor_degcel2raw_pt100 = 1;
+static constexpr double _temperatureFactor_degcel2raw_pt1000 = 1;
 
 yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
 {
@@ -1370,14 +1370,14 @@ bool Parser::parsePidUnitsType(Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &f
     return true;
 }
 
-bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificInfo_t *foc_based_info, std::string groupName)
+bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificInfo_t *foc_based_info, std::string groupName, double temperatureFactor_degcel2raw[])
 {
-     Bottle &focGroup=config.findGroup(groupName);
-     if (focGroup.isNull() )
-     {
-        yError() << "embObjMC BOARD " << _boardname << " detected that Group " << groupName << " is not found in configuration file";
-        return false;
-     }
+    Bottle &focGroup=config.findGroup(groupName);
+    if (focGroup.isNull() )
+    {
+    yError() << "embObjMC BOARD " << _boardname << " detected that Group " << groupName << " is not found in configuration file";
+    return false;
+    }
 
     Bottle xtmp;
     unsigned int i;
@@ -1391,14 +1391,37 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
         for (i = 1; i < xtmp.size(); i++)
            foc_based_info[i - 1].hasHallSensor = xtmp.get(i).asInt32() != 0;
     }
-    if (!extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints))
+    if (!extractGroup(focGroup, xtmp, "TemperatureSensorType", "TemperatureSensorType PT100/PT1000/NONE ", _njoints))
     {
         return false;
     }
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            foc_based_info[i - 1].hasTempSensor = xtmp.get(i).asInt32() != 0;
+        {
+            std::string s = xtmp.get(i).asString();
+            if(s == "PT100")
+            {
+                foc_based_info[i - 1].hasTemperatureSensor = 1;
+                foc_based_info[i - 1].temperatureSensorType = motor_temperature_sensor_type_pt100;
+                temperatureFactor_degcel2raw[i - 1] = _temperatureFactor_degcel2raw_pt100;
+            }
+                
+            else if (s == "PT1000") 
+            {
+                foc_based_info[i - 1].hasTemperatureSensor = 1;
+                foc_based_info[i - 1].temperatureSensorType = motor_temperature_sensor_pt1000;
+                temperatureFactor_degcel2raw[i - 1] = _temperatureFactor_degcel2raw_pt1000;
+            }
+            else
+            {
+                foc_based_info[i - 1].hasTemperatureSensor = 0;
+                yError("Not supported TemperatureSensorType %s!", s.c_str());
+                foc_based_info[i - 1].temperatureSensorType = motor_temperature_sensor_none;
+                temperatureFactor_degcel2raw[i - 1] = 0;
+                return false;
+            }
+        }
     }
     if (!extractGroup(focGroup, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
     {
@@ -1692,6 +1715,47 @@ bool Parser::parseCurrentLimits(yarp::os::Searchable &config, std::vector<motorC
 
     return true;
 
+}
+
+bool Parser::parseTemperatureLimits(yarp::os::Searchable &config, std::vector<temperatureLimits_t> &temperatureLimits)
+{
+    Bottle &limits = config.findGroup("LIMITS");
+    if (limits.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " detected that Group LIMITS is not found in configuration file";
+        return false;
+    }
+
+    temperatureLimits.resize(_njoints);
+    unsigned int i;
+    Bottle xtmp;
+
+    // hardware limit
+    if(!extractGroup(limits, xtmp, "hardwareTemperatureLimits", "a list of temperature limits", _njoints, false))
+    {
+        yWarning("hardwareTemperatureLimits param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support if needed. \n Using default values for warningTemperatureLimits too.");
+
+        temperatureLimits[i - 1].hardwareTemperatureLimit  = 0; //change with constexpr default value
+        temperatureLimits[i - 1].warningTemperatureLimit = 0; //change with constexpr default value
+    }
+    else if (!extractGroup(limits, xtmp, "warningTemperatureLimits", "a list of warning temperature limits", _njoints, false))
+    {
+        // warning limit - parsing it only if hardwareTemperatureLimit available
+        yWarning("warningTemperatureLimits param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support if needed. \n Using default value for warningTemperatureLimits only.");
+
+        temperatureLimits[i - 1].warningTemperatureLimit = 0;  //change with constexpr default value
+        temperatureLimits[i - 1].hardwareTemperatureLimit = xtmp.get(i).asFloat64();
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++) 
+        {
+            temperatureLimits[i - 1].hardwareTemperatureLimit = xtmp.get(i).asFloat64();
+            temperatureLimits[i - 1].warningTemperatureLimit  = xtmp.get(i).asFloat64();
+        }
+    }
+    
+    return true;
 }
 
 bool Parser::parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLimits_t> &jointsLimits)
@@ -2153,7 +2217,6 @@ bool Parser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J
             return false;
         }
     }
-
 
     return true;
 }

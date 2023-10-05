@@ -53,9 +53,6 @@ public:
     double* bemf2raw;
     double* ktau2raw;
 
-    double* DegCel2Raw;
-    double* Raw2DegCel;
-
     measureConvFactors(int numofjoints);
 
     ~measureConvFactors();

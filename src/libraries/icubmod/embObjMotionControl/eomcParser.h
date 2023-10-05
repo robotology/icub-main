@@ -201,12 +201,18 @@ public:
     int    filterType;
 };
 
-
+typedef enum
+{
+    motor_temperature_sensor_type_pt100  = 0,
+    motor_temperature_sensor_pt1000      = 1,
+    motor_temperature_sensor_none        = 255
+} motor_temperatureSensorTypeEnum_t;
 
 typedef struct
 {
     bool hasHallSensor;
-    bool hasTempSensor;
+    bool hasTemperatureSensor;
+    motor_temperatureSensorTypeEnum_t temperatureSensorType;  // uses a typedef enum
     bool hasRotorEncoder;
     bool hasRotorEncoderIndex;
     int  rotorIndexOffset;
@@ -317,6 +323,13 @@ typedef struct
     float32_t P0;
 } kalmanFilterParams_t;
 
+
+typedef struct
+{
+    double         hardwareTemperatureLimit;
+    double         warningTemperatureLimit;
+} temperatureLimits_t;
+
 //template <class T>
 
 class Parser
@@ -420,11 +433,14 @@ public:
     ~Parser();
 
     bool parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory);
-    bool parseFocGroup(yarp::os::Searchable &config, focBasedSpecificInfo_t *foc_based_info, std::string groupName);
+    bool parseFocGroup(yarp::os::Searchable &config, focBasedSpecificInfo_t *foc_based_info, std::string groupName, double temperatureFactor_degcel2raw[]);
     //bool parseCurrentPid(yarp::os::Searchable &config, PidInfo *cpids);//deprecated
     bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &jointtoset);
     bool parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts, int defaultVelocityTimeout);
     bool parseCurrentLimits(yarp::os::Searchable &config, std::vector<motorCurrentLimits_t> &currLimits);
+
+    bool parseTemperatureLimits(yarp::os::Searchable &config, std::vector<temperatureLimits_t> &temperatureLimits);
+
     bool parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLimits_t> &jointsLimits);
     bool parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLimits_t> &rotorsLimits);
     bool parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &couplingInfo);
@@ -441,7 +457,6 @@ public:
     bool parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found);
     bool parseKalmanFilterParams(yarp::os::Searchable &config, std::vector<kalmanFilterParams_t> &kalmanFilterParams);
 
-    bool parseTemperatureLimits();
 };
 
 }}}; //close namespaces

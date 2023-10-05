@@ -204,6 +204,7 @@ private:
     servConfigMC_t                          serviceConfig;  /** contains the needed data for configure motion control service, like i.e. board ports where joint are connected */ 
     double *                                _gearbox_M2J;   /** the gearbox ratio motor to joint */
     double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
+    double *                                _temperatureFactor_degcel2raw; /** the conversion factor between degree in celsius and raw value based on type of temperature sensor available for the motor*/
     double *                                _deadzone;
     std::vector<eomc::kalmanFilterParams_t> _kalman_params;  /** Kalman filter parameters */
 
@@ -215,6 +216,7 @@ private:
     std::vector<eomc::rotorLimits_t>        _rotorsLimits; /** contains limit about rotors such as position and pwm */
     std::vector<eomc::jointLimits_t>        _jointsLimits; /** contains limit about joints such as position and velocity */
     std::vector<eomc::motorCurrentLimits_t> _currentLimits;
+    std::vector<eomc::temperatureLimits_t>  _temperatureLimits;
     eomc::couplingInfo_t                    _couplingInfo; /** contains coupling matrix */
     std::vector<eomc::JointsSet>            _jsets;
     std::vector<int>                        _joint2set;   /** for each joint says the number of  set it belongs to */
@@ -490,6 +492,7 @@ public:
     bool getJointEncoderTypeRaw(int j, int &type) ;
     bool getRotorEncoderTypeRaw(int j, int &type) ;
     bool getKinematicMJRaw(int j, double &rotres) ;
+    bool getTemperatureSensorTypeRaw(int j, int& ret) ;
     bool getHasTempSensorsRaw(int j, int& ret) ;
     bool getHasHallSensorRaw(int j, int& ret) ;
     bool getHasRotorEncoderRaw(int j, int& ret) ;

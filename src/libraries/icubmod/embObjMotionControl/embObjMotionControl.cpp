@@ -100,6 +100,7 @@ bool embObjMotionControl::alloc(int nj)
     _encodersStamp = allocAndCheck<double>(nj);
     _gearbox_M2J = allocAndCheck<double>(nj);
     _gearbox_E2J = allocAndCheck<double>(nj);
+    _temperatureFactor_degcel2raw = allocAndCheck<double>(nj);
     _deadzone = allocAndCheck<double>(nj);
     _foc_based_info=allocAndCheck<eomc::focBasedSpecificInfo_t>(nj);
     _trj_pids= new eomc::PidInfo[nj];
@@ -127,6 +128,7 @@ bool embObjMotionControl::alloc(int nj)
     _rotorsLimits.resize(nj);
     _jointsLimits.resize(nj);
     _currentLimits.resize(nj);
+    _temperatureLimits.resize(nj);
     _jsets.resize(nj);
     _joint2set.resize(nj);
     _timeouts.resize(nj);
@@ -147,6 +149,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_encodersStamp);
     checkAndDestroy(_gearbox_M2J);
     checkAndDestroy(_gearbox_E2J);
+    checkAndDestroy(_temperatureFactor_degcel2raw);
     checkAndDestroy(_deadzone);
     checkAndDestroy(_impedance_limits);
     checkAndDestroy(checking_motiondone);
@@ -208,6 +211,7 @@ embObjMotionControl::embObjMotionControl() :
     _rotorsLimits(0),
     _jointsLimits(0),
     _currentLimits(0),
+    _temperatureLimits(0),
     _jsets(0),
     _joint2set(0),
     _timeouts(0),
@@ -219,6 +223,7 @@ embObjMotionControl::embObjMotionControl() :
 {
     _gearbox_M2J  = 0;
     _gearbox_E2J  = 0;
+    _temperatureFactor_degcel2raw = 0;
     _deadzone     = 0;
     opened        = 0;
     _trj_pids     = NULL;
@@ -789,8 +794,6 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
 
     ///////// GENERAL MECHANICAL INFO
-
-
     {
         if(!_mcparser->parseAxisInfo(config, _axisMap, _axesInfo))
             return false;
@@ -814,7 +817,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
         if (!_mcparser->parseAmpsToSensor(config, measConvFactors.ampsToSensor))
             return false;
-
+        
         //VALE: i have to parse GeneralMecGroup after parsing jointsetcfg, because inside generalmec group there is useMotorSpeedFbk that needs jointset info.
 
         if(!_mcparser->parseGearboxValues(config, _gearbox_M2J, _gearbox_E2J))
@@ -962,6 +965,9 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if(!_mcparser->parseCurrentLimits(config, _currentLimits))
             return false;
 
+        if(!_mcparser->parseTemperatureLimits(config, _temperatureLimits))
+            return false;
+
         if(!_mcparser->parseJointsLimits(config, _jointsLimits))
             return false;
 
@@ -973,7 +979,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     if(serviceConfig.ethservice.configuration.type == eomn_serv_MC_foc)
     {
         std::string groupName = (static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.mc.foc_based.type) == eobrd_foc) ? "2FOC" : "AMCBLDC";
-        if(!_mcparser->parseFocGroup(config, _foc_based_info, groupName))
+        if(!_mcparser->parseFocGroup(config, _foc_based_info, groupName, _temperatureFactor_degcel2raw))
             return false;
     }
 
@@ -1395,7 +1401,7 @@ bool embObjMotionControl::init()
         motor_cfg.rotEncTolerance = _motorEncs[logico].tolerance;
         motor_cfg.hasHallSensor = _foc_based_info[logico].hasHallSensor;
         motor_cfg.hasRotorEncoder = _foc_based_info[logico].hasRotorEncoder;
-        motor_cfg.hasTempSensor = _foc_based_info[logico].hasTempSensor;
+        motor_cfg.hasTempSensor = _foc_based_info[logico].hasTemperatureSensor;
         motor_cfg.hasRotorEncoderIndex = _foc_based_info[logico].hasRotorEncoderIndex;
         motor_cfg.hasSpeedEncoder = _foc_based_info[logico].hasSpeedEncoder;
         motor_cfg.verbose = _foc_based_info[logico].verbose;
@@ -1403,6 +1409,7 @@ bool embObjMotionControl::init()
         motor_cfg.rotorIndexOffset = _foc_based_info[logico].rotorIndexOffset;
         motor_cfg.rotorEncoderType = _motorEncs[logico].type;
         motor_cfg.pwmLimit =_rotorsLimits[logico].pwmMax;
+        motor_cfg.temperatureLimit = (eOmeas_temperature_t)(_temperatureLimits[logico].hardwareTemperatureLimit * _temperatureFactor_degcel2raw[logico]); //passing raw value not in degree
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMin, fisico ));
         
@@ -3270,7 +3277,15 @@ bool embObjMotionControl::getKinematicMJRaw(int j, double &rotres)
     return false;
 }
 
-bool embObjMotionControl::getHasTempSensorsRaw(int j, int& ret)
+bool embObjMotionControl::getTemperatureSensorTypeRaw(int j, int& ret)
+{
+    // refresh cached value when reading data from the EMS
+    ret = (int)_foc_based_info[j].temperatureSensorType;
+
+    return true;
+}
+
+bool embObjMotionControl::getHasTempSensorsRaw(int j, int& ret) 
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
@@ -3454,9 +3469,9 @@ bool embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle
         Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { int tmp = 0; getHasHallSensorRaw(i, tmp); r.addInt32(tmp); }
         return true;
     }
-    else if (key == "hasTempSensor")
+    else if (key == "TemperatureSensorType")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasTempSensorsRaw(i, tmp); r.addInt32(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getTemperatureSensorTypeRaw(i, tmp); r.addInt32(tmp); }
         return true;
     }
     else if (key == "hasRotorEncoder")
