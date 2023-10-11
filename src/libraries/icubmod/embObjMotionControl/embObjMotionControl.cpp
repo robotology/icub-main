@@ -74,7 +74,7 @@ static bool nv_not_found(void)
 
 
 
-
+int _printCounter = 0;
 
 
 
@@ -102,6 +102,7 @@ bool embObjMotionControl::alloc(int nj)
     _gearbox_E2J = allocAndCheck<double>(nj);
     _temperatureFactor_degcel2raw = allocAndCheck<double>(nj);
     _deadzone = allocAndCheck<double>(nj);
+    _temperatureValues = allocAndCheck<double>(nj);
     _foc_based_info=allocAndCheck<eomc::focBasedSpecificInfo_t>(nj);
     _trj_pids= new eomc::PidInfo[nj];
     //_dir_pids= new eomc::PidInfo[nj];
@@ -151,6 +152,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_gearbox_E2J);
     checkAndDestroy(_temperatureFactor_degcel2raw);
     checkAndDestroy(_deadzone);
+    checkAndDestroy(_temperatureValues);
     checkAndDestroy(_impedance_limits);
     checkAndDestroy(checking_motiondone);
     checkAndDestroy(_ref_command_positions);
@@ -225,6 +227,7 @@ embObjMotionControl::embObjMotionControl() :
     _gearbox_E2J  = 0;
     _temperatureFactor_degcel2raw = 0;
     _deadzone     = 0;
+    _temperatureValues = 0;
     opened        = 0;
     _trj_pids     = NULL;
     //_dir_pids     = NULL;
@@ -338,7 +341,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
-
+    _printCounter = 0;
     ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
@@ -1401,7 +1404,7 @@ bool embObjMotionControl::init()
         motor_cfg.rotEncTolerance = _motorEncs[logico].tolerance;
         motor_cfg.hasHallSensor = _foc_based_info[logico].hasHallSensor;
         motor_cfg.hasRotorEncoder = _foc_based_info[logico].hasRotorEncoder;
-        motor_cfg.hasTempSensor = _foc_based_info[logico].hasTemperatureSensor;
+        motor_cfg.hasTempSensor = _foc_based_info[logico].hasTempSensor;
         motor_cfg.hasRotorEncoderIndex = _foc_based_info[logico].hasRotorEncoderIndex;
         motor_cfg.hasSpeedEncoder = _foc_based_info[logico].hasSpeedEncoder;
         motor_cfg.verbose = _foc_based_info[logico].verbose;
@@ -1571,6 +1574,23 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
             mcdiagnostics.ports[joint]->write();
         }
     }
+
+    
+    if ((_printCounter % 1000) == 0)
+    {
+        _printCounter = 0;
+        if(!getTemperaturesRaw(_temperatureValues))
+        {
+            yError("ERROR IN GETTING SOME TEMPERATURES");
+            return false;
+        }
+        else
+        {
+            yDebug("GOT SOME TEMPERATURESSSSSS");
+        }
+    }
+    ++_printCounter;
+    
 
     return true;
 }
@@ -4699,7 +4719,9 @@ bool embObjMotionControl::getTemperatureRaw(int m, double* val)
     bool ret = res->getLocalValue(protid, &status);
     if(ret)
     {
-        *val = (double) status.mot_temperature;
+        *val = (double) status.mot_temperature ;
+        *val /= _temperatureFactor_degcel2raw[m];
+        yDebug("Temperature updating to value: %lf", *val);
     }
     else
     {
@@ -4707,6 +4729,16 @@ bool embObjMotionControl::getTemperatureRaw(int m, double* val)
         *val = 0;
     }
 
+    if (val > _temperatureLimits[m].hardwareTemperatureLimit)
+    {
+        yError("Hardware temperature limit for motor:%i overcame! Stopping processess as safety procedure to not damage motor", m);
+        return false;
+    }
+    else if (val > _temperatureLimits[m].warningTemperatureLimit)
+    {
+        yWarning("Warning temperature limit for motor:%i overcame! Processes not stopped but consider to decrese motor usage or reduce currents and PWMs to not risk motor damaging", m);
+    }
+    
     return ret;
 }
 

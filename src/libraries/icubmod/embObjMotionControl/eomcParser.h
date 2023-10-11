@@ -211,7 +211,7 @@ typedef enum
 typedef struct
 {
     bool hasHallSensor;
-    bool hasTemperatureSensor;
+    bool hasTempSensor;
     motor_temperatureSensorTypeEnum_t temperatureSensorType;  // uses a typedef enum
     bool hasRotorEncoder;
     bool hasRotorEncoderIndex;

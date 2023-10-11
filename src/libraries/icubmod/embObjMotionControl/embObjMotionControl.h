@@ -206,6 +206,7 @@ private:
     double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
     double *                                _temperatureFactor_degcel2raw; /** the conversion factor between degree in celsius and raw value based on type of temperature sensor available for the motor*/
     double *                                _deadzone;
+    double *                                _temperatureValues;
     std::vector<eomc::kalmanFilterParams_t> _kalman_params;  /** Kalman filter parameters */
 
     eomc::focBasedSpecificInfo_t *            _foc_based_info;
