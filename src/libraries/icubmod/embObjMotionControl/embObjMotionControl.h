@@ -204,11 +204,12 @@ private:
     servConfigMC_t                          serviceConfig;  /** contains the needed data for configure motion control service, like i.e. board ports where joint are connected */ 
     double *                                _gearbox_M2J;   /** the gearbox ratio motor to joint */
     double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
-    double *                                _temperatureFactor_degcel2raw; /** the conversion factor between degree in celsius and raw value based on type of temperature sensor available for the motor*/
     double *                                _deadzone;
     double *                                _temperatureValues;
     std::vector<eomc::kalmanFilterParams_t> _kalman_params;  /** Kalman filter parameters */
 
+    std::vector<std::unique_ptr<eomc::ITemperatureSensor>> _temperatureSensorsVector;  
+    
     eomc::focBasedSpecificInfo_t *            _foc_based_info;
 
     std::vector<eomc::encoder_t>            _jointEncs;
@@ -268,6 +269,7 @@ private:
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/    
     eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
+    std::vector<int>    _temperatureSensorErrorWatchdog;  /* counter used to filter error coming from tdb reading fromm 2FOC board*/
     
 
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
@@ -493,7 +495,7 @@ public:
     bool getJointEncoderTypeRaw(int j, int &type) ;
     bool getRotorEncoderTypeRaw(int j, int &type) ;
     bool getKinematicMJRaw(int j, double &rotres) ;
-    bool getTemperatureSensorTypeRaw(int j, int& ret) ;
+    bool getTemperatureSensorTypeRaw(int j, std::string& ret) ;
     bool getHasTempSensorsRaw(int j, int& ret) ;
     bool getHasHallSensorRaw(int j, int& ret) ;
     bool getHasRotorEncoderRaw(int j, int& ret) ;

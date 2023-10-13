@@ -26,6 +26,7 @@
 #include <vector>
 #include <array>
 #include <map>
+#include <memory>
 
 //  Yarp stuff
 #include <yarp/os/Bottle.h>
@@ -55,6 +56,216 @@ namespace yarp {
 //    PIdAlgo_velocityInnerLoop = 1,
 //    PidAlgo_currentInnerLoop =2
 //} PidAlgorithmType_t;
+
+typedef enum
+{
+    motor_temperature_sensor_pt100       = 0,
+    motor_temperature_sensor_pt1000      = 1,
+    motor_temperature_sensor_none        = 255
+} motor_temperatureSensorTypeEnum_t;
+
+class ITemperatureSensor
+{
+
+public:
+
+    virtual double convertTempCelsiusToRaw(const double temperature) = 0;
+
+    virtual double convertRawToTempCelsius(const double temperature) = 0;
+};
+
+class TemperatureSensorPT100 : public ITemperatureSensor
+{
+private:
+    // resistors of the voltage divider bridge
+    int _r_1;
+    int _r_2;
+    int _r_3;
+    
+
+    double _ptc_offset;    // offset of the temperature sensor line
+    double _ptc_gradient;  // slope/gradient of the temperature sensor line
+    double _pga_gain;      // ADC gain set for the tdb (temperature detection board)
+
+    int _vcc;               // vcc that enters the voltage divider bridge
+    double _resolution_pga; // resolution of the internal pga of the tdb
+    double _resolution_tdb; // resolution used for the raw value for the output of the tdb
+
+    double _half_bridge_resistor_coeff;
+
+    bool isConfigured = false;
+
+public:
+
+    TemperatureSensorPT100()
+    {
+        _r_1 = 4700;
+        _r_2 = 4700;
+        _r_3 = 100; 
+
+        _ptc_offset = 100.0;
+        _ptc_gradient = 0.3851;
+        _pga_gain = 2;
+        _vcc = 5;
+        _resolution_pga = 2.048;
+        _resolution_tdb = 32767; 
+
+        _half_bridge_resistor_coeff = (double)_r_3 / (double)(_r_2 + _r_3);
+        isConfigured = true;
+    }
+
+    TemperatureSensorPT100(const TemperatureSensorPT100& other) = default; // const copy constructor
+    TemperatureSensorPT100& operator=(const TemperatureSensorPT100& other) = default; // const copy assignment operator
+    TemperatureSensorPT100(TemperatureSensorPT100&& other) = default; // move constructor
+    TemperatureSensorPT100& operator=(TemperatureSensorPT100&& other) = default; // move assignment operator
+
+    ~TemperatureSensorPT100() = default; // destructor
+
+    virtual double convertTempCelsiusToRaw(const double temperature) override
+    {
+        double res = 0;
+        if (!isConfigured)
+        {
+            yError("Cannot proceed, class paramters not confgured");
+            return res;
+        }
+       	
+        double tmp = (( (_ptc_offset + _ptc_gradient * temperature) / ((double)_r_1 + (_ptc_offset + _ptc_gradient * temperature))) - _half_bridge_resistor_coeff) * (double)_vcc;
+        res = (_resolution_tdb + 1) * ((_pga_gain * tmp) / _resolution_pga);
+        
+	    yDebug("Converted temperature limit to raw value:%f", res);
+        return res;
+    }
+
+    virtual double convertRawToTempCelsius(const double temperature) override
+    {
+        double res = 0;
+        if (!isConfigured)
+        {
+            yError("Cannot proceed, class paramters not confgured");
+            return res;
+        }
+        
+        double tmp = temperature * ((_resolution_pga) / (_pga_gain * _vcc * (_resolution_tdb + 1)));
+        double den = _ptc_gradient * (_r_2 - _r_2*tmp - _r_3*tmp);
+        res = (tmp * (_r_1*_r_2 + _r_1*_r_3 + _ptc_offset*_r_2 + _ptc_offset*_r_3) / den) + ((_r_3*_r_1 - _r_2*_ptc_offset) / den);
+        
+        
+        //yDebug("Converted temperature  to Celsius degree value:%f", res);
+        return res;
+    }
+
+};
+
+
+class TemperatureSensorPT1000 : public ITemperatureSensor
+{
+
+private:
+    // resistors of the voltage divider bridge
+    int _r_1;
+    int _r_2;
+    int _r_3;
+    
+     double _ptc_offset;    // offset of the temperature sensor line
+    double _ptc_gradient;  // slope/gradient of the temperature sensor line
+    double _pga_gain;      // ADC gain set for the tdb (temperature detection board)
+
+    int _vcc;               // vcc that enters the voltage divider bridge
+    double _resolution_pga; // resolution of the internal pga of the tdb
+    double _resolution_tdb; // resolution used for the raw value for the output of the tdb
+    
+    double _half_bridge_resistor_coeff;
+    
+    bool isConfigured = false;
+
+public:
+
+    TemperatureSensorPT1000()
+    {
+        _r_1 = 4700;
+        _r_2 = 4700;
+        _r_3 = 1000;
+
+        _ptc_offset = 1000;
+        _ptc_gradient = 3.851;
+        _pga_gain = 2;
+        _vcc = 5;
+        _resolution_pga = 2.048;
+        _resolution_tdb = 32767;
+        
+        _half_bridge_resistor_coeff = (double)_r_3 / (double)(_r_2 + _r_3);
+
+        isConfigured = true;
+    }
+
+    TemperatureSensorPT1000(const TemperatureSensorPT1000& other) = default; // const copy constructor
+    TemperatureSensorPT1000& operator=(const TemperatureSensorPT1000& other) = default; // const copy assignment operator
+    TemperatureSensorPT1000(TemperatureSensorPT1000&& other) = default; // move constructor
+    TemperatureSensorPT1000& operator=(TemperatureSensorPT1000&& other) = default; // move assignment operator
+
+    ~TemperatureSensorPT1000() = default; // destructor
+
+    virtual double convertTempCelsiusToRaw(const double temperature) override
+    {
+        double res = 0;
+        if (!isConfigured)
+        {
+            yError("Cannot proceed, class paramters not confgured");
+            return res;
+        }
+        
+        double tmp = (( (_ptc_offset + _ptc_gradient * temperature) / ((double)_r_1 + (_ptc_offset + _ptc_gradient * temperature))) - _half_bridge_resistor_coeff) * (double)_vcc;
+        res = (_resolution_tdb + 1) * ((_pga_gain * tmp) / _resolution_pga);
+        
+	    yDebug("Converted temperature limit to raw value:%f", res);
+        return res;
+    }
+
+    virtual double convertRawToTempCelsius(const double temperature) override
+    {
+        double res = 0;
+        if (!isConfigured)
+        {
+            yError("Cannot proceed, class paramters not confgured");
+            return res;
+        }
+        
+        double tmp = temperature * ((_resolution_pga) / (_pga_gain * _vcc * (_resolution_tdb + 1)));
+        double den = _ptc_gradient * (_r_2 - _r_2*tmp - _r_3*tmp);
+        res = (tmp * (_r_1*_r_2 + _r_1*_r_3 + _ptc_offset*_r_2 + _ptc_offset*_r_3) / den) + ((_r_3*_r_1 - _r_2*_ptc_offset) / den);
+        
+	    //yDebug("Converted temperature  to Celsius degree value:%f", res);
+        
+	    return res;
+    }
+};
+
+
+class TemperatureSensorNONE : public ITemperatureSensor
+{
+
+public:
+
+    TemperatureSensorNONE()
+    {
+        yError("Private varibales NOT DEFINED for class TemperatureSensorNONE");
+    }
+
+    ~TemperatureSensorNONE() = default;
+    
+    virtual double convertTempCelsiusToRaw(const double temperature) override
+    {
+        yError("convertTempCelsiusToRaw METHOD, NOT IMPLEMENTED for class TemperatureSensorNONE");
+        return 0;
+    }
+
+    virtual double convertRawToTempCelsius(const double temperature) override
+    {
+        yError("convertRawToTempCelsius METHOD, NOT IMPLEMENTED for class TemperatureSensorNONE");
+        return 0;
+    }
+};
 
 
 class Pid_Algorithm
@@ -201,13 +412,6 @@ public:
     int    filterType;
 };
 
-typedef enum
-{
-    motor_temperature_sensor_type_pt100  = 0,
-    motor_temperature_sensor_pt1000      = 1,
-    motor_temperature_sensor_none        = 255
-} motor_temperatureSensorTypeEnum_t;
-
 typedef struct
 {
     bool hasHallSensor;
@@ -328,7 +532,7 @@ typedef struct
 {
     double         hardwareTemperatureLimit;
     double         warningTemperatureLimit;
-} temperatureLimits_t;
+} temperatureLimits_t; // limits expressed as raw values after conversion is applied
 
 //template <class T>
 
@@ -433,14 +637,12 @@ public:
     ~Parser();
 
     bool parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory);
-    bool parseFocGroup(yarp::os::Searchable &config, focBasedSpecificInfo_t *foc_based_info, std::string groupName, double temperatureFactor_degcel2raw[]);
+    bool parseFocGroup(yarp::os::Searchable &config, focBasedSpecificInfo_t *foc_based_info, std::string groupName, std::vector<std::unique_ptr<eomc::ITemperatureSensor>>& temperatureSensorsVector);
     //bool parseCurrentPid(yarp::os::Searchable &config, PidInfo *cpids);//deprecated
     bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &jointtoset);
     bool parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts, int defaultVelocityTimeout);
     bool parseCurrentLimits(yarp::os::Searchable &config, std::vector<motorCurrentLimits_t> &currLimits);
-
     bool parseTemperatureLimits(yarp::os::Searchable &config, std::vector<temperatureLimits_t> &temperatureLimits);
-
     bool parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLimits_t> &jointsLimits);
     bool parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLimits_t> &rotorsLimits);
     bool parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &couplingInfo);
@@ -456,7 +658,6 @@ public:
     bool parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impedanceParameters_t> &impedance);
     bool parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found);
     bool parseKalmanFilterParams(yarp::os::Searchable &config, std::vector<kalmanFilterParams_t> &kalmanFilterParams);
-
 };
 
 }}}; //close namespaces

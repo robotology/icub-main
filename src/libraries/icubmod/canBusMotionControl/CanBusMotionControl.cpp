@@ -231,7 +231,6 @@ public:
 
     // msg 3b
     unsigned char _interactionmodeStatus;
-    //short _hardwareTemperatureLimit;
     double _update_e2;
 
     // msg 4
@@ -325,7 +324,6 @@ public:
         _boardStatus=0;
         _controlmodeStatus=0;
         _interactionmodeStatus=0;
-        //_hardwareTemperatureLimit = 0;
         _position_error = 0;
         _torque_error = 0;
         _speed_joint = 0;
@@ -3390,13 +3388,11 @@ void CanBusMotionControl::handleBroadcasts()
 
                     case ICUBCANPROTO_PER_MC_MSG__ADDITIONAL_STATUS:
                         r._bcastRecvBuffer[j]._interactionmodeStatus=*((char *)(data)) & 0x0F;
-                        //r._bcastRecvBuffer[j]._hardwareTemperatureLimit= *((short *)(data+1));
                         r._bcastRecvBuffer[j]._update_e2 = before;
                         j++;
                         if (j < r.getJoints())
                         {
                             r._bcastRecvBuffer[j]._interactionmodeStatus=(*((char *)(data)) >> 4) & 0x0F;
-                            //r._bcastRecvBuffer[j]._hardwareTemperatureLimit=(*((short*)(data+3)));
                             r._bcastRecvBuffer[j]._update_e2 = before;
                         }
                         break;
