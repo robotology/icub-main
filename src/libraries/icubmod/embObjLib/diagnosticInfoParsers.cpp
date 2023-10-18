@@ -811,23 +811,45 @@ void SysParser::parseInfo()
 
         case eoerror_value_SYS_ctrloop_execoverflowRX:
         {
-            // TODO: check if time to show is TX. Shouldn't be RX in this case?
-            snprintf(str, sizeof(str), " %s RX execution time %d[usec]. Latest previous execution times of TX, RX, DO, TX %ld[usec]", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, m_dnginfo.param64);
+            //here the param64 contains: TX RX DO TX
+            uint16_t prev_rx = (m_dnginfo.param64 & 0x0000ffff00000000)>>32;
+            uint16_t prev_do = (m_dnginfo.param64 & 0x00000000ffff0000)>>16;
+            uint16_t prev_tx = (m_dnginfo.param64 & 0x000000000000ffff);
+            uint16_t prev_prev_tx = (m_dnginfo.param64 & 0xffff000000000000)>>48;
+            //currently we don't print the two time ago TX.
+
+            //snprintf(str, sizeof(str), " %s RX execution time %d[usec]. Latest previous execution times[usec] RX=%d, DO=%d, TX=%d", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, prev_rx, prev_do, prev_tx);
+            snprintf(str, sizeof(str), " %s RX execution time %d[usec]. Latest previous execution times[usec] (..., Tx=%d);(RX=%d, DO=%d, TX=%d);",
+                     m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, prev_prev_tx, prev_rx, prev_do, prev_tx);
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_ctrloop_execoverflowDO:
         {
-            snprintf(str, sizeof(str), " %s DO execution time %d[usec]. Latest previous execution times of RX, DO, TX, RX %ld[usec]", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, m_dnginfo.param64);
+            //here the param64 contains: RX DO TX RX
+            uint16_t prev_do = (m_dnginfo.param64 & 0x0000ffff00000000)>>32;
+            uint16_t prev_tx = (m_dnginfo.param64 & 0x00000000ffff0000)>>16;
+            uint16_t prev_rx = (m_dnginfo.param64 & 0x000000000000ffff);
+            uint16_t prev_prev_rx = (m_dnginfo.param64 & 0xffff000000000000)>>48;
+            //currently we don't print the two time ago RX.
+            //snprintf(str, sizeof(str), " %s DO execution time %d[usec]. Latest previous execution times[usec] DO=%d, TX=%d, RX=%d", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, prev_do, prev_tx, prev_rx);
+            snprintf(str, sizeof(str), " %s DO execution time %d[usec]. Latest previous execution times[usec] (..., Tx=%s);(RX=%d, DO=%d, TX=%d); (Rx=%d, ...);",
+                     m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, "N/A", prev_prev_rx, prev_do, prev_tx, prev_rx);
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_ctrloop_execoverflowTX:
         {
-            // TODO: ask suggested the usec time (last parsed value is just one value, not 4) --> do I need to mask it or printing just par64 as int does the job?
-            snprintf(str, sizeof(str), " %s TX execution time %d[usec]. Latest previous execution times of TX, RX, DO %ld[usec]",
-                    m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, m_dnginfo.param64
-            );
+           //here the param64 contains: DO TX RX DO
+            uint16_t prev_tx = (m_dnginfo.param64 & 0x0000ffff00000000)>>32;
+            uint16_t prev_rx = (m_dnginfo.param64 & 0x00000000ffff0000)>>16;
+            uint16_t prev_do = (m_dnginfo.param64 & 0x000000000000ffff);
+            uint8_t can1_frames = (m_dnginfo.param64 & 0x00ff000000000000) >> 48;
+            uint8_t can2_frames = (m_dnginfo.param64 & 0xff00000000000000) >> 56;
+            //snprintf(str, sizeof(str), " %s TX execution time %d[usec]. Latest previous execution times[usec] TX=%d, RX=%d, DO=%d. Num of CAN frames[CAN1,CAN2]=[%u %u]", m_dnginfo.baseMessage.c_str(), 
+            //m_dnginfo.param16, prev_tx, prev_rx, prev_do, can1_frames, can2_frames );
+            snprintf(str, sizeof(str), " %s TX execution time %d[usec]. Latest previous execution times[usec] (RX=%s, DO=%s, TX=%d); (Rx=%d, DO=%d, ...). Num of CAN frames[CAN1,CAN2]=[%u %u]",
+                     m_dnginfo.baseMessage.c_str(), m_dnginfo.param16, "N/A", "N/A" , prev_tx, prev_rx, prev_do, can1_frames, can2_frames);
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
