@@ -2,7 +2,7 @@ name: Cancel CI of Draft PR
 
 on:
   workflow_run:
-    workflows: [Continuous Integration]
+    workflows: [CI Workflow]
     types:
       - requested
 
