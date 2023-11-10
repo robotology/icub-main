@@ -106,7 +106,41 @@ typedef struct
     bool pwmIsLimited;          /** set to true if pwm is limited */
 }behaviour_flags_t;
 
-}}};
+
+class Watchdog
+{
+
+private:
+
+bool _isStarted;
+uint32_t _count;
+uint32_t _threshold; // use 10000 as limit on the watchdog for the error on the temperature sensor receiving of the values - 
+                    // since the ETH callback timing is 2ms by default so using 10000 we can set a checking threshould of 5 second
+                    // in which we can allow the tdb to not respond. If cannot receive response over 1s we trigger the error
+
+double _time;
+
+public:
+
+Watchdog(): _count(0), _isStarted(false), _threshold(10000), _time(0){;}
+Watchdog(uint32_t threshold):_count(0), _isStarted(false),_threshold(threshold), _time(0){;}
+~Watchdog() = default;
+Watchdog(const Watchdog& other) =  default;
+Watchdog(Watchdog&& other) noexcept =  default;
+Watchdog& operator=(const Watchdog& other) =  default;
+Watchdog& operator=(Watchdog&& other) noexcept =  default;
+
+
+bool isStarted(){return _isStarted;}
+void start() {_count = 0; _time = yarp::os::Time::now(); _isStarted = true;}
+bool isExpired() {return (_count > _threshold);}
+void increment() {++_count;}
+void clear(){_isStarted=false;}
+double getStartTime() {return _time;}
+uint32_t getCount() {return _count; }
+
+};
+}}}
 
 namespace yarp {
     namespace dev  {
@@ -205,7 +239,6 @@ private:
     double *                                _gearbox_M2J;   /** the gearbox ratio motor to joint */
     double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
     double *                                _deadzone;
-    double *                                _temperatureValues;
     std::vector<eomc::kalmanFilterParams_t> _kalman_params;  /** Kalman filter parameters */
 
     std::vector<std::unique_ptr<eomc::ITemperatureSensor>> _temperatureSensorsVector;  
@@ -269,7 +302,8 @@ private:
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/    
     eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
-    std::vector<int>    _temperatureSensorErrorWatchdog;  /* counter used to filter error coming from tdb reading fromm 2FOC board*/
+    std::vector<yarp::dev::eomc::Watchdog>    _temperatureSensorErrorWatchdog;  /* counter used to filter error coming from tdb reading fromm 2FOC board*/
+    std::vector<yarp::dev::eomc::Watchdog>    _temperatureExceededLimitWatchdog;  /* counter used to filter the print of the exeded limits*/
     
 
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 

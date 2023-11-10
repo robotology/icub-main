@@ -242,7 +242,6 @@ eObool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, vo
     return eobool_true;
 }
 
-
 void* feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32)
 {
     IethResource* h = NULL;

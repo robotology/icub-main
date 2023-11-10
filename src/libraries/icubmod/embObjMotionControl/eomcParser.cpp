@@ -1394,22 +1394,9 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
 
     if (!extractGroup(focGroup, xtmp, "TemperatureSensorType", "TemperatureSensorType PT100/PT1000/NONE ", _njoints, false))
     {
-        yWarning("In board %s group TemperatureSensorType not filled. Setting it to NONE as default value. If needed update the configuration files accordingly", _boardname.c_str()) ;
-        for (i = 0; i < (unsigned)_njoints; i++)
+        // 1. check if I have old config
+        if (extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints, false)) 
         {
-            foc_based_info[i].temperatureSensorType = motor_temperature_sensor_none;
-            foc_based_info[i].hasTempSensor = 0;
-        }
-
-        if (!extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints, false))
-        {
-            yWarning("In board %s group HasTempSensor not filled. Setting it to 0 as default value. If needed update the configuration files accordingly", _boardname.c_str());
-            for (i = 0; i < (unsigned)_njoints; i++)
-                foc_based_info[i].hasTempSensor = 0;
-        }
-        else
-        {
-            yWarning() << "ATTENTION HasTempSensor will be soon DEPRECATED in favour of TemperatureSensorType. Currently kept for backward compatibility but update your configuration files if using a Temperature Sensor";
             for (i = 1; i < xtmp.size(); i++)
             {
                 if (xtmp.get(i).asInt32() != 0)
@@ -1417,13 +1404,18 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
                     yError() << "In " << _boardname << "entry" << i << ": inconsistent configuration. HasTempSensor cannot be used alone. Will be soon deprecated. Use TemperatureSensorType in 2FOC group and set Temperature limits in LIMITS group." ;
                     return false;
                 }
-                else
-                {
-                    foc_based_info[i - 1].hasTempSensor = xtmp.get(i).asInt32();
-                }
             }
         }
-    }
+
+        // if I'm here all joints have HasTempSensor =0
+        for (i = 0; i < _njoints; i++)
+        {
+            foc_based_info[i].hasTempSensor = 0;
+            temperatureSensorsVector.at(i) = std::make_unique<eomc::TemperatureSensorNONE>();
+            yWarning()<< _boardname << "ATTENTION HasTempSensor will be soon DEPRECATED in favour of TemperatureSensorType (PT100, PT1000, NONE(=default)). Currently kept for backward compatibility but update your configuration files if using a Temperature Sensor";
+        } 
+
+    }    
     else
     {
         for (i = 1; i < xtmp.size(); i++)
@@ -1432,7 +1424,6 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
             if(s == "PT100")
             {
                 foc_based_info[i - 1].hasTempSensor = 1;
-                foc_based_info[i - 1].temperatureSensorType = motor_temperature_sensor_pt100;
                 temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorPT100>();
                 
             }
@@ -1440,14 +1431,13 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
             {
                 
                 foc_based_info[i - 1].hasTempSensor = 1;
-                foc_based_info[i - 1].temperatureSensorType = motor_temperature_sensor_pt1000;
                 temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorPT1000>();
             }
             else
             {
-                yWarning("Not available or Not supported TemperatureSensorType: %s. Setting NONE as default", s.c_str());
+                if(s != "NONE")//if sis == NONE the warning is not correct
+                    yWarning("Not available or Not supported TemperatureSensorType: %s. Setting NONE as default", s.c_str());
                 foc_based_info[i - 1].hasTempSensor = 0;
-                foc_based_info[i - 1].temperatureSensorType = motor_temperature_sensor_none;
                 temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorNONE>();
             }
         }
@@ -1765,8 +1755,8 @@ bool Parser::parseTemperatureLimits(yarp::os::Searchable &config, std::vector<te
         yWarning("hardwareTemperatureLimits param not found in config file for board %s. Please update robot configuration files or contact https://github.com/robotology/icub-support if needed. Using default values.", _boardname.c_str());
         for (i = 0; i < (unsigned)_njoints; i++)
         {
-            //temperatureLimits[i].hardwareTemperatureLimit  = 0;
-            //temperatureLimits[i].warningTemperatureLimit = 0;
+            temperatureLimits[i].hardwareTemperatureLimit  = 0;
+            temperatureLimits[i].warningTemperatureLimit = 0;
         }
     }
     else
@@ -1777,7 +1767,7 @@ bool Parser::parseTemperatureLimits(yarp::os::Searchable &config, std::vector<te
             // warning limit - parsing it only if hardwareTemperatureLimit available
             yWarning("warningTemperatureLimits param not found in config file for board %s. Please update robot configuration files or contact https://github.com/robotology/icub-support if needed. Using default values.", _boardname.c_str());
 
-            //for (i = 0; i < (unsigned)_njoints; i++) temperatureLimits[i].warningTemperatureLimit = 0;
+            for (i = 0; i < (unsigned)_njoints; i++) temperatureLimits[i].warningTemperatureLimit = 0;
         }
         else
         {

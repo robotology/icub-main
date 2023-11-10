@@ -72,6 +72,8 @@ public:
     virtual double convertTempCelsiusToRaw(const double temperature) = 0;
 
     virtual double convertRawToTempCelsius(const double temperature) = 0;
+
+    virtual motor_temperatureSensorTypeEnum_t getType() = 0;
 };
 
 class TemperatureSensorPT100 : public ITemperatureSensor
@@ -155,6 +157,8 @@ public:
         return res;
     }
 
+    virtual motor_temperatureSensorTypeEnum_t getType() override
+    {return motor_temperature_sensor_pt100;}
 };
 
 
@@ -239,6 +243,9 @@ public:
         
 	    return res;
     }
+
+    virtual motor_temperatureSensorTypeEnum_t getType() override
+    {return motor_temperature_sensor_pt1000;}
 };
 
 
@@ -249,22 +256,25 @@ public:
 
     TemperatureSensorNONE()
     {
-        yError("Private varibales NOT DEFINED for class TemperatureSensorNONE");
+        yInfo("Private varibales NOT DEFINED for class TemperatureSensorNONE");
     }
 
     ~TemperatureSensorNONE() = default;
     
     virtual double convertTempCelsiusToRaw(const double temperature) override
     {
-        yError("convertTempCelsiusToRaw METHOD, NOT IMPLEMENTED for class TemperatureSensorNONE");
+        yInfo("convertTempCelsiusToRaw METHOD, NOT IMPLEMENTED for class TemperatureSensorNONE");
         return 0;
     }
 
     virtual double convertRawToTempCelsius(const double temperature) override
     {
-        yError("convertRawToTempCelsius METHOD, NOT IMPLEMENTED for class TemperatureSensorNONE");
+        //yError("convertRawToTempCelsius METHOD, NOT IMPLEMENTED for class TemperatureSensorNONE");
         return 0;
     }
+
+    virtual motor_temperatureSensorTypeEnum_t getType() override
+    {return motor_temperature_sensor_none;}
 };
 
 
@@ -416,7 +426,6 @@ typedef struct
 {
     bool hasHallSensor;
     bool hasTempSensor;
-    motor_temperatureSensorTypeEnum_t temperatureSensorType;  // uses a typedef enum
     bool hasRotorEncoder;
     bool hasRotorEncoderIndex;
     int  rotorIndexOffset;
