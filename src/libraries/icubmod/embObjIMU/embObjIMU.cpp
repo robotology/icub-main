@@ -144,24 +144,6 @@ bool embObjIMU::open(yarp::os::Searchable &config)
     //init conversion factor
     //TODO: currently the conversion factors are not read from xml files, but configured here.
     //please read IMUbosh datasheet for more information
-    for (int i=0; i<servCfg.id.size(); i++) {
-        auto type = static_cast<eOas_sensor_t>(servCfg.inertials[i].typeofsensor);
-        if ((eoas_accel_mtb_int == type) || (eoas_accel_mtb_ext == type) || (eoas_gyros_mtb_ext == type) ||
-            (eoas_gyros_st_l3g4200d == type)) {
-            servCfg.convFactors.accFactor = 1.0; // For now let's keep 1.0
-            servCfg.convFactors.magFactor = 1.0;
-            servCfg.convFactors.gyrFactor = 1.0;
-            servCfg.convFactors.eulFactor = 1.0;
-        }
-        else {
-            servCfg.convFactors.accFactor = 100.0; // 1 m/sec2 = 100 binary units
-            servCfg.convFactors.magFactor = 16.0 * 1000000.0;  // 1 microT = 16 binary units
-            servCfg.convFactors.gyrFactor = 16.0;  // 1 degree/sec = 16 binary units
-            servCfg.convFactors.eulFactor = 16.0; //  1 degree  = 16 binary units
-            //eul angles don't need a conversion.
-        }
-        GET_privData(mPriv).sens.measConverters.push_back({servCfg.convFactors.accFactor, servCfg.convFactors.gyrFactor,  servCfg.convFactors.magFactor, servCfg.convFactors.eulFactor});
-    }
     // configure the sensor(s)
 
     if(false == GET_privData(mPriv).sendConfing2board(servCfg))

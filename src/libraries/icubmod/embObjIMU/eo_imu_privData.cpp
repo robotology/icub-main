@@ -157,6 +157,18 @@ void SensorsData::init(servConfigImu_t &servCfg, string error_string)
                     newSensor.name = servCfg.sensorName[i];
                 }
                 newSensor.framename = newSensor.name;
+                switch (des->typeofsensor) {
+					case eoas_imu_acc:
+						newSensor.conversionFactor = 100.0; // 1 m/sec2 = 100 binary units
+						break;
+                    case eoas_imu_mag:
+                        newSensor.conversionFactor = 16.0 * 1000000.0; // 1 microT = 16 binary units
+						break;
+                    case eoas_imu_gyr:
+						newSensor.conversionFactor = 16.0; // 1 degree/sec = 16 binary units
+                    case eoas_imu_eul:
+                        newSensor.conversionFactor = 16.0; // 1 degree = 16 binary units
+				}
                 if(des->typeofsensor == eoas_imu_qua)
                     newSensor.values.resize(4);
                 else
@@ -230,36 +242,6 @@ bool SensorsData::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::
     try
     {   std::lock_guard<std::mutex> lck (mutex);
         out = mysens[type].at(sens_index).values;
-        switch(type)
-        {
-            case eoas_imu_acc:
-            case eoas_accel_mtb_int:
-            case eoas_accel_mtb_ext:    
-            {
-                for(int i=0; i<out.size(); i++)
-                    out[i] = measConverters[sens_index].convertAcc_raw2metric(out[i]);
-            }break;
-
-            case  eoas_imu_mag:
-            {    for(int i=0; i<out.size(); i++)
-                out[i] = measConverters[sens_index].convertMag_raw2metric(out[i]);
-            }break;
-
-            case eoas_imu_gyr:
-            case eoas_gyros_st_l3g4200d:
-            case eoas_gyros_mtb_ext:
-            {    for(int i=0; i<out.size(); i++)
-                out[i] = measConverters[sens_index].convertGyr_raw2metric(out[i]);
-            }break;
-
-            case eoas_imu_eul:
-            {
-                for(int i=0; i<out.size(); i++)
-                    out[i] = measConverters[sens_index].convertEul_raw2metric(out[i]);
-            }
-
-            default: break;
-        };
         timestamp = mysens[type].at(sens_index).timestamp;
     }
     catch (const std::out_of_range& oor)
@@ -276,9 +258,9 @@ bool SensorsData::update(eOas_sensor_t type, uint8_t index, eOas_inertial3_data_
 
     sensorInfo_t *info = &(mysens[type][index]);
 
-    info->values[0] = newdata->x;
-    info->values[1] = newdata->y;
-    info->values[2] = newdata->z;
+    info->values[0] = newdata->x / info->conversionFactor;
+    info->values[1] = newdata->y / info->conversionFactor;
+    info->values[2] = newdata->z / info->conversionFactor;
     info->timestamp = yarp::os::Time::now();
 
     return true;
