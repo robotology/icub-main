@@ -97,6 +97,8 @@ private:
     void *mPriv;
     
     std::string getBoardInfo(void) const;
+    std::pair <size_t, eOas_sensor_t> getGyroSubIndex(size_t sens_index) const;
+    std::pair <size_t, eOas_sensor_t> getAccSubIndex(size_t sens_index) const;
     void cleanup(void);
     
     //debug

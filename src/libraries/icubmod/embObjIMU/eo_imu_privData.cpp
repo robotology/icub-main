@@ -233,6 +233,8 @@ bool SensorsData::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::
         switch(type)
         {
             case eoas_imu_acc:
+            case eoas_accel_mtb_int:
+            case eoas_accel_mtb_ext:    
             {
                 for(int i=0; i<out.size(); i++)
                     out[i] = measConverters[sens_index].convertAcc_raw2metric(out[i]);
@@ -244,6 +246,8 @@ bool SensorsData::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::
             }break;
 
             case eoas_imu_gyr:
+            case eoas_gyros_st_l3g4200d:
+            case eoas_gyros_mtb_ext:
             {    for(int i=0; i<out.size(); i++)
                 out[i] = measConverters[sens_index].convertGyr_raw2metric(out[i]);
             }break;
@@ -290,6 +294,8 @@ bool SensorsData::updateStatus(eOas_sensor_t type, uint8_t index, eOas_inertial3
     switch(type)
     {
         case eoas_imu_acc:
+        case eoas_accel_mtb_int:
+        case eoas_accel_mtb_ext:   
             info->state = status.calib.acc;
         break;
 
@@ -298,6 +304,8 @@ bool SensorsData::updateStatus(eOas_sensor_t type, uint8_t index, eOas_inertial3
             break;
 
         case eoas_imu_gyr:
+        case eoas_gyros_st_l3g4200d:
+        case eoas_gyros_mtb_ext:
             info->state = status.calib.gyr;
             break;
         case eoas_imu_eul:
