@@ -10,9 +10,9 @@
 #define __eo_imu_privData_h__
 
 #include "embObjGeneralDevPrivData.h"
-#include "imuMeasureConverter.h"
 #include <yarp/sig/Vector.h>
 #include <mutex>
+#include <map>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 
 
@@ -30,7 +30,8 @@ namespace yarp {
 
 class yarp::dev::PositionMaps // data used for handling the received messsages
 {
-    std::uint8_t positionmap[eoas_sensors_numberof][eOcanports_number][16];
+    std::uint8_t canpositionmap[eoas_sensors_numberof][eOcanports_number][16];
+    std::uint8_t ethpositionmap[eoas_sensors_numberof];
 public:
     PositionMaps();
     ~PositionMaps();
@@ -41,7 +42,6 @@ public:
 };
 
 
-
 typedef struct
 {
     std::string name;
@@ -49,6 +49,7 @@ typedef struct
     yarp::sig::Vector values;
     uint8_t state;
     double timestamp;
+    double conversionFactor{1.0};  // raw to metric measure
 } sensorInfo_t;
 
 class yarp::dev::SensorsData
@@ -59,7 +60,6 @@ private:
     string errorstring;
 
 public:
-    ImuMeasureConverter measConverter;
     SensorsData();
     void init(servConfigImu_t &servCfg, string error_string);
     bool update(eOas_sensor_t type, uint8_t index, eOas_inertial3_data_t *newdata);

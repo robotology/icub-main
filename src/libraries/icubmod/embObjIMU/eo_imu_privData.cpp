@@ -18,7 +18,7 @@ using namespace yarp::dev;
 
 PositionMaps::PositionMaps()
 {
-    memset(positionmap, 0xff, sizeof(positionmap));
+    memset(canpositionmap, 0xff, sizeof(canpositionmap));
 }
 
 PositionMaps::~PositionMaps(void) {;}
@@ -43,12 +43,13 @@ bool PositionMaps::init(servConfigImu_t &servCfg)
             {
                 if(des->on.any.place == eobrd_place_can)
                 {
-                    positionmap[des->typeofsensor][des->on.can.port][des->on.can.addr] = numberof[des->typeofsensor];
+                    canpositionmap[des->typeofsensor][des->on.can.port][des->on.can.addr] = numberof[des->typeofsensor];
                     numberof[des->typeofsensor]++;
                 }
                 else if(des->on.any.place == eobrd_place_eth)
                 {
-                    // must manage the case of gyro on ems
+                    ethpositionmap[des->typeofsensor] = numberof[des->typeofsensor];
+                    numberof[des->typeofsensor]++;
                 }
             }
         }
@@ -63,22 +64,31 @@ bool PositionMaps::init(servConfigImu_t &servCfg)
 bool PositionMaps::getIndex(const eOas_inertial3_data_t* data, uint8_t& index, eOas_sensor_t& type)
 {
     uint8_t canbus, canaddress;
-    if(!getCanAddress(data, canbus, canaddress))
-        return false;
-
+    type = static_cast<eOas_sensor_t>(data->typeofsensor);
+    if (type != eoas_gyros_st_l3g4200d) {
+        if (!getCanAddress(data, canbus, canaddress))
+            return false;
+    }
     if(data->typeofsensor >= eoas_sensors_numberof)
     {   // it is not a valid index
         return false;
     }
+    if(type == eoas_gyros_st_l3g4200d) {
+        index = ethpositionmap[data->typeofsensor];
+    }
+    else {
+        index = canpositionmap[data->typeofsensor][canbus][canaddress];
+    }
 
-    index = positionmap[data->typeofsensor][canbus][canaddress];
-
-    type = static_cast<eOas_sensor_t>(data->typeofsensor);
     return (0xff == index) ? false : true;
 }
 
 bool PositionMaps::getIndex(eOas_sensor_t type, uint8_t canbus, uint8_t canaddress, uint8_t& index)
 {
+    // It is the ems, it is an eth board
+    if(type == eoas_gyros_st_l3g4200d) {
+        return false;
+    }
     if(canbus >= eOcanports_number)
     {
         return false;
@@ -87,7 +97,7 @@ bool PositionMaps::getIndex(eOas_sensor_t type, uint8_t canbus, uint8_t canaddre
     if(canaddress > 0x0f)
         return false;
 
-    index = positionmap[type][canbus][canaddress];
+    index = canpositionmap[type][canbus][canaddress];
     return (0xff == index) ? false : true;
 }
 
@@ -96,7 +106,11 @@ bool PositionMaps::getCanAddress(const eOas_inertial3_data_t *data, uint8_t &can
 {
     if(nullptr == data)
         return false;
-
+    auto type = static_cast<eOas_sensor_t>(data->typeofsensor);
+    // It is the ems, it is an eth board
+    if (eoas_gyros_st_l3g4200d == type) {
+        return false;
+    }
     canbus = data->id >> 4;
 
     if(canbus >= eOcanports_number)
@@ -143,6 +157,18 @@ void SensorsData::init(servConfigImu_t &servCfg, string error_string)
                     newSensor.name = servCfg.sensorName[i];
                 }
                 newSensor.framename = newSensor.name;
+                switch (des->typeofsensor) {
+					case eoas_imu_acc:
+						newSensor.conversionFactor = 100.0; // 1 m/sec2 = 100 binary units
+						break;
+                    case eoas_imu_mag:
+                        newSensor.conversionFactor = 16.0 * 1000000.0; // 1 microT = 16 binary units
+						break;
+                    case eoas_imu_gyr:
+						newSensor.conversionFactor = 16.0; // 1 degree/sec = 16 binary units
+                    case eoas_imu_eul:
+                        newSensor.conversionFactor = 16.0; // 1 degree = 16 binary units
+				}
                 if(des->typeofsensor == eoas_imu_qua)
                     newSensor.values.resize(4);
                 else
@@ -216,32 +242,6 @@ bool SensorsData::getSensorMeasure(size_t sens_index, eOas_sensor_t type, yarp::
     try
     {   std::lock_guard<std::mutex> lck (mutex);
         out = mysens[type].at(sens_index).values;
-        switch(type)
-        {
-            case eoas_imu_acc:
-            {
-                for(int i=0; i<out.size(); i++)
-                    out[i] = measConverter.convertAcc_raw2metric(out[i]);
-            }break;
-
-            case  eoas_imu_mag:
-            {    for(int i=0; i<out.size(); i++)
-                out[i] = measConverter.convertMag_raw2metric(out[i]);
-            }break;
-
-            case eoas_imu_gyr:
-            {    for(int i=0; i<out.size(); i++)
-                out[i] = measConverter.convertGyr_raw2metric(out[i]);
-            }break;
-
-            case eoas_imu_eul:
-            {
-                for(int i=0; i<out.size(); i++)
-                    out[i] = measConverter.convertEul_raw2metric(out[i]);
-            }
-
-            default: break;
-        };
         timestamp = mysens[type].at(sens_index).timestamp;
     }
     catch (const std::out_of_range& oor)
@@ -258,9 +258,9 @@ bool SensorsData::update(eOas_sensor_t type, uint8_t index, eOas_inertial3_data_
 
     sensorInfo_t *info = &(mysens[type][index]);
 
-    info->values[0] = newdata->x;
-    info->values[1] = newdata->y;
-    info->values[2] = newdata->z;
+    info->values[0] = newdata->x / info->conversionFactor;
+    info->values[1] = newdata->y / info->conversionFactor;
+    info->values[2] = newdata->z / info->conversionFactor;
     info->timestamp = yarp::os::Time::now();
 
     return true;
@@ -276,6 +276,8 @@ bool SensorsData::updateStatus(eOas_sensor_t type, uint8_t index, eOas_inertial3
     switch(type)
     {
         case eoas_imu_acc:
+        case eoas_accel_mtb_int:
+        case eoas_accel_mtb_ext:   
             info->state = status.calib.acc;
         break;
 
@@ -284,6 +286,8 @@ bool SensorsData::updateStatus(eOas_sensor_t type, uint8_t index, eOas_inertial3
             break;
 
         case eoas_imu_gyr:
+        case eoas_gyros_st_l3g4200d:
+        case eoas_gyros_mtb_ext:
             info->state = status.calib.gyr;
             break;
         case eoas_imu_eul:

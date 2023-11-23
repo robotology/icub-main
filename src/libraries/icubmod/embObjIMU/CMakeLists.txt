@@ -15,7 +15,7 @@ IF (NOT SKIP_embObjIMU)
 #   message(INFO " embObjIMU - embObj_includes: ${embObj_includes}, ${CMAKE_CURRENT_SOURCE_DIR}/")
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-  yarp_add_plugin(embObjIMU embObjIMU.cpp embObjIMU.h eo_imu_privData.h  eo_imu_privData.cpp imuMeasureConverter.cpp imuMeasureConverter.h )
+  yarp_add_plugin(embObjIMU embObjIMU.cpp embObjIMU.h eo_imu_privData.h  eo_imu_privData.cpp)
   TARGET_LINK_LIBRARIES(embObjIMU ethResources)
   icub_export_plugin(embObjIMU)
 

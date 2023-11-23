@@ -59,6 +59,52 @@ std::string embObjIMU::getBoardInfo(void) const
    return GET_privData(mPriv).getBoardInfo();
 }
 
+std::pair<size_t, eOas_sensor_t> embObjIMU::getGyroSubIndex(size_t sens_index) const
+{
+    std::pair<size_t, eOas_sensor_t> ret;
+    if (sens_index >= GET_privData(mPriv).sens.getNumOfSensors(eoas_imu_gyr))
+    {
+        sens_index -= GET_privData(mPriv).sens.getNumOfSensors(eoas_imu_gyr);
+        if (sens_index >= GET_privData(mPriv).sens.getNumOfSensors(eoas_gyros_st_l3g4200d))
+        {
+            sens_index -= GET_privData(mPriv).sens.getNumOfSensors(eoas_gyros_st_l3g4200d);
+            ret.second = eoas_gyros_mtb_ext;
+        }
+        else
+        {
+            ret.second = eoas_gyros_st_l3g4200d;
+        }
+    }
+    else
+    {
+        ret.second = eoas_imu_gyr;
+    }
+    ret.first = sens_index;
+    return ret;
+}
+std::pair<size_t, eOas_sensor_t> embObjIMU::getAccSubIndex(size_t sens_index) const
+{
+    std::pair<size_t, eOas_sensor_t> ret;
+    if (sens_index >= GET_privData(mPriv).sens.getNumOfSensors(eoas_imu_acc))
+    {
+        sens_index -= GET_privData(mPriv).sens.getNumOfSensors(eoas_imu_acc);
+        if (sens_index >= GET_privData(mPriv).sens.getNumOfSensors(eoas_accel_mtb_int))
+        {
+            sens_index -= GET_privData(mPriv).sens.getNumOfSensors(eoas_accel_mtb_int);
+            ret.second = eoas_accel_mtb_ext;
+        }
+        else
+        {
+            ret.second = eoas_accel_mtb_int;
+        }
+    }
+    else
+    {
+        ret.second = eoas_imu_acc;
+    }
+    ret.first = sens_index;
+    return ret;
+}
 void embObjIMU::cleanup(void)
 {
     GET_privData(mPriv).cleanup(static_cast <eth::IethResource*> (this));
@@ -85,43 +131,35 @@ bool embObjIMU::open(yarp::os::Searchable &config)
         return false;
     }
 
-    
+
     const eOmn_serv_parameter_t* servparam = &servCfg.ethservice;
-    
+
     if(false == GET_privData(mPriv).res->serviceVerifyActivate(eomn_serv_category_inertials3, servparam, 5.0))
     {
         yError() << getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate() ";
         cleanup();
         return false;
     }
-    
+
     //init conversion factor
     //TODO: currently the conversion factors are not read from xml files, but configured here.
     //please read IMUbosh datasheet for more information
-    
-    servCfg.convFactors.accFactor = 100.0; // 1 m/sec2 = 100 binary units
-    servCfg.convFactors.magFactor = 16.0 * 1000000.0;  // 1 microT = 16 binary units
-    servCfg.convFactors.gyrFactor = 16.0;  // 1 degree/sec = 16 binary units
-    servCfg.convFactors.eulFactor = 16.0; //  1 degree  = 16 binary units
-    //eul angles don't need a conversion.
-    GET_privData(mPriv).sens.measConverter.Initialize(servCfg.convFactors.accFactor, servCfg.convFactors.gyrFactor,  servCfg.convFactors.magFactor, servCfg.convFactors.eulFactor);
-    
     // configure the sensor(s)
-    
+
     if(false == GET_privData(mPriv).sendConfing2board(servCfg))
     {
         cleanup();
         return false;
     }
-    
-    
+
+
     if(false == GET_privData(mPriv).initRegulars())
     {
         cleanup();
         return false;
     }
-    
-    
+
+
     if(false == GET_privData(mPriv).res->serviceStart(eomn_serv_category_inertials3))
     {
         yError() << getBoardInfo() << "open() fails to start as service.... cannot continue";
@@ -138,12 +176,12 @@ bool embObjIMU::open(yarp::os::Searchable &config)
 
     // build data structure used to handle rx packets
     GET_privData(mPriv).maps.init(servCfg);
-    
-    
+
+
     {   // start the configured sensors. so far, we must keep it in here. later on we can remove this command
-        
+
         uint8_t enable = 1;
-        
+
         eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial3, 0, eoprot_tag_as_inertial3_cmmnds_enable);
         if(false == GET_privData(mPriv).res->setRemoteValue(id32, &enable))
         {
@@ -152,7 +190,7 @@ bool embObjIMU::open(yarp::os::Searchable &config)
             return false;
         }
     }
-    
+
     GET_privData(mPriv).sens.init(servCfg, getBoardInfo());
     GET_privData(mPriv).setOpen(true);
     return true;
@@ -170,52 +208,83 @@ bool embObjIMU::close()
 
 size_t embObjIMU::getNrOfThreeAxisGyroscopes() const
 {
-    return GET_privData(mPriv).sens.getNumOfSensors(eoas_imu_gyr);
+    return GET_privData(mPriv).sens.getNumOfSensors(eoas_imu_gyr) +
+           GET_privData(mPriv).sens.getNumOfSensors(eoas_gyros_st_l3g4200d) + 
+           GET_privData(mPriv).sens.getNumOfSensors(eoas_gyros_mtb_ext);
 }
 
 yarp::dev::MAS_status embObjIMU::getThreeAxisGyroscopeStatus(size_t sens_index) const
 {
-    return  GET_privData(mPriv).sensorState_eo2yarp(eoas_imu_gyr, GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_gyr));
+    auto gyroSubIndex = getGyroSubIndex(sens_index);
+    return GET_privData(mPriv).sensorState_eo2yarp(gyroSubIndex.second, GET_privData(mPriv).sens.getSensorStatus(gyroSubIndex.first, gyroSubIndex.second));
 }
 
 bool embObjIMU::getThreeAxisGyroscopeName(size_t sens_index, std::string &name) const
 {
-    return GET_privData(mPriv).sens.getSensorName(sens_index, eoas_imu_gyr, name);
+    auto gyroSubIndex = getGyroSubIndex(sens_index);
+    return GET_privData(mPriv).sens.getSensorName(gyroSubIndex.first, gyroSubIndex.second, name);
 }
 
 bool embObjIMU::getThreeAxisGyroscopeFrameName(size_t sens_index, std::string &frameName) const
 {
-    return GET_privData(mPriv).sens.getSensorFrameName(sens_index, eoas_imu_gyr, frameName);
+    auto gyroSubIndex = getGyroSubIndex(sens_index);
+    return GET_privData(mPriv).sens.getSensorFrameName(gyroSubIndex.first, gyroSubIndex.second, frameName);
 }
 
 bool embObjIMU::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-    return GET_privData(mPriv).sens.getSensorMeasure(sens_index, eoas_imu_gyr, out, timestamp);
+    auto gyroSubIndex = getGyroSubIndex(sens_index);
+    return GET_privData(mPriv).sens.getSensorMeasure(gyroSubIndex.first, gyroSubIndex.second, out, timestamp);
 }
 
 size_t embObjIMU::getNrOfThreeAxisLinearAccelerometers() const
 {
-    return GET_privData(mPriv).sens.getNumOfSensors(eoas_imu_acc);
+    return GET_privData(mPriv).sens.getNumOfSensors(eoas_imu_acc) + 
+           GET_privData(mPriv).sens.getNumOfSensors(eoas_accel_mtb_int) +
+           GET_privData(mPriv).sens.getNumOfSensors(eoas_accel_mtb_ext);
 }
 
 yarp::dev::MAS_status embObjIMU::getThreeAxisLinearAccelerometerStatus(size_t sens_index) const
 {
-    return  GET_privData(mPriv).sensorState_eo2yarp(eoas_imu_acc, GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_acc));
+    if (sens_index >= getNrOfThreeAxisLinearAccelerometers()) {
+        yError() << getBoardInfo() << "getThreeAxisLinearAccelerometerStatus: index out of range";
+        return MAS_status::MAS_ERROR;
+	}
+    auto accSubIndex = getAccSubIndex(sens_index);
+    return GET_privData(mPriv).sensorState_eo2yarp(accSubIndex.second, GET_privData(mPriv).sens.getSensorStatus(accSubIndex.first, accSubIndex.second));
 }
 
 bool embObjIMU::getThreeAxisLinearAccelerometerName(size_t sens_index, std::string &name) const
 {
-    return GET_privData(mPriv).sens.getSensorName(sens_index, eoas_imu_acc, name);
+    if (sens_index >= getNrOfThreeAxisLinearAccelerometers())
+    {
+        yError() << getBoardInfo() << "getThreeAxisLinearAccelerometerName: index out of range";
+        return false;
+    }
+    auto accSubIndex = getAccSubIndex(sens_index);
+    return GET_privData(mPriv).sens.getSensorName(accSubIndex.first, accSubIndex.second, name);
 }
 
 bool embObjIMU::getThreeAxisLinearAccelerometerFrameName(size_t sens_index, std::string &frameName) const
 {
-    return GET_privData(mPriv).sens.getSensorFrameName(sens_index, eoas_imu_acc, frameName);
+    if (sens_index >= getNrOfThreeAxisLinearAccelerometers())
+    {
+        yError() << getBoardInfo() << "getThreeAxisLinearAccelerometerFrameName: index out of range";
+        return false;
+    }
+    auto accSubIndex = getAccSubIndex(sens_index);
+    return GET_privData(mPriv).sens.getSensorFrameName(accSubIndex.first, accSubIndex.second, frameName);
 }
 
 bool embObjIMU::getThreeAxisLinearAccelerometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-    return GET_privData(mPriv).sens.getSensorMeasure(sens_index, eoas_imu_acc, out, timestamp);
+    if (sens_index >= getNrOfThreeAxisLinearAccelerometers())
+    {
+        yError() << getBoardInfo() << "getThreeAxisLinearAccelerometerMeasure: index out of range";
+        return false;
+    }
+    auto accSubIndex = getAccSubIndex(sens_index);
+    return GET_privData(mPriv).sens.getSensorMeasure(accSubIndex.first, accSubIndex.second, out, timestamp);
 }
 
 size_t embObjIMU::getNrOfThreeAxisMagnetometers() const
@@ -225,21 +294,41 @@ size_t embObjIMU::getNrOfThreeAxisMagnetometers() const
 
 yarp::dev::MAS_status embObjIMU::getThreeAxisMagnetometerStatus(size_t sens_index) const
 {
+    if (sens_index >= getNrOfThreeAxisMagnetometers())
+	{
+        yError() << getBoardInfo() << "getThreeAxisMagnetometerStatus: index out of range";
+		return MAS_status::MAS_ERROR;
+	}
     return  GET_privData(mPriv).sensorState_eo2yarp(eoas_imu_mag, GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_mag));
 }
 
 bool embObjIMU::getThreeAxisMagnetometerName(size_t sens_index, std::string &name) const
 {
+    if (sens_index >= getNrOfThreeAxisMagnetometers())
+	{
+        yError() << getBoardInfo() << "getThreeAxisMagnetometerName: index out of range";
+		return false;
+	}
     return GET_privData(mPriv).sens.getSensorName(sens_index, eoas_imu_mag, name);
 }
 
 bool embObjIMU::getThreeAxisMagnetometerFrameName(size_t sens_index, std::string &frameName) const
 {
+    if (sens_index >= getNrOfThreeAxisMagnetometers())
+    {
+        yError() << getBoardInfo() << "getThreeAxisMagnetometerFrameName: index out of range";
+		return false;
+	}
     return GET_privData(mPriv).sens.getSensorFrameName(sens_index, eoas_imu_mag, frameName);
 }
 
 bool embObjIMU::getThreeAxisMagnetometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
+    if (sens_index >= getNrOfThreeAxisMagnetometers())
+	{
+        yError() << getBoardInfo() << "getThreeAxisMagnetometerMeasure: index out of range";
+		return false;
+	}
     return GET_privData(mPriv).sens.getSensorMeasure(sens_index, eoas_imu_mag, out, timestamp);
 }
 
@@ -250,23 +339,43 @@ size_t embObjIMU::getNrOfOrientationSensors() const
 
 yarp::dev::MAS_status embObjIMU::getOrientationSensorStatus(size_t sens_index) const
 {
+    if (sens_index >= getNrOfOrientationSensors())
+    {
+        yError() << getBoardInfo() <<  "getOrientationSensorStatus: index out of range";
+        return MAS_status::MAS_ERROR;
+    }
     return  GET_privData(mPriv).sensorState_eo2yarp(eoas_imu_eul, GET_privData(mPriv).sens.getSensorStatus(sens_index, eoas_imu_eul));
 }
 
 bool embObjIMU::getOrientationSensorName(size_t sens_index, std::string &name) const
 {
+    if (sens_index >= getNrOfOrientationSensors())
+    {
+		yError() << getBoardInfo() << "getOrientationSensorName: index out of range";
+		return false;
+	}
     return GET_privData(mPriv).sens.getSensorName(sens_index, eoas_imu_eul, name);
 }
 
 bool embObjIMU::getOrientationSensorFrameName(size_t sens_index, std::string &frameName) const
 {
+    if (sens_index >= getNrOfOrientationSensors())
+	{
+        yError() << getBoardInfo() << "getOrientationSensorFrameName: index out of range";
+        return false;
+    }
     return GET_privData(mPriv).sens.getSensorFrameName(sens_index, eoas_imu_eul, frameName);
 }
 
 bool embObjIMU::getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index, yarp::sig::Vector& rpy_out, double& timestamp) const
 {
+    if (sens_index >= getNrOfOrientationSensors())
+        {
+		yError() << getBoardInfo() << "getOrientationSensorMeasureAsRollPitchYaw: index out of range";
+		return false;
+	}
     return GET_privData(mPriv).sens.getSensorMeasure(sens_index, eoas_imu_eul, rpy_out, timestamp);
-    
+
 }
 
 
@@ -297,13 +406,13 @@ bool embObjIMU::update(eOprotID32_t id32, double timestamp, void* rxdata)
         if(data == NULL)
         {
             yError() << getBoardInfo() << "update(): I have to update " << numofIntem2update << "items, but the " << i << "-th item is null.";
-            continue; 
+            continue;
             //NOTE: I signal this strange situation with an arror for debug porpouse...maybe we can convert in in warning when the device is stable....
         }
         uint8_t index;
         eOas_sensor_t type;
         bool validdata =  GET_privData(mPriv).maps.getIndex(data, index, type);
-        
+
         if(!validdata)
         {
 
@@ -350,18 +459,18 @@ void embObjIMU::updateDebugPrints(eOprotID32_t id32, double timestamp, void* rxd
 {
     static int prog = 1;
     static double prevtime =  yarp::os::Time::now();
-    
+
     double delta = yarp::os::Time::now() - prevtime;
     double millidelta = 1000.0 *delta;
     long milli = static_cast<long>(millidelta);
-    
-    
+
+
     eOas_inertial3_status_t *i3s  = (eOas_inertial3_status_t*)rxdata;
-    
+
     EOconstarray* arrayofvalues = eo_constarray_Load(reinterpret_cast<const EOarray*>(&i3s->arrayofdata));
-    
+
     uint8_t n = eo_constarray_Size(arrayofvalues);
-    
+
     if(n > 0)
     {
         prog++;
