@@ -1601,20 +1601,11 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
         if((_temperatureSensorsVector.at(motor)->getType() == motor_temperature_sensor_none))
             return true;
 
-        eOmc_motor_status_basic_t mc_motor_status_basic = {};
-        id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, motor, eoprot_tag_mc_motor_status_basic);
+        eOmc_motor_status_t *mc_motor_status = reinterpret_cast<eOmc_motor_status_t*>(rxdata);
         
-        if (!res->getLocalValue(id32, &mc_motor_status_basic))
+        if((double)mc_motor_status->basic.mot_temperature != temperatureErrorValue_s) //I get a valid value
         {
-            yError() << getBoardInfo() << "getLocalValue() cannot retrieve motor" << motor << "status basic";
-            return true; //do we need to actually return false here since is eth error
-        }
-
-        //eOmc_motor_status_basic_t *mc_motor_status_basic = reinterpret_cast<eOmc_motor_status_basic_t*>(rxdata);
-        
-        if((double)mc_motor_status_basic.mot_temperature != temperatureErrorValue_s) //I get a valid value
-        {
-            double tmp = _temperatureSensorsVector.at(motor)->convertRawToTempCelsius((double)mc_motor_status_basic.mot_temperature);
+            double tmp = _temperatureSensorsVector.at(motor)->convertRawToTempCelsius((double)mc_motor_status->basic.mot_temperature);
             
             if (tmp > _temperatureLimits[motor].warningTemperatureLimit)
             {
@@ -1656,8 +1647,6 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
             }
         }
     }
-
-
 
     return true;
 }
@@ -4816,7 +4805,6 @@ bool embObjMotionControl::getTemperatureRaw(int m, double* val)
 
     if (((double)status.mot_temperature) == temperatureErrorValue_s) //using -5000 as the default value on 2FOC for initializing the temperature. If cannot read from I2C the value cannot be updated
     {
-        yError() << getBoardInfo() << "At timestamp" << yarp::os::Time::now() << "In motor" << m << "cannot read Temperature" << *val << "from I2C. There might be cabling problems, TDB cable might be broken or sensor unreachable";
         return false;
     }
     
