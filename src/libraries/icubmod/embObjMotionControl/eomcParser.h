@@ -94,8 +94,8 @@ private:
     double _resolution_tdb; // resolution used for the raw value for the output of the tdb
 
     double _half_bridge_resistor_coeff;
-
-    bool isConfigured = false;
+    double _first_res_coeff;
+    double _second_res_coeff;
 
 public:
 
@@ -112,8 +112,11 @@ public:
         _resolution_pga = 2.048;
         _resolution_tdb = 32767; 
 
+        // define here and calculate when the class object is built to speed up calculations
+        // since the value does not change in the sensor type class object
         _half_bridge_resistor_coeff = (double)_r_3 / (double)(_r_2 + _r_3);
-        isConfigured = true;
+        _first_res_coeff = _r_1*_r_2 + _r_1*_r_3 + _ptc_offset*_r_2 + _ptc_offset*_r_3;
+        _second_res_coeff = _r_3*_r_1 - _r_2*_ptc_offset;
     }
 
     TemperatureSensorPT100(const TemperatureSensorPT100& other) = default; // const copy constructor
@@ -126,11 +129,6 @@ public:
     virtual double convertTempCelsiusToRaw(const double temperature) override
     {
         double res = 0;
-        if (!isConfigured)
-        {
-            yError("Cannot proceed, class paramters not confgured");
-            return res;
-        }
        	
         double tmp = (( (_ptc_offset + _ptc_gradient * temperature) / ((double)_r_1 + (_ptc_offset + _ptc_gradient * temperature))) - _half_bridge_resistor_coeff) * (double)_vcc;
         res = (_resolution_tdb + 1) * ((_pga_gain * tmp) / _resolution_pga);
@@ -142,18 +140,12 @@ public:
     virtual double convertRawToTempCelsius(const double temperature) override
     {
         double res = 0;
-        if (!isConfigured)
-        {
-            yError("Cannot proceed, class paramters not confgured");
-            return res;
-        }
         
         double tmp = temperature * ((_resolution_pga) / (_pga_gain * _vcc * (_resolution_tdb + 1)));
         double den = _ptc_gradient * (_r_2 - _r_2*tmp - _r_3*tmp);
-        res = (tmp * (_r_1*_r_2 + _r_1*_r_3 + _ptc_offset*_r_2 + _ptc_offset*_r_3) / den) + ((_r_3*_r_1 - _r_2*_ptc_offset) / den);
+
+        res = (tmp * (_first_res_coeff) / den) + ((_second_res_coeff) / den);
         
-        
-        //yDebug("Converted temperature  to Celsius degree value:%f", res);
         return res;
     }
 
@@ -171,7 +163,7 @@ private:
     int _r_2;
     int _r_3;
     
-     double _ptc_offset;    // offset of the temperature sensor line
+    double _ptc_offset;    // offset of the temperature sensor line
     double _ptc_gradient;  // slope/gradient of the temperature sensor line
     double _pga_gain;      // ADC gain set for the tdb (temperature detection board)
 
@@ -179,10 +171,12 @@ private:
     double _resolution_pga; // resolution of the internal pga of the tdb
     double _resolution_tdb; // resolution used for the raw value for the output of the tdb
     
+    // define here and calculate when the class object is built to speed up calculations
+    // since the value does not change in the sensor type class object
     double _half_bridge_resistor_coeff;
+    double _first_res_coeff;
+    double _second_res_coeff;
     
-    bool isConfigured = false;
-
 public:
 
     TemperatureSensorPT1000()
@@ -200,7 +194,8 @@ public:
         
         _half_bridge_resistor_coeff = (double)_r_3 / (double)(_r_2 + _r_3);
 
-        isConfigured = true;
+        _first_res_coeff = _r_1*_r_2 + _r_1*_r_3 + _ptc_offset*_r_2 + _ptc_offset*_r_3;
+        _second_res_coeff = _r_3*_r_1 - _r_2*_ptc_offset;
     }
 
     TemperatureSensorPT1000(const TemperatureSensorPT1000& other) = default; // const copy constructor
@@ -213,11 +208,6 @@ public:
     virtual double convertTempCelsiusToRaw(const double temperature) override
     {
         double res = 0;
-        if (!isConfigured)
-        {
-            yError("Cannot proceed, class paramters not confgured");
-            return res;
-        }
         
         double tmp = (( (_ptc_offset + _ptc_gradient * temperature) / ((double)_r_1 + (_ptc_offset + _ptc_gradient * temperature))) - _half_bridge_resistor_coeff) * (double)_vcc;
         res = (_resolution_tdb + 1) * ((_pga_gain * tmp) / _resolution_pga);
@@ -229,17 +219,11 @@ public:
     virtual double convertRawToTempCelsius(const double temperature) override
     {
         double res = 0;
-        if (!isConfigured)
-        {
-            yError("Cannot proceed, class paramters not confgured");
-            return res;
-        }
         
         double tmp = temperature * ((_resolution_pga) / (_pga_gain * _vcc * (_resolution_tdb + 1)));
         double den = _ptc_gradient * (_r_2 - _r_2*tmp - _r_3*tmp);
-        res = (tmp * (_r_1*_r_2 + _r_1*_r_3 + _ptc_offset*_r_2 + _ptc_offset*_r_3) / den) + ((_r_3*_r_1 - _r_2*_ptc_offset) / den);
-        
-	    //yDebug("Converted temperature  to Celsius degree value:%f", res);
+
+        res = (tmp * (_first_res_coeff) / den) + ((_second_res_coeff) / den);
         
 	    return res;
     }
@@ -269,7 +253,6 @@ public:
 
     virtual double convertRawToTempCelsius(const double temperature) override
     {
-        //yError("convertRawToTempCelsius METHOD, NOT IMPLEMENTED for class TemperatureSensorNONE");
         return 0;
     }
 
