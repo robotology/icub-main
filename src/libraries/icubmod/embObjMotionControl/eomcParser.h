@@ -197,6 +197,7 @@ public:
     double viscousNeg;
     double coulombPos;
     double coulombNeg;
+    double velocityThres;
     int    filterType;
 };
 
@@ -349,6 +350,7 @@ private:
     double *_viscousNeg;
     double *_coulombPos;
     double *_coulombNeg;
+    double *_velocityThres;
 
 
 
