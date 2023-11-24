@@ -45,7 +45,7 @@ class batteryReaderThread : public PeriodicThread
     double             battery_current = 0;
     std::string        battery_info = "icub battery system v1.0";
     int                backpack_status = 0;
-    IBattery::Battery_status     battery_status = IBattery::Battery_status::BATTERY_OK_STANBY;
+    IBattery::Battery_status     battery_status = IBattery::Battery_status::BATTERY_OK_STANDBY;
 
     batteryReaderThread (ISerialDevice *_iSerial, double period) :
     PeriodicThread((double)period),
