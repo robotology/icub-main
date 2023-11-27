@@ -27,7 +27,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE ${IPOPT_DEFINITIONS} _USE_MAT
 
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
 target_link_libraries(${PROJECT_NAME} iKin actionPrimitives ${YARP_LIBRARIES}
-                                      ${OpenCV_LIBRARIES} ${IPOPT_LIBRARIES})
+                                      ${OpenCV_LIBS} ${IPOPT_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 

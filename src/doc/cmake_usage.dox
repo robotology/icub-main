@@ -72,7 +72,7 @@ if you need OpenCV, do:
 \verbatim
 FIND_PACKAGE(OpenCV REQUIRED)
 INCLUDE_DIRECTORIES(${OPENCV_INCLUDE_DIR})
-LINK_LIBRARIES(${OPENCV_LIBRARIES})
+LINK_LIBRARIES(${OpenCV_LIBS})
 \endverbatim
 Note that capitalization and pluralization is a bit inconsistent in
 this case.  To figure this out, look for a file called "FindOpenCV.cmake" 

@@ -14,6 +14,6 @@ add_executable(${PROJECT_NAME} ${source} ${header})
 if(OpenCV_VERSION_MAJOR GREATER 2)
   target_compile_definitions(${PROJECT_NAME} PRIVATE OPENCV_GREATER_2)
 endif()
-target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ${OpenCV_LIBRARIES} iKin)
+target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ${OpenCV_LIBS} iKin)
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
