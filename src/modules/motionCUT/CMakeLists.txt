@@ -12,6 +12,6 @@ set(doc_files ${PROJECT_NAME}.xml)
 source_group("DOC Files" FILES ${doc_files})
 
 add_executable(${PROJECT_NAME} ${source_files} ${doc_files})
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${YARP_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 yarp_install(FILES ${doc_files} DESTINATION ${ICUB_MODULES_INSTALL_DIR})

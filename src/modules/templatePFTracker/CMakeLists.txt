@@ -12,6 +12,6 @@ file(GLOB folder_source src/*.cpp src/*.cc src/*.c)
 
 include_directories(${PROJECT_SOURCE_DIR}/include ${GSL_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} ${folder_header} ${folder_source})
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${GSL_LIBRARIES} ${YARP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${GSL_LIBRARIES} ${YARP_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 

@@ -23,6 +23,6 @@ set(folder_header include/iCub/spherical_projection.h
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_executable(${PROJECT_NAME} ${folder_source} ${folder_header})
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} ${YARP_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
