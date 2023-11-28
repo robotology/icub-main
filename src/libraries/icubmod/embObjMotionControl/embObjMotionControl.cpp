@@ -12,6 +12,7 @@
 #include <yarp/os/Time.h>
 #include <string.h>
 #include <iostream>
+#include <cmath>
 
 #include "embObjMotionControl.h"
 #include <ethManager.h>
@@ -72,10 +73,7 @@ static bool nv_not_found(void)
     return false;
 }
 
-
-
-
-
+static constexpr double const temperatureErrorValue_s = -5000;
 
 
 
@@ -101,7 +99,7 @@ bool embObjMotionControl::alloc(int nj)
     _gearbox_M2J = allocAndCheck<double>(nj);
     _gearbox_E2J = allocAndCheck<double>(nj);
     _deadzone = allocAndCheck<double>(nj);
-    _foc_based_info=allocAndCheck<eomc::focBasedSpecificInfo_t>(nj);
+    _foc_based_info= allocAndCheck<eomc::focBasedSpecificInfo_t>(nj);
     _trj_pids= new eomc::PidInfo[nj];
     //_dir_pids= new eomc::PidInfo[nj];
     _trq_pids= new eomc::TrqPidInfo [nj];
@@ -123,10 +121,10 @@ bool embObjMotionControl::alloc(int nj)
     _calibrated = allocAndCheck<bool>(nj);
     _cacheImpedance = allocAndCheck<eOmc_impedance_t>(nj);
 
-
     _rotorsLimits.resize(nj);
     _jointsLimits.resize(nj);
     _currentLimits.resize(nj);
+    _temperatureLimits.resize(nj);
     _jsets.resize(nj);
     _joint2set.resize(nj);
     _timeouts.resize(nj);
@@ -135,9 +133,10 @@ bool embObjMotionControl::alloc(int nj)
     _jointEncs.resize(nj);
     _motorEncs.resize(nj);
     _kalman_params.resize(nj);
+    _temperatureSensorsVector.resize(nj);
+    _temperatureExceededLimitWatchdog.resize(nj);
+    _temperatureSensorErrorWatchdog.resize(nj); 
     
-    //debug purpose
-
     return true;
 }
 
@@ -160,7 +159,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
     checkAndDestroy(_foc_based_info);
-
 
     if(_trj_pids)
         delete [] _trj_pids;
@@ -208,6 +206,7 @@ embObjMotionControl::embObjMotionControl() :
     _rotorsLimits(0),
     _jointsLimits(0),
     _currentLimits(0),
+    _temperatureLimits(0),
     _jsets(0),
     _joint2set(0),
     _timeouts(0),
@@ -215,7 +214,10 @@ embObjMotionControl::embObjMotionControl() :
     _axesInfo(0),
     _jointEncs(0),
     _motorEncs(0),
-    _kalman_params(0)
+    _kalman_params(0),
+    _temperatureSensorsVector(0),
+    _temperatureExceededLimitWatchdog(0),
+    _temperatureSensorErrorWatchdog(0)
 {
     _gearbox_M2J  = 0;
     _gearbox_E2J  = 0;
@@ -814,7 +816,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
         if (!_mcparser->parseAmpsToSensor(config, measConvFactors.ampsToSensor))
             return false;
-
+        
         //VALE: i have to parse GeneralMecGroup after parsing jointsetcfg, because inside generalmec group there is useMotorSpeedFbk that needs jointset info.
 
         if(!_mcparser->parseGearboxValues(config, _gearbox_M2J, _gearbox_E2J))
@@ -962,6 +964,9 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if(!_mcparser->parseCurrentLimits(config, _currentLimits))
             return false;
 
+        if(!_mcparser->parseTemperatureLimits(config, _temperatureLimits))
+            return false;
+
         if(!_mcparser->parseJointsLimits(config, _jointsLimits))
             return false;
 
@@ -973,9 +978,31 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     if(serviceConfig.ethservice.configuration.type == eomn_serv_MC_foc)
     {
         std::string groupName = (static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.mc.foc_based.type) == eobrd_foc) ? "2FOC" : "AMCBLDC";
-        if(!_mcparser->parseFocGroup(config, _foc_based_info, groupName))
+        if(!_mcparser->parseFocGroup(config, _foc_based_info, groupName, _temperatureSensorsVector))
             return false;
+
+        for (j = 0; j < _njoints; j++)
+        {
+            if (((_temperatureSensorsVector.at(j)->getType() != motor_temperature_sensor_none )) && ((_temperatureLimits[j].hardwareTemperatureLimit == 0) || (_temperatureLimits[j].warningTemperatureLimit == 0)))
+            {
+                yError() << "In" << getBoardInfo() << "joint" << j << ": inconsistent configuration, please update it. If Temperature limits are not set then TemperatureSensorType must be NONE or not set and/or HasTempSensor must be zero. Aborting...";
+                return false;
+            }
+
+            if (_temperatureSensorsVector.at(j)->getType() == motor_temperature_sensor_none)
+            {
+                yInfo() << "embObjMC " << getBoardInfo() << "joint " << j << " has motor not provided with any available type of temperature sensor. If needed update the configurations file accordingly";
+            }
+        }
     }
+    else
+    {
+        for (j = 0; j < _njoints; j++)
+        {
+            _temperatureSensorsVector.at(j) = std::make_unique<eomc::TemperatureSensorNONE>();
+        }
+    }
+    
 
 
     /////// [TIMEOUTS]
@@ -1403,7 +1430,8 @@ bool embObjMotionControl::init()
         motor_cfg.rotorIndexOffset = _foc_based_info[logico].rotorIndexOffset;
         motor_cfg.rotorEncoderType = _motorEncs[logico].type;
         motor_cfg.pwmLimit =_rotorsLimits[logico].pwmMax;
-        motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
+        motor_cfg.temperatureLimit = (eOmeas_temperature_t) S_16(_temperatureSensorsVector.at(logico)->convertTempCelsiusToRaw(_temperatureLimits.at(logico).hardwareTemperatureLimit)); //passing raw value not in degree
+	    motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMin, fisico ));
         
         yarp::dev::Pid tmp;
@@ -1515,6 +1543,8 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
     // use this function to update the values cached in the class using data received by the remote boards via the network callbacks
     // in embObjMotionControl it is updated only the timestamp of the encoders, thuus i dont used rxdata
     size_t joint = eoprot_ID2index(id32);
+    eOprotEntity_t ent = eoprot_ID2entity(id32);
+    eOprotTag_t tag = eoprot_ID2tag(id32);
 
     // rxdata = rxdata;
 
@@ -1535,9 +1565,6 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
 
     if(eomn_serv_diagn_mode_MC_AMOyarp == mcdiagnostics.config.mode)
     {
-        eOprotEntity_t ent = eoprot_ID2entity(id32);
-        eOprotTag_t tag = eoprot_ID2tag(id32);
-
         char str[128] = "boh";
 
         eoprot_ID2information(id32, str, sizeof(str));
@@ -1545,10 +1572,10 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
         if((eoprot_entity_mc_joint == ent) && (eoprot_tag_mc_joint_status_debug == tag) && (joint < mcdiagnostics.ports.size()))
         {
 
-            eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_status_core);
+            eOprotID32_t id32sc = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_status_core);
             eOmc_joint_status_core_t  jcore = {};
 
-            res->getLocalValue(id32, &jcore);
+            res->getLocalValue(id32sc, &jcore);
 
             int32_t *debug32 = reinterpret_cast<int32_t*>(rxdata);
             // write into relevant port
@@ -1562,6 +1589,62 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
             output.addInt32(debug32[1]);
             output.addInt32(jcore.measures.meas_position);
             mcdiagnostics.ports[joint]->write();
+        }
+    }
+
+    if((eoprot_entity_mc_motor == ent) && (eoprot_tag_mc_motor_status == tag))
+    {
+        if(false == initialised())
+            return true;
+
+        uint8_t motor = eoprot_ID2index(id32);
+        if((_temperatureSensorsVector.at(motor)->getType() == motor_temperature_sensor_none))
+            return true;
+
+        eOmc_motor_status_t *mc_motor_status = reinterpret_cast<eOmc_motor_status_t*>(rxdata);
+        
+        if((double)mc_motor_status->basic.mot_temperature != temperatureErrorValue_s) //I get a valid value
+        {
+            double tmp = _temperatureSensorsVector.at(motor)->convertRawToTempCelsius((double)mc_motor_status->basic.mot_temperature);
+            
+            if (tmp > _temperatureLimits[motor].warningTemperatureLimit)
+            {
+                if(! _temperatureExceededLimitWatchdog.at(motor).isStarted())
+                {
+                    yWarning() << getBoardInfo() << "Motor" << motor << "The temperature (" << tmp << "[ ℃  ] )  exceeds the warning limit (" << _temperatureLimits[motor].warningTemperatureLimit << "[ ℃  ] ). Processes not stopped but it is strongly recommended decreasing motor usage or reducing currents and PWMs to not risk motor damaging";
+                    _temperatureExceededLimitWatchdog.at(motor).start();
+                }
+                else
+                {
+                    if(_temperatureExceededLimitWatchdog.at(motor).isExpired())
+                    {
+                        yWarning() << getBoardInfo() << "Motor" << motor << "The temperature (" << tmp << "[ ℃  ] )  exceeds the warning limit (" << _temperatureLimits[motor].warningTemperatureLimit << "[ ℃  ] ) again!. Processes not stopped but it is strongly recommended decreasing motor usage or reducing currents and PWMs to not risk motor damaging";
+                        _temperatureExceededLimitWatchdog.at(motor).start();
+                    }
+                    _temperatureExceededLimitWatchdog.at(motor).increment();
+                }
+            }
+            else
+            {
+                _temperatureExceededLimitWatchdog.at(motor).clear();
+            }
+        }
+        else //I get a NOT valid value
+        {
+            if(! _temperatureSensorErrorWatchdog.at(motor).isStarted())
+            {
+                yError() << getBoardInfo() << "At timestamp" << yarp::os::Time::now() << "In motor" << motor << "cannot read Temperature from I2C. There might be cabling problems, TDB cable might be broken or sensor unreachable";
+                _temperatureSensorErrorWatchdog.at(motor).start();
+            }
+            else
+            {
+                _temperatureSensorErrorWatchdog.at(motor).increment();
+                if( _temperatureSensorErrorWatchdog.at(motor).isExpired())
+                {
+                    yError()<< getBoardInfo() << "Motor" << motor << "failed to read temperature for" << yarp::os::Time::now() - _temperatureSensorErrorWatchdog.at(motor).getStartTime() << "seconds";
+                    _temperatureSensorErrorWatchdog.at(motor).start();
+                }
+            }
         }
     }
 
@@ -3270,7 +3353,27 @@ bool embObjMotionControl::getKinematicMJRaw(int j, double &rotres)
     return false;
 }
 
-bool embObjMotionControl::getHasTempSensorsRaw(int j, int& ret)
+bool embObjMotionControl::getTemperatureSensorTypeRaw(int j, std::string& ret)
+{
+    // refresh cached value when reading data from the EMS
+    ret = "NONE";
+    if (_temperatureSensorsVector.at(j)->getType() == motor_temperature_sensor_pt100)
+    {
+        ret = "PT100";
+    }
+    else if (_temperatureSensorsVector.at(j)->getType() == motor_temperature_sensor_pt1000)
+    {
+        ret = "PT1000";
+    }
+    else
+    {
+        ret = "NONE";
+    }
+    
+    return true;
+}
+
+bool embObjMotionControl::getHasTempSensorsRaw(int j, int& ret) 
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
@@ -3456,7 +3559,12 @@ bool embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle
     }
     else if (key == "hasTempSensor")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasTempSensorsRaw(i, tmp); r.addInt32(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { int tmp = 0; getHasTempSensorsRaw(i, tmp); r.addInt32(tmp); }
+        return true;
+    }
+    else if (key == "TemperatureSensorType")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { std::string tmp = ""; getTemperatureSensorTypeRaw(i, tmp); r.addString(tmp); }
         return true;
     }
     else if (key == "hasRotorEncoder")
@@ -3752,6 +3860,7 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("gearbox_E2J");
     listOfKeys->addString("hasHallSensor");
     listOfKeys->addString("hasTempSensor");
+    listOfKeys->addString("TemperatureSensorType");
     listOfKeys->addString("hasRotorEncoder");
     listOfKeys->addString("hasRotorEncoderIndex");
     listOfKeys->addString("rotorIndexOffset");
@@ -4681,17 +4790,27 @@ bool embObjMotionControl::getTemperatureRaw(int m, double* val)
     eOmc_motor_status_basic_t status;
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
 
+    // if (_temperatureSensorsVector.at(m) == nullptr ||  (_temperatureSensorsVector.at(motor)->getType() == motor_temperature_sensor_none))
+    *val = NAN;
+    if (_temperatureSensorsVector.at(m)->getType() == motor_temperature_sensor_none)
+        return true;
+    
+
     bool ret = res->getLocalValue(protid, &status);
-    if(ret)
+    if(!ret)
     {
-        *val = (double) status.mot_temperature;
-    }
-    else
-    {
-        yError() << "embObjMotionControl::getTemperatureRaw failed for" << getBoardInfo() << " motor " << m ;
-        *val = 0;
+        yError() << getBoardInfo() << "At timestamp" << yarp::os::Time::now() << "In motor" << m << "embObjMotionControl::getTemperatureRaw failed to complete getLocalValue()";
+        return ret;
     }
 
+    if (((double)status.mot_temperature) == temperatureErrorValue_s) //using -5000 as the default value on 2FOC for initializing the temperature. If cannot read from I2C the value cannot be updated
+    {
+        return false;
+    }
+    
+    *val = _temperatureSensorsVector.at(m)->convertRawToTempCelsius((double)status.mot_temperature);
+    
+    
     return ret;
 }
 
@@ -4707,17 +4826,19 @@ bool embObjMotionControl::getTemperaturesRaw(double *vals)
 
 bool embObjMotionControl::getTemperatureLimitRaw(int m, double *temp)
 {
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_temperaturelimit);
-    uint16_t size;
-    eOmeas_temperature_t temperaturelimit = {0};
-    *temp = 0;
-    if(!askRemoteValue(protid, &temperaturelimit, size))
-    {
-        yError() << "embObjMotionControl::getTemperatureLimitRaw() can't read temperature limits  for" << getBoardInfo() << " motor " << m;
-        return false;
-    }
+    // eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_temperaturelimit);
+    // uint16_t size;
+    // eOmeas_temperature_t temperaturelimit = {0};
+    // *temp = 0;
+    // if(!askRemoteValue(protid, &temperaturelimit, size))
+    // {
+    //     yError() << "embObjMotionControl::getTemperatureLimitRaw() can't read temperature limits  for" << getBoardInfo() << " motor " << m;
+    //     return false;
+    // }
 
-    *temp = (double) temperaturelimit;
+    // *temp = (double) temperaturelimit;
+
+    *temp= _temperatureLimits[m].warningTemperatureLimit;
 
     return true;
 }

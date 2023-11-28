@@ -1370,14 +1370,14 @@ bool Parser::parsePidUnitsType(Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &f
     return true;
 }
 
-bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificInfo_t *foc_based_info, std::string groupName)
+bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificInfo_t *foc_based_info, std::string groupName, std::vector<std::unique_ptr<eomc::ITemperatureSensor>>& temperatureSensorsVector)
 {
-     Bottle &focGroup=config.findGroup(groupName);
-     if (focGroup.isNull() )
-     {
+    Bottle &focGroup=config.findGroup(groupName);
+    if (focGroup.isNull() )
+    {
         yError() << "embObjMC BOARD " << _boardname << " detected that Group " << groupName << " is not found in configuration file";
         return false;
-     }
+    }
 
     Bottle xtmp;
     unsigned int i;
@@ -1391,14 +1391,56 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
         for (i = 1; i < xtmp.size(); i++)
            foc_based_info[i - 1].hasHallSensor = xtmp.get(i).asInt32() != 0;
     }
-    if (!extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints))
+
+    if (!extractGroup(focGroup, xtmp, "TemperatureSensorType", "TemperatureSensorType PT100/PT1000/NONE ", _njoints, false))
     {
-        return false;
-    }
+        // 1. check if I have old config
+        if (extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints, false)) 
+        {
+            for (i = 1; i < xtmp.size(); i++)
+            {
+                if (xtmp.get(i).asInt32() != 0)
+                {
+                    yError() << "In " << _boardname << "entry" << i << ": inconsistent configuration. HasTempSensor cannot be used alone. Will be soon deprecated. Use TemperatureSensorType in 2FOC group and set Temperature limits in LIMITS group." ;
+                    return false;
+                }
+            }
+        }
+
+        // if I'm here all joints have HasTempSensor =0
+        for (i = 0; i < _njoints; i++)
+        {
+            foc_based_info[i].hasTempSensor = 0;
+            temperatureSensorsVector.at(i) = std::make_unique<eomc::TemperatureSensorNONE>();
+            yWarning()<< _boardname << "ATTENTION HasTempSensor will be soon DEPRECATED in favour of TemperatureSensorType (PT100, PT1000, NONE(=default)). Currently kept for backward compatibility but update your configuration files if using a Temperature Sensor";
+        } 
+
+    }    
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            foc_based_info[i - 1].hasTempSensor = xtmp.get(i).asInt32() != 0;
+        {
+            std::string s = xtmp.get(i).asString();
+            if(s == "PT100")
+            {
+                foc_based_info[i - 1].hasTempSensor = 1;
+                temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorPT100>();
+                
+            }
+            else if (s == "PT1000") 
+            {
+                
+                foc_based_info[i - 1].hasTempSensor = 1;
+                temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorPT1000>();
+            }
+            else
+            {
+                if(s != "NONE")//if sis == NONE the warning is not correct
+                    yWarning("Not available or Not supported TemperatureSensorType: %s. Setting NONE as default", s.c_str());
+                foc_based_info[i - 1].hasTempSensor = 0;
+                temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorNONE>();
+            }
+        }
     }
     if (!extractGroup(focGroup, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
     {
@@ -1692,6 +1734,57 @@ bool Parser::parseCurrentLimits(yarp::os::Searchable &config, std::vector<motorC
 
     return true;
 
+}
+
+bool Parser::parseTemperatureLimits(yarp::os::Searchable &config, std::vector<temperatureLimits_t> &temperatureLimits)
+{
+    Bottle &limits = config.findGroup("LIMITS");
+    if (limits.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " detected that Group LIMITS is not found in configuration file";
+        return false;
+    }
+
+    temperatureLimits.resize(_njoints);
+    unsigned int i;
+    Bottle xtmp;
+
+    // hardware limit
+    if(!extractGroup(limits, xtmp, "hardwareTemperatureLimits", "a list of temperature limits", _njoints, false))
+    {
+        yWarning("hardwareTemperatureLimits param not found in config file for board %s. Please update robot configuration files or contact https://github.com/robotology/icub-support if needed. Using default values.", _boardname.c_str());
+        for (i = 0; i < (unsigned)_njoints; i++)
+        {
+            temperatureLimits[i].hardwareTemperatureLimit  = 0;
+            temperatureLimits[i].warningTemperatureLimit = 0;
+        }
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++) temperatureLimits[i - 1].hardwareTemperatureLimit = xtmp.get(i).asFloat64();
+        if (!extractGroup(limits, xtmp, "warningTemperatureLimits", "a list of warning temperature limits", _njoints, false))
+        {
+            // warning limit - parsing it only if hardwareTemperatureLimit available
+            yWarning("warningTemperatureLimits param not found in config file for board %s. Please update robot configuration files or contact https://github.com/robotology/icub-support if needed. Using default values.", _boardname.c_str());
+
+            for (i = 0; i < (unsigned)_njoints; i++) temperatureLimits[i].warningTemperatureLimit = 0;
+        }
+        else
+        {
+            for (i = 1; i < xtmp.size(); i++) temperatureLimits[i - 1].warningTemperatureLimit = xtmp.get(i).asFloat64();
+        }
+    }
+    
+    //Now I verify that warning temperature limits is < 85% of hardwareTemperatureLimit.
+    for (i = 0; i < (unsigned)_njoints; i++)
+    {
+        if(temperatureLimits[i].warningTemperatureLimit > (0.85 * temperatureLimits[i].hardwareTemperatureLimit))
+        {
+            yError() << "In " << _boardname << "joint " << i << ": inconsistent temperature limits. warningTemperatureLimit must be smaller than 85% of hardwareTemperatureLimit" ;
+            return false;
+        }
+    }
+    return true;
 }
 
 bool Parser::parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLimits_t> &jointsLimits)
