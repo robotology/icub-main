@@ -257,7 +257,6 @@ void ConfigParser::parseInfo()
         } break;
 
         case eoerror_value_CFG_skin_failed_toomanyboards:
-        case eoerror_value_CFG_inertials_failed_toomanyboards:
         case eoerror_value_CFG_inertials3_failed_toomanyboards:
         case eoerror_value_CFG_temperatures_failed_toomanyboards:
         {
@@ -276,7 +275,6 @@ void ConfigParser::parseInfo()
         } break;
 
         case eoerror_value_CFG_skin_failed_candiscovery:
-        case eoerror_value_CFG_inertials_failed_candiscovery:
         case eoerror_value_CFG_inertials3_failed_candiscovery:
         case eoerror_value_CFG_temperatures_failed_candiscovery:
         {
@@ -367,7 +365,6 @@ void ConfigParser::parseInfo()
         case eoerror_value_CFG_mc_mc4_failed_mais_verify:
         case eoerror_value_CFG_mc_mc4plus_ok:
         case eoerror_value_CFG_mc_mc4plus_failed_encoders_verify:
-        case eoerror_value_CFG_inertials_ok:
         case eoerror_value_CFG_comm_cannotloadaregularrop:
         case eoerror_value_CFG_mc_mc4plusmais_ok:
         case eoerror_value_CFG_mc_mc4plusmais_failed_encoders_verify:
@@ -377,13 +374,11 @@ void ConfigParser::parseInfo()
         case eoerror_value_CFG_strain_not_verified_yet:
         case eoerror_value_CFG_mais_not_verified_yet:
         case eoerror_value_CFG_skin_not_verified_yet:
-        case eoerror_value_CFG_inertials_not_verified_yet:
         case eoerror_value_CFG_inertials3_not_verified_yet:
         case eoerror_value_CFG_encoders_not_verified_yet:
         case eoerror_value_CFG_mc_using_onboard_config:
         case eoerror_value_CFG_strain_using_onboard_config:
         case eoerror_value_CFG_mais_using_onboard_config:
-        case eoerror_value_CFG_inertials_using_onboard_config:
         case eoerror_value_CFG_inertials3_using_onboard_config:
         case eoerror_value_CFG_skin_using_onboard_config:
         case eoerror_value_CFG_inertials3_ok:
@@ -396,7 +391,6 @@ void ConfigParser::parseInfo()
         case eoerror_value_CFG_mc_mc2pluspsc_ok:
         case eoerror_value_CFG_mc_mc2pluspsc_failed_encoders_verify:
         case eoerror_value_CFG_mc_mc2pluspsc_failed_candiscovery_of_pscs:
-        case eoerror_value_CFG_inertials_failed_notsupported:
         case eoerror_value_CFG_inertials3_failed_notsupported:
         case eoerror_value_CFG_temperatures_failed_notsupported:
         case eoerror_value_CFG_mais_failed_notsupported:
@@ -474,7 +468,6 @@ void ConfigParser::parseInfo()
 
         } break;
 
-        case eoerror_value_CFG_inertials_failed_unsupportedsensor:
         case eoerror_value_CFG_inertials3_failed_unsupportedsensor:
         {
             int16_t unsuppsens = m_dnginfo.param16;
@@ -486,7 +479,6 @@ void ConfigParser::parseInfo()
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
 
-        case eoerror_value_CFG_inertials_changed_requestedrate:
         case eoerror_value_CFG_inertials3_changed_requestedrate:
         case eoerror_value_CFG_temperatures_changed_requestedrate:
         case eoerror_value_CFG_psc_changed_requestedrate:

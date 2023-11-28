@@ -554,8 +554,8 @@ bool ServiceParser::convert(eObrd_protocolversion_t const &prot, char *str, int 
 bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 {
     bool formaterror = false;
-    // so far we check for eomn_serv_AS_mais / strain / inertials inertials3 / psc / pos only
-    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type) &&
+    // so far we check for eomn_serv_AS_mais / strain / inertials3 / psc / pos only
+    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) &&
        (eomn_serv_AS_inertials3 != type) && (eomn_serv_AS_psc != type) && (eomn_serv_AS_pos != type))
     {
         yError() << "ServiceParser::check_analog() is called with wrong type";
@@ -1590,66 +1590,6 @@ bool ServiceParser::parseService(Searchable &config, servConfigFTsensor_t &ftcon
 
     return true;
 }
-
-bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &inertialsconfig)
-{
-    if(false == check_analog(config, eomn_serv_AS_inertials))
-    {
-        yError() << "ServiceParser::parseService() has received an invalid SERVICE group for inertials";
-        return false;
-    }
-
-    // now we extract values ... so far we dont make many checks ... we just assume the vector<> are of size 1.
-    servCanBoard_t themtb_props = as_service.properties.canboards.at(0);
-
-    // it must be an mtb
-    if(eobrd_cantype_mtb != themtb_props.type)
-    {
-        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_mtb but is a:" << eoboards_type2string2(eoboards_cantype2type(themtb_props.type), eobool_false);
-        return false;
-    }
-
-    inertialsconfig.acquisitionrate = as_service.settings.acquisitionrate;
-
-    memset(&inertialsconfig.ethservice.configuration, 0, sizeof(inertialsconfig.ethservice.configuration));
-
-    inertialsconfig.ethservice.configuration.type = eomn_serv_AS_inertials;
-    memcpy(&inertialsconfig.ethservice.configuration.data.as.inertial.mtbversion.protocol, &themtb_props.protocol, sizeof(eObrd_protocolversion_t));
-    memcpy(&inertialsconfig.ethservice.configuration.data.as.inertial.mtbversion.firmware, &themtb_props.firmware, sizeof(eObrd_firmwareversion_t));
-
-    // now, for all the sensors we must fill:
-    // - inertialsconfig.ethservice.configuration.data.as.inertial.canmap[2] with mask of location of mtb boards... no, i dont do it
-    // - the vector of ...
-
-
-    inertialsconfig.inertials.resize(0);
-
-    EOarray* array = eo_array_New(eOas_inertials_maxnumber, sizeof(eOas_inertial_descriptor_t), &inertialsconfig.ethservice.configuration.data.as.inertial.arrayofsensors);
-    for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
-    {
-        servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
-        eOas_sensor_t type = sensor.type;
-
-        if((eoas_accel_mtb_int != type) && (eoas_accel_mtb_ext != type) && (eoas_gyros_mtb_ext != type) && (eoas_gyros_st_l3g4200d != type))
-        {
-            yWarning() << "ServiceParser::parseService() has detected a wrong inertial sensor:" << eoas_sensor2string(type) << " ...  we drop it";
-            continue;
-        }
-        // if ok, i copy it inside ...
-
-        eOas_inertial_descriptor_t des = {};
-        des.type = type;
-        memcpy(&des.on, &sensor.location, sizeof(eObrd_location_t));
-
-        eo_array_PushBack(array, &des);
-        inertialsconfig.inertials.push_back(des);
-        inertialsconfig.id.push_back(sensor.id);
-    }
-
-
-    return true;
-}
-
 
 bool ServiceParser::parseService(Searchable &config, servConfigImu_t &imuconfig)
 {

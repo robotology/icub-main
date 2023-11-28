@@ -921,14 +921,7 @@ void HostTransceiver::eoprot_override_as(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_mais_status_the15values
         },
-        // inertial
-        {   // eoprot_tag_as_inertial_status: it gives data from mtb to the device, so that it writes it in the relevant yarp port
-            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
-            EO_INIT(.entity)        eoprot_entity_as_inertial,
-            EO_INIT(.tag)           eoprot_tag_as_inertial_status,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_status
-        },        // inertial3
+        // inertial3
         {   // eoprot_tag_as_inertial3_status: ...
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_inertial3,

@@ -67,7 +67,6 @@ namespace eth {
         iethres_motioncontrol   = 3,
         iethres_skin            = 4,
         iethres_analogvirtual   = 5,
-        iethres_analoginertial  = 6,
         iethres_analogmultienc  = 7,
         iethres_analoginertial3 = 8,
         iethres_temperature     = 9,

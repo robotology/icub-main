@@ -51,14 +51,6 @@ typedef struct
 
 typedef struct
 {
-    eOmn_serv_parameter_t               ethservice;
-    int                                 acquisitionrate;
-    std::vector<eOas_inertial_descriptor_t>  inertials;
-    std::vector<std::string>                      id;
-} servConfigInertials_t;
-
-typedef struct
-{
     double accFactor;
     double gyrFactor;
     double magFactor;
@@ -297,7 +289,6 @@ public:
     bool parseService(yarp::os::Searchable &config, servConfigMais_t& maisconfig);
     bool parseService(yarp::os::Searchable &config, servConfigStrain_t &strainconfig);
     bool parseService(yarp::os::Searchable &config, servConfigFTsensor_t &ftconfig);
-    bool parseService(yarp::os::Searchable &config, servConfigInertials_t &inertialsconfig);
     bool parseService(yarp::os::Searchable &config, servConfigImu_t &imuconfig);
     bool parseService(yarp::os::Searchable &config, servConfigSkin_t &skinconfig);
     bool parseService(yarp::os::Searchable &config, servConfigPSC_t &pscconfig);

@@ -46,7 +46,7 @@ if (OpenCV_FOUND)
     mark_as_advanced(ICUB_OpenCV_LEGACY)
   else()
     set(ICUB_OpenCV_LEGACY true CACHE BOOL "Legacy version of OpenCV detected" FORCE)
-    message(STATUS "OpenCV is previous 2.0 (some modules will be skipped)")  
+    message(STATUS "OpenCV is previous 2.0 (some modules will be skipped)")
     message(STATUS "Setting ICUB_OpenCV_LEGACY true")
   endif()
 
@@ -64,9 +64,11 @@ checkandset_dependency(IPOPT)
 checkandset_dependency(OpenCV)
 checkandset_dependency(Qt5)
 
+set(MINIMUM_REQUIRED_icub_firmware_shared_VERSION 1.37.2)
+
 if(icub_firmware_shared_FOUND AND ICUB_USE_icub_firmware_shared)
-  if(icub_firmware_shared_VERSION VERSION_LESS 1.37.2)
-    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected: at least 1.37.2 is required")
+  if(icub_firmware_shared_VERSION VERSION_LESS ${MINIMUM_REQUIRED_icub_firmware_shared_VERSION})
+    message(FATAL_ERROR "An old version of icub-firmware-shared has been detected: at least ${MINIMUM_REQUIRED_icub_firmware_shared_VERSION} is required")
   endif()
 endif()
 
