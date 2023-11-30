@@ -55,8 +55,6 @@
 
 static void handle_data_analogarray(const EOnv* nv, const eOropdescriptor_t* rd);
 
-static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd);
-
 static void handle_data_inertial3(const EOnv* nv, const eOropdescriptor_t* rd);
 
 static void handle_data_temperature(const EOnv* nv, const eOropdescriptor_t* rd);
@@ -113,14 +111,6 @@ extern void eoprot_fun_UPDT_as_mais_status_the15values(const EOnv* nv, const eOr
     }
 }
 
-
-extern void eoprot_fun_UPDT_as_inertial_status(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    if(eo_ropcode_sig == rd->ropcode)
-    {
-        handle_data_inertial(nv, rd);
-    }
-}
 
 extern void eoprot_fun_UPDT_as_inertial3_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
@@ -185,13 +175,6 @@ static void handle_data_analogarray(const EOnv* nv, const eOropdescriptor_t* rd)
         feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)arrayof);
     }
 }
-
-static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    eOas_inertial_status_t *inertialstatus  = (eOas_inertial_status_t*)rd->data;
-    feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)inertialstatus);
-}
-
 
 static void handle_data_inertial3(const EOnv* nv, const eOropdescriptor_t* rd)
 {

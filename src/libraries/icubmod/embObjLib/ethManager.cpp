@@ -449,11 +449,6 @@ int TheEthManager::releaseResource2(eth::AbstractEthResource* ethresource, IethR
             category = eomn_serv_category_none;
         } break;
 
-        case iethres_analoginertial:
-        {
-            category = eomn_serv_category_inertials;
-        } break;
-
         case iethres_analoginertial3:
         {
             category = eomn_serv_category_inertials3;
