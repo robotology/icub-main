@@ -158,6 +158,7 @@ jobs:
               -DENABLE_icubmod_canBusSkin:BOOL=ON \
               -DENABLE_icubmod_canBusVirtualAnalogSensor:BOOL=ON \
               -DENABLE_icubmod_embObjFTsensor:BOOL=ON \
+              -DENABLE_icubmod_embObjAnalogSensor:BOOL=ON \
               -DENABLE_icubmod_embObjIMU:BOOL=ON \
               -DENABLE_icubmod_embObjInertials:BOOL=ON \
               -DENABLE_icubmod_embObjMais:BOOL=ON \

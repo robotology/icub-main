@@ -330,7 +330,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
     else if(AS_Type_INERTIAL_MTB == _as_type)
     {
-        servcategory = eomn_serv_category_inertials;
+        servcategory = eomn_serv_category_inertials3;
     }
 
 
@@ -440,7 +440,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         
         case AS_Type_INERTIAL_MTB:
         {
-            entity = eoprot_entity_as_inertial;
+            entity = eoprot_entity_as_inertial3;
             ret = sendConfig2SkinInertial(config);
         } break;
 
@@ -483,10 +483,10 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     {
         // start the configured sensors
 
-        eOas_inertial_commands_t startCommand = {0};
+        eOas_inertial3_commands_t startCommand = {0};
         startCommand.enable = 1;
 
-        uint32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
+        uint32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial3, 0, eoprot_tag_as_inertial3_cmmnds_enable);
         if(false == res->setRemoteValue(id32, (uint8_t*) &startCommand))
         {
             yError() << "embObjAnalogSensor::open() fails to command the start transmission of the inertials";
@@ -1132,8 +1132,8 @@ bool embObjAnalogSensor::init()
         
         case AS_Type_INERTIAL_MTB:
         {
-            servcategory = eomn_serv_category_inertials;
-            protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_status);
+            servcategory = eomn_serv_category_inertials3;
+            protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial3, 0, eoprot_tag_as_inertial3_status);
         } break;
 
         default:
@@ -1290,7 +1290,7 @@ eth::iethresType_t embObjAnalogSensor::type()
 
         case AS_Type_INERTIAL_MTB:
         {
-            ret = eth::iethres_analoginertial;
+            ret = eth::iethres_analoginertial3;
         } break;
 
         default:
@@ -1424,7 +1424,7 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
 
 bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
 {
-    eOas_inertial_status_t *status = (eOas_inertial_status_t*) inertialdata;
+    eOas_inertial3_status_t *status = (eOas_inertial3_status_t*) inertialdata;
 
     return true;
 
