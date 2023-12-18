@@ -45,11 +45,7 @@ class batteryReaderThread : public PeriodicThread
     double             battery_current = 0;
     std::string        battery_info = "icub battery system v1.0";
     int                backpack_status = 0;
-#if YARP_VERSION_MAJOR == 3 && YARP_VERSION_MINOR <= 8
-    IBattery::Battery_status     battery_status = IBattery::Battery_status::BATTERY_OK_STANBY; 
-#else
     IBattery::Battery_status     battery_status = IBattery::Battery_status::BATTERY_OK_STANDBY;    
-#endif
 
     batteryReaderThread (ISerialDevice *_iSerial, double period) :
     PeriodicThread((double)period),
