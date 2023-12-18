@@ -320,7 +320,7 @@ A better strategy is to interface with the desired subtype indirectly using the
 abstract base classes. In this case, configuration cannot be done directly 
 using member functions, as each subtype will have different configurable 
 parameters and thus different functions. Instead, configuration is done by 
-sending Property instances to the configure method (cf. the YARP IConfig class).
+sending Property instances to the configure method.
 This strategy already guarantees that changing to another subtype only involves 
 a reasonably small amount of changes in your program. Changing to another 
 subtype will, however, require a recompilation of the program. Further, features 

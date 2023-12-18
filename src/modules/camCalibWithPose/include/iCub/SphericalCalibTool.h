@@ -12,7 +12,6 @@
 // yarp
 //#include <yarp/sig/Image.h>
 #include <yarp/sig/all.h>
-#include <yarp/os/IConfig.h>
 #include <yarp/os/Value.h>
 
 // opencv
@@ -56,7 +55,6 @@ public:
     SphericalCalibTool();
     virtual ~SphericalCalibTool();
 
-    // IConfig
     virtual bool open (yarp::os::Searchable &config);
     virtual bool close();
     virtual bool configure (yarp::os::Searchable &config);

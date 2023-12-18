@@ -22,7 +22,6 @@
 #include <vector>
 #include <sstream>
 
-#include <yarp/os/IConfig.h>
 #include <yarp/sig/Matrix.h>
 
 #include "iCub/learningMachine/IFixedSizeLearner.h"
@@ -31,7 +30,7 @@
 namespace iCub {
 namespace learningmachine {
 
-class Kernel : public yarp::os::IConfig {
+class Kernel {
 private:
     std::string name;
 public:
@@ -77,7 +76,7 @@ public:
     }
 
     /*
-     * Inherited from IConfig.
+     * Inherited from Kernel.
      */
     virtual bool configure(yarp::os::Searchable& config) {
         bool success = false;
@@ -237,7 +236,7 @@ public:
     void setCoDomainSize(unsigned int size);
 
     /*
-     * Inherited from IConfig.
+     * Inherited from IMachineLearner.
      */
     virtual bool configure(yarp::os::Searchable& config);
 

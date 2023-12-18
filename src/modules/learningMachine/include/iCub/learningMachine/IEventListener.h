@@ -19,8 +19,6 @@
 #ifndef LM_IEVENTLISTENER__
 #define LM_IEVENTLISTENER__
 
-#include <yarp/os/IConfig.h>
-
 #include "iCub/learningMachine/IEvent.h"
 #include "iCub/learningMachine/TrainEvent.h"
 #include "iCub/learningMachine/PredictEvent.h"
@@ -42,7 +40,7 @@ class IEvent;
 class TrainEvent;
 class PredictEvent;
 
-class IEventListener : public yarp::os::IConfig {
+class IEventListener {
 protected:
     /**
      * The name of this type of EventListener.
@@ -133,7 +131,7 @@ public:
     }
 
     /*
-     * Inherited from IConfig.
+     * Configure.
      */
     virtual bool configure(yarp::os::Searchable& config);
 

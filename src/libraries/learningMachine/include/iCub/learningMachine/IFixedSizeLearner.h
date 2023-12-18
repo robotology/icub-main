@@ -146,7 +146,7 @@ public:
     virtual std::string getConfigHelp();
 
     /*
-     * Inherited from IConfig.
+     * Inherited from IMachineLearner.
      */
     virtual bool configure(yarp::os::Searchable& config);
 

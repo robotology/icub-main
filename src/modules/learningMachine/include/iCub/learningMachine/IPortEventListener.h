@@ -101,7 +101,7 @@ public:
     }
 
     /*
-     * Inherited from IConfig.
+     * Configure.
      */
     virtual bool configure(yarp::os::Searchable& config);
 

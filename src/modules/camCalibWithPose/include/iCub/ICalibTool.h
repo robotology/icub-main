@@ -11,17 +11,14 @@
 
 // yarp
 #include <yarp/sig/Image.h>
-#include <yarp/os/IConfig.h>
 
 /**
  * Interface to calibrate and project input image based on camera's internal parameters and projection mode\n
  */
-class ICalibTool : public yarp::os::IConfig
+class ICalibTool
 {
 
 public:
-
-    // IConfig
     virtual bool open (yarp::os::Searchable &config) = 0;
     virtual bool close () = 0;
     virtual bool configure (yarp::os::Searchable &config) = 0;

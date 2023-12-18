@@ -23,7 +23,6 @@
 // yarp
 //#include <yarp/sig/Image.h>
 #include <yarp/sig/all.h>
-#include <yarp/os/IConfig.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Value.h>
 
