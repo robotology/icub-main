@@ -154,7 +154,7 @@ public:
     virtual void reset();
 
     /*
-     * Inherited from IConfig.
+     * Inherited from ITransformer.
      */
     virtual bool configure(yarp::os::Searchable &config);
 

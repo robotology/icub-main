@@ -91,7 +91,7 @@ public:
     virtual std::string getInfo();
 
     /*
-     * Inherited from IConfig.
+     * Inherited from IScaler.
      */
     virtual bool configure(yarp::os::Searchable& config);
 

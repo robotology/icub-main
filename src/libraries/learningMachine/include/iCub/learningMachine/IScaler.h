@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include <yarp/os/IConfig.h>
+#include <yarp/os/Bottle.h>
 
 namespace iCub {
 namespace learningmachine {
@@ -38,7 +38,7 @@ namespace learningmachine {
  *
  */
 
-class IScaler : public yarp::os::IConfig {
+class IScaler {
 protected:
     /**
      * The offset for the linear transformation.
@@ -175,7 +175,7 @@ public:
     virtual bool fromString(const std::string& str);
 
     /*
-     * Inherited from IConfig.
+     * Configure.
      */
     virtual bool configure(yarp::os::Searchable& config);
 };

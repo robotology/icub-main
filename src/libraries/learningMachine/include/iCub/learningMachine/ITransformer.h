@@ -22,7 +22,6 @@
 #include <sstream>
 #include <string>
 
-#include <yarp/os/IConfig.h>
 #include <yarp/os/Portable.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/sig/Vector.h>
@@ -55,7 +54,7 @@ namespace learningmachine {
  *
  */
 
-class ITransformer : public yarp::os::IConfig, public yarp::os::Portable {
+class ITransformer : public yarp::os::Portable {
 protected:
     /**
      * The name of this type of transformer.
@@ -164,7 +163,7 @@ public:
     virtual ITransformer* clone() = 0;
 
     /*
-     * Inherited from IConfig.
+     * Configure.
      */
     virtual bool configure(yarp::os::Searchable& config) { return true; }
 

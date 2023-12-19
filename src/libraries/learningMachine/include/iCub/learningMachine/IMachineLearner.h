@@ -23,7 +23,6 @@
 #include <sstream>
 
 #include <yarp/sig/Vector.h>
-#include <yarp/os/IConfig.h>
 #include <yarp/os/Portable.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Value.h>
@@ -86,7 +85,7 @@ namespace learningmachine {
  *
  */
 
-class IMachineLearner : public yarp::os::IConfig, public yarp::os::Portable {
+class IMachineLearner : public yarp::os::Portable {
 protected:
     /**
      * The name of this type of machine learner.
@@ -121,6 +120,22 @@ public:
      * Destructor (empty).
      */
     virtual ~IMachineLearner() { }
+
+
+    /**
+     * Initialize the object.
+     */
+    virtual bool open(yarp::os::Searchable& config) {return true;}
+
+    /**
+     * Shut the object down.
+     */
+    virtual bool close() {return true;}
+
+    /**
+     * Change parameters.
+     */
+    virtual bool configure(yarp::os::Searchable& config) {return false;}
 
     /**
      * Provide the learning machine with an example of the desired mapping.

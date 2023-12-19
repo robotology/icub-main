@@ -181,7 +181,7 @@ public:
     double getSigma();
 
     /*
-     * Inherited from IConfig.
+     * Inherited from IMachineLearner.
      */
     virtual bool configure(yarp::os::Searchable& config);
 
