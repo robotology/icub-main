@@ -50,9 +50,6 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
     Bottle botLeftConfig(rf.toString().c_str());
     Bottle botRightConfig(rf.toString().c_str());
 
-    botLeftConfig.setMonitor(rf.getMonitor());
-    botRightConfig.setMonitor(rf.getMonitor());
-
     string strLeftGroup = "CAMERA_CALIBRATION_LEFT";
     if (botLeftConfig.check(strLeftGroup.c_str()))
     {            
