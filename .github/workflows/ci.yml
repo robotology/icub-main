@@ -152,6 +152,7 @@ jobs:
               -DICUB_USE_icub_firmware_shared:BOOL=ON \
               -DENABLE_icubmod_skinWrapper:BOOL=ON \
               -DENABLE_icubmod_sharedcan:BOOL=ON \
+              -DENABLE_icubmod_bcbBattery:BOOL=ON \
               -DENABLE_icubmod_canmotioncontrol:BOOL=ON \
               -DENABLE_icubmod_canBusAnalogSensor:BOOL=ON \
               -DENABLE_icubmod_canBusInertialMTB:BOOL=ON \
