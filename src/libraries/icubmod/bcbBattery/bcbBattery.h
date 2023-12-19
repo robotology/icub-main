@@ -8,6 +8,7 @@
 #define __BCBBATTERY_H__
 
 #include <mutex>
+#include <yarp/conf/version.h>
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/dev/IBattery.h>
 #include <yarp/dev/PolyDriver.h>
