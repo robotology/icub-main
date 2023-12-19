@@ -534,7 +534,6 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
 
     // pass configuration over to bottle
     Bottle botConfig(rf.toString());
-    botConfig.setMonitor(rf.getMonitor());
     // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
     if(botConfig.check("group", valGroup, "Configuration group to load module options from (string).")) {

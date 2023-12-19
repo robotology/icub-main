@@ -99,6 +99,7 @@ private:
     // DEVICE
     IAnalogSensor* tactileSensor;               // interface for executing the tactile sensor calibration
     PolyDriver* tactileSensorDevice;
+    std::string tactileSensorDevice_inputPortName;
 
     // ERROR MANAGEMENT
     bool _isWorking;                            // true if the compensator is working fine
@@ -186,7 +187,7 @@ public:
     Stamp getTimestamp(){       return timestamp; }
     
     string getName(){           return name; }
-    string getInputPortName(){  return tactileSensorDevice->getValue("remote").asString().c_str(); }
+    string getInputPortName(){  return tactileSensorDevice_inputPortName; }
     string getSkinPartName(){   return SkinPart_s[skinPart]; }
     SkinPart getSkinPart(){     return skinPart; }
     string getBodyPartName(){   return BodyPart_s[bodyPart]; }

@@ -73,6 +73,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     options.put("local",  localPortName.str().c_str());
     options.put("remote",  inputPortName.c_str());
     options.put("device", "analogsensorclient");
+    tactileSensorDevice_inputPortName=inputPortName.c_str();
      
     // create a new device driver
     tactileSensorDevice = new PolyDriver(options);
