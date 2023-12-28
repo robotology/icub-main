@@ -324,77 +324,10 @@ bool embObjFTsensor::updateTemperatureValues(eOprotID32_t id32, double timestamp
     return true;
 }
 
-
-// -----------------------------  yarp::dev::IAnalogSensor --------------------------------------
-
-
-/*! Read a vector from the sensor.
- * @param out a vector containing the sensor's last readings.
- * @return AS_OK or return code. AS_TIMEOUT if the sensor timed-out.
- **/
-int embObjFTsensor::read(yarp::sig::Vector &out)
-{
-    // This method gives analogdata to the analogServer
-
-    if(false == GET_privData(mPriv).isOpen())
-    {
-        return false;
-    }
-
-    std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
-
-    out.resize(GET_privData(mPriv).analogdata.size());
-    for (size_t k = 0; k<GET_privData(mPriv).analogdata.size(); k++)
-    {
-        out[k] = GET_privData(mPriv).analogdata[k] + GET_privData(mPriv).offset[k];
-    }
-
-    return IAnalogSensor::AS_OK;;
-}
-
-int embObjFTsensor::getState(int ch)
-{
-    return AS_OK;
-}
-
-
-int embObjFTsensor::getChannels()
-{
-    return GET_privData(mPriv).strain_Channels;
-}
-
-
-int embObjFTsensor::calibrateSensor()
-{
-    std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
-    for (size_t i = 0; i <  GET_privData(mPriv).analogdata.size(); i++)
-    {
-        GET_privData(mPriv).offset[i] = - GET_privData(mPriv).analogdata[i];
-    }
-    return AS_OK;
-}
-
-int embObjFTsensor::calibrateSensor(const yarp::sig::Vector& value)
-{
-    return AS_OK;
-}
-
-int embObjFTsensor::calibrateChannel(int ch)
-{
-    return AS_OK;
-}
-
-int embObjFTsensor::calibrateChannel(int ch, double v)
-{
-    return AS_OK;
-}
-
 eth::iethresType_t embObjFTsensor::type()
 {
     return eth::iethres_analogstrain;
 }
-
-
 
 // ---------------------- ITemperatureSensors --------------------------------------------------------
 size_t embObjFTsensor::getNrOfTemperatureSensors() const

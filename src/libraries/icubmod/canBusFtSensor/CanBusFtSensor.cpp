@@ -312,55 +312,6 @@ bool CanBusFtSensor::close()
     return true;
 }
 
-int CanBusFtSensor::read(yarp::sig::Vector &out)
-{
-    mtx.lock();
-    out=data;
-    mtx.unlock();
-
-    if( this->diagnostic )
-        return status;
-    else
-        return IAnalogSensor::AS_OK;
-}
-
-int CanBusFtSensor::getState(int ch)
-{
-    if( this->diagnostic )
-        return status;
-    else
-        return IAnalogSensor::AS_OK;
-}
-
-int CanBusFtSensor::getChannels()
-{
-    return channelsNum;
-}
-
-int CanBusFtSensor::calibrateSensor()
-{
-    //NOT YET IMPLEMENTED
-    return 0;
-}
-
-int CanBusFtSensor::calibrateChannel(int ch, double v)
-{
-    //NOT YET IMPLEMENTED
-    return 0;
-}
-
-int CanBusFtSensor::calibrateSensor(const yarp::sig::Vector& v)
-{
-    //NOT YET IMPLEMENTED
-    return 0;
-}
-
-int CanBusFtSensor::calibrateChannel(int ch)
-{
-    //NOT YET IMPLEMENTED
-    return 0;
-}
-
 bool CanBusFtSensor::threadInit()
 {
     return true;
@@ -476,7 +427,7 @@ void CanBusFtSensor::run()
         const char   type     = ((msgid&0x700)>>8);
 
         //parse data here
-        status=IAnalogSensor::AS_OK;
+        status=MAS_status::MAS_OK;
 
         if (type==0x03) //analog data
         {
@@ -487,29 +438,29 @@ void CanBusFtSensor::run()
                 {
                     case ANALOG_FORMAT_8_BIT:
                         ret=decode8(buff, msgid, data.data());
-                        status=IAnalogSensor::AS_OK;
+                        status=MAS_status::MAS_OK;
                         break;
                     case ANALOG_FORMAT_16_BIT:
                         if (len==6)
                         {
                             ret=decode16(buff, msgid, data.data());
-                            status=IAnalogSensor::AS_OK;
+                            status=MAS_status::MAS_OK;
                         }
                         else
                         {
-                            if ((len==7) && (buff[6] != 0)) // changed from "== 1" in order to maintain compatibility with extra overflow information in byte 6. 
+                            if ((len==7) && (buff[6] != 0)) // changed from "== 1" in order to maintain compatibility with extra overflow information in byte 6.
                             {
-                                status=IAnalogSensor::AS_OVF;
+                                status=MAS_status::MAS_OVF;
                             }
                             else
                             {
-                                status=IAnalogSensor::AS_ERROR;
+                                status=MAS_status::MAS_ERROR;
                             }
                             ret=decode16(buff, msgid, data.data());
                         }
                         break;
                     default:
-                        status=IAnalogSensor::AS_ERROR;
+                        status=MAS_status::MAS_ERROR;
                         ret=false;
                 }
             }
@@ -519,7 +470,7 @@ void CanBusFtSensor::run()
     //if 100ms have passed since the last received message
     if (timeStamp+0.1<timeNow)
     {
-        status=IAnalogSensor::AS_TIMEOUT;
+        status=MAS_status::MAS_TIMEOUT;
     }
 }
 
@@ -553,10 +504,10 @@ bool CanBusFtSensor::getSixAxisForceTorqueSensorFrameName(size_t sens_index, std
 
 bool CanBusFtSensor::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-    std::lock_guard<std::mutex> lck(mtx);    
+    std::lock_guard<std::mutex> lck(mtx);
     out = data;
     timestamp = timeStamp;
-    
+
     return true;
 }
 

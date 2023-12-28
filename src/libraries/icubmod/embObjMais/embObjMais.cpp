@@ -129,7 +129,7 @@ embObjMais::embObjMais()
     counterError=0;
     counterTimeout=0;
 
-    status = IAnalogSensor::AS_OK;
+    status = MAS_status::MAS_OK;
 
 
     opened = false;
@@ -426,57 +426,6 @@ bool embObjMais::initRegulars()
 }
 
 
-/*! Read a vector from the sensor.
- * @param out a vector containing the sensor's last readings.
- * @return AS_OK or return code. AS_TIMEOUT if the sensor timed-out.
- **/
-
-int embObjMais::read(yarp::sig::Vector &out)
-{
-    // This method gives analogdata to the analogServer
-
-    if(false == opened)
-    {
-        return false;
-    }
-
-    std::lock_guard<std::mutex> lck(mtx);
-
-    // errors are not handled for now... it'll always be OK!!
-    if (status != IAnalogSensor::AS_OK)
-    {
-        switch (status)
-        {
-            case IAnalogSensor::AS_OVF:
-            {
-                counterSat++;
-            }  break;
-            case IAnalogSensor::AS_ERROR:
-            {
-                counterError++;
-            } break;
-            case IAnalogSensor::AS_TIMEOUT:
-            {
-                counterTimeout++;
-            } break;
-            default:
-            {
-                counterError++;
-            } break;
-        }
-        return status;
-    }
-
-    out.resize(analogdata.size());
-    for (size_t k = 0; k<analogdata.size(); k++)
-    {
-        out[k] = analogdata[k];
-    }
-
-    return status;
-}
-
-
 void embObjMais::resetCounters()
 {
     counterSat=0;
@@ -491,44 +440,6 @@ void embObjMais::getCounters(unsigned int &sat, unsigned int &err, unsigned int 
     err=counterError;
     to=counterTimeout;
 }
-
-
-int embObjMais::getState(int ch)
-{
-    printf("getstate\n");
-    return AS_OK;
-}
-
-
-int embObjMais::getChannels()
-{
-    return analogdata.size();
-}
-
-
-int embObjMais::calibrateSensor()
-{
-    return AS_OK;
-}
-
-
-int embObjMais::calibrateSensor(const yarp::sig::Vector& value)
-{
-    return AS_OK;
-}
-
-
-int embObjMais::calibrateChannel(int ch)
-{
-    return AS_OK;
-}
-
-
-int embObjMais::calibrateChannel(int ch, double v)
-{
-    return AS_OK;
-}
-
 
 size_t embObjMais::getNrOfEncoderArrays() const {
     return 1;

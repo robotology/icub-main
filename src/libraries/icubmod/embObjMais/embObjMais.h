@@ -5,7 +5,6 @@
 #define __embObjMais_h__
 
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/IAnalogSensor.h>
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <string>
@@ -37,8 +36,7 @@ namespace yarp {
 
 // -- class embObjMais
 
-class yarp::dev::embObjMais:            public yarp::dev::IAnalogSensor,
-                                        public yarp::dev::DeviceDriver,
+class yarp::dev::embObjMais:            public yarp::dev::DeviceDriver,
                                         public eth::IethResource,
                                         public yarp::dev::IEncoderArrays
 {
@@ -55,15 +53,6 @@ public:
     // An open function yarp factory compatible
     bool open(yarp::os::Searchable &config);
     bool close();
-
-    // IAnalogSensor interface
-    virtual int read(yarp::sig::Vector &out);
-    virtual int getState(int ch);
-    virtual int getChannels();
-    virtual int calibrateChannel(int ch, double v);
-    virtual int calibrateSensor();
-    virtual int calibrateSensor(const yarp::sig::Vector& value);
-    virtual int calibrateChannel(int ch);
 
     // IEncoderArrays interface
     virtual size_t getNrOfEncoderArrays() const override;
