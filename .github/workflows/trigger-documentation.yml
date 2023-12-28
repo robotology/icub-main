@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - name: Repository Dispatch
-      uses: peter-evans/repository-dispatch@v2.1.2
+      uses: peter-evans/repository-dispatch@v2
       with:
         token: ${{ secrets.BOT_TRIGGER_ROBOTOLOGY_DOCUMENTATION }}
         repository: robotology/robotology-documentation
