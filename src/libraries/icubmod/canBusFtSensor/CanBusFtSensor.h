@@ -9,7 +9,6 @@
 
 #include <mutex>
 #include <yarp/os/PeriodicThread.h>
-#include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
@@ -38,12 +37,11 @@ using namespace yarp::dev;
 * | period         | int    | ms    | - | Yes | Publication period (in ms) of the sensor reading on the Can Bus | - |
 * | channels       | int    | -     | - | Yes | Number of output channels of the sensor (6 for STRAIN board, 16 for MAIS board) | - |
 * | useCalibration | int    | -     | - | No  | If useCalibration is present and set to 1 output the calibrated readings, otherwise output the raw values | - |
-* | diagnostic     | int    | -     | - | No  | If diagnostic is present and set to 1 properly return the state of the sensor, otherwise always return IAnalogSensor::AS_OK | - |
+* | diagnostic     | int    | -     | - | No  | If diagnostic is present and set to 1 properly return the state of the sensor, otherwise always return MAS_status::MAS_OK | - |
 * | sensorName     | string | -     | - | Yes | Unique name of the sensor  | - |
 * | frameName      | string | -     | unknown_frame_name | No  | Name of the robot link to which the sensor is attached | Many sensors can be attached to the same frame link. The parameter is typically used in ROS message headers and should match a valid frame link name defined in the robot model (.sdf / .urdf). If wrongly assigned, ROS will not work properly. |
 */
-class CanBusFtSensor : public PeriodicThread, 
-                           public yarp::dev::IAnalogSensor, 
+class CanBusFtSensor : public PeriodicThread,
                            public DeviceDriver,
                            public yarp::dev::ISixAxisForceTorqueSensors
 {
@@ -96,17 +94,6 @@ public:
 
     virtual bool open(yarp::os::Searchable& config);
     virtual bool close();
-
-
-    //IAnalogSensor interface
-    virtual int read(yarp::sig::Vector &out);
-    virtual int getState(int ch);
-    virtual int getChannels();
-    int calibrateSensor();
-    virtual int calibrateChannel(int ch, double v);
-
-    virtual int calibrateSensor(const yarp::sig::Vector& v);
-    virtual int calibrateChannel(int ch);
 
     virtual bool threadInit();
     virtual void threadRelease();

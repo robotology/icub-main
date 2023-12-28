@@ -24,7 +24,6 @@
 #define __embObjFTsensor_h__
 
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/IAnalogSensor.h>
 #include "IethResource.h"
 
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
@@ -43,7 +42,6 @@ namespace yarp {
 
 class yarp::dev::embObjFTsensor:    public yarp::dev::DeviceDriver,
                                     public eth::IethResource,
-                                    public yarp::dev::IAnalogSensor,
                                     public yarp::dev::ITemperatureSensors,
                                     public yarp::dev::ISixAxisForceTorqueSensors
 {
@@ -56,20 +54,11 @@ public:
     bool open(yarp::os::Searchable &config);
     bool close();
 
-    // IAnalogSensor interface
-    virtual int read(yarp::sig::Vector &out);
-    virtual int getState(int ch);
-    virtual int getChannels();
-    virtual int calibrateChannel(int ch, double v);
-    virtual int calibrateSensor();
-    virtual int calibrateSensor(const yarp::sig::Vector& value);
-    virtual int calibrateChannel(int ch);
-
     // IethResource interface
     virtual bool initialised();
     virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
-    
+
     // ITemperatureSensors
     virtual size_t getNrOfTemperatureSensors() const override;
     virtual yarp::dev::MAS_status getTemperatureSensorStatus(size_t sens_index) const override;
@@ -77,7 +66,7 @@ public:
     virtual bool getTemperatureSensorFrameName(size_t sens_index, std::string &frameName) const override;
     virtual bool getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const override;
     virtual bool getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
-    
+
     // ISixAxisForceTorqueSensors
     virtual size_t getNrOfSixAxisForceTorqueSensors() const override;
     virtual yarp::dev::MAS_status getSixAxisForceTorqueSensorStatus(size_t sens_index) const override;
