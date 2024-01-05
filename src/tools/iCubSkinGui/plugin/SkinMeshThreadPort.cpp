@@ -87,16 +87,21 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : Periodic
     for (int t=0; t<sensorSetConfig.size(); ++t)
     {
         yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
-
         std::string type(sensorConfig.get(0).asString());
 
         if (type=="triangle"       ||
             type=="fingertip"      ||
             type=="fingertip2L"    ||
             type=="fingertip2R"    ||
+            type=="fingertip3L"    ||
+            type=="fingertip3R"    ||
+            type=="fingertip4L"    ||
+            type=="fingertip4R"    ||
+            type=="fingertipMID"   ||
             type=="triangle_10pad" ||
             type=="quad16"         ||
             type=="palmR"          ||
+            type=="fakePalm"       ||
             type=="palmL"          ||
             type == "cer_sh_pdl"   ||
             type == "cer_sh_pdr"   ||
@@ -142,6 +147,26 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : Periodic
                     {
                         sensor[id]=new Fingertip2R(xc,yc,th,gain,layoutNum,lrMirror);
                     }
+                    else if (type=="fingertip3L")
+                    {
+                        sensor[id]=new Fingertip3L(xc,yc,th,gain,layoutNum,lrMirror);
+                    }
+                    else if (type=="fingertip3R")
+                    {
+                        sensor[id]=new Fingertip3R(xc,yc,th,gain,layoutNum,lrMirror);
+                    }
+                    else if (type=="fingertip4L")
+                    {
+                        sensor[id]=new Fingertip4L(xc,yc,th,gain,layoutNum,lrMirror);
+                    }
+                    else if (type=="fingertip4R")
+                    {
+                        sensor[id]=new Fingertip4R(xc,yc,th,gain,layoutNum,lrMirror);
+                    }
+                    if (type=="fingertipMID")
+                    {
+                        sensor[id]=new FingertipMID(xc,yc,th,gain,layoutNum,lrMirror);
+                    }
                     else if (type=="quad16")
                     {
                         sensor[id]=new Quad16(xc,yc,th,gain,layoutNum,lrMirror);
@@ -153,6 +178,10 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : Periodic
                     else if (type=="palmR")
                     {
                         sensor[id]=new PalmR(xc,yc,th,gain,layoutNum,lrMirror);
+                    }
+                    else if (type=="fakePalm")
+                    {
+                        sensor[id]=new fakePalm(xc,yc,th,gain,layoutNum,lrMirror);
                     }
                     else if (type=="palmL")
                     {

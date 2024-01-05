@@ -10,9 +10,13 @@ include_directories(${GSL_INCLUDE_DIRS})
 set(QtICubSkinGuiPlugin_SRCS Fingertip2Left.cpp
                              Fingertip2Right.cpp
                              Fingertip3Left.cpp
+                             Fingertip4Left.cpp
                              Fingertip3Right.cpp
+                             Fingertip4Right.cpp
                              Fingertip.cpp
+                             FingertipMID.cpp
                              PalmLeft.cpp
+                             fakePalm.cpp
                              PalmRight.cpp
                              qticubskinguiplugin.cpp
                              qticubskinguiplugin_plugin.cpp
