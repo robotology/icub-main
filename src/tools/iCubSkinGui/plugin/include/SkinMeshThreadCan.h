@@ -132,55 +132,55 @@ public:
                         {
                             sensor[id]=new Triangle(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        if (type=="triangle_10pad")
+                        else if (type=="triangle_10pad")
                         {
                             sensor[id]=new Triangle_10pad(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        if (type=="fingertip")
+                        else if (type=="fingertip")
                         {
                             sensor[id]=new Fingertip(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        if (type=="fingertip2L")
+                        else if (type=="fingertip2L")
                         {
                             sensor[id]=new Fingertip2L(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        if (type=="fingertip3L")
+                        else if (type=="fingertip3L")
                         {
                             sensor[id]=new Fingertip3L(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        if (type=="fingertip4L")
+                        else if(type == "fingertip4L")
                         {
                             sensor[id]=new Fingertip4L(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        if (type == "cer_sh_pdl")
+                        else if(type == "cer_sh_pdl")
                         {
                             sensor[id] = new CER_SH_PDL(xc, yc, th, gain, layoutNum, lrMirror);
                         }
-                        if (type=="fingertip2R")
+                        else if(type == "fingertip2R")
                         {
                             sensor[id]=new Fingertip2R(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        if (type=="fingertip3R")
+                        else if(type == "fingertip3R")
                         {
                             sensor[id]=new Fingertip3R(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                         if (type=="fingertip4R")
+                        else if (type == "fingertip4R")
                         {
                             sensor[id]=new Fingertip4R(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                         if (type=="fingertipMID")
+                        else if (type == "fingertipMID")
                         {
                             sensor[id]=new FingertipMID(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        if (type=="quad16")
+                        else if (type == "quad16")
                         {
                             sensor[id]=new Quad16(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        if (type=="palmR")
+                        else if(type == "palmR")
                         {
                             sensor[id]=new PalmR(xc,yc,th,gain,layoutNum,lrMirror);
                         }
-                        if (type=="palmL")
+                        else if(type == "palmL")
                         {
                             sensor[id]=new PalmL(xc,yc,th,gain,layoutNum,lrMirror);
                         }
