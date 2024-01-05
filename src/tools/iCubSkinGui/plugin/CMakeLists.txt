@@ -11,8 +11,12 @@ set(QtICubSkinGuiPlugin_SRCS Fingertip2Left.cpp
                              Fingertip2Right.cpp
                              Fingertip3Left.cpp
                              Fingertip3Right.cpp
+                             Fingertip4Left.cpp
+                             Fingertip4Right.cpp
                              Fingertip.cpp
+                             FingertipMID.cpp
                              PalmLeft.cpp
+                             fakePalm.cpp
                              PalmRight.cpp
                              qticubskinguiplugin.cpp
                              qticubskinguiplugin_plugin.cpp
@@ -22,7 +26,7 @@ set(QtICubSkinGuiPlugin_SRCS Fingertip2Left.cpp
                              TouchSensor.cpp
                              Triangle_10pad.cpp
                              Triangle.cpp
-			     CER_SH_PDL.cpp)
+			                 CER_SH_PDL.cpp)
 
 set(QtICubSkinGuiPlugin_HDRS qticubskinguiplugin.h
                              qticubskinguiplugin_plugin.h
@@ -30,7 +34,11 @@ set(QtICubSkinGuiPlugin_HDRS qticubskinguiplugin.h
                              include/Fingertip2Right.h
                              include/Fingertip3Left.h
                              include/Fingertip3Right.h
+                             include/Fingertip4Left.h
+                             include/Fingertip4Right.h
                              include/Fingertip.h
+                             include/FingertipMID.h
+                             include/fakePalm.h
                              include/PalmLeft.h
                              include/PalmRight.h
                              include/Quad16.h
