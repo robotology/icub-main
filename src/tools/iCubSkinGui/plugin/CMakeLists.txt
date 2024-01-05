@@ -10,8 +10,8 @@ include_directories(${GSL_INCLUDE_DIRS})
 set(QtICubSkinGuiPlugin_SRCS Fingertip2Left.cpp
                              Fingertip2Right.cpp
                              Fingertip3Left.cpp
-                             Fingertip4Left.cpp
                              Fingertip3Right.cpp
+                             Fingertip4Left.cpp
                              Fingertip4Right.cpp
                              Fingertip.cpp
                              FingertipMID.cpp
@@ -34,7 +34,10 @@ set(QtICubSkinGuiPlugin_HDRS qticubskinguiplugin.h
                              include/Fingertip2Right.h
                              include/Fingertip3Left.h
                              include/Fingertip3Right.h
+                             include/Fingertip4Left.h
+                             include/Fingertip4Right.h
                              include/Fingertip.h
+                             include/fakePalm.h
                              include/PalmLeft.h
                              include/PalmRight.h
                              include/Quad16.h
