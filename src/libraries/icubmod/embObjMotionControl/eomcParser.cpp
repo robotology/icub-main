@@ -905,6 +905,7 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
 
     if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints, false)) 
     {
+        yWarning() << "kbemf not found. Using fallback where kbemf is set to 0.";
         for (int j = 0; j<_njoints; j++) _kbemf[j] = 0;
     } 
     else
