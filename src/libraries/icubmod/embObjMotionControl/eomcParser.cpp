@@ -903,8 +903,14 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
 
     Bottle xtmp;
 
-    if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints, false)) return false; 
-    for (int j = 0; j<_njoints; j++) _kbemf[j] = xtmp.get(j + 1).asFloat64();
+    if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints, false)) 
+    {
+        for (int j = 0; j<_njoints; j++) _kbemf[j] = 0;
+    } 
+    else
+    {
+        for (int j = 0; j<_njoints; j++) _kbemf[j] = xtmp.get(j + 1).asFloat64();
+    }
     
     if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints)) return false; 
     for (int j = 0; j<_njoints; j++) _ktau[j] = xtmp.get(j + 1).asFloat64();
@@ -955,12 +961,7 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
     }
     else
     {
-        for (int j = 0; j<_njoints; j++) 
-        {
-            _velocityThres[j] = xtmp.get(j + 1).asFloat64();
-            std::cout << "_velocityThres[" << j << "] = " << _velocityThres[j] << std::endl;
-        }
-
+        for (int j = 0; j<_njoints; j++) _velocityThres[j] = xtmp.get(j + 1).asFloat64();
     }
 
 
