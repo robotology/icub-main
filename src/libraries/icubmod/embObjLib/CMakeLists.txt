@@ -97,7 +97,14 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../m
                                                 ../skinLib)
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
                                                   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
-install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+
+install(TARGETS ${PROJECT_NAME}
+        RUNTIME
+          DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        ARCHIVE
+          DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 
 target_link_libraries(${PROJECT_NAME} YARP::YARP_os
                                       YARP::YARP_dev
