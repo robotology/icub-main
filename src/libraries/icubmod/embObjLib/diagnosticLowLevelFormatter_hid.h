@@ -32,7 +32,6 @@ namespace Diagnostic {
         class AnalogSensorParser;
         class AuxEmbeddedInfo;
         class EntityNameProvider;
-        
     }
 }
 
