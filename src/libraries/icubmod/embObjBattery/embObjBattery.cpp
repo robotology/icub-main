@@ -13,8 +13,7 @@
 #include <yarp/os/LogStream.h>
 
 #include <iostream>
-#include <string>
-#include <sstream>
+#include <string_view>
 #include <cmath>
 #include <array>
 
@@ -38,7 +37,7 @@ void CanBatteryData::decode(eOas_battery_timedvalue_t *data, double timestamp)
 {
     temperature_ = data->temperature / 10;  // in steps of 0.1 celsius degree (pos and neg).
     voltage_ = std::trunc(10 * data->voltage) / 10;
-    current_ = data->current;
+    current_ = std::trunc(10 * data->current) / 10;
     charge_ = data->charge;
     status_ = data->status;
     timeStamp_ = timestamp;
@@ -138,6 +137,8 @@ bool embObjBattery::open(yarp::os::Searchable &config)
         return false;
     }
 
+    canBatteryData_.sensorName_ = eoboards_type2string(parser.getBatteryInfo().board);
+    canBatteryData_.sensorType_ = parser.getBatteryInfo().board;
     device_->setOpen(true);
     return true;
 }
@@ -261,19 +262,15 @@ bool embObjBattery::update(eOprotID32_t id32, double timestamp, void *rxdata)
     }
     else if (!isCanDataAvailable && (data->age != 0))
     {
-        if (updateStatusStringStream(data->status, canBatteryData_.prevStatus_, true))
-        {
-            yDebug() << "First Status are:\n" << statusStreamBMS.str() << statusStreamBAT.str() << "\n";
-        }
+        yDebug() << "First Status are:\n" << updateStatusStringStream(data->status, canBatteryData_.prevStatus_, true);
+        
         canBatteryData_.prevStatus_ = data->status;
         isCanDataAvailable = true;
     }
     else if (data->status != canBatteryData_.prevStatus_)
     {
-        if (updateStatusStringStream(data->status, canBatteryData_.prevStatus_, false))
-        {
-            yDebug() << "Status changed to:\n" << statusStreamBMS.str() << statusStreamBAT.str() << "\n";
-        }
+        yDebug() << "Status changed to:\n" << updateStatusStringStream(data->status, canBatteryData_.prevStatus_, false);
+        
         canBatteryData_.prevStatus_ = data->status;
     }
 
@@ -314,10 +311,10 @@ bool embObjBattery::checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current)
     return true;
 }
 
-bool embObjBattery::updateStatusStringStream(const uint32_t &currStatus, const uint32_t &prevStatus, bool isFirstLoop)
+std::string embObjBattery::updateStatusStringStream(const uint16_t &currStatus, const uint16_t &prevStatus, bool isFirstLoop)
 {
     // Initialize the first time the static map
-    static const std::array<std::pair<eOas_battery_alarm_status_t, std::string>, eoas_battery_alarm_status_numberof> s_boards_map_of_battery_alarm_status =
+    static const std::array<std::pair<eOas_battery_alarm_status_t, std::string_view>, eoas_battery_alarm_status_numberof> s_boards_map_of_battery_alarm_status =
     {
         {{eoas_bms_general_alarm_lowvoltage, "eoas_bms_general_alarm_lowvoltage"},
         {eoas_bms_general_alarm_highvoltage, "eoas_bms_general_alarm_highvoltage"},
@@ -348,67 +345,52 @@ bool embObjBattery::updateStatusStringStream(const uint32_t &currStatus, const u
         {eoas_bat_status_btn_1_stable_op, "eoas_bat_status_btn_1_stable_op"}}
     };
 
-    // Clear buffer for BAT and BMS
-    statusStreamBMS.str("");
-    statusStreamBAT.str("");
+    // Clear and reserve space for buffer for BAT and BMS
+    std::string statusstring = {};
+    statusstring.reserve(512);
 
-    bool isBmsSignatureBit = embot::core::binary::bit::check(currStatus, 0);
-
-    if(isBmsSignatureBit)
+    if (canBatteryData_.sensorType_ == eobrd_cantype_bms)
     {
-        // And add header string
-        statusStreamBMS << "STATUS_BMS:" << "\n";
-        if (!(embot::core::binary::mask::check(currStatus, static_cast<uint32_t>(0x0000ffff))))
+        for (uint8_t i = 0; i < eoas_bms_alarm_numberof; i++)
         {
-            statusStreamBMS << "\tNo Faults. All Alarms Bit Down\n";
-        }
-        else
-        {
-            for (uint8_t i = 1; i < eoas_bms_alarm_numberof; i++)
+            if((embot::core::binary::bit::check(currStatus, i)))
             {
-                std::string tmpString = (embot::core::binary::bit::check(currStatus, i)) ?  (s_boards_map_of_battery_alarm_status.at(i)).second : "";
-
-                if (tmpString != "")
-                {
-                    statusStreamBMS << "\t" << tmpString << "\n";
-                }
+                statusstring.append("\t");
+                statusstring.append(s_boards_map_of_battery_alarm_status.at(i).second);
+                statusstring.append("\n");
             }
         }
     }
-    else
+    else if(canBatteryData_.sensorType_ == eobrd_cantype_bat)
     {
-        uint8_t map_pos = 0;
-        statusStreamBAT << "STATUS_BAT:" << "\n";
-
-        for (const auto& [k,v] : s_boards_map_of_battery_alarm_status)
+        uint8_t bit_pos = 0;
+        for (uint8_t i = eoas_bms_alarm_numberof; i < eoas_battery_alarm_status_numberof; i = i+2)
         {
-            std::string tmpString = "";
-            uint8_t bit_pos = (uint8_t)k;
-
-            if (bit_pos > eoas_bms_alarm_numberof && bit_pos < eoas_battery_alarm_status_numberof)
+            if ((embot::core::binary::bit::check(currStatus, bit_pos) != embot::core::binary::bit::check(prevStatus, bit_pos)) || isFirstLoop)
             {
-                if (isFirstLoop)
+                statusstring.append("\t");
+                if((embot::core::binary::bit::check(currStatus, bit_pos)))
                 {
-                    tmpString = embot::core::binary::bit::check(currStatus, bit_pos) ? v : (s_boards_map_of_battery_alarm_status.at(map_pos+1)).second;
-                }
+                    statusstring.append(s_boards_map_of_battery_alarm_status.at(i).second);
+                } 
                 else
                 {
-                    if (embot::core::binary::bit::check(currStatus, bit_pos) != embot::core::binary::bit::check(prevStatus, bit_pos))
-                    {
-                        tmpString = embot::core::binary::bit::check(currStatus, bit_pos) ? v : (s_boards_map_of_battery_alarm_status.at(map_pos+1)).second;
-                    }
+                    statusstring.append(s_boards_map_of_battery_alarm_status.at(i+1).second);
                 }
-                if (tmpString != "")
-                {
-                    statusStreamBAT << "\t" << tmpString << "\n";
-                }
+                statusstring.append("\n");
             }
-            ++map_pos;
+            
+            ++bit_pos;
         }
-
     }
 
-    return true;
+    if(statusstring.empty())
+    {
+        statusstring.append("\tNo Faults Detected. All Alarms Bit Down\n");
+    }
+
+    
+    return statusstring;
 }
 
 double embObjBattery::calculateBoardTime(eOabstime_t current)
@@ -436,13 +418,13 @@ bool embObjBattery::getBatteryVoltage(double &voltage)
 
 bool embObjBattery::getBatteryCurrent(double &current)
 {
-    current = (canBatteryData_.current_ != 0) ? canBatteryData_.current_ : NAN;
+    current = canBatteryData_.current_;
     return true;
 }
 
 bool embObjBattery::getBatteryCharge(double &charge)
 {
-    charge = canBatteryData_.charge_;
+    charge = (canBatteryData_.charge_ != 0.0) ? canBatteryData_.charge_ : NAN;
     return true;
 }
 
@@ -461,7 +443,7 @@ bool embObjBattery::getBatteryTemperature(double &temperature)
 bool embObjBattery::getBatteryInfo(std::string &battery_info)
 {
     std::stringstream ss;
-    ss << "{\"temperature\":" << canBatteryData_.temperature_ << ",\"voltage\":" << canBatteryData_.voltage_ << ",\"charge\":" << canBatteryData_.charge_ << ",\"status\":" << canBatteryData_.status_
+    ss << "{\"temperature\":" << canBatteryData_.temperature_ << ",\"voltage\":" << canBatteryData_.voltage_ << ",\"current\":" << canBatteryData_.current_ << ",\"charge\":" << canBatteryData_.charge_ << ",\"status\":" << canBatteryData_.status_
        << ",\"ts\":" << canBatteryData_.timeStamp_ << "}" << std::endl;
 
     battery_info = ss.str();
@@ -474,7 +456,7 @@ bool CanBatteryData::operator==(const CanBatteryData &other) const
         return false;
     if ((int)(voltage_ * 10) != (int)(other.voltage_ * 10))  // Only one digit after dot
         return false;
-    if (current_ != other.current_)
+    if ((int)(current_ * 10) != (int)(other.current_ * 10))
         return false;
     if (charge_ != other.charge_)
         return false;
@@ -484,6 +466,9 @@ bool CanBatteryData::operator==(const CanBatteryData &other) const
         return false;
     if (sensorName_ != other.sensorName_)
         return false;
+    if (sensorType_ != other.sensorType_)
+        return false;
+    
     return true;
 }
 
