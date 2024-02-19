@@ -89,6 +89,7 @@ protected:
     Diagnostic::LowLevel::EntityNameProvider &m_entityNameProvider;
     
     void printBaseInfo();
+    void getCanBoardsFromMaps(char *canboards1, char *canboards2, uint16_t canmask1, uint16_t canmask2);
 };
 
 class Diagnostic::LowLevel::ConfigParser : public Diagnostic::LowLevel::DefaultParser

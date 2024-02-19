@@ -48,7 +48,23 @@ void DefaultParser::printBaseInfo()
     m_dnginfo.baseInfo.finalMessage.append(str);
 }
 
+void DefaultParser::getCanBoardsFromMaps(char *canboards1, char* canboards2, uint16_t canmask1, uint16_t canmask2)
+{
+    for(int i=1; i<15; i++)
+    {
+        if ( (canmask1 & (1<<i)) == (1<<i))
+        {
+            strcat(canboards1,  std::to_string(i).c_str());
+            strcat(canboards1, " ");
+        }
 
+        if ( (canmask2 & (1<<i)) == (1<<i))
+        {
+            strcat(canboards2,  std::to_string(i).c_str());
+            strcat(canboards2, " ");
+        }
+    }
+}
 /**************************************************************************************************************************/
 /******************************************   ConfigParser   ***************************************************/
 /**************************************************************************************************************************/
@@ -1114,9 +1130,8 @@ void SysParser::parseInfo()
             m_dnginfo.baseInfo.finalMessage.append(str);
 
         }break;
-
-        case eoerror_value_SYS_canservices_boards_lostcontact: 
-        case eoerror_value_SYS_canservices_boards_retrievedcontact:
+        
+        case eoerror_value_SYS_canservices_boards_lostcontact:
         {
             eOmn_serv_category_t serv_category = (eOmn_serv_category_t)m_dnginfo.param16;
             uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
@@ -1124,26 +1139,32 @@ void SysParser::parseInfo()
             char lostCanBoards1[64] = {0};
             char lostCanBoards2[64] = {0};
 
-            for(int i=1; i<15; i++)
-            {
-                if ( (lostMaskcan1 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards1,  std::to_string(i).c_str());
-                    strcat(lostCanBoards1, " ");
-                }
-
-                if ( (lostMaskcan2 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards2,  std::to_string(i).c_str());
-                    strcat(lostCanBoards2, " ");
-                }
-            }
-
+            getCanBoardsFromMaps(lostCanBoards1, lostCanBoards2, lostMaskcan1, lostMaskcan2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. Lost can boards on (can1map, can2map) = ([ %s ], [ %s ] )",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category),
                 lostCanBoards1, lostCanBoards2
+            );
+
+            m_dnginfo.baseInfo.finalMessage.append(str);
+
+        } break;
+
+        case eoerror_value_SYS_canservices_boards_retrievedcontact:
+        {
+            eOmn_serv_category_t serv_category = (eOmn_serv_category_t)m_dnginfo.param16;
+            uint16_t retrievedMaskcan1 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
+            uint16_t retrievedMaskcan2 = (m_dnginfo.param64 & 0x000000000000ffff);
+            char retrievedCanBoards1[64] = {0};
+            char retrievedCanBoards2[64] = {0};
+
+            getCanBoardsFromMaps(retrievedCanBoards1, retrievedCanBoards2, retrievedMaskcan1, retrievedMaskcan2);
+
+            snprintf(str, sizeof(str), "%s Type of service category is %s. Retrieved can boards on (can1map, can2map) = ([ %s ], [ %s ] ).",
+                m_dnginfo.baseMessage.c_str(),
+                eomn_servicecategory2string(serv_category),
+                retrievedCanBoards1, retrievedCanBoards2
             );
 
             m_dnginfo.baseInfo.finalMessage.append(str);
@@ -1159,20 +1180,7 @@ void SysParser::parseInfo()
             char foundCanBoards1[64] = {0};
             char foundCanBoards2[64] = {0};
 
-            for(int i=1; i<15; i++)
-            {
-                if ( (foundMaskcan1 & (1<<i)) == (1<<i) )
-                {
-                    strcat(foundCanBoards1,  std::to_string(i).c_str());
-                    strcat(foundCanBoards1, " ");
-                }
-
-                if ( (foundMaskcan2 & (1<<i)) == (1<<i) )
-                {
-                    strcat(foundCanBoards2,  std::to_string(i).c_str());
-                    strcat(foundCanBoards2, " ");
-                }
-            }
+            getCanBoardsFromMaps(foundCanBoards1, foundCanBoards2, foundMaskcan1, foundMaskcan2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. CAN boards are on (can1map, can2map) = ([ %s ], [ %s ])",
                 m_dnginfo.baseMessage.c_str(),
@@ -1192,20 +1200,7 @@ void SysParser::parseInfo()
             char lostCanBoards1[64] = {0};
             char lostCanBoards2[64] = {0};
 
-            for(int i=1; i<15; i++)
-            {
-                if ( (lostMaskcan1 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards1, std::to_string(i).c_str());
-                    strcat(lostCanBoards1, " ");
-                }
-
-                if ( (lostMaskcan2 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards2, std::to_string(i).c_str());
-                    strcat(lostCanBoards2, " ");
-                }
-            }
+            getCanBoardsFromMaps(lostCanBoards1, lostCanBoards2, lostMaskcan1, lostMaskcan2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ], [ %s ]).",
                 m_dnginfo.baseMessage.c_str(),
@@ -1226,20 +1221,7 @@ void SysParser::parseInfo()
             char retrievedCanBoards1[64] = {0};
             char retrievedCanBoards2[64] = {0};
 
-            for(int i=1; i<15; i++)
-            {
-                if ( (retrievedMaskcan1 & (1<<i)) == (1<<i))
-                {
-                    strcat(retrievedCanBoards1, std::to_string(i).c_str());
-                    strcat(retrievedCanBoards1, " ");
-                }
-
-                if ( (retrievedMaskcan2 & (1<<i)) == (1<<i))
-                {
-                    strcat(retrievedCanBoards2, std::to_string(i).c_str());
-                    strcat(retrievedCanBoards2, " ");
-                }
-            }
+            getCanBoardsFromMaps(retrievedCanBoards1, retrievedCanBoards2, retrievedMaskcan1, retrievedMaskcan2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. CAN boards are on (can1map, can2map) = ([ %s ], [ %s ]). Total retrieving time: %d [ms]",
                 m_dnginfo.baseMessage.c_str(),
@@ -1262,20 +1244,7 @@ void SysParser::parseInfo()
             char lostCanBoards1[64] = {0};
             char lostCanBoards2[64] = {0};
 
-            for(int i=1; i<15; i++)
-            {
-                if ( (lostMaskcan1 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards1, std::to_string(i).c_str());
-                    strcat(lostCanBoards1, " ");
-                }
-
-                if ( (lostMaskcan2 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards2, std::to_string(i).c_str());
-                    strcat(lostCanBoards2, " ");
-                }
-            }
+            getCanBoardsFromMaps(lostCanBoards1, lostCanBoards2, lostMaskcan1, lostMaskcan2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ] , [ %s ]). Total disappearance time: %d [ms]",
                 m_dnginfo.baseMessage.c_str(),
