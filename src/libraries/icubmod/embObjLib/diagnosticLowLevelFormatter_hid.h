@@ -35,7 +35,8 @@ namespace Diagnostic {
     }
 }
 
-
+const int maxstr = 64;
+typedef char diagstr[maxstr];
 
 //In this class the Info formatter and the parsers collect the embedded diagnostic Info.
 //Only the info contained in Diagnostic::EmbeddedInfo  baseInfo are usefull for the user level.
@@ -89,7 +90,6 @@ protected:
     Diagnostic::LowLevel::EntityNameProvider &m_entityNameProvider;
     
     void printBaseInfo();
-    void getCanBoardsFromMaps(char *canboards1, char *canboards2, uint16_t canmask1, uint16_t canmask2);
 };
 
 class Diagnostic::LowLevel::ConfigParser : public Diagnostic::LowLevel::DefaultParser
@@ -156,6 +156,8 @@ public:
 
     void parseInfo();
 
+private:
+void canMask2canBoardsStr(uint16_t canmask, diagstr canboardsstr);
 };
 
 

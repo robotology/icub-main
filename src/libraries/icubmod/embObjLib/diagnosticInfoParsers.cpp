@@ -48,23 +48,6 @@ void DefaultParser::printBaseInfo()
     m_dnginfo.baseInfo.finalMessage.append(str);
 }
 
-void DefaultParser::getCanBoardsFromMaps(char *canboards1, char* canboards2, uint16_t canmask1, uint16_t canmask2)
-{
-    for(int i=1; i<15; i++)
-    {
-        if ( (canmask1 & (1<<i)) == (1<<i))
-        {
-            strcat(canboards1,  std::to_string(i).c_str());
-            strcat(canboards1, " ");
-        }
-
-        if ( (canmask2 & (1<<i)) == (1<<i))
-        {
-            strcat(canboards2,  std::to_string(i).c_str());
-            strcat(canboards2, " ");
-        }
-    }
-}
 /**************************************************************************************************************************/
 /******************************************   ConfigParser   ***************************************************/
 /**************************************************************************************************************************/
@@ -796,10 +779,21 @@ void HwErrorParser::parseInfo()
 /******************************************   SysErrorParser   ***************************************************/
 /**************************************************************************************************************************/
 
-
+//  Private class functions
+void SysParser::canMask2canBoardsStr(uint16_t canmask, diagstr canboardsstr)
+{
+    for(int i=1; i<15; i++)
+    {
+        diagstr tmpstr{};
+        if ( (canmask & (1<<i)) == (1<<i))
+        {
+            snprintf(tmpstr, maxstr, "%d", i);
+            strcat(canboardsstr, tmpstr);
+        }
+    }
+}
 
 SysParser::SysParser(AuxEmbeddedInfo &dnginfo, EntityNameProvider &entityNameProvider):DefaultParser(dnginfo, entityNameProvider){;}
-
 void SysParser::parseInfo()
 {
     char str[512] = {0};
@@ -898,26 +892,26 @@ void SysParser::parseInfo()
 
         case eoerror_value_SYS_canservices_txfifooverflow:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s Frame.ID=%d, Frame.Size=%d Frame.Data=0x.%lx", 
-            m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), (m_dnginfo.param16&& 0x0fff), ((m_dnginfo.param16&& 0xf000)>>12), m_dnginfo.param64 );
+            snprintf(str, sizeof(str), " %s CanPort=%s Frame.ID=%d, Frame.Size=%d Frame.Data=0x%lx", 
+            m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), (m_dnginfo.param16 & 0x0fff), ((m_dnginfo.param16 & 0xf000)>>12), m_dnginfo.param64 );
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_canservices_txbusfailure:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s. Size of fifo is %d", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16&& 0xff00) >>8));
+            snprintf(str, sizeof(str), " %s CanPort=%s. Size of fifo is %d", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16 & 0xff00) >>8));
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_canservices_formingfailure:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s. Message class is %d. Message cmd is %d", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16&& 0xff00) >>8), (m_dnginfo.param16&& 0x00ff));
+            snprintf(str, sizeof(str), " %s CanPort=%s. Message class is %d. Message cmd is %d", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16 & 0xff00) >>8), (m_dnginfo.param16 & 0x00ff));
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_canservices_parsingfailure:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s. Frame.size=%d. Frame.Id=%d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16&& 0xf000) >>12), (m_dnginfo.param16&& 0x0fff));
+            snprintf(str, sizeof(str), " %s CanPort=%s. Frame.size=%d. Frame.Id=%d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16 & 0xf000) >>12), (m_dnginfo.param16 & 0x0fff));
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
@@ -1010,19 +1004,19 @@ void SysParser::parseInfo()
 
         case eoerror_value_SYS_canservices_canprint:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x.%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
+            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_canservices_rxmaisbug:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x.%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
+            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_canservices_rxfromwrongboard:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x.%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
+            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
@@ -1136,10 +1130,11 @@ void SysParser::parseInfo()
             eOmn_serv_category_t serv_category = (eOmn_serv_category_t)m_dnginfo.param16;
             uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
             uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x000000000000ffff);
-            char lostCanBoards1[64] = {0};
-            char lostCanBoards2[64] = {0};
+            diagstr lostCanBoards1 = {0};
+            diagstr lostCanBoards2 = {0};
 
-            getCanBoardsFromMaps(lostCanBoards1, lostCanBoards2, lostMaskcan1, lostMaskcan2);
+            canMask2canBoardsStr(lostMaskcan1, lostCanBoards1);
+            canMask2canBoardsStr(lostMaskcan2, lostCanBoards2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. Lost can boards on (can1map, can2map) = ([ %s ], [ %s ] )",
                 m_dnginfo.baseMessage.c_str(),
@@ -1156,10 +1151,11 @@ void SysParser::parseInfo()
             eOmn_serv_category_t serv_category = (eOmn_serv_category_t)m_dnginfo.param16;
             uint16_t retrievedMaskcan1 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
             uint16_t retrievedMaskcan2 = (m_dnginfo.param64 & 0x000000000000ffff);
-            char retrievedCanBoards1[64] = {0};
-            char retrievedCanBoards2[64] = {0};
+            diagstr retrievedCanBoards1 = {0};
+            diagstr retrievedCanBoards2 = {0};
 
-            getCanBoardsFromMaps(retrievedCanBoards1, retrievedCanBoards2, retrievedMaskcan1, retrievedMaskcan2);
+            canMask2canBoardsStr(retrievedMaskcan1, retrievedCanBoards1);
+            canMask2canBoardsStr(retrievedMaskcan2, retrievedCanBoards2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. Retrieved can boards on (can1map, can2map) = ([ %s ], [ %s ] ).",
                 m_dnginfo.baseMessage.c_str(),
@@ -1177,10 +1173,11 @@ void SysParser::parseInfo()
 	        uint16_t foundMaskcan1 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
             uint16_t foundMaskcan2 = (m_dnginfo.param64 & 0x000000000000ffff);
 
-            char foundCanBoards1[64] = {0};
-            char foundCanBoards2[64] = {0};
+            diagstr foundCanBoards1 = {0};
+            diagstr foundCanBoards2 = {0};
 
-            getCanBoardsFromMaps(foundCanBoards1, foundCanBoards2, foundMaskcan1, foundMaskcan2);
+            canMask2canBoardsStr(foundMaskcan1, foundCanBoards1);
+            canMask2canBoardsStr(foundMaskcan2, foundCanBoards2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. CAN boards are on (can1map, can2map) = ([ %s ], [ %s ])",
                 m_dnginfo.baseMessage.c_str(),
@@ -1197,10 +1194,11 @@ void SysParser::parseInfo()
             uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
             uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x000000000000ffff);
 
-            char lostCanBoards1[64] = {0};
-            char lostCanBoards2[64] = {0};
+            diagstr lostCanBoards1 = {0};
+            diagstr lostCanBoards2 = {0};
 
-            getCanBoardsFromMaps(lostCanBoards1, lostCanBoards2, lostMaskcan1, lostMaskcan2);
+            canMask2canBoardsStr(lostMaskcan1, lostCanBoards1);
+            canMask2canBoardsStr(lostMaskcan2, lostCanBoards2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ], [ %s ]).",
                 m_dnginfo.baseMessage.c_str(),
@@ -1218,10 +1216,11 @@ void SysParser::parseInfo()
             uint16_t retrievedMaskcan2 = (m_dnginfo.param64 & 0x000000000000ffff);
             uint32_t totRetrvTime = (m_dnginfo.param64 & 0xffffffff00000000) >> 32;
 
-            char retrievedCanBoards1[64] = {0};
-            char retrievedCanBoards2[64] = {0};
+            diagstr retrievedCanBoards1 = {0};
+            diagstr retrievedCanBoards2 = {0};
 
-            getCanBoardsFromMaps(retrievedCanBoards1, retrievedCanBoards2, retrievedMaskcan1, retrievedMaskcan2);
+            canMask2canBoardsStr(retrievedMaskcan1, retrievedCanBoards1);
+            canMask2canBoardsStr(retrievedMaskcan2, retrievedCanBoards2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. CAN boards are on (can1map, can2map) = ([ %s ], [ %s ]). Total retrieving time: %d [ms]",
                 m_dnginfo.baseMessage.c_str(),
@@ -1241,10 +1240,11 @@ void SysParser::parseInfo()
             uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x000000000000ffff);
             uint32_t totDisappTime = (m_dnginfo.param64 & 0xffffffff00000000) >> 32;
 
-            char lostCanBoards1[64] = {0};
-            char lostCanBoards2[64] = {0};
+            diagstr lostCanBoards1 = {0};
+            diagstr lostCanBoards2 = {0};
 
-            getCanBoardsFromMaps(lostCanBoards1, lostCanBoards2, lostMaskcan1, lostMaskcan2);
+            canMask2canBoardsStr(lostMaskcan1, lostCanBoards1);
+            canMask2canBoardsStr(lostMaskcan2, lostCanBoards2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ] , [ %s ]). Total disappearance time: %d [ms]",
                 m_dnginfo.baseMessage.c_str(),
