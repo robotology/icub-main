@@ -32,11 +32,11 @@ namespace Diagnostic {
         class AnalogSensorParser;
         class AuxEmbeddedInfo;
         class EntityNameProvider;
-        
     }
 }
 
-
+constexpr int diagstr_lenght = 64;
+typedef char diagstr[diagstr_lenght];
 
 //In this class the Info formatter and the parsers collect the embedded diagnostic Info.
 //Only the info contained in Diagnostic::EmbeddedInfo  baseInfo are usefull for the user level.
@@ -156,6 +156,10 @@ public:
 
     void parseInfo();
 
+private:
+void canMask2canBoardsStr(uint16_t canmask, diagstr canboardsstr);
+void getCanMonitorInfo(eOmn_serv_category_t &serv_category, diagstr boardsOnCan1, diagstr boardsOnCan2);
+void getCanMonitorInfoWithTime(eOmn_serv_category_t &serv_category, diagstr boardsOnCan1, diagstr boardsOnCan2, uint32_t &time);
 };
 
 

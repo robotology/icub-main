@@ -48,7 +48,6 @@ void DefaultParser::printBaseInfo()
     m_dnginfo.baseInfo.finalMessage.append(str);
 }
 
-
 /**************************************************************************************************************************/
 /******************************************   ConfigParser   ***************************************************/
 /**************************************************************************************************************************/
@@ -597,7 +596,12 @@ void MotionControlParser::parseInfo()
 
         case eoerror_value_MC_generic_error: //TBD Check print
         {
-            snprintf(str, sizeof(str), " %s (Error is %lx)", m_dnginfo.baseMessage.c_str(), m_dnginfo.param64);
+            uint16_t joint_num = m_dnginfo.param16;
+            m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
+
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) (Error is %lx)", 
+                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, m_dnginfo.param64
+                                        );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
         
@@ -775,10 +779,38 @@ void HwErrorParser::parseInfo()
 /******************************************   SysErrorParser   ***************************************************/
 /**************************************************************************************************************************/
 
+//  Private class functions
+void SysParser::canMask2canBoardsStr(uint16_t canmask, diagstr canboardsstr)
+{
+    for(int i=1; i<15; i++)
+    {
+        diagstr tmpstr{};
+        if ( (canmask & (1<<i)) == (1<<i))
+        {
+            snprintf(tmpstr, diagstr_lenght, "%d", i);
+            strcat(canboardsstr, tmpstr);
+        }
+    }
+}
 
+void SysParser::getCanMonitorInfo(eOmn_serv_category_t &serv_category, diagstr boardsOnCan1, diagstr boardsOnCan2)
+{
+    serv_category = (eOmn_serv_category_t)m_dnginfo.param16;
+    uint16_t boardsMaskCan1 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
+    uint16_t boardsMaskCan2 = (m_dnginfo.param64 & 0x000000000000ffff);
+
+    canMask2canBoardsStr(boardsMaskCan1, boardsOnCan1);
+    canMask2canBoardsStr(boardsMaskCan2, boardsOnCan2);
+
+}
+
+void SysParser::getCanMonitorInfoWithTime(eOmn_serv_category_t &serv_category, diagstr boardsOnCan1, diagstr boardsOnCan2, uint32_t &time)
+{
+    getCanMonitorInfo(serv_category, boardsOnCan1, boardsOnCan2);
+    time = (m_dnginfo.param64 & 0xffffffff00000000) >> 32;
+}
 
 SysParser::SysParser(AuxEmbeddedInfo &dnginfo, EntityNameProvider &entityNameProvider):DefaultParser(dnginfo, entityNameProvider){;}
-
 void SysParser::parseInfo()
 {
     char str[512] = {0};
@@ -877,26 +909,26 @@ void SysParser::parseInfo()
 
         case eoerror_value_SYS_canservices_txfifooverflow:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s Frame.ID=%d, Frame.Size=%d Frame.Data=0x.%lx", 
-            m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), (m_dnginfo.param16&& 0x0fff), ((m_dnginfo.param16&& 0xf000)>>12), m_dnginfo.param64 );
+            snprintf(str, sizeof(str), " %s CanPort=%s Frame.ID=%d, Frame.Size=%d Frame.Data=0x%lx", 
+            m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), (m_dnginfo.param16 & 0x0fff), ((m_dnginfo.param16 & 0xf000)>>12), m_dnginfo.param64 );
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_canservices_txbusfailure:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s. Size of fifo is %d", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16&& 0xff00) >>8));
+            snprintf(str, sizeof(str), " %s CanPort=%s. Size of fifo is %d", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16 & 0xff00) >>8));
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_canservices_formingfailure:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s. Message class is %d. Message cmd is %d", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16&& 0xff00) >>8), (m_dnginfo.param16&& 0x00ff));
+            snprintf(str, sizeof(str), " %s CanPort=%s. Message class is %d. Message cmd is %d", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16 & 0xff00) >>8), (m_dnginfo.param16 & 0x00ff));
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_canservices_parsingfailure:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s. Frame.size=%d. Frame.Id=%d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16&& 0xf000) >>12), (m_dnginfo.param16&& 0x0fff));
+            snprintf(str, sizeof(str), " %s CanPort=%s. Frame.size=%d. Frame.Id=%d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), ((m_dnginfo.param16 & 0xf000) >>12), (m_dnginfo.param16 & 0x0fff));
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
@@ -989,19 +1021,19 @@ void SysParser::parseInfo()
 
         case eoerror_value_SYS_canservices_canprint:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x.%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
+            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_canservices_rxmaisbug:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x.%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
+            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
         case eoerror_value_SYS_canservices_rxfromwrongboard:
         {
-            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x.%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
+            snprintf(str, sizeof(str), " %s CanPort=%s Frame.Size=%d Frame.Data=0x%lx", m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.param16, m_dnginfo.param64 );
             m_dnginfo.baseInfo.finalMessage.append(str);
         }break;
 
@@ -1109,31 +1141,13 @@ void SysParser::parseInfo()
             m_dnginfo.baseInfo.finalMessage.append(str);
 
         }break;
-
-        case eoerror_value_SYS_canservices_boards_lostcontact: //TODO: DONE (see eomn_servicecategory2string) make a specific message.need some translation from enum to string
-        case eoerror_value_SYS_canservices_boards_retrievedcontact://TODO: DONE  (see eomn_servicecategory2string) make a specific message.need some translation from enum to string
+        
+        case eoerror_value_SYS_canservices_boards_lostcontact:
         {
-            eOmn_serv_category_t serv_category = (eOmn_serv_category_t)m_dnginfo.param16;
-            uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
-            uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
-            char lostCanBoards1[64] = {0};
-            char lostCanBoards2[64] = {0};
-
-            for(int i=1; i<15; i++)
-            {
-                if ( (lostMaskcan1 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards1,  std::to_string(i).c_str());
-                    strcat(lostCanBoards1, " ");
-                }
-
-                if ( (lostMaskcan2 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards2,  std::to_string(i).c_str());
-                    strcat(lostCanBoards2, " ");
-                }
-            }
-
+            eOmn_serv_category_t serv_category; 
+            diagstr lostCanBoards1 = {0};
+            diagstr lostCanBoards2 = {0};
+            getCanMonitorInfo(serv_category, lostCanBoards1, lostCanBoards2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. Lost can boards on (can1map, can2map) = ([ %s ], [ %s ] )",
                 m_dnginfo.baseMessage.c_str(),
@@ -1145,45 +1159,29 @@ void SysParser::parseInfo()
 
         } break;
 
-/**
- * {eoerror_value_SYS_canservices_monitor_regularcontact, "SYS: a service has verified that the TX of its CAN boards is regular. In sourceaddress the eOmn_serv_category_t, in par64 LS 32 bits the bit mask of boards (CAN1 in MS 16 bits and CAN2 in LS 16 bits)"},
-    {eoerror_value_SYS_canservices_monitor_lostcontact,  "SYS: a service has detected that some CAN boards have stopped transmission. In sourceaddress the eOmn_serv_category_t, in par64 LS 32 bits the bit mask of lost board (CAN1 in MS 16 bits and CAN2 in LS 16 bits), in in par64 MS 32 bits the time in ms since last contact"},
-    {eoerror_value_SYS_canservices_monitor_stillnocontact,  "SYS: a service has detected that some CAN boards are still not transmitting. In sourceaddress the eOmn_serv_category_t, in par64 LS 32 bits the bit mask of lost board (CAN1 in MS 16 bits and CAN2 in LS 16 bits), in in par64 MS 32 bits the total disappearence time in ms"},
-    {eoerror_value_SYS_canservices_monitor_retrievedcontact, "SYS: a service has recovered all CAN boards that were not transmitting. In sourceaddress the eOmn_serv_category_t)"}
-
-*/
-        case eoerror_value_SYS_canservices_monitor_retrievedcontact: //TODO: make a specific message.need some translation from enum to string
+        case eoerror_value_SYS_canservices_boards_retrievedcontact:
         {
-            eOmn_serv_category_t serv_category = (eOmn_serv_category_t)m_dnginfo.baseInfo.sourceCANBoardAddr;
-            snprintf(str, sizeof(str), "%s Type of service category is %s.",
+            eOmn_serv_category_t serv_category;
+            diagstr retrievedCanBoards1 = {0};
+            diagstr retrievedCanBoards2 = {0};
+            getCanMonitorInfo(serv_category, retrievedCanBoards1, retrievedCanBoards2);
+
+            snprintf(str, sizeof(str), "%s Type of service category is %s. Retrieved can boards on (can1map, can2map) = ([ %s ], [ %s ] ).",
                 m_dnginfo.baseMessage.c_str(),
-                eomn_servicecategory2string(serv_category)
+                eomn_servicecategory2string(serv_category),
+                retrievedCanBoards1, retrievedCanBoards2
             );
+
             m_dnginfo.baseInfo.finalMessage.append(str);
+
         } break;
 
-        case eoerror_value_SYS_canservices_monitor_regularcontact: //TODO: make a specific message.need some translation from enum to string
+        case eoerror_value_SYS_canservices_monitor_regularcontact:
         {
-            eOmn_serv_category_t serv_category = (eOmn_serv_category_t)m_dnginfo.baseInfo.sourceCANBoardAddr;
-            uint16_t foundMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
-            uint16_t foundMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
-            char foundCanBoards1[64] = {0};
-            char foundCanBoards2[64] = {0};
-
-            for(int i=1; i<15; i++)
-            {
-                if ( (foundMaskcan1 & (1<<i)) == (1<<i))
-                {
-                    strcat(foundCanBoards1,  std::to_string(i).c_str());
-                    strcat(foundCanBoards1, " ");
-                }
-
-                if ( (foundMaskcan2 & (1<<i)) == (1<<i))
-                {
-                    strcat(foundCanBoards1,  std::to_string(i).c_str());
-                    strcat(foundCanBoards2, " ");
-                }
-            }
+            eOmn_serv_category_t serv_category;
+            diagstr foundCanBoards1 = {0};
+            diagstr foundCanBoards2 = {0};
+            getCanMonitorInfo(serv_category, foundCanBoards1, foundCanBoards2);
 
             snprintf(str, sizeof(str), "%s Type of service category is %s. CAN boards are on (can1map, can2map) = ([ %s ], [ %s ])",
                 m_dnginfo.baseMessage.c_str(),
@@ -1194,66 +1192,51 @@ void SysParser::parseInfo()
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
 
-        case eoerror_value_SYS_canservices_monitor_lostcontact: //TODO: make a specific message.need some translation from enum to string
+        case eoerror_value_SYS_canservices_monitor_lostcontact:
         {
-            eOmn_serv_category_t serv_category = (eOmn_serv_category_t)m_dnginfo.baseInfo.sourceCANBoardAddr;
-            uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
-            uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
-            uint64_t timeLastContact = (m_dnginfo.param64 & 0xffff000000000000) >> 48;
-            char lostCanBoards1[64] = {0};
-            char lostCanBoards2[64] = {0};
+            eOmn_serv_category_t serv_category;
+            diagstr lostCanBoards1 = {0};
+            diagstr lostCanBoards2 = {0};
+            getCanMonitorInfo(serv_category, lostCanBoards1, lostCanBoards2);
 
-            for(int i=1; i<15; i++)
-            {
-                if ( (lostMaskcan1 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards1, std::to_string(i).c_str());
-                    strcat(lostCanBoards1, " ");
-                }
-
-                if ( (lostMaskcan2 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards2, std::to_string(i).c_str());
-                    strcat(lostCanBoards2, " ");
-                }
-            }
-
-            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ], [ %s ]). Time since last contact: %ld [ms]",
+            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ], [ %s ]).",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category),
                 lostCanBoards1,
-                lostCanBoards2,
-                timeLastContact
+                lostCanBoards2
             );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
 
-        case eoerror_value_SYS_canservices_monitor_stillnocontact://TODO: make a specific message.need some translation from enum to string
+         case eoerror_value_SYS_canservices_monitor_retrievedcontact:
         {
-            eOmn_serv_category_t serv_category = (eOmn_serv_category_t)m_dnginfo.baseInfo.sourceCANBoardAddr;
-            uint16_t lostMaskcan2 = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
-            uint16_t lostMaskcan1 = (m_dnginfo.param64 & 0x000000000000ffff);
-            uint64_t totDisappTime = (m_dnginfo.param64 & 0xffff000000000000) >> 48;
+            eOmn_serv_category_t serv_category;
+            uint32_t totRetrvTime;
+            diagstr retrievedCanBoards1 = {0};
+            diagstr retrievedCanBoards2 = {0};
+            getCanMonitorInfoWithTime(serv_category, retrievedCanBoards1, retrievedCanBoards2, totRetrvTime);
 
-            char lostCanBoards1[64] = {0};
-            char lostCanBoards2[64] = {0};
 
-            for(int i=1; i<15; i++)
-            {
-                if ( (lostMaskcan1 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards1, std::to_string(i).c_str());
-                    strcat(lostCanBoards1, " ");
-                }
+            snprintf(str, sizeof(str), "%s Type of service category is %s. CAN boards are on (can1map, can2map) = ([ %s ], [ %s ]). Total retrieving time: %d [ms]",
+                m_dnginfo.baseMessage.c_str(),
+                eomn_servicecategory2string(serv_category),
+                retrievedCanBoards1,
+                retrievedCanBoards2,
+                totRetrvTime
+            );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
 
-                if ( (lostMaskcan2 & (1<<i)) == (1<<i))
-                {
-                    strcat(lostCanBoards2, std::to_string(i).c_str());
-                    strcat(lostCanBoards2, " ");
-                }
-            }
 
-            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ] , [ %s ]). Total disappearance time: %ld [ms]",
+        case eoerror_value_SYS_canservices_monitor_stillnocontact:
+        {
+            eOmn_serv_category_t serv_category;
+            uint32_t totDisappTime;
+            diagstr lostCanBoards1 = {0};
+            diagstr lostCanBoards2 = {0};
+            getCanMonitorInfoWithTime(serv_category, lostCanBoards1, lostCanBoards2, totDisappTime);
+
+            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost CAN boards are on (can1map, can2map) = ([ %s ] , [ %s ]). Total disappearance time: %d [ms]",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category),
                 lostCanBoards1,
