@@ -664,21 +664,24 @@ bool embObjMotionControl::saveCouplingsData(void)
            jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc4plusmais_based.jomocoupling);
 
         } break;
+
         case eomn_serv_MC_mc2pluspsc:
         {
             jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc2pluspsc.jomocoupling);
 
         } break;
+
         case eomn_serv_MC_mc4plusfaps:
         {
             jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc4plusfaps.jomocoupling);
 
         } break;
-        case eomn_serv_MC_mc4pluspmc:
-        {
-            jc_dest = &dummyjomocoupling; // this mode does not have a coupling as it is w/ 7 independent joints
 
+        case eomn_serv_MC_advfoc:
+        {
+            jc_dest = &dummyjomocoupling;
         } break;
+
         case eomn_serv_MC_mc4:
         {
             return true;
@@ -688,33 +691,11 @@ bool embObjMotionControl::saveCouplingsData(void)
         {
             return true;
         } break;
+
         default:
         {
             return false;
         }
-    }
-
-
-    // this mode does not use jointsets but only eOmc_jointset_configuration_t
-    if(eomn_serv_MC_mc4pluspmc == serviceConfig.ethservice.configuration.type)
-    {
-        eOmc_arrayof_7jointsetconfig_t *arrayof7jset = &(serviceConfig.ethservice.configuration.data.mc.mc4pluspmc.arrayof7jointsets);
-        EOarray *array = eo_array_New(7, sizeof(eOmc_jointset_configuration_t), arrayof7jset);
-        // must initialise each entry of array
-
-        //for(size_t s=0; s< _jsets.size(); s++)
-        for(size_t s=0; s<4; s++)
-        {
-            eOmc_jointset_configuration_t* cfg_ptr = _jsets[s].getConfiguration();
-            eo_array_PushBack(array, cfg_ptr);
-        }
-        for(size_t e=0; e<3; e++)
-        {
-            eOmc_jointset_configuration_t cfg = {0};
-            eo_array_PushBack(array, &cfg);
-        }
-
-        return true;
     }
 
 
@@ -760,6 +741,27 @@ bool embObjMotionControl::saveCouplingsData(void)
     {
         eOmc_jointset_configuration_t* cfg_ptr = _jsets[s].getConfiguration();
         memcpy(&(jc_dest->jsetcfg[s]), cfg_ptr, sizeof(eOmc_jointset_configuration_t));
+    }
+
+
+    if(eomn_serv_MC_advfoc == serviceConfig.ethservice.configuration.type)
+    {
+        // i will copy data from jc_dest to the effective destination
+        eOmc_adv4jomo_coupling_t *ajc = &serviceConfig.ethservice.configuration.data.mc.advfoc.adv4jomocoupling;
+        ajc->type = eommccoupling_traditional4x4;
+        // i copy some fields as they are
+        std::memmove(&ajc->data.coupling4x4.joint2set[0], &jc_dest->joint2set[0], 4*sizeof(uint8_t));
+        std::memmove(&ajc->data.coupling4x4.jsetcfg[0], &jc_dest->jsetcfg[0], 4*sizeof(eOmc_jointset_configuration_t));
+        std::memmove(&ajc->data.coupling4x4.joint2motor, &jc_dest->joint2motor, sizeof(eOmc_4x4_matrix_t));
+        std::memmove(&ajc->data.coupling4x4.motor2joint, &jc_dest->motor2joint, sizeof(eOmc_4x4_matrix_t));
+        // and i will copy only 4x4 from one field
+        for(uint8_t r=0; r<4; r++)
+        {
+            for(uint8_t c=0; c<4; c++)
+            {
+                ajc->data.coupling4x4.encoder2joint4x4[r][c] = jc_dest->encoder2joint[r][c];
+            }
+        }
     }
 
     return true;
@@ -860,7 +862,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     {
         bool lowLevPidisMandatory = false;
 
-        if(serviceConfig.ethservice.configuration.type == eomn_serv_MC_foc)
+        if((serviceConfig.ethservice.configuration.type == eomn_serv_MC_foc) || (serviceConfig.ethservice.configuration.type == eomn_serv_MC_advfoc))
         {
             lowLevPidisMandatory = true;
         }
@@ -974,10 +976,26 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             return false;
     }
 
-    /////// [2FOC] or [AMCBLDC]
-    if(serviceConfig.ethservice.configuration.type == eomn_serv_MC_foc)
+    /////// [2FOC] or [AMCBLDC] or [ADVFOC_COMMON]
+    eOmn_serv_type_t servtype = static_cast<eOmn_serv_type_t>(serviceConfig.ethservice.configuration.type);
+
+    if((eomn_serv_MC_foc == servtype) || (eomn_serv_MC_advfoc == servtype))
     {
-        std::string groupName = (static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.mc.foc_based.type) == eobrd_foc) ? "2FOC" : "AMCBLDC";
+        std::string groupName = {};
+
+        if(eomn_serv_MC_foc == servtype)
+        {
+            // in here the name of the group depends on the configured board
+            eObrd_type_t brd = static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.mc.foc_based.type);
+            groupName = (eobrd_foc == brd) ? "2FOC" : "AMCBLDC";
+        }
+        else if(eomn_serv_MC_advfoc == servtype)
+        {
+            // but in here we may have multiple boards, so ... it is better to use a generic name
+            // ADVFOC with multiple columns, one for each motor
+            groupName = "ADVFOC";
+        }
+
         if(!_mcparser->parseFocGroup(config, _foc_based_info, groupName, _temperatureSensorsVector))
             return false;
 
@@ -5108,8 +5126,8 @@ bool embObjMotionControl::iNeedCouplingsInfo(void)
         (mc_serv_type == eomn_serv_MC_mc4plus) ||
         (mc_serv_type == eomn_serv_MC_mc4plusmais) ||
         (mc_serv_type == eomn_serv_MC_mc2pluspsc) ||
-        (mc_serv_type == eomn_serv_MC_mc4plusfaps)
-        || (mc_serv_type == eomn_serv_MC_mc4pluspmc)
+        (mc_serv_type == eomn_serv_MC_mc4plusfaps) ||
+        (mc_serv_type == eomn_serv_MC_advfoc)
       )
         return true;
     else

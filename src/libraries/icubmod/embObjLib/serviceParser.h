@@ -215,6 +215,7 @@ typedef struct
 {
     eOmc_actuator_t                 type;
     eOmc_actuator_descriptor_t      desc;
+    eOmc_adv_actuator_descriptor_t  advdescr;
 } servMC_actuator_t;
 
 
@@ -335,9 +336,11 @@ public:
     bool convert(std::string const &fromstring, std::string &str, bool &formaterror);
     bool convert(std::string const &fromstring, const uint8_t strsize, char *str, bool &formaterror);
     bool convert(std::string const &fromstring, eObrd_location_t &location, bool &formaterror);
+    bool convert(std::string const &fromstring, eOlocation_t &location, bool &formaterror);
 
 
     bool convert(eObrd_location_t const &loc, char *str, int len);
+    bool convert(eOlocation_t const &loc, char *str, int len);
     bool convert(eObrd_canlocation_t const &canloc, char *str, int len);
 
     bool convert(eObrd_protocolversion_t const &prot, char *str, int len);
