@@ -334,7 +334,15 @@ bool EthMaintainer::command_program(eOipv4addr_t ipv4, FILE *programFile, eOupro
     eOipv4addr_t rxipv4addr;
     eOipv4port_t rxipv4port;
 
-    ++progdata.mNProgSteps;
+
+    // Commenting out line 345 fixes the programming result of ETH boards;
+    // leaving it causes an error message even if the programming went well
+    // see :
+    //  - https://github.com/robotology/icub-main/issues/939
+    //  - https://github.com/robotology/icub-main/pull/944
+    //  
+
+    //++progdata.mNProgSteps;
 
     int success=0;
 
@@ -1874,14 +1882,20 @@ bool EthMaintainer::program(eOipv4addr_t ipv4, eObrd_ethtype_t type, eOuprot_pro
     // we program the boards .......
     ret = command_program(ipv4, fp, partition, progress, &boardlist, result);
 
-
     if(false == ret)
     {
         if(_verbose)
         {
-            printf("ERROR: EthMaintainer::program() could not program board %s @ %s: %s.\n",
-                   targetboardtext, ipv4string.c_str(),
-                   result.c_str());
+            //TBD sepcify which board fails
+            // see https://github.com/robotology/icub-main/issues/945
+            printf("KO: EthMaintainer::program() could not program some of these boards:\n");
+            for(int i=0; i<pboards.size(); i++)
+            {
+            boardInfo2_t boardinfo = pboards.at(i)->getInfo();    
+            printf("board %s @ %s.\n",
+            eoboards_type2string2(eoboards_ethtype2type(boardinfo.boardtype), eobool_true),  
+            pboards.at(i)->_ipv4string.c_str()); 
+            }
         }
         return false;
     }
@@ -1889,7 +1903,16 @@ bool EthMaintainer::program(eOipv4addr_t ipv4, eObrd_ethtype_t type, eOuprot_pro
 
     if(_verbose)
     {
-        printf("OK: EthMaintainer::program() has succesfully programmed board %s @ %s.\n", targetboardtext, ipv4string.c_str());
+
+        for(int i=0; i<pboards.size(); i++)
+        {
+            //list of programmed boards
+            // see https://github.com/robotology/icub-main/pull/944
+            boardInfo2_t boardinfo = pboards.at(i)->getInfo();    
+            printf("OK: EthMaintainer::program() has succesfully programmed board %s @ %s.\n",
+            eoboards_type2string2(eoboards_ethtype2type(boardinfo.boardtype), eobool_true),  
+            pboards.at(i)->_ipv4string.c_str()); 
+        }
     }
 
 
