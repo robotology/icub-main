@@ -334,7 +334,8 @@ bool EthMaintainer::command_program(eOipv4addr_t ipv4, FILE *programFile, eOupro
     eOipv4addr_t rxipv4addr;
     eOipv4port_t rxipv4port;
 
-    ++progdata.mNProgSteps;
+    // commenting out fixes the programming result
+    //++progdata.mNProgSteps;
 
     int success=0;
 
@@ -1874,14 +1875,19 @@ bool EthMaintainer::program(eOipv4addr_t ipv4, eObrd_ethtype_t type, eOuprot_pro
     // we program the boards .......
     ret = command_program(ipv4, fp, partition, progress, &boardlist, result);
 
-
     if(false == ret)
     {
         if(_verbose)
         {
-            printf("ERROR: EthMaintainer::program() could not program board %s @ %s: %s.\n",
-                   targetboardtext, ipv4string.c_str(),
-                   result.c_str());
+            //TBD sepcify which board fails
+            printf("KO: EthMaintainer::program() could not program some of these boards:\n");
+            for(int i=0; i<pboards.size(); i++)
+            {
+            boardInfo2_t boardinfo = pboards.at(i)->getInfo();    
+            printf("board %s @ %s.\n",
+            eoboards_type2string2(eoboards_ethtype2type(boardinfo.boardtype), eobool_true),  
+            pboards.at(i)->_ipv4string.c_str()); 
+            }
         }
         return false;
     }
@@ -1889,7 +1895,15 @@ bool EthMaintainer::program(eOipv4addr_t ipv4, eObrd_ethtype_t type, eOuprot_pro
 
     if(_verbose)
     {
-        printf("OK: EthMaintainer::program() has succesfully programmed board %s @ %s.\n", targetboardtext, ipv4string.c_str());
+
+        for(int i=0; i<pboards.size(); i++)
+        {
+            //list of programmed boards
+            boardInfo2_t boardinfo = pboards.at(i)->getInfo();    
+            printf("OK: EthMaintainer::program() has succesfully programmed board %s @ %s.\n",
+            eoboards_type2string2(eoboards_ethtype2type(boardinfo.boardtype), eobool_true),  
+            pboards.at(i)->_ipv4string.c_str()); 
+        }
     }
 
 
