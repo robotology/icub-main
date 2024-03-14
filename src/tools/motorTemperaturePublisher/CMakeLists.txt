@@ -2,7 +2,7 @@
 # Authors: Jacopo Losi
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-project(MotorTemperaturePublisher)
+project(motorTemperaturePublisher)
 # find YARP
 find_package(YARP COMPONENTS os sig dev)
 # set up our program

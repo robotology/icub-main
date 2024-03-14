@@ -15,7 +15,7 @@
  * Public License for more details
 */
 
-#include "TemperatureManager.h"
+#include "MotorTemperaturePublisher.h"
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/os/Network.h>
 
@@ -37,11 +37,9 @@ int main(int argc, char * argv[])
     }
     
     /* create your module */
-    TemperatureManager module;
+    MotorTemperaturePublisher module;
     /* prepare and configure the resource finder */
     ResourceFinder rf;
-    //rf.seDefaultContext("TemperatureManager");
-    //rf.setDefaultConfigFile("config.ini");
     rf.configure(argc, argv);
     rf.setVerbose(true);
     yDebug() << "Configuring and starting module. \n";
