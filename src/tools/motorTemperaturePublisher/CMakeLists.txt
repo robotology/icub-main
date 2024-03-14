@@ -1,3 +1,7 @@
+# Copyright: (C) 2024 iCub Facility - Istituto Italiano di Tecnologia
+# Authors: Jacopo Losi
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
 project(MotorTemperaturePublisher)
 # find YARP
 find_package(YARP COMPONENTS os sig dev)
