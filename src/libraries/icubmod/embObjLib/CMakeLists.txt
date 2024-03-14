@@ -109,6 +109,7 @@ install(TARGETS ${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} YARP::YARP_os
                                       YARP::YARP_dev
                                       icub_firmware_shared::embobj
+                                      icub_firmware_shared::embot
                                       ACE::ACE)
 
 icub_export_library(${PROJECT_NAME})

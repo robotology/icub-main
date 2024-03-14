@@ -6,10 +6,10 @@
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 
-#include <string>
 #include "diagnosticLowLevelFormatter_hid.h"
 #include "diagnosticLowLevelFormatter.h"
 #include "EoBoards.h"
+#include "embot_core_binary.h"
 
 
 using namespace Diagnostic::LowLevel;
@@ -532,6 +532,69 @@ void ConfigParser::parseInfo()
 /******************************************   MotionControlParser   ***************************************************/
 /**************************************************************************************************************************/
 
+// private class functions
+std::string MotionControlParser::motorStatusBitsToString(eOmc_motorFaultState_t motorstatus)
+{
+    // dimesion of the array is hard-code but it must be aligned w/ the union typedef eOmc_motorFaultState_t
+    static const std::array<std::string_view, eOmc_motorFaultState_numberof> s_motor_fault_status =
+    {
+        //B0 L
+        "ExternalFaultAsserted",
+        "UnderVoltageFailure",
+        "OverVoltageFailure",
+        "OverCurrentFailure",
+        //B0 H
+        "DHESInvalidValue",
+        "AS5045CSumError",
+        "DHESInvalidSequence",
+        "CANInvalidProtocol",
+        //B1 L
+        "CAN_BufferOverRun",
+        "SetpointExpired",
+        "CAN_TXIsPasv",
+        "CAN_RXIsPasv",
+        //B1 H
+        "CAN_IsWarnTX",
+        "CAN_IsWarnRX",
+        "OverHeatingFailure",
+        "",
+        //B2 L
+        "ADCCalFailure",
+        "I2TFailure",
+        "EMUROMFault",
+        "EMUROMCRCFault",
+        //B2 H
+        "EncoderFault",
+        "FirmwareSPITimingError",
+        "AS5045CalcError",
+        "FirmwarePWMFatalError",
+        //B3 L
+        "CAN_TXWasPasv",
+        "CAN_RXWasPasv",
+        "CAN_RTRFlagActive",
+        "CAN_WasWarn",
+        //B3 H
+        "CAN_DLCError",
+        "SiliconRevisionFault",
+        "PositionLimitUpper",
+        "PositionLimitLower"
+    };
+
+    std::string statusstring = {};
+    statusstring.reserve(256);
+
+    for (uint8_t i = 0; i < eOmc_motorFaultState_numberof; i++) // important to loop over the eOmc_motorFaultState_numberof (dimension of the union typedef eOmc_motorFaultState_t)
+    {
+        // check bit by bit and add to ss the faulted bits
+        if(embot::core::binary::bit::check(motorstatus.bitmask, i))
+        {
+            statusstring.append(static_cast<const char*>(s_motor_fault_status.at(i).data()));
+            statusstring.append(" ");
+        }
+    }
+    return statusstring;
+}
+
 MotionControlParser::MotionControlParser(AuxEmbeddedInfo &dnginfo, EntityNameProvider &entityNameProvider):DefaultParser(dnginfo, entityNameProvider){;}
 
 void MotionControlParser::parseInfo()
@@ -596,11 +659,13 @@ void MotionControlParser::parseInfo()
 
         case eoerror_value_MC_generic_error: //TBD Check print
         {
+            eOmc_motorFaultState_t motor_status;
             uint16_t joint_num = m_dnginfo.param16;
+            motor_status.bitmask = m_dnginfo.param64 & 0xffffffff;
             m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
-
-            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) (Error is %lx)", 
-                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, m_dnginfo.param64
+            std::string motorStatusString = motorStatusBitsToString(motor_status);
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) (Errors:%s)", 
+                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, motorStatusString.c_str()
                                         );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
@@ -1149,7 +1214,7 @@ void SysParser::parseInfo()
             diagstr lostCanBoards2 = {0};
             getCanMonitorInfo(serv_category, lostCanBoards1, lostCanBoards2);
 
-            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost can boards on (can1map, can2map) = ([ %s ], [ %s ] )",
+            snprintf(str, sizeof(str), "%s Type of service category is %s. Lost can boards on (can1map, can2map) = ([ %s ], [ %s ] ).",
                 m_dnginfo.baseMessage.c_str(),
                 eomn_servicecategory2string(serv_category),
                 lostCanBoards1, lostCanBoards2
@@ -1393,7 +1458,7 @@ void InertialSensorParser::parseInfo()
         case eoerror_value_IS_arrayofinertialdataoverflow:
         {
             
-            uint8_t frame_id = m_dnginfo.param16 & 0x00ff;
+            uint8_t frame_id = m_dnginfo.param16 & 0x0fff;
             uint8_t frame_size = (m_dnginfo.param16 & 0xf000) >> 12;
             uint64_t frame_data = m_dnginfo.param64;
 

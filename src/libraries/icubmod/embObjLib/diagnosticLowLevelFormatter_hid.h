@@ -11,7 +11,9 @@
 #define __diagnosticLowLevelFormatter_hid_h__
 
 #include <string>
+#include <string_view>
 #include <memory>
+#include <array>
 #include <yarp/os/LogStream.h>
 #include "diagnosticLowLevelFormatter.h"
 #include "EoError.h"
@@ -116,7 +118,8 @@ public:
 
     void parseInfo();
 
-
+private:
+std::string motorStatusBitsToString(eOmc_motorFaultState_t motorstatus);
 };
 
 class Diagnostic::LowLevel::SkinParser : public Diagnostic::LowLevel::DefaultParser
