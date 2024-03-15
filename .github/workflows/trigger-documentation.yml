@@ -3,7 +3,7 @@ name: Trigger Documentation
 on:
   push:
     branches:
-    - 'master'
+    - 'devel'
 
 jobs:
   docs:
