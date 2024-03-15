@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<portscope rows="1" columns="1" carrier="mcast">
+    <plot gridx="0"
+          gridy="0"
+          hspan="1"
+	  vspan="1"
+          minval="0"
+	  maxval="60"
+          title="Left Leg Temperature"
+          bgcolor="LightSlateGrey">
+    <graph remote="/left_leg/motor_temperatures:o"
+               index="1"
+               color="red"
+               title="hip_pitch"
+               type="lines"
+               size="3" />
+    <graph remote="/left_leg/motor_temperatures:o"
+               index="3"
+               color="blue"
+               title="hip_roll"
+               type="lines"
+               size="3" />
+    <graph remote="/left_leg/motor_temperatures:o"
+               index="5"
+               color="purple"
+               title="hip_yaw"
+               type="lines"
+               size="3" />
+    <graph remote="/left_leg/motor_temperatures:o"
+               index="7"
+               color="orange"
+               title="knee"
+               type="lines"
+               size="3" />
+    <graph remote="/left_leg/motor_temperatures:o"
+               index="9"
+               color="yellow"
+               title="ankle_pitch"
+               type="lines"
+               size="3" />
+    <graph remote="/left_leg/motor_temperatures:o"
+               index="11"
+               color="green"
+               title="ankle_roll"
+               type="lines"
+               size="3" />
+    </plot>
+    
+
+</portscope>

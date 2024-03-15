@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
+
+
+<module>
+  <name>MotorTemperaturePublisher</name>
+  <doxygen-group>icub_tools</doxygen-group>
+  <description>Motor Temperature Detector and Publisher</description>
+  <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
+  <version>1.0</version>
+
+  <description-long>
+    This module is a working example for building a YARP device that exploits the iMotor YARP
+    interfaces to interact with the motion control module.
+    Specifically to this example, we are defining a <i><b>PolyDriver</b></i> device that interacts with the
+    pointer to the <i><b>iMotor</b></i> yarp interface and prints the motor temperatures to an output port.
+    Those temperatures value can be obtained exploiting the interface method <i>getTemperatures()</i> and
+    saved to a c-array of doubles.
+    Considering that, a properly built yarp module should derive from the public interface
+    <i><b>yarp::os::RFModule</b></i>, whose complete explanation is available at <a href="https://yarp.it/latest/thrift_tutorial_simple.html#thrift_tutorial_simple_module">this link</a> the
+    following methods should be overridden:
+    <list type="bullet">
+      <item>
+        <description>configure()</description>
+      </item>
+      <item>
+        <description>getPeriod()</description>
+      </item>
+      <item>
+        <description>updateModule()</description>
+      </item>
+      <item>
+        <description>close()</description>
+      </item>
+    </list>
+
+    In order to use this module, whose final target is to print at the port called <i><b>/portprefix/motor_temperatures:o</b></i> the temperatures of the motors connected, the following steps
+    should be done:
+    <list>
+      <item>
+        <description>supposed to have the correct setup running on the yarpserver sending data to state ports</description>
+      </item>
+      <item>
+        <description>./build/MotorTemperaturePublisher --from app/conf/config.ini</description>
+      </item>
+    </list>
+    
+    This will instantiate the aformentioned port, where with a frequence of <i><b>_updatePeriod</b></i> time,
+    the following values will be streamed on the port:
+    
+    <list>
+      <item>
+        <description>timeStamp | temperature_motor_0 | boolean_limit_overcame_0 | ... | temperature_motor_N | boolean_limit_overcame_N |</description>
+      </item>
+    </list>
+    
+    the <i><b>config.ini</b></i> file should be filled in with the following data:
+    <list>
+      <item>
+        <description>robotname: name of the robot as set in the configuration files</description>
+      </item>
+      <item>
+        <description>period: times used for streaming the data to the port</description>
+      </item>
+      <item>
+        <description>listofjoints: joints, as list a list, i.e. (0 1 2), which you wanna get the temperatures</description>
+      </item>
+    </list>
+    
+  </description-long>
+
+  <arguments>
+    <param default="MotorTemperaturePublisher" desc="select the current context.">context</param>
+    <param default="config.ini" desc="configuration file name.">from</param>
+    <param default="MotorTemperaturePublisher"
+      desc="module's name; all the open ports will be tagged with the prefix /name.">name</param>
+    <param default="ergocub" desc="name of the robot to connect to.">robot</param>
+  </arguments>
+
+  <authors>
+    <author email="jacopo.losi@iit.it"> Jacopo Losi </author>
+  </authors>
+
+  <data>
+    <output>
+      <type>yarp::os::Bottle</type>
+      <port carrier="tcp">/ergocub/subpart/motor_temperature:o</port>
+      <description>
+        show the temperature of the motors of the subpart
+      </description>
+    </output>
+  </data>
+
+</module>

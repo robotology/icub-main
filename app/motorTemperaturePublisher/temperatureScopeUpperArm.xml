@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<portscope rows="1" columns="1" carrier="mcast">
+    <plot gridx="0"
+          gridy="0"
+          hspan="1"
+	      vspan="1"
+          minval="-10"
+	      maxval="50"
+          title="Motor temperature Plot"
+          bgcolor="LightSlateGrey">
+    <graph remote="/upper_arm/motor_temperatures:o"
+               index="1"
+               color="purple"
+               title="temperature pitch"
+               type="lines"
+               size="3" />
+    <graph remote="/upper_arm/motor_temperatures:o"
+               index="5"
+               color="darkgreen"
+               title="temperature yaw"
+               type="lines"
+               size="3" />
+    <graph remote="/upper_arm/motor_temperatures:o"
+               index="7"
+               color="orange"
+               title="temperature elbow"
+               type="lines"
+               size="3" />
+    <graph remote="/ergocub2S/upper_arm/stateExt:o/split16:o"
+                index="0"
+                color="red"
+                title="current pitch"
+                type="lines"
+                size="3" />
+    <graph remote="/ergocub2S/upper_arm/stateExt:o/split16:o"
+                index="1"
+                color="blue"
+                title="current roll"
+                type="lines"
+                size="3" />
+    <graph remote="/ergocub2S/upper_arm/stateExt:o/split16:o"
+                index="2"
+                color="green"
+                title="current yaw"
+                type="lines"
+                size="3" />
+    <graph remote="/ergocub2S/upper_arm/stateExt:o/split16:o"
+                index="3"
+                color="yellow"
+                title="current elbow"
+                type="lines"
+                size="3" />
+    </plot>
+</portscope>
