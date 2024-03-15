@@ -24,39 +24,27 @@
         <description>supposed to have the correct setup running on the yarpserver sending data to state ports</description>
       </item>
       <item>
-        <description>./build/MotorTemperaturePublisher --from app/conf/config.ini</description>
+        <description>MotorTemperaturePublisher --from config.ini</description>
       </item>
     </list>
     
-    This will instantiate the aformentioned port where, with a period of <i><b>_updatePeriod</b></i> seconds, the following values will be streamed on the port:
+    This will instantiate the aformentioned port where the following values will be streamed at the specified period:
     
     <list>
       <item>
         <description>timeStamp | temperature_motor_0 | boolean_limit_overcame_0 | ... | temperature_motor_N | boolean_limit_overcame_N |</description>
       </item>
     </list>
-    
-    the <i><b>config.ini</b></i> file should be filled in with the following data:
-    <list>
-      <item>
-        <description>robotname: name of the robot as set in the configuration files</description>
-      </item>
-      <item>
-        <description>period: times used for streaming the data to the port</description>
-      </item>
-      <item>
-        <description>listofjoints: joints, as list a list, i.e. (0 1 2), which you wanna get the temperatures</description>
-      </item>
-    </list>
-    
   </description-long>
 
   <arguments>
     <param default="MotorTemperaturePublisher" desc="select the current context.">context</param>
     <param default="config.ini" desc="configuration file name.">from</param>
-    <param default="MotorTemperaturePublisher"
-      desc="module's name; all the open ports will be tagged with the prefix /name.">name</param>
-    <param default="ergocub" desc="name of the robot to connect to.">robot</param>
+    <param default="MotorTemperaturePublisher" desc="module's name; all the open ports will be tagged with the prefix /name.">name</param>
+    <param default="ergocub" desc="name of the robot to connect to.">robotname</param>
+    <param default="/left_leg" desc="name of the part's port to connect to.">portprefix</param>
+    <param default="1.0" desc="period used for streaming the data to the port.">period</param>
+    <param default="(0 1 2 3 4 5)" desc="joints, as list a list, i.e. (0 1 2), for which you want to get the temperature.">listofjoints</param>
   </arguments>
 
   <authors>
