@@ -11,8 +11,10 @@
 #define __diagnosticLowLevelFormatter_hid_h__
 
 #include <string>
+#include <string_view>
 #include <memory>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Log.h>
 #include "diagnosticLowLevelFormatter.h"
 #include "EoError.h"
 
