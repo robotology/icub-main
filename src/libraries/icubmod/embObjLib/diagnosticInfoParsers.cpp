@@ -685,6 +685,19 @@ void MotionControlParser::parseInfo()
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
 
+        case eoerror_value_MC_motor_overheating:
+        {
+            uint16_t joint_num = m_dnginfo.param16;
+            int16_t temp_raw_value = m_dnginfo.param64 & 0xffff;
+
+            m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
+            
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d), Raw_temperature_value=%d)",
+                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, temp_raw_value
+                                        );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
         case EOERROR_VALUE_DUMMY:
         {
             m_dnginfo.baseInfo.finalMessage.append(": unrecognised eoerror_category_MotionControl error value.");

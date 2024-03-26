@@ -35,10 +35,12 @@ class CanBatteryData
     float32_t voltage_{0};
     float32_t current_{0};
     float32_t charge_{0};
-    uint32_t status_{0};
-    uint32_t prevStatus_{0};
+    uint16_t status_{0};
+    uint16_t prevStatus_{0};
     double timeStamp_{0};
-    std::string sensorName_;
+    std::string sensorName_{};
+    eObrd_type_t sensorType_{eobrd_unknown};
+    
 
     void decode(eOas_battery_timedvalue_t *data, double timestamp);
     bool operator==(const CanBatteryData &other) const;
@@ -81,7 +83,7 @@ class yarp::dev::embObjBattery : public yarp::dev::DeviceDriver, public eth::Iet
     bool initRegulars(ServiceParserCanBattery &parser, eth::AbstractEthResource *deviceRes);
     void cleanup(void);
     bool checkUpdateTimeout(eOprotID32_t id32, eOabstime_t current);
-    bool updateStatusStringStream(const uint32_t &currStatus, const uint32_t &prevStatus, bool isFirstLoop);
+    std::string updateStatusStringStream(const uint16_t &currStatus, const uint16_t &prevStatus, bool isFirstLoop);
     static constexpr eOabstime_t updateTimeout_{11000};
     std::vector<yarp::dev::MAS_status> masStatus_{MAS_OK, MAS_OK, MAS_OK, MAS_OK};
 
@@ -93,9 +95,6 @@ class yarp::dev::embObjBattery : public yarp::dev::DeviceDriver, public eth::Iet
 
     double firstYarpTimestamp_{0};
     eOabstime_t firstCanTimestamp_{0};
-
-    std::stringstream statusStreamBMS = {};
-    std::stringstream statusStreamBAT = {};
 };
 
 #endif
