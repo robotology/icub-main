@@ -234,7 +234,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     if(_mouthmaskemotions) {
 
         std::string id;
-        for(size_t index=0; index<_eyebrowmaskemotions; index++){
+        for(size_t index=0; index<_mouthmaskemotions; index++){
             id = "BM_M"+std::to_string(index);
             Bottle& bot = config.findGroup(id);
             auto hexCode = getHexCode(bot);
