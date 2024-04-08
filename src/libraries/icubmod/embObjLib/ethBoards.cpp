@@ -54,14 +54,31 @@
 
 eth::EthBoards::EthBoards()
 {
-    memset(LUT, 0, sizeof(LUT));
+    // memset(LUT, 0, sizeof(LUT));
+    // Changed memset with for loop initialization due to problem on Windows
+    // which was failing in updating correctly values to LUT vars
+    for (auto& lut : LUT)
+    {
+        lut.clear();
+    }
+    
     sizeofLUT = 0;
 }
 
 
 eth::EthBoards::~EthBoards()
 {
-    memset(LUT, 0, sizeof(LUT));
+    /**
+    * LUT has already been cleaned by the call to
+    * eth::EthBoards::rem(eth::AbstractEthResource* res, iethresType_t type) and
+    * eth::EthBoards::rem(eth::AbstractEthResource* res)
+    * so there's nothing to do here since LUT is already destroyed correctly
+    * but we can keep the clear for syntax reasons
+    */
+    for (auto& l : LUT) 
+    { 
+        l.clear(); 
+    } 
     sizeofLUT = 0;
 }
 
@@ -202,14 +219,9 @@ bool eth::EthBoards::rem(eth::AbstractEthResource* res)
         return false;
     }
 
-    LUT[index].resource = NULL;
-    LUT[index].ipv4 = 0;
-    LUT[index].boardnumber = 0;
-    LUT[index].name = "";
-    LUT[index].numberofinterfaces = 0;
-    for(int i=0; i<iethresType_numberof; i++)
-    {
-        LUT[index].interfaces[i] = NULL;
+    for (auto& l : LUT) 
+    { 
+        l.clear(); 
     }
 
     sizeofLUT--;
