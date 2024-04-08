@@ -15,6 +15,7 @@
 #include <memory>
 #include <array>
 #include <yarp/os/LogStream.h>
+#include <yarp/os/Log.h>
 #include "diagnosticLowLevelFormatter.h"
 #include "EoError.h"
 

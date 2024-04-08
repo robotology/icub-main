@@ -81,15 +81,25 @@ namespace eth {
 
         // private types      
 
-        typedef struct
+        typedef struct ethboardProperties_t
         {
-            eOipv4addr_t            ipv4;
-            string                  name;
-            uint8_t                 numberofinterfaces;
-            uint8_t                 boardnumber;
-            AbstractEthResource*    resource;
-            IethResource*           interfaces[iethresType_numberof];
-        } ethboardProperties_t;
+            eOipv4addr_t            ipv4 {0};
+            string                  name {""};
+            uint8_t                 numberofinterfaces {0};
+            uint8_t                 boardnumber {0};
+            AbstractEthResource*    resource {nullptr};
+            IethResource*           interfaces[iethresType_numberof] {nullptr};
+
+            void clear()
+            {
+                ipv4 = 0;
+                name = "";
+                numberofinterfaces = 0;
+                boardnumber = 0;
+                resource = nullptr;
+                for (auto& itf : interfaces) {itf = nullptr;}
+            };
+        };
 
 
     private:
@@ -107,8 +117,8 @@ namespace eth {
                 
         inline static const string errorname[1] = {"wrong-unknown-board"};
 
-        int sizeofLUT;
-        ethboardProperties_t LUT[EthBoards::maxEthBoards];
+        int sizeofLUT {0};
+        ethboardProperties_t LUT[EthBoards::maxEthBoards] {};
 
     private:
 

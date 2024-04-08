@@ -6,7 +6,6 @@
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 
-#include <string>
 #include "diagnosticLowLevelFormatter.h"
 #include "diagnosticLowLevelFormatter_hid.h"
 
