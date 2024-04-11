@@ -334,15 +334,7 @@ bool EthMaintainer::command_program(eOipv4addr_t ipv4, FILE *programFile, eOupro
     eOipv4addr_t rxipv4addr;
     eOipv4port_t rxipv4port;
 
-
-    // Commenting out line 345 fixes the programming result of ETH boards;
-    // leaving it causes an error message even if the programming went well
-    // see :
-    //  - https://github.com/robotology/icub-main/issues/939
-    //  - https://github.com/robotology/icub-main/pull/944
-    //  
-
-    //++progdata.mNProgSteps;
+    ++progdata.mNProgSteps;
 
     int success=0;
 
@@ -681,7 +673,7 @@ string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double w
         eOuprot_cmd_LEGACY_SCAN_REPLY_t * scan = reinterpret_cast<eOuprot_cmd_LEGACY_SCAN_REPLY_t*> (mRxBuffer);
 
         string ipv4rxstring = ipv4tostring(rxipv4addr);
-        
+
         if(uprot_OPC_DISCOVER == disc->reply.opc)
         {
             // the board has replied with the new protocol.
@@ -1206,7 +1198,7 @@ std::string EthMaintainer::prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY2_t * d
         char strdate[24] = {0};
         char builton[24] = {0};
         constexpr uint8_t maxNumberOfProcessesOnSingleCore {3};
-        
+
         // When "n" is in [0,3) we are considering the standard single core processes (loader, updater, application)
         // if n >= 3 we are using a multi-core board un one o more processes
         eOuprot_procinfo_t pInfo = (n < maxNumberOfProcessesOnSingleCore) ? binfo.processes.info[n] : binfo.extraprocesses[n];
@@ -1257,6 +1249,33 @@ int EthMaintainer::sendPROG2(const uint8_t opc, progData_t &progdata)
     // data can be either a eOuprot_cmd_PROG_DATA_t* or a eOuprot_cmd_PROG_END_t*
     // both have the same layout of the opc in first position
 
+    if(uprot_OPC_PROG_DATA == opc)
+    {
+        bool validFLASHaddress = true;
+
+        // add a filter.
+        // the filter depends on the memory layout of the board.
+        // for ems, mc4plu, mc2plus valid flash is inside [0x08000000, 0x0800000 + 1MB = 0x08100000)
+        // for amc and future dual core boards is inside [0x08000000, 0x0800000 + 2MB = 0x08200000)
+        // so ... either we get the valid flash range from board to board or we get the union of teh two ranges.
+        // i will be quick and ...
+        eOuprot_cmd_PROG_DATA_t *pd = reinterpret_cast<eOuprot_cmd_PROG_DATA_t*>(progdata.data);
+        uint32_t adr = * reinterpret_cast<uint32_t*>(&pd->address[0]); // quick conversion for u32 in little endian
+        uint16_t siz = * reinterpret_cast<uint16_t*>(&pd->size[0]); // quick conversion for u16 in little endian
+
+        if((adr < 0x08000000) || (adr >= 0x08200000) || ((adr+siz) > 0x08200000))
+        {
+            validFLASHaddress = false;
+            printf("EthMaintainer::sendPROG2() detected and filtered out a eOuprot_cmd_PROG_DATA_t w/ non-FLASH chunch of %d bytes in [0x%x, 0x%x]\n" ,
+                   siz, adr, adr+siz);
+        }
+
+        if(false == validFLASHaddress)
+        {
+            return 0;
+        }
+    }
+
 
     // use unicast to all selected boards
     for(int k=0;k<progdata.selected.size(); k++)
@@ -1268,7 +1287,10 @@ int EthMaintainer::sendPROG2(const uint8_t opc, progData_t &progdata)
     eOipv4addr_t rxipv4addr;
     eOipv4port_t rxipv4port;
 
-    ++progdata.mNChunks;
+    if(uprot_OPC_PROG_DATA == opc)
+    {
+        ++progdata.mNChunks;
+    }
 
     if(progdata.answers)
     {
@@ -1596,7 +1618,7 @@ bool EthMaintainer::go2maintenance(eOipv4addr_t ipv4, bool verify, int retries, 
 
 
 bool EthMaintainer::go2application(eOipv4addr_t ipv4, bool checkdef2runapplication, double bootstraptime, bool verify)
-{    
+{
     bool ret = false;
 
     EthBoardList boardlist = information(ipv4, true, false, 2, 1.0);
@@ -1882,6 +1904,7 @@ bool EthMaintainer::program(eOipv4addr_t ipv4, eObrd_ethtype_t type, eOuprot_pro
     // we program the boards .......
     ret = command_program(ipv4, fp, partition, progress, &boardlist, result);
 
+
     if(false == ret)
     {
         if(_verbose)
@@ -2127,7 +2150,7 @@ bool EthMaintainer::command_changeaddress(eOipv4addr_t ipv4, eOipv4addr_t ipv4ne
     {
         stopit =  true;
     }
-    
+
     if(true == stopit)
     {
         if(_verbose)
