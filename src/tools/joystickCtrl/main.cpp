@@ -762,8 +762,7 @@ public:
     void printStatus()
     {
         double t=Time::now();
-        static char buff [1000];
-        buff[0] = 0;
+        std::ostringstream buff;
 
         if (t-t0>=PRINT_STATUS_PER)
         {
@@ -772,14 +771,14 @@ public:
 
             for (int i=0;i <numAxes; i++)
             {
-                sprintf(buff + strlen(buff), "%+9.1f", rawAxes[i]);
+                buff << std::setw(9) << std::fixed << std::setprecision(1) << rawAxes[i];
             }
-            sprintf(buff + strlen(buff), " ---> ");
+            buff << " ---> ";
             for (int i=0;i <num_outputs; i++)
             {
-                sprintf(buff + strlen(buff), "%+9.1f", outAxes[i]);
+                buff << std::setw(9) << std::fixed << std::setprecision(1) << outAxes[i];
             }
-            yDebug() << buff;
+            yDebug() << buff.str();
             t0=t;
         }
     }
