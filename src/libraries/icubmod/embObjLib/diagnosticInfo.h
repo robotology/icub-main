@@ -10,6 +10,7 @@
 #ifndef __diagnosticInfo_h__
 #define __diagnosticInfo_h__
 
+#include <cstdint>
 #include <string>
 
 
