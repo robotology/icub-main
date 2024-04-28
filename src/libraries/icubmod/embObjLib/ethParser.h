@@ -23,6 +23,7 @@
 #ifndef _ETHPARSER_H_
 #define _ETHPARSER_H_
 
+#include <cstdint>
 #include <string>
 
 #include "EoProtocol.h"
