@@ -29,6 +29,8 @@ using namespace yarp::sig;
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 #include <iCub/ctrl/clustering.h>
 #include <iCub/ctrl/filters.h>
+// Workaround for https://github.com/swig/swig/issues/2828
+%ignore waveletIntegrand;
 #include <iCub/ctrl/functionEncoder.h>
 #include <iCub/ctrl/kalman.h>
 #include <iCub/ctrl/math.h>
