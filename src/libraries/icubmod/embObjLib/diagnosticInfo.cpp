@@ -34,6 +34,9 @@ void TimeOfInfo::toString(std::string &str_toi)
 
 void EmbeddedInfo::printMessage()
 {
+    if (finalMessage.size() == 0)
+        return;
+   
    std::string str_toi;
    timeOfInfo.toString(str_toi);
 

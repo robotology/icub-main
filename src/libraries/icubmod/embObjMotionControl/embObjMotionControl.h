@@ -30,8 +30,10 @@
 
 using namespace std;
 
+// system std include
 #include <string>
 #include <mutex>
+#include <math.h>
 //  Yarp stuff
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
@@ -44,11 +46,12 @@ using namespace std;
 
 #include<yarp/dev/ImplementJointFault.h>
 
+#include <abstractEthResource.h>
 
+// local include
 #include "IethResource.h"
 #include"EoError.h"
 #include <ethManager.h>
-#include <abstractEthResource.h>
 
 #include "serviceParser.h"
 #include "eomcParser.h"
@@ -74,8 +77,6 @@ using namespace std;
 //                  only embObjAnalog can override its behaviour
 
 #define     EMBOBJMC_DONT_USE_MAIS
-
-
 
 //
 //   helper structures
@@ -114,16 +115,14 @@ private:
 
 bool _isStarted;
 uint32_t _count;
+double _time;
 uint32_t _threshold; // use 10000 as limit on the watchdog for the error on the temperature sensor receiving of the values - 
                     // since the ETH callback timing is 2ms by default so using 10000 we can set a checking threshould of 5 second
                     // in which we can allow the tdb to not respond. If cannot receive response over 1s we trigger the error
-
-double _time;
-
 public:
 
-Watchdog(): _count(0), _isStarted(false), _threshold(10000), _time(0){;}
-Watchdog(uint32_t threshold):_count(0), _isStarted(false),_threshold(threshold), _time(0){;}
+Watchdog(): _count(0), _isStarted(false), _threshold(60000), _time(0){;}
+Watchdog(uint32_t threshold):_count(0), _isStarted(false), _threshold(threshold), _time(0){;}
 ~Watchdog() = default;
 Watchdog(const Watchdog& other) =  default;
 Watchdog(Watchdog&& other) noexcept =  default;
@@ -138,8 +137,49 @@ void increment() {++_count;}
 void clear(){_isStarted=false;}
 double getStartTime() {return _time;}
 uint32_t getCount() {return _count; }
+void setThreshold(uint8_t txrateOfRegularROPs){_threshold = _threshold / txrateOfRegularROPs;}
+uint32_t getThreshold(){return _threshold;}
 
 };
+
+class TemperatureFilter
+{
+private:
+    uint32_t _threshold;   // threshold for the delta between current and previous temperature --> set to 20 Celsius deg by default --> over 20 deg delta spike
+    double _motorTempPrev; // motor temperature at previous instant for checking positive temperature spikes 
+    bool _isStarted;
+    int32_t _initCounter;
+    std::vector<double> _initTempBuffer;
+public:
+    TemperatureFilter(): _threshold(20), _isStarted(false), _initCounter(50), _initTempBuffer(0), _motorTempPrev(0){;}
+    TemperatureFilter(uint32_t threshold, int32_t initCounter): _threshold(threshold), _isStarted(false), _initCounter(initCounter), _initTempBuffer(0), _motorTempPrev(0){;}
+    ~TemperatureFilter() = default;
+    TemperatureFilter(const TemperatureFilter& other) = default;
+    TemperatureFilter(TemperatureFilter&& other) noexcept = default;
+    TemperatureFilter& operator=(const TemperatureFilter& other) = default;
+    TemperatureFilter& operator=(TemperatureFilter&& other) noexcept = default;
+
+    bool isStarted(){return _isStarted;}
+    uint32_t getTemperatureThreshold() {return _threshold; }
+    double getPrevTemperature(){return _motorTempPrev;}
+    void updatePrevTemperature(double temperature){_motorTempPrev = temperature;}
+    void start(double temperature)
+    {
+        if(_initCounter < 0)
+        {
+            int median_pos = std::ceil(_initTempBuffer.size() / 2) -1;
+            _motorTempPrev = _initTempBuffer.at(median_pos);
+            _isStarted = true;
+        }
+        else
+        {
+            _initTempBuffer.push_back(temperature);
+            --_initCounter;
+        }
+        
+    }
+};
+
 }}}
 
 namespace yarp {
@@ -220,7 +260,6 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementJointFault
     {
 private:
-
     eth::TheEthManager*        ethManager;
     eth::AbstractEthResource*  res;
     ServiceParser*             parser;
@@ -243,26 +282,26 @@ private:
 
     std::vector<std::unique_ptr<eomc::ITemperatureSensor>> _temperatureSensorsVector;  
     
-    eomc::focBasedSpecificInfo_t *            _foc_based_info;
+    eomc::focBasedSpecificInfo_t *           _foc_based_info;
 
-    std::vector<eomc::encoder_t>            _jointEncs;
-    std::vector<eomc::encoder_t>            _motorEncs;
+    std::vector<eomc::encoder_t>             _jointEncs;
+    std::vector<eomc::encoder_t>             _motorEncs;
 
-    std::vector<eomc::rotorLimits_t>        _rotorsLimits; /** contains limit about rotors such as position and pwm */
-    std::vector<eomc::jointLimits_t>        _jointsLimits; /** contains limit about joints such as position and velocity */
-    std::vector<eomc::motorCurrentLimits_t> _currentLimits;
-    std::vector<eomc::temperatureLimits_t>  _temperatureLimits;
-    eomc::couplingInfo_t                    _couplingInfo; /** contains coupling matrix */
-    std::vector<eomc::JointsSet>            _jsets;
-    std::vector<int>                        _joint2set;   /** for each joint says the number of  set it belongs to */
-    std::vector<eomc::timeouts_t>           _timeouts;
+    std::vector<eomc::rotorLimits_t>         _rotorsLimits; /** contains limit about rotors such as position and pwm */
+    std::vector<eomc::jointLimits_t>         _jointsLimits; /** contains limit about joints such as position and velocity */
+    std::vector<eomc::motorCurrentLimits_t>  _currentLimits;
+    std::vector<eomc::temperatureLimits_t>   _temperatureLimits;
+    eomc::couplingInfo_t                     _couplingInfo; /** contains coupling matrix */
+    std::vector<eomc::JointsSet>             _jsets;
+    std::vector<int>                         _joint2set;   /** for each joint says the number of  set it belongs to */
+    std::vector<eomc::timeouts_t>            _timeouts;
 
     std::vector<eomc::impedanceParameters_t> _impedance_params;   /** impedance parameters */ // TODO doubled!!! optimize using just one of the 2!!!
-    eomc::impedanceLimits_t *               _impedance_limits;  /** impedancel imits */
+    eomc::impedanceLimits_t *                _impedance_limits;  /** impedancel imits */
 
 
     eomc::PidInfo    *                      _trj_pids;
-    //eomc::PidInfo    *                      _dir_pids;
+    //eomc::PidInfo    *                    _dir_pids;
     eomc::TrqPidInfo *                      _trq_pids;
     eomc::PidInfo    *                      _cur_pids;
     eomc::PidInfo    *                      _spd_pids;
@@ -298,13 +337,13 @@ private:
     double  *_ref_positions;    // used for direct position control.
     double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
-    bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
+    bool    *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/    
     eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
     std::vector<yarp::dev::eomc::Watchdog>    _temperatureSensorErrorWatchdog;  /* counter used to filter error coming from tdb reading fromm 2FOC board*/
     std::vector<yarp::dev::eomc::Watchdog>    _temperatureExceededLimitWatchdog;  /* counter used to filter the print of the exeded limits*/
-    
+    std::vector<yarp::dev::eomc::TemperatureFilter> _temperatureSpikesFilter;
 
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
     Tools:Emb_RensponseTimingVerifier m_responseTimingVerifier;

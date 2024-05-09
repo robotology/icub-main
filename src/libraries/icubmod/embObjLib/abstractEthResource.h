@@ -53,6 +53,7 @@ namespace eth {
             string              boardtypeString;
             string              boardnameString;
             string              firmwareString;
+            uint8_t             txROPratedivider;
         };
 
         //AbstractEthResource();
