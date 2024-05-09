@@ -825,7 +825,7 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
         {
             if (timeout > timeout_calibration[*lit])
             {
-                yError() << deviceName << ": Timeout while calibrating " << (*lit);
+                yError() << deviceName << ": Timeout while calibrating joint" << (*lit);
                 calibration_ok = false;
                 lit++;
                 timeout = 0;
