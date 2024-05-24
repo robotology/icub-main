@@ -129,6 +129,7 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
     properties.ipv4addressingString = brddata.properties.ipv4addressingstring;
     properties.boardtypeString = brddata.properties.typestring;
     properties.boardnameString = brddata.settings.name;
+    properties.txROPratedivider = txconfig.txratedivider;
 
 
     eth::EthMonitorPresence::Config mpConfig;

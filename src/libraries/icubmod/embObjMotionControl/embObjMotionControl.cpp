@@ -8,12 +8,14 @@
 */
 
 //#include <yarp/dev/CanBusInterface.h>
-#include <yarp/os/Bottle.h>
-#include <yarp/os/Time.h>
+// system std include
 #include <string.h>
 #include <iostream>
 #include <cmath>
 
+// yarp include
+#include <yarp/os/Bottle.h>
+#include <yarp/os/Time.h>
 #include "embObjMotionControl.h"
 #include <ethManager.h>
 #include <FeatureInterface.h>
@@ -21,6 +23,10 @@
 
 #include <yarp/os/LogStream.h>
 
+#include <yarp/os/NetType.h>
+#include <yarp/dev/ControlBoardHelper.h>
+
+// local include
 #include "EoCommon.h"
 #include "EOarray.h"
 #include "EoProtocol.h"
@@ -28,10 +34,6 @@
 #include "EoProtocolMC.h"
 #include "EoProtocolAS.h"
 #include "motionControlDefaultValues.h"
-
-#include <yarp/os/NetType.h>
-#include <yarp/dev/ControlBoardHelper.h>
-
 
 #include "eomcUtils.h"
 
@@ -48,9 +50,6 @@ using namespace yarp::dev::eomc;
 #define ASK_REFERENCE_TO_FIRMWARE 1
 
 #define PARSER_MOTION_CONTROL_VERSION   6
-
-
-
 
 
 static inline bool NOT_YET_IMPLEMENTED(const char *txt)
@@ -73,10 +72,7 @@ static bool nv_not_found(void)
     return false;
 }
 
-static constexpr double const temperatureErrorValue_s = -5000;
-
-
-
+//static constexpr double const temperatureErrorValue_s = -5000;
 
 std::string embObjMotionControl::getBoardInfo(void)
 {
@@ -136,6 +132,15 @@ bool embObjMotionControl::alloc(int nj)
     _temperatureSensorsVector.resize(nj);
     _temperatureExceededLimitWatchdog.resize(nj);
     _temperatureSensorErrorWatchdog.resize(nj); 
+    _temperatureSpikesFilter.resize(nj);
+    
+    // update threshold for watchdog parametrized on the ROP transmission rate (by default is 2ms)
+    uint8_t txrate = res->getProperties().txROPratedivider;
+    for(int i = 0; i < nj; ++i)
+    {
+        _temperatureExceededLimitWatchdog.at(i).setThreshold(txrate);
+        _temperatureSensorErrorWatchdog.at(i).setThreshold(txrate);
+    }
     
     return true;
 }
@@ -217,7 +222,8 @@ embObjMotionControl::embObjMotionControl() :
     _kalman_params(0),
     _temperatureSensorsVector(0),
     _temperatureExceededLimitWatchdog(0),
-    _temperatureSensorErrorWatchdog(0)
+    _temperatureSensorErrorWatchdog(0),
+    _temperatureSpikesFilter(0)
 {
     _gearbox_M2J  = 0;
     _gearbox_E2J  = 0;
@@ -1621,33 +1627,7 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
 
         eOmc_motor_status_t *mc_motor_status = reinterpret_cast<eOmc_motor_status_t*>(rxdata);
         
-        if((double)mc_motor_status->basic.mot_temperature != temperatureErrorValue_s) //I get a valid value
-        {
-            double tmp = _temperatureSensorsVector.at(motor)->convertRawToTempCelsius((double)mc_motor_status->basic.mot_temperature);
-            
-            if (tmp > _temperatureLimits[motor].warningTemperatureLimit)
-            {
-                if(! _temperatureExceededLimitWatchdog.at(motor).isStarted())
-                {
-                    yWarning() << getBoardInfo() << "Motor" << motor << "The temperature (" << tmp << "[ ℃  ] )  exceeds the warning limit (" << _temperatureLimits[motor].warningTemperatureLimit << "[ ℃  ] ). Processes not stopped but it is strongly recommended decreasing motor usage or reducing currents and PWMs to not risk motor damaging";
-                    _temperatureExceededLimitWatchdog.at(motor).start();
-                }
-                else
-                {
-                    if(_temperatureExceededLimitWatchdog.at(motor).isExpired())
-                    {
-                        yWarning() << getBoardInfo() << "Motor" << motor << "The temperature (" << tmp << "[ ℃  ] )  exceeds the warning limit (" << _temperatureLimits[motor].warningTemperatureLimit << "[ ℃  ] ) again!. Processes not stopped but it is strongly recommended decreasing motor usage or reducing currents and PWMs to not risk motor damaging";
-                        _temperatureExceededLimitWatchdog.at(motor).start();
-                    }
-                    _temperatureExceededLimitWatchdog.at(motor).increment();
-                }
-            }
-            else
-            {
-                _temperatureExceededLimitWatchdog.at(motor).clear();
-            }
-        }
-        else //I get a NOT valid value
+        if((double)mc_motor_status->basic.mot_temperature < 0 ) //I get a invalid value
         {
             if(! _temperatureSensorErrorWatchdog.at(motor).isStarted())
             {
@@ -1659,10 +1639,58 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
                 _temperatureSensorErrorWatchdog.at(motor).increment();
                 if( _temperatureSensorErrorWatchdog.at(motor).isExpired())
                 {
-                    yError()<< getBoardInfo() << "Motor" << motor << "failed to read temperature for" << yarp::os::Time::now() - _temperatureSensorErrorWatchdog.at(motor).getStartTime() << "seconds";
+                    yError()<< getBoardInfo() << "Motor" << motor << "failed to read" << _temperatureSensorErrorWatchdog.at(motor).getCount() << "temperature readings for" << yarp::os::Time::now() - _temperatureSensorErrorWatchdog.at(motor).getStartTime() << "seconds";
                     _temperatureSensorErrorWatchdog.at(motor).start();
                 }
             }
+            return true;
+        }
+        
+        //if I'm here I have a valid value
+        double delta_tmp = 0;
+        double tmp = _temperatureSensorsVector.at(motor)->convertRawToTempCelsius((double)mc_motor_status->basic.mot_temperature);
+        
+        // check if this is a spike or not
+        // evaluate difference between current and previous temperature
+        if(!_temperatureSpikesFilter.at(motor).isStarted()) //Pre-set of the filter buffer is ready
+        {
+            _temperatureSpikesFilter.at(motor).start(tmp);
+            return true;
+        }
+
+        // when i'm here the filter is ready.
+        delta_tmp = std::abs(tmp - _temperatureSpikesFilter.at(motor).getPrevTemperature());
+        
+        //1. check if I have a good value (not a spike)
+        if(delta_tmp > _temperatureSpikesFilter.at(motor).getTemperatureThreshold())
+        {
+            //it is a spike
+            return true;
+        }
+        // this is a not spike --> can update prev temperature
+        _temperatureSpikesFilter.at(motor).updatePrevTemperature(tmp);
+        
+        //2. tmp is good and check the limits
+        if(tmp > _temperatureLimits[motor].warningTemperatureLimit)
+        {
+            if(! _temperatureExceededLimitWatchdog.at(motor).isStarted())
+            {
+                yWarning() << getBoardInfo() << "Motor" << motor << "The temperature (" << tmp << "[ ℃  ] )  exceeds the warning limit (" << _temperatureLimits[motor].warningTemperatureLimit << "[ ℃  ] ). Processes not stopped but it is strongly recommended decreasing motor usage or reducing currents and PWMs to not risk motor damaging";
+                _temperatureExceededLimitWatchdog.at(motor).start();
+            }
+            else
+            {
+                if(_temperatureExceededLimitWatchdog.at(motor).isExpired())
+                {
+                    yWarning() << getBoardInfo() << "Motor" << motor << "The temperature (" << tmp << "[ ℃  ] )  exceeds the warning limit (" << _temperatureLimits[motor].warningTemperatureLimit << "[ ℃  ] ) again!. Processes not stopped but it is strongly recommended decreasing motor usage or reducing currents and PWMs to not risk motor damaging";
+                    _temperatureExceededLimitWatchdog.at(motor).start();
+                }
+                _temperatureExceededLimitWatchdog.at(motor).increment();
+            }
+        }
+        else
+        {
+            _temperatureExceededLimitWatchdog.at(motor).clear();
         }
     }
 
@@ -4821,10 +4849,10 @@ bool embObjMotionControl::getTemperatureRaw(int m, double* val)
         return ret;
     }
 
-    if (((double)status.mot_temperature) == temperatureErrorValue_s) //using -5000 as the default value on 2FOC for initializing the temperature. If cannot read from I2C the value cannot be updated
-    {
-        return false;
-    }
+    // if (((double)status.mot_temperature) == temperatureErrorValue_s) //using -5000 as the default value on 2FOC for initializing the temperature. If cannot read from I2C the value cannot be updated
+    // {
+    //     return false;
+    // }
     
     *val = _temperatureSensorsVector.at(m)->convertRawToTempCelsius((double)status.mot_temperature);
     
