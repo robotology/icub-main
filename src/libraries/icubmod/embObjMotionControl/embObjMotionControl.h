@@ -137,7 +137,7 @@ void increment() {++_count;}
 void clear(){_isStarted=false;}
 double getStartTime() {return _time;}
 uint32_t getCount() {return _count; }
-void setThreshold(uint8_t txrateOfRegularROPs){_threshold = _threshold / txrateOfRegularROPs;}
+void setThreshold(uint8_t txrateOfRegularROPs){ if(txrateOfRegularROPs != 0) _threshold = _threshold / txrateOfRegularROPs;}
 uint32_t getThreshold(){return _threshold;}
 
 };
