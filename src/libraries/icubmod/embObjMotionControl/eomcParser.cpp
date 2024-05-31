@@ -1467,9 +1467,9 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
     if (!extractGroup(focGroup, xtmp, "Verbose", "Verbose 0/1 ", _njoints, false))
     {
         //return false;
-        yWarning() << "In " << _boardname << " there isn't " << groupName << ". Verbose filed. For default it is enabled" ;
+        yWarning() << "In " << _boardname << " there isn't " << groupName << ". Verbose failed. By default it is disabled" ;
         for (i = 0; i < (unsigned)_njoints; i++)
-            foc_based_info[i].verbose = 1;
+            foc_based_info[i].verbose = 0;
     }
     else
     {
@@ -1481,7 +1481,7 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
     if (!extractGroup(focGroup, xtmp, "AutoCalibration", "AutoCalibration 0/1 ", _njoints, false))
     {
         //return false;
-        yWarning() << "In " << _boardname << " there isn't " << groupName << ". AutoCalibration filed. For default it is disabled" ;
+        yWarning() << "In " << _boardname << " there isn't " << groupName << ". AutoCalibration failed. By default it is disabled" ;
         for (i = 0; i < (unsigned)_njoints; i++)
             AutoCalibration[i] = 0;
     }
