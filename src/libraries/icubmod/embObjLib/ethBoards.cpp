@@ -219,10 +219,8 @@ bool eth::EthBoards::rem(eth::AbstractEthResource* res)
         return false;
     }
 
-    for (auto& l : LUT) 
-    { 
-        l.clear(); 
-    }
+    auto& l = LUT[index];
+    l.clear();
 
     sizeofLUT--;
 
