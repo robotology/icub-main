@@ -11,6 +11,8 @@
 #include "EoBoards.h"
 #include "embot_core_binary.h"
 
+#include <yarp/os/Time.h>
+
 
 using namespace Diagnostic::LowLevel;
 
@@ -825,13 +827,21 @@ void HwErrorParser::parseInfo()
 
         case eoerror_value_HW_encoder_invalid_value:
         case eoerror_value_HW_encoder_close_to_limits:
-        case eoerror_value_HW_encoder_crc: 
+        case eoerror_value_HW_encoder_crc:
         case eoerror_value_HW_encoder_not_connected:
         {
-            printBaseInfo();
-        } break;
+            uint8_t joint_num = m_dnginfo.param16 & 0x00ff;
+            int16_t number_of_errors = m_dnginfo.param64 & 0x000000000000ffff;
+            m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
 
-    
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) Number of error in 10 seconds is: %d)", 
+                                        m_dnginfo.baseMessage.c_str(), 
+                                        m_dnginfo.baseInfo.axisName.c_str(), 
+                                        joint_num,
+                                        number_of_errors);
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+        
         case EOERROR_VALUE_DUMMY:
         {
             m_dnginfo.baseInfo.finalMessage.append(": unrecognised eoerror_category_HardWare error value.");
