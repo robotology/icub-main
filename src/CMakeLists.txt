@@ -37,9 +37,7 @@ endif()
 
 if (BUILD_TESTING)
   if(NOT BUILD_SHARED_LIBS)
-    if(LINUX)
-      add_subdirectory(unittest)
-    endif()
+    add_subdirectory(unittest)
   endif()
 endif()
 
