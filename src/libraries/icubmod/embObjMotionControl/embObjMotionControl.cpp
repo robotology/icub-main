@@ -141,7 +141,7 @@ bool embObjMotionControl::alloc(int nj)
         _temperatureExceededLimitWatchdog.at(i).setThreshold(txrate);
         _temperatureSensorErrorWatchdog.at(i).setThreshold(txrate);
     }
-    
+
     return true;
 }
 
@@ -223,7 +223,9 @@ embObjMotionControl::embObjMotionControl() :
     _temperatureSensorsVector(0),
     _temperatureExceededLimitWatchdog(0),
     _temperatureSensorErrorWatchdog(0),
-    _temperatureSpikesFilter(0)
+    _temperatureSpikesFilter(0),
+    _rawDataAuxVector(0),
+    _rawValuesMetadataMap({})
 {
     _gearbox_M2J  = 0;
     _gearbox_E2J  = 0;
@@ -1311,6 +1313,8 @@ bool embObjMotionControl::init()
     {
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, n, eoprot_tag_mc_joint_status_core);
         id32v.push_back(protid);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, n, eoprot_tag_mc_joint_status_addinfo_multienc);
+        id32v.push_back(protid);
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, n, eoprot_tag_mc_motor_status);
         id32v.push_back(protid);
     }
@@ -1485,6 +1489,30 @@ bool embObjMotionControl::init()
 
     //to be done
 
+    ///////////////////////////////////////////////
+    // intialize the map of the rawValuesVectors //
+    //////////////////////////////////////////////
+    const char* tag = eoprot_TAG2string(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_addinfo_multienc);                              
+    
+    _rawValuesMetadataMap.insert({{tag, rawValuesKeyMetadata({}, _njoints * eOmc_joint_multienc_maxnum)}});
+    for (auto &[k, v] : _rawValuesMetadataMap)
+    {
+        std::string auxstring = "";
+        
+        for (int i = 0; i < _njoints; i++)
+        {
+            getEntityName(i, auxstring);
+            if (k == tag)
+            {
+                v.rawValueNames.insert(v.rawValueNames.end(), 
+                    {auxstring+"_primary_encoder_raw_value", 
+                    auxstring+"_secondary_encoder_raw_value",
+                    auxstring+"_primary_encoder_diagnostic"}
+                );  
+            }
+            auxstring.clear();
+        }  
+    }
     yTrace() << "embObjMotionControl::init(): correctly instantiated for " << getBoardInfo();
     return true;
 }
@@ -1737,7 +1765,7 @@ bool embObjMotionControl::setPidRaw(const PidControlTypeEnum& pidtype, int j, co
     return true;
 }
 
-bool embObjMotionControl::getPidRaw (const PidControlTypeEnum& pidtype, int axis, Pid *pid)
+bool embObjMotionControl::getPidRaw(const PidControlTypeEnum& pidtype, int axis, Pid *pid)
 {
     switch (pidtype)
     {
@@ -5540,6 +5568,100 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
 
     fault = eoerror_code2value(status.mc_fault_state);
     message = eoerror_code2string(status.mc_fault_state);
+
+    return true;
+}
+
+bool embObjMotionControl::getRawData_core(std::string key, std::vector<std::int32_t> &data)
+{
+    //Here I need to be sure 100% the key exists!!! 
+    // It must exists since the call is made while iterating over the map
+    data.clear();
+    for(int j=0; j< _njoints; j++)
+    {
+        eOmc_joint_status_additionalInfo_t addinfo;
+        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_addinfo_multienc);
+        if(!res->getLocalValue(protid, &addinfo))
+        {
+            return false;
+        }
+        for (int k = 0; k < std::size(addinfo.multienc); k++)
+        {
+            data.push_back((int32_t)addinfo.multienc[k]);
+        }
+        
+    }
+    return true;
+}
+
+bool embObjMotionControl::getRawDataMap(std::map<std::string, std::vector<std::int32_t>> &map)
+{
+    for (auto it = _rawValuesMetadataMap.begin(); it != _rawValuesMetadataMap.end(); it++)
+    {
+        if(!getRawData_core(it->first, _rawDataAuxVector))
+        {
+            yError() << getBoardInfo() << "getRawData failed. Cannot retrieve all raw data from local memory";
+            return false;
+        }
+        map.insert({it->first, _rawDataAuxVector});
+    }
+    
+    return true;
+}
+
+bool embObjMotionControl::getRawData(std::string key, std::vector<std::int32_t> &data)
+{  
+    if(_rawValuesMetadataMap.find(key) != _rawValuesMetadataMap.end())
+    {
+        getRawData_core(key, data);
+    }
+    else
+    {
+        yError() << getBoardInfo() << "Request key:" << key << "is not available. Cannot retrieve get raw data.";
+        return false;
+    }
+
+    return true;
+}
+
+bool embObjMotionControl::getKeys(std::vector<std::string> &keys)
+{
+    for (const auto &p : _rawValuesMetadataMap)
+    {
+        keys.push_back(p.first);
+    }
+    
+    return true;
+}
+
+int  embObjMotionControl::getNumberOfKeys()
+{
+    return _rawValuesMetadataMap.size();
+}
+
+bool embObjMotionControl::getMetadataMAP(rawValuesKeyMetadataMap &metamap)
+{
+    if (_rawValuesMetadataMap.empty())
+    {
+        yError() << getBoardInfo() << "embObjMotionControl Map is empty. Closing...";
+        return false;
+    }
+    
+    metamap.metadataMap = _rawValuesMetadataMap;
+    return true;
+}
+bool embObjMotionControl::getKeyMetadata(std::string key, rawValuesKeyMetadata &meta)
+{
+    if(_rawValuesMetadataMap.find(key) != _rawValuesMetadataMap.end())
+    {
+        meta = _rawValuesMetadataMap[key];
+    }
+    else
+    {
+        yError() << getBoardInfo() << "Requested key" << key << "is not available in the map. Closing...";
+        return false;
+    }
+    
 
     return true;
 }

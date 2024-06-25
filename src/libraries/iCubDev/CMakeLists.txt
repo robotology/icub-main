@@ -4,10 +4,17 @@
 
 project(iCubDev)
 
+# Add IDL files generation from thrift
+set(idl_files include/iCub/rawValuesPublisher.thrift)
+set(doc_files include/iCub/rawValuesPublisher.xml)
+# yarp_add_idl(IDL_GEN_FILES ${idl_files})
+yarp_idl_to_dir(INPUT_FILES ${idl_files} OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/iCub PLACEMENT MERGED)
+
 # Find .cpp and .h files automatically.  This is a bit lazy,
 # and in principle it would be better to list these files manually.
 FILE(GLOB folder_source src/*.cpp)
 FILE(GLOB folder_header include/iCub/*.h)
+FILE(GLOB folder_idlgen include/iCub/*.cpp)
 
 # Declare groups of source and header files -- makes things pretty in MSVC.
 SOURCE_GROUP("Source Files" FILES ${folder_source})
@@ -17,10 +24,12 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Create everything needed to build our executable.
-add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+add_library(${PROJECT_NAME} ${folder_source} ${folder_header} ${folder_idlgen})#${IDL_GEN_FILES})
 add_library(ICUB::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+                                                  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/iCub>"
+                                                  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+                                                  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/iCub>")
 target_link_libraries(${PROJECT_NAME} YARP::YARP_os
                                       YARP::YARP_dev)
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -37,6 +46,7 @@ install(TARGETS ${PROJECT_NAME}
         PUBLIC_HEADER
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/iCub")
 
+install(FILES ${folder_idlgen} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/iCub")#${IDL_GEN_FILES}
 
 icub_install_basic_package_files(${PROJECT_NAME}
                                  DEPENDENCIES YARP_os

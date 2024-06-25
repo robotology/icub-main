@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
+ 
+<module>
+  <name>rawValuesPublisher</name>
+  <doxygen-group>icub_libraries</doxygen-group>
+  <description></description>
+  <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
+  <version>1.0</version>
+  
+  <description-long>
+    This is an interface developed for reading and streaming whatever type of data ones needs.
+    It has been thought to be as generic as possible and agnostic to the data streamed.
+    In this manner one can use it for streaming and reading raw data coming from the low level of the sensorboards.
+    As a matter of fact, its first implementation is aimed at reading the raw values of the joint encoders, thus to understand their behavior.
+  </description-long>
+ 
+  <arguments>    
+    <param default="fakedevicetest/raw_data" desc="This is configured for the network wrapper server.
+    Name of the prefix of the port needed by the server 
+    and the client for streaming the raw data and the metadata. 
+    In case of the data, it will be followed by rawdata. 
+    In case of the metadata it will be follows by rpc">name</param>
+    <param default="2" desc="This is configured by the network wrapper server.
+    It is the period, in ms, used by the device for streaming on the port the rawdata">period</param>
+  </arguments>
+ 
+  <authors>
+    <author email="jacopo.losi@iit.it"> Jacopo Losi </author>
+    <author email="valentina.gaggero@iit.it"> Valentina Gaggero </author>
+  </authors>
+ 
+  <data>
+    <output>
+      <type>yarp::os::BufferedPort</type>
+      <port carrier="tcp">/portName/rawdata:o</port>
+      <description>
+        Streams out the raw data coming from whatever device
+        we are gonna debugging on, such as the encoder position.
+        Data are stored to a yarp::os::BufferedPort 
+        whose elements have the datatype <b>rawValuesDataVectorsMap</b>,
+        which is a map where the keys are <b>std::string</b> and 
+        the values are vectors of <b>std::int32_t</b>. 
+        The vector elements can contain whatever data one desires, as an example
+        the raw data of the joint encoders.
+        There exists a corresponding input port /portName/rawdata:i used by the 
+        related network wrapper client for reading the data streamed by the server.
+      </description>
+    </output>
+    <output>
+      <type>yarp::os::Port</type>
+      <port carrier="rcp">/portName/rpc:o</port>
+      <description>
+        This is usually open by a network wrapper server 
+        and stream out to the corresponding input port /portName/rpc:i 
+        opened by the network wrapper client the metadata needed 
+        for correctly parsing the raw data.
+        The metadata have type <b>rawValuesKeyMetadataMap</b>, which is basically
+        a map where the keys are <b>std::string</b> and the values are of type
+        <b>rawValuesKeyMetadata</b>, which is made of 2 elements.
+        One is a vector of <b>std::string</b> containing the names of the raw values for that key
+        and the other is the size of the vector as <b>std::int32_t</b> .
+      </description>
+    </output>
+  </data>
+
+  <services>
+      <server>
+        <port carrier="rpc">/RawValuesPublisherMetadata/rpc</port>
+        <description>
+            This service implements the <b>getMetadata()</b> method necessary
+            for reading from the <b>embObjMOtionControl</b> the metadata used for configuring 
+            the client and the plugin that exploits it, i.e. the <i>TelemetryDeviceDumper</i>
+        </description>
+      </server>
+  </services>
+ 
+</module>
+

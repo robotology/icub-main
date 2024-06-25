@@ -37,7 +37,7 @@ bool MotorTemperaturePublisher::configure(yarp::os::ResourceFinder& rf)
     }
     else
     {
-        if(conf_group.check("portprefix")) { _portPrefix = conf_group.find("portprefix").asString(); }
+        if(conf_group.check("portprefix")) { m_portPrefix = conf_group.find("portprefix").asString(); }
         if(conf_group.check("period")) { _updatePeriod = conf_group.find("period").asFloat64(); }
         if(conf_group.check("robotname")) { _robotName = conf_group.find("robotname").asString(); }
         if (conf_group.check("listofjoints"))
@@ -52,12 +52,12 @@ bool MotorTemperaturePublisher::configure(yarp::os::ResourceFinder& rf)
     // Create remote motion control device
     Property options;
     options.put("device", "remote_controlboard");
-    options.put("remote", "/"+ _robotName + _portPrefix);
-    options.put("local", _portPrefix + "/mc");
+    options.put("remote", "/"+ _robotName + m_portPrefix);
+    options.put("local", m_portPrefix + "/mc");
 
 
     yDebug() << "++++ config:\n" 
-        << "\t portprefix: " << _portPrefix << "\n"
+        << "\t portprefix: " << m_portPrefix << "\n"
         << "\t period: " << _updatePeriod << "\n"
         << "\t robotname: " << _robotName << "\n"
         << "\t listofjoints: " << jointsBottle->toString() << "\n";
@@ -96,7 +96,7 @@ bool MotorTemperaturePublisher::configure(yarp::os::ResourceFinder& rf)
     
     
     // open the communication port towards motor controller module
-    if(!_outputPort.open(_portPrefix +"/motor_temperatures:o"))
+    if(!_outputPort.open(m_portPrefix +"/motor_temperatures:o"))
     {
         yError() << "Error opening output port for motor control";
         return false;
