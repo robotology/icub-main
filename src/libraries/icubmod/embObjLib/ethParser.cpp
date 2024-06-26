@@ -416,6 +416,19 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
         }
 
     }
+    
+    
+    Bottle groupEthBoardSettings_LoggingMode = Bottle(groupEthBoardSettings.findGroup("LOGGINGMODE"));
+    if(groupEthBoardSettings_LoggingMode.isNull())
+    {
+        yWarning() << "eth::parser::read(): cannot find ETH_BOARD_PROPERTIES/LOGGINGMODE group in config files for BOARD w/ IP" << boarddata.properties.ipv4string << " and will use default values";
+        yWarning() << "Default values for ETH_BOARD_PROPERTIES/LOGGINGMODE group: (RXDOTXbeyondbudget {enabled}, RXDOTXstatistics {period} } = " <<
+                      boarddata.settings.txconfig. << boarddata.settings.txconfig.maxtimeRX << boarddata.settings.txconfig.maxtimeDO << boarddata.settings.txconfig.maxtimeTX << boarddata.settings.txconfig.txratedivider;
+    }
+    else
+    {
+
+    }
 
 
 
