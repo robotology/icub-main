@@ -421,12 +421,28 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     Bottle groupEthBoardSettings_LoggingMode = Bottle(groupEthBoardSettings.findGroup("LOGGINGMODE"));
     if(groupEthBoardSettings_LoggingMode.isNull())
     {
+        boarddata.settings.txconfig.logging.flags = (0x0001 << eomn_appl_log_asynchro_exectime_overflow);
+        boarddata.settings.txconfig.logging.period = 0;
         yWarning() << "eth::parser::read(): cannot find ETH_BOARD_PROPERTIES/LOGGINGMODE group in config files for BOARD w/ IP" << boarddata.properties.ipv4string << " and will use default values";
-        yWarning() << "Default values for ETH_BOARD_PROPERTIES/LOGGINGMODE group: (RXDOTXbeyondbudget {enabled}, RXDOTXstatistics {period} } = " <<
-                      boarddata.settings.txconfig. << boarddata.settings.txconfig.maxtimeRX << boarddata.settings.txconfig.maxtimeDO << boarddata.settings.txconfig.maxtimeTX << boarddata.settings.txconfig.txratedivider;
+        yWarning() << "Default values for ETH_BOARD_PROPERTIES/LOGGINGMODE group: (period = 0, asynchroRXDOTXoverflow =  true, periodicRXDOTXstats = false";
     }
     else
     {
+        float tmp = groupEthBoardSettings_LoggingMode.find("period").asFloat32();
+        boarddata.settings.txconfig.logging.period = (tmp>0) ? static_cast<uint16_t>(1000.0*tmp) : 0;
+
+        boarddata.settings.txconfig.logging.flags = 0;
+
+        bool overflow = groupEthBoardSettings_LoggingMode.find("asynchroRXDOTXoverflow").asBool();
+        if(overflow)
+        {
+            boarddata.settings.txconfig.logging.flags |= (0x0001 << eomn_appl_log_asynchro_exectime_overflow);
+        }
+        bool stats = groupEthBoardSettings_LoggingMode.find("periodicRXDOTXstats").asBool();
+        if(stats)
+        {
+            boarddata.settings.txconfig.logging.flags |= (0x0001 << eomn_appl_log_periodic_exectime_statistics);
+        }
 
     }
 
