@@ -1027,67 +1027,46 @@ void SysParser::parseInfo()
 
         }break;
 
+        case eoerror_value_SYS_ctrloop_rxphasemin:
+        case eoerror_value_SYS_ctrloop_dophasemin:
+        case eoerror_value_SYS_ctrloop_txphasemin:
         case eoerror_value_SYS_ctrloop_rxphaseaverage:
-        {
-            snprintf(str, sizeof(str), " %s %d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16);
-            m_dnginfo.baseInfo.finalMessage.append(str);
-
-        }break;
-       
         case eoerror_value_SYS_ctrloop_dophaseaverage:
-        {
-            snprintf(str, sizeof(str), " %s %d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16);
-            m_dnginfo.baseInfo.finalMessage.append(str);
-
-        }break;
-
         case eoerror_value_SYS_ctrloop_txphaseaverage:
-        {
-            snprintf(str, sizeof(str), " %s %d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16);
-            m_dnginfo.baseInfo.finalMessage.append(str);
-
-        }break;
-
         case eoerror_value_SYS_ctrloop_rxphasemax:
-        {
-            snprintf(str, sizeof(str), " %s %d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16);
-            m_dnginfo.baseInfo.finalMessage.append(str);
-
-        }break;
-
         case eoerror_value_SYS_ctrloop_dophasemax:
-        {
-            snprintf(str, sizeof(str), " %s %d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16);
-            m_dnginfo.baseInfo.finalMessage.append(str);
-
-        }break;
         case eoerror_value_SYS_ctrloop_txphasemax:
         {
-            snprintf(str, sizeof(str), " %s %d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16);
+            snprintf(str, sizeof(str), " %s, monitored over %f sec is %d microsec", m_dnginfo.baseMessage.c_str(),
+                     0.01*static_cast<float>(m_dnginfo.param64 & 0xffff),
+                     m_dnginfo.param16
+                     );
             m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
 
-        }break;
-
-        case eoerror_value_SYS_ctrloop_rxphasemin:
+        case eoerror_value_SYS_exec_time_stats:
         {
-            snprintf(str, sizeof(str), " %s %d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16);
+            static constexpr const char * const names[4] = { "runner.RX()", "runner.DO()", "runner.TX()", "other.ID = " };
+            std::string actor = {};
+            if(m_dnginfo.param16 < 3)
+            {
+                actor = names[m_dnginfo.param16];
+            }
+            else
+            {
+                actor= names[3] + std::to_string(m_dnginfo.param16);
+            }
+
+            snprintf(str, sizeof(str), " %s: %s -> (%d, %d, %d) us over %f sec",
+                     m_dnginfo.baseMessage.c_str(),
+                     actor.c_str(),
+                     static_cast<uint16_t>((m_dnginfo.param64 >> 48) & 0xffff), // min
+                     static_cast<uint16_t>((m_dnginfo.param64 >> 32) & 0xffff), // average
+                     static_cast<uint16_t>((m_dnginfo.param64 >> 16) & 0xffff), // max
+                     0.01*static_cast<float>(m_dnginfo.param64 & 0xffff)        // period
+                     );
             m_dnginfo.baseInfo.finalMessage.append(str);
-
-        }break;
-
-        case eoerror_value_SYS_ctrloop_dophasemin:
-        {
-            snprintf(str, sizeof(str), " %s %d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16);
-            m_dnginfo.baseInfo.finalMessage.append(str);
-
-        }break;
-
-        case eoerror_value_SYS_ctrloop_txphasemin:
-        {
-            snprintf(str, sizeof(str), " %s %d ", m_dnginfo.baseMessage.c_str(), m_dnginfo.param16);
-            m_dnginfo.baseInfo.finalMessage.append(str);
-
-        }break;
+        } break;
 
         case eoerror_value_SYS_proxy_forward_fails:
         {
