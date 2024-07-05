@@ -414,39 +414,89 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
             boarddata.settings.txconfig.maxtimeDO = 300;
             boarddata.settings.txconfig.maxtimeTX = 300;
         }
+        
+        
+        // set initial values.
+        
+        // in here i store the final values of the parsing
+        // they muts have the default values altready in her
+        bool log_imm_sigOVF {true};             
+        bool log_per_sigSTA {false};
+        float log_per_periodSEC = 0.0;
+        
+        Bottle groupEthBoardSettings_RunningMode_Logging = Bottle(groupEthBoardSettings_RunningMode.findGroup("LOGGING"));
+        if(groupEthBoardSettings_RunningMode_Logging.isNull())
+        {
+            yWarning() << "eth::parser::read(): cannot find ETH_BOARD_PROPERTIES/RUNNINGMODE/LOGGING group in config files for BOARD w/ IP" << boarddata.properties.ipv4string << " and will use default values";
+            yWarning() << "Default values for ETH_BOARD_PROPERTIES/RUNNINGMODE/LOGGING group: (IMMEDIATE.emitRXDOTXoverflow = true, PERIODIC.period = 0, PERIODIC.emitRXDOTXstatistics = false";
+        }
+        else
+        {
+            // find groups: IMMEDIATE and PERIODIC
+            
+            Bottle groupEthBoardSettings_RunningMode_Logging_Immediate = Bottle(groupEthBoardSettings_RunningMode_Logging.findGroup("IMMEDIATE"));
+            if(groupEthBoardSettings_RunningMode_Logging_Immediate.isNull())
+            {
+                // IMMEDIATE not found, so i keep default value
+            }
+            else
+            {   
+                if(false == groupEthBoardSettings_RunningMode_Logging_Immediate.check("emitRXDOTXoverflow"))
+                {
+                    // IMMEDIATE.emitRXDOTXoverflow not found, so i keep default
+                }
+                else
+                {
+                    log_imm_sigOVF = groupEthBoardSettings_RunningMode_Logging_Immediate.fond("emitRXDOTXoverflow").asBool())
+                }               
+            }
+            
+            Bottle groupEthBoardSettings_RunningMode_Logging_Periodic = Bottle(groupEthBoardSettings_RunningMode_Logging.findGroup("PERIODIC"));  
+            if(groupEthBoardSettings_RunningMode_Logging_Periodic.isNull())
+            {
+                // PERIODIC not found, so i keep default value
+            }
+            else
+            { 
 
-    }
-    
-    
-    Bottle groupEthBoardSettings_LoggingMode = Bottle(groupEthBoardSettings.findGroup("LOGGINGMODE"));
-    if(groupEthBoardSettings_LoggingMode.isNull())
-    {
-        boarddata.settings.txconfig.logging.flags = (0x0001 << eomn_appl_log_asynchro_exectime_overflow);
-        boarddata.settings.txconfig.logging.period10ms = 0;
-        yWarning() << "eth::parser::read(): cannot find ETH_BOARD_PROPERTIES/LOGGINGMODE group in config files for BOARD w/ IP" << boarddata.properties.ipv4string << " and will use default values";
-        yWarning() << "Default values for ETH_BOARD_PROPERTIES/LOGGINGMODE group: (period = 0, asynchroRXDOTXoverflow =  true, periodicRXDOTXstats = false";
-    }
-    else
-    {
-        float tmp = groupEthBoardSettings_LoggingMode.find("period").asFloat32();
-        boarddata.settings.txconfig.logging.period10ms = (tmp<0) ? (0) : ( (tmp < 600) ? static_cast<uint16_t>(100.0*tmp) : 60000); // period is uint16_t and keeps units of 10 ms to be able to manage up to 10 minutes
+                if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("period"))
+                {
+                    // PERIODIC.period not found, so i keep default
+                }
+                else
+                {
+                    // i get it and i filter in range [0, 600)
+                    float tmp = groupEthBoardSettings_RunningMode_Logging_Immediate.fond("period").asFloat32());
+                    log_per_periodSEC = (tmp<0.0) ? (0.0) : ( (tmp < 600.0) ? tmp : 600.0 ); 
+                }
+                
+                if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("emitRXDOTXstatistics"))
+                {
+                    // PERIODIC.emitRXDOTXstatistics not found, so i keep default
+                }
+                else
+                {
+                    log_imm_sigSTA = groupEthBoardSettings_RunningMode_Logging_Immediate.fond("emitRXDOTXstatistics").asBool())
+                }
+                
+            }  
 
+            yInfo() << "ETH_BOARD_PROPERTIES/RUNNINGMODE/LOGGING group for BOARD w/ IP" << boarddata.properties.ipv4string << " has values:";
+            yInfi() << "IMMEDIATE.emitRXDOTXoverflow = " << log_imm_sigOVF << " PERIODIC.period = " << log_per_periodSEC << " PERIODIC.emitRXDOTXstatistics = " << log_per_sigSTA;               
+            
+        }
+                            
+        
+        // now i apply the resulting values to the compact struct
+        constexpr uint16_t maskOverflow = (0x0001 << eomn_appl_log_asynchro_exectime_overflow);
+        constexpr uint16_t maskStatistics = (0x0001 << eomn_appl_log_periodic_exectime_statistics);
         boarddata.settings.txconfig.logging.flags = 0;
-
-        bool overflow = groupEthBoardSettings_LoggingMode.find("asynchroRXDOTXoverflow").asBool();
-        if(overflow)
-        {
-            boarddata.settings.txconfig.logging.flags |= (0x0001 << eomn_appl_log_asynchro_exectime_overflow);
-        }
-        bool stats = groupEthBoardSettings_LoggingMode.find("periodicRXDOTXstats").asBool();
-        if(stats)
-        {
-            boarddata.settings.txconfig.logging.flags |= (0x0001 << eomn_appl_log_periodic_exectime_statistics);
-        }
+        if(true == log_imm_sigOVF) { boarddata.settings.txconfig.logging.flags |= maskOverflow; }
+        if(true == log_per_sigSTA) { boarddata.settings.txconfig.logging.flags |= maskStatistics; }
+        boarddata.settings.txconfig.logging.period10ms = static_cast<uint16_t>(100.0*log_per_periodSEC); // period is uint16_t and keeps units of 10 ms to be able to manage up to 10 minutes
 
     }
-
-
+    
 
     // <- ETH_BOARD/ETH_BOARD_SETTINGS/RUNNINGMODE
 
