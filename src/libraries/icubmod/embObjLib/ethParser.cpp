@@ -414,10 +414,124 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
             boarddata.settings.txconfig.maxtimeDO = 300;
             boarddata.settings.txconfig.maxtimeTX = 300;
         }
+        
+        
+        // set initial values.
+        
+        // in here i store the final values of the parsing
+        // they muts have the default values already in here
+        struct parseLOGGING
+        {
+            struct IMM
+            {
+                bool sigOVRFL {true};
+            };
+            struct PER
+            {
+                double period {0.0};
+                bool sigSTATS {false};
+            };
+
+            IMM immediate {};
+            PER periodic {};
+
+            void setdefault()
+            {
+                immediate.sigOVRFL = true;
+                periodic.period = 0;
+                periodic.sigSTATS = false;
+            }
+        };
+
+        parseLOGGING pLOG {};
+
+        pLOG.setdefault();
+
+        //bool log_imm_sigOVF {true};
+        //bool log_per_sigSTA {false};
+        //float log_per_periodSEC = 0.0;
+        
+        Bottle groupEthBoardSettings_RunningMode_Logging = Bottle(groupEthBoardSettings_RunningMode.findGroup("LOGGING"));
+        if(groupEthBoardSettings_RunningMode_Logging.isNull())
+        {
+            yWarning() << "eth::parser::read(): cannot find ETH_BOARD_PROPERTIES/RUNNINGMODE/LOGGING group in config files for BOARD w/ IP" << boarddata.properties.ipv4string << " and will use default values";
+            yWarning() << "Default values for ETH_BOARD_PROPERTIES/RUNNINGMODE/LOGGING group: (IMMEDIATE.emitRXDOTXoverflow = true, PERIODIC.period = 0, PERIODIC.emitRXDOTXstatistics = false";
+        }
+        else
+        {
+            // find groups: IMMEDIATE and PERIODIC
+            
+            Bottle groupEthBoardSettings_RunningMode_Logging_Immediate = Bottle(groupEthBoardSettings_RunningMode_Logging.findGroup("IMMEDIATE"));
+            if(groupEthBoardSettings_RunningMode_Logging_Immediate.isNull())
+            {
+                // IMMEDIATE not found, so i keep default value
+            }
+            else
+            {   
+                if(false == groupEthBoardSettings_RunningMode_Logging_Immediate.check("emitRXDOTXoverflow"))
+                {
+                    // IMMEDIATE.emitRXDOTXoverflow not found, so i keep default
+                }
+                else
+                {
+                    if(groupEthBoardSettings_RunningMode_Logging_Immediate.find("emitRXDOTXoverflow").isBool())
+                    {
+                        printf("x 33\n");
+                       pLOG.immediate.sigOVRFL = groupEthBoardSettings_RunningMode_Logging_Immediate.find("emitRXDOTXoverflow").asBool();
+                    }
+               }
+            }
+            
+            Bottle groupEthBoardSettings_RunningMode_Logging_Periodic = Bottle(groupEthBoardSettings_RunningMode_Logging.findGroup("PERIODIC"));  
+            if(groupEthBoardSettings_RunningMode_Logging_Periodic.isNull())
+            {
+                printf("x 4\n");
+                // PERIODIC not found, so i keep default value
+            }
+            else
+            { 
+
+                if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("period"))
+                {
+                    // PERIODIC.period not found, so i keep default
+                }
+                else
+                {
+                    // i get it and i filter in range [0, 600)
+                    if(true == groupEthBoardSettings_RunningMode_Logging_Periodic.find("period").isFloat64())
+                    {
+                        double tmp = groupEthBoardSettings_RunningMode_Logging_Periodic.find("period").asFloat64();
+                        pLOG.periodic.period = (tmp<0.0) ? (0.0) : ( (tmp < 600.0) ? tmp : 600.0 );
+                     }
+                }
+                
+                if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("emitRXDOTXstatistics"))
+                {
+                    // PERIODIC.emitRXDOTXstatistics not found, so i keep default
+                }
+                else
+                {
+                    pLOG.periodic.sigSTATS = groupEthBoardSettings_RunningMode_Logging_Periodic.find("emitRXDOTXstatistics").asBool();
+                }
+                
+            }  
+
+            yInfo() << "ETH_BOARD_PROPERTIES/RUNNINGMODE/LOGGING group for BOARD w/ IP" << boarddata.properties.ipv4string << " has values: " <<
+             "IMMEDIATE.emitRXDOTXoverflow = " << pLOG.immediate.sigOVRFL << " PERIODIC.period = " << pLOG.periodic.period << " PERIODIC.emitRXDOTXstatistics = " << pLOG.periodic.sigSTATS;
+            
+        }
+                            
+        
+        // now i apply the resulting values to the compact struct
+        constexpr uint16_t maskOverflow = (0x0001 << eomn_appl_log_asynchro_exectime_overflow);
+        constexpr uint16_t maskStatistics = (0x0001 << eomn_appl_log_periodic_exectime_statistics);
+        boarddata.settings.txconfig.logging.flags = 0;
+        if(true == pLOG.immediate.sigOVRFL) { boarddata.settings.txconfig.logging.flags |= maskOverflow; }
+        if(true == pLOG.periodic.sigSTATS) { boarddata.settings.txconfig.logging.flags |= maskStatistics; }
+        boarddata.settings.txconfig.logging.period10ms = static_cast<uint16_t>(100.0*pLOG.periodic.period); // period is uint16_t and keeps units of 10 ms to be able to manage up to 10 minutes
 
     }
-
-
+    
 
     // <- ETH_BOARD/ETH_BOARD_SETTINGS/RUNNINGMODE
 

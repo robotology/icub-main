@@ -55,6 +55,8 @@ EthResource::EthResource()
     txconfig.maxtimeRX = defmaxtimeRX;
     txconfig.maxtimeDO = defmaxtimeDO;
     txconfig.maxtimeTX = defmaxtimeTX;
+    txconfig.logging.flags = (0x0001 << eomn_appl_log_asynchro_exectime_overflow);
+    txconfig.logging.period10ms = 0;
 
     memset(verifiedEPprotocol, 0, sizeof(verifiedEPprotocol));
 
