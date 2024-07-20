@@ -646,7 +646,7 @@ void MotionControlParser::parseInfo()
         } break;
 
 
-        case eoerror_value_MC_motor_qencoder_dirty:
+        //case eoerror_value_MC_motor_qencoder_dirty:
         case eoerror_value_MC_motor_qencoder_phase: //TBD: check encoder raw value
         {
             uint16_t joint_num = m_dnginfo.param16;
@@ -655,6 +655,20 @@ void MotionControlParser::parseInfo()
 
             snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d), Raw_quad_encoder_value=%d)",
                                         m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, enc_raw_value
+                                        );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
+        case eoerror_value_MC_motor_qencoder_dirty: 
+        {
+            uint16_t joint_num = m_dnginfo.param16;
+            uint16_t dirty_error = m_dnginfo.param64 & 0xffff;
+            uint16_t index_error = (m_dnginfo.param64 & 0xffff0000)>>16;
+            uint16_t phase_error = (m_dnginfo.param64 & 0xffff00000000)>>32;
+            m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
+
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d), index=%d, dirty=%d, phase=%d)",
+                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, index_error, dirty_error, phase_error
                                         );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
