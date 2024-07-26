@@ -132,6 +132,12 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
 
     yWarning() << "in EthReceiver::config() the config socket has queue size = "<< sock_input_buf_size<< "; you request ETHRECEIVER_BUFFER_SIZE=" << _dgram_buffer_size;
 
+    // On Windows the MSG_DONTWAIT flag set in EthReceiver::run(), so the recv is actually blocking, and this prevents
+    // the clean close. So, we instead use ACE_NONBLOCK that works also on Windows
+#ifdef WIN32
+    recv_socket->enable(ACE_NONBLOCK);
+#endif
+
     return true;
 }
 
