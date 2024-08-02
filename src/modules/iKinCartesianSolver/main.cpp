@@ -35,9 +35,7 @@ See \ref iKinSlv "Cartesian Solver" for documentation.
 
 \section lib_sec Libraries
 - YARP libraries.
-- \ref iKin "iKin" library (it requires IPOPT: see the
-  <a
-  href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>).
+- \ref iKin "iKin" library (it requires IPOPT).
 
 \section parameters_sec Parameters
 --part \e type [mandatory]

@@ -742,15 +742,15 @@ public:
     virtual bool getGraspModel(perception::Model *&model) const;
 
     /**
-    * Return the cartesian interface used internally to control the 
-    * limb. 
-    * @param ctrl the cartesian interface.
-    * @return true/false on success/fail. 
-    *  
-    * @note Useful to access solver's options through the <a 
-    *       href="http://wiki.icub.org/yarpdoc/dd/de6/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian
-    *       Interface</a>.
-    */
+     * Return the cartesian interface used internally to control the
+     * limb.
+     * @param ctrl the cartesian interface.
+     * @return true/false on success/fail.
+     *
+     * @note Useful to access solver's options through the <a
+     *       href="https://www.yarp.it/latest/classyarp_1_1dev_1_1ICartesianControl.html">Cartesian
+     *       Interface</a>.
+     */
     virtual bool getCartesianIF(yarp::dev::ICartesianControl *&ctrl) const;
 
     /**

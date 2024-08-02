@@ -14,7 +14,7 @@
  * Driver for Ethernet communication with Force-Torque sensors, the Strain2 board.
  * It is also possible read the temperature of tthe sensor.
  *
- * The parameters accepted in the config argument of the open method are described in http://wiki.icub.org/wiki/Robot_configuration.
+ * The parameters accepted in the config argument of the open method are described in https://icub-tech-iit.github.io/documentation/icub_robot_configuration/icub_robot_configuration_index/.
  */
 
 

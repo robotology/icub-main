@@ -43,7 +43,7 @@ The model of the sensor measurements considers a fixed base, with z-axis
 pointing upwards. The estimation of the external wrench applied at the
 end-effector of the limb has the same orientation of the fixed base frame.
 For further information about the use of this module and of the iCub force control interface, please refer to the force control page:
-http://wiki.icub.org/wiki/Force_Control
+https://icub-tech-iit.github.io/documentation/icub_force_control/icub-force-control/.
 
 \section lib_sec Libraries
 - YARP libraries.
