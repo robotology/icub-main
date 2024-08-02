@@ -23,7 +23,7 @@
  * @ingroup icub_hardware_modules
  * \defgroup eth2ems eth2ems
  *
- * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a ems to can bus device.
+ * Implements <a href="https://yarp.it/latest/classyarp_1_1dev_1_1ICanBus.html"> ICanBus interface <\a> for a ems to can bus device.
  * This is the eth2ems module device.
  *
  * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia

@@ -8,9 +8,7 @@ environments to compile the code.
 
 @section cmake_usage_basics Getting started
 
-For basic information about
-how to install use CMake, see:
- - <a href="http://wiki.icub.org/wiki/CMake">Installing and Using CMake</A>
+Refer to the <a href="https://cmake.org/"><CMake> documentation for more information.
 
 If your module is independent of others in the repository at the code
 level, you don't have to do anything special.  Here's about the

@@ -31,7 +31,7 @@ Run and execute through \e yarpmanager .
 There are two applications:
 
 - Face Expressions (faceExpressions.xml). This can run out of the box, since it assumes you have a pc104 and a real iCub.
-- FaceSim (faceExpressionsSim.xml). This is the equivalent application to be used with the <a href="http://wiki.icub.org/wiki/Simulator_README#FACE_EXPRESSIONS:">robot simulator</a>.
+- FaceSim (faceExpressionsSim.xml). This is the equivalent application to be used with the robot simulator.
 
 Now from any machine you can rpc to the port "/icub/face/emotions/in" and send high level commands.
 Be aware that some commands are only available on the latest robots mounting the RFE board.

@@ -2849,7 +2849,7 @@ void iCubInertialSensor::allocate(const string &_type)
 
     setH0(H0);
 
-    // T_nls (see http://wiki.icub.org/wiki/ICubInertiaSensorKinematics )
+    // T_nls: see https://icub-tech-iit.github.io/documentation/icub_kinematics/icub-forward-kinematics/icub-forward-kinematics-imu/
     Matrix HN(4,4);
     HN.zero();
     HN(0,0)=1.0;

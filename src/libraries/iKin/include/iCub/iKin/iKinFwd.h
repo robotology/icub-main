@@ -21,8 +21,7 @@
  *
  * \section dep_sec Dependencies 
  * - ctrlLib 
- * - IPOPT: see the <a
- *   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>.
+ * - IPOPT
  *  
  * \note <b>If you're going to use iKin for your work, please
  *       quote it within any resulting publication</b>: <i>

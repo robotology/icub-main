@@ -17,10 +17,8 @@ This repository is maintained by:
 
 See COPYING and AUTHORS for licensing info, authors and copyright holders.
 
-The iCub manual contains more details about the structure of the 
-repository and how the code is organized. The manual is available
-online at: http://wiki.icub.org/wiki/Manual and is the most
-up to date source of information.
+The [iCub manual](https://icub-tech-iit.github.io/documentation/) contains more details about the structure of the 
+repository and how the code is organized, being the most up-to-date source of information.
 
 Direct link to installation instructions:
 https://icub-tech-iit.github.io/documentation/sw_installation.

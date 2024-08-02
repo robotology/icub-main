@@ -28,7 +28,7 @@
  *        mounted on Strain2 board.
  *
  * It is possible to read from multiple strain2 board.
- * The parameters accepted in the config argument of the open method are described in http://wiki.icub.org/wiki/Robot_configuration.
+ * The parameters accepted in the config argument of the open method are described in https://icub-tech-iit.github.io/documentation/icub_robot_configuration/icub_robot_configuration_index/.
  */
 
 
