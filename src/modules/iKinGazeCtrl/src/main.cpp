@@ -49,7 +49,7 @@ along with the vergence angle can be given to the module both in
 absolute and relative mode.
 
 Moreover, this module also implements the server part of the <a
-href="http://wiki.icub.org/yarpdoc/classyarp_1_1dev_1_1IGazeControl.html">Gaze
+href="https://www.yarp.it/latest/classyarp_1_1dev_1_1IGazeControl.html">Gaze
 Control Interface</a>. For a tutorial on how to use the
 interface, please go \ref icub_gaze_interface "here".
 
@@ -80,17 +80,12 @@ robot setup; you should find something similar to:
 Shifts 8 8 8 8 8 8 ...
 \endcode
 
-Read more on <a
-href="http://wiki.icub.org/wiki/ControlBoard_configuration_file#Shifts">Shifts
-Factors</a>.
-
 \note A video on iCub gazing can be seen <a
       href="https://youtu.be/I4ZKfAvs1y0">here</a>.
 
 \section lib_sec Libraries
 - YARP libraries.
-- \ref iKin "iKin" library (it requires IPOPT lib: see the <a
-  href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>).
+- \ref iKin "iKin" library (it requires IPOPT).
 
 \section parameters_sec Parameters
 --context \e dir
@@ -119,7 +114,7 @@ Factors</a>.
 --torso \e name
 - The parameter \e name selects the robot's torso port to
   connect to; if not specified, \e torso is assumed. The special
- *string \e off can be used to skip opening the torso device.  
+ *string \e off can be used to skip opening the torso device.
 
 --trajectory_time::neck \e time
 - Specify the neck trajectory execution time in point-to-point
@@ -511,7 +506,7 @@ following ports:
 \section coor_sys_sec Coordinate System
 Positions (meters) refer to the root reference frame attached to
 the waist as in the <a
-href="http://wiki.icub.org/wiki/ICubForwardKinematics">wiki</a>.
+href="https://icub-tech-iit.github.io/documentation/icub_kinematics/icub-forward-kinematics/icub-forward-kinematics/">official documentation</a>.
 
 \section in_files_sec Input Data Files
 None.

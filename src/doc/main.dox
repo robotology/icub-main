@@ -8,27 +8,20 @@
 
 \image html icub_small_new-white.gif "Welcome to my brain!"
 
-This is the iCub online code documentation (the iCub manual can be found
-elsewhere: http://wiki.icub.org/wiki/Manual). This is the result of an 
-automatic process that parses the doxygen documentation in the repository. 
+This is the iCub online code documentation.
+This is the result of an automatic process that parses the doxygen documentation in the repository. 
 For this reason the information here at times can be innaccurate or 
 completely broken!
 
 Topics:
 
- - <a href="http://wiki.icub.org/wiki/ICub_Software_Installation">Software installation</a>.
+ - <a href="https://icub-tech-iit.github.io/documentation/sw_installation">Software installation</a>.
  - \ref icub_modules_all - most of the software (including \ref icub_module and \ref icub_mod_library)
  - \ref icub_applications - a list of documented applications 
    (collections of modules)
  - \ref icub_tutorials - a set of tutorials to learn how to use the software
- - The documentation for contributed software is here: <a href="http://wiki.icub.org/iCub/contrib"> Contrib documentation </A> 
- - Programmer's checklist:
-  - <a href="http://wiki.icub.org/wiki/Licensing"> Licensing </A> - have you declared your authorship, and rights granted?
-  - <a href="http://wiki.icub.org/wiki/Manual#Eleven._Guidelines"> Coding guidelines </A> - some tips on how to write your code
-  - <a href="http://wiki.icub.org/wiki/Manual#Ten._Standardization_of_methods"> Modules and CMake</A> - some tips on how to make your code compilable
-  - <a href="http://wiki.icub.org/wiki/Committing_changes_to_the_software_repository"> Committing to the repository </A> - things to check before committing files to the repository
  - Reference material:
-  - The <a href="http://wiki.icub.org/wiki/Manual">The iCub manual</a>
+  - The <a href="https://icub-tech-iit.github.io/documentation/">The iCub manual</a>.
   - The <a href="http://www.robotcub.org/">RobotCub Website</a>.
   - Our software architecture, <a href="http://www.yarp.it/">YARP</a>.
 

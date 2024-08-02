@@ -56,7 +56,8 @@ your old calibration file (e.g. icubEyes.ini) with this new one.
 \note If you are using low resolution images (320x240) you should use a big
 chessboard pattern (i.e. with square side length of ~4cm). \note Make sure to
 show the pattern horizontally. \note Further information can be found in the <a
-      href="http://wiki.icub.org/wiki/Stereo_calibration">wiki</a>.
+      href="https://icub-tech-iit.github.io/documentation/icub_robot_calibration/icub-stereo-calib/">official
+documentation</a>.
 
 \section lib_sec Libraries
 YARP libraries and OpenCV
