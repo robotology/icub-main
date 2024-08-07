@@ -2,8 +2,6 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-cmake_minimum_required(VERSION 3.12)
-
 # Name of the project must correspond to the class name that needs to be
 # instantiated by the factory - so embObjLib is not ok
 SET(PROJECTNAME boardTransceiver)

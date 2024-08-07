@@ -2,8 +2,6 @@
 # Authors: Paul Fitzpatrick
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-cmake_minimum_required(VERSION 3.12)
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
 
 # Find YARP for bindings-only builds
