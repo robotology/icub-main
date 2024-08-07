@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.12...3.28)
 
 set(ROOT_PROJECT_NAME ICUB)
 project(${ROOT_PROJECT_NAME} LANGUAGES C CXX
