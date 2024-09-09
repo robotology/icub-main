@@ -32,8 +32,9 @@
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/pointing_far.h>
 
-#define RAD2DEG     (180.0/M_PI)
-#define DEG2RAD     (M_PI/180.0)
+#define RAD2DEG         (180.0/M_PI)
+#define DEG2RAD         (M_PI/180.0)
+#define ELBOW_REST_DEG  10.0
 
 using namespace std;
 using namespace yarp::os;
@@ -47,7 +48,7 @@ using namespace iCub::iKin;
 class PointingFarNLP : public Ipopt::TNLP
 {
     iCubArm *finger_tip;
-    iCubArm *finger_base;
+    iCubArm *elbow;
     iCubFinger *finger;
     Vector point;
 
@@ -60,7 +61,7 @@ public:
         iarm->getInfo(info);
         string hand=info.find("arm_type").asString();
         finger_tip=new iCubArm(hand);
-        finger_base=new iCubArm(hand);
+        elbow=new iCubArm(hand);
 
         size_t underscore=hand.find('_');
         if (underscore!=string::npos)
@@ -73,8 +74,8 @@ public:
             iarm->getLimits(i,&min,&max);
             (*finger_tip->asChain())[i].setMin(DEG2RAD*min);
             (*finger_tip->asChain())[i].setMax(DEG2RAD*max);
-            (*finger_base->asChain())[i].setMin(DEG2RAD*min);
-            (*finger_base->asChain())[i].setMax(DEG2RAD*max);
+            (*elbow->asChain())[i].setMin(DEG2RAD*min);
+            (*elbow->asChain())[i].setMax(DEG2RAD*max);
         }
 
         // finger_tip: block torso
@@ -86,18 +87,18 @@ public:
         finger_tip->blockLink(8,0.0);
         finger_tip->blockLink(9,0.0);
 
-        // finger_base: block torso
-        finger_base->blockLink(0,0.0);
-        finger_base->blockLink(1,0.0);
-        finger_base->blockLink(2,0.0);
+        // elbow: block torso
+        elbow->blockLink(0,0.0);
+        elbow->blockLink(1,0.0);
+        elbow->blockLink(2,0.0);
 
-        // finger_base: block wrist
-        finger_base->blockLink(8,0.0);
-        finger_base->blockLink(9,0.0);
+        // elbow: remove forearm
+        for (auto i=0; i<4; i++)
+            elbow->asChain()->rmLink(7);
 
         // remove all constraints
         finger_tip->asChain()->setAllConstraints(false);
-        finger_base->asChain()->setAllConstraints(false);
+        elbow->asChain()->setAllConstraints(false);
 
         finger=new iCubFinger(hand+"_index");
         finger->asChain()->setAllConstraints(false);
@@ -108,7 +109,7 @@ public:
     virtual ~PointingFarNLP()
     {
         delete finger_tip;
-        delete finger_base;
+        delete elbow;
         delete finger;
     }
 
@@ -127,7 +128,6 @@ public:
 
         // add final transformations
         finger_tip->asChain()->setHN(finger->getH());
-        finger_base->asChain()->setHN(finger->getH0());
     }
 
     /*********************************************************************/
@@ -187,7 +187,7 @@ public:
         for (size_t i=0; i<q.length(); i++)
            q[i]=x[i];
         finger_tip->setAng(q);
-        finger_base->setAng(q);
+        elbow->asChain()->setAng(q);
     }
 
     /*********************************************************************/
@@ -195,7 +195,7 @@ public:
                 Ipopt::Number& obj_value)
     {
         setAng(x);
-        obj_value=10.0*DEG2RAD-x[3];
+        obj_value=ELBOW_REST_DEG*DEG2RAD-x[3];
         obj_value*=obj_value;
         return true;
     }
@@ -206,7 +206,7 @@ public:
     {
         setAng(x);
         for (Ipopt::Index i=0; i<n; i++)
-            grad_f[i]=(i==3?-2.0*(10.0*DEG2RAD-x[3]):0.0);
+            grad_f[i]=(i==3?-2.0*(ELBOW_REST_DEG*DEG2RAD-x[3]):0.0);
         return true;
     }
 
@@ -215,12 +215,12 @@ public:
                 Ipopt::Index m, Ipopt::Number* g)
     {
         setAng(x);
-        Vector fingerBasePos=finger_base->EndEffPosition();
-        Vector pb_dir=point-fingerBasePos;
+        Vector elbowPos=elbow->asChain()->EndEffPosition();
+        Vector pe_dir=point-elbowPos;
 
         Matrix tip=finger_tip->getH();
-        Vector tb_dir=tip.getCol(3).subVector(0,2)-fingerBasePos;
-        g[0]=dot(pb_dir,tb_dir)/(norm(pb_dir)*norm(tb_dir));
+        Vector te_dir=tip.getCol(3).subVector(0,2)-elbowPos;
+        g[0]=dot(pe_dir,te_dir)/(norm(pe_dir)*norm(te_dir));
         
         double e=-1.0-tip(2,2);
         g[1]=e*e;
@@ -249,25 +249,26 @@ public:
         else
         {
             setAng(x);
-            Vector fingerBasePos=finger_base->EndEffPosition();
-            Vector pb_dir=point-fingerBasePos;
+            Vector elbowPos=elbow->asChain()->EndEffPosition();
+            Vector pe_dir=point-elbowPos;
 
             Matrix tip=finger_tip->getH();
-            Vector tb_dir=tip.getCol(3).subVector(0,2)-fingerBasePos;
+            Vector te_dir=tip.getCol(3).subVector(0,2)-elbowPos;
 
-            Matrix dpb_dir=-1.0*finger_base->AnaJacobian().removeRows(3,3);
-            Matrix dtb_dir=finger_tip->AnaJacobian().removeRows(3,3)+dpb_dir;
+            Matrix dpe_dir=-1.0*elbow->asChain()->AnaJacobian().removeRows(3,3);
+            dpe_dir=cat(dpe_dir,zeros(3,finger_tip->getDOF()-elbow->asChain()->getDOF()));
+            Matrix dte_dir=finger_tip->AnaJacobian().removeRows(3,3)+dpe_dir;
 
-            double npb=norm(pb_dir);
-            double ntb=norm(tb_dir);
-            double nn=npb*ntb;
-            double tmp1=dot(pb_dir,tb_dir);
-            double tmp2=ntb/npb;
+            double npe=norm(pe_dir);
+            double nte=norm(te_dir);
+            double nn=npe*nte;
+            double tmp1=dot(pe_dir,te_dir);
+            double tmp2=nte/npe;
             double tmp3=nn*nn;
 
             for (Ipopt::Index i=0; i<n; i++)
-                values[i]=(dot(dpb_dir.getCol(i),tb_dir)+dot(pb_dir,dtb_dir.getCol(i)))/nn-
-                          tmp1*(dot(pb_dir,dpb_dir.getCol(i))*tmp2)/tmp3;
+                values[i]=(dot(dpe_dir.getCol(i),te_dir)+dot(pe_dir,dte_dir.getCol(i)))/nn-
+                          tmp1*(dot(pe_dir,dpe_dir.getCol(i))*tmp2)/tmp3;
             
             double e=-1.0-tip(2,2);
             Matrix dtipZ=finger_tip->AnaJacobian(2);
