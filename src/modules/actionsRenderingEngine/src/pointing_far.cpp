@@ -161,10 +161,11 @@ public:
             x_u[i]=(*finger_tip->asChain())(i).getMax();
         }
 
-        g_l[0]=1.0;
+        g_l[0]=0.999;
         g_u[0]=std::numeric_limits<double>::max();
 
-        g_l[1]=g_u[1]=0.0;
+        g_l[1]=0.0;
+        g_u[1]=0.001;
         return true;
     }
 
@@ -193,7 +194,9 @@ public:
     bool eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                 Ipopt::Number& obj_value)
     {
-        obj_value=x[3]*x[3];
+        setAng(x);
+        obj_value=10.0*DEG2RAD-x[3];
+        obj_value*=obj_value;
         return true;
     }
 
@@ -201,8 +204,9 @@ public:
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number* grad_f)
     {
+        setAng(x);
         for (Ipopt::Index i=0; i<n; i++)
-            grad_f[i]=(i==3?2.0*x[3]:0.0);
+            grad_f[i]=(i==3?-2.0*(10.0*DEG2RAD-x[3]):0.0);
         return true;
     }
 
@@ -211,7 +215,6 @@ public:
                 Ipopt::Index m, Ipopt::Number* g)
     {
         setAng(x);
-
         Vector fingerBasePos=finger_base->EndEffPosition();
         Vector pb_dir=point-fingerBasePos;
 
@@ -322,7 +325,7 @@ bool PointingFar::compute(ICartesianControl *iarm, const Property& requirements,
     app->Options()->SetNumericValue("constr_viol_tol",0.01);
     app->Options()->SetIntegerValue("acceptable_iter",0);
     app->Options()->SetStringValue("mu_strategy","adaptive");
-    app->Options()->SetIntegerValue("max_iter",100);
+    app->Options()->SetIntegerValue("max_iter",200);
     app->Options()->SetStringValue("nlp_scaling_method","gradient-based");
     app->Options()->SetStringValue("hessian_approximation","limited-memory");
     app->Options()->SetStringValue("derivative_test","none");
