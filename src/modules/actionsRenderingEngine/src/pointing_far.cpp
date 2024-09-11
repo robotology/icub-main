@@ -34,7 +34,6 @@
 
 #define RAD2DEG         (180.0/M_PI)
 #define DEG2RAD         (M_PI/180.0)
-#define ELBOW_REST_DEG  10.0
 
 using namespace std;
 using namespace yarp::os;
@@ -161,11 +160,11 @@ public:
             x_u[i]=(*finger_tip->asChain())(i).getMax();
         }
 
-        g_l[0]=0.999;
+        g_l[0]=0.9999;
         g_u[0]=std::numeric_limits<double>::max();
 
-        g_l[1]=0.0;
-        g_u[1]=0.001;
+        g_l[1]=-std::numeric_limits<double>::max();
+        g_u[1]=0.0;
         return true;
     }
 
@@ -195,8 +194,9 @@ public:
                 Ipopt::Number& obj_value)
     {
         setAng(x);
-        obj_value=ELBOW_REST_DEG*DEG2RAD-x[3];
-        obj_value*=obj_value;
+        Matrix tip=finger_tip->getH();
+        double e=-1.0-tip(2,2);
+        obj_value=e*e;
         return true;
     }
 
@@ -205,8 +205,11 @@ public:
                      Ipopt::Number* grad_f)
     {
         setAng(x);
+        Matrix tip=finger_tip->getH();
+        double e=-1.0-tip(2,2);
+        Matrix dtipZ=finger_tip->AnaJacobian(2);
         for (Ipopt::Index i=0; i<n; i++)
-            grad_f[i]=(i==3?-2.0*(ELBOW_REST_DEG*DEG2RAD-x[3]):0.0);
+            grad_f[i]=-2.0*e*dtipZ(2,i);
         return true;
     }
 
@@ -222,8 +225,8 @@ public:
         Vector te_dir=tip.getCol(3).subVector(0,2)-elbowPos;
         g[0]=dot(pe_dir,te_dir)/(norm(pe_dir)*norm(te_dir));
         
-        double e=-1.0-tip(2,2);
-        g[1]=e*e;
+        Vector pt_dir=point-tip.getCol(3).subVector(0,2);
+        g[1]=pt_dir[0];
         return true;
     }
 
@@ -262,18 +265,14 @@ public:
             double npe=norm(pe_dir);
             double nte=norm(te_dir);
             double nn=npe*nte;
-            double tmp1=dot(pe_dir,te_dir);
-            double tmp2=nte/npe;
-            double tmp3=nn*nn;
 
             for (Ipopt::Index i=0; i<n; i++)
                 values[i]=(dot(dpe_dir.getCol(i),te_dir)+dot(pe_dir,dte_dir.getCol(i)))/nn-
-                          tmp1*(dot(pe_dir,dpe_dir.getCol(i))*tmp2)/tmp3;
+                          dot(pe_dir,te_dir)*(dot(pe_dir,dpe_dir.getCol(i))*nte/npe)/(nn*nn);
             
-            double e=-1.0-tip(2,2);
-            Matrix dtipZ=finger_tip->AnaJacobian(2);
+            Matrix dtip=-1.0*finger_tip->AnaJacobian();
             for (Ipopt::Index i=0; i<n; i++)
-                values[n+i]=-2.0*e*dtipZ(2,i);
+                values[n+i]=dtip(0,i);
         }
         return true;
     }
