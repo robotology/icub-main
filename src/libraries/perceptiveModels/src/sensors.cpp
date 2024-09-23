@@ -101,12 +101,16 @@ bool SensorEncoderArrays::getOutput(Value &in) const
         return false;
 
     if (iencarray->getEncoderArrayStatus(index_array)!=MAS_OK)
+    {
+        in=latch;
         return false;
+    }
 
     double stamp;
     Vector vect(iencarray->getEncoderArraySize(index_array));
     iencarray->getEncoderArrayMeasure(index_array,vect,stamp);
     in=Value(vect[index_element]);
+    latch=in;
 
     return true;
 }
