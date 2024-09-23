@@ -2,7 +2,17 @@
 # Authors: Paul Fitzpatrick
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
+# Detect if we are doing a standalone build of the bindings, using an external icub-main
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  set(ICUB_BINDINGS_BUILD_STANDALONE TRUE)
+else()
+  set(ICUB_BINDINGS_BUILD_STANDALONE FALSE)
+endif()
+
+if(ICUB_BINDINGS_BUILD_STANDALONE)
+  cmake_minimum_required(VERSION 3.16)
+  project(ICUBBindings)
+endif()
 
 # Find YARP for bindings-only builds
 find_package(YARP COMPONENTS conf os sig dev math gsl REQUIRED)
@@ -11,25 +21,15 @@ foreach(_component conf os sig dev math gsl)
   include_directories(${YARP_${_component}_INCLUDE_DIRS})
 endforeach()
 
-# Work-around for missing paths to OpenCV libraries
-find_package(OpenCV)
-if(OpenCV_FOUND)
-    link_directories(${OpenCV_LINK_DIRECTORIES} ${OPENCV_LINK_DIRECTORIES})
+# Find ICUB for bindings-only builds
+if(ICUB_BINDINGS_BUILD_STANDALONE)
+  find_package(ICUB REQUIRED)
 endif()
 
 set(ICUB_SWIG_LIBRARIES ctrlLib
-                        iDyn
                         iKin
                         skinDynLib
                         optimization)
-
-#TODO this has to been removed as soon as swig fully support target_include_directories
-include_directories(${CMAKE_SOURCE_DIR}/src/libraries/iDyn/include)
-include_directories(${CMAKE_SOURCE_DIR}/src/libraries/iKin/include)
-include_directories(${CMAKE_SOURCE_DIR}/src/libraries/ctrlLib/include)
-include_directories(${CMAKE_SOURCE_DIR}/src/libraries/skinDynLib/include)
-include_directories(${CMAKE_SOURCE_DIR}/src/libraries/optimization/include)
-
 
 # for yarp.i
 include_directories(${YARP_BINDINGS})
@@ -58,7 +58,7 @@ if(CREATE_PYTHON)
                      LANGUAGE python
                      SOURCES icub.i)
     target_link_libraries(${SWIG_MODULE_icub_python_REAL_NAME} Python::Python ${ICUB_SWIG_LIBRARIES})
-    set_target_properties(${SWIG_MODULE_icub_python_REAL_NAME} PROPERTIES OUTPUT_NAME "_icub")
+    set_target_properties(${SWIG_MODULE_icub_python_REAL_NAME} PROPERTIES SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE)
 
     # installation path is determined reliably on most platforms using distutils
     execute_process(COMMAND ${Python_EXECUTABLE} -c "from distutils import sysconfig; print(sysconfig.get_python_lib(1,0,prefix=''))"
@@ -102,7 +102,9 @@ if(CREATE_RUBY)
     target_link_libraries(${SWIG_MODULE_icub_ruby_REAL_NAME} ${RUBY_LIBRARY} ${ICUB_SWIG_LIBRARIES})
     target_include_directories(${SWIG_MODULE_icub_ruby_REAL_NAME} SYSTEM PRIVATE ${RUBY_INCLUDE_PATH})
     set_target_properties(${SWIG_MODULE_icub_ruby_REAL_NAME} PROPERTIES OUTPUT_NAME "icub"
-                                                                      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/ruby")
+                                                                      LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/ruby"
+                                                                      SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE)
+
 endif()
 
 if(CREATE_JAVA)
@@ -120,6 +122,7 @@ if(CREATE_JAVA)
     if(APPLE)
       set_target_properties(${SWIG_MODULE_icub_java_REAL_NAME} PROPERTIES SUFFIX ".jnilib")
     endif(APPLE)
+    set_target_properties(${SWIG_MODULE_icub_python_REAL_NAME} PROPERTIES SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE)
 endif()
 
 if(CREATE_CSHARP)
@@ -129,7 +132,7 @@ if(CREATE_CSHARP)
                      SOURCES icub.i)
 
   target_link_libraries(${SWIG_MODULE_icub_csharp_REAL_NAME} ${SWIG_ICUB_LIBRARIES})
-  set_target_properties(${SWIG_MODULE_icub_csharp_REAL_NAME} PROPERTIES OUTPUT_NAME "icub" LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/csharp")
+  set_target_properties(${SWIG_MODULE_icub_csharp_REAL_NAME} PROPERTIES OUTPUT_NAME "icub" LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/csharp" SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE)
 endif()
 
 if(CREATE_LUA)
@@ -140,5 +143,5 @@ if(CREATE_LUA)
                    LANGUAGE lua
                    SOURCES icub.i)
   target_link_libraries(${SWIG_MODULE_icub_lua_REAL_NAME} ${LUA_LIBRARY} ${ICUB_SWIG_LIBRARIES})
-  set_target_properties(${SWIG_MODULE_icub_lua_REAL_NAME} PROPERTIES OUTPUT_NAME "icub" LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/lua")
+  set_target_properties(${SWIG_MODULE_icub_lua_REAL_NAME} PROPERTIES OUTPUT_NAME "icub" LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/lua" SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE)
 endif()
