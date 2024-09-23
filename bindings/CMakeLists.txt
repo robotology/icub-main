@@ -58,7 +58,6 @@ if(CREATE_PYTHON)
                      LANGUAGE python
                      SOURCES icub.i)
     target_link_libraries(${SWIG_MODULE_icub_python_REAL_NAME} Python::Python ${ICUB_SWIG_LIBRARIES})
-    set_target_properties(${SWIG_MODULE_icub_python_REAL_NAME} PROPERTIES OUTPUT_NAME "_icub")
 
     # installation path is determined reliably on most platforms using distutils
     execute_process(COMMAND ${Python_EXECUTABLE} -c "from distutils import sysconfig; print(sysconfig.get_python_lib(1,0,prefix=''))"
