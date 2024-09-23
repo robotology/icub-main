@@ -27,7 +27,6 @@ if(ICUB_BINDINGS_BUILD_STANDALONE)
 endif()
 
 set(ICUB_SWIG_LIBRARIES ctrlLib
-                        iDyn
                         iKin
                         skinDynLib
                         optimization)

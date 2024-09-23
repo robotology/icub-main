@@ -57,13 +57,6 @@ using namespace yarp::sig;
 #include <iCub/optimization/matrixTransformation.h>
 #include <iCub/optimization/neuralNetworks.h>
 
-// iDyn
-//#include <iCub/iDyn/iDynInv.h>
-//#include <iCub/iDyn/iDyn.h>
-//#include <iCub/iDyn/iDynContact.h>
-//#include <iCub/iDyn/iDynTransform.h>
-//#include <iCub/iDyn/iDynBody.h>
-
 %}
 
 %include <std_vector.i>
@@ -132,15 +125,6 @@ using namespace yarp::sig;
 %include <iCub/optimization/calibReference.h>
 %include <iCub/optimization/neuralNetworks.h>
 
-
-// iDyn
-//%include <iCub/iDyn/iDynInv.h>
-
-//%ignore notImplemented;
-//%include <iCub/iDyn/iDyn.h>
-//%include <iCub/iDyn/iDynContact.h>
-//%include <iCub/iDyn/iDynTransform.h>
-//%include <iCub/iDyn/iDynBody.h>
 
 %{
 typedef yarp::os::TypedReader<iCub::skinDynLib::skinContactList> TypedReaderSkinContactList;
