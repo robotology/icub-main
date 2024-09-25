@@ -204,6 +204,7 @@ protected:
     int num_arrays;
     int index_array;
     int index_element;
+    mutable yarp::os::Value latch;
 
 public:
     /**

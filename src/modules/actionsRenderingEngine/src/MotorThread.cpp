@@ -17,6 +17,7 @@
 */
 
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <cmath>
@@ -639,9 +640,9 @@ bool MotorThread::loadKinematicOffsets()
 
 bool MotorThread::saveKinematicOffsets()
 {
-    string fileName=rf.getHomeContextPath();
-    fileName+="/"+kinematics_file;
-    ofstream kin_fout(fileName.c_str());
+    std::filesystem::path fileName(rf.getHomeContextPath()+"/"+kinematics_file);
+    std::filesystem::create_directories(fileName.parent_path());
+    ofstream kin_fout(fileName);
     if (!kin_fout.is_open())
     {
         yError("Unable to open file '%s'!",fileName.c_str());
@@ -2632,7 +2633,9 @@ bool MotorThread::calibFingers(Bottle &options)
             graspModel[arm]->calibrate(prop);
 
             ofstream fout;
-            fout.open((rf.getHomeContextPath()+"/"+graspFile[arm]).c_str());
+            std::filesystem::path fileName(rf.getHomeContextPath()+"/"+graspFile[arm]);
+            std::filesystem::create_directories(fileName.parent_path());
+            fout.open(fileName);
             graspModel[arm]->toStream(fout);
             fout.close();
 
@@ -2988,9 +2991,10 @@ bool MotorThread::suspendLearningModeAction(Bottle &options)
     {
         if (!actions_path.empty())
         {
-            string fileName=rf.getHomeContextPath();
+            std::filesystem::path fileName=rf.getHomeContextPath();
             fileName+="/"+actions_path+"/"+arm_name+"/"+dragger.actionName+".action";
-            ofstream action_fout(fileName.c_str());
+            std::filesystem::create_directories(fileName.parent_path());
+            ofstream action_fout(fileName);
             if(!action_fout.is_open())
             {
                 yError("Unable to open file '%s' for action %s!",(actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str(),dragger.actionName.c_str());
