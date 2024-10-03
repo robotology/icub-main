@@ -57,7 +57,7 @@ if(CREATE_PYTHON)
     swig_add_library(icub_python
                      LANGUAGE python
                      SOURCES icub.i)
-    target_link_libraries(${SWIG_MODULE_icub_python_REAL_NAME} Python::Python ${ICUB_SWIG_LIBRARIES})
+    target_link_libraries(${SWIG_MODULE_icub_python_REAL_NAME} Python::Module ${ICUB_SWIG_LIBRARIES})
     set_target_properties(${SWIG_MODULE_icub_python_REAL_NAME} PROPERTIES SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE)
 
     # installation path is determined reliably on most platforms using distutils
