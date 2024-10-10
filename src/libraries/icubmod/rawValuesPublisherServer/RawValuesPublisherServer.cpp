@@ -183,7 +183,7 @@ void RawValuesPublisherServer::run()
 // Private nmethods
 bool RawValuesPublisherServer::populateMetadata(rawValuesKeyMetadataMap &metamap)
 {
-    if(!m_iRawValuesPublisher->getMetadataMAP(metamap))
+    if(!m_iRawValuesPublisher->getMetadataMap(metamap))
     {
         return false;
     }

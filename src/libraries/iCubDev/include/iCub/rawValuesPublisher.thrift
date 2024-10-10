@@ -4,6 +4,7 @@
 #
 # rawValuePublisher.thrift
 
+namespace yarp iCub
 /**
 * rawValuesDataVectorsMap
 *

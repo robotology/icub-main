@@ -5639,7 +5639,7 @@ int  embObjMotionControl::getNumberOfKeys()
     return _rawValuesMetadataMap.size();
 }
 
-bool embObjMotionControl::getMetadataMAP(rawValuesKeyMetadataMap &metamap)
+bool embObjMotionControl::getMetadataMap(rawValuesKeyMetadataMap &metamap)
 {
     if (_rawValuesMetadataMap.empty())
     {

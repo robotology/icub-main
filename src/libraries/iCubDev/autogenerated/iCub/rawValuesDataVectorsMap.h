@@ -14,6 +14,8 @@
 #include <yarp/os/Wire.h>
 #include <yarp/os/idl/WireTypes.h>
 
+namespace iCub {
+
 /**
  * rawValuesDataVectorsMap
  * IDL struct of a map of vectors to store the raw value data sent by the device
@@ -60,5 +62,7 @@ private:
     bool nested_read_vectorsMap(yarp::os::idl::WireReader& reader);
     bool nested_write_vectorsMap(const yarp::os::idl::WireWriter& writer) const;
 };
+
+} // namespace iCub
 
 #endif // YARP_THRIFT_GENERATOR_STRUCT_RAWVALUESDATAVECTORSMAP_H

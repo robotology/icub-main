@@ -33,6 +33,7 @@
 // ParamParser generated classes
 #include "FakeRawValuesPublisher_ParamsParser.h"
 
+using namespace iCub;
 class FakeRawValuesPublisher :
     public iCub::debugLibrary::IRawValuesPublisher,
     public yarp::dev::DeviceDriver,
@@ -47,7 +48,7 @@ class FakeRawValuesPublisher :
         virtual bool getRawData(std::string key, std::vector<std::int32_t> &data) override;
         virtual bool getKeys(std::vector<std::string> &keys) override;
         virtual int  getNumberOfKeys() override;
-        virtual bool getMetadataMAP(rawValuesKeyMetadataMap &metamap) override;
+        virtual bool getMetadataMap(rawValuesKeyMetadataMap &metamap) override;
         virtual bool getKeyMetadata(std::string key, rawValuesKeyMetadata &meta) override;
 
 

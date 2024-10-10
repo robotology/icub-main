@@ -8,11 +8,13 @@
 // This is an automatically generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#include <RawValuesPublisherMetadata.h>
+#include <iCub/RawValuesPublisherMetadata.h>
 
 #include <yarp/os/idl/WireTypes.h>
 
 #include <algorithm>
+
+namespace iCub {
 
 // getMetadata helper class declaration
 class RawValuesPublisherMetadata_getMetadata_helper :
@@ -326,3 +328,5 @@ bool RawValuesPublisherMetadata::read(yarp::os::ConnectionReader& connection)
     }
     return false;
 }
+
+} // namespace iCub

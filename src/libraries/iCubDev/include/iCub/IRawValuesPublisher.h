@@ -6,10 +6,10 @@
 #ifndef _ICUB_IRAWVALUESPUBLISHER_H_
 #define _ICUB_IRAWVALUESPUBLISHER_H_
 
-#include "rawValuesDataVectorsMap.h"
-#include "rawValuesKeyMetadata.h"
-#include "rawValuesKeyMetadataMap.h"
-#include "RawValuesPublisherMetadata.h"
+#include <iCub/rawValuesDataVectorsMap.h>
+#include <iCub/rawValuesKeyMetadata.h>
+#include <iCub/rawValuesKeyMetadataMap.h>
+#include <iCub/RawValuesPublisherMetadata.h>
 
 namespace iCub
 {
@@ -48,7 +48,7 @@ namespace iCub
                 * @return true if the local map is not empty and if the copy ends correctly
                 * otherwise return false
                 */
-                virtual bool getMetadataMAP(rawValuesKeyMetadataMap &metamap) = 0;
+                virtual bool getMetadataMap(rawValuesKeyMetadataMap &metamap) = 0;
                 
                 /* Given the key of a specific entry fill the metadata with the one
                 * present at the requested entry of the local map

@@ -8,7 +8,9 @@
 // This is an automatically generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#include <rawValuesKeyMetadata.h>
+#include <iCub/rawValuesKeyMetadata.h>
+
+namespace iCub {
 
 // Constructor with field values
 rawValuesKeyMetadata::rawValuesKeyMetadata(const std::vector<std::string>& rawValueNames,
@@ -228,3 +230,5 @@ bool rawValuesKeyMetadata::nested_write_size(const yarp::os::idl::WireWriter& wr
     }
     return true;
 }
+
+} // namespace iCub

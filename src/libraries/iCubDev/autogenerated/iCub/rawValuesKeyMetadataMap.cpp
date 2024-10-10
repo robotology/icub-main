@@ -8,7 +8,9 @@
 // This is an automatically generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#include <rawValuesKeyMetadataMap.h>
+#include <iCub/rawValuesKeyMetadataMap.h>
+
+namespace iCub {
 
 // Constructor with field values
 rawValuesKeyMetadataMap::rawValuesKeyMetadataMap(const std::map<std::string, rawValuesKeyMetadata>& metadataMap) :
@@ -206,3 +208,5 @@ bool rawValuesKeyMetadataMap::nested_write_metadataMap(const yarp::os::idl::Wire
     }
     return true;
 }
+
+} // namespace iCub

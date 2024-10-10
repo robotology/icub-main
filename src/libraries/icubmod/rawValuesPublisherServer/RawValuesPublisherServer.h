@@ -33,6 +33,7 @@
  *  See https://github.com/robotology/icub-main/tree/ab93283ba6d654396b92e081d960ace777a9e656/src/tools/depth2kin es example
  *
  * */
+using namespace iCub;
 
 class RawValuesPublisherServer :
     public yarp::os::PeriodicThread,

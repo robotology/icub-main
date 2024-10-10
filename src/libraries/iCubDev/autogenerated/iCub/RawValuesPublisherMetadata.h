@@ -13,7 +13,9 @@
 
 #include <yarp/os/Wire.h>
 #include <yarp/os/idl/WireTypes.h>
-#include <rawValuesKeyMetadataMap.h>
+#include <iCub/rawValuesKeyMetadataMap.h>
+
+namespace iCub {
 
 class RawValuesPublisherMetadata :
         public yarp::os::Wire
@@ -33,5 +35,7 @@ public:
     // read from ConnectionReader
     bool read(yarp::os::ConnectionReader& connection) override;
 };
+
+} // namespace iCub
 
 #endif // YARP_THRIFT_GENERATOR_SERVICE_RAWVALUESPUBLISHERMETADATA_H

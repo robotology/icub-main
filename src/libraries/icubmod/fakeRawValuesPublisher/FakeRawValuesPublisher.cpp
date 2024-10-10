@@ -108,7 +108,7 @@ int FakeRawValuesPublisher::getNumberOfKeys()
 }
 
 
-bool FakeRawValuesPublisher::getMetadataMAP(rawValuesKeyMetadataMap &metamap)
+bool FakeRawValuesPublisher::getMetadataMap(rawValuesKeyMetadataMap &metamap)
 {
     
     #ifdef DEBUG_RAW_VALUES_MACRO

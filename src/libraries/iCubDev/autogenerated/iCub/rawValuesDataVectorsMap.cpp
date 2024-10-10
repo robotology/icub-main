@@ -8,7 +8,9 @@
 // This is an automatically generated file.
 // It could get re-generated if the ALLOW_IDL_GENERATION flag is on.
 
-#include <rawValuesDataVectorsMap.h>
+#include <iCub/rawValuesDataVectorsMap.h>
+
+namespace iCub {
 
 // Constructor with field values
 rawValuesDataVectorsMap::rawValuesDataVectorsMap(const std::map<std::string, std::vector<std::int32_t>>& vectorsMap) :
@@ -240,3 +242,5 @@ bool rawValuesDataVectorsMap::nested_write_vectorsMap(const yarp::os::idl::WireW
     }
     return true;
 }
+
+} // namespace iCub

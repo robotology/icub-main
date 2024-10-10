@@ -198,6 +198,7 @@ struct MCdiagnostics
 };
 
 using namespace yarp::dev;
+using namespace iCub;
 
 
 /**
@@ -716,7 +717,7 @@ public:
     virtual bool getRawData(std::string key, std::vector<std::int32_t> &data) override;
     virtual bool getKeys(std::vector<std::string> &keys) override;
     virtual int  getNumberOfKeys() override;
-    virtual bool getMetadataMAP(rawValuesKeyMetadataMap &metamap) override;
+    virtual bool getMetadataMap(rawValuesKeyMetadataMap &metamap) override;
     virtual bool getKeyMetadata(std::string key, rawValuesKeyMetadata &meta) override;
 };
 

@@ -13,21 +13,21 @@ yarp_prepare_plugin(rawValuesPublisherClient
 
 if(ENABLE_rawValuesPublisherClient)
   option(ALLOW_DEVICE_PARAM_PARSER_GENERATION "Generate the param parser for rawValuesPublisherClient device" OFF)
-  yarp_add_plugin(yarp_rawValuesPublisherClient)
+  yarp_add_plugin(rawValuesPublisherClient)
 
-  target_sources(yarp_rawValuesPublisherClient  PRIVATE  RawValuesPublisherClient.cpp
+  target_sources(rawValuesPublisherClient  PRIVATE  RawValuesPublisherClient.cpp
                                                 RawValuesPublisherClient.h
                                                 RawValuesPublisherClient_ParamsParser.cpp
                                                 RawValuesPublisherClient_ParamsParser.h)
 
-  target_link_libraries(yarp_rawValuesPublisherClient  PRIVATE YARP::YARP_os
+  target_link_libraries(rawValuesPublisherClient  PRIVATE YARP::YARP_os
                                                       YARP::YARP_dev
                                                       ICUB::iCubDev
                                                       ethResources)
   list(APPEND YARP_${YARP_PLUGIN_MASTER}_PRIVATE_DEPS YARP_os
                                                       YARP_dev)
 
-  yarp_install(TARGETS yarp_rawValuesPublisherClient 
+  yarp_install(TARGETS rawValuesPublisherClient 
                EXPORT YARP_${YARP_PLUGIN_MASTER}
                COMPONENT ${YARP_PLUGIN_MASTER}
                LIBRARY DESTINATION ${YARP_DYNAMIC_PLUGINS_INSTALL_DIR}
@@ -36,5 +36,5 @@ if(ENABLE_rawValuesPublisherClient)
 
   set(YARP_${YARP_PLUGIN_MASTER}_PRIVATE_DEPS ${YARP_${YARP_PLUGIN_MASTER}_PRIVATE_DEPS} PARENT_SCOPE)
 
-  set_property(TARGET yarp_rawValuesPublisherClient PROPERTY FOLDER "Plugins/Device")
+  set_property(TARGET rawValuesPublisherClient PROPERTY FOLDER "Plugins/Device")
 endif()

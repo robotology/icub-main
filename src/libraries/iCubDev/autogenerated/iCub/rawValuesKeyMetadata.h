@@ -14,6 +14,8 @@
 #include <yarp/os/Wire.h>
 #include <yarp/os/idl/WireTypes.h>
 
+namespace iCub {
+
 class rawValuesKeyMetadata :
         public yarp::os::idl::WirePortable
 {
@@ -60,5 +62,7 @@ private:
     bool nested_read_size(yarp::os::idl::WireReader& reader);
     bool nested_write_size(const yarp::os::idl::WireWriter& writer) const;
 };
+
+} // namespace iCub
 
 #endif // YARP_THRIFT_GENERATOR_STRUCT_RAWVALUESKEYMETADATA_H

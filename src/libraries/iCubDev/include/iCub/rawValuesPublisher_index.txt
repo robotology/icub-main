@@ -1,8 +1,0 @@
-rawValuesDataVectorsMap.h
-rawValuesDataVectorsMap.cpp
-rawValuesKeyMetadata.h
-rawValuesKeyMetadata.cpp
-rawValuesKeyMetadataMap.h
-rawValuesKeyMetadataMap.cpp
-RawValuesPublisherMetadata.h
-RawValuesPublisherMetadata.cpp

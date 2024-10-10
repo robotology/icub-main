@@ -156,7 +156,7 @@ int RawValuesPublisherClient::getNumberOfKeys()
     return NOT_YET_IMPLEMENTED("getNumberOfKeys()");
 }
 
-bool RawValuesPublisherClient::getMetadataMAP(rawValuesKeyMetadataMap &metamap)
+bool RawValuesPublisherClient::getMetadataMap(rawValuesKeyMetadataMap &metamap)
 {
     metamap = m_RPCInterface.getMetadata();
     
