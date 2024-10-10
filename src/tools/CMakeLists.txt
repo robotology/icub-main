@@ -12,7 +12,7 @@ add_subdirectory(imageCropper)
 add_subdirectory(embObjProtoTools/boardTransceiver)
 add_subdirectory(wholeBodyPlayer)
 add_subdirectory(motorTemperaturePublisher)
-
+add_subdirectory(fakeRawDataPublisherTester)
 add_subdirectory(canLoader)
 add_subdirectory(ethLoader)
 add_subdirectory(strainCalib)

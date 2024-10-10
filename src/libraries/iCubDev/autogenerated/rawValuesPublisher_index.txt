@@ -1,0 +1,8 @@
+iCub/rawValuesDataVectorsMap.h
+iCub/rawValuesDataVectorsMap.cpp
+iCub/rawValuesKeyMetadata.h
+iCub/rawValuesKeyMetadata.cpp
+iCub/rawValuesKeyMetadataMap.h
+iCub/rawValuesKeyMetadataMap.cpp
+iCub/RawValuesPublisherMetadata.h
+iCub/RawValuesPublisherMetadata.cpp

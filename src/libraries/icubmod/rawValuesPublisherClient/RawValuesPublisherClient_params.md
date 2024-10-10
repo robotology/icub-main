@@ -1,0 +1,4 @@
+* |   |  remote                | string  | -       |   -           | Yes          | Prefix of the ports to which to connect, opened by RawValuesParameterSensorsServer device. |       |
+* |   |  local                 | string  | -       |   -           | Yes          | Port prefix of the ports opened by this device. |       |
+* |   |  externalConnection    | bool    | -       | false         | No           | If set to true, the connection to the rpc port of the RVP server is skipped and it is possible to connect to the data source externally after being opened |  |
+* |   |  carrier               | string  | -       | tcp           | No           | The carier used for the connection with the server.          |  |

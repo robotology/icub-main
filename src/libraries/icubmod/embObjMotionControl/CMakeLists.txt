@@ -18,7 +18,6 @@ yarp_prepare_plugin(embObjMotionControl
   
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-#    yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h usrcbk/eOcfg_nvsEP_mc_usrcbk_pippo.c )
     yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h eomcParser.cpp eomcParser.h measuresConverter.cpp measuresConverter.h eomcUtils.h)
     TARGET_LINK_LIBRARIES(embObjMotionControl ethResources iCubDev)
     icub_export_plugin(embObjMotionControl)

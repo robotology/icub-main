@@ -38,9 +38,9 @@ private:
     int _nmotors;
     int _nEnabledMotors = 0;
 
-    std::string _portPrefix="/5-setup";
+    std::string m_portPrefix="";
     double _updatePeriod = 1; //seconds
-    std::string _robotName= "icub";
+    std::string _robotName= "";
     yarp::sig::Vector _listOfJoints = 0;
 
     yarp::dev::PolyDriver _motionControlDevice;
