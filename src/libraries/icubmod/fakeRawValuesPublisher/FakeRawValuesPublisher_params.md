@@ -1,0 +1,3 @@
+* |         |  name          | string  | -              |   -           | Yes        | Name of the device | |
+* |         |  njomos        | int     | -              |   -           | Yes        | Number of joint or motors to be instantiated | |
+* |         |  threshold     | int     | -              |   -           | Yes        | Threshold used for defining the amplitude of the sawthooth curve that simulates periodic raw encoder data | |

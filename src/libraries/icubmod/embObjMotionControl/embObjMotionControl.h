@@ -48,6 +48,8 @@ using namespace std;
 
 #include <abstractEthResource.h>
 
+#include <iCub/IRawValuesPublisher.h>
+
 // local include
 #include "IethResource.h"
 #include"EoError.h"
@@ -196,6 +198,7 @@ struct MCdiagnostics
 };
 
 using namespace yarp::dev;
+using namespace iCub;
 
 
 /**
@@ -257,7 +260,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementCurrentControl,
     public eth::IethResource,
     public IJointFaultRaw,
-    public ImplementJointFault
+    public ImplementJointFault,
+    public iCub::debugLibrary::IRawValuesPublisher
     {
 private:
     eth::TheEthManager*        ethManager;
@@ -345,6 +349,9 @@ private:
     std::vector<yarp::dev::eomc::Watchdog>    _temperatureExceededLimitWatchdog;  /* counter used to filter the print of the exeded limits*/
     std::vector<yarp::dev::eomc::TemperatureFilter> _temperatureSpikesFilter;
 
+    std::map<std::string, rawValuesKeyMetadata> _rawValuesMetadataMap;
+    std::vector<std::int32_t> _rawDataAuxVector;
+
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
     Tools:Emb_RensponseTimingVerifier m_responseTimingVerifier;
 #endif
@@ -422,6 +429,9 @@ private:
     bool helper_getSpdPidsRaw(Pid *pid);
     
     bool checkCalib14RotationParam(int32_t calib_param4);
+
+    // used in rawvaluespublisher interface
+    bool getRawData_core(std::string key, std::vector<std::int32_t> &data);
     
 public:
 
@@ -702,6 +712,13 @@ public:
     // Returns false and fault is set to -2 if retrieval was unsuccessful.
     virtual bool getLastJointFaultRaw(int j, int& fault, std::string& message) override;
 
+    // IRawValuesPublisher
+    virtual bool getRawDataMap(std::map<std::string, std::vector<std::int32_t>> &map) override;
+    virtual bool getRawData(std::string key, std::vector<std::int32_t> &data) override;
+    virtual bool getKeys(std::vector<std::string> &keys) override;
+    virtual int  getNumberOfKeys() override;
+    virtual bool getMetadataMap(rawValuesKeyMetadataMap &metamap) override;
+    virtual bool getKeyMetadata(std::string key, rawValuesKeyMetadata &meta) override;
 };
 
 #endif // include guard

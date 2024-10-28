@@ -143,6 +143,7 @@ eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, vo
 
 eObool_t feat_manage_motioncontrol_addinfo_multienc(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata)
 {
+    /** commented out this section thus to use the addInfo.multienc[] vector for the rawValuesPublisher
     IethResource* multienc = NULL;
 
     if(NULL == _interface2ethManager)
@@ -170,7 +171,7 @@ eObool_t feat_manage_motioncontrol_addinfo_multienc(eOipv4addr_t ipv4, eOprotID3
     {
         multienc->update(id32, yarp::os::Time::now(), rxdata);
     }
-
+    */
     return eobool_true;
 }
 
