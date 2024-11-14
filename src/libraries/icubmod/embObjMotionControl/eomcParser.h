@@ -510,6 +510,24 @@ typedef struct
     impedanceLimits_t limits;
 } impedanceParameters_t;
 
+
+// LuGre friction model parameters
+typedef struct
+{
+    double Km;     // Motor torque constant (not strictly LuGre) but required to compute the net torque
+    double Kw;     // Viscous friction constant
+    double S0;     // LuGre bristle analogy eleastic constant
+    double S1;     // LuGre bristle analogy viscous constant
+    double Vth;    // Stribeck velocity threshold
+    double Fc_pos; // Coulomb friction constant (positive rotation)
+    double Fc_neg; // Coulomb friction constant (negative rotation)
+    double Fs_pos; // Stribeck friction constant (positive rotation)
+    double Fs_neg; // Stribeck friction constant (negative rotation)
+    double tbd0;   // for future use?
+    double tbd1;   // for future use?
+    double tbd2;   // for future use? 
+} lugreParameters_t;
+
 typedef struct
 {
     bool enabled;
@@ -648,6 +666,7 @@ public:
     bool parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[]);
     bool parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[]);
     bool parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impedanceParameters_t> &impedance);
+    bool parseLugreGroup(yarp::os::Searchable &config,std::vector<lugreParameters_t> &lugre);
     bool parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found);
     bool parseKalmanFilterParams(yarp::os::Searchable &config, std::vector<kalmanFilterParams_t> &kalmanFilterParams);
 };

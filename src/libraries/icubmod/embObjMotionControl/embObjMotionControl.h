@@ -301,7 +301,8 @@ private:
     std::vector<eomc::timeouts_t>            _timeouts;
 
     std::vector<eomc::impedanceParameters_t> _impedance_params;   /** impedance parameters */ // TODO doubled!!! optimize using just one of the 2!!!
-    eomc::impedanceLimits_t *                _impedance_limits;  /** impedancel imits */
+    std::vector<eomc::lugreParameters_t>     _lugre_params;   /** LuGre friction model parameters */
+    eomc::impedanceLimits_t *                _impedance_limits;  /** impedance limits */
 
 
     eomc::PidInfo    *                      _trj_pids;
