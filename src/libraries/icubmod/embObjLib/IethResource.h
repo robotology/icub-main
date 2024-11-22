@@ -91,13 +91,23 @@ namespace eth {
 
     public:
             const char * stringOfType();
-            /* the entityName there will be the name of the entity, or it can be an empty string if the enity han't name
+            /* the entityName there will be the name of the entity, or it can be an empty string if the enity hasn't name
             The entity could be:
               - axis in case the ethResource type is iethres_motioncontrol
               - sensor id in case of, skin, mais and strain 
               The defiult value is an empty string 
               return false in case of error, like entityId is not present. Aniway the entity name is initialize to empty string.*/
             virtual bool getEntityName(uint32_t entityId, std::string &entityName);
+
+            /* the encoderTypeName will be the name of the type of the encoder mounted at the joint or at the motor, 
+            or it can be the string "ERROR" is a corresponding name is not found
+            The entity, i.e. the jomo, can be:
+              - motor
+              - joint
+            The default value is the empty string
+            It returns false in case of error and the encoderTypeName string is filled with "ERROR"
+            */
+            virtual bool getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName);
 
     private:
             static const char * names[iethresType_numberof+1];

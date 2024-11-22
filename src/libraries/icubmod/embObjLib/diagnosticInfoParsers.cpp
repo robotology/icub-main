@@ -12,6 +12,7 @@
 #include "embot_core_binary.h"
 
 #include <yarp/os/Time.h>
+#include <algorithm>
 
 
 using namespace Diagnostic::LowLevel;
@@ -631,16 +632,19 @@ void MotionControlParser::parseInfo()
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
 
-        case eoerror_value_MC_aea_abs_enc_invalid:
-        case eoerror_value_MC_aea_abs_enc_spikes:
-        case eoerror_value_MC_aea_abs_enc_timeout:
+        case eoerror_value_MC_abs_enc_invalid:
+        case eoerror_value_MC_abs_enc_spikes:
+        case eoerror_value_MC_abs_enc_timeout:
         {
+            std::string encoderTypeName = {};
             uint8_t joint_num = m_dnginfo.param16 & 0x00ff;
             uint8_t enc_port = (m_dnginfo.param16 & 0xff00)>>8;
             m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
+            m_entityNameProvider.getEncoderTypeName(joint_num, eomc_pos_atjoint, encoderTypeName);
+            std::transform(encoderTypeName.begin(), encoderTypeName.end(), encoderTypeName.begin(), ::toupper);
 
-            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d), encoderPort=%d)",
-                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, enc_port
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d), encoderPort=%d, encoderType=%s)",
+                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, enc_port, encoderTypeName.c_str()
                                         );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
