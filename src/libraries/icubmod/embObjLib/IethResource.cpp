@@ -75,6 +75,12 @@ bool IethResource::getEntityName(uint32_t entityId, std::string &entityName)
     return true;
 }
 
+bool IethResource::getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName)
+{
+    encoderTypeName.clear();
+    return true;
+}
+
 
 // - end-of-file (leave a blank line after)----------------------------------------------------------------------------
 
