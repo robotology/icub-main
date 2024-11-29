@@ -8,7 +8,7 @@
 // This is an automatically generated file. Please do not edit it.
 // It will be re-generated if the cmake flag ALLOW_DEVICE_PARAM_PARSER_GERNERATION is ON.
 
-// Generated on: Thu Nov 28 16:55:27 2024
+// Generated on: Fri Nov 29 12:03:55 2024
 
 
 #include "CouplingICubHandMk2_ParamsParser.h"
@@ -35,14 +35,6 @@ std::vector<std::string> CouplingICubHandMk2_ParamsParser::getListOfParams() con
     params.push_back("COUPLING::actuatedAxesNames");
     params.push_back("COUPLING::actuatedAxesPosMin");
     params.push_back("COUPLING::actuatedAxesPosMax");
-    params.push_back("COUPLING_PARAMS::L0x");
-    params.push_back("COUPLING_PARAMS::L0y");
-    params.push_back("COUPLING_PARAMS::q2bias");
-    params.push_back("COUPLING_PARAMS::q1off");
-    params.push_back("COUPLING_PARAMS::k");
-    params.push_back("COUPLING_PARAMS::d");
-    params.push_back("COUPLING_PARAMS::l");
-    params.push_back("COUPLING_PARAMS::b");
     return params;
 }
 
@@ -271,270 +263,6 @@ bool      CouplingICubHandMk2_ParamsParser::parseParams(const yarp::os::Searchab
         prop_check.unput("COUPLING::actuatedAxesPosMax");
     }
 
-    //Parser of parameter COUPLING_PARAMS::L0x
-    {
-        yarp::os::Bottle sectionp;
-        sectionp = config.findGroup("COUPLING_PARAMS");
-        if (sectionp.check("L0x"))
-        {
-            {
-                m_COUPLING_PARAMS_L0x.clear();
-                yarp::os::Bottle* tempBot = sectionp.find("L0x").asList();
-                if (tempBot)
-                {
-                    std::string tempBots = tempBot->toString();
-                    for (size_t i=0; i<tempBot->size(); i++)
-                    {
-                        m_COUPLING_PARAMS_L0x.push_back(tempBot->get(i).asFloat64());
-                    }
-                }
-                else
-                {
-                     yCError(CouplingICubHandMk2ParamsCOMPONENT) <<"parameter 'COUPLING_PARAMS_L0x' is not a properly formatted bottle";
-                }
-            }
-            yCInfo(CouplingICubHandMk2ParamsCOMPONENT) << "Parameter 'COUPLING_PARAMS::L0x' using value:" << m_COUPLING_PARAMS_L0x;
-        }
-        else
-        {
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Mandatory parameter 'COUPLING_PARAMS::L0x' not found!";
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Description of the parameter: x coordinate of the first end of the lever is";
-            return false;
-        }
-        prop_check.unput("COUPLING_PARAMS::L0x");
-    }
-
-    //Parser of parameter COUPLING_PARAMS::L0y
-    {
-        yarp::os::Bottle sectionp;
-        sectionp = config.findGroup("COUPLING_PARAMS");
-        if (sectionp.check("L0y"))
-        {
-            {
-                m_COUPLING_PARAMS_L0y.clear();
-                yarp::os::Bottle* tempBot = sectionp.find("L0y").asList();
-                if (tempBot)
-                {
-                    std::string tempBots = tempBot->toString();
-                    for (size_t i=0; i<tempBot->size(); i++)
-                    {
-                        m_COUPLING_PARAMS_L0y.push_back(tempBot->get(i).asFloat64());
-                    }
-                }
-                else
-                {
-                     yCError(CouplingICubHandMk2ParamsCOMPONENT) <<"parameter 'COUPLING_PARAMS_L0y' is not a properly formatted bottle";
-                }
-            }
-            yCInfo(CouplingICubHandMk2ParamsCOMPONENT) << "Parameter 'COUPLING_PARAMS::L0y' using value:" << m_COUPLING_PARAMS_L0y;
-        }
-        else
-        {
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Mandatory parameter 'COUPLING_PARAMS::L0y' not found!";
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Description of the parameter: y coordinate of the first end of the lever is";
-            return false;
-        }
-        prop_check.unput("COUPLING_PARAMS::L0y");
-    }
-
-    //Parser of parameter COUPLING_PARAMS::q2bias
-    {
-        yarp::os::Bottle sectionp;
-        sectionp = config.findGroup("COUPLING_PARAMS");
-        if (sectionp.check("q2bias"))
-        {
-            {
-                m_COUPLING_PARAMS_q2bias.clear();
-                yarp::os::Bottle* tempBot = sectionp.find("q2bias").asList();
-                if (tempBot)
-                {
-                    std::string tempBots = tempBot->toString();
-                    for (size_t i=0; i<tempBot->size(); i++)
-                    {
-                        m_COUPLING_PARAMS_q2bias.push_back(tempBot->get(i).asFloat64());
-                    }
-                }
-                else
-                {
-                     yCError(CouplingICubHandMk2ParamsCOMPONENT) <<"parameter 'COUPLING_PARAMS_q2bias' is not a properly formatted bottle";
-                }
-            }
-            yCInfo(CouplingICubHandMk2ParamsCOMPONENT) << "Parameter 'COUPLING_PARAMS::q2bias' using value:" << m_COUPLING_PARAMS_q2bias;
-        }
-        else
-        {
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Mandatory parameter 'COUPLING_PARAMS::q2bias' not found!";
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Description of the parameter: Angle of L1 - P1 when the finger is fully open";
-            return false;
-        }
-        prop_check.unput("COUPLING_PARAMS::q2bias");
-    }
-
-    //Parser of parameter COUPLING_PARAMS::q1off
-    {
-        yarp::os::Bottle sectionp;
-        sectionp = config.findGroup("COUPLING_PARAMS");
-        if (sectionp.check("q1off"))
-        {
-            {
-                m_COUPLING_PARAMS_q1off.clear();
-                yarp::os::Bottle* tempBot = sectionp.find("q1off").asList();
-                if (tempBot)
-                {
-                    std::string tempBots = tempBot->toString();
-                    for (size_t i=0; i<tempBot->size(); i++)
-                    {
-                        m_COUPLING_PARAMS_q1off.push_back(tempBot->get(i).asFloat64());
-                    }
-                }
-                else
-                {
-                     yCError(CouplingICubHandMk2ParamsCOMPONENT) <<"parameter 'COUPLING_PARAMS_q1off' is not a properly formatted bottle";
-                }
-            }
-            yCInfo(CouplingICubHandMk2ParamsCOMPONENT) << "Parameter 'COUPLING_PARAMS::q1off' using value:" << m_COUPLING_PARAMS_q1off;
-        }
-        else
-        {
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Mandatory parameter 'COUPLING_PARAMS::q1off' not found!";
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Description of the parameter: Angle of P1 - P0 when the finger is closed";
-            return false;
-        }
-        prop_check.unput("COUPLING_PARAMS::q1off");
-    }
-
-    //Parser of parameter COUPLING_PARAMS::k
-    {
-        yarp::os::Bottle sectionp;
-        sectionp = config.findGroup("COUPLING_PARAMS");
-        if (sectionp.check("k"))
-        {
-            {
-                m_COUPLING_PARAMS_k.clear();
-                yarp::os::Bottle* tempBot = sectionp.find("k").asList();
-                if (tempBot)
-                {
-                    std::string tempBots = tempBot->toString();
-                    for (size_t i=0; i<tempBot->size(); i++)
-                    {
-                        m_COUPLING_PARAMS_k.push_back(tempBot->get(i).asFloat64());
-                    }
-                }
-                else
-                {
-                     yCError(CouplingICubHandMk2ParamsCOMPONENT) <<"parameter 'COUPLING_PARAMS_k' is not a properly formatted bottle";
-                }
-            }
-            yCInfo(CouplingICubHandMk2ParamsCOMPONENT) << "Parameter 'COUPLING_PARAMS::k' using value:" << m_COUPLING_PARAMS_k;
-        }
-        else
-        {
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Mandatory parameter 'COUPLING_PARAMS::k' not found!";
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Description of the parameter: Connecting rod length, L1-L0";
-            return false;
-        }
-        prop_check.unput("COUPLING_PARAMS::k");
-    }
-
-    //Parser of parameter COUPLING_PARAMS::d
-    {
-        yarp::os::Bottle sectionp;
-        sectionp = config.findGroup("COUPLING_PARAMS");
-        if (sectionp.check("d"))
-        {
-            {
-                m_COUPLING_PARAMS_d.clear();
-                yarp::os::Bottle* tempBot = sectionp.find("d").asList();
-                if (tempBot)
-                {
-                    std::string tempBots = tempBot->toString();
-                    for (size_t i=0; i<tempBot->size(); i++)
-                    {
-                        m_COUPLING_PARAMS_d.push_back(tempBot->get(i).asFloat64());
-                    }
-                }
-                else
-                {
-                     yCError(CouplingICubHandMk2ParamsCOMPONENT) <<"parameter 'COUPLING_PARAMS_d' is not a properly formatted bottle";
-                }
-            }
-            yCInfo(CouplingICubHandMk2ParamsCOMPONENT) << "Parameter 'COUPLING_PARAMS::d' using value:" << m_COUPLING_PARAMS_d;
-        }
-        else
-        {
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Mandatory parameter 'COUPLING_PARAMS::d' not found!";
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Description of the parameter: Distance between the two joints, P1 and P0";
-            return false;
-        }
-        prop_check.unput("COUPLING_PARAMS::d");
-    }
-
-    //Parser of parameter COUPLING_PARAMS::l
-    {
-        yarp::os::Bottle sectionp;
-        sectionp = config.findGroup("COUPLING_PARAMS");
-        if (sectionp.check("l"))
-        {
-            {
-                m_COUPLING_PARAMS_l.clear();
-                yarp::os::Bottle* tempBot = sectionp.find("l").asList();
-                if (tempBot)
-                {
-                    std::string tempBots = tempBot->toString();
-                    for (size_t i=0; i<tempBot->size(); i++)
-                    {
-                        m_COUPLING_PARAMS_l.push_back(tempBot->get(i).asFloat64());
-                    }
-                }
-                else
-                {
-                     yCError(CouplingICubHandMk2ParamsCOMPONENT) <<"parameter 'COUPLING_PARAMS_l' is not a properly formatted bottle";
-                }
-            }
-            yCInfo(CouplingICubHandMk2ParamsCOMPONENT) << "Parameter 'COUPLING_PARAMS::l' using value:" << m_COUPLING_PARAMS_l;
-        }
-        else
-        {
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Mandatory parameter 'COUPLING_PARAMS::l' not found!";
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Description of the parameter: Distance between L1 and P1";
-            return false;
-        }
-        prop_check.unput("COUPLING_PARAMS::l");
-    }
-
-    //Parser of parameter COUPLING_PARAMS::b
-    {
-        yarp::os::Bottle sectionp;
-        sectionp = config.findGroup("COUPLING_PARAMS");
-        if (sectionp.check("b"))
-        {
-            {
-                m_COUPLING_PARAMS_b.clear();
-                yarp::os::Bottle* tempBot = sectionp.find("b").asList();
-                if (tempBot)
-                {
-                    std::string tempBots = tempBot->toString();
-                    for (size_t i=0; i<tempBot->size(); i++)
-                    {
-                        m_COUPLING_PARAMS_b.push_back(tempBot->get(i).asFloat64());
-                    }
-                }
-                else
-                {
-                     yCError(CouplingICubHandMk2ParamsCOMPONENT) <<"parameter 'COUPLING_PARAMS_b' is not a properly formatted bottle";
-                }
-            }
-            yCInfo(CouplingICubHandMk2ParamsCOMPONENT) << "Parameter 'COUPLING_PARAMS::b' using value:" << m_COUPLING_PARAMS_b;
-        }
-        else
-        {
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Mandatory parameter 'COUPLING_PARAMS::b' not found!";
-            yCError(CouplingICubHandMk2ParamsCOMPONENT) << "Description of the parameter: Distance between L0 and P0";
-            return false;
-        }
-        prop_check.unput("COUPLING_PARAMS::b");
-    }
-
     /*
     //This code check if the user set some parameter which are not check by the parser
     //If the parser is set in strict mode, this will generate an error
@@ -578,18 +306,10 @@ std::string      CouplingICubHandMk2_ParamsParser::getDocumentationOfDeviceParam
     doc = doc + std::string("'COUPLING::actuatedAxesNames': Names of the actuated axes\n");
     doc = doc + std::string("'COUPLING::actuatedAxesPosMin': Actuated axes' position minimum\n");
     doc = doc + std::string("'COUPLING::actuatedAxesPosMax': Actuated axes' position maximum\n");
-    doc = doc + std::string("'COUPLING_PARAMS::L0x': x coordinate of the first end of the lever is\n");
-    doc = doc + std::string("'COUPLING_PARAMS::L0y': y coordinate of the first end of the lever is\n");
-    doc = doc + std::string("'COUPLING_PARAMS::q2bias': Angle of L1 - P1 when the finger is fully open\n");
-    doc = doc + std::string("'COUPLING_PARAMS::q1off': Angle of P1 - P0 when the finger is closed\n");
-    doc = doc + std::string("'COUPLING_PARAMS::k': Connecting rod length, L1-L0\n");
-    doc = doc + std::string("'COUPLING_PARAMS::d': Distance between the two joints, P1 and P0\n");
-    doc = doc + std::string("'COUPLING_PARAMS::l': Distance between L1 and P1\n");
-    doc = doc + std::string("'COUPLING_PARAMS::b': Distance between L0 and P0\n");
     doc = doc + std::string("\n");
     doc = doc + std::string("Here are some examples of invocation command with yarpdev, with all params:\n");
-    doc = doc + " yarpdev --device couplingICubHandMk2 --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value> --COUPLING_PARAMS::L0x <mandatory_value> --COUPLING_PARAMS::L0y <mandatory_value> --COUPLING_PARAMS::q2bias <mandatory_value> --COUPLING_PARAMS::q1off <mandatory_value> --COUPLING_PARAMS::k <mandatory_value> --COUPLING_PARAMS::d <mandatory_value> --COUPLING_PARAMS::l <mandatory_value> --COUPLING_PARAMS::b <mandatory_value>\n";
+    doc = doc + " yarpdev --device couplingICubHandMk2 --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>\n";
     doc = doc + std::string("Using only mandatory params:\n");
-    doc = doc + " yarpdev --device couplingICubHandMk2 --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value> --COUPLING_PARAMS::L0x <mandatory_value> --COUPLING_PARAMS::L0y <mandatory_value> --COUPLING_PARAMS::q2bias <mandatory_value> --COUPLING_PARAMS::q1off <mandatory_value> --COUPLING_PARAMS::k <mandatory_value> --COUPLING_PARAMS::d <mandatory_value> --COUPLING_PARAMS::l <mandatory_value> --COUPLING_PARAMS::b <mandatory_value>\n";
+    doc = doc + " yarpdev --device couplingICubHandMk2 --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>\n";
     doc = doc + std::string("=============================================\n\n");    return doc;
 }

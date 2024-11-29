@@ -10,95 +10,18 @@
 #include <yarp/os/LogStream.h>
 #include <cmath>
 #include <array>
+#include <numeric>
 
 
 YARP_LOG_COMPONENT(COUPLINGICUBHANDMK2, "yarp.device.couplingICubHandMk2")
 
 
-double CouplingICubHandMk2::evaluateCoupledJoint(const double& q1, const std::string& finger_name)
-{
-    /**
-     * Coupling law taken from from https://icub-tech-iit.github.io/documentation/hands/hands_mk5_coupling
-     */
-    auto params = mFingerParameters.at(finger_name);
-    double q1_rad = q1 * M_PI / 180.0;
-    double q1off_rad = params.q1off * M_PI / 180.0;
-    double q2bias_rad = params.q2bias * M_PI / 180.0;
-
-    double P1x_q1 = params.d * cos(q1_rad + q1off_rad);
-    double P1y_q1 = params.d * sin(q1_rad + q1off_rad);
-
-    double h_sq = std::pow(P1x_q1 - params.L0x, 2) + std::pow(P1y_q1 - params.L0y, 2);
-    double h = std::sqrt(h_sq);
-    double l_sq = std::pow(params.l, 2);
-    double k_sq = std::pow(params.k, 2);
-
-    double q2 = atan2(P1y_q1 - params.L0y, P1x_q1 - params.L0x) + \
-        acos((h_sq + l_sq - k_sq) / (2.0 * params.l * h)) + \
-        -q2bias_rad - M_PI;
-
-    // The value of q1 is subtracted from the result as the formula provides
-    // the absolute angle of the coupled distal joint with respect to the palm.
-    return q2 * 180.0 / M_PI - q1;
-}
-
-
-double CouplingICubHandMk2::evaluateCoupledJointJacobian(const double& q1, const std::string& finger_name)
-{
-    /**
-     * Coupling law jacobian taken from from https://icub-tech-iit.github.io/documentation/hands/hands_mk5_coupling
-     */
-    auto params = mFingerParameters.at(finger_name);
-    double q1_rad = q1 * M_PI / 180.0;
-    double q1off_rad = params.q1off * M_PI / 180.0;
-
-    double P1x_q1 = params.d * cos(q1_rad + q1off_rad);
-    double P1y_q1 = params.d * sin(q1_rad + q1off_rad);
-
-    double h_sq = std::pow(P1x_q1 - params.L0x, 2) + std::pow(P1y_q1 - params.L0y, 2);
-    double h = std::sqrt(h_sq);
-    double l_sq = std::pow(params.l, 2);
-    double k_sq = std::pow(params.k, 2);
-
-    double dq2_dq1_11 = 1;
-    double dq2_dq1_21 = 2 - (std::pow(params.d, 2) - std::pow(params.b, 2)) / (std::pow(params.d, 2) - (params.L0x * P1x_q1 + params.L0y * P1y_q1));
-    double dq2_dq1_12 = (params.L0x * P1y_q1 - params.L0y * P1x_q1) * (l_sq - k_sq - h_sq);
-    double dq2_dq1_22 = 2 * params.l * h * h_sq * std::sqrt(1 - std::pow((l_sq - k_sq + h_sq) / (2 * params.l * h), 2));
-    double dq2_dq1 = dq2_dq1_11 / dq2_dq1_21 + dq2_dq1_12 / dq2_dq1_22;
-
-    // The value of 1 is subtracted from the result as evaluateCoupledJointJacobian provides
-    // the jacobian of the absolute angle of the coupled distal joint.
-    return dq2_dq1 - 1;
-}
-
-
-bool CouplingICubHandMk2::populateFingerParameters()
-{
-    constexpr int nFingers = 5;
-    // All the +1 is because the first element of the bottle is the name of the group
-    if(m_COUPLING_PARAMS_L0x.size()!=nFingers   || m_COUPLING_PARAMS_L0y.size()!=nFingers || m_COUPLING_PARAMS_q2bias.size()!=nFingers ||
-       m_COUPLING_PARAMS_q1off.size()!=nFingers || m_COUPLING_PARAMS_k.size()!=nFingers   || m_COUPLING_PARAMS_d.size()!=nFingers      ||
-       m_COUPLING_PARAMS_l.size()!=nFingers     || m_COUPLING_PARAMS_b.size()!=nFingers )
-    {
-        yCError(COUPLINGXCUBHANDMK5)<<"Invalid hand parameters, check your configuration file";
-        return false;
-    }
-
-
-    const std::array<std::string,5> names = {"thumb", "index", "middle", "ring", "pinky"};
-    for (std::size_t i = 0; i < names.size(); i++)
-    {
-        mFingerParameters.insert({names.at(i), {m_COUPLING_PARAMS_L0x[i], m_COUPLING_PARAMS_L0y[i], m_COUPLING_PARAMS_q2bias[i],
-                                  m_COUPLING_PARAMS_q1off[i], m_COUPLING_PARAMS_k[i], m_COUPLING_PARAMS_d[i],
-                                  m_COUPLING_PARAMS_l[i], m_COUPLING_PARAMS_b[i]}});
-    }
-
-    return true;
-}
-
 bool CouplingICubHandMk2::populateCouplingParameters() {
-    yarp::sig::VectorOf<size_t> coupled_physical_joints{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-    yarp::sig::VectorOf<size_t> coupled_actuated_axes{0, 1, 2, 3, 4, 5};
+    yarp::sig::VectorOf<size_t> coupled_physical_joints, coupled_actuated_axes;
+    coupled_physical_joints.resize(m_jointNames.size());
+    coupled_actuated_axes.resize(m_COUPLING_actuatedAxesNames.size());
+    std::iota(coupled_physical_joints.begin(), coupled_physical_joints.end(), 0);
+    std::iota(coupled_actuated_axes.begin(), coupled_actuated_axes.end(), 0);
     std::vector<std::pair<double, double>> physical_joint_limits;
 
     physical_joint_limits.resize(m_jointNames.size());
@@ -113,25 +36,12 @@ bool CouplingICubHandMk2::populateCouplingParameters() {
 bool CouplingICubHandMk2::open(yarp::os::Searchable& config) {
 
     if(!parseParams(config)) {
-        yCError(COUPLINGXCUBHANDMK5) << "Error parsing parameters";
+        yCError(COUPLINGICUBHANDMK2) << "Error parsing parameters";
         return false;
     }
 
-    yCDebug(COUPLINGXCUBHANDMK5) << "Opening CouplingICubHandMk2"<<config.toString();
-
-    bool ok = populateCouplingParameters();
-    if (!ok) {
-        yCError(COUPLINGXCUBHANDMK5) << "Error parsing coupling parameters";
-        return false;
-    }
-
-    ok = ok && populateFingerParameters();
-    if (!ok) {
-        yCError(COUPLINGXCUBHANDMK5) << "Error parsing finger parameters";
-        return false;
-    }
-
-    return ok;
+    yCDebug(COUPLINGICUBHANDMK2) << "Opening CouplingICubHandMk2"<<config.toString();
+    return true;
 }
 
 bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesPos(const yarp::sig::Vector& physJointsPos, yarp::sig::Vector& actAxesPos) {
@@ -140,26 +50,28 @@ bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesPos(const yarp:
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || physJointsPos.size() != nrOfPhysicalJoints || actAxesPos.size() != nrOfActuatedAxes) {
-        yCError(COUPLINGXCUBHANDMK5) << "convertFromPhysicalJointsToActuatedAxesPos: input or output vectors have wrong size";
+        yCError(COUPLINGICUBHANDMK2) << "convertFromPhysicalJointsToActuatedAxesPos: input or output vectors have wrong size";
         return false;
     }
 
-    /* thumb_add <-- thumb_add */
-    actAxesPos[0] = physJointsPos[0];
-    /* thumb_oc <-- thumb_prox */
-    actAxesPos[1] = physJointsPos[1];
-    /* index_add <-- index_add */
-    actAxesPos[2] = physJointsPos[3];
-    /* index_oc <-- index_prox */
-    actAxesPos[3] = physJointsPos[4];
-    /* middle_oc <-- middle_prox */
-    actAxesPos[4] = physJointsPos[6];
-    /**
-     * ring_pinky_oc <-- pinkie_prox
-     * as, on the real robot, the coupled group composed of ring_prox, ring_dist, pinkie_prox and pinkie_dist
-     * is controlled using the encoder on the pinkie_prox as feedback
-     */
-    actAxesPos[5] = physJointsPos[10];
+    // l/r_hand_finger
+    actAxesPos[0] = (20.0 - physJointsPos[12])*3;
+    // l/r_thumb_oppose
+    actAxesPos[1] = physJointsPos[0];
+    // l/r_thumb_proximal
+    actAxesPos[2] = physJointsPos[1];
+    // l/r_thumb_distal
+    actAxesPos[3] = physJointsPos[2] + physJointsPos[3];
+    // l/r_index_proximal
+    actAxesPos[4] = physJointsPos[5];
+    // l/r_index_distal
+    actAxesPos[5] = physJointsPos[6] + physJointsPos[7];
+    // l/r_middle_proximal
+    actAxesPos[6] = physJointsPos[9];
+    // l/r_middle_distal
+    actAxesPos[7] = physJointsPos[10] + physJointsPos[11];
+    // l/r_pinky
+    actAxesPos[8] = physJointsPos[13] + physJointsPos[14] + physJointsPos[15];
     return true;
 }
 
@@ -169,30 +81,58 @@ bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesVel(const yarp:
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || physJointsVel.size() != nrOfPhysicalJoints || actAxesVel.size() != nrOfActuatedAxes) {
-        yCError(COUPLINGXCUBHANDMK5) << "convertFromPhysicalJointsToActuatedAxesVel: input or output vectors have wrong size";
+        yCError(COUPLINGICUBHANDMK2) << "convertFromPhysicalJointsToActuatedAxesVel: input or output vectors have wrong size";
         return false;
     }
-    /* thumb_add <-- thumb_add */
-    actAxesVel[0] = physJointsVel[0];
-    /* thumb_oc <-- thumb_prox */
-    actAxesVel[1] = physJointsVel[1];
-    /* index_add <-- index_add */
-    actAxesVel[2] = physJointsVel[3];
-    /* index_oc <-- index_prox */
-    actAxesVel[3] = physJointsVel[4];
-    /* middle_oc <-- middle_prox */
-    actAxesVel[4] = physJointsVel[6];
-    /**
-     * ring_pinky_oc <-- pinkie_prox
-     * as, on the real robot, the coupled group composed of ring_prox, ring_dist, pinkie_prox and pinkie_dist
-     * is controlled using the encoder on the pinkie_prox as feedback
-     */
-    actAxesVel[5] = physJointsVel[10];
+    // l/r_hand_finger
+    actAxesVel[0] = -physJointsVel[12]*3;
+    // l/r_thumb_oppose
+    actAxesVel[1] = physJointsVel[0];
+    // l/r_thumb_proximal
+    actAxesVel[2] = physJointsVel[1];
+    // l/r_thumb_distal
+    actAxesVel[3] = physJointsVel[2] + physJointsVel[3];
+    // l/r_index_proximal
+    actAxesVel[4] = physJointsVel[5];
+    // l/r_index_distal
+    actAxesVel[5] = physJointsVel[6] + physJointsVel[7];
+    // l/r_middle_proximal
+    actAxesVel[6] = physJointsVel[9];
+    // l/r_middle_distal
+    actAxesVel[7] = physJointsVel[10] + physJointsVel[11];
+    // l/r_pinky
+    actAxesVel[8] = physJointsVel[13] + physJointsVel[14] + physJointsVel[15];
     return true;
 }
 
 
 bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesAcc(const yarp::sig::Vector& physJointsPos, const yarp::sig::Vector& physJointsVel, const yarp::sig::Vector& physJointsAcc, yarp::sig::Vector& actAxesAcc) {
+    size_t nrOfPhysicalJoints;
+    size_t nrOfActuatedAxes;
+    auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
+    ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
+    if (!ok || physJointsAcc.size() != nrOfPhysicalJoints || actAxesAcc.size() != nrOfActuatedAxes) {
+        yCError(COUPLINGICUBHANDMK2) << "convertFromPhysicalJointsToActuatedAxesAcc: input or output vectors have wrong size";
+        return false;
+    }
+    // l/r_hand_finger
+    actAxesAcc[0] = -physJointsAcc[12]*3;
+    // l/r_thumb_oppose
+    actAxesAcc[1] = physJointsAcc[0];
+    // l/r_thumb_proximal
+    actAxesAcc[2] = physJointsAcc[1];
+    // l/r_thumb_distal
+    actAxesAcc[3] = physJointsAcc[2] + physJointsAcc[3];
+    // l/r_index_proximal
+    actAxesAcc[4] = physJointsAcc[5];
+    // l/r_index_distal
+    actAxesAcc[5] = physJointsAcc[6] + physJointsAcc[7];
+    // l/r_middle_proximal
+    actAxesAcc[6] = physJointsAcc[9];
+    // l/r_middle_distal
+    actAxesAcc[7] = physJointsAcc[10] + physJointsAcc[11];
+    // l/r_pinky
+    actAxesAcc[8] = physJointsAcc[13] + physJointsAcc[14] + physJointsAcc[15];
     return false;
 }
 
@@ -207,33 +147,51 @@ bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsPos(const yarp:
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || physJointsPos.size() != nrOfPhysicalJoints || actAxesPos.size() != nrOfActuatedAxes) {
-        yCError(COUPLINGXCUBHANDMK5) << "convertFromActuatedAxesToPhysicalJointsPos: input or output vectors have wrong size";
+        yCError(COUPLINGICUBHANDMK2) << "convertFromActuatedAxesToPhysicalJointsPos: input or output vectors have wrong size";
         return false;
     }
-    physJointsPos[0] = actAxesPos[0];
-    /* thumb_prox <-- thumb_oc */
-    physJointsPos[1] = actAxesPos[1];
-    /* thumb_dist <-- coupling_law(thumb_prox) */
-    physJointsPos[2] = evaluateCoupledJoint(physJointsPos[1], "thumb");
-    /* index_add <-- index_add */
-    physJointsPos[3] = actAxesPos[2];
-    /* index_prox <-- index_oc */
-    physJointsPos[4] = actAxesPos[3];
-    /* index_dist <-- coupling_law(index_prox) */
-    physJointsPos[5] = evaluateCoupledJoint(physJointsPos[4], "index");
-    /* middle_prox <-- middle_oc */
-    physJointsPos[6] = actAxesPos[4];
-    /* middle_dist <-- coupling_law(middle_prox) */
-    physJointsPos[7] = evaluateCoupledJoint(physJointsPos[6], "middle");
-    /* ring_prox <-- ring_pinky_oc */
-    physJointsPos[8] = actAxesPos[5];
-    /* ring_dist <-- coupling_law(ring_prox) */
-    physJointsPos[9] = evaluateCoupledJoint(physJointsPos[8], "ring");
-    /* pinky_prox <-- ring_pinky_oc */
-    physJointsPos[10] = actAxesPos[5];
-    /* pinky_dist <-- coupling_law(pinky_prox) */
-    physJointsPos[11] = evaluateCoupledJoint(physJointsPos[10], "pinky");
 
+    // l/r_hand_thumb_0
+    physJointsPos[0] = actAxesPos[1];
+    // l/r_hand_thumb_1
+    physJointsPos[1] = actAxesPos[2];
+    // l/r_hand_thumb_2
+    physJointsPos[2] = actAxesPos[3]/2;
+    // l/r_hand_thumb_3
+    physJointsPos[3] = actAxesPos[3]/2;
+    // l/r_hand_index_0
+    physJointsPos[4] = -(20.0 - actAxesPos[0]/3);
+    // l/r_hand_index_1
+    physJointsPos[5] = actAxesPos[4];
+    // l/r_hand_index_2
+    physJointsPos[6] = actAxesPos[5]/2;
+    // l/r_hand_index_3
+    physJointsPos[7] = actAxesPos[5]/2;
+    // l/r_hand_middle_0
+    physJointsPos[8] = 0.0;
+    // l/r_hand_middle_1
+    physJointsPos[9] = actAxesPos[6];
+    // l/r_hand_middle_2
+    physJointsPos[10] = actAxesPos[7]/2;
+    // l/r_hand_middle_3
+    physJointsPos[11] = actAxesPos[7]/2;
+    // l/r_hand_ring_0
+    physJointsPos[12] = 20.0 - actAxesPos[0]/3;
+    // l/r_hand_ring_1
+    physJointsPos[13] = actAxesPos[8]/3;
+    // l/r_hand_ring_2
+    physJointsPos[14] = actAxesPos[8]/3;
+    // l/r_hand_ring_3
+    physJointsPos[15] = actAxesPos[8]/3;
+    // l/r_hand_little_0
+    physJointsPos[16] = 20.0 - actAxesPos[0]/3;
+    // l/r_hand_little_1
+    physJointsPos[17] = actAxesPos[8]/3;
+    // l/r_hand_little_2
+    physJointsPos[18] = actAxesPos[8]/3;
+    // l/r_hand_little_3
+    physJointsPos[19] = actAxesPos[8]/3;
+    
     return true;
 }
 
@@ -244,54 +202,105 @@ bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsVel(const yarp:
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || actAxesPos.size() != nrOfActuatedAxes || physJointsVel.size() != nrOfPhysicalJoints || actAxesVel.size() != nrOfActuatedAxes) {
-        yCError(COUPLINGXCUBHANDMK5) << "convertFromPhysicalJointsToActuatedAxesVel: input or output vectors have wrong size";
+        yCError(COUPLINGICUBHANDMK2) << "convertFromPhysicalJointsToActuatedAxesVel: input or output vectors have wrong size";
         return false;
     }
 
-    /**
-     * Extract the current position of proximal joints from pos_feedback.
-     */
-    double lastThumbProx  = actAxesPos[1];
-    double lastIndexProx  = actAxesPos[3];
-    double lastMiddleProx = actAxesPos[4];
-    double lastRingProx   = actAxesPos[5];
-    double lastPinkyProx  = actAxesPos[5];
-
-    /**
-     * In the following, we use the fact that:
-     * /dot{distal_joint} = \partial{distal_joint}{proximal_joint} \dot{proximal_joint}.
-     */
-
-
-    /* thumb_add <-- thumb_add */
-    physJointsVel[0] = actAxesVel[0];
-    /* thumb_prox <-- thumb_oc */
-    physJointsVel[1] = actAxesVel[1];
-    /* thumb_dist <-- coupling_law_jacobian(thumb_prox_position) * thumb_prox */
-    physJointsVel[2] = evaluateCoupledJointJacobian(lastThumbProx, "thumb") * physJointsVel[1];
-    /* index_add <-- index_add */
-    physJointsVel[3] = actAxesVel[2];
-    /* index_prox <-- index_oc */
-    physJointsVel[4] = actAxesVel[3];
-    /* index_dist <-- coupling_law_jacobian(index_prox_position) * index_prox */
-    physJointsVel[5] = evaluateCoupledJointJacobian(lastIndexProx, "index") * physJointsVel[4];
-    /* middle_prox <-- middle_oc */
-    physJointsVel[6] = actAxesVel[4];
-    /* middle_dist <-- coupling_law_jacobian(middle_prox_position) * middle_prox */
-    physJointsVel[7] = evaluateCoupledJointJacobian(lastMiddleProx, "middle") * physJointsVel[6];
-    /* ring_prox <-- ring_pinky_oc */
-    physJointsVel[8] = actAxesVel[5];
-    /* ring_dist <-- coupling_law_jacobian(ring_prox_position) * ring_prox */
-    physJointsVel[9] = evaluateCoupledJointJacobian(lastRingProx, "ring") * physJointsVel[8];
-    /* pinky_prox <-- ring_pinky_oc */
-    physJointsVel[10] = actAxesVel[5];
-    /* pinky_dist <-- coupling_law(pinky_prox) */
-    physJointsVel[11] = evaluateCoupledJointJacobian(lastPinkyProx, "pinky") * physJointsVel[10];
+    // l/r_hand_thumb_0
+    physJointsVel[0] = actAxesVel[1];
+    // l/r_hand_thumb_1
+    physJointsVel[1] = actAxesVel[2];
+    // l/r_hand_thumb_2
+    physJointsVel[2] = actAxesVel[3]/2;
+    // l/r_hand_thumb_3
+    physJointsVel[3] = actAxesVel[3]/2;
+    // l/r_hand_index_0
+    physJointsVel[4] = actAxesVel[0]/3;
+    // l/r_hand_index_1
+    physJointsVel[5] = actAxesVel[4];
+    // l/r_hand_index_2
+    physJointsVel[6] = actAxesVel[5]/2;
+    // l/r_hand_index_3
+    physJointsVel[7] = actAxesVel[5]/2;
+    // l/r_hand_middle_0
+    physJointsVel[8] = 0.0;
+    // l/r_hand_middle_1
+    physJointsVel[9] = actAxesVel[6];
+    // l/r_hand_middle_2
+    physJointsVel[10] = actAxesVel[7]/2;
+    // l/r_hand_middle_3
+    physJointsVel[11] = actAxesVel[7]/2;
+    // l/r_hand_ring_0
+    physJointsVel[12] = -actAxesVel[0]/3;
+    // l/r_hand_ring_1
+    physJointsVel[13] = actAxesVel[8]/3;
+    // l/r_hand_ring_2
+    physJointsVel[14] = actAxesVel[8]/3;
+    // l/r_hand_ring_3
+    physJointsVel[15] = actAxesVel[8]/3;
+    // l/r_hand_little_0
+    physJointsVel[16] = - actAxesVel[0]/3;
+    // l/r_hand_little_1
+    physJointsVel[17] = actAxesVel[8]/3;
+    // l/r_hand_little_2
+    physJointsVel[18] = actAxesVel[8]/3;
+    // l/r_hand_little_3
+    physJointsVel[19] = actAxesVel[8]/3;
 
     return true;
 }
 
 bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsAcc(const yarp::sig::Vector& actAxesPos, const yarp::sig::Vector& actAxesVel, const yarp::sig::Vector& actAxesAcc, yarp::sig::Vector& physJointsAcc) {
+    size_t nrOfPhysicalJoints;
+    size_t nrOfActuatedAxes;
+    auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
+    ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
+    if (!ok || actAxesPos.size() != nrOfActuatedAxes || physJointsAcc.size() != nrOfPhysicalJoints || actAxesAcc.size() != nrOfActuatedAxes) {
+        yCError(COUPLINGICUBHANDMK2) << "convertFromPhysicalJointsToActuatedAxesAcc: input or output vectors have wrong size";
+        return false;
+    }
+
+    // l/r_hand_thumb_0
+    physJointsAcc[0] = actAxesAcc[1];
+    // l/r_hand_thumb_1
+    physJointsAcc[1] = actAxesAcc[2];
+    // l/r_hand_thumb_2
+    physJointsAcc[2] = actAxesAcc[3]/2;
+    // l/r_hand_thumb_3
+    physJointsAcc[3] = actAxesAcc[3]/2;
+    // l/r_hand_index_0
+    physJointsAcc[4] = actAxesAcc[0]/3;
+    // l/r_hand_index_1
+    physJointsAcc[5] = actAxesAcc[4];
+    // l/r_hand_index_2
+    physJointsAcc[6] = actAxesAcc[5]/2;
+    // l/r_hand_index_3
+    physJointsAcc[7] = actAxesAcc[5]/2;
+    // l/r_hand_middle_0
+    physJointsAcc[8] = 0.0;
+    // l/r_hand_middle_1
+    physJointsAcc[9] = actAxesAcc[6];
+    // l/r_hand_middle_2
+    physJointsAcc[10] = actAxesAcc[7]/2;
+    // l/r_hand_middle_3
+    physJointsAcc[11] = actAxesAcc[7]/2;
+    // l/r_hand_ring_0
+    physJointsAcc[12] = - actAxesAcc[0]/3;
+    // l/r_hand_ring_1
+    physJointsAcc[13] = actAxesAcc[8]/3;
+    // l/r_hand_ring_2
+    physJointsAcc[14] = actAxesAcc[8]/3;
+    // l/r_hand_ring_3
+    physJointsAcc[15] = actAxesAcc[8]/3;
+    // l/r_hand_little_0
+    physJointsAcc[16] = - actAxesAcc[0]/3;
+    // l/r_hand_little_1
+    physJointsAcc[17] = actAxesAcc[8]/3;
+    // l/r_hand_little_2
+    physJointsAcc[18] = actAxesAcc[8]/3;
+    // l/r_hand_little_3
+    physJointsAcc[19] = actAxesAcc[8]/3;
+    
     return false;
 }
 bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsTrq(const yarp::sig::Vector& actAxesPos, const yarp::sig::Vector& actAxesTrq, yarp::sig::Vector& physJointsTrq) {

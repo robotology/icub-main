@@ -62,29 +62,6 @@ public:
     bool open(yarp::os::Searchable& config) override;
 private:
 
-    std::unordered_map<std::string, FingerParameters> mFingerParameters;
-
-
-    /*
-     * This method implements the law q2 = q2(q1) from
-     * https://icub-tech-iit.github.io/documentation/hands/hands_mk5_coupling,
-     * i.e., the absolute angle of the distal joint q2 with respect to the palm.
-     *
-     * The inputs q1 and the return value of the function are in degrees.
-     */
-    double evaluateCoupledJoint(const double& q1, const std::string& finger_name);
-
-    /*
-     * This method implements the law \frac{\partial{q2}}{\partial{q1}} from
-     * https://icub-tech-iit.github.io/documentation/hands/hands_mk5_coupling,
-     * i.e., the jacobian of the absolute angle of the distal joint q2 measured from the palm,
-     * with respect to the proximal joint q1.
-     *
-     * The input q1 is in degrees.
-     */
-    double evaluateCoupledJointJacobian(const double& q1, const std::string& finger_name);
-
-    bool populateFingerParameters();
     bool populateCouplingParameters();
 };
 
