@@ -1721,7 +1721,6 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
             _temperatureExceededLimitWatchdog.at(motor).clear();
         }
     }
-
     return true;
 }
 
@@ -1738,6 +1737,38 @@ bool embObjMotionControl::getEntityName(uint32_t entityId, std::string &entityNa
     }
     return ret;
 
+}
+
+
+bool embObjMotionControl::getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName)
+{
+    encoderTypeName.clear();
+    
+    if ((jomoId >= 0) && (jomoId < _njoints))
+    {
+        switch (pos)
+        {
+        case eomc_pos_atjoint:
+            encoderTypeName = eomc_encoder2string(_jointEncs[jomoId].type, eobool_true);
+            break;
+        case eomc_pos_atmotor:
+            encoderTypeName = eomc_encoder2string(_motorEncs[jomoId].type, eobool_true);
+            break;
+        case eomc_pos_unknown:
+            encoderTypeName = "UNKNOWN";
+            break;
+        case eomc_pos_none:
+        default:
+            encoderTypeName = "NONE";
+            break;
+        }
+        return true;
+    }
+    else
+    {
+        encoderTypeName = "ERROR";
+        return false;
+    }
 }
 
 ///////////// PID INTERFACE
