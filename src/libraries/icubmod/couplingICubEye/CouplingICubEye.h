@@ -6,32 +6,32 @@
  * BSD-3-Clause license. See the accompanying LICENSE file for details.
  */
 
-#ifndef COUPLINGICUBEYEMK3_H
-#define COUPLINGICUBEYEMK3_H
+#ifndef COUPLINGICUBEYE_H
+#define COUPLINGICUBEYE_H
 
 #include <yarp/os/LogComponent.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/ImplementJointCoupling.h>
-#include "CouplingICubEyeMk3_ParamsParser.h"
+#include "CouplingICubEye_ParamsParser.h"
 
 #include <unordered_map>
 #include <vector>
 #include <string>
 
 
-YARP_DECLARE_LOG_COMPONENT(COUPLINGICUBEYEMK3)
+YARP_DECLARE_LOG_COMPONENT(COUPLINGICUBEYE)
 
 /**
  * Coupling law from https://icub-tech-iit.github.io/documentation/icub_kinematics/icub-vergence-version/icub-vergence-version/
  */
 /** TBD
  */
-class CouplingICubEyeMk3 :  public yarp::dev::DeviceDriver,
+class CouplingICubEye :  public yarp::dev::DeviceDriver,
                             public yarp::dev::ImplementJointCoupling,
-                            public CouplingICubEyeMk3_ParamsParser {
+                            public CouplingICubEye_ParamsParser {
 public:
-    CouplingICubEyeMk3() = default;
-    virtual ~CouplingICubEyeMk3() override = default;
+    CouplingICubEye() = default;
+    virtual ~CouplingICubEye() override = default;
     bool convertFromPhysicalJointsToActuatedAxesPos(const yarp::sig::Vector& physJointsPos, yarp::sig::Vector& actAxesPos) override;
     bool convertFromPhysicalJointsToActuatedAxesVel(const yarp::sig::Vector& physJointsPos, const yarp::sig::Vector& physJointsVel, yarp::sig::Vector& actAxesVel) override;
     bool convertFromPhysicalJointsToActuatedAxesAcc(const yarp::sig::Vector& physJointsPos, const yarp::sig::Vector& physJointsVel, const yarp::sig::Vector& physJointsAcc, yarp::sig::Vector& actAxesAcc) override;
@@ -53,4 +53,4 @@ private:
     bool populateCouplingParameters();
 };
 
-#endif // COUPLINGICUBEYEMK3_H
+#endif // COUPLINGICUBEYE_H

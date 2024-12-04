@@ -8,11 +8,11 @@
 // This is an automatically generated file. Please do not edit it.
 // It will be re-generated if the cmake flag ALLOW_DEVICE_PARAM_PARSER_GERNERATION is ON.
 
-// Generated on: Mon Dec  2 15:29:09 2024
+// Generated on: Wed Dec  4 09:08:59 2024
 
 
-#ifndef COUPLINGICUBEYEMK3_PARAMSPARSER_H
-#define COUPLINGICUBEYEMK3_PARAMSPARSER_H
+#ifndef COUPLINGICUBEYE_PARAMSPARSER_H
+#define COUPLINGICUBEYE_PARAMSPARSER_H
 
 #include <yarp/os/Searchable.h>
 #include <yarp/dev/IDeviceDriverParams.h>
@@ -20,7 +20,7 @@
 #include <cmath>
 
 /**
-* This class is the parameters parser for class CouplingICubEyeMk3.
+* This class is the parameters parser for class CouplingICubEye.
 *
 * These are the used parameters:
 * | Group name | Parameter name     | Type           | Units | Default Value | Required | Description                                  | Notes |
@@ -35,24 +35,24 @@
 *
 * The device can be launched by yarpdev using one of the following examples (with and without all optional parameters):
 * \code{.unparsed}
-* yarpdev --device couplingICubEyeMk3 --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>
+* yarpdev --device couplingICubEye --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>
 * \endcode
 *
 * \code{.unparsed}
-* yarpdev --device couplingICubEyeMk3 --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>
+* yarpdev --device couplingICubEye --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>
 * \endcode
 *
 */
 
-class CouplingICubEyeMk3_ParamsParser : public yarp::dev::IDeviceDriverParams
+class CouplingICubEye_ParamsParser : public yarp::dev::IDeviceDriverParams
 {
 public:
-    CouplingICubEyeMk3_ParamsParser();
-    ~CouplingICubEyeMk3_ParamsParser() override = default;
+    CouplingICubEye_ParamsParser();
+    ~CouplingICubEye_ParamsParser() override = default;
 
 public:
-    const std::string m_device_classname = {"CouplingICubEyeMk3"};
-    const std::string m_device_name = {"couplingICubEyeMk3"};
+    const std::string m_device_classname = {"CouplingICubEye"};
+    const std::string m_device_name = {"couplingICubEye"};
     bool m_parser_is_strict = false;
     struct parser_version_type
     {
