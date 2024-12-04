@@ -1,8 +1,8 @@
-![YARP logo](https://raw.githubusercontent.com/robotology/yarp/master/doc/images/yarp-robot-24.png "couplingICubEyeMk3")
-## couplingICubEyeMk3
+![YARP logo](https://raw.githubusercontent.com/robotology/yarp/master/doc/images/yarp-robot-24.png "couplingICubEye")
+## couplingICubEye
 
 
-This is the device for [YARP](https://www.yarp.it/) for handling the coupling of the [eyes mk3](https://icub-tech-iit.github.io/documentation/icub_kinematics/icub-vergence-version/icub-vergence-version/)
+This is the device for [YARP](https://www.yarp.it/) for handling the coupling of the [eyes](https://icub-tech-iit.github.io/documentation/icub_kinematics/icub-vergence-version/icub-vergence-version/)
 
 ## Device documentation
 
@@ -13,7 +13,7 @@ See the documentation for more details about each interface.
 
 | YARP device name |
 |:----------------:|
-| `couplingICubEyeMk3`     |
+| `couplingICubEye`     |
 
 Parameters used by this device are:
 
@@ -32,11 +32,11 @@ Parameters used by this device are:
 Configuration file using `.ini` format:
 
 ```ini
-device              couplingICubEyeMk3
+device              couplingICubEye
 jointNames          eyes_tilt l_eye_pan_joint r_eye_pan_joint
 
 [COUPLING]
-device              couplingICubEyeMk3 
+device              couplingICubEye 
 actuatedAxesNames   eyes_version eyes_vergence
 actuatedAxesPosMin  -30.0   0.0
 actuatedAxesPosMax  30.0    50.0

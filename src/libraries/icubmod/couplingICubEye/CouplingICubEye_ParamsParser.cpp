@@ -8,24 +8,24 @@
 // This is an automatically generated file. Please do not edit it.
 // It will be re-generated if the cmake flag ALLOW_DEVICE_PARAM_PARSER_GERNERATION is ON.
 
-// Generated on: Mon Dec  2 15:29:09 2024
+// Generated on: Wed Dec  4 09:08:59 2024
 
 
-#include "CouplingICubEyeMk3_ParamsParser.h"
+#include "CouplingICubEye_ParamsParser.h"
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Value.h>
 
 namespace {
-    YARP_LOG_COMPONENT(CouplingICubEyeMk3ParamsCOMPONENT, "yarp.device.CouplingICubEyeMk3")
+    YARP_LOG_COMPONENT(CouplingICubEyeParamsCOMPONENT, "yarp.device.CouplingICubEye")
 }
 
 
-CouplingICubEyeMk3_ParamsParser::CouplingICubEyeMk3_ParamsParser()
+CouplingICubEye_ParamsParser::CouplingICubEye_ParamsParser()
 {
 }
 
 
-std::vector<std::string> CouplingICubEyeMk3_ParamsParser::getListOfParams() const
+std::vector<std::string> CouplingICubEye_ParamsParser::getListOfParams() const
 {
     std::vector<std::string> params;
     params.push_back("jointNames");
@@ -39,12 +39,12 @@ std::vector<std::string> CouplingICubEyeMk3_ParamsParser::getListOfParams() cons
 }
 
 
-bool      CouplingICubEyeMk3_ParamsParser::parseParams(const yarp::os::Searchable & config)
+bool      CouplingICubEye_ParamsParser::parseParams(const yarp::os::Searchable & config)
 {
     //Check for --help option
     if (config.check("help"))
     {
-        yCInfo(CouplingICubEyeMk3ParamsCOMPONENT) << getDocumentationOfDeviceParams();
+        yCInfo(CouplingICubEyeParamsCOMPONENT) << getDocumentationOfDeviceParams();
     }
 
     std::string config_string = config.toString();
@@ -66,15 +66,15 @@ bool      CouplingICubEyeMk3_ParamsParser::parseParams(const yarp::os::Searchabl
                 }
                 else
                 {
-                     yCError(CouplingICubEyeMk3ParamsCOMPONENT) <<"parameter 'jointNames' is not a properly formatted bottle";
+                     yCError(CouplingICubEyeParamsCOMPONENT) <<"parameter 'jointNames' is not a properly formatted bottle";
                 }
             }
-            yCInfo(CouplingICubEyeMk3ParamsCOMPONENT) << "Parameter 'jointNames' using value:" << m_jointNames;
+            yCInfo(CouplingICubEyeParamsCOMPONENT) << "Parameter 'jointNames' using value:" << m_jointNames;
         }
         else
         {
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Mandatory parameter 'jointNames' not found!";
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Description of the parameter: Names of the physical joints";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Mandatory parameter 'jointNames' not found!";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Description of the parameter: Names of the physical joints";
             return false;
         }
         prop_check.unput("jointNames");
@@ -99,15 +99,15 @@ bool      CouplingICubEyeMk3_ParamsParser::parseParams(const yarp::os::Searchabl
                 }
                 else
                 {
-                     yCError(CouplingICubEyeMk3ParamsCOMPONENT) <<"parameter 'LIMITS_jntPosMin' is not a properly formatted bottle";
+                     yCError(CouplingICubEyeParamsCOMPONENT) <<"parameter 'LIMITS_jntPosMin' is not a properly formatted bottle";
                 }
             }
-            yCInfo(CouplingICubEyeMk3ParamsCOMPONENT) << "Parameter 'LIMITS::jntPosMin' using value:" << m_LIMITS_jntPosMin;
+            yCInfo(CouplingICubEyeParamsCOMPONENT) << "Parameter 'LIMITS::jntPosMin' using value:" << m_LIMITS_jntPosMin;
         }
         else
         {
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Mandatory parameter 'LIMITS::jntPosMin' not found!";
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Description of the parameter: Physical joints' position minimum";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Mandatory parameter 'LIMITS::jntPosMin' not found!";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Description of the parameter: Physical joints' position minimum";
             return false;
         }
         prop_check.unput("LIMITS::jntPosMin");
@@ -132,15 +132,15 @@ bool      CouplingICubEyeMk3_ParamsParser::parseParams(const yarp::os::Searchabl
                 }
                 else
                 {
-                     yCError(CouplingICubEyeMk3ParamsCOMPONENT) <<"parameter 'LIMITS_jntPosMax' is not a properly formatted bottle";
+                     yCError(CouplingICubEyeParamsCOMPONENT) <<"parameter 'LIMITS_jntPosMax' is not a properly formatted bottle";
                 }
             }
-            yCInfo(CouplingICubEyeMk3ParamsCOMPONENT) << "Parameter 'LIMITS::jntPosMax' using value:" << m_LIMITS_jntPosMax;
+            yCInfo(CouplingICubEyeParamsCOMPONENT) << "Parameter 'LIMITS::jntPosMax' using value:" << m_LIMITS_jntPosMax;
         }
         else
         {
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Mandatory parameter 'LIMITS::jntPosMax' not found!";
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Description of the parameter: Physical joints' position maximum";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Mandatory parameter 'LIMITS::jntPosMax' not found!";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Description of the parameter: Physical joints' position maximum";
             return false;
         }
         prop_check.unput("LIMITS::jntPosMax");
@@ -153,12 +153,12 @@ bool      CouplingICubEyeMk3_ParamsParser::parseParams(const yarp::os::Searchabl
         if (sectionp.check("device"))
         {
             m_COUPLING_device = sectionp.find("device").asString();
-            yCInfo(CouplingICubEyeMk3ParamsCOMPONENT) << "Parameter 'COUPLING::device' using value:" << m_COUPLING_device;
+            yCInfo(CouplingICubEyeParamsCOMPONENT) << "Parameter 'COUPLING::device' using value:" << m_COUPLING_device;
         }
         else
         {
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Mandatory parameter 'COUPLING::device' not found!";
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Description of the parameter: Name of the device that handles the coupling";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Mandatory parameter 'COUPLING::device' not found!";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Description of the parameter: Name of the device that handles the coupling";
             return false;
         }
         prop_check.unput("COUPLING::device");
@@ -183,15 +183,15 @@ bool      CouplingICubEyeMk3_ParamsParser::parseParams(const yarp::os::Searchabl
                 }
                 else
                 {
-                     yCError(CouplingICubEyeMk3ParamsCOMPONENT) <<"parameter 'COUPLING_actuatedAxesNames' is not a properly formatted bottle";
+                     yCError(CouplingICubEyeParamsCOMPONENT) <<"parameter 'COUPLING_actuatedAxesNames' is not a properly formatted bottle";
                 }
             }
-            yCInfo(CouplingICubEyeMk3ParamsCOMPONENT) << "Parameter 'COUPLING::actuatedAxesNames' using value:" << m_COUPLING_actuatedAxesNames;
+            yCInfo(CouplingICubEyeParamsCOMPONENT) << "Parameter 'COUPLING::actuatedAxesNames' using value:" << m_COUPLING_actuatedAxesNames;
         }
         else
         {
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Mandatory parameter 'COUPLING::actuatedAxesNames' not found!";
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Description of the parameter: Names of the actuated axes";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Mandatory parameter 'COUPLING::actuatedAxesNames' not found!";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Description of the parameter: Names of the actuated axes";
             return false;
         }
         prop_check.unput("COUPLING::actuatedAxesNames");
@@ -216,15 +216,15 @@ bool      CouplingICubEyeMk3_ParamsParser::parseParams(const yarp::os::Searchabl
                 }
                 else
                 {
-                     yCError(CouplingICubEyeMk3ParamsCOMPONENT) <<"parameter 'COUPLING_actuatedAxesPosMin' is not a properly formatted bottle";
+                     yCError(CouplingICubEyeParamsCOMPONENT) <<"parameter 'COUPLING_actuatedAxesPosMin' is not a properly formatted bottle";
                 }
             }
-            yCInfo(CouplingICubEyeMk3ParamsCOMPONENT) << "Parameter 'COUPLING::actuatedAxesPosMin' using value:" << m_COUPLING_actuatedAxesPosMin;
+            yCInfo(CouplingICubEyeParamsCOMPONENT) << "Parameter 'COUPLING::actuatedAxesPosMin' using value:" << m_COUPLING_actuatedAxesPosMin;
         }
         else
         {
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Mandatory parameter 'COUPLING::actuatedAxesPosMin' not found!";
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Description of the parameter: Actuated axes' position minimum";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Mandatory parameter 'COUPLING::actuatedAxesPosMin' not found!";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Description of the parameter: Actuated axes' position minimum";
             return false;
         }
         prop_check.unput("COUPLING::actuatedAxesPosMin");
@@ -249,15 +249,15 @@ bool      CouplingICubEyeMk3_ParamsParser::parseParams(const yarp::os::Searchabl
                 }
                 else
                 {
-                     yCError(CouplingICubEyeMk3ParamsCOMPONENT) <<"parameter 'COUPLING_actuatedAxesPosMax' is not a properly formatted bottle";
+                     yCError(CouplingICubEyeParamsCOMPONENT) <<"parameter 'COUPLING_actuatedAxesPosMax' is not a properly formatted bottle";
                 }
             }
-            yCInfo(CouplingICubEyeMk3ParamsCOMPONENT) << "Parameter 'COUPLING::actuatedAxesPosMax' using value:" << m_COUPLING_actuatedAxesPosMax;
+            yCInfo(CouplingICubEyeParamsCOMPONENT) << "Parameter 'COUPLING::actuatedAxesPosMax' using value:" << m_COUPLING_actuatedAxesPosMax;
         }
         else
         {
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Mandatory parameter 'COUPLING::actuatedAxesPosMax' not found!";
-            yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "Description of the parameter: Actuated axes' position maximum";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Mandatory parameter 'COUPLING::actuatedAxesPosMax' not found!";
+            yCError(CouplingICubEyeParamsCOMPONENT) << "Description of the parameter: Actuated axes' position maximum";
             return false;
         }
         prop_check.unput("COUPLING::actuatedAxesPosMax");
@@ -273,12 +273,12 @@ bool      CouplingICubEyeMk3_ParamsParser::parseParams(const yarp::os::Searchabl
         {
             if (m_parser_is_strict)
             {
-                yCError(CouplingICubEyeMk3ParamsCOMPONENT) << "User asking for parameter: "<<it->name <<" which is unknown to this parser!";
+                yCError(CouplingICubEyeParamsCOMPONENT) << "User asking for parameter: "<<it->name <<" which is unknown to this parser!";
                 extra_params_found = true;
             }
             else
             {
-                yCWarning(CouplingICubEyeMk3ParamsCOMPONENT) << "User asking for parameter: "<< it->name <<" which is unknown to this parser!";
+                yCWarning(CouplingICubEyeParamsCOMPONENT) << "User asking for parameter: "<< it->name <<" which is unknown to this parser!";
             }
         }
 
@@ -292,11 +292,11 @@ bool      CouplingICubEyeMk3_ParamsParser::parseParams(const yarp::os::Searchabl
 }
 
 
-std::string      CouplingICubEyeMk3_ParamsParser::getDocumentationOfDeviceParams() const
+std::string      CouplingICubEye_ParamsParser::getDocumentationOfDeviceParams() const
 {
     std::string doc;
     doc = doc + std::string("\n=============================================\n");
-    doc = doc + std::string("This is the help for device: CouplingICubEyeMk3\n");
+    doc = doc + std::string("This is the help for device: CouplingICubEye\n");
     doc = doc + std::string("\n");
     doc = doc + std::string("This is the list of the parameters accepted by the device:\n");
     doc = doc + std::string("'jointNames': Names of the physical joints\n");
@@ -308,8 +308,8 @@ std::string      CouplingICubEyeMk3_ParamsParser::getDocumentationOfDeviceParams
     doc = doc + std::string("'COUPLING::actuatedAxesPosMax': Actuated axes' position maximum\n");
     doc = doc + std::string("\n");
     doc = doc + std::string("Here are some examples of invocation command with yarpdev, with all params:\n");
-    doc = doc + " yarpdev --device couplingICubEyeMk3 --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>\n";
+    doc = doc + " yarpdev --device couplingICubEye --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>\n";
     doc = doc + std::string("Using only mandatory params:\n");
-    doc = doc + " yarpdev --device couplingICubEyeMk3 --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>\n";
+    doc = doc + " yarpdev --device couplingICubEye --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>\n";
     doc = doc + std::string("=============================================\n\n");    return doc;
 }
