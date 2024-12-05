@@ -438,6 +438,8 @@ public:
     embObjMotionControl();
     ~embObjMotionControl();
 
+    // Upcasted methods
+    bool getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName);
 
     // Device Driver
     virtual bool open(yarp::os::Searchable &par);
@@ -447,7 +449,6 @@ public:
     virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
     virtual bool getEntityName(uint32_t entityId, std::string &entityName);
-    virtual bool getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName);
 
     /////////   PID INTERFACE   /////////
     virtual bool setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid) override;
