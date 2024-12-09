@@ -73,6 +73,7 @@ private:
     eth::IethResource* m_MC_ethRes;
 public:
     bool getAxisName(uint32_t entityId, std::string &axisName);
+    bool getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName);
 };
 
 

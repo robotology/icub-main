@@ -8,6 +8,7 @@
 
 #include "diagnosticLowLevelFormatter.h"
 #include "diagnosticLowLevelFormatter_hid.h"
+#include "embObjMotionControl.h"
 
 
 
@@ -157,4 +158,18 @@ bool EntityNameProvider::getAxisName(uint32_t entityId, std::string &axisName)
     }
     
     return (m_MC_ethRes->getEntityName(entityId, axisName));
+}
+
+bool EntityNameProvider::getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName)
+{
+    if (m_MC_ethRes == nullptr)  
+    {
+        encoderTypeName = "N/A";
+        return false;
+    }
+
+    if(embObjMotionControl *emc = dynamic_cast<embObjMotionControl*>(m_MC_ethRes); emc != nullptr)
+    {
+        return (emc->getEncoderTypeName(jomoId, pos, encoderTypeName));
+    }   
 }

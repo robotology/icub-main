@@ -91,7 +91,7 @@ namespace eth {
 
     public:
             const char * stringOfType();
-            /* the entityName there will be the name of the entity, or it can be an empty string if the enity han't name
+            /* the entityName there will be the name of the entity, or it can be an empty string if the enity hasn't name
             The entity could be:
               - axis in case the ethResource type is iethres_motioncontrol
               - sensor id in case of, skin, mais and strain 

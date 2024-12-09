@@ -438,6 +438,8 @@ public:
     embObjMotionControl();
     ~embObjMotionControl();
 
+    // Upcasted methods
+    bool getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName);
 
     // Device Driver
     virtual bool open(yarp::os::Searchable &par);
