@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         build_type: [Release]
-        os: [ubuntu-22.04, windows-latest]
+        os: [ubuntu-24.04, windows-latest]
         build_shared_libs: [ON, OFF]
 
     steps:
@@ -34,7 +34,7 @@ jobs:
     # Remove apt repos that are known to break from time to time
     # See https://github.com/actions/virtual-environments/issues/323
     - name: Remove broken apt repos [Ubuntu]
-      if: matrix.os == 'ubuntu-22.04'
+      if: matrix.os == 'ubuntu-24.04'
       shell: bash
       run: |
         for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
@@ -56,12 +56,23 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
     - name: Dependencies [Ubuntu]
-      if: matrix.os == 'ubuntu-22.04'
+      if: matrix.os == 'ubuntu-24.04'
       shell: bash
       run: |
         sudo apt update
         sudo apt install -y git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev libopencv-dev qtbase5-dev \
-                            qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev libpython3-dev swig
+                            qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev libpython3-dev
+
+    - name: Install Custom SWIG 4.2.1 [Ubuntu]
+      if: matrix.os == 'ubuntu-24.04'
+      shell: bash
+      run: |
+        mkdir -p ${GITHUB_WORKSPACE}/swig
+        cd ${GITHUB_WORKSPACE}/swig
+        wget https://github.com/robotology/robotology-vcpkg-ports/releases/download/storage/swig_4_2_1_ubuntu_24_04.zip
+        unzip swig_4_2_1_ubuntu_24_04.zip
+        export PATH=${GITHUB_WORKSPACE}/swig/bin:$PATH
+        export SWIG_LIB=${GITHUB_WORKSPACE}/swig/share/swig/4.2.1
 
     - name: Determine YCM and YARP required versions
       shell: bash
@@ -114,7 +125,7 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
 
     - name: Source-based Dependencies [Ubuntu]
-      if: matrix.os == 'ubuntu-22.04'
+      if: matrix.os == 'ubuntu-24.04'
       shell: bash
       run: |
         # YCM
@@ -173,7 +184,7 @@ jobs:
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
     - name: Configure [Ubuntu]
-      if: matrix.os == 'ubuntu-22.04'
+      if: matrix.os == 'ubuntu-24.04'
       shell: bash
       run: |
         mkdir -p build
@@ -202,7 +213,7 @@ jobs:
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
     - name: Enable python bindings on Ubuntu
-      if: matrix.os == 'ubuntu-22.04'
+      if: matrix.os == 'ubuntu-24.04'
       shell: bash
       run: |
         cd build
