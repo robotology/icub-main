@@ -63,16 +63,20 @@ jobs:
         sudo apt install -y git build-essential cmake libace-dev coinor-libipopt-dev libeigen3-dev libopencv-dev qtbase5-dev \
                             qtdeclarative5-dev qtmultimedia5-dev libtinyxml-dev libgsl-dev libpython3-dev
 
+      # regression documented in https://github.com/robotology/robotology-superbuild/blob/master/cmake/RobotologySuperbuildLogic.cmake#L39-L64
     - name: Install Custom SWIG 4.2.1 [Ubuntu]
       if: matrix.os == 'ubuntu-24.04'
       shell: bash
       run: |
-        mkdir -p ${GITHUB_WORKSPACE}/swig
-        cd ${GITHUB_WORKSPACE}/swig
+        sudo apt remove swig
+        cd ${GITHUB_WORKSPACE}
         wget https://github.com/robotology/robotology-vcpkg-ports/releases/download/storage/swig_4_2_1_ubuntu_24_04.zip
         unzip swig_4_2_1_ubuntu_24_04.zip
-        export PATH=${GITHUB_WORKSPACE}/swig/bin:$PATH
-        export SWIG_LIB=${GITHUB_WORKSPACE}/swig/share/swig/4.2.1
+        echo "${{ github.workspace }}/swig_4_2_1_ubuntu_24_04_install/bin" >> $GITHUB_PATH
+        echo "SWIG_LIB=${{ github.workspace }}/swig_4_2_1_ubuntu_24_04_install/share/swig/4.2.1" >> $GITHUB_ENV
+
+    - name: Check SWIG version
+      run: swig -version
 
     - name: Determine YCM and YARP required versions
       shell: bash
