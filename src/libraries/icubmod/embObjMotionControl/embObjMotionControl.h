@@ -118,13 +118,14 @@ private:
 bool _isStarted;
 uint32_t _count;
 double _time;
+double _abstime;
 uint32_t _threshold; // use 10000 as limit on the watchdog for the error on the temperature sensor receiving of the values - 
                     // since the ETH callback timing is 2ms by default so using 10000 we can set a checking threshould of 5 second
                     // in which we can allow the tdb to not respond. If cannot receive response over 1s we trigger the error
 public:
 
-Watchdog(): _count(0), _isStarted(false), _threshold(60000), _time(0){;}
-Watchdog(uint32_t threshold):_count(0), _isStarted(false), _threshold(threshold), _time(0){;}
+Watchdog(): _count(0), _isStarted(false), _threshold(60000), _time(0), _abstime(yarp::os::Time::now()){;}
+Watchdog(uint32_t threshold):_count(0), _isStarted(false), _threshold(threshold), _time(0), _abstime(yarp::os::Time::now()){;}
 ~Watchdog() = default;
 Watchdog(const Watchdog& other) =  default;
 Watchdog(Watchdog&& other) noexcept =  default;
@@ -134,13 +135,14 @@ Watchdog& operator=(Watchdog&& other) noexcept =  default;
 
 bool isStarted(){return _isStarted;}
 void start() {_count = 0; _time = yarp::os::Time::now(); _isStarted = true;}
-bool isExpired() {return (_count > _threshold);}
+bool isExpired() {return (_count >= _threshold);}
 void increment() {++_count;}
 void clear(){_isStarted=false;}
 double getStartTime() {return _time;}
 uint32_t getCount() {return _count; }
 void setThreshold(uint8_t txrateOfRegularROPs){ if(txrateOfRegularROPs != 0) _threshold = _threshold / txrateOfRegularROPs;}
 uint32_t getThreshold(){return _threshold;}
+double getAbsoluteTime(){return _abstime;}
 
 };
 
