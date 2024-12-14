@@ -161,28 +161,9 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
+        cmake --preset robot -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
               -DBUILD_SHARED_LIBS:BOOL=${{ matrix.build_shared_libs }} \
-              -DICUB_USE_icub_firmware_shared:BOOL=ON \
-              -DENABLE_icubmod_skinWrapper:BOOL=ON \
-              -DENABLE_icubmod_sharedcan:BOOL=ON \
-              -DENABLE_icubmod_bcbBattery:BOOL=ON \
-              -DENABLE_icubmod_canmotioncontrol:BOOL=ON \
-              -DENABLE_icubmod_canBusAnalogSensor:BOOL=ON \
-              -DENABLE_icubmod_canBusInertialMTB:BOOL=ON \
-              -DENABLE_icubmod_canBusSkin:BOOL=ON \
-              -DENABLE_icubmod_canBusVirtualAnalogSensor:BOOL=ON \
-              -DENABLE_icubmod_embObjFTsensor:BOOL=ON \
-              -DENABLE_icubmod_embObjIMU:BOOL=ON \
-              -DENABLE_icubmod_embObjInertials:BOOL=ON \
-              -DENABLE_icubmod_embObjMais:BOOL=ON \
-              -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
-              -DENABLE_icubmod_embObjBattery:BOOL=ON \
-              -DENABLE_icubmod_embObjSkin:BOOL=ON \
-              -DENABLE_icubmod_embObjMultipleFTsensors:BOOL=ON \
-              -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
-              -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DBUILD_TESTING:BOOL=ON \
               -DICUB_SHARED_LIBRARY=OFF \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -193,26 +174,9 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
+        cmake --preset robot
+              -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
               -DBUILD_SHARED_LIBS:BOOL=${{ matrix.build_shared_libs }} \
-              -DICUB_USE_icub_firmware_shared:BOOL=ON \
-              -DENABLE_icubmod_skinWrapper:BOOL=ON \
-              -DENABLE_icubmod_sharedcan:BOOL=ON \
-              -DENABLE_icubmod_canmotioncontrol:BOOL=ON \
-              -DENABLE_icubmod_canBusAnalogSensor:BOOL=ON \
-              -DENABLE_icubmod_canBusInertialMTB:BOOL=ON \
-              -DENABLE_icubmod_canBusSkin:BOOL=ON \
-              -DENABLE_icubmod_canBusVirtualAnalogSensor:BOOL=ON \
-              -DENABLE_icubmod_embObjFTsensor:BOOL=ON \
-              -DENABLE_icubmod_embObjIMU:BOOL=ON \
-              -DENABLE_icubmod_embObjInertials:BOOL=ON \
-              -DENABLE_icubmod_embObjMais:BOOL=ON \
-              -DENABLE_icubmod_embObjMotionControl:BOOL=ON \
-              -DENABLE_icubmod_embObjBattery:BOOL=ON \
-              -DENABLE_icubmod_embObjSkin:BOOL=ON \
-              -DENABLE_icubmod_embObjMultipleFTsensors:BOOL=ON \
-              -DENABLE_icubmod_parametricCalibrator:BOOL=ON \
-              -DENABLE_icubmod_parametricCalibratorEth:BOOL=ON \
               -DBUILD_TESTING:BOOL=ON \
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
