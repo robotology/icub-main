@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         build_type: [Release]
-        os: [ubuntu-24.04, windows-latest]
+        os: [ubuntu-latest, windows-latest]
         build_shared_libs: [ON, OFF]
 
     steps:
@@ -34,7 +34,7 @@ jobs:
     # Remove apt repos that are known to break from time to time
     # See https://github.com/actions/virtual-environments/issues/323
     - name: Remove broken apt repos [Ubuntu]
-      if: matrix.os == 'ubuntu-24.04'
+      if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
@@ -56,7 +56,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
     - name: Dependencies [Ubuntu]
-      if: matrix.os == 'ubuntu-24.04'
+      if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         sudo apt update
@@ -65,7 +65,7 @@ jobs:
 
       # regression documented in https://github.com/robotology/robotology-superbuild/blob/master/cmake/RobotologySuperbuildLogic.cmake#L39-L64
     - name: Install Custom SWIG 4.2.1 [Ubuntu]
-      if: matrix.os == 'ubuntu-24.04'
+      if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         sudo apt remove swig
@@ -129,7 +129,7 @@ jobs:
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
 
     - name: Source-based Dependencies [Ubuntu]
-      if: matrix.os == 'ubuntu-24.04'
+      if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         # YCM
@@ -169,7 +169,7 @@ jobs:
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
     - name: Configure [Ubuntu]
-      if: matrix.os == 'ubuntu-24.04'
+      if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         mkdir -p build
@@ -181,7 +181,7 @@ jobs:
               -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
 
     - name: Enable python bindings on Ubuntu
-      if: matrix.os == 'ubuntu-24.04'
+      if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         cd build
