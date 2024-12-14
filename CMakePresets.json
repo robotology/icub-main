@@ -35,6 +35,7 @@
         "ENABLE_icubmod_embObjBattery": "ON",
         "ENABLE_icubmod_embObjFTsensor": "ON",
         "ENABLE_icubmod_embObjMultipleFTsensors": "ON",
+        "ENABLE_icubmod_embObjInertials": "ON",
         "ENABLE_icubmod_embObjIMU": "ON",
         "ENABLE_icubmod_embObjMais": "ON",
         "ENABLE_icubmod_embObjMotionControl": "ON",
