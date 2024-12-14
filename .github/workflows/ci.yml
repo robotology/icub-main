@@ -174,7 +174,7 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake --preset robot
+        cmake --preset robot \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install \
               -DBUILD_SHARED_LIBS:BOOL=${{ matrix.build_shared_libs }} \
               -DBUILD_TESTING:BOOL=ON \
