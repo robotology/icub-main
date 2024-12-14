@@ -1,0 +1,58 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 22,
+    "patch": 1
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default Configuration",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_icubmod_cartesiancontrollerclient": "ON",
+        "ENABLE_icubmod_cartesiancontrollerserver": "ON",
+        "ENABLE_icubmod_gazecontrollerclient": "ON"
+      }
+    },
+    {
+      "name": "robot",
+      "inherits": "default",
+      "displayName": "Robot Configuration",
+      "cacheVariables": {
+        "ICUB_USE_icub_firmware_shared": "ON",
+        "ENABLE_icubmod_skinWrapper": "ON",
+        "ENABLE_icubmod_sharedcan": "ON",
+        "ENABLE_icubmod_bcbBattery": "ON",
+        "ENABLE_icubmod_canmotioncontrol": "ON",
+        "ENABLE_icubmod_canBusAnalogSensor": "ON",
+        "ENABLE_icubmod_canBusInertialMTB": "ON",
+        "ENABLE_icubmod_canBusSkin": "ON",
+        "ENABLE_icubmod_canBusFtSensor": "ON",
+        "ENABLE_icubmod_canBusVirtualAnalogSensor": "ON",
+        "ENABLE_icubmod_embObjBattery": "ON",
+        "ENABLE_icubmod_embObjFTsensor": "ON",
+        "ENABLE_icubmod_embObjMultipleFTsensors": "ON",
+        "ENABLE_icubmod_embObjIMU": "ON",
+        "ENABLE_icubmod_embObjMais": "ON",
+        "ENABLE_icubmod_embObjMotionControl": "ON",
+        "ENABLE_icubmod_embObjSkin": "ON",
+        "ENABLE_icubmod_embObjPOS": "ON",
+        "ENABLE_icubmod_parametricCalibrator": "ON",
+        "ENABLE_icubmod_parametricCalibratorEth": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "robot",
+      "configurePreset": "robot"
+    }
+  ]
+}
