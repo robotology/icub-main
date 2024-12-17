@@ -514,18 +514,15 @@ typedef struct
 // LuGre friction model parameters
 typedef struct
 {
-    double Km;     // Motor torque constant (not strictly LuGre) but required to compute the net torque
-    double Kw;     // Viscous friction constant
-    double S0;     // LuGre bristle analogy eleastic constant
-    double S1;     // LuGre bristle analogy viscous constant
-    double Vth;    // Stribeck velocity threshold
-    double Fc_pos; // Coulomb friction constant (positive rotation)
-    double Fc_neg; // Coulomb friction constant (negative rotation)
-    double Fs_pos; // Stribeck friction constant (positive rotation)
-    double Fs_neg; // Stribeck friction constant (negative rotation)
-    double tbd0;   // for future use?
-    double tbd1;   // for future use?
-    double tbd2;   // for future use? 
+    double Km;     // Motor torque constant (not strictly LuGre) but required to compute the net torque [Nm/A]
+    double Kw;     // Viscous friction constant [Nm/(rad/s)]
+    double S0;     // LuGre bristle analogy eleastic constant [Nm/rad]
+    double S1;     // LuGre bristle analogy viscous constant [Nm/(rad/s)]
+    double Vth;    // Stribeck velocity threshold [rad/s]
+    double Fc_pos; // Coulomb friction constant (positive rotation) [Nm]
+    double Fc_neg; // Coulomb friction constant (negative rotation) [Nm]
+    double Fs_pos; // Stribeck friction constant (positive rotation) [Nm]
+    double Fs_neg; // Stribeck friction constant (negative rotation) [Nm]
 } lugreParameters_t;
 
 typedef struct

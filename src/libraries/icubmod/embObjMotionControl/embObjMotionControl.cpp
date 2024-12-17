@@ -958,12 +958,8 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     ////// LUGRE PARAMETERS
     if(! _mcparser->parseLugreGroup(config,_lugre_params))
     {
-        yWarning() << "embObjMC " << getBoardInfo() << "LUGRE section: missing, sensorless torque estimation disabled";
-        static const double NOT_AVAILABLE = -1.0;
-        for(j=0; j<_njoints; j++)
-        {
-            _lugre_params[j].Km = NOT_AVAILABLE;
-        }
+        yError() << "embObjMC " << getBoardInfo() << "LUGRE section: error detected in parameters syntax";
+        
     }
 
     ////// IMPEDANCE LIMITS DEFAULT VALUES (UNDER TESTING)
