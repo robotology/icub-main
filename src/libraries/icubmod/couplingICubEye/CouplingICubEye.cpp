@@ -37,7 +37,7 @@ bool CouplingICubEye::open(yarp::os::Searchable& config) {
         return false;
     }
 
-    if(!populateCouplingParameters) {
+    if(!populateCouplingParameters()) {
         yCError(COUPLINGICUBEYE) << "Error populating coupling parameters";
         return false;
     }
