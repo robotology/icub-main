@@ -37,9 +37,9 @@ jointNames          eyes_tilt l_eye_pan_joint r_eye_pan_joint
 
 [COUPLING]
 device              couplingICubEye 
-actuatedAxesNames   eyes_version eyes_vergence
-actuatedAxesPosMin  -30.0   0.0
-actuatedAxesPosMax  30.0    50.0
+actuatedAxesNames   eyes_tilt eyes_version eyes_vergence
+actuatedAxesPosMin  -30.0     -30.0   0.0
+actuatedAxesPosMax  30.0      30.0    50.0
 
 [LIMITS]
 jntPosMax           30.0    55.0    30.0
