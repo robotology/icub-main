@@ -40,6 +40,11 @@ bool CouplingICubHandMk2::open(yarp::os::Searchable& config) {
         return false;
     }
 
+    if(!populateCouplingParameters()) {
+        yCError(COUPLINGICUBHANDMK2) << "Error populating coupling parameters";
+        return false;
+    }
+
     yCDebug(COUPLINGICUBHANDMK2) << "Opening CouplingICubHandMk2"<<config.toString();
     return true;
 }
