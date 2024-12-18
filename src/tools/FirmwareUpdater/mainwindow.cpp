@@ -1097,14 +1097,14 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
 
     /*******************************************************************************/
     bool isMulticore = (eoboards_type2numberofcores(eoboards_ethtype2type(info.boardtype))) > 1 ? true : false;
-    QTreeWidgetItem *startUpNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Startup" << core->getProcessFromUint(info.processes.startup, isMulticore));
+    QTreeWidgetItem *startUpNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Startup" << core->getProcessFromUint(info.processes.startup, isMulticore, info.boardtype));
     bootStrapNode->addChild(startUpNode);
     bootStrapNode->setExpanded(true);
 
-    QTreeWidgetItem *defaultNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Default" << core->getProcessFromUint(info.processes.def2run, isMulticore));
+    QTreeWidgetItem *defaultNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Default" << core->getProcessFromUint(info.processes.def2run, isMulticore, info.boardtype));
     bootStrapNode->addChild(defaultNode);
 
-    QTreeWidgetItem *runningNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Running" << core->getProcessFromUint(info.processes.runningnow, isMulticore));
+    QTreeWidgetItem *runningNode = new QTreeWidgetItem(bootStrapNode, QStringList() << "Running" << core->getProcessFromUint(info.processes.runningnow, isMulticore, info.boardtype));
     bootStrapNode->addChild(runningNode);
 
     /*******************************************************************************/
@@ -1125,7 +1125,7 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
         propertiesNode->addChild(processNode);
         processNode->setExpanded(true);
 
-        QTreeWidgetItem *processType = new QTreeWidgetItem(processNode, QStringList() << "Type" << core->getProcessFromUint(pinfo.type, isMulticore));
+        QTreeWidgetItem *processType = new QTreeWidgetItem(processNode, QStringList() << "Type" << core->getProcessFromUint(pinfo.type, isMulticore, info.boardtype));
         processNode->addChild(processType);
 
         QTreeWidgetItem *processVersion = new QTreeWidgetItem(processNode, QStringList() << "Version" << QString("%1.%2").arg(pinfo.version.major).arg(pinfo.version.minor));
