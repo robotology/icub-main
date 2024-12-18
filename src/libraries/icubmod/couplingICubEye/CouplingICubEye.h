@@ -24,8 +24,7 @@ YARP_DECLARE_LOG_COMPONENT(COUPLINGICUBEYE)
 /**
  * Coupling law from https://icub-tech-iit.github.io/documentation/icub_kinematics/icub-vergence-version/icub-vergence-version/
  */
-/** TBD
- */
+
 class CouplingICubEye :  public yarp::dev::DeviceDriver,
                             public yarp::dev::ImplementJointCoupling,
                             public CouplingICubEye_ParamsParser {
