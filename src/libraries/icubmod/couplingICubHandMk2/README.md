@@ -2,7 +2,7 @@
 ## couplingICubHandMk2
 
 
-This is the device for [YARP](https://www.yarp.it/) for handling the coupling of the [hands mk5](https://icub-tech-iit.github.io/documentation/hands/hands_mk5_coupling/)
+This is the device for [YARP](https://www.yarp.it/) for handling the coupling of the hands mk2.
 
 ## Device documentation
 
@@ -27,41 +27,67 @@ Parameters used by this device are:
 |                      |     `actuatedAxesNames`        | list of strings     | Read / write | -       |   -           |  Yes            | Names of the actuated axes                                      |                                   |
 |                      |     `actuatedAxesPosMin`        | list of strings     | Read / write | -       |   -           |  Yes            | Actuated axes' position minimum                                      |                                   |
 |                      |     `actuatedAxesPosMax`        | list of strings     | Read / write | -       |   -           |  Yes            | Actuated axes' position maximum                                      |                                   |
-|  `COUPLING_PARAMS`                      |     -             | group         | Read / write | -       |   -           |  Yes            | The group containing the coupling params                                   |                                   |
-|                      |     `L0x`        | list of double     | Read / write | -       |   -           |  Yes            | x coordinate of the first end of the lever is applied                                      |           The lenght of the list must be 5                        |
-|                      |     `L0y`        | list of double     | Read / write | -       |   -           |  Yes            | y coordinate of the first end of the lever is applied                                      |           The lenght of the list must be 5                        |
-|                      |     `q2bias`        | list of double     | Read / write | -       |   -           |  Yes            | Angle of L1 - P1  when the finger is fully open           |           The lenght of the list must be 5                        |
-|                      |     `q1off`        | list of double     | Read / write | -       |   -           |  Yes            | Angle of P1 - P0  when the finger is fully closed           |           The lenght of the list must be 5                        |
-|                      |     `k`        | list of double     | Read / write | -       |   -           |  Yes            | Connecting rod length, \|L1-L0\|           |           The lenght of the list must be 5                        |
-|                      |     `d`        | list of double     | Read / write | -       |   -           |  Yes            | Distance between the two joints, P1 and P0           |           The lenght of the list must be 5                        |
-|                      |     `l`        | list of double     | Read / write | -       |   -           |  Yes            | Distance between L1 and P1            |           The lenght of the list must be 5                        |
-|                      |     `b`        | list of double     | Read / write | -       |   -           |  Yes            | Distance between L0 and P0             |           The lenght of the list must be 5                        |
 
 
 
 Configuration file using `.ini` format:
 
 ```ini
-device                couplingICubHandMk2
-jointNames l_thumb_add l_thumb_prox l_thumb_dist l_index_add l_index_prox l_index_dist l_middle_prox l_middle_dist l_ring_prox l_ring_dist l_pinkie_prox l_pinkie_dist
+disableImplicitNetworkWrapper
+yarpDeviceName left_hand_hardware_device
+
+jointNames (l_hand_thumb_0_joint l_hand_thumb_1_joint l_hand_thumb_2_joint l_hand_thumb_3_joint l_hand_index_0_joint l_hand_index_1_joint l_hand_index_2_joint l_hand_index_3_joint l_hand_middle_0_joint l_hand_middle_1_joint l_hand_middle_2_joint l_hand_middle_3_joint l_hand_ring_0_joint l_hand_ring_1_joint l_hand_ring_2_joint l_hand_ring_3_joint l_hand_little_0_joint l_hand_little_1_joint l_hand_little_2_joint l_hand_little_3_joint)
+
+min_stiffness (0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0)
+max_stiffness (1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0 1000.0)
+min_damping   (0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0)
+max_damping   (100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0  100.0)
+
+[TRAJECTORY_GENERATION]
+trajectory_type minimum_jerk
 
 [COUPLING]
-actuatedAxesNames     l_thumb_add l_thumb_oc l_index_add l_index_oc l_middle_oc l_ring_pinky_oc
-actuatedAxesPosMin       0.0 0.0 0.0 0.0 0.0 0.0
-actuatedAxesPosMax       90.0 82.1 15.0 90.0 90.0 90.0
+device                   couplingICubHandMk2
+actuatedAxesNames        (l_hand_finger l_thumb_oppose l_thumb_proximal l_thumb_distal l_index_proximal l_index_distal l_middle_proximal l_middle_distal l_pinky)
+actuatedAxesPosMin       (0.0  0.0  0.0  0.0   0.0  0.0   0.0  0.0   0.0)
+actuatedAxesPosMax       (60.0 90.0 90.0 180.0 90.0 180.0 90.0 180.0 270.0)
 
-[COUPLING_PARAMS]
-L0x     -0.00555 -0.0050 -0.0050 -0.0050  -0.0050
-L0y      0.00285  0.0040  0.0040  0.0040   0.0040
-q2bias     -180.0  -173.35  -173.35  -173.35  -170.54
-q1off       4.29    2.86    2.86    2.86     3.43
-k         0.0171 0.02918 0.02918 0.02918  0.02425
-d        0.02006 0.03004 0.03004 0.03004  0.02504
-l         0.0085 0.00604 0.00604 0.00604  0.00608
-b        0.00624  0.0064  0.0064  0.0064   0.0064
+[POSITION_CONTROL]
+controlUnits  metric_units
+controlLaw    joint_pid_gazebo_v1
+kp            (0.1   0.1   0.1   0.1  0.1   0.1   0.1   0.1  0.1   0.1   0.1   0.1  0.1   0.1   0.1   0.1  0.1   0.1   0.1   0.1)
+kd            (0.01  0.01  0.01  0.01 0.01  0.01  0.01  0.01 0.01  0.01  0.01  0.01 0.01  0.01  0.01  0.01 0.01  0.01  0.01  0.01)
+ki            (0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0)
+maxInt        (9999  9999  9999  9999 9999  9999  9999  9999 9999  9999  9999  9999 9999  9999  9999  9999 9999  9999  9999  9999)
+maxOutput     (9999  9999  9999  9999 9999  9999  9999  9999 9999  9999  9999  9999 9999  9999  9999  9999 9999  9999  9999  9999)
+shift         (0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0)
+ko            (0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0)
+stictionUp    (0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0)
+stictionDwn   (0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0)
 
+[VELOCITY_CONTROL]
+velocityControlImplementationType integrator_and_position_pid
+controlUnits  metric_units
+controlLaw    joint_pid_gazebo_v1
+kp            (8.726 8.726 8.726 5.235 8.726 8.726 8.726 5.235 8.726 8.726 8.726 8.726 8.726 8.726 8.726 8.726 8.726 8.726 8.726 8.726)
+kd            (0.035 0.035 0.035 0.002 0.035 0.035 0.035 0.002 0.035 0.035 0.035 0.035 0.035 0.035 0.035 0.035 0.035 0.035 0.035 0.035)
+ki            (0.002 0.002 0.002 0.0   0.002 0.002 0.002 0.0   0.002 0.002 0.002 0.002 0.002 0.002 0.002 0.002 0.002 0.002 0.002 0.002)
+maxInt        (9999  9999  9999  9999  9999 9999  9999  9999  9999 9999  9999  9999  9999  9999  9999  9999  9999  9999  9999  9999)
+maxOutput     (9999  9999  9999  9999  9999 9999  9999  9999  9999 9999  9999  9999  9999  9999  9999  9999  9999  9999  9999  9999)
+shift         (0.0   0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+ko            (0.0   0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+stictionUp    (0.0   0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+stictionDwn   (0.0   0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+
+[IMPEDANCE_CONTROL]
+controlUnits  metric_units
+controlLaw    joint_pid_gazebo_v1
+stiffness     (0.0   0.0   0.0   0.0 0.0   0.0   0.0   0.0 0.0   0.0   0.0   0.0 0.0   0.0   0.0   0.0 0.0   0.0   0.0   0.0)
+damping       (0.0   0.0   0.0   0.0 0.0   0.0   0.0   0.0 0.0   0.0   0.0   0.0 0.0   0.0   0.0   0.0 0.0   0.0   0.0   0.0)
 
 [LIMITS]
-jntPosMax   90.0  82.1  53.6  15.0  90.0  99.2  90.0  99.2  90.0  99.2  90.0  93.3
-jntPosMin    0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0
+jntPosMax (0.0    0.0 20.0 20.0 90.0 90.0 90.0 90.0 90.0 90.0 90.0 90.0 90.0 90.0 90.0 90.0 90.0 90.0 90.0 90.0)
+jntPosMin (-20.0  0.0  0.0 0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  90.0 90.0)
+jntVelMax (100.0  100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0 100.0)
+
 ```
