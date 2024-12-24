@@ -2484,7 +2484,7 @@ bool Parser::parseLugreGroup(yarp::os::Searchable &config,std::vector<lugreParam
     {
         for (int j = 0; j<_njoints; ++j)
         {
-            lugre[j].Km = 1.0;
+            lugre[j].Km = -1.0;
         }
         
         yWarning() <<"embObjMC BOARD " << _boardname << "fromConfig(): Warning: no LUGRE group found in config file, returning";
