@@ -135,7 +135,7 @@ bool CouplingICubEye::convertFromActuatedAxesToPhysicalJointsVel(const yarp::sig
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || actAxesPos.size() != nrOfActuatedAxes || physJointsVel.size() != nrOfPhysicalJoints || actAxesVel.size() != nrOfActuatedAxes) {
-        yCError(COUPLINGICUBEYE) << "convertFromPhysicalJointsToActuatedAxesVel: input or output vectors have wrong size";
+        yCError(COUPLINGICUBEYE) << "convertFromActuatedAxesToPhysicalJointsVel: input or output vectors have wrong size";
         return false;
     }
 
@@ -155,7 +155,7 @@ bool CouplingICubEye::convertFromActuatedAxesToPhysicalJointsAcc(const yarp::sig
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || actAxesPos.size() != nrOfActuatedAxes || physJointsAcc.size() != nrOfPhysicalJoints || actAxesAcc.size() != nrOfActuatedAxes) {
-        yCError(COUPLINGICUBEYE) << "convertFromPhysicalJointsToActuatedAxesAcc: input or output vectors have wrong size";
+        yCError(COUPLINGICUBEYE) << "convertFromActuatedAxesToPhysicalJointsAcc: input or output vectors have wrong size";
         return false;
     }
 
