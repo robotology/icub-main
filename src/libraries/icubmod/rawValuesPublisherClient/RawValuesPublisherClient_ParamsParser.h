@@ -8,17 +8,16 @@
 // This is an automatically generated file. Please do not edit it.
 // It will be re-generated if the cmake flag ALLOW_DEVICE_PARAM_PARSER_GERNERATION is ON.
 
-// Generated on: Fri Oct  4 16:28:45 2024
+// Generated on: Wed Jan  8 10:37:54 2025
 
 
 #ifndef RAWVALUESPUBLISHERCLIENT_PARAMSPARSER_H
 #define RAWVALUESPUBLISHERCLIENT_PARAMSPARSER_H
 
 #include <yarp/os/Searchable.h>
-// #include <yarp/dev/IDeviceDriverParams.h>
+#include <yarp/dev/IDeviceDriverParams.h>
 #include <string>
 #include <cmath>
-#include <vector>
 
 /**
 * This class is the parameters parser for class RawValuesPublisherClient.
@@ -42,13 +41,11 @@
 *
 */
 
-// class RawValuesPublisherClient_ParamsParser : public yarp::dev::IDeviceDriverParams
-// {
-class RawValuesPublisherClient_ParamsParser
+class RawValuesPublisherClient_ParamsParser : public yarp::dev::IDeviceDriverParams
 {
 public:
     RawValuesPublisherClient_ParamsParser();
-    ~RawValuesPublisherClient_ParamsParser() = default;
+    ~RawValuesPublisherClient_ParamsParser() override = default;
 
 public:
     const std::string m_device_classname = {"RawValuesPublisherClient"};
@@ -71,11 +68,11 @@ public:
     bool m_externalConnection = {false};
     std::string m_carrier = {"tcp"};
 
-    bool          parseParams(const yarp::os::Searchable & config);
-    std::string   getDeviceClassName() const { return m_device_classname; }
-    std::string   getDeviceName() const { return m_device_name; }
-    std::string   getDocumentationOfDeviceParams() const;
-    std::vector<std::string> getListOfParams() const;
+    bool          parseParams(const yarp::os::Searchable & config) override;
+    std::string   getDeviceClassName() const override { return m_device_classname; }
+    std::string   getDeviceName() const override { return m_device_name; }
+    std::string   getDocumentationOfDeviceParams() const override;
+    std::vector<std::string> getListOfParams() const override;
 };
 
 #endif
