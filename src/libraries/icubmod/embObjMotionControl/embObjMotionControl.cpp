@@ -1659,7 +1659,7 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
         {
             if(! _temperatureSensorErrorWatchdog.at(motor).isStarted())
             {
-                yError() << getBoardInfo() << "At timestamp" << yarp::os::Time::now() << "In motor" << motor << "cannot read Temperature from I2C. There might be cabling problems, TDB cable might be broken or sensor unreachable";
+                yWarning() << getBoardInfo() << "At time" << (_temperatureSensorErrorWatchdog.at(motor).getAbsoluteTime() - yarp::os::Time::now()) << "In motor" << motor << "cannot read Temperature from I2C. There might be cabling problems, TDB cable might be broken or sensor unreachable";
                 _temperatureSensorErrorWatchdog.at(motor).start();
             }
             else
@@ -1667,7 +1667,7 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
                 _temperatureSensorErrorWatchdog.at(motor).increment();
                 if( _temperatureSensorErrorWatchdog.at(motor).isExpired())
                 {
-                    yError()<< getBoardInfo() << "Motor" << motor << "failed to read" << _temperatureSensorErrorWatchdog.at(motor).getCount() << "temperature readings for" << yarp::os::Time::now() - _temperatureSensorErrorWatchdog.at(motor).getStartTime() << "seconds";
+                    yWarning()<< getBoardInfo() << "Motor" << motor << "failed to read" << _temperatureSensorErrorWatchdog.at(motor).getCount() << "temperature readings for" << yarp::os::Time::now() - _temperatureSensorErrorWatchdog.at(motor).getStartTime() << "seconds";
                     _temperatureSensorErrorWatchdog.at(motor).start();
                 }
             }
@@ -2282,12 +2282,6 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type14.offset                 = (int32_t)S_32(params.param5);
         calib.params.type14.calibrationZero        = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
 
-        yDebug() << "***** calib.params.type14.pwmlimit = " <<calib.params.type14.pwmlimit;
-        yDebug() << "***** calib.params.type14.final_pos = " <<calib.params.type14.final_pos;
-        yDebug() << "***** calib.params.type14.invertdirection = " <<calib.params.type14.invertdirection;
-        yDebug() << "***** calib.params.type14.rotation = " <<calib.params.type14.rotation;
-        yDebug() << "***** calib.params.type14.offset = " <<calib.params.type14.offset;
-        yDebug() << "***** calib.params.type14.calibrationZero = " <<calib.params.type14.calibrationZero;
         break;
 
     default:
@@ -4864,7 +4858,6 @@ bool embObjMotionControl::getTemperatureRaw(int m, double* val)
     eOmc_motor_status_basic_t status;
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
 
-    // if (_temperatureSensorsVector.at(m) == nullptr ||  (_temperatureSensorsVector.at(motor)->getType() == motor_temperature_sensor_none))
     *val = NAN;
     if (_temperatureSensorsVector.at(m)->getType() == motor_temperature_sensor_none)
         return true;
@@ -4876,11 +4869,6 @@ bool embObjMotionControl::getTemperatureRaw(int m, double* val)
         yError() << getBoardInfo() << "At timestamp" << yarp::os::Time::now() << "In motor" << m << "embObjMotionControl::getTemperatureRaw failed to complete getLocalValue()";
         return ret;
     }
-
-    // if (((double)status.mot_temperature) == temperatureErrorValue_s) //using -5000 as the default value on 2FOC for initializing the temperature. If cannot read from I2C the value cannot be updated
-    // {
-    //     return false;
-    // }
     
     *val = _temperatureSensorsVector.at(m)->convertRawToTempCelsius((double)status.mot_temperature);
     
@@ -4900,18 +4888,6 @@ bool embObjMotionControl::getTemperaturesRaw(double *vals)
 
 bool embObjMotionControl::getTemperatureLimitRaw(int m, double *temp)
 {
-    // eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_temperaturelimit);
-    // uint16_t size;
-    // eOmeas_temperature_t temperaturelimit = {0};
-    // *temp = 0;
-    // if(!askRemoteValue(protid, &temperaturelimit, size))
-    // {
-    //     yError() << "embObjMotionControl::getTemperatureLimitRaw() can't read temperature limits  for" << getBoardInfo() << " motor " << m;
-    //     return false;
-    // }
-
-    // *temp = (double) temperaturelimit;
-
     *temp= _temperatureLimits[m].warningTemperatureLimit;
 
     return true;
