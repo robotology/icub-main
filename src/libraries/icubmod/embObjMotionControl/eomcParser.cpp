@@ -2457,6 +2457,115 @@ bool Parser::parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impeda
 
 }
 
+/*
+typedef struct
+{
+    double Km;
+    double Kw;
+    double S0; 
+    double S1;
+    double Vth;
+    double Fc_pos;
+    double Fc_neg;
+    double Fs_pos;
+    double Fs_neg;
+    double tbd0;
+    double tbd1;
+    double tbd2;
+} lugreParameters_t;
+*/
+
+bool Parser::parseLugreGroup(yarp::os::Searchable &config,std::vector<lugreParameters_t> &lugre)
+{
+    Bottle lugreGroup;
+    lugreGroup=config.findGroup("LUGRE","LUGRE parameters");
+
+    if(lugreGroup.isNull())
+    {
+        for (int j = 0; j<_njoints; ++j)
+        {
+            lugre[j].Km = -1.0;
+        }
+        
+        yWarning() <<"embObjMC BOARD " << _boardname << "fromConfig(): Warning: no LUGRE group found in config file, returning";
+        return true;
+    }
+
+
+
+    if(_verbosewhenok)
+    {
+        yDebug()  << "embObjMC BOARD " << _boardname << ":fromConfig() detected that LUGRE parameters section is found";
+    }
+
+    if(!checkAndSetVectorSize(lugre, _njoints, "parseLugreGroup"))
+        return false;
+
+
+    int j=0;
+    Bottle xtmp;
+    if (!extractGroup(lugreGroup, xtmp, "Km", "torque constant parameter", _njoints))
+        return false;
+
+    for (j=0; j<_njoints; j++)
+        lugre[j].Km = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(lugreGroup, xtmp, "Kw", "viscous friction parameter", _njoints))
+        return false;
+
+    for (j=0; j<_njoints; j++)
+        lugre[j].Kw = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(lugreGroup, xtmp, "S0", "hysteresis position parameter", _njoints))
+        return false;
+
+    for (j=0; j<_njoints; j++)
+        lugre[j].S0 = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(lugreGroup, xtmp, "S1", "hysteresis velocity parameter", _njoints))
+        return false;
+        
+    for (j=0; j<_njoints; j++)
+        lugre[j].S1 = xtmp.get(j+1).asFloat64();
+        
+    if (!extractGroup(lugreGroup, xtmp, "Vth", "velocity threshold parameter", _njoints))
+        return false;
+
+    for (j=0; j<_njoints; j++)
+        lugre[j].Vth = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(lugreGroup, xtmp, "Fc_pos", "Coulomb force parameter (forward)", _njoints))
+        return false;
+                
+    for (j=0; j<_njoints; j++)
+        lugre[j].Fc_pos = xtmp.get(j+1).asFloat64();
+        
+    if (!extractGroup(lugreGroup, xtmp, "Fc_neg", "Coulomb force parameter (backward)", _njoints))
+        return false;
+                
+    for (j=0; j<_njoints; j++)
+        lugre[j].Fc_neg = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(lugreGroup, xtmp, "Fs_pos", "Stribeck force parameter (forward)", _njoints))
+        return false;
+                
+    for (j=0; j<_njoints; j++)
+        lugre[j].Fs_pos = xtmp.get(j+1).asFloat64();
+        
+    if (!extractGroup(lugreGroup, xtmp, "Fs_neg", "Stribeck force parameter (backward)", _njoints))
+        return false;
+                
+    for (j=0; j<_njoints; j++)
+        lugre[j].Fs_neg = xtmp.get(j+1).asFloat64();
+
+    if(_verbosewhenok)
+    {
+        yInfo() << "embObjMC BOARD " << _boardname << "LUGRE section: parameters successfully loaded";
+    }
+    return true;
+
+}
+
 bool Parser::convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
 {
     const char *t = fromstring.c_str();

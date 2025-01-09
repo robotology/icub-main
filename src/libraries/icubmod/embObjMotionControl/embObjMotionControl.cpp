@@ -125,6 +125,7 @@ bool embObjMotionControl::alloc(int nj)
     _joint2set.resize(nj);
     _timeouts.resize(nj);
     _impedance_params.resize(nj);
+    _lugre_params.resize(nj);
     _axesInfo.resize(nj);
     _jointEncs.resize(nj);
     _motorEncs.resize(nj);
@@ -141,7 +142,7 @@ bool embObjMotionControl::alloc(int nj)
         _temperatureExceededLimitWatchdog.at(i).setThreshold(txrate);
         _temperatureSensorErrorWatchdog.at(i).setThreshold(txrate);
     }
-
+    
     return true;
 }
 
@@ -216,6 +217,7 @@ embObjMotionControl::embObjMotionControl() :
     _joint2set(0),
     _timeouts(0),
     _impedance_params(0),
+    _lugre_params(0),
     _axesInfo(0),
     _jointEncs(0),
     _motorEncs(0),
@@ -953,6 +955,12 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         return false;
     }
 
+    ////// LUGRE PARAMETERS
+    if(! _mcparser->parseLugreGroup(config,_lugre_params))
+    {
+        yError() << "embObjMC " << getBoardInfo() << "LUGRE section: error detected in parameters syntax";
+        
+    }
 
     ////// IMPEDANCE LIMITS DEFAULT VALUES (UNDER TESTING)
     for(j=0; j<_njoints; j++)
@@ -1374,7 +1382,7 @@ bool embObjMotionControl::init()
         jconfig.impedance.damping   = (eOmeas_damping_t) _measureConverter->impN2S(_impedance_params[logico].damping, fisico);
         jconfig.impedance.stiffness = (eOmeas_stiffness_t) _measureConverter->impN2S(_impedance_params[logico].stiffness, fisico);
         jconfig.impedance.offset    = 0;
-
+        
         _cacheImpedance[logico].stiffness = jconfig.impedance.stiffness;
         _cacheImpedance[logico].damping   = jconfig.impedance.damping;
         _cacheImpedance[logico].offset    = jconfig.impedance.offset;
@@ -1461,6 +1469,16 @@ bool embObjMotionControl::init()
         motor_cfg.temperatureLimit = (eOmeas_temperature_t) S_16(_temperatureSensorsVector.at(logico)->convertTempCelsiusToRaw(_temperatureLimits.at(logico).hardwareTemperatureLimit)); //passing raw value not in degree
 	    motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMin, fisico ));
+
+        motor_cfg.LuGre_params.Km     = _lugre_params[logico].Km;
+        motor_cfg.LuGre_params.Kw     = _lugre_params[logico].Kw;
+        motor_cfg.LuGre_params.S0     = _lugre_params[logico].S0;
+        motor_cfg.LuGre_params.S1     = _lugre_params[logico].S1;
+        motor_cfg.LuGre_params.Vth    = _lugre_params[logico].Vth;
+        motor_cfg.LuGre_params.Fc_pos = _lugre_params[logico].Fc_pos;
+        motor_cfg.LuGre_params.Fc_neg = _lugre_params[logico].Fc_neg;
+        motor_cfg.LuGre_params.Fs_pos = _lugre_params[logico].Fs_pos;
+        motor_cfg.LuGre_params.Fs_neg = _lugre_params[logico].Fs_neg;
         
         yarp::dev::Pid tmp;
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_CURRENT, _cur_pids[logico].pid, fisico);
