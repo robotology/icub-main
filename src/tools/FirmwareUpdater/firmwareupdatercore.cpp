@@ -320,7 +320,7 @@ boardInfo2_t FirmwareUpdaterCore::getMoreDetails(int boardNum,QString *infoStrin
 
 }
 
-QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id, bool isMultiCore)
+QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id, bool isMultiCore, eObrd_ethtype_t boardtype)
 {
     switch (id) {
     case uprot_proc_Loader:
@@ -328,9 +328,19 @@ QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id, bool isMultiCore)
     case uprot_proc_Updater:
         return "eUpdater";
     case uprot_proc_Application00:
-        return isMultiCore ? "eApplication_core_0" : "eApplication";
+        if ((boardtype == eobrd_ethtype_amc) && isMultiCore)
+            return "eApplication_core_0";
+        else if ((boardtype == eobrd_ethtype_amcfoc) && isMultiCore)
+            return "app.yri" ;
+        else
+            return "eApplication";
     case uprot_proc_Application01:
-        return "eApplication_core_1";
+        if ((boardtype == eobrd_ethtype_amc) && isMultiCore)
+            return "eApplication_core_1";
+        else if ((boardtype == eobrd_ethtype_amcfoc) && isMultiCore)
+            return "app.mot" ;
+        else
+            return "eApplication_core_1";
     case uprot_proc_ApplPROGupdater:
         return "eApplPROGupdater";
     default:
