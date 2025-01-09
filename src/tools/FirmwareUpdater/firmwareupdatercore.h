@@ -56,7 +56,7 @@ public:
     bool goToMaintenance();
     bool eraseEthEprom();
     void eraseCanEprom();
-     QString getProcessFromUint(uint8_t id, bool isMultiCore = false, eObrd_ethtype_t boardtype = eobrd_ethtype_unknown);
+    QString getProcessFromUint(uint8_t id, bool isMultiCore = false, eObrd_ethtype_t boardtype = eobrd_ethtype_unknown);
 
     cDownloader *getDownloader();
 
