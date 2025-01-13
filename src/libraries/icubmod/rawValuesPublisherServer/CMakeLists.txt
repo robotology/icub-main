@@ -10,7 +10,7 @@ yarp_prepare_plugin(rawValuesPublisherServer
                     TYPE RawValuesPublisherServer
                     INCLUDE RawValuesPublisherServer.h
                     EXTRA_CONFIG
-                        WRAPPER=rawValuesPublisherServer
+                    WRAPPER=rawValuesPublisherServer
                     DEFAULT OFF
                     GENERATE_PARSER)
 
