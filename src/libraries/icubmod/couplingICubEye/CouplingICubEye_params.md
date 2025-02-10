@@ -2,8 +2,7 @@
 |:---------------:|:------------------:|:---------------:|:-------:|:--------------:|:--------:|:----------------------------------------------:|:--------------------------------:|
 |                 | jointNames         | vector<string>  | -       | -              |  Yes     | Names of the physical joints                   |                                  |
 | LIMITS          | jntPosMin          | vector<double>  | -       | -              |  Yes     | Physical joints' position minimum             |                                  |
-| LIMITS          | jntPosMax          | vector<double>  | -       | -              |  Yes     | Physical joints' position maximum             |                                  |
-| COUPLING        | device             | string          | -       | -              |  Yes     | Name of the device that handles the coupling   |                                  |
+| LIMITS          | jntPosMax          | vector<double>  | -       | -              |  Yes     | Physical joints' position maximum             |                                  |                                |
 | COUPLING        | actuatedAxesNames  | vector<string>  | -       | -              |  Yes     | Names of the actuated axes                     |                                  |
 | COUPLING        | actuatedAxesPosMin | vector<double>  | -       | -              |  Yes     | Actuated axes' position minimum                |                                  |
 | COUPLING        | actuatedAxesPosMax | vector<double>  | -       | -              |  Yes     | Actuated axes' position maximum                |                                  |

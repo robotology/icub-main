@@ -8,7 +8,7 @@
 // This is an automatically generated file. Please do not edit it.
 // It will be re-generated if the cmake flag ALLOW_DEVICE_PARAM_PARSER_GERNERATION is ON.
 
-// Generated on: Wed Dec  4 09:08:59 2024
+// Generated on: Mon Feb 10 15:12:03 2025
 
 
 #include "CouplingICubEye_ParamsParser.h"
@@ -31,7 +31,6 @@ std::vector<std::string> CouplingICubEye_ParamsParser::getListOfParams() const
     params.push_back("jointNames");
     params.push_back("LIMITS::jntPosMin");
     params.push_back("LIMITS::jntPosMax");
-    params.push_back("COUPLING::device");
     params.push_back("COUPLING::actuatedAxesNames");
     params.push_back("COUPLING::actuatedAxesPosMin");
     params.push_back("COUPLING::actuatedAxesPosMax");
@@ -144,24 +143,6 @@ bool      CouplingICubEye_ParamsParser::parseParams(const yarp::os::Searchable &
             return false;
         }
         prop_check.unput("LIMITS::jntPosMax");
-    }
-
-    //Parser of parameter COUPLING::device
-    {
-        yarp::os::Bottle sectionp;
-        sectionp = config.findGroup("COUPLING");
-        if (sectionp.check("device"))
-        {
-            m_COUPLING_device = sectionp.find("device").asString();
-            yCInfo(CouplingICubEyeParamsCOMPONENT) << "Parameter 'COUPLING::device' using value:" << m_COUPLING_device;
-        }
-        else
-        {
-            yCError(CouplingICubEyeParamsCOMPONENT) << "Mandatory parameter 'COUPLING::device' not found!";
-            yCError(CouplingICubEyeParamsCOMPONENT) << "Description of the parameter: Name of the device that handles the coupling";
-            return false;
-        }
-        prop_check.unput("COUPLING::device");
     }
 
     //Parser of parameter COUPLING::actuatedAxesNames
@@ -302,14 +283,13 @@ std::string      CouplingICubEye_ParamsParser::getDocumentationOfDeviceParams() 
     doc = doc + std::string("'jointNames': Names of the physical joints\n");
     doc = doc + std::string("'LIMITS::jntPosMin': Physical joints' position minimum\n");
     doc = doc + std::string("'LIMITS::jntPosMax': Physical joints' position maximum\n");
-    doc = doc + std::string("'COUPLING::device': Name of the device that handles the coupling\n");
     doc = doc + std::string("'COUPLING::actuatedAxesNames': Names of the actuated axes\n");
     doc = doc + std::string("'COUPLING::actuatedAxesPosMin': Actuated axes' position minimum\n");
     doc = doc + std::string("'COUPLING::actuatedAxesPosMax': Actuated axes' position maximum\n");
     doc = doc + std::string("\n");
     doc = doc + std::string("Here are some examples of invocation command with yarpdev, with all params:\n");
-    doc = doc + " yarpdev --device couplingICubEye --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>\n";
+    doc = doc + " yarpdev --device couplingICubEye --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>\n";
     doc = doc + std::string("Using only mandatory params:\n");
-    doc = doc + " yarpdev --device couplingICubEye --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::device <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>\n";
+    doc = doc + " yarpdev --device couplingICubEye --jointNames <mandatory_value> --LIMITS::jntPosMin <mandatory_value> --LIMITS::jntPosMax <mandatory_value> --COUPLING::actuatedAxesNames <mandatory_value> --COUPLING::actuatedAxesPosMin <mandatory_value> --COUPLING::actuatedAxesPosMax <mandatory_value>\n";
     doc = doc + std::string("=============================================\n\n");    return doc;
 }
