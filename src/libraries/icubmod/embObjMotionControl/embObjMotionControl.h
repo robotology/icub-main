@@ -60,6 +60,7 @@ using namespace std;
 #include "measuresConverter.h"
 
 #include "mcEventDownsampler.h"
+#include "ethParser.h"
 
 
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
@@ -109,6 +110,10 @@ typedef struct
     bool pwmIsLimited;          /** set to true if pwm is limited */
 }behaviour_flags_t;
 
+typedef struct // this struct is used to store the configuration of flags and value for maintenance mode
+{
+    bool enableSkipRecalibration;   /** if true, the joint will not be recalibrated when the yri is restarted */
+} maintenanceModeCfg_t;
 
 class Watchdog
 {
@@ -285,6 +290,7 @@ private:
     double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
     double *                                _deadzone;
     std::vector<eomc::kalmanFilterParams_t> _kalman_params;  /** Kalman filter parameters */
+    eomc::maintenanceModeCfg_t              _maintenanceModeCfg; /** contains the configuration for maintenance mode */
 
     std::vector<std::unique_ptr<eomc::ITemperatureSensor>> _temperatureSensorsVector;  
     
@@ -319,6 +325,8 @@ private:
     
     // event downsampler
     mced::mcEventDownsampler* event_downsampler;
+
+    eth::parser::boardData bdata;
 
 #ifdef VERIFY_ROP_SETIMPEDANCE
     uint32_t *impedanceSignature;
