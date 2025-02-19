@@ -718,6 +718,17 @@ void MotionControlParser::parseInfo()
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
 
+        case eoerror_value_MC_motor_tdb_not_reading:
+        {
+            uint16_t joint_num = m_dnginfo.param16;
+
+            m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
+            
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d))",
+                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num);
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
         case EOERROR_VALUE_DUMMY:
         {
             m_dnginfo.baseInfo.finalMessage.append(": unrecognised eoerror_category_MotionControl error value.");
@@ -859,7 +870,39 @@ void HwErrorParser::parseInfo()
                                         number_of_errors);
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
+
+        case eoerror_value_HW_amo_encoder_status0:
+        {
+            uint8_t joint_num = m_dnginfo.param16 & 0x00ff;
+            uint32_t nonius_track_errors = (m_dnginfo.param64 & 0xffffffff00000000) >> 32;
+            uint32_t master_track_errors = m_dnginfo.param64 & 0x00000000ffffffff;
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) Number of poor-level or clipping errors in 10 seconds for nonius track is: %d and for master track is: %d)", 
+                                        m_dnginfo.baseMessage.c_str(), 
+                                        m_dnginfo.baseInfo.axisName.c_str(), 
+                                        joint_num,
+                                        nonius_track_errors,
+                                        master_track_errors);
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
         
+        case eoerror_value_HW_amo_encoder_status1:
+        {
+            uint8_t joint_num = m_dnginfo.param16 & 0x00ff;
+            uint16_t internal_crc_errors                     = (m_dnginfo.param64 & 0xffff000000000000) >> 48;
+            uint16_t i2c_comm_errors                         = (m_dnginfo.param64 & 0x0000ffff00000000) >> 32;
+            uint16_t nonius_period_consistency_errors        = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
+            uint16_t eccessive_input_signal_frequency_errors = (m_dnginfo.param64 & 0x000000000000ffff);
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) Number of error in 10 seconds as internal crc errors: %d, i2c communication errors: %d, nonius track period consistency errors: %d, eccessive input signal frequency errors: %d)", 
+                                        m_dnginfo.baseMessage.c_str(), 
+                                        m_dnginfo.baseInfo.axisName.c_str(), 
+                                        joint_num,
+                                        internal_crc_errors,
+                                        i2c_comm_errors,
+                                        nonius_period_consistency_errors,
+                                        eccessive_input_signal_frequency_errors);
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
         case EOERROR_VALUE_DUMMY:
         {
             m_dnginfo.baseInfo.finalMessage.append(": unrecognised eoerror_category_HardWare error value.");

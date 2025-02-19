@@ -1677,7 +1677,7 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
         {
             if(! _temperatureSensorErrorWatchdog.at(motor).isStarted())
             {
-                yWarning() << getBoardInfo() << "At time" << (_temperatureSensorErrorWatchdog.at(motor).getAbsoluteTime() - yarp::os::Time::now()) << "In motor" << motor << "cannot read Temperature from I2C. There might be cabling problems, TDB cable might be broken or sensor unreachable";
+                yWarning() << getBoardInfo() << "At time" << (yarp::os::Time::now() - _temperatureSensorErrorWatchdog.at(motor).getAbsoluteTime()) << "In motor" << motor << "cannot read Temperature from I2C. There might be cabling problems, TDB cable might be broken or sensor unreachable";
                 _temperatureSensorErrorWatchdog.at(motor).start();
             }
             else
