@@ -42,7 +42,7 @@ public:
 };
 
 
-typedef struct
+struct sensorInfo_t
 {
     std::string name;
     std::string framename;
@@ -50,7 +50,7 @@ typedef struct
     uint8_t state;
     double timestamp;
     double conversionFactor{1.0};  // raw to metric measure
-} sensorInfo_t;
+};
 
 class yarp::dev::SensorsData
 {
