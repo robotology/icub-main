@@ -698,6 +698,7 @@ bool parametricCalibratorEth::calibrate()
 
         //4) check calibration result
         std::list<int> failedJoints = {};
+        std::list<int>::iterator fji = failedJoints.begin();
         if(checkCalibrateJointEnded(*Bit, failedJoints )) //check calibration on entire set
         {
             yDebug() << deviceName  << ": set" << setOfJoint_idx  << ": Calibration ended, going to zero!";
@@ -705,14 +706,14 @@ bool parametricCalibratorEth::calibrate()
         else    // keep pid safe for failed joints and go on
         {
             yError() <<  deviceName  << ": set" << setOfJoint_idx << ": Detected errors during calibration! Idling failed joints and set on those safe PWM limits";
-            for ((const auto &fj : failedJoints) && (!abortCalib))
+            for (fji = failedJoints.begin(); fji != failedJoints.end() && !abortCalib; fji++)
             {
                 auto it = std::find_if(currentSetList.begin(), currentSetList.end(),
-                                       [joint](int id) { return id == fj; });
+                                       [fji](int id) { return id == *fji; });
                 
-                if ((it != currentSetList.end())) 
+                if (it != currentSetList.end()) 
                 {
-                    yDebug() << deviceName << ": joint # " << fj << " failed the calibration. Idling it and setting safe PWM limits";
+                    yDebug() << deviceName << ": joint # " << *fji << " failed the calibration. Idling it and setting safe PWM limits";
                     iAmp->setPWMLimit((*it), limited_max_pwm[(*it)]);
                     iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE
                 }
@@ -776,20 +777,21 @@ bool parametricCalibratorEth::calibrate()
         {
             yError() <<  deviceName  << ": set" << setOfJoint_idx  << ": some axis got timeout while reaching zero position. Idling failed joints and set on those safe PWM limits";
             // set the failed joints to idle and set safe PWM limits
-            for ((const auto &fj : failedJoints) && (!abortCalib))
+            // for (const auto &fj : failedJoints && !abortCalib)
+            for (fji = failedJoints.begin(); fji != failedJoints.end() && !abortCalib; fji++)
             {
                 auto it = std::find_if(currentSetList.begin(), currentSetList.end(),
-                                       [joint](int id) { return id == fj; });
+                                       [fji](int id) { return id == *fji; });
                 
                 if (it != currentSetList.end()) 
                 {
-                    yDebug() << deviceName << ": joint # " << fj << " failed reaching zero position. Idling it and setting safe PWM limits";
+                    yDebug() << deviceName << ": joint # " << *fji << " failed reaching zero position. Idling it and setting safe PWM limits";
                     iAmp->setPWMLimit((*it), limited_max_pwm[(*it)]);
                     iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE
                 }
                 else
                 {
-                    yDebug() << deviceName << ": joint # " << fj << " reached zero position. Setting original max PWM limits";
+                    yDebug() << deviceName << ": joint # " << *fji << " reached zero position. Setting original max PWM limits";
                     iAmp->setPWMLimit((*it),original_max_pwm[(*it)]);
                 }
             }
