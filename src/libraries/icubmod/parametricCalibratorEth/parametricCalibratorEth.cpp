@@ -698,7 +698,6 @@ bool parametricCalibratorEth::calibrate()
 
         //4) check calibration result
         std::list<int> failedJoints = {};
-        std::list<int>::iterator fji = failedJoints.begin();
         if(checkCalibrateJointEnded(*Bit, failedJoints )) //check calibration on entire set
         {
             yDebug() << deviceName  << ": set" << setOfJoint_idx  << ": Calibration ended, going to zero!";
@@ -706,12 +705,12 @@ bool parametricCalibratorEth::calibrate()
         else    // keep pid safe for failed joints and go on
         {
             yError() <<  deviceName  << ": set" << setOfJoint_idx << ": Detected errors during calibration! Idling failed joints and set on those safe PWM limits";
-            for (fji = failedJoints.begin(); fji != failedJoints.end() && !abortCalib; fji++)
+            for (lit = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++)
             {
-                auto it = std::find_if(currentSetList.begin(), currentSetList.end(),
-                                       [fji](int id) { return id == *fji; });
+                auto it = std::find_if(failedJoints.begin(), failedJoints.end(),
+                                       [lit](int id) { return id == *lit; });
                 
-                if (it != currentSetList.end()) 
+                if (it != failedJoints.end()) 
                 {
                     yDebug() << deviceName << ": joint # " << *fji << " failed the calibration. Idling it and setting safe PWM limits";
                     iAmp->setPWMLimit((*it), limited_max_pwm[(*it)]);
@@ -752,12 +751,6 @@ bool parametricCalibratorEth::calibrate()
         for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
             goneToZero &= checkGoneToZeroThreshold(*lit, failedJoints);
-            if (!goneToZero) 
-            {
-                yDebug() << deviceName << ": joint # " << *lit << " failed to go to zero position";
-                failedJoints.push_back(*lit);
-            }
-            
         }
         
         if(abortCalib)
@@ -778,13 +771,12 @@ bool parametricCalibratorEth::calibrate()
         {
             yError() <<  deviceName  << ": set" << setOfJoint_idx  << ": some axis got timeout while reaching zero position. Idling failed joints and set on those safe PWM limits";
             // set the failed joints to idle and set safe PWM limits
-            // for (const auto &fj : failedJoints && !abortCalib)
-            for (fji = failedJoints.begin(); fji != failedJoints.end() && !abortCalib; fji++)
+            for (lit = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++)
             {
-                auto it = std::find_if(currentSetList.begin(), currentSetList.end(),
-                                       [fji](int id) { return id == *fji; });
+                auto it = std::find_if(failedJoints.begin(), failedJoints.end(),
+                                       [lit](int id) { return id == *lit; });
                 
-                if (it != currentSetList.end()) 
+                if (it != failedJoints.end()) 
                 {
                     yDebug() << deviceName << ": joint # " << *fji << " failed reaching zero position. Idling it and setting safe PWM limits";
                     iAmp->setPWMLimit((*it), limited_max_pwm[(*it)]);
@@ -957,7 +949,12 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j, std::list<int> &fa
         yWarning() << deviceName << ": checkGoneToZeroThreshold, joint " << j << " is disabled on user request";
         return true;
     }
-    if (skipCalibration) return false;
+    if (skipCalibration)
+    {
+        yWarning() << deviceName << ": checkGoneToZeroThreshold, joint " << j << " is set with safe PWM limits on user request (skipCalibration flag is on)";
+        failedJoints.push_back(j);
+        return false; 
+    }
 
     // wait.
     bool finished = false;
@@ -1013,6 +1010,11 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j, std::list<int> &fa
             break;
         }
         Time::delay(0.5);
+    }
+
+    if(!finished)
+    {
+        failedJoints.push_back(j); // adding joint that failed goingToZero for any reason to the list of failed joints. Specific warning given before.
     }
     return finished;
 }
