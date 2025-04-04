@@ -2573,7 +2573,6 @@ bool Parser::parseMaintenanceModeGroup(yarp::os::Searchable &config, bool &skipR
     Bottle &maintenanceGroup=config.findGroup("MAINTENANCE");
     if (maintenanceGroup.isNull())
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " detected that Group MAINTENANCE is not found in configuration file. Setting default values.";
         skipRecalibrationEnabled = false;
         return true;
     }
@@ -2588,6 +2587,7 @@ bool Parser::parseMaintenanceModeGroup(yarp::os::Searchable &config, bool &skipR
     {
         if (!skip_recalibration.isBool())
         {
+            yError() << "embObjMotionControl::open() detected that skipRecalibration bool param is different from accepted values (true / false). Assuming false";
             skipRecalibrationEnabled = false;
         }
         else

@@ -267,14 +267,13 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     Value checkSkipReCalib = config.findGroup("MAINTENANCE").find("skipRecalibration");
     if(checkSkipReCalib.isNull())
     {
-        yWarning() << deviceName << ": skipRecalibration bool param not found. Assuming false";
         skipReCalibration = false;
     }
     else
     {
         if(!checkSkipReCalib.isBool())
         {
-            yWarning() << deviceName << ": skipRecalibration bool param is different from accepted values (true / false). Assuming false";
+            yError() << deviceName << ": skipRecalibration bool param is different from accepted values (true / false). Assuming false";
             skipReCalibration = false;
         }
         else
@@ -712,7 +711,7 @@ bool parametricCalibratorEth::calibrate()
                 
                 if (it != failedJoints.end()) 
                 {
-                    yDebug() << deviceName << ": joint # " << *fji << " failed the calibration. Idling it and setting safe PWM limits";
+                    yDebug() << deviceName << ": joint # " << *lit << " failed the calibration. Idling it and setting safe PWM limits";
                     iAmp->setPWMLimit((*it), limited_max_pwm[(*it)]);
                     // stop calibration for expired timeout
                     iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE or NOT_CONFIGURED
@@ -778,13 +777,13 @@ bool parametricCalibratorEth::calibrate()
                 
                 if (it != failedJoints.end()) 
                 {
-                    yDebug() << deviceName << ": joint # " << *fji << " failed reaching zero position. Idling it and setting safe PWM limits";
+                    yDebug() << deviceName << ": joint # " << *lit << " failed reaching zero position. Idling it and setting safe PWM limits";
                     iAmp->setPWMLimit((*it), limited_max_pwm[(*it)]);
                     iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE
                 }
                 else
                 {
-                    yDebug() << deviceName << ": joint # " << *fji << " reached zero position. Setting original max PWM limits";
+                    yDebug() << deviceName << ": joint # " << *lit << " reached zero position. Setting original max PWM limits";
                     iAmp->setPWMLimit((*it),original_max_pwm[(*it)]);
                 }
             }
