@@ -715,7 +715,8 @@ bool parametricCalibratorEth::calibrate()
                 {
                     yDebug() << deviceName << ": joint # " << *fji << " failed the calibration. Idling it and setting safe PWM limits";
                     iAmp->setPWMLimit((*it), limited_max_pwm[(*it)]);
-                    iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE
+                    // stop calibration for expired timeout
+                    iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE or NOT_CONFIGURED
                 }
             }
             Bit++;
