@@ -711,8 +711,7 @@ bool parametricCalibratorEth::calibrate()
                 
                 if (it != failedJoints.end()) 
                 {
-                    yDebug() << deviceName << ": joint # " << *lit << " failed the calibration. Idling it and setting safe PWM limits";
-                    iAmp->setPWMLimit((*it), limited_max_pwm[(*it)]);
+                    yError() << deviceName << ": joint # " << *lit << " failed the calibration. Idling it and keeping safe PWM limits";
                     // stop calibration for expired timeout
                     iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE or NOT_CONFIGURED
                 }
@@ -777,8 +776,7 @@ bool parametricCalibratorEth::calibrate()
                 
                 if (it != failedJoints.end()) 
                 {
-                    yDebug() << deviceName << ": joint # " << *lit << " failed reaching zero position. Idling it and setting safe PWM limits";
-                    iAmp->setPWMLimit((*it), limited_max_pwm[(*it)]);
+                    yError() << deviceName << ": joint # " << *lit << " failed reaching zero position. Idling it and keeping safe PWM limits";
                     iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE
                 }
                 else
