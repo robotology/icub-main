@@ -140,6 +140,7 @@ parametricCalibratorEth::parametricCalibratorEth() :
     isCalibrated(false),
     skipCalibration(false),
     clearHwFault(false),
+    skipReCalibration(false),
     n_joints(0),
     timeout_goToZero(nullptr),
     timeout_calibration(nullptr),
@@ -231,13 +232,11 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
         }
     }
 
-//    yWarning() <<  deviceName.c_str() << ": useRawEncoderData is " << useRawEncoderData;
-
     if(useRawEncoderData)
     {
         skipCalibration = true;
     }
-    else
+    else // Check skipCalibration flag, the robot will skip the calibration process
     {
         // Check useRawEncoderData = skip root calibration -- use with care
         Value checkSkipCalib = config.findGroup("GENERAL").find("skipCalibration");
@@ -261,6 +260,30 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
                     yWarning() << deviceName << ": BE CAREFUL USING THE ROBOT IN THIS CONFIGURATION! See 'skipCalibration' param in config file";
                 } 
            }
+        }
+    }
+
+    // Check skipRecalibration flag in MAINTENANCE group, if true the rebot will skip the recalibration at each yri restart. First time calibration needs to be triggered
+    Value checkSkipReCalib = config.findGroup("MAINTENANCE").find("skipRecalibration");
+    if(checkSkipReCalib.isNull())
+    {
+        skipReCalibration = false;
+    }
+    else
+    {
+        if(!checkSkipReCalib.isBool())
+        {
+            yError() << deviceName << ": skipRecalibration bool param is different from accepted values (true / false). Assuming false";
+            skipReCalibration = false;
+        }
+        else
+        {
+            skipReCalibration = checkSkipReCalib.asBool();
+            if(skipReCalibration)
+            {
+                yWarning() << deviceName << ": skipping recalibration at each yri restart!! This option was set in  MAINTENANCE group in general.xml file.";
+                yWarning() << deviceName << ": BE CAREFUL USING THE ROBOT IN THIS CONFIGURATION! See 'skipRecalibration' param in config file";
+            }
         }
     }
 
@@ -643,21 +666,6 @@ bool parametricCalibratorEth::calibrate()
             continue;
         }
         
-        //2) if calibration needs to go to hardware limits, enable joint
-        //VALE: i can add this cycle for calib on eth because it does nothing,
-        //      because enablePid doesn't send command because joints are not calibrated
-
-        /*for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
-        {
-            if (type[*lit]==0 ||
-                type[*lit]==2 ||
-                type[*lit]==4 ) 
-            {
-                yDebug() << "In calibration " <<  deviceName  << ": enabling joint " << *lit << " to test hardware limit";
-                iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
-            }
-        }*/
-        
         Time::delay(0.1f);
         if(abortCalib)
         {
@@ -670,7 +678,7 @@ bool parametricCalibratorEth::calibrate()
         {
             // Enable amp moved into EMS class;
             // Here we just call the calibration procedure
-            calibrateJoint((*lit));
+            calibrateJoint((*lit)); // just set the parameters
         }
 
         Time::delay(0.1f);
@@ -678,7 +686,7 @@ bool parametricCalibratorEth::calibrate()
         for(lit  = currentSetList.begin(); lit != currentSetList.end(); lit++)      //for each joint of set
         {
             iEncoders->getEncoder((*lit), &currPos[(*lit)]);
-            yDebug() <<  deviceName  << ": set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values AFTER calib: " << currPos[(*lit)];
+            yDebug() <<  deviceName  << ": set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values just before starting low-level calibration: " << currPos[(*lit)];
         }
 
         if(abortCalib)
@@ -688,34 +696,29 @@ bool parametricCalibratorEth::calibrate()
         }
 
         //4) check calibration result
-        if(checkCalibrateJointEnded((*Bit)) ) //check calibration on entire set
+        std::list<int> failedJoints = {};
+        if(checkCalibrateJointEnded(*Bit, failedJoints )) //check calibration on entire set
         {
-            yDebug() <<  deviceName  << ": set" << setOfJoint_idx  << ": Calibration ended, going to zero!\n";
+            yDebug() << deviceName  << ": set" << setOfJoint_idx  << ": Calibration ended, going to zero!";
         }
-        else    // keep pid safe  and go on
+        else    // keep pid safe for failed joints and go on
         {
-            yError() <<  deviceName  << ": set" << setOfJoint_idx << ": Calibration went wrong! Disabling axes and keeping safe pid limit\n";
-
-            for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
+            yError() <<  deviceName  << ": set" << setOfJoint_idx << ": Detected errors during calibration! Idling failed joints and set on those safe PWM limits";
+            for (lit = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++)
             {
-               iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
+                auto it = std::find_if(failedJoints.begin(), failedJoints.end(),
+                                       [lit](int id) { return id == *lit; });
+                
+                if (it != failedJoints.end()) 
+                {
+                    yError() << deviceName << ": joint # " << *lit << " failed the calibration. Idling it and keeping safe PWM limits";
+                    // stop calibration for expired timeout
+                    iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE or NOT_CONFIGURED
+                }
             }
             Bit++;
             continue; //go to next set
         }
-
-        // 5) if calibration finish with success enable disabled joints in order to move them to zero
-        /*for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
-        {
-            // if the joint han not been enabled at point 1, now i enable it 
-            //iAmps->enableAmp((*lit));
-            if (type[*lit]!=0 &&
-                type[*lit]!=2 &&
-                type[*lit]!=4 ) 
-            {
-                iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
-            }
-        }*/
 
         if(abortCalib)
         {
@@ -728,7 +731,8 @@ bool parametricCalibratorEth::calibrate()
         for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
             // Manda in Zero
-            goToStartupPosition((*lit));
+            goToStartupPosition((*lit)); 
+            
         }
         
         if(abortCalib)
@@ -740,11 +744,13 @@ bool parametricCalibratorEth::calibrate()
 
         //7) check joints are in position
         bool goneToZero = true;
+        failedJoints.clear(); // I can reuse the same list --> I'm in a new phase of the calibration 
+        
         for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
-            goneToZero &= checkGoneToZeroThreshold(*lit);
+            goneToZero &= checkGoneToZeroThreshold(*lit, failedJoints);
         }
-
+        
         if(abortCalib)
         {
             Bit++;
@@ -753,18 +759,31 @@ bool parametricCalibratorEth::calibrate()
         
         if(goneToZero)
         {
-            yDebug() <<  deviceName  << ": set" << setOfJoint_idx  << ": Reached zero position!\n";
+            yDebug() <<  deviceName  << ": set" << setOfJoint_idx  << ": Reached zero position!";
             for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
             {
                 iAmp->setPWMLimit((*lit),original_max_pwm[(*lit)]);
             }
         }
-        else          // keep pid safe and go on
+        else // keep pid safe for failed joints and go on
         {
-            yError() <<  deviceName  << ": set" << setOfJoint_idx  << ": some axis got timeout while reaching zero position... disabling this set of axes\n";
-            for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
+            yError() <<  deviceName  << ": set" << setOfJoint_idx  << ": some axis got timeout while reaching zero position. Idling failed joints and set on those safe PWM limits";
+            // set the failed joints to idle and set safe PWM limits
+            for (lit = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++)
             {
-                iControlMode->setControlMode((*lit),VOCAB_CM_IDLE);
+                auto it = std::find_if(failedJoints.begin(), failedJoints.end(),
+                                       [lit](int id) { return id == *lit; });
+                
+                if (it != failedJoints.end()) 
+                {
+                    yError() << deviceName << ": joint # " << *lit << " failed reaching zero position. Idling it and keeping safe PWM limits";
+                    iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE
+                }
+                else
+                {
+                    yDebug() << deviceName << ": joint # " << *lit << " reached zero position. Setting original max PWM limits";
+                    iAmp->setPWMLimit((*it),original_max_pwm[(*it)]);
+                }
             }
         }
         
@@ -797,13 +816,14 @@ bool parametricCalibratorEth::calibrateJoint(int j)
     return b;
 }
 
-bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
+bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set, std::list<int> &failedJoints)
 {
     bool calibration_ok = true;
     int timeout = 0;
 
     std::list<int>::iterator lit;
     std::list<int>::iterator lend;
+    failedJoints.clear();
 
     lit = set.begin();
     lend = set.end();
@@ -826,6 +846,7 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
             if (timeout > timeout_calibration[*lit])
             {
                 yError() << deviceName << ": Timeout while calibrating joint" << (*lit);
+                failedJoints.push_back(*lit);
                 calibration_ok = false;
                 lit++;
                 timeout = 0;
@@ -889,6 +910,7 @@ bool parametricCalibratorEth::goToStartupPosition(int j)
     }
 
     bool ret = true;
+    int mode = 0;
     if (disableStartupPosCheck[j])
     {
         yWarning() << deviceName << ": goToZero, joint " << j << " is disabled on user request";
@@ -896,6 +918,14 @@ bool parametricCalibratorEth::goToStartupPosition(int j)
     }
 
     if (abortCalib) return true;
+    iControlMode->getControlMode(j, &mode);
+
+    if((mode == VOCAB_CM_IDLE) && (skipReCalibration))
+    {
+        yWarning() << deviceName << ": goToZero, joint " << j << " is idle and skipRecalibration is requested, skipping!";
+        return true;
+    }
+    
     yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << legacyStartupPosition.positions[j] << \
                                 "desired speed: " << legacyStartupPosition.velocities[j] <<" )";
     ret = iPosition->setRefSpeed(j, legacyStartupPosition.velocities[j]);
@@ -903,7 +933,7 @@ bool parametricCalibratorEth::goToStartupPosition(int j)
     return ret;
 }
 
-bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
+bool parametricCalibratorEth::checkGoneToZeroThreshold(int j, std::list<int> &failedJoints)
 {
     if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
     {
@@ -916,7 +946,12 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
         yWarning() << deviceName << ": checkGoneToZeroThreshold, joint " << j << " is disabled on user request";
         return true;
     }
-    if (skipCalibration) return false;
+    if (skipCalibration)
+    {
+        yWarning() << deviceName << ": checkGoneToZeroThreshold, joint " << j << " is set with safe PWM limits on user request (skipCalibration flag is on)";
+        failedJoints.push_back(j);
+        return false; 
+    }
 
     // wait.
     bool finished = false;
@@ -935,6 +970,12 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
         iControlMode->getControlMode(j, &mode);
         iPids->getPidOutput(VOCAB_PIDTYPE_POSITION,j, &output);
         
+        if((skipReCalibration) && (mode == VOCAB_CM_IDLE))
+        {
+            yDebug() << deviceName << ": checkGoneToZeroThreshold, joint " << j << " is IDLE and skipRecalibration is requested, return completed!";
+            finished = true;
+            break;
+        }
         delta = fabs(angj-legacyStartupPosition.positions[j]);
         yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" , \
                deviceName.c_str(), j, angj, legacyStartupPosition.positions[j], delta, startupPosThreshold[j], output, yarp::os::Vocab32::decode(mode).c_str());
@@ -966,6 +1007,11 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
             break;
         }
         Time::delay(0.5);
+    }
+
+    if(!finished)
+    {
+        failedJoints.push_back(j); // adding joint that failed goingToZero for any reason to the list of failed joints. Specific warning given before.
     }
     return finished;
 }

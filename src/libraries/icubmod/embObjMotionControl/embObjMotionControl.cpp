@@ -266,7 +266,9 @@ embObjMotionControl::embObjMotionControl() :
     _last_position_move_time = NULL;
 
     behFlags.useRawEncoderData = false;
-    behFlags.pwmIsLimited     = false;
+    behFlags.pwmIsLimited      = false;
+    
+    _maintenanceModeCfg.enableSkipRecalibration = false; 
 
     std::string tmp = yarp::conf::environment::get_string("ETH_VERBOSEWHENOK");
     if (tmp != "")
@@ -362,7 +364,12 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
     // add specific info about this device ...
-
+    
+    if(false == eth::parser::read(config, bdata))
+    {
+        yError() << getBoardInfo() << "embObjMotionControl::open(): eth::parser fails to read board configuration data from xml file";
+        return false;
+    }
 
     if(NULL == parser)
     {
@@ -1273,7 +1280,11 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         return false;
     }
 
-
+    if (!_mcparser->parseMaintenanceModeGroup(config, _maintenanceModeCfg.enableSkipRecalibration))// in general maintenance group
+    {
+        return false;
+    }
+    
     // second step of configuration
     if(false == fromConfig_Step2(config))
     {
@@ -1505,7 +1516,25 @@ bool embObjMotionControl::init()
     // invia la configurazione del controller  //
     /////////////////////////////////////////////
 
-    //to be done
+    protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_controller, 0, eoprot_tag_mc_controller_config);
+
+    eOmc_controller_config_t controller_cfg = {0};
+    memset(&controller_cfg, 0, sizeof(eOmc_controller_config_t));
+    controller_cfg.durationofctrlloop = (uint32_t)bdata.settings.txconfig.cycletime;
+    controller_cfg.enableskiprecalibration = _maintenanceModeCfg.enableSkipRecalibration;
+
+    if(false == res->setcheckRemoteValue(protid, &controller_cfg, 10, 0.010, 0.050))
+    {
+        yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for the controller " << "in "<< getBoardInfo();
+        return false;
+    }
+    else
+    {
+        if(behFlags.verbosewhenok)
+        {
+            yDebug() << "embObjMotionControl::init() correctly configured controller config " << "in "<< getBoardInfo();
+        }
+    }
 
     ///////////////////////////////////////////////
     // intialize the map of the rawValuesVectors //
@@ -2445,22 +2474,21 @@ bool embObjMotionControl::calibrateAxisWithParamsRaw(int j, unsigned int type, d
 bool embObjMotionControl::calibrationDoneRaw(int axis)
 {
     bool result = false;
-    eOenum08_t temp = 0;
-    uint16_t size = 0;
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_core_modes_controlmodestatus);
-    if(false == askRemoteValue(id32, &temp, size))
+    eOmc_joint_status_core_t jcore = {0};
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_core);
+    if(!res->getLocalValue(id32, &jcore))
     {
-        yError () << "Failure of askRemoteValue() inside embObjMotionControl::doneRaw(axis=" << axis << ") for " << getBoardInfo();
+        yError () << "Failure of getLocalValue() inside embObjMotionControl::calibrationDoneRaw(axis=" << axis << ") for " << getBoardInfo();
         return false;
     }
 
-    eOmc_controlmode_t type = (eOmc_controlmode_t) temp;
+    eOmc_controlmode_t type = (eOmc_controlmode_t) jcore.modes.controlmodestatus;
 
 
     // if the control mode is no longer a calibration type, it means calibration ended
     if (eomc_controlmode_idle == type)
     {
-        result = false;
+        result = (_maintenanceModeCfg.enableSkipRecalibration) ? true : false;
     }
     else if (eomc_controlmode_calib == type)
     {
@@ -2468,22 +2496,22 @@ bool embObjMotionControl::calibrationDoneRaw(int axis)
     }
     else if (eomc_controlmode_hwFault == type)
     {
-        yError("unable to complete calibration: joint %d in 'hw_fault status' inside doneRaw() function", axis);
+        yError("unable to complete calibration: joint %d in 'hw_fault status' inside calibrationDoneRaw() function", axis);
         result = false;
     }
     else if (eomc_controlmode_notConfigured == type)
     {
-        yError("unable to complete calibration: joint %d in 'not_configured' status inside doneRaw() function", axis);
+        yError("unable to complete calibration: joint %d in 'not_configured' status inside calibrationDoneRaw() function", axis);
         result = false;
     }
     else if (eomc_controlmode_unknownError == type)
     {
-        yError("unable to complete calibration: joint %d in 'unknownError' status inside doneRaw() function", axis);
+        yError("unable to complete calibration: joint %d in 'unknownError' status inside calibrationDoneRaw() function", axis);
         result = false;
     }
     else if (eomc_controlmode_configured == type)
     {
-        yError("unable to complete calibration: joint %d in 'configured' status inside doneRaw() function", axis);
+        yError("unable to complete calibration: joint %d in 'configured' status inside calibrationDoneRaw() function", axis);
         result = false;
     }
     else

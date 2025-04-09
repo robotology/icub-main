@@ -109,8 +109,8 @@ private:
     bool calibrate();
     bool calibrateJoint(int j);
     bool goToStartupPosition(int j);
-    bool checkCalibrateJointEnded(std::list<int> set);
-    bool checkGoneToZeroThreshold(int j);
+    bool checkCalibrateJointEnded(std::list<int> set, std::list<int> &failedJoints);
+    bool checkGoneToZeroThreshold(int j, std::list<int> &failedJoints);
     bool checkHwFault(); 
 
 
@@ -144,6 +144,7 @@ private:
     int    *disableHomeAndPark;
     int    *disableStartupPosCheck;
     bool    clearHwFault;
+    bool    skipReCalibration;
 
     int    *timeout_goToZero;
     int    *timeout_calibration;

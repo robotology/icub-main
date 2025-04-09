@@ -654,7 +654,7 @@ public:
     bool parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLimits_t> &rotorsLimits);
     bool parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &couplingInfo);
     bool parseMotioncontrolVersion(yarp::os::Searchable &config, int &version);
-    bool parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncoderData, bool  &pwmIsLimited );
+    bool parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncoderData, bool  &pwmIsLimited);
     bool isVerboseEnabled(yarp::os::Searchable &config);
     bool parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<axisInfo_t> &axisInfo);
     bool parseEncoderFactor(yarp::os::Searchable &config, double encoderFactor[]);
@@ -666,6 +666,7 @@ public:
     bool parseLugreGroup(yarp::os::Searchable &config,std::vector<lugreParameters_t> &lugre);
     bool parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found);
     bool parseKalmanFilterParams(yarp::os::Searchable &config, std::vector<kalmanFilterParams_t> &kalmanFilterParams);
+    bool parseMaintenanceModeGroup(yarp::os::Searchable &config, bool &skipRecalibrationEnabled);
 };
 
 }}}; //close namespaces

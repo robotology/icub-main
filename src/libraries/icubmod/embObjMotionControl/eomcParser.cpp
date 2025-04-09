@@ -1994,7 +1994,7 @@ bool Parser::isVerboseEnabled(yarp::os::Searchable &config)
     return ret;
 }
 
-bool Parser::parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncoderData, bool  &pwmIsLimited )
+bool Parser::parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncoderData, bool  &pwmIsLimited)
 {
 
     // Check useRawEncoderData = do not use calibration data!
@@ -2564,6 +2564,43 @@ bool Parser::parseLugreGroup(yarp::os::Searchable &config,std::vector<lugreParam
     }
     return true;
 
+}
+
+
+bool Parser::parseMaintenanceModeGroup(yarp::os::Searchable &config, bool &skipRecalibrationEnabled)
+{
+    // Extract group MaintenanceModeGroup
+    Bottle &maintenanceGroup=config.findGroup("MAINTENANCE");
+    if (maintenanceGroup.isNull())
+    {
+        skipRecalibrationEnabled = false;
+        return true;
+    }
+    
+    // Check skipRecalibrationEnabled = do not recalibrate joint at yarprobointerface restart! Used by low level motion controller
+    Value skip_recalibration = maintenanceGroup.find("skipRecalibration");
+    if (skip_recalibration.isNull())
+    {
+        skipRecalibrationEnabled = false;
+    }
+    else
+    {
+        if (!skip_recalibration.isBool())
+        {
+            yError() << "embObjMotionControl::open() detected that skipRecalibration bool param is different from accepted values (true / false). Assuming false";
+            skipRecalibrationEnabled = false;
+        }
+        else
+        {
+            skipRecalibrationEnabled = skip_recalibration.asBool();
+            if(skipRecalibrationEnabled)
+            {
+                yWarning() << "embObjMotionControl::open() detected that skipRecalibration is requested! Be careful  See 'skipRecalibration' param in config file";
+                yWarning() << "THE ROBOT WILL SKIP THE RECALIBRATION IN THIS CONFIGURATION!";
+            }
+        }
+    }
+    return true;
 }
 
 bool Parser::convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
