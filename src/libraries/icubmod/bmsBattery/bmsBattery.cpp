@@ -52,7 +52,7 @@ bool BmsBattery::open(yarp::os::Searchable& config)
     if (!driver.isValid())
     {
         yError() << "Error opening PolyDriver check parameters";
-#ifndef DEBUG_TEST 
+#ifndef DEBUG_TEST
         return false;
 #endif
     }
@@ -62,7 +62,7 @@ bool BmsBattery::open(yarp::os::Searchable& config)
     if (!pSerial)
     {
         yError("Error opening serial driver. Device not available");
-#ifndef DEBUG_TEST 
+#ifndef DEBUG_TEST
         return false;
 #endif
     }
@@ -150,7 +150,7 @@ void BmsBattery::run()
                 timeinfo = localtime(&rawtime);
                 //battery_data.timestamp = asctime(timeinfo);
                 battery_voltage = double(battery_voltage) / 1024 * 66;
-                battery_current = (double(battery_current) - 512) / 128 * 20; //+- 60 is the maximum current that the sensor can read. 128+512 is the value of the AD 
+                battery_current = (double(battery_current) - 512) / 128 * 20; //+- 60 is the maximum current that the sensor can read. 128+512 is the value of the AD
                 //when the current is 20A.
                 battery_charge = double(battery_charge) / 100; // the value coming from the BCS board goes from 0 to 100%
                 reading_ok = true;
@@ -175,44 +175,44 @@ void BmsBattery::run()
     }
 }
 
-bool BmsBattery::getBatteryVoltage(double &voltage)
+ReturnValue BmsBattery::getBatteryVoltage(double &voltage)
 {
     lock_guard<mutex> lck(mtx);
     voltage = battery_voltage;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool BmsBattery::getBatteryCurrent(double &current)
+ReturnValue BmsBattery::getBatteryCurrent(double &current)
 {
     lock_guard<mutex> lck(mtx);
     current = battery_current;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool BmsBattery::getBatteryCharge(double &charge)
+ReturnValue BmsBattery::getBatteryCharge(double &charge)
 {
     lock_guard<mutex> lck(mtx);
     charge = battery_charge;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool BmsBattery::getBatteryStatus(Battery_status &status)
+ReturnValue BmsBattery::getBatteryStatus(Battery_status &status)
 {
     //yError("Not yet implemented");
-    return false;
+    return  YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
-bool BmsBattery::getBatteryTemperature(double &temperature)
+ReturnValue BmsBattery::getBatteryTemperature(double &temperature)
 {
     //yError("Not yet implemented");
-    return false;
+    return  YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
-bool BmsBattery::getBatteryInfo(string &info)
+ReturnValue BmsBattery::getBatteryInfo(string &info)
 {
     lock_guard<mutex> lck(mtx);
     info = battery_info;
-    return true;
+    return ReturnValue_ok;
 }
 
 void BmsBattery::threadRelease()
