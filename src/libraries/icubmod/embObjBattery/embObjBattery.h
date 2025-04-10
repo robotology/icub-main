@@ -40,7 +40,7 @@ class CanBatteryData
     double timeStamp_{0};
     std::string sensorName_{};
     eObrd_type_t sensorType_{eobrd_unknown};
-    
+
 
     void decode(eOas_battery_timedvalue_t *data, double timestamp);
     bool operator==(const CanBatteryData &other) const;
@@ -63,12 +63,12 @@ class yarp::dev::embObjBattery : public yarp::dev::DeviceDriver, public eth::Iet
     bool update(eOprotID32_t id32, double timestamp, void *rxdata) override;
 
     // IBattery
-    bool getBatteryVoltage(double &voltage) override;
-    bool getBatteryCurrent(double &current) override;
-    bool getBatteryCharge(double &charge) override;
-    bool getBatteryStatus(Battery_status &status) override;
-    bool getBatteryTemperature(double &temperature) override;
-    bool getBatteryInfo(std::string &battery_info) override;
+    ReturnValue getBatteryVoltage(double &voltage) override;
+    ReturnValue getBatteryCurrent(double &current) override;
+    ReturnValue getBatteryCharge(double &charge) override;
+    ReturnValue getBatteryStatus(Battery_status &status) override;
+    ReturnValue getBatteryTemperature(double &temperature) override;
+    ReturnValue getBatteryInfo(std::string &battery_info) override;
 
     virtual double calculateBoardTime(eOabstime_t current);
 
