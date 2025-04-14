@@ -4320,6 +4320,63 @@ int cDownloader::strain_calibrate_offset2_strain1safer (int bus, int target_id, 
     return 0;
 }
 
+int cDownloader::initSINGLEBOARD(int canbus, int canaddress, icubCanProto_boardType_t boardtype)
+{
+
+
+    if (m_idriver == NULL)
+    {
+        if (_verbose) yError("Driver not ready\n");
+        
+        return -1;
+    }
+
+    int retries = 5; // Number of retries
+    for (int attempt = 0; attempt < retries; ++attempt)
+    {
+        txBuffer[0].setId(build_id(ID_MASTER, canaddress));
+        txBuffer[0].setLen(1);
+        txBuffer[0].getData()[0] = ICUBCANPROTO_BL_BROADCAST; // Discovery command
+        set_bus(txBuffer[0], canbus);
+
+        int ret = m_idriver->send_message(txBuffer, 1);
+        if (ret == 0)
+        {
+            if (_verbose) yError("Unable to send discovery message\n");
+            return -1;
+        }
+
+        drv_sleep(5.0); // Wait for response
+
+        int read_messages = m_idriver->receive_message(rxBuffer, 10, 5.0);
+
+        // Add the debug logging here
+        for (int i = 0; i < read_messages; ++i)
+        {
+            yDebug("Received message ID: 0x%x, Data: [%x, %x, %x, %x, %x, %x, %x, %x]",
+                   rxBuffer[i].getId(),
+                   rxBuffer[i].getData()[0], rxBuffer[i].getData()[1], rxBuffer[i].getData()[2],
+                   rxBuffer[i].getData()[3], rxBuffer[i].getData()[4], rxBuffer[i].getData()[5],
+                   rxBuffer[i].getData()[6], rxBuffer[i].getData()[7]);
+        }
+
+
+
+        for (int i = 0; i < read_messages; ++i)
+        {
+
+            if ((rxBuffer[i].getId() >> 4 & 0x0F) == canaddress)
+            {
+                if (_verbose) yInfo("Board %d found on CAN bus %d\n", canaddress, canbus);
+                return 0; // Board found
+            }
+        }
+    }
+
+    if (_verbose) yError("Board %d not found on CAN bus %d after %d attempts\n", canaddress, canbus, retries);
+    return -1; // Board not found
+}
+
 
 
 

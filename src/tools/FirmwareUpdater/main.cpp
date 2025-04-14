@@ -1485,80 +1485,152 @@ int setBoardToMaintenance(FirmwareUpdaterCore *core,QString device,QString id,QS
     return 0;
 }
 
-
-int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file,bool eraseEEprom)
+int programCanDevice(FirmwareUpdaterCore *core, QString device, QString id, QString board, QString canLine, QString canId, QString file, bool eraseEEprom)
 {
     QString retString;
-    if(device.contains("ETH")){
-        int boards = core->connectTo(device,id);
-        if(boards > 0){
+
+    // Log the input parameters
+    qDebug() << "programCanDevice called with:";
+    qDebug() << "  device:" << device;
+    qDebug() << "  id:" << id;
+    qDebug() << "  board:" << board;
+    qDebug() << "  canLine:" << canLine;
+    qDebug() << "  canId:" << canId;
+    qDebug() << "  file:" << file;
+    qDebug() << "  eraseEEprom:" << eraseEEprom;
+
+    if (device.contains("ETH")) {
+        int boards = core->connectTo(device, id);
+        if (boards > 0) {
             char board_ipaddr[16];
-            for(int i=0;i<core->getEthBoardList().size();i++){
+            for (int i = 0; i < core->getEthBoardList().size(); i++) {
                 EthBoard ethBoard = core->getEthBoardList()[i];
                 snprintf(board_ipaddr, sizeof(board_ipaddr), "%s", ethBoard.getIPV4string().c_str());
 
-                if(board.contains(board_ipaddr)){
-                    core->setSelectedEthBoard(i,true);
-                    QList <sBoard> canBoards = core->getCanBoardsFromEth(board,&retString,canLine.toInt(),true);
-                    if(canBoards.count() > 0){
+                if (board.contains(board_ipaddr)) {
+                    core->setSelectedEthBoard(i, true);
+
+                    // Log the retrieved CAN boards
+                    QList<sBoard> canBoards = core->getCanBoardsFromEth(board, &retString, canLine.toInt(), true);
+                    qDebug() << "Retrieved CAN boards count:" << canBoards.count();
+
+                    if (canBoards.count() > 0) {
                         int selectedCount = 0;
-                        for(int j=0;j<canBoards.count();j++){
+                        for (int j = 0; j < canBoards.count(); j++) {
                             sBoard b = canBoards.at(j);
-                            if(b.bus == canLine.toInt() && b.pid == canId.toInt()){
+                            if (b.bus == canLine.toInt() && b.pid == canId.toInt()) {
                                 b.selected = true;
                                 b.eeprom = eraseEEprom;
-                                canBoards.replace(j,b);
+                                canBoards.replace(j, b);
                                 selectedCount++;
                             }
-
                         }
-                        if(selectedCount > 0){
-                            core->setSelectedCanBoards(canBoards,board);
-                            bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, board);
-                            if(verbosity >= 1) qDebug() << retString;
+
+                        // Log the number of selected boards
+                        qDebug() << "Selected CAN boards count:" << selectedCount;
+
+                        if (selectedCount > 0) {
+                            core->setSelectedCanBoards(canBoards, board);
+
+                            // Log before calling uploadCanApplication
+                            qDebug() << "Calling uploadCanApplication with file:" << file;
+                            // bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, board);
+                            QList<sBoard> resultCanBoards; // Declare resultCanBoards
+                            bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, board, canLine.toInt(), &resultCanBoards);
+                            if (verbosity >= 1) qDebug() << retString;
                             return ret ? 0 : -1;
-                        }else{
-                            if(verbosity >= 1) qDebug() << "No board selected";
+                        } else {
+                            if (verbosity >= 1) qDebug() << "No board selected";
                             return -1;
                         }
-                    }else{
-                        if(verbosity >= 1) qDebug() << retString;
+                    } else {
+                        if (verbosity >= 1) qDebug() << retString;
                         return -1;
                     }
-
                 }
             }
-
-        }
-    }else{
-        QList <sBoard> canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
-        if(canBoards.count() > 0){
-            int selectedCount = 0;
-            for(int j=0;j<canBoards.count();j++){
-                sBoard b = canBoards.at(j);
-                if(b.bus == canLine.toInt() && b.pid == canId.toInt()){
-                    b.selected = true;
-                    b.eeprom = eraseEEprom;
-                    canBoards.replace(j,b);
-                    selectedCount++;
-                }
-            }
-            if(selectedCount > 0){
-                core->setSelectedCanBoards(canBoards,device,id.toInt());
-                bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, device, id.toInt());
-                if(verbosity >= 1) qDebug() << retString;
-                return ret ? 0 : -1;
-            }else{
-                if(verbosity >= 1) qDebug() << "No board selected";
-                return -1;
-            }
-        }else{
-            if(verbosity >= 1) qDebug() << retString;
-            return -1;
         }
     }
     return -1;
 }
+
+
+
+
+
+// int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file,bool eraseEEprom)
+// {
+//     QString retString;
+//     if(device.contains("ETH")){
+//         int boards = core->connectTo(device,id);
+//         if(boards > 0){
+//             char board_ipaddr[16];
+//             for(int i=0;i<core->getEthBoardList().size();i++){
+//                 EthBoard ethBoard = core->getEthBoardList()[i];
+//                 snprintf(board_ipaddr, sizeof(board_ipaddr), "%s", ethBoard.getIPV4string().c_str());
+
+//                 if(board.contains(board_ipaddr)){
+//                     core->setSelectedEthBoard(i,true);
+//                     QList <sBoard> canBoards = core->getCanBoardsFromEth(board,&retString,canLine.toInt(),true);
+//                     if(canBoards.count() > 0){
+//                         int selectedCount = 0;
+//                         for(int j=0;j<canBoards.count();j++){
+//                             sBoard b = canBoards.at(j);
+//                             if(b.bus == canLine.toInt() && b.pid == canId.toInt()){
+//                                 b.selected = true;
+//                                 b.eeprom = eraseEEprom;
+//                                 canBoards.replace(j,b);
+//                                 selectedCount++;
+//                             }
+
+//                         }
+//                         if(selectedCount > 0){
+//                             core->setSelectedCanBoards(canBoards,board);
+//                             bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, board);
+//                             if(verbosity >= 1) qDebug() << retString;
+//                             return ret ? 0 : -1;
+//                         }else{
+//                             if(verbosity >= 1) qDebug() << "No board selected";
+//                             return -1;
+//                         }
+//                     }else{
+//                         if(verbosity >= 1) qDebug() << retString;
+//                         return -1;
+//                     }
+
+//                 }
+//             }
+
+//         }
+//     }else{
+//         QList <sBoard> canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
+//         if(canBoards.count() > 0){
+//             int selectedCount = 0;
+//             for(int j=0;j<canBoards.count();j++){
+//                 sBoard b = canBoards.at(j);
+//                 if(b.bus == canLine.toInt() && b.pid == canId.toInt()){
+//                     b.selected = true;
+//                     b.eeprom = eraseEEprom;
+//                     canBoards.replace(j,b);
+//                     selectedCount++;
+//                 }
+//             }
+//             if(selectedCount > 0){
+//                 core->setSelectedCanBoards(canBoards,device,id.toInt());
+//                 bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, device, id.toInt());
+//                 if(verbosity >= 1) qDebug() << retString;
+//                 return ret ? 0 : -1;
+//             }else{
+//                 if(verbosity >= 1) qDebug() << "No board selected";
+//                 return -1;
+//             }
+//         }else{
+//             if(verbosity >= 1) qDebug() << retString;
+//             return -1;
+//         }
+//     }
+//     return -1;
+// }
 
 
 int programEthDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString file)

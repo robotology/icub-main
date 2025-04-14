@@ -36,6 +36,7 @@ public:
     boardInfo2_t getMoreDetails(int boardNum = EthMaintainer::ipv4OfAllSelected, QString *infoString = NULL, eOipv4addr_t *address = NULL);
     QList<sBoard> getCanBoardsFromEth(QString address, QString *retString, int canID = CanPacket::everyCANbus, bool force = false);
     QList<sBoard> getCanBoardsFromDriver(QString driver, int networkId, QString *retString, bool force = false);
+    QList<sBoard> getCanBoardsFromEthSINGLEONE(QString address, int canID, int canAddress, QString *retString);
     void blinkEthBoards();
     QString getEthBoardInfo(int index);
     QString getEthBoardAddress(int index);
