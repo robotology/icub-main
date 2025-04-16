@@ -263,10 +263,10 @@ void FirmwareUpdaterCore::setSelectedCanBoards(QList <sBoard> selectedBoards,QSt
     this->canBoards = selectedBoards;
 
 
-    qDebug() << "setSelectedCanBoards called with:";
-    qDebug() << "  address:" << address;
-    qDebug() << "  deviceId:" << deviceId;
-    qDebug() << "  canBoards count:" << canBoards.count();
+    // qDebug() << "setSelectedCanBoards called with:";
+    // qDebug() << "  address:" << address;
+    // qDebug() << "  deviceId:" << deviceId;
+    // qDebug() << "  canBoards count:" << canBoards.count();
 
     foreach (sBoard b, selectedBoards) {
         qDebug() << "Selecting CAN board with Bus: " << selectedBoards[0].bus
@@ -499,10 +499,10 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
     unsigned int remoteAddr;
     unsigned int localAddr;
 
-    qDebug() << "getCanBoardsFromEth called with:";
-    qDebug() << "  address:" << address;
-    qDebug() << "  canID:" << canID;
-    qDebug() << "  force:" << force;
+    // qDebug() << "getCanBoardsFromEth called with:";
+    // qDebug() << "  address:" << address;
+    // qDebug() << "  canID:" << canID;
+    // qDebug() << "  force:" << force;
 
 
 
@@ -554,17 +554,17 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
         return canBoards;
     }
 
-    for (int i = 0; i < downloader.board_list_size; i++) {
-        qDebug() << "Discovered Board: Bus " << downloader.board_list[i].bus
-                 << " ID: " << downloader.board_list[i].pid
-                 << " Status: " << downloader.board_list[i].status;
-    }
+    // for (int i = 0; i < downloader.board_list_size; i++) {
+    //     qDebug() << "Discovered Board: Bus " << downloader.board_list[i].bus
+    //              << " ID: " << downloader.board_list[i].pid
+    //              << " Status: " << downloader.board_list[i].status;
+    // }
 
     for(int i=0; i<downloader.board_list_size;i++){
         canBoards.append(downloader.board_list[i]);
     }
     currentAddress = address;
-    qDebug() << "getCanBoardsFromEth returning" << canBoards.count() << "boards.";
+    // qDebug() << "getCanBoardsFromEth returning" << canBoards.count() << "boards.";
 
     //downloader.stopdriver();
     mutex.unlock();
@@ -1088,14 +1088,14 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename, QString *result
 
 //    }
     // Debug inputs
-    qDebug() << "uploadCanApplication called with:";
-    qDebug() << "  filename:" << filename;
-    qDebug() << "  address:" << address;
-    qDebug() << "  deviceId:" << deviceId;
-    qDebug() << "  resultCanBoards is null:" << (resultCanBoards == nullptr);
-    if (resultCanBoards != nullptr) {
-        qDebug() << "  resultCanBoards size:" << resultCanBoards->size();
-    }
+    // qDebug() << "uploadCanApplication called with:";
+    // qDebug() << "  filename:" << filename;
+    // qDebug() << "  address:" << address;
+    // qDebug() << "  deviceId:" << deviceId;
+    // qDebug() << "  resultCanBoards is null:" << (resultCanBoards == nullptr);
+    // if (resultCanBoards != nullptr) {
+    //     qDebug() << "  resultCanBoards size:" << resultCanBoards->size();
+    // }
 
 
 
@@ -1119,14 +1119,14 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename, QString *result
 
 
 
-    QString res;
-    QList<sBoard> boards;
+    // QString res;
+    // QList<sBoard> boards;
 
-    if(!address.isEmpty() && deviceId == -1){
-        getCanBoardsFromEth(address,&res);
-    }else{
-        getCanBoardsFromDriver("SOCKETCAN",deviceId,&res);
-    }
+    // if(!address.isEmpty() && deviceId == -1){
+    //     getCanBoardsFromEth(address,&res);
+    // }else{
+    //     getCanBoardsFromDriver("SOCKETCAN",deviceId,&res);
+    // }
 
 
     if (resultCanBoards->size() == 1)
