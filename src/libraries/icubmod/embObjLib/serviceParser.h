@@ -25,7 +25,7 @@ typedef struct
 {
     eOmn_serv_parameter_t   ethservice;
     int                     acquisitionrate;
-    std::string                  nameOfMais;
+    std::string             nameOfMais;
 } servConfigMais_t;
 
 
@@ -34,7 +34,7 @@ typedef struct
     eOmn_serv_parameter_t   ethservice;
     int                     acquisitionrate;
     bool                    useCalibration;
-    std::string                  nameOfStrain;
+    std::string             nameOfStrain;
     eObrd_cantype_t         boardType;
 } servConfigStrain_t;
 
@@ -81,6 +81,7 @@ typedef struct
     eOmn_serv_parameter_t     ethservice;
     int                       acquisitionrate;
     std::vector<std::string>  idList;
+    std::vector<std::string>  sensorName;
 } servConfigPOS_t;
 
 

@@ -898,7 +898,12 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 }
 
                 b_PROPERTIES_SENSORS_pos_CALIBRATION = Bottle(b_PROPERTIES_SENSORS.findGroup("CALIBRATION"));
-                if(b_PROPERTIES_SENSORS_pos_CALIBRATION.isNull())
+                if(!b_PROPERTIES_SENSORS_pos_CALIBRATION.isNull())
+                {
+                    yError() << "ServiceParser::check_analog() found PROPERTIES.SENSORS.CALIBRATION group. This is not allowed. CALIBRATION must be removed";
+                    return false;
+                }
+                /*
                 {
                     yWarning() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.CALIBRATION. Using neutral values (ROT:zero, 0.0, false)";
                 }
@@ -926,8 +931,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                         yWarning() << "ServiceParser::check_analog() cannot find PROPERTIES.SENSORS.CALIBRATION.invertDirection. Using value false";
                     }
                 }
-
-
+                */
             }
             else
             {
@@ -1914,6 +1918,11 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
         yError() << "ServiceParser::parseService(POS) has received an invalid SERVICE group for POS";
         return false;
     }
+    else
+    {
+        yDebug() << "ServiceParser::parseService(POS) has received a valid SERVICE group for POS with size of enabled sensors equal to:" << as_service.settings.enabledsensors.size();
+    }
+    
 
 
     if(as_service.settings.enabledsensors.size() > eOas_pos_sensorsinboard_maxnumber)
@@ -1926,18 +1935,16 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
 
     eObrd_type_t boardtype = eobrd_none;
     eObrd_location_t location = {};
+    std::string sensorName = "";
     for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
     {
         if(eobrd_none == boardtype)
         {
             boardtype = as_service.settings.enabledsensors[i].boardtype;
             location = as_service.settings.enabledsensors[i].location;
+            sensorName = as_service.settings.enabledsensors[i].sensorName;
             bool validBoardForPOS = (eobrd_mtb4 == boardtype) || (eobrd_mtb4c == boardtype) || (eobrd_pmc == boardtype);
-            if(validBoardForPOS)
-            {
-                // ok
-            }
-            else
+            if(!validBoardForPOS)
             {
                 yError() << "ServiceParser::parseService(POS): sensors must have the correct boardtype (mtb4, mtb4c or pmc).";
                 return false;
@@ -1980,10 +1987,18 @@ bool ServiceParser::parseService(Searchable &config, servConfigPOS_t &posconfig)
     // set type of service
     posconfig.ethservice.configuration.type = eomn_serv_AS_pos;
 
-
     //get acquisition rate
     posconfig.acquisitionrate = as_service.settings.acquisitionrate;
 
+    //get number of enabled sensors, their id and name
+    posconfig.idList.resize(as_service.settings.enabledsensors.size());
+    posconfig.sensorName.resize(as_service.settings.enabledsensors.size());
+    for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
+    {
+        posconfig.idList[i] = as_service.settings.enabledsensors[i].id;
+        posconfig.sensorName[i] = as_service.settings.enabledsensors[i].sensorName;
+        yDebug() << "Get enabled sensor:" << as_service.settings.enabledsensors[i].id << "name:" << as_service.settings.enabledsensors[i].sensorName;
+    }
 
     // get firmware and protocol info
     eOmn_serv_config_data_as_pos_t *pos = &posconfig.ethservice.configuration.data.as.pos;
@@ -4324,6 +4339,13 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
                 pos->config.boardconfig[b].canloc.addr = mc_service.properties.poslocations[b].addr;
                 pos->config.boardconfig[b].canloc.port = mc_service.properties.poslocations[b].port;
 
+                // check if we have even 1 FAP board configured and send an error. Calibration group should not be present
+                // if(pos->config.boardconfig[b].sensors[0].type != nan)
+                // {
+                //     yError() << "ServiceParser::parseService() found PROPERTIES.SENSORS.CALIBRATION group in MC SERVICE. This is not allowed. CALIBRATION must be removed";
+                //     return false;
+                // }
+                /*
                 for(size_t s=0; s<eOas_pos_sensorsinboard_maxnumber; s++)
                 {
                     pos->config.boardconfig[b].sensors[s].connector = s;
@@ -4334,6 +4356,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
                     pos->config.boardconfig[b].sensors[s].rotation = eoas_pos_ROT_zero;
                     pos->config.boardconfig[b].sensors[s].offset = 0;
                 }
+                */
             }
 
 #if 0
