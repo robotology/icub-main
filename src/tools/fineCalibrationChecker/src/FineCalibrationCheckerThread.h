@@ -13,44 +13,42 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
-*/
+ */
 // -*- mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#ifndef FINE_CALIBRATION_CHECKER_H
-#define FINE_CALIBRATION_CHECKER_H
+#ifndef FINE_CALIBRATION_CHECKER_THREAD_H
+#define FINE_CALIBRATION_CHECKER_THREAD_H
 
-// yarp includes
-#include <yarp/os/RFModule.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/ICalibrator.h>
+// YARP includes
+#include <yarp/os/Thread.h>
 
-// icub includes
-#include <iCub/IRawValuesPublisher.h>
-
-class FineCalibrationChecker : public yarp::os::RFModule
+class FineCalibrationCheckerThread : public yarp::os::Thread
 {
 public:
     // Constructor
-    FineCalibrationChecker() = default;
+    FineCalibrationCheckerThread() = default;
 
     // Destructor
-    ~FineCalibrationChecker() = default;
+    ~FineCalibrationCheckerThread() = default;
 
     // Copy constructor
-    FineCalibrationChecker(const FineCalibrationChecker& other) = default;
+    FineCalibrationCheckerThread(const FineCalibrationCheckerThread& other) = default;
 
     // Copy assignment operator
-    FineCalibrationChecker& operator=(const FineCalibrationChecker& other) = default;
+    FineCalibrationCheckerThread& operator=(const FineCalibrationCheckerThread& other) = default;
 
     // Move constructor
-    FineCalibrationChecker(FineCalibrationChecker&& other) noexcept = default;
+    FineCalibrationCheckerThread(FineCalibrationCheckerThread&& other) noexcept = default;
 
     // Move assignment operator
-    FineCalibrationChecker& operator=(FineCalibrationChecker&& other) noexcept = default;
+    FineCalibrationCheckerThread& operator=(FineCalibrationCheckerThread&& other) noexcept = default;
 
-    // Public methods
-    bool configure(yarp::os::ResourceFinder& rf) override;
-    void runCalibration();
+    // Overridden methods from yarp::os::Thread
+    void run() override;
+    void onStop() override;
+    bool threadInit() override;
+    void threadRelease() override;
+
     bool isCalibrationSuccessful() const;
 
 private:
@@ -60,11 +58,15 @@ private:
     // Pointer to the raw values publisher interface
     iCub::debugLibrary::IRawValuesPublisher* _iravap;
 
-    // Pointer to the parametric calibrator interface
-    yarp::dev::ICalibrator* _icalib;
+    // Pointer to the parametric calibrator and its controller interface
+    yarp::dev::IRemoteCalibrator* _iremotecalib;
+    yarp::dev::IControlCalibration* _icontrolcalib;
 
     // Clinet driver to communicate with interfaces
     yarp::dev::PolyDriver _fineCalibrationCheckerDevice;
+
+    
+    void runCalibration();
 };
 
-#endif // FINE_CALIBRATION_CHECKER_H
+#endif // FINE_CALIBRATION_CHECKER_THREAD_H
