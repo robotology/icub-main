@@ -5,10 +5,18 @@
 project(fineCalibrationChecker)
 # find YARP
 find_package(YARP COMPONENTS os sig dev)
+find_package(iCubDev 2.7.0 QUIET)
 # set up our program
-add_executable(${PROJECT_NAME} ./src/fineCalibrationChecker.h ./src/fineCalibrationChecker.cpp  ./src/main.cpp )
+add_executable(${PROJECT_NAME} 
+    ./src/FineCalibrationCheckerModule.h 
+    ./src/FineCalibrationCheckerModule.cpp
+    ./src/FineCalibrationCheckerThread.h
+    ./src/FineCalibrationCheckerThread.cpp
+    ./src/main.cpp 
+
+)
 
 # link with YARP libraries
-target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ICUB::iCubDev)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
