@@ -59,7 +59,7 @@ using yarp::os::Log;
 
 using namespace eth;
 
-EthSender::EthSender(int txrate) : PeriodicThread((double)txrate/1000.0)
+EthSender::EthSender(int txrate) : PeriodicThread((double)txrate/1000.0, yarp::os::ShouldUseSystemClock::Yes, yarp::os::PeriodicThreadClock::Absolute)
 {
     rateofthread = txrate;
     yDebug() << "EthSender is a PeriodicThread with txrate =" << rateofthread << "ms";

@@ -62,7 +62,7 @@ using namespace eth;
 
 
 
-EthReceiver::EthReceiver(int raterx): PeriodicThread((double)raterx/1000.0)
+EthReceiver::EthReceiver(int raterx): PeriodicThread((double)raterx/1000.0, yarp::os::ShouldUseSystemClock::Yes, yarp::os::PeriodicThreadClock::Absolute)
 {
     rateofthread = raterx;
     yDebug() << "EthReceiver is a PeriodicThread with rxrate =" << rateofthread << "ms";
