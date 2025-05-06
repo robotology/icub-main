@@ -54,13 +54,13 @@ using namespace yarp::dev::eomc;
 
 static inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
-    yError() << txt << " is not yet implemented for embObjMotionControl";
+    yErrorOnce() << txt << " is not yet implemented for embObjMotionControl";
     return true;
 }
 
 static inline bool DEPRECATED(const char *txt)
 {
-    yError() << txt << " has been deprecated for embObjMotionControl";
+    yErrorOnce() << txt << " has been deprecated for embObjMotionControl";
     return true;
 }
 
