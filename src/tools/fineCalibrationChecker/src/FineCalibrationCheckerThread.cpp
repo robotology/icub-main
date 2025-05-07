@@ -21,6 +21,9 @@
 
 bool FineCalibrationCheckerThread::threadInit()
 {
+    // TODO: think to eventually move this initialization of calibrationStatus elsewhere
+    calibrationStatus = false;
+
     // Read configuration file
     Bottle &conf_group = rf.findGroup("GENERAL");
     if (conf_group.isNull())
@@ -30,10 +33,10 @@ bool FineCalibrationCheckerThread::threadInit()
     else
     {
         // Read parameters from the configuration file
-        if (conf_group.check("devicename")) { m_deviceName = conf_group.find("devicename").asString(); }
-        if (conf_group.check("portprefix")) { m_portPrefix = conf_group.find("portprefix").asString(); }
-        if (conf_group.check("period")) { m_updatePeriod = conf_group.find("period").asFloat64(); }
-        if (conf_group.check("robotname")) { m_robotName = conf_group.find("robotname").asString(); }
+        if (conf_group.check("devicename")) { _deviceName = conf_group.find("devicename").asString(); }
+        if (conf_group.check("robotname")) { _robotName = conf_group.find("robotname").asString(); }
+        if (conf_group.check("subpartslist")) { _subpartsList = conf_group.find("subpartslist").asList(); }
+        if (conf_group.check("jointslist")) { _jointsList = conf_group.find("jointslist").asList(); }
     }
 
     // Initialize remote raw values publisher device
@@ -74,9 +77,88 @@ bool FineCalibrationCheckerThread::threadInit()
         return false;
     }
 
+    // Configuring raw values metadata
+    rawValuesKeyMetadataMap metadata = {}; // I just need to call it once while configuring (I think) 
+    iravap->getMetadataMap(metadata);
+    yDebug() << m_deviceName << "Configured raw values with metadata";
+    for (auto [k, m] : metadata.metadataMap)
+    {
+        yDebug() << m_deviceName << "Key: " << k << "\n"
+            << "\t rawValueType: " << m.rawValueType << "\n"
+            << "\t rawValueSize: " << m.rawValueSize << "\n"
+            << "\t rawValueNames: " << yarp::os::join(m.rawValueNames, ", ");
+    }
 
     return true;
 
+}
+
+void FineCalibrationCheckerThread::run()
+{
+    // Run the calibration thread
+    if (_fineCalibrationCheckerDevice.isValid())
+    {
+        // Perform calibration logic here
+        // For example, you can call methods on _iremotecalib and _icontrolcalib to perform calibration tasks
+       this->runCalibration();
+    }
+}
+
+void FineCalibrationCheckerThread::threadRelease()
+{
+    // Release resources and close the device
+    if (_fineCalibrationCheckerDevice.isValid())
+    {
+        _fineCalibrationCheckerDevice.close();
+    }
+}
+
+void FineCalibrationCheckderThread::onStop()
+{
+    // Stop the calibration thread
+    if (_fineCalibrationCheckerDevice.isValid())
+    {
+        _iremotecalib->stopCalibration();
+    }
+}
+
+// Private methods
+bool FineCalibrationCheckerThread::isCalibrationSuccessful() const
+{
+    // Check if the calibration was successful
+    return calibrationStatus;
+}
+
+void FineCalibrationCheckerThread::runCalibration()
+{
+    // Implement the calibration logic here
+    // For example, you can call methods on _iremotecalib and _icontrolcalib to perform calibration tasks
+    if(_iremotecalib->calibrateWholePart())
+    {
+        yDebug() << m_deviceName << "Calibration for subpart " << _subpartList[i] << " successful!";
+        calibrationStatus = true; // Set the calibration status based on the result of the calibration process
+
+        //TODO: we need to check if the raw position read overlaps with the expected position
+        bool ok;
+        ok = iravap->getRawDataMap(rawDataValuesMap);
+        if (!ok)
+        {
+            yWarning() << "telemetryDeviceDumper warning : raw_data_values was not read correctly";
+        }
+        else
+        {
+            for (auto [key,value] : rawDataValuesMap)
+            {
+                bufferManager.push_back(value, "raw_data_values::"+key);
+            }
+        }
+    }
+    else
+    {
+        yError() << m_deviceName << "Calibration for subpart " << _subpartList[i] << " failed!";
+        calibrationStatus = false;
+    }
+    
 }
 
 /**

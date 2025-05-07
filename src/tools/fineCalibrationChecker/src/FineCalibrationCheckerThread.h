@@ -19,10 +19,24 @@
 #ifndef FINE_CALIBRATION_CHECKER_THREAD_H
 #define FINE_CALIBRATION_CHECKER_THREAD_H
 
+// Standard includes
+#include <vector>
+#include <string>
+
 // YARP includes
 #include <yarp/os/Thread.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/DeviceDriver.h>
+#include <yarp/dev/IMultipleWrapper.h>
+#include <yarp/dev/IRemoteCalibrator.h>
+#include <yarp/dev/IControlCalibration.h>
 
-class FineCalibrationCheckerThread : public yarp::os::Thread
+// iCub includes
+#include <iCub/IRawValuesPublisher.h>
+
+class FineCalibrationCheckerThread : public yarp::os::Thread,
+                                    public yarp::dev::IMultipleWrapper,
+                                    public yarp::dev::DeviceDriver
 {
 public:
     // Constructor
@@ -49,11 +63,27 @@ public:
     bool threadInit() override;
     void threadRelease() override;
 
+    // Overridden methods from yarp::dev::IMultipleWrapper
+    bool attachAll(const yarp::dev::PolyDriverList& poly) override;
+    bool detachAll() override;
+
+    // Overridden methods from yarp::dev::DeviceDriver
+    bool open(yarp::os::Searchable& config) override;
+    bool close() override;
+
     bool isCalibrationSuccessful() const;
 
 private:
     // Private members
+
+    // Configuration parameters
+    std::string _robotName= "";
+    std::string _deviceName= "fineCalibrationChecker";
+    yarp::sig::Vector _subpartsList = 0;
+    yarp::sig::Vector _jointsList = 0;
+    std::vector<std::string> _robotSubpartsWrapper = {"head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
     bool calibrationStatus;
+    std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
 
     // Pointer to the raw values publisher interface
     iCub::debugLibrary::IRawValuesPublisher* _iravap;
