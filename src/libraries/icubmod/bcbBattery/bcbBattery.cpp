@@ -222,51 +222,51 @@ void batteryReaderThread::run()
 #endif
 }
 
-bool BcbBattery::getBatteryVoltage(double &voltage)
+ReturnValue BcbBattery::getBatteryVoltage(double &voltage)
 {
-    if (!batteryReader) return false;
+    if (!batteryReader) return ReturnValue::return_code::return_value_error_generic;
     std::lock_guard<std::mutex> lg(batteryReader->datamut);
     voltage = batteryReader->battery_voltage;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool BcbBattery::getBatteryCurrent(double &current)
+ReturnValue BcbBattery::getBatteryCurrent(double &current)
 {
-    if (!batteryReader) return false;
+    if (!batteryReader) return ReturnValue::return_code::return_value_error_generic;
     std::lock_guard<std::mutex> lg(batteryReader->datamut);
     current = batteryReader->battery_current;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool BcbBattery::getBatteryCharge(double &charge)
+ReturnValue BcbBattery::getBatteryCharge(double &charge)
 {
-    if (!batteryReader) return false;
+    if (!batteryReader) return ReturnValue::return_code::return_value_error_generic;
     std::lock_guard<std::mutex> lg(batteryReader->datamut);
     charge = batteryReader->battery_charge;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool BcbBattery::getBatteryStatus(Battery_status &status)
+ReturnValue BcbBattery::getBatteryStatus(Battery_status &status)
 {
-    if (!batteryReader) return false;
+    if (!batteryReader) return ReturnValue::return_code::return_value_error_generic;
     std::lock_guard<std::mutex> lg(batteryReader->datamut);
     status= batteryReader->battery_status;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool BcbBattery::getBatteryTemperature(double &temperature)
+ReturnValue BcbBattery::getBatteryTemperature(double &temperature)
 {
     //yError("Not yet implemented");
     temperature = std::nan("");
-    return false;
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
-bool BcbBattery::getBatteryInfo(string &info)
+ReturnValue BcbBattery::getBatteryInfo(string &info)
 {
-    if (!batteryReader) return false;
+    if (!batteryReader) return ReturnValue::return_code::return_value_error_generic;
     std::lock_guard<std::mutex> lg(batteryReader->datamut);
     info = batteryReader->battery_info;
-    return true;
+    return ReturnValue_ok;
 }
 
 void batteryReaderThread::threadRelease()

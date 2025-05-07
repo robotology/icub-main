@@ -57,12 +57,12 @@ public:
     virtual bool open(yarp::os::Searchable& config);
     virtual bool close();
 
-    virtual bool getBatteryVoltage     (double &voltage);
-    virtual bool getBatteryCurrent     (double &current);
-    virtual bool getBatteryCharge      (double &charge);
-    virtual bool getBatteryStatus      (Battery_status &status);
-    virtual bool getBatteryInfo        (std::string &info);
-    virtual bool getBatteryTemperature (double &temperature);
+    virtual ReturnValue getBatteryVoltage     (double &voltage);
+    virtual ReturnValue getBatteryCurrent     (double &current);
+    virtual ReturnValue getBatteryCharge      (double &charge);
+    virtual ReturnValue getBatteryStatus      (Battery_status &status);
+    virtual ReturnValue getBatteryInfo        (std::string &info);
+    virtual ReturnValue getBatteryTemperature (double &temperature);
 
     virtual bool threadInit();
     virtual void threadRelease();

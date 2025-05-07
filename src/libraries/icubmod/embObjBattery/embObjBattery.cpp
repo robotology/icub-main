@@ -263,14 +263,14 @@ bool embObjBattery::update(eOprotID32_t id32, double timestamp, void *rxdata)
     else if (!isCanDataAvailable && (data->age != 0))
     {
         yDebug() << "First Status are:\n" << updateStatusStringStream(data->status, canBatteryData_.prevStatus_, true);
-        
+
         canBatteryData_.prevStatus_ = data->status;
         isCanDataAvailable = true;
     }
     else if (data->status != canBatteryData_.prevStatus_)
     {
         yDebug() << "Status changed to:\n" << updateStatusStringStream(data->status, canBatteryData_.prevStatus_, false);
-        
+
         canBatteryData_.prevStatus_ = data->status;
     }
 
@@ -372,14 +372,14 @@ std::string embObjBattery::updateStatusStringStream(const uint16_t &currStatus, 
                 if((embot::core::binary::bit::check(currStatus, bit_pos)))
                 {
                     statusstring.append(s_boards_map_of_battery_alarm_status.at(i).second);
-                } 
+                }
                 else
                 {
                     statusstring.append(s_boards_map_of_battery_alarm_status.at(i+1).second);
                 }
                 statusstring.append("\n");
             }
-            
+
             ++bit_pos;
         }
     }
@@ -389,7 +389,7 @@ std::string embObjBattery::updateStatusStringStream(const uint16_t &currStatus, 
         statusstring.append("\tNo Faults Detected. All Alarms Bit Down\n");
     }
 
-    
+
     return statusstring;
 }
 
@@ -410,44 +410,44 @@ double embObjBattery::calculateBoardTime(eOabstime_t current)
     return realtime;
 }
 
-bool embObjBattery::getBatteryVoltage(double &voltage)
+ReturnValue embObjBattery::getBatteryVoltage(double &voltage)
 {
     voltage = canBatteryData_.voltage_;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool embObjBattery::getBatteryCurrent(double &current)
+ReturnValue embObjBattery::getBatteryCurrent(double &current)
 {
     current = canBatteryData_.current_;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool embObjBattery::getBatteryCharge(double &charge)
+ReturnValue embObjBattery::getBatteryCharge(double &charge)
 {
     charge = (canBatteryData_.charge_ != 0.0) ? canBatteryData_.charge_ : NAN;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool embObjBattery::getBatteryStatus(Battery_status &status)
+ReturnValue embObjBattery::getBatteryStatus(Battery_status &status)
 {
     status = static_cast<Battery_status>(canBatteryData_.status_);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool embObjBattery::getBatteryTemperature(double &temperature)
+ReturnValue embObjBattery::getBatteryTemperature(double &temperature)
 {
     temperature = (canBatteryData_.temperature_ != 0) ? canBatteryData_.temperature_ : NAN;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool embObjBattery::getBatteryInfo(std::string &battery_info)
+ReturnValue embObjBattery::getBatteryInfo(std::string &battery_info)
 {
     std::stringstream ss;
     ss << "{\"temperature\":" << canBatteryData_.temperature_ << ",\"voltage\":" << canBatteryData_.voltage_ << ",\"current\":" << canBatteryData_.current_ << ",\"charge\":" << canBatteryData_.charge_ << ",\"status\":" << canBatteryData_.status_
        << ",\"ts\":" << canBatteryData_.timeStamp_ << "}" << std::endl;
 
     battery_info = ss.str();
-    return true;
+    return ReturnValue_ok;
 }
 
 bool CanBatteryData::operator==(const CanBatteryData &other) const
@@ -468,7 +468,7 @@ bool CanBatteryData::operator==(const CanBatteryData &other) const
         return false;
     if (sensorType_ != other.sensorType_)
         return false;
-    
+
     return true;
 }
 

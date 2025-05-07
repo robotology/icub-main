@@ -46,7 +46,7 @@ class batteryReaderThread : public PeriodicThread
     double             battery_current = 0;
     std::string        battery_info = "icub battery system v1.0";
     int                backpack_status = 0;
-    IBattery::Battery_status     battery_status = IBattery::Battery_status::BATTERY_OK_STANDBY;    
+    IBattery::Battery_status     battery_status = IBattery::Battery_status::BATTERY_OK_STANDBY;
 
     batteryReaderThread (ISerialDevice *_iSerial, double period) :
     PeriodicThread((double)period),
@@ -84,12 +84,12 @@ public:
     virtual bool open(yarp::os::Searchable& config);
     virtual bool close();
 
-    virtual bool getBatteryVoltage     (double &voltage) override;
-    virtual bool getBatteryCurrent     (double &current) override;
-    virtual bool getBatteryCharge      (double &charge) override;
-    virtual bool getBatteryStatus      (Battery_status &status) override;
-    virtual bool getBatteryInfo        (std::string &info) override;
-    virtual bool getBatteryTemperature (double &temperature) override;
+    virtual ReturnValue getBatteryVoltage     (double &voltage) override;
+    virtual ReturnValue getBatteryCurrent     (double &current) override;
+    virtual ReturnValue getBatteryCharge      (double &charge) override;
+    virtual ReturnValue getBatteryStatus      (Battery_status &status) override;
+    virtual ReturnValue getBatteryInfo        (std::string &info) override;
+    virtual ReturnValue getBatteryTemperature (double &temperature) override;
 };
 
 
