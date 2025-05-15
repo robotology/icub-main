@@ -16,6 +16,11 @@
  */
 // -*- mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
+// Standard includes
+#include <iostream>
+#include <algorithm>
+#include <unordered_map>
+#include <set>
 // APIs
 #include "FineCalibrationCheckerThread.h"
 
@@ -47,34 +52,54 @@ bool FineCalibrationCheckerThread::threadInit()
 
     yDebug() << m_deviceName << "++++ config:\n"
         << "\t portprefix: " << m_portPrefix << "\n"
-        << "\t period: " << m_updatePeriod << "\n"
         << "\t robotname: " << m_robotName << "\n";
 
-    _fineCalibrationCheckerDevice.open(deviceProperties);
-
-    if (!_fineCalibrationCheckerDevice.isValid())
+    _robotSubpartsList.resize(_subpartsList.size());
+    for (size_t i = 0; i < _subpartsList.size(); i++)
     {
-        yError() << m_deviceNname << "Unable to open device driver. Aborting...";
-        return false;
+        _robotSubpartsList[i] = _subpartsList->get(i).asString();
+        yDebug() << m_deviceName << "Subpart " << i << ": " << _robotSubpartsList[i];
     }
+    configureDevicesMap(_robotSubpartsList);
 
-    if (!_fineCalibrationCheckerDevice.view(_iravap) || _iravap == nullptr)
+    // ************ END OF CONFIGURATION ************
+    
+    // Open the device driver
+    for (size_t i = 0; i < _subpartsList.size(); i++)
     {
-        yError() << m_deviceName << "Unable to open raw values publisher interface. Aborting...";
-        return false;
-    }
 
-    // Initialize parametric calibrator device
-    if (!_fineCalibrationCheckerDevice.view(_iremotecalib) || _iremotecalib == nullptr)
-    {
-        yError() << m_deviceName << "Unable to open remote calibrator interface. Aborting...";
-        return false;
-    }
+        _fineCalibrationCheckerDevice.open(deviceProperties);
 
-    if (!_fineCalibrationCheckerDevice.view(_icontrolcalib) || _icontrolcalib == nullptr)
-    {
-        yError() << m_deviceName << "Unable to open control calibration interface. Aborting...";
-        return false;
+        if (!_fineCalibrationCheckerDevice.isValid())
+        {
+            yError() << m_deviceNname << "Unable to open device driver. Aborting...";
+            return false;
+        }
+
+        if (!_fineCalibrationCheckerDevice.view(_iravap) || _iravap == nullptr)
+        {
+            yError() << m_deviceName << "Unable to open raw values publisher interface. Aborting...";
+            return false;
+        }
+
+        // Initialize parametric calibrator device
+        if (!_fineCalibrationCheckerDevice.view(_iremotecalib) || _iremotecalib == nullptr)
+        {
+            yError() << m_deviceName << "Unable to open remote calibrator interface. Aborting...";
+            return false;
+        }
+
+        if (!_fineCalibrationCheckerDevice.view(_icontrolcalib) || _icontrolcalib == nullptr)
+        {
+            yError() << m_deviceName << "Unable to open control calibration interface. Aborting...";
+            return false;
+        }
+
+        if (!_fineCalibrationCheckerDevice.view(_imot) || _imot == nullptr)
+        {
+            yError() << m_deviceName << "Unable to open motor interface. Aborting...";
+            return false;
+        }
     }
 
     // Configuring raw values metadata
@@ -100,7 +125,12 @@ void FineCalibrationCheckerThread::run()
     {
         // Perform calibration logic here
         // For example, you can call methods on _iremotecalib and _icontrolcalib to perform calibration tasks
-       this->runCalibration();
+        for (size_t i = 0; i < _subpartsList.size(); i++)
+        {
+            this->configureCalibration(_subpartsList[i]);
+            this->runCalibration();
+        }
+        
     }
 }
 
@@ -129,13 +159,54 @@ bool FineCalibrationCheckerThread::isCalibrationSuccessful() const
     return calibrationStatus;
 }
 
+
+void FineCalibrationCheckerThread::configureCalibration(std::string subpartName)
+{
+    // Configure the calibration parameters here
+    // For example, you can set the calibration parameters for each subpart
+    // Configure the calibration parameters for the specified subpart
+    yDebug() << m_deviceName << "Configuring calibration for subpart " << subpartName;
+
+    for (size_t i = 0; i < _subpartsList.size(); i++)
+    {
+        // Set calibration parameters for each subpart
+        // You can use _iremotecalib and _icontrolcalib to set the parameters
+        yDebug() << m_deviceName << "Configuring calibration for subpart " << _subpartsList[i];
+
+        yarp::dev::PolyDriver driver = _fineCalibrationCheckerDevices[subpartName];
+        driver.view(_iremotecalib);
+        driver.view(_icontrolcalib);
+
+        runCalibration();
+    }
+}
+
 void FineCalibrationCheckerThread::runCalibration()
 {
     // Implement the calibration logic here
     // For example, you can call methods on _iremotecalib and _icontrolcalib to perform calibration tasks
+
+    yDebug() << m_deviceName << "Starting calibration process"; 
     if(_iremotecalib->calibrateWholePart())
     {
-        yDebug() << m_deviceName << "Calibration for subpart " << _subpartList[i] << " successful!";
+        yDebug() << m_deviceName << "Calibration for subpart " << _subpartList[i] << " started!";
+        
+        int motors = 0;
+        _imot->getNumberOfMotors(&motors);
+        for (size_t i = 0; i < motors; i++)
+        {
+            /* code */
+        }
+        
+        if (_icontrolcalib->calibrationDone())
+        {
+            yDebug() << m_deviceName << "Calibration for subpart " << _subpartList[i] << " completed successfully!";
+        }
+        else
+        {
+            yError() << m_deviceName << "Calibration for subpart " << _subpartList[i] << " failed!";
+        }
+        
         calibrationStatus = true; // Set the calibration status based on the result of the calibration process
 
         //TODO: we need to check if the raw position read overlaps with the expected position
@@ -161,32 +232,24 @@ void FineCalibrationCheckerThread::runCalibration()
     
 }
 
-/**
-TODO: Keep 
-    this in mind which can be a good insight if we wanna define a vector of Device Drivers 
-    instead of alwats instantiate different device driver separately
-#include <iostream>
-#include <vector>
-#include <string>
-#include <unordered_map>
-#include <algorithm>
-#include <set>
+FineCalibrationCheckerThread::configureDevicesMap(std::vector<std::string> list)
+{
+    // Configure the devices map based on the provided list of subpart names
 
-int main() {
-    std::vector<std::string> input = {"left_arm", "right_arm", "tail", "left_leg", "torso"}; // "head" is missing, "tail" is unknown
-    std::vector<std::string> desired_order = {"head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
+    std::vector<std::string> input = list; // Example input list
+    std::vector<std::string> desired_order = _robotSubpartsWrapper; // Example desired order
 
     // Step 1: Create the order map
     std::unordered_map<std::string, int> order_map;
-    for (size_t i = 0; i < desired_order.size(); ++i) {
-        order_map[desired_order[i]] = i;
+    for (size_t i = 0; i < _robotSubpartsWrapper.size(); ++i) {
+        order_map[_robotSubpartsWrapper[i]] = i;
     }
 
     // Step 2: Separate known and unknown elements
     std::vector<std::string> known_items;
     std::vector<std::string> unknown_items;
 
-    for (const auto& item : input) {
+    for (const auto& item : list) {
         if (order_map.count(item)) {
             known_items.push_back(item);
         } else {
@@ -200,9 +263,9 @@ int main() {
     });
 
     // Step 4: Optionally detect missing elements
-    std::set<std::string> input_set(input.begin(), input.end());
+    std::set<std::string> input_set(list.begin(), list.end());
     std::vector<std::string> missing_items;
-    for (const auto& expected : desired_order) {
+    for (const auto& expected : _robotSubpartsWrapper) {
         if (!input_set.count(expected)) {
             missing_items.push_back(expected);
         }
@@ -225,7 +288,8 @@ int main() {
         std::cout << "\n";
     }
 
-    return 0;
+    for (const auto& item : known_items)
+    {
+        _fineCalibrationCheckerDevices.insert(std::pair{item, yarp::dev::PolyDriver()});
+    }
 }
-
- */

@@ -22,6 +22,7 @@
 // Standard includes
 #include <vector>
 #include <string>
+#include <map>
 
 // YARP includes
 #include <yarp/os/Thread.h>
@@ -35,7 +36,6 @@
 #include <iCub/IRawValuesPublisher.h>
 
 class FineCalibrationCheckerThread : public yarp::os::Thread,
-                                    public yarp::dev::IMultipleWrapper,
                                     public yarp::dev::DeviceDriver
 {
 public:
@@ -63,10 +63,6 @@ public:
     bool threadInit() override;
     void threadRelease() override;
 
-    // Overridden methods from yarp::dev::IMultipleWrapper
-    bool attachAll(const yarp::dev::PolyDriverList& poly) override;
-    bool detachAll() override;
-
     // Overridden methods from yarp::dev::DeviceDriver
     bool open(yarp::os::Searchable& config) override;
     bool close() override;
@@ -79,9 +75,10 @@ private:
     // Configuration parameters
     std::string _robotName= "";
     std::string _deviceName= "fineCalibrationChecker";
-    yarp::sig::Vector _subpartsList = 0;
+    yarp::os::Bottle* _subpartsList = nullptr;
     yarp::sig::Vector _jointsList = 0;
     std::vector<std::string> _robotSubpartsWrapper = {"head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
+    std::vector<std::string> _robotSubpartsList = {};
     bool calibrationStatus;
     std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
 
@@ -91,12 +88,16 @@ private:
     // Pointer to the parametric calibrator and its controller interface
     yarp::dev::IRemoteCalibrator* _iremotecalib;
     yarp::dev::IControlCalibration* _icontrolcalib;
+    yar::dev::IMotor* _imot;
 
     // Clinet driver to communicate with interfaces
-    yarp::dev::PolyDriver _fineCalibrationCheckerDevice;
+    std::map<std::string, yarp::dev::PolyDriver> _fineCalibrationCheckerDevicesMap;
 
-    
+    void configureCalibration(std::string subpartName);
     void runCalibration();
+
+    // Utility methods
+    void configureDevicesMap(std::vector<std::string> list);
 };
 
 #endif // FINE_CALIBRATION_CHECKER_THREAD_H
