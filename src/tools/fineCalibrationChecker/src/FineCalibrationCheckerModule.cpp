@@ -25,8 +25,4 @@
 // APIs
 #include "FineCalibrationCheckerModule.h"
 
-// Constructor
-FineCalibrationChecker::FineCalibrationChecker()
-{
-    // Initialization (if needed)
-}
+

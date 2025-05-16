@@ -25,12 +25,16 @@
 #include <map>
 
 // YARP includes
+#include <yarp/os/Bottle.h>
 #include <yarp/os/Thread.h>
+#include <yarp/os/ResourceFinder.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/IMultipleWrapper.h>
 #include <yarp/dev/IRemoteCalibrator.h>
 #include <yarp/dev/IControlCalibration.h>
+#include <yarp/dev/IMotor.h>
+
+
 
 // iCub includes
 #include <iCub/IRawValuesPublisher.h>
@@ -57,6 +61,9 @@ public:
     // Move assignment operator
     FineCalibrationCheckerThread& operator=(FineCalibrationCheckerThread&& other) noexcept = default;
 
+    // Parameterized constructor
+    FineCalibrationCheckerThread(yarp::os::ResourceFinder& rf);
+
     // Overridden methods from yarp::os::Thread
     void run() override;
     void onStop() override;
@@ -73,10 +80,11 @@ private:
     // Private members
 
     // Configuration parameters
+    std::string _portPrefix = "/fineCalibrationChecker";
     std::string _robotName= "";
     std::string _deviceName= "fineCalibrationChecker";
     yarp::os::Bottle* _subpartsList = nullptr;
-    yarp::sig::Vector _jointsList = 0;
+    yarp::os::Bottle* _jointsList = nullptr;
     std::vector<std::string> _robotSubpartsWrapper = {"head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
     std::vector<std::string> _robotSubpartsList = {};
     bool calibrationStatus;
@@ -88,10 +96,10 @@ private:
     // Pointer to the parametric calibrator and its controller interface
     yarp::dev::IRemoteCalibrator* _iremotecalib;
     yarp::dev::IControlCalibration* _icontrolcalib;
-    yar::dev::IMotor* _imot;
+    yarp::dev::IMotor* _imot;
 
     // Clinet driver to communicate with interfaces
-    std::map<std::string, yarp::dev::PolyDriver> _fineCalibrationCheckerDevicesMap;
+    std::map<std::string, yarp::dev::PolyDriver*> _fineCalibrationCheckerDevicesMap;
 
     void configureCalibration(std::string subpartName);
     void runCalibration();
