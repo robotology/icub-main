@@ -17,7 +17,6 @@
 // -*- mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
 #include "FineCalibrationCheckerModule.h"
-#include "FineCalibrationCheckerThread.h"
 
 // YARP includes
 #include <yarp/os/Network.h>
@@ -26,29 +25,17 @@
 
 int main(int argc, char *argv[])
 {
-    // Run the calibration
-    // checkerThread.runCalibration();
-
-    // // Check if the calibration was successful
-    // if (checkerThread.isCalibrationSuccessful()) {
-    //     std::cout << "Calibration was successful!" << std::endl;
-    // } else {
-    //     std::cout << "Calibration failed!" << std::endl;
-    // }
-
     yarp::os::Network yarp;
     if (!yarp.checkNetwork())
     {
         yError() << " YARP network does not work. Aborting...";
         return EXIT_FAILURE;
     }
-    // Create an instance of FineCalibrationChecker
+
     yarp::os::ResourceFinder rf;
 
     rf.configure(argc, argv);
 
-    FineCalibrationCheckerThread checkerThread = FineCalibrationCheckerThread(rf);
-
-    checkerThread.start();
-    return 0;
+    FineCalibrationCheckerModule calibModule;
+    return calibModule.runModule(rf);
 }

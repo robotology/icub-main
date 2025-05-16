@@ -25,4 +25,47 @@
 // APIs
 #include "FineCalibrationCheckerModule.h"
 
+namespace
+{
+    YARP_LOG_COMPONENT(FineCalibrationCheckerModuleCOMPONENT, "yarp.device.fineCalibrationCheckerModule")
+}
+
+bool FineCalibrationCheckerModule::configure(yarp::os::ResourceFinder& rf)
+{
+    // Create the thread using std::make_unique
+    checkerThread = std::make_unique<FineCalibrationCheckerThread>(rf);
+
+    // Start the thread
+    if (!checkerThread->start()) {
+        yCError(FineCalibrationCheckerModuleCOMPONENT) << "Failed to start FineCalibrationCheckerThread.";
+        checkerThread.reset(); // Release the unique_ptr if starting fails
+        return false;
+    }
+
+    return true;
+}
+
+bool FineCalibrationCheckerModule::close()
+{
+    // Stop the thread if it exists
+    if (checkerThread) {
+        checkerThread->stop();
+        checkerThread.reset(); // Automatically deletes the thread
+    }
+
+    return true;
+}
+
+bool FineCalibrationCheckerModule::updateModule()
+{
+    // This method is called periodically by the RFModule
+    // You can add any periodic tasks here if needed
+    return true;
+}
+
+double FineCalibrationCheckerModule::getPeriod()
+{
+    // Return the period for the module
+    return 1.0; // Example: 1 second
+}
 

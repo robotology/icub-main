@@ -19,6 +19,9 @@
 #ifndef FINE_CALIBRATION_CHECKER_MODULE_H
 #define FINE_CALIBRATION_CHECKER_MODULE_H
 
+// std includes
+#include <memory> // For std::unique_ptr
+
 // yarp includes
 #include <yarp/os/RFModule.h>
 #include <yarp/dev/PolyDriver.h>
@@ -29,35 +32,42 @@
 // icub includes
 #include <iCub/IRawValuesPublisher.h>
 
-class FineCalibrationChecker : public yarp::os::RFModule
+// local includes
+#include "FineCalibrationCheckerThread.h"
+
+class FineCalibrationCheckerModule : public yarp::os::RFModule
 {
 public:
     // Constructor
-    FineCalibrationChecker() = default;
+    FineCalibrationCheckerModule() = default;
 
     // Destructor
-    ~FineCalibrationChecker() = default;
+    ~FineCalibrationCheckerModule() = default;
 
     // Copy constructor
-    FineCalibrationChecker(const FineCalibrationChecker& other) = default;
+    FineCalibrationCheckerModule(const FineCalibrationCheckerModule& other) = default;
 
     // Copy assignment operator
-    FineCalibrationChecker& operator=(const FineCalibrationChecker& other) = default;
+    FineCalibrationCheckerModule& operator=(const FineCalibrationCheckerModule& other) = default;
 
     // Move constructor
-    FineCalibrationChecker(FineCalibrationChecker&& other) noexcept = default;
+    FineCalibrationCheckerModule(FineCalibrationCheckerModule&& other) noexcept = default;
 
     // Move assignment operator
-    FineCalibrationChecker& operator=(FineCalibrationChecker&& other) noexcept = default;
+    FineCalibrationCheckerModule& operator=(FineCalibrationCheckerModule&& other) noexcept = default;
 
     // Public methods
-    bool configure(yarp::os::ResourceFinder& rf) override;
-    bool interruptModule() override;
-    bool close() override;
 
+    // Overridden methods from RFModule
+    bool configure(yarp::os::ResourceFinder& rf) override;
+    bool close() override;
+    double getPeriod() override; // TODO: add comment in implementation, should not do anything
+    bool updateModule() override; // TODO: add comment in implementation, should not do anything
 
 private:
 
+    // Private variables
+    std::unique_ptr<FineCalibrationCheckerThread> checkerThread;
 };
 
 #endif // FINE_CALIBRATION_CHECKER_MODULE_H

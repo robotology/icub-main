@@ -19,12 +19,13 @@
 #ifndef FINE_CALIBRATION_CHECKER_THREAD_H
 #define FINE_CALIBRATION_CHECKER_THREAD_H
 
-// Standard includes
+// std includes
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 
-// YARP includes
+// yarp includes
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Thread.h>
 #include <yarp/os/ResourceFinder.h>
@@ -34,13 +35,10 @@
 #include <yarp/dev/IControlCalibration.h>
 #include <yarp/dev/IMotor.h>
 
-
-
 // iCub includes
 #include <iCub/IRawValuesPublisher.h>
 
-class FineCalibrationCheckerThread : public yarp::os::Thread,
-                                    public yarp::dev::DeviceDriver
+class FineCalibrationCheckerThread : public yarp::os::Thread
 {
 public:
     // Constructor
@@ -70,10 +68,6 @@ public:
     bool threadInit() override;
     void threadRelease() override;
 
-    // Overridden methods from yarp::dev::DeviceDriver
-    bool open(yarp::os::Searchable& config) override;
-    bool close() override;
-
     bool isCalibrationSuccessful() const;
 
 private:
@@ -91,7 +85,7 @@ private:
     std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
 
     // Pointer to the raw values publisher interface
-    iCub::debugLibrary::IRawValuesPublisher* _iravap;
+    iCub::debugLibrary::IRawValuesPublisher* _iravap;//TODO: we need also to make another device for this interface not implemented by remotecontrolboardremapper
 
     // Pointer to the parametric calibrator and its controller interface
     yarp::dev::IRemoteCalibrator* _iremotecalib;
@@ -99,7 +93,7 @@ private:
     yarp::dev::IMotor* _imot;
 
     // Clinet driver to communicate with interfaces
-    std::map<std::string, yarp::dev::PolyDriver*> _fineCalibrationCheckerDevicesMap;
+    std::map<std::string, std::unique_ptr<yarp::dev::PolyDriver>> _fineCalibrationCheckerDevicesMap;
 
     void configureCalibration(std::string subpartName);
     void runCalibration();
