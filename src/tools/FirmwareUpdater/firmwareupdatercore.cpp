@@ -259,18 +259,9 @@ void FirmwareUpdaterCore::setSelectedCanBoards(QList <sBoard> selectedBoards,QSt
         getCanBoardsFromDriver(address,deviceId,&res);
     }
 
-
     this->canBoards = selectedBoards;
 
-
-    // qDebug() << "setSelectedCanBoards called with:";
-    // qDebug() << "  address:" << address;
-    // qDebug() << "  deviceId:" << deviceId;
-    // qDebug() << "  canBoards count:" << canBoards.count();
-
     foreach (sBoard b, selectedBoards) {
-        qDebug() << "Selecting CAN board with Bus: " << selectedBoards[0].bus
-                 << " ID: " << selectedBoards[0].pid;
         for(int i=0;i<downloader.board_list_size;i++){
             if(downloader.board_list[i].bus == b.bus &&
                     downloader.board_list[i].pid == b.pid){
@@ -362,8 +353,6 @@ QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromDriver(QString driver, int ne
 {
     mutex.lock();
 
-
-
     if(force){
         downloader.stopdriver();
     }else{
@@ -379,51 +368,24 @@ QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromDriver(QString driver, int ne
     canBoards.clear();
     yarp::os::Property params;
     QString networkType;
-    // if(driver.contains("CFW2",Qt::CaseInsensitive)){
-    //     networkType="cfw2can";
-    // } else if(driver.contains("ECAN",Qt::CaseInsensitive)){
-    //     networkType = "ecan";
-    // } else if(driver.contains("PCAN",Qt::CaseInsensitive)){
-    //     networkType = "pcan";
-    // } else if(driver.contains("SOCKET",Qt::CaseInsensitive)){
-    //     networkType="socketcan";
-    // }
-    if (driver.contains("CFW2", Qt::CaseInsensitive)) {
-        networkType = "cfw2can";
-    } else if (driver.contains("ECAN", Qt::CaseInsensitive)) {
+    if(driver.contains("CFW2",Qt::CaseInsensitive)){
+        networkType="cfw2can";
+    } else if(driver.contains("ECAN",Qt::CaseInsensitive)){
         networkType = "ecan";
-    } else if (driver.contains("PCAN", Qt::CaseInsensitive)) {
+    } else if(driver.contains("PCAN",Qt::CaseInsensitive)){
         networkType = "pcan";
-    } else if (driver.contains("SOCKET", Qt::CaseInsensitive)) {
-        networkType = "socketcan";
-    } else {
-        qDebug() << "Error: Unknown driver type:" << driver;
-        *retString = "Unknown driver type: " + driver;
-        mutex.unlock();
-        return canBoards; // Return an empty list
+    } else if(driver.contains("SOCKET",Qt::CaseInsensitive)){
+        networkType="socketcan";
     }
-
-
     params.put("device", networkType.toLatin1().data());
-    params.put("canDeviceNum", 0);
+    params.put("canDeviceNum", networkId);
     params.put("canTxQueue", 64);
     params.put("canRxQueue", 64);
     params.put("canTxTimeout", 2000);
     params.put("canRxTimeout", 2000);
 
-    qDebug() << "Initializing driver with parameters:";
-    qDebug() << "  device:" << QString::fromStdString(params.find("device").asString());
-    qDebug() << "  canDeviceNum:" << params.find("canDeviceNum").asInt32();
-    qDebug() << "  canTxQueue:" << params.find("canTxQueue").asInt32();
-    qDebug() << "  canRxQueue:" << params.find("canRxQueue").asInt32();
-    qDebug() << "  canTxTimeout:" << params.find("canTxTimeout").asInt32();
-    qDebug() << "  canRxTimeout:" << params.find("canRxTimeout").asInt32();
-
-
     //try to connect to the driver
     int ret = downloader.initdriver(params, (verbosity>1) ? true : false);
-
-
 
     if (0 != ret){
         if(-2 == ret){
@@ -440,8 +402,6 @@ QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromDriver(QString driver, int ne
     }
 
 
-
-
     ret = downloader.initschede();
 
     if (ret == -1)
@@ -453,13 +413,6 @@ QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromDriver(QString driver, int ne
         //not_connected_status();
         mutex.unlock();
         return canBoards;
-    }
-
-
-    for (int i = 0; i < downloader.board_list_size; i++) {
-        qDebug() << "Discovered Board: Bus " << downloader.board_list[i].bus
-                 << " ID: " << downloader.board_list[i].pid
-                 << " Status: " << downloader.board_list[i].status;
     }
 
     for(int i=0; i<downloader.board_list_size;i++){
@@ -477,8 +430,6 @@ QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromDriver(QString driver, int ne
 
 QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString *retString, int canID, bool force)
 {
- 
-
     mutex.lock();
 
     if(force){
@@ -498,11 +449,6 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
     canBoards.clear();
     unsigned int remoteAddr;
     unsigned int localAddr;
-
-    // qDebug() << "getCanBoardsFromEth called with:";
-    // qDebug() << "  address:" << address;
-    // qDebug() << "  canID:" << canID;
-    // qDebug() << "  force:" << force;
 
 
 
@@ -554,21 +500,13 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
         return canBoards;
     }
 
-    // for (int i = 0; i < downloader.board_list_size; i++) {
-    //     qDebug() << "Discovered Board: Bus " << downloader.board_list[i].bus
-    //              << " ID: " << downloader.board_list[i].pid
-    //              << " Status: " << downloader.board_list[i].status;
-    // }
-
     for(int i=0; i<downloader.board_list_size;i++){
         canBoards.append(downloader.board_list[i]);
     }
     currentAddress = address;
-    // qDebug() << "getCanBoardsFromEth returning" << canBoards.count() << "boards.";
 
     //downloader.stopdriver();
     mutex.unlock();
-
     return canBoards;
 
 }
@@ -1075,7 +1013,6 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
 #else
 bool FirmwareUpdaterCore::uploadCanApplication(QString filename, QString *resultString, bool ee, QString address, int deviceId, QList<sBoard> *resultCanBoards)
-
 // bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultString, bool ee, QString address,int deviceId,QList <sBoard> *resultCanBoards)
 {
 //    if(!address.isEmpty()){
@@ -1087,48 +1024,8 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename, QString *result
 //        }
 
 //    }
-    // Debug inputs
-    // qDebug() << "uploadCanApplication called with:";
-    // qDebug() << "  filename:" << filename;
-    // qDebug() << "  address:" << address;
-    // qDebug() << "  deviceId:" << deviceId;
-    // qDebug() << "  resultCanBoards is null:" << (resultCanBoards == nullptr);
-    // if (resultCanBoards != nullptr) {
-    //     qDebug() << "  resultCanBoards size:" << resultCanBoards->size();
-    // }
-
-
-
-
-    if (filename.isEmpty() || resultCanBoards == nullptr) {
-        *resultString = "Invalid input: filename or resultCanBoards is null/empty.";
-        qDebug() << "Error: Invalid input. filename or resultCanBoards is null/empty.";
-
-        return false;
-    }
-
-    // Add debug statements here to inspect the board list
-    for (int i = 0; i < downloader.board_list_size; i++) {
-        qDebug() << "Board " << i
-                 << " Bus: " << downloader.board_list[i].bus
-                 << " ID: " << downloader.board_list[i].pid
-                 << " Selected: " << downloader.board_list[i].selected
-                 << " Status: " << downloader.board_list[i].status;
-    }
-
-
-
-
     // QString res;
     // QList<sBoard> boards;
-
-    // if(!address.isEmpty() && deviceId == -1){
-    //     getCanBoardsFromEth(address,&res);
-    // }else{
-    //     getCanBoardsFromDriver("SOCKETCAN",deviceId,&res);
-    // }
-
-
     if (resultCanBoards->size() == 1)
     {
         int canID = resultCanBoards->at(0).bus;
