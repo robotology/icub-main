@@ -40,6 +40,7 @@ FineCalibrationCheckerThread::FineCalibrationCheckerThread(yarp::os::ResourceFin
     : yarp::os::Thread(), _deviceName("fineCalibrationChecker"), _portPrefix("/fineCalibrationChecker"),
       _robotName("icub"), _subpartsList(nullptr), _jointsList(nullptr), calibrationStatus(false)
 {
+    configured = false;
     // Read configuration file
     yarp::os::Bottle &conf_group = rf.findGroup("GENERAL");
     if (conf_group.isNull())
@@ -67,24 +68,38 @@ bool FineCalibrationCheckerThread::threadInit()
         _robotSubpartsList[i] = _subpartsList->get(i).asString();
         yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Configuring controlboard" << i << _robotSubpartsList[i];
     }
+    for (size_t i = 0; i < _jointsList->size(); i++)
+    {
+        yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Configuring joint" << i << _jointsList->get(i).asString();
+    }
     configureDevicesMap(_robotSubpartsList);
 
     // ************ END OF CONFIGURATION ************
 
     // Initialize the remote control boards
     yarp::os::Property deviceProperties;
-    deviceProperties.put("device", "remotecontrolboardremapper");
+    yarp::os::Bottle axesNames;
+    axesNames.addList();
     yarp::os::Bottle remoteControlBoards;
-    yarp::os::Bottle &remoteControlBoardsList = remoteControlBoards.addList();
+    remoteControlBoards.addList();
+
+    deviceProperties.put("device", "remotecontrolboardremapper");
+    for (size_t i = 0; i < _jointsList->size(); i++)
+    {
+        axesNames.addString(_jointsList->get(i).asString());
+        deviceProperties.put("axesNames", axesNames.get(i));
+    }
+    
     for (size_t i = 0; i < _robotSubpartsList.size(); i++)
     {
-        remoteControlBoardsList.addString("/" + _robotName + "/" + _robotSubpartsList[i]);
-        deviceProperties.put("remoteControlBoards",remoteControlBoards.get(i));
+        remoteControlBoards.addString(_robotSubpartsList[i]);
+        deviceProperties.put("remoteControlBoards", remoteControlBoards.get(i));
         deviceProperties.put("localPortPrefix", "/" + _deviceName);
+        deviceProperties.put("localPortName", "/" + _deviceName + "/" + _robotSubpartsList[i]);
 
         yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "configuring"
-        << "\t robotname: " << _robotName
-        << "\t controlboard: " << _robotSubpartsList[i] << "\n";
+        << "robotname:" << _robotName
+        << "controlboard:" << _robotSubpartsList[i] << "\n";
 
         _fineCalibrationCheckerDevicesMap[_robotSubpartsList[i]]->open(deviceProperties);
 
@@ -101,26 +116,9 @@ bool FineCalibrationCheckerThread::threadInit()
             return false;
         }
         */
-
-        // Initialize parametric calibrator device
-        if (!_fineCalibrationCheckerDevicesMap[_robotSubpartsList[i]]->view(_iremotecalib) || _iremotecalib == nullptr)
-        {
-            yCError(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Unable to open remote calibrator interface. Aborting...";
-            return false;
-        }
-
-        if (!_fineCalibrationCheckerDevicesMap[_robotSubpartsList[i]]->view(_icontrolcalib) || _icontrolcalib == nullptr)
-        {
-            yCError(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Unable to open control calibration interface. Aborting...";
-            return false;
-        }
-
-        if (!_fineCalibrationCheckerDevicesMap[_robotSubpartsList[i]]->view(_imot) || _imot == nullptr)
-        {
-            yCError(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Unable to open motor interface. Aborting...";
-            return false;
-        }
     }
+
+    yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Opened all devices successfully";
 
     // Configuring raw values metadata
     // iCub::rawValuesKeyMetadataMap metadata = {}; // I just need to call it once while configuring (I think) 
@@ -142,41 +140,39 @@ bool FineCalibrationCheckerThread::threadInit()
 void FineCalibrationCheckerThread::run()
 {
     // Run the calibration thread
-    if (!this->isStopping())
+    if(!this->isStopping() && !configured)
     {
+        yCDebug(FineCalibrationCheckerThreadCOMPONENT) << "Running calibration thread";
         // Perform calibration logic here
         // For example, you can call methods on _iremotecalib and _icontrolcalib to perform calibration tasks
         for (size_t i = 0; i < _robotSubpartsList.size(); i++)
         {
             configureCalibration(_robotSubpartsList[i]);
-            runCalibration();
+            //runCalibration();
         }
-        
+    }
+    else
+    {
+        yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Thread already configured";
     }
 }
 
 void FineCalibrationCheckerThread::threadRelease()
 {
     // Release resources and close the device
-    if (this->stop())
+    
+    // Close all devices
+    for (size_t i = 0; i < _fineCalibrationCheckerDevicesMap.size(); i++)
     {
-        // Close all devices
-        for (size_t i = 0; i < _fineCalibrationCheckerDevicesMap.size(); i++)
+        if(_fineCalibrationCheckerDevicesMap[_robotSubpartsList[i]]->close())
         {
-            if(_fineCalibrationCheckerDevicesMap[_robotSubpartsList[i]]->close())
-            {
-                yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Closed device" << _robotSubpartsList[i];
-            }
-            else
-            {
-                yCError(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Unable to close device" << _robotSubpartsList[i];
-            }
-        }   
-    }
-    else
-    {
-        yCError(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Problem. Unable to stop the thread.";
-    }
+            yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Closed device" << _robotSubpartsList[i];
+        }
+        else
+        {
+            yCError(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Unable to close device" << _robotSubpartsList[i];
+        }
+    }   
 }
 
 void FineCalibrationCheckerThread::onStop()
@@ -192,15 +188,35 @@ bool FineCalibrationCheckerThread::isCalibrationSuccessful() const
 }
 
 
-void FineCalibrationCheckerThread::configureCalibration(std::string subpartName)
+bool FineCalibrationCheckerThread::configureCalibration(std::string subpartName)
 {
     // Configure the calibration parameters here
     // For example, you can set the calibration parameters for each subpart
     // Configure the calibration parameters for the specified subpart
     yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Configuring calibration for subpart " << subpartName;
 
-    _fineCalibrationCheckerDevicesMap[subpartName]->view(_iremotecalib);
-    _fineCalibrationCheckerDevicesMap[subpartName]->view(_icontrolcalib);
+    // Initialize parametric calibrator device
+    if (!_fineCalibrationCheckerDevicesMap[subpartName]->view(_iremotecalib) || _iremotecalib == nullptr)
+    {
+        yCError(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Unable to open remote calibrator interface. Aborting...";
+        return false;
+    }
+
+    if (!_fineCalibrationCheckerDevicesMap[subpartName]->view(_icontrolcalib) || _icontrolcalib == nullptr)
+    {
+        yCError(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Unable to open control calibration interface. Aborting...";
+        return false;
+    }
+
+    if (!_fineCalibrationCheckerDevicesMap[subpartName]->view(_imot) || _imot == nullptr)
+    {
+        yCError(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Unable to open motor interface. Aborting...";
+        return false;
+    }
+
+    yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Opened remote calibrator and control calibration interfaces successfully";
+    configured = true;
+    return true;
 }
 
 void FineCalibrationCheckerThread::runCalibration()

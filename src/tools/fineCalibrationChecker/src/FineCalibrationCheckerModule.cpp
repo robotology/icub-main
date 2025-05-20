@@ -60,6 +60,7 @@ bool FineCalibrationCheckerModule::updateModule()
 {
     // This method is called periodically by the RFModule
     // You can add any periodic tasks here if needed
+    yCDebug(FineCalibrationCheckerModuleCOMPONENT) << "Module is running happily";
     return true;
 }
 

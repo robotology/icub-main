@@ -79,9 +79,10 @@ private:
     std::string _deviceName= "fineCalibrationChecker";
     yarp::os::Bottle* _subpartsList = nullptr;
     yarp::os::Bottle* _jointsList = nullptr;
-    std::vector<std::string> _robotSubpartsWrapper = {"head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
+    std::vector<std::string> _robotSubpartsWrapper = {"setup_mc", "head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
     std::vector<std::string> _robotSubpartsList = {};
     bool calibrationStatus;
+    bool configured = false;
     std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
 
     // Pointer to the raw values publisher interface
@@ -95,7 +96,7 @@ private:
     // Clinet driver to communicate with interfaces
     std::map<std::string, std::unique_ptr<yarp::dev::PolyDriver>> _fineCalibrationCheckerDevicesMap;
 
-    void configureCalibration(std::string subpartName);
+    bool configureCalibration(std::string subpartName);
     void runCalibration();
 
     // Utility methods
