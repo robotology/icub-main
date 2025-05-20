@@ -95,8 +95,9 @@ private:
 
     // Clinet driver to communicate with interfaces
     std::map<std::string, std::unique_ptr<yarp::dev::PolyDriver>> _fineCalibrationCheckerDevicesMap;
+    std::unique_ptr<yarp::dev::PolyDriver> _fineCalibrationCheckerDevice;
 
-    bool configureCalibration(std::string subpartName);
+    bool configureCalibration();
     void runCalibration();
 
     // Utility methods

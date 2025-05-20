@@ -48,7 +48,8 @@ bool FineCalibrationCheckerModule::configure(yarp::os::ResourceFinder& rf)
 bool FineCalibrationCheckerModule::close()
 {
     // Stop the thread if it exists
-    if (checkerThread) {
+    if (checkerThread) 
+    {
         checkerThread->stop();
         checkerThread.reset(); // Automatically deletes the thread
     }
