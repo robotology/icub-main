@@ -27,7 +27,7 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Value.h>
-#include <yarp/dev/IVisualParams.h>
+#include <yarp/dev/IRgbVisualParams.h>
 #include <yarp/dev/IFrameGrabberControlsDC1394.h>
 #include <yarp/dev/IFrameGrabberControls.h>
 
