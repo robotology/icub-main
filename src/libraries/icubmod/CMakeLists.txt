@@ -17,6 +17,17 @@ if(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
   add_definitions(-D_WIP_CHECK_PROTOCOL_VERSION_)
 endif()
 
+# The committed versions of the param parsers is not compatible with YARP 3.12.0, so depending on the YARP version we set
+# the option to automatically run the generator to ON if we detect an incompatible YARP version. This can be changed when
+# compatibility with YARP 3.11 is dropped and YARP 3.12 compatible param parser are generated
+if(YARP_VERSION VERSION_LESS 3.11.100)
+  set(ALLOW_DEVICE_PARAM_PARSER_GENERATION_DEFAULT_VALUE OFF)
+else()
+  set(ALLOW_DEVICE_PARAM_PARSER_GENERATION_DEFAULT_VALUE ON)
+endif()
+
+option(ALLOW_DEVICE_PARAM_PARSER_GENERATION "Generate the param parser for icub-main devices" ${ALLOW_DEVICE_PARAM_PARSER_GENERATION_DEFAULT_VALUE})
+
 yarp_begin_plugin_library(icubmod QUIET)
   # This variable is used to provide a private (not installed) header for backward compatibility of YARP interfaces
   # across different YARP versions

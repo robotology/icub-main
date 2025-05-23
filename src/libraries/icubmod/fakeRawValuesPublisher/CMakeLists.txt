@@ -12,7 +12,6 @@ yarp_prepare_plugin(fakeRawValuesPublisher
                     GENERATE_PARSER)
 
 if(ENABLE_fakeRawValuesPublisher)
-  option(ALLOW_DEVICE_PARAM_PARSER_GENERATION "Generate the param parser for fakeRawValuesPublisher device" OFF)
   yarp_add_plugin(fakeRawValuesPublisher)
 
   target_sources(fakeRawValuesPublisher  PRIVATE FakeRawValuesPublisher.cpp
