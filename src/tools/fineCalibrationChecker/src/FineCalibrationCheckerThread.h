@@ -41,6 +41,19 @@
 class FineCalibrationCheckerThread : public yarp::os::Thread
 {
 public:
+    // Enum for device status
+    enum class deviceStatus 
+    {
+        INITIALIZED = 0,
+        OPENED = 1,
+        CONFIGURED = 2,
+        CALIBRATED = 3,
+        END_POSITION_CHECKED = 4,
+        IN_HOME_POSITION = 5,
+        UNKNOWN = 244,
+        NONE = 255
+    };
+
     // Constructor
     FineCalibrationCheckerThread() = default;
 
@@ -77,28 +90,26 @@ private:
     std::string _portPrefix = "/fineCalibrationChecker";
     std::string _robotName= "";
     std::string _deviceName= "fineCalibrationChecker";
-    yarp::os::Bottle* _subpartsList = nullptr;
-    yarp::os::Bottle* _jointsList = nullptr;
+    
+    deviceStatus _deviceStatus = deviceStatus::NONE;
+    
+    yarp::os::Bottle _controlBoardsList = yarp::os::Bottle();
+    yarp::os::Bottle _axesNamesList = yarp::os::Bottle();
     std::vector<std::string> _robotSubpartsWrapper = {"setup_mc", "head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
-    std::vector<std::string> _robotSubpartsList = {};
-    bool calibrationStatus;
-    bool configured = false;
     std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
 
-    // Pointer to the raw values publisher interface
-    iCub::debugLibrary::IRawValuesPublisher* _iravap;//TODO: we need also to make another device for this interface not implemented by remotecontrolboardremapper
-
-    // Pointer to the parametric calibrator and its controller interface
+    // Pointers to interfaces
     yarp::dev::IRemoteCalibrator* _iremotecalib;
     yarp::dev::IControlCalibration* _icontrolcalib;
     yarp::dev::IMotor* _imot;
+    iCub::debugLibrary::IRawValuesPublisher* _iravap;
 
-    // Clinet driver to communicate with interfaces
+    // Client drivers to communicate with interfaces
     std::unique_ptr<yarp::dev::PolyDriver> _fineCalibrationCheckerDevice;
     std::unique_ptr<yarp::dev::PolyDriver> _rawValuesOublisherDevice;
 
     bool configureCalibration();
-    void runCalibration();
+    bool runCalibration();
 
     // Utility methods
     void configureDevicesMap(std::vector<std::string> list);
