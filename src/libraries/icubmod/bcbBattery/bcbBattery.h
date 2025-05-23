@@ -17,6 +17,9 @@
 #include <yarp/sig/Vector.h>
 #include <regex>
 
+// This is to provide compatibility with both YARP 3.11 and 3.12
+#include <iCub/YarpDevReturnValueCompat.h>
+
 using namespace yarp::os;
 using namespace yarp::dev;
 
@@ -84,12 +87,12 @@ public:
     virtual bool open(yarp::os::Searchable& config);
     virtual bool close();
 
-    virtual bool getBatteryVoltage     (double &voltage) override;
-    virtual bool getBatteryCurrent     (double &current) override;
-    virtual bool getBatteryCharge      (double &charge) override;
-    virtual bool getBatteryStatus      (Battery_status &status) override;
-    virtual bool getBatteryInfo        (std::string &info) override;
-    virtual bool getBatteryTemperature (double &temperature) override;
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryVoltage     (double &voltage) override;
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryCurrent     (double &current) override;
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryCharge      (double &charge) override;
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryStatus      (Battery_status &status) override;
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryInfo        (std::string &info) override;
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryTemperature (double &temperature) override;
 };
 
 

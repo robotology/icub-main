@@ -410,44 +410,44 @@ double embObjBattery::calculateBoardTime(eOabstime_t current)
     return realtime;
 }
 
-bool embObjBattery::getBatteryVoltage(double &voltage)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 embObjBattery::getBatteryVoltage(double &voltage)
 {
     voltage = canBatteryData_.voltage_;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool embObjBattery::getBatteryCurrent(double &current)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 embObjBattery::getBatteryCurrent(double &current)
 {
     current = canBatteryData_.current_;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool embObjBattery::getBatteryCharge(double &charge)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 embObjBattery::getBatteryCharge(double &charge)
 {
     charge = (canBatteryData_.charge_ != 0.0) ? canBatteryData_.charge_ : NAN;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool embObjBattery::getBatteryStatus(Battery_status &status)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 embObjBattery::getBatteryStatus(Battery_status &status)
 {
     status = static_cast<Battery_status>(canBatteryData_.status_);
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool embObjBattery::getBatteryTemperature(double &temperature)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 embObjBattery::getBatteryTemperature(double &temperature)
 {
     temperature = (canBatteryData_.temperature_ != 0) ? canBatteryData_.temperature_ : NAN;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool embObjBattery::getBatteryInfo(std::string &battery_info)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 embObjBattery::getBatteryInfo(std::string &battery_info)
 {
     std::stringstream ss;
     ss << "{\"temperature\":" << canBatteryData_.temperature_ << ",\"voltage\":" << canBatteryData_.voltage_ << ",\"current\":" << canBatteryData_.current_ << ",\"charge\":" << canBatteryData_.charge_ << ",\"status\":" << canBatteryData_.status_
        << ",\"ts\":" << canBatteryData_.timeStamp_ << "}" << std::endl;
 
     battery_info = ss.str();
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
 bool CanBatteryData::operator==(const CanBatteryData &other) const

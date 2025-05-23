@@ -18,6 +18,10 @@ if(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
 endif()
 
 yarp_begin_plugin_library(icubmod QUIET)
+  # This variable is used to provide a private (not installed) header for backward compatibility of YARP interfaces
+  # across different YARP versions
+  set(YARP_COMPAT_SHIM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/yarpCompatShim)
+
   add_subdirectory(canBusMotionControl)
   add_subdirectory(cartesianController)
   add_subdirectory(cfw2Can)

@@ -11,6 +11,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 yarp_add_plugin(bmsBattery bmsBattery.h bmsBattery.cpp)
 target_link_libraries(bmsBattery ${YARP_LIBRARIES})
 
+# Backward compatibility between YARP 3.11 and 3.12
+target_include_directories(bmsBattery PUBLIC "$<BUILD_INTERFACE:${YARP_COMPAT_SHIM_INCLUDE_DIR}>")
+
 icub_export_plugin(bmsBattery)
 
   yarp_install(TARGETS bmsBattery

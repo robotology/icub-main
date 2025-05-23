@@ -222,51 +222,51 @@ void batteryReaderThread::run()
 #endif
 }
 
-bool BcbBattery::getBatteryVoltage(double &voltage)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BcbBattery::getBatteryVoltage(double &voltage)
 {
-    if (!batteryReader) return false;
+    if (!batteryReader) return YARP_DEV_RETURN_VALUE_ERROR_NOT_READY_CH312;
     std::lock_guard<std::mutex> lg(batteryReader->datamut);
     voltage = batteryReader->battery_voltage;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool BcbBattery::getBatteryCurrent(double &current)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BcbBattery::getBatteryCurrent(double &current)
 {
-    if (!batteryReader) return false;
+    if (!batteryReader) return YARP_DEV_RETURN_VALUE_ERROR_NOT_READY_CH312;
     std::lock_guard<std::mutex> lg(batteryReader->datamut);
     current = batteryReader->battery_current;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool BcbBattery::getBatteryCharge(double &charge)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BcbBattery::getBatteryCharge(double &charge)
 {
-    if (!batteryReader) return false;
+    if (!batteryReader) return YARP_DEV_RETURN_VALUE_ERROR_NOT_READY_CH312;
     std::lock_guard<std::mutex> lg(batteryReader->datamut);
     charge = batteryReader->battery_charge;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool BcbBattery::getBatteryStatus(Battery_status &status)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BcbBattery::getBatteryStatus(Battery_status &status)
 {
-    if (!batteryReader) return false;
+    if (!batteryReader) return YARP_DEV_RETURN_VALUE_ERROR_NOT_READY_CH312;
     std::lock_guard<std::mutex> lg(batteryReader->datamut);
     status= batteryReader->battery_status;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool BcbBattery::getBatteryTemperature(double &temperature)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BcbBattery::getBatteryTemperature(double &temperature)
 {
     //yError("Not yet implemented");
     temperature = std::nan("");
-    return false;
+    return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
 }
 
-bool BcbBattery::getBatteryInfo(string &info)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BcbBattery::getBatteryInfo(string &info)
 {
-    if (!batteryReader) return false;
+    if (!batteryReader) return YARP_DEV_RETURN_VALUE_ERROR_NOT_READY_CH312;
     std::lock_guard<std::mutex> lg(batteryReader->datamut);
     info = batteryReader->battery_info;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
 void batteryReaderThread::threadRelease()

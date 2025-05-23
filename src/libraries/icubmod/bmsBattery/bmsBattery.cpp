@@ -175,44 +175,44 @@ void BmsBattery::run()
     }
 }
 
-bool BmsBattery::getBatteryVoltage(double &voltage)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BmsBattery::getBatteryVoltage(double &voltage)
 {
     lock_guard<mutex> lck(mtx);
     voltage = battery_voltage;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool BmsBattery::getBatteryCurrent(double &current)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BmsBattery::getBatteryCurrent(double &current)
 {
     lock_guard<mutex> lck(mtx);
     current = battery_current;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool BmsBattery::getBatteryCharge(double &charge)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BmsBattery::getBatteryCharge(double &charge)
 {
     lock_guard<mutex> lck(mtx);
     charge = battery_charge;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
-bool BmsBattery::getBatteryStatus(Battery_status &status)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BmsBattery::getBatteryStatus(Battery_status &status)
 {
     //yError("Not yet implemented");
-    return false;
+    return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
 }
 
-bool BmsBattery::getBatteryTemperature(double &temperature)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BmsBattery::getBatteryTemperature(double &temperature)
 {
     //yError("Not yet implemented");
-    return false;
+    return YARP_DEV_RETURN_VALUE_ERROR_NOT_IMPLEMENTED_BY_DEVICE_CH312;
 }
 
-bool BmsBattery::getBatteryInfo(string &info)
+YARP_DEV_RETURN_VALUE_TYPE_CH312 BmsBattery::getBatteryInfo(string &info)
 {
     lock_guard<mutex> lck(mtx);
     info = battery_info;
-    return true;
+    return YARP_DEV_RETURN_VALUE_OK_CH312;
 }
 
 void BmsBattery::threadRelease()
