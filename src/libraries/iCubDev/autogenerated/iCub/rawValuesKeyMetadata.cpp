@@ -14,9 +14,11 @@ namespace iCub {
 
 // Constructor with field values
 rawValuesKeyMetadata::rawValuesKeyMetadata(const std::vector<std::string>& rawValueNames,
+                                           const std::vector<std::string>& axesNames,
                                            const std::int32_t size) :
         WirePortable(),
         rawValueNames(rawValueNames),
+        axesNames(axesNames),
         size(size)
 {
 }
@@ -25,6 +27,9 @@ rawValuesKeyMetadata::rawValuesKeyMetadata(const std::vector<std::string>& rawVa
 bool rawValuesKeyMetadata::read(yarp::os::idl::WireReader& reader)
 {
     if (!read_rawValueNames(reader)) {
+        return false;
+    }
+    if (!read_axesNames(reader)) {
         return false;
     }
     if (!read_size(reader)) {
@@ -40,7 +45,7 @@ bool rawValuesKeyMetadata::read(yarp::os::idl::WireReader& reader)
 bool rawValuesKeyMetadata::read(yarp::os::ConnectionReader& connection)
 {
     yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListHeader(2)) {
+    if (!reader.readListHeader(3)) {
         return false;
     }
     if (!read(reader)) {
@@ -53,6 +58,9 @@ bool rawValuesKeyMetadata::read(yarp::os::ConnectionReader& connection)
 bool rawValuesKeyMetadata::write(const yarp::os::idl::WireWriter& writer) const
 {
     if (!write_rawValueNames(writer)) {
+        return false;
+    }
+    if (!write_axesNames(writer)) {
         return false;
     }
     if (!write_size(writer)) {
@@ -68,7 +76,7 @@ bool rawValuesKeyMetadata::write(const yarp::os::idl::WireWriter& writer) const
 bool rawValuesKeyMetadata::write(yarp::os::ConnectionWriter& connection) const
 {
     yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) {
+    if (!writer.writeListHeader(3)) {
         return false;
     }
     if (!write(writer)) {
@@ -175,6 +183,104 @@ bool rawValuesKeyMetadata::nested_write_rawValueNames(const yarp::os::idl::WireW
         return false;
     }
     for (const auto& _item : rawValueNames) {
+        if (!writer.writeString(_item, true)) {
+            return false;
+        }
+    }
+    if (!writer.writeListEnd()) {
+        return false;
+    }
+    return true;
+}
+
+// read axesNames field
+bool rawValuesKeyMetadata::read_axesNames(yarp::os::idl::WireReader& reader)
+{
+    if (reader.noMore()) {
+        reader.fail();
+        return false;
+    }
+    size_t _csize;
+    yarp::os::idl::WireState _etype;
+    reader.readListBegin(_etype, _csize);
+    // WireReader removes BOTTLE_TAG_LIST from the tag
+    constexpr int expected_tag = ((BOTTLE_TAG_STRING) & (~BOTTLE_TAG_LIST));
+    if constexpr (expected_tag != 0) {
+        if (_csize != 0 && _etype.code != expected_tag) {
+            return false;
+        }
+    }
+    axesNames.resize(_csize);
+    for (size_t _i = 0; _i < _csize; ++_i) {
+        if (reader.noMore()) {
+            reader.fail();
+            return false;
+        }
+        if (!reader.readString(axesNames[_i])) {
+            reader.fail();
+            return false;
+        }
+    }
+    reader.readListEnd();
+    return true;
+}
+
+// write axesNames field
+bool rawValuesKeyMetadata::write_axesNames(const yarp::os::idl::WireWriter& writer) const
+{
+    if (!writer.writeListBegin(BOTTLE_TAG_STRING, axesNames.size())) {
+        return false;
+    }
+    for (const auto& _item : axesNames) {
+        if (!writer.writeString(_item, true)) {
+            return false;
+        }
+    }
+    if (!writer.writeListEnd()) {
+        return false;
+    }
+    return true;
+}
+
+// read (nested) axesNames field
+bool rawValuesKeyMetadata::nested_read_axesNames(yarp::os::idl::WireReader& reader)
+{
+    if (reader.noMore()) {
+        reader.fail();
+        return false;
+    }
+    size_t _csize;
+    yarp::os::idl::WireState _etype;
+    reader.readListBegin(_etype, _csize);
+    // WireReader removes BOTTLE_TAG_LIST from the tag
+    constexpr int expected_tag = ((BOTTLE_TAG_STRING) & (~BOTTLE_TAG_LIST));
+    if constexpr (expected_tag != 0) {
+        if (_csize != 0 && _etype.code != expected_tag) {
+            return false;
+        }
+    }
+    axesNames.resize(_csize);
+    for (size_t _i = 0; _i < _csize; ++_i) {
+        if (reader.noMore()) {
+            reader.fail();
+            return false;
+        }
+        if (!reader.readString(axesNames[_i])) {
+            reader.fail();
+            return false;
+        }
+    }
+    reader.readListEnd();
+    return true;
+}
+
+// write (nested) axesNames field
+bool rawValuesKeyMetadata::nested_write_axesNames(const yarp::os::idl::WireWriter& writer) const
+{
+    if (!writer.writeListBegin(BOTTLE_TAG_STRING, axesNames.size())) {
+        return false;
+    }
+    for (const auto& _item : axesNames) {
         if (!writer.writeString(_item, true)) {
             return false;
         }

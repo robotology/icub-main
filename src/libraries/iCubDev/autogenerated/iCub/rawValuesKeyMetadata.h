@@ -22,6 +22,7 @@ class rawValuesKeyMetadata :
 public:
     // Fields
     std::vector<std::string> rawValueNames{};
+    std::vector<std::string> axesNames{};
     std::int32_t size{0};
 
     // Default constructor
@@ -29,6 +30,7 @@ public:
 
     // Constructor with field values
     rawValuesKeyMetadata(const std::vector<std::string>& rawValueNames,
+                         const std::vector<std::string>& axesNames,
                          const std::int32_t size);
 
     // Read structure on a Wire
@@ -55,6 +57,12 @@ private:
     bool write_rawValueNames(const yarp::os::idl::WireWriter& writer) const;
     bool nested_read_rawValueNames(yarp::os::idl::WireReader& reader);
     bool nested_write_rawValueNames(const yarp::os::idl::WireWriter& writer) const;
+
+    // read/write axesNames field
+    bool read_axesNames(yarp::os::idl::WireReader& reader);
+    bool write_axesNames(const yarp::os::idl::WireWriter& writer) const;
+    bool nested_read_axesNames(yarp::os::idl::WireReader& reader);
+    bool nested_write_axesNames(const yarp::os::idl::WireWriter& writer) const;
 
     // read/write size field
     bool read_size(yarp::os::idl::WireReader& reader);

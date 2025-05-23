@@ -17,6 +17,6 @@ add_executable(${PROJECT_NAME}
 )
 
 # link with YARP libraries
-target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ICUB::iCubDev)
+target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ${OpenCV_LIBS} ICUB::iCubDev)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)

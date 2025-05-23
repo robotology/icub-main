@@ -25,6 +25,8 @@
 #include <map>
 #include <memory>
 
+#include <opencv2/opencv.hpp>
+
 // yarp includes
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Thread.h>
@@ -38,9 +40,28 @@
 // iCub includes
 #include <iCub/IRawValuesPublisher.h>
 
+
+struct ItemData {
+    std::string name;
+    int32_t val1, val2, val3, val4;
+};
+
 class FineCalibrationCheckerThread : public yarp::os::Thread
 {
 public:
+    // Enum for device status
+    enum class deviceStatus 
+    {
+        INITIALIZED = 0,
+        OPENED = 1,
+        CONFIGURED = 2,
+        CALIBRATED = 3,
+        END_POSITION_CHECKED = 4,
+        IN_HOME_POSITION = 5,
+        UNKNOWN = 244,
+        NONE = 255
+    };
+
     // Constructor
     FineCalibrationCheckerThread() = default;
 
@@ -77,31 +98,35 @@ private:
     std::string _portPrefix = "/fineCalibrationChecker";
     std::string _robotName= "";
     std::string _deviceName= "fineCalibrationChecker";
-    yarp::os::Bottle* _subpartsList = nullptr;
-    yarp::os::Bottle* _jointsList = nullptr;
+    std::string _remoteRawValuesPort = "";
+    
+    deviceStatus _deviceStatus = deviceStatus::NONE;
+    
+    yarp::os::Bottle _controlBoardsList = yarp::os::Bottle();
+    yarp::os::Bottle _axesNamesList = yarp::os::Bottle();
     std::vector<std::string> _robotSubpartsWrapper = {"setup_mc", "head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
-    std::vector<std::string> _robotSubpartsList = {};
-    bool calibrationStatus;
-    bool configured = false;
     std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
+    iCub::rawValuesKeyMetadataMap rawDataMetadata;
+    std::map<std::string, std::array<int32_t, 2>> axesRawGoldenPositionsResMap;
+    std::string _rawValuesTag = "eoprot_tag_mc_joint_status_addinfo_multienc";
 
-    // Pointer to the raw values publisher interface
-    iCub::debugLibrary::IRawValuesPublisher* _iravap;//TODO: we need also to make another device for this interface not implemented by remotecontrolboardremapper
-
-    // Pointer to the parametric calibrator and its controller interface
+    // Pointers to interfaces
     yarp::dev::IRemoteCalibrator* _iremotecalib;
     yarp::dev::IControlCalibration* _icontrolcalib;
     yarp::dev::IMotor* _imot;
+    iCub::debugLibrary::IRawValuesPublisher* _iravap;
 
-    // Clinet driver to communicate with interfaces
+    // Client drivers to communicate with interfaces
     std::unique_ptr<yarp::dev::PolyDriver> _fineCalibrationCheckerDevice;
     std::unique_ptr<yarp::dev::PolyDriver> _rawValuesOublisherDevice;
 
     bool configureCalibration();
-    void runCalibration();
-
+    bool runCalibration();
+    void evaluateHardStopPositionDelta(const std::string& key, const std::string& inputFileName, const std::string& outputFileName);
+    void generateOutputImage(int frameWidth, int frameHeight, const std::vector<ItemData>& items);
     // Utility methods
     void configureDevicesMap(std::vector<std::string> list);
+    cv::Scalar getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2);
 };
 
 #endif // FINE_CALIBRATION_CHECKER_THREAD_H
