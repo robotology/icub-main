@@ -512,7 +512,7 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
 }
 
 
-QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromEthSINGLEONE(QString address, int canID, int canAddress, QString *retString)
+QList<sBoard> FirmwareUpdaterCore::discoverSingleCanBoardViaEth(QString address, int canID, int canAddress, QString *retString)
 {
     QList<sBoard> result;
 
@@ -528,7 +528,7 @@ QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromEthSINGLEONE(QString address,
         return result;
     }
 
-    if (downloader.initSINGLEBOARD(canID, canAddress, icubCanProto_boardType__unknown) == 0)
+    if (downloader.initSINGLEBOARD(canID, canAddress) == 0)
     {
         for (int i = 0; i < downloader.board_list_size; ++i)
         {
@@ -1013,46 +1013,37 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
 #else
 bool FirmwareUpdaterCore::uploadCanApplication(QString filename, QString *resultString, bool ee, QString address, int deviceId, QList<sBoard> *resultCanBoards)
-// bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultString, bool ee, QString address,int deviceId,QList <sBoard> *resultCanBoards)
 {
-//    if(!address.isEmpty()){
-//        if(currentAddress != address){
-//            if(downloader.connected){
-//                downloader.stopdriver();
-//            }
-//            getCanBoardsFromEth(address,resultString);
-//        }
+    // Always refresh the board list from ETH
+    QList<sBoard> boards = getCanBoardsFromEth(address, resultString, deviceId, false);
+    if (boards.isEmpty()) {
+        *resultString = "No boards found.";
+        return false;
+    }
+    *resultCanBoards = boards;
 
-//    }
-    // QString res;
-    // QList<sBoard> boards;
-    if (resultCanBoards->size() == 1)
-    {
-        int canID = resultCanBoards->at(0).bus;
-        int canAddress = resultCanBoards->at(0).pid;
+    // Count selected boards
+    int selectedCount = 0;
+    int selectedIndex = -1;
+    for (int i = 0; i < boards.size(); ++i) {
+        if (boards[i].selected) {
+            selectedCount++;
+            selectedIndex = i;
+        }
+    }
 
-        QList<sBoard> singleBoard = getCanBoardsFromEthSINGLEONE(address, canID, canAddress, resultString);
-        if (singleBoard.isEmpty())
-        {
+    // If exactly one board is selected, use unicast discovery
+    if (selectedCount == 1 && selectedIndex != -1) {
+        int canID = boards[selectedIndex].bus;
+        int canAddress = boards[selectedIndex].pid;
+        QList<sBoard> singleBoard = discoverSingleCanBoardViaEth(address, canID, canAddress, resultString);
+        if (singleBoard.isEmpty()) {
             *resultString = QString("Board not found at CAN ID: %1, Address: %2").arg(canID).arg(canAddress);
             return false; // Board not found
         }
-
         *resultCanBoards = singleBoard;
     }
-    else
-    {
-        // Existing logic for multiple boards
-        QList<sBoard> boards = getCanBoardsFromEth(address, resultString, deviceId, false);
-        if (boards.isEmpty())
-        {
-            *resultString = "No boards found.";
-            return false;
-
-        }
-        *resultCanBoards = boards;
-    }
-
+    // else: keep using the boards list as is (broadcast)
 
     double timer_start =0;
     double timer_end   =0;

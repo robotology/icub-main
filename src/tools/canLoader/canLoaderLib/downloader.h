@@ -175,7 +175,7 @@ void set_canbus_id      (int id);
 int strain_start_sampling    (int bus, int target_id, string *errorstring = NULL);
 int strain_stop_sampling     (int bus, int target_id, string *errorstring = NULL);
 
-int initSINGLEBOARD(int canbus, int canaddress, icubCanProto_boardType_t boardtype);
+int initSINGLEBOARD(int canbus, int canaddress);
 
 float strain_amplifier_discretegain2float(strain2_ampl_discretegain_t c);
 
