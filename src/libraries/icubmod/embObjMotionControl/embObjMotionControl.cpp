@@ -1549,6 +1549,7 @@ bool embObjMotionControl::init()
         for (int i = 0; i < _njoints; i++)
         {
             getEntityName(i, auxstring);
+            v.axesNames.push_back(auxstring);
             if (k == tag)
             {
                 v.axesNames.push_back(auxstring);
