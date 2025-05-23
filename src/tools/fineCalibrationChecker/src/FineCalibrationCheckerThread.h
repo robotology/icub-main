@@ -94,8 +94,8 @@ private:
     yarp::dev::IMotor* _imot;
 
     // Clinet driver to communicate with interfaces
-    std::map<std::string, std::unique_ptr<yarp::dev::PolyDriver>> _fineCalibrationCheckerDevicesMap;
     std::unique_ptr<yarp::dev::PolyDriver> _fineCalibrationCheckerDevice;
+    std::unique_ptr<yarp::dev::PolyDriver> _rawValuesOublisherDevice;
 
     bool configureCalibration();
     void runCalibration();
