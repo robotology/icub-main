@@ -23,7 +23,7 @@
 #include <yarp/dev/IFrameGrabberControls.h>
 #include <yarp/dev/IFrameGrabberControlsDC1394.h>
 #include <yarp/dev/IFrameGrabberImage.h>
-#include <yarp/dev/IRgbVisualParams.h.h>
+#include <yarp/dev/IRgbVisualParams.h>
 
 namespace yarp {
     namespace dev {
