@@ -1514,52 +1514,26 @@ int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
                         }
                         if(selectedCount > 0){
                             core->setSelectedCanBoards(canBoards,board);
-                            bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, board);
-                            if(verbosity >= 1) qDebug() << retString;
+                            // bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, board);
+                            QList<sBoard> resultCanBoards; // Declare resultCanBoards
+                            bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, board, canLine.toInt(), &resultCanBoards);
+                            if (verbosity >= 1) qDebug() << retString;
                             return ret ? 0 : -1;
-                        }else{
-                            if(verbosity >= 1) qDebug() << "No board selected";
+                        } else {
+                            if (verbosity >= 1) qDebug() << "No board selected";
                             return -1;
                         }
-                    }else{
-                        if(verbosity >= 1) qDebug() << retString;
+                    } else {
+                        if (verbosity >= 1) qDebug() << retString;
                         return -1;
                     }
 
                 }
             }
-
-        }
-    }else{
-        QList <sBoard> canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
-        if(canBoards.count() > 0){
-            int selectedCount = 0;
-            for(int j=0;j<canBoards.count();j++){
-                sBoard b = canBoards.at(j);
-                if(b.bus == canLine.toInt() && b.pid == canId.toInt()){
-                    b.selected = true;
-                    b.eeprom = eraseEEprom;
-                    canBoards.replace(j,b);
-                    selectedCount++;
-                }
-            }
-            if(selectedCount > 0){
-                core->setSelectedCanBoards(canBoards,device,id.toInt());
-                bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, device, id.toInt());
-                if(verbosity >= 1) qDebug() << retString;
-                return ret ? 0 : -1;
-            }else{
-                if(verbosity >= 1) qDebug() << "No board selected";
-                return -1;
-            }
-        }else{
-            if(verbosity >= 1) qDebug() << retString;
-            return -1;
-        }
+        } 
     }
     return -1;
 }
-
 
 int programEthDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString file)
 {
