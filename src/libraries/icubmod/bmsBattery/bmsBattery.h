@@ -15,6 +15,9 @@
 #include <yarp/os/ResourceFinder.h>
 #include <yarp/sig/Vector.h>
 
+// This is to provide compatibility with both YARP 3.11 and 3.12
+#include <iCub/YarpDevReturnValueCompat.h>
+
 using namespace yarp::os;
 using namespace yarp::dev;
 
@@ -57,12 +60,12 @@ public:
     virtual bool open(yarp::os::Searchable& config);
     virtual bool close();
 
-    virtual bool getBatteryVoltage     (double &voltage);
-    virtual bool getBatteryCurrent     (double &current);
-    virtual bool getBatteryCharge      (double &charge);
-    virtual bool getBatteryStatus      (Battery_status &status);
-    virtual bool getBatteryInfo        (std::string &info);
-    virtual bool getBatteryTemperature (double &temperature);
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryVoltage     (double &voltage);
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryCurrent     (double &current);
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryCharge      (double &charge);
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryStatus      (Battery_status &status);
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryInfo        (std::string &info);
+    virtual YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryTemperature (double &temperature);
 
     virtual bool threadInit();
     virtual void threadRelease();

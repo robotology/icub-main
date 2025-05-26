@@ -12,7 +12,6 @@ yarp_prepare_plugin(couplingICubHandMk2
                     DEFAULT ON)
 
 if(ENABLE_couplingICubHandMk2)
-  option(ALLOW_DEVICE_PARAM_PARSER_GENERATION "Generate the param parser for couplingICubHandMk2 device" OFF)
   yarp_add_plugin(yarp_couplingICubHandMk2)
 
   if(MSVC)

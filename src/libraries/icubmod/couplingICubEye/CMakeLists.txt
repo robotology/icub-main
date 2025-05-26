@@ -12,7 +12,6 @@ yarp_prepare_plugin(couplingICubEye
                     DEFAULT ON)
 
 if(ENABLE_couplingICubEye)
-    option(ALLOW_DEVICE_PARAM_PARSER_GENERATION "Generate the param parser for couplingICubEye device" OFF)
     yarp_add_plugin(yarp_couplingICubEye)
 
     if(MSVC)

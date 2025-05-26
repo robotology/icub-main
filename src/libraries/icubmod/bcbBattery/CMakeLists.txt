@@ -10,6 +10,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 yarp_add_plugin(bcbBattery bcbBattery.h bcbBattery.cpp)
 target_link_libraries(bcbBattery ${YARP_LIBRARIES})
+# Backward compatibility between YARP 3.11 and 3.12
+target_include_directories(bcbBattery PUBLIC "$<BUILD_INTERFACE:${YARP_COMPAT_SHIM_INCLUDE_DIR}>")
 
 icub_export_plugin(bcbBattery)
 

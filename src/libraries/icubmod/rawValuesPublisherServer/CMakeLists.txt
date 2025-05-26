@@ -15,7 +15,6 @@ yarp_prepare_plugin(rawValuesPublisherServer
                     GENERATE_PARSER)
 
 if(ENABLE_rawValuesPublisherServer)
-  option(ALLOW_DEVICE_PARAM_PARSER_GENERATION "Generate the param parser for rawValuesPublisherServer device" OFF)
   yarp_add_plugin(rawValuesPublisherServer)
 
   target_sources(rawValuesPublisherServer PRIVATE RawValuesPublisherServer.cpp

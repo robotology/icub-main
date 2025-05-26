@@ -23,6 +23,9 @@
 #include "embObjGeneralDevPrivData.h"
 #include "serviceParserCanBattery.h"
 
+// This is to provide compatibility with both YARP 3.11 and 3.12
+#include <iCub/YarpDevReturnValueCompat.h>
+
 namespace yarp::dev
 {
 class embObjBattery;
@@ -63,12 +66,12 @@ class yarp::dev::embObjBattery : public yarp::dev::DeviceDriver, public eth::Iet
     bool update(eOprotID32_t id32, double timestamp, void *rxdata) override;
 
     // IBattery
-    bool getBatteryVoltage(double &voltage) override;
-    bool getBatteryCurrent(double &current) override;
-    bool getBatteryCharge(double &charge) override;
-    bool getBatteryStatus(Battery_status &status) override;
-    bool getBatteryTemperature(double &temperature) override;
-    bool getBatteryInfo(std::string &battery_info) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryVoltage(double &voltage) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryCurrent(double &current) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryCharge(double &charge) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryStatus(Battery_status &status) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryTemperature(double &temperature) override;
+    YARP_DEV_RETURN_VALUE_TYPE_CH312 getBatteryInfo(std::string &battery_info) override;
 
     virtual double calculateBoardTime(eOabstime_t current);
 
