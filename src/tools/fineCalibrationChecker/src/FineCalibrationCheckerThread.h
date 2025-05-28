@@ -25,6 +25,8 @@
 #include <map>
 #include <memory>
 
+#include <opencv2/opencv.hpp>
+
 // yarp includes
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Thread.h>
@@ -37,6 +39,12 @@
 
 // iCub includes
 #include <iCub/IRawValuesPublisher.h>
+
+
+struct ItemData {
+    std::string name;
+    int32_t val1, val2, val3;
+};
 
 class FineCalibrationCheckerThread : public yarp::os::Thread
 {
@@ -97,6 +105,9 @@ private:
     yarp::os::Bottle _axesNamesList = yarp::os::Bottle();
     std::vector<std::string> _robotSubpartsWrapper = {"setup_mc", "head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
     std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
+    iCub::rawValuesKeyMetadataMap rawDataMetadata;
+    std::map<std::string, int32_t> axesRawGoldenPositionsMap;
+    std::string _rawValuesTag = "eoprot_tag_mc_joint_status_addinfo_multienc";
 
     // Pointers to interfaces
     yarp::dev::IRemoteCalibrator* _iremotecalib;
@@ -110,9 +121,11 @@ private:
 
     bool configureCalibration();
     bool runCalibration();
-
+    void evaluateHardStopPositionDelta(const std::string& key, const std::string& inputFileName, const std::string& outputFileName);
+    void generateOutputImage(int cellWidth, int cellHeight, const std::vector<ItemData>& items);
     // Utility methods
     void configureDevicesMap(std::vector<std::string> list);
+    cv::Scalar getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2);
 };
 
 #endif // FINE_CALIBRATION_CHECKER_THREAD_H

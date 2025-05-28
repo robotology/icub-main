@@ -22,6 +22,9 @@
 #include <unordered_map>
 #include <set>
 #include <utility>
+#include <fstream>
+#include <sstream>
+#include <filesystem>
 
 // yarp includes
 #include <yarp/os/LogStream.h>
@@ -75,6 +78,19 @@ FineCalibrationCheckerThread::FineCalibrationCheckerThread(yarp::os::ResourceFin
             }
         }
     }
+
+    // Read raw golden hard-stop positions from csv file and save them in map
+    std::ifstream file("zeroPositionsData.csv");
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string key, value;
+        if (std::getline(iss, key, ',') && std::getline(iss, value)) {
+            axesRawGoldenPositionsMap[key] = std::stoi(value);
+        }
+        yCDebug(FineCalibrationCheckerThreadCOMPONENT) << "Zero GOLDEN position for joint " << key << " is " << axesRawGoldenPositionsMap[key];
+    }
+    
     _deviceStatus = deviceStatus::INITIALIZED;
 }
 
@@ -169,7 +185,11 @@ void FineCalibrationCheckerThread::run()
                     {
                         yCDebug(FineCalibrationCheckerThreadCOMPONENT) << "\t key:" << key << "value:" << value;
                     }
-                
+                    
+                    // Here we have to evaluate the delta between the raw golen position 
+                    // and the raw position read at the hard stop per each axis
+                    evaluateHardStopPositionDelta(_rawValuesTag, "zeroPositionsData.csv", "zeroPositionsDataDelta.csv");
+
                     _deviceStatus = deviceStatus::END_POSITION_CHECKED;
                 }
                 if(_deviceStatus == deviceStatus::END_POSITION_CHECKED)
@@ -258,12 +278,14 @@ bool FineCalibrationCheckerThread::configureCalibration()
     
 
     // Configuring raw values metadata
-    iCub::rawValuesKeyMetadataMap metadata = {}; // I just need to call it once while configuring (I think) 
-    _iravap->getMetadataMap(metadata);
+    rawDataMetadata = {};
+    _iravap->getMetadataMap(rawDataMetadata);
     yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Configured raw values with metadata";
-    for (auto [k, m] : metadata.metadataMap)
+    for (auto [k, m] : rawDataMetadata.metadataMap)
     {
-        yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName << "Key: " << k << "\n"
+        yCDebug(FineCalibrationCheckerThreadCOMPONENT) << _deviceName
+            << "\t Key: " << k << "\n"
+            << "\t axesName: " << m.axesNames << "\n"
             << "\t rawValueNames: " << m.rawValueNames;
     }
      
@@ -301,6 +323,63 @@ bool FineCalibrationCheckerThread::runCalibration()
     }
     
     return true;
+}
+
+void FineCalibrationCheckerThread::evaluateHardStopPositionDelta(const std::string& key, const std::string& inputFileName, const std::string& outputFileName)
+{
+    // Get the directory of the input file
+    std::filesystem::path inputPath(inputFileName);
+    std::filesystem::path outputPath = inputPath.parent_path() / outputFileName;
+    int32_t delta = 0;
+
+    std::ofstream outFile(outputPath);
+    if (!outFile.is_open()) {
+        yCError(FineCalibrationCheckerThreadCOMPONENT) << "Unable to open output file:" << outputPath.string();
+        return;
+    }
+
+    if(auto it = rawDataValuesMap.find(key); it != rawDataValuesMap.end())
+    {
+        std::vector<std::string> axesNames = {};
+        std::vector<std::int32_t> rawData = {};
+        _iravap->getAxesNames(it->first, axesNames);
+        _iravap->getRawData(it->first, rawData);
+
+        for (size_t i = 0; i < axesNames.size(); ++i)
+        {
+            int32_t goldPosition = 0;
+            int32_t rawPosition = 0;
+            int32_t delta = 0;
+            if (auto it = axesRawGoldenPositionsMap.find(axesNames[i]); it != axesRawGoldenPositionsMap.end())
+            {
+                goldPosition = it->second;
+                rawPosition = rawData[3*i]; // This because the raw values for tag eoprot_tag_mc_joint_status_addinfo_multienc 
+                                            // are stored in a vector whose legth is joints_number*3, where each sub-array is made such
+                                            // [raw_val_primary_enc, raw_val_secondary_enc, rraw_val_auxiliary_enc] 
+                                            // and we want the first value for each joint
+                delta = std::abs(goldPosition - rawPosition);
+            }
+            
+            // Write to output CSV file
+            outFile << axesNames[i] << "," << goldPosition << "," << rawPosition << "," << delta << "\n";
+        }
+    }
+    else
+    {
+        yCError(FineCalibrationCheckerThreadCOMPONENT) << "Key" << key << "not found in rawDataValuesMap";
+        outFile << "Key not found in rawDataValuesMap\n";
+    }
+
+    outFile.close();
+    yCDebug(FineCalibrationCheckerThreadCOMPONENT) << "Output CSV written to:" << outputPath.string();
+
+    std::vector<ItemData> sampleItems = {
+        {"Item1", 20, 21, 1},
+        {"Item2", 20, 24, 4},
+        {"Item3", 20, 22, 2}
+    };
+
+    generateOutputImage(300, 150, sampleItems);
 }
 
 void FineCalibrationCheckerThread::configureDevicesMap(std::vector<std::string> list)
@@ -358,4 +437,71 @@ void FineCalibrationCheckerThread::configureDevicesMap(std::vector<std::string> 
     //     for (const auto& item : missing_items) std::cout << item << " ";
     //     std::cout << "\n";
     // }
+
 }
+
+void FineCalibrationCheckerThread::generateOutputImage(int cellWidth, int cellHeight, const std::vector<ItemData>& items)
+{
+
+    const int cols = 1, rows = 1; // Adjust the number of columns and rows as needed
+    // const int cellWidth = 300, cellHeight = 150;
+    const int canvasWidth = cols * cellWidth;
+    const int canvasHeight = rows * cellHeight;
+
+    cv::Mat image = cv::Mat::zeros(canvasHeight, canvasWidth, CV_8UC3);
+    image.setTo(cv::Scalar(255, 255, 255)); // White background
+
+
+    for (int row = 0; row < rows; ++row) 
+    {
+        for (int col = 0; col < cols; ++col) 
+        {
+            int x = col * cellWidth;
+            int y = row * cellHeight;
+
+            int lineHeight = 20;
+            int padding = 10;
+            cv::Point topLeft = cv::Point(x, y);
+            // Draw each item as a row
+            for (size_t i = 0; i < items.size(); ++i) 
+            {
+                const ItemData& item = items[i];
+                int y = topLeft.y + padding + i * (lineHeight + 5);
+                cv::Point p1(topLeft.x + padding, y);
+                cv::Point p2(topLeft.x + cellWidth - padding, y + lineHeight);
+
+                // Background color based on val3
+                cv::Scalar bgColor = getColorForDelta(item.val3, 1, 3);
+                cv::rectangle(image, p1, p2, bgColor, cv::FILLED);
+
+                // Text content
+                std::string text = item.name + "  " +
+                                std::to_string(item.val1) + " " +
+                                std::to_string(item.val2) + " " +
+                                std::to_string(item.val3);
+
+                cv::putText(image, text, cv::Point(p1.x + 5, y + lineHeight - 5),
+                            cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0), 1);
+            }
+
+            // Draw border of the cell
+            cv::rectangle(image, topLeft,
+                        cv::Point(topLeft.x + cellWidth, topLeft.y + cellHeight),
+                        cv::Scalar(200, 200, 200), 2);
+        }
+    }
+
+    cv::imwrite("grid_output.png", image); 
+    cv::imshow("Grid Output", image);     // Open a window with the rendered image
+    cv::waitKey(0);                       // Wait until any key is pressed
+    cv::destroyAllWindows();             // Clean up
+
+}
+
+cv::Scalar FineCalibrationCheckerThread::getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2)
+{
+    if (delta > threshold_2) return cv::Scalar(0, 0, 255);    // Red
+    else if (delta > threshold_1) return cv::Scalar(0, 165, 255); // Orange
+    else return cv::Scalar(0, 255, 0); // Green
+}
+
