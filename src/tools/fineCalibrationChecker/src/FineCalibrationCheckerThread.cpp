@@ -330,10 +330,14 @@ void FineCalibrationCheckerThread::evaluateHardStopPositionDelta(const std::stri
     // Get the directory of the input file
     std::filesystem::path inputPath(inputFileName);
     std::filesystem::path outputPath = inputPath.parent_path() / outputFileName;
+    int32_t goldPosition = 0;
+    int32_t rawPosition = 0;
     int32_t delta = 0;
+    std::vector<ItemData> sampleItems = {};
 
     std::ofstream outFile(outputPath);
-    if (!outFile.is_open()) {
+    if (!outFile.is_open()) 
+    {
         yCError(FineCalibrationCheckerThreadCOMPONENT) << "Unable to open output file:" << outputPath.string();
         return;
     }
@@ -347,9 +351,9 @@ void FineCalibrationCheckerThread::evaluateHardStopPositionDelta(const std::stri
 
         for (size_t i = 0; i < axesNames.size(); ++i)
         {
-            int32_t goldPosition = 0;
-            int32_t rawPosition = 0;
-            int32_t delta = 0;
+            goldPosition = 0;
+            rawPosition = 0;
+            delta = 0;
             if (auto it = axesRawGoldenPositionsMap.find(axesNames[i]); it != axesRawGoldenPositionsMap.end())
             {
                 goldPosition = it->second;
@@ -362,6 +366,7 @@ void FineCalibrationCheckerThread::evaluateHardStopPositionDelta(const std::stri
             
             // Write to output CSV file
             outFile << axesNames[i] << "," << goldPosition << "," << rawPosition << "," << delta << "\n";
+            sampleItems.push_back({axesNames[i], goldPosition, rawPosition, delta});
         }
     }
     else
@@ -372,12 +377,6 @@ void FineCalibrationCheckerThread::evaluateHardStopPositionDelta(const std::stri
 
     outFile.close();
     yCDebug(FineCalibrationCheckerThreadCOMPONENT) << "Output CSV written to:" << outputPath.string();
-
-    std::vector<ItemData> sampleItems = {
-        {"Item1", 20, 21, 1},
-        {"Item2", 20, 24, 4},
-        {"Item3", 20, 22, 2}
-    };
 
     generateOutputImage(300, 150, sampleItems);
 }
