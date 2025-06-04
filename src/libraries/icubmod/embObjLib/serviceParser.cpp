@@ -3211,7 +3211,7 @@ bool ServiceParser::check_motion(Searchable &config)
     } // has_PROPERTIES_CANBOARDS
 
 
-    if(true == has_PROPERTIES_MAIS)
+    if(true == has_PROPERTIES_MAIS && mc_service.type == eomn_serv_MC_mc4plusmais)
     {
         // i get .location and nothing else
 
