@@ -85,8 +85,9 @@ jobs:
         grep -m 1 YARP_REQUIRED_VERSION CMakeLists.txt | sed "s/[^0-9.]//g" > YARP_VERSION.txt
         cat YARP_VERSION.txt | awk -F '.' '{ print $1 }' > YARP_VERSION_MAJOR.txt
         cat YARP_VERSION.txt | awk -F '.' '{ print $2 }' > YARP_VERSION_MINOR.txt
+        cat YARP_VERSION.txt | awk -F '.' '{ print $3 }' > YARP_VERSION_PATCH.txt
         echo "ycm_version=$(cat YCM_VERSION.txt)" >> $GITHUB_ENV
-        echo "yarp_branch=yarp-$(cat YARP_VERSION_MAJOR.txt).$(cat YARP_VERSION_MINOR.txt)" >> $GITHUB_ENV
+        echo "yarp_tag=v$(cat YARP_VERSION_MAJOR.txt).$(cat YARP_VERSION_MINOR.txt).$(cat YARP_VERSION_PATCH.txt)" >> $GITHUB_ENV
 
     - name: Determine icub-firmware-shared required branch
       shell: bash
@@ -109,13 +110,13 @@ jobs:
       run: |
         # YCM
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/ycm.git --depth 1 --branch v${{ env.ycm_version }}
-        cd ycm && mkdir -p build && cd build
+        git clone https://github.com/robotology/ycm-cmake-modules.git --depth 1 --branch v${{ env.ycm_version }}
+        cd ycm-cmake-modules && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target INSTALL
         # YARP
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/yarp.git --depth 1 --branch ${{ env.yarp_branch }}
+        git clone https://github.com/robotology/yarp.git --depth 1 --branch ${{ env.yarp_tag }}
         cd yarp && mkdir -p build && cd build
         cmake -A x64 -DCMAKE_TOOLCHAIN_FILE=${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake -DYARP_COMPILE_GUIS:BOOL=OFF \
               -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
@@ -134,13 +135,13 @@ jobs:
       run: |
         # YCM
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/ycm.git --depth 1 --branch v${{ env.ycm_version }}
-        cd ycm && mkdir -p build && cd build
+        git clone https://github.com/robotology/ycm-cmake-modules.git --depth 1 --branch v${{ env.ycm_version }}
+        cd ycm-cmake-modules && mkdir -p build && cd build
         cmake -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install ..
         cmake --build . --config ${{ matrix.build_type }} --target install
         # YARP
         cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/robotology/yarp.git --depth 1 --branch ${{ env.yarp_branch }}
+        git clone https://github.com/robotology/yarp.git --depth 1 --branch ${{ env.yarp_tag }}
         cd yarp && mkdir -p build && cd build
         cmake -DCMAKE_PREFIX_PATH=${GITHUB_WORKSPACE}/install -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/install -DYARP_COMPILE_GUIS:BOOL=OFF ..
         cmake --build . --config ${{ matrix.build_type }} --target install
