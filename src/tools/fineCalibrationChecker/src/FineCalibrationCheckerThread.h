@@ -43,7 +43,7 @@
 
 struct ItemData {
     std::string name;
-    int32_t val1, val2, val3;
+    int32_t val1, val2, val3, val4;
 };
 
 class FineCalibrationCheckerThread : public yarp::os::Thread
@@ -98,6 +98,7 @@ private:
     std::string _portPrefix = "/fineCalibrationChecker";
     std::string _robotName= "";
     std::string _deviceName= "fineCalibrationChecker";
+    std::string _remoteRawValuesPort = "";
     
     deviceStatus _deviceStatus = deviceStatus::NONE;
     
@@ -106,7 +107,7 @@ private:
     std::vector<std::string> _robotSubpartsWrapper = {"setup_mc", "head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
     std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
     iCub::rawValuesKeyMetadataMap rawDataMetadata;
-    std::map<std::string, int32_t> axesRawGoldenPositionsMap;
+    std::map<std::string, std::array<int32_t, 2>> axesRawGoldenPositionsResMap;
     std::string _rawValuesTag = "eoprot_tag_mc_joint_status_addinfo_multienc";
 
     // Pointers to interfaces
@@ -122,7 +123,7 @@ private:
     bool configureCalibration();
     bool runCalibration();
     void evaluateHardStopPositionDelta(const std::string& key, const std::string& inputFileName, const std::string& outputFileName);
-    void generateOutputImage(int cellWidth, int cellHeight, const std::vector<ItemData>& items);
+    void generateOutputImage(int frameWidth, int frameHeight, const std::vector<ItemData>& items);
     // Utility methods
     void configureDevicesMap(std::vector<std::string> list);
     cv::Scalar getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2);

@@ -42,7 +42,7 @@ namespace
 
 FineCalibrationCheckerThread::FineCalibrationCheckerThread(yarp::os::ResourceFinder &rf)
     : yarp::os::Thread(), _deviceName("fineCalibrationChecker"), _portPrefix("/fineCalibrationChecker"),
-      _robotName("icub"), _controlBoardsList(yarp::os::Bottle()), _axesNamesList(yarp::os::Bottle()), _deviceStatus(deviceStatus::NONE)
+      _robotName("icub"), _remoteRawValuesPort("/icub/rawvalues"), _controlBoardsList(yarp::os::Bottle()), _axesNamesList(yarp::os::Bottle()), _deviceStatus(deviceStatus::NONE)
 {
     // Initialize device driver as empty PolyDriver
     _fineCalibrationCheckerDevice = std::make_unique<yarp::dev::PolyDriver>();
@@ -59,6 +59,7 @@ FineCalibrationCheckerThread::FineCalibrationCheckerThread(yarp::os::ResourceFin
         // Read parameters from the configuration file
         if (conf_group.check("devicename")) { _deviceName = conf_group.find("devicename").asString(); }
         if (conf_group.check("robotname")) { _robotName = conf_group.find("robotname").asString(); }
+        if (conf_group.check("remoteRawValuesPort")) { _remoteRawValuesPort = conf_group.find("remoteRawValuesPort").asString(); }
         if (conf_group.check("remoteControlBoardsList")) 
         {
             yarp::os::Bottle* subpartsList = conf_group.find("remoteControlBoardsList").asList();
@@ -82,13 +83,16 @@ FineCalibrationCheckerThread::FineCalibrationCheckerThread(yarp::os::ResourceFin
     // Read raw golden hard-stop positions from csv file and save them in map
     std::ifstream file("zeroPositionsData.csv");
     std::string line;
-    while (std::getline(file, line)) {
+    while (std::getline(file, line)) 
+    {
         std::istringstream iss(line);
-        std::string key, value;
-        if (std::getline(iss, key, ',') && std::getline(iss, value)) {
-            axesRawGoldenPositionsMap[key] = std::stoi(value);
+        std::string key, pos, res;
+        if (std::getline(iss, key, ',') && std::getline(iss, pos, ',') && std::getline(iss, res)) {
+            axesRawGoldenPositionsResMap[key] = {std::stoi(pos), std::stoi(res)};
         }
-        yCDebug(FineCalibrationCheckerThreadCOMPONENT) << "Zero GOLDEN position for joint " << key << " is " << axesRawGoldenPositionsMap[key];
+        yCDebug(FineCalibrationCheckerThreadCOMPONENT) << "Zero GOLDEN position for joint" << key 
+            << "is" << axesRawGoldenPositionsResMap[key][0]
+            << "and its encoder has" << axesRawGoldenPositionsResMap[key][1] << "ticks per revolution";
     }
     
     _deviceStatus = deviceStatus::INITIALIZED;
@@ -121,7 +125,7 @@ bool FineCalibrationCheckerThread::threadInit()
 
     yarp::os::Property rawValuesDeviceProperties;
     rawValuesDeviceProperties.put("device", "rawValuesPublisherClient");
-    rawValuesDeviceProperties.put("remote", "/" + _robotName + "/setup_rawval");
+    rawValuesDeviceProperties.put("remote", _remoteRawValuesPort);
     rawValuesDeviceProperties.put("local", "/" + _deviceName + "/rawValuesPublisherClient");
 
     _rawValuesOublisherDevice->open(rawValuesDeviceProperties);
@@ -332,6 +336,8 @@ void FineCalibrationCheckerThread::evaluateHardStopPositionDelta(const std::stri
     std::filesystem::path outputPath = inputPath.parent_path() / outputFileName;
     int32_t goldPosition = 0;
     int32_t rawPosition = 0;
+    int32_t resolution = 0;
+    int32_t rescaledPos = 0;
     int32_t delta = 0;
     std::vector<ItemData> sampleItems = {};
 
@@ -353,20 +359,23 @@ void FineCalibrationCheckerThread::evaluateHardStopPositionDelta(const std::stri
         {
             goldPosition = 0;
             rawPosition = 0;
+            resolution = 0;
             delta = 0;
-            if (auto it = axesRawGoldenPositionsMap.find(axesNames[i]); it != axesRawGoldenPositionsMap.end())
+            if (auto it = axesRawGoldenPositionsResMap.find(axesNames[i]); it != axesRawGoldenPositionsResMap.end())
             {
-                goldPosition = it->second;
+                goldPosition = it->second[0];
+                resolution = it->second[1];
                 rawPosition = rawData[3*i]; // This because the raw values for tag eoprot_tag_mc_joint_status_addinfo_multienc 
                                             // are stored in a vector whose legth is joints_number*3, where each sub-array is made such
                                             // [raw_val_primary_enc, raw_val_secondary_enc, rraw_val_auxiliary_enc] 
                                             // and we want the first value for each joint
-                delta = std::abs(goldPosition - rawPosition);
+                rescaledPos = goldPosition * resolution / 65535; // Rescale the position (in iCubDegrees) to the encoder full resolution             
+                delta = std::abs(rescaledPos - rawPosition);
             }
             
             // Write to output CSV file
-            outFile << axesNames[i] << "," << goldPosition << "," << rawPosition << "," << delta << "\n";
-            sampleItems.push_back({axesNames[i], goldPosition, rawPosition, delta});
+            outFile << axesNames[i] << "," << goldPosition << "," << rescaledPos << "," << rawPosition << "," << delta << "\n";
+            sampleItems.push_back({axesNames[i], goldPosition, rescaledPos, rawPosition, delta});
         }
     }
     else
@@ -378,7 +387,7 @@ void FineCalibrationCheckerThread::evaluateHardStopPositionDelta(const std::stri
     outFile.close();
     yCDebug(FineCalibrationCheckerThreadCOMPONENT) << "Output CSV written to:" << outputPath.string();
 
-    generateOutputImage(300, 150, sampleItems);
+    generateOutputImage(800, 400, sampleItems);
 }
 
 void FineCalibrationCheckerThread::configureDevicesMap(std::vector<std::string> list)
@@ -439,62 +448,46 @@ void FineCalibrationCheckerThread::configureDevicesMap(std::vector<std::string> 
 
 }
 
-void FineCalibrationCheckerThread::generateOutputImage(int cellWidth, int cellHeight, const std::vector<ItemData>& items)
+void FineCalibrationCheckerThread::generateOutputImage(int frameWidth, int frameHeight, const std::vector<ItemData>& items)
 {
-
-    const int cols = 1, rows = 1; // Adjust the number of columns and rows as needed
-    // const int cellWidth = 300, cellHeight = 150;
-    const int canvasWidth = cols * cellWidth;
-    const int canvasHeight = rows * cellHeight;
-
-    cv::Mat image = cv::Mat::zeros(canvasHeight, canvasWidth, CV_8UC3);
+    cv::Mat image = cv::Mat::zeros(frameHeight, frameWidth, CV_8UC3);
     image.setTo(cv::Scalar(255, 255, 255)); // White background
 
+    int lineHeight = 30;
+    int padding = 10;
+    int textOffset = 20;
 
-    for (int row = 0; row < rows; ++row) 
+    for (size_t i = 0; i < items.size(); ++i)
     {
-        for (int col = 0; col < cols; ++col) 
-        {
-            int x = col * cellWidth;
-            int y = row * cellHeight;
+        int y = padding + i * lineHeight;
+        // Draw background rectangle for the row
+        cv::Scalar bgColor = getColorForDelta(items[i].val3, 1, 3);
+        cv::rectangle(image,
+                      cv::Point(padding, y),
+                      cv::Point(frameWidth - padding, y + lineHeight - 5),
+                      bgColor, cv::FILLED);
 
-            int lineHeight = 20;
-            int padding = 10;
-            cv::Point topLeft = cv::Point(x, y);
-            // Draw each item as a row
-            for (size_t i = 0; i < items.size(); ++i) 
-            {
-                const ItemData& item = items[i];
-                int y = topLeft.y + padding + i * (lineHeight + 5);
-                cv::Point p1(topLeft.x + padding, y);
-                cv::Point p2(topLeft.x + cellWidth - padding, y + lineHeight);
+        // Draw border for the row
+        cv::rectangle(image,
+                      cv::Point(padding, y),
+                      cv::Point(frameWidth - padding, y + lineHeight - 5),
+                      cv::Scalar(200, 200, 200), 1);
 
-                // Background color based on val3
-                cv::Scalar bgColor = getColorForDelta(item.val3, 1, 3);
-                cv::rectangle(image, p1, p2, bgColor, cv::FILLED);
+        // Compose text: name val1 val2 val3
+        std::string text = items[i].name + "  " +
+                           std::to_string(items[i].val1) + " " +
+                           std::to_string(items[i].val2) + " " +
+                           std::to_string(items[i].val3) + " " +
+                           std::to_string(items[i].val4);
 
-                // Text content
-                std::string text = item.name + "  " +
-                                std::to_string(item.val1) + " " +
-                                std::to_string(item.val2) + " " +
-                                std::to_string(item.val3);
-
-                cv::putText(image, text, cv::Point(p1.x + 5, y + lineHeight - 5),
-                            cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0), 1);
-            }
-
-            // Draw border of the cell
-            cv::rectangle(image, topLeft,
-                        cv::Point(topLeft.x + cellWidth, topLeft.y + cellHeight),
-                        cv::Scalar(200, 200, 200), 2);
-        }
+        cv::putText(image, text, cv::Point(padding + 5, y + textOffset),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(0, 0, 0), 2);
     }
 
-    cv::imwrite("grid_output.png", image); 
-    cv::imshow("Grid Output", image);     // Open a window with the rendered image
-    cv::waitKey(0);                       // Wait until any key is pressed
-    cv::destroyAllWindows();             // Clean up
-
+    cv::imwrite("output_frame.png", image);
+    cv::imshow("Output Frame", image);
+    cv::waitKey(0);
+    cv::destroyAllWindows();
 }
 
 cv::Scalar FineCalibrationCheckerThread::getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2)
