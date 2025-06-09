@@ -22,7 +22,8 @@ struct rawValuesDataVectorsMap
 struct rawValuesKeyMetadata
 {
    1: list<string> rawValueNames;
-   2: i32 size;
+   2: list<string> axesNames;
+   3: i32 size;
 }
 
 struct rawValuesKeyMetadataMap

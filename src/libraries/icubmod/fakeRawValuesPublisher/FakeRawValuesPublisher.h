@@ -50,6 +50,7 @@ class FakeRawValuesPublisher :
         virtual int  getNumberOfKeys() override;
         virtual bool getMetadataMap(rawValuesKeyMetadataMap &metamap) override;
         virtual bool getKeyMetadata(std::string key, rawValuesKeyMetadata &meta) override;
+        virtual bool getAxesNames(std::string key, std::vector<std::string> &axesNames) override;
 
 
     private:
@@ -63,6 +64,7 @@ class FakeRawValuesPublisher :
         int m_numberOfJomos = 0;
         int m_sawtoothThreshold = 0;
         std::string m_rawValuesVectorTag = "";
+        std::vector<std::string> m_rawValuesAxesNames = {};
         std::vector<std::int32_t> m_rawDataAuxVector;
         int m_sawthootTestVal = 0;
 

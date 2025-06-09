@@ -45,6 +45,7 @@ FakeRawValuesPublisher::FakeRawValuesPublisher()
     m_sawtoothThreshold = 128;
     m_sawthootTestVal = 0;
     m_rawValuesVectorTag = "rawJomoEncoderValues";
+    m_rawValuesAxesNames = {};
     m_rawDataAuxVector = {};
     m_rawValuesMetadataMap = {};
 }
@@ -114,10 +115,10 @@ bool FakeRawValuesPublisher::getMetadataMap(rawValuesKeyMetadataMap &metamap)
     #ifdef DEBUG_RAW_VALUES_MACRO
     for (auto [k, v] : m_rawValuesMetadataMap)
     {
-        yCDebug(FAKERAWVALUESPUBLISHER) << "size of elements name at key:" << k << "is:" << v.rawValueNames.size(); 
+        yCDebug(FAKERAWVALUESPUBLISHER) << "size of elements at key:" << k << "is:" << v.rawValueNames.size(); 
         for (size_t e = 0; e < v.rawValueNames.size(); e++)
         {
-            yCDebug(FAKERAWVALUESPUBLISHER) << "GOT to rawValueNames:" << v.rawValueNames[e];
+            yCDebug(FAKERAWVALUESPUBLISHER) << "For axis:" << v.axesNames[e] << "GOT rawValueNames:" << v.rawValueNames[e];
         }
         
     }
@@ -146,6 +147,21 @@ bool FakeRawValuesPublisher::getKeyMetadata(std::string key, rawValuesKeyMetadat
     return true;
 }
 
+bool FakeRawValuesPublisher::getAxesNames(std::string key, std::vector<std::string> &axesNames)
+{
+    axesNames.clear();
+    if (m_rawValuesMetadataMap.find(key) != m_rawValuesMetadataMap.end())
+    {
+        axesNames.assign(m_rawValuesMetadataMap[key].axesNames.begin(), m_rawValuesMetadataMap[key].axesNames.end());
+    }
+    else
+    {
+        yCError(FAKERAWVALUESPUBLISHER) << "Requested key" << key << "is not available in the map. Exiting";
+        return false;
+    }
+    return true;
+}
+
 bool FakeRawValuesPublisher::open(yarp::os::Searchable& config)
 {
     if (!parseParams(config))
@@ -159,10 +175,11 @@ bool FakeRawValuesPublisher::open(yarp::os::Searchable& config)
     m_sawtoothThreshold = m_threshold;
 
     // Instantiate map of raw values vectors
-    m_rawValuesMetadataMap.insert({m_rawValuesVectorTag, rawValuesKeyMetadata({}, m_numberOfJomos)});
+    m_rawValuesMetadataMap.insert({m_rawValuesVectorTag, rawValuesKeyMetadata({}, {}, m_numberOfJomos)});
     for (int i = 0; i < m_numberOfJomos;  i++)
     {
-        m_rawValuesMetadataMap[m_rawValuesVectorTag].rawValueNames.push_back("fake_jomo_"+std::to_string(i));
+        m_rawValuesMetadataMap[m_rawValuesVectorTag].axesNames.push_back("fake_jomo_"+std::to_string(i));
+        m_rawValuesMetadataMap[m_rawValuesVectorTag].rawValueNames.push_back("fake_jomo_rawvalue_"+std::to_string(i));
     }
     
     m_rawDataAuxVector.resize(m_numberOfJomos);
