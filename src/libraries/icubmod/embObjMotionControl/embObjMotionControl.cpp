@@ -1549,9 +1549,9 @@ bool embObjMotionControl::init()
         for (int i = 0; i < _njoints; i++)
         {
             getEntityName(i, auxstring);
-            v.axesNames.push_back(auxstring);
             if (k == tag)
             {
+                v.axesNames.push_back(auxstring);
                 v.rawValueNames.insert(v.rawValueNames.end(), 
                     {auxstring+"_primary_encoder_raw_value", 
                     auxstring+"_secondary_encoder_raw_value",
