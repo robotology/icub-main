@@ -6,7 +6,7 @@ iCub
 [![Community](https://img.shields.io/badge/Join-Robotology_Community-blue?style=plastic&logo=github)](https://github.com/robotology/community)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-![ci](https://github.com/robotology/icub-main/workflows/Continuous%20Integration/badge.svg)
+![ci](https://github.com/robotology/icub-main/workflows/CI%20Workflow/badge.svg)
 
 ## Maintainers
 This repository is maintained by:
