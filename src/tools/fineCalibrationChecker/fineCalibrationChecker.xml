@@ -3,17 +3,21 @@
 
 
 <module>
-  <name>FineCalibrationChecker</name>
+  <name>fineCalibrationChecker</name>
   <doxygen-group>icub_tools</doxygen-group>
-  <description>Tool for checking accuracy of joint calibration</description>
+  <description>Tool for checking and analyzing the accuracy of joint calibration on ergoCub and iCub robots.</description>
   <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
   <version>1.0</version>
 
   <description-long>
-    This module is a tool for checking the accuracy of joint calibration.
-    Specifically it aims at reading the raw position of the joint encoder and comparing it with the expected <i>golden</i> position, 
-    which is the one that the joint should have when we are sure about its mechanics and calibration, i.e. it ground truth.
-    
+    The fineCalibrationChecker module is designed for the ergoCub and iCub platforms to assist users in evaluating the accuracy of joint calibration procedures. 
+    It collects and analyzes data that can help identify miscalibration errors on a specific robot system.
+    The module reads configuration parameters and joint information from a configuration file, connects to remote control boards and a raw values publisher, and executes a calibration routine.
+    It checks the golden hard-stop positions of the joints and compares them with live encoder readings, evaluating the difference (delta) between expected and measured joint positions. 
+    The results are logged and output to CSV files and images for further analysis.
+    The tool is implemented as a YARP RFModule managing a dedicated thread, which performs all the core data collection and calibration checking actions asynchronously. 
+    This makes it useful for developers and technicians who need to verify and fine-tune the mechanical calibration of the robot’s joints, ensuring accurate and reliable operation.
+
     In order to use this module, whose final target is to print the needed position data to a csv file and then plot it on a GUI, you need to have the following:
     <list>
       <item>
@@ -28,7 +32,7 @@
   </description-long>
 
   <arguments>
-    <param default="fineCalibrationCheker" desc="select the current context.">context</param>
+    <param default="fineCalibrationChecker" desc="select the current context.">context</param>
     <param default="config.ini" desc="configuration file name.">from</param>
     <param default="fineCalibrationChecker" desc="module's name; all the open ports will be tagged with the prefix /name.">name</param>
     <param default="torsoPitchMj1" desc="name of the robot to connect to.">robotname</param>
@@ -42,12 +46,31 @@
   </authors>
 
   <data>
+    <input>
+      <type>yarp::os::Bottle</type>
+      <port carrier="tcp">/fineCalibrationChecker/rpc:i</port>
+      <required>no</required>
+      <priority>no</priority>
+      <description>RPC port for module commands and configuration.</description>
+    </input>
     <output>
+      <type>csv</type>
       <description>
-        File in csv format containing the data of the joint encoder position and the expected golden position.
-        Gui showing the data in a table.
+        File in CSV format containing the data of the joint encoder position and the expected golden position.
+      </description>
+    </output>
+    <output>
+      <type>image</type>
+      <description>
+        Image file visualizing the comparison between measured and golden joint positions.
       </description>
     </output>
   </data>
+
+  <commands>
+    <command name="help">
+      <description>Shows the list of available commands.</description>
+    </command>
+  </commands>
 
 </module>
