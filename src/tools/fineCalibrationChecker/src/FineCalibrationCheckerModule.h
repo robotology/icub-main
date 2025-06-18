@@ -14,6 +14,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
 */
+// -*- mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
 /**
  * @ingroup icub_tools
  * \defgroup fineCalibrationChecker fineCalibrationChecker
@@ -31,8 +32,7 @@
  * This software is intended for use on the ergoCub, iCub platforms and related bench setups made with same components. 
  * Use on other platforms is not guaranteed.
  * Complete documentation to the tool can be found at (https://robotology.github.io/robotology-documentation/doc/html/group__fineCalibrationChecker.html)
- * 
-// -*- mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
+*/
 
 #ifndef FINE_CALIBRATION_CHECKER_MODULE_H
 #define FINE_CALIBRATION_CHECKER_MODULE_H
