@@ -182,6 +182,11 @@ bool RawValuesPublisherClient::getAxesNames(std::string key, std::vector<std::st
 {
     axesNames.clear();
     rawValuesKeyMetadata metadata;
+    if (!this->getKeyMetadata(key, metadata))
+    {
+        yCError(RAWVALUESPUBLISHERCLIENT) << "Failed to get metadata for key" << key;
+        return false;
+    }
     this->getKeyMetadata(key, metadata);
 
     if (metadata.axesNames.empty())
