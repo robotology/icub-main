@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
+
+
+<module>
+  <name>fineCalibrationChecker</name>
+  <doxygen-group>icub_tools</doxygen-group>
+  <description>Tool for checking and analyzing the accuracy of joint calibration on ergoCub and iCub robots.</description>
+  <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
+  <version>1.0</version>
+
+  <description-long>
+    The fineCalibrationChecker module is designed for the ergoCub and iCub platforms to assist users in evaluating the accuracy of joint calibration procedures. 
+    It collects and analyzes data that can help identify miscalibration errors on a specific robot system.
+    The module reads configuration parameters and joint information from a configuration file, connects to remote control boards and a raw values publisher, and executes a calibration routine.
+    It checks the golden hard-stop positions of the joints and compares them with live encoder readings, evaluating the difference (delta) between expected and measured joint positions. 
+    The results are logged and output to CSV files and images for further analysis.
+    The tool is implemented as a YARP RFModule managing a dedicated thread, which performs all the core data collection and calibration checking actions asynchronously. 
+    This makes it useful for developers and technicians who need to verify and fine-tune the mechanical calibration of the robot’s joints, ensuring accurate and reliable operation.
+
+    In order to use this module, whose final target is to print the needed position data to a csv file and then plot it on a GUI, you need to have the following:
+    <list>
+      <item>
+        <description>supposed to have the correct setup running and the yarprobotinterface open</description>
+      </item>
+      <item>
+        <description>fineCalibrationChecker --from config.ini</description>
+      </item>
+    </list>
+    This will instantiate a module and a thread that will run at a specific period. The core od this thread is running some actiions. 
+    Once those are done and the user has got all the data the module can be simply closed. In this moment the thread will stop and the module will close.
+  </description-long>
+
+  <arguments>
+    <param default="fineCalibrationChecker" desc="select the current context.">context</param>
+    <param default="config.ini" desc="configuration file name.">from</param>
+    <param default="fineCalibrationChecker" desc="module's name; all the open ports will be tagged with the prefix /name.">name</param>
+    <param default="torsoPitchMj1" desc="name of the robot to connect to.">robotname</param>
+    <param default="/torsoPitchMj1/setup_rawval" desc="name of the remote port streaming the raw encoder data to connect to.">remoteRawValuesPort</param>
+    <param default="(torso-pitch-mj1-setup)" desc="list of the remote control board to connect to.">remoteControlBoardsList</param>
+    <param default="(torso_pitch_mj1_real_aksim2)" desc="list of the axes names to connect to.">axesNamesList</param>
+  </arguments>
+
+  <authors>
+    <author email="jacopo.losi@iit.it"> Jacopo Losi </author>
+  </authors>
+
+  <data>
+    <input>
+      <type>yarp::os::Bottle</type>
+      <port carrier="tcp">/fineCalibrationChecker/rpc:i</port>
+      <required>no</required>
+      <priority>no</priority>
+      <description>RPC port for module commands and configuration.</description>
+    </input>
+    <output>
+      <type>csv</type>
+      <description>
+        File in CSV format containing the data of the joint encoder position and the expected golden position.
+      </description>
+    </output>
+    <output>
+      <type>image</type>
+      <description>
+        Image file visualizing the comparison between measured and golden joint positions.
+      </description>
+    </output>
+  </data>
+
+  <commands>
+    <command name="help">
+      <description>Shows the list of available commands.</description>
+    </command>
+  </commands>
+
+</module>

@@ -48,6 +48,7 @@ class RawValuesPublisherClient :
         virtual int  getNumberOfKeys() override;
         virtual bool getMetadataMap(rawValuesKeyMetadataMap &metamap) override;
         virtual bool getKeyMetadata(std::string key, rawValuesKeyMetadata &meta) override;
+        virtual bool getAxesNames(std::string key, std::vector<std::string> &axesNames) override;
 };
 
 #endif

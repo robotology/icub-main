@@ -1541,7 +1541,7 @@ bool embObjMotionControl::init()
     //////////////////////////////////////////////
     const char* tag = eoprot_TAG2string(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_addinfo_multienc);                              
     
-    _rawValuesMetadataMap.insert({{tag, rawValuesKeyMetadata({}, _njoints * eOmc_joint_multienc_maxnum)}});
+    _rawValuesMetadataMap.insert({{tag, rawValuesKeyMetadata({}, {}, _njoints * eOmc_joint_multienc_maxnum)}});
     for (auto &[k, v] : _rawValuesMetadataMap)
     {
         std::string auxstring = "";
@@ -1551,6 +1551,7 @@ bool embObjMotionControl::init()
             getEntityName(i, auxstring);
             if (k == tag)
             {
+                v.axesNames.push_back(auxstring);
                 v.rawValueNames.insert(v.rawValueNames.end(), 
                     {auxstring+"_primary_encoder_raw_value", 
                     auxstring+"_secondary_encoder_raw_value",
@@ -5627,7 +5628,7 @@ bool embObjMotionControl::getLastJointFaultRaw(int j, int& fault, std::string& m
 
 bool embObjMotionControl::getRawData_core(std::string key, std::vector<std::int32_t> &data)
 {
-    //Here I need to be sure 100% the key exists!!! 
+    // Here I need to be sure 100% the key exists!!! 
     // It must exists since the call is made while iterating over the map
     data.clear();
     for(int j=0; j< _njoints; j++)
@@ -5716,6 +5717,21 @@ bool embObjMotionControl::getKeyMetadata(std::string key, rawValuesKeyMetadata &
     }
     
 
+    return true;
+}
+
+bool embObjMotionControl::getAxesNames(std::string key, std::vector<std::string> &axesNames)
+{
+    axesNames.clear();
+    if (_rawValuesMetadataMap.find(key) != _rawValuesMetadataMap.end())
+    {
+        axesNames.assign(_rawValuesMetadataMap[key].axesNames.begin(), _rawValuesMetadataMap[key].axesNames.end());
+    }
+    else
+    {
+        yError() << getBoardInfo() << "Requested key" << key << "is not available in the map. Exiting";
+        return false;
+    }
     return true;
 }
 

@@ -57,6 +57,14 @@ namespace iCub
                 * @return true if the find and copy ends fine otherwise false
                 */
                 virtual bool getKeyMetadata(std::string key, rawValuesKeyMetadata &meta) = 0;
+
+                /* Fill the passed vector with the name of the axes saved 
+                * at the requested key entry in the local map of metadata
+                * @param key for getting the specific entry in the local map
+                * @param axesNames vector of strings which will be filled with the axesNames of the metadata map
+                * @return true if there's no error in pushing back the axesNames in the vector
+                */
+                virtual bool getAxesNames(std::string key, std::vector<std::string> &axesNames) = 0;
         };
     }
 }

@@ -177,3 +177,24 @@ bool RawValuesPublisherClient::getKeyMetadata(std::string key, rawValuesKeyMetad
 
     return true;
 }
+
+bool RawValuesPublisherClient::getAxesNames(std::string key, std::vector<std::string> &axesNames)
+{
+    axesNames.clear();
+    rawValuesKeyMetadata metadata;
+    if (!this->getKeyMetadata(key, metadata))
+    {
+        yCError(RAWVALUESPUBLISHERCLIENT) << "Failed to get metadata for key" << key;
+        return false;
+    }
+    this->getKeyMetadata(key, metadata);
+
+    if (metadata.axesNames.empty())
+    {
+        yCError(RAWVALUESPUBLISHERCLIENT) << "No axes names found for key" << key;
+        return false;
+    }
+
+    axesNames.assign(metadata.axesNames.begin(), metadata.axesNames.end());
+    return true;
+}
