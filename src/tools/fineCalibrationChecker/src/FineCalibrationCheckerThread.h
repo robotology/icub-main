@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 iCub Facility - Istituto Italiano di Tecnologia
+ * Copyright (C) 2025 iCub Facility - Istituto Italiano di Tecnologia
  * Author:  Jacopo Losi
  * email:   jacopo.losi@iit.it
  * Permission is granted to copy, distribute, and/or modify this program
