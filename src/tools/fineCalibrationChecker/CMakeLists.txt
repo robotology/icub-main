@@ -1,4 +1,4 @@
-# Copyright: (C) 2024 iCub Facility - Istituto Italiano di Tecnologia
+# Copyright: (C) 2025 iCub Facility - Istituto Italiano di Tecnologia
 # Authors: Jacopo Losi
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
