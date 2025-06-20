@@ -1438,7 +1438,8 @@ bool embObjMotionControl::init()
         jconfig.kalman_params.R = _kalman_params[logico].R;
         jconfig.kalman_params.P0 = _kalman_params[logico].P0;
 
-        if(false == res->setcheckRemoteValue(protid, &jconfig, 10, 0.010, 0.050))
+        //if(false == res->setcheckRemoteValue(protid, &jconfig, 10, 0.010, 0.050))
+        if(false == res->setRemoteValue(protid, &jconfig))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for joint config fisico #" << fisico << "in "<< getBoardInfo();
             return false;
