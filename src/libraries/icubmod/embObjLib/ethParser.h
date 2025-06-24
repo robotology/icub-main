@@ -49,7 +49,7 @@ namespace eth { namespace parser {
         }
         void reset() {
             type = eobrd_ethtype_none; ipv4addressing.addr = 0; ipv4addressing.port = 0;
-            maxSizeRXpacket = 768; maxSizeROP = 384; ipv4string = ""; ipv4addressingstring = "";
+            maxSizeRXpacket = 768; maxSizeROP = ETH_PROTOCOL_MAX_SIZE_ROP; ipv4string = ""; ipv4addressingstring = "";
         }
     };
 
