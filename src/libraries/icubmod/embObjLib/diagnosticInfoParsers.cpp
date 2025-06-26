@@ -422,9 +422,9 @@ void ConfigParser::parseInfo()
         case eoerror_value_CFG_bat_using_onboard_config:
         case eoerror_value_CFG_bat_failed_notsupported:
         case eoerror_value_CFG_mc_advfoc_ok:
-        case eoerror_value_CFG_mc_advfoc_failed_candiscovery_of_foc:
+        case eoerror_value_CFG_mc_advfoc_failed_candiscovery:
         case eoerror_value_CFG_mc_advfoc_failed_encoders_verify:         
-        case eoerror_value_CFG_mc_advfoc_failed_ICCdiscovery_of_advfoc:
+        case eoerror_value_CFG_mc_advfoc_failed_ICCdiscovery:
         {
             printBaseInfo();
         } break;
