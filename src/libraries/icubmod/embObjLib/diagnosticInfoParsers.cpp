@@ -421,6 +421,10 @@ void ConfigParser::parseInfo()
         case eoerror_value_CFG_bat_not_verified_yet:
         case eoerror_value_CFG_bat_using_onboard_config:
         case eoerror_value_CFG_bat_failed_notsupported:
+        case eoerror_value_CFG_mc_advfoc_ok:
+        case eoerror_value_CFG_mc_advfoc_failed_candiscovery_of_foc:
+        case eoerror_value_CFG_mc_advfoc_failed_encoders_verify:         
+        case eoerror_value_CFG_mc_advfoc_failed_ICCdiscovery_of_advfoc:
         {
             printBaseInfo();
         } break;
@@ -1495,8 +1499,8 @@ void EthMonitorParser::parseInfo()
             std::string ethport =  "unknown";
             switch(m_dnginfo.param16)
             {
-                case 0: ethport="ETH input (P2/P13/J4)"; break;
-                case 1: ethport="ETH output (P3/P12/J5)"; break;
+                case 0: ethport="ETH input (P2/P13/J4/J6)"; break;
+                case 1: ethport="ETH output (P3/P12/J5/J7)"; break;
                 case 2: ethport="internal"; break;
             };
             if(eoerror_value_ETHMON_error_rxcrc == value)
