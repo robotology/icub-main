@@ -524,7 +524,7 @@ void ConfigParser::parseInfo()
             const char *wrongprot = "WRONG PROTOCOL VERSION";
             const char *wrongappl = "WRONG APPLICATION VERSION";
 
-            snprintf(str, sizeof(str), "%s boards in %s:\n",
+            snprintf(str, sizeof(str), "%s  %s board.\n",
                                         m_dnginfo.baseMessage.c_str(),
                                         m_dnginfo.baseInfo.sourceCANPortStr.c_str()
                                         );
@@ -533,7 +533,7 @@ void ConfigParser::parseInfo()
                 uint64_t val = invalidmask & 0x0f;
                 if(0 != val)
                 {
-                    snprintf(str, sizeof(str), "\t Wrong core application because it has: %s %s %s \n",
+                    snprintf(str, sizeof(str), "\t Error on ICC core application because it has: %s %s %s \n",
                                                 ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
                                                 ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
                                                 ((val & 0x4) == 0x4) ? (wrongprot) : (empty)
