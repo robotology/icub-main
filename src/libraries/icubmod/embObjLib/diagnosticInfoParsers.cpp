@@ -524,7 +524,7 @@ void ConfigParser::parseInfo()
             const char *wrongprot = "WRONG PROTOCOL VERSION";
             const char *wrongappl = "WRONG APPLICATION VERSION";
 
-            snprintf(str, sizeof(str), "%s  %s board.\n",
+            snprintf(str, sizeof(str), "%s %s board.\n",
                                         m_dnginfo.baseMessage.c_str(),
                                         m_dnginfo.baseInfo.sourceCANPortStr.c_str()
                                         );
