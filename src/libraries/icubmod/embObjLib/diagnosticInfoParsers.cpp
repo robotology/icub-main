@@ -425,6 +425,7 @@ void ConfigParser::parseInfo()
         case eoerror_value_CFG_mc_advfoc_failed_candiscovery:
         case eoerror_value_CFG_mc_advfoc_failed_encoders_verify:         
         case eoerror_value_CFG_mc_advfoc_failed_ICCdiscovery:
+        case eoerror_value_CFG_mc_advfoc_failed_ICCping:
         {
             printBaseInfo();
         } break;
@@ -511,6 +512,37 @@ void ConfigParser::parseInfo()
                 numOfSens
             );
             m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
+        case eoerror_value_CFG_mc_advfoc_ICCdiscovery_invalid:
+        {
+            uint8_t numofinvalid = m_dnginfo.param16 & 0x00ff;
+            const char *canboardname = eoboards_type2string(static_cast<eObrd_type_t>(m_dnginfo.param16 >> 8));
+            uint64_t invalidmask = m_dnginfo.param64;
+            const char *empty = "";
+            const char *wrongtype = "WRONG BOARD TYPE";
+            const char *wrongprot = "WRONG PROTOCOL VERSION";
+            const char *wrongappl = "WRONG APPLICATION VERSION";
+
+            snprintf(str, sizeof(str), "%s boards in %s:\n",
+                                        m_dnginfo.baseMessage.c_str(),
+                                        m_dnginfo.baseInfo.sourceCANPortStr.c_str()
+                                        );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+
+                uint64_t val = invalidmask & 0x0f;
+                if(0 != val)
+                {
+                    snprintf(str, sizeof(str), "\t Wrong core application because it has: %s %s %s \n",
+                                                ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
+                                                ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
+                                                ((val & 0x4) == 0x4) ? (wrongprot) : (empty)
+                    );
+
+                    m_dnginfo.baseInfo.finalMessage.append(str);
+
+                }
+
         } break;
         
         case EOERROR_VALUE_DUMMY:
