@@ -64,7 +64,7 @@ checkandset_dependency(IPOPT)
 checkandset_dependency(OpenCV)
 checkandset_dependency(Qt5)
 
-set(MINIMUM_REQUIRED_icub_firmware_shared_VERSION 1.43.1)
+set(MINIMUM_REQUIRED_icub_firmware_shared_VERSION 1.44.0)
 
 if(icub_firmware_shared_FOUND AND ICUB_USE_icub_firmware_shared)
   if(icub_firmware_shared_VERSION VERSION_LESS ${MINIMUM_REQUIRED_icub_firmware_shared_VERSION})
