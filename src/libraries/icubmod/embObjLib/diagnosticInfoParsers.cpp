@@ -516,8 +516,6 @@ void ConfigParser::parseInfo()
 
         case eoerror_value_CFG_mc_advfoc_ICCdiscovery_invalid:
         {
-            uint8_t numofinvalid = m_dnginfo.param16 & 0x00ff;
-            const char *canboardname = eoboards_type2string(static_cast<eObrd_type_t>(m_dnginfo.param16 >> 8));
             uint64_t invalidmask = m_dnginfo.param64;
             const char *empty = "";
             const char *wrongtype = "WRONG BOARD TYPE";
