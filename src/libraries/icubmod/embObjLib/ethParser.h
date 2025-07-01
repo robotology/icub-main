@@ -92,7 +92,7 @@ namespace eth { namespace parser {
                 } break;
                 case ENTITY::logging:
                 {
-                    return std::string(" logging.period = ") + std::to_string(txconfig.logging.period10ms/100) + " flags = TBD";
+                    return std::string(" logging.period = ") + std::to_string(txconfig.logging.period10ms / 100.0) + " flags = TBD";
                 } break;
                 default:
                 {
