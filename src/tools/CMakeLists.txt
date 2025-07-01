@@ -3,7 +3,6 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 add_subdirectory(controlBoardDumper)
-add_subdirectory(simpleClient)
 add_subdirectory(fingersTuner)
 add_subdirectory(imageSplitter)
 add_subdirectory(trajectoryPlayer)
