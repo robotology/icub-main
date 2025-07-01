@@ -82,7 +82,7 @@ namespace eth { namespace parser {
                 } break;
                 case ENTITY::runningmode:
                 {
-                    return std::string(" runnermode = ") + ((txconfig.runnermode == eomn_appl_runnermode_besteffort) ? "besteffort" : "syncronized") +
+                    return std::string(" runnermode = ") + ((txconfig.runnermode == eomn_appl_runnermode_besteffort) ? "besteffort" : "synchronized") +
                            " safetygap = " + std::to_string(txconfig.safetygap) +
                            " cycletime = " + std::to_string(txconfig.cycletime) +
                            " maxtimeRX = " + std::to_string(txconfig.maxtimeRX) +
