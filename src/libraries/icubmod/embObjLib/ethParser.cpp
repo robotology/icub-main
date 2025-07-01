@@ -371,10 +371,7 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
         {
             int tmp = groupEthBoardSettings_RunningMode.find("safetygap").asInt32();
 
-            if(tmp >= boarddata.settings.txconfig.cycletime)
-            {
-                yWarning() << "eth::parser::read() for BOARD" << boarddata.properties.ipv4string << "ETH_BOARD_SETTINGS::RUNNINGMODE::safetygap can be only < 1000 (so far) and it was:" << tmp << ", now becomes 0";
-                tmp = 0;
+                yWarning() << "eth::parser::read() for BOARD" << boarddata.properties.ipv4string << ": ETH_BOARD_SETTINGS::RUNNINGMODE::safetygap (" << tmp << ") must be less than cycletime (" << boarddata.settings.txconfig.cycletime << "). Resetting to 0";
             }
             boarddata.settings.txconfig.safetygap = tmp;
         }
