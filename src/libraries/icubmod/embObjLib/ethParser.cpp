@@ -338,28 +338,21 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     }
     else
     {
-        if(true == groupEthBoardSettings_RunningMode.check("execution"))
+        // Default to synchronized mode.
+        boarddata.settings.txconfig.runnermode = eomn_appl_runnermode_synchronized;
+        if (groupEthBoardSettings_RunningMode.check("execution"))
         {
             std::string tmp = groupEthBoardSettings_RunningMode.find("execution").asString();
-
-            if(tmp == "synchronized")
-            {
-                boarddata.settings.txconfig.runnermode = eomn_appl_runnermode_synchronized;
-            }
-            else if(tmp == "besteffort")
+            if (tmp == "besteffort")
             {
                 boarddata.settings.txconfig.runnermode = eomn_appl_runnermode_besteffort;
             }
-            else
+            else if (tmp != "synchronized")
             {
-                // we force synchronized
-                boarddata.settings.txconfig.runnermode = eomn_appl_runnermode_synchronized;
+                yWarning() << "eth::parser::read() for BOARD" << boarddata.properties.ipv4string 
+                           << ": ETH_BOARD_SETTINGS::RUNNINGMODE::execution has unknown value '" << tmp 
+                           << "', defaulting to 'synchronized'.";
             }
-        }
-        else
-        {
-            // just to stress that default must be synchronized 
-            boarddata.settings.txconfig.runnermode = eomn_appl_runnermode_synchronized;
         }
 
         if(true == groupEthBoardSettings_RunningMode.check("period"))
