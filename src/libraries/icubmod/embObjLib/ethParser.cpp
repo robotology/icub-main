@@ -289,15 +289,15 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     }
 
     // maxSizeROP:
-    if(true == groupEthBoardProps.check("maxSizeROP"))
+    //if(true == groupEthBoardProps.check("maxSizeROP"))
+    //{
+    //    boarddata.properties.maxSizeROP = groupEthBoardProps.find("maxSizeROP").asInt32();
+    //    //yDebug() << "eth::parser::read() has detected maxSizeOfROP =" << boarddata.properties.maxSizeROP << "for BOARD w/ IP" << boarddata.properties.ipv4string;
+    //}
+    //else
     {
-        boarddata.properties.maxSizeROP = groupEthBoardProps.find("maxSizeROP").asInt32();
-        //yDebug() << "eth::parser::read() has detected maxSizeOfROP =" << boarddata.properties.maxSizeROP << "for BOARD w/ IP" << boarddata.properties.ipv4string;
-    }
-    else
-    {
-        boarddata.properties.maxSizeROP = 384;
-        yWarning() << "eth::parser::read() in BOARD w/ IP" << boarddata.properties.ipv4string << "cannot find: maxSizeROP. using:" << boarddata.properties.maxSizeROP;
+        boarddata.properties.maxSizeROP = ETH_PROTOCOL_MAX_SIZE_ROP;
+        //yWarning() << "eth::parser::read() in BOARD w/ IP" << boarddata.properties.ipv4string << "cannot find: maxSizeROP. using:" << boarddata.properties.maxSizeROP;
     }
 
 

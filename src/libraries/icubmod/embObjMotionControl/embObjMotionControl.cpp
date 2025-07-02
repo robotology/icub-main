@@ -1406,7 +1406,11 @@ bool embObjMotionControl::init()
 
 
         jconfig.maxvelocityofjoint = S_32(_measureConverter->posA2E(_jointsLimits[logico].velMax, fisico)); //icubdeg/s
-        jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].velocity);
+        jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].velocity_ref);
+        jconfig.currentsetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].current_ref);
+        jconfig.openloopsetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].pwm_ref);
+        jconfig.torquesetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].torque_ref);
+        jconfig.torquefeedbacktimeout = (eOmeas_time_t) U_16(_timeouts[logico].torque_fbk);
 
         jconfig.jntEncoderResolution = _jointEncs[logico].resolution;
         jconfig.jntEncoderType = _jointEncs[logico].type;
@@ -1434,7 +1438,8 @@ bool embObjMotionControl::init()
         jconfig.kalman_params.R = _kalman_params[logico].R;
         jconfig.kalman_params.P0 = _kalman_params[logico].P0;
 
-        if(false == res->setcheckRemoteValue(protid, &jconfig, 10, 0.010, 0.050))
+        //if(false == res->setcheckRemoteValue(protid, &jconfig, 10, 0.010, 0.050))
+        if(false == res->setRemoteValue(protid, &jconfig))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for joint config fisico #" << fisico << "in "<< getBoardInfo();
             return false;
