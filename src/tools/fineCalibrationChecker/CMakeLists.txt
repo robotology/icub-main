@@ -5,7 +5,7 @@
 project(fineCalibrationChecker)
 # find YARP
 find_package(YARP COMPONENTS os sig dev)
-find_package(iCubDev 2.7.0 QUIET)
+
 # set up our program
 add_executable(${PROJECT_NAME} 
     ./src/FineCalibrationCheckerModule.h 
