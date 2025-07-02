@@ -80,8 +80,8 @@ bool eth::parser::print(const boardData &boarddata)
 
     yDebug() << "ETH_BOARD/ETH_BOARD_SETTINGS:";
     yDebug() << "ETH_BOARD/ETH_BOARD_SETTINGS/Name = " << boarddata.settings.name;
-    yDebug() << "ETH_BOARD/ETH_BOARD_SETTINGS/RUNNINGMODE/(period, maxTimeOfRXactivity, maxTimeOfDOactivity, maxTimeOfTXactivity, TXrateOfRegularROPs) = " <<
-                boarddata.settings.txconfig.cycletime << boarddata.settings.txconfig.maxtimeRX << boarddata.settings.txconfig.maxtimeDO << boarddata.settings.txconfig.maxtimeTX << boarddata.settings.txconfig.txratedivider;
+    yDebug() << "ETH_BOARD/ETH_BOARD_SETTINGS/RUNNINGMODE/ = " << boarddata.settings.to_string(boardSettings::ENTITY::runningmode);
+    yDebug() << "ETH_BOARD/ETH_BOARD_SETTINGS/RUNNINGMODE/LOGGING/ = " << boarddata.settings.to_string(boardSettings::ENTITY::logging);
     yDebug() << "ETH_BOARD/ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE";
     yDebug() << "ETH_BOARD/ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE/(enabled, timeout, periodOfMissingReport) = " <<
                 boarddata.actions.monitorpresence_enabled << boarddata.actions.monitorpresence_timeout << boarddata.actions.monitorpresence_periodofmissingreport;
@@ -311,6 +311,11 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     char xmlboardname[64] = {0};
     snprintf(xmlboardname, sizeof(xmlboardname), "%s", paramNameBoard.toString().c_str());
 
+    // at first we provide boarddata.settings w/ default values that are safe
+    // in this way we dont need to manage the case of a missing tag unless we want to force somthing different
+    // note that reset() removes all diagnostics
+ 
+    boarddata.settings.reset(); 
 
     if(0 != strlen(xmlboardname))
     {
@@ -333,6 +338,22 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
     }
     else
     {
+        // Default to synchronized mode.
+        boarddata.settings.txconfig.runnermode = eomn_appl_runnermode_synchronized;
+        if (groupEthBoardSettings_RunningMode.check("execution"))
+        {
+            std::string tmp = groupEthBoardSettings_RunningMode.find("execution").asString();
+            if (tmp == "besteffort")
+            {
+                boarddata.settings.txconfig.runnermode = eomn_appl_runnermode_besteffort;
+            }
+            else if (tmp != "synchronized")
+            {
+                yWarning() << "eth::parser::read() for BOARD" << boarddata.properties.ipv4string 
+                           << ": ETH_BOARD_SETTINGS::RUNNINGMODE::execution has unknown value '" << tmp 
+                           << "', defaulting to 'synchronized'.";
+            }
+        }
 
         if(true == groupEthBoardSettings_RunningMode.check("period"))
         {
@@ -344,6 +365,18 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
                 tmp = 1000;
             }
             boarddata.settings.txconfig.cycletime = tmp;
+        }
+
+        if(true == groupEthBoardSettings_RunningMode.check("safetygap"))
+        {
+            int tmp = groupEthBoardSettings_RunningMode.find("safetygap").asInt32();
+
+            if(tmp >= boarddata.settings.txconfig.cycletime)
+            {
+                yWarning() << "eth::parser::read() for BOARD" << boarddata.properties.ipv4string << ": ETH_BOARD_SETTINGS::RUNNINGMODE::safetygap (" << tmp << ") must be less than cycletime (" << boarddata.settings.txconfig.cycletime << "). Resetting to 0";
+            }
+
+            boarddata.settings.txconfig.safetygap = tmp;
         }
 
         if(true == groupEthBoardSettings_RunningMode.check("maxTimeOfRXactivity"))
@@ -414,22 +447,49 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
             boarddata.settings.txconfig.maxtimeDO = 300;
             boarddata.settings.txconfig.maxtimeTX = 300;
         }
-        
+
         
         // set initial values.
         
         // in here i store the final values of the parsing
-        // they muts have the default values already in here
+        // they have the default values already in here
+        // they are all false except for sigOVRFLrxdotx so that we keep backwards compatibility 
         struct parseLOGGING
         {
             struct IMM
             {
-                bool sigOVRFL {true};
+                bool sigOVRFLrxdotx {true};
+                bool sigOVRFLperiod {false};
+                void clear()
+                {
+                    sigOVRFLrxdotx = true;
+                    sigOVRFLperiod = false;
+                }
+                std::string to_string() const
+                {
+                    return std::string("IMM -> (sigOVRFLrxdotx = ") + std::to_string(sigOVRFLrxdotx) +
+                           std::string(", sigOVRFLperiod = ") + std::to_string(sigOVRFLperiod) +
+                           ")";
+                }
             };
             struct PER
             {
                 double period {0.0};
-                bool sigSTATS {false};
+                bool sigSTATS_RXDOTXminavgmax {false};
+                bool sigSTATS_PERIODminavgmax {false};
+                bool sigSTATS_PERIODhistogram {false};
+                void clear()
+                {
+                    period = 0;
+                    sigSTATS_RXDOTXminavgmax = sigSTATS_PERIODminavgmax = sigSTATS_PERIODhistogram = false;
+                }
+                std::string to_string() const
+                {
+                    return std::string("PER -> (sigSTATS_RXDOTXminavgmax = ") + std::to_string(sigSTATS_RXDOTXminavgmax) +
+                           std::string(", sigSTATS_PERIODminavgmax = ") + std::to_string(sigSTATS_PERIODminavgmax) +
+                        std::string(", sigSTATS_PERIODhistogram = ") + std::to_string(sigSTATS_PERIODhistogram) +
+                           ")";
+                }
             };
 
             IMM immediate {};
@@ -437,19 +497,21 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
 
             void setdefault()
             {
-                immediate.sigOVRFL = true;
-                periodic.period = 0;
-                periodic.sigSTATS = false;
+                immediate.clear();
+                periodic.clear();
+            }
+
+            std::string to_string() const
+            {
+                return std::string("parseLOGGING -> ") + immediate.to_string() + ", " + periodic.to_string();
             }
         };
 
         parseLOGGING pLOG {};
 
+        // we impose the default value that will have all false except for pLOG.immediate.sigOVRFLrxdotx true
         pLOG.setdefault();
 
-        //bool log_imm_sigOVF {true};
-        //bool log_per_sigSTA {false};
-        //float log_per_periodSEC = 0.0;
         
         Bottle groupEthBoardSettings_RunningMode_Logging = Bottle(groupEthBoardSettings_RunningMode.findGroup("LOGGING"));
         if(groupEthBoardSettings_RunningMode_Logging.isNull())
@@ -464,70 +526,121 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
             Bottle groupEthBoardSettings_RunningMode_Logging_Immediate = Bottle(groupEthBoardSettings_RunningMode_Logging.findGroup("IMMEDIATE"));
             if(groupEthBoardSettings_RunningMode_Logging_Immediate.isNull())
             {
-                // IMMEDIATE not found, so i keep default value
+                // IMMEDIATE not found, so i keep default value that has only pLOG.immediate.sigOVRFLrxdotx true.
             }
             else
-            {   
-                if(false == groupEthBoardSettings_RunningMode_Logging_Immediate.check("emitRXDOTXoverflow"))
+            {
+
+                if(true == groupEthBoardSettings_RunningMode_Logging_Immediate.check("emitRXDOTXoverflow"))
                 {
-                    // IMMEDIATE.emitRXDOTXoverflow not found, so i keep default
+                    Value& v = groupEthBoardSettings_RunningMode_Logging_Immediate.find("emitRXDOTXoverflow");
+                    if (v.isBool())
+                    {
+                       pLOG.immediate.sigOVRFLrxdotx = v.asBool();
+                    }
+                }
+
+                if(false == groupEthBoardSettings_RunningMode_Logging_Immediate.check("emitPERIODoverflow"))
+                {
+                    // IMMEDIATE.emitPERIODoverflow not found, so i keep default (false)
+                    // pLOG.immediate.sigOVRFLperiod = false;
                 }
                 else
                 {
-                    if(groupEthBoardSettings_RunningMode_Logging_Immediate.find("emitRXDOTXoverflow").isBool())
+                    if(groupEthBoardSettings_RunningMode_Logging_Immediate.find("emitPERIODoverflow").isBool())
                     {
-                        printf("x 33\n");
-                       pLOG.immediate.sigOVRFL = groupEthBoardSettings_RunningMode_Logging_Immediate.find("emitRXDOTXoverflow").asBool();
+                        pLOG.immediate.sigOVRFLperiod = groupEthBoardSettings_RunningMode_Logging_Immediate.find("emitPERIODoverflow").asBool();
                     }
-               }
+                    else
+                    { 
+                        // keep default (false)
+                        // pLOG.immediate.sigOVRFLperiod = false;
+                    }
+                }
             }
             
             Bottle groupEthBoardSettings_RunningMode_Logging_Periodic = Bottle(groupEthBoardSettings_RunningMode_Logging.findGroup("PERIODIC"));  
             if(groupEthBoardSettings_RunningMode_Logging_Periodic.isNull())
             {
-                printf("x 4\n");
-                // PERIODIC not found, so i keep default value
+                // PERIODIC not found, so i keep default values (period zero, all false)
             }
             else
             { 
 
                 if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("period"))
                 {
-                    // PERIODIC.period not found, so i keep default
+                    // PERIODIC.period not found, so i keep default (0)
                 }
                 else
                 {
-                    // i get it and i filter in range [0, 600)
+                    // i get it and i filter in range [0, 600]
                     if(true == groupEthBoardSettings_RunningMode_Logging_Periodic.find("period").isFloat64())
                     {
                         double tmp = groupEthBoardSettings_RunningMode_Logging_Periodic.find("period").asFloat64();
                         pLOG.periodic.period = (tmp<0.0) ? (0.0) : ( (tmp < 600.0) ? tmp : 600.0 );
-                     }
+                    }
                 }
-                
-                if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("emitRXDOTXstatistics"))
+
+                // Handle emitRXDOTXstatistics for backward compatibility
+                Value& v_stats = groupEthBoardSettings_RunningMode_Logging_Periodic.find("emitRXDOTXstatistics");
+                if (v_stats.isBool())
                 {
-                    // PERIODIC.emitRXDOTXstatistics not found, so i keep default
+                    pLOG.periodic.sigSTATS_RXDOTXminavgmax = v_stats.asBool();
+                }
+
+                // note: emitRXDOTXminavgmax and emitRXDOTXstatistics emit both the same thing and both are legal xml tags.
+                // however, emitRXDOTXminavgmax is the more correct name so it wins over emitRXDOTXstatistics
+                // Handle emitRXDOTXminavgmax, which is preferred and overrides emitRXDOTXstatistics
+                Value& v_minavgmax = groupEthBoardSettings_RunningMode_Logging_Periodic.find("emitRXDOTXminavgmax");
+                if (v_minavgmax.isBool())
+                {
+                    pLOG.periodic.sigSTATS_RXDOTXminavgmax = v_minavgmax.asBool();
+                }
+
+
+                if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("emitPERIODminavgmax"))
+                {
+                   // PERIODIC.emitPERIODminavgmax not found, so i keep default (false)
+                   //pLOG.periodic.sigSTATS_PERIODminavgmax = false;
                 }
                 else
                 {
-                    pLOG.periodic.sigSTATS = groupEthBoardSettings_RunningMode_Logging_Periodic.find("emitRXDOTXstatistics").asBool();
+                    pLOG.periodic.sigSTATS_PERIODminavgmax = groupEthBoardSettings_RunningMode_Logging_Periodic.find("emitPERIODminavgmax").asBool();
                 }
-                
+
+                if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("emitPERIODhistogram"))
+                {
+                   // PERIODIC.emitPERIODhistogram not found, so i keep default (false)
+                   //pLOG.periodic.sigSTATS_PERIODhistogram = false;
+                }
+                else
+                {
+                    pLOG.periodic.sigSTATS_PERIODhistogram = groupEthBoardSettings_RunningMode_Logging_Periodic.find("emitPERIODhistogram").asBool();
+                }
             }  
 
             yInfo() << "ETH_BOARD_PROPERTIES/RUNNINGMODE/LOGGING group for BOARD w/ IP" << boarddata.properties.ipv4string << " has values: " <<
-             "IMMEDIATE.emitRXDOTXoverflow = " << pLOG.immediate.sigOVRFL << " PERIODIC.period = " << pLOG.periodic.period << " PERIODIC.emitRXDOTXstatistics = " << pLOG.periodic.sigSTATS;
+                " IMMEDIATE.emit* = " << pLOG.immediate.to_string() << " PERIODIC.period = " << pLOG.periodic.period << " PERIODIC.emit* = " << pLOG.periodic.to_string();
             
         }
                             
         
         // now i apply the resulting values to the compact struct
-        constexpr uint16_t maskOverflow = (0x0001 << eomn_appl_log_asynchro_exectime_overflow);
-        constexpr uint16_t maskStatistics = (0x0001 << eomn_appl_log_periodic_exectime_statistics);
+        constexpr uint16_t maskRXDOTXoverflow = (0x0001 << eomn_appl_log_asynchro_exectime_rxdotx_overflow);
+        constexpr uint16_t maskRXDOTXminavgmax = (0x0001 << eomn_appl_log_periodic_exectime_rxdotx_minavgmax);
+        constexpr uint16_t maskPERIODoverflow = (0x0001 << eomn_appl_log_asynchro_exectime_period_overflow);
+        constexpr uint16_t maskPERIODminavgmax = (0x0001 << eomn_appl_log_periodic_exectime_period_minavgmax);
+        constexpr uint16_t maskPERIODhistogram = (0x0001 << eomn_appl_log_periodic_exectime_period_histogram);
+
+
         boarddata.settings.txconfig.logging.flags = 0;
-        if(true == pLOG.immediate.sigOVRFL) { boarddata.settings.txconfig.logging.flags |= maskOverflow; }
-        if(true == pLOG.periodic.sigSTATS) { boarddata.settings.txconfig.logging.flags |= maskStatistics; }
+
+        if(true == pLOG.immediate.sigOVRFLrxdotx) { boarddata.settings.txconfig.logging.flags |= maskRXDOTXoverflow; }
+        if(true == pLOG.immediate.sigOVRFLperiod) { boarddata.settings.txconfig.logging.flags |= maskPERIODoverflow; }
+        if(true == pLOG.periodic.sigSTATS_RXDOTXminavgmax) { boarddata.settings.txconfig.logging.flags |= maskRXDOTXminavgmax; }
+        if(true == pLOG.periodic.sigSTATS_PERIODminavgmax) { boarddata.settings.txconfig.logging.flags |= maskPERIODminavgmax; }
+        if(true == pLOG.periodic.sigSTATS_PERIODhistogram) { boarddata.settings.txconfig.logging.flags |= maskPERIODhistogram; }
+
         boarddata.settings.txconfig.logging.period10ms = static_cast<uint16_t>(100.0*pLOG.periodic.period); // period is uint16_t and keeps units of 10 ms to be able to manage up to 10 minutes
 
     }

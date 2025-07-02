@@ -58,13 +58,50 @@ namespace eth { namespace parser {
         std::string         name;
         eOmn_appl_config_t  txconfig;
 
-        boardSettings()  {
+        boardSettings()  
+        {
             reset();
         }
-        void reset() {
-            name = "none"; txconfig.cycletime = 1000; txconfig.txratedivider = 1;
+        void reset()
+        {
+            name = "none";
+            txconfig.runnermode = eomn_appl_runnermode_synchronized;
+            txconfig.safetygap = 0; txconfig.cycletime = 1000; txconfig.txratedivider = 1;
             txconfig.maxtimeRX = 400; txconfig.maxtimeDO = 300; txconfig.maxtimeTX = 300;
+            txconfig.logging.period10ms = 0; txconfig.logging.flags = 0;
         }
+
+        enum class ENTITY { name, runningmode, logging };
+        std::string to_string(ENTITY e) const
+        {
+            switch(e)
+            {
+                case ENTITY::name:
+                {
+                    return name;
+                } break;
+                case ENTITY::runningmode:
+                {
+                    return std::string(" runnermode = ") + ((txconfig.runnermode == eomn_appl_runnermode_besteffort) ? "besteffort" : "synchronized") +
+                           " safetygap = " + std::to_string(txconfig.safetygap) +
+                           " cycletime = " + std::to_string(txconfig.cycletime) +
+                           " maxtimeRX = " + std::to_string(txconfig.maxtimeRX) +
+                           " maxtimeDO = " + std::to_string(txconfig.maxtimeDO) +
+                           " txratedivider = " + std::to_string(txconfig.txratedivider)
+                        ;
+                } break;
+                case ENTITY::logging:
+                {
+                    return std::string(" logging.period = ") + std::to_string(txconfig.logging.period10ms / 100.0) + " flags = TBD";
+                } break;
+                default:
+                {
+                } break;
+            }
+            return "";
+
+        }
+
     };
 
     struct boardActions

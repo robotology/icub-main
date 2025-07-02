@@ -1107,15 +1107,15 @@ void SysParser::parseInfo()
 
         case eoerror_value_SYS_exec_time_stats:
         {
-            static constexpr const char * const names[4] = { "runner.RX()", "runner.DO()", "runner.TX()", "other.ID = " };
+            static constexpr const char * const names[5] = { "runner.RX()", "runner.DO()", "runner.TX()", "runner.RXDOTX()", "other.ID = " };
             std::string actor = {};
-            if(m_dnginfo.param16 < 3)
+            if(m_dnginfo.param16 <= 3)
             {
                 actor = names[m_dnginfo.param16];
             }
             else
             {
-                actor= names[3] + std::to_string(m_dnginfo.param16);
+                actor = names[4] + std::to_string(m_dnginfo.param16);
             }
 
             snprintf(str, sizeof(str), " %s: %s -> (%d, %d, %d) us over %f sec",
@@ -1125,6 +1125,42 @@ void SysParser::parseInfo()
                      static_cast<uint16_t>((m_dnginfo.param64 >> 32) & 0xffff), // average
                      static_cast<uint16_t>((m_dnginfo.param64 >> 16) & 0xffff), // max
                      0.01*static_cast<float>(m_dnginfo.param64 & 0xffff)        // period
+                     );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
+        case eoerror_value_SYS_ctrloop_execoverflowPERIOD:
+        {
+            uint16_t budget = m_dnginfo.param16;
+            uint16_t current = static_cast<uint16_t>((m_dnginfo.param64 >> 48) & 0xffff);
+            uint16_t rxt = static_cast<uint16_t>((m_dnginfo.param64 >> 32) & 0xffff);
+            uint16_t dot = static_cast<uint16_t>((m_dnginfo.param64 >> 16) & 0xffff);
+            uint16_t txt = static_cast<uint16_t>((m_dnginfo.param64 ) & 0xffff);
+
+            snprintf(str, sizeof(str), " %s: RXDOTX cycle budget = %d us, RXDOTX exec time = %d us, (rx, do, tx) = (%d, %d, %d) us",
+                        m_dnginfo.baseMessage.c_str(),
+                        budget,
+                        current,
+                        rxt, dot, txt
+                     );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
+
+        case eoerror_value_SYS_ctrloop_histogramPERIOD:
+        {
+            uint16_t w = m_dnginfo.param16;
+            float v[8] = {0};
+            for(uint8_t i=0; i<8; i++)
+            {
+                uint64_t x = (m_dnginfo.param64 >> (8*i)) & 0xff;
+                v[i] = static_cast<float>(x)/255.0;
+            }
+
+            snprintf(str, sizeof(str), " %s: RXDOTX execution histogram w/ bins = %d us wide in [0, %f) + beyond -> [%f, %f, %f, %f, %f, %f, %f) + %f",
+                     m_dnginfo.baseMessage.c_str(),
+                     w, 7.0*w,
+                     v[0], v[1], v[2], v[3], v[4], v[5], v[6],
+                     v[7]
                      );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
