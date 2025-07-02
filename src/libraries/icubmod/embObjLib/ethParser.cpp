@@ -371,8 +371,11 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
         {
             int tmp = groupEthBoardSettings_RunningMode.find("safetygap").asInt32();
 
+            if(tmp >= boarddata.settings.txconfig.cycletime)
+            {
                 yWarning() << "eth::parser::read() for BOARD" << boarddata.properties.ipv4string << ": ETH_BOARD_SETTINGS::RUNNINGMODE::safetygap (" << tmp << ") must be less than cycletime (" << boarddata.settings.txconfig.cycletime << "). Resetting to 0";
             }
+
             boarddata.settings.txconfig.safetygap = tmp;
         }
 
@@ -526,25 +529,16 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
                 // IMMEDIATE not found, so i keep default value that has only pLOG.immediate.sigOVRFLrxdotx true.
             }
             else
-            {   
-                if(false == groupEthBoardSettings_RunningMode_Logging_Immediate.check("emitRXDOTXoverflow"))
-                {
-                    // IMMEDIATE.emitRXDOTXoverflow not found, so i keep default (true)
-                    // pLOG.immediate.sigOVRFLrxdotx = true;
-                }
-                else
-                {
-                    if(groupEthBoardSettings_RunningMode_Logging_Immediate.find("emitRXDOTXoverflow").isBool())
-                    {
-                       pLOG.immediate.sigOVRFLrxdotx = groupEthBoardSettings_RunningMode_Logging_Immediate.find("emitRXDOTXoverflow").asBool();
-                    }
-                    else
-                    {
-                        // keep default (true)
-                        // pLOG.immediate.sigOVRFLrxdotx = true;
-                    }
-                }
+            {
 
+                if(true == groupEthBoardSettings_RunningMode_Logging_Immediate.check("emitRXDOTXoverflow"))
+                {
+                    Value& v = groupEthBoardSettings_RunningMode_Logging_Immediate.find("emitRXDOTXoverflow");
+                    if (v.isBool())
+                    {
+                       pLOG.immediate.sigOVRFLrxdotx = v.asBool();
+                    }
+                }
 
                 if(false == groupEthBoardSettings_RunningMode_Logging_Immediate.check("emitPERIODoverflow"))
                 {
@@ -586,28 +580,23 @@ bool eth::parser::read(yarp::os::Searchable &cfgtotal, boardData &boarddata)
                         pLOG.periodic.period = (tmp<0.0) ? (0.0) : ( (tmp < 600.0) ? tmp : 600.0 );
                     }
                 }
-                
-                if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("emitRXDOTXstatistics"))
+
+                // Handle emitRXDOTXstatistics for backward compatibility
+                Value& v_stats = groupEthBoardSettings_RunningMode_Logging_Periodic.find("emitRXDOTXstatistics");
+                if (v_stats.isBool())
                 {
-                    // PERIODIC.emitRXDOTXstatistics not found, so i keep default (false)
-                    //pLOG.periodic.sigSTATS_RXDOTXminavgmax = false;
+                    pLOG.periodic.sigSTATS_RXDOTXminavgmax = v_stats.asBool();
                 }
-                else
-                {
-                    pLOG.periodic.sigSTATS_RXDOTXminavgmax = groupEthBoardSettings_RunningMode_Logging_Periodic.find("emitRXDOTXstatistics").asBool();
-                }
-                
+
                 // note: emitRXDOTXminavgmax and emitRXDOTXstatistics emit both the same thing and both are legal xml tags.
                 // however, emitRXDOTXminavgmax is the more correct name so it wins over emitRXDOTXstatistics
-                if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("emitRXDOTXminavgmax"))
+                // Handle emitRXDOTXminavgmax, which is preferred and overrides emitRXDOTXstatistics
+                Value& v_minavgmax = groupEthBoardSettings_RunningMode_Logging_Periodic.find("emitRXDOTXminavgmax");
+                if (v_minavgmax.isBool())
                 {
-                    // PERIODIC.emitRXDOTXminavgmax not found, so ...
-                    // i keep the default value (false) or the value imposed by tag emitRXDOTXstatistics
+                    pLOG.periodic.sigSTATS_RXDOTXminavgmax = v_minavgmax.asBool();
                 }
-                else
-                {
-                    pLOG.periodic.sigSTATS_RXDOTXminavgmax = groupEthBoardSettings_RunningMode_Logging_Periodic.find("emitRXDOTXminavgmax").asBool();
-                }
+
 
                 if(false == groupEthBoardSettings_RunningMode_Logging_Periodic.check("emitPERIODminavgmax"))
                 {
