@@ -421,6 +421,11 @@ void ConfigParser::parseInfo()
         case eoerror_value_CFG_bat_not_verified_yet:
         case eoerror_value_CFG_bat_using_onboard_config:
         case eoerror_value_CFG_bat_failed_notsupported:
+        case eoerror_value_CFG_mc_advfoc_ok:
+        case eoerror_value_CFG_mc_advfoc_failed_candiscovery:
+        case eoerror_value_CFG_mc_advfoc_failed_encoders_verify:         
+        case eoerror_value_CFG_mc_advfoc_failed_ICCdiscovery:
+        case eoerror_value_CFG_mc_advfoc_failed_ICCping:
         {
             printBaseInfo();
         } break;
@@ -508,6 +513,110 @@ void ConfigParser::parseInfo()
             );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
+
+        case eoerror_value_CFG_mc_advfoc_ICCdiscovery_result:
+        {
+            uint64_t invalidmask = m_dnginfo.param16;
+            const char *empty       = "";
+            const char *wrongtype   = "WRONG BOARD TYPE";
+            const char *wrongappl   = "WRONG APPLICATION VERSION";
+            const char *wrongprot   = "WRONG PROTOCOL VERSION";
+            const char *wronchannel = "WRONG CHANNEL ";
+
+            int fw_build =    (m_dnginfo.param64 & 0x00000000000000ff);
+            int fw_minor =    (m_dnginfo.param64 & 0x000000000000ff00) >> 8;
+            int fw_major =    (m_dnginfo.param64 & 0x0000000000ff0000) >> 16;
+            int proto_minor = (m_dnginfo.param64 & 0x00000000ff000000) >> 24;
+            int proto_major = (m_dnginfo.param64 & 0x000000ff00000000) >> 32;
+            int boardtype =   (m_dnginfo.param64 & 0x000000ff00000000) >> 40;
+
+
+            eObrd_type_t  general_brd_type = eoboards_cantype2type((eObrd_cantype_t )boardtype);
+
+            std::string board_type_str = eoboards_type2string(general_brd_type);
+            
+            snprintf(str, sizeof(str), " %s on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d", 
+                                        m_dnginfo.baseMessage.c_str(), board_type_str.c_str(),
+                                        fw_build, fw_major, fw_minor, proto_major, proto_minor );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+
+
+
+
+            snprintf(str, sizeof(str), "%s %s board.\n",
+                                        m_dnginfo.baseMessage.c_str(),
+                                        m_dnginfo.baseInfo.sourceCANPortStr.c_str()
+                                        );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+                                       
+            uint64_t val = invalidmask & 0x0f;
+            if(0 != val)
+            {
+                snprintf(str, sizeof(str), "\t Error on ICC core application because it has: %s %s %s %s \n",
+                                            ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
+                                            ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
+                                            ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
+                                            ((val & 0x8) == 0x8) ? (wronchannel) : (empty)
+                );
+
+                m_dnginfo.baseInfo.finalMessage.append(str);
+
+            }
+            else
+            {
+                printf("All good");
+            }
+
+        } break;
+
+
+
+        // case eoerror_value_SYS_canservices_board_detected:
+        // {
+        //     //in param64 the fw copies the struct eObrd_typeandversions_t defined in EoBoards.h in icub=firmware repo
+        //     /**
+        //     typedef struct {
+        //         eOenum08_t                  boardtype;
+        //         uint8_t                     firmwarebuildnumber;
+        //         eObrd_version_t             firmwareversion;
+        //         eObrd_version_t             protocolversion;   
+        //     } eObrd_typeandversions_t;      EO_VERIFYsizeof(eObrd_typeandversions_t, 6);
+
+
+        //     typedef struct                  // size is: 1+1+0 = 2
+        //     {
+        //         uint8_t                     major;
+        //         uint8_t                     minor;    
+        //     } eObrd_version_t;
+
+        //      */
+        //     //TODO:
+        //     //checking the fw it seems this error code is no longer used.
+        //     //So I cannot retrieve the board type. 
+        //     //For now I leave the code. When I'm sure that it is old, I'll remove it
+        //     int fw_build =    (m_dnginfo.param64 & 0x00000000000000ff);
+        //     int fw_major =    (m_dnginfo.param64 & 0x000000000000ff00) >> 8;
+        //     int fw_minor =    (m_dnginfo.param64 & 0x0000000000ff0000) >> 16;
+        //     int proto_major = (m_dnginfo.param64 & 0x00000000ff000000) >> 24;
+        //     int proto_minor = (m_dnginfo.param64 & 0x000000ff00000000) >> 32;
+
+        //     //used in comm-v1 protocol
+        //     // eObrd_typeandversions_t *brd_info_ptr = (eObrd_typeandversions_t *)&m_dnginfo.param64;
+        //     // int fw_build =   brd_info_ptr->firmwarebuildnumber;
+        //     // int fw_major =   brd_info_ptr->firmwareversion.major;
+        //     // int fw_minor =   brd_info_ptr->firmwareversion.minor;
+        //     // int proto_major =brd_info_ptr->protocolversion.major;
+        //     // int proto_minor =brd_info_ptr->protocolversion.minor;
+
+        //     // eObrd_type_t  general_brd_type = eoboards_cantype2type((eObrd_cantype_t )brd_info_ptr->boardtype);
+
+        //     // std::string board_type_str = eoboards_type2string(general_brd_type);
+            
+        //     snprintf(str, sizeof(str), " %s on CAN port=%s with address %d.  Fw ver is %d.%d.%d. Proto ver is %d.%d", 
+        //                                  m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.baseInfo.sourceCANBoardAddr,
+        //                                  fw_build, fw_major, fw_minor, proto_major, proto_minor );
+        //     m_dnginfo.baseInfo.finalMessage.append(str);
+        // }break;
         
         case EOERROR_VALUE_DUMMY:
         {
@@ -1495,8 +1604,8 @@ void EthMonitorParser::parseInfo()
             std::string ethport =  "unknown";
             switch(m_dnginfo.param16)
             {
-                case 0: ethport="ETH input (P2/P13/J4)"; break;
-                case 1: ethport="ETH output (P3/P12/J5)"; break;
+                case 0: ethport="ETH input (P2/P13/J4/J6)"; break;
+                case 1: ethport="ETH output (P3/P12/J5/J7)"; break;
                 case 2: ethport="internal"; break;
             };
             if(eoerror_value_ETHMON_error_rxcrc == value)
