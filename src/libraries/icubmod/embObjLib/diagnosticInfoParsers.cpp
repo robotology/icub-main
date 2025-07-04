@@ -544,7 +544,7 @@ void ConfigParser::parseInfo()
             }
             else
             {
-                snprintf("All good");
+                printf("All good");
             }
 
         } break;
