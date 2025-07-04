@@ -551,52 +551,52 @@ void ConfigParser::parseInfo()
 
 
 
-        case eoerror_value_SYS_canservices_board_detected:
-        {
-            //in param64 the fw copies the struct eObrd_typeandversions_t defined in EoBoards.h in icub=firmware repo
-            /**
-            typedef struct {
-                eOenum08_t                  boardtype;
-                uint8_t                     firmwarebuildnumber;
-                eObrd_version_t             firmwareversion;
-                eObrd_version_t             protocolversion;   
-            } eObrd_typeandversions_t;      EO_VERIFYsizeof(eObrd_typeandversions_t, 6);
+        // case eoerror_value_SYS_canservices_board_detected:
+        // {
+        //     //in param64 the fw copies the struct eObrd_typeandversions_t defined in EoBoards.h in icub=firmware repo
+        //     /**
+        //     typedef struct {
+        //         eOenum08_t                  boardtype;
+        //         uint8_t                     firmwarebuildnumber;
+        //         eObrd_version_t             firmwareversion;
+        //         eObrd_version_t             protocolversion;   
+        //     } eObrd_typeandversions_t;      EO_VERIFYsizeof(eObrd_typeandversions_t, 6);
 
 
-            typedef struct                  // size is: 1+1+0 = 2
-            {
-                uint8_t                     major;
-                uint8_t                     minor;    
-            } eObrd_version_t;
+        //     typedef struct                  // size is: 1+1+0 = 2
+        //     {
+        //         uint8_t                     major;
+        //         uint8_t                     minor;    
+        //     } eObrd_version_t;
 
-             */
-            //TODO:
-            //checking the fw it seems this error code is no longer used.
-            //So I cannot retrieve the board type. 
-            //For now I leave the code. When I'm sure that it is old, I'll remove it
-            int fw_build =    (m_dnginfo.param64 & 0x00000000000000ff);
-            int fw_major =    (m_dnginfo.param64 & 0x000000000000ff00) >> 8;
-            int fw_minor =    (m_dnginfo.param64 & 0x0000000000ff0000) >> 16;
-            int proto_major = (m_dnginfo.param64 & 0x00000000ff000000) >> 24;
-            int proto_minor = (m_dnginfo.param64 & 0x000000ff00000000) >> 32;
+        //      */
+        //     //TODO:
+        //     //checking the fw it seems this error code is no longer used.
+        //     //So I cannot retrieve the board type. 
+        //     //For now I leave the code. When I'm sure that it is old, I'll remove it
+        //     int fw_build =    (m_dnginfo.param64 & 0x00000000000000ff);
+        //     int fw_major =    (m_dnginfo.param64 & 0x000000000000ff00) >> 8;
+        //     int fw_minor =    (m_dnginfo.param64 & 0x0000000000ff0000) >> 16;
+        //     int proto_major = (m_dnginfo.param64 & 0x00000000ff000000) >> 24;
+        //     int proto_minor = (m_dnginfo.param64 & 0x000000ff00000000) >> 32;
 
-            //used in comm-v1 protocol
-            // eObrd_typeandversions_t *brd_info_ptr = (eObrd_typeandversions_t *)&m_dnginfo.param64;
-            // int fw_build =   brd_info_ptr->firmwarebuildnumber;
-            // int fw_major =   brd_info_ptr->firmwareversion.major;
-            // int fw_minor =   brd_info_ptr->firmwareversion.minor;
-            // int proto_major =brd_info_ptr->protocolversion.major;
-            // int proto_minor =brd_info_ptr->protocolversion.minor;
+        //     //used in comm-v1 protocol
+        //     // eObrd_typeandversions_t *brd_info_ptr = (eObrd_typeandversions_t *)&m_dnginfo.param64;
+        //     // int fw_build =   brd_info_ptr->firmwarebuildnumber;
+        //     // int fw_major =   brd_info_ptr->firmwareversion.major;
+        //     // int fw_minor =   brd_info_ptr->firmwareversion.minor;
+        //     // int proto_major =brd_info_ptr->protocolversion.major;
+        //     // int proto_minor =brd_info_ptr->protocolversion.minor;
 
-            // eObrd_type_t  general_brd_type = eoboards_cantype2type((eObrd_cantype_t )brd_info_ptr->boardtype);
+        //     // eObrd_type_t  general_brd_type = eoboards_cantype2type((eObrd_cantype_t )brd_info_ptr->boardtype);
 
-            // std::string board_type_str = eoboards_type2string(general_brd_type);
+        //     // std::string board_type_str = eoboards_type2string(general_brd_type);
             
-            snprintf(str, sizeof(str), " %s on CAN port=%s with address %d.  Fw ver is %d.%d.%d. Proto ver is %d.%d", 
-                                         m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.baseInfo.sourceCANBoardAddr,
-                                         fw_build, fw_major, fw_minor, proto_major, proto_minor );
-            m_dnginfo.baseInfo.finalMessage.append(str);
-        }break;
+        //     snprintf(str, sizeof(str), " %s on CAN port=%s with address %d.  Fw ver is %d.%d.%d. Proto ver is %d.%d", 
+        //                                  m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.sourceCANPortStr.c_str(), m_dnginfo.baseInfo.sourceCANBoardAddr,
+        //                                  fw_build, fw_major, fw_minor, proto_major, proto_minor );
+        //     m_dnginfo.baseInfo.finalMessage.append(str);
+        // }break;
         
         case EOERROR_VALUE_DUMMY:
         {
