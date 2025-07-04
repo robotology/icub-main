@@ -532,7 +532,7 @@ void ConfigParser::parseInfo()
             uint64_t val = invalidmask & 0x0f;
             if(0 != val)
             {
-                snprintf(str, sizeof(str), "\t Error on ICC core application because it has: %s %s %s \n",
+                snprintf(str, sizeof(str), "\t Error on ICC core application because it has: %s %s %s %s \n",
                                             ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
                                             ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
                                             ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
