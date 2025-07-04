@@ -536,7 +536,7 @@ void ConfigParser::parseInfo()
             std::string board_type_str = eoboards_type2string(general_brd_type);
             
             snprintf(str, sizeof(str), " %s on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d", 
-                                        m_dnginfo.baseMessage.c_str(), board_type_str
+                                        m_dnginfo.baseMessage.c_str(), board_type_str.c_str(),
                                         fw_build, fw_major, fw_minor, proto_major, proto_minor );
             m_dnginfo.baseInfo.finalMessage.append(str);
 
