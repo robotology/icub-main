@@ -523,12 +523,32 @@ void ConfigParser::parseInfo()
             const char *wrongprot   = "WRONG PROTOCOL VERSION";
             const char *wronchannel = "WRONG CHANNEL ";
 
+            int fw_build =    (m_dnginfo.param64 & 0x00000000000000ff);
+            int fw_minor =    (m_dnginfo.param64 & 0x000000000000ff00) >> 8;
+            int fw_major =    (m_dnginfo.param64 & 0x0000000000ff0000) >> 16;
+            int proto_minor = (m_dnginfo.param64 & 0x00000000ff000000) >> 24;
+            int proto_major = (m_dnginfo.param64 & 0x000000ff00000000) >> 32;
+            int boardtype =   (m_dnginfo.param64 & 0x000000ff00000000) >> 40;
+
+
+            eObrd_type_t  general_brd_type = eoboards_cantype2type((eObrd_cantype_t )boardtype);
+
+            std::string board_type_str = eoboards_type2string(general_brd_type);
+            
+            snprintf(str, sizeof(str), " %s on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d", 
+                                        m_dnginfo.baseMessage.c_str(), board_type_str
+                                        fw_build, fw_major, fw_minor, proto_major, proto_minor );
+            m_dnginfo.baseInfo.finalMessage.append(str);
+
+
+
+
             snprintf(str, sizeof(str), "%s %s board.\n",
                                         m_dnginfo.baseMessage.c_str(),
                                         m_dnginfo.baseInfo.sourceCANPortStr.c_str()
                                         );
             m_dnginfo.baseInfo.finalMessage.append(str);
-
+                                       
             uint64_t val = invalidmask & 0x0f;
             if(0 != val)
             {
