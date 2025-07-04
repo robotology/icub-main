@@ -514,7 +514,7 @@ void ConfigParser::parseInfo()
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
 
-        case eoerror_value_CFG_mc_advfoc_ICCdiscovery_invalid:
+        case eoerror_value_CFG_mc_advfoc_ICCdiscovery_result:
         {
             uint64_t invalidmask = m_dnginfo.param16;
             const char *empty       = "";
