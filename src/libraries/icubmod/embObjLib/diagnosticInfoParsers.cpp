@@ -531,7 +531,7 @@ void ConfigParser::parseInfo()
             int boardtype =   (m_dnginfo.param64 & 0x0000ff0000000000) >> 40;
 
             eObrd_type_t  general_brd_type = eoboards_cantype2type((eObrd_cantype_t )boardtype);
-                                       
+            std::string board_type_str = eoboards_type2string(general_brd_type);                           
             uint64_t val = invalidmask & 0x0f;
             if(0 != val)
             {
