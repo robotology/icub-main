@@ -516,10 +516,10 @@ void ConfigParser::parseInfo()
         case eoerror_value_CFG_mc_advfoc_ICCdiscovery_result:
         {
             const char *empty       = "";
-            const char *wrongtype   = "WRONG BOARD TYPE";
+            const char *wrongtype   = "WRONG ONBOARD BOARD TYPE";
             const char *wrongappl   = "WRONG APPLICATION VERSION";
             const char *wrongprot   = "WRONG PROTOCOL VERSION";
-            const char *wronchannel = "WRONG CHANNEL ";
+            const char *wronchannel = "WRONG PORT SELECTED ";
 
             uint64_t invalidmask = m_dnginfo.param16;
             int fw_build =    (m_dnginfo.param64 & 0x00000000000000ff);
@@ -536,14 +536,14 @@ void ConfigParser::parseInfo()
             {   
                 if((val & 0x10) == 0x10)
                 {
-                    snprintf(str, sizeof(str), "%s error, the application on the other core does not respond to the ping.\n",
+                    snprintf(str, sizeof(str), "%s error, the application on the other core does not respond.",
                                             m_dnginfo.baseMessage.c_str()
                     );
                     m_dnginfo.baseInfo.finalMessage.append(str);
                 }
                 else
                 {
-                    snprintf(str, sizeof(str), " error on ICCdiscoevry on core application because it has: %s %s %s %s \n",
+                    snprintf(str, sizeof(str), " error on ICCdiscovery because it has: %s %s %s %s ",
                                                 ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
                                                 ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
                                                 ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
@@ -553,16 +553,16 @@ void ConfigParser::parseInfo()
 
                     snprintf(str, sizeof(str), "Found on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
                                             board_type_str.c_str(),
-                                            fw_build, fw_major, fw_minor, proto_major, proto_minor 
+                                            fw_major, fw_minor, fw_build, proto_major, proto_minor 
                     );
                     m_dnginfo.baseInfo.finalMessage.append(str);
                 }
             }
             else
             {
-                snprintf(str, sizeof(str), "%s ICCdiscovery successful.\nFound on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
+                snprintf(str, sizeof(str), "%s ICCdiscovery successful. Found on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
                                         m_dnginfo.baseMessage.c_str(), board_type_str.c_str(),
-                                        fw_build, fw_major, fw_minor, proto_major, proto_minor );
+                                        fw_major, fw_minor, fw_build, proto_major, proto_minor  );
 
                 m_dnginfo.baseInfo.finalMessage.append(str);
             }
