@@ -544,8 +544,7 @@ void ConfigParser::parseInfo()
                 }
                 else
                 {
-                    snprintf(str, sizeof(str), "%s error on ICCdiscoevry on core application because it has: %s %s %s %s \n",
-                                                m_dnginfo.baseMessage.c_str(),
+                    snprintf(str, sizeof(str), " error on ICCdiscoevry on core application because it has: %s %s %s %s \n",
                                                 ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
                                                 ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
                                                 ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
