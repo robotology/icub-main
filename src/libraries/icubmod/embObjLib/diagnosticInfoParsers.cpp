@@ -550,10 +550,10 @@ void ConfigParser::parseInfo()
                 else
                 {
                     snprintf(str, sizeof(str), "error on ICCdiscovery because it has:%s%s%s%s.",
-                                                ((val & 0x1) == 0x1) ? (wrongtype)   : (empty),
-                                                ((val & 0x2) == 0x2) ? (wrongappl)   : (empty),
-                                                ((val & 0x4) == 0x4) ? (wrongprot)   : (empty),
-                                                ((val & 0x8) == 0x8) ? (wronchannel) : (empty)  
+                                                ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
+                                                ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
+                                                ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
+                                                ((val & 0x8) == 0x8) ? (wrongport) : (empty)  
                     );
                     m_dnginfo.baseInfo.finalMessage.append(str);
 
