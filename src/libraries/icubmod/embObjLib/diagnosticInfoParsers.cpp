@@ -532,7 +532,7 @@ void ConfigParser::parseInfo()
             int BUS =         (m_dnginfo.param64 & 0xff00000000000000) >> 56;
 
             eOlocation_t location {};
-            location.bus = = static_cast<eObus_t>(BUS);
+            location.bus = static_cast<eObus_t>(BUS);
             location.adr = address;
             std::string location_str(64, '\0');
             ServiceParser parser;
