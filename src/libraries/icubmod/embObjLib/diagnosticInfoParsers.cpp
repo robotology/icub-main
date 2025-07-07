@@ -535,7 +535,7 @@ void ConfigParser::parseInfo()
             uint64_t val = invalidmask & 0x0f;
             if(0 != val)
             {
-                snprintf(str, sizeof(str), "\t Error on ICCdiscoevry on core application because it has: %s %s %s %s \n",
+                snprintf(str, sizeof(str), "Error on ICCdiscoevry on core application because it has: %s %s %s %s \n",
                                             ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
                                             ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
                                             ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
@@ -553,7 +553,7 @@ void ConfigParser::parseInfo()
             }
             else
             {
-                snprintf(str, sizeof(str), "%s ICCdiscovery successful. Found on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
+                snprintf(str, sizeof(str), "%s ICCdiscovery successful.\nFound on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
                                         m_dnginfo.baseMessage.c_str(), board_type_str.c_str(),
                                         fw_build, fw_major, fw_minor, proto_major, proto_minor );
 
