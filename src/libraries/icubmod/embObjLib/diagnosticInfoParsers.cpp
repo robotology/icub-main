@@ -543,7 +543,7 @@ void ConfigParser::parseInfo()
                 );
 
                 snprintf(str, sizeof(str), "Found on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
-                                        general_brd_type.c_str(),
+                                        board_type_str.c_str(),
                                         fw_build, fw_major, fw_minor, proto_major, proto_minor 
                 );
 
@@ -554,7 +554,7 @@ void ConfigParser::parseInfo()
             else
             {
                 snprintf(str, sizeof(str), "%s ICCdiscovery successful. Found on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
-                                        m_dnginfo.baseMessage.c_str(), general_brd_type.c_str(),
+                                        m_dnginfo.baseMessage.c_str(), board_type_str.c_str(),
                                         fw_build, fw_major, fw_minor, proto_major, proto_minor );
 
                 m_dnginfo.baseInfo.finalMessage.append(str);
