@@ -533,7 +533,7 @@ void ConfigParser::parseInfo()
 
             eOlocation_t location {};
             location.bus = BUS;
-            location.address = address;
+            location.adr = address;
             std::string lcoation_str;
             ServiceParser::convert(location, lcoation_str);
             eObrd_type_t  general_brd_type = eoboards_cantype2type((eObrd_cantype_t )boardtype);
