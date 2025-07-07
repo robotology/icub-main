@@ -425,7 +425,6 @@ void ConfigParser::parseInfo()
         case eoerror_value_CFG_mc_advfoc_failed_candiscovery:
         case eoerror_value_CFG_mc_advfoc_failed_encoders_verify:         
         case eoerror_value_CFG_mc_advfoc_failed_ICCdiscovery:
-        case eoerror_value_CFG_mc_advfoc_failed_ICCping:
         {
             printBaseInfo();
         } break;
