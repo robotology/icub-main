@@ -537,13 +537,15 @@ void ConfigParser::parseInfo()
             {   
                 if(val & 0x16)
                 {
-                    snprintf(str, sizeof(str), "Error: the application on the other core does not respond to the ping.\n"
+                    snprintf(str, sizeof(str), "%s error: the application on the other core does not respond to the ping.\n",
+                                            m_dnginfo.baseMessage.c_str()
                     );
                     m_dnginfo.baseInfo.finalMessage.append(str);
                 }
                 else
                 {
-                    snprintf(str, sizeof(str), "Error on ICCdiscoevry on core application because it has: %s %s %s %s \n",
+                    snprintf(str, sizeof(str), "%s error on ICCdiscoevry on core application because it has: %s %s %s %s \n",
+                                                m_dnginfo.baseMessage.c_str(),
                                                 ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
                                                 ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
                                                 ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
