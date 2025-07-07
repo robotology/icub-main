@@ -534,21 +534,29 @@ void ConfigParser::parseInfo()
             std::string board_type_str = eoboards_type2string(general_brd_type);                           
             uint64_t val = invalidmask & 0x0f;
             if(0 != val)
-            {
-                snprintf(str, sizeof(str), "Error on ICCdiscoevry on core application because it has: %s %s %s %s \n",
-                                            ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
-                                            ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
-                                            ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
-                                            ((val & 0x8) == 0x8) ? (wronchannel) : (empty)
-                );
-                m_dnginfo.baseInfo.finalMessage.append(str);
+            {   
+                if(val & 0x16)
+                {
+                    snprintf(str, sizeof(str), "Error: the application on the other core does not respond to the ping.\n"
+                    );
+                    m_dnginfo.baseInfo.finalMessage.append(str);
+                }
+                else
+                {
+                    snprintf(str, sizeof(str), "Error on ICCdiscoevry on core application because it has: %s %s %s %s \n",
+                                                ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
+                                                ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
+                                                ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
+                                                ((val & 0x8) == 0x8) ? (wronchannel) : (empty)
+                    );
+                    m_dnginfo.baseInfo.finalMessage.append(str);
 
-                snprintf(str, sizeof(str), "Found on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
-                                        board_type_str.c_str(),
-                                        fw_build, fw_major, fw_minor, proto_major, proto_minor 
-                );
-                m_dnginfo.baseInfo.finalMessage.append(str);
-
+                    snprintf(str, sizeof(str), "Found on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
+                                            board_type_str.c_str(),
+                                            fw_build, fw_major, fw_minor, proto_major, proto_minor 
+                    );
+                    m_dnginfo.baseInfo.finalMessage.append(str);
+                }
             }
             else
             {
