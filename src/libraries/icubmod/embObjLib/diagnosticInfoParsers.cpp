@@ -535,9 +535,9 @@ void ConfigParser::parseInfo()
             uint64_t val = invalidmask & 0x0f;
             if(0 != val)
             {   
-                if(val & 0x16)
+                if((val & 0x16) == 0x16)
                 {
-                    snprintf(str, sizeof(str), "%s error: the application on the other core does not respond to the ping.\n",
+                    snprintf(str, sizeof(str), "%s error, the application on the other core does not respond to the ping.\n",
                                             m_dnginfo.baseMessage.c_str()
                     );
                     m_dnginfo.baseInfo.finalMessage.append(str);
