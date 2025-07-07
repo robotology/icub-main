@@ -516,13 +516,13 @@ void ConfigParser::parseInfo()
 
         case eoerror_value_CFG_mc_advfoc_ICCdiscovery_result:
         {
-            uint64_t invalidmask = m_dnginfo.param16;
             const char *empty       = "";
             const char *wrongtype   = "WRONG BOARD TYPE";
             const char *wrongappl   = "WRONG APPLICATION VERSION";
             const char *wrongprot   = "WRONG PROTOCOL VERSION";
             const char *wronchannel = "WRONG CHANNEL ";
 
+            uint64_t invalidmask = m_dnginfo.param16;
             int fw_build =    (m_dnginfo.param64 & 0x00000000000000ff);
             int fw_minor =    (m_dnginfo.param64 & 0x000000000000ff00) >> 8;
             int fw_major =    (m_dnginfo.param64 & 0x0000000000ff0000) >> 16;
@@ -531,13 +531,6 @@ void ConfigParser::parseInfo()
             int boardtype =   (m_dnginfo.param64 & 0x0000ff0000000000) >> 40;
 
             eObrd_type_t  general_brd_type = eoboards_cantype2type((eObrd_cantype_t )boardtype);
-
-            std::string board_type_str = eoboards_type2string(general_brd_type);
-            
-            // snprintf(str, sizeof(str), " %s on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
-            //                             m_dnginfo.baseMessage.c_str(), board_type_str.c_str(),
-            //                             fw_build, fw_major, fw_minor, proto_major, proto_minor );
-            // m_dnginfo.baseInfo.finalMessage.append(str);
                                        
             uint64_t val = invalidmask & 0x0f;
             if(0 != val)
@@ -564,7 +557,6 @@ void ConfigParser::parseInfo()
                                         fw_build, fw_major, fw_minor, proto_major, proto_minor );
 
                 m_dnginfo.baseInfo.finalMessage.append(str);
-                printf("ICCdiscovery successful.\n");
             }
 
         } break;
