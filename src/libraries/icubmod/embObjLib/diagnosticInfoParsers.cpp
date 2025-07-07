@@ -531,7 +531,7 @@ void ConfigParser::parseInfo()
             int address =     (m_dnginfo.param64 & 0x00ff000000000000) >> 48;
             int BUS =         (m_dnginfo.param64 & 0xff00000000000000) >> 56;
 
-            eOlocation_t location = { static_cast<eObus_t>(BUS), address };
+            eOlocation_t location = { static_cast<eObus_t>(BUS), 0, address};
             char location_str[64];
             ServiceParser parser;
             parser.convert(location, &location_str[0], sizeof(location_str));
