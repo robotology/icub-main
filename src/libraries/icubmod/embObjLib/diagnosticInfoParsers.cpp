@@ -10,7 +10,7 @@
 #include "diagnosticLowLevelFormatter.h"
 #include "EoBoards.h"
 #include "embot_core_binary.h"
-
+#include <serviceParser.h>
 #include <yarp/os/Time.h>
 #include <algorithm>
 
