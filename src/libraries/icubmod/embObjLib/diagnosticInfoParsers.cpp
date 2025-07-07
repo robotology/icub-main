@@ -559,18 +559,19 @@ void ConfigParser::parseInfo()
                     );
                     m_dnginfo.baseInfo.finalMessage.append(str);
 
-                    snprintf(str, sizeof(str), "Found on other core: %s FW ver is %d.%d.%d. Protocol ver is %d.%d  BUS:%d address:%d ffff %s. \n", 
+                    snprintf(str, sizeof(str), "Found on other core: %s FW ver is %d.%d.%d. Protocol ver is %d.%d  Port: %s. \n", 
                                             board_type_str.c_str(),
-                                            fw_major, fw_minor, fw_build, proto_major, proto_minor, BUS, address, location_str
+                                            fw_major, fw_minor, fw_build, proto_major, proto_minor, location_str
                     );
                     m_dnginfo.baseInfo.finalMessage.append(str);
                 }
             }
             else
             {
-                snprintf(str, sizeof(str), "%s ICCdiscovery successful. Found on other core: %s FW ver is %d.%d.%d. Protocol ver is %d.%d BUS:%d address:%d. \n", 
+                snprintf(str, sizeof(str), "%s ICCdiscovery successful. Found on other core: %s FW ver is %d.%d.%d. Protocol ver is %d.%d Port: %s. \n", 
                                         m_dnginfo.baseMessage.c_str(), board_type_str.c_str(),
-                                        fw_major, fw_minor, fw_build, proto_major, proto_minor, BUS, address  );
+                                        fw_major, fw_minor, fw_build, proto_major, proto_minor, location_str  
+                );
 
                 m_dnginfo.baseInfo.finalMessage.append(str);
             }
