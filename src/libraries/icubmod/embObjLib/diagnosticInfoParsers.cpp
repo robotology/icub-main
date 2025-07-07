@@ -541,13 +541,12 @@ void ConfigParser::parseInfo()
                                             ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
                                             ((val & 0x8) == 0x8) ? (wronchannel) : (empty)
                 );
+                m_dnginfo.baseInfo.finalMessage.append(str);
 
                 snprintf(str, sizeof(str), "Found on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
                                         board_type_str.c_str(),
                                         fw_build, fw_major, fw_minor, proto_major, proto_minor 
                 );
-
-
                 m_dnginfo.baseInfo.finalMessage.append(str);
 
             }
