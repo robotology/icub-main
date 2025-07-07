@@ -515,11 +515,11 @@ void ConfigParser::parseInfo()
 
         case eoerror_value_CFG_mc_advfoc_ICCdiscovery_result:
         {
-            const char *empty       = "";
-            const char *wrongtype   = "WRONG ONBOARD BOARD TYPE";
-            const char *wrongappl   = "WRONG APPLICATION VERSION";
-            const char *wrongprot   = "WRONG PROTOCOL VERSION";
-            const char *wronchannel = "WRONG PORT SELECTED ";
+            const char *wrongtype = "WRONG ONBOARD BOARD TYPE";
+            const char *wrongappl = "WRONG APPLICATION VERSION";
+            const char *wrongprot = "WRONG PROTOCOL VERSION";
+            const char *wrongport = "WRONG PORT SELECTED ";
+            const char *empty     = "";
 
             uint64_t invalidmask = m_dnginfo.param16;
             int fw_build =    (m_dnginfo.param64 & 0x00000000000000ff);
