@@ -528,18 +528,17 @@ void ConfigParser::parseInfo()
             int fw_major =    (m_dnginfo.param64 & 0x0000000000ff0000) >> 16;
             int proto_minor = (m_dnginfo.param64 & 0x00000000ff000000) >> 24;
             int proto_major = (m_dnginfo.param64 & 0x000000ff00000000) >> 32;
-            int boardtype =   (m_dnginfo.param64 & 0x000000ff00000000) >> 40;
+            int boardtype =   (m_dnginfo.param64 & 0x0000ff0000000000) >> 40;
 
 
             eObrd_type_t  general_brd_type = eoboards_cantype2type((eObrd_cantype_t )boardtype);
 
             std::string board_type_str = eoboards_type2string(general_brd_type);
             
-            snprintf(str, sizeof(str), " %s on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d", 
+            snprintf(str, sizeof(str), " %s on other core: %s Fw ver is %d.%d.%d. Proto ver is %d.%d \n", 
                                         m_dnginfo.baseMessage.c_str(), board_type_str.c_str(),
                                         fw_build, fw_major, fw_minor, proto_major, proto_minor );
             m_dnginfo.baseInfo.finalMessage.append(str);
-
 
 
 
@@ -564,7 +563,7 @@ void ConfigParser::parseInfo()
             }
             else
             {
-                printf("All good");
+                printf("ICCdiscovery successful.\n");
             }
 
         } break;
