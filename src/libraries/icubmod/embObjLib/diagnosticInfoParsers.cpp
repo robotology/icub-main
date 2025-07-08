@@ -518,42 +518,73 @@ void ConfigParser::parseInfo()
             const char *wrongtype = " WRONG ONBOARD BOARD TYPE";
             const char *wrongappl = " WRONG APPLICATION VERSION";
             const char *wrongprot = " WRONG PROTOCOL VERSION";
-            const char *wrongport = " WRONG PORT SELECTED";
             const char *empty     = "";
 
-            uint64_t invalidmask = m_dnginfo.param16;
-            int fw_build =    (m_dnginfo.param64 & 0x00000000000000ff);
-            int fw_minor =    (m_dnginfo.param64 & 0x000000000000ff00) >> 8;
-            int fw_major =    (m_dnginfo.param64 & 0x0000000000ff0000) >> 16;
-            int proto_minor = (m_dnginfo.param64 & 0x00000000ff000000) >> 24;
-            int proto_major = (m_dnginfo.param64 & 0x000000ff00000000) >> 32;
-            int boardtype =   (m_dnginfo.param64 & 0x0000ff0000000000) >> 40;
-            int address =     (m_dnginfo.param64 & 0x00ff000000000000) >> 48;
-            int BUS =         (m_dnginfo.param64 & 0xff00000000000000) >> 56;
+            uint8_t NoResponse      = 0x10;
+            uint8_t WrongType       = 0x01;
+            uint8_t WrongApp        = 0x02;
+            uint8_t WrongProtocol   = 0x04;
+            uint8_t WrongChannel    = 0x08;
+            
+            // Define bitmask and shift constants
+            constexpr uint64_t MASK_FW_BUILD     = 0x00000000000000FF;
+            constexpr uint64_t MASK_FW_MINOR     = 0x000000000000FF00;
+            constexpr uint64_t MASK_FW_MAJOR     = 0x0000000000FF0000;
+            constexpr uint64_t MASK_PROTO_MINOR  = 0x00000000FF000000;
+            constexpr uint64_t MASK_PROTO_MAJOR  = 0x000000FF00000000;
+            constexpr uint64_t MASK_BOARD_TYPE   = 0x0000FF0000000000;
+            constexpr uint64_t MASK_ADDRESS      = 0x00FF000000000000;
+            constexpr uint64_t MASK_BUS          = 0xFF00000000000000;
 
-            eOlocation_t location = { static_cast<eObus_t>(BUS), 0, address};
+            constexpr uint8_t SHIFT_FW_BUILD     = 0;
+            constexpr uint8_t SHIFT_FW_MINOR     = 8;
+            constexpr uint8_t SHIFT_FW_MAJOR     = 16;
+            constexpr uint8_t SHIFT_PROTO_MINOR  = 24;
+            constexpr uint8_t SHIFT_PROTO_MAJOR  = 32;
+            constexpr uint8_t SHIFT_BOARD_TYPE   = 40;
+            constexpr uint8_t SHIFT_ADDRESS      = 48;
+            constexpr uint8_t SHIFT_BUS          = 56;
+
+            // Extract values using masks and shifts
+            uint8_t fw_build     = (m_dnginfo.param64 & MASK_FW_BUILD)     >> SHIFT_FW_BUILD;
+            uint8_t fw_minor     = (m_dnginfo.param64 & MASK_FW_MINOR)     >> SHIFT_FW_MINOR;
+            uint8_t fw_major     = (m_dnginfo.param64 & MASK_FW_MAJOR)     >> SHIFT_FW_MAJOR;
+            uint8_t proto_minor  = (m_dnginfo.param64 & MASK_PROTO_MINOR)  >> SHIFT_PROTO_MINOR;
+            uint8_t proto_major  = (m_dnginfo.param64 & MASK_PROTO_MAJOR)  >> SHIFT_PROTO_MAJOR;
+            uint8_t board_type   = (m_dnginfo.param64 & MASK_BOARD_TYPE)   >> SHIFT_BOARD_TYPE;
+            uint8_t address      = (m_dnginfo.param64 & MASK_ADDRESS)      >> SHIFT_ADDRESS;
+            uint8_t bus          = (m_dnginfo.param64 & MASK_BUS)          >> SHIFT_BUS;
+
+            uint16_t invalidmask = m_dnginfo.param16;
+            eOlocation_t location = { static_cast<eObus_t>(bus), 0, address};
             char location_str[64];
             ServiceParser parser;
             parser.convert(location, &location_str[0], sizeof(location_str));
-            eObrd_type_t  general_brd_type = eoboards_cantype2type(static_cast<eObrd_cantype_t>(boardtype));
+            eObrd_type_t  general_brd_type = eoboards_cantype2type(static_cast<eObrd_cantype_t>(board_type));
             std::string board_type_str = eoboards_type2string(general_brd_type);                           
-            uint64_t val = invalidmask & 0x0ff;
+            uint16_t val = invalidmask & 0x0ff;
             if(0 != val)
             {   
-                if((val & 0x10) == 0x10)
+                if((val & NoResponse) == NoResponse)
                 {
-                    snprintf(str, sizeof(str), "%s error, the application on the other core does not respond.",
+                    snprintf(str, sizeof(str), "%serror, the application on the other core does not respond.",
+                                            m_dnginfo.baseMessage.c_str()
+                    );
+                    m_dnginfo.baseInfo.finalMessage.append(str);
+                }
+                else if((val & WrongChannel) == WrongChannel)
+                {
+                    snprintf(str, sizeof(str), "%serror, wrong port selected.",
                                             m_dnginfo.baseMessage.c_str()
                     );
                     m_dnginfo.baseInfo.finalMessage.append(str);
                 }
                 else
                 {
-                    snprintf(str, sizeof(str), "error on ICCdiscovery because it has:%s%s%s%s. ",
-                                                ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
-                                                ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
-                                                ((val & 0x4) == 0x4) ? (wrongprot) : (empty),
-                                                ((val & 0x8) == 0x8) ? (wrongport) : (empty)  
+                    snprintf(str, sizeof(str), "error on ICCdiscovery because it has:%s%s%s. ",
+                                                ((val & WrongType)      == WrongType)       ? (wrongtype) : (empty),
+                                                ((val & WrongApp)       == WrongApp)        ? (wrongappl) : (empty),
+                                                ((val & WrongProtocol)  == WrongProtocol)   ? (wrongprot) : (empty)
                     );
                     m_dnginfo.baseInfo.finalMessage.append(str);
 
