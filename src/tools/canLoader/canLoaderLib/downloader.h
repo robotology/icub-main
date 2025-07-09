@@ -175,8 +175,6 @@ void set_canbus_id      (int id);
 int strain_start_sampling    (int bus, int target_id, string *errorstring = NULL);
 int strain_stop_sampling     (int bus, int target_id, string *errorstring = NULL);
 
-int initSINGLEBOARD(int canbus, int canaddress);
-
 float strain_amplifier_discretegain2float(strain2_ampl_discretegain_t c);
 
 // the strain2 has multiple (up to 3) regulation sets. with these functions we can get / set the regulation set in use inside the strain2.
