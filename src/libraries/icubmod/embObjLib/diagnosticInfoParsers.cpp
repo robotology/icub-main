@@ -556,7 +556,7 @@ void ConfigParser::parseInfo()
             uint8_t bus          = (m_dnginfo.param64 & MASK_BUS)          >> SHIFT_BUS;
 
             uint16_t invalidmask = m_dnginfo.param16;
-            eOlocation_t location = { static_cast<eObus_t>(bus), 0, address};
+            eOlocation_t location = { bus, 0, address};
             char location_str[64];
             ServiceParser parser;
             parser.convert(location, &location_str[0], sizeof(location_str));
