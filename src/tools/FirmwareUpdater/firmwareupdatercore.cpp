@@ -10,17 +10,17 @@ static void updateProgressCallback(float fraction)
     self->updateProgress(fraction);
 }
 
-// 09/2020 davide.tome@iit.it - address and port configurable in firmwareupdater.ini
+// 09/2020 davide.tome@iit.it - address and port configurable in firmwareupdater.ini 
 bool FirmwareUpdaterCore::isValidIpAddress(QString addr)
 {
     QStringList ipFields;
 
     ipFields = addr.split(".");
-    if(ipFields.count() == 4 && ipFields[3].contains(":"))
+    if(ipFields.count() == 4 && ipFields[3].contains(":")) 
     {
         QString address_,port_;
         int ipv0, ipv1, ipv2, ipv3;
-
+      
         address_ = addr.split(":")[0];
         port_ = ipFields[3].split(":")[1];
 
@@ -36,7 +36,7 @@ bool FirmwareUpdaterCore::isValidIpAddress(QString addr)
         ipv2 = address_.split(".")[2].toInt();
         ipv3 = address_.split(".")[3].toInt();
 
-        if(ipv0 == 10 && 0 < ipv1 < 255 && 0 < ipv2 < 255 && 0 < ipv3 < 255 && 0 < port_.toInt() < 255)
+        if(ipv0 == 10 && 0 < ipv1 < 255 && 0 < ipv2 < 255 && 0 < ipv3 < 255 && 0 < port_.toInt() < 255) 
         {
             hostIPaddress = EO_COMMON_IPV4ADDR(ipv0, ipv1, ipv2, ipv3);
             return true;
@@ -54,9 +54,9 @@ FirmwareUpdaterCore::FirmwareUpdaterCore(QObject *parent) : QObject(parent), mut
 bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address, int VerbositY)
 {
     verbosity = VerbositY;
-
+    
     mutex.lock();
-
+  
     setVerbosity(verbosity);
 
     Bottle sensorSetConfig=config.findGroup("DRIVERS").tail();
@@ -77,16 +77,16 @@ bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address, in
         }
 
 
-        // 09/2020 davide.tome@iit.it - address and port configurable in firmwareupdater.ini
+        // 09/2020 davide.tome@iit.it - address and port configurable in firmwareupdater.ini 
         if(type == "ETH") {
-
+        
             if(isValidIpAddress(line))
             {
                 port = line.split(":")[1].toInt();
                 qDebug() << "IP address FOUND in .ini file, Using :" << line.split(":")[0];
                 qDebug() << "Port Number FOUND in .ini file, Using :" << line.split(":")[1];
-            }
-            else
+            } 
+            else 
             {
                 int ipv0, ipv1, ipv2, ipv3;
 
@@ -107,7 +107,7 @@ bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address, in
 
             }
         }
-
+        
     }
 
     if(!gMNT.open(hostIPaddress, port))
@@ -449,7 +449,7 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
     canBoards.clear();
     unsigned int remoteAddr;
     unsigned int localAddr;
-
+    
 
 
     if (!compile_ip_addresses(address.toLatin1().data(),&remoteAddr,&localAddr)){
@@ -509,42 +509,6 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
     mutex.unlock();
     return canBoards;
 
-}
-
-
-QList<sBoard> FirmwareUpdaterCore::discoverSingleCanBoardViaEth(QString address, int canID, int canAddress, QString *retString)
-{
-    QList<sBoard> result;
-
-    // Create a yarp::os::Property to pass to initdriver
-    yarp::os::Property params;
-    params.put("device", "ETH");
-    params.put("remote", address.toStdString().c_str());
-
-
-    if (!downloader.initdriver(params, true))
-    {
-        *retString = "Failed to initialize driver";
-        return result;
-    }
-
-    if (downloader.initSINGLEBOARD(canID, canAddress) == 0)
-    {
-        for (int i = 0; i < downloader.board_list_size; ++i)
-        {
-            if (downloader.board_list[i].pid == canAddress)
-            {
-                result.append(downloader.board_list[i]);
-                break;
-            }
-        }
-    }
-    else
-    {
-        *retString = "Board not found";
-    }
-
-    return result;
 }
 
 
@@ -1012,38 +976,24 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 }
 
 #else
-bool FirmwareUpdaterCore::uploadCanApplication(QString filename, QString *resultString, bool ee, QString address, int deviceId, QList<sBoard> *resultCanBoards)
+bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultString, bool ee, QString address,int deviceId,QList <sBoard> *resultCanBoards)
 {
-    // Always refresh the board list from ETH
-    QList<sBoard> boards = getCanBoardsFromEth(address, resultString, deviceId, false);
-    if (boards.isEmpty()) {
-        *resultString = "No boards found.";
-        return false;
-    }
-    *resultCanBoards = boards;
+//    if(!address.isEmpty()){
+//        if(currentAddress != address){
+//            if(downloader.connected){
+//                downloader.stopdriver();
+//            }
+//            getCanBoardsFromEth(address,resultString);
+//        }
 
-    // Count selected boards
-    int selectedCount = 0;
-    int selectedIndex = -1;
-    for (int i = 0; i < boards.size(); ++i) {
-        if (boards[i].selected) {
-            selectedCount++;
-            selectedIndex = i;
-        }
+//    }
+    QString res;
+    if(!address.isEmpty() && deviceId == -1){
+        getCanBoardsFromEth(address,&res);
+    }else{
+        getCanBoardsFromDriver(address,deviceId,&res);
     }
 
-    // If exactly one board is selected, use unicast discovery
-    if (selectedCount == 1 && selectedIndex != -1) {
-        int canID = boards[selectedIndex].bus;
-        int canAddress = boards[selectedIndex].pid;
-        QList<sBoard> singleBoard = discoverSingleCanBoardViaEth(address, canID, canAddress, resultString);
-        if (singleBoard.isEmpty()) {
-            *resultString = QString("Board not found at CAN ID: %1, Address: %2").arg(canID).arg(canAddress);
-            return false; // Board not found
-        }
-        *resultCanBoards = singleBoard;
-    }
-    // else: keep using the boards list as is (broadcast)
 
     double timer_start =0;
     double timer_end   =0;
