@@ -2631,15 +2631,18 @@ int cDownloader::initschede()
                     board_list[j].applicationisrunning = (5 == rxBuffer[i].getLen()) ? (true) : (false); // the application replies with a message of len 5, the bootloader 4.
                     board_list[j].appl_vers_major = rxBuffer[i].getData()[2];
                     board_list[j].appl_vers_minor = rxBuffer[i].getData()[3];
-                    if (rxBuffer[i].getLen()==4)
-                        board_list[j].appl_vers_build = -1;
-                    else
-                        board_list[j].appl_vers_build = rxBuffer[i].getData()[4];
                     board_list[j].status  = BOARD_RUNNING;
                     board_list[j].selected  = false;
                     board_list[j].eeprom =false;
                     memset (board_list[j].serial,  0, 8);
                     memset (board_list[j].add_info,  0, 32);
+                    if (rxBuffer[i].getLen()==4)
+                        board_list[j].appl_vers_build = -1;
+                    else
+                        board_list[j].appl_vers_build = rxBuffer[i].getData()[4];
+                    board_list[j].prot_vers_major = 0;
+                    board_list[j].prot_vers_minor = 0;
+
                     j++;
                 }
         }
@@ -4317,83 +4320,9 @@ int cDownloader::strain_calibrate_offset2_strain1safer (int bus, int target_id, 
     return 0;
 }
 
-int cDownloader::initSINGLEBOARD(int canbus, int canaddress)
-{
-    if (m_idriver == NULL)
-    {
-        if (_verbose) yError("Driver not ready\n");
-        return -1;
-    }
 
-    int retries = 5; // Number of retries
-    for (int attempt = 0; attempt < retries; ++attempt)
-    {
-        txBuffer[0].setId(build_id(ID_MASTER, canaddress));
-        txBuffer[0].setLen(1);
-        txBuffer[0].getData()[0] = ICUBCANPROTO_BL_BROADCAST; // Discovery command
-        set_bus(txBuffer[0], canbus);
 
-        int ret = m_idriver->send_message(txBuffer, 1);
-        if (ret == 0)
-        {
-            if (_verbose) yError("Unable to send discovery message\n");
-            return -1;
-        }
 
-        drv_sleep(0.2); // Wait for response (reduced from 5.0)
-
-        int read_messages = m_idriver->receive_message(rxBuffer, 10, 0.2); // reduced timeout
-
-        for (int i = 0; i < read_messages; ++i)
-        {
-            yDebug("Received message ID: 0x%x, Data: [%x, %x, %x, %x, %x, %x, %x, %x]",
-                   rxBuffer[i].getId(),
-                   rxBuffer[i].getData()[0], rxBuffer[i].getData()[1], rxBuffer[i].getData()[2],
-                   rxBuffer[i].getData()[3], rxBuffer[i].getData()[4], rxBuffer[i].getData()[5],
-                   rxBuffer[i].getData()[6], rxBuffer[i].getData()[7]);
-        }
-
-        for (int i = 0; i < read_messages; ++i)
-        {
-            if ((rxBuffer[i].getId() >> 4 & 0x0F) == canaddress)
-            {
-                if (_verbose) yInfo("Board %d found on CAN bus %d\n", canaddress, canbus);
-
-                // Populate board_list with discovered board
-                if (board_list != NULL) {
-                    delete[] board_list;
-                    board_list = NULL;
-                }
-                board_list = new sBoard[1];
-                board_list_size = 1;
-
-                sBoard& current_board = board_list[0];
-                current_board.bus = canbus;
-                current_board.pid = canaddress;
-                current_board.type = rxBuffer[i].getData()[1];
-                current_board.applicationisrunning = (rxBuffer[i].getLen() == 5);
-                current_board.appl_vers_major = rxBuffer[i].getData()[2];
-                current_board.appl_vers_minor = rxBuffer[i].getData()[3];
-                if (current_board.applicationisrunning) {
-                    current_board.appl_vers_build = rxBuffer[i].getData()[4];
-                } else {
-                    current_board.appl_vers_build = -1;
-                }
-                current_board.status = BOARD_RUNNING;
-                current_board.selected = false;
-                current_board.eeprom = false;
-                // Optionally clear serial/add_info
-                current_board.serial[0] = '\0';
-                current_board.add_info[0] = '\0';
-
-                return 0; // Board found
-            }
-        }
-    }
-
-    if (_verbose) yError("Board %d not found on CAN bus %d after %d attempts\n", canaddress, canbus, retries);
-    return -1; // Board not found
-}
 
 // eof
 
