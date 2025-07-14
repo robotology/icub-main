@@ -1214,3 +1214,27 @@ void FirmwareUpdaterCore::bootFromUpdater()
     gMNT.command_def2run(EthMaintainer::ipv4OfAllSelected, eUpdater, false, false);
     mutex.unlock();
 }
+
+void FirmwareUpdaterCore::selectCanBoardsByAddresses(const std::vector<std::pair<int, int>>& addresses)
+{
+    mutex.lock();
+    for (int i = 0; i < downloader.board_list_size; ++i) {
+        downloader.board_list[i].selected = false;
+        for (const auto& addr : addresses) {
+            if (downloader.board_list[i].bus == addr.first &&
+                downloader.board_list[i].pid == addr.second) {
+                downloader.board_list[i].selected = true;
+            }
+        }
+    }
+    mutex.unlock();
+}
+
+QList<sBoard> FirmwareUpdaterCore::getSelectedCanBoards() const {
+    QList<sBoard> result;
+    for (int i = 0; i < downloader.board_list_size; ++i) {
+        if (downloader.board_list[i].selected)
+            result.append(downloader.board_list[i]);
+    }
+    return result;
+}
