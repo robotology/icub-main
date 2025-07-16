@@ -1687,17 +1687,69 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
 
     Bottle xtmp;
     xtmp.clear();
-    if (!extractGroup(timeoutsGroup, xtmp, "velocity", "a list of timeout to be used in the vmo control", _njoints))
+    if (!extractGroup(timeoutsGroup, xtmp, "velocity", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yError() << "embObjMC BOARD " << _boardname << " no velocity parameter found in TIMEOUTS group in motion control config file.";
-        return false;
+        yWarning() << "embObjMC BOARD " << _boardname << " no velocity parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
+        for(i=0; i<_njoints; i++)
+            timeouts[i].velocity_ref = 100;
     }
     else
     {
         for(i=1; i<xtmp.size(); i++)
-            timeouts[i-1].velocity = xtmp.get(i).asInt32();
+            timeouts[i-1].velocity_ref = xtmp.get(i).asInt32();
+    }
+    
+    xtmp.clear();
+    if (!extractGroup(timeoutsGroup, xtmp, "current", "a list of timeout to be used in the vmo control", _njoints, false))
+    {
+        yWarning() << "embObjMC BOARD " << _boardname << " no current parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
+        for(i=0; i<_njoints; i++)
+            timeouts[i].current_ref = 100;        
+    }
+    else
+    {
+        for(i=1; i<xtmp.size(); i++)
+            timeouts[i-1].current_ref = xtmp.get(i).asInt32();
     }
 
+    xtmp.clear();
+    if (!extractGroup(timeoutsGroup, xtmp, "pwm", "a list of timeout to be used in the vmo control", _njoints, false))
+    {
+        yWarning() << "embObjMC BOARD " << _boardname << " no pwm parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
+        for(i=0; i<_njoints; i++)
+            timeouts[i].pwm_ref = 100;
+    }
+    else
+    {
+        for(i=1; i<xtmp.size(); i++)
+            timeouts[i-1].pwm_ref = xtmp.get(i).asInt32();
+    }
+
+    xtmp.clear();
+    if (!extractGroup(timeoutsGroup, xtmp, "torque", "a list of timeout to be used in the vmo control", _njoints, false))
+    {
+        yWarning() << "embObjMC BOARD " << _boardname << " no torque parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
+        for(i=0; i<_njoints; i++)
+            timeouts[i].torque_ref = 100;
+    }
+    else
+    {
+        for(i=1; i<xtmp.size(); i++)
+            timeouts[i-1].torque_ref = xtmp.get(i).asInt32();
+    }
+
+    xtmp.clear();
+    if (!extractGroup(timeoutsGroup, xtmp, "torque_measure", "a list of timeout to be used in the vmo control", _njoints, false))
+    {
+        yWarning() << "embObjMC BOARD " << _boardname << " no torque_measure parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
+        for(i=0; i<_njoints; i++)
+            timeouts[i].torque_fbk = 100;
+    }
+    else
+    {
+        for(i=1; i<xtmp.size(); i++)
+            timeouts[i-1].torque_fbk = xtmp.get(i).asInt32();
+    }
 
     return true;
 
