@@ -519,10 +519,11 @@ void FineCalibrationChecker::generateOutputImage(int frameWidth, int frameHeight
     int lineHeight = 30;
     int padding = 10;
     int textOffset = 20;
+    int colWidthAvg = (frameWidth - 2 * padding) / 5; // Average width for each column
 
     // Define headers and column widths (in pixels)
     std::vector<std::string> headers = {"AxisName", "GoldPosition", "RescaledPosition", "RawPosition", "Delta"};
-    std::vector<int> colWidths = {140, 180, 200, 180, 120}; // Adjust as needed for your data
+    std::vector<int> colWidths(5, colWidthAvg); // Creates a vector of size 5, all values set to colWidthAvg
     std::vector<int> colX(headers.size());
     colX[0] = padding + 5;
     for (size_t i = 1; i < headers.size(); ++i) {
