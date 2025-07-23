@@ -33,14 +33,14 @@ bool RawValuesPublisherServer::open(yarp::os::Searchable& config)
     {
         return false;
     }
-    // set the period. m_period var is defined in the <device_name>_ParamsParser.h file 
+    // set the period. m_period var is defined in the <device_name>_ParamsParser.h file
     // and updates at config file parsing as per m_name var.
     m_threadPeriodInS = m_period / 1000.0;
-    
+
     if(m_threadPeriodInS <= 0)
     {
         yCError(RAWVALUESPUBLISHERSERVER)
-            << "Period parameter is present with value:" 
+            << "Period parameter is present with value:"
             << m_threadPeriodInS << "but it is not a positive integer. Closing...";
         return false;
     }
@@ -50,14 +50,14 @@ bool RawValuesPublisherServer::open(yarp::os::Searchable& config)
     // Open port
     if(!m_streamingRawDataPort.open(m_streamingPortName))
     {
-        yCError(RAWVALUESPUBLISHERSERVER) 
+        yCError(RAWVALUESPUBLISHERSERVER)
             << "Error opening streaming raw data port:" << m_streamingPortName;
         close();
         return false;
     }
 
     m_rpcPortName = m_name + "/rpc:o";
-    
+
     // Attach to port
     if(!this->yarp().attachAsServer(m_rpcRawDataPort))
     {
@@ -69,7 +69,7 @@ bool RawValuesPublisherServer::open(yarp::os::Searchable& config)
     // Open port
     if(!m_rpcRawDataPort.open(m_rpcPortName))
     {
-        yCError(RAWVALUESPUBLISHERSERVER) 
+        yCError(RAWVALUESPUBLISHERSERVER)
             << "Failure in opening rpc port:" << m_rpcPortName;
         close();
         return false;
@@ -93,7 +93,7 @@ bool RawValuesPublisherServer::attachAll(const yarp::dev::PolyDriverList &p)
 {
     if (p.size() != 1 )
     {
-        yCError(RAWVALUESPUBLISHERSERVER)  
+        yCError(RAWVALUESPUBLISHERSERVER)
             << "Trying to expose" << p.size() << "device(s). Expected only one device to be exposed to YARP ports. Closing...";
         close();
         return false;
@@ -103,19 +103,25 @@ bool RawValuesPublisherServer::attachAll(const yarp::dev::PolyDriverList &p)
 
     if(!poly)
     {
-        yCError(RAWVALUESPUBLISHERSERVER)  
+        yCError(RAWVALUESPUBLISHERSERVER)
             << "NullPointerException when getting the polyDriver at attachAll.";
         close();
         return false;
     }
-    
+
     // View all the interfaces
-    poly->view(m_iRawValuesPublisher);
+    if(!poly->view(m_iRawValuesPublisher))
+    {
+        yCError(RAWVALUESPUBLISHERSERVER)
+            << "Failure in viewing raw values publisher interface";
+        close();
+        return false;
+    }
 
     // Set rate period
     if(!this->setPeriod(m_threadPeriodInS))
     {
-        yCError(RAWVALUESPUBLISHERSERVER) 
+        yCError(RAWVALUESPUBLISHERSERVER)
             << "Failure in setting periodic thread period";
         close();
         return false;
@@ -132,7 +138,7 @@ bool RawValuesPublisherServer::attachAll(const yarp::dev::PolyDriverList &p)
     // Start periodic thread
     if(!this->start())
     {
-        yCError(RAWVALUESPUBLISHERSERVER) 
+        yCError(RAWVALUESPUBLISHERSERVER)
             << "Failure in starting periodic thread";
         close();
         return false;
@@ -150,7 +156,7 @@ bool RawValuesPublisherServer::detachAll()
     {
         this->stop();
     }
-    
+
     m_rpcRawDataPort.close();
     m_streamingRawDataPort.close();
 
@@ -168,7 +174,7 @@ void RawValuesPublisherServer::run()
 {
     rawValuesDataVectorsMap &rdm = m_streamingRawDataPort.prepare();
     rdm.vectorsMap.clear();
-    
+
     if(!m_iRawValuesPublisher->getRawDataMap(rdm.vectorsMap))
     {
         m_streamingRawDataPort.unprepare();
@@ -196,10 +202,10 @@ bool RawValuesPublisherServer::populateMetadata(rawValuesKeyMetadataMap &metamap
         {
             yCDebug(RAWVALUESPUBLISHERSERVER) << "Metadata element:" << v.rawValueNames[i];
         }
-        
+
     }
     #endif
-    
+
 
     return true;
 }
