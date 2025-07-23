@@ -200,7 +200,7 @@ bool FineCalibrationChecker::close()
     {
         yCError(FineCalibrationCheckerCOMPONENT) << "Unable to close raw values publisher device";
     }
-    this->stop();
+    yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Closed all devices successfully";
 
     return true;
 }
@@ -315,26 +315,23 @@ void FineCalibrationChecker::run()
                 // TODO: input file not needed anymore. RobeRemoved
                 evaluateHardStopPositionDelta(_rawValuesTag, "zeroPositionsDataDelta.csv");
                 _deviceStatus = deviceStatus::CHECK_COMPLETED;
-                shoutdownTimer = std::chrono::steady_clock::now();
             }
         }
         else if(_deviceStatus == deviceStatus::CHECK_COMPLETED)
         {
             auto now = std::chrono::steady_clock::now();
-<<<<<<< HEAD
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTimer2Log).count() > 5000)
-=======
             if (std::chrono::duration_cast<std::chrono::milliseconds>(now - shoutdownTimer).count() > 5000) 
->>>>>>> 0df20d787 (get goldPosition in degrees)
             {
-                yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Operation completed successfully. Stopping thread...";
-                this->stop();
+                yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Operation completed successfully. Waiting yarprobotinterface to stop the thread...";
+                // shoutdownTimer = now;
+                break; // Exit the loop to stop the thread
             }
         }
         else
         {
             yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Device is in unknown state. Stopping thread...";
-            this->stop();
+            break; // Exit the loop to stop the thread
+
         }
     }
 
@@ -452,12 +449,14 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
 {
     // Get the directory of the output file
     std::filesystem::path outputPath(outputFileName);
-    int32_t goldPosition = 0;
-    int32_t rawPosition = 0;
-    int32_t resolution = 0;
-    int32_t rescaledPos = 0;
-    int32_t delta = 0;
+    int64_t goldPosition = 0;
+    int64_t rawPosition = 0;
+    int64_t resolution = 0;
+    int64_t rescaledPos = 0;
+    int64_t delta = 0;
     std::vector<ItemData> sampleItems = {};
+
+    std::vector<int64_t> homePositions = {30, 30, 0, 50}; // Assuming home positions are all zero for simplicity
 
     std::ofstream outFile(outputPath);
     if (!outFile.is_open())
@@ -490,8 +489,8 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                                             // are stored in a vector whose legth is joints_number*3, where each sub-array is made such
                                             // [raw_val_primary_enc, raw_val_secondary_enc, rraw_val_auxiliary_enc]
                                             // and we want the first value for each joint
-                rescaledPos = goldPosition * resolution / 360; // Rescale the position (in Degrees) to the encoder full resolution             
-                delta = std::abs(rescaledPos - rawPosition);
+                rescaledPos = rawPosition * 65553 / resolution; // Rescale the encoder raw position to iCubDegrees            
+                delta = std::abs(goldPosition - rescaledPos) / (65553/360) - homePositions[i]; // Calculate the delta in iCubDegrees
 
                 yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
             }
@@ -591,14 +590,12 @@ void FineCalibrationChecker::generateOutputImage(int frameWidth, int frameHeight
     cv::imshow("Output Frame", image);
     cv::waitKey(0);
     cv::destroyAllWindows();
-
-    this->close();
 }
 
 cv::Scalar FineCalibrationChecker::getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2)
 {
-    if (delta > threshold_2) return cv::Scalar(0, 0, 255);    // Red
-    else if (delta > threshold_1) return cv::Scalar(0, 165, 255); // Orange
+    if (std::abs(delta) > threshold_2) return cv::Scalar(0, 0, 255);    // Red
+    else if (std::abs(delta) > threshold_1) return cv::Scalar(0, 165, 255); // Orange
     else return cv::Scalar(0, 255, 0); // Green
 }
 

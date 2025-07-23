@@ -42,7 +42,7 @@
 
 struct ItemData {
     std::string name;
-    int32_t val1, val2, val3, val4;
+    int64_t val1, val2, val3, val4;
 };
 
 class FineCalibrationChecker : public yarp::dev::DeviceDriver,
