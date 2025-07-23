@@ -136,7 +136,6 @@ private:
     void generateOutputImage(int frameWidth, int frameHeight, const std::vector<ItemData>& items);
 
     // Utility methods
-    void configureDevicesMap(std::vector<std::string> list);
     cv::Scalar getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2);
 
     bool attachToAllControlBoards(const yarp::dev::PolyDriverList& polyList);

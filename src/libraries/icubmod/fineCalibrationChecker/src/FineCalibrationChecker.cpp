@@ -475,8 +475,6 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
             resolution = 0;
             delta = 0;
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Evaluating axis:" << axesNames[i];
-            yCDebug(FineCalibrationCheckerCOMPONENT) << "First value added to MAP:" << axesRawGoldenPositionsResMap.at(axesNames[i])[0] 
-                << "and second value:" << axesRawGoldenPositionsResMap.at(axesNames[i])[1];
             if (auto it = axesRawGoldenPositionsResMap.find(axesNames[i]); it != axesRawGoldenPositionsResMap.end())
             {
                 goldPosition = it->second[0];
@@ -489,6 +487,11 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                 delta = std::abs(rescaledPos - rawPosition);
 
                 yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
+            }
+            else
+            {
+                yCWarning(FineCalibrationCheckerCOMPONENT) << "This device axes has not ben requested to be checked. Continue...";
+                continue;
             }
             
             // Write to output CSV file
@@ -506,64 +509,6 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
     yCDebug(FineCalibrationCheckerCOMPONENT) << "Output CSV written to:" << outputPath.string();
 
     generateOutputImage(1000, 400, sampleItems);
-}
-
-void FineCalibrationChecker::configureDevicesMap(std::vector<std::string> list)
-{
-    // Configure the devices map based on the provided list of subpart names
-
-    // std::vector<std::string> input = list; // Example input list
-    // std::vector<std::string> desired_order = _robotSubpartsWrapper; // Example desired order
-
-    // // Step 1: Create the order map
-    // std::unordered_map<std::string, int> order_map;
-    // for (size_t i = 0; i < _robotSubpartsWrapper.size(); ++i) {
-    //     order_map[_robotSubpartsWrapper[i]] = i;
-    // }
-
-    // // Step 2: Separate known and unknown elements
-    // std::vector<std::string> known_items;
-    // std::vector<std::string> unknown_items;
-
-    // for (const auto& item : list) {
-    //     if (order_map.count(item)) {
-    //         known_items.push_back(item);
-    //     } else {
-    //         unknown_items.push_back(item);  // Handle unknowns
-    //     }
-    // }
-
-    // // Step 3: Sort known items using desired order
-    // std::sort(known_items.begin(), known_items.end(), [&](const std::string& a, const std::string& b) {
-    //     return order_map[a] < order_map[b];
-    // });
-
-    // // Step 4: Optionally detect missing elements
-    // std::set<std::string> input_set(list.begin(), list.end());
-    // std::vector<std::string> missing_items;
-    // for (const auto& expected : _robotSubpartsWrapper) {
-    //     if (!input_set.count(expected)) {
-    //         missing_items.push_back(expected);
-    //     }
-    // }
-
-    // // Output results
-    // std::cout << "Sorted known items:\n";
-    // for (const auto& item : known_items) std::cout << item << " ";
-    // std::cout << "\n";
-
-    // if (!unknown_items.empty()) {
-    //     std::cout << "Unknown items (not in desired order):\n";
-    //     for (const auto& item : unknown_items) std::cout << item << " ";
-    //     std::cout << "\n";
-    // }
-
-    // if (!missing_items.empty()) {
-    //     std::cout << "Missing expected items:\n";
-    //     for (const auto& item : missing_items) std::cout << item << " ";
-    //     std::cout << "\n";
-    // }
-
 }
 
 void FineCalibrationChecker::generateOutputImage(int frameWidth, int frameHeight, const std::vector<ItemData>& items)
