@@ -449,7 +449,11 @@ public:
 
 typedef struct
 {
-    int velocity;
+    int velocity_ref;
+    int current_ref;
+    int pwm_ref;
+    int torque_ref;
+    int torque_fbk;
 } timeouts_t;
 
 typedef struct
