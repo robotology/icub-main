@@ -110,7 +110,13 @@ bool RawValuesPublisherServer::attachAll(const yarp::dev::PolyDriverList &p)
     }
     
     // View all the interfaces
-    poly->view(m_iRawValuesPublisher);
+    if(!poly->view(m_iRawValuesPublisher))
+    {
+        yCError(RAWVALUESPUBLISHERSERVER)
+            << "Failure in viewing raw values publisher interface";
+        close();
+        return false;
+    }
 
     // Set rate period
     if(!this->setPeriod(m_threadPeriodInS))
