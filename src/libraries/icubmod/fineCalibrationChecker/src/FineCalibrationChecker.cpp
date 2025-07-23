@@ -68,7 +68,7 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
         if (property.check("devicename")) { _deviceName = property.find("devicename").asString(); }
         if (property.check("robotname")) { _robotName = property.find("robotname").asString(); }
         if (property.check("remoteRawValuesPort")) { _remoteRawValuesPort = property.find("remoteRawValuesPort").asString(); }
-        if (property.check("axesNamesList")) 
+        if (property.check("axesNamesList"))
         {
             yarp::os::Bottle* _jointsList = property.find("axesNamesList").asList();
             yarp::os::Bottle &axesNames = _axesNamesList.addList();
@@ -92,7 +92,7 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
         {
             yarp::os::Bottle* _encoderResolutions = property.find("encoderResolutions").asList();
             yarp::os::Bottle &encoderResolutions = _encoderResolutionsList.addList();
-            
+
             for (size_t i = 0; i < _encoderResolutions->size(); i++)
             {
                 encoderResolutions.addInt32(_encoderResolutions->get(i).asInt32());
@@ -105,7 +105,7 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
         yarp::os::Bottle* encres = _encoderResolutionsList.get(0).asList();
 
         // Check list sizes. They must be equal
-        if (axes->size() != goldpos->size() || 
+        if (axes->size() != goldpos->size() ||
             axes->size() != encres->size())
         {
             yCError(FineCalibrationCheckerCOMPONENT) << "Axes names, gold positions and encoder resolutions lists must have the same size. Stopping device...";
@@ -118,7 +118,7 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Encoder resolutions list:" << encres->toString();
         }
 
-        
+
         for (size_t i = 0; i < axes->size(); i++)
         {
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Adding to MAP key:" << axes->get(i).asString()
@@ -128,7 +128,7 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
                 << "and" << axesRawGoldenPositionsResMap.at(axes->get(i).asString())[1];
         }
     }
-    
+
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Initialized device driver";
     _deviceStatus = deviceStatus::INITIALIZED;
 
@@ -148,7 +148,7 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open device driver. Aborting...";
         return false;
     }
-    
+
     // Open port to the remote raw values publisher server and connect the client network wrapper to it
     if (_remoteRawValuesPort.empty())
     {
@@ -158,7 +158,7 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
     else
     {
         yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Remote raw values port:" << _remoteRawValuesPort;
-        
+
     }
 
      yarp::os::Property rawValuesDeviceProperties;
@@ -173,7 +173,7 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open raw values device driver. Aborting...";
         return false;
     }
-    
+
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Opened all devices successfully";
 
     _deviceStatus = deviceStatus::OPENED;
@@ -200,6 +200,8 @@ bool FineCalibrationChecker::close()
     {
         yCError(FineCalibrationCheckerCOMPONENT) << "Unable to close raw values publisher device";
     }
+    this->stop();
+
     return true;
 }
 
@@ -223,7 +225,7 @@ bool FineCalibrationChecker::threadInit()
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open raw values publisher interface. Aborting...";
         return false;
     }
-    
+
 
     // Configuring raw values metadata
     rawDataMetadata = {};
@@ -237,9 +239,9 @@ bool FineCalibrationChecker::threadInit()
             << "\t rawValueNames: " << m.rawValueNames
         ;
     }
-     
+
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Opened remote calibrator and control calibration interfaces successfully";
-    
+
 
     _deviceStatus = deviceStatus::CONFIGURED;
     return true;
@@ -260,7 +262,7 @@ void FineCalibrationChecker::run()
         if (_deviceStatus == deviceStatus::CONFIGURED)
         {
             auto now = std::chrono::steady_clock::now();
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTimerLog).count() > 1000) 
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTimerLog).count() > 1000)
             {
                 yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Running calibration thread with deviceStatus:" << (uint8_t)_deviceStatus;
                 lastTimerLog = now;
@@ -307,8 +309,8 @@ void FineCalibrationChecker::run()
                 {
                     yCDebug(FineCalibrationCheckerCOMPONENT) << "\t key:" << key << "value:" << value;
                 }
-                
-                // Here we have to evaluate the delta between the raw golen position 
+
+                // Here we have to evaluate the delta between the raw golen position
                 // and the raw position read at the hard stop per each axis
                 // TODO: input file not needed anymore. RobeRemoved
                 evaluateHardStopPositionDelta(_rawValuesTag, "zeroPositionsDataDelta.csv");
@@ -318,7 +320,7 @@ void FineCalibrationChecker::run()
         else if(_deviceStatus == deviceStatus::CHECK_COMPLETED)
         {
             auto now = std::chrono::steady_clock::now();
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTimer2Log).count() > 5000) 
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTimer2Log).count() > 5000)
             {
                 yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Operation completed successfully. Waiting for yarprobotinterface stop";
                 lastTimer2Log = now;
@@ -330,11 +332,11 @@ void FineCalibrationChecker::run()
             this->stop();
         }
     }
-    
+
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Thread stopping";
     // Perform any cleanup or finalization tasks here
     // For example, you can close the device or release resources
-    
+
 }
 
 void FineCalibrationChecker::onStop()
@@ -347,14 +349,14 @@ bool FineCalibrationChecker::attachAll(const yarp::dev::PolyDriverList& device2a
     // Attach all devices to the FineCalibrationChecker
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Attaching all devices";
 
-    // The _imultwrap view should be place before calling the attachToAllControlBoards method 
+    // The _imultwrap view should be place before calling the attachToAllControlBoards method
     // otherwise IMultipleWrapper::attachAll cannot be used
     if (!_remappedControlBoardDevice->view(remappedControlBoardInterfaces._imultwrap) || remappedControlBoardInterfaces._imultwrap == nullptr)
     {
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open multiple wrapper interface. Aborting...";
         return false;
     }
-    
+
     if (!_remappedControlBoardDevice->isValid())
     {
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Device is not valid. Cannot attach.";
@@ -426,7 +428,7 @@ bool FineCalibrationChecker::attachToAllControlBoards(const yarp::dev::PolyDrive
         yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Attaching control board" << polyList[i]->key;
         controlBoardsList.push(const_cast<yarp::dev::PolyDriverDescriptor&>(*polyList[i]));
     }
-    
+
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Control boards list size:" << controlBoardsList.size();
 
     // Attach the list of control boards to the control board remapper
@@ -453,7 +455,7 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
     std::vector<ItemData> sampleItems = {};
 
     std::ofstream outFile(outputPath);
-    if (!outFile.is_open()) 
+    if (!outFile.is_open())
     {
         yCError(FineCalibrationCheckerCOMPONENT) << "Unable to open output file:" << outputPath.string();
         return;
@@ -479,11 +481,11 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
             {
                 goldPosition = it->second[0];
                 resolution = it->second[1];
-                rawPosition = rawData[3*i]; // This because the raw values for tag eoprot_tag_mc_joint_status_addinfo_multienc 
+                rawPosition = rawData[3*i]; // This because the raw values for tag eoprot_tag_mc_joint_status_addinfo_multienc
                                             // are stored in a vector whose legth is joints_number*3, where each sub-array is made such
-                                            // [raw_val_primary_enc, raw_val_secondary_enc, rraw_val_auxiliary_enc] 
+                                            // [raw_val_primary_enc, raw_val_secondary_enc, rraw_val_auxiliary_enc]
                                             // and we want the first value for each joint
-                rescaledPos = goldPosition * resolution / 65535; // Rescale the position (in iCubDegrees) to the encoder full resolution             
+                rescaledPos = goldPosition * resolution / 65535; // Rescale the position (in iCubDegrees) to the encoder full resolution
                 delta = std::abs(rescaledPos - rawPosition);
 
                 yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
@@ -493,7 +495,7 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                 yCWarning(FineCalibrationCheckerCOMPONENT) << "This device axes has not ben requested to be checked. Continue...";
                 continue;
             }
-            
+
             // Write to output CSV file
             outFile << axesNames[i] << "," << goldPosition << "," << rescaledPos << "," << rawPosition << "," << delta << "\n";
             sampleItems.push_back({axesNames[i], goldPosition, rescaledPos, rawPosition, delta});
@@ -584,6 +586,8 @@ void FineCalibrationChecker::generateOutputImage(int frameWidth, int frameHeight
     cv::imshow("Output Frame", image);
     cv::waitKey(0);
     cv::destroyAllWindows();
+
+    this->close();
 }
 
 cv::Scalar FineCalibrationChecker::getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2)
