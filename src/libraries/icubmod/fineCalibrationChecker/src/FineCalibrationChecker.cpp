@@ -255,7 +255,7 @@ void FineCalibrationChecker::run()
 
     // Use chrono for time-based debug prints
     static auto lastTimerLog = std::chrono::steady_clock::now();
-    static auto lastTimer2Log = std::chrono::steady_clock::now();
+    static auto shoutdownTimer = std::chrono::steady_clock::now();
 
     while(!this->isStopping())
     {
@@ -315,15 +315,20 @@ void FineCalibrationChecker::run()
                 // TODO: input file not needed anymore. RobeRemoved
                 evaluateHardStopPositionDelta(_rawValuesTag, "zeroPositionsDataDelta.csv");
                 _deviceStatus = deviceStatus::CHECK_COMPLETED;
+                shoutdownTimer = std::chrono::steady_clock::now();
             }
         }
         else if(_deviceStatus == deviceStatus::CHECK_COMPLETED)
         {
             auto now = std::chrono::steady_clock::now();
+<<<<<<< HEAD
             if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTimer2Log).count() > 5000)
+=======
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - shoutdownTimer).count() > 5000) 
+>>>>>>> 0df20d787 (get goldPosition in degrees)
             {
-                yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Operation completed successfully. Waiting for yarprobotinterface stop";
-                lastTimer2Log = now;
+                yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Operation completed successfully. Stopping thread...";
+                this->stop();
             }
         }
         else
@@ -485,7 +490,7 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                                             // are stored in a vector whose legth is joints_number*3, where each sub-array is made such
                                             // [raw_val_primary_enc, raw_val_secondary_enc, rraw_val_auxiliary_enc]
                                             // and we want the first value for each joint
-                rescaledPos = goldPosition * resolution / 65535; // Rescale the position (in iCubDegrees) to the encoder full resolution
+                rescaledPos = goldPosition * resolution / 360; // Rescale the position (in Degrees) to the encoder full resolution             
                 delta = std::abs(rescaledPos - rawPosition);
 
                 yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
