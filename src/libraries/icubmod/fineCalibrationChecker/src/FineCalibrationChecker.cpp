@@ -45,7 +45,7 @@ namespace
 FineCalibrationChecker::FineCalibrationChecker()
     : yarp::os::Thread(), _deviceName("fineCalibrationChecker"), _portPrefix("/fineCalibrationChecker"),
       _robotName("icub"), _remoteRawValuesPort("/icub/rawvalues"), _axesNamesList(yarp::os::Bottle()),
-      _goldPositionsList(yarp::os::Bottle()), _encoderResolutionsList(yarp::os::Bottle()), _deviceStatus(deviceStatus::NONE)
+      _goldPositionsList(yarp::os::Bottle()), _encoderResolutionsList(yarp::os::Bottle()), _calibrationDeltasList(yarp::os::Bottle()), _deviceStatus(deviceStatus::NONE)
 {
     // Initialize device driver as empty PolyDriver
     _remappedControlBoardDevice = std::make_unique<yarp::dev::PolyDriver>();
@@ -88,6 +88,16 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
                 goldPositions.addInt32(_goldPositions->get(i).asInt32());
             }
         }
+        if(property.check("calibrationDeltas"))
+        {
+            yarp::os::Bottle* _calibrationDeltas = property.find("calibrationDeltas").asList();
+            yarp::os::Bottle &calibrationDeltas = _calibrationDeltasList.addList();
+
+            for (size_t i = 0; i < _calibrationDeltas->size(); i++)
+            {
+                calibrationDeltas.addFloat64(_calibrationDeltas->get(i).asFloat64());
+            }
+        }
         if(property.check("encoderResolutions"))
         {
             yarp::os::Bottle* _encoderResolutions = property.find("encoderResolutions").asList();
@@ -103,10 +113,12 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
         yarp::os::Bottle* axes = _axesNamesList.get(0).asList();
         yarp::os::Bottle* goldpos = _goldPositionsList.get(0).asList();
         yarp::os::Bottle* encres = _encoderResolutionsList.get(0).asList();
+        yarp::os::Bottle* caldeltas = _calibrationDeltasList.get(0).asList();
 
         // Check list sizes. They must be equal
         if (axes->size() != goldpos->size() ||
-            axes->size() != encres->size())
+            axes->size() != encres->size() ||
+            axes->size() != caldeltas->size())
         {
             yCError(FineCalibrationCheckerCOMPONENT) << "Axes names, gold positions and encoder resolutions lists must have the same size. Stopping device...";
             return false;
@@ -116,13 +128,14 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Axes names list:" << _axesNamesList.toString();
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Gold positions list:" << goldpos->toString();
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Encoder resolutions list:" << encres->toString();
+            yCDebug(FineCalibrationCheckerCOMPONENT) << "Calibration deltas list:" << caldeltas->toString();
         }
 
 
         for (size_t i = 0; i < axes->size(); i++)
         {
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Adding to MAP key:" << axes->get(i).asString()
-                << "GP:" << goldpos->get(i).asInt32() << "ER:" << encres->get(i).asInt32();
+                << "GP:" << goldpos->get(i).asInt32() << "ER:" << encres->get(i).asInt32() << "CD:" << caldeltas->get(i).asFloat64();
             axesRawGoldenPositionsResMap[axes->get(i).asString()] = {goldpos->get(i).asInt32(), encres->get(i).asInt32()};
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Array added to MAP:" << axesRawGoldenPositionsResMap.at(axes->get(i).asString())[0]
                 << "and" << axesRawGoldenPositionsResMap.at(axes->get(i).asString())[1];
@@ -469,6 +482,8 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
     int64_t delta = 0;
     std::vector<ItemData> sampleItems = {};
 
+    yarp::os::Bottle* caldeltas = _calibrationDeltasList.get(0).asList();
+
     std::vector<int64_t> homePositions = {30, 30, 0, 50}; // Assuming home positions are all zero for simplicity
     std::vector<double> calibrationDelta = {0, -9.2, -17.1, -2.7}; // Assuming raw home positions are all zero for simplicity
     std::ofstream outFile(outputPath);
@@ -496,6 +511,7 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Evaluating axis:" << axesNames[i];
             if (auto it = axesRawGoldenPositionsResMap.find(axesNames[i]); it != axesRawGoldenPositionsResMap.end())
             {
+                calibrationDelta[i] = caldeltas->get(i).asFloat64(); // Get the calibration delta for the axis
                 double pos = 0.0;
                 remappedControlBoardInterfaces._ienc->getEncoder(i, &pos); // Update home position by calling the IEncoders API
                 homePositions[i] = (pos > 0) ? static_cast<int64_t>(pos) : static_cast<int64_t>(-pos); // Update home position for the axis

@@ -112,6 +112,7 @@ private:
     yarp::os::Bottle _axesNamesList = yarp::os::Bottle();
     yarp::os::Bottle _goldPositionsList = yarp::os::Bottle();
     yarp::os::Bottle _encoderResolutionsList = yarp::os::Bottle();
+    yarp::os::Bottle _calibrationDeltasList = yarp::os::Bottle();
 
     std::vector<std::string> _robotSubpartsWrapper = {"setup_mc", "head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
     std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
