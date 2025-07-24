@@ -35,6 +35,7 @@
 #include <yarp/dev/IMultipleWrapper.h>
 #include <yarp/dev/IControlCalibration.h>
 #include <yarp/dev/IMotor.h>
+#include <yarp/dev/IEncoders.h>
 
 // iCub includes
 #include <iCub/IRawValuesPublisher.h>
@@ -124,6 +125,7 @@ private:
         yarp::dev::IMultipleWrapper* _imultwrap{ nullptr };
         yarp::dev::IControlCalibration* _icontrolcalib { nullptr };
         yarp::dev::IMotor* _imot { nullptr };
+        yarp::dev::IEncoders* _ienc { nullptr };
     } remappedControlBoardInterfaces;
     
     iCub::debugLibrary::IRawValuesPublisher* _iravap;

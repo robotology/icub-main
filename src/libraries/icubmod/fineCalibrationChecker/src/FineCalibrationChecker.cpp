@@ -214,6 +214,19 @@ bool FineCalibrationChecker::threadInit()
         return false;
     }
 
+    if (!_remappedControlBoardDevice->view(remappedControlBoardInterfaces._ienc) || remappedControlBoardInterfaces._ienc == nullptr)
+    {
+        yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open encoders interface. Aborting...";
+        return false;
+    }
+    
+
+    if (!_remappedControlBoardDevice->view(remappedControlBoardInterfaces._ienc) || remappedControlBoardInterfaces._ienc == nullptr)
+    {
+        yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open encoders interface. Aborting...";
+        return false;
+    }
+
     if (!_remappedControlBoardDevice->view(remappedControlBoardInterfaces._icontrolcalib) || remappedControlBoardInterfaces._icontrolcalib == nullptr)
     {
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open control calibration interface. Aborting...";
@@ -483,6 +496,9 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Evaluating axis:" << axesNames[i];
             if (auto it = axesRawGoldenPositionsResMap.find(axesNames[i]); it != axesRawGoldenPositionsResMap.end())
             {
+                double pos = 0.0;
+                remappedControlBoardInterfaces._ienc->getEncoder(i, &pos); // Update home position by calling the IEncoders API
+                homePositions[i] = static_cast<int64_t>(pos); // Update home position for the axis
                 goldPosition = it->second[0];
                 resolution = it->second[1];
                 rawPosition = rawData[3*i]; // This because the raw values for tag eoprot_tag_mc_joint_status_addinfo_multienc
@@ -490,9 +506,9 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                                             // [raw_val_primary_enc, raw_val_secondary_enc, rraw_val_auxiliary_enc]
                                             // and we want the first value for each joint
                 rescaledPos = rawPosition * 65553 / resolution; // Rescale the encoder raw position to iCubDegrees            
-                delta = std::abs(goldPosition - rescaledPos) / (65553/360) - homePositions[i]; // Calculate the delta in iCubDegrees
+                delta = std::abs(goldPosition - rescaledPos) / (65553/360) - homePositions[i]; // Calculate the delta in degrees
 
-                yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
+                yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "HP:" << homePositions[i] << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
             }
             else
             {

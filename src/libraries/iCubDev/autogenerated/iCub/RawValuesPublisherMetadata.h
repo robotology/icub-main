@@ -13,6 +13,7 @@
 
 #include <yarp/os/Wire.h>
 #include <yarp/os/idl/WireTypes.h>
+#include <yarp/os/ApplicationNetworkProtocolVersion.h>
 #include <iCub/rawValuesKeyMetadataMap.h>
 
 namespace iCub {
@@ -21,9 +22,15 @@ class RawValuesPublisherMetadata :
         public yarp::os::Wire
 {
 public:
+    //ProtocolVersion
+    virtual yarp::os::ApplicationNetworkProtocolVersion getLocalProtocolVersion();
+    virtual yarp::os::ApplicationNetworkProtocolVersion getRemoteProtocolVersion();
+    virtual bool checkProtocolVersion();
+
     // Constructor
     RawValuesPublisherMetadata();
 
+    //Service methods
     /**
      * Read the rawvalues metadata necessary to configure the RawValuesPublisherClient device.
      */
