@@ -30,12 +30,12 @@
 // yarp includes
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Thread.h>
-#include <yarp/os/ResourceFinder.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/DeviceDriver.h>
-#include <yarp/dev/IRemoteCalibrator.h>
+#include <yarp/dev/IMultipleWrapper.h>
 #include <yarp/dev/IControlCalibration.h>
 #include <yarp/dev/IMotor.h>
+#include <yarp/dev/IEncoders.h>
 
 // iCub includes
 #include <iCub/IRawValuesPublisher.h>
@@ -43,10 +43,12 @@
 
 struct ItemData {
     std::string name;
-    int32_t val1, val2, val3, val4;
+    int64_t val1, val2, val3, val4;
 };
 
-class FineCalibrationCheckerThread : public yarp::os::Thread
+class FineCalibrationChecker : public yarp::dev::DeviceDriver,
+                                    public yarp::os::Thread,
+                                    public yarp::dev::IMultipleWrapper
 {
 public:
     // Enum for device status
@@ -55,45 +57,50 @@ public:
         INITIALIZED = 0,
         OPENED = 1,
         CONFIGURED = 2,
-        CALIBRATED = 3,
-        END_POSITION_CHECKED = 4,
-        IN_HOME_POSITION = 5,
+        STARTED = 3,
+        CALIBRATED = 4,
+        IN_ZERO_POSITION = 5,
+        CHECK_COMPLETED = 6,
         UNKNOWN = 244,
         NONE = 255
     };
 
     // Constructor
-    FineCalibrationCheckerThread() = default;
+    FineCalibrationChecker();
 
     // Destructor
-    ~FineCalibrationCheckerThread() = default;
+    ~FineCalibrationChecker() = default;
 
     // Copy constructor
-    FineCalibrationCheckerThread(const FineCalibrationCheckerThread& other) = default;
+    FineCalibrationChecker(const FineCalibrationChecker& other) = default;
 
     // Copy assignment operator
-    FineCalibrationCheckerThread& operator=(const FineCalibrationCheckerThread& other) = default;
+    FineCalibrationChecker& operator=(const FineCalibrationChecker& other) = default;
 
     // Move constructor
-    FineCalibrationCheckerThread(FineCalibrationCheckerThread&& other) noexcept = default;
+    FineCalibrationChecker(FineCalibrationChecker&& other) noexcept = default;
 
     // Move assignment operator
-    FineCalibrationCheckerThread& operator=(FineCalibrationCheckerThread&& other) noexcept = default;
+    FineCalibrationChecker& operator=(FineCalibrationChecker&& other) noexcept = default;
 
-    // Parameterized constructor
-    FineCalibrationCheckerThread(yarp::os::ResourceFinder& rf);
+    // Overridden methods from yarp::dev::DeviceDriver
+    bool open(yarp::os::Searchable& config) override;
+    bool close() override;
 
     // Overridden methods from yarp::os::Thread
     void run() override;
     void onStop() override;
     bool threadInit() override;
-    void threadRelease() override;
+
+    // Overridden methods from yarp::dev::IMultipleWrapper
+    bool attachAll(const yarp::dev::PolyDriverList& device2attach) override;
+    bool detachAll() override;
 
     bool isCalibrationSuccessful() const;
 
 private:
     // Private members
-
+    
     // Configuration parameters
     std::string _portPrefix = "/fineCalibrationChecker";
     std::string _robotName= "";
@@ -102,8 +109,11 @@ private:
     
     deviceStatus _deviceStatus = deviceStatus::NONE;
     
-    yarp::os::Bottle _controlBoardsList = yarp::os::Bottle();
     yarp::os::Bottle _axesNamesList = yarp::os::Bottle();
+    yarp::os::Bottle _goldPositionsList = yarp::os::Bottle();
+    yarp::os::Bottle _encoderResolutionsList = yarp::os::Bottle();
+    yarp::os::Bottle _calibrationDeltasList = yarp::os::Bottle();
+
     std::vector<std::string> _robotSubpartsWrapper = {"setup_mc", "head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
     std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
     iCub::rawValuesKeyMetadataMap rawDataMetadata;
@@ -111,22 +121,27 @@ private:
     std::string _rawValuesTag = "eoprot_tag_mc_joint_status_addinfo_multienc";
 
     // Pointers to interfaces
-    yarp::dev::IRemoteCalibrator* _iremotecalib;
-    yarp::dev::IControlCalibration* _icontrolcalib;
-    yarp::dev::IMotor* _imot;
+    struct
+    {
+        yarp::dev::IMultipleWrapper* _imultwrap{ nullptr };
+        yarp::dev::IControlCalibration* _icontrolcalib { nullptr };
+        yarp::dev::IMotor* _imot { nullptr };
+        yarp::dev::IEncoders* _ienc { nullptr };
+    } remappedControlBoardInterfaces;
+    
     iCub::debugLibrary::IRawValuesPublisher* _iravap;
 
     // Client drivers to communicate with interfaces
-    std::unique_ptr<yarp::dev::PolyDriver> _fineCalibrationCheckerDevice;
-    std::unique_ptr<yarp::dev::PolyDriver> _rawValuesOublisherDevice;
+    std::unique_ptr<yarp::dev::PolyDriver> _remappedControlBoardDevice;
+    std::unique_ptr<yarp::dev::PolyDriver> _rawValuesPublisherDevice;
 
-    bool configureCalibration();
-    bool runCalibration();
-    void evaluateHardStopPositionDelta(const std::string& key, const std::string& inputFileName, const std::string& outputFileName);
+    void evaluateHardStopPositionDelta(const std::string& key, const std::string& outputFileName);
     void generateOutputImage(int frameWidth, int frameHeight, const std::vector<ItemData>& items);
+
     // Utility methods
-    void configureDevicesMap(std::vector<std::string> list);
     cv::Scalar getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2);
+
+    bool attachToAllControlBoards(const yarp::dev::PolyDriverList& polyList);
 };
 
 #endif // FINE_CALIBRATION_CHECKER_THREAD_H
