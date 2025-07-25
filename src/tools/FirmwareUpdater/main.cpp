@@ -497,9 +497,7 @@ int main(int argc, char *argv[])
                 // *** END CHANGE ***
                 else if(canLine.isEmpty() && canId.isEmpty()){
                     // This is for programming the ETH board itself
-                    // *** NEW: Only allow if user did NOT specify --addresses ***
-                    qDebug() << "ERROR: No CAN board specified and no --addresses given. Refusing to program ETH board with CAN firmware.";
-                    ret = -1;
+                   ret = programEthDevice(&core,device,id,board,file);
                 }else{
                     // This is for programming a SINGLE CAN board
                     ret = programCanDevice(&core,device,id,board,canLine,canId,file,eraseEEprom);
