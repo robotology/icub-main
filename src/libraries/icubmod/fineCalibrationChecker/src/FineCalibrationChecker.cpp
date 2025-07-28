@@ -288,18 +288,22 @@ void FineCalibrationChecker::run()
         if (_deviceStatus == deviceStatus::CONFIGURED)
         {
             auto now = std::chrono::steady_clock::now();
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTimerLog).count() > 1000)
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTimerLog).count() > 1000) 
             {
-                yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Running calibration thread with deviceStatus:" << (uint8_t)_deviceStatus;
+                yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Device configured, waiting for attachAll() to be called.";
                 lastTimerLog = now;
             }
-            yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Waiting the thread to complete the initialization. Continue...";
+            yarp::os::Time::delay(0.1); // Prevent busy-waiting.
             continue;
         }
         else if(_deviceStatus == deviceStatus::STARTED)
         {
             // Get number of axes
-            int numAxes = _axesNamesList.size();
+            int numAxes = 0;
+            if(!_axesNamesList.isNull() && _axesNamesList.size() > 0 && _axesNamesList.get(0).isList())
+            {
+                numAxes = _axesNamesList.get(0).asList()->size();
+            }
             // Check if calibration is done by calling IControlCalibration APIs
             bool calibDone = true;
             for (size_t i = 0; i < numAxes; i++)
