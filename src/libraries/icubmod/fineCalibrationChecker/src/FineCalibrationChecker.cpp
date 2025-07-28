@@ -477,6 +477,10 @@ bool FineCalibrationChecker::attachToAllControlBoards(const yarp::dev::PolyDrive
 
 void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& key, const std::string& outputFileName)
 {
+
+    // Add comments for magic numbers
+    int32_t RAW_VALUES_STRIDE = 3; // Number of raw values per joint in the raw data vector
+    int64_t ICUB_DEGREES_RANGE = 65553; // Range of iCub degrees for rescaling
     // Get the directory of the output file
     std::filesystem::path outputPath(outputFileName);
     int64_t goldPosition = 0;
@@ -521,12 +525,12 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                 homePositions[i] = (pos > 0) ? static_cast<int64_t>(pos) : static_cast<int64_t>(-pos); // Update home position for the axis
                 goldPosition = it->second[0];
                 resolution = it->second[1];
-                rawPosition = rawData[3*i]; // This because the raw values for tag eoprot_tag_mc_joint_status_addinfo_multienc
+                rawPosition = rawData[RAW_VALUES_STRIDE*i]; // This because the raw values for tag eoprot_tag_mc_joint_status_addinfo_multienc
                                             // are stored in a vector whose legth is joints_number*3, where each sub-array is made such
                                             // [raw_val_primary_enc, raw_val_secondary_enc, rraw_val_auxiliary_enc]
                                             // and we want the first value for each joint
-                rescaledPos = rawPosition * 65553 / resolution; // Rescale the encoder raw position to iCubDegrees            
-                delta = std::abs(goldPosition - rescaledPos) / (65553/360) - homePositions[i]; // Calculate the delta in degrees
+                rescaledPos = rawPosition * ICUB_DEGREES_RANGE / resolution; // Rescale the encoder raw position to iCubDegrees            
+                delta = std::abs(goldPosition - rescaledPos) / (ICUB_DEGREES_RANGE/360) - homePositions[i]; // Calculate the delta in degrees
                 delta = std::abs(delta) + static_cast<int64_t>(calibrationDelta[i]); // Add the calibration delta to the delta
                 yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "HP:" << homePositions[i] << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
             }
