@@ -479,8 +479,8 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
 {
 
     // Add comments for magic numbers
-    int32_t RAW_VALUES_STRIDE = 3; // Number of raw values per joint in the raw data vector
-    int64_t ICUB_DEGREES_RANGE = 65553; // Range of iCub degrees for rescaling
+    const int32_t RAW_VALUES_STRIDE = 3; // Number of raw values per joint in the raw data vector
+    const int64_t ICUB_DEGREES_RANGE = (65535); // Range of iCub degrees for rescaling (2^16-1)
     // Get the directory of the output file
     std::filesystem::path outputPath(outputFileName);
     int64_t goldPosition = 0;
