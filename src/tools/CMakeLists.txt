@@ -50,7 +50,6 @@ if(ICUB_USE_OpenCV)
         # put hereafter modules that rely on old versions of OpenCV declared as legacy
     else()
         add_subdirectory(stereoCalib)
-        add_subdirectory(fineCalibrationChecker)
     endif()
 else()
     message(STATUS "OpenCV not found/selected")

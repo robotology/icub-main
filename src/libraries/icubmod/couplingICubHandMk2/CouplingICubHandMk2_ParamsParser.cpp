@@ -8,7 +8,7 @@
 // This is an automatically generated file. Please do not edit it.
 // It will be re-generated if the cmake flag ALLOW_DEVICE_PARAM_PARSER_GERNERATION is ON.
 
-// Generated on: Mon Feb 10 15:12:03 2025
+// Generated on: Wed Jul 30 08:46:36 2025
 
 
 #include "CouplingICubHandMk2_ParamsParser.h"
