@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     QCommandLineOption saveDatFileOption(QStringList() << "u" << "save-dat-file", "Saves the calibration .dat file from STRAIN2 eeprom","","");
     QCommandLineOption changeCanIdOption(QStringList() << "k" << "change-can-id", "changes CAN ID","id-new","");
     QCommandLineOption changeBoardIpOption(QStringList() << "2" << "change-ip-addr", "changes board IP address","ip-new","");
-    QCommandLineOption boardAddressesOption(QStringList() << "A" << "addresses", "List of board addresses (e.g., 'CAN1:0 CAN2:1')","addresses_list");
+    QCommandLineOption boardAddressesOption(QStringList() << "A" << "addresses", "List of board addresses (e.g., 'CAN1:1 CAN2:1')","addresses_list");
 
     parser.addOption(noGuiOption);
     parser.addOption(strainCalibOption);
