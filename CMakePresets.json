@@ -42,7 +42,10 @@
         "ENABLE_icubmod_embObjSkin": "ON",
         "ENABLE_icubmod_embObjPOS": "ON",
         "ENABLE_icubmod_parametricCalibrator": "ON",
-        "ENABLE_icubmod_parametricCalibratorEth": "ON"
+        "ENABLE_icubmod_parametricCalibratorEth": "ON",
+        "ENABLE_icubmod_rawValuesPublisherClient": "ON",
+        "ENABLE_icubmod_rawValuesPublisherServer": "ON",
+        "ENABLE_icubmod_fineCalibrationChecker": "ON"
       }
     }
   ],
