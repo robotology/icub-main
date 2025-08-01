@@ -59,6 +59,8 @@ public:
     QString getProcessFromUint(uint8_t id, bool isMultiCore = false, eObrd_ethtype_t boardtype = eobrd_ethtype_unknown);
 
     cDownloader *getDownloader();
+    void selectCanBoardsByAddresses(const std::vector<std::pair<int, int>>& addresses);
+    QList<sBoard> getSelectedCanBoards();
 
 
 private:

@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     QCommandLineOption saveDatFileOption(QStringList() << "u" << "save-dat-file", "Saves the calibration .dat file from STRAIN2 eeprom","","");
     QCommandLineOption changeCanIdOption(QStringList() << "k" << "change-can-id", "changes CAN ID","id-new","");
     QCommandLineOption changeBoardIpOption(QStringList() << "2" << "change-ip-addr", "changes board IP address","ip-new","");
-
+    QCommandLineOption boardAddressesOption(QStringList() << "A" << "addresses", "List of board addresses (e.g., 'CAN1:1 CAN2:1')","addresses_list");
 
     parser.addOption(noGuiOption);
     parser.addOption(strainCalibOption);
@@ -160,8 +160,43 @@ int main(int argc, char *argv[])
     parser.addOption(saveDatFileOption);
     parser.addOption(changeCanIdOption);
     parser.addOption(changeBoardIpOption);
+    parser.addOption(boardAddressesOption);
 
     parser.process(a);
+
+    std::vector<std::pair<int, int>> boardAddresses;
+    
+    if (parser.isSet(boardAddressesOption)) {
+        qDebug() << "boardAddressesOption is set!";
+        QString addressesValue = parser.value(boardAddressesOption);
+        qDebug() << "Value from --addresses:" << addressesValue;
+        QStringList addressList = addressesValue.split(QRegularExpression("[ ,]"), Qt::SkipEmptyParts); // Use QRegularExpression for future compatibility
+        qDebug() << "Split address list size:" << addressList.size();
+
+        for (const QString& arg : addressList) {
+            qDebug() << "  Processing arg:" << arg;
+            if (arg.startsWith("CAN", Qt::CaseInsensitive)) {
+                QStringList parts = arg.split(":");
+                if (parts.size() == 2) {
+                    bool ok_bus, ok_addr;
+                    int bus = parts[0].mid(3).toInt(&ok_bus);
+                    int addr = parts[1].toInt(&ok_addr);
+                    if (ok_bus && ok_addr) {
+                        boardAddresses.push_back({bus, addr});
+                        qDebug() << "    -> Parsed and added: bus" << bus << "addr" << addr;
+                    } else {
+                        qDebug() << "    -> FAILED to parse bus/addr to int.";
+                    }
+                } else {
+                    qDebug() << "    -> FAILED: split on ':' did not produce 2 parts.";
+                }
+            } else {
+                qDebug() << "    -> FAILED: does not start with 'CAN'.";
+            }
+        }
+        qDebug() << "Final boardAddresses vector size:" << boardAddresses.size();
+    }
+
 
     bool noGui = parser.isSet(noGuiOption);
     bool adminMode = parser.isSet(adminOption);
@@ -421,8 +456,6 @@ int main(int argc, char *argv[])
             case action_program:
             {
                 ret = 1;
-                //yDebug() << "program";
-
                 if(device.isEmpty()){
                     if(verbosity >= 1) qDebug() << "Need a device to be set";
                 }else if(id.isEmpty()){
@@ -431,19 +464,41 @@ int main(int argc, char *argv[])
                     if(verbosity >= 1) qDebug() << "Need a board to be set";
                 }else if(file.isEmpty()){
                     if(verbosity >= 1) qDebug() << "Need a file path to be set";
-                }else if(canLine.isEmpty() && canId.isEmpty()){
-                    ret = programEthDevice(&core,device,id,board,file);
-//                    if(eraseEEprom && ret == 0){
-//                        ret = eraseEthEEprom(&core,device,id,board);
-//                    }
-                }else{
-                    if(canLine.isEmpty()){
-                        if(verbosity >= 1) qDebug() << "Need a can line to be set";
-                    } else if(canId.isEmpty()){
-                        if(verbosity >= 1) qDebug() << "Need a can id to be set";
-                    }else{
-                        ret = programCanDevice(&core,device,id,board,canLine,canId,file,eraseEEprom);
+                }
+                // *** START CHANGE: This block must be checked FIRST for CAN programming ***
+                else if (!boardAddresses.empty()) {
+                    // MULTI-BOARD PROGRAMMING
+                    qDebug() << "Multi-board programming requested for addresses:" << boardAddresses.size();
+                    QString retString;
+                    QList<sBoard> canBoards = core.getCanBoardsFromEth(board, &retString, -1, true);
+                    for (const auto& b : canBoards) {
+                        qDebug() << "Discovered CAN board bus:" << b.bus << "pid:" << b.pid;
                     }
+                    qDebug() << "Discovered CAN boards:" << canBoards.size();
+                    core.selectCanBoardsByAddresses(boardAddresses);
+                    // Get the updated list from the core's downloader
+                    QList<sBoard> selectedBoards = core.getSelectedCanBoards();
+                    if (selectedBoards.size() == 0) {
+                        qDebug() << "ERROR: No CAN boards selected for programming. Aborting.";
+                        ret = -1;
+                        break;
+                    }
+                    for (const auto& b : selectedBoards) {
+                        qDebug() << "CAN board bus:" << b.bus << "pid:" << b.pid << "selected:" << b.selected;
+                    }
+                    QString resultString;
+                    QList<sBoard> resultCanBoards;
+                    bool ok = core.uploadCanApplication(file, &resultString, eraseEEprom, board, -1, &resultCanBoards);
+                    if (verbosity >= 1) qDebug() << resultString;
+                    ret = ok ? 0 : -1;
+                }
+                // *** END CHANGE ***
+                else if(canLine.isEmpty() && canId.isEmpty()){
+                    // This is for programming the ETH board itself
+                   ret = programEthDevice(&core,device,id,board,file);
+                }else{
+                    // This is for programming a SINGLE CAN board
+                    ret = programCanDevice(&core,device,id,board,canLine,canId,file,eraseEEprom);
                 }
 
             } break;
@@ -2141,6 +2196,7 @@ int verifyOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QS
                 if(canBoards.count() <= 0)
                 {
                     if(verbosity >= 1) qDebug() <<  retString;
+                    qDebug() << QString("%1: no can board beneath").arg(board);
                 }
                 else
                 {
@@ -2158,6 +2214,7 @@ int verifyOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QS
     else
     {
         if(verbosity >= 1) qDebug() << "No boards Found";
+        qDebug() << board << ": cannot find it";
     }
 
     return ret;
@@ -2251,8 +2308,7 @@ int queryOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QSt
                 if(canBoards.count() <= 0)
                 {
                     if(verbosity >= 1) qDebug() <<  retString;
-                    snprintf(notfound, sizeof(notfound), "%s: no can board beneath", board.toStdString().c_str());
-                    qDebug() << notfound;
+                    qDebug() << board << ": no can board beneath";
                 }
                 else
                 {
@@ -2270,8 +2326,7 @@ int queryOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QSt
     else
     {
         if(verbosity >= 1) qDebug() << "No boards Found";
-        snprintf(notfound, sizeof(notfound), "%s: cannot find it", board.toStdString().c_str());
-        qDebug() << notfound;
+        qDebug() << board << ": cannot find it";
     }
 
     return ret;
