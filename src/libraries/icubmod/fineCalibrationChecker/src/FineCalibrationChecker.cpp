@@ -142,6 +142,8 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
         }
     }
 
+    _withGui = property.check("withGui", yarp::os::Value(false)).asBool();
+
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Initialized device driver";
     _deviceStatus = deviceStatus::INITIALIZED;
 
@@ -232,7 +234,7 @@ bool FineCalibrationChecker::threadInit()
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open encoders interface. Aborting...";
         return false;
     }
-    
+
 
     if (!_remappedControlBoardDevice->view(remappedControlBoardInterfaces._ienc) || remappedControlBoardInterfaces._ienc == nullptr)
     {
@@ -288,7 +290,7 @@ void FineCalibrationChecker::run()
         if (_deviceStatus == deviceStatus::CONFIGURED)
         {
             auto now = std::chrono::steady_clock::now();
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTimerLog).count() > 1000) 
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTimerLog).count() > 1000)
             {
                 yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Device configured, waiting for attachAll() to be called.";
                 lastTimerLog = now;
@@ -350,7 +352,7 @@ void FineCalibrationChecker::run()
         else if(_deviceStatus == deviceStatus::CHECK_COMPLETED)
         {
             auto now = std::chrono::steady_clock::now();
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - shoutdownTimer).count() > 5000) 
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(now - shoutdownTimer).count() > 5000)
             {
                 yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Operation completed successfully. Waiting yarprobotinterface to stop the thread...";
                 // shoutdownTimer = now;
@@ -529,7 +531,7 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                                             // are stored in a vector whose legth is joints_number*3, where each sub-array is made such
                                             // [raw_val_primary_enc, raw_val_secondary_enc, rraw_val_auxiliary_enc]
                                             // and we want the first value for each joint
-                rescaledPos = rawPosition * ICUB_DEGREES_RANGE / resolution; // Rescale the encoder raw position to iCubDegrees            
+                rescaledPos = rawPosition * ICUB_DEGREES_RANGE / resolution; // Rescale the encoder raw position to iCubDegrees
                 delta = std::abs(goldPosition - rescaledPos) / (ICUB_DEGREES_RANGE/360) - homePositions[i]; // Calculate the delta in degrees
                 delta = std::abs(delta) + static_cast<int64_t>(calibrationDelta[i]); // Add the calibration delta to the delta
                 yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "HP:" << homePositions[i] << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
@@ -553,8 +555,10 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
 
     outFile.close();
     yCDebug(FineCalibrationCheckerCOMPONENT) << "Output CSV written to:" << outputPath.string();
-
-    generateOutputImage(1800, 400, sampleItems);
+    // Generate output image
+    if(_withGui) {
+        generateOutputImage(1800, 400, sampleItems);
+    }
 }
 
 void FineCalibrationChecker::generateOutputImage(int frameWidth, int frameHeight, const std::vector<ItemData>& items)
