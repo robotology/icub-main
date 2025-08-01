@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
         qDebug() << "boardAddressesOption is set!";
         QString addressesValue = parser.value(boardAddressesOption);
         qDebug() << "Value from --addresses:" << addressesValue;
-        QStringList addressList = addressesValue.split(QRegExp("[ ,]"), Qt::SkipEmptyParts); // Use RegEx to split on space OR comma
+        QStringList addressList = addressesValue.split(QRegularExpression("[ ,]"), Qt::SkipEmptyParts); // Use QRegularExpression for future compatibility
         qDebug() << "Split address list size:" << addressList.size();
 
         for (const QString& arg : addressList) {
@@ -478,15 +478,13 @@ int main(int argc, char *argv[])
                     core.selectCanBoardsByAddresses(boardAddresses);
                     // Get the updated list from the core's downloader
                     QList<sBoard> selectedBoards = core.getSelectedCanBoards();
-                    int selectedCount = 0;
-                    for (const auto& b : selectedBoards) {
-                        qDebug() << "CAN board bus:" << b.bus << "pid:" << b.pid << "selected:" << b.selected;
-                        if (b.selected) selectedCount++;
-                    }
-                    if (selectedCount == 0) {
+                    if (selectedBoards.size() == 0) {
                         qDebug() << "ERROR: No CAN boards selected for programming. Aborting.";
                         ret = -1;
                         break;
+                    }
+                    for (const auto& b : selectedBoards) {
+                        qDebug() << "CAN board bus:" << b.bus << "pid:" << b.pid << "selected:" << b.selected;
                     }
                     QString resultString;
                     QList<sBoard> resultCanBoards;
@@ -2216,8 +2214,7 @@ int verifyOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QS
     else
     {
         if(verbosity >= 1) qDebug() << "No boards Found";
-        snprintf(notfound, sizeof(notfound), "%s: cannot find it", board.toStdString().c_str());
-        qDebug() << notfound;
+        qDebug() << board << ": cannot find it";
     }
 
     return ret;
