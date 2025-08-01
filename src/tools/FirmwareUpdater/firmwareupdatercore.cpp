@@ -1218,19 +1218,18 @@ void FirmwareUpdaterCore::bootFromUpdater()
 void FirmwareUpdaterCore::selectCanBoardsByAddresses(const std::vector<std::pair<int, int>>& addresses)
 {
     mutex.lock();
+    QSet<QPair<int, int>> addresses_set;
+    for (const auto& addr : addresses) {
+        addresses_set.insert(qMakePair(addr.first, addr.second));
+    }
     for (int i = 0; i < downloader.board_list_size; ++i) {
-        downloader.board_list[i].selected = false;
-        for (const auto& addr : addresses) {
-            if (downloader.board_list[i].bus == addr.first &&
-                downloader.board_list[i].pid == addr.second) {
-                downloader.board_list[i].selected = true;
-            }
-        }
+        downloader.board_list[i].selected = addresses_set.contains(qMakePair(downloader.board_list[i].bus, downloader.board_list[i].pid));
     }
     mutex.unlock();
 }
 
-QList<sBoard> FirmwareUpdaterCore::getSelectedCanBoards() const {
+QList<sBoard> FirmwareUpdaterCore::getSelectedCanBoards() {
+    QMutexLocker locker(&mutex);
     QList<sBoard> result;
     for (int i = 0; i < downloader.board_list_size; ++i) {
         if (downloader.board_list[i].selected)

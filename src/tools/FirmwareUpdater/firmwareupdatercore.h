@@ -60,7 +60,7 @@ public:
 
     cDownloader *getDownloader();
     void selectCanBoardsByAddresses(const std::vector<std::pair<int, int>>& addresses);
-    QList<sBoard> getSelectedCanBoards() const;
+    QList<sBoard> getSelectedCanBoards();
 
 
 private:

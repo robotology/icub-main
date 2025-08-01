@@ -2178,7 +2178,6 @@ int verifyOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QS
     int ret = 2;
 
     const bool forceMaintenance = true;
-    char notfound[256] = {0};
 
     int boards = core->connectTo(device, id);
 
@@ -2199,8 +2198,7 @@ int verifyOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QS
                 if(canBoards.count() <= 0)
                 {
                     if(verbosity >= 1) qDebug() <<  retString;
-                    snprintf(notfound, sizeof(notfound), "%s: no can board beneath", board.toStdString().c_str());
-                    qDebug() << notfound;
+                    qDebug() << QString("%1: no can board beneath").arg(board);
                 }
                 else
                 {
@@ -2313,8 +2311,7 @@ int queryOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QSt
                 if(canBoards.count() <= 0)
                 {
                     if(verbosity >= 1) qDebug() <<  retString;
-                    snprintf(notfound, sizeof(notfound), "%s: no can board beneath", board.toStdString().c_str());
-                    qDebug() << notfound;
+                    qDebug() << board << ": no can board beneath";
                 }
                 else
                 {
@@ -2332,8 +2329,7 @@ int queryOnThirdLevel_CANunderETH(FirmwareUpdaterCore *core, QString device, QSt
     else
     {
         if(verbosity >= 1) qDebug() << "No boards Found";
-        snprintf(notfound, sizeof(notfound), "%s: cannot find it", board.toStdString().c_str());
-        qDebug() << notfound;
+        qDebug() << board << ": cannot find it";
     }
 
     return ret;
