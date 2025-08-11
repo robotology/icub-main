@@ -1671,7 +1671,7 @@ bool Parser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<Joi
     return true;
 }
 
-bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts, int defaultVelocityTimeout)
+bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts, int defaultTimeout)
 {
     if(!checkAndSetVectorSize(timeouts, _njoints, "parseTimeoutsGroup"))
         return false;
@@ -1691,7 +1691,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     {
         yWarning() << "embObjMC BOARD " << _boardname << " no velocity parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
         for(i=0; i<_njoints; i++)
-            timeouts[i].velocity_ref = 100;
+            timeouts[i].velocity_ref = defaultTimeout;
     }
     else
     {
@@ -1704,7 +1704,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     {
         yWarning() << "embObjMC BOARD " << _boardname << " no current parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
         for(i=0; i<_njoints; i++)
-            timeouts[i].current_ref = 100;        
+            timeouts[i].current_ref = defaultTimeout;        
     }
     else
     {
@@ -1717,7 +1717,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     {
         yWarning() << "embObjMC BOARD " << _boardname << " no pwm parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
         for(i=0; i<_njoints; i++)
-            timeouts[i].pwm_ref = 100;
+            timeouts[i].pwm_ref = defaultTimeout;
     }
     else
     {
@@ -1730,7 +1730,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     {
         yWarning() << "embObjMC BOARD " << _boardname << " no torque parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
         for(i=0; i<_njoints; i++)
-            timeouts[i].torque_ref = 100;
+            timeouts[i].torque_ref = defaultTimeout;
     }
     else
     {
@@ -1743,7 +1743,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     {
         yWarning() << "embObjMC BOARD " << _boardname << " no torque_measure parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
         for(i=0; i<_njoints; i++)
-            timeouts[i].torque_fbk = 100;
+            timeouts[i].torque_fbk = defaultTimeout;
     }
     else
     {

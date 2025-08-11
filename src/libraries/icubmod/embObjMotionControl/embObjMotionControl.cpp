@@ -1043,11 +1043,17 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             _temperatureSensorsVector.at(j) = std::make_unique<eomc::TemperatureSensorNONE>();
         }
     }
-    
 
+    int defaultTimeout = 100;
+
+    if (this->serviceConfig.ethservice.configuration.type == eomn_serv_MC_advfoc)
+    {
+        // in this case the default timeout is 100ms
+        defaultTimeout = 300;
+    }
 
     /////// [TIMEOUTS]
-    if(! _mcparser->parseTimeoutsGroup(config, _timeouts, 1000 /*defaultVelocityTimeout*/))
+    if(! _mcparser->parseTimeoutsGroup(config, _timeouts, defaultTimeout))
         return false;
 
 
