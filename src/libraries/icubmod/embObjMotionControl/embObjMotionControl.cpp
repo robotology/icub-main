@@ -1048,7 +1048,8 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
     if (this->serviceConfig.ethservice.configuration.type == eomn_serv_MC_advfoc)
     {
-        // in this case the default timeout is 100ms
+        // temporary workaround
+        // in this case the default timeout is 300 ms because there is some lag in AMC
         defaultTimeout = 300;
     }
 

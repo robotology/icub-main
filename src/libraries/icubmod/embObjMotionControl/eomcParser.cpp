@@ -1689,7 +1689,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     xtmp.clear();
     if (!extractGroup(timeoutsGroup, xtmp, "velocity", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no velocity parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
+        yWarning() << "embObjMC BOARD " << _boardname << " no velocity parameter found in TIMEOUTS group in motion control config file, using default = " << defaultTimeout << " ms.";
         for(i=0; i<_njoints; i++)
             timeouts[i].velocity_ref = defaultTimeout;
     }
@@ -1702,7 +1702,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     xtmp.clear();
     if (!extractGroup(timeoutsGroup, xtmp, "current", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no current parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
+        yWarning() << "embObjMC BOARD " << _boardname << " no current parameter found in TIMEOUTS group in motion control config file, using default = " << defaultTimeout << " ms.";
         for(i=0; i<_njoints; i++)
             timeouts[i].current_ref = defaultTimeout;        
     }
@@ -1715,7 +1715,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     xtmp.clear();
     if (!extractGroup(timeoutsGroup, xtmp, "pwm", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no pwm parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
+        yWarning() << "embObjMC BOARD " << _boardname << " no pwm parameter found in TIMEOUTS group in motion control config file, using default = " << defaultTimeout << " ms.";
         for(i=0; i<_njoints; i++)
             timeouts[i].pwm_ref = defaultTimeout;
     }
@@ -1728,7 +1728,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     xtmp.clear();
     if (!extractGroup(timeoutsGroup, xtmp, "torque", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no torque parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
+        yWarning() << "embObjMC BOARD " << _boardname << " no torque parameter found in TIMEOUTS group in motion control config file, using default = " << defaultTimeout << " ms.";
         for(i=0; i<_njoints; i++)
             timeouts[i].torque_ref = defaultTimeout;
     }
@@ -1741,7 +1741,7 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
     xtmp.clear();
     if (!extractGroup(timeoutsGroup, xtmp, "torque_measure", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no torque_measure parameter found in TIMEOUTS group in motion control config file, using default = 100 ms.";
+        yWarning() << "embObjMC BOARD " << _boardname << " no torque_measure parameter found in TIMEOUTS group in motion control config file, using default = " << defaultTimeout << " ms.";
         for(i=0; i<_njoints; i++)
             timeouts[i].torque_fbk = defaultTimeout;
     }
