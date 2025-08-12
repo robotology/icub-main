@@ -1043,11 +1043,18 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             _temperatureSensorsVector.at(j) = std::make_unique<eomc::TemperatureSensorNONE>();
         }
     }
-    
 
+    int defaultTimeout = 100;
+
+    if (this->serviceConfig.ethservice.configuration.type == eomn_serv_MC_advfoc)
+    {
+        // temporary workaround
+        // in this case the default timeout is 300 ms because there is some lag in AMC
+        defaultTimeout = 300;
+    }
 
     /////// [TIMEOUTS]
-    if(! _mcparser->parseTimeoutsGroup(config, _timeouts, 1000 /*defaultVelocityTimeout*/))
+    if(! _mcparser->parseTimeoutsGroup(config, _timeouts, defaultTimeout))
         return false;
 
 
@@ -1406,7 +1413,11 @@ bool embObjMotionControl::init()
 
 
         jconfig.maxvelocityofjoint = S_32(_measureConverter->posA2E(_jointsLimits[logico].velMax, fisico)); //icubdeg/s
-        jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].velocity);
+        jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].velocity_ref);
+        jconfig.currentsetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].current_ref);
+        jconfig.openloopsetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].pwm_ref);
+        jconfig.torquesetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].torque_ref);
+        jconfig.torquefeedbacktimeout = (eOmeas_time_t) U_16(_timeouts[logico].torque_fbk);
 
         jconfig.jntEncoderResolution = _jointEncs[logico].resolution;
         jconfig.jntEncoderType = _jointEncs[logico].type;

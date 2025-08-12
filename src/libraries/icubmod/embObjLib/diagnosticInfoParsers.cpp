@@ -815,6 +815,28 @@ void MotionControlParser::parseInfo()
                                         );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
+        
+        case eoerror_value_MC_ref_setpoint_timeout:
+        {
+            uint16_t joint_num = m_dnginfo.param16;
+            int16_t timeout_type = m_dnginfo.param64 & 0xff;
+            
+            char* timeout_type_str = 0;
+            
+            switch(timeout_type)
+            {
+                case eoerror_value_MC_ref_timeout_torque:  timeout_type_str = "TORQUE";  break;
+                case eoerror_value_MC_ref_timeout_current: timeout_type_str = "CURRENT"; break;
+                case eoerror_value_MC_ref_timeout_pwm:     timeout_type_str = "PWM";     break;
+                default: timeout_type_str = "UNKNOWN"; break;
+            }
+
+            m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
+            
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d)). The board isn't receiving %s reference setpoint commands and has been faulted to prevent damage.",
+                     m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, timeout_type_str);
+            m_dnginfo.baseInfo.finalMessage.append(str);
+        } break;
 
         case eoerror_value_MC_motor_tdb_not_reading:
         {
