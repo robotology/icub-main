@@ -328,20 +328,19 @@ QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id, bool isMultiCore, eO
     case uprot_proc_Updater:
         return "eUpdater";
     case uprot_proc_Application00:
-        if (((boardtype == eobrd_ethtype_amcfoc) || (boardtype == eobrd_ethtype_amc)) && isMultiCore)
+        if (isMultiCore)
             return "app.yri" ;
         else
             return "eApplication";
     case uprot_proc_Application01:
-        if (((boardtype == eobrd_ethtype_amcfoc) || (boardtype == eobrd_ethtype_amc)) && isMultiCore)
+        if (isMultiCore)
             return "app.mot" ;
         else
-            return "eApplication_core_1";
+            return "error";
     case uprot_proc_ApplPROGupdater:
         return "eApplPROGupdater";
     default:
         return "None";
-        break;
     }
 }
 
