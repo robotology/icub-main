@@ -328,15 +328,15 @@ QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id, bool isMultiCore, eO
     case uprot_proc_Updater:
         return "eUpdater";
     case uprot_proc_Application00:
-        if (isMultiCore)
+        if (eoboards_is_MC_board(eoboards_ethtype2type(boardtype)) && isMultiCore)
             return "app.yri" ;
         else
             return "eApplication";
     case uprot_proc_Application01:
-        if (isMultiCore)
+        if (eoboards_is_MC_board(eoboards_ethtype2type(boardtype)) && isMultiCore)
             return "app.mot" ;
         else
-            return "error";
+            return "eApplication_core_1";
     case uprot_proc_ApplPROGupdater:
         return "eApplPROGupdater";
     default:
