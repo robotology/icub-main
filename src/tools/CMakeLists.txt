@@ -24,7 +24,6 @@ if(ICUB_USE_Qt5)
      message(STATUS "GSL not found")
    endif()
 
-   add_subdirectory(frameGrabberGui2)
    add_subdirectory(skinManagerGui)
    add_subdirectory(FirmwareUpdater)
 else()
