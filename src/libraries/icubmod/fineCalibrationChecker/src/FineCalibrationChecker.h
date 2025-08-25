@@ -52,7 +52,7 @@ class FineCalibrationChecker : public yarp::dev::DeviceDriver,
 {
 public:
     // Enum for device status
-    enum class deviceStatus 
+    enum class deviceStatus
     {
         INITIALIZED = 0,
         OPENED = 1,
@@ -100,15 +100,16 @@ public:
 
 private:
     // Private members
-    
+
     // Configuration parameters
     std::string _portPrefix = "/fineCalibrationChecker";
     std::string _robotName= "";
     std::string _deviceName= "fineCalibrationChecker";
     std::string _remoteRawValuesPort = "";
-    
+    bool _withGui = false;
+
     deviceStatus _deviceStatus = deviceStatus::NONE;
-    
+
     yarp::os::Bottle _axesNamesList = yarp::os::Bottle();
     yarp::os::Bottle _goldPositionsList = yarp::os::Bottle();
     yarp::os::Bottle _encoderResolutionsList = yarp::os::Bottle();
@@ -128,7 +129,7 @@ private:
         yarp::dev::IMotor* _imot { nullptr };
         yarp::dev::IEncoders* _ienc { nullptr };
     } remappedControlBoardInterfaces;
-    
+
     iCub::debugLibrary::IRawValuesPublisher* _iravap;
 
     // Client drivers to communicate with interfaces
