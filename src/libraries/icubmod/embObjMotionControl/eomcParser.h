@@ -407,6 +407,7 @@ public:
 
 typedef struct
 {
+    float kbemf; // optional
     bool hasHallSensor;
     bool hasTempSensor;
     bool hasRotorEncoder;
