@@ -329,12 +329,12 @@ QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id, bool isMultiCore)
         return "eUpdater";
     case uprot_proc_Application00:
         if (isMultiCore)
-            return "app.yri" ;
+            return "appl.yri" ;
         else
             return "eApplication";
     case uprot_proc_Application01:
         if (isMultiCore)
-            return "app.mot" ;
+            return "appl.mot" ;
         else
             return "eApplication_core_1";
     case uprot_proc_ApplPROGupdater:
