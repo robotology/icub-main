@@ -1497,12 +1497,12 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
         //return false;
         yWarning() << "In " << _boardname << " there isn't " << groupName << ". Kbemf failed. By default Kbemf is set to 0" ;
         for (i = 0; i < (unsigned)_njoints; i++)
-            Kbemf[i] = 0;
+            foc_based_info[i].kbemf = 0.0f;
     }
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            Kbemf[i - 1] = xtmp.get(i).asFloat32();
+            foc_based_info[i-1].kbemf = xtmp.get(i).asFloat32();
     }
 
     if (!extractGroup(focGroup, xtmp, "RotorIndexOffset", "RotorIndexOffset", _njoints))

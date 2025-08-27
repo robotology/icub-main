@@ -1486,6 +1486,7 @@ bool embObjMotionControl::init()
         motor_cfg.verbose = _foc_based_info[logico].verbose;
         motor_cfg.motorPoles = _foc_based_info[logico].motorPoles;
         motor_cfg.rotorIndexOffset = _foc_based_info[logico].rotorIndexOffset;
+        motor_cfg.Kbemf = _foc_based_info[logico].kbemf;
         motor_cfg.rotorEncoderType = _motorEncs[logico].type;
         motor_cfg.pwmLimit =_rotorsLimits[logico].pwmMax;
         motor_cfg.temperatureLimit = (eOmeas_temperature_t) S_16(_temperatureSensorsVector.at(logico)->convertTempCelsiusToRaw(_temperatureLimits.at(logico).hardwareTemperatureLimit)); //passing raw value not in degree
