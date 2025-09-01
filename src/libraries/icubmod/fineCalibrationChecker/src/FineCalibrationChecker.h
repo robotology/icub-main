@@ -43,7 +43,8 @@
 
 struct ItemData {
     std::string name;
-    int64_t val1, val2, val3, val4;
+    int64_t val1, val2, val3;
+    double val4;
 };
 
 class FineCalibrationChecker : public yarp::dev::DeviceDriver,
@@ -114,6 +115,7 @@ private:
     yarp::os::Bottle _goldPositionsList = yarp::os::Bottle();
     yarp::os::Bottle _encoderResolutionsList = yarp::os::Bottle();
     yarp::os::Bottle _calibrationDeltasList = yarp::os::Bottle();
+    yarp::os::Bottle _axesSignsList = yarp::os::Bottle();
 
     std::vector<std::string> _robotSubpartsWrapper = {"setup_mc", "head", "left_arm", "right_arm", "torso", "left_leg", "right_leg"};
     std::map<std::string, std::vector<std::int32_t>> rawDataValuesMap;
@@ -130,17 +132,21 @@ private:
         yarp::dev::IEncoders* _ienc { nullptr };
     } remappedControlBoardInterfaces;
 
-    iCub::debugLibrary::IRawValuesPublisher* _iravap;
+    struct
+    {
+        yarp::dev::IMultipleWrapper* _imultwrap{ nullptr };
+        iCub::debugLibrary::IRawValuesPublisher* _iravap { nullptr };
+    } remappedRawValuesPublisherInterfaces;
 
     // Client drivers to communicate with interfaces
     std::unique_ptr<yarp::dev::PolyDriver> _remappedControlBoardDevice;
-    std::unique_ptr<yarp::dev::PolyDriver> _rawValuesPublisherDevice;
+    std::unique_ptr<yarp::dev::PolyDriver> _remappedRawValuesPublisherDevice;
 
     void evaluateHardStopPositionDelta(const std::string& key, const std::string& outputFileName);
     void generateOutputImage(int frameWidth, int frameHeight, const std::vector<ItemData>& items);
 
     // Utility methods
-    cv::Scalar getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2);
+    cv::Scalar getColorForDelta(double delta, double threshold_1, double threshold_2);
 
     bool attachToAllControlBoards(const yarp::dev::PolyDriverList& polyList);
 };

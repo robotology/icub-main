@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
  * Copyright (C) 2020 iCub Tech - Istituto Italiano di Tecnologia
  * Author:  Marco Accame
  * email:   marco.accame@iit.it
