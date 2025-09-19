@@ -51,7 +51,7 @@ public:
     // This should be the name of the actuator at index sens_index, i.e. serviceConfig.idList[sens_index].
     virtual bool getEncoderArrayName(size_t sens_index, std::string &name) const override;
 
-    // TODO: In this case, if we keep the analysis done around this service, out element should contain the position of the actuator at sens_index, i.e. m_data[sens_index]. 
+    // In this case, if we keep the analysis done around this service, out element should contain the position of the actuator at sens_index, i.e. m_data[sens_index]. 
     // Thus, it is actually a single value, not a vector of 2 or 4 elements.
     virtual bool getEncoderArrayMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
 
@@ -72,7 +72,7 @@ private:
     servConfigPOS_t serviceConfig;
     yarp::dev::embObjDevPrivData m_PDdevice;
     mutable std::mutex m_mutex;
-    yarp::sig::Vector m_data; //TODO: this should be a vector of 2 or 4 elements, depending on the device, if related to abduction or open-close. Each number is the position of the actuator.
+    yarp::sig::Vector m_data; //this should be a vector of 2 or 4 elements, depending on the device, if related to abduction or open-close. Each number is the position of the actuator.
 
 
 private:
