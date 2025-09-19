@@ -360,14 +360,12 @@ size_t embObjPOS::getNrOfEncoderArrays() const
 
 yarp::dev::MAS_status embObjPOS::getEncoderArrayStatus(size_t sens_index) const
 {
-    //TODO: maybe we should add a mutex for each method which write data to be thread safe
     if (sens_index >= serviceConfig.idList.size()) return yarp::dev::MAS_UNKNOWN; //REV-VALE:this is wrong. I guess it is a copy-paste error. It should be 4 or the max size of sensor we can manage. Maybe in fw-shared there is already a constant for this. defined.
     return yarp::dev::MAS_OK;
 }
 
 bool embObjPOS::getEncoderArrayName(size_t sens_index, std::string &name) const
 {
-    //TODO: maybe we should add a mutex for each method which write data to be thread safe
     if (sens_index >= serviceConfig.idList.size()) return false; 
     name = serviceConfig.idList[sens_index];
     return true;
@@ -390,7 +388,7 @@ bool embObjPOS::getEncoderArrayMeasure(size_t sens_index, yarp::sig::Vector& out
 size_t embObjPOS::getEncoderArraySize(size_t sens_index) const
 {
     if (sens_index >= serviceConfig.idList.size()) return 0;
-    return 1; //TODO: this should return the size of data at index sens_index, which should actually be 1.
+    return 1; //this should return the size of data at index sens_index, which should actually be 1.
 }
 
 eth::iethresType_t embObjPOS::type()
