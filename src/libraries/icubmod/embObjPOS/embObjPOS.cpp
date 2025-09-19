@@ -356,9 +356,7 @@ yarp::dev::MAS_status embObjPOS::getEncoderArrayStatus(size_t sens_index) const
 bool embObjPOS::getEncoderArrayName(size_t sens_index, std::string &name) const
 {
     //TODO: maybe we should add a mutex for each method which write data to be thread safe
-    if (sens_index >= serviceConfig.idList.size()) return false; //REV-VALE: same as line 269
-    // TODO: we can think to add a name specific for the encoder array, such as "left_arm_pos4", cosidering that now we have the name of the 2/4 actuators which is stored in idList
-    // and not a name for the encoder array itself, which might have dimension 2 or 4, depeding if the device is related to the open-close or abductions.
+    if (sens_index >= serviceConfig.idList.size()) return false; 
     name = serviceConfig.idList[sens_index];
     return true;
 }
