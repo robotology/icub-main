@@ -71,7 +71,7 @@ private:
 
     servConfigPOS_t serviceConfig;
     yarp::dev::embObjDevPrivData m_PDdevice;
-    std::mutex m_mutex;
+    mutable std::mutex m_mutex;
     yarp::sig::Vector m_data; //TODO: this should be a vector of 2 or 4 elements, depending on the device, if related to abduction or open-close. Each number is the position of the actuator.
 
 

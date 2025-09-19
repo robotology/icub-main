@@ -261,28 +261,40 @@ bool embObjPOS::initRegulars(void)
 void embObjPOS::helper_remapperFromSensorToDataIndex(const uint32_t sensorId, uint32_t &dataIndex) const
 {
     /**
-     * This is the typedef enum present in EoBoards.h 
-     * that defines the index in the data vector of each finger position read by the POS service.
-     * We can use this function to remap the sensorId (which is the idList[] element) to the corresponding index in m_data[] vector.
-     * therefore we can get from the m_data[] vector the position of the sensor corresponding to the desired finger.
-     * This remapping is needed bacause the sensorId is always in a sequence ranges from 0 to n-1, where n is the number of enabled sensors,
-     * which is 4 for open-close and 2 for abduction, while the index in m_data[] vector is not in a sequence from 0 to n-1,
-     * but it is defined by the eObrd_portpos_t enum, which has some values not in sequence, e.g. the abductions.
-     * We copy here the enum for clarity:
+     * @brief Typedef enum from EoBoards.h defining finger-position indexes.
+     *
+     * This enumeration specifies the index in the @c m_data[] vector for each
+     * finger position read by the POS service. It is used to remap a
+     * @c sensorId (the @c idList[] element) to the corresponding index in
+     * @c m_data[] so the position of the sensor for the desired finger can be
+     * retrieved.
+     *
+     * The remapping is required because:
+     * - The @c sensorId sequence always runs from 0 to n-1, where n is the number
+     *   of enabled sensors (4 for open/close, 2 for abduction).
+     * - The indexes in @c m_data[] are defined by ::eObrd_portpos_t and are not
+     *   guaranteed to be sequential.
+     *
+     * Some enum values are intentionally non-sequential (e.g., abductions).
+     * For clarity, the enum is reproduced below:
+     *
+     * @code
      * typedef enum
-        {
-            eobrd_portpos_hand_thumb_oc         = 0,
-            eobrd_portpos_hand_index_oc         = 1,
-            eobrd_portpos_hand_middle_oc        = 2,
-            eobrd_portpos_hand_ring_pinky_oc    = 3,
-            eobrd_portpos_hand_thumb_add        = 4,
-            eobrd_portpos_hand_tbd              = 5,
-            eobrd_portpos_hand_index_add        = 6,    
-            
-            eobrd_portpos_none                  = 31,    // as ... eobrd_port_none
-            eobrd_portpos_unknown               = 30     // as ... eobrd_port_unknown
-        } eObrd_portpos_t;
-    */
+     * {
+     *     eobrd_portpos_hand_thumb_oc      = 0,
+     *     eobrd_portpos_hand_index_oc      = 1,
+     *     eobrd_portpos_hand_middle_oc     = 2,
+     *     eobrd_portpos_hand_ring_pinky_oc = 3,
+     *     eobrd_portpos_hand_thumb_add     = 4,
+     *     eobrd_portpos_hand_tbd           = 5,
+     *     eobrd_portpos_hand_index_add     = 6,
+     *
+     *     eobrd_portpos_none               = 31,  //!< Same as eobrd_port_none
+     *     eobrd_portpos_unknown            = 30   //!< Same as eobrd_port_unknown
+     * } eObrd_portpos_t;
+     * @endcode
+     */
+
     
     // First we need to understand if the sensorId is related to open-close or abduction.
     // We can do this by checking the size of idList[] vector, which is 4 for open-close and 2 for abduction.
@@ -364,12 +376,14 @@ bool embObjPOS::getEncoderArrayName(size_t sens_index, std::string &name) const
 bool embObjPOS::getEncoderArrayMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
     // we cannot receice an index higher that the number of enabled sensors
-    if (sens_index >= serviceConfig.idList.size()) return false; 
+    if (sens_index >= serviceConfig.idList.size()) return false;
+    std::lock_guard<std::mutex> lock(m_mutex);
     timestamp = yarp::os::Time::now();
     // we need to remap the sens_index, which is the index in idList[], to the corresponding index in m_data[] vector
     uint32_t dataIndex = 0;
     helper_remapperFromSensorToDataIndex(static_cast<uint32_t>(sens_index), dataIndex);
-    out = m_data[dataIndex]; //TODO: this should be a vector of 2 or 4 elements, depending on the device, if related to abduction or open-close. Each number is the position of the actuator.
+    out.resize(1);
+    out[0] = m_data[dataIndex];
     return true;
 }
 
