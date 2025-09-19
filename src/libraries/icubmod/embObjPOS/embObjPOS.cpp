@@ -10,14 +10,17 @@
 #include <string>
 #include <iostream>
 #include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 // Yarp Includes
 #include <yarp/os/Time.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/os/NetType.h>
+
+// external libraries includes
 #include <ace/config.h>
 #include <ace/Log_Msg.h>
 
@@ -25,27 +28,27 @@
 // specific to this device driver.
 #include <embObjPOS.h>
 #include <ethManager.h>
-#include <yarp/os/LogStream.h>
 #include "EoAnalogSensors.h"
 #include "EOnv_hid.h"
-
 #include "EoProtocol.h"
 #include "EoProtocolMN.h"
 #include "EoProtocolAS.h"
 
-#include <yarp/os/NetType.h>
 
 #ifdef WIN32
 #pragma warning(once:4355)
 #endif
 
-
+namespace {
+    YARP_LOG_COMPONENT(EMBOBJPOS, "yarp.dev.embObjPOS")
+}
 
 using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-
+constexpr int POS_OPEN_CLOSE_SENSORS_COUNT = 4;
+constexpr int POS_ABDUCTION_SENSORS_COUNT = 2;
 
 bool embObjPOS::fromConfig(yarp::os::Searchable &config, servConfigPOS_t &serviceConfig)
 {
@@ -81,28 +84,31 @@ bool embObjPOS::open(yarp::os::Searchable &config)
 {
     // 1) prepare eth service verifing if the eth manager is available and parsing info about the eth board.
 
-    yInfo() << "embObjPOS::open(): preparing ETH resource";
+    yCInfo(EMBOBJPOS) << "embObjPOS::open(): preparing ETH resource";
 
     if(! m_PDdevice.prerareEthService(config, this))
         return false;
 
-    yInfo() << "embObjPOS::open(): browsing xml files which describe the service";
+    yCInfo(EMBOBJPOS) << "embObjPOS::open(): browsing xml files which describe the service";
 
     // 2) read stuff from config file
-    servConfigPOS_t serviceConfig;
+    serviceConfig = {};
     if(!fromConfig(config, serviceConfig))
     {
-        yError() << "embObjPOS missing some configuration parameter. Check logs and your config file.";
+        yCError(EMBOBJPOS) << "embObjPOS missing some configuration parameter. Check logs and your config file.";
         return false;
     }
 
     // 3) prepare data vector
     {
-        m_data.resize(eOas_pos_data_maxnumber, 0.0);
+        // for now resize to max number of pos sensors 
+        //--> then we will resize to the number of enabled sensors 
+        //--> we can eventually use here reserve to max number and resize to enabled number
+        m_data.resize(eOas_pos_data_maxnumber, 0.0); 
     }
 
 
-    yInfo() << "embObjPOS::open(): verify the presence of the board and if its protocol version is correct";
+    yCInfo(EMBOBJPOS) << "embObjPOS::open(): verify the presence of the board and if its protocol version is correct";
 
     // 4) verify analog sensor protocol and then verify-Activate the POS service
     if(!m_PDdevice.res->verifyEPprotocol(eoprot_endpoint_analogsensors))
@@ -112,22 +118,19 @@ bool embObjPOS::open(yarp::os::Searchable &config)
     }
 
 
-    yInfo() << "embObjPOS::open(): verify and activate the POS service";
+    yCInfo(EMBOBJPOS) << "embObjPOS::open(): verify and activate the POS service";
 
     const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
 
     if(!m_PDdevice.res->serviceVerifyActivate(eomn_serv_category_pos, servparam, 5.0))
     {
-        yError() << m_PDdevice.getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate() ";
+        yCError(EMBOBJPOS) << m_PDdevice.getBoardInfo() << "open() has an error in call of ethResources::serviceVerifyActivate()";
         cleanup();
         return false;
     }
 
 
-    //printServiceConfig();
-
-
-    yInfo() << "embObjPOS::open(): configure the POS service";
+    yCInfo(EMBOBJPOS) << "embObjPOS::open(): configure the POS service";
 
     if(false == sendConfig2boards(serviceConfig))
     {
@@ -135,7 +138,7 @@ bool embObjPOS::open(yarp::os::Searchable &config)
         return false;
     }
 
-    yInfo() << "embObjPOS::open(): impose the network variable which the ETH bord must stream up";
+    yCInfo(EMBOBJPOS) << "embObjPOS::open(): impose the network variable which the ETH bord must stream up";
 
     // Set variable to be signaled
     if(false == initRegulars())
@@ -145,11 +148,11 @@ bool embObjPOS::open(yarp::os::Searchable &config)
     }
 
 
-    yInfo() << "embObjPOS::open(): start the POS service";
+    yCInfo(EMBOBJPOS) << "embObjPOS::open(): start the POS service";
 
     if(!m_PDdevice.res->serviceStart(eomn_serv_category_pos))
     {
-        yError() << m_PDdevice.getBoardInfo() << "open() fails to start as service.... cannot continue";
+        yCError(EMBOBJPOS) << m_PDdevice.getBoardInfo() << "open() fails to start as service.... cannot continue";
         cleanup();
         return false;
     }
@@ -157,11 +160,11 @@ bool embObjPOS::open(yarp::os::Searchable &config)
     {
         if(m_PDdevice.isVerbose())
         {
-            yDebug() << m_PDdevice.getBoardInfo() << "open() correctly starts service";
+            yCDebug(EMBOBJPOS) << m_PDdevice.getBoardInfo() << "open() correctly starts service";
         }
     }
 
-    yInfo() << "embObjPOS::open(): start streaming of POS data";
+    yCInfo(EMBOBJPOS) << "embObjPOS::open(): start streaming of POS data";
 
     sendStart2boards();
 
@@ -181,13 +184,13 @@ bool embObjPOS::sendConfig2boards(servConfigPOS_t &serviceConfig)
 
     if(false == m_PDdevice.res->setcheckRemoteValue(id32, &cfg, 10, 0.010, 0.050))
     {
-        yError() << m_PDdevice.getBoardInfo() << "FATAL error in sendConfig2boards() while try to configure datarate=" << cfg.datarate;
+        yCError(EMBOBJPOS) << m_PDdevice.getBoardInfo() << "FATAL error in sendConfig2boards() while try to configure datarate=" << cfg.datarate;
         return false;
     }
 
     if(m_PDdevice.isVerbose())
     {
-        yDebug() << m_PDdevice.getBoardInfo() << ": sendConfig2boards() correctly configured boards with datarate=" << cfg.datarate;
+        yCDebug(EMBOBJPOS) << m_PDdevice.getBoardInfo() << ": sendConfig2boards() correctly configured boards with datarate=" << cfg.datarate;
     }
 
     return true;
@@ -204,13 +207,13 @@ bool embObjPOS::sendStart2boards(void)
 
     if(false == m_PDdevice.res->setcheckRemoteValue(id32, &enable, 10, 0.010, 0.050))
     {
-        yError() << m_PDdevice.getBoardInfo() << "FATAL error in sendStart2boards() while try to enable the boards transmission";
+        yCError(EMBOBJPOS) << m_PDdevice.getBoardInfo() << "FATAL error in sendStart2boards() while try to enable the boards transmission";
         return false;
     }
 
     if(m_PDdevice.isVerbose())
     {
-        yDebug() << m_PDdevice.getBoardInfo() << ": sendStart2boards() correctly enabled the boards transmission";
+        yCDebug(EMBOBJPOS) << m_PDdevice.getBoardInfo() << ": sendStart2boards() correctly enabled the boards transmission";
     }
 
     return true;
@@ -237,85 +240,157 @@ bool embObjPOS::initRegulars(void)
 
     if(false == m_PDdevice.res->serviceSetRegulars(eomn_serv_category_pos, id32v))
     {
-        yError() << m_PDdevice.getBoardInfo() << "initRegulars() fails to add its variables to regulars: cannot proceed any further";
+        yCError(EMBOBJPOS) << m_PDdevice.getBoardInfo() << "initRegulars() fails to add its variables to regulars: cannot proceed any further";
         return false;
     }
 
     if(m_PDdevice.isVerbose())
     {
-        yDebug() << m_PDdevice.getBoardInfo() << "initRegulars() added" << id32v.size() << "regular rops ";
-        char nvinfo[128];
+        yCDebug(EMBOBJPOS) << m_PDdevice.getBoardInfo() << "initRegulars() added" << id32v.size() << "regular rops ";
+        char nvinfo[128] = {};
         for (size_t r = 0; r<id32v.size(); r++)
         {
             uint32_t item = id32v.at(r);
             eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
-            yDebug() << "\t it added regular rop for" << nvinfo;
+            yCDebug(EMBOBJPOS) << "\t it added regular rop for" << nvinfo;
         }
     }
-
-
+    
     return true;
 }
 
-
-/*! Read a vector from the sensor.
- * @param out a vector containing the sensor's last readings.
- * @return AS_OK or return code. AS_TIMEOUT if the sensor timed-out.
- **/
-
-int embObjPOS::read(yarp::sig::Vector &out)
+void embObjPOS::helper_remapperFromSensorToDataIndex(const uint32_t sensorId, uint32_t &dataIndex) const
 {
-    // This method gives the data, received from embedded boards, to the analogServer
+    /**
+     * @brief Typedef enum from EoBoards.h defining finger-position indexes.
+     *
+     * This enumeration specifies the index in the @c m_data[] vector for each
+     * finger position read by the POS service. It is used to remap a
+     * @c sensorId (the @c idList[] element) to the corresponding index in
+     * @c m_data[] so the position of the sensor for the desired finger can be
+     * retrieved.
+     *
+     * The remapping is required because:
+     * - The @c sensorId sequence always runs from 0 to n-1, where n is the number
+     *   of enabled sensors (4 for open/close, 2 for abduction).
+     * - The indexes in @c m_data[] are defined by ::eObrd_portpos_t and are not
+     *   guaranteed to be sequential.
+     *
+     * Some enum values are intentionally non-sequential (e.g., abductions).
+     * For clarity, the enum is reproduced below:
+     *
+     * @code
+     * typedef enum
+     * {
+     *     eobrd_portpos_hand_thumb_oc      = 0,
+     *     eobrd_portpos_hand_index_oc      = 1,
+     *     eobrd_portpos_hand_middle_oc     = 2,
+     *     eobrd_portpos_hand_ring_pinky_oc = 3,
+     *     eobrd_portpos_hand_thumb_add     = 4,
+     *     eobrd_portpos_hand_tbd           = 5,
+     *     eobrd_portpos_hand_index_add     = 6,
+     *
+     *     eobrd_portpos_none               = 31,  //!< Same as eobrd_port_none
+     *     eobrd_portpos_unknown            = 30   //!< Same as eobrd_port_unknown
+     * } eObrd_portpos_t;
+     * @endcode
+     */
 
-    if(!m_PDdevice.isOpen())
-        return AS_ERROR ;
+    
+    // First we need to understand if the sensorId is related to open-close or abduction.
+    // We can do this by checking the size of idList[] vector, which is 4 for open-close and 2 for abduction.
+    // We need to use a temporary variable to store the dataIndex, because it is passed by reference.
+    // and the enum has a different type than uint32_t.
 
+    eObrd_portpos_t portPosIndex = eobrd_portpos_unknown; // default value in case of error
+    if (serviceConfig.idList.size() == POS_OPEN_CLOSE_SENSORS_COUNT) // open-close
+    {
+        switch (sensorId)
+        {
+            case 0:
+                portPosIndex = eobrd_portpos_hand_thumb_oc;
+                break;
+            case 1:
+                portPosIndex = eobrd_portpos_hand_index_oc;
+                break;
+            case 2:
+                portPosIndex = eobrd_portpos_hand_middle_oc;
+                break;
+            case 3:
+                portPosIndex = eobrd_portpos_hand_ring_pinky_oc;
+                break;
+            default:
+                portPosIndex = eobrd_portpos_unknown; // error
+                break;
+        }
+    }
+    else if (serviceConfig.idList.size() == POS_ABDUCTION_SENSORS_COUNT) // abduction
+    {
+       switch (sensorId)
+        {
+            case 0:
+                portPosIndex = eobrd_portpos_hand_thumb_add;
+                break;
+            case 1:
+                portPosIndex = eobrd_portpos_hand_index_add;
+                break;
+            default:
+                portPosIndex = eobrd_portpos_unknown; // error
+                break;
+        }
+    }
+    else
+    {
+        portPosIndex = eobrd_portpos_unknown; // error
+    }
+
+    dataIndex = static_cast<uint32_t>(portPosIndex);
+}
+
+size_t embObjPOS::getNrOfEncoderArrays() const
+{
+    // this should return the number of sensors we wanna have per control boards
+    // e.g. currently POS service can manage up to 4 position sensors (2 for open/close and 2 for abduction)
+    // so we are returning the number of enabled sensors, i.e. 2 or 4, depending on the device
+    // differently, we can choose another approach, i.e. return 1, as the encoder array is a single entity, 
+    // which is actually the control board associated with the opened serivice
+    // and then getEncoderArraySize() should return 2 or 4, i.es the number of enabled sensors
+    yCDebug(EMBOBJPOS) << m_PDdevice.getBoardInfo() << "embObjPOS::getNrOfEncoderArrays called at timestamp=" << yarp::os::Time::now() << "returning" << serviceConfig.idList.size();
+    return serviceConfig.idList.size();
+}
+
+yarp::dev::MAS_status embObjPOS::getEncoderArrayStatus(size_t sens_index) const
+{
+    if (sens_index >= serviceConfig.idList.size()) return yarp::dev::MAS_UNKNOWN;
+    return yarp::dev::MAS_OK;
+}
+
+bool embObjPOS::getEncoderArrayName(size_t sens_index, std::string &name) const
+{
+    if (sens_index >= serviceConfig.idList.size()) return false; 
+    name = serviceConfig.idList[sens_index];
+    return true;
+}
+
+bool embObjPOS::getEncoderArrayMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+{
+    // we cannot receice an index higher that the number of enabled sensors
+    if (sens_index >= serviceConfig.idList.size()) return false;
     std::lock_guard<std::mutex> lock(m_mutex);
-
-    // errors are not handled for now... it'll always be OK!!
-    out=m_data;
-
-    return AS_OK;
+    timestamp = yarp::os::Time::now();
+    // we need to remap the sens_index, which is the index in idList[], to the corresponding index in m_data[] vector
+    uint32_t dataIndex = 0;
+    helper_remapperFromSensorToDataIndex(static_cast<uint32_t>(sens_index), dataIndex);
+    out.resize(1);
+    out[0] = m_data[dataIndex];
+    return true;
 }
 
-
-
-int embObjPOS::getState(int ch)
+size_t embObjPOS::getEncoderArraySize(size_t sens_index) const
 {
-    printf("getstate\n");
-    return AS_OK;
+    if (sens_index >= serviceConfig.idList.size()) return 0;
+    return 1; //this should return the size of data at index sens_index, which should actually be 1.
 }
-
-
-int embObjPOS::getChannels()
-{
-    return static_cast<int>(eOas_pos_data_maxnumber);
-}
-
-
-int embObjPOS::calibrateSensor()
-{
-    return AS_OK;
-}
-
-
-int embObjPOS::calibrateSensor(const yarp::sig::Vector& value)
-{
-    return AS_OK;
-}
-
-
-int embObjPOS::calibrateChannel(int ch)
-{
-    return AS_OK;
-}
-
-
-int embObjPOS::calibrateChannel(int ch, double v)
-{
-    return AS_OK;
-}
-
 
 eth::iethresType_t embObjPOS::type()
 {
@@ -326,7 +401,7 @@ eth::iethresType_t embObjPOS::type()
 bool embObjPOS::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
     // called by feat_manage_analogsensors_data() which is called by:
-    // eoprot_fun_UPDT_as_pos_status
+    // eoprot_fun_UPDT_as_pos_status()
     if(!m_PDdevice.isOpen())
         return false;
 
@@ -334,7 +409,7 @@ bool embObjPOS::update(eOprotID32_t id32, double timestamp, void* rxdata)
     uint32_t sizeOfData = pos_st_ptr->arrayofdata.head.size;
 
     if(sizeOfData>m_data.size())
-        yWarning() << m_PDdevice.getBoardInfo() << "In update function I received more data than I had been configured to store.My size is " << m_data.size() << "while I received " << sizeOfData << "values!";
+        yCWarning(EMBOBJPOS) << m_PDdevice.getBoardInfo() << "In update function I received more data than I had been configured to store.My size is " << m_data.size() << "while I received " << sizeOfData << "values!";
 
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -348,38 +423,15 @@ bool embObjPOS::update(eOprotID32_t id32, double timestamp, void* rxdata)
     return true;
 }
 
-
-
-
 bool embObjPOS::close()
 {
     cleanup();
     return true;
 }
 
-
-// void embObjPOS::printServiceConfig(void)
-// {
-//     char loc[20] = {0};
-//     char fir[20] = {0};
-//     char pro[20] = {0};
-//
-//     const char * boardname = (NULL != res) ? (res->getProperties().boardnameString.c_str()) : ("NOT-ASSIGNED-YET");
-//     const char * ipv4 = (NULL != res) ? (res->getProperties().ipv4addrString.c_str()) : ("NOT-ASSIGNED-YET");
-//
-//     parser->convert(serviceConfig.ethservice.configuration.data.as.mais.canloc, loc, sizeof(loc));
-//     parser->convert(serviceConfig.ethservice.configuration.data.as.mais.version.firmware, fir, sizeof(fir));
-//     parser->convert(serviceConfig.ethservice.configuration.data.as.mais.version.protocol, pro, sizeof(pro));
-//
-//     yInfo() << "The embObjPOS device using BOARD" << boardname << "w/ IP" << ipv4 << "has the following service config:";
-//     yInfo() << "- acquisitionrate =" << serviceConfig.acquisitionrate;
-//     yInfo() << "- MAIS named" << serviceConfig.nameOfMais << "@" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
-// }
-
-
 void embObjPOS::cleanup(void)
 {
-    m_PDdevice.cleanup(static_cast <eth::IethResource*> (this));
+    m_PDdevice.cleanup(static_cast<eth::IethResource*> (this));
 }
 
 // eof

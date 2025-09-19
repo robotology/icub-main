@@ -27,7 +27,6 @@
 // specific to this device driver.
 #include <embObjMais.h>
 #include <ethManager.h>
-#include <yarp/os/LogStream.h>
 #include "EoAnalogSensors.h"
 #include "EOnv_hid.h"
 
