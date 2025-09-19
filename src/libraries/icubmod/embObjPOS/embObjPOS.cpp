@@ -47,7 +47,8 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-
+constexpr int POS_OPEN_CLOSE_SENSORS_COUNT = 4;
+constexpr int POS_ABDUCTION_SENSORS_COUNT = 2;
 
 bool embObjPOS::fromConfig(yarp::os::Searchable &config, servConfigPOS_t &serviceConfig)
 {
@@ -246,7 +247,7 @@ bool embObjPOS::initRegulars(void)
     if(m_PDdevice.isVerbose())
     {
         yCDebug(EMBOBJPOS) << m_PDdevice.getBoardInfo() << "initRegulars() added" << id32v.size() << "regular rops ";
-        char nvinfo[128];
+        char nvinfo[128] = {};
         for (size_t r = 0; r<id32v.size(); r++)
         {
             uint32_t item = id32v.at(r);
@@ -302,7 +303,7 @@ void embObjPOS::helper_remapperFromSensorToDataIndex(const uint32_t sensorId, ui
     // and the enum has a different type than uint32_t.
 
     eObrd_portpos_t portPosIndex = eobrd_portpos_unknown; // default value in case of error
-    if (serviceConfig.idList.size() == 4) // open-close
+    if (serviceConfig.idList.size() == POS_OPEN_CLOSE_SENSORS_COUNT) // open-close
     {
         switch (sensorId)
         {
@@ -323,7 +324,7 @@ void embObjPOS::helper_remapperFromSensorToDataIndex(const uint32_t sensorId, ui
                 break;
         }
     }
-    else if (serviceConfig.idList.size() == 2) // abduction
+    else if (serviceConfig.idList.size() == POS_ABDUCTION_SENSORS_COUNT) // abduction
     {
        switch (sensorId)
         {
@@ -360,7 +361,7 @@ size_t embObjPOS::getNrOfEncoderArrays() const
 
 yarp::dev::MAS_status embObjPOS::getEncoderArrayStatus(size_t sens_index) const
 {
-    if (sens_index >= serviceConfig.idList.size()) return yarp::dev::MAS_UNKNOWN; //REV-VALE:this is wrong. I guess it is a copy-paste error. It should be 4 or the max size of sensor we can manage. Maybe in fw-shared there is already a constant for this. defined.
+    if (sens_index >= serviceConfig.idList.size()) return yarp::dev::MAS_UNKNOWN;
     return yarp::dev::MAS_OK;
 }
 
@@ -400,9 +401,7 @@ eth::iethresType_t embObjPOS::type()
 bool embObjPOS::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
     // called by feat_manage_analogsensors_data() which is called by:
-    // eoprot_fun_UPDT_as_pos_status
-    char nvinfo[128] = {};
-    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+    // eoprot_fun_UPDT_as_pos_status()
     if(!m_PDdevice.isOpen())
         return false;
 
