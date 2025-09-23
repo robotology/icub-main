@@ -573,7 +573,7 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                 // divided by the iCub degrees range and multiplied by 360 to convert it to degrees
                 // and then we add the home position to it
                 // This is the reason why we want the home position to be always positive at line 540
-                delta = static_cast<double>((goldPosition - rescaledPos) / (ICUB_DEGREES_RANGE/360)) + homePositions[i]; // Calculate the delta in degrees
+                                delta = static_cast<double>((goldPosition - rescaledPos) / (ICUB_DEGREES_RANGE/360.0)) + homePositions[i]; // Calculate the delta in degrees
                 calibrationDelta[i] = (axesSigns->get(i).asInt32() > 0) ? calibrationDelta[i] : -calibrationDelta[i]; // Apply the sign to the calibration delta
                 delta += calibrationDelta[i]; // Add the calibration delta to the delta
                 yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "HP:" << homePositions[i] << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
