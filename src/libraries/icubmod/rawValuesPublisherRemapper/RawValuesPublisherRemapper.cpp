@@ -240,8 +240,11 @@ bool RawValuesPublisherRemapper::getMetadataMap(iCub::rawValuesKeyMetadataMap& m
         {
             if (metamap.metadataMap.find(k) != metamap.metadataMap.end())
             {
-                yCDebug(RAWVALUESPUBLISHERREMAPPER) << "Key " << k << " already exists in the combined metadata map. Adding only values.";
-                // Append axesNames and rawValueNames to the existing entry
+                if(m_verbose)
+                {
+                    yCDebug(RAWVALUESPUBLISHERREMAPPER) << "Key " << k << " already exists in the combined metadata map. Adding only values.";
+                }
+                    // Append axesNames and rawValueNames to the existing entry
                 auto& existingMeta = metamap.metadataMap[k];
                 existingMeta.axesNames.insert(existingMeta.axesNames.end(), v.axesNames.begin(), v.axesNames.end());
                 existingMeta.rawValueNames.insert(existingMeta.rawValueNames.end(), v.rawValueNames.begin(), v.rawValueNames.end());
