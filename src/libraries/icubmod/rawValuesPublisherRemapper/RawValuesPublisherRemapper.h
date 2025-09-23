@@ -10,7 +10,6 @@
 #include <yarp/dev/IMultipleWrapper.h>
 #include "RawValuesPublisherRemapper_ParamsParser.h"
 
-using namespace iCub; 
 
 class RawValuesPublisherRemapper :
     public yarp::dev::DeviceDriver,
@@ -45,8 +44,8 @@ public:
     bool getRawData(std::string key, std::vector<std::int32_t> &data) override;
     bool getKeys(std::vector<std::string> &keys) override;
     int  getNumberOfKeys() override;
-    bool getMetadataMap(rawValuesKeyMetadataMap &metamap) override;
-    bool getKeyMetadata(std::string key, rawValuesKeyMetadata &meta) override;
+    bool getMetadataMap(iCub::rawValuesKeyMetadataMap &metamap) override;
+    bool getKeyMetadata(std::string key, iCub::rawValuesKeyMetadata &meta) override;
     bool getAxesNames(std::string key, std::vector<std::string> &axesNames) override;
 };
 

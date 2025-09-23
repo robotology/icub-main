@@ -445,7 +445,7 @@ bool FineCalibrationChecker::detachAll()
         yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Stopping the thread before detaching all devices";
         this->stop();
     }
-    if(!remappedControlBoardInterfaces._imultwrap->detachAll() && !remappedRawValuesPublisherInterfaces._imultwrap->detachAll())
+    if(!remappedControlBoardInterfaces._imultwrap->detachAll() || !remappedRawValuesPublisherInterfaces._imultwrap->detachAll())
     {
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Failed to detach all devices";
         return false;

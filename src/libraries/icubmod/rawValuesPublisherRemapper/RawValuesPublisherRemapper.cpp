@@ -127,36 +127,46 @@ bool RawValuesPublisherRemapper::getRawDataMap(std::map<std::string, std::vector
         // to avoid overwriting data from previous control boards
         // This is useful when multiple control boards publish
         // data under the same key
-        if (map.find(temp_map.begin()->first) != map.end())
+        for (const auto& [k, v] : temp_map)
         {
-            // Key already exists, append the values
-            map[temp_map.begin()->first].insert(map[temp_map.begin()->first].end(),
-                                                 temp_map.begin()->second.begin(),
-                                                 temp_map.begin()->second.end());
-        }
-        else // Key does not exist, insert the new key-value pair
-        {
-            map.insert(temp_map.begin(), temp_map.end());
-        }  
+            if (map.find(k) != map.end())
+            {   
+                // Key already exists, append values
+                yCDebug(RAWVALUESPUBLISHERREMAPPER) << "Key " << k << " already exists in the combined map. Appending values.";
+                map[k].insert(map[k].end(), v.begin(), v.end());
+            }
+            else
+            {
+                // Key does not exist, create new entry
+                map[k] = v;
+            }
+        } 
     }
     return allOk;
 }
 
 bool RawValuesPublisherRemapper::getRawData(std::string key, std::vector<std::int32_t>& data)
 {
+    bool found = false;
+    data.clear();
     for (size_t i = 0; i < m_remappedControlBoards.size(); i++)
     {
-        if (!m_remappedControlBoards[i]) {
+        if (!m_remappedControlBoards[i]) 
+        {
             yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Null pointer in m_remappedControlBoards at index " << i;
             continue;
         }
-        if (m_remappedControlBoards[i]->getRawData(key, data))
+        std::vector<std::int32_t> temp_data;
+        if (m_remappedControlBoards[i]->getRawData(key, temp_data))
         {
-            return true;
+            data.insert(data.end(), temp_data.begin(), temp_data.end());
+            found = true;
         }
     }
-    yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Key not found: " << key;
-    return false;
+    if (!found) {
+        yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Key not found: " << key;
+    }
+    return found;
 }
 
 bool RawValuesPublisherRemapper::getKeys(std::vector<std::string>& keys)
@@ -205,13 +215,13 @@ int RawValuesPublisherRemapper::getNumberOfKeys()
     return allOk ? total_keys : -1;
 }
 
-bool RawValuesPublisherRemapper::getMetadataMap(rawValuesKeyMetadataMap& metamap)
+bool RawValuesPublisherRemapper::getMetadataMap(iCub::rawValuesKeyMetadataMap& metamap)
 {
     yCDebug(RAWVALUESPUBLISHERREMAPPER) << "Getting metadata map from all attached control boards:" << m_remappedControlBoards.size();
     bool allOk = true;
     for (size_t i = 0; i < m_remappedControlBoards.size(); i++)
     {
-        rawValuesKeyMetadataMap temp_metamap = {};
+        iCub::rawValuesKeyMetadataMap temp_metamap = {};
         if (!m_remappedControlBoards[i]) 
         {
             yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Null pointer in m_remappedControlBoards at index " << i;
@@ -227,9 +237,15 @@ bool RawValuesPublisherRemapper::getMetadataMap(rawValuesKeyMetadataMap& metamap
         else
         {
             yCDebug(RAWVALUESPUBLISHERREMAPPER) << "Successfully got metadata map from control board " << i << "with elements:";
-            for (const auto& [k, v] : temp_metamap.metadataMap)
+            if(m_verbose)
             {
-                yCDebug(RAWVALUESPUBLISHERREMAPPER) << "\tKey: " << k << " AxesNames: " << v.axesNames << " RawValueNames: " << v.rawValueNames;
+                for (const auto& [k, v] : temp_metamap.metadataMap)
+                {
+                    yarp::os::Bottle axesNamesBottle, rawValueNamesBottle;
+                    for(const auto& axisName : v.axesNames) { axesNamesBottle.addString(axisName); }
+                    for(const auto& rawValueName : v.rawValueNames) { rawValueNamesBottle.addString(rawValueName); }
+                    yCDebug(RAWVALUESPUBLISHERREMAPPER) << "\tKey: " << k << " AxesNames: " << axesNamesBottle.toString() << " RawValueNames: " << rawValueNamesBottle.toString();
+                }
             }
         }
         for (const auto& [k, v] : temp_metamap.metadataMap)
@@ -256,8 +272,10 @@ bool RawValuesPublisherRemapper::getMetadataMap(rawValuesKeyMetadataMap& metamap
     return allOk;
 }
 
-bool RawValuesPublisherRemapper::getKeyMetadata(std::string key, rawValuesKeyMetadata& meta)
+bool RawValuesPublisherRemapper::getKeyMetadata(std::string key, iCub::rawValuesKeyMetadata& meta)
 {
+    bool found = false;
+    meta = {};
     for (size_t i = 0; i < m_remappedControlBoards.size(); i++)
     {
         if (!m_remappedControlBoards[i]) 
@@ -265,28 +283,48 @@ bool RawValuesPublisherRemapper::getKeyMetadata(std::string key, rawValuesKeyMet
             yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Null pointer in m_remappedControlBoards at index " << i;
             continue;
         }
-        if (m_remappedControlBoards[i]->getKeyMetadata(key, meta))
+        iCub::rawValuesKeyMetadata temp_meta;
+        if (m_remappedControlBoards[i]->getKeyMetadata(key, temp_meta))
         {
-            return true;
+            if (!found) 
+            {
+                meta = temp_meta;
+            } 
+            else 
+            {
+                meta.axesNames.insert(meta.axesNames.end(), temp_meta.axesNames.begin(), temp_meta.axesNames.end());
+                meta.rawValueNames.insert(meta.rawValueNames.end(), temp_meta.rawValueNames.begin(), temp_meta.rawValueNames.end());
+                meta.size = static_cast<int>(meta.rawValueNames.size());
+            }
+            found = true;
         }
     }
-    yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Metadata not found for key: " << key;
-    return false;
+    if (!found) {
+        yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Metadata not found for key: " << key;
+    }
+    return found;
 }
 
 bool RawValuesPublisherRemapper::getAxesNames(std::string key, std::vector<std::string>& axesNames)
 {
+    bool found = false;
+    axesNames.clear();
     for (size_t i = 0; i < m_remappedControlBoards.size(); i++)
     {
         if (!m_remappedControlBoards[i]) {
             yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Null pointer in m_remappedControlBoards at index " << i;
             continue;
         }
-        if (m_remappedControlBoards[i]->getAxesNames(key, axesNames))
+        std::vector<std::string> temp_axesNames;
+        if (m_remappedControlBoards[i]->getAxesNames(key, temp_axesNames))
         {
-            return true;
+            axesNames.insert(axesNames.end(), temp_axesNames.begin(), temp_axesNames.end());
+            found = true;
         }
     }
-    yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Axes names not found for key: " << key;
-    return false;
+    if (!found) 
+    {
+        yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Axes names not found for key: " << key;
+    }
+    return found;
 }
