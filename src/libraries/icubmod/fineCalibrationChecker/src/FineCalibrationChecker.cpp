@@ -574,7 +574,7 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                 // Therefore, in order to have the correct sign for the delta, aligned with the standard we use for the joints kinematics
                 // we need to apply the sign of the axis to the home position (line 558) and to the calibration delta (line 577)
                 // the sign is taken from the axesSigns list provided in the configuration file, defined following the primary encoder sign
-                                delta = static_cast<double>((goldPosition - rescaledPos) / (ICUB_DEGREES_RANGE/360.0)) + homePositions[i]; // Calculate the delta in degrees
+                delta = static_cast<double>((goldPosition - rescaledPos) / (ICUB_DEGREES_RANGE/360.0)) + homePositions[i]; // Calculate the delta in degrees
                 calibrationDelta[i] = (axesSigns->get(i).asInt32() > 0) ? calibrationDelta[i] : -calibrationDelta[i]; // Apply the sign to the calibration delta
                 delta += calibrationDelta[i]; // Add the calibration delta to the delta
                 yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "HP:" << homePositions[i] << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
