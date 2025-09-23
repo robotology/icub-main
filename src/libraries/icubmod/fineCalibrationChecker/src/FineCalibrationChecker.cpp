@@ -555,7 +555,6 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                 calibrationDelta[i] = caldeltas->get(i).asFloat64(); // Get the calibration delta for the axis
                 double pos = 0.0;
                 remappedControlBoardInterfaces._ienc->getEncoder(i, &pos); // Update home position by calling the IEncoders API
-                //homePositions[i] = (pos > 0) ? pos : -pos; // Update home position for the axis
                 homePositions[i] = (axesSigns->get(i).asInt32() > 0) ? pos : -pos; // Update home position for the axis
                 goldPosition = it->second[0];
                 resolution = it->second[1];
@@ -569,10 +568,12 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                 // Delta is in degrees
                 // The issue here is that the home position can be negative or positive, while the gold and rescaled positions are always positive
                 // and when we calculate their difference we are not sure if we are aligned with the home position sign convention
-                // Thus we calculate the delta as the absolute value of the difference between gold and rescaled positions
+                // Thus we calculate the delta as the the difference between gold and rescaled positions
                 // divided by the iCub degrees range and multiplied by 360 to convert it to degrees
                 // and then we add the home position to it
-                // This is the reason why we want the home position to be always positive at line 540
+                // Therefore, in order to have the correct sign for the delta, aligned with the standard we use for the joints kinematics
+                // we need to apply the sign of the axis to the home position (line 558) and to the calibration delta (line 577)
+                // the sign is taken from the axesSigns list provided in the configuration file, defined following the primary encoder sign
                                 delta = static_cast<double>((goldPosition - rescaledPos) / (ICUB_DEGREES_RANGE/360.0)) + homePositions[i]; // Calculate the delta in degrees
                 calibrationDelta[i] = (axesSigns->get(i).asInt32() > 0) ? calibrationDelta[i] : -calibrationDelta[i]; // Apply the sign to the calibration delta
                 delta += calibrationDelta[i]; // Add the calibration delta to the delta
