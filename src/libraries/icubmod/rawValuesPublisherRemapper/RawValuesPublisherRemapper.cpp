@@ -173,6 +173,7 @@ bool RawValuesPublisherRemapper::getKeys(std::vector<std::string>& keys)
 {
     keys.clear();
     bool allOk = true;
+    std::set<std::string> unique_keys;
     for (size_t i = 0; i < m_remappedControlBoards.size(); i++)
     {
         if (!m_remappedControlBoards[i]) {
@@ -187,32 +188,19 @@ bool RawValuesPublisherRemapper::getKeys(std::vector<std::string>& keys)
             allOk = false;
             continue;
         }
-        keys.insert(keys.end(), temp_keys.begin(), temp_keys.end());
+        unique_keys.insert(temp_keys.begin(), temp_keys.end());
     }
+    keys.assign(unique_keys.begin(), unique_keys.end());
     return allOk;
 }
 
 int RawValuesPublisherRemapper::getNumberOfKeys()
 {
-    int total_keys = 0;
-    bool allOk = true;
-    for (size_t i = 0; i < m_remappedControlBoards.size(); i++)
-    {
-        if (!m_remappedControlBoards[i]) {
-            yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Null pointer in m_remappedControlBoards at index " << i;
-            allOk = false;
-            continue;
-        }
-        int n = m_remappedControlBoards[i]->getNumberOfKeys();
-        if (n < 0)
-        {
-            yCWarning(RAWVALUESPUBLISHERREMAPPER) << "Failed to get number of keys from control board " << i;
-            allOk = false;
-            continue;
-        }
-        total_keys += n;
+    std::vector<std::string> keys;
+    if (getKeys(keys)) {
+        return static_cast<int>(keys.size());
     }
-    return allOk ? total_keys : -1;
+    return -1;
 }
 
 bool RawValuesPublisherRemapper::getMetadataMap(iCub::rawValuesKeyMetadataMap& metamap)
