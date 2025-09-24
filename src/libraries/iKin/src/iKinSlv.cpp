@@ -349,7 +349,7 @@ bool CartesianSolver::alignJointsBounds()
         yInfo("part #%d: %s",i,prt->prp[i].find("part").asString().c_str());
         for (int j=0; j<jnt[i]; j++)
         {               
-            if (!lim[i]->getLimits(rmp[i][j],&min,&max))
+            if (!lim[i]->getPosLimits(rmp[i][j],&min,&max))
             {
                 yError("joint #%d: failed getting limits!",cnt);
                 return false;
