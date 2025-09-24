@@ -132,7 +132,10 @@ bool RawValuesPublisherRemapper::getRawDataMap(std::map<std::string, std::vector
             if (map.find(k) != map.end())
             {   
                 // Key already exists, append values
-                yCDebug(RAWVALUESPUBLISHERREMAPPER) << "Key " << k << " already exists in the combined map. Appending values.";
+                if(m_verbose)
+                {
+                    yCDebug(RAWVALUESPUBLISHERREMAPPER) << "Key " << k << " already exists in the combined map. Appending values.";
+                }
                 map[k].insert(map[k].end(), v.begin(), v.end());
             }
             else
