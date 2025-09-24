@@ -13,21 +13,21 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <ace/config.h>
+#include <ace/Log_Msg.h>
+
 // Yarp Includes
 #include <yarp/os/Time.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/PolyDriver.h>
-#include <yarp/os/NetType.h>
 
-// external libraries includes
-#include <ace/config.h>
-#include <ace/Log_Msg.h>
+#include <yarp/os/NetType.h>
 
 
 // specific to this device driver.
-#include <embObjPOS.h>
-#include <ethManager.h>
+#include "embObjPOS.h"
+#include "ethManager.h"
 #include "EoAnalogSensors.h"
 #include "EOnv_hid.h"
 #include "EoProtocol.h"

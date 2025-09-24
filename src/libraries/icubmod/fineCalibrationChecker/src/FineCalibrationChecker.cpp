@@ -49,7 +49,7 @@ FineCalibrationChecker::FineCalibrationChecker()
 {
     // Initialize device driver as empty PolyDriver
     _remappedControlBoardDevice = std::make_unique<yarp::dev::PolyDriver>();
-    _rawValuesPublisherDevice = std::make_unique<yarp::dev::PolyDriver>();
+    _remappedRawValuesPublisherDevice = std::make_unique<yarp::dev::PolyDriver>();
 }
 
 bool FineCalibrationChecker::open(yarp::os::Searchable& config)
@@ -108,17 +108,30 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
                 encoderResolutions.addInt32(_encoderResolutions->get(i).asInt32());
             }
         }
+        if (property.check("axesSigns"))
+        {
+            yarp::os::Bottle* _axesSigns = property.find("axesSigns").asList();
+            yarp::os::Bottle &axesSigns = _axesSignsList.addList();
+
+            for (size_t i = 0; i < _axesSigns->size(); i++)
+            {
+                axesSigns.addInt32(_axesSigns->get(i).asInt32());
+            }
+        }
+        
 
         // Use pointer to list to simplify the listing
         yarp::os::Bottle* axes = _axesNamesList.get(0).asList();
         yarp::os::Bottle* goldpos = _goldPositionsList.get(0).asList();
         yarp::os::Bottle* encres = _encoderResolutionsList.get(0).asList();
         yarp::os::Bottle* caldeltas = _calibrationDeltasList.get(0).asList();
+        yarp::os::Bottle* signs = _axesSignsList.get(0).asList();
 
         // Check list sizes. They must be equal
         if (axes->size() != goldpos->size() ||
             axes->size() != encres->size() ||
-            axes->size() != caldeltas->size())
+            axes->size() != caldeltas->size() ||
+            axes->size() != signs->size())
         {
             yCError(FineCalibrationCheckerCOMPONENT) << "Axes names, gold positions and encoder resolutions lists must have the same size. Stopping device...";
             return false;
@@ -129,6 +142,7 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Gold positions list:" << goldpos->toString();
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Encoder resolutions list:" << encres->toString();
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Calibration deltas list:" << caldeltas->toString();
+            yCDebug(FineCalibrationCheckerCOMPONENT) << "Axes signs list:" << signs->toString();
         }
 
 
@@ -177,13 +191,14 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
     }
 
      yarp::os::Property rawValuesDeviceProperties;
-    rawValuesDeviceProperties.put("device", "rawValuesPublisherClient");
+    rawValuesDeviceProperties.put("device", "rawvaluespublisherremapper");
+    rawValuesDeviceProperties.put("axesNames", _axesNamesList.get(0));
     rawValuesDeviceProperties.put("remote", _remoteRawValuesPort);
-    rawValuesDeviceProperties.put("local", "/" + _deviceName + "/rawValuesPublisherClient");
+    rawValuesDeviceProperties.put("local", "/" + _deviceName + "/rawValuesPublisherRemapper");
 
-    _rawValuesPublisherDevice->open(rawValuesDeviceProperties);
+    _remappedRawValuesPublisherDevice->open(rawValuesDeviceProperties);
 
-    if (!_rawValuesPublisherDevice->isValid())
+    if (!_remappedRawValuesPublisherDevice->isValid())
     {
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open raw values device driver. Aborting...";
         return false;
@@ -207,7 +222,7 @@ bool FineCalibrationChecker::close()
         yCError(FineCalibrationCheckerCOMPONENT) << "Unable to close device" << _deviceName;
     }
 
-    if (_rawValuesPublisherDevice->close())
+    if (_remappedRawValuesPublisherDevice->close())
     {
         yCDebug(FineCalibrationCheckerCOMPONENT) << "Closed raw values publisher device";
     }
@@ -235,20 +250,13 @@ bool FineCalibrationChecker::threadInit()
         return false;
     }
 
-
-    if (!_remappedControlBoardDevice->view(remappedControlBoardInterfaces._ienc) || remappedControlBoardInterfaces._ienc == nullptr)
-    {
-        yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open encoders interface. Aborting...";
-        return false;
-    }
-
     if (!_remappedControlBoardDevice->view(remappedControlBoardInterfaces._icontrolcalib) || remappedControlBoardInterfaces._icontrolcalib == nullptr)
     {
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open control calibration interface. Aborting...";
         return false;
     }
 
-    if (!_rawValuesPublisherDevice->view(_iravap) || _iravap == nullptr)
+    if (!_remappedRawValuesPublisherDevice->view(remappedRawValuesPublisherInterfaces._iravap) || remappedRawValuesPublisherInterfaces._iravap == nullptr)
     {
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open raw values publisher interface. Aborting...";
         return false;
@@ -257,7 +265,7 @@ bool FineCalibrationChecker::threadInit()
 
     // Configuring raw values metadata
     rawDataMetadata = {};
-    _iravap->getMetadataMap(rawDataMetadata);
+    remappedRawValuesPublisherInterfaces._iravap->getMetadataMap(rawDataMetadata);
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Configured raw values with metadata";
     for (auto [k, m] : rawDataMetadata.metadataMap)
     {
@@ -269,7 +277,6 @@ bool FineCalibrationChecker::threadInit()
     }
 
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Opened remote calibrator and control calibration interfaces successfully";
-
 
     _deviceStatus = deviceStatus::CONFIGURED;
     return true;
@@ -310,12 +317,14 @@ void FineCalibrationChecker::run()
             bool calibDone = true;
             for (size_t i = 0; i < numAxes; i++)
             {
-                //calibDone &= remappedControlBoardInterfaces._icontrolcalib->calibrationDone(i);
+                calibDone &= remappedControlBoardInterfaces._icontrolcalib->calibrationDone(i);
                 // TODO: add list of axis that did not perform calibration to be rechecked
             }
             if (!calibDone)
             {
                 yCWarning(FineCalibrationCheckerCOMPONENT) << _deviceName << "Calib not complete for all axis. Waiting for calibration to finish...";
+                yarp::os::Time::delay(0.1); // Prevent busy-waiting.
+                continue;
             }
             else
             {
@@ -330,7 +339,7 @@ void FineCalibrationChecker::run()
         }
         else if(_deviceStatus == deviceStatus::IN_ZERO_POSITION)
         {
-            if(!_iravap->getRawDataMap(rawDataValuesMap))
+            if(!remappedRawValuesPublisherInterfaces._iravap->getRawDataMap(rawDataValuesMap))
             {
                 yCWarning(FineCalibrationCheckerCOMPONENT) << "embObjMotionControl::IRawValuesPublisher warning : raw_data_values map was not read correctly";
             }
@@ -355,7 +364,6 @@ void FineCalibrationChecker::run()
             if (std::chrono::duration_cast<std::chrono::milliseconds>(now - shoutdownTimer).count() > 5000)
             {
                 yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Operation completed successfully. Waiting yarprobotinterface to stop the thread...";
-                // shoutdownTimer = now;
                 break; // Exit the loop to stop the thread
             }
         }
@@ -397,6 +405,18 @@ bool FineCalibrationChecker::attachAll(const yarp::dev::PolyDriverList& device2a
         return false;
     }
 
+    if(!_remappedRawValuesPublisherDevice->view(remappedRawValuesPublisherInterfaces._imultwrap) || remappedRawValuesPublisherInterfaces._imultwrap == nullptr)
+    {
+        yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open multiple wrapper interface for raw values publisher. Aborting...";
+        return false;
+    }
+
+    if(!_remappedRawValuesPublisherDevice->isValid())
+    {
+        yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Raw values publisher device is not valid. Cannot attach.";
+        return false;
+    }
+
     // Attach the device to the thread
     if (!this->attachToAllControlBoards(device2attach))
     {
@@ -425,7 +445,7 @@ bool FineCalibrationChecker::detachAll()
         yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Stopping the thread before detaching all devices";
         this->stop();
     }
-    if(!remappedControlBoardInterfaces._imultwrap->detachAll())
+    if(!remappedControlBoardInterfaces._imultwrap->detachAll() || !remappedRawValuesPublisherInterfaces._imultwrap->detachAll())
     {
         yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Failed to detach all devices";
         return false;
@@ -472,6 +492,12 @@ bool FineCalibrationChecker::attachToAllControlBoards(const yarp::dev::PolyDrive
         return false;
     }
 
+    if(!remappedRawValuesPublisherInterfaces._imultwrap->attachAll(controlBoardsList))
+    {
+        yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Failed to attach all control boards to raw values publisher";
+        return false;
+    }
+
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Successfully attached all control boards";
 
     return true;
@@ -489,13 +515,12 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
     int64_t rawPosition = 0;
     int64_t resolution = 0;
     int64_t rescaledPos = 0;
-    int64_t delta = 0;
+    double delta = 0;
     std::vector<ItemData> sampleItems = {};
 
     yarp::os::Bottle* caldeltas = _calibrationDeltasList.get(0).asList();
+    yarp::os::Bottle* axesSigns = _axesSignsList.get(0).asList();
 
-    std::vector<int64_t> homePositions = {30, 30, 0, 50}; // Assuming home positions are all zero for simplicity
-    std::vector<double> calibrationDelta = {0, -9.2, -17.1, -2.7}; // Assuming raw home positions are all zero for simplicity
     std::ofstream outFile(outputPath);
     if (!outFile.is_open())
     {
@@ -509,22 +534,28 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
     {
         std::vector<std::string> axesNames = {};
         std::vector<std::int32_t> rawData = {};
-        _iravap->getAxesNames(it->first, axesNames);
-        _iravap->getRawData(it->first, rawData);
 
+        // Fill axesNames and rawData vectors
+        axesNames = rawDataMetadata.metadataMap.at(it->first).axesNames;
+        rawData = it->second;
+
+        std::vector<double> homePositions(axesNames.size(), 0);
+        std::vector<double> calibrationDelta(axesNames.size(), 0.0);
+
+        
         for (size_t i = 0; i < axesNames.size(); ++i)
         {
             goldPosition = 0;
             rawPosition = 0;
             resolution = 0;
-            delta = 0;
+            delta = 0.0;
             yCDebug(FineCalibrationCheckerCOMPONENT) << "Evaluating axis:" << axesNames[i];
             if (auto it = axesRawGoldenPositionsResMap.find(axesNames[i]); it != axesRawGoldenPositionsResMap.end())
             {
                 calibrationDelta[i] = caldeltas->get(i).asFloat64(); // Get the calibration delta for the axis
                 double pos = 0.0;
                 remappedControlBoardInterfaces._ienc->getEncoder(i, &pos); // Update home position by calling the IEncoders API
-                homePositions[i] = (pos > 0) ? static_cast<int64_t>(pos) : static_cast<int64_t>(-pos); // Update home position for the axis
+                homePositions[i] = (axesSigns->get(i).asInt32() > 0) ? pos : -pos; // Update home position for the axis
                 goldPosition = it->second[0];
                 resolution = it->second[1];
                 rawPosition = rawData[RAW_VALUES_STRIDE*i]; // This because the raw values for tag eoprot_tag_mc_joint_status_addinfo_multienc
@@ -532,8 +563,20 @@ void FineCalibrationChecker::evaluateHardStopPositionDelta(const std::string& ke
                                             // [raw_val_primary_enc, raw_val_secondary_enc, rraw_val_auxiliary_enc]
                                             // and we want the first value for each joint
                 rescaledPos = rawPosition * ICUB_DEGREES_RANGE / resolution; // Rescale the encoder raw position to iCubDegrees
-                delta = std::abs(goldPosition - rescaledPos) / (ICUB_DEGREES_RANGE/360) - homePositions[i]; // Calculate the delta in degrees
-                delta = std::abs(delta) + static_cast<int64_t>(calibrationDelta[i]); // Add the calibration delta to the delta
+                // Gold position and rescaled position are in iCubDegrees --> thus between 0 and 65535
+                // Home position is in degrees --> thus between -180 and 180
+                // Delta is in degrees
+                // The issue here is that the home position can be negative or positive, while the gold and rescaled positions are always positive
+                // and when we calculate their difference we are not sure if we are aligned with the home position sign convention
+                // Thus we calculate the delta as the the difference between gold and rescaled positions
+                // divided by the iCub degrees range and multiplied by 360 to convert it to degrees
+                // and then we add the home position to it
+                // Therefore, in order to have the correct sign for the delta, aligned with the standard we use for the joints kinematics
+                // we need to apply the sign of the axis to the home position (line 558) and to the calibration delta (line 577)
+                // the sign is taken from the axesSigns list provided in the configuration file, defined following the primary encoder sign
+                delta = static_cast<double>((goldPosition - rescaledPos) / (ICUB_DEGREES_RANGE/360.0)) + homePositions[i]; // Calculate the delta in degrees
+                calibrationDelta[i] = (axesSigns->get(i).asInt32() > 0) ? calibrationDelta[i] : -calibrationDelta[i]; // Apply the sign to the calibration delta
+                delta += calibrationDelta[i]; // Add the calibration delta to the delta
                 yCDebug(FineCalibrationCheckerCOMPONENT) << "GP:" << goldPosition << "HP:" << homePositions[i] << "RSP:" << rescaledPos << "RWP:" << rawPosition << "DD:" << delta;
             }
             else
@@ -603,7 +646,7 @@ void FineCalibrationChecker::generateOutputImage(int frameWidth, int frameHeight
     {
         int y = padding + (i + 1) * lineHeight; // +1 to account for header
         // Draw background rectangle for the row
-        cv::Scalar bgColor = getColorForDelta(items[i].val4, 1, 3);
+        cv::Scalar bgColor = getColorForDelta(items[i].val4, 1.0, 3.0); // Green, Orange, Red based on delta thresholds
         cv::rectangle(image,
                       cv::Point(padding, y),
                       cv::Point(frameWidth - padding, y + lineHeight - 5),
@@ -636,7 +679,7 @@ void FineCalibrationChecker::generateOutputImage(int frameWidth, int frameHeight
     cv::destroyAllWindows();
 }
 
-cv::Scalar FineCalibrationChecker::getColorForDelta(int32_t delta, int32_t threshold_1, int32_t threshold_2)
+cv::Scalar FineCalibrationChecker::getColorForDelta(double delta, double threshold_1, double threshold_2)
 {
     if (std::abs(delta) > threshold_2) return cv::Scalar(0, 0, 255);    // Red
     else if (std::abs(delta) > threshold_1) return cv::Scalar(0, 165, 255); // Orange
