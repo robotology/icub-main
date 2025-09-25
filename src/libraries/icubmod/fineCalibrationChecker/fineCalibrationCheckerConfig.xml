@@ -9,7 +9,7 @@
     <param name="goldPositions">(0 0)</param> <!-- gold positions are encoder position in iCubDegrees at chosen zero-->
     <param name="calibrationDeltas">(0 0)</param> <!--  calibration delta are copied from the calibration files (since there are no API for getting them)-->
     <param name="encoderResolutions">(16384 16384)</param> <!--encoder full resolution e.g. for AEA is 2^18 -->
-    <param name="axesSigns">(1, -1)</param> <!-- encoder signs are taken by checking the sign of primary encoder resolution in the mc_service configuration file for the related board -->
+    <param name="axesSigns">(1 -1)</param> <!-- encoder signs are taken by checking the sign of primary encoder resolution in the mc_service configuration file for the related board -->
     <param name="withGui">true</param> <!-- if set to true an image showing the output data is shown otherwise no -->
 
     <action phase="startup" level="15" type="attach">

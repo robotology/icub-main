@@ -13,7 +13,7 @@ The device performs calibration checking by:
 
 ## Main Features
 
-The main features of this tool include:
+The main features of this device include:
 - Configuration through XML files containing joint information and parameters
 - Integration with motion control and raw values publisher network wrappers
 - Remote control board connectivity for joint and encoder data access
@@ -22,7 +22,7 @@ The main features of this tool include:
 - Generation of CSV output files and optional visual feedback
 - Asynchronous operation as a threaded YARP device
 
-This tool helps developers and technicians verify and fine-tune the mechanical calibration of robot joints, ensuring accurate and reliable operation.
+This device helps developers and technicians verify and fine-tune the mechanical calibration of robot joints, ensuring accurate and reliable operation.
 
 ## Configuration Parameters
 
@@ -39,7 +39,7 @@ The device requires the following parameters in its configuration file:
 
 ## Setup and Usage
 
-To run the module:
+To use the device:
 
 1. Place the configuration XML file in your desired location (e.g., `./checker/fineCalibrationChecker.xml`)
 2. Configure the `rawvaluespublisherremapper` and `rawValuesPublisherServer` devices
