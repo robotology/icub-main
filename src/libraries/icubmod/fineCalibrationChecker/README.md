@@ -1,50 +1,56 @@
-# Fine Calibration Checker Tool
+# Fine Calibration Checker Device
 
 ## Overview
 
-This is a tool designed for ergoCub and iCub platforms aimed at giving to the user information about the accuracy of the joints calibration procedure, allowing to collect data that might help in analyzing miscalibration errors on a specific system. 
-It has been thought to interface with **YARP** devices and robot **control boards**.
-The tool is made of two main parts:
-- a **module** that does not much other than managing a thread, which contains all the core functionalities of the application
-- a **thread** that does all the job for collecting the desired data about the joint calibration
+This is a YARP device designed for `ergoCub` and `iCub` platforms that provides information about the accuracy of the joints calibration procedure. It helps collect and analyze data related to miscalibration errors on specific systems.
+The device interfaces with robot **control boards** and **raw encoder data** streams through YARP.
 
-## FineCalibrationChecker Module
-
-The module is built on the inheritance of the `YARP` interface `yarp::os::RFModule` and does not much other than managing a `yarp::os::Thread` and keep it running with a specific period until the user decides to stop the whole process.
-
-## FineCalibrationChcker Thread
-
-The thread is basically just an implementation of a `yarp::os::Thread` but it contains all the core implementations of this tool. 
-Specifically it does the following actions:
-- parse the configuration data given by the file `config.ini`
-- initialize all the data structures needed for storing the data
-- parse the `.csv` file that stores the input position data, which must be present in the `app/fineCalibrationChecker` directory named as `zeroPositionsData.csv` (an example file is already installed in the repo)
-- open devices and connect to remote control boards and ports
-- run the calibration check
-- give in output the requested results
+The device performs calibration checking by:
+- Connecting to remote control boards and raw encoder data ports
+- Reading and comparing joint positions with expected golden positions (in degrees)
+- Analyzing calibration accuracy and generating detailed reports
+- Providing visual and numerical output for calibration analysis
 
 ## Main Features
 
-Therefore the main features of this tool can be summarized as follows:
-- Reads configuration parameters and joint information from a configuration file.
-- Connects to remote control boards and a raw values publisher to access joint and encoder data.
-- Executes a calibration routine, including checking golden hard-stop positions and comparing them with live encoder readings.
-- Evaluates the difference (delta) between expected and measured joint positions, logs the results, and generates output files and images for analysis.
-- Runs as a threaded YARP module, allowing for asynchronous calibration and monitoring.
+The main features of this tool include:
+- Configuration through XML files containing joint information and parameters
+- Integration with motion control and raw values publisher network wrappers
+- Remote control board connectivity for joint and encoder data access
+- Comparison of golden hard-stop positions with live encoder readings
+- Analysis of differences between expected and measured joint positions
+- Generation of CSV output files and optional visual feedback
+- Asynchronous operation as a threaded YARP device
 
-This tool is useful for developers and technicians who need to verify and fine-tune the mechanical calibration of the robot’s joints, ensuring accurate and reliable operation.
+This tool helps developers and technicians verify and fine-tune the mechanical calibration of robot joints, ensuring accurate and reliable operation.
 
-## Commands and files
+## Configuration Parameters
 
-In order to correctly run the module one should type the following command from the directory that stores `config.ini` file and the `zeroPositionData.csv` file:
+The device requires the following parameters in its configuration file:
+- `devicename`: Name of the device instance (default: "fineCalibrationChecker")
+- `robotname`: Name of the robot matching configuration files
+- `remoteRawValuesPort`: Port name for raw values data (e.g., "/setup/raw_data")
+- `axesNamesList`: List of joint names matching remapper configuration
+- `goldPositions`: Encoder positions in iCubDegrees at chosen zero positions
+- `calibrationDeltas`: Calibration deltas from calibration files
+- `encoderResolutions`: Full encoder resolutions (e.g., 16384 for AEA)
+- `axesSigns`: Encoder signs based on primary encoder resolution
+- `withGui`: Enable/disable visual output display
 
-```
-fineCalibrationChecker --from conf/config.ini
-```
+## Setup and Usage
 
-It should be noted then, that in the same directory the aforementioned file for the ground truth positions should be stored and it should have the defined name.
-It has to contain the data organized line by line and with the following structure:
+To run the module:
 
-```
-axes_name,gold_position,joint_encoder_full_resolution
-```
+1. Place the configuration XML file in your desired location (e.g., `./checker/fineCalibrationChecker.xml`)
+2. Configure the `rawvaluespublisherremapper` and `rawValuesPublisherServer` devices
+3. Add the device wrappers to the main robot configuration file
+4. Start the `yarprobotinterface` application
+5. The device will automatically execute if properly configured
+6. Results are saved to a CSV file in the `yarprobotinterface` working directory
+7. If `withGui` is enabled, a visualization of the output data will be displayed
+
+For configuration examples, refer to `fineCalibrationCheckerConfig.xml`.
+
+
+
+
