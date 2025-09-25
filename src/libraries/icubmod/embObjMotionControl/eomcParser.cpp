@@ -1491,6 +1491,19 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
             AutoCalibration[i - 1] = xtmp.get(i).asInt32();
     }
 
+    std::vector<float> Kbemf (_njoints);
+    if (!extractGroup(focGroup, xtmp, "Kbemf", "Kbemf", _njoints, false))
+    {
+        //return false;
+        yWarning() << "In " << _boardname << " there isn't " << groupName << ". Kbemf failed. By default Kbemf is set to 0" ;
+        for (i = 0; i < (unsigned)_njoints; i++)
+            foc_based_info[i].kbemf = 0.0f;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            foc_based_info[i-1].kbemf = xtmp.get(i).asFloat32();
+    }
 
     if (!extractGroup(focGroup, xtmp, "RotorIndexOffset", "RotorIndexOffset", _njoints))
     {
