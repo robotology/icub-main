@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD yarprobotinterface 3.0//EN" "http://www.yarp.it/DTD/yarprobotinterfaceV3.0.dtd">
 
+<device xmlns:xi="http://www.w3.org/2001/XInclude" name="fineCalibrationChecker" type="fineCalibrationChecker">
+    <param name="devicename">fineCalibrationChecker</param> <!-- this is the device name to keep -->
+    <param name="robotname">setup</param> <!-- robot name that should match with the value stated in the configuration files -->
+    <param name="remoteRawValuesPort">/setup/raw_data</param> <!-- raw values port name, which should match with the one defined in the raw values nws wrapper-->
+    <param name="axesNamesList">(joint1 joint2)</param> <!-- List of axes names, which should match with what defined in the remappers -->
+    <param name="goldPositions">(0 0)</param> <!-- gold positions are encoder position in iCubDegrees at chosen zero-->
+    <param name="calibrationDeltas">(0 0)</param> <!--  calibration delta are copied from the calibration files (since there are no API for getting them)-->
+    <param name="encoderResolutions">(16384 16384)</param> <!--encoder full resolution e.g. for AEA is 2^18 -->
+    <param name="axesSigns">(1 -1)</param> <!-- encoder signs are taken by checking the sign of primary encoder resolution in the mc_service configuration file for the related board -->
+    <param name="withGui">true</param> <!-- if set to true an image showing the output data is shown otherwise no -->
 
-    <device xmlns:xi="http://www.w3.org/2001/XInclude" name="fineCalibrationChecker" type="fineCalibrationChecker">
-        <param name="devicename">fineCalibrationChecker</param>
-        <param name="robotname">setup</param>
-        <param name="remoteRawValuesPort">/setup_mc/raw_data</param>
-        <param name="axesNamesList">(lego_setup)</param>
-        <param name="goldPositions">(0)</param>
-        <param name="encoderResolutions">(16384)</param>
+    <action phase="startup" level="15" type="attach">
+        <paramlist name="networks"> <!-- control boards to be attached, which should match with the values in the remappers -->
+            <elem name="setup_joint_0">setup-mc-board1</elem>
+            <elem name="setup_joint_1">setup-mc-board2</elem>
+        </paramlist>
+    </action>
 
-
-        <action phase="startup" level="15" type="attach">
-            <paramlist name="networks">
-                <elem name="setup_joint_0">setup-eb2-j0_2-mc</elem>
-            </paramlist>
-        </action>
-
-        <action phase="shutdown" level="2" type="detach" />
-
-    </device>
+    <action phase="shutdown" level="2" type="detach" />
+</device>
