@@ -1074,7 +1074,6 @@ protected:
         d[iKinLimbVersion("2.8")-ver_in]=iKinLimbVersion("2.8");
         d[iKinLimbVersion("2.10")-ver_in]=iKinLimbVersion("2.10");
         d[iKinLimbVersion("3.0")-ver_in]=iKinLimbVersion("3.0");
-        d[iKinLimbVersion("3.1")-ver_in]=iKinLimbVersion("3.1");
 
         auto ver_out=d.begin()->second;
         if (ver_out!=ver_in)
