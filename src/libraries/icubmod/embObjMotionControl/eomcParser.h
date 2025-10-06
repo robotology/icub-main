@@ -557,7 +557,7 @@ private:
     bool _verbosewhenok;
 
     std::map<std::string, Pid_Algorithm*> minjerkAlgoMap;
-    //std::map<std::string, Pid_Algorithm*> directAlgoMap;
+    std::map<std::string, Pid_Algorithm*> directAlgoMap;
     std::map<std::string, Pid_Algorithm*> torqueAlgoMap;
 
     //std::map<std::string, Pid_Algorithm*> currentAlgoMap;
@@ -566,11 +566,11 @@ private:
     std::vector<std::string> _positionControlLaw;
     std::vector<std::string> _velocityControlLaw;
     std::vector<std::string> _mixedControlLaw;
-    //std::vector<std::string> _posDirectControlLaw;
-    //std::vector<std::string> _velDirectControlLaw;
     std::vector<std::string> _torqueControlLaw;
     std::vector<std::string> _currentControlLaw;
     std::vector<std::string> _speedControlLaw;
+    std::vector<std::string> _positionDirectControlLaw;
+    std::vector<std::string> _velocityDirectControlLaw;
 
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
@@ -591,20 +591,19 @@ private:
     bool parseSelectedPositionControl(yarp::os::Searchable &config);
     bool parseSelectedVelocityControl(yarp::os::Searchable &config);
     bool parseSelectedMixedControl(yarp::os::Searchable &config);
-    //bool parseSelectedPosDirectControl(yarp::os::Searchable &config);
-    //bool parseSelectedVelDirectControl(yarp::os::Searchable &config);
     bool parseSelectedTorqueControl(yarp::os::Searchable &config);
+    bool parseSelectedPositionDirectControl(yarp::os::Searchable &config);
+    bool parseSelectedVelocityDirectControl(yarp::os::Searchable &config);
 
     bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids);
-    bool parseSelectedSpeedPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids);
 
     bool parsePid_minJerk_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePid_minJerk_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePid_minJerk_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
 
-    //bool parsePid_direct_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
-    //bool parsePid_direct_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
-    //bool parsePid_direct_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePid_direct_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePid_direct_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePid_direct_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
 
     bool parsePid_torque_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePid_torque_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
