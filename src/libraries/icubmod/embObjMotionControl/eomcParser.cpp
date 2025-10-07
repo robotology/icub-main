@@ -76,7 +76,7 @@ Parser::~Parser()
 }
 
 
-bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory)
+bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory)
 {
     // compila la lista con i tag dei pid per ciascun modo 
     // di controllo per ciascun giunto 
@@ -119,13 +119,13 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *
 
     // usa _positionDirectControlLaw per recuperare i PID
     // del position direct control per ogni giunto
-    //if(!parseSelectedPositionDirectControl(config)) // OK
-    //    return false;
+    if(!parseSelectedPositionDirectControl(config)) // OK
+        return false;
 
     // usa _velocityDirectControlLaw per recuperare i PID
     // del velocity direct control per ogni giunto
-    //if(!parseSelectedVelocityDirectControl(config)) // OK
-    //    return false;
+    if(!parseSelectedVelocityDirectControl(config)) // OK
+        return false;
 
     // usa _torqueControlLaw per recuperare i PID
     // del torque control per ogni giunto
@@ -134,7 +134,7 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *
 
 
 
-    if(!getCorrectPidForEachJoint(ppids/*, vpids*/, tpids))
+    if(!getCorrectPidForEachJoint(ppids, vpids, tpids))
         return false;
 
 
@@ -1125,10 +1125,10 @@ bool Parser::parsePid_torque_outVel(Bottle &b_pid, string controlLaw)
     return true;
 }
 
-bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids)
+bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids)
 {
     Pid_Algorithm *minjerkAlgo_ptr = NULL;
-    //Pid_Algorithm *directAlgo_ptr = NULL;
+    Pid_Algorithm *directAlgo_ptr = NULL;
     Pid_Algorithm *torqueAlgo_ptr = NULL;
 
     //since some joints could not have all pid configured, reset pid values to 0.
@@ -1158,8 +1158,8 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
         ppids[i].usernamePidSelected = _positionControlLaw[i];
         ppids[i].enabled = true;
 
-        /*
-        //get velocity pid
+        
+        //get position direct pid
         if (_positionDirectControlLaw[i] == "none")
         {
             directAlgo_ptr = NULL;
@@ -1169,7 +1169,7 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
             it = directAlgoMap.find(_positionDirectControlLaw[i]);
             if (it == directAlgoMap.end())
             {
-                yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _positionDirectControlLaw[i].c_str() << "in parsed vel pid";
+                yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _positionDirectControlLaw[i].c_str() << "in parsed posDirect pid";
                 return false;
             }
 
@@ -1191,7 +1191,39 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
             vpids[i].enabled = false;
             vpids[i].usernamePidSelected = "none";
         }
-        */
+        
+        //get velocity direct pid
+        if (_velocityDirectControlLaw[i] == "none")
+        {
+            directAlgo_ptr = NULL;
+        }
+        else
+        {
+            it = directAlgoMap.find(_velocityDirectControlLaw[i]);
+            if (it == directAlgoMap.end())
+            {
+                yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _velocityDirectControlLaw[i].c_str() << "in parsed velDirect pid";
+                return false;
+            }
+
+            directAlgo_ptr = directAlgoMap[_velocityDirectControlLaw[i]];
+        }
+
+        if (directAlgo_ptr)
+        {
+            vpids[i].pid = directAlgo_ptr->getPID(i);
+            vpids[i].fbk_PidUnits = directAlgo_ptr->fbk_PidUnits;
+            vpids[i].out_PidUnits = directAlgo_ptr->out_PidUnits;
+            //vpids[i].controlLaw = directAlgo_ptr->type;
+            vpids[i].out_type = directAlgo_ptr->out_type;
+            vpids[i].usernamePidSelected = _velocityDirectControlLaw[i];
+            vpids[i].enabled = true;
+        }
+        else
+        {
+            vpids[i].enabled = false;
+            vpids[i].usernamePidSelected = "none";
+        }
 
         //get torque pid
         if (_torqueControlLaw[i] == "none")

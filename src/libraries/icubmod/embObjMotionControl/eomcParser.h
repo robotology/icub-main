@@ -615,7 +615,7 @@ private:
     bool parsePidsGroupDeluxe(yarp::os::Bottle& pidsGroup, Pid myPid[]);
 
     bool parsePidsGroup(yarp::os::Bottle& pidsGroup, yarp::dev::Pid myPid[], std::string prefix);
-    bool getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids);
+    bool getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids);
     bool parsePidUnitsType(yarp::os::Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
 
     bool checkJointTypes(PidInfo *pids, const std::string &pid_type);
@@ -647,7 +647,7 @@ public:
     Parser(int numofjoints, std::string boardname);
     ~Parser();
 
-    bool parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory);
+    bool parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vpids, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory);
     bool parseFocGroup(yarp::os::Searchable &config, focBasedSpecificInfo_t *foc_based_info, std::string groupName, std::vector<std::unique_ptr<eomc::ITemperatureSensor>>& temperatureSensorsVector);
     //bool parseCurrentPid(yarp::os::Searchable &config, PidInfo *cpids);//deprecated
     bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &jointtoset);
