@@ -316,10 +316,11 @@ private:
 
 
     eomc::PidInfo    *                      _trj_pids;
-    eomc::PidInfo    *                      _dir_pids;
+    eomc::PidInfo    *                      _dir_pos_pids;
+    eomc::PidInfo    *                      _dir_vel_pids;
     eomc::TrqPidInfo *                      _trq_pids;
     eomc::PidInfo    *                      _cur_pids;
-    eomc::PidInfo    *                      _spd_pids;
+    eomc::PidInfo    *                      _vel_pids;
 
     int *                                   _axisMap;   /** axies map*/
     std::vector<eomc::axisInfo_t>           _axesInfo;
