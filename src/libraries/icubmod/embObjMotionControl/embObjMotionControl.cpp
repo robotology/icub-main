@@ -5795,7 +5795,7 @@ bool embObjMotionControl::getAxesNames(std::string key, std::vector<std::string>
 
 ReturnValue embObjMotionControl::getAxes(size_t& axes)
 {
-        axes=_njoints; // # Vale: è un duplicato?
+        axes=_njoints;
 
     return ReturnValue::return_code::return_value_ok;
 }
@@ -5830,19 +5830,17 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(int jnt, double vel)
             } eOmc_setpoint_type_t; 
  
     */
-   
-    _ref_command_speeds[jnt] = vel;   // save internally the new value of velocity.
-    
-    setpoint.to.velocity.value =  (eOmeas_velocity_t) S_32(vel);
+      
+    setpoint.to.velocity.value =  (eOmeas_velocity_t) S_32(_ref_command_speeds[jnt]);
 
      //accelerazione serve per minimum jerk o c'è feedforward nel velocity direct?
-    setpoint.to.velocity.withacceleration = 0; //(eOmeas_acceleration_t) S_32(_ref_accs[jnt]);
+    setpoint.to.velocity.withacceleration = 0; // # Vale: chidere ad Alessandro
     
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, jnt, eoprot_tag_mc_joint_cmmnds_setpoint);
     
     if(false == res->setRemoteValue(protid, &setpoint))
     {
-        yError() << "while setting velocity direct mode";
+        yError() << getBoardInfo() << "while setting velocity direct target for";
         return ReturnValue::return_code::return_value_error_method_failed;
     }
     
@@ -5879,7 +5877,7 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(const std::vector<int>& jnts,
     for (int j=0; j < jnts.size(); j++)
     {
         ret &= setRefVelocityRaw(jnts[j], vels[j]);
-        if (!ret){}
+        if (!ret)
         {
             yError() << "while setting velocity direct mode for joint " << jnts[j];
             return ret;
@@ -5890,19 +5888,20 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(const std::vector<int>& jnts,
 
 ReturnValue embObjMotionControl::getRefVelocityRaw(const int jnt, double& vel)
 {
-    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, jnt,  eoprot_tag_mc_joint_status_target);//# Vale: quale è l'equivalente di questo? -> eoprot_tag_mc_joint_status_target);
+    // Using joint related datatypes, instead of motor related datatypes
+    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, jnt,  eoprot_tag_mc_joint_status_target);//# Vale: quale è l'equivalente di questo? -> eoprot_tag_mc_joint_status_target);
     
     uint16_t size;
     
-    eOmc_motor_status_basic_t  status;
+    eoprot_tag_mc_joint_status_target  target;
 
-    if (!askRemoteValue(protoId, &status, size)) // # Vale: "size" è argomento, ma non viene usato nella funzione
+    if (!askRemoteValue(protoId, &target, size))
     {
         yError() << "embObjMotionControl::getRefVelocityRaw() could not read velocity direct reference for " << getBoardInfo() << "joint " << jnt;
         return ReturnValue::return_code::return_value_error_method_failed;
     }
 
-    vel = (double)status.mot_velocity;
+    vel = (double)target.trgt_velocity;
 
     return ReturnValue::return_code::return_value_ok;
 }
@@ -5916,7 +5915,7 @@ ReturnValue embObjMotionControl::getRefVelocityRaw(std::vector<double>& vels)
         ret &= getRefVelocityRaw(j, vels[j]);
         if (!ret)
         {
-            yError() << "while getting velocity direct mode for joint " << j;
+            yError() << getBoardInfo() << "while getting velocity direct target for joint " << j;
             return ret;
         }
     }
@@ -5932,14 +5931,12 @@ ReturnValue embObjMotionControl::getRefVelocityRaw(const std::vector<int>& jnts,
         ret &= getRefVelocityRaw(jnts[j], vels[j]);
         if (!ret)
         {
-            yError() << "while getting velocity direct mode for joint " << j;
+            yError() << getBoardInfo() << "while getting velocity direct target for joint " << jnts[j];
             return ret;
         }
     }
     return ret;
 }
-
-// # Vale: I metodi da qui alla fine sono da mettere nella parte che gestisce i PID o li vogliamo qui?
 
 ReturnValue embObjMotionControl::setPidFeedforwardRaw(const PidControlTypeEnum& pidtype,int j, double v)
 {
