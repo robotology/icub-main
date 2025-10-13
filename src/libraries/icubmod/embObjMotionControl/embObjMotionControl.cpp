@@ -1371,15 +1371,39 @@ bool embObjMotionControl::init()
 
     SystemClock::delaySystem(0.005);
 
-
-
     /* X ANTO: add here a print of the pids*/
     for(int j=0; j< _njoints; j++)
-    {
+    {   
+
         yError() << "PID for joint " << j << " VELOCITY DIRECT ";
         _dir_vel_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
 
          yError() << "-------------PID for joint " << j << " VELOCITY DIRECT --------------------------";
+
+         yError() << "PID for joint " << j << " POSITION DIRECT ";
+        _dir_pos_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
+
+         yError() << "-------------PID for joint " << j << " POSITION DIRECT --------------------------";
+
+         yError() << "PID for joint " << j << " TORQUE ";
+        _trq_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
+
+         yError() << "-------------PID for joint " << j << "TORQUE --------------------------";
+
+         yError() << "PID for joint " << j << " CURRENT ";
+        _cur_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
+
+         yError() << "-------------PID for joint " << j << " CURRENT --------------------------";
+
+         yError() << "PID for joint " << j << " VELOCITY (trajectory) ";
+        _vel_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
+
+         yError() << "-------------PID for joint " << j << " VELOCITY (trajectory) --------------------------";
+
+         yError() << "PID for joint " << j << " POSITION (trajectory) ";
+        _trj_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
+
+         yError() << "-------------PID for joint " << j << " POSITION (trajectory) --------------------------";
 
     }
     //////////////////////////////////////////
@@ -1397,8 +1421,8 @@ bool embObjMotionControl::init()
         copyPid_iCub2eo(&tmp, &jconfig.pidtrajectory);
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT, _dir_pos_pids[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &jconfig.piddirect);
-        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT, _dir_vel_pids[logico].pid, fisico);
-        copyPid_iCub2eo(&tmp, &jconfig.piddirect);
+        //tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT, _dir_vel_pids[logico].pid, fisico);
+        //copyPid_iCub2eo(&tmp, &jconfig.piddirect);
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE, _trq_pids[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &jconfig.pidtorque);
 
@@ -5771,38 +5795,151 @@ bool embObjMotionControl::getAxesNames(std::string key, std::vector<std::string>
 
 ReturnValue embObjMotionControl::getAxes(size_t& axes)
 {
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+        axes=_njoints; // # Vale: è un duplicato?
+
+    return ReturnValue::return_code::return_value_ok;
 }
 
-ReturnValue embObjMotionControl::setRefVelocityRaw(int, double)
+ReturnValue embObjMotionControl::setRefVelocityRaw(int jnt, double vel)
 {
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    int mode=0;
+    getControlModeRaw(jnt, &mode);
+    if( (mode != VOCAB_CM_VELOCITY_DIRECT) &&
+        (mode != VOCAB_CM_IDLE))
+    {
+        if(event_downsampler->canprint())
+        {
+            yError() << "setRefVelocityRaw: skipping command because " << getBoardInfo() << " joint " << jnt << " is not in VOCAB_CM_VELOCITY_DIRECT mode";
+        }
+        return ReturnValue::return_code::return_value_ok;
+    }
+    
+    eOmc_setpoint_t setpoint;
+    setpoint.type = eomc_setpoint_velocity;
+
+    // Dubbio:
+    /*      # Vale: Manca un  eomc_setpoint_velocityraw?
+            typedef enum
+            {
+                eomc_setpoint_position                      = 0,
+                eomc_setpoint_velocity                      = 1,
+                eomc_setpoint_torque                        = 2,
+                eomc_setpoint_current                       = 3,
+                eomc_setpoint_positionraw                   = 4,
+                eomc_setpoint_openloop                      = 5
+            } eOmc_setpoint_type_t; 
+ 
+    */
+   
+    _ref_command_speeds[jnt] = vel;   // save internally the new value of velocity.
+    
+    setpoint.to.velocity.value =  (eOmeas_velocity_t) S_32(vel);
+
+     //accelerazione serve per minimum jerk o c'è feedforward nel velocity direct?
+    setpoint.to.velocity.withacceleration = 0; //(eOmeas_acceleration_t) S_32(_ref_accs[jnt]);
+    
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, jnt, eoprot_tag_mc_joint_cmmnds_setpoint);
+    
+    if(false == res->setRemoteValue(protid, &setpoint))
+    {
+        yError() << "while setting velocity direct mode";
+        return ReturnValue::return_code::return_value_error_method_failed;
+    }
+    
+    return ReturnValue::return_code::return_value_ok;
 }
 
 ReturnValue embObjMotionControl::setRefVelocityRaw(const std::vector<double>& vels)
 {
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    // Velocity is expressed in iDegrees/s
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= setRefVelocityRaw(j, vels[j]);
+
+        if (!ret){
+            yError() << "while setting velocity direct mode for joint " << j;
+            return ret;
+        }
+    }
+    return ret;
 }
 
 ReturnValue embObjMotionControl::setRefVelocityRaw(const std::vector<int>& jnts, const std::vector<double>& vels)
 {
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    // Velocity is expressed in iDegrees/s
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
+
+    if (jnts.size() != vels.size())
+    {
+        yError() << "while setting velocity direct mode";
+        return ReturnValue::return_code::return_value_error_method_failed;
+    }
+
+    for (int j=0; j < jnts.size(); j++)
+    {
+        ret &= setRefVelocityRaw(jnts[j], vels[j]);
+        if (!ret){}
+        {
+            yError() << "while setting velocity direct mode for joint " << jnts[j];
+            return ret;
+        }
+    }
+    return ret;
 }
 
 ReturnValue embObjMotionControl::getRefVelocityRaw(const int jnt, double& vel)
 {
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, jnt,  eoprot_tag_mc_joint_status_target);//# Vale: quale è l'equivalente di questo? -> eoprot_tag_mc_joint_status_target);
+    
+    uint16_t size;
+    
+    eOmc_motor_status_basic_t  status;
+
+    if (!askRemoteValue(protoId, &status, size)) // # Vale: "size" è argomento, ma non viene usato nella funzione
+    {
+        yError() << "embObjMotionControl::getRefVelocityRaw() could not read velocity direct reference for " << getBoardInfo() << "joint " << jnt;
+        return ReturnValue::return_code::return_value_error_method_failed;
+    }
+
+    vel = (double)status.mot_velocity;
+
+    return ReturnValue::return_code::return_value_ok;
 }
 
 ReturnValue embObjMotionControl::getRefVelocityRaw(std::vector<double>& vels)
 {
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
+
+    for (int j = 0; j< _njoints; j++)
+    {
+        ret &= getRefVelocityRaw(j, vels[j]);
+        if (!ret)
+        {
+            yError() << "while getting velocity direct mode for joint " << j;
+            return ret;
+        }
+    }
+    return ret;
 }
 
 ReturnValue embObjMotionControl::getRefVelocityRaw(const std::vector<int>& jnts, std::vector<double>& vels)
 {
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
+
+    for (int j = 0; j< jnts.size(); j++)
+    {
+        ret &= getRefVelocityRaw(jnts[j], vels[j]);
+        if (!ret)
+        {
+            yError() << "while getting velocity direct mode for joint " << j;
+            return ret;
+        }
+    }
+    return ret;
 }
+
+// # Vale: I metodi da qui alla fine sono da mettere nella parte che gestisce i PID o li vogliamo qui?
 
 ReturnValue embObjMotionControl::setPidFeedforwardRaw(const PidControlTypeEnum& pidtype,int j, double v)
 {
