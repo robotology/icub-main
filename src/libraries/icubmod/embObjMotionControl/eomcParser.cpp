@@ -562,15 +562,34 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config) //
         }
 
         eOmc_ctrl_out_type_t out_type;
+
         if(!getOutputType(out_type, valOutputType.toString()))
         {
             return false;
         }
 
-        if(!parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap))
+        if(valOutputType.toString() == "pwm"){
+
+            if(!parsePidValues(botControlLaw, _velocityDirectControlLaw[i], eomc_ctrl_out_type_pwm, directVelAlgoMap))
+            {
+                yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _velocityDirectControlLaw[i].c_str() << "[PWM]. Quitting.";
+                return false;
+            }   
+
+                yError() << " -------------------------- VELOCITY DIRECT [PWM]--------------------------";
+
+        }
+
+        if(valOutputType.toString() == "current")
         {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _velocityDirectControlLaw[i].c_str() <<". Quitting.";
-            return false;
+            if(!parsePidValues(botControlLaw, _velocityDirectControlLaw[i], eomc_ctrl_out_type_vel_cur, directVelAlgoMap))
+            {
+                yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _velocityDirectControlLaw[i].c_str() << "[CURRENT]. Quitting.";
+                return false;
+            }   
+
+            yError() << " -------------------------- VELOCITY DIRECT [!!! CURRENT !!!]--------------------------";
+
         }   
 
     }
