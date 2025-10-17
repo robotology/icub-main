@@ -5805,7 +5805,7 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(int jnt, double vel)
     int mode=0;
     getControlModeRaw(jnt, &mode);
     if( (mode != VOCAB_CM_VELOCITY_DIRECT) &&
-        (mode != VOCAB_CM_IDLE))
+        (mode != VOCAB_CM_IDLE)) //VALE: 
     {
         if(event_downsampler->canprint())
         {
@@ -5821,7 +5821,7 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(int jnt, double vel)
     /*      # Vale: Manca un  eomc_setpoint_velocityraw?
             typedef enum
             {
-                eomc_setpoint_position                      = 0,
+                eomc_setpoint_position                      = 0, 
                 eomc_setpoint_velocity                      = 1,
                 eomc_setpoint_torque                        = 2,
                 eomc_setpoint_current                       = 3,
@@ -5840,7 +5840,7 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(int jnt, double vel)
     
     if(false == res->setRemoteValue(protid, &setpoint))
     {
-        yError() << getBoardInfo() << "while setting velocity direct target for";
+        yError() << getBoardInfo() << "while setting velocity direct target for"  << "joint " << jnt;
         return ReturnValue::return_code::return_value_error_method_failed;
     }
     
@@ -5855,10 +5855,8 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(const std::vector<double>& ve
     {
         ret &= setRefVelocityRaw(j, vels[j]);
 
-        if (!ret){
-            yError() << "while setting velocity direct mode for joint " << j;
+        if (!ret)
             return ret;
-        }
     }
     return ret;
 }
@@ -5870,7 +5868,7 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(const std::vector<int>& jnts,
 
     if (jnts.size() != vels.size())
     {
-        yError() << "while setting velocity direct mode";
+         yError() << getBoardInfo() << "while setting velocity direct target: size of joints and velocities vectors do not match";
         return ReturnValue::return_code::return_value_error_method_failed;
     }
 
@@ -5878,10 +5876,7 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(const std::vector<int>& jnts,
     {
         ret &= setRefVelocityRaw(jnts[j], vels[j]);
         if (!ret)
-        {
-            yError() << "while setting velocity direct mode for joint " << jnts[j];
             return ret;
-        }
     }
     return ret;
 }
@@ -5889,11 +5884,11 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(const std::vector<int>& jnts,
 ReturnValue embObjMotionControl::getRefVelocityRaw(const int jnt, double& vel)
 {
     // Using joint related datatypes, instead of motor related datatypes
-    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, jnt,  eoprot_tag_mc_joint_status_target);//# Vale: quale è l'equivalente di questo? -> eoprot_tag_mc_joint_status_target);
+    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, jnt,  eoprot_tag_mc_joint_status_target);
     
     uint16_t size;
     
-    eoprot_tag_mc_joint_status_target  target;
+    eOmc_joint_status_target_t target;
 
     if (!askRemoteValue(protoId, &target, size))
     {
@@ -5914,10 +5909,8 @@ ReturnValue embObjMotionControl::getRefVelocityRaw(std::vector<double>& vels)
     {
         ret &= getRefVelocityRaw(j, vels[j]);
         if (!ret)
-        {
-            yError() << getBoardInfo() << "while getting velocity direct target for joint " << j;
-            return ret;
-        }
+        return ret;
+
     }
     return ret;
 }
@@ -5930,10 +5923,7 @@ ReturnValue embObjMotionControl::getRefVelocityRaw(const std::vector<int>& jnts,
     {
         ret &= getRefVelocityRaw(jnts[j], vels[j]);
         if (!ret)
-        {
-            yError() << getBoardInfo() << "while getting velocity direct target for joint " << jnts[j];
             return ret;
-        }
     }
     return ret;
 }
