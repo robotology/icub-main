@@ -588,8 +588,13 @@ typedef struct
     double         warningTemperatureLimit;
 } temperatureLimits_t; // limits expressed as raw values after conversion is applied
 
-//template <class T>
 
+enum class pidParserType_t
+{
+    Simple,    // parse only the param in parsePidsGroupSimple function
+    Extended, // parse the param in parsePidsGroupExtended function
+    Deluxe    // parse the param in parsePidsGroupDeluxe function
+};
 class Parser
 {
 
@@ -631,14 +636,13 @@ private:
     //PID parsing functions
     bool parseControlsGroup(yarp::os::Searchable &config);
     bool getOutputType(eOmc_ctrl_out_type_t &out_type, std::string outputtype_str);
-    bool parsePidValues(yarp::os::Bottle& b_pid, std::string controlLaw, eOmc_ctrl_out_type_t outType, std::map<std::string, Pid_Algorithm*> &pidMap);
+    bool parsePidValues(yarp::os::Bottle& b_pid, std::string controlLaw, eOmc_ctrl_out_type_t outType, std::map<std::string, Pid_Algorithm*> &pidMap, pidParserType_t parserType);
     bool parseSelectedPositionControl(yarp::os::Searchable &config);
     bool parseSelectedVelocityControl(yarp::os::Searchable &config);
     bool parseSelectedMixedControl(yarp::os::Searchable &config);
     bool parseSelectedTorqueControl(yarp::os::Searchable &config);
     bool parseSelectedPositionDirectControl(yarp::os::Searchable &config);
     bool parseSelectedVelocityDirectControl(yarp::os::Searchable &config);
-
     bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids);
 
     // bool parsePid_minJerk_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
