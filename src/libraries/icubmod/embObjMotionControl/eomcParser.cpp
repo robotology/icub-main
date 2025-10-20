@@ -540,10 +540,10 @@ bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config) //
         {
             case eomc_ctrl_out_type_pwm:
             case eomc_ctrl_out_type_cur:
-                parseOk = parsePidValues(botControlLaw, _positionDirectControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Extended);
+                parseOk = parsePidValues(botControlLaw, _positionDirectControlLaw[i], out_type, directPosAlgoMap, pidParserType_t::Extended);
                 break;
             case eomc_ctrl_out_type_vel:
-                parseOk = parsePidValues(botControlLaw, _positionDirectControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Simple);
+                parseOk = parsePidValues(botControlLaw, _positionDirectControlLaw[i], out_type, directPosAlgoMap, pidParserType_t::Simple);
                 break;
         }
         if(!parseOk)
@@ -607,10 +607,10 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config) //
         {
             case eomc_ctrl_out_type_pwm:
             case eomc_ctrl_out_type_cur:
-                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Extended);
+                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::Extended);
                 break;
             case eomc_ctrl_out_type_vel:
-                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Simple);
+                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::Simple);
                 break;
         }
         if(!parseOk)
@@ -672,10 +672,10 @@ bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config) // OK
         {
             case eomc_ctrl_out_type_pwm:
             case eomc_ctrl_out_type_cur:
-                parseOk = parsePidValues(botControlLaw, _torqueControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Deluxe);
+                parseOk = parsePidValues(botControlLaw, _torqueControlLaw[i], out_type, torqueAlgoMap, pidParserType_t::Deluxe);
                 break;
             case eomc_ctrl_out_type_vel:
-                parseOk = parsePidValues(botControlLaw, _torqueControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Extended);
+                parseOk = parsePidValues(botControlLaw, _torqueControlLaw[i], out_type, torqueAlgoMap, pidParserType_t::Extended);
                 break;
         }
         if(!parseOk)
@@ -960,7 +960,7 @@ bool Parser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, c
 
 bool Parser::parsePidValues(yarp::os::Bottle &b_pid, std::string controlLaw, eOmc_ctrl_out_type_t outType, std::map<std::string, Pid_Algorithm*> &pidMap, pidParserType_t parserType)
 {
-    if (pidMap.find(controlLaw) == pidMap.end()) return true;
+    if (pidMap.find(controlLaw) != pidMap.end()) return true;
 
     Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, outType);
 
@@ -1175,7 +1175,7 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, PidInfo *
         it = minjerkAlgoMap.find(_positionControlLaw[i]);
         if (it == minjerkAlgoMap.end())
         {
-            yError() << "embObjMC BOARD " << _boardname << "Cannot find " << _positionControlLaw[i].c_str() << "in parsed pos pid";
+            yError() << "embObjMC BOARD" << _boardname << "Cannot find" << _positionControlLaw[i].c_str() << "in parsed pos pid";
             return false;
         }
 

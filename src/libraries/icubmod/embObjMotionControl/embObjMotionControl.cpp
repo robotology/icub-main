@@ -5815,26 +5815,9 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(int jnt, double vel)
     }
     
     eOmc_setpoint_t setpoint;
-    setpoint.type = eomc_setpoint_velocity;
-
-    // Dubbio:
-    /*      # Vale: Manca un  eomc_setpoint_velocityraw?
-            typedef enum
-            {
-                eomc_setpoint_position                      = 0, 
-                eomc_setpoint_velocity                      = 1,
-                eomc_setpoint_torque                        = 2,
-                eomc_setpoint_current                       = 3,
-                eomc_setpoint_positionraw                   = 4,
-                eomc_setpoint_openloop                      = 5
-            } eOmc_setpoint_type_t; 
- 
-    */
+    setpoint.type = eomc_setpoint_velocityraw;
       
-    setpoint.to.velocity.value =  (eOmeas_velocity_t) S_32(_ref_command_speeds[jnt]);
-
-     //accelerazione serve per minimum jerk o c'è feedforward nel velocity direct?
-    setpoint.to.velocity.withacceleration = 0; // # Vale: chidere ad Alessandro
+    setpoint.to.velocity.value =  (eOmeas_velocity_t) S_32(vel);
     
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, jnt, eoprot_tag_mc_joint_cmmnds_setpoint);
     
