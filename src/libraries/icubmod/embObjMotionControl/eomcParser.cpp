@@ -607,10 +607,10 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config) //
         {
             case eomc_ctrl_out_type_pwm:
             case eomc_ctrl_out_type_cur:
-                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::Extended);
+                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::FOC2);
                 break;
             case eomc_ctrl_out_type_vel:
-                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::Simple);
+                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::FOC2);
                 break;
         }
         if(!parseOk)
@@ -978,9 +978,15 @@ bool Parser::parsePidValues(yarp::os::Bottle &b_pid, std::string controlLaw, eOm
     case pidParserType_t::Extended:
         parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
         break;
+
     case pidParserType_t::Deluxe:
         parsePidsGroupDeluxe(b_pid, pidAlgo_ptr->pid);
         break;
+
+    case pidParserType_t::FOC2:
+        parsePidsGroup2FOC(b_pid, pidAlgo_ptr->pid);
+        break;
+        
     default:
         break;
     };

@@ -593,7 +593,8 @@ enum class pidParserType_t
 {
     Simple,    // parse only the param in parsePidsGroupSimple function
     Extended, // parse the param in parsePidsGroupExtended function
-    Deluxe    // parse the param in parsePidsGroupDeluxe function
+    Deluxe,    // parse the param in parsePidsGroupDeluxe function
+    FOC2
 };
 class Parser
 {
