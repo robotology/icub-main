@@ -1534,11 +1534,32 @@ bool embObjMotionControl::init()
         motor_cfg.LuGre_params.Fs_neg = _lugre_params[logico].Fs_neg;
         
         yarp::dev::Pid tmp;
+
+        //current pid
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, _cur_pids[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &motor_cfg.pidcurrent);
-                
-        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, _vel_pids[logico].pid, fisico);
-        copyPid_iCub2eo(&tmp, &motor_cfg.pidspeed);
+
+        //velocity pid
+        memset(&motor_cfg.pidvelcur, 0, sizeof(eOmc_PID_t));
+        memset(&motor_cfg.pidvelpwm, 0, sizeof(eOmc_PID_t));
+
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, _dir_vel_pids[logico].pid, fisico);
+
+        if(eomc_ctrl_out_type_pwm == _dir_vel_pids[logico].out_type)
+        {
+            copyPid_iCub2eo(&tmp, &motor_cfg.pidvelpwm);
+           
+        }
+        else if (eomc_ctrl_out_type_vel_cur == _dir_vel_pids[logico].out_type)
+        {
+            copyPid_iCub2eo(&tmp, &motor_cfg.pidvelcur);
+        }
+        {
+
+            yError() << "embObjMC " << getBoardInfo() << " joint " << logico << " velocity direct pid has unsupported output type";
+            return false;
+        }
+        
 
         if (false == res->setcheckRemoteValue(protid, &motor_cfg, 10, 0.010, 0.050))
         {
@@ -5505,7 +5526,7 @@ bool embObjMotionControl::helper_setCurPidRaw(int j, const Pid &pid)
 
 bool embObjMotionControl::helper_setSpdPidRaw(int j, const Pid &pid)
 {
-    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pidspeed);
+    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pidvelpwm);
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
 
@@ -5552,7 +5573,7 @@ bool embObjMotionControl::helper_getSpdPidRaw(int j, Pid *pid)
         return false;
 
     // refresh cached value when reading data from the EMS
-    eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg.pidspeed;
+    eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg.pidvelpwm;
     copyPid_eo2iCub(&tmp, pid);
 
     return true;
@@ -5582,7 +5603,7 @@ bool embObjMotionControl::helper_getSpdPidsRaw(Pid *pid)
 
     for (int j = 0; j<_njoints; j++)
     {
-        eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg_list[j].pidspeed;
+        eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg_list[j].pidvelpwm;
         copyPid_eo2iCub(&tmp, &pid[j]);
     }
     return true;
