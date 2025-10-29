@@ -398,6 +398,8 @@ bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config) // OK
             case eomc_ctrl_out_type_vel:
                 parseOk = parsePidValues(botControlLaw, _velocityControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Simple);
                 break;
+            case eomc_ctrl_out_type_vel_cur:
+                break;
         }
         if(!parseOk)
         {
