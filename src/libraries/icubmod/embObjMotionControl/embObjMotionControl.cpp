@@ -1547,16 +1547,18 @@ bool embObjMotionControl::init()
 
         if(eomc_ctrl_out_type_pwm == _dir_vel_pids[logico].out_type)
         {
+            _dir_vel_pids[logico].out_type = eomc_ctrl_out_type_vel;
             copyPid_iCub2eo(&tmp, &motor_cfg.pidvelpwm);
-           
         }
-        else if (eomc_ctrl_out_type_vel_cur == _dir_vel_pids[logico].out_type)
+        else if (eomc_ctrl_out_type_cur == _dir_vel_pids[logico].out_type)
         {
+            _dir_vel_pids[logico].out_type = eomc_ctrl_out_type_vel_cur;
             copyPid_iCub2eo(&tmp, &motor_cfg.pidvelcur);
         }
+        else
         {
 
-            yError() << "embObjMC " << getBoardInfo() << " joint " << logico << " velocity direct pid has unsupported output type";
+            yError() << "embObjMC " << getBoardInfo() << " joint " << logico << " velocity direct pid has unsupported output type " << _dir_vel_pids[logico].out_type;
             return false;
         }
         
