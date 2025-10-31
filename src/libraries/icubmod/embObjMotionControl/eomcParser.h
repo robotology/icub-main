@@ -418,8 +418,8 @@ public:
                 case eomc_ctrl_out_type_n_a: return "n/a";
                 case eomc_ctrl_out_type_pwm: return "pwm";
                 case eomc_ctrl_out_type_cur: return "cur";
-                case eomc_ctrl_out_type_vel: return "vel";
-                case eomc_ctrl_out_type_vel_cur: return "cur";
+                case eomc_ctrl_out_type_vel: return "vel_pwm";
+                case eomc_ctrl_out_type_vel_cur: return "vel_cur";
                 default: return "UNKNOWN";
             }
         };
