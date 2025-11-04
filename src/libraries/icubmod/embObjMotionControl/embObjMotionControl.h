@@ -270,7 +270,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IJointFaultRaw,
     public ImplementJointFault,
     public iCub::debugLibrary::IRawValuesPublisher,
-    public IVelocityDirectRaw
+    public IVelocityDirectRaw,
+    public ImplementVelocityDirect
     {
 private:
     eth::TheEthManager*        ethManager;

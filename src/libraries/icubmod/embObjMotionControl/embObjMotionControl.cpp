@@ -188,6 +188,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementEncodersTimed(this),
     ImplementPositionControl(this),
     ImplementVelocityControl(this),
+    ImplementVelocityDirect(this),
     ImplementControlMode(this),
     ImplementImpedanceControl(this),
     ImplementMotorEncoders(this),
@@ -325,6 +326,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementPidControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM);
     ImplementControlMode::initialize(_njoints, _axisMap);
     ImplementVelocityControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementVelocityDirect::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementControlLimits::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM, f.bemf2raw, f.ktau2raw);
@@ -1545,31 +1547,12 @@ bool embObjMotionControl::init()
 
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT, _dir_vel_pids[logico].pid, fisico);
 
-        if(eomc_ctrl_out_type_pwm == _dir_vel_pids[logico].out_type)
+        if(eomc_ctrl_out_type_vel == _dir_vel_pids[logico].out_type)
         {
-            yError("************************************************************************************");
-            yError("************************************************************************************");
-            yError("************************************************************************************");
-            yError("************************************************************************************");
-            yError("************************************************************************************");
-            yError("************************************************************************************");
-            yError("************************************************************************************");
-
-            _dir_vel_pids[logico].out_type = eomc_ctrl_out_type_vel;
             copyPid_iCub2eo(&tmp, &motor_cfg.pidvelpwm);
         }
-        else if (eomc_ctrl_out_type_cur == _dir_vel_pids[logico].out_type)
+        else if (eomc_ctrl_out_type_vel_cur == _dir_vel_pids[logico].out_type)
         {
-            yError("####################################################################################");
-            yError("####################################################################################");
-            yError("####################################################################################");
-            yError("####################################################################################");
-            yError("####################################################################################");
-            yError("####################################################################################");
-            yError("####################################################################################");
-            yError("####################################################################################");
-            
-            _dir_vel_pids[logico].out_type = eomc_ctrl_out_type_vel_cur;
             copyPid_iCub2eo(&tmp, &motor_cfg.pidvelcur);
         }
         else
@@ -5857,7 +5840,7 @@ ReturnValue embObjMotionControl::setRefVelocityRaw(int jnt, double vel)
     eOmc_setpoint_t setpoint;
     setpoint.type = eomc_setpoint_velocityraw;
       
-    setpoint.to.velocity.value =  (eOmeas_velocity_t) S_32(vel);
+    setpoint.to.velocityraw.value =  (eOmeas_velocity_t) S_32(vel);
     
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, jnt, eoprot_tag_mc_joint_cmmnds_setpoint);
     
