@@ -398,8 +398,6 @@ bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config) // OK
             case eomc_ctrl_out_type_vel:
                 parseOk = parsePidValues(botControlLaw, _velocityControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Simple);
                 break;
-            case eomc_ctrl_out_type_vel_cur:
-                break;
         }
         if(!parseOk)
         {
@@ -604,6 +602,15 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config) //
             return false;
         }
 
+        if (out_type == eomc_ctrl_out_type_pwm)
+        {
+            out_type = eomc_ctrl_out_type_vel;
+        }
+        else if (out_type == eomc_ctrl_out_type_cur)
+        {
+            out_type = eomc_ctrl_out_type_vel_cur;
+        }
+
         bool parseOk = false;
         switch (out_type)
         {
@@ -614,7 +621,11 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config) //
             case eomc_ctrl_out_type_vel:
                 parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::FOC2);
                 break;
+            case eomc_ctrl_out_type_vel_cur:
+                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::FOC2);
+                break;        
         }
+
         if(!parseOk)
         {
             yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _velocityDirectControlLaw[i].c_str() <<". Quitting.";
