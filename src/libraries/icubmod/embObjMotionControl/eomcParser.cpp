@@ -1745,6 +1745,11 @@ bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeou
         for(i=0; i<_njoints; i++)
             timeouts[i].torque_ref = defaultTimeout;
     }
+    else
+    {
+        for(i=1; i<xtmp.size(); i++)
+            timeouts[i-1].torque_ref = xtmp.get(i).asInt32();
+    }
 
     xtmp.clear();
     if (!extractGroup(timeoutsGroup, xtmp, "torque_measure", "a list of timeout to be used in the vmo control", _njoints, false))
