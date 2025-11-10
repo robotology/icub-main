@@ -109,6 +109,8 @@ namespace eth {
             */
             virtual bool getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName);
 
+            virtual bool getEntityControlModeName(uint32_t jomoId, eOmc_controlmode_t control_mode, std::string &controlModeName, eObool_t compact_string = eobool_true);
+
     private:
             static const char * names[iethresType_numberof+1];
     };

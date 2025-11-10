@@ -459,6 +459,7 @@ public:
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
     virtual bool getEntityName(uint32_t entityId, std::string &entityName);
     virtual bool getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName) override;
+    virtual bool getEntityControlModeName(uint32_t entityId, eOmc_controlmode_t control_mode, std::string &controlModeName, eObool_t compact_string) override;
 
     /////////   PID INTERFACE   /////////
     virtual bool setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid) override;
