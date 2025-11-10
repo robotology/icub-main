@@ -26,7 +26,7 @@
 #include <yarp/os/NetType.h>
 #include <yarp/dev/ControlBoardHelper.h>
 
-// #include <yarp/dev/ReturnValue.h>
+ #include <yarp/dev/ReturnValue.h>
 
 // local include
 #include "EoCommon.h"
