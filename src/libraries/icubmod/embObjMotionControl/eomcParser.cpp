@@ -47,7 +47,7 @@ yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
     _velocityDirectControlLaw.resize(0);
     _torqueControlLaw.resize(0);
     _currentControlLaw.resize(0);
-    _speedControlLaw.resize(0);
+
 
     _kbemf=allocAndCheck<double>(_njoints);
     _ktau=allocAndCheck<double>(_njoints);
@@ -86,7 +86,6 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vp
     //std::vector<std::string> _mixedControlLaw;
     //std::vector<std::string> _torqueControlLaw;
     //std::vector<std::string> _currentControlLaw;
-    //std::vector<std::string> _speedControlLaw;
     //std::vector<std::string> _positionDirectControlLaw;
     //std::vector<std::string> _velocityDirectControlLaw;
 
@@ -98,10 +97,6 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vp
     if(!parseSelectedCurrentPid(config, lowLevPidisMandatory, cpids)) // OK
         return false;
 
-    // legge i pid di velocità per ciascun motore 
-    // come specificato in _speedControlLaw
-    //if(!parseSelectedSpeedPid(config, lowLevPidisMandatory, spids)) // OK
-    //    return false;
 
     // usa _positionControlLaw per recuperare i PID
     // del position control per ogni giunto
