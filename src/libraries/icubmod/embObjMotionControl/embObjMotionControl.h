@@ -390,8 +390,8 @@ private:
     bool saveCouplingsData(void);
     void debugUtil_printJointsetInfo(void);
 
-    bool isTorqueControlEnabled(int joint);
-    bool isVelocityControlEnabled(int joint);
+    //bool isTorqueControlEnabled(int joint); //commented out because not used
+   // bool isVelocityControlEnabled(int joint); //commented out because not used
 
     bool iNeedCouplingsInfo(void); //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
 

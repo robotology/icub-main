@@ -617,7 +617,6 @@ private:
     std::vector<std::string> _mixedControlLaw;
     std::vector<std::string> _torqueControlLaw;
     std::vector<std::string> _currentControlLaw;
-    std::vector<std::string> _speedControlLaw;
     std::vector<std::string> _positionDirectControlLaw;
     std::vector<std::string> _velocityDirectControlLaw;
 

@@ -26,7 +26,7 @@
 #include <yarp/os/NetType.h>
 #include <yarp/dev/ControlBoardHelper.h>
 
-// #include <yarp/dev/ReturnValue.h>
+ #include <yarp/dev/ReturnValue.h>
 
 // local include
 #include "EoCommon.h"
@@ -1124,17 +1124,17 @@ bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(yarp::dev::PidFeedbac
     return true;
 }
 
-bool embObjMotionControl::isTorqueControlEnabled(int joint)
-{
-    return (_trq_pids[joint].enabled);
-}
+// bool embObjMotionControl::isTorqueControlEnabled(int joint)
+// {
+//     return (_trq_pids[joint].enabled);
+// }
 
-bool embObjMotionControl::isVelocityControlEnabled(int joint)
-{
-    //TODO: check if this function belongs to velocity interface or velocity direct interface
-    //return (_dir_pids[joint].enabled);
-    return (_trj_pids[joint].enabled);
-}
+// bool embObjMotionControl::isVelocityControlEnabled(int joint)
+// {
+//     //TODO: check if this function belongs to velocity interface or velocity direct interface
+//     //return (_dir_pids[joint].enabled);
+//     return (_trj_pids[joint].enabled);
+// }
 
 
 void embObjMotionControl::updateDeadZoneWithDefaultValues(void)
@@ -4025,7 +4025,7 @@ bool embObjMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
         for (int i = 0; i < _njoints; i++)
         {
             getPosLimitsRaw(i, &min, &max);
-            setLimitsRaw(i, min, val.get(i).asFloat64());
+            setPosLimitsRaw(i, min, val.get(i).asFloat64());
         }
         return true;
     }
@@ -4035,7 +4035,7 @@ bool embObjMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
         for (int i = 0; i < _njoints; i++)
         {
             getPosLimitsRaw(i, &min, &max);
-            setLimitsRaw(i, val.get(i).asFloat64(), max);
+            setPosLimitsRaw(i, val.get(i).asFloat64(), max);
         }
     }
 #endif
