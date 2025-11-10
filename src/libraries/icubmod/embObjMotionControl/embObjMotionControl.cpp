@@ -1373,41 +1373,7 @@ bool embObjMotionControl::init()
 
     SystemClock::delaySystem(0.005);
 
-    /* X ANTO: add here a print of the pids*/
-    for(int j=0; j< _njoints; j++)
-    {   
 
-        yError() << "PID for joint " << j << " VELOCITY DIRECT ";
-        _dir_vel_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
-
-         yError() << "-------------PID for joint " << j << " VELOCITY DIRECT --------------------------";
-
-         yError() << "PID for joint " << j << " POSITION DIRECT ";
-        _dir_pos_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
-
-         yError() << "-------------PID for joint " << j << " POSITION DIRECT --------------------------";
-
-         yError() << "PID for joint " << j << " TORQUE ";
-        _trq_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
-
-         yError() << "-------------PID for joint " << j << "TORQUE --------------------------";
-
-         yError() << "PID for joint " << j << " CURRENT ";
-        _cur_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
-
-         yError() << "-------------PID for joint " << j << " CURRENT --------------------------";
-
-         yError() << "PID for joint " << j << " VELOCITY (trajectory) ";
-        _vel_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
-
-         yError() << "-------------PID for joint " << j << " VELOCITY (trajectory) --------------------------";
-
-         yError() << "PID for joint " << j << " POSITION (trajectory) ";
-        _trj_pids[j].print(); // note here we don't need to transform fro id "logico" to "fisico" because logico=fisico
-
-         yError() << "-------------PID for joint " << j << " POSITION (trajectory) --------------------------";
-
-    }
     //////////////////////////////////////////
     // invia la configurazione dei GIUNTI   //
     //////////////////////////////////////////
@@ -1423,8 +1389,6 @@ bool embObjMotionControl::init()
         copyPid_iCub2eo(&tmp, &jconfig.pidtrajectory);
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT, _dir_pos_pids[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &jconfig.piddirect);
-        //tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT, _dir_vel_pids[logico].pid, fisico);
-        //copyPid_iCub2eo(&tmp, &jconfig.piddirect);
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE, _trq_pids[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &jconfig.pidtorque);
 
