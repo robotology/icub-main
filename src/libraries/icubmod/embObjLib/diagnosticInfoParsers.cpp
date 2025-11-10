@@ -12,8 +12,10 @@
 #include "embot_core_binary.h"
 #include "serviceParser.h"
 #include <yarp/os/Time.h>
-#include <algorithm>
 
+#include <algorithm>
+#include <sstream>
+#include <iomanip>
 
 using namespace Diagnostic::LowLevel;
 
@@ -861,10 +863,14 @@ void MotionControlParser::parseInfo()
 
             m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
 
-            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d), Position_feedback=%.4f, Ref_controlmode=%x)",
-                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, position_feedback_converted, ref_controlmode
-                                        );
-            m_dnginfo.baseInfo.finalMessage.append(str);
+            std::stringstream ss;
+            ss << " " << m_dnginfo.baseMessage
+               << " (Joint=" << m_dnginfo.baseInfo.axisName
+               << " (NIB=" << joint_num
+               << "), Position_feedback=" << std::fixed << std::setprecision(4) << position_feedback_converted
+               << ", Ref_controlmode=0x" << std::hex << static_cast<int>(ref_controlmode) << ")";
+            m_dnginfo.baseInfo.finalMessage.append(ss.str());
+            
         } break;
         case EOERROR_VALUE_DUMMY:
         {
