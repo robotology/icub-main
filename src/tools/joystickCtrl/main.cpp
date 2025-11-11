@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Marco Randazzo
  * email:  marco.randazzo@iit.it
@@ -104,13 +104,13 @@ using namespace yarp::math;
 #define PRINT_STATUS_PER 0.1
 #define MAX_AXES         32
 
-enum { JTYPE_UNDEF=-1, JTYPE_POLAR=0, JTYPE_CARTESIAN=1, JTYPE_CONSTANT=2, JTYPE_STRING=3 };
+enum { JTYPE_UNDEF=-1, JTYPE_POLAR=0, JTYPE_CARTESIAN=1, JTYPE_CONSTANT=2, JTYPE_STRING=3, JTYPE_BUTTON=4 };
 
 class CtrlThread: public PeriodicThread
 {
     struct struct_jointProperties
     {
-        int type; 
+        int type;
         int param[3];
         string param_s;
     };
@@ -131,7 +131,7 @@ protected:
     int numButtons;
     int joy_id;
     SDL_Joystick* joy1;
-    
+
     //button actions;
     string button_actions [20];
 
@@ -215,7 +215,7 @@ public:
         }
 
         Bottle b;
-        
+
 
         b = rf.findGroup("INPUTS").findGroup("Reverse");
         if (b.size()-1 == num_inputs)
@@ -292,6 +292,19 @@ public:
                 jointProperties[i].param[2]=0;
             }
             else
+            if (b.get(1).asString()=="button_as_axis")
+            {
+                if (b.size() < 5)
+                {
+                    yError("Configuration error: 'button_as_axis' for Ax%d requires 3 parameters (button_num, low_val, high_val)", i);
+                    return false;
+                }
+                jointProperties[i].type=JTYPE_BUTTON;
+                jointProperties[i].param[0]=b.get(2).asInt32(); //button num
+                jointProperties[i].param[1]=b.get(3).asInt32(); //low value
+                jointProperties[i].param[2]=b.get(4).asInt32(); //high value
+            }
+            else
             if (b.get(1).asString()=="constant")
             {
                 jointProperties[i].type=JTYPE_CONSTANT;
@@ -345,7 +358,7 @@ public:
             yInfo ( "associating the following actions to the buttons: \n");
             for (int iii = 0; iii < 20; iii++){
                 char tmp[80];
-                sprintf(tmp, "button%d", iii); 
+                sprintf(tmp, "button%d", iii);
                 if (exec_comm_bottle.check(tmp))
                 {
                     button_actions[iii] = exec_comm_bottle.find(tmp).toString();
@@ -448,7 +461,7 @@ public:
         yInfo (  "\n");
 
         // check: selected joint MUST have at least one axis
-        if (numAxes<=0) 
+        if (numAxes<=0)
         {
             yError ( "Error: selected joystick has %d Axes?!\n",numAxes );
             return false;
@@ -463,7 +476,7 @@ public:
                 yWarning (  "Do you want to continue anyway (y/n)?\n");
                 char input[255];
                 cin >> input;
-                if (input[0]!='y' && input[0]!='Y') 
+                if (input[0]!='y' && input[0]!='Y')
                 {
                     yInfo ( "Quitting...\n");
                     return false;
@@ -583,7 +596,7 @@ public:
         Bottle axis_data;
         Bottle buttons_data;
         for(int i=0;i<num_outputs;i++)
-        {            
+        {
             if (jointProperties[i].type == JTYPE_POLAR)
             {
                 if (jointProperties[i].param[2] == 0)
@@ -609,6 +622,26 @@ public:
             else if (jointProperties[i].type == JTYPE_CONSTANT)
             {
                 outAxes[i]=(jointProperties[i].param[0]);
+            }
+            else if (jointProperties[i].type == JTYPE_BUTTON)
+            {
+                const int button_idx = jointProperties[i].param[0];
+                if (button_idx>=0 && button_idx<numButtons)
+                {
+                    if (rawButtons[button_idx] == 0)
+                    {
+                       outAxes[i] = jointProperties[i].param[1];
+                    }
+                    else
+                    {
+                       outAxes[i] = jointProperties[i].param[2];
+                    }
+                }
+                else
+                {
+                    yWarning ( "Button id out of bounds (%d<%d)",button_idx,numButtons);
+                    outAxes[i] = 0.0;
+                }
             }
             else
             {
@@ -647,14 +680,14 @@ public:
                     action += " ";
                     //if true, the behavior is like a button, one esecution per press
                     //if false, execution is continuous
-                    bool trigger_mode=true; 
+                    bool trigger_mode=true;
                     switch(rawHats[i])
                     {
                         case SDL_HAT_UP:
                             action += "up";
                             break;
                         case SDL_HAT_RIGHT:
-                            action += "right"; 
+                            action += "right";
                             break;
                         case SDL_HAT_DOWN:
                             action += "down";
@@ -686,7 +719,7 @@ public:
                         }
                     }
                     else
-                    {    
+                    {
                         yInfo ("executing script %d: %s\n", i, action.c_str());
                         int ret = system(action.c_str());
                     }
@@ -700,7 +733,7 @@ public:
 
         // Preparing data to be sent on the yarp ports
         for(int i=0;i<num_outputs;i++)
-        {    
+        {
             if ( jointProperties[i].type == JTYPE_STRING)
                 data.addString(jointProperties[i].param_s.c_str());
             else
@@ -737,7 +770,7 @@ public:
     }
 
     virtual void threadRelease()
-    {    
+    {
         if (rawAxes)         delete [] rawAxes;
         if (rawHats)         delete [] rawHats;
         if (rawHatsOld)      delete [] rawHatsOld;
