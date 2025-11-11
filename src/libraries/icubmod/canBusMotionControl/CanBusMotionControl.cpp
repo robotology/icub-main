@@ -2570,13 +2570,13 @@ bool CanBusMotionControl::open (Searchable &config)
 
     // default initialization for this device driver.
     yarp::os::Time::delay(0.005);
-    setPids(VOCAB_PIDTYPE_POSITION, p._pids);
+    setPids(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, p._pids);
     
     if (p._torqueControlEnabled==true)
     {
         _MCtorqueControlEnabled = true;
         yarp::os::Time::delay(0.005);
-        setPids(VOCAB_PIDTYPE_TORQUE, p._tpids);
+        setPids(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE, p._tpids);
         
         for (int i=0; i<p._njoints; i++)
         {
@@ -2624,7 +2624,7 @@ bool CanBusMotionControl::open (Searchable &config)
     for(i = 0; i < p._njoints; i++)
     {
         yarp::os::Time::delay(0.001);
-        setLimits(i, p._limitsMin[i], p._limitsMax[i]);
+        setPosLimitsRaw(i, p._limitsMin[i], p._limitsMax[i]);
         yarp::os::Time::delay(0.001);
         setVelLimits(i, 0, p._maxJntCmdVelocity[i]);
         yarp::os::Time::delay(0.001);
@@ -3830,7 +3830,7 @@ void CanBusMotionControl:: run()
 
 
     // ControlMode
-bool CanBusMotionControl::getControlModesRaw(int *v)
+ReturnValue CanBusMotionControl::getControlModesRaw(int *v)
 {
     DEBUG_FUNC("Calling GET_CONTROL_MODES\n");
     CanBusResources& r = RES(system_resources);
@@ -3842,7 +3842,7 @@ bool CanBusMotionControl::getControlModesRaw(int *v)
         temp = int(r._bcastRecvBuffer[i]._controlmodeStatus);
         v[i]=from_modeint_to_modevocab(temp);
     }
-    return true;
+    return ReturnValue_ok;
 }
 /*
 //@@@ TO BE REMOVED LATER (AFTER INCLUDING FIRMWARE_SHARED)
@@ -4016,13 +4016,13 @@ int CanBusMotionControl::from_modeint_to_modevocab (unsigned char modeint)
     }
 }
 
-bool CanBusMotionControl::getControlModeRaw(int j, int *v)
+ReturnValue CanBusMotionControl::getControlModeRaw(int j, int *v)
 {
     CanBusResources& r = RES(system_resources);
     if (!(j>= 0 && j <= r.getJoints())) 
     {
         *v=VOCAB_CM_UNKNOWN;
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     short s;
@@ -4034,15 +4034,15 @@ bool CanBusMotionControl::getControlModeRaw(int j, int *v)
     s = r._bcastRecvBuffer[j]._controlmodeStatus;
   
     *v=from_modeint_to_modevocab(s);
-    return true;
+    return ReturnValue_ok;
 }
 
 // IControl Mode 2
-bool CanBusMotionControl::getControlModesRaw(const int n_joints, const int *joints, int *modes)
+ReturnValue CanBusMotionControl::getControlModesRaw(const int n_joints, const int *joints, int *modes)
 {
     DEBUG_FUNC("Calling GET_CONTROL_MODE MULTIPLE JOINTS \n");
-    if (joints==0) return false;
-    if (modes==0) return false;
+    if (joints==0) return ReturnValue::return_code::return_value_error_generic;
+    if (modes==0) return ReturnValue::return_code::return_value_error_generic;
 
     CanBusResources& r = RES(system_resources);
     int i;
@@ -4051,21 +4051,21 @@ bool CanBusMotionControl::getControlModesRaw(const int n_joints, const int *join
     {
         getControlModeRaw(joints[i], &modes[i]);
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
+ReturnValue CanBusMotionControl::setControlModeRaw(const int j, const int mode)
 {
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    if (mode == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
+    if (mode == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return ReturnValue::return_code::return_value_error_generic;}
 
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
 
     icubCanProto_controlmode_t v = from_modevocab_to_modeint(mode);
-    if (v==icubCanProto_controlmode_unknownError) return false;
+    if (v==icubCanProto_controlmode_unknownError) return ReturnValue::return_code::return_value_error_generic;
     _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,v);
 
     int current_mode = VOCAB_CM_UNKNOWN;
@@ -4074,12 +4074,12 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     do
     {
         getControlModeRaw(j,&current_mode);
-        if (current_mode==mode) {ret = true; break;}
-        if (current_mode==VOCAB_CM_IDLE     && mode==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
+        if (current_mode==mode) {ret = ReturnValue_ok; break;}
+        if (current_mode==VOCAB_CM_IDLE     && mode==VOCAB_CM_FORCE_IDLE) {ret = ReturnValue_ok; break;}
         if (current_mode==VOCAB_CM_HW_FAULT)
         {
             if (mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), j);}
-            ret = true; break;
+            ret = ReturnValue_ok; break;
         }
         yarp::os::Time::delay(0.010);
         if (timeout >0) yWarning ("setControlModeRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(mode).c_str());
@@ -4088,25 +4088,25 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     while (timeout < 10);
     if (timeout>=10)
     {
-        ret = false;
+        ret = ReturnValue::return_code::return_value_error_generic;
         yError ("100ms Timeout occured in setControlModeRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(mode).c_str());
     }
 
     return ret;
 }
 
-bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *joints, int *modes)
+ReturnValue CanBusMotionControl::setControlModesRaw(const int n_joints, const int *joints, int *modes)
 {
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW MULTIPLE JOINTS\n");
-    if (n_joints==0) return false;
-    if (joints==0) return false;
-    bool ret = true;
+    if (n_joints==0) return ReturnValue::return_code::return_value_error_generic;
+    if (joints==0) return ReturnValue::return_code::return_value_error_generic;
+    ReturnValue ret = ReturnValue_ok;
     for (int i=0;i<n_joints; i++)
     {
         if (modes[i] == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
         icubCanProto_controlmode_t v = from_modevocab_to_modeint(modes[i]);
-        if (v==icubCanProto_controlmode_unknownError) ret = false;
+        if (v==icubCanProto_controlmode_unknownError) ret = ReturnValue::return_code::return_value_error_generic;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,joints[i],v);
 
         int current_mode = VOCAB_CM_UNKNOWN;
@@ -4114,11 +4114,11 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
         do
         {
             getControlModeRaw(joints[i],&current_mode);
-            if (current_mode==modes[i]) {ret = true; break;}
+            if (current_mode==modes[i]) {ret = ReturnValue_ok; break;}
             if (current_mode==VOCAB_CM_IDLE)
             {
                 if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), joints[i]);}
-                ret = true; break;
+                ret = ReturnValue_ok; break;
             }
             yarp::os::Time::delay(0.010);
             if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
@@ -4127,7 +4127,7 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
         while (timeout < 10);
         if (timeout>=10)
         {
-            ret = false;
+            ret = ReturnValue::return_code::return_value_error_generic;
             yError ("100ms Timeout occured in setControlModesRaw(M) (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
         }
     }
@@ -4135,33 +4135,33 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
     return ret;
 }
 
-bool CanBusMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys)
+ReturnValue CanBusMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys)
 {
     listOfKeys->clear();
     listOfKeys->addString("filterType");
     listOfKeys->addString("PWMLimit");
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle& val)
+ReturnValue CanBusMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle& val)
 {
     val.clear();
     CanBusResources& res = RES(system_resources);
     if (key == "filterType")
     {
         Bottle& r = val.addList(); for (int i = 0; i< res.getJoints(); i++) { int tmp = 0; getFilterTypeRaw(i, &tmp);  r.addInt32(tmp); }
-        return true;
+        return ReturnValue_ok;
     }
     if (key == "PWMLimit")
     {
         Bottle& r = val.addList(); for (int i = 0; i< res.getJoints(); i++) { double tmp = 0; getPWMLimitRaw(i, &tmp);  r.addFloat64(tmp); }
-        return true;
+        return ReturnValue_ok;
     }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
-    return false;
+    return ReturnValue::return_code::return_value_error_generic;
 }
 
-bool CanBusMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::Bottle& val)
+ReturnValue CanBusMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::Bottle& val)
 {
     CanBusResources& r = RES(system_resources);
     size_t _njoints = r.getJoints();
@@ -4170,7 +4170,7 @@ bool CanBusMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
     if (val.size() != _njoints)
     {
         yWarning("setRemoteVariable(): Protocol error %s", s1.c_str());
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     if (key == "filterType")
@@ -4180,7 +4180,7 @@ bool CanBusMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
             int filter_type = val.get(i).asInt32();
             this->setFilterTypeRaw(i, filter_type);
         }
-        return true;
+        return ReturnValue_ok;
     }
     if (key == "PWMLimit")
     {
@@ -4189,54 +4189,54 @@ bool CanBusMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
             double limit = val.get(i).asFloat64();
             this->setPWMLimitRaw(i, (int)(limit));
         }
-        return true;
+        return ReturnValue_ok;
     }
     yWarning("setRemoteVariable(): Unknown variable %s", key.c_str());
-    return false;
+    return ReturnValue::return_code::return_value_error_generic;
 }
 
-bool CanBusMotionControl::getAxisNameRaw(int axis, std::string& name)
+ReturnValue CanBusMotionControl::getAxisNameRaw(int axis, std::string& name)
 {
     CanBusResources& r = RES(system_resources);
     if (axis >= 0 && axis < r.getJoints())
     {
         name = r._jointNames[axis];
-        return true;
+        return ReturnValue_ok;
     }
     else
     {
         name = "ERROR";
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 }
 
-bool CanBusMotionControl::getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type)
+ReturnValue CanBusMotionControl::getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type)
 {
     CanBusResources& r = RES(system_resources);
     if (axis >= 0 && axis < r.getJoints())
     {
         //type = joint_type[axis];
         type = VOCAB_JOINTTYPE_REVOLUTE;
-        return true;
+        return ReturnValue_ok;
     }
     else
     {
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 }
 
-bool CanBusMotionControl::setControlModesRaw(int *modes)
+ReturnValue CanBusMotionControl::setControlModesRaw(int *modes)
 {
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");
     CanBusResources& r = RES(system_resources);
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
 
     for (int i = 0; i < r.getJoints(); i++)
     {
         if (modes[i] == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
         icubCanProto_controlmode_t v = from_modevocab_to_modeint(modes[i]);
-        if (v==icubCanProto_controlmode_unknownError) return false;
+        if (v==icubCanProto_controlmode_unknownError) return ReturnValue::return_code::return_value_error_generic;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
 
         int current_mode = VOCAB_CM_UNKNOWN;
@@ -4244,12 +4244,12 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
         do
         {
             getControlModeRaw(i,&current_mode);
-            if (current_mode==modes[i]) {ret = true; break;}
-            if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
+            if (current_mode==modes[i]) {ret = ReturnValue_ok; break;}
+            if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = ReturnValue_ok; break;}
             if (current_mode==VOCAB_CM_HW_FAULT)
             {
                 if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), i);}
-                ret = true; break;
+                ret = ReturnValue_ok; break;
             }
             yarp::os::Time::delay(0.010);
             if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
@@ -4258,7 +4258,7 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
         while (timeout < 10);
         if (timeout>=10)
         {
-            ret = false;
+            ret = ReturnValue::return_code::return_value_error_generic;
             yError ("100ms Timeout occured in setControlModesRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
         }
     }
@@ -4267,12 +4267,12 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
 }
 
 // return the number of controlled axes.
-bool CanBusMotionControl::getAxes(int *ax)
+ReturnValue CanBusMotionControl::getAxes(int *ax)
 {
     CanBusResources& r = RES(system_resources);
     *ax = r.getJoints();
 
-    return true;
+    return ReturnValue_ok;
 }
 
 bool CanBusMotionControl::helper_setPosPidRaw (int axis, const Pid &pid)
@@ -4290,45 +4290,45 @@ bool CanBusMotionControl::helper_setPosPidRaw (int axis, const Pid &pid)
     return true;
 }
 
-bool CanBusMotionControl::setPidRaw (const PidControlTypeEnum& pidtype, int axis, const Pid &pid)
+ReturnValue CanBusMotionControl::setPidRaw (const PidControlTypeEnum& pidtype, int axis, const Pid &pid)
 {
     //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     switch (pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
             helper_setPosPidRaw(axis,pid);
         break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
             helper_setVelPidRaw(axis,pid);
         break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
             helper_setCurPidRaw(axis,pid);
         break;
-        case VOCAB_PIDTYPE_TORQUE:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
             helper_setTrqPidRaw(axis,pid);
         break;
         default:
-            yError()<<"Invalid pidtype:"<<pidtype;
+           yError()<<"Invalid pidtype:"<<"Find something default"; // TODO: What can we use as default???
         break;
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp)
+ReturnValue CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp)
 {
     //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     if (!ENABLED(axis))
     {
         //@@@ TODO: check here
         //*stiff = 0;
         //*damp = 0;
-        return true;
+        return ReturnValue_ok;
     }
  
     CanBusResources& r = RES(system_resources);
@@ -4338,7 +4338,7 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
         _mutex.unlock();
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     r.startPacket();
@@ -4356,7 +4356,7 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
         //@@@ TODO: check here
         //*stiff = 0;
         //*damp = 0;
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     CanMessage *m=t->get(0);
@@ -4365,7 +4365,7 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
         //@@@ TODO: check here
         //*stiff = 0;
         //*damp = 0;
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     unsigned char *data;
@@ -4377,15 +4377,15 @@ bool CanBusMotionControl::getImpedanceRaw (int axis, double *stiff, double *damp
 
     t->clear();
 
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
+ReturnValue CanBusMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp)
 {
     CanBusResources& r = RES(system_resources);
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     // *** This method is implementented reading data without sending/receiving data from the Canbus ***
@@ -4394,20 +4394,20 @@ bool CanBusMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
     *min_damp= _axisImpedanceHelper->getImpedanceLimits()->get_min_damp(); 
     *max_damp= _axisImpedanceHelper->getImpedanceLimits()->get_max_damp(); 
     int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
+ReturnValue CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
 {
     //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     if (!ENABLED(axis))
     {
         //@@@ TODO: check here
         //*off = 0;
-        return true;
+        return ReturnValue_ok;
     }
  
     CanBusResources& r = RES(system_resources);
@@ -4417,7 +4417,7 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
         _mutex.unlock();
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     r.startPacket();
@@ -4434,7 +4434,7 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
         yError("getImpedanceOffset: message timed out\n");
         //@@@ TODO: check here
         //*off=0;
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     CanMessage *m=t->get(0);
@@ -4442,7 +4442,7 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
     {
         //@@@ TODO: check here
         //*off=0;
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     unsigned char *data;
@@ -4451,19 +4451,19 @@ bool CanBusMotionControl::getImpedanceOffsetRaw (int axis, double *off)
 
     t->clear();
 
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp)
+ReturnValue CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp)
 {
     //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     DEBUG_FUNC("setImpedanceRaw\n");
 
     if (!ENABLED(axis))
-        return true;
+        return ReturnValue_ok;
 
     CanBusResources& r = RES(system_resources);
     std::lock_guard<std::recursive_mutex> lck(_mutex);
@@ -4477,7 +4477,7 @@ bool CanBusMotionControl::setImpedanceRaw (int axis, double stiff, double damp)
     r.writePacket();
 
     //yDebug("stiffness is: %d \n", S_16(stiff));
-    return true;
+    return ReturnValue_ok;
 }
 
 bool CanBusMotionControl::setTorqueSource (int axis, char board_id, char board_chan )
@@ -4507,16 +4507,16 @@ bool CanBusMotionControl::setTorqueSource (int axis, char board_id, char board_c
     return true;
 }
 
-bool CanBusMotionControl::setImpedanceOffsetRaw (int axis, double off)
+ReturnValue CanBusMotionControl::setImpedanceOffsetRaw (int axis, double off)
 {
     //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     DEBUG_FUNC("setImpedanceOffsetRaw\n");
 
     if (!ENABLED(axis))
-        return true;
+        return ReturnValue_ok;
 
     CanBusResources& r = RES(system_resources);
     std::lock_guard<std::recursive_mutex> lck(_mutex);
@@ -4525,7 +4525,7 @@ bool CanBusMotionControl::setImpedanceOffsetRaw (int axis, double off)
     *((short *)(r._writeBuffer[0].getData()+1)) = S_16(off);
     r._writeBuffer[0].setLen(3);
     r.writePacket();
-    return true;
+    return ReturnValue_ok;
 }
 
 bool CanBusMotionControl::helper_getPosPidRaw (int axis, Pid *out)
@@ -4558,34 +4558,34 @@ bool CanBusMotionControl::helper_getPosPidRaw (int axis, Pid *out)
     return true;
 }
 
-bool CanBusMotionControl::getPidRaw (const PidControlTypeEnum& pidtype, int axis, Pid *pid)
+ReturnValue CanBusMotionControl::getPidRaw (const PidControlTypeEnum& pidtype, int axis, Pid *pid)
 {
     //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     switch (pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
             helper_getPosPidRaw(axis,pid);
         break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
             helper_getVelPidRaw(axis,pid);
         break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
             helper_getCurPidRaw(axis,pid);
         break;
-        case VOCAB_PIDTYPE_TORQUE:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
             helper_getTrqPidRaw(axis,pid);
         break;
         default:
-            yError()<<"Invalid pidtype:"<<pidtype;
+          yError()<<"Invalid pidtype:"<<"Find something default"; // TODO: What can we use as default???;
         break;
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getPidsRaw (const PidControlTypeEnum& pidtype, Pid *pids)
+ReturnValue CanBusMotionControl::getPidsRaw (const PidControlTypeEnum& pidtype, Pid *pids)
 {
     CanBusResources& r = RES(system_resources);
 
@@ -4595,7 +4595,7 @@ bool CanBusMotionControl::getPidsRaw (const PidControlTypeEnum& pidtype, Pid *pi
         getPidRaw(pidtype,i,&pids[i]);
     }
 
-    return true;
+    return ReturnValue_ok;
 }
 
 bool CanBusMotionControl::helper_setTrqPidRaw(int axis, const Pid &pid)
@@ -4788,10 +4788,10 @@ bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
     return true;
 }
 
-bool CanBusMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids)
+ReturnValue CanBusMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids)
 {
     CanBusResources& r = RES(system_resources);
-    if (pids==0) return false;
+    if (pids==0) return ReturnValue::return_code::return_value_error_generic;
 
     int i;
     for (i = 0; i < r.getJoints(); i++)
@@ -4799,45 +4799,47 @@ bool CanBusMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pi
         setPidRaw(pidtype, i, pids[i]);
     }
 
-    return true;
+    return ReturnValue_ok;
 }
 
 /// cmd is a SingleAxis poitner with 1 double arg
-bool CanBusMotionControl::setPidReferenceRaw (const PidControlTypeEnum& pidtype, int j, double ref)
+ReturnValue CanBusMotionControl::setPidReferenceRaw (const PidControlTypeEnum& pidtype, int j, double ref)
 {
-    return NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+    //return NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::setPidReferencesRaw (const PidControlTypeEnum& pidtype, const double *refs)
+ReturnValue CanBusMotionControl::setPidReferencesRaw (const PidControlTypeEnum& pidtype, const double *refs)
 {
     CanBusResources& r = RES(system_resources);
-    if (refs==0) return false;
+    if (refs==0) return ReturnValue::return_code::return_value_error_generic;
 
     int i=0;
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for (i = 0; i < r.getJoints(); i++)
     {
-        ret = ret & setPidReferenceRaw(pidtype,i,refs[i]);
+        ret &= setPidReferenceRaw(pidtype,i,refs[i]);
     }
 
     return ret;
 }
 
 /// cmd is a SingleAxis poitner with 1 double arg
-bool CanBusMotionControl::setRefTorqueRaw (int j, double ref_trq)
+ReturnValue CanBusMotionControl::setRefTorqueRaw (int j, double ref_trq)
 {
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     //I'm sending a DWORD but the value MUST be clamped to S_16. Do not change.
-    return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_DESIRED_TORQUE, axis, S_16(ref_trq));
+    return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_DESIRED_TORQUE, axis, S_16(ref_trq)) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic);
+
 }
 
-bool CanBusMotionControl::setRefTorquesRaw(const int n_joint, const int *joints, const double *t)
+ReturnValue CanBusMotionControl::setRefTorquesRaw(const int n_joint, const int *joints, const double *t)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for(int j=0; j< n_joint; j++)
     {
         ret &= setRefTorqueRaw(joints[j], t[j]);
@@ -4846,21 +4848,21 @@ bool CanBusMotionControl::setRefTorquesRaw(const int n_joint, const int *joints,
 }
 
 /// cmd is a SingleAxis pointer with 1 double arg
-bool CanBusMotionControl::getTorqueRaw (int j, double *trq)
+ReturnValue CanBusMotionControl::getTorqueRaw (int j, double *trq)
 {
     CanBusResources& r = RES(system_resources);
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     *trq = double(r._bcastRecvBuffer[k]._torque);
-    return true;
+    return ReturnValue_ok;
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::setRefTorquesRaw (const double *ref_trqs)
+ReturnValue CanBusMotionControl::setRefTorquesRaw (const double *ref_trqs)
 {
     CanBusResources& r = RES(system_resources);
 
@@ -4869,17 +4871,17 @@ bool CanBusMotionControl::setRefTorquesRaw (const double *ref_trqs)
     {
         //I'm sending a DWORD but the value MUST be clamped to S_16. Do not change.
         if (_writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_DESIRED_TORQUE, i, S_16(ref_trqs[i])) != true)
-            return false;
+            return ReturnValue::return_code::return_value_error_generic;
     }
 
-    return true;
+    return ReturnValue_ok;
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getTorquesRaw (double *trqs)
+ReturnValue CanBusMotionControl::getTorquesRaw (double *trqs)
 {
     CanBusResources& r = RES(system_resources);
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for (int j = 0; j < r.getJoints() && ret; j++)
     {
         ret &= getTorqueRaw(j, &trqs[j]);
@@ -4887,12 +4889,12 @@ bool CanBusMotionControl::getTorquesRaw (double *trqs)
     return ret;
 }
 
-bool CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
+ReturnValue CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
 {
     CanBusResources& r = RES(system_resources);
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     // *** This method is implementented reading data without sending/receiving data from the Canbus ***
@@ -4922,65 +4924,128 @@ bool CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *max)
         }
         it++;
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getTorqueRangesRaw (double *min, double *max)
+ReturnValue CanBusMotionControl::getTorqueRangesRaw (double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getTorqueRangesRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int axis, double *err)
+ReturnValue CanBusMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int axis, double *err)
 {
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     switch (pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
         *err = double(r._bcastRecvBuffer[axis]._position_error);
         break;
-        case VOCAB_PIDTYPE_TORQUE:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
         *err = double(r._bcastRecvBuffer[axis]._torque_error);
         break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
         *err = 0; //not yet implemented
-        NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_VELOCITY");
+        //NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_VELOCITY");
+        return ReturnValue::return_code::return_value_error_not_implemented_by_device;
         break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
         *err = 0; //not yet implemented
-        NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_CURRENT");
+        //NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_CURRENT");
+        return ReturnValue::return_code::return_value_error_not_implemented_by_device;
         break;
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getTargetPositionRaw(int axis, double *ref)
+ReturnValue CanBusMotionControl::getTargetPositionRaw(int axis, double *ref)
 {
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     *(ref) = this->_ref_command_positions[axis];
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getTargetPositionsRaw(double *ref)
+ReturnValue CanBusMotionControl::getTargetPositionsRaw(double *ref)
 {
     CanBusResources& r = RES(system_resources);
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for (int j = 0; j < r.getJoints() && ret; j++)
     {
         ret &= getTargetPositionRaw(j, &ref[j]);
     }
     return ret;
 }
-
-bool CanBusMotionControl::getTargetPositionsRaw(int nj, const int * jnts, double *refs)
+/* 
+ReturnValue CanBusMotionControl::getTargetPositionsRaw(int nj, const int * jnts, double *refs)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
+    for (int j = 0; j < nj && ret; j++)
+    {
+        ret &= getTargetPositionRaw(jnts[j], &refs[j]);
+    }
+    return ret;
+} */ // TODO: Why multiple identical methods???
+
+ReturnValue CanBusMotionControl::getTargetVelocityRaw(int axis, double *ref)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))
+        return ReturnValue::return_code::return_value_error_generic;
+    std::lock_guard<std::recursive_mutex> lck(_mutex);
+    *(ref) = this->_ref_command_speeds[axis];
+    return ReturnValue_ok;
+}
+
+ReturnValue CanBusMotionControl::getTargetVelocitiesRaw(double *ref)
+{
+    CanBusResources& r = RES(system_resources);
+    ReturnValue ret = ReturnValue_ok;
+    for (int j = 0; j < r.getJoints() && ret; j++)
+    {
+        ret &= getTargetVelocityRaw(j, &ref[j]);
+    }
+    return ret;
+}
+
+ReturnValue CanBusMotionControl::getTargetVelocitiesRaw(int nj, const int * jnts, double *refs)
+{
+    ReturnValue ret = ReturnValue_ok;
+    for (int j = 0; j < nj && ret; j++)
+    {
+        ret &= getTargetVelocityRaw(jnts[j], &refs[j]);
+    }
+    return ret;
+}
+
+/*ReturnValue CanBusMotionControl::getTargetPositionRaw(int axis, double *ref)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))
+        return ReturnValue::return_code::return_value_error_generic;
+    *ref = _ref_positions[axis];
+    return ReturnValue_ok;
+}*/ // TODO: Which will be used?
+
+/*ReturnValue CanBusMotionControl::getTargetPositionsRaw(double *ref)
+{
+    CanBusResources& r = RES(system_resources);
+    ReturnValue ret = ReturnValue_ok;
+    for (int j = 0; j < r.getJoints() && ret; j++)
+    {
+        ret &= getTargetPositionRaw(j, &ref[j]);
+    }
+    return ret;
+}*/
+
+ReturnValue CanBusMotionControl::getTargetPositionsRaw(int nj, const int * jnts, double *refs)
+{
+    ReturnValue ret = ReturnValue_ok;
     for (int j = 0; j < nj && ret; j++)
     {
         ret &= getTargetPositionRaw(jnts[j], &refs[j]);
@@ -4988,75 +5053,14 @@ bool CanBusMotionControl::getTargetPositionsRaw(int nj, const int * jnts, double
     return ret;
 }
 
-bool CanBusMotionControl::getRefVelocityRaw(int axis, double *ref)
-{
-    CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))
-        return false;
-    std::lock_guard<std::recursive_mutex> lck(_mutex);
-    *(ref) = this->_ref_command_speeds[axis];
-    return true;
-}
-
-bool CanBusMotionControl::getRefVelocitiesRaw(double *ref)
-{
-    CanBusResources& r = RES(system_resources);
-    bool ret = true;
-    for (int j = 0; j < r.getJoints() && ret; j++)
-    {
-        ret &= getRefVelocityRaw(j, &ref[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::getRefVelocitiesRaw(int nj, const int * jnts, double *refs)
-{
-    bool ret = true;
-    for (int j = 0; j < nj && ret; j++)
-    {
-        ret &= getRefVelocityRaw(jnts[j], &refs[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::getRefPositionRaw(int axis, double *ref)
-{
-    CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))
-        return false;
-    *ref = _ref_positions[axis];
-    return true;
-}
-
-bool CanBusMotionControl::getRefPositionsRaw(double *ref)
-{
-    CanBusResources& r = RES(system_resources);
-    bool ret = true;
-    for (int j = 0; j < r.getJoints() && ret; j++)
-    {
-        ret &= getRefPositionRaw(j, &ref[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::getRefPositionsRaw(int nj, const int * jnts, double *refs)
-{
-    bool ret = true;
-    for (int j = 0; j < nj && ret; j++)
-    {
-        ret &= getRefPositionRaw(jnts[j], &refs[j]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs)
+ReturnValue CanBusMotionControl::getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs)
 {
     CanBusResources& r = RES(system_resources);
     for (int i = 0; i < r.getJoints(); i++)
     {
         errs[i] = getPidErrorRaw(pidtype, i, &errs[i]);
     }
-    return true;
+    return ReturnValue_ok;
 }
 
 bool CanBusMotionControl::getParameterRaw(int axis, unsigned int type, double* value)
@@ -5271,58 +5275,61 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
     return true;
 }
 
-bool CanBusMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref)
+ReturnValue CanBusMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref)
 {
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
     {
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     switch (pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
         {
             int value = 0;
             if (_readDWord (ICUBCANPROTO_POL_MC_CMD__GET_DESIRED_POSITION, axis, value) == true)
             { *ref = double (value);}
             else
-            { *ref =0; yError() << "Invalid _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_DESIRED_POSITION)"; return false; }
+            { *ref =0; yError() << "Invalid _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_DESIRED_POSITION)"; return ReturnValue::return_code::return_value_error_generic; }
         }
         break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
         {
             *ref=0;
-            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_VELOCITY");
+            //NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_VELOCITY");
+            return ReturnValue::return_code::return_value_error_not_implemented_by_device;
         }
         break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
         {
             *ref=0;
-            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_CURRENT");
+            //NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_CURRENT");
+            return ReturnValue::return_code::return_value_error_not_implemented_by_device;
         }
         break;
-        case VOCAB_PIDTYPE_TORQUE:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
         {
             *ref=0;
-            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_TORQUE");
+            //NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_TORQUE");
+            return ReturnValue::return_code::return_value_error_not_implemented_by_device;
         }
         break;
         default:
         {
             *ref=0;
-            yError()<<"Invalid pidtype:"<<pidtype;
+          yError()<<"Invalid pidtype:"<<"Find something default"; // TODO: What can we use as default???;
         }
         break;
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs)
+ReturnValue CanBusMotionControl::getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     CanBusResources& r = RES(system_resources);
-    if (refs==0) return false;
+    if (refs==0) return ReturnValue::return_code::return_value_error_generic;
 
     for (int i = 0; i < r.getJoints(); i++)
     {
@@ -5331,43 +5338,50 @@ bool CanBusMotionControl::getPidReferencesRaw(const PidControlTypeEnum& pidtype,
     return ret;
 }
 
-bool CanBusMotionControl::getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *err)
+ReturnValue CanBusMotionControl::getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *err)
 {
-    return NOT_YET_IMPLEMENTED("getErrorLimit");
+    //return NOT_YET_IMPLEMENTED("getErrorLimit");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *errs)
+ReturnValue CanBusMotionControl::getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *errs)
 {
-    return NOT_YET_IMPLEMENTED("getErrorLimits");
+    //return NOT_YET_IMPLEMENTED("getErrorLimits");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit)
+ReturnValue CanBusMotionControl::setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit)
 {
-    return NOT_YET_IMPLEMENTED("setErrorLimit");
+    //return NOT_YET_IMPLEMENTED("setErrorLimit");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits)
+ReturnValue CanBusMotionControl::setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits)
 {
-    return NOT_YET_IMPLEMENTED("setErrorLimits");
+    //return NOT_YET_IMPLEMENTED("setErrorLimits");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::resetPidRaw(const PidControlTypeEnum& pidtype, int j)
+ReturnValue CanBusMotionControl::resetPidRaw(const PidControlTypeEnum& pidtype, int j)
 {
-    return NOT_YET_IMPLEMENTED("resetPid");
+    //return NOT_YET_IMPLEMENTED("resetPid");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::enablePidRaw(const PidControlTypeEnum& pidtype, int axis)
+ReturnValue CanBusMotionControl::enablePidRaw(const PidControlTypeEnum& pidtype, int axis)
 {
-    return NOT_YET_IMPLEMENTED("enablePidRaw");
+    //return NOT_YET_IMPLEMENTED("enablePidRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setPidOffsetRaw(const PidControlTypeEnum& pidtype, int axis, double v)
+ReturnValue CanBusMotionControl::setPidOffsetRaw(const PidControlTypeEnum& pidtype, int axis, double v)
 {
+    ReturnValue ret = ReturnValue_ok;
+
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_OFFSET, axis, S_16(v));
-
+    return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_OFFSET, axis, S_16(v)) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic);
 }
 
 bool CanBusMotionControl::setParameterRaw(int axis, unsigned int type, double value)
@@ -5376,7 +5390,6 @@ bool CanBusMotionControl::setParameterRaw(int axis, unsigned int type, double va
         return false;
 
     return _writeWord16 (type, axis, S_16(value));
-
 }
 
 bool CanBusMotionControl::setDebugParameterRaw(int axis, unsigned int index, double value)
@@ -5407,61 +5420,61 @@ bool CanBusMotionControl::setDebugReferencePositionRaw(int axis, double value)
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(value));
 }
 
-bool CanBusMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int axis, double *out)
+ReturnValue CanBusMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int axis, double *out)
 {
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     switch (pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
             *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
         break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
             *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
         break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
             *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
         break;
-        case VOCAB_PIDTYPE_TORQUE:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
             *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
         break;
         default:
-            yError()<<"Invalid pidtype:"<<pidtype;
+          yError()<<"Invalid pidtype:"<<"Find something default"; // TODO: What can we use as default???;
         break;
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs)
+ReturnValue CanBusMotionControl::getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs)
 {
     CanBusResources& r = RES(system_resources);
     for (int i = 0; i < r.getJoints(); i++)
     {
         getPidOutput(pidtype, i, &outs[i]);
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::disablePidRaw(const PidControlTypeEnum& pidtype, int axis)
+ReturnValue CanBusMotionControl::disablePidRaw(const PidControlTypeEnum& pidtype, int axis)
 {
-    return NOT_YET_IMPLEMENTED("disablePidRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
+ReturnValue CanBusMotionControl::positionMoveRaw(int axis, double ref)
 {
     /// prepare can message.
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     if (!ENABLED (axis))
     {
         // still fills the _ref_position structure.
         _ref_command_positions[axis] = ref;
-        return true;
+        return ReturnValue_ok;
     }
 
     if (yarp::os::Time::now()-_last_position_move_time[axis]<MAX_POSITION_MOVE_INTERVAL) 
@@ -5478,7 +5491,7 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         mode != VOCAB_CM_IDLE)
     {
         yError() << "positionMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_POSITION mode";
-        return true;
+        return ReturnValue_ok;
     }
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
@@ -5492,54 +5505,54 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
     r._writeBuffer[0].setLen(7);
 
     r.writePacket();
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::positionMoveRaw(const double *refs)
+ReturnValue CanBusMotionControl::positionMoveRaw(const double *refs)
 {
     CanBusResources& r = RES(system_resources);
     int i = 0;
-    if (refs == 0) return false;
-    bool ret = true;
+    if (refs == 0) return ReturnValue::return_code::return_value_error_generic;
+    ReturnValue ret = ReturnValue_ok;
     for (i = 0; i < r.getJoints (); i++)
     {
-        ret = ret & positionMoveRaw(i, refs[i]);
+        ret &= positionMoveRaw(i, refs[i]);
     }
 
     return ret;
 }
 
-bool CanBusMotionControl::relativeMoveRaw(int j, double delta)
+ReturnValue CanBusMotionControl::relativeMoveRaw(int j, double delta)
 {
-    return NOT_YET_IMPLEMENTED("positionRelative");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::relativeMoveRaw(const double *deltas)
+ReturnValue CanBusMotionControl::relativeMoveRaw(const double *deltas)
 {
-    return NOT_YET_IMPLEMENTED("positionRelative");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
 /// check motion done, single axis.
-bool CanBusMotionControl::checkMotionDoneRaw(int axis, bool *ret)
+ReturnValue CanBusMotionControl::checkMotionDoneRaw(int axis, bool *ret)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     short value;
 
     if (!_readWord16 (ICUBCANPROTO_POL_MC_CMD__MOTION_DONE, axis, value))
     {
         *ret=false;
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     *ret= (value!=0);
 
-    return true;
+    return ReturnValue_ok;
 }
 
 /// ret is a pointer to a bool
-bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
+ReturnValue CanBusMotionControl::checkMotionDoneRaw (bool *val)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -5552,7 +5565,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
         _mutex.unlock();
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     r.startPacket();
@@ -5567,7 +5580,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
     if (r._writeMessages < 1)
     {
         _mutex.unlock();
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     r.writePacket(); //write immediatly
@@ -5578,7 +5591,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
     t->synch();
 
     if (!r.getErrorStatus())
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     int j;
     for (i = 0, j = 0; i < r.getJoints(); i++)
@@ -5592,7 +5605,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
                 if (!value)
                 {
                     *val=false;
-                    return true;
+                    return ReturnValue_ok;
                 }
             }
             j++;
@@ -5602,31 +5615,31 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
     t->clear();
 
     *val=true;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::calibrateAxisWithParamsRaw(int axis, unsigned int type, double p1, double p2, double p3)
+ReturnValue CanBusMotionControl::calibrateAxisWithParamsRaw(int axis, unsigned int type, double p1, double p2, double p3)
 {
-    bool b = _writeByteWords16(ICUBCANPROTO_POL_MC_CMD__CALIBRATE_ENCODER, axis, type, S_16(p1), S_16(p2), S_16(p3));
-    return b;
+    return _writeByteWords16(ICUBCANPROTO_POL_MC_CMD__CALIBRATE_ENCODER, axis, type, S_16(p1), S_16(p2), S_16(p3)) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic);
+
 }
 
-bool CanBusMotionControl::setCalibrationParametersRaw(int j, const CalibrationParameters& params)
+ReturnValue CanBusMotionControl::setCalibrationParametersRaw(int j, const CalibrationParameters& params)
 {
     return calibrateAxisWithParamsRaw(j, params.type, params.param1, params.param2, params.param3);
 }
 
-bool CanBusMotionControl::setTrajSpeedRaw(int axis, double sp)
+ReturnValue CanBusMotionControl::setTrajSpeedRaw(int axis, double sp)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     sp /= 10.0; // encoder ticks per ms
     _ref_speeds[axis] = sp;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::setTrajSpeedsRaw(const double *spds)
+ReturnValue CanBusMotionControl::setTrajSpeedsRaw(const double *spds)
 {
     CanBusResources& r = RES(system_resources);
     memcpy(_ref_speeds, spds, sizeof(double)* r.getJoints());
@@ -5634,13 +5647,15 @@ bool CanBusMotionControl::setTrajSpeedsRaw(const double *spds)
     for (i = 0; i < r.getJoints(); i++)
         _ref_speeds[i] /= 10.0;
 
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::setTrajAccelerationRaw(int axis, double acc)
+ReturnValue CanBusMotionControl::setTrajAccelerationRaw(int axis, double acc)
 {
+    ReturnValue ret = ReturnValue_ok;
+
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     /*
     *Acceleration is expressed in imp/s^2. 
@@ -5652,10 +5667,15 @@ bool CanBusMotionControl::setTrajAccelerationRaw(int axis, double acc)
     _ref_accs[axis] = acc;
     const short s = S_16(_ref_accs[axis]);
 
-    return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_DESIRED_ACCELER, axis, s);
+    if(! _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_DESIRED_ACCELER, axis, s))
+    {
+        ret = ReturnValue::return_code::return_value_error_generic;
+    }
+
+    return ret;
 }
 
-bool CanBusMotionControl::setTrajAccelerationsRaw(const double *accs)
+ReturnValue CanBusMotionControl::setTrajAccelerationsRaw(const double *accs)
 {
     CanBusResources& r = RES(system_resources);
 
@@ -5673,14 +5693,14 @@ bool CanBusMotionControl::setTrajAccelerationsRaw(const double *accs)
         _ref_accs[i] = acc;
 
         if (!_writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_DESIRED_ACCELER, i, S_16(_ref_accs[i])))
-            return false;
+            return ReturnValue::return_code::return_value_error_generic;
     }
 
-    return true;
+    return ReturnValue_ok;
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getTrajSpeedsRaw (double *spds)
+ReturnValue CanBusMotionControl::getTrajSpeedsRaw (double *spds)
 {
     CanBusResources& r = RES(system_resources);
 
@@ -5689,20 +5709,20 @@ bool CanBusMotionControl::getTrajSpeedsRaw (double *spds)
     for (i = 0; i < r.getJoints(); i++)
         spds[i] *= 10.0;
 
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getTrajSpeedRaw (int axis, double *spd)
+ReturnValue CanBusMotionControl::getTrajSpeedRaw (int axis, double *spd)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     *spd = _ref_speeds[axis] * 10.0;
 
-    return true;
+    return ReturnValue_ok;
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getTrajAccelerationsRaw (double *accs)
+ReturnValue CanBusMotionControl::getTrajAccelerationsRaw (double *accs)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -5716,17 +5736,17 @@ bool CanBusMotionControl::getTrajAccelerationsRaw (double *accs)
             accs[i] *= 1000.0;
         }
         else
-            return false;
+            return ReturnValue::return_code::return_value_error_generic;
     }
 
-    return true;
+    return ReturnValue_ok;
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getTrajAccelerationRaw (int axis, double *accs)
+ReturnValue CanBusMotionControl::getTrajAccelerationRaw (int axis, double *accs)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     short value = 0;
 
@@ -5736,13 +5756,13 @@ bool CanBusMotionControl::getTrajAccelerationRaw (int axis, double *accs)
         *accs = double(value) * 1000.0 * 1000.0;
     }
     else
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    return true;
+    return ReturnValue_ok;
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getRefTorquesRaw (double *ref_trqs)
+ReturnValue CanBusMotionControl::getRefTorquesRaw (double *ref_trqs)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -5754,17 +5774,17 @@ bool CanBusMotionControl::getRefTorquesRaw (double *ref_trqs)
             _ref_torques[i] = ref_trqs[i] = double (value);
         }
         else
-            return false;
+            return ReturnValue::return_code::return_value_error_generic;
     }
 
-    return true;
+    return ReturnValue_ok;
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getRefTorqueRaw (int axis, double *ref_trq)
+ReturnValue CanBusMotionControl::getRefTorqueRaw (int axis, double *ref_trq)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     short value = 0;
 
@@ -5774,23 +5794,23 @@ bool CanBusMotionControl::getRefTorqueRaw (int axis, double *ref_trq)
         *ref_trq = double (value);
     }
     else
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParameters *param)
+ReturnValue CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParameters *param)
 {
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     MotorTorqueParameters pzero;
     *param = pzero;
 
     if (!ENABLED(axis))
     {
-        return true;
+        return ReturnValue_ok;
     }
 
     _mutex.lock();
@@ -5799,7 +5819,7 @@ bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParamete
     {
         yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
         _mutex.unlock();
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     r.startPacket();
@@ -5815,13 +5835,13 @@ bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParamete
     if (!r.getErrorStatus() || (t->timedOut()))
     {
         yError("getMotorTorqueParamsRaw: message timed out\n");
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     CanMessage *m=t->get(0);
     if (m==0)
     {
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     param->bemf = *((short *)(m->getData()+1)); //1&2
@@ -5829,7 +5849,7 @@ bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParamete
     param->ktau = *((short *)(m->getData()+4)); //4&5 
     param->ktau_scale = 0;
     //7 dummy
-    return true;
+    return ReturnValue_ok;
 }
 
 bool CanBusMotionControl::getFilterTypeRaw(int j, int* type)
@@ -5870,7 +5890,7 @@ bool CanBusMotionControl::setFilterTypeRaw (int j, int type)
     return true;
 }
 
-bool CanBusMotionControl::setMotorTorqueParamsRaw (int j, MotorTorqueParameters param)
+ReturnValue CanBusMotionControl::setMotorTorqueParamsRaw (int j, MotorTorqueParameters param)
 {
     const int axis = j;
 
@@ -5878,7 +5898,7 @@ bool CanBusMotionControl::setMotorTorqueParamsRaw (int j, MotorTorqueParameters 
     CanBusResources& r = RES(system_resources);
 
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     r.startPacket();
@@ -5890,25 +5910,37 @@ bool CanBusMotionControl::setMotorTorqueParamsRaw (int j, MotorTorqueParameters 
     *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = (unsigned char) (0);
     r._writeBuffer[0].setLen(8);
     r.writePacket();
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::stopRaw(int j)
+ReturnValue CanBusMotionControl::stopRaw(int j)
 {
-    bool ret = true;
-    ret &= _writeNone  (ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
+    bool b = true;
+    ReturnValue ret = ReturnValue_ok;
+
+    b &= _writeNone  (ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
+    if (!b)
+    {
+        ret = ReturnValue::return_code::return_value_error_generic;
+    }
+
     return ret;
 }
 
-bool CanBusMotionControl::stopRaw()
+ReturnValue CanBusMotionControl::stopRaw()
 {
     CanBusResources& r = RES(system_resources);
     const int n=r.getJoints();
-    bool ret = true;
-
+    ReturnValue ret = ReturnValue_ok;
+    bool b = true;
     for (int j=0; j<n; j++)
     {
-       ret &= _writeNone  (ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
+       b &= _writeNone(ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
+    } // TODO: Check this function
+    
+    if(!b)
+    {
+        ret = ReturnValue::return_code::return_value_error_generic;
     }
     
     return ret;
@@ -5916,7 +5948,7 @@ bool CanBusMotionControl::stopRaw()
 
 /// cmd is an array of double of length njoints specifying speed 
 /// for each axis
-bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
+ReturnValue CanBusMotionControl::velocityMoveRaw (int axis, double sp)
 {
     /// prepare can message.
     CanBusResources& r = RES(system_resources);
@@ -5929,7 +5961,7 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         mode != VOCAB_CM_IDLE)
     {
         yError() << "velocityMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_VELOCITY mode";
-        return true;
+        return ReturnValue_ok;
     }
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
@@ -5957,16 +5989,16 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     }
 
     r.writePacket();
-    return true;
+    return ReturnValue_ok;
 }
 
 /// cmd is an array of double of length njoints specifying speed 
 /// for each axis
-bool CanBusMotionControl::velocityMoveRaw (const double *sp)
+ReturnValue CanBusMotionControl::velocityMoveRaw (const double *sp)
 {
-    if (sp==0) return false;
+    if (sp==0) return ReturnValue::return_code::return_value_error_generic;
     CanBusResources& r = RES(system_resources);
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     int j=0;
     for(j=0; j< r.getJoints(); j++)
     {
@@ -5975,16 +6007,16 @@ bool CanBusMotionControl::velocityMoveRaw (const double *sp)
     return ret;
 }
 
-bool CanBusMotionControl::setEncoderRaw(int j, double val)
+ReturnValue CanBusMotionControl::setEncoderRaw(int j, double val)
 {
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_ENCODER_POSITION, axis, S_32(val));
+    return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_ENCODER_POSITION, axis, S_32(val)) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic);
 }
 
-bool CanBusMotionControl::setEncodersRaw(const double *vals)
+ReturnValue CanBusMotionControl::setEncodersRaw(const double *vals)
 {
     CanBusResources& r = RES(system_resources);
 
@@ -5992,18 +6024,18 @@ bool CanBusMotionControl::setEncodersRaw(const double *vals)
     for (i = 0; i < r.getJoints(); i++)
     {
         if (_writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_ENCODER_POSITION, i, S_32(vals[i])) != true)
-            return false;
+            return ReturnValue::return_code::return_value_error_generic;
     }
 
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::resetEncoderRaw(int j)
+ReturnValue CanBusMotionControl::resetEncoderRaw(int j)
 {
     return setEncoderRaw(j, 0);
 }
 
-bool CanBusMotionControl::resetEncodersRaw()
+ReturnValue CanBusMotionControl::resetEncodersRaw()
 {
     int n=RES(system_resources).getJoints();
     double *tmp = new double [n];
@@ -6012,14 +6044,14 @@ bool CanBusMotionControl::resetEncodersRaw()
     for(int i=0;i<n;i++)
         tmp[i]=0;
 
-    bool ret= setEncodersRaw(tmp);
+    ReturnValue ret= setEncodersRaw(tmp);
 
     delete [] tmp;
 
     return ret;
 }
 
-bool CanBusMotionControl::getEncodersRaw(double *v)
+ReturnValue CanBusMotionControl::getEncodersRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -6035,7 +6067,7 @@ bool CanBusMotionControl::getEncodersRaw(double *v)
     }
 
     stampEncoders.update(stamp);
-    return true;
+    return ReturnValue_ok;
 }
 
 Stamp CanBusMotionControl::getLastInputStamp()
@@ -6045,17 +6077,17 @@ Stamp CanBusMotionControl::getLastInputStamp()
     return ret;
 }
 
-bool CanBusMotionControl::getEncoderRaw(int axis, double *v)
+ReturnValue CanBusMotionControl::getEncoderRaw(int axis, double *v)
 {
     CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))return false;
+    if (!(axis >= 0 && axis <= r.getJoints()))return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[axis]._position_joint._value);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getEncoderSpeedsRaw(double *v)
+ReturnValue CanBusMotionControl::getEncoderSpeedsRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -6064,23 +6096,23 @@ bool CanBusMotionControl::getEncoderSpeedsRaw(double *v)
         int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
         v[i] = (double(r._bcastRecvBuffer[i]._speed_joint)*1000.0)/vel_factor;
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getEncoderSpeedRaw(int j, double *v)
+ReturnValue CanBusMotionControl::getEncoderSpeedRaw(int j, double *v)
 {
     CanBusResources& r = RES(system_resources);
     //ACE_ASSERT (j >= 0 && j <= r.getJoints());
     if (!(j >= 0 && j <= r.getJoints()))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Vel_estimator_shift));
     *v = (double(r._bcastRecvBuffer[j]._speed_joint)*1000.0)/vel_factor;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getEncoderAccelerationsRaw(double *v)
+ReturnValue CanBusMotionControl::getEncoderAccelerationsRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -6090,45 +6122,45 @@ bool CanBusMotionControl::getEncoderAccelerationsRaw(double *v)
         int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Acc_estimator_shift));
         v[i] = (double(r._bcastRecvBuffer[i]._accel_joint)*1000000.0)/(vel_factor*acc_factor);
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
+ReturnValue CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
 {
     CanBusResources& r = RES(system_resources);
     //ACE_ASSERT (j >= 0 && j <= r.getJoints());
     if (!(j >= 0 && j <= r.getJoints()))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Vel_estimator_shift));
     int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(j).jnt_Acc_estimator_shift));
     *v = (double(r._bcastRecvBuffer[j]._accel_joint)*1000000.0)/(vel_factor*acc_factor);
-    return true;
+    return ReturnValue_ok;
 }
 
 
-bool CanBusMotionControl::setMotorEncoderRaw(int m, const double val)
+ReturnValue CanBusMotionControl::setMotorEncoderRaw(int m, const double val)
 {
-    return NOT_YET_IMPLEMENTED("setMotorEncoderRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setMotorEncodersRaw(const double *vals)
+ReturnValue CanBusMotionControl::setMotorEncodersRaw(const double *vals)
 {
-    return NOT_YET_IMPLEMENTED("setMotorEncodersRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::resetMotorEncoderRaw(int m)
+ReturnValue CanBusMotionControl::resetMotorEncoderRaw(int m)
 {
-    return NOT_YET_IMPLEMENTED("resetMotorEncoderRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::resetMotorEncodersRaw()
+ReturnValue CanBusMotionControl::resetMotorEncodersRaw()
 {
-    return NOT_YET_IMPLEMENTED("resetMotorEncodersRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getMotorEncodersRaw(double *v)
+ReturnValue CanBusMotionControl::getMotorEncodersRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -6144,20 +6176,20 @@ bool CanBusMotionControl::getMotorEncodersRaw(double *v)
     }
 
     stampEncoders.update(stamp);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getMotorEncoderRaw(int m, double *v)
+ReturnValue CanBusMotionControl::getMotorEncoderRaw(int m, double *v)
 {
     CanBusResources& r = RES(system_resources);
-    if (!(m >= 0 && m <= r.getJoints()))return false;
+    if (!(m >= 0 && m <= r.getJoints()))return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[m]._position_rotor._value);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getMotorEncodersTimedRaw(double *v, double *t)
+ReturnValue CanBusMotionControl::getMotorEncodersTimedRaw(double *v, double *t)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -6174,45 +6206,45 @@ bool CanBusMotionControl::getMotorEncodersTimedRaw(double *v, double *t)
     }
 
     stampEncoders.update(stamp);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getMotorEncoderTimedRaw(int m, double *v, double *t)
+ReturnValue CanBusMotionControl::getMotorEncoderTimedRaw(int m, double *v, double *t)
 {
     CanBusResources& r = RES(system_resources);
-    if (!(m >= 0 && m <= r.getJoints()))return false;
+    if (!(m >= 0 && m <= r.getJoints()))return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[m]._position_rotor._value);
     *t = r._bcastRecvBuffer[m]._position_rotor._stamp;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getMotorEncoderCountsPerRevolutionRaw(int m, double *cpr)
+ReturnValue CanBusMotionControl::getMotorEncoderCountsPerRevolutionRaw(int m, double *cpr)
 {
-    return NOT_YET_IMPLEMENTED("getMotorEncodersCountsPerRevolutionRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr)
+ReturnValue CanBusMotionControl::setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr)
 {
-    return NOT_YET_IMPLEMENTED("setMotorEncodersCountsPerRevolutionRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getNumberOfMotorEncodersRaw(int* m)
-{
-    CanBusResources& r = RES(system_resources);
-    *m=r.getJoints();
-    return true;
-}
-
-bool CanBusMotionControl::getNumberOfMotorsRaw(int* m)
+ReturnValue CanBusMotionControl::getNumberOfMotorEncodersRaw(int* m)
 {
     CanBusResources& r = RES(system_resources);
     *m=r.getJoints();
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getMotorEncoderSpeedsRaw(double *v)
+ReturnValue CanBusMotionControl::getNumberOfMotorsRaw(int* m)
+{
+    CanBusResources& r = RES(system_resources);
+    *m=r.getJoints();
+    return ReturnValue_ok;
+}
+
+ReturnValue CanBusMotionControl::getMotorEncoderSpeedsRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -6221,21 +6253,21 @@ bool CanBusMotionControl::getMotorEncoderSpeedsRaw(double *v)
         int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Vel_estimator_shift));
         v[i] = (double(r._bcastRecvBuffer[i]._speed_rotor._value)*1000.0)/vel_factor;
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getMotorEncoderSpeedRaw(int m, double *v)
+ReturnValue CanBusMotionControl::getMotorEncoderSpeedRaw(int m, double *v)
 {
     CanBusResources& r = RES(system_resources);
-    if (!(m >= 0 && m <= r.getJoints()))return false;
+    if (!(m >= 0 && m <= r.getJoints()))return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Vel_estimator_shift));
     *v = (double(r._bcastRecvBuffer[m]._speed_rotor._value)*1000.0)/vel_factor;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
+ReturnValue CanBusMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -6245,33 +6277,33 @@ bool CanBusMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
         int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Acc_estimator_shift));
         accs[i] = (double(r._bcastRecvBuffer[i]._accel_rotor._value)*1000000.0)/(vel_factor*acc_factor);
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
+ReturnValue CanBusMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
 {
     CanBusResources& r = RES(system_resources);
-    if (!(m >= 0 && m <= r.getJoints()))return false;
+    if (!(m >= 0 && m <= r.getJoints()))return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Vel_estimator_shift));
     int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Acc_estimator_shift));
     *acc = (double(r._bcastRecvBuffer[m]._accel_rotor._value)*1000000.0)/(vel_factor*acc_factor);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::disableAmpRaw(int axis)
+ReturnValue CanBusMotionControl::disableAmpRaw(int axis)
 {
-    return DEPRECATED("disableAmpRaw");
+    return ReturnValue::return_code::return_value_error_deprecated;
 }
 
-bool CanBusMotionControl::enableAmpRaw(int axis)
+ReturnValue CanBusMotionControl::enableAmpRaw(int axis)
 {
-    return DEPRECATED("enableAmpRaw");
+    return ReturnValue::return_code::return_value_error_deprecated;
 }
 
 // bcast
-bool CanBusMotionControl::getCurrentsRaw(double *cs)
+ReturnValue CanBusMotionControl::getCurrentsRaw(double *cs)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -6281,35 +6313,35 @@ bool CanBusMotionControl::getCurrentsRaw(double *cs)
     {
         cs[i] = double(r._bcastRecvBuffer[i]._current);
     }
-    return true;
+    return ReturnValue_ok;
 }
 
 // bcast currents
-bool CanBusMotionControl::getCurrentRaw(int axis, double *c)
+ReturnValue CanBusMotionControl::getCurrentRaw(int axis, double *c)
 {
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     *c = double(r._bcastRecvBuffer[axis]._current);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::setMaxCurrentRaw(int axis, double v)
+ReturnValue CanBusMotionControl::setMaxCurrentRaw(int axis, double v)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_CURRENT_LIMIT, axis, S_32(v));
+    return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_CURRENT_LIMIT, axis, S_32(v)) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic);
 }
 
-bool CanBusMotionControl::getMaxCurrentRaw(int axis, double* v)
+ReturnValue CanBusMotionControl::getMaxCurrentRaw(int axis, double* v)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    return NOT_YET_IMPLEMENTED("getMaxCurrentRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
     //int tmp=0;
     //v=0;
     //bool ret = _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_CURRENT_LIMIT, axis, tmp);
@@ -6326,73 +6358,73 @@ bool CanBusMotionControl::setVelocityShiftRaw(int axis, double shift)
     return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_VEL_SHIFT, axis, S_16(shift));
 }
 
-bool CanBusMotionControl::getTemperatureRaw(int m, double* val)
+ReturnValue CanBusMotionControl::getTemperatureRaw(int m, double* val)
 {
-    return NOT_YET_IMPLEMENTED("getTemperatureRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getTemperaturesRaw(double *vals)
+ReturnValue CanBusMotionControl::getTemperaturesRaw(double *vals)
 {
-    return NOT_YET_IMPLEMENTED("getTemperaturesRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getTemperatureLimitRaw(int m, double *temp)
+ReturnValue CanBusMotionControl::getTemperatureLimitRaw(int m, double *temp)
 {
-    return NOT_YET_IMPLEMENTED("getTemperatureLimitRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setTemperatureLimitRaw(int m, const double temp)
+ReturnValue CanBusMotionControl::setTemperatureLimitRaw(int m, const double temp)
 {
-    return NOT_YET_IMPLEMENTED("setTemperatureLimitRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getPeakCurrentRaw(int m, double *val)
+ReturnValue CanBusMotionControl::getPeakCurrentRaw(int m, double *val)
 {
-    return NOT_YET_IMPLEMENTED("getPeakCurrentRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setPeakCurrentRaw(int m, const double val)
+ReturnValue CanBusMotionControl::setPeakCurrentRaw(int m, const double val)
 {
-    return NOT_YET_IMPLEMENTED("setPeakCurrentRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getNominalCurrentRaw(int m, double *val)
+ReturnValue CanBusMotionControl::getNominalCurrentRaw(int m, double *val)
 {
-    return NOT_YET_IMPLEMENTED("getNominalCurrentRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setNominalCurrentRaw(int m, const double val)
+ReturnValue CanBusMotionControl::setNominalCurrentRaw(int m, const double val)
 {
-    return NOT_YET_IMPLEMENTED("setNominalCurrentRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getPWMRaw(int j, double* val)
+ReturnValue CanBusMotionControl::getPWMRaw(int j, double* val)
 {
-    return NOT_YET_IMPLEMENTED("getPWMRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getPWMLimitRaw(int j, double* val)
+ReturnValue CanBusMotionControl::getPWMLimitRaw(int j, double* val)
 {
     if (!(j >= 0 && j <= (CAN_MAX_CARDS - 1) * 2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     short s = 0;
-    bool ret = _readWord16(ICUBCANPROTO_POL_MC_CMD__GET_PWM_LIMIT, j, s);
     *val = s;
-    return ret;
+    return _readWord16(ICUBCANPROTO_POL_MC_CMD__GET_PWM_LIMIT, j, s) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic);
 }
 
-bool CanBusMotionControl::setPWMLimitRaw(int j, const double val)
+ReturnValue CanBusMotionControl::setPWMLimitRaw(int j, const double val)
 {
     if (!(j >= 0 && j <= (CAN_MAX_CARDS - 1) * 2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    return _writeWord16(ICUBCANPROTO_POL_MC_CMD__SET_PWM_LIMIT, j, S_16(val));
+    return _writeWord16(ICUBCANPROTO_POL_MC_CMD__SET_PWM_LIMIT, j, S_16(val)) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic);
+
 }
 
-bool CanBusMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
+ReturnValue CanBusMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
 {
-    return NOT_YET_IMPLEMENTED("getPowerSupplyVoltageRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
 bool CanBusMotionControl::setSpeedEstimatorShiftRaw(int axis, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc)
@@ -6421,24 +6453,24 @@ bool CanBusMotionControl::setVelocityTimeoutRaw(int axis, double timeout)
     return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_VEL_TIMEOUT, axis, S_16(timeout));
 }
 
-bool CanBusMotionControl::calibrationDoneRaw(int axis)
+ReturnValue CanBusMotionControl::calibrationDoneRaw(int axis)
 {
     short value = 0;
     DEBUG_FUNC("Calling doneRaw for joint %d\n", axis);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     if (!_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_CONTROL_MODE, axis, value))
     {
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     } 
 
     if (!(value & 0xf0))
     {
-        return true;
+        return ReturnValue_ok;
     }
 
-    return false;
+    return ReturnValue::return_code::return_value_error_generic;
 }
 
 bool CanBusMotionControl::setPrintFunction(int (*f) (const char *fmt, ...))
@@ -6447,7 +6479,7 @@ bool CanBusMotionControl::setPrintFunction(int (*f) (const char *fmt, ...))
     return true;
 }
 
-bool CanBusMotionControl::getAmpStatusRaw(int *st)
+ReturnValue CanBusMotionControl::getAmpStatusRaw(int *st)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -6461,42 +6493,44 @@ bool CanBusMotionControl::getAmpStatusRaw(int *st)
         st[i] = short(r._bcastRecvBuffer[i]._axisStatus);  
    
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getAmpStatusRaw(int j, int *st)
+ReturnValue CanBusMotionControl::getAmpStatusRaw(int j, int *st)
 {
     CanBusResources& r = RES(system_resources);
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     st[j] = short(r._bcastRecvBuffer[j]._axisStatus);  
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::setLimitsRaw(int axis, double min, double max)
+ReturnValue CanBusMotionControl::setPosLimitsRaw(int axis, double min, double max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    bool ret=true;
-
-    ret = ret && _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_MIN_POSITION, axis, S_32(min));
-    ret = ret && _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_MAX_POSITION, axis, S_32(max));
+    ReturnValue ret = ReturnValue_ok; // TODO: check the return values
+    ret &= (_writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_MIN_POSITION, axis, S_32(min)) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic));
+    ret &= (_writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_MAX_POSITION, axis, S_32(max)) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic));
+    //ret = ret && _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_MIN_POSITION, axis, S_32(min));
+    //ret = ret && _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_MAX_POSITION, axis, S_32(max));
 
     return ret;
 }
 
-bool CanBusMotionControl::getPosLimitsRaw(int axis, double *min, double *max)
+ReturnValue CanBusMotionControl::getPosLimitsRaw(int axis, double *min, double *max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     int iMin=0;
     int iMax=0;
-    bool ret=true;
+    ReturnValue ret=ReturnValue_ok;
 
-    ret = ret && _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_MIN_POSITION, axis, iMin);
-    ret = ret && _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_MAX_POSITION, axis, iMax);
-
+    ret &= (_readDWord (ICUBCANPROTO_POL_MC_CMD__GET_MIN_POSITION, axis, iMin) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic));
+    ret &= (_readDWord (ICUBCANPROTO_POL_MC_CMD__GET_MAX_POSITION, axis, iMax) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic));
+    //ret = ret && _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_MIN_POSITION, axis, iMin);
+    //ret = ret && _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_MAX_POSITION, axis, iMax);
     *min=iMin;
     *max=iMax;
 
@@ -6508,9 +6542,9 @@ bool CanBusMotionControl::getPosLimitsRaw(int axis, double *min, double *max)
 //     Position control2 interface    //
 ////////////////////////////////////////
 
-bool CanBusMotionControl::positionMoveRaw(const int n_joint, const int *joints, const double *refs)
+ReturnValue CanBusMotionControl::positionMoveRaw(const int n_joint, const int *joints, const double *refs)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)
     {
         ret = ret && positionMoveRaw(joints[j], refs[j]);
@@ -6518,9 +6552,9 @@ bool CanBusMotionControl::positionMoveRaw(const int n_joint, const int *joints, 
     return ret;
 }
 
-bool CanBusMotionControl::relativeMoveRaw(const int n_joint, const int *joints, const double *deltas)
+ReturnValue CanBusMotionControl::relativeMoveRaw(const int n_joint, const int *joints, const double *deltas)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)
     {
         ret = ret && relativeMoveRaw(joints[j], deltas[j]);
@@ -6528,9 +6562,9 @@ bool CanBusMotionControl::relativeMoveRaw(const int n_joint, const int *joints, 
     return ret;
 }
 
-bool CanBusMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
+ReturnValue CanBusMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     bool value = true;
     bool tot_value = true;
     for(int j=0; j<n_joint; j++)
@@ -6542,9 +6576,9 @@ bool CanBusMotionControl::checkMotionDoneRaw(const int n_joint, const int *joint
     return ret;
 }
 
-bool CanBusMotionControl::setTrajSpeedsRaw(const int n_joint, const int *joints, const double *spds)
+ReturnValue CanBusMotionControl::setTrajSpeedsRaw(const int n_joint, const int *joints, const double *spds)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)
     {
         ret = ret && setTrajSpeedRaw(joints[j], spds[j]);
@@ -6552,9 +6586,9 @@ bool CanBusMotionControl::setTrajSpeedsRaw(const int n_joint, const int *joints,
     return ret;
 }
 
-bool CanBusMotionControl::setTrajAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
+ReturnValue CanBusMotionControl::setTrajAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)
     {
         ret = ret && setTrajAccelerationRaw(joints[j], accs[j]);
@@ -6562,9 +6596,9 @@ bool CanBusMotionControl::setTrajAccelerationsRaw(const int n_joint, const int *
     return ret;
 }
 
-bool CanBusMotionControl::getTrajSpeedsRaw(const int n_joint, const int *joints, double *spds)
+ReturnValue CanBusMotionControl::getTrajSpeedsRaw(const int n_joint, const int *joints, double *spds)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)
     {
         ret = ret && getTrajSpeedRaw(joints[j], &spds[j]);
@@ -6572,9 +6606,9 @@ bool CanBusMotionControl::getTrajSpeedsRaw(const int n_joint, const int *joints,
     return ret;
 }
 
-bool CanBusMotionControl::getTrajAccelerationsRaw(const int n_joint, const int *joints, double *accs)
+ReturnValue CanBusMotionControl::getTrajAccelerationsRaw(const int n_joint, const int *joints, double *accs)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)
     {
         ret = ret && getTrajAccelerationRaw(joints[j], &accs[j]);
@@ -6582,9 +6616,9 @@ bool CanBusMotionControl::getTrajAccelerationsRaw(const int n_joint, const int *
     return ret;
 }
 
-bool CanBusMotionControl::stopRaw(const int n_joint, const int *joints)
+ReturnValue CanBusMotionControl::stopRaw(const int n_joint, const int *joints)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)
     {
         ret = ret && stopRaw(joints[j]);
@@ -6598,9 +6632,9 @@ bool CanBusMotionControl::stopRaw(const int n_joint, const int *joints)
 //     Velocity control2 interface    //
 ////////////////////////////////////////
 
-bool CanBusMotionControl::velocityMoveRaw(const int n_joint, const int *joints, const double *spds)
+ReturnValue CanBusMotionControl::velocityMoveRaw(const int n_joint, const int *joints, const double *spds)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for(int j=0; j< n_joint; j++)
     {
         ret = ret && velocityMoveRaw(joints[j], spds[j]);
@@ -6611,65 +6645,66 @@ bool CanBusMotionControl::velocityMoveRaw(const int n_joint, const int *joints, 
 bool CanBusMotionControl::helper_setCurPidRaw(int j, const Pid &pid)
 {
     // Our boards do not have a Velocity Pid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Current Pid");
+    return NOT_YET_IMPLEMENTED("helper_setCurPidRaw");
 }
 bool CanBusMotionControl::helper_getCurPidRaw(int j, Pid *pid)
 {
     // Our boards do not have a Velocity Pid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Current Pid");
+    return NOT_YET_IMPLEMENTED("helper_getCurPidRaw");
 }
 
 bool CanBusMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
 {
     // Our boards do not have a Velocity Pid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+    return NOT_YET_IMPLEMENTED("helper_setVelPidRaw");
 }
 bool CanBusMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 {
     // Our boards do not have a Velocity Pid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+    return NOT_YET_IMPLEMENTED("helper_getVelPidRaw");
+    //return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
 ///////////// END Velocity Control 2 INTERFACE  //////////////////
 
 // IControlLimits
-bool CanBusMotionControl::setVelLimitsRaw(int axis, double min, double max)
+ReturnValue CanBusMotionControl::setVelLimitsRaw(int axis, double min, double max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     _max_vel_jnt_cmd[axis]=max;
     //min not implemented
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
+ReturnValue CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     *max = _max_vel_jnt_cmd[axis];
     *min = 0;
-    return true;
+    return ReturnValue_ok;
 }
 
 // PositionDirect Interface
-bool CanBusMotionControl::setPositionRaw(int j, double ref)
+ReturnValue CanBusMotionControl::setPositionRaw(int j, double ref)
 {
     CanBusResources& r = RES(system_resources);
 
     if (1/*fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
     {
-
         int mode = 0;
         getControlModeRaw(j, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT &&
             mode != VOCAB_CM_IDLE)
         {
             yError() << "setPositionRaw: skipping command because " << networkName.c_str() << " joint " << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
-            return true;
+            return ReturnValue_ok;
         }
-        return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
+
+        return _writeDWord(ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref)) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic);
     }
     else
     { 
@@ -6678,39 +6713,39 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
         _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, j));
         //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,ref);
         //_writeDWord (CAN_SET_COMMAND_POSITION, j, S_32(saturated_cmd));
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 }
 
-bool CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, const double *refs)
+ReturnValue CanBusMotionControl::setPositionsRaw(const int n_joint, const int *joints, const double *refs)
 {
-    if (refs == 0) return false;
-    if (joints == 0) return false;
-    bool ret = true;
+    if (refs == 0) return ReturnValue::return_code::return_value_error_generic;
+    if (joints == 0) return ReturnValue::return_code::return_value_error_generic;
+    ReturnValue ret = ReturnValue_ok;
 
     for (int j = 0; j < n_joint; j++)
     {
-        ret = ret & setPositionRaw(joints[j],refs[j]);
+        ret &= setPositionRaw(joints[j],refs[j]);
     }
     return ret;
 }
 
-bool CanBusMotionControl::setPositionsRaw(const double *refs)
+ReturnValue CanBusMotionControl::setPositionsRaw(const double *refs)
 {
-    if (refs == 0) return false;
+    if (refs == 0) return ReturnValue::return_code::return_value_error_generic;
     CanBusResources& r = RES(system_resources);
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
 
     for (int j = 0; j < r.getJoints(); j++)
     {
-        ret = ret & setPositionRaw(j,refs[j]);
+        ret &= setPositionRaw(j,refs[j]);
     }
     return ret;
 }
 
-bool CanBusMotionControl::isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled)
+ReturnValue CanBusMotionControl::isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool& enabled)
 {
-    return NOT_YET_IMPLEMENTED("isPidEnabled");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
 bool CanBusMotionControl::loadBootMemory()
@@ -7311,7 +7346,7 @@ yarp::dev::DeviceDriver *CanBusMotionControl::createDevice(yarp::os::Searchable&
     return 0;
 }
 
-bool CanBusMotionControl::getEncodersTimedRaw(double *v, double *t)
+ReturnValue CanBusMotionControl::getEncodersTimedRaw(double *v, double *t)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -7328,23 +7363,24 @@ bool CanBusMotionControl::getEncodersTimedRaw(double *v, double *t)
     }
 
     stampEncoders.update(stamp);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double *t)
+ReturnValue CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double *t)
 {
     CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))return false;
+    if (!(axis >= 0 && axis <= r.getJoints()))
+        return ReturnValue::return_code::return_value_error_generic;
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     *v = double(r._bcastRecvBuffer[axis]._position_joint._value);
     *t = r._bcastRecvBuffer[axis]._position_joint._stamp;
-    return true;
+    return ReturnValue_ok;
 }
 
 
 // IInteractionMode
-bool CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode)
+ReturnValue CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode)
 {
     DEBUG_FUNC("Calling GET_INTERACTION_MODE SINGLE JOINT\n");
     CanBusResources& r = RES(system_resources);
@@ -7353,14 +7389,14 @@ bool CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::Interaction
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     temp = int(r._bcastRecvBuffer[axis]._interactionmodeStatus);
     *mode=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+ReturnValue CanBusMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
 {
     DEBUG_FUNC("Calling GET_INTERACTION_MODE MULTIPLE JOINTS \n");
-    if (joints==0) return false;
-    if (modes==0) return false;
+    if (joints==0) return ReturnValue::return_code::return_value_error_generic;
+    if (modes==0) return ReturnValue::return_code::return_value_error_generic;
 
     CanBusResources& r = RES(system_resources);
     int i;
@@ -7369,10 +7405,10 @@ bool CanBusMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp
     {
         getInteractionModeRaw(joints[i], &modes[i]);
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+ReturnValue CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
 {
     DEBUG_FUNC("Calling GET_INTERACTION_MODE ALL JOINTS \n");
     CanBusResources& r = RES(system_resources);
@@ -7384,30 +7420,30 @@ bool CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum*
         temp = int(r._bcastRecvBuffer[i]._interactionmodeStatus);
         modes[i]=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum mode)
+ReturnValue CanBusMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum mode)
 {
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     DEBUG_FUNC("Calling SET_INTERACTION_MODE RAW\n");
 
-    if (mode == VOCAB_IM_COMPLIANT && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
+    if (mode == VOCAB_IM_COMPLIANT && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return ReturnValue::return_code::return_value_error_generic;}
     int v = from_interactionvocab_to_interactionint(mode);
-    if (v==icubCanProto_interactionmode_unknownError) return false;
+    if (v==icubCanProto_interactionmode_unknownError) return ReturnValue::return_code::return_value_error_generic;
     _writeByte8(CAN_SET_INTERACTION_MODE,j,v);
 
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+ReturnValue CanBusMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
 {
     DEBUG_FUNC("Calling SET_INTERACTION_MODE_RAW MULTIPLE JOINTS\n");
-    if (n_joints==0) return false;
-    if (joints==0) return false;
-    bool ret = true;
+    if (n_joints==0) return ReturnValue::return_code::return_value_error_generic;
+    if (joints==0) return ReturnValue::return_code::return_value_error_generic;
+    ReturnValue ret = ReturnValue_ok;
     for (int i=0;i<n_joints; i++)
     {
         ret = ret && setInteractionModeRaw(joints[i],modes[i]);
@@ -7415,7 +7451,7 @@ bool CanBusMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
     return ret;
 }
 
-bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+ReturnValue CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
 {
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");
     CanBusResources& r = RES(system_resources);
@@ -7425,23 +7461,23 @@ bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
        if (modes[i] == VOCAB_IM_COMPLIANT && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
        int v = from_interactionvocab_to_interactionint(modes[i]);
-       if (v==icubCanProto_interactionmode_unknownError) return false;
+       if (v==icubCanProto_interactionmode_unknownError) return ReturnValue::return_code::return_value_error_generic;
        _writeByte8(CAN_SET_INTERACTION_MODE,i,v);
     }
 
-    return true;
+    return ReturnValue_ok;
 }
 
 //PWM interface
-bool CanBusMotionControl::setRefDutyCycleRaw(int j, double v)
-{
+ReturnValue CanBusMotionControl::setRefDutyCycleRaw(int j, double v)
+{   
     if (!(j >= 0 && j <= (CAN_MAX_CARDS - 1) * 2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    return _writeWord16(ICUBCANPROTO_POL_MC_CMD__SET_OPENLOOP_PARAMS, j, S_16(v));
+    return _writeWord16(ICUBCANPROTO_POL_MC_CMD__SET_OPENLOOP_PARAMS, j, S_16(v)) ? ReturnValue_ok : ReturnValue(ReturnValue::return_code::return_value_error_generic);
 }
 
-bool CanBusMotionControl::setRefDutyCyclesRaw(const double *v)
+ReturnValue CanBusMotionControl::setRefDutyCyclesRaw(const double *v)
 {
     CanBusResources& r = RES(system_resources);
 
@@ -7451,48 +7487,48 @@ bool CanBusMotionControl::setRefDutyCyclesRaw(const double *v)
         setRefDutyCycleRaw(i, v[i]);
     }
 
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getRefDutyCycleRaw(int j, double *v)
+ReturnValue CanBusMotionControl::getRefDutyCycleRaw(int j, double *v)
 {
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
     short int value = 0;
     if (_readWord16(ICUBCANPROTO_POL_MC_CMD__GET_OPENLOOP_PARAMS, axis, value) == true)
         *v = double(value);
     else
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
 
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getRefDutyCyclesRaw(double *v)
+ReturnValue CanBusMotionControl::getRefDutyCyclesRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
-    if (v == 0) return false;
+    if (v == 0) return ReturnValue::return_code::return_value_error_generic;
     int i = 0;
-    bool ret = true;
+    ReturnValue ret = ReturnValue_ok;
     for (i = 0; i < r.getJoints(); i++)
     {
-        ret = ret & getRefDutyCycleRaw(i, &v[i]);
+        ret &= getRefDutyCycleRaw(i, &v[i]);
     }
     return ret;
 }
 
-bool CanBusMotionControl::getDutyCycleRaw(int j, double *v)
+ReturnValue CanBusMotionControl::getDutyCycleRaw(int j, double *v)
 {
     CanBusResources& r = RES(system_resources);
     if (!(j >= 0 && j <= r.getJoints()))
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     *(v) = double(r._bcastRecvBuffer[j]._pid_value);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getDutyCyclesRaw(double *v)
+ReturnValue CanBusMotionControl::getDutyCyclesRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -7502,7 +7538,7 @@ bool CanBusMotionControl::getDutyCyclesRaw(double *v)
     {
         v[i] = double(r._bcastRecvBuffer[i]._pid_value);
     }
-    return true;
+    return ReturnValue_ok;
 }
 
 // Current interface
@@ -7517,38 +7553,72 @@ return NOT_YET_IMPLEMENTED("getCurrentsRaw");
 }
 */
 
-bool CanBusMotionControl::getCurrentRangeRaw(int j, double *min, double *max)
+ReturnValue CanBusMotionControl::getCurrentRangeRaw(int j, double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED_WARNING("getCurrentRangeRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getCurrentRangesRaw(double *min, double *max)
+ReturnValue CanBusMotionControl::getCurrentRangesRaw(double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED_WARNING("getCurrentRangesRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setRefCurrentsRaw(const double *t)
+ReturnValue CanBusMotionControl::setRefCurrentsRaw(const double *t)
 {
-    return NOT_YET_IMPLEMENTED("setRefCurrentsRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setRefCurrentRaw(int j, double t)
+ReturnValue CanBusMotionControl::setRefCurrentRaw(int j, double t)
 {
-    return NOT_YET_IMPLEMENTED("setRefCurrentRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::setRefCurrentsRaw(const int n_joint, const int *joints, const double *t)
+ReturnValue CanBusMotionControl::setRefCurrentsRaw(const int n_joint, const int *joints, const double *t)
 {
-    return NOT_YET_IMPLEMENTED("setRefCurrentsRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getRefCurrentsRaw(double *t)
+ReturnValue CanBusMotionControl::getRefCurrentsRaw(double *t)
 {
-    return NOT_YET_IMPLEMENTED("getRefCurrentsRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
-bool CanBusMotionControl::getRefCurrentRaw(int j, double *t)
+ReturnValue CanBusMotionControl::getRefCurrentRaw(int j, double *t)
 {
-    return NOT_YET_IMPLEMENTED("getRefCurrentRaw");
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
 }
 
+ReturnValue CanBusMotionControl::getPidExtraInfoRaw(const PidControlTypeEnum& pidtype, int j, yarp::dev::PidExtraInfo& info)
+{
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
+}
+
+ReturnValue CanBusMotionControl::getPidExtraInfosRaw(const PidControlTypeEnum& pidtype, std::vector<yarp::dev::PidExtraInfo>& info)
+{
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
+}
+
+ReturnValue CanBusMotionControl::setPidFeedforwardRaw(const PidControlTypeEnum& pidtype, int j, double v)
+{
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
+}
+
+ReturnValue CanBusMotionControl::getPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double& v)
+{
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
+}
+
+ReturnValue CanBusMotionControl::getPidFeedforwardRaw(const PidControlTypeEnum& pidtype, int j, double& v)
+{
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
+}
+
+ReturnValue CanBusMotionControl::setGearboxRatioRaw(int m, const double val)
+{
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
+}
+
+ReturnValue CanBusMotionControl::getGearboxRatioRaw(int m, double *val)
+{
+    return ReturnValue::return_code::return_value_error_not_implemented_by_device;
+}
