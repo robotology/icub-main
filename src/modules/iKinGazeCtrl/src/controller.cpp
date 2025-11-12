@@ -99,7 +99,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     // exclude acceleration constraints by fixing
     // thresholds at high values
     Vector a_robHead(nJointsHead,std::numeric_limits<double>::max());
-    velHead->setRefAccelerations(a_robHead.data());
+    velHead->setTrajAccelerations(a_robHead.data());
 
     copyJointsBounds(chainNeck,chainEyeL);
     copyJointsBounds(chainEyeL,chainEyeR);
@@ -487,7 +487,7 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
     ang_[1]=CTRL_RAD2DEG*sat(ang[1],lim(eyesJoints[1],0),lim(eyesJoints[1],1));
     ang_[2]=CTRL_RAD2DEG*sat(ang[2],lim(eyesJoints[2],0),lim(eyesJoints[2],1));
 
-    posHead->setRefSpeeds((int)eyesJoints.size(),eyesJoints.data(),vel.data());
+    posHead->setTrajSpeeds((int)eyesJoints.size(),eyesJoints.data(),vel.data());
     posHead->positionMove((int)eyesJoints.size(),eyesJoints.data(),ang_.data());
 
     if (commData->debugInfoEnabled && (port_debug.getOutputCount()>0))

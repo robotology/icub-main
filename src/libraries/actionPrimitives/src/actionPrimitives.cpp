@@ -1507,7 +1507,7 @@ bool ActionPrimitives::cmdHand(const Action &action)
         {
             int j=fingersJnts[i];
             modCtrl->setControlMode(j,VOCAB_CM_POSITION);
-            posCtrl->setRefSpeed(j,vels[j-jHandMin]);
+            posCtrl->setTrajSpeed(j,vels[j-jHandMin]);
         }
         
         posCtrl->positionMove((int)sz,fingersJnts.data(),poss.data());

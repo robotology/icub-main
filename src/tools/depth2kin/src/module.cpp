@@ -353,8 +353,8 @@ void CalibModule::openHand(IControlMode *imod, IPositionControl *ipos)
 
     for (int i=i0; i<nEncs; i++)
     {
-        ipos->setRefAcceleration(i,std::numeric_limits<double>::max());
-        ipos->setRefSpeed(i,vels[i-i0]);
+        ipos->setTrajAcceleration(i,std::numeric_limits<double>::max());
+        ipos->setTrajSpeed(i,vels[i-i0]);
         ipos->positionMove(i,poss[i-i0]);
     }
 }
@@ -534,8 +534,8 @@ void CalibModule::prepareRobot()
 
     for (int i=i0; i<nEncs; i++)
     {
-        iposs->setRefAcceleration(i,std::numeric_limits<double>::max());
-        iposs->setRefSpeed(i,vels[i-i0]);
+        iposs->setTrajAcceleration(i,std::numeric_limits<double>::max());
+        iposs->setTrajSpeed(i,vels[i-i0]);
         iposs->positionMove(i,poss[i-i0]);
     }
 

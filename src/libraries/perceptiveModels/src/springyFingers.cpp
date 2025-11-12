@@ -525,13 +525,13 @@ bool SpringyFingersModel::calibrate(const Property &options)
         for (int j=7; j<nAxes; j++)
         {
             imod->setControlMode(j,VOCAB_CM_POSITION);
-            ilim->getLimits(j,&qmin[j],&qmax[j]);            
+            ilim->getPosLimits(j,&qmin[j],&qmax[j]);            
 
-            ipos->getRefAcceleration(j,&acc[j]);
-            ipos->getRefSpeed(j,&vel[j]);
+            ipos->getTrajAcceleration(j,&acc[j]);
+            ipos->getTrajSpeed(j,&vel[j]);
             
-            ipos->setRefAcceleration(j,std::numeric_limits<double>::max());
-            ipos->setRefSpeed(j,60.0);
+            ipos->setTrajAcceleration(j,std::numeric_limits<double>::max());
+            ipos->setTrajSpeed(j,60.0);
             ipos->positionMove(j,(j==8)?qmax[j]:qmin[j]);   // thumb in opposition
         }
 
@@ -680,8 +680,8 @@ bool SpringyFingersModel::calibrate(const Property &options)
 
         for (int j=7; j<nAxes; j++)
         {
-            ipos->setRefAcceleration(j,acc[j]);
-            ipos->setRefSpeed(j,vel[j]);
+            ipos->setTrajAcceleration(j,acc[j]);
+            ipos->setTrajSpeed(j,vel[j]);
         }
 
         return ok;
@@ -755,7 +755,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
 
     mtx.lock();
     imod->setControlMode(joint,VOCAB_CM_POSITION);
-    ipos->setRefSpeed(joint,finger.getCalibVel());
+    ipos->setTrajSpeed(joint,finger.getCalibVel());
     mtx.unlock();
 
     for (int i=0; i<5; i++)

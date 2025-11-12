@@ -43,6 +43,7 @@ using namespace std;
 #include <yarp/dev/ControlBoardHelper.h>
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
+#include <yarp/dev/IVelocityDirect.h>
 
 #include<yarp/dev/ImplementJointFault.h>
 
@@ -268,7 +269,9 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public eth::IethResource,
     public IJointFaultRaw,
     public ImplementJointFault,
-    public iCub::debugLibrary::IRawValuesPublisher
+    public iCub::debugLibrary::IRawValuesPublisher,
+    public IVelocityDirectRaw,
+    public ImplementVelocityDirect
     {
 private:
     eth::TheEthManager*        ethManager;
@@ -314,10 +317,11 @@ private:
 
 
     eomc::PidInfo    *                      _trj_pids;
-    //eomc::PidInfo    *                    _dir_pids;
+    eomc::PidInfo    *                      _dir_pos_pids;
+    eomc::PidInfo    *                      _dir_vel_pids;
     eomc::TrqPidInfo *                      _trq_pids;
     eomc::PidInfo    *                      _cur_pids;
-    eomc::PidInfo    *                      _spd_pids;
+    eomc::PidInfo    *                      _vel_pids;
 
     int *                                   _axisMap;   /** axies map*/
     std::vector<eomc::axisInfo_t>           _axesInfo;
@@ -386,8 +390,8 @@ private:
     bool saveCouplingsData(void);
     void debugUtil_printJointsetInfo(void);
 
-    bool isTorqueControlEnabled(int joint);
-    bool isVelocityControlEnabled(int joint);
+    //bool isTorqueControlEnabled(int joint); //commented out because not used
+   // bool isVelocityControlEnabled(int joint); //commented out because not used
 
     bool iNeedCouplingsInfo(void); //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
 
@@ -462,27 +466,32 @@ public:
     virtual bool getEntityControlModeName(uint32_t entityId, eOenum08_t control_mode, std::string &controlModeName, eObool_t compact_string) override;
 
     /////////   PID INTERFACE   /////////
-    virtual bool setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid) override;
-    virtual bool setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids) override;
-    virtual bool setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref) override;
-    virtual bool setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs) override;
-    virtual bool setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit) override;
-    virtual bool setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits) override;
-    virtual bool getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err) override;
-    virtual bool getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs) override;
-    virtual bool getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out) override;
-    virtual bool getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs) override;
-    virtual bool getPidRaw(const PidControlTypeEnum& pidtype, int j, Pid *pid) override;
-    virtual bool getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids) override;
-    virtual bool getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref) override;
-    virtual bool getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs) override;
-    virtual bool getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit) override;
-    virtual bool getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits) override;
-    virtual bool resetPidRaw(const PidControlTypeEnum& pidtype, int j) override;
-    virtual bool disablePidRaw(const PidControlTypeEnum& pidtype, int j) override;
-    virtual bool enablePidRaw(const PidControlTypeEnum& pidtype, int j) override;
-    virtual bool setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v) override;
-    virtual bool isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled) override;
+    virtual ReturnValue setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid) override;
+    virtual ReturnValue setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids) override;
+    virtual ReturnValue setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref) override;
+    virtual ReturnValue setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs) override;
+    virtual ReturnValue setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit) override;
+    virtual ReturnValue setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits) override;
+    virtual ReturnValue getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err) override;
+    virtual ReturnValue getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs) override;
+    virtual ReturnValue getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out) override;
+    virtual ReturnValue getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs) override;
+    virtual ReturnValue getPidRaw(const PidControlTypeEnum& pidtype, int j, Pid *pid) override;
+    virtual ReturnValue getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids) override;
+    virtual ReturnValue getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref) override;
+    virtual ReturnValue getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs) override;
+    virtual ReturnValue getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit) override;
+    virtual ReturnValue getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits) override;
+    virtual ReturnValue resetPidRaw(const PidControlTypeEnum& pidtype, int j) override;
+    virtual ReturnValue disablePidRaw(const PidControlTypeEnum& pidtype, int j) override;
+    virtual ReturnValue enablePidRaw(const PidControlTypeEnum& pidtype, int j) override;
+    virtual ReturnValue setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v) override;
+    virtual ReturnValue setPidFeedforwardRaw(const PidControlTypeEnum& pidtype,int j, double v) override;
+    virtual ReturnValue getPidOffsetRaw(const PidControlTypeEnum& pidtype,int j, double& v) override;
+    virtual ReturnValue getPidFeedforwardRaw(const PidControlTypeEnum& pidtype,int j, double& v) override;
+    virtual ReturnValue isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool& enabled) override;
+    virtual ReturnValue getPidExtraInfoRaw(const PidControlTypeEnum& pidtype, int j, yarp::dev::PidExtraInfo& units) override;
+    virtual ReturnValue getPidExtraInfosRaw(const PidControlTypeEnum& pidtype, std::vector<yarp::dev::PidExtraInfo>& units) override;
 
     // POSITION CONTROL INTERFACE RAW
     virtual bool getAxes(int *ax) override;
@@ -492,14 +501,14 @@ public:
     virtual bool relativeMoveRaw(const double *deltas) override;
     virtual bool checkMotionDoneRaw(bool *flag) override;
     virtual bool checkMotionDoneRaw(int j, bool *flag) override;
-    virtual bool setRefSpeedRaw(int j, double sp) override;
-    virtual bool setRefSpeedsRaw(const double *spds) override;
-    virtual bool setRefAccelerationRaw(int j, double acc) override;
-    virtual bool setRefAccelerationsRaw(const double *accs) override;
-    virtual bool getRefSpeedRaw(int j, double *ref) override;
-    virtual bool getRefSpeedsRaw(double *spds) override;
-    virtual bool getRefAccelerationRaw(int j, double *acc) override;
-    virtual bool getRefAccelerationsRaw(double *accs) override;
+    virtual bool setTrajSpeedRaw(int j, double sp) override;
+    virtual bool setTrajSpeedsRaw(const double *spds) override;
+    virtual bool setTrajAccelerationRaw(int j, double acc) override;
+    virtual bool setTrajAccelerationsRaw(const double *accs) override;
+    virtual bool getTrajSpeedRaw(int j, double *ref) override;
+    virtual bool getTrajSpeedsRaw(double *spds) override;
+    virtual bool getTrajAccelerationRaw(int j, double *acc) override;
+    virtual bool getTrajAccelerationsRaw(double *accs) override;
     virtual bool stopRaw(int j) override;
     virtual bool stopRaw() override;
 
@@ -508,10 +517,10 @@ public:
     virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs) override;
     virtual bool relativeMoveRaw(const int n_joint, const int *joints, const double *deltas) override;
     virtual bool checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags) override;
-    virtual bool setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds) override;
-    virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs) override;
-    virtual bool getRefSpeedsRaw(const int n_joint, const int *joints, double *spds) override;
-    virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs) override;
+    virtual bool setTrajSpeedsRaw(const int n_joint, const int *joints, const double *spds) override;
+    virtual bool setTrajAccelerationsRaw(const int n_joint, const int *joints, const double *accs) override;
+    virtual bool getTrajSpeedsRaw(const int n_joint, const int *joints, double *spds) override;
+    virtual bool getTrajAccelerationsRaw(const int n_joint, const int *joints, double *accs) override;
     virtual bool stopRaw(const int n_joint, const int *joints) override;
     virtual bool getTargetPositionRaw(const int joint, double *ref) override;
     virtual bool getTargetPositionsRaw(double *refs) override;
@@ -637,11 +646,11 @@ public:
 #endif
 
     // Limits
-    virtual bool setLimitsRaw(int axis, double min, double max) override;
-    virtual bool getLimitsRaw(int axis, double *min, double *max) override;
+    virtual ReturnValue setPosLimitsRaw(int axis, double min, double max) override;
+    virtual ReturnValue getPosLimitsRaw(int axis, double *min, double *max) override;
     // Limits 2
-    virtual bool setVelLimitsRaw(int axis, double min, double max) override;
-    virtual bool getVelLimitsRaw(int axis, double *min, double *max) override;
+    virtual ReturnValue setVelLimitsRaw(int axis, double min, double max) override;
+    virtual ReturnValue getVelLimitsRaw(int axis, double *min, double *max) override;
 
     // Torque control
     virtual bool getTorqueRaw(int j, double *t) override;
@@ -659,9 +668,9 @@ public:
 
     // IVelocityControl2
     virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds) override;
-    virtual bool getRefVelocityRaw(const int joint, double *ref) override;
-    virtual bool getRefVelocitiesRaw(double *refs) override;
-    virtual bool getRefVelocitiesRaw(const int n_joint, const int *joints, double *refs) override;
+    virtual bool  getTargetVelocityRaw(const int joint, double *ref) override;
+    virtual bool  getTargetVelocitiesRaw(double *refs) override;
+    virtual bool  getTargetVelocitiesRaw(const int n_joint, const int *joints, double *refs) override;
 
 
     // Impedance interface
@@ -733,6 +742,15 @@ public:
     virtual bool getMetadataMap(rawValuesKeyMetadataMap &metamap) override;
     virtual bool getKeyMetadata(std::string key, rawValuesKeyMetadata &meta) override;
     virtual bool getAxesNames(std::string key, std::vector<std::string> &axesNames) override;
+
+    // VelocityDirect Interface
+    virtual ReturnValue getAxes(size_t& axes) override;
+    virtual ReturnValue setRefVelocityRaw(int jnt, double vel) override;
+    virtual ReturnValue setRefVelocityRaw(const std::vector<double>& vels) override;
+    virtual ReturnValue setRefVelocityRaw(const std::vector<int>& jnts, const std::vector<double>& vels) override;
+    virtual ReturnValue getRefVelocityRaw(const int jnt, double& vel) override;
+    virtual ReturnValue getRefVelocityRaw(std::vector<double>& vels) override;
+    virtual ReturnValue getRefVelocityRaw(const std::vector<int>& jnts, std::vector<double>& vels) override;
 };
 
 #endif // include guard
