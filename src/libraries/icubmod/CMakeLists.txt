@@ -33,10 +33,10 @@ yarp_begin_plugin_library(icubmod QUIET)
   # across different YARP versions
   set(YARP_COMPAT_SHIM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/yarpCompatShim)
 
-  add_subdirectory(canBusMotionControl)
+  # add_subdirectory(canBusMotionControl)
   add_subdirectory(cartesianController)
   add_subdirectory(cfw2Can)
-  add_subdirectory(dragonfly2)
+  # add_subdirectory(dragonfly2)
   add_subdirectory(esdCan)
   add_subdirectory(sharedCan)
   add_subdirectory(socketCan)
