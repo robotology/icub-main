@@ -282,7 +282,7 @@ protected:
                 yError() << "Joint " << i << " not in position mode";
             }
         }
-        pos->setRefSpeeds(disp.length(), joints.data(), speeds.data());
+        pos->setTrajSpeeds(disp.length(), joints.data(), speeds.data());
         pos->positionMove(disp.length(), joints.data(), positions.data());
 
         cout << "Script port: " << x->getCmd().toString() << endl;

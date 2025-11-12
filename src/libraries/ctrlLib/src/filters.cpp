@@ -182,7 +182,7 @@ void RateLimiter::init(const Vector &u0)
 
 
 /**********************************************************************/
-void RateLimiter::getLimits(Vector &rL, Vector &rU)
+void RateLimiter::getPosLimits(Vector &rL, Vector &rU)
 {
     rL=rateLowerLim;
     rU=rateUpperLim;

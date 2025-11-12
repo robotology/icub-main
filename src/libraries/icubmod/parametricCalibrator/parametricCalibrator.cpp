@@ -703,7 +703,7 @@ bool parametricCalibrator::goToZero(int j)
     bool ret = true;
     if (abortCalib) return true;
     yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << zeroPos[j] << "desired speed: " << zeroVel[j] <<" )";
-    ret  = iPosition->setRefSpeed(j, zeroVel[j]);
+    ret  = iPosition->setTrajSpeed(j, zeroVel[j]);
     ret &= iPosition->positionMove(j, zeroPos[j]);
     return ret;
 }
@@ -733,7 +733,7 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
         iEncoders->getEncoder(j, &angj);
         iPosition->checkMotionDone(j, &done);
         iControlMode->getControlMode(j, &mode);
-        iPids->getPidOutput(VOCAB_PIDTYPE_POSITION, j, &output);
+        iPids->getPidOutput(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, j, &output);
 
         delta = fabs(angj-zeroPos[j]);
         yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" ,deviceName.c_str(),j,angj, zeroPos[j],delta, zeroPosThreshold[j], output, yarp::os::Vocab32::decode(mode).c_str());
@@ -838,7 +838,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
         }
     }
 
-    iPosition->setRefSpeeds(homeVel);
+    iPosition->setTrajSpeeds(homeVel);
     iPosition->positionMove(homePos);
     Time::delay(0.01);
     
@@ -995,7 +995,7 @@ bool parametricCalibrator::parkSingleJoint(int j, bool _wait)
         cannotPark = true;
     }
 
-    iPosition->setRefSpeed(j, homeVel[j]);
+    iPosition->setTrajSpeed(j, homeVel[j]);
     iPosition->positionMove(j, homePos[j]);
     Time::delay(0.01);
 

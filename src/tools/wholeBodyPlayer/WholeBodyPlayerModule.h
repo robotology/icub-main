@@ -95,7 +95,7 @@ public:
             max.resize(m_numAxes);
             min.resize(m_numAxes);
             for (size_t i = 0; i<m_numAxes; i++) {
-               m_controlLimits->getLimits(i,&min[i],&max[i]);
+               m_controlLimits->getPosLimits(i,&min[i],&max[i]);
             }
         }
         yarp::os::BufferedPort<yarp::os::Bottle>::useCallback();
