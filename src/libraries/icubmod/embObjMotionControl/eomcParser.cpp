@@ -43,11 +43,11 @@ yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
     _positionControlLaw.resize(0);
     _velocityControlLaw.resize(0);
     _mixedControlLaw.resize(0);
-    //_posDirectControlLaw.resize(0);
-    //_velDirectControlLaw.resize(0);
+    _positionDirectControlLaw.resize(0);
+    _velocityDirectControlLaw.resize(0);
     _torqueControlLaw.resize(0);
     _currentControlLaw.resize(0);
-    _speedControlLaw.resize(0);
+
 
     _kbemf=allocAndCheck<double>(_njoints);
     _ktau=allocAndCheck<double>(_njoints);
@@ -59,7 +59,8 @@ yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
     _velocityThres=allocAndCheck<double>(_njoints);
 
     minjerkAlgoMap.clear();
-    //directAlgoMap.clear();
+    directPosAlgoMap.clear();
+    directVelAlgoMap.clear();
     torqueAlgoMap.clear();
 };
 
@@ -76,18 +77,18 @@ Parser::~Parser()
 }
 
 
-bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory)
+bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vpids, PidInfo *pDirpids, PidInfo *vDirpids, TrqPidInfo *tpids, PidInfo *cpids, bool lowLevPidisMandatory)
 {
     // compila la lista con i tag dei pid per ciascun modo 
     // di controllo per ciascun giunto 
     //std::vector<std::string> _positionControlLaw;
     //std::vector<std::string> _velocityControlLaw;
     //std::vector<std::string> _mixedControlLaw;
-    //std::vector<std::string> _posDirectControlLaw;
-    //std::vector<std::string> _velDirectControlLaw;
     //std::vector<std::string> _torqueControlLaw;
     //std::vector<std::string> _currentControlLaw;
-    //std::vector<std::string> _speedControlLaw;
+    //std::vector<std::string> _positionDirectControlLaw;
+    //std::vector<std::string> _velocityDirectControlLaw;
+
     if(!parseControlsGroup(config)) // OK
         return false;
 
@@ -96,10 +97,6 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *
     if(!parseSelectedCurrentPid(config, lowLevPidisMandatory, cpids)) // OK
         return false;
 
-    // legge i pid di velocità per ciascun motore 
-    // come specificato in _speedControlLaw
-    if(!parseSelectedSpeedPid(config, lowLevPidisMandatory, spids)) // OK
-        return false;
 
     // usa _positionControlLaw per recuperare i PID
     // del position control per ogni giunto
@@ -116,15 +113,15 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *
     if(!parseSelectedMixedControl(config)) // OK
         return false;
 
-    // usa _posDirectControlLaw per recuperare i PID
+    // usa _positionDirectControlLaw per recuperare i PID
     // del position direct control per ogni giunto
-    //if(!parseSelectedPosDirectControl(config)) // OK
-    //    return false;
+    if(!parseSelectedPositionDirectControl(config)) // OK
+        return false;
 
-    // usa _velDirectControlLaw per recuperare i PID
+    // usa _velocityDirectControlLaw per recuperare i PID
     // del velocity direct control per ogni giunto
-    //if(!parseSelectedVelDirectControl(config)) // OK
-    //    return false;
+    if(!parseSelectedVelocityDirectControl(config)) // OK
+        return false;
 
     // usa _torqueControlLaw per recuperare i PID
     // del torque control per ogni giunto
@@ -132,8 +129,7 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *
         return false;
 
 
-
-    if(!getCorrectPidForEachJoint(ppids/*, vpids*/, tpids))
+    if(!getCorrectPidForEachJoint(ppids, vpids, pDirpids, vDirpids, tpids))
         return false;
 
 
@@ -165,14 +161,6 @@ bool Parser::parseControlsGroup(yarp::os::Searchable &config) // OK
         return false;
     LOAD_STRINGS(_mixedControlLaw, xtmp);
 
-    //if (!extractGroup(controlsGroup, xtmp, "posDirectControl", "Position Direct Control ", _njoints)) 
-    //    return false;
-    //LOAD_STRINGS(_posDirectControlLaw, xtmp);
-
-    //if (!extractGroup(controlsGroup, xtmp, "velDirectControl", "Velocity Direct Control ", _njoints)) 
-    //    return false;
-    //LOAD_STRINGS(_velDirectControlLaw, xtmp);
-
     if (!extractGroup(controlsGroup, xtmp, "torqueControl", "Torque Control ", _njoints))
         return false;
     LOAD_STRINGS(_torqueControlLaw, xtmp);
@@ -181,14 +169,42 @@ bool Parser::parseControlsGroup(yarp::os::Searchable &config) // OK
         return false;
     LOAD_STRINGS(_currentControlLaw, xtmp);
 
-    if (!extractGroup(controlsGroup, xtmp, "speedPid", "Speed Pid ", _njoints))
+    if (!extractGroup(controlsGroup, xtmp, "positionDirect", "Position Direct Control ", _njoints)) 
         return false;
-    LOAD_STRINGS(_speedControlLaw, xtmp);
+    LOAD_STRINGS(_positionDirectControlLaw, xtmp);
+
+    if (!extractGroup(controlsGroup, xtmp, "velocityDirect", "Velocity Direct Control ", _njoints)) 
+        return false;
+    LOAD_STRINGS(_velocityDirectControlLaw, xtmp);
 
     return true;
 }
 
+bool yarp::dev::eomc::Parser::getOutputType(eOmc_ctrl_out_type_t &out_type, std::string outputtype_str)
+{
+    out_type = eomc_ctrl_out_type_n_a;
 
+    if (outputtype_str == "velocity")
+    {
+        out_type = eomc_ctrl_out_type_vel;
+        return true;
+    }
+    else if (outputtype_str == "pwm")
+    {
+        out_type = eomc_ctrl_out_type_pwm;
+        return true;
+    }
+    else if (outputtype_str == "current")
+    {
+        out_type = eomc_ctrl_out_type_cur;
+        return true;
+    }
+    else
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable to use output type " << outputtype_str << " . Quitting.";
+        return false;
+    }
+}
 
 bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids) // OK
 {
@@ -256,71 +272,6 @@ bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMan
     return checkJointTypes(pids, "CURRENT");
 }
 
-bool Parser::parseSelectedSpeedPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids) // OK
-{
-    //first of all verify current pid has been configured if it is mandatory
-    for (int i = 0; i<_njoints; i++)
-    {
-        if (_speedControlLaw[i] == "none")
-        {
-            if (pidisMandatory)
-            {
-                yError() << "embObjMC BOARD " << _boardname << "SpeedPid is mandatory. It should be different from none ";
-                return false;
-            }
-        }
-        else
-        {
-            // 1) verify that selected control law is defined in file
-            Bottle botControlLaw = config.findGroup(_speedControlLaw[i]);
-            if (botControlLaw.isNull())
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Missing " << i << " control law " << _speedControlLaw[i].c_str();
-                return false;
-            }
-
-            // 2) read control_law
-            Value &valControlLaw = botControlLaw.find("controlLaw");
-            if ((valControlLaw.isNull()) || (!valControlLaw.isString()))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Unable read " << i << " control law parameter for " << _speedControlLaw[i].c_str() << ". Quitting.";
-                return false;
-            }
-
-            string strControlLaw= valControlLaw.toString();
-            if (strControlLaw != string("low_lev_speed"))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Unable to use " << i << " control law " << strControlLaw << " for speed pid. Quitting.";
-                return false;
-            }
-
-            yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-            yarp::dev::PidOutputUnitsEnum    out_unitstype;
-            if (!parsePidUnitsType(botControlLaw, fbk_unitstype, out_unitstype))
-                return false;
-
-            yarp::dev::Pid *mycpids = new yarp::dev::Pid[_njoints];
-
-            if (!parsePidsGroup2FOC(botControlLaw, mycpids))
-            {
-                delete[] mycpids;
-
-                return false;
-            }
-
-            pids[i].enabled = true;
-            pids[i].fbk_PidUnits = fbk_unitstype;
-            pids[i].out_PidUnits = out_unitstype;
-            //pids[i].controlLaw = PidAlgo_simple;
-            pids[i].pid = mycpids[i];
-
-            delete[] mycpids;
-        }
-    }
-
-    return checkJointTypes(pids, "SPEED");
-}
-
 bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config) // OK
 {
     for(int i=0; i<_njoints; i++)
@@ -357,38 +308,30 @@ bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config) // OK
             return false;
         }
 
-        string strOutputType= valOutputType.toString();
-        if (strOutputType == string("pwm"))
+
+        eOmc_ctrl_out_type_t out_type;
+        if(!getOutputType(out_type, valOutputType.toString()))
         {
-            if (!parsePid_minJerk_outPwm(botControlLaw, _positionControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _positionControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("velocity"))
-        {
-            if (!parsePid_minJerk_outVel(botControlLaw, _positionControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _positionControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("current"))
-        {
-            if (!parsePid_minJerk_outCur(botControlLaw, _positionControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _positionControlLaw[i];
-                return false;
-            }
-        }
-        else
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to use output type " << strOutputType << " for position control. Quitting.";
             return false;
         }
-
-    }
+        bool parseOk = false;
+        switch (out_type)
+        {
+            case eomc_ctrl_out_type_pwm:
+            case eomc_ctrl_out_type_cur:
+                parseOk = parsePidValues(botControlLaw, _positionControlLaw[i], out_type, minjerkAlgoMap, yarp::dev::eomc::pidParserType_t::Extended);
+                break;
+            case eomc_ctrl_out_type_vel:
+                parseOk = parsePidValues(botControlLaw, _positionControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Simple);
+                break;
+        }
+        if(!parseOk)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _positionControlLaw[i].c_str() <<". Quitting.";
+            return false;
+        }   
+       
+    } //close for
     return true;
 
 }
@@ -434,36 +377,28 @@ bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config) // OK
             return false;
         }
 
-        string strOutputType = valOutputType.toString();
-        if (strOutputType == string("pwm"))
+        eOmc_ctrl_out_type_t out_type;
+        if(!getOutputType(out_type, valOutputType.toString()))
         {
-            if (!parsePid_minJerk_outPwm(botControlLaw, _velocityControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in "<< _velocityControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("velocity"))
-        {
-            if (!parsePid_minJerk_outVel(botControlLaw, _velocityControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _velocityControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("current"))
-        {
-            if (!parsePid_minJerk_outCur(botControlLaw, _velocityControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _velocityControlLaw[i];
-                return false;
-            }
-        }
-        else
-        {
-           yError() << "embObjMC BOARD " << _boardname << "Unable to use output type " << strOutputType << " for velocity control. Quitting.";
             return false;
         }
+
+        bool parseOk = false;
+        switch (out_type)
+        {
+            case eomc_ctrl_out_type_pwm:
+            case eomc_ctrl_out_type_cur:
+                parseOk = parsePidValues(botControlLaw, _velocityControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Extended);
+                break;
+            case eomc_ctrl_out_type_vel:
+                parseOk = parsePidValues(botControlLaw, _velocityControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Simple);
+                break;
+        }
+        if(!parseOk)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _positionControlLaw[i].c_str() <<". Quitting.";
+            return false;
+        }   
 
     }
     return true;
@@ -472,6 +407,9 @@ bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config) // OK
 
 bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config) // OK
 {
+    //TODO: understand how to save the values of mixed control
+    return true;
+/*
     for (int i = 0; i<_njoints; i++)
     {
         if(_mixedControlLaw[i] == "none")
@@ -545,18 +483,19 @@ bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config) // OK
 
     }
     return true;
+    */
 
 }
-#if 0
-bool Parser::parseSelectedPosDirectControl(yarp::os::Searchable &config) // OK
+
+bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config) // OK
 {
     for (int i = 0; i<_njoints; i++)
     {
         // 1) verify that selected control law is defined in file
-        Bottle botControlLaw = config.findGroup(_posDirectControlLaw[i]);
+        Bottle botControlLaw = config.findGroup(_positionDirectControlLaw[i]);
         if (botControlLaw.isNull())
         {
-            yError() << "embObjMC BOARD " << _boardname << "Missing " << _posDirectControlLaw[i].c_str();
+            yError() << "embObjMC BOARD " << _boardname << "Missing " << _positionDirectControlLaw[i].c_str();
             return false;
         }
 
@@ -565,7 +504,7 @@ bool Parser::parseSelectedPosDirectControl(yarp::os::Searchable &config) // OK
         {
             if ((valControlLaw.isNull()) || (!valControlLaw.isString()))
             {
-                yError() << "embObjMC BOARD " << _boardname << "Unable read controlLaw parameter for " << _posDirectControlLaw[i].c_str() << ". Quitting.";
+                yError() << "embObjMC BOARD " << _boardname << "Unable read controlLaw parameter for " << _positionDirectControlLaw[i].c_str() << ". Quitting.";
                 return false;
             }
         }
@@ -573,62 +512,56 @@ bool Parser::parseSelectedPosDirectControl(yarp::os::Searchable &config) // OK
         string strControlLaw = valControlLaw.toString();
         if (strControlLaw != "direct")
         {
-            yError() << "embObjMC BOARD " << _boardname << "Unknown control law for " << _posDirectControlLaw[i].c_str() << ". Quitting.";
+            yError() << "embObjMC BOARD " << _boardname << "Unknown control law for " << _positionDirectControlLaw[i].c_str() << ". Quitting.";
             return false;
         }
 
         Value &valOutputType = botControlLaw.find("outputType");
         if ((valOutputType.isNull()) || (!valOutputType.isString()))
         {
-            yError() << "embObjMC BOARD " << _boardname << "Unable read outputType parameter for " << _posDirectControlLaw[i].c_str() << ". Quitting.";
+            yError() << "embObjMC BOARD " << _boardname << "Unable read outputType parameter for " << _positionDirectControlLaw[i].c_str() << ". Quitting.";
             return false;
         }
 
-        string strOutputType = valOutputType.toString();
-        if (strOutputType == string("pwm"))
+        eOmc_ctrl_out_type_t out_type;
+        if(!getOutputType(out_type, valOutputType.toString()))
         {
-            if (!parsePid_direct_outPwm(botControlLaw, _posDirectControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _posDirectControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("velocity"))
-        {
-            if (!parsePid_direct_outVel(botControlLaw, _posDirectControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _posDirectControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("current"))
-        {
-            if (!parsePid_direct_outCur(botControlLaw, _posDirectControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _posDirectControlLaw[i];
-                return false;
-            }
-        }
-        else
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to use output type " << strOutputType << " for direct position control. Quitting.";
             return false;
         }
+
+        bool parseOk = false;
+        switch (out_type)
+        {
+            case eomc_ctrl_out_type_pwm:
+            case eomc_ctrl_out_type_cur:
+                parseOk = parsePidValues(botControlLaw, _positionDirectControlLaw[i], out_type, directPosAlgoMap, pidParserType_t::Extended);
+                break;
+            case eomc_ctrl_out_type_vel:
+                parseOk = parsePidValues(botControlLaw, _positionDirectControlLaw[i], out_type, directPosAlgoMap, pidParserType_t::Simple);
+                break;
+        }
+        if(!parseOk)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _positionDirectControlLaw[i].c_str() <<". Quitting.";
+            return false;
+        }   
+
+       
 
     }
     return true;
 
 }
 
-bool Parser::parseSelectedVelDirectControl(yarp::os::Searchable &config) // OK
+bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config) // OK
 {
     for (int i = 0; i<_njoints; i++)
     {
         // 1) verify that selected control law is defined in file
-        Bottle botControlLaw = config.findGroup(_velDirectControlLaw[i]);
+        Bottle botControlLaw = config.findGroup(_velocityDirectControlLaw[i]);
         if (botControlLaw.isNull())
         {
-            yError() << "embObjMC BOARD " << _boardname << "Missing " << _velDirectControlLaw[i].c_str();
+            yError() << "embObjMC BOARD " << _boardname << "Missing " << _velocityDirectControlLaw[i].c_str();
             return false;
         }
 
@@ -637,7 +570,7 @@ bool Parser::parseSelectedVelDirectControl(yarp::os::Searchable &config) // OK
         {
             if ((valControlLaw.isNull()) || (!valControlLaw.isString()))
             {
-                yError() << "embObjMC BOARD " << _boardname << "Unable read controlLaw parameter for " << _velDirectControlLaw[i].c_str() << ". Quitting.";
+                yError() << "embObjMC BOARD " << _boardname << "Unable read controlLaw parameter for " << _velocityDirectControlLaw[i].c_str() << ". Quitting.";
                 return false;
             }
         }
@@ -645,53 +578,57 @@ bool Parser::parseSelectedVelDirectControl(yarp::os::Searchable &config) // OK
         string strControlLaw = valControlLaw.toString();
         if (strControlLaw != "direct")
         {
-            yError() << "embObjMC BOARD " << _boardname << "Unknown control law for " << _velDirectControlLaw[i].c_str() << ". Quitting.";
+            yError() << "embObjMC BOARD " << _boardname << "Unknown control law "<< strControlLaw << "for " << _velocityDirectControlLaw[i].c_str() << ". Quitting.";
             return false;
         }
 
         Value &valOutputType = botControlLaw.find("outputType");
         if ((valOutputType.isNull()) || (!valOutputType.isString()))
         {
-            yError() << "embObjMC BOARD " << _boardname << "Unable read outputType parameter for " << _velDirectControlLaw[i].c_str() << ". Quitting.";
+            yError() << "embObjMC BOARD " << _boardname << "Unable read outputType parameter for " << _velocityDirectControlLaw[i].c_str() << ". Quitting.";
             return false;
         }
 
-        string strOutputType = valOutputType.toString();
-        if (strOutputType == string("pwm"))
+        eOmc_ctrl_out_type_t out_type;
+
+        if(!getOutputType(out_type, valOutputType.toString()))
         {
-            if (!parsePid_direct_outPwm(botControlLaw, _velDirectControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _velDirectControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("velocity"))
-        {
-            if (!parsePid_direct_outVel(botControlLaw, _velDirectControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _velDirectControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("current"))
-        {
-            if (!parsePid_direct_outCur(botControlLaw, _velDirectControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _velDirectControlLaw[i];
-                return false;
-            }
-        }
-        else
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to use output type " << strOutputType << " for direct velocity control. Quitting.";
             return false;
         }
 
+        if (out_type == eomc_ctrl_out_type_pwm)
+        {
+            out_type = eomc_ctrl_out_type_vel;
+        }
+        else if (out_type == eomc_ctrl_out_type_cur)
+        {
+            out_type = eomc_ctrl_out_type_vel_cur;
+        }
+
+        bool parseOk = false;
+        switch (out_type)
+        {
+            case eomc_ctrl_out_type_pwm:
+            case eomc_ctrl_out_type_cur:
+                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::FOC2);
+                break;
+            case eomc_ctrl_out_type_vel:
+                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::FOC2);
+                break;
+            case eomc_ctrl_out_type_vel_cur:
+                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::FOC2);
+                break;        
+        }
+
+        if(!parseOk)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _velocityDirectControlLaw[i].c_str() <<". Quitting.";
+            return false;
+        }   
     }
     return true;
 
 }
-#endif
 
 bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config) // OK
 {
@@ -731,36 +668,29 @@ bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config) // OK
             return false;
         }
 
-        string strOutputType = valOutputType.toString();
-        if (strOutputType == string("pwm"))
+        eOmc_ctrl_out_type_t out_type;
+        if(!getOutputType(out_type, valOutputType.toString()))
         {
-            if (!parsePid_torque_outPwm(botControlLaw, _torqueControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _torqueControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("velocity"))
-        {
-            if (!parsePid_torque_outVel(botControlLaw, _torqueControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _torqueControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("current"))
-        {
-            if (!parsePid_torque_outCur(botControlLaw, _torqueControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _torqueControlLaw[i];
-                return false;
-            }
-        }
-        else
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to use output type " << strOutputType << " for torque control. Quitting.";
             return false;
         }
+
+         bool parseOk = false;
+        switch (out_type)
+        {
+            case eomc_ctrl_out_type_pwm:
+            case eomc_ctrl_out_type_cur:
+                parseOk = parsePidValues(botControlLaw, _torqueControlLaw[i], out_type, torqueAlgoMap, pidParserType_t::Deluxe);
+                break;
+            case eomc_ctrl_out_type_vel:
+                parseOk = parsePidValues(botControlLaw, _torqueControlLaw[i], out_type, torqueAlgoMap, pidParserType_t::Extended);
+                break;
+        }
+        if(!parseOk)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _torqueControlLaw[i].c_str() <<". Quitting.";
+            return false;
+        }   
+        
     }
     return true;
 
@@ -1034,6 +964,45 @@ bool Parser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, c
     return true;
 }
 
+
+bool Parser::parsePidValues(yarp::os::Bottle &b_pid, std::string controlLaw, eOmc_ctrl_out_type_t outType, std::map<std::string, Pid_Algorithm*> &pidMap, pidParserType_t parserType)
+{
+    if (pidMap.find(controlLaw) != pidMap.end()) return true;
+
+    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, outType);
+
+    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
+    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
+    if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
+    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
+
+    switch (parserType)
+    {
+    case pidParserType_t::Simple:
+        parsePidsGroupSimple(b_pid, pidAlgo_ptr->pid);
+        break;
+    
+    case pidParserType_t::Extended:
+        parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
+        break;
+
+    case pidParserType_t::Deluxe:
+        parsePidsGroupDeluxe(b_pid, pidAlgo_ptr->pid);
+        break;
+
+    case pidParserType_t::FOC2:
+        parsePidsGroup2FOC(b_pid, pidAlgo_ptr->pid);
+        break;
+        
+    default:
+        break;
+    };
+
+    pidMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
+
+    return true;
+}
+/* Commented because not used
 bool Parser::parsePid_minJerk_outPwm(Bottle &b_pid, string controlLaw)
 {    
     if (minjerkAlgoMap.find(controlLaw) != minjerkAlgoMap.end()) return true;
@@ -1088,10 +1057,9 @@ bool Parser::parsePid_minJerk_outVel(Bottle &b_pid, string controlLaw)
     return true;
 }
 
-/*
-bool Parser::parsePid_direct_outPwm(Bottle &b_pid, string controlLaw)
+bool Parser::parsePid_directPos_outPwm(Bottle &b_pid, string controlLaw)
 {
-    if (directAlgoMap.find(controlLaw) != directAlgoMap.end()) return true;
+    if (directPosAlgoMap.find(controlLaw) != directPosAlgoMap.end()) return true;
 
     Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_pwm);
 
@@ -1100,17 +1068,16 @@ bool Parser::parsePid_direct_outPwm(Bottle &b_pid, string controlLaw)
     if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
     pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
 
-    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
+    parsePidsGroupSimple(b_pid, pidAlgo_ptr->pid); // X ANTO: extended is only for torque control because it has friction params
 
-    directAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
+    directPosAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
 
     return true;
 }
-*/
-/*
+
 bool Parser::parsePid_direct_outCur(Bottle &b_pid, string controlLaw)
 {
-    if (directAlgoMap.find(controlLaw) != directAlgoMap.end()) return true;
+    if (directPosAlgoMap.find(controlLaw) != directPosAlgoMap.end()) return true;
 
     Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_cur);
 
@@ -1119,9 +1086,9 @@ bool Parser::parsePid_direct_outCur(Bottle &b_pid, string controlLaw)
     if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
     pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
 
-    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
+    parsePidsGroupSimple(b_pid, pidAlgo_ptr->pid); // X ANTO: extended is only for torque control because it has friction params
 
-    directAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
+    directPosAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
 
     return true;
 }
@@ -1143,7 +1110,7 @@ bool Parser::parsePid_direct_outVel(Bottle &b_pid, string controlLaw)
 
     return true;
 }
-*/
+
 bool Parser::parsePid_torque_outPwm(Bottle &b_pid, string controlLaw)
 {
     if (torqueAlgoMap.find(controlLaw) != torqueAlgoMap.end()) return true;
@@ -1197,16 +1164,20 @@ bool Parser::parsePid_torque_outVel(Bottle &b_pid, string controlLaw)
 
     return true;
 }
-
-bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids)
+*/
+//TODO: fill also vpids
+bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, PidInfo *pDirpids, PidInfo *vDirpids,TrqPidInfo *tpids)
 {
     Pid_Algorithm *minjerkAlgo_ptr = NULL;
-    //Pid_Algorithm *directAlgo_ptr = NULL;
+    Pid_Algorithm *directPosAlgo_ptr = NULL;
+    Pid_Algorithm *directVelAlgo_ptr = NULL;
     Pid_Algorithm *torqueAlgo_ptr = NULL;
 
     //since some joints could not have all pid configured, reset pid values to 0.
     memset(ppids, 0, sizeof(PidInfo)*_njoints);
-    //memset(vpids, 0, sizeof(PidInfo)*_njoints);
+    memset(vpids, 0, sizeof(PidInfo)*_njoints);
+    memset(pDirpids, 0, sizeof(PidInfo)*_njoints);
+    memset(vDirpids, 0, sizeof(PidInfo)*_njoints);
     memset(tpids, 0, sizeof(TrqPidInfo)*_njoints);
 
     map<string, Pid_Algorithm*>::iterator it;
@@ -1217,7 +1188,7 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
         it = minjerkAlgoMap.find(_positionControlLaw[i]);
         if (it == minjerkAlgoMap.end())
         {
-            yError() << "embObjMC BOARD " << _boardname << "Cannot find " << _positionControlLaw[i].c_str() << "in parsed pos pid";
+            yError() << "embObjMC BOARD" << _boardname << "Cannot find" << _positionControlLaw[i].c_str() << "in parsed pos pid";
             return false;
         }
 
@@ -1231,40 +1202,64 @@ bool Parser::getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPi
         ppids[i].usernamePidSelected = _positionControlLaw[i];
         ppids[i].enabled = true;
 
-        /*
-        //get velocity pid
-        if (_posDirectControlLaw[i] == "none")
+        
+        //get position direct pid
+        if (_positionDirectControlLaw[i] != "none")
         {
-            directAlgo_ptr = NULL;
-        }
-        else
-        {
-            it = directAlgoMap.find(_posDirectControlLaw[i]);
-            if (it == directAlgoMap.end())
+            it = directPosAlgoMap.find(_positionDirectControlLaw[i]);
+            if (it == directPosAlgoMap.end())
             {
-                yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _posDirectControlLaw[i].c_str() << "in parsed vel pid";
+                yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _positionDirectControlLaw[i].c_str() << "in parsed posDirect pid";
                 return false;
             }
 
-            directAlgo_ptr = directAlgoMap[_posDirectControlLaw[i]];
+            directPosAlgo_ptr = directPosAlgoMap[_positionDirectControlLaw[i]];
         }
 
-        if (directAlgo_ptr)
+        if (directPosAlgo_ptr)
         {
-            vpids[i].pid = directAlgo_ptr->getPID(i);
-            vpids[i].fbk_PidUnits = directAlgo_ptr->fbk_PidUnits;
-            vpids[i].out_PidUnits = directAlgo_ptr->out_PidUnits;
-            //vpids[i].controlLaw = directAlgo_ptr->type;
-            vpids[i].out_type = directAlgo_ptr->out_type;
-            vpids[i].usernamePidSelected = _posDirectControlLaw[i];
-            vpids[i].enabled = true;
+            pDirpids[i].pid = directPosAlgo_ptr->getPID(i);
+            pDirpids[i].fbk_PidUnits = directPosAlgo_ptr->fbk_PidUnits;
+            pDirpids[i].out_PidUnits = directPosAlgo_ptr->out_PidUnits;
+            //pDirpids[i].controlLaw = directPosAlgo_ptr->type;
+            pDirpids[i].out_type = directPosAlgo_ptr->out_type;
+            pDirpids[i].usernamePidSelected = _positionDirectControlLaw[i];
+            pDirpids[i].enabled = true;
         }
         else
         {
-            vpids[i].enabled = false;
-            vpids[i].usernamePidSelected = "none";
+            pDirpids[i].enabled = false;
+            pDirpids[i].usernamePidSelected = "none";
         }
-        */
+        
+        //get velocity direct pid
+        if (_velocityDirectControlLaw[i] != "none")
+        {
+            it = directVelAlgoMap.find(_velocityDirectControlLaw[i]);
+            if (it == directVelAlgoMap.end())
+            {
+                yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _velocityDirectControlLaw[i].c_str() << "in parsed velDirect pid";
+                return false;
+            }
+
+            directVelAlgo_ptr = directVelAlgoMap[_velocityDirectControlLaw[i]];
+        }
+
+        if (directVelAlgo_ptr)
+        {
+            vDirpids[i].pid = directVelAlgo_ptr->getPID(i);
+            vDirpids[i].fbk_PidUnits = directVelAlgo_ptr->fbk_PidUnits;
+            vDirpids[i].out_PidUnits = directVelAlgo_ptr->out_PidUnits;
+            //vDirpids[i].controlLaw = directVelAlgo_ptr->type;
+            vDirpids[i].out_type = directVelAlgo_ptr->out_type;
+            vDirpids[i].usernamePidSelected = _velocityDirectControlLaw[i];
+            vDirpids[i].enabled = true;
+        }
+        else
+        {
+            vDirpids[i].enabled = false;
+            vDirpids[i].usernamePidSelected = "none";
+        }
 
         //get torque pid
         if (_torqueControlLaw[i] == "none")

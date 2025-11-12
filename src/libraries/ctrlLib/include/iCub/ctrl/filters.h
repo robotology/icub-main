@@ -207,7 +207,7 @@ public:
     * @param rL Rate lower limit.
     * @param rU Rate upper limit.
     */
-    void getLimits(yarp::sig::Vector &rL, yarp::sig::Vector &rU);
+    void getPosLimits(yarp::sig::Vector &rL, yarp::sig::Vector &rU);
 
     /**
     * Sets new Rate limits

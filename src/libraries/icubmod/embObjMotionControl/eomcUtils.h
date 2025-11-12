@@ -196,8 +196,7 @@ namespace yarp {
         out->setStictionValues(in->stiction_up_val, in->stiction_down_val);
         out->setKff(in->kff);
     }
-    
-    
+        
     bool controlModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut)
     {
         bool ret = true;
@@ -220,6 +219,10 @@ namespace yarp {
                 embOut = eomc_controlmode_cmd_velocity;
                 break;
                 
+            case VOCAB_CM_VELOCITY_DIRECT:
+                embOut = eomc_controlmode_cmd_vel_direct;
+                break;
+
             case VOCAB_CM_MIXED:
                 embOut = eomc_controlmode_cmd_mixed;
                 break;
@@ -272,6 +275,10 @@ namespace yarp {
                 vocabOut = VOCAB_CM_VELOCITY;
                 break;
                 
+            case eomc_controlmode_cmd_vel_direct:
+                vocabOut = VOCAB_CM_VELOCITY_DIRECT;
+                break;
+
             case eomc_controlmode_direct:
                 vocabOut = VOCAB_CM_POSITION_DIRECT;
                 break;

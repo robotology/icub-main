@@ -545,7 +545,7 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
 
         for (int i=0; i<nJointsTorso; i++)
         {   
-            if (lims->getLimits(i,&min,&max))
+            if (lims->getPosLimits(i,&min,&max))
             {
                 if (commData->head_version<iKinLimbVersion("3.0"))
                 {
@@ -571,7 +571,7 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
 
     for (int i=0; i<nJointsHead; i++)
     {   
-        if (lims->getLimits(i,&min,&max))
+        if (lims->getPosLimits(i,&min,&max))
         {
             // limit eye's tilt due to eyelids
             if (i==3)

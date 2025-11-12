@@ -364,7 +364,7 @@ protected:
         driver->view(ipos);
         driver->view(ienc);
         imod->setControlMode(i,VOCAB_CM_POSITION);
-        ipos->setRefSpeed(i,50.0);
+        ipos->setTrajSpeed(i,50.0);
         ipos->positionMove(i,0.0);
         yInfo("Driving the joint back to rest... ");
         t0=Time::now();

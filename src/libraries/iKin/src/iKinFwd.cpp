@@ -1737,7 +1737,7 @@ bool iCubTorso::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iTorso=0; iTorso<3; iTorso++)
     {
-        if (!limTorso.getLimits(iTorso,&min,&max))
+        if (!limTorso.getPosLimits(iTorso,&min,&max))
             return false;
 
         if (version<iKinLimbVersion("3.0"))
@@ -1900,7 +1900,7 @@ bool iCubArm::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iTorso=0; iTorso<3; iTorso++)
     {
-        if (!limTorso.getLimits(iTorso,&min,&max))
+        if (!limTorso.getPosLimits(iTorso,&min,&max))
             return false;
 
         if (version<iKinLimbVersion("3.0"))
@@ -1917,7 +1917,7 @@ bool iCubArm::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iArm=0; iArm<getN()-iTorso; iArm++)
     {
-        if (!limArm.getLimits(iArm,&min,&max))
+        if (!limArm.getPosLimits(iArm,&min,&max))
             return false;
 
         (*this)[iTorso+iArm].setMin(CTRL_DEG2RAD*min);
@@ -2151,19 +2151,19 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     if (finger=="thumb")
     {
-        if (!limFinger.getLimits(8,&min,&max))
+        if (!limFinger.getPosLimits(8,&min,&max))
             return false;
 
         (*this)[0].setMin(CTRL_DEG2RAD*min);
         (*this)[0].setMax(CTRL_DEG2RAD*max);
 
-        if (!limFinger.getLimits(9,&min,&max))
+        if (!limFinger.getPosLimits(9,&min,&max))
             return false;
 
         (*this)[2].setMin(CTRL_DEG2RAD*min);
         (*this)[2].setMax(CTRL_DEG2RAD*max);
 
-        if (!limFinger.getLimits(10,&min,&max))
+        if (!limFinger.getPosLimits(10,&min,&max))
             return false;
 
         (*this)[3].setMin(CTRL_DEG2RAD*min);
@@ -2173,7 +2173,7 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
     }
     else if (finger=="index")
     {
-        if (!limFinger.getLimits(7,&min,&max))
+        if (!limFinger.getPosLimits(7,&min,&max))
             return false;
 
         fingers_abduction_max = max;
@@ -2181,13 +2181,13 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         (*this)[0].setMin(0.0);
         (*this)[0].setMax(CTRL_DEG2RAD*(max-min)/3.0);
 
-        if (!limFinger.getLimits(11,&min,&max))
+        if (!limFinger.getPosLimits(11,&min,&max))
             return false;
 
         (*this)[1].setMin(CTRL_DEG2RAD*min);
         (*this)[1].setMax(CTRL_DEG2RAD*max);
 
-        if (!limFinger.getLimits(12,&min,&max))
+        if (!limFinger.getPosLimits(12,&min,&max))
             return false;
 
         (*this)[2].setMin(CTRL_DEG2RAD*min);
@@ -2197,13 +2197,13 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
     }
     else if (finger=="middle")
     {
-        if (!limFinger.getLimits(13,&min,&max))
+        if (!limFinger.getPosLimits(13,&min,&max))
             return false;
 
         (*this)[0].setMin(CTRL_DEG2RAD*min);
         (*this)[0].setMax(CTRL_DEG2RAD*max);
 
-        if (!limFinger.getLimits(14,&min,&max))
+        if (!limFinger.getPosLimits(14,&min,&max))
             return false;
 
         (*this)[1].setMin(CTRL_DEG2RAD*min);
@@ -2213,7 +2213,7 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
     }
     else if ((finger=="ring") || (finger=="little"))
     {
-        if (!limFinger.getLimits(7,&min,&max))
+        if (!limFinger.getPosLimits(7,&min,&max))
             return false;
 
         fingers_abduction_max = max;
@@ -2221,7 +2221,7 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
         (*this)[0].setMin(0.0);
         (*this)[0].setMax(CTRL_DEG2RAD*(max-min)/3.0);
 
-        if (!limFinger.getLimits(15,&min,&max))
+        if (!limFinger.getPosLimits(15,&min,&max))
             return false;
 
         (*this)[1].setMin(CTRL_DEG2RAD*min);
@@ -2525,7 +2525,7 @@ bool iCubLeg::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iLeg=0; iLeg<getN(); iLeg++)
     {
-        if (!limLeg.getLimits(iLeg,&min,&max))
+        if (!limLeg.getPosLimits(iLeg,&min,&max))
             return false;
 
         (*this)[iLeg].setMin(CTRL_DEG2RAD*min);
@@ -2719,7 +2719,7 @@ bool iCubEye::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iTorso=0; iTorso<3; iTorso++)
     {
-        if (!limTorso.getLimits(iTorso,&min,&max))
+        if (!limTorso.getPosLimits(iTorso,&min,&max))
             return false;
 
         if (version<iKinLimbVersion("3.0"))
@@ -2736,7 +2736,7 @@ bool iCubEye::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iHead=0; iHead<getN()-iTorso; iHead++)
     {
-        if (!limHead.getLimits(iHead,&min,&max))
+        if (!limHead.getPosLimits(iHead,&min,&max))
             return false;
 
         (*this)[iTorso+iHead].setMin(CTRL_DEG2RAD*min);
@@ -2946,7 +2946,7 @@ bool iCubInertialSensor::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iTorso=0; iTorso<3; iTorso++)
     {
-        if (!limTorso.getLimits(iTorso,&min,&max))
+        if (!limTorso.getPosLimits(iTorso,&min,&max))
             return false;
 
         if (version<iKinLimbVersion("3.0"))
@@ -2964,7 +2964,7 @@ bool iCubInertialSensor::alignJointsBounds(const deque<IControlLimits*> &lim)
     // only the neck
     for (iHead=0; iHead<3; iHead++)
     {
-        if (!limHead.getLimits(iHead,&min,&max))
+        if (!limHead.getPosLimits(iHead,&min,&max))
             return false;
 
         (*this)[iTorso+iHead].setMin(CTRL_DEG2RAD*min);

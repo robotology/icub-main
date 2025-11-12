@@ -2027,7 +2027,7 @@ bool iCubArmDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iTorso=0; iTorso<3; iTorso++)
     {   
-        if (!limTorso.getLimits(iTorso,&min,&max))
+        if (!limTorso.getPosLimits(iTorso,&min,&max))
             return false;
 
         (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
@@ -2036,7 +2036,7 @@ bool iCubArmDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iArm=0; iArm<getN()-iTorso; iArm++)
     {   
-        if (!limArm.getLimits(iArm,&min,&max))
+        if (!limArm.getPosLimits(iArm,&min,&max))
             return false;
 
         (*this)[iTorso+iArm].setMin(CTRL_DEG2RAD*min);
@@ -2126,7 +2126,7 @@ bool iCubArmNoTorsoDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iArm=0; iArm<getN(); iArm++)
     {   
-        if (!limArm.getLimits(iArm,&min,&max))
+        if (!limArm.getPosLimits(iArm,&min,&max))
             return false;
 
         (*this)[iArm].setMin(CTRL_DEG2RAD*min);
@@ -2211,7 +2211,7 @@ bool iCubTorsoDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iTorso=0; iTorso<3; iTorso++)
     {   
-        if (!limTorso.getLimits(iTorso,&min,&max))
+        if (!limTorso.getPosLimits(iTorso,&min,&max))
             return false;
 
         (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
@@ -2325,7 +2325,7 @@ bool iCubLegDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iLeg=0; iLeg<getN(); iLeg++)
     {   
-        if (!limLeg.getLimits(iLeg,&min,&max))
+        if (!limLeg.getPosLimits(iLeg,&min,&max))
             return false;
 
         (*this)[iLeg].setMin(CTRL_DEG2RAD*min);
@@ -2502,7 +2502,7 @@ bool iCubLegDynV2::alignJointsBounds(const deque<IControlLimits*> &lim)
 
     for (iLeg=0; iLeg<getN(); iLeg++)
     {   
-        if (!limLeg.getLimits(iLeg,&min,&max))
+        if (!limLeg.getPosLimits(iLeg,&min,&max))
             return false;
 
         (*this)[iLeg].setMin(CTRL_DEG2RAD*min);
@@ -2566,7 +2566,7 @@ bool iCubNeckInertialDyn::alignJointsBounds(const deque<IControlLimits*> &lim)
     // only the neck: the sensor is in a virtual link
     for (iHead=0; iHead<3; iHead++)
     {   
-        if (!limHead.getLimits(iHead,&min,&max))
+        if (!limHead.getPosLimits(iHead,&min,&max))
             return false;
 
         (*this)[iHead].setMin(CTRL_DEG2RAD*min);
@@ -2645,7 +2645,7 @@ bool iCubNeckInertialDynV2::alignJointsBounds(const deque<IControlLimits*> &lim)
     // only the neck: the sensor is in a virtual link
     for (iHead=0; iHead<3; iHead++)
     {   
-        if (!limHead.getLimits(iHead,&min,&max))
+        if (!limHead.getPosLimits(iHead,&min,&max))
             return false;
 
         (*this)[iHead].setMin(CTRL_DEG2RAD*min);

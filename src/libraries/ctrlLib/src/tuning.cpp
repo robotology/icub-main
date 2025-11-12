@@ -265,7 +265,7 @@ bool OnlineStictionEstimator::threadInit()
     if (!configured)
         return false;
 
-    ilim->getLimits(joint,&x_min,&x_max);
+    ilim->getPosLimits(joint,&x_min,&x_max);
     double x_range=x_max-x_min;
     x_min+=0.1*x_range;
     x_max-=0.1*x_range;
@@ -289,7 +289,7 @@ bool OnlineStictionEstimator::threadInit()
     Vector _N(1,10.0), _Tt(1,1.0);
 
     Pid pidInfo;
-    ipid->getPid(VOCAB_PIDTYPE_POSITION,joint,&pidInfo);
+    ipid->getPid(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,joint,&pidInfo);
     dpos_dV=(pidInfo.kp>=0.0?-1.0:1.0);
     stiction*=dpos_dV;
     Matrix _satLim(1,2);
@@ -500,10 +500,10 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
         return false;
 
     Pid pidInfo;
-    ipid->getPid(VOCAB_PIDTYPE_POSITION,joint,&pidInfo);
+    ipid->getPid(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,joint,&pidInfo);
     dpos_dV=(pidInfo.kp>=0.0?-1.0:1.0);
     
-    ilim->getLimits(joint,&x_min,&x_max);
+    ilim->getPosLimits(joint,&x_min,&x_max);
     double x_range=x_max-x_min;
     x_min+=0.1*x_range;
     x_max-=0.1*x_range;
@@ -597,8 +597,8 @@ bool OnlineCompensatorDesign::threadInit()
             else
             {
                 imod->setControlMode(joint,VOCAB_CM_POSITION);
-                ipos->setRefAcceleration(joint,std::numeric_limits<double>::max());
-                ipos->setRefSpeed(joint,(x_max-x_min)/controller_validation_ref_period);
+                ipos->setTrajAcceleration(joint,std::numeric_limits<double>::max());
+                ipos->setTrajSpeed(joint,(x_max-x_min)/controller_validation_ref_period);
                 ipos->positionMove(joint,x_tg);
             }
             controller_validation_num_cycles=0;
@@ -763,7 +763,7 @@ void OnlineCompensatorDesign::run()
                         if ((pidCur==&pidOld) && controller_validation_stiction_yarp)
                             ipwm->setRefDutyCycle(joint,0.0);
 
-                        ipid->setPid(VOCAB_PIDTYPE_POSITION,joint,*pidCur);
+                        ipid->setPid(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,joint,*pidCur);
                         controller_validation_num_cycles=0;
                     }
                 }
@@ -786,7 +786,7 @@ void OnlineCompensatorDesign::run()
                 info[0]=3.0;
                 ipwm->getDutyCycle(joint,&info[1]);
                 ienc->getEncoder(joint,&info[2]);
-                ipid->getPidReference(VOCAB_PIDTYPE_POSITION,joint,&info[3]);
+                ipid->getPidReference(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,joint,&info[3]);
                 info[4]=(pidCur==&pidOld?0.0:1.0);
                 info=cat(info,Vector(4,0.0));   // zero-padding
 
@@ -825,7 +825,7 @@ void OnlineCompensatorDesign::threadRelease()
         case controller_validation:
         {
             ipos->stop(joint);
-            ipid->setPid(VOCAB_PIDTYPE_POSITION,joint,pidOld);
+            ipid->setPid(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,joint,pidOld);
             break;
         }
     }
@@ -975,7 +975,7 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
 
     max_time=options.check("max_time",Value(0.0)).asFloat64();
 
-    ipid->getPid(VOCAB_PIDTYPE_POSITION,joint,&pidOld);
+    ipid->getPid(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,joint,&pidOld);
     pidNew=pidOld;
 
     // enforce the correct sign of gains
@@ -1097,7 +1097,7 @@ bool OnlineCompensatorDesign::getResults(Property &results)
             Vector info(3);
             ipwm->getDutyCycle(joint,&info[0]);
             ienc->getEncoder(joint,&info[1]);
-            ipid->getPidReference(VOCAB_PIDTYPE_POSITION,joint,&info[2]);
+            ipid->getPidReference(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,joint,&info[2]);
 
             results.put("voltage",info[0]);
             results.put("position",info[1]);

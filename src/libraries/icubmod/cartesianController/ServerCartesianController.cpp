@@ -1074,7 +1074,7 @@ bool ServerCartesianController::alignJointsBounds()
         yInfo("part #%lu: %s",(unsigned long)i,lDsc[i].key.c_str());
         for (int j=0; j<lJnt[i]; j++)
         {
-            if (!lLim[i]->getLimits(lRmp[i][j],&min,&max))
+            if (!lLim[i]->getPosLimits(lRmp[i][j],&min,&max))
             {
                 yError("joint #%d: failed getting limits!",cnt);
                 return false;
@@ -1107,7 +1107,7 @@ double ServerCartesianController::getFeedback(Vector &_fb)
         bool ok;
 
         if (useReferences)
-            ok=lPid[i]->getPidReferences(VOCAB_PIDTYPE_POSITION,fbTmp.data());
+            ok=lPid[i]->getPidReferences(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,fbTmp.data());
         else if (encTimedEnabled)
         {
             ok=lEnt[i]->getEncodersTimed(fbTmp.data(),stamps.data());
@@ -2181,7 +2181,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     // thresholds at high values
     for (int i=0; i<numDrv; i++)
         for (int j=0; j<lJnt[i]; j++)
-            lVel[i]->setRefAcceleration(j,std::numeric_limits<double>::max());
+            lVel[i]->setTrajAcceleration(j,std::numeric_limits<double>::max());
 
     // init task-space reference velocity
     xdot_set.resize(7,0.0);

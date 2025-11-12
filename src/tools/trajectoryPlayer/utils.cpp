@@ -303,7 +303,7 @@ bool robotDriver::init()
     //set the initial reference speeds
     double* speeds = new double [n_joints];
     for (int i=0; i<n_joints; i++) speeds[i] = 20.0;
-    ipos_ll->setRefSpeeds(speeds);
+    ipos_ll->setTrajSpeeds(speeds);
 
     //dbg_connected is optional, so it has not to be returned
     return drv_connected;

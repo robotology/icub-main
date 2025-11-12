@@ -1019,8 +1019,8 @@ bool MotorThread::threadInit()
 
         Vector vels(16),accs(16);
         vels=20.0; accs=6000.0;
-        pos_arm[LEFT]->setRefSpeeds(vels.data());
-        pos_arm[LEFT]->setRefAccelerations(accs.data());
+        pos_arm[LEFT]->setTrajSpeeds(vels.data());
+        pos_arm[LEFT]->setTrajAccelerations(accs.data());
     }
 
     if(partUsed=="both_arms" || partUsed=="right_arm")
@@ -1040,16 +1040,16 @@ bool MotorThread::threadInit()
 
         Vector vels(16),accs(16);
         vels=20.0; accs=6000.0;
-        pos_arm[RIGHT]->setRefSpeeds(vels.data());
-        pos_arm[RIGHT]->setRefAccelerations(accs.data());
+        pos_arm[RIGHT]->setTrajSpeeds(vels.data());
+        pos_arm[RIGHT]->setTrajAccelerations(accs.data());
     }
 
     drv_ctrl_gaze->view(ctrl_gaze);
 
     Vector vels(3),accs(3);
     vels=5.0; accs=6000.0;
-    pos_torso->setRefSpeeds(vels.data());
-    pos_torso->setRefAccelerations(accs.data());
+    pos_torso->setTrajSpeeds(vels.data());
+    pos_torso->setTrajAccelerations(accs.data());
 
     // initialize the gaze controller
 

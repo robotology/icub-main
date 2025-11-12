@@ -26,6 +26,8 @@
 #include <yarp/os/NetType.h>
 #include <yarp/dev/ControlBoardHelper.h>
 
+ #include <yarp/dev/ReturnValue.h>
+
 // local include
 #include "EoCommon.h"
 #include "EOarray.h"
@@ -52,17 +54,7 @@ using namespace yarp::dev::eomc;
 #define PARSER_MOTION_CONTROL_VERSION   6
 
 
-static inline bool NOT_YET_IMPLEMENTED(const char *txt)
-{
-    yErrorOnce() << txt << " is not yet implemented for embObjMotionControl";
-    return true;
-}
 
-static inline bool DEPRECATED(const char *txt)
-{
-    yErrorOnce() << txt << " has been deprecated for embObjMotionControl";
-    return true;
-}
 
 #define NV_NOT_FOUND    return nv_not_found();
 
@@ -97,10 +89,11 @@ bool embObjMotionControl::alloc(int nj)
     _deadzone = allocAndCheck<double>(nj);
     _foc_based_info= allocAndCheck<eomc::focBasedSpecificInfo_t>(nj);
     _trj_pids= new eomc::PidInfo[nj];
-    //_dir_pids= new eomc::PidInfo[nj];
+    _dir_pos_pids= new eomc::PidInfo[nj];
+    _dir_vel_pids= new eomc::PidInfo[nj];
     _trq_pids= new eomc::TrqPidInfo [nj];
     _cur_pids= new eomc::PidInfo[nj];
-    _spd_pids= new eomc::PidInfo[nj];
+    _vel_pids= new eomc::PidInfo[nj];
     _impedance_limits=allocAndCheck<eomc::impedanceLimits_t>(nj);
     checking_motiondone=allocAndCheck<bool>(nj);
     _last_position_move_time=allocAndCheck<double>(nj);
@@ -169,8 +162,11 @@ bool embObjMotionControl::dealloc()
     if(_trj_pids)
         delete [] _trj_pids;
 
-    //if(_dir_pids)
-    //    delete [] _dir_pids;
+    if(_dir_pos_pids)
+        delete [] _dir_pos_pids;
+
+    if(_dir_vel_pids)
+        delete [] _dir_vel_pids;
 
     if(_trq_pids)
         delete [] _trq_pids;
@@ -178,8 +174,8 @@ bool embObjMotionControl::dealloc()
     if(_cur_pids)
         delete [] _cur_pids;
 
-    if (_spd_pids)
-        delete[] _spd_pids;
+    if (_vel_pids)
+        delete[] _vel_pids;
 
 
     return true;
@@ -192,6 +188,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementEncodersTimed(this),
     ImplementPositionControl(this),
     ImplementVelocityControl(this),
+    ImplementVelocityDirect(this),
     ImplementControlMode(this),
     ImplementImpedanceControl(this),
     ImplementMotorEncoders(this),
@@ -234,10 +231,11 @@ embObjMotionControl::embObjMotionControl() :
     _deadzone     = 0;
     opened        = 0;
     _trj_pids     = NULL;
-    //_dir_pids     = NULL;
+    _dir_pos_pids = NULL;
+    _dir_vel_pids = NULL;
     _trq_pids     = NULL;
     _cur_pids     = NULL;
-    _spd_pids     = NULL;
+    _vel_pids     = NULL;
     res           = NULL;
     _njoints      = 0;
     _axisMap      = NULL;
@@ -328,6 +326,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementPidControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM);
     ImplementControlMode::initialize(_njoints, _axisMap);
     ImplementVelocityControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementVelocityDirect::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementControlLimits::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor, f.dutycycleToPWM, f.bemf2raw, f.ktau2raw);
@@ -633,14 +632,9 @@ bool embObjMotionControl::updatedJointsetsCfgWithControlInfo()
         _jsets[s].cfg.pid_output_types.postrj_ctrl_out_type = _trj_pids[joint].out_type;
         _jsets[s].cfg.pid_output_types.veltrj_ctrl_out_type = _trj_pids[joint].out_type;
         _jsets[s].cfg.pid_output_types.mixtrj_ctrl_out_type = _trj_pids[joint].out_type;
-
-        //_jsets[s].cfg.pid_output_types.posdir_ctrl_out_type = _dir_pids[joint].out_type;
-        //_jsets[s].cfg.pid_output_types.veldir_ctrl_out_type = _dir_pids[joint].out_type;
-        _jsets[s].cfg.pid_output_types.posdir_ctrl_out_type = _trj_pids[joint].out_type;
-        _jsets[s].cfg.pid_output_types.veldir_ctrl_out_type = _trj_pids[joint].out_type;
-
+        _jsets[s].cfg.pid_output_types.posdir_ctrl_out_type = _dir_pos_pids[joint].out_type;
+        _jsets[s].cfg.pid_output_types.veldir_ctrl_out_type = _dir_vel_pids[joint].out_type;
         _jsets[s].cfg.pid_output_types.torque_ctrl_out_type = _trq_pids[joint].out_type;
-
         _jsets[s].cfg.pid_output_types.pwm_ctrl_out_type = eomc_ctrl_out_type_pwm;
 
         if (_cur_pids[joint].enabled)
@@ -884,7 +878,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             lowLevPidisMandatory = true;
         }
 
-        if(!_mcparser->parsePids(config, _trj_pids/*, _dir_pids*/, _trq_pids, _cur_pids, _spd_pids, lowLevPidisMandatory))
+        if(!_mcparser->parsePids(config, _trj_pids, _vel_pids, _dir_pos_pids, _dir_vel_pids, _trq_pids, _cur_pids, lowLevPidisMandatory))
             return false;
 
         // 1) verify joint belonging to same set has same control law
@@ -926,10 +920,11 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     ///////////////INIT INTERFACES
     _measureConverter = new ControlBoardHelper(_njoints, _axisMap, measConvFactors.angleToEncoder, NULL, measConvFactors.newtonsToSensor, measConvFactors.ampsToSensor, nullptr, measConvFactors.dutycycleToPWM , measConvFactors.bemf2raw, measConvFactors.ktau2raw);
     _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, _trj_pids->fbk_PidUnits, _trj_pids->out_PidUnits);
-    //_measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_DIRECT, _dir_pids->fbk_PidUnits, _dir_pids->out_PidUnits);
+    _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT, _dir_vel_pids->fbk_PidUnits, _dir_vel_pids->out_PidUnits);
     _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE,   _trq_pids->fbk_PidUnits, _trq_pids->out_PidUnits);
     _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT,  _cur_pids->fbk_PidUnits, _cur_pids->out_PidUnits);
-    _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, _spd_pids->fbk_PidUnits, _spd_pids->out_PidUnits);
+    _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, _vel_pids->fbk_PidUnits, _vel_pids->out_PidUnits);
+    _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT, _dir_pos_pids->fbk_PidUnits, _dir_pos_pids->out_PidUnits);
     /*
     void ControlBoardHelper::set_pid_conversion_units(const PidControlTypeEnum& pidtype, const PidFeedbackUnitsEnum fbk_conv_units, const PidOutputUnitsEnum out_conv_units)
     {
@@ -944,10 +939,11 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     */
     initializeInterfaces(measConvFactors);
     ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, _trj_pids->fbk_PidUnits, _trj_pids->out_PidUnits);
-    //ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_DIRECT,   _dir_pids->fbk_PidUnits, _dir_pids->out_PidUnits);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT,   _dir_pos_pids->fbk_PidUnits, _dir_pos_pids->out_PidUnits);
     ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE,   _trq_pids->fbk_PidUnits, _trq_pids->out_PidUnits);
     ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT,  _cur_pids->fbk_PidUnits, _cur_pids->out_PidUnits);
-    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, _spd_pids->fbk_PidUnits, _spd_pids->out_PidUnits);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, _vel_pids->fbk_PidUnits, _vel_pids->out_PidUnits);
+    ImplementPidControl::setConversionUnits(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT,   _dir_vel_pids->fbk_PidUnits, _dir_vel_pids->out_PidUnits);
 
 
     //Now save in data in structures EmbObj protocol compatible
@@ -1128,16 +1124,17 @@ bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(yarp::dev::PidFeedbac
     return true;
 }
 
-bool embObjMotionControl::isTorqueControlEnabled(int joint)
-{
-    return (_trq_pids[joint].enabled);
-}
+// bool embObjMotionControl::isTorqueControlEnabled(int joint)
+// {
+//     return (_trq_pids[joint].enabled);
+// }
 
-bool embObjMotionControl::isVelocityControlEnabled(int joint)
-{
-    //return (_dir_pids[joint].enabled);
-    return (_trj_pids[joint].enabled);
-}
+// bool embObjMotionControl::isVelocityControlEnabled(int joint)
+// {
+//     //TODO: check if this function belongs to velocity interface or velocity direct interface
+//     //return (_dir_pids[joint].enabled);
+//     return (_trj_pids[joint].enabled);
+// }
 
 
 void embObjMotionControl::updateDeadZoneWithDefaultValues(void)
@@ -1377,7 +1374,6 @@ bool embObjMotionControl::init()
     SystemClock::delaySystem(0.005);
 
 
-
     //////////////////////////////////////////
     // invia la configurazione dei GIUNTI   //
     //////////////////////////////////////////
@@ -1389,11 +1385,11 @@ bool embObjMotionControl::init()
         eOmc_joint_config_t jconfig = {0};
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         yarp::dev::Pid tmp; 
-        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_POSITION,_trj_pids[logico].pid, fisico);
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,_trj_pids[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &jconfig.pidtrajectory);
-        //tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_DIRECT, _dir_pids[logico].pid, fisico);
-        //copyPid_iCub2eo(&tmp, &jconfig.piddirect);
-        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_TORQUE, _trq_pids[logico].pid, fisico);
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT, _dir_pos_pids[logico].pid, fisico);
+        copyPid_iCub2eo(&tmp, &jconfig.piddirect);
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE, _trq_pids[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &jconfig.pidtorque);
 
         //stiffness and damping read in xml file are in Nm/deg and Nm/(Deg/sec), so we need to convert before send to fw.
@@ -1504,11 +1500,32 @@ bool embObjMotionControl::init()
         motor_cfg.LuGre_params.Fs_neg = _lugre_params[logico].Fs_neg;
         
         yarp::dev::Pid tmp;
-        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_CURRENT, _cur_pids[logico].pid, fisico);
+
+        //current pid
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, _cur_pids[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &motor_cfg.pidcurrent);
-                
-        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::VOCAB_PIDTYPE_VELOCITY, _spd_pids[logico].pid, fisico);
-        copyPid_iCub2eo(&tmp, &motor_cfg.pidspeed);
+
+        //velocity pid
+        memset(&motor_cfg.pidvelcur, 0, sizeof(eOmc_PID_t));
+        memset(&motor_cfg.pidvelpwm, 0, sizeof(eOmc_PID_t));
+
+        tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT, _dir_vel_pids[logico].pid, fisico);
+
+        if(eomc_ctrl_out_type_vel == _dir_vel_pids[logico].out_type)
+        {
+            copyPid_iCub2eo(&tmp, &motor_cfg.pidvelpwm);
+        }
+        else if (eomc_ctrl_out_type_vel_cur == _dir_vel_pids[logico].out_type)
+        {
+            copyPid_iCub2eo(&tmp, &motor_cfg.pidvelcur);
+        }
+        else
+        {
+
+            yError() << "embObjMC " << getBoardInfo() << " joint " << logico << " velocity direct pid has unsupported output type " << _dir_vel_pids[logico].out_type;
+            return false;
+        }
+        
 
         if (false == res->setcheckRemoteValue(protid, &motor_cfg, 10, 0.010, 0.050))
         {
@@ -1848,52 +1865,52 @@ bool embObjMotionControl::getEntityControlModeName(uint32_t entityId, eOenum08_t
 }
 
 ///////////// PID INTERFACE
-bool embObjMotionControl::setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid)
+ReturnValue embObjMotionControl::setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid)
 {
     switch (pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
             helper_setPosPidRaw(j,pid);
         break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
             //helper_setVelPidRaw(j,pid);
             helper_setSpdPidRaw(j, pid);
         break;
-        case VOCAB_PIDTYPE_TORQUE:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
             helper_setTrqPidRaw(j, pid);
             break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
             helper_setCurPidRaw(j,pid);
         break;
         default:
-            yError()<<"Invalid pidtype:"<<pidtype;
+            yError()<<"Invalid pidtype:"<<static_cast<int>(pidtype);
         break;
     }
-    return true;
+    return ReturnValue::return_code::return_value_ok;
 }
 
-bool embObjMotionControl::getPidRaw(const PidControlTypeEnum& pidtype, int axis, Pid *pid)
+ReturnValue embObjMotionControl::getPidRaw(const PidControlTypeEnum& pidtype, int axis, Pid *pid)
 {
     switch (pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
             helper_getPosPidRaw(axis,pid);
         break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
             //helper_getVelPidRaw(axis,pid);
             helper_getSpdPidRaw(axis, pid);
         break;
-        case VOCAB_PIDTYPE_TORQUE:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
             helper_getTrqPidRaw(axis, pid);
             break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
             helper_getCurPidRaw(axis,pid);
         break;
         default:
-            yError()<<"Invalid pidtype:"<<pidtype;
+            yError()<<"Invalid pidtype:"<<static_cast<int>(pidtype);
         break;
     }
-    return true;
+    return ReturnValue::return_code::return_value_ok;
 }
 
 bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
@@ -1914,9 +1931,9 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
     return true;
 }
 
-bool embObjMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids)
+ReturnValue embObjMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
     for(int j=0; j< _njoints; j++)
     {
         ret &= setPidRaw(pidtype, j, pids[j]);
@@ -1924,14 +1941,14 @@ bool embObjMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pi
     return ret;
 }
 
-bool embObjMotionControl::setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref)
+ReturnValue embObjMotionControl::setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref)
 {
-    return NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
-bool embObjMotionControl::setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs)
+ReturnValue embObjMotionControl::setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
     for(int j=0, index=0; j< _njoints; j++, index++)
     {
         ret &= setPidReferenceRaw(pidtype, j, refs[index]);
@@ -1939,48 +1956,48 @@ bool embObjMotionControl::setPidReferencesRaw(const PidControlTypeEnum& pidtype,
     return ret;
 }
 
-bool embObjMotionControl::setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit)
+ReturnValue embObjMotionControl::setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit)
 {
     // print_debug(AC_trace_file, "embObjMotionControl::setErrorLimitRaw()");
-    return NOT_YET_IMPLEMENTED("setErrorLimitRaw");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
-bool embObjMotionControl::setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits)
+ReturnValue embObjMotionControl::setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits)
 {
     // print_debug(AC_trace_file, "embObjMotionControl::setErrorLimitsRaw()");
-    return NOT_YET_IMPLEMENTED("setErrorLimitsRaw");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
-bool embObjMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err)
+ReturnValue embObjMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err)
 {
     uint16_t size = 0;
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     eOmc_joint_status_core_t  jcore = {0};
     *err = 0;
     if(!res->getLocalValue(id32, &jcore))
-        return false;
+        return ReturnValue::return_code::return_value_error_method_failed;
 
     switch(pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
         {
             if((eomc_controlmode_torque == jcore.modes.controlmodestatus)   ||
                (eomc_controlmode_openloop == jcore.modes.controlmodestatus) ||
                (eomc_controlmode_current == jcore.modes.controlmodestatus))
-                    return true;
+                    return ReturnValue::return_code::return_value_ok;
             else
                 *err = (double) jcore.ofpid.generic.error1;
         }
         break;
-        /*
-        case VOCAB_PIDTYPE_DIRECT:
+        
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT:
         {
             *err=0;  //not yet implemented
-            NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_DIRECT");
+            YARP_METHOD_NOT_YET_IMPLEMENTED();
         }
         break;
-        */
-        case VOCAB_PIDTYPE_TORQUE:
+        
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
         {
             if ((eOmc_interactionmode_compliant == jcore.modes.interactionmodestatus) &&
                 (eomc_controlmode_position == jcore.modes.controlmodestatus))
@@ -1994,30 +2011,38 @@ bool embObjMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int 
             }
         }
         break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
         {
             *err = 0;  //not yet implemented
-            NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_LLSPEED");
+            YARP_METHOD_NOT_YET_IMPLEMENTED();
         }
         break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
         {
             *err = 0;  //not yet implemented
-            NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_CURRENT");
+            YARP_METHOD_NOT_YET_IMPLEMENTED();
         }
         break;
+
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT:
+        {
+            *err=0;  //not yet implemented
+            YARP_METHOD_NOT_YET_IMPLEMENTED();
+        }
+        break;    
+        
         default:
         {
-            yError()<<"Invalid pidtype:"<<pidtype;
+            yError()<<"Invalid pidtype:"<<static_cast<int>(pidtype);
         }
         break;
     }
-    return true;
+    return ReturnValue::return_code::return_value_ok;
 }
 
-bool embObjMotionControl::getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs)
+ReturnValue embObjMotionControl::getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
     for(int j=0; j< _njoints; j++)
     {
         ret &= getPidErrorRaw(pidtype, j, &errs[j]);
@@ -2074,88 +2099,97 @@ bool embObjMotionControl::helper_getPosPidsRaw(Pid *pid)
 }
 
 
-bool embObjMotionControl::getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids)
+ReturnValue embObjMotionControl::getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids)
 {
     switch (pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
             helper_getPosPidsRaw(pids);
             break;
-        //case VOCAB_PIDTYPE_DIRECT:
-        //    helper_getVelPidsRaw(pids);
-        //    break;
-        case VOCAB_PIDTYPE_TORQUE:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT   :
+            helper_getPosPidsRaw(pids);
+            break;
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT   :
+            helper_getVelPidsRaw(pids);
+            break;
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
             helper_getTrqPidsRaw(pids);
             break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
             helper_getCurPidsRaw(pids);
             break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
             helper_getSpdPidsRaw(pids);
             break;
         default:
-            yError()<<"Invalid pidtype:"<<pidtype;
+            yError()<<"Invalid pidtype:"<<static_cast<int>(pidtype);
             break;
     }
-    return true;
+    return ReturnValue::return_code::return_value_ok;
 }
 
-bool embObjMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref)
+ReturnValue embObjMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref)
 {
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     eOmc_joint_status_core_t jcore = {0};
     *ref = 0;
     if(!res->getLocalValue(id32, &jcore))
-        return false;
+        return ReturnValue::return_code::return_value_error_method_failed;
 
     switch (pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
         {
             if((eomc_controlmode_torque == jcore.modes.controlmodestatus) ||
             (eomc_controlmode_openloop == jcore.modes.controlmodestatus) ||
             (eomc_controlmode_current == jcore.modes.controlmodestatus))
-            { *ref = 0; yError() << "Invalid getPidReferenceRaw() request for current control mode"; return true; }
+            { *ref = 0; yError() << "Invalid getPidReferenceRaw() request for current control mode"; return ReturnValue::return_code::return_value_ok; }
             *ref = (double) jcore.ofpid.generic.reference1;
         }
         break;
-        //case VOCAB_PIDTYPE_DIRECT:
-        //{
-        //    *ref=0;
-        //    NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_DIRECT");
-        //}
-        //break;
-        case VOCAB_PIDTYPE_TORQUE:
-        {
-            *ref = 0;
-            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_TORQUE");
-        }
-        break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT:
         {
             *ref=0;
-            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_CURRENT");
+             YARP_METHOD_NOT_YET_IMPLEMENTED();
         }
         break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
         {
             *ref = 0;
-            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_VELOCITY");
+            YARP_METHOD_NOT_YET_IMPLEMENTED();
+        }
+        break;
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
+        {
+            *ref=0;
+            YARP_METHOD_NOT_YET_IMPLEMENTED();
+        }
+        break;
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
+        {
+            *ref = 0;
+            YARP_METHOD_NOT_YET_IMPLEMENTED();
+        }
+        break;
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT:
+        {
+            *ref=0;
+             YARP_METHOD_NOT_YET_IMPLEMENTED();
         }
         break;
         default:
         {
             *ref=0;
-            yError()<<"Invalid pidtype:"<<pidtype;
+            yError()<<"Invalid pidtype:"<<static_cast<int>(pidtype);
         }
         break;
     }
-    return true;
+    return ReturnValue::return_code::return_value_ok;
 }
 
-bool embObjMotionControl::getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs)
+ReturnValue embObjMotionControl::getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
 
     // just one joint at time, wait answer before getting to the next.
     // This is because otherwise too many msg will be placed into can queue
@@ -2166,34 +2200,34 @@ bool embObjMotionControl::getPidReferencesRaw(const PidControlTypeEnum& pidtype,
     return ret;
 }
 
-bool embObjMotionControl::getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit)
+ReturnValue embObjMotionControl::getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit)
 {
-    return NOT_YET_IMPLEMENTED("getErrorLimit");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
-bool embObjMotionControl::getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits)
+ReturnValue embObjMotionControl::getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits)
 {
-    return NOT_YET_IMPLEMENTED("getErrorLimit");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
-bool embObjMotionControl::resetPidRaw(const PidControlTypeEnum& pidtype, int j)
+ReturnValue embObjMotionControl::resetPidRaw(const PidControlTypeEnum& pidtype, int j)
 {
-    return NOT_YET_IMPLEMENTED("resetPid");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
-bool embObjMotionControl::disablePidRaw(const PidControlTypeEnum& pidtype, int j)
+ReturnValue embObjMotionControl::disablePidRaw(const PidControlTypeEnum& pidtype, int j)
 {
-    return DEPRECATED("disablePidRaw");
+    return YARP_METHOD_DEPRECATED();
 }
 
-bool embObjMotionControl::enablePidRaw(const PidControlTypeEnum& pidtype, int j)
+ReturnValue embObjMotionControl::enablePidRaw(const PidControlTypeEnum& pidtype, int j)
 {
-    return DEPRECATED("enablePidRaw");
+    return YARP_METHOD_DEPRECATED();
 }
 
-bool embObjMotionControl::setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v)
+ReturnValue embObjMotionControl::setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v)
 {
-    return NOT_YET_IMPLEMENTED("setOffset");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ////////////////////////////////////////
@@ -2608,12 +2642,12 @@ bool embObjMotionControl::positionMoveRaw(const double *refs)
 
 bool embObjMotionControl::relativeMoveRaw(int j, double delta)
 {
-    return NOT_YET_IMPLEMENTED("positionRelative");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::relativeMoveRaw(const double *deltas)
 {
-    return NOT_YET_IMPLEMENTED("positionRelative");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 
@@ -2652,7 +2686,7 @@ bool embObjMotionControl::checkMotionDoneRaw(bool *flag)
     return true;
 }
 
-bool embObjMotionControl::setRefSpeedRaw(int j, double sp)
+bool embObjMotionControl::setTrajSpeedRaw(int j, double sp)
 {
     // Velocity is expressed in iDegrees/s
     // save internally the new value of speed; it'll be used in the positionMove
@@ -2661,7 +2695,7 @@ bool embObjMotionControl::setRefSpeedRaw(int j, double sp)
     return true;
 }
 
-bool embObjMotionControl::setRefSpeedsRaw(const double *spds)
+bool embObjMotionControl::setTrajSpeedsRaw(const double *spds)
 {
     // Velocity is expressed in iDegrees/s
     // save internally the new value of speed; it'll be used in the positionMove
@@ -2672,7 +2706,7 @@ bool embObjMotionControl::setRefSpeedsRaw(const double *spds)
     return true;
 }
 
-bool embObjMotionControl::setRefAccelerationRaw(int j, double acc)
+bool embObjMotionControl::setTrajAccelerationRaw(int j, double acc)
 {
     // Acceleration is expressed in iDegrees/s^2
     // save internally the new value of the acceleration; it'll be used in the velocityMove command
@@ -2693,7 +2727,7 @@ bool embObjMotionControl::setRefAccelerationRaw(int j, double acc)
     return true;
 }
 
-bool embObjMotionControl::setRefAccelerationsRaw(const double *accs)
+bool embObjMotionControl::setTrajAccelerationsRaw(const double *accs)
 {
     // Acceleration is expressed in iDegrees/s^2
     // save internally the new value of the acceleration; it'll be used in the velocityMove command
@@ -2715,31 +2749,31 @@ bool embObjMotionControl::setRefAccelerationsRaw(const double *accs)
     return true;
 }
 
-bool embObjMotionControl::getRefSpeedRaw(int j, double *spd)
+bool embObjMotionControl::getTrajSpeedRaw(int j, double *spd)
 {
     if (j<0 || j>_njoints) return false;
 #if ASK_REFERENCE_TO_FIRMWARE
     *spd = _ref_speeds[j];
-    //return NOT_YET_IMPLEMENTED("getRefSpeedRaw");
+    //return YARP_METHOD_NOT_YET_IMPLEMENTED();
 #else
     *spd = _ref_speeds[j];
 #endif
     return true;
 }
 
-bool embObjMotionControl::getRefSpeedsRaw(double *spds)
+bool embObjMotionControl::getTrajSpeedsRaw(double *spds)
 {
     memcpy(spds, _ref_speeds, sizeof(double) * _njoints);
     return true;
 }
 
-bool embObjMotionControl::getRefAccelerationRaw(int j, double *acc)
+bool embObjMotionControl::getTrajAccelerationRaw(int j, double *acc)
 {
     *acc = _ref_accs[j];
     return true;
 }
 
-bool embObjMotionControl::getRefAccelerationsRaw(double *accs)
+bool embObjMotionControl::getTrajAccelerationsRaw(double *accs)
 {
     memcpy(accs, _ref_accs, sizeof(double) * _njoints);
     return true;
@@ -2823,42 +2857,42 @@ bool embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int *joint
 
 }
 
-bool embObjMotionControl::setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds)
+bool embObjMotionControl::setTrajSpeedsRaw(const int n_joint, const int *joints, const double *spds)
 {
     bool ret = true;
     for(int j=0; j<n_joint; j++)
     {
-        ret = ret &&setRefSpeedRaw(joints[j], spds[j]);
+        ret = ret &&setTrajSpeedRaw(joints[j], spds[j]);
     }
     return ret;
 }
 
-bool embObjMotionControl::setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
+bool embObjMotionControl::setTrajAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
 {
     bool ret = true;
     for(int j=0; j<n_joint; j++)
     {
-        ret = ret &&setRefAccelerationRaw(joints[j], accs[j]);
+        ret = ret &&setTrajAccelerationRaw(joints[j], accs[j]);
     }
     return ret;
 }
 
-bool embObjMotionControl::getRefSpeedsRaw(const int n_joint, const int *joints, double *spds)
+bool embObjMotionControl::getTrajSpeedsRaw(const int n_joint, const int *joints, double *spds)
 {
     bool ret = true;
     for(int j=0; j<n_joint; j++)
     {
-        ret = ret && getRefSpeedRaw(joints[j], &spds[j]);
+        ret = ret && getTrajSpeedRaw(joints[j], &spds[j]);
     }
     return ret;
 }
 
-bool embObjMotionControl::getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs)
+bool embObjMotionControl::getTrajAccelerationsRaw(const int n_joint, const int *joints, double *accs)
 {
     bool ret = true;
     for(int j=0; j<n_joint; j++)
     {
-        ret = ret && getRefAccelerationRaw(joints[j], &accs[j]);
+        ret = ret && getTrajAccelerationRaw(joints[j], &accs[j]);
     }
     return ret;
 }
@@ -3036,22 +3070,22 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 
 bool embObjMotionControl::setEncoderRaw(int j, double val)
 {
-    return NOT_YET_IMPLEMENTED("setEncoder");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::setEncodersRaw(const double *vals)
 {
-    return NOT_YET_IMPLEMENTED("setEncoders");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::resetEncoderRaw(int j)
 {
-    return NOT_YET_IMPLEMENTED("resetEncoder");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::resetEncodersRaw()
 {
-    return NOT_YET_IMPLEMENTED("resetEncoders");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::getEncoderRaw(int j, double *value)
@@ -3161,32 +3195,32 @@ bool embObjMotionControl::getNumberOfMotorEncodersRaw(int* num)
 
 bool embObjMotionControl::setMotorEncoderRaw(int m, const double val)
 {
-    return NOT_YET_IMPLEMENTED("setMotorEncoder");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::setMotorEncodersRaw(const double *vals)
 {
-    return NOT_YET_IMPLEMENTED("setMotorEncoders");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr)
 {
-    return NOT_YET_IMPLEMENTED("setMotorEncoderCountsPerRevolutionRaw");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::getMotorEncoderCountsPerRevolutionRaw(int m, double *cpr)
 {
-    return NOT_YET_IMPLEMENTED("getMotorEncoderCountsPerRevolutionRaw");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::resetMotorEncoderRaw(int mj)
 {
-    return NOT_YET_IMPLEMENTED("resetMotorEncoder");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::resetMotorEncodersRaw()
 {
-    return NOT_YET_IMPLEMENTED("reseMotortEncoders");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::getMotorEncoderRaw(int m, double *value)
@@ -3295,12 +3329,12 @@ bool embObjMotionControl::getMotorEncoderTimedRaw(int m, double *encs, double *s
 
 bool embObjMotionControl::enableAmpRaw(int j)
 {
-    return DEPRECATED("enableAmpRaw");
+    return YARP_METHOD_DEPRECATED();
 }
 
 bool embObjMotionControl::disableAmpRaw(int j)
 {
-    return DEPRECATED("disableAmpRaw");
+    return YARP_METHOD_DEPRECATED();
 }
 
 bool embObjMotionControl::getCurrentRaw(int j, double *value)
@@ -3362,7 +3396,7 @@ bool embObjMotionControl::getMaxCurrentRaw(int j, double *val)
 
 bool embObjMotionControl::getAmpStatusRaw(int j, int *st)
 {
- //VALE: can i set this func like deprecated? none sets _enabledAmp!!
+ //VALE: can i set this func like YARP_METHOD_DEPRECATED? none sets _enabledAmp!!
     (_enabledAmp[j ]) ? *st = 1 : *st = 0;
     return true;
 }
@@ -3383,17 +3417,17 @@ bool embObjMotionControl::getAmpStatusRaw(int *sts)
 //    Debug interface
 //----------------------------------------------\\
 
-bool embObjMotionControl::setParameterRaw(int j, unsigned int type, double value)   {       return NOT_YET_IMPLEMENTED("setParameterRaw"); }
-bool embObjMotionControl::getParameterRaw(int j, unsigned int type, double* value)  {       return NOT_YET_IMPLEMENTED("getParameterRaw"); }
-bool embObjMotionControl::getDebugParameterRaw(int j, unsigned int index, double* value)  { return NOT_YET_IMPLEMENTED("getDebugParameterRaw"); }
-bool embObjMotionControl::setDebugParameterRaw(int j, unsigned int index, double value)   { return NOT_YET_IMPLEMENTED("setDebugParameterRaw"); }
-bool embObjMotionControl::setDebugReferencePositionRaw(int j, double value)         {       return NOT_YET_IMPLEMENTED("setDebugReferencePositionRaw"); }
-bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value)        {       return NOT_YET_IMPLEMENTED("getDebugReferencePositionRaw");}
+bool embObjMotionControl::setParameterRaw(int j, unsigned int type, double value)   {       return YARP_METHOD_NOT_YET_IMPLEMENTED(); }
+bool embObjMotionControl::getParameterRaw(int j, unsigned int type, double* value)  {       return YARP_METHOD_NOT_YET_IMPLEMENTED(); }
+bool embObjMotionControl::getDebugParameterRaw(int j, unsigned int index, double* value)  { return YARP_METHOD_NOT_YET_IMPLEMENTED(); }
+bool embObjMotionControl::setDebugParameterRaw(int j, unsigned int index, double value)   { return YARP_METHOD_NOT_YET_IMPLEMENTED(); }
+bool embObjMotionControl::setDebugReferencePositionRaw(int j, double value)         {       return YARP_METHOD_NOT_YET_IMPLEMENTED(); }
+bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value)        {       return YARP_METHOD_NOT_YET_IMPLEMENTED();}
 
 #endif //IMPLEMENT_DEBUG_INTERFACE
 
 // Limit interface
-bool embObjMotionControl::setLimitsRaw(int j, double min, double max)
+ReturnValue embObjMotionControl::setPosLimitsRaw(int j, double min, double max)
 {
     bool ret = true;
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_userlimits);
@@ -3409,21 +3443,21 @@ bool embObjMotionControl::setLimitsRaw(int j, double min, double max)
     {
         yError() << "while setting position limits for joint" << j << " \n";
     }
-    return ret;
+    return ReturnValue::return_code::return_value_ok;
 }
 
-bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
+ReturnValue embObjMotionControl::getPosLimitsRaw(int j, double *min, double *max)
 {
     eOmeas_position_limits_t limits;
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_userlimits);
     uint16_t size;
     
     if(! askRemoteValue(protoid, &limits, size))
-        return false;
+        return ReturnValue::return_code::return_value_error_method_failed;
 
     *min = (double)limits.min + SAFETY_THRESHOLD;
     *max = (double)limits.max - SAFETY_THRESHOLD;
-    return true;
+    return ReturnValue::return_code::return_value_ok;
 }
 
 bool embObjMotionControl::getGearboxRatioRaw(int j, double *gearbox)
@@ -3869,13 +3903,13 @@ bool embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os::Bottle
     else if (key == "jointMax")
     {
         double tmp1, tmp2;
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addFloat64(tmp2); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getPosLimitsRaw(i, &tmp1, &tmp2);  r.addFloat64(tmp2); }
         return true;
     }
     else if (key == "jointMin")
     {
         double tmp1, tmp2;
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addFloat64(tmp1); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getPosLimitsRaw(i, &tmp1, &tmp2);  r.addFloat64(tmp1); }
         return true;
     }
     else if (key == "jointEncTolerance")
@@ -4006,8 +4040,8 @@ bool embObjMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
         double min, max;
         for (int i = 0; i < _njoints; i++)
         {
-            getLimitsRaw(i, &min, &max);
-            setLimitsRaw(i, min, val.get(i).asFloat64());
+            getPosLimitsRaw(i, &min, &max);
+            setPosLimitsRaw(i, min, val.get(i).asFloat64());
         }
         return true;
     }
@@ -4016,8 +4050,8 @@ bool embObjMotionControl::setRemoteVariableRaw(std::string key, const yarp::os::
         double min, max;
         for (int i = 0; i < _njoints; i++)
         {
-            getLimitsRaw(i, &min, &max);
-            setLimitsRaw(i, val.get(i).asFloat64(), max);
+            getPosLimitsRaw(i, &min, &max);
+            setPosLimitsRaw(i, val.get(i).asFloat64(), max);
         }
     }
 #endif
@@ -4070,30 +4104,30 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
 }
 
 // IControlLimits2
-bool embObjMotionControl::setVelLimitsRaw(int axis, double min, double max)
+ReturnValue embObjMotionControl::setVelLimitsRaw(int axis, double min, double max)
 {
-    return NOT_YET_IMPLEMENTED("setVelLimitsRaw");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
-bool embObjMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
+ReturnValue embObjMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_config);
     uint16_t size;
     eOmc_joint_config_t    joint_cfg;
     if(! askRemoteValue(protoid, &joint_cfg, size))
-        return false;
+        return ReturnValue::return_code::return_value_error_method_failed;
 
     *max = joint_cfg.maxvelocityofjoint;
     *min = 0;
 
-    return true;
+    return ReturnValue::return_code::return_value_ok;
 }
 
 
 /*
  * IVirtualAnalogSensor Interface
  *
- *  DEPRECATED!! WILL BE REMOVED IN THE NEAR FUTURE!!
+ *  YARP_METHOD_DEPRECATED!! WILL BE REMOVED IN THE NEAR FUTURE!!
  *
  */
 
@@ -4160,12 +4194,12 @@ bool embObjMotionControl::getTorquesRaw(double *t)
 
 bool embObjMotionControl::getTorqueRangeRaw(int j, double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getTorqueRangeRaw");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::getTorqueRangesRaw(double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getTorqueRangesRaw");
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 bool embObjMotionControl::setRefTorquesRaw(const double *t)
@@ -4455,7 +4489,7 @@ bool embObjMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
 
     return true;
 
-    //return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+    //return YARP_METHOD_NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 */
 
@@ -4471,7 +4505,7 @@ bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 
     return true;
 
-    //return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+    //return YARP_METHOD_NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
 bool embObjMotionControl::helper_getVelPidsRaw(Pid *pid)
@@ -4488,7 +4522,7 @@ bool embObjMotionControl::helper_getVelPidsRaw(Pid *pid)
 
     return true;
 
-    //return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+    //return YARP_METHOD_NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
 // PositionDirect Interface
@@ -4583,7 +4617,8 @@ bool embObjMotionControl::getTargetPositionsRaw(int nj, const int * jnts, double
     return ret;
 }
 
-bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
+
+bool  embObjMotionControl::getTargetVelocityRaw(int axis, double *ref)
 {
     if (axis<0 || axis>_njoints) return false;
 #if ASK_REFERENCE_TO_FIRMWARE
@@ -4595,7 +4630,7 @@ bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
     eOmc_joint_status_target_t  target = {0};
     if(!askRemoteValue(id32, &target, size))
     {
-        yError() << "embObjMotionControl::getRefVelocityRaw() could not read reference vel for " << getBoardInfo() << "joint " << axis;
+        yError() << "embObjMotionControl::getTargetVelocityRaw() could not read reference vel for " << getBoardInfo() << "joint " << axis;
         return false;
     }
     *ref = (double) target.trgt_velocity;
@@ -4606,14 +4641,14 @@ bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
 #endif
 }
 
-bool embObjMotionControl::getRefVelocitiesRaw(double *refs)
+bool  embObjMotionControl::getTargetVelocitiesRaw(double *refs)
 {
     #if ASK_REFERENCE_TO_FIRMWARE
     std::vector <eOmc_joint_status_target_t> targetList(_njoints);
     bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_target, targetList);
     if(!ret)
     {
-        yError() << "embObjMotionControl::getRefVelocitiesRaw() could not read reference vel for " << getBoardInfo() ;
+        yError() << "embObjMotionControl::getTargetVelocitiesRaw() could not read reference vel for " << getBoardInfo() ;
         return false;
     }
     // Get the value
@@ -4631,17 +4666,17 @@ bool embObjMotionControl::getRefVelocitiesRaw(double *refs)
     #endif
 }
 
-bool embObjMotionControl::getRefVelocitiesRaw(int nj, const int * jnts, double *refs)
+bool  embObjMotionControl::getTargetVelocitiesRaw(int nj, const int * jnts, double *refs)
 {
     std::vector <double> refsList(_njoints);
-    if(!getRefVelocitiesRaw(refsList.data()))
+    if(!getTargetVelocitiesRaw(refsList.data()))
         return false;
     
     for (int i = 0; i<nj; i++)
     {
         if(jnts[i]>= _njoints)
         {
-            yError() << getBoardInfo() << "getRefVelocitiesRaw: joint " << jnts[i] << "doesn't exist";
+            yError() << getBoardInfo() << "getTargetVelocitiesRaw: joint " << jnts[i] << "doesn't exist";
             return false;
         }
         refs[i] = refsList[jnts[i]];
@@ -4899,58 +4934,56 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 }
 
 
-bool embObjMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out)
+ReturnValue embObjMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out)
 {
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     eOmc_joint_status_core_t jcore = {0};
     *out = 0;
     if(!res->getLocalValue(protoId, &jcore) )
-        return false;
+        return ReturnValue::return_code::return_value_error_method_failed;
 
     switch (pidtype)
     {
-        case VOCAB_PIDTYPE_POSITION:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION:
             if((eomc_controlmode_torque == jcore.modes.controlmodestatus)   ||  (eomc_controlmode_current == jcore.modes.controlmodestatus))
                 *out=0;
             else
                 *out = (double) jcore.ofpid.generic.output;
         break;
-        //case VOCAB_PIDTYPE_DIRECT:
-        //    *out=0;
-        //break;
-        case VOCAB_PIDTYPE_TORQUE:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT:
+            *out=0;
+        break;
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
             if ((eomc_controlmode_torque == jcore.modes.controlmodestatus) ||
                 ((eomc_controlmode_position == jcore.modes.controlmodestatus) && (eOmc_interactionmode_compliant == jcore.modes.interactionmodestatus)))
                 *out = jcore.ofpid.generic.output;
             else
                 *out = 0;
             break;
-        case VOCAB_PIDTYPE_CURRENT:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT:
             *out=0;
         break;
-        case VOCAB_PIDTYPE_VELOCITY:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
             *out = 0;
             break;
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT:
+            *out=0;
+        break;
         default:
-            yError()<<"Invalid pidtype:"<<pidtype;
+            yError()<<"Invalid pidtype:"<<static_cast<int>(pidtype);
         break;
     }
-    return true;
+    return ReturnValue::return_code::return_value_ok;
 }
 
-bool embObjMotionControl::getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs)
+ReturnValue embObjMotionControl::getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs)
 {
-    bool ret = true;
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
     for(int j=0; j< _njoints; j++)
     {
         ret &= getPidOutputRaw(pidtype, j, &outs[j]);
     }
     return ret;
-}
-
-bool embObjMotionControl::isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled)
-{
-    return NOT_YET_IMPLEMENTED("isPidEnabled");
 }
 
 bool embObjMotionControl::getNumberOfMotorsRaw(int* num)
@@ -5470,12 +5503,12 @@ bool embObjMotionControl::helper_setCurPidRaw(int j, const Pid &pid)
 
         return true;
 
-        //return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+        //return YARP_METHOD_NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
 bool embObjMotionControl::helper_setSpdPidRaw(int j, const Pid &pid)
 {
-    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pidspeed);
+    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pidvelpwm);
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
 
@@ -5495,7 +5528,7 @@ bool embObjMotionControl::helper_setSpdPidRaw(int j, const Pid &pid)
 
     return true;
 
-    //return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+    //return YARP_METHOD_NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
 bool embObjMotionControl::helper_getCurPidRaw(int j, Pid *pid)
@@ -5522,7 +5555,7 @@ bool embObjMotionControl::helper_getSpdPidRaw(int j, Pid *pid)
         return false;
 
     // refresh cached value when reading data from the EMS
-    eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg.pidspeed;
+    eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg.pidvelpwm;
     copyPid_eo2iCub(&tmp, pid);
 
     return true;
@@ -5552,7 +5585,7 @@ bool embObjMotionControl::helper_getSpdPidsRaw(Pid *pid)
 
     for (int j = 0; j<_njoints; j++)
     {
-        eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg_list[j].pidspeed;
+        eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg_list[j].pidvelpwm;
         copyPid_eo2iCub(&tmp, &pid[j]);
     }
     return true;
@@ -5763,4 +5796,151 @@ bool embObjMotionControl::getAxesNames(std::string key, std::vector<std::string>
     return true;
 }
 
+ReturnValue embObjMotionControl::getAxes(size_t& axes)
+{
+        axes=_njoints;
+
+    return ReturnValue::return_code::return_value_ok;
+}
+
+ReturnValue embObjMotionControl::setRefVelocityRaw(int jnt, double vel)
+{
+    int mode=0;
+    getControlModeRaw(jnt, &mode);
+    if( (mode != VOCAB_CM_VELOCITY_DIRECT) &&
+        (mode != VOCAB_CM_IDLE)) //VALE: 
+    {
+        if(event_downsampler->canprint())
+        {
+            yError() << "setRefVelocityRaw: skipping command because " << getBoardInfo() << " joint " << jnt << " is not in VOCAB_CM_VELOCITY_DIRECT mode";
+        }
+        return ReturnValue::return_code::return_value_ok;
+    }
+    
+    eOmc_setpoint_t setpoint;
+    setpoint.type = eomc_setpoint_velocityraw;
+      
+    setpoint.to.velocityraw.value =  (eOmeas_velocity_t) S_32(vel);
+    
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, jnt, eoprot_tag_mc_joint_cmmnds_setpoint);
+    
+    if(false == res->setRemoteValue(protid, &setpoint))
+    {
+        yError() << getBoardInfo() << "while setting velocity direct target for"  << "joint " << jnt;
+        return ReturnValue::return_code::return_value_error_method_failed;
+    }
+    
+    return ReturnValue::return_code::return_value_ok;
+}
+
+ReturnValue embObjMotionControl::setRefVelocityRaw(const std::vector<double>& vels)
+{
+    // Velocity is expressed in iDegrees/s
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= setRefVelocityRaw(j, vels[j]);
+
+        if (!ret)
+            return ret;
+    }
+    return ret;
+}
+
+ReturnValue embObjMotionControl::setRefVelocityRaw(const std::vector<int>& jnts, const std::vector<double>& vels)
+{
+    // Velocity is expressed in iDegrees/s
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
+
+    if (jnts.size() != vels.size())
+    {
+         yError() << getBoardInfo() << "while setting velocity direct target: size of joints and velocities vectors do not match";
+        return ReturnValue::return_code::return_value_error_method_failed;
+    }
+
+    for (int j=0; j < jnts.size(); j++)
+    {
+        ret &= setRefVelocityRaw(jnts[j], vels[j]);
+        if (!ret)
+            return ret;
+    }
+    return ret;
+}
+
+ReturnValue embObjMotionControl::getRefVelocityRaw(const int jnt, double& vel)
+{
+    // Using joint related datatypes, instead of motor related datatypes
+    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, jnt,  eoprot_tag_mc_joint_status_target);
+    
+    uint16_t size;
+    
+    eOmc_joint_status_target_t target;
+
+    if (!askRemoteValue(protoId, &target, size))
+    {
+        yError() << "embObjMotionControl::getRefVelocityRaw() could not read velocity direct reference for " << getBoardInfo() << "joint " << jnt;
+        return ReturnValue::return_code::return_value_error_method_failed;
+    }
+
+    vel = (double)target.trgt_velocity;
+
+    return ReturnValue::return_code::return_value_ok;
+}
+
+ReturnValue embObjMotionControl::getRefVelocityRaw(std::vector<double>& vels)
+{
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
+
+    for (int j = 0; j< _njoints; j++)
+    {
+        ret &= getRefVelocityRaw(j, vels[j]);
+        if (!ret)
+        return ret;
+
+    }
+    return ret;
+}
+
+ReturnValue embObjMotionControl::getRefVelocityRaw(const std::vector<int>& jnts, std::vector<double>& vels)
+{
+    ReturnValue ret = ReturnValue::return_code::return_value_ok;
+
+    for (int j = 0; j< jnts.size(); j++)
+    {
+        ret &= getRefVelocityRaw(jnts[j], vels[j]);
+        if (!ret)
+            return ret;
+    }
+    return ret;
+}
+
+ReturnValue embObjMotionControl::setPidFeedforwardRaw(const PidControlTypeEnum& pidtype,int j, double v)
+{
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+}
+
+ReturnValue embObjMotionControl::getPidOffsetRaw(const PidControlTypeEnum& pidtype,int j, double& v)
+{
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+}
+
+ReturnValue embObjMotionControl::getPidFeedforwardRaw(const PidControlTypeEnum& pidtype,int j, double& v)
+{
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+}
+
+ReturnValue embObjMotionControl::isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool& enabled)
+{
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+}
+
+ReturnValue embObjMotionControl::getPidExtraInfoRaw(const PidControlTypeEnum& pidtype, int j, yarp::dev::PidExtraInfo& units)
+{
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+}
+
+ReturnValue embObjMotionControl::getPidExtraInfosRaw(const PidControlTypeEnum& pidtype, std::vector<yarp::dev::PidExtraInfo>& units)
+{
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+}
 // eof

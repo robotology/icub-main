@@ -134,7 +134,7 @@ void velControlThread::run()
                 if (fabs(targets(i)-encoders(i))>6.0)
                     ipos->positionMove(i,targets(i));
                 else
-                    ipid->setPidReference(yarp::dev::VOCAB_PIDTYPE_POSITION,i,targets(i));
+                    ipid->setPidReference(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,i,targets(i));
             }
         }
         else
@@ -228,11 +228,11 @@ bool velControlThread::init(PolyDriver *d, std::string partName, std::string rob
     accs.resize(nJoints);
     Vector speeds;
     speeds.resize(nJoints);
-    ivel->getRefAccelerations(accs.data());
+    ivel->getTrajAccelerations(accs.data());
     accs=ACCELERATIONS;
-    ivel->setRefAccelerations(accs.data());
+    ivel->setTrajAccelerations(accs.data());
     speeds=50.0;
-    ipos->setRefSpeeds(speeds.data());
+    ipos->setTrajSpeeds(speeds.data());
 
     encoders.resize(nJoints);
     encoders_speed.resize(nJoints);

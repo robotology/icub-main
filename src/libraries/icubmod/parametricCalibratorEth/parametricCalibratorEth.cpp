@@ -928,7 +928,7 @@ bool parametricCalibratorEth::goToStartupPosition(int j)
     
     yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << legacyStartupPosition.positions[j] << \
                                 "desired speed: " << legacyStartupPosition.velocities[j] <<" )";
-    ret = iPosition->setRefSpeed(j, legacyStartupPosition.velocities[j]);
+    ret = iPosition->setTrajSpeed(j, legacyStartupPosition.velocities[j]);
     ret &= iPosition->positionMove(j, legacyStartupPosition.positions[j]);
     return ret;
 }
@@ -968,7 +968,7 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j, std::list<int> &fa
         iEncoders->getEncoder(j, &angj);
         iPosition->checkMotionDone(j, &done);
         iControlMode->getControlMode(j, &mode);
-        iPids->getPidOutput(VOCAB_PIDTYPE_POSITION,j, &output);
+        iPids->getPidOutput(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,j, &output);
         
         if((skipReCalibration) && (mode == VOCAB_CM_IDLE))
         {
@@ -1162,7 +1162,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 
 bool parametricCalibratorEth::moveAndCheck(PositionSequence &data)
 {
-    iPosition->setRefSpeeds(data.velocities.data());
+    iPosition->setTrajSpeeds(data.velocities.data());
     iPosition->positionMove(data.positions.data());
 
     bool done    = false;
@@ -1191,7 +1191,7 @@ bool parametricCalibratorEth::moveAndCheck_legacy(PositionSequence &data, std::v
     {
         if (cannotPark[(*joint)] ==false)
         {
-            iPosition->setRefSpeed((*joint), data.velocities[(*joint)]);
+            iPosition->setTrajSpeed((*joint), data.velocities[(*joint)]);
             iPosition->positionMove((*joint), data.positions[(*joint)]);
         }
     }
@@ -1346,13 +1346,13 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
 
     if(useLegacyParking) // legacy version: can be removed when legacy will not be supported anymore
     {
-        iPosition->setRefSpeed (j, legacyStartupPosition.velocities[j]);
+        iPosition->setTrajSpeed (j, legacyStartupPosition.velocities[j]);
         iPosition->positionMove(j, legacyStartupPosition.positions[j]);
     }
     else
     {
         // Send the position and velocities of the last sequence step
-        iPosition->setRefSpeed (j, parkingSequence.rbegin()->velocities[j]);
+        iPosition->setTrajSpeed (j, parkingSequence.rbegin()->velocities[j]);
         iPosition->positionMove(j, parkingSequence.rbegin()->positions[j]);
     }
 

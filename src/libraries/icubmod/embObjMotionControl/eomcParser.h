@@ -387,7 +387,49 @@ public:
     {
         //delete (usernamePidSelected);
     }
+    void print() const
+    {
+        yInfo("PidInfo:");
+        yInfo("  pid: [kp=%f, ki=%f, kd=%f, max_int=%f, max_output=%f, scale=%f, offset=%f, stiction_up_val=%f, stiction_down_val=%f, kff=%f]",
+              pid.kp, pid.ki, pid.kd, pid.max_int, pid.max_output, pid.scale, pid.offset, pid.stiction_up_val, pid.stiction_down_val, pid.kff);
 
+        // Convert enums to string
+        auto fbkUnitsToString = [](yarp::dev::PidFeedbackUnitsEnum e) -> std::string {
+            switch(e) {
+                case yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS : return "RAW_MACHINE_UNITS";
+                case yarp::dev::PidFeedbackUnitsEnum::METRIC : return "METRIC";
+                
+                default: return "UNKNOWN";
+            }
+        };
+        auto outUnitsToString = [](yarp::dev::PidOutputUnitsEnum e) -> std::string {
+            switch(e) {
+                case yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS: return "RAW_MACHINE_UNITS";
+                case yarp::dev::PidOutputUnitsEnum::POSITION_METRIC : return "POSITION METRIC";
+                case yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC : return "VELOCITY METRIC";
+                case yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT : return "PWM";
+                case yarp::dev::PidOutputUnitsEnum::TORQUE_METRIC : return "NEWTON_METERS";
+                case yarp::dev::PidOutputUnitsEnum::CURRENT_METRIC : return "CURRENT METRIC";
+                default: return "UNKNOWN";
+            }
+        };
+        auto outTypeToString = [](eOmc_ctrl_out_type_t e) -> std::string {
+            switch(e) {
+                case eomc_ctrl_out_type_n_a: return "n/a";
+                case eomc_ctrl_out_type_pwm: return "pwm";
+                case eomc_ctrl_out_type_cur: return "cur";
+                case eomc_ctrl_out_type_vel: return "vel_pwm";
+                case eomc_ctrl_out_type_vel_cur: return "vel_cur";
+                default: return "UNKNOWN";
+            }
+        };
+
+        yInfo("  fbk_PidUnits: %s", fbkUnitsToString(fbk_PidUnits).c_str());
+        yInfo("  out_PidUnits: %s", outUnitsToString(out_PidUnits).c_str());
+        yInfo("  out_type: %s", outTypeToString(out_type).c_str());
+        yInfo("  usernamePidSelected: %s", usernamePidSelected.c_str());
+        yInfo("  enabled: %s", enabled ? "true" : "false");
+    }
     //void dumpdata(void);
 
 };
@@ -546,8 +588,14 @@ typedef struct
     double         warningTemperatureLimit;
 } temperatureLimits_t; // limits expressed as raw values after conversion is applied
 
-//template <class T>
 
+enum class pidParserType_t
+{
+    Simple,    // parse only the param in parsePidsGroupSimple function
+    Extended, // parse the param in parsePidsGroupExtended function
+    Deluxe,    // parse the param in parsePidsGroupDeluxe function
+    FOC2
+};
 class Parser
 {
 
@@ -557,7 +605,8 @@ private:
     bool _verbosewhenok;
 
     std::map<std::string, Pid_Algorithm*> minjerkAlgoMap;
-    //std::map<std::string, Pid_Algorithm*> directAlgoMap;
+    std::map<std::string, Pid_Algorithm*> directPosAlgoMap;
+    std::map<std::string, Pid_Algorithm*> directVelAlgoMap;
     std::map<std::string, Pid_Algorithm*> torqueAlgoMap;
 
     //std::map<std::string, Pid_Algorithm*> currentAlgoMap;
@@ -566,11 +615,10 @@ private:
     std::vector<std::string> _positionControlLaw;
     std::vector<std::string> _velocityControlLaw;
     std::vector<std::string> _mixedControlLaw;
-    //std::vector<std::string> _posDirectControlLaw;
-    //std::vector<std::string> _velDirectControlLaw;
     std::vector<std::string> _torqueControlLaw;
     std::vector<std::string> _currentControlLaw;
-    std::vector<std::string> _speedControlLaw;
+    std::vector<std::string> _positionDirectControlLaw;
+    std::vector<std::string> _velocityDirectControlLaw;
 
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
@@ -587,28 +635,27 @@ private:
 
     //PID parsing functions
     bool parseControlsGroup(yarp::os::Searchable &config);
-    
+    bool getOutputType(eOmc_ctrl_out_type_t &out_type, std::string outputtype_str);
+    bool parsePidValues(yarp::os::Bottle& b_pid, std::string controlLaw, eOmc_ctrl_out_type_t outType, std::map<std::string, Pid_Algorithm*> &pidMap, pidParserType_t parserType);
     bool parseSelectedPositionControl(yarp::os::Searchable &config);
     bool parseSelectedVelocityControl(yarp::os::Searchable &config);
     bool parseSelectedMixedControl(yarp::os::Searchable &config);
-    //bool parseSelectedPosDirectControl(yarp::os::Searchable &config);
-    //bool parseSelectedVelDirectControl(yarp::os::Searchable &config);
     bool parseSelectedTorqueControl(yarp::os::Searchable &config);
-
+    bool parseSelectedPositionDirectControl(yarp::os::Searchable &config);
+    bool parseSelectedVelocityDirectControl(yarp::os::Searchable &config);
     bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids);
-    bool parseSelectedSpeedPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids);
 
-    bool parsePid_minJerk_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
-    bool parsePid_minJerk_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
-    bool parsePid_minJerk_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
+    // bool parsePid_minJerk_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
+    // bool parsePid_minJerk_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
+    // bool parsePid_minJerk_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
 
-    //bool parsePid_direct_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
-    //bool parsePid_direct_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
-    //bool parsePid_direct_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
+    // bool parsePid_direct_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
+    // bool parsePid_direct_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
+    // bool parsePid_direct_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
 
-    bool parsePid_torque_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
-    bool parsePid_torque_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
-    bool parsePid_torque_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
+    // bool parsePid_torque_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
+    // bool parsePid_torque_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
+    // bool parsePid_torque_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
 
     bool parsePidsGroup2FOC(yarp::os::Bottle& pidsGroup, Pid myPid[]);
     bool parsePidsGroupSimple(yarp::os::Bottle& pidsGroup, Pid myPid[]);
@@ -616,7 +663,7 @@ private:
     bool parsePidsGroupDeluxe(yarp::os::Bottle& pidsGroup, Pid myPid[]);
 
     bool parsePidsGroup(yarp::os::Bottle& pidsGroup, yarp::dev::Pid myPid[], std::string prefix);
-    bool getCorrectPidForEachJoint(PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids);
+    bool getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, PidInfo *pDirpids, PidInfo *vDirpids,TrqPidInfo *tpids);
     bool parsePidUnitsType(yarp::os::Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
 
     bool checkJointTypes(PidInfo *pids, const std::string &pid_type);
@@ -648,7 +695,7 @@ public:
     Parser(int numofjoints, std::string boardname);
     ~Parser();
 
-    bool parsePids(yarp::os::Searchable &config, PidInfo *ppids/*, PidInfo *vpids*/, TrqPidInfo *tpids, PidInfo *cpids, PidInfo *spids, bool lowLevPidisMandatory);
+    bool parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vpids, PidInfo *pDirpids, PidInfo *vDirpids, TrqPidInfo *tpids, PidInfo *cpids, bool lowLevPidisMandatory);
     bool parseFocGroup(yarp::os::Searchable &config, focBasedSpecificInfo_t *foc_based_info, std::string groupName, std::vector<std::unique_ptr<eomc::ITemperatureSensor>>& temperatureSensorsVector);
     //bool parseCurrentPid(yarp::os::Searchable &config, PidInfo *cpids);//deprecated
     bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &jointtoset);
