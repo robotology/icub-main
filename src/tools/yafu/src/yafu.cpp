@@ -1,4 +1,23 @@
-#include "test.h"
+/* 
+ * Copyright (C)2013  iCub Facility - Istituto Italiano di Tecnologia
+ * Author: SATHISH KUMAR S
+ * email:  sathish.subramani@iit.it
+ * github: https://github.com/sksubiit
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
+ *
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+ * License for more details
+*/
+
+#include "yafu.h"
 
 // helper: receive a 4-byte eOuprot_cmdREPLY_t for dest_ ip and check opc
 bool simpleEthClient::recvReplyForIP(uint8_t expected_opc, int timeout_ms, eOuprot_result_t &out_res)
@@ -1283,7 +1302,7 @@ int main(int argc, char *argv[])
         } else if (is_ip(b)) {
             ip = b; cmd = a;
         } else {
-            std::cerr << "Usage: ./YAFU <ip> <command>  OR  ./YAFU <command> <ip>\n";
+            std::cerr << "Usage: ./yafu <ip> <command>  OR  ./yafu <command> <ip>\n";
             std::cerr << "Commands: discover, maintenance|jump2updater, application|def2run_application, restart, blink, program\n";
             return 1;
         }
@@ -1316,6 +1335,6 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    std::cerr << "Usage: ./YAFU <ip> <command>  OR  ./YAFU <command> <ip>\n";
+    std::cerr << "Usage: ./yafu <ip> <command>  OR  ./yafu <command> <ip>\n";
     return 1;
 }

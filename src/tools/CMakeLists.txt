@@ -15,7 +15,7 @@ add_subdirectory(fakeRawDataPublisherTester)
 add_subdirectory(canLoader)
 add_subdirectory(ethLoader)
 add_subdirectory(strainCalib)
-add_subdirectory(YAFU)
+add_subdirectory(yafu)
 
 # Tools available both for Qt5
 if(ICUB_USE_Qt5)
