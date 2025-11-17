@@ -45,6 +45,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <cstdlib>
 
 #include "EoBoards.h"  
 #include "EoUpdaterProtocol.h"
@@ -91,6 +92,7 @@ private:
     struct sockaddr_in src_;
 
     // helpers for programming
+    static std::string resolveFirmwareInfoXml();
     bool recvReplyForIP(uint8_t expected_opc, int timeout_ms, eOuprot_result_t &out_res);
     bool findFirmwareForBoard(const std::string &boardname, std::string &out_hexpath);
     bool sendPROG_START(eOuprot_partition2prog_t partition, eOuprot_result_t &out_res);

@@ -19,6 +19,81 @@
 
 #include "yafu.h"
 
+
+// new helper: resolve installed or in-tree firmware.info.xml path
+std::string simpleEthClient::resolveFirmwareInfoXml()
+{
+    // 1) Environment Variable Override (Highest Priority)
+    // This provides an explicit, reliable way to specify the file path, ideal for production.
+    const char *env = getenv("YAFU_FIRMWARE_INFO");
+    if (env && env[0] != '\0') {
+        struct stat st;
+        if (stat(env, &st) == 0) {
+            std::cerr << "[Resolver] Found firmware info via 'YAFU_FIRMWARE_INFO' environment variable." << std::endl;
+            return std::string(env);
+        }
+    }
+
+    // 2) AMENT_PREFIX_PATH / Package-Style Installed Locations
+    // This is the standard way to find files in relocatable installations (e.g., in a build/install or /opt/.. dir).
+    std::vector<std::string> prefixes;
+    const char *ament = getenv("AMENT_PREFIX_PATH");
+    if (ament && ament[0] != '\0') {
+        std::string s(ament);
+        std::stringstream ss(s);
+        std::string item;
+        while (std::getline(ss, item, ':')) if (!item.empty()) prefixes.push_back(item);
+    }
+
+    // Also check relative to the executable for local installs (e.g., bin/../share)
+    char exe_buf[PATH_MAX];
+    ssize_t elen = readlink("/proc/self/exe", exe_buf, sizeof(exe_buf) - 1);
+    if (elen > 0) {
+        exe_buf[elen] = '\0';
+        std::string exe_s(exe_buf);
+        size_t pos = exe_s.find_last_of('/');
+        if (pos != std::string::npos) {
+            std::string exe_dir = exe_s.substr(0, pos);
+            prefixes.push_back(exe_dir + "/.."); // for bin/ -> share/ layout
+        }
+    }
+
+    for (const auto &p : prefixes) {
+        std::string cand1 = p + "/share/icub-firmware/info/firmware.info.xml";
+        std::string cand2 = p + "/share/ICUB/info/firmware.info.xml";
+        struct stat st;
+        if (stat(cand1.c_str(), &st) == 0) {
+            std::cerr << "[Resolver] Found firmware info via installed prefix path (AMENT_PREFIX_PATH or exe-relative)." << std::endl;
+            return cand1;
+        }
+        if (stat(cand2.c_str(), &st) == 0) {
+            std::cerr << "[Resolver] Found firmware info via installed prefix path (AMENT_PREFIX_PATH or exe-relative)." << std::endl;
+            return cand2;
+        }
+    }
+
+    // 3) In-Tree Development Path (Last Resort for Developer Convenience)
+    // This allows developers to run the tool from the source/build tree without installing.
+    std::vector<std::string> repo_candidates = {
+        "../src/icub-firmware-build/info/firmware.info.xml",
+        "../../src/icub-firmware-build/info/firmware.info.xml"
+    };
+    for (const auto &c : repo_candidates) {
+        struct stat st;
+        if (stat(c.c_str(), &st) == 0) {
+            std::cerr << "[Resolver] Found firmware info via in-tree development path." << std::endl;
+            return c;
+        }
+    }
+
+    // If no file is found via the explicit methods above, fail clearly.
+    std::cerr << "[Resolver] ERROR: Could not find firmware.info.xml." << std::endl;
+    std::cerr << "[Resolver] Please ensure that YAFU_FIRMWARE_INFO or AMENT_PREFIX_PATH is set correctly," << std::endl;
+    std::cerr << "[Resolver] or that you are running from a valid development workspace." << std::endl;
+    return std::string(); // not found
+}
+
+
 // helper: receive a 4-byte eOuprot_cmdREPLY_t for dest_ ip and check opc
 bool simpleEthClient::recvReplyForIP(uint8_t expected_opc, int timeout_ms, eOuprot_result_t &out_res)
 {
@@ -52,8 +127,8 @@ bool simpleEthClient::recvReplyForIP(uint8_t expected_opc, int timeout_ms, eOupr
 // search firmware.info.xml for <board type="boardname"> and return the file path (relative resolved)
 bool simpleEthClient::findFirmwareForBoard(const std::string &boardname, std::string &out_hexpath)
 {
-    // path hardcoded relative to repo; adapt if needed
-    const char *xmlpath = "../../../../../icub-firmware-build/info/firmware.info.xml";
+    std::string xmlpath = resolveFirmwareInfoXml();
+    if (xmlpath.empty()) return false;
     std::ifstream f(xmlpath);
     if (!f.is_open()) return false;
     std::string line;
@@ -117,7 +192,8 @@ bool simpleEthClient::findFirmwareForBoard(const std::string &boardname, std::st
 bool simpleEthClient::findFirmwareForBoardWithVersion(const std::string &boardname, std::string &out_hexpath, int &out_major, int &out_minor)
 {
     out_major = out_minor = -1;
-    const char *xmlpath = "../../../../../icub-firmware-build/info/firmware.info.xml";
+    std::string xmlpath = resolveFirmwareInfoXml();
+    if (xmlpath.empty()) return false;
     std::ifstream f(xmlpath);
     if (!f.is_open()) return false;
 
@@ -1242,6 +1318,8 @@ int simpleEthClient::orchestrateParallelProgram()
 
     return prog_failed.empty() ? 0 : 3;
 }
+
+
 
 
 int main(int argc, char *argv[])
