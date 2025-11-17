@@ -74,7 +74,7 @@ private:
 public:
     bool getAxisName(uint32_t entityId, std::string &axisName);
     bool getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std::string &encoderTypeName);
-    bool getEntityControlModeName(uint32_t jomoId, eOmc_controlmode_t control_mode, std::string &controlModeName, eObool_t compact_string = eobool_true);
+    bool getEntityControlModeName(uint32_t jomoId, eOenum08_t control_mode, std::string &controlModeName, eObool_t compact_string = eobool_true);
 };
 
 

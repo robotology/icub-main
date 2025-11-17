@@ -861,7 +861,7 @@ void MotionControlParser::parseInfo()
             int32_t position_feedback = (m_dnginfo.param64 & 0xffffffff00000000) >> 32;
             float position_feedback_converted = static_cast<float>(position_feedback) * iCubDegreesToDegreesFactor;
             std::string ref_controlmode_str = {};
-            m_entityNameProvider.getEntityControlModeName(joint_num, static_cast<eOmc_controlmode_t>(ref_controlmode), ref_controlmode_str, false);
+            m_entityNameProvider.getEntityControlModeName(joint_num, static_cast<eOenum08_t>(ref_controlmode), ref_controlmode_str, false);
 
             m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
 

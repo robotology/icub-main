@@ -170,7 +170,7 @@ bool EntityNameProvider::getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos
     return (m_MC_ethRes->getEncoderTypeName(jomoId, pos, encoderTypeName));
 }
 
-bool EntityNameProvider::getEntityControlModeName(uint32_t jomoId, eOmc_controlmode_t control_mode, std::string &controlModeName, eObool_t compact_string)
+bool EntityNameProvider::getEntityControlModeName(uint32_t jomoId, eOenum08_t control_mode, std::string &controlModeName, eObool_t compact_string)
 {
     if (m_MC_ethRes == nullptr)  
     {
