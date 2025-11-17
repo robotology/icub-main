@@ -1,3 +1,9 @@
+# Copyright: (C) 2025 iCub Facility - Istituto Italiano di Tecnologia
+# Authors: SATHISH KUMAR S
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+# yafu - Yet_Another_Firmware_Updater
+# version: 1.0 - 2025/11/17
+
 #!/bin/bash
 
 # This script discovery for multiple boards in parallel.
