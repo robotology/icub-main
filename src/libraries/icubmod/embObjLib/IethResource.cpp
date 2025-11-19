@@ -81,6 +81,12 @@ bool IethResource::getEncoderTypeName(uint32_t jomoId, eOmc_position_t pos, std:
     return true;
 }
 
+bool IethResource::getEntityControlModeName(uint32_t jomoId, eOenum08_t control_mode, std::string &controlModeName, eObool_t compact_string)
+{
+    controlModeName.clear();
+    return true;
+}
+
 
 // - end-of-file (leave a blank line after)----------------------------------------------------------------------------
 

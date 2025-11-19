@@ -12,12 +12,17 @@
 #include "embot_core_binary.h"
 #include "serviceParser.h"
 #include <yarp/os/Time.h>
-#include <algorithm>
 
+#include <algorithm>
+#include <sstream>
+#include <iomanip>
 
 using namespace Diagnostic::LowLevel;
 
-
+constexpr uint32_t iCubDegreesPerRevolution = 65536;
+constexpr uint32_t degreesPerRevolution = 360;
+constexpr float iCubDegreesToDegreesFactor = static_cast<float>(degreesPerRevolution) / static_cast<float>(iCubDegreesPerRevolution);
+constexpr float degreesToICubDegreesFactor = static_cast<float>(iCubDegreesPerRevolution) / static_cast<float>(degreesPerRevolution);
 
 
 /**************************************************************************************************************************/
@@ -849,6 +854,26 @@ void MotionControlParser::parseInfo()
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
 
+        case eoerror_value_MC_joint_software_limit:
+        {
+            uint16_t joint_num = m_dnginfo.param16;
+            int8_t ref_controlmode = m_dnginfo.param64 & 0x00ff;
+            int32_t position_feedback = (m_dnginfo.param64 & 0xffffffff00000000) >> 32;
+            float position_feedback_converted = static_cast<float>(position_feedback) * iCubDegreesToDegreesFactor;
+            std::string ref_controlmode_str = {};
+            m_entityNameProvider.getEntityControlModeName(joint_num, static_cast<eOenum08_t>(ref_controlmode), ref_controlmode_str, false);
+
+            m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
+
+            std::stringstream ss;
+            ss << " " << m_dnginfo.baseMessage
+               << " (Joint=" << m_dnginfo.baseInfo.axisName
+               << " (NIB=" << joint_num
+               << "), Position_feedback=" << std::fixed << std::setprecision(4) << position_feedback_converted
+               << ", Ref_controlmode=" << ref_controlmode_str << ")";
+            m_dnginfo.baseInfo.finalMessage.append(ss.str());
+            
+        } break;
         case EOERROR_VALUE_DUMMY:
         {
             m_dnginfo.baseInfo.finalMessage.append(": unrecognised eoerror_category_MotionControl error value.");
