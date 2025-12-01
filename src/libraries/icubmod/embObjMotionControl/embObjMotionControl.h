@@ -391,8 +391,7 @@ private:
     void debugUtil_printJointsetInfo(void);
 
     bool isTorqueControlEnabled(int joint);
-    bool isVelocityControlEnabled(int joint);
-
+    
     bool iNeedCouplingsInfo(void); //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
 
     bool getJointConfiguration(int joint, eOmc_joint_config_t *jntCfg_ptr);
@@ -419,34 +418,35 @@ private:
     void cleanup(void);
     
     //used in pid interface
-    bool helper_setPosPidRaw( int j, const Pid &pid);
-    bool helper_getPosPidRaw(int j, Pid *pid);
-    bool helper_getPosPidsRaw(Pid *pid);
+    ReturnValue helper_setPosPidRaw( int j, const Pid &pid);
+    ReturnValue helper_getPosPidRaw(int j, Pid *pid);
+    ReturnValue helper_getPosPidsRaw(Pid *pid);
     
     //used in torque control interface
-    bool helper_setTrqPidRaw( int j, const Pid &pid);
-    bool helper_getTrqPidRaw(int j, Pid *pid);
-    bool helper_getTrqPidsRaw(Pid *pid);
+    ReturnValue helper_setTrqPidRaw( int j, const Pid &pid);
+    ReturnValue helper_getTrqPidRaw(int j, Pid *pid);
+    ReturnValue helper_getTrqPidsRaw(Pid *pid);
     
     //used in velocity control interface
-    bool helper_setVelPidRaw( int j, const Pid &pid);
-    bool helper_getVelPidRaw(int j, Pid *pid);
-    bool helper_getVelPidsRaw(Pid *pid);
+    ReturnValue helper_setVelPidRaw( int j, const Pid &pid);
+    ReturnValue helper_getVelPidRaw(int j, Pid *pid);
+    ReturnValue helper_getVelPidsRaw(Pid *pid);
     
     //used in current control interface
-    bool helper_setCurPidRaw(int j, const Pid &pid);
-    bool helper_getCurPidRaw(int j, Pid *pid);
-    bool helper_getCurPidsRaw(Pid *pid);
+    ReturnValue helper_setCurPidRaw(int j, const Pid &pid);
+    ReturnValue helper_getCurPidRaw(int j, Pid *pid);
+    ReturnValue helper_getCurPidsRaw(Pid *pid);
     
     //used in low level speed control interface
-    bool helper_setSpdPidRaw(int j, const Pid &pid);
-    bool helper_getSpdPidRaw(int j, Pid *pid);
-    bool helper_getSpdPidsRaw(Pid *pid);
+    ReturnValue helper_setSpdPidRaw(int j, const Pid &pid);
+    ReturnValue helper_getSpdPidRaw(int j, Pid *pid);
+    ReturnValue helper_getSpdPidsRaw(Pid *pid);
     
     bool checkCalib14RotationParam(int32_t calib_param4);
 
     // used in rawvaluespublisher interface
     bool getRawData_core(std::string key, std::vector<std::int32_t> &data);
+    std::string controlModeType2String(eOmc_controlmode_t type);
     
 public:
 
