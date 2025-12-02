@@ -1637,7 +1637,7 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::getFPSMaskDC1394(unsigned int& val)
 // 16
 yarp::dev::ReturnValue CFWCamera_DR2_2::getFPSDC1394(unsigned int& val)
 {
-    if (!m_pCamera) val = 0; return yarp::dev::ReturnValue_ok;
+    if (!m_pCamera) { val = 0; return yarp::dev::ReturnValue::return_code::return_value_error_generic; }
 
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
@@ -1645,7 +1645,7 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::getFPSDC1394(unsigned int& val)
     { 
         yError("LINE: %d\n",__LINE__); 
         val = 0;
-        return yarp::dev::ReturnValue_ok;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     }
 
     dc1394framerate_t fps; 
@@ -1668,8 +1668,8 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::setFPSDC1394(int fps)
         return yarp::dev::ReturnValue::return_code::return_value_error_generic; 
     }
 
-    fps = DC1394_SUCCESS==dc1394_video_set_framerate(m_pCamera,(dc1394framerate_t)((int)fps+DC1394_FRAMERATE_MIN));    
-    return yarp::dev::ReturnValue_ok;
+    bool ok = (DC1394_SUCCESS==dc1394_video_set_framerate(m_pCamera,(dc1394framerate_t)((int)fps+DC1394_FRAMERATE_MIN)));
+    return ok ? yarp::dev::ReturnValue_ok : yarp::dev::ReturnValue::return_code::return_value_error_generic;
 }
 
 // 18
@@ -1686,8 +1686,8 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::getISOSpeedDC1394(unsigned int& val)
 yarp::dev::ReturnValue CFWCamera_DR2_2::setISOSpeedDC1394(int speed)
 {   
     if (!m_pCamera) return yarp::dev::ReturnValue::return_code::return_value_error_generic;
-    speed = DC1394_SUCCESS==dc1394_video_set_iso_speed(m_pCamera,(dc1394speed_t)(speed+DC1394_ISO_SPEED_MIN));
-    return yarp::dev::ReturnValue_ok;
+    bool ok = (DC1394_SUCCESS==dc1394_video_set_iso_speed(m_pCamera,(dc1394speed_t)(speed+DC1394_ISO_SPEED_MIN)));
+    return ok ? yarp::dev::ReturnValue_ok : yarp::dev::ReturnValue::return_code::return_value_error_generic;
 }
 
 // 20
@@ -1986,24 +1986,19 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::setTransmissionDC1394(bool bTxON)
 // 31
 yarp::dev::ReturnValue CFWCamera_DR2_2::getTransmissionDC1394(bool& bTxON)
 {
-    // Doubts here. The dc1394 api should be derived from #include <dc1394/dc1394.h>, which as far as I understood
-    // is an external library (not part of YARP).
-
-    if (!m_pCamera) bTxON = false; return yarp::dev::ReturnValue::return_code::return_value_error_generic;
+    if (!m_pCamera) { bTxON = false; return yarp::dev::ReturnValue::return_code::return_value_error_generic; }
     
-    // dc1394switch_t bTxON; // This parameter shadown the input one, but dc1394 api needs it!
-    // I changed the implementation to use a temporary variable.
-
     dc1394switch_t bTxON_tmp;
+    dc1394error_t err = dc1394_video_get_transmission(m_pCamera,&bTxON_tmp);
+    if (err != DC1394_SUCCESS)
+    {
+        bTxON = false;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
+    }
 
-    bTxON = dc1394_video_get_transmission(m_pCamera,&bTxON_tmp); //
-
-    return bTxON ? yarp::dev::ReturnValue_ok : yarp::dev::ReturnValue::return_code::return_value_error_generic;
-
+    bTxON = (bTxON_tmp == DC1394_ON);
+    return yarp::dev::ReturnValue_ok;
 }
-
-// 32 setBayer
-// 33 getBayer
 
 // 34
 yarp::dev::ReturnValue CFWCamera_DR2_2::setBroadcastDC1394(bool onoff)
@@ -2221,7 +2216,7 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int bpp
     double bpp_tmp=bytesPerPixel(colorCoding); // And here used for computation. Should we rename this to e.g. "double bpPixel?
     double newBandOcc=double(fps*xDim*yDim)*bpp_tmp;
 
-    unsigned int bytesPerPacket=(unsigned int)(0.01*double(bpp_tmp)*double(busBand)*double(maxBytesPerPacket)/newBandOcc);
+    unsigned int bytesPerPacket=(unsigned int)(0.01*double(bpp)*double(busBand)*double(maxBytesPerPacket)/newBandOcc);
     bytesPerPacket=(bytesPerPacket/unitBytesPerPacket)*unitBytesPerPacket;
     if (bytesPerPacket>maxBytesPerPacket)
     {
