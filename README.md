@@ -13,6 +13,7 @@ This repository is maintained by:
 
 | | |
 |:---:|:---:|
+| [<img src="https://github.com/valegagge.png" width="40">](https://github.com/valegagge) | [@valegagge](https://github.com/valegagge) |
 | [<img src="https://github.com/pattacini.png" width="40">](https://github.com/pattacini) | [@pattacini](https://github.com/pattacini) |
 
 See COPYING and AUTHORS for licensing info, authors and copyright holders.

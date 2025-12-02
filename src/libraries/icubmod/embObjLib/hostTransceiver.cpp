@@ -1053,18 +1053,20 @@ void HostTransceiver::eoprot_override_sk(void)
 void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(EOreceiver *r)
 {  
     const eOreceiver_seqnum_error_t * err = eo_receiver_GetSequenceNumberError(r);
+    char ipv4str[32] = {};
+    eo_common_ipv4addr_to_string(err->remipv4addr, ipv4str, sizeof(ipv4str));
+    std::string ipv4str_s(ipv4str);
     long long unsigned int exp = err->exp_seqnum;
     long long unsigned int rec = err->rec_seqnum;
     long long unsigned int timeoftxofcurrent = err->timeoftxofcurrent;
-    long long unsigned int timeoftxofprevious = err->timeoftxofprevious;
-    char *ipaddr = (char*)&err->remipv4addr;
-    //printf("\nERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
-    char errmsg[256] = {0};
-    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::parse() detected an ERROR in sequence number from IP = %d.%d.%d.%d. Expected: %llu, Received: %llu, Missing: %llu, Prev Frame TX at %llu us, This Frame TX at %llu us",
-                                    ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3],
-                                    exp, rec, rec-exp,
-                                    timeoftxofprevious, timeoftxofcurrent);
-    yError() << errmsg;
+    long long unsigned int timeoftxofprevious = err->timeoftxofprevious; 
+    yError() << "hostTransceiver()::parse() detected an ERROR in sequence number from IP =" 
+             << ipv4str_s
+	     << "Expected:" << exp
+             << "- Received:" << rec
+             << "- Missing:" << (rec - exp)
+             << "- Prev Frame TX at" << timeoftxofprevious << "us"
+             << "- This Frame TX at" << timeoftxofcurrent << "us";	     
 }
 
 
@@ -1082,17 +1084,22 @@ void cpp_protocol_callback_incaseoferror_invalidFrame(EOreceiver *r)
 {
     const eOreceiver_invalidframe_error_t * err = eo_receiver_GetInvalidFrameError(r);
     char errmsg[256] = {0};
-    char *ipaddr = (char*)&err->remipv4addr;
+    char ipv4str[32] = {};
+    eo_common_ipv4addr_to_string(err->remipv4addr, ipv4str, sizeof(ipv4str));
+    std::string ipv4str_s(ipv4str);
     tmpStructROPframeHeader_t *header = (tmpStructROPframeHeader_t*)err->ropframe;
     long long unsigned int ageofframe = header->ageofframe;
     long long unsigned int sequencenumber = header->sequencenumber;
     uint16_t ropframesize = 0;
     eo_ropframe_Size_Get(err->ropframe, &ropframesize);
-    //snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::parse() detected an ERROR of type INVALID FRAME from IP = TBD");
-    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::parse() detected an ERROR of type INVALID FRAME from IP = %d.%d.%d.%d", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]);
-    yError() << errmsg;
-    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::parse() detected: ropframesize = %d, ropsizeof = %d, ropsnumberof = %d, ageoframe = %llu, sequencenumber = %llu", ropframesize, header->ropssizeof, header->ropsnumberof, ageofframe, sequencenumber);
-    yDebug() << errmsg;
+
+    yError() << "hostTransceiver()::parse() detected an ERROR of type INVALID FRAME from IP =" << ipv4str_s;
+    yError() << "hostTransceiver()::parse() detected:"
+             << "ropframesize ="   << ropframesize
+             << "ropsizeof ="      << static_cast<int>(header->ropssizeof)
+             << "ropnumberof ="    << static_cast<int>(header->ropsnumberof)
+             << "ageofframe ="     << ageofframe
+             << "sequencenumber =" << sequencenumber;
 
 }
 

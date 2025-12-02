@@ -1123,10 +1123,10 @@ bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(yarp::dev::PidFeedbac
     return true;
 }
 
-bool embObjMotionControl::isTorqueControlEnabled(int joint)
-{
-    return (_trq_pids[joint].enabled);
-}
+// bool embObjMotionControl::isTorqueControlEnabled(int joint)
+// {
+//     return (_trq_pids[joint].enabled);
+// }
 
 void embObjMotionControl::updateDeadZoneWithDefaultValues(void)
 {
@@ -1835,6 +1835,22 @@ bool embObjMotionControl::getEncoderTypeName(uint32_t jomoId, eOmc_position_t po
     else
     {
         encoderTypeName = "ERROR";
+        return false;
+    }
+}
+
+bool embObjMotionControl::getEntityControlModeName(uint32_t entityId, eOenum08_t control_mode, std::string &controlModeName, eObool_t compact_string)
+{
+    controlModeName.clear();
+    
+    if ((entityId>= 0) && (entityId< _njoints))
+    {
+        controlModeName = eomc_controlmode2string(control_mode, compact_string);
+        return true;
+    }
+    else
+    {
+        controlModeName = eomc_controlmode2string(eomc_ctrlmval_unknownError, compact_string);
         return false;
     }
 }

@@ -495,9 +495,8 @@ bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config) //
         Bottle botControlLaw = config.findGroup(_positionDirectControlLaw[i]);
         if (botControlLaw.isNull())
         {
-            // if there is no position direct control for this joint, just continue
-            yWarning() << "embObjMC BOARD " << _boardname << "Missing " << _positionDirectControlLaw[i].c_str();
-            return true;
+            yError() << "embObjMC BOARD " << _boardname << "Missing " << _positionDirectControlLaw[i].c_str();
+            return false;
         }
 
         // 2) read control_law
