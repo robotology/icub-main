@@ -324,8 +324,7 @@ ReturnValue DragonflyDeviceDriver2::setOperationModeDC1394(bool b1394b)
 }
 ReturnValue DragonflyDeviceDriver2::getOperationModeDC1394(bool& b1394)
 {
-	b1394 = RES(system_resources)->getOperationModeDC1394(b1394);
-	return ReturnValue_ok;
+	return RES(system_resources)->getOperationModeDC1394(b1394) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 ReturnValue DragonflyDeviceDriver2::setTransmissionDC1394(bool bTxON)
 {
@@ -333,8 +332,7 @@ ReturnValue DragonflyDeviceDriver2::setTransmissionDC1394(bool bTxON)
 }
 ReturnValue DragonflyDeviceDriver2::getTransmissionDC1394(bool& bTxON)
 {
-	bTxON = RES(system_resources)->getTransmissionDC1394(bTxON);
-	return ReturnValue_ok;
+	return RES(system_resources)->getTransmissionDC1394(bTxON) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 /*
 bool DragonflyDeviceDriver2::setBayerDC1394(bool bON)
@@ -372,8 +370,7 @@ ReturnValue DragonflyDeviceDriver2::setBytesPerPacketDC1394(unsigned int bpp)
 }
 ReturnValue DragonflyDeviceDriver2::getBytesPerPacketDC1394(unsigned int& bpp)
 {
-	bpp = RES(system_resources)->getBytesPerPacketDC1394(bpp);
-	return ReturnValue_ok;
+	return RES(system_resources)->getBytesPerPacketDC1394(bpp) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
 //IVisualParams

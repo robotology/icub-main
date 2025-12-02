@@ -1695,7 +1695,7 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::getColorCodingMaskDC1394(unsigned int vi
 {
     if (!m_pCamera) val = 0; return yarp::dev::ReturnValue::return_code::return_value_error_generic;
 
-    if (mRawDriver) val = 1<<(DC1394_COLOR_CODING_RAW8-DC1394_COLOR_CODING_MIN); return yarp::dev::ReturnValue();//return yarp::dev::ReturnValue_ok;
+    if (mRawDriver) { val = 1<<(DC1394_COLOR_CODING_RAW8-DC1394_COLOR_CODING_MIN); return yarp::dev::ReturnValue_ok; }
 
     dc1394video_mode_t vm=(dc1394video_mode_t)(video_mode+DC1394_VIDEO_MODE_MIN);
 
