@@ -1973,7 +1973,8 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::getOperationModeDC1394(bool& b1394)
     if (!m_pCamera) return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     dc1394operation_mode_t b1394b;
     dc1394_video_get_operation_mode(m_pCamera,&b1394b);
-    return (b1394b==DC1394_OPERATION_MODE_1394B) ? yarp::dev::ReturnValue_ok : yarp::dev::ReturnValue::return_code::return_value_error_generic;
+    b1394 = (b1394b == DC1394_OPERATION_MODE_1394B);
+    return b1394 ? yarp::dev::ReturnValue_ok : yarp::dev::ReturnValue::return_code::return_value_error_generic;
 }
 
 // 30
@@ -2147,8 +2148,8 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::getBytesPerPacketDC1394(unsigned int& bp
     if (manage(error)) { yError("LINE: %d\n",__LINE__); bpp = 0; return yarp::dev::ReturnValue::return_code::return_value_error_generic;}
 
     int fps=maxFPS(videoMode,colorCoding);
-    double bpp_tmp=bytesPerPixel(colorCoding); // And here used for computation. Should we rename this to e.g. "double bpPixel?
-    double maxBandOcc=double(fps*xDim*yDim)*bpp_tmp;
+    double bytesPerPixelValue=bytesPerPixel(colorCoding); // And here used for computation. Should we rename this to e.g. "double bpPixel?
+    double maxBandOcc=double(fps*xDim*yDim)*bytesPerPixelValue;
     double margin=double(busBand)/maxBandOcc;
 
     int bandPercent=(int)(100.0*double(bytesPerPacket)/(double(maxBytesPerPacket)*margin));
@@ -2213,8 +2214,8 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int bpp
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return yarp::dev::ReturnValue::return_code::return_value_error_generic; }
 
     int fps=maxFPS(videoMode,colorCoding);
-    double bpp_tmp=bytesPerPixel(colorCoding); // And here used for computation. Should we rename this to e.g. "double bpPixel?
-    double newBandOcc=double(fps*xDim*yDim)*bpp_tmp;
+    double bytesPerPixelValue=bytesPerPixel(colorCoding); // And here used for computation. Should we rename this to e.g. "double bpPixel?
+    double newBandOcc=double(fps*xDim*yDim)*bytesPerPixelValue;
 
     unsigned int bytesPerPacket=(unsigned int)(0.01*double(bpp)*double(busBand)*double(maxBytesPerPacket)/newBandOcc);
     bytesPerPacket=(bytesPerPacket/unitBytesPerPacket)*unitBytesPerPacket;

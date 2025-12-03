@@ -396,7 +396,7 @@ ReturnValue DragonflyDeviceDriver2::getRgbResolution(int &width, int &height)
 ReturnValue DragonflyDeviceDriver2::setRgbResolution(int width, int height){
     if(width<=0 || height<=0){
         yError()<<"DragonflyDeviceDriver: invalid width or height";
-        return ReturnValue::return_code::return_value_error_generic;;
+        return ReturnValue::return_code::return_value_error_generic;
     }
     return RES(system_resources)->setRgbResolution(width,height) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }

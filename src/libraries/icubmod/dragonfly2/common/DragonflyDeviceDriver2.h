@@ -550,7 +550,7 @@ public:
     *
     * 	unsigned int mask;
     *
-    *	for (unsigned int m; m<modes.num; ++m)
+    *	for (unsigned int m=0; m<modes.num; ++m)
     *
     *			mask|=1<<(modes.modes[m]-DC1394_VIDEO_MODE_MIN);
     *
