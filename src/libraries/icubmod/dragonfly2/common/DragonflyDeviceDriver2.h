@@ -548,7 +548,7 @@ public:
     * Get supported video mode mask.
     * The video mode bitmask is obtained as follows:
     *
-    * 	unsigned int mask=0;
+    * 	unsigned int mask;
     *
     *	for (unsigned int m=0; m<modes.num; ++m)
     *
@@ -561,7 +561,7 @@ public:
     * 28=FORMAT7 4, 29=FORMAT7 5, 30=FORMAT7 6, 31=FORMAT7 7
     * @return video mode bitmask.
     */
-    virtual unsigned int getVideoModeMaskDC1394();
+    virtual yarp::dev::ReturnValue getVideoModeMaskDC1394(unsigned int& val);
     /**
     * Get camera acquisition mode.
     * @return video mode ID: 0=160x120 YUV444, 1=320x240 YUV422, 2=640x480 YUV411, 3=640x480 YUV422, 4=640x480 RGB8, 5=640x480 MONO8,
@@ -570,7 +570,7 @@ public:
     * 20=1600x1200 MONO8, 21=1280x960 MONO16, 22=1600x1200_MONO16, 23=EXIF, 24=FORMAT7 0, 25=FORMAT7 1, 26=FORMAT7 2, 27=FORMAT7 3,
     * 28=FORMAT7 4, 29=FORMAT7 5, 30=FORMAT7 6, 31=FORMAT7 7
     */
-    virtual unsigned int getVideoModeDC1394();
+    virtual yarp::dev::ReturnValue getVideoModeDC1394(unsigned int& val);
     /**
     * Set camera acquisition mode.
     * @param video_mode ID: 0=160x120 YUV444, 1=320x240 YUV422, 2=640x480 YUV411, 3=640x480 YUV422, 4=640x480 RGB8, 5=640x480 MONO8,
@@ -580,13 +580,13 @@ public:
     * 28=FORMAT7 4, 29=FORMAT7 5, 30=FORMAT7 6, 31=FORMAT7 7
     * @return true/false upon success/failure.
     */
-    virtual bool setVideoModeDC1394(int video_mode);
+    virtual yarp::dev::ReturnValue setVideoModeDC1394(int video_mode);
 
     /**
     * Get supported framerates mask.
     * The framerates bitmask is obtained as follows:
     *
-    *	unsigned int mask=0;
+    *	unsigned int mask;
     *
     *	for (unsigned int f=0; f<fps.num; ++f)
     *
@@ -595,37 +595,37 @@ public:
     * 0=1.875 fps, 1=3.75 fps, 2=7.5 fps, 3=15 fps, 4=30 fps, 5=60 fps, 6=120 fps, 7=240 fps.
     * @return framerates bitmask.
     */
-    virtual unsigned int getFPSMaskDC1394();
+    virtual yarp::dev::ReturnValue getFPSMaskDC1394(unsigned int& val);
 
     /**
     * Get camera framerate.
     * @return framerate mode ID: 0=1.875 fps, 1=3.75 fps, 2=7.5 fps, 3=15 fps, 4=30 fps, 5=60 fps, 6=120 fps, 7=240 fps.
     */
-    virtual unsigned int getFPSDC1394();
+    virtual yarp::dev::ReturnValue getFPSDC1394(unsigned int& val);
     /**
     * Set camera framerate.
     * @param fps framerate ID: 0=1.875 fps, 1=3.75 fps, 2=7.5 fps, 3=15 fps, 4=30 fps, 5=60 fps, 6=120 fps, 7=240 fps.
     * @return true/false upon success/failure.
     */
-    virtual bool setFPSDC1394(int fps);
+    virtual yarp::dev::ReturnValue setFPSDC1394(int fps);
 
     /**
     * Get camera Firewire ISO speed.
     * @return ISO speed ID: 0=100 Mbps, 1=200 Mbps, 2=400 Mbps, 3=800 Mbps, 4=1600 Mbps, 5=3200 Mbps.
     */
-    virtual unsigned int getISOSpeedDC1394();
+    virtual yarp::dev::ReturnValue getISOSpeedDC1394(unsigned int& val);
     /**
     * Set camera Firewire ISO speed.
     * @param speed ISO speed ID: 0=100 Mbps, 1=200 Mbps, 2=400 Mbps, 3=800 Mbps, 4=1600 Mbps, 5=3200 Mbps.
     * @return true/false upon success/failure.
     */
-    virtual bool setISOSpeedDC1394(int speed);
+    virtual yarp::dev::ReturnValue setISOSpeedDC1394(int speed);
 
     /**
     * Get supported color coding mask.
     * The framerates bitmask is obtained as follows:
     *
-    *	unsigned int mask=0;
+    *	unsigned int mask;
     *
     *	for (unsigned int m=0; m<codings.num; ++m)
     *
@@ -634,18 +634,18 @@ public:
     * 0=MONO8, 1=YUV411, 2=YUV422, 3=YUV444, 4=RGB8, 5=MONO16, 6=RGB16, 7=MONO16S, 8=RGB16S, 9=RAW8, 10=RAW16.
     * @return framerates bitmask.
     */
-    virtual unsigned int getColorCodingMaskDC1394(unsigned int video_mode);
+    virtual yarp::dev::ReturnValue getColorCodingMaskDC1394(unsigned int video_mode,unsigned int& val);
     /**
     * Get image color coding.
     * @return image color coding ID: 0=MONO8, 1=YUV411, 2=YUV422, 3=YUV444, 4=RGB8, 5=MONO16, 6=RGB16, 7=MONO16S, 8=RGB16S, 9=RAW8, 10=RAW16.
     */
-    virtual unsigned int getColorCodingDC1394();
+    virtual yarp::dev::ReturnValue getColorCodingDC1394(unsigned int& val);
     /**
     * Set image color coding.
     * @param coding image color coding ID: 0=MONO8, 1=YUV411, 2=YUV422, 3=YUV444, 4=RGB8, 5=MONO16, 6=RGB16, 7=MONO16S, 8=RGB16S, 9=RAW8, 10=RAW16.
     * @return true/false upon success/failure.
     */
-    virtual bool setColorCodingDC1394(int coding);
+    virtual yarp::dev::ReturnValue setColorCodingDC1394(int coding);
 
     /**
     * Set White Balance.
@@ -672,7 +672,7 @@ public:
     * @param yoffstep vertical offset granularity
     * @return true/false upon success/failure
     */
-    virtual bool getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep);
+    virtual yarp::dev::ReturnValue getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep);
 
     /**
     * Get image dimensions in Format 7 mode.
@@ -682,7 +682,7 @@ public:
     * @param y0 vertical image offset
     * @return true/false upon success/failure
     */
-    virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);
+    virtual yarp::dev::ReturnValue getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);
     /**
     * Set image dimensions in Format 7 mode.
     * @param xdim image width
@@ -691,31 +691,31 @@ public:
     * @param y0 vertical image offset
     * @return true/false upon success/failure
     */
-    virtual bool setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0);
+    virtual yarp::dev::ReturnValue setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0);
 
     /**
     * Set Operation Mode.
     * @param b1394b true=1394b false=LEGACY
     * @return true/false upon success/failure
     */
-    virtual bool setOperationModeDC1394(bool b1394b);
+    virtual yarp::dev::ReturnValue setOperationModeDC1394(bool b1394b);
     /**
     * Get Operation Mode.
     * @return true=1394b false=LEGACY
     */
-    virtual bool getOperationModeDC1394();
+    virtual yarp::dev::ReturnValue getOperationModeDC1394(bool& b1394);
 
     /**
     * Set image transmission ON/OFF.
     * @param bTxON true=ON false=OFF
     * @return true/false upon success/failure
     */
-    virtual bool setTransmissionDC1394(bool bTxON);
+    virtual yarp::dev::ReturnValue setTransmissionDC1394(bool bTxON);
     /**
     * Is image transmission ON or OFF?
     * @return true=ON false=OFF
     */
-    virtual bool getTransmissionDC1394();
+    virtual yarp::dev::ReturnValue getTransmissionDC1394(bool& bTxON);
     //virtual bool setBayerDC1394(bool bON);
     //virtual bool getBayerDC1394();
 
@@ -725,43 +725,43 @@ public:
     * @param onoff true=ON false=OFF
     * @return true/false upon success/failure
     */
-    virtual bool setBroadcastDC1394(bool onoff);
+    virtual yarp::dev::ReturnValue setBroadcastDC1394(bool onoff);
     /**
     * Set camera features to default.
     * @return true/false upon success/failure
     */
-    virtual bool setDefaultsDC1394();
+    virtual yarp::dev::ReturnValue setDefaultsDC1394();
     /*
     * Reset camera.
     * @return true/false upon success/failure
     */
-    virtual bool setResetDC1394();
+    virtual yarp::dev::ReturnValue setResetDC1394();
     /**
     * Switch camera power ON/OFF.
     * @param onoff true=ON false=OFF
     * @return true/false upon success/failure
     */
-    virtual bool setPowerDC1394(bool onoff);
+    virtual yarp::dev::ReturnValue setPowerDC1394(bool onoff);
     /**
     * Switch image capture ON/OFF.
     * @param onoff true=ON false=OFF
     * @return true/false upon success/failure
     */
-    virtual bool setCaptureDC1394(bool bON);
+    virtual yarp::dev::ReturnValue setCaptureDC1394(bool bON);
 
     /**
     * Get Firewire communication packet size.
     * In Format7 mode the framerate depends from packet size.
     * @return bytes per packet
     */
-    virtual unsigned int getBytesPerPacketDC1394();
+    virtual yarp::dev::ReturnValue getBytesPerPacketDC1394(unsigned int& bpp);
     /**
     * Set Firewire communication packet size.
     * In Format7 mode the framerate depends from packet size.
     * @param bpp bytes per packet
     * @return true/false upon success/failure
     */
-    virtual bool setBytesPerPacketDC1394(unsigned int bpp);
+    virtual yarp::dev::ReturnValue setBytesPerPacketDC1394(unsigned int bpp);
 
     //IVisualParams
 
@@ -782,7 +782,7 @@ public:
      * @return true on success
      */
 
-    virtual bool getRgbSupportedConfigurations(yarp::sig::VectorOf<yarp::dev::CameraConfig> &configurations);
+    virtual yarp::dev::ReturnValue getRgbSupportedConfigurations(std::vector<yarp::dev::CameraConfig>& configurations);
     /**
      * Get the resolution of the rgb image from the camera
      * @param width  image width
@@ -790,7 +790,7 @@ public:
      * @return true on success
      */
 
-    virtual bool getRgbResolution(int &width, int &height);
+    virtual yarp::dev::ReturnValue getRgbResolution(int& width, int& height);
     /**
      * Set the resolution of the rgb image from the camera
      * @param width  image width
@@ -798,7 +798,7 @@ public:
      * @return true on success
      */
 
-    virtual bool setRgbResolution(int width, int height);
+    virtual yarp::dev::ReturnValue setRgbResolution(int width, int height);
 
     /**
      * Get the field of view (FOV) of the rgb camera.
@@ -807,7 +807,7 @@ public:
      * @param  verticalFov   will return the value of the vertical fov in degrees
      * @return true on success
      */
-    virtual bool getRgbFOV(double &horizontalFov, double &verticalFov);
+    virtual yarp::dev::ReturnValue getRgbFOV(double& horizontalFov, double& verticalFov);
 
     /**
      * Set the field of view (FOV) of the rgb camera.
@@ -816,7 +816,7 @@ public:
      * @param  verticalFov   will set the value of the vertical fov in degrees
      * @return true on success
      */
-    virtual bool setRgbFOV(double horizontalFov, double verticalFov);
+    virtual yarp::dev::ReturnValue setRgbFOV(double horizontalFov, double verticalFov);
 
     /**
      * Get the intrinsic parameters of the rgb camera
@@ -826,7 +826,7 @@ public:
      *
      * Look at IVisualParams.h for more details
      */
-    virtual bool getRgbIntrinsicParam(yarp::os::Property &intrinsic);
+    virtual yarp::dev::ReturnValue getRgbIntrinsicParam(yarp::os::Property& intrinsic);
 
     /**
      * Get the mirroring setting of the sensor
@@ -834,7 +834,7 @@ public:
      * @param mirror: true if image is mirrored, false otherwise
      * @return true if success
      */
-    virtual bool getRgbMirroring(bool &mirror);
+    virtual yarp::dev::ReturnValue getRgbMirroring(bool& mirror);
 
     /**
      * Set the mirroring setting of the sensor
@@ -842,32 +842,32 @@ public:
      * @param mirror: true if image should be mirrored, false otherwise
      * @return true if success
      */
-    virtual bool setRgbMirroring(bool mirror);
+    virtual yarp::dev::ReturnValue setRgbMirroring(bool mirror);
 
     // Control2
 
     /* Implementation of IFrameGrabberControls2 interface */
-    virtual bool getCameraDescription(CameraDescriptor *camera);
-    virtual bool hasFeature(int feature, bool *hasFeature);
-    virtual bool setFeature(int feature, double values);
-    virtual bool getFeature(int feature, double *values);
-    virtual bool setFeature(int feature, double  value1, double  value2);
-    virtual bool getFeature(int feature, double *value1, double *value2);
-    virtual bool hasOnOff(int feature, bool *HasOnOff);
-    virtual bool setActive(int feature, bool onoff);
-    virtual bool getActive(int feature, bool *isActive);
-    virtual bool hasAuto(int feature, bool *hasAuto);
-    virtual bool hasManual(int feature, bool *hasManual);
-    virtual bool hasOnePush(int feature, bool *hasOnePush);
-    virtual bool setMode(int feature, FeatureMode mode);
-    virtual bool getMode(int feature, FeatureMode *mode);
-    virtual bool setOnePush(int feature);
+    virtual yarp::dev::ReturnValue getCameraDescription(CameraDescriptor& camera);
+    virtual yarp::dev::ReturnValue getActive(yarp::dev::cameraFeature_id_t feature, bool& isActive);
+    virtual yarp::dev::ReturnValue getFeature(yarp::dev::cameraFeature_id_t feature, double& value);
+    virtual yarp::dev::ReturnValue getMode(yarp::dev::cameraFeature_id_t feature, yarp::dev::FeatureMode& mode);
+    virtual yarp::dev::ReturnValue hasAuto(yarp::dev::cameraFeature_id_t feature, bool& hasAuto);
+    virtual yarp::dev::ReturnValue hasFeature(yarp::dev::cameraFeature_id_t, bool& hasFeature);
+    virtual yarp::dev::ReturnValue hasManual(yarp::dev::cameraFeature_id_t,  bool& hasManual);
+    virtual yarp::dev::ReturnValue hasOnePush(yarp::dev::cameraFeature_id_t feature, bool& hasOnePush);
+    virtual yarp::dev::ReturnValue hasOnOff(yarp::dev::cameraFeature_id_t feature, bool& HasOnOff);
+    virtual yarp::dev::ReturnValue setActive(cameraFeature_id_t feature, bool onoff);
+    virtual yarp::dev::ReturnValue getFeature(yarp::dev::cameraFeature_id_t feature, double& value1, double& value2);
+    virtual yarp::dev::ReturnValue setFeature(cameraFeature_id_t feature, double value);
+    virtual yarp::dev::ReturnValue setFeature(yarp::dev::cameraFeature_id_t feature, double value1, double value2);
+    virtual yarp::dev::ReturnValue setMode(yarp::dev::cameraFeature_id_t feature, yarp::dev::FeatureMode mode);
+    virtual yarp::dev::ReturnValue setOnePush(yarp::dev::cameraFeature_id_t feature);
 
 protected:
     void* system_resources;
     bool raw;
-    FeatureMode TRANSL_MODE(bool mode) { return (mode ? MODE_AUTO : MODE_MANUAL); }
-    bool TRANSL_MODE(FeatureMode mode) { return (mode == MODE_AUTO? 1 : 0); }
+    FeatureMode TRANSL_MODE(bool mode) { return (mode ? FeatureMode::MODE_AUTO : FeatureMode::MODE_MANUAL); }
+    bool TRANSL_MODE(FeatureMode mode) { return (mode == FeatureMode::MODE_AUTO? 1 : 0); }
 };
 
 /**
@@ -907,7 +907,7 @@ public:
     * @param image that will store the last frame.
     * @return true/false upon success/failure
     */
-    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image);
+    yarp::dev::ReturnValue getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image);
 
     /**
         * FrameGrabber image interface, returns the last acquired frame as
@@ -915,7 +915,7 @@ public:
         * @param image that will store the last frame.
         * @return true/false upon success/failure
         */
-    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image);
+    yarp::dev::ReturnValue getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image);
 
     /**
      * Return the height of each frame.
@@ -966,7 +966,7 @@ public:
     * @param image that will store the last frame.
     * @return true/false upon success/failure
     */
-    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image);
+    yarp::dev::ReturnValue getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image);
 
     /**
      * Return the height of each frame.
