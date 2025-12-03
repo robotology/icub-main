@@ -2214,7 +2214,7 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int bpp
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return yarp::dev::ReturnValue::return_code::return_value_error_generic; }
 
     int fps=maxFPS(videoMode,colorCoding);
-    double bytesPerPixelValue=bytesPerPixel(colorCoding); // And here used for computation. Should we rename this to e.g. "double bpPixel?
+    double bytesPerPixelValue = bytesPerPixel(colorCoding);
     double newBandOcc=double(fps*xDim*yDim)*bytesPerPixelValue;
 
     unsigned int bytesPerPacket=(unsigned int)(0.01*double(bpp)*double(busBand)*double(maxBytesPerPacket)/newBandOcc);
@@ -2228,7 +2228,7 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int bpp
         bytesPerPacket=unitBytesPerPacket;
     }
     
-    printf("videoMode %d band percnet %d bytesPerPacket %d\n",videoMode,bpp,bytesPerPacket); // I assume we want to printf the percentage here since the formatting is related to an "int bpp" parameter.
+    printf("videoMode %d band percnet %d bytesPerPacket %d\n",videoMode,bpp,bytesPerPacket);
     
     error=dc1394_format7_set_packet_size(m_pCamera,videoMode,bytesPerPacket);
     if (manage(error)) { yError("LINE: %d\n",__LINE__); return yarp::dev::ReturnValue::return_code::return_value_error_generic; }
