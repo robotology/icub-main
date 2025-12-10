@@ -10,7 +10,7 @@
 #include <yarp/os/LogStream.h>
 
 namespace {
-YARP_LOG_COMPONENT(RAWVALUESPUBLISHERREMAPPER, "yarp.device.rawvaluespublisherremapper")
+YARP_LOG_COMPONENT(RAWVALUESPUBLISHERREMAPPER, "yarp.device.rawValuesPublisherRemapper")
 }
 
 // Private methods

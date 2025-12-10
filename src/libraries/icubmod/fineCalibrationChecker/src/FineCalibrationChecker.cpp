@@ -191,18 +191,19 @@ bool FineCalibrationChecker::open(yarp::os::Searchable& config)
     }
 
      yarp::os::Property rawValuesDeviceProperties;
-    rawValuesDeviceProperties.put("device", "rawvaluespublisherremapper");
-    rawValuesDeviceProperties.put("axesNames", _axesNamesList.get(0));
-    rawValuesDeviceProperties.put("remote", _remoteRawValuesPort);
-    rawValuesDeviceProperties.put("local", "/" + _deviceName + "/rawValuesPublisherRemapper");
+     rawValuesDeviceProperties.put("device", "rawValuesPublisherRemapper");
+     rawValuesDeviceProperties.put("axesNames", _axesNamesList.get(0));
+     rawValuesDeviceProperties.put("remote", _remoteRawValuesPort);
+     rawValuesDeviceProperties.put("local", "/" + _deviceName + "/rawValuesPublisherRemapper");
 
-    _remappedRawValuesPublisherDevice->open(rawValuesDeviceProperties);
+     _remappedRawValuesPublisherDevice->open(rawValuesDeviceProperties);
 
-    if (!_remappedRawValuesPublisherDevice->isValid())
-    {
-        yCError(FineCalibrationCheckerCOMPONENT) << _deviceName << "Unable to open raw values device driver. Aborting...";
-        return false;
-    }
+     if (!_remappedRawValuesPublisherDevice->isValid()) {
+       yCError(FineCalibrationCheckerCOMPONENT)
+           << _deviceName
+           << "Unable to open raw values device driver. Aborting...";
+       return false;
+     }
 
     yCDebug(FineCalibrationCheckerCOMPONENT) << _deviceName << "Opened all devices successfully";
 
