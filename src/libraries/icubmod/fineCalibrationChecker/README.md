@@ -42,7 +42,7 @@ The device requires the following parameters in its configuration file:
 To use the device:
 
 1. Place the configuration XML file in your desired location (e.g., `./checker/fineCalibrationChecker.xml`)
-2. Configure the `rawvaluespublisherremapper` and `rawValuesPublisherServer` devices
+2. Configure the `rawValuesPublisherRemapper` and `rawValuesPublisherServer` devices
 3. Add the device wrappers to the main robot configuration file
 4. Start the `yarprobotinterface` application
 5. The device will automatically execute if properly configured

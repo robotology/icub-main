@@ -30,11 +30,11 @@
 *
 * The device can be launched by yarpdev using one of the following examples (with and without all optional parameters):
 * \code{.unparsed}
-* yarpdev --device rawvaluespublisherremapper --axesNames <mandatory_value> --joints 1
+* yarpdev --device rawValuesPublisherRemapper --axesNames <mandatory_value> --joints 1
 * \endcode
 *
 * \code{.unparsed}
-* yarpdev --device rawvaluespublisherremapper --axesNames <mandatory_value>
+* yarpdev --device rawValuesPublisherRemapper --axesNames <mandatory_value>
 * \endcode
 *
 */
@@ -47,7 +47,7 @@ public:
 
 public:
     const std::string m_device_classname = {"RawValuesPublisherRemapper"};
-    const std::string m_device_name = {"rawvaluespublisherremapper"};
+    const std::string m_device_name = {"rawValuesPublisherRemapper"};
     bool m_parser_is_strict = false;
     struct parser_version_type
     {

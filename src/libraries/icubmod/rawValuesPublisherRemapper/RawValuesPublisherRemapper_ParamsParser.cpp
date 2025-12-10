@@ -157,8 +157,8 @@ std::string      RawValuesPublisherRemapper_ParamsParser::getDocumentationOfDevi
     doc = doc + std::string("'joints': Number of control boards to be remapped\n");
     doc = doc + std::string("\n");
     doc = doc + std::string("Here are some examples of invocation command with yarpdev, with all params:\n");
-    doc = doc + " yarpdev --device rawvaluespublisherremapper --axesNames <mandatory_value> --joints 1\n";
+    doc = doc + " yarpdev --device rawValuesPublisherRemapper --axesNames <mandatory_value> --joints 1\n";
     doc = doc + std::string("Using only mandatory params:\n");
-    doc = doc + " yarpdev --device rawvaluespublisherremapper --axesNames <mandatory_value>\n";
+    doc = doc + " yarpdev --device rawValuesPublisherRemapper --axesNames <mandatory_value>\n";
     doc = doc + std::string("=============================================\n\n");    return doc;
 }
