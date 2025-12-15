@@ -2543,9 +2543,10 @@ ReturnValue embObjMotionControl::calibrationDoneRaw(int axis)
         case eomc_controlmode_idle:
             return ((_maintenanceModeCfg.enableSkipRecalibration) ? ReturnValue_ok : ReturnValue_error_generic);
         case eomc_controlmode_calib:
+            return ReturnValue_error_generic;
         case eomc_controlmode_hwFault:
-        case eomc_controlmode_notConfigured:
         case eomc_controlmode_unknownError:
+        case eomc_controlmode_notConfigured:
         case eomc_controlmode_configured:
         {   
             yError() << getBoardInfo()<< "Unable to complete calibration: joint" << axis << " is in " << controlModeType2String(type) << " status in "<<  __YFUNCTION__;
