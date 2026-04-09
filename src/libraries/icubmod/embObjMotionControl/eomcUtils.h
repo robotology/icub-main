@@ -18,6 +18,7 @@
  */
 
 //here there is only a name space that contains all utils funtion of embObjMotionControl
+#include <string>
 
 namespace yarp {
     namespace dev  {
@@ -81,7 +82,7 @@ namespace yarp {
                     return int(x - .5);
     }
     
-    bool EncoderType_iCub2eo(const string* in, uint8_t *out)
+    bool EncoderType_iCub2eo(const std::string* in, uint8_t *out)
     {
         if (*in == "NONE")
         {
@@ -122,7 +123,7 @@ namespace yarp {
         return false;
     }
     
-    bool EncoderType_eo2iCub(const uint8_t *in, string* out)
+    bool EncoderType_eo2iCub(const uint8_t *in, std::string* out)
     {
         if (*in == 0)
         {
@@ -325,8 +326,8 @@ namespace yarp {
                 break;
                 
             default:
-                printf("embObj to yarp unknown controlmode %d\n", embObjMode);
                 vocabOut = VOCAB_CM_UNKNOWN;
+                yError() << "Received an unknown controlMode from the EMS boards with value " << (int)embObjMode;
                 break;
         }
         return vocabOut;

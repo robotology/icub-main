@@ -7,14 +7,16 @@
 *
 */
 
-//#include <yarp/dev/CanBusInterface.h>
+
 #include <yarp/os/Bottle.h>
+#include <algorithm>
 #include <string.h>
 #include <iostream>
 
 
 
 #include <eomcParser.h>
+#include <embObjMotionControlDefaults.h> // include the header with default values
 
 #include <yarp/os/LogStream.h>
 
@@ -31,669 +33,927 @@ using namespace std;
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::dev::eomc;
+using namespace yarp::dev::eomc::configType;
+
+//------------------------------------------------------------------------------
+// Utilities functions for parsing the configuration file of embObjMotionControl
+//------------------------------------------------------------------------------
+inline void loadStrings(std::vector<std::string>& dest, const yarp::os::Bottle& source)
+{
+    dest.clear();
+    for (unsigned int i = 1; i < source.size(); ++i)
+    {
+        dest.push_back(source.get(i).asString());
+    }
+}
+
+
+// Static map for eOmc_ctrl_out_type_t: config string -> (enum, description)
+struct CtrlOutTypeInfo
+{
+    eOmc_ctrl_out_type_t enumValue;
+    std::string description;
+};
+
+static const std::map<std::string, CtrlOutTypeInfo> ctrlOutTypeConfigMap = 
+{
+    {"n_a",      {eomc_ctrl_out_type_n_a,  "Not applicable / Not set"}},
+    {"pwm",      {eomc_ctrl_out_type_pwm,  "PWM (Pulse Width Modulation)"}},
+    {"velocity", {eomc_ctrl_out_type_vel,  "Velocity control output"}},
+    {"current",  {eomc_ctrl_out_type_cur,  "Current control output"}}
+};
+
+// Helper function to get control output type from configuration string
+bool getCtrlOutTypeFromConfig(const std::string &configName, eOmc_ctrl_out_type_t &outType, std::string &description)
+{
+    auto it = ctrlOutTypeConfigMap.find(configName);
+    if (it != ctrlOutTypeConfigMap.end())
+    {
+        outType = it->second.enumValue;
+        description = it->second.description;
+        return true;
+    }
+    
+    outType = eomc_ctrl_out_type_n_a;
+    description = "Unknown control output type";
+    return false;
+}
 
 
 
-
+//------------------------------------------------------------------------------
+// Parser class implementation
+//------------------------------------------------------------------------------
 yarp::dev::eomc::Parser::Parser(int numofjoints, string boardname)
+    : _defaultSettings(defaults::DefaultsFactory::getInstance().getDefaults())
 {
     _njoints = numofjoints;
     _boardname = boardname;
-    _verbosewhenok = 0;
-    _positionControlLaw.resize(0);
-    _velocityControlLaw.resize(0);
-    _mixedControlLaw.resize(0);
-    _positionDirectControlLaw.resize(0);
-    _velocityDirectControlLaw.resize(0);
-    _torqueControlLaw.resize(0);
-    _currentControlLaw.resize(0);
-
-
-    _kbemf=allocAndCheck<double>(_njoints);
-    _ktau=allocAndCheck<double>(_njoints);
-    _filterType=allocAndCheck<int>(_njoints);
-    _viscousPos=allocAndCheck<double>(_njoints);
-    _viscousNeg=allocAndCheck<double>(_njoints);
-    _coulombPos=allocAndCheck<double>(_njoints);
-    _coulombNeg=allocAndCheck<double>(_njoints);
-    _velocityThres=allocAndCheck<double>(_njoints);
-
-    minjerkAlgoMap.clear();
-    directPosAlgoMap.clear();
-    directVelAlgoMap.clear();
-    torqueAlgoMap.clear();
+    
+    _optionalParametersUsed.clear();
 };
 
 Parser::~Parser()
 {
-    checkAndDestroy(_kbemf);
-    checkAndDestroy(_ktau);
-    checkAndDestroy(_filterType);
-    checkAndDestroy(_viscousPos);
-    checkAndDestroy(_viscousNeg);
-    checkAndDestroy(_coulombPos);
-    checkAndDestroy(_coulombNeg);
-    checkAndDestroy(_velocityThres);
+    // std::vector manages memory automatically, no need to delete
 }
 
-
-bool Parser::parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vpids, PidInfo *pDirpids, PidInfo *vDirpids, TrqPidInfo *tpids, PidInfo *cpids, bool lowLevPidisMandatory)
+//---------------------------------------------------
+// auxiliary functions to parse groups in config file 
+// --------------------------------------------------
+bool Parser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size, bool mandatory)
 {
-    // compila la lista con i tag dei pid per ciascun modo 
-    // di controllo per ciascun giunto 
-    //std::vector<std::string> _positionControlLaw;
-    //std::vector<std::string> _velocityControlLaw;
-    //std::vector<std::string> _mixedControlLaw;
-    //std::vector<std::string> _torqueControlLaw;
-    //std::vector<std::string> _currentControlLaw;
-    //std::vector<std::string> _positionDirectControlLaw;
-    //std::vector<std::string> _velocityDirectControlLaw;
-
-    if(!parseControlsGroup(config)) // OK
+    size++;
+    out.clear();
+    Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
+    if (tmp.isNull())
+    {
+        std::string message = key1 + " parameter not found for board " + _boardname + " in bottle " + input.toString();
+        if(mandatory)
+            yError () << message.c_str();
+        // else
+        //     yWarning() << message.c_str();
         return false;
+    }
 
-    // legge i pid di corrente per ciascun motore 
-    // come specificato in _currentControlLaw
-    if(!parseSelectedCurrentPid(config, lowLevPidisMandatory, cpids)) // OK
+    if(tmp.size()!=size)
+    {
+        yError () << key1.c_str() << " incorrect number of entries in BOARD " << _boardname;
         return false;
+    }
 
-
-    // usa _positionControlLaw per recuperare i PID
-    // del position control per ogni giunto
-    if(!parseSelectedPositionControl(config)) // OK
-        return false;
-
-    // usa _velocityControlLaw per recuperare i PID
-    // del velocity control per ogni giunto
-    if(!parseSelectedVelocityControl(config)) // OK
-        return false;
-
-    // usa _positionControlLaw per recuperare i PID
-    // del mixed control per ogni giunto
-    if(!parseSelectedMixedControl(config)) // OK
-        return false;
-
-    // usa _positionDirectControlLaw per recuperare i PID
-    // del position direct control per ogni giunto
-    if(!parseSelectedPositionDirectControl(config)) // OK
-        return false;
-
-    // usa _velocityDirectControlLaw per recuperare i PID
-    // del velocity direct control per ogni giunto
-    if(!parseSelectedVelocityDirectControl(config)) // OK
-        return false;
-
-    // usa _torqueControlLaw per recuperare i PID
-    // del torque control per ogni giunto
-    if(!parseSelectedTorqueControl(config)) // OK
-        return false;
-
-
-    if(!getCorrectPidForEachJoint(ppids, vpids, pDirpids, vDirpids, tpids))
-        return false;
-
-
+    out=tmp;
     return true;
 }
 
-#define LOAD_STRINGS(dest, source) for (unsigned int i=1; i<source.size(); ++i) dest.push_back(source.get(i).asString())
-
-bool Parser::parseControlsGroup(yarp::os::Searchable &config) // OK
+bool Parser::areControlPidGroupEqual(const std::vector<std::string> &controlGroup)
 {
-    Bottle xtmp;
+    auto ret = std::all_of(controlGroup.begin() + 1, controlGroup.end(),
+                       [&](const std::string& s) { return s == controlGroup[0]; });
+    
+    if(!ret) yError() << "embObjMC BOARD " << _boardname << "Control Pid group entries are not all equal. Quitting.";
 
-    Bottle controlsGroup = config.findGroup("CONTROLS", "Configuration of used control laws ");
-    if(controlsGroup.isNull())
+    // for(const auto& s : controlGroup)
+    // {
+    //     yError() << "*********** embObjMC BOARD " << _boardname << " CONTROL GROUP: " << s;
+    // }
+    
+    return ret;
+}
+
+inline bool Parser::GetGroupBottle(yarp::os::Searchable& config, const std::string& controlName, yarp::os::Bottle& outBottle, bool mandatory)
+{
+    if(controlName == eomc::paramValues::NONE_STR)
     {
-        yError() << "embObjMC BOARD " << _boardname << " no CONTROLS group found in config file, returning";
+        outBottle.clear();
+        return true;
+    }
+    yarp::os::Bottle& tmp = config.findGroup(controlName.c_str());
+    if (tmp.isNull())
+    {
+        outBottle.clear();
+        if(mandatory)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to find" << controlName.c_str() << " in config file.";
+        }
         return false;
     }
+
+    outBottle = tmp;
+    return true;
+}
+
+
+//---------------------------------------------------
+// auxiliary functions to parse PIDs in config file 
+// --------------------------------------------------
+bool Parser::readUserNameControlsGroup(yarp::os::Searchable &config) 
+{
+    Bottle controlsGroup, xtmp;
+    std::vector<std::string> userControlNames;
+
+    if(!GetGroupBottle(config, "CONTROLS", controlsGroup)) return false;
 
     if (!extractGroup(controlsGroup, xtmp, "positionControl", "Position Control ", _njoints)) 
         return false;
-    LOAD_STRINGS(_positionControlLaw, xtmp);
+    loadStrings(userControlNames, xtmp);
+    if(!areControlPidGroupEqual(userControlNames)) return false;
+    _userNameControlPosition = userControlNames[0];
 
     if (!extractGroup(controlsGroup, xtmp, "velocityControl", "Velocity Control ", _njoints)) 
         return false;
-    LOAD_STRINGS(_velocityControlLaw, xtmp);
+    loadStrings(userControlNames, xtmp);
+    if(!areControlPidGroupEqual(userControlNames)) return false;
+    _userNameControlVelocity = userControlNames[0];
+    if(_userNameControlVelocity != paramValues::NONE_STR && _userNameControlVelocity != _userNameControlPosition)
+    {
+        yError() << "embObjMC BOARD " << _boardname << ": velocityControl parameter (" << _userNameControlVelocity.c_str()
+                 << ") must be equal to positionControl parameter (" << _userNameControlPosition.c_str() << ") or set to " << paramValues::NONE_STR << "because embedded control uses the same pid parameters for both position and velocity control. Quitting.";
+        return false;
+    }   
 
     if (!extractGroup(controlsGroup, xtmp, "mixedControl", "Mixed Control ", _njoints)) 
         return false;
-    LOAD_STRINGS(_mixedControlLaw, xtmp);
+    loadStrings(userControlNames, xtmp);
+    if(!areControlPidGroupEqual(userControlNames)) return false;
+    _userNameControlMixed = userControlNames[0];
+    if(_userNameControlMixed != paramValues::NONE_STR && _userNameControlMixed != _userNameControlPosition)
+    {
+        yError() << "embObjMC BOARD " << _boardname << ": mixedControl parameter (" << _userNameControlMixed.c_str()
+                 << ") must be equal to positionControl parameter (" << _userNameControlPosition.c_str() << ") or set to " << paramValues::NONE_STR << "because embedded control uses the same pid parameters for both position and velocity control. Quitting.";
+        return false;
+    }
 
     if (!extractGroup(controlsGroup, xtmp, "torqueControl", "Torque Control ", _njoints))
         return false;
-    LOAD_STRINGS(_torqueControlLaw, xtmp);
+    loadStrings(userControlNames, xtmp);
+    if(!areControlPidGroupEqual(userControlNames)) return false;
+    _userNameControlTorque = userControlNames[0];
 
     if (!extractGroup(controlsGroup, xtmp, "currentPid", "Current Pid ", _njoints))
         return false;
-    LOAD_STRINGS(_currentControlLaw, xtmp);
+    loadStrings(userControlNames, xtmp);
+    if(!areControlPidGroupEqual(userControlNames)) return false;
+    _userNameControlCurrent = userControlNames[0];
 
     if (!extractGroup(controlsGroup, xtmp, "positionDirect", "Position Direct Control ", _njoints)) 
         return false;
-    LOAD_STRINGS(_positionDirectControlLaw, xtmp);
-
+    loadStrings(userControlNames, xtmp);
+    if(!areControlPidGroupEqual(userControlNames)) return false;
+    _userNameControlPositionDirect = userControlNames[0];
+    
     if (!extractGroup(controlsGroup, xtmp, "velocityDirect", "Velocity Direct Control ", _njoints)) 
         return false;
-    LOAD_STRINGS(_velocityDirectControlLaw, xtmp);
+    loadStrings(userControlNames, xtmp);
+    if(!areControlPidGroupEqual(userControlNames)) return false;
+    _userNameControlVelocityDirect = userControlNames[0];
 
     return true;
 }
 
-bool yarp::dev::eomc::Parser::getOutputType(eOmc_ctrl_out_type_t &out_type, std::string outputtype_str)
-{
-    out_type = eomc_ctrl_out_type_n_a;
 
-    if (outputtype_str == "velocity")
+bool yarp::dev::eomc::Parser::getOutputType(yarp::os::Bottle& pidsGroup, eOmc_ctrl_out_type_t &outType)
+{
+    Value &valOutputType= pidsGroup.find("outputType");
+    if( (valOutputType.isNull()) || (!valOutputType.isString()) )
     {
-        out_type = eomc_ctrl_out_type_vel;
-        return true;
+        yError() << "embObjMC BOARD " << _boardname << "Unable read outputType parameter. Quitting.";
+        return false;
     }
-    else if (outputtype_str == "pwm")
+    std::string description;
+    return getCtrlOutTypeFromConfig(valOutputType.toString(), outType, description);
+}
+
+
+
+ bool Parser::readControlLaw(yarp::os::Bottle& pidsGroup, std::string &controlLaw_str)
+{
+    // 2) read control_law
+    Value &valControlLaw = pidsGroup.find("controlLaw");
+    if ((valControlLaw.isNull()) || (!valControlLaw.isString()))
     {
-        out_type = eomc_ctrl_out_type_pwm;
-        return true;
+        yError() << "embObjMC BOARD " << _boardname << "Unable read control law parameter. Quitting.";
+        return false;
     }
-    else if (outputtype_str == "current")
+
+    controlLaw_str = valControlLaw.toString();
+    return true;
+}
+
+bool Parser::parsePidUnitsType(yarp::os::Bottle& pidsGroup, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits)
+{
+
+    Value &fbkControlUnits=pidsGroup.find("fbkControlUnits");
+    Value &outControlUnits = pidsGroup.find("outputControlUnits");
+    if(fbkControlUnits.isNull())
     {
-        out_type = eomc_ctrl_out_type_cur;
-        return true;
+        yError() << "embObjMC BOARD " << _boardname << " missing fbkControlUnits parameter";
+        return false;
+    }
+    if(!fbkControlUnits.isString())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " fbkControlUnits parameter is not a string";
+        return false;
+    }
+    if (outControlUnits.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " missing outputControlUnits parameter";
+        return false;
+    }
+    if (!outControlUnits.isString())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " outputControlUnits parameter is not a string";
+        return false;
+    }
+
+    if(fbkControlUnits.toString()== eomc::paramValues::FbkControlUnits_metric)
+    {
+        fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::METRIC;
+    }
+    else if(fbkControlUnits.toString()==eomc::paramValues::FbkControlUnits_machine)
+    {
+        fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
     }
     else
     {
-        yError() << "embObjMC BOARD " << _boardname << "Unable to use output type " << outputtype_str << " . Quitting.";
+        yError() << "embObjMC BOARD " << _boardname << "invalid fbkControlUnits value: " << fbkControlUnits.toString().c_str();
         return false;
     }
-}
 
-bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids) // OK
-{
-    //first of all verify current pid has been configured if it is mandatory
-    for (int i = 0; i<_njoints; i++)
+    if (outControlUnits.toString() == eomc::paramValues::OutControlUnit_dutycycle)
     {
-        if (_currentControlLaw[i] == "none")
-        {
-            if (pidisMandatory)
-            {
-                yError() << "embObjMC BOARD " << _boardname << "CurrentPid is mandatory. It should be different from none ";
-                return false;
-            }
-        }
-        else
-        {
-            // 1) verify that selected control law is defined in file
-            Bottle botControlLaw = config.findGroup(_currentControlLaw[i]);
-            if (botControlLaw.isNull())
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Missing " << i << " current control law " << _currentControlLaw[i].c_str();
-                return false;
-            }
-
-            // 2) read control_law
-            Value &valControlLaw = botControlLaw.find("controlLaw");
-            if ((valControlLaw.isNull()) || (!valControlLaw.isString()))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Unable read " << i << " control law parameter for " << _currentControlLaw[i].c_str() << ". Quitting.";
-                return false;
-            }
-
-            string strControlLaw = valControlLaw.toString();
-            if (strControlLaw != string("low_lev_current"))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Unable to use " << i << " control law " << strControlLaw << " for current pid. Quitting.";
-                return false;
-            }
-
-            yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-            yarp::dev::PidOutputUnitsEnum    out_unitstype;
-            if (!parsePidUnitsType(botControlLaw, fbk_unitstype, out_unitstype))
-                return false;
-
-            yarp::dev::Pid *mycpids = new yarp::dev::Pid[_njoints];
-
-            if (!parsePidsGroup2FOC(botControlLaw, mycpids))
-            {
-                delete[] mycpids;
-
-                return false;
-            }
-
-            pids[i].enabled = true;
-            pids[i].out_type = eomc_ctrl_out_type_cur;
-            pids[i].fbk_PidUnits = fbk_unitstype;
-            pids[i].out_PidUnits = out_unitstype;
-            //pids[i].controlLaw = PidAlgo_simple;
-            pids[i].pid = mycpids[i];
-
-            delete[] mycpids;
-        }
+        out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT;
     }
-
-    return checkJointTypes(pids, "CURRENT");
-}
-
-bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config) // OK
-{
-    for(int i=0; i<_njoints; i++)
+    else if (outControlUnits.toString() == string("machine_units"))
     {
-        // 1) verify that selected control law is defined in file
-        Bottle botControlLaw = config.findGroup(_positionControlLaw[i]);
-        if (botControlLaw.isNull())
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Missing " << _positionControlLaw[i].c_str();
-            return false;
-        }
-
-        // 2) read control_law
-        Value &valControlLaw= botControlLaw.find("controlLaw");
-        {
-            if ((valControlLaw.isNull()) || (!valControlLaw.isString()))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Unable read controlLaw parameter for " << _positionControlLaw[i].c_str() << ". Quitting.";
-                return false;
-            }
-        }
-
-        string strControlLaw = valControlLaw.toString();
-        if (strControlLaw != "minjerk")
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unknown control law for " << _positionControlLaw[i].c_str() << ". Quitting.";
-            return false;
-        }
-
-        Value &valOutputType= botControlLaw.find("outputType");
-        if( (valOutputType.isNull()) || (!valOutputType.isString()) )
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable read outputType parameter for " << _positionControlLaw[i].c_str() <<". Quitting.";
-            return false;
-        }
-
-
-        eOmc_ctrl_out_type_t out_type;
-        if(!getOutputType(out_type, valOutputType.toString()))
-        {
-            return false;
-        }
-        bool parseOk = false;
-        switch (out_type)
-        {
-            case eomc_ctrl_out_type_pwm:
-            case eomc_ctrl_out_type_cur:
-                parseOk = parsePidValues(botControlLaw, _positionControlLaw[i], out_type, minjerkAlgoMap, yarp::dev::eomc::pidParserType_t::Extended);
-                break;
-            case eomc_ctrl_out_type_vel:
-                parseOk = parsePidValues(botControlLaw, _positionControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Simple);
-                break;
-        }
-        if(!parseOk)
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _positionControlLaw[i].c_str() <<". Quitting.";
-            return false;
-        }   
-       
-    } //close for
-    return true;
-
-}
-
-bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config) // OK
-{
-    for(int i=0; i<_njoints; i++)
+        out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
+    }
+    else
     {
-        if(_velocityControlLaw[i] == "none")
-        {
-            continue;
-        }
-
-        // 1) verify that selected control law is defined in file
-        Bottle botControlLaw = config.findGroup(_velocityControlLaw[i]);
-        if (botControlLaw.isNull())
-        {
-           yError() << "embObjMC BOARD " << _boardname << "Missing " << _velocityControlLaw[i].c_str();
-            return false;
-        }
-
-        // 2) read control_law
-        Value &valControlLaw=botControlLaw.find("controlLaw");
-        {
-            if ((valControlLaw.isNull()) || (!valControlLaw.isString()))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Unable read controlLaw parameter for " << _velocityControlLaw[i].c_str() << ". Quitting.";
-                return false;
-            }
-        }
-
-        string strControlLaw = valControlLaw.toString();
-        if (strControlLaw != "minjerk")
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unknown control law for " << _velocityControlLaw[i].c_str() << ". Quitting.";
-            return false;
-        }
-
-        Value &valOutputType = botControlLaw.find("outputType");
-        if ((valOutputType.isNull()) || (!valOutputType.isString()))
-        {
-           yError() << "embObjMC BOARD " << _boardname << "Unable read control law parameter for " << _velocityControlLaw[i].c_str() <<". Quitting.";
-            return false;
-        }
-
-        eOmc_ctrl_out_type_t out_type;
-        if(!getOutputType(out_type, valOutputType.toString()))
-        {
-            return false;
-        }
-
-        bool parseOk = false;
-        switch (out_type)
-        {
-            case eomc_ctrl_out_type_pwm:
-            case eomc_ctrl_out_type_cur:
-                parseOk = parsePidValues(botControlLaw, _velocityControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Extended);
-                break;
-            case eomc_ctrl_out_type_vel:
-                parseOk = parsePidValues(botControlLaw, _velocityControlLaw[i], out_type, minjerkAlgoMap, pidParserType_t::Simple);
-                break;
-        }
-        if(!parseOk)
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _positionControlLaw[i].c_str() <<". Quitting.";
-            return false;
-        }   
-
+        yError() << "embObjMC BOARD " << _boardname << "invalid outputControlUnits value: " << outControlUnits.toString().c_str();
+        return false;
     }
     return true;
-
 }
 
-bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config) // OK
-{
-    //TODO: understand how to save the values of mixed control
-    return true;
-/*
-    for (int i = 0; i<_njoints; i++)
-    {
-        if(_mixedControlLaw[i] == "none")
-        {
-            continue;
-        }
+// //TODO: fill also vpids
+// bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, PidInfo *pDirpids, PidInfo *vDirpids,TrqPidInfo *tpids)
+// {
+//     Pid_Algorithm *minjerkAlgo_ptr = NULL;
+//     Pid_Algorithm *directPosAlgo_ptr = NULL;
+//     Pid_Algorithm *directVelAlgo_ptr = NULL;
+//     Pid_Algorithm *torqueAlgo_ptr = NULL;
 
-  	// 1) verify that selected control law is defined in file
-        Bottle botControlLaw = config.findGroup(_mixedControlLaw[i]);
-        if (botControlLaw.isNull())
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Missing " << _mixedControlLaw[i].c_str();
-            return false;
-        }
+//     //since some joints could not have all pid configured, reset pid values to 0.
+//     memset(ppids, 0, sizeof(PidInfo)*_njoints);
+//     memset(vpids, 0, sizeof(PidInfo)*_njoints);
+//     memset(pDirpids, 0, sizeof(PidInfo)*_njoints);
+//     memset(vDirpids, 0, sizeof(PidInfo)*_njoints);
+//     memset(tpids, 0, sizeof(TrqPidInfo)*_njoints);
 
-        // 2) read control_law
-        Value &valControlLaw = botControlLaw.find("controlLaw");
-        {
-            if ((valControlLaw.isNull()) || (!valControlLaw.isString()))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Unable read controlLaw parameter for " << _mixedControlLaw[i].c_str() << ". Quitting.";
-                return false;
-            }
-        }
+//     map<string, Pid_Algorithm*>::iterator it;
 
-        string strControlLaw = valControlLaw.toString();
-        if (strControlLaw != "minjerk")
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unknown control law for " << _mixedControlLaw[i].c_str() << ". Quitting.";
-            return false;
-        }
+//     for (int i = 0; i < _njoints; i++)
+//     {
+//         //get position pid
+//         it = minjerkAlgoMap.find(_userNameControlPosition);
+//         if (it == minjerkAlgoMap.end())
+//         {
+//             yError() << "embObjMC BOARD" << _boardname << "Cannot find" << _userNameControlPosition.c_str() << "in parsed pos pid";
+//             return false;
+//         }
 
+//         minjerkAlgo_ptr = minjerkAlgoMap[_userNameControlPosition];
 
-        Value &valOutputType = botControlLaw.find("outputType");
-        if ((valOutputType.isNull()) || (!valOutputType.isString()))
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable read control law parameter for " << _mixedControlLaw[i].c_str() << ". Quitting.";
-            return false;
-        }
+//         ppids[i].pid = minjerkAlgo_ptr->getPID(i);
+//         ppids[i].fbk_PidUnits = minjerkAlgo_ptr->fbk_PidUnits;
+//         ppids[i].out_PidUnits = minjerkAlgo_ptr->out_PidUnits;
+//         //ppids[i].controlLaw =  minjerkAlgo_ptr->type;
+//         ppids[i].out_type = minjerkAlgo_ptr->out_type;
+//         ppids[i].usernamePidSelected = _userNameControlPosition;
+//         ppids[i].enabled = true;
 
-        string strOutputType = valOutputType.toString();
-        if (strOutputType == string("pwm"))
-        {
-            if (!parsePid_minJerk_outPwm(botControlLaw, _mixedControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _velocityControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("velocity"))
-        {
-            if (!parsePid_minJerk_outVel(botControlLaw, _mixedControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _velocityControlLaw[i];
-                return false;
-            }
-        }
-        else if (strOutputType == string("current"))
-        {
-            if (!parsePid_minJerk_outCur(botControlLaw, _mixedControlLaw[i]))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "format error in " << _velocityControlLaw[i];
-                return false;
-            }
-        }
-        else
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to use output type " << strOutputType << " for mixed control. Quitting.";
-            return false;
-        }
-
-    }
-    return true;
-    */
-
-}
-
-bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config) // OK
-{
-    for (int i = 0; i<_njoints; i++)
-    {
-        // 1) verify that selected control law is defined in file
-        Bottle botControlLaw = config.findGroup(_positionDirectControlLaw[i]);
-        if (botControlLaw.isNull())
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Missing " << _positionDirectControlLaw[i].c_str();
-            return false;
-        }
-
-        // 2) read control_law
-        Value &valControlLaw= botControlLaw.find("controlLaw");
-        {
-            if ((valControlLaw.isNull()) || (!valControlLaw.isString()))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Unable read controlLaw parameter for " << _positionDirectControlLaw[i].c_str() << ". Quitting.";
-                return false;
-            }
-        }
-
-        string strControlLaw = valControlLaw.toString();
-        if (strControlLaw != "direct")
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unknown control law for " << _positionDirectControlLaw[i].c_str() << ". Quitting.";
-            return false;
-        }
-
-        Value &valOutputType = botControlLaw.find("outputType");
-        if ((valOutputType.isNull()) || (!valOutputType.isString()))
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable read outputType parameter for " << _positionDirectControlLaw[i].c_str() << ". Quitting.";
-            return false;
-        }
-
-        eOmc_ctrl_out_type_t out_type;
-        if(!getOutputType(out_type, valOutputType.toString()))
-        {
-            return false;
-        }
-
-        bool parseOk = false;
-        switch (out_type)
-        {
-            case eomc_ctrl_out_type_pwm:
-            case eomc_ctrl_out_type_cur:
-                parseOk = parsePidValues(botControlLaw, _positionDirectControlLaw[i], out_type, directPosAlgoMap, pidParserType_t::Extended);
-                break;
-            case eomc_ctrl_out_type_vel:
-                parseOk = parsePidValues(botControlLaw, _positionDirectControlLaw[i], out_type, directPosAlgoMap, pidParserType_t::Simple);
-                break;
-        }
-        if(!parseOk)
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _positionDirectControlLaw[i].c_str() <<". Quitting.";
-            return false;
-        }   
-
-       
-
-    }
-    return true;
-
-}
-
-bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config) // OK
-{
-    for (int i = 0; i<_njoints; i++)
-    {
-        // 1) verify that selected control law is defined in file
-        Bottle botControlLaw = config.findGroup(_velocityDirectControlLaw[i]);
-        if (botControlLaw.isNull())
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Missing " << _velocityDirectControlLaw[i].c_str();
-            return false;
-        }
-
-        // 2) read control_law
-        Value &valControlLaw = botControlLaw.find("controlLaw");
-        {
-            if ((valControlLaw.isNull()) || (!valControlLaw.isString()))
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Unable read controlLaw parameter for " << _velocityDirectControlLaw[i].c_str() << ". Quitting.";
-                return false;
-            }
-        }
-
-        string strControlLaw = valControlLaw.toString();
-        if (strControlLaw != "direct")
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unknown control law "<< strControlLaw << "for " << _velocityDirectControlLaw[i].c_str() << ". Quitting.";
-            return false;
-        }
-
-        Value &valOutputType = botControlLaw.find("outputType");
-        if ((valOutputType.isNull()) || (!valOutputType.isString()))
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable read outputType parameter for " << _velocityDirectControlLaw[i].c_str() << ". Quitting.";
-            return false;
-        }
-
-        eOmc_ctrl_out_type_t out_type;
-
-        if(!getOutputType(out_type, valOutputType.toString()))
-        {
-            return false;
-        }
-
-        if (out_type == eomc_ctrl_out_type_pwm)
-        {
-            out_type = eomc_ctrl_out_type_vel;
-        }
-        else if (out_type == eomc_ctrl_out_type_cur)
-        {
-            out_type = eomc_ctrl_out_type_vel_cur;
-        }
-
-        bool parseOk = false;
-        switch (out_type)
-        {
-            case eomc_ctrl_out_type_pwm:
-            case eomc_ctrl_out_type_cur:
-                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::FOC2);
-                break;
-            case eomc_ctrl_out_type_vel:
-                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::FOC2);
-                break;
-            case eomc_ctrl_out_type_vel_cur:
-                parseOk = parsePidValues(botControlLaw, _velocityDirectControlLaw[i], out_type, directVelAlgoMap, pidParserType_t::FOC2);
-                break;        
-        }
-
-        if(!parseOk)
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _velocityDirectControlLaw[i].c_str() <<". Quitting.";
-            return false;
-        }   
-    }
-    return true;
-
-}
-
-bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config) // OK
-{
-    for(int i=0; i<_njoints; i++)
-    {
-        if(_torqueControlLaw[i] == "none")
-        {
-            continue;
-        }
-        // 1) verify that selected control law is defined in file
-        Bottle botControlLaw = config.findGroup(_torqueControlLaw[i]);
-        if (botControlLaw.isNull())
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Missing " << _torqueControlLaw[i].c_str();
-            return false;
-        }
-
-        // 2) read control_law
-        Value &valControlLaw= botControlLaw.find("controlLaw");
-        if( (valControlLaw.isNull()) || (!valControlLaw.isString()) )
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable read control law parameter for " << _torqueControlLaw[i].c_str() <<". Quitting.";
-            return false;
-        }
-
-        string strControlLaw = valControlLaw.toString();
-        if (strControlLaw != "torque")
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unknown control law for " << _torqueControlLaw[i].c_str() << ". Quitting.";
-            return false;
-        }
-
-        Value &valOutputType = botControlLaw.find("outputType");
-        if ((valOutputType.isNull()) || (!valOutputType.isString()))
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable read outputType parameter for " << _torqueControlLaw[i].c_str() << ". Quitting.";
-            return false;
-        }
-
-        eOmc_ctrl_out_type_t out_type;
-        if(!getOutputType(out_type, valOutputType.toString()))
-        {
-            return false;
-        }
-
-         bool parseOk = false;
-        switch (out_type)
-        {
-            case eomc_ctrl_out_type_pwm:
-            case eomc_ctrl_out_type_cur:
-                parseOk = parsePidValues(botControlLaw, _torqueControlLaw[i], out_type, torqueAlgoMap, pidParserType_t::Deluxe);
-                break;
-            case eomc_ctrl_out_type_vel:
-                parseOk = parsePidValues(botControlLaw, _torqueControlLaw[i], out_type, torqueAlgoMap, pidParserType_t::Extended);
-                break;
-        }
-        if(!parseOk)
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _torqueControlLaw[i].c_str() <<". Quitting.";
-            return false;
-        }   
         
+//         //get position direct pid
+//         if (_userNameControlPositionDirect != paramValues::NONE_STR)
+//         {
+//             it = directPosAlgoMap.find(_userNameControlPositionDirect);
+//             if (it == directPosAlgoMap.end())
+//             {
+//                 yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _userNameControlPositionDirect.c_str() << "in parsed posDirect pid";
+//                 return false;
+//             }
+
+//             directPosAlgo_ptr = directPosAlgoMap[_userNameControlPositionDirect];
+//         }
+
+//         if (directPosAlgo_ptr)
+//         {
+//             pDirpids[i].pid = directPosAlgo_ptr->getPID(i);
+//             pDirpids[i].fbk_PidUnits = directPosAlgo_ptr->fbk_PidUnits;
+//             pDirpids[i].out_PidUnits = directPosAlgo_ptr->out_PidUnits;
+//             //pDirpids[i].controlLaw = directPosAlgo_ptr->type;
+//             pDirpids[i].out_type = directPosAlgo_ptr->out_type;
+//             pDirpids[i].usernamePidSelected = _userNameControlPositionDirect;
+//             pDirpids[i].enabled = true;
+//         }
+//         else
+//         {
+//             pDirpids[i].enabled = false;
+//             pDirpids[i].usernamePidSelected = paramValues::NONE_STR;
+//         }
+        
+//         //get velocity direct pid
+//         if (_userNameControlVelocityDirect != paramValues::NONE_STR)
+//         {
+//             it = directVelAlgoMap.find(_userNameControlVelocityDirect);
+//             if (it == directVelAlgoMap.end())
+//             {
+//                 yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _userNameControlVelocityDirect.c_str() << "in parsed velDirect pid";
+//                 return false;
+//             }
+
+//             directVelAlgo_ptr = directVelAlgoMap[_userNameControlVelocityDirect];
+//         }
+
+//         if (directVelAlgo_ptr)
+//         {
+//             vDirpids[i].pid = directVelAlgo_ptr->getPID(i);
+//             vDirpids[i].fbk_PidUnits = directVelAlgo_ptr->fbk_PidUnits;
+//             vDirpids[i].out_PidUnits = directVelAlgo_ptr->out_PidUnits;
+//             //vDirpids[i].controlLaw = directVelAlgo_ptr->type;
+//             vDirpids[i].out_type = directVelAlgo_ptr->out_type;
+//             vDirpids[i].usernamePidSelected = _userNameControlVelocityDirect;
+//             vDirpids[i].enabled = true;
+//         }
+//         else
+//         {
+//             vDirpids[i].enabled = false;
+//             vDirpids[i].usernamePidSelected = paramValues::NONE_STR;
+//         }
+
+//         //get torque pid
+//         if (_userNameControlTorque == paramValues::NONE_STR)
+//         {
+//             torqueAlgo_ptr = NULL;
+//         }
+//         else
+//         {
+//             it = torqueAlgoMap.find(_userNameControlTorque);
+//             if (it == torqueAlgoMap.end())
+//             {
+//                 yError() << "embObjMC BOARD " << _boardname << "Cannot find " << _userNameControlTorque.c_str() << "in parsed trq pid";
+//                 return false;
+//             }
+
+//             torqueAlgo_ptr = torqueAlgoMap[_userNameControlTorque];
+//         }
+
+//         if (torqueAlgo_ptr)
+//         {
+//             tpids[i].pid = torqueAlgo_ptr->getPID(i);
+//             tpids[i].fbk_PidUnits = torqueAlgo_ptr->fbk_PidUnits;
+//             tpids[i].out_PidUnits = torqueAlgo_ptr->out_PidUnits;
+//             //tpids[i].controlLaw = torqueAlgo_ptr->type;
+//             tpids[i].out_type = torqueAlgo_ptr->out_type;
+//             tpids[i].usernamePidSelected = _userNameControlTorque;
+//             tpids[i].enabled = true;
+//             tpids[i].kbemf = _kbemf[i];
+//             tpids[i].ktau = _ktau[i];
+//             tpids[i].viscousPos = _viscousPos[i];
+//             tpids[i].viscousNeg = _viscousNeg[i];
+//             tpids[i].coulombPos = _coulombPos[i];
+//             tpids[i].coulombNeg = _coulombNeg[i];
+//             tpids[i].velocityThres = _velocityThres[i];
+//             tpids[i].filterType = _filterType[i];
+//         }
+//         else
+//         {
+//             tpids[i].enabled = false;
+//             tpids[i].usernamePidSelected = paramValues::NONE_STR;
+//         }
+//     }
+
+//         //eomc_ctrl_out_type_n_a = 0,
+//         //eomc_ctrl_out_type_pwm = 1,
+//         //eomc_ctrl_out_type_vel = 2,
+//         //eomc_ctrl_out_type_cur = 3
+
+//     return checkJointTypes(tpids, "TORQUE") && checkJointTypes(ppids, "POSITION");
+// }
+
+
+//---------------------------------------------------
+// Parse PIDs functions in config file 
+// --------------------------------------------------
+bool Parser::parsePids(yarp::os::Searchable &config, PidControllers_t &pids, bool lowLevPidisMandatory)
+{
+    // Read the CONTROLS group to get the user names of the control pids choosen by user.
+    // it also check that all joints have the same control name for each control type  
+
+    if(!readUserNameControlsGroup(config)) 
+        return false;
+
+    if(!parseSelectedCurrentPid(config, lowLevPidisMandatory, pids.cur))
+        return false;
+
+    if(!parseSelectedPositionControl(config, pids.trj))
+        return false;
+
+    if(!parseSelectedVelocityControl(config, pids.vel))
+        return false;
+
+    if(!parseSelectedMixedControl(config, pids.mix)) 
+        return false;
+
+    if(!parseSelectedPositionDirectControl(config, pids.dir_pos))
+        return false;
+
+    if(!parseSelectedVelocityDirectControl(config, pids.dir_vel))
+        return false;
+
+    if(!parseSelectedTorqueControl(config, pids.trq))
+        return false;
+
+    return true;
+}
+
+bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, std::vector<eomc::PidInfo> &curr_pids)
+{
+        //first of all verify current pid has been configured if it is mandatory
+    
+    if(_userNameControlCurrent == eomc::paramValues::NONE_STR)
+    {
+        for (auto& current_pid : curr_pids)
+        {
+            current_pid.enabled = false;
+        }
+    
+        if(pidisMandatory)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "CurrentPid is mandatory. It should be different from none for at least one joint.";
+            return false;
+        }
+        else
+            return true;
+    }
+    
+    
+    Bottle bot_ctrl;
+    if (!GetGroupBottle(config, _userNameControlCurrent, bot_ctrl)) return false;
+
+
+    // check the control law defined in the PID group called by _currentControlLaw
+    std::string strControlLaw;
+    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+    
+    if (strControlLaw != eomc::paramValues::ControlLawCurrent)
+    {
+        yError() << "embObjMC BOARD" << _boardname << "Unable to use" << strControlLaw <<  "control law for current pid. Quitting.";
+        return false;
+    }
+
+    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+    yarp::dev::PidOutputUnitsEnum    out_unitstype;
+    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype))return false;
+
+    if(! parsePidsGroup2FOC(bot_ctrl, curr_pids)) return false;
+    
+    for(auto & c_pid : curr_pids)
+    {
+        c_pid.enabled = true;
+        c_pid.fbk_PidUnits = fbk_unitstype;
+        c_pid.out_PidUnits = out_unitstype;
+        c_pid.controlLaw = strControlLaw;
+        c_pid.usernamePidSelected = _userNameControlCurrent;
+        c_pid.out_type = eomc_ctrl_out_type_cur; 
+    }
+
+    return true;
+}
+
+bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &pos_pids) 
+{
+
+    if(_userNameControlPosition == eomc::paramValues::NONE_STR)
+    {
+        for (auto& p_pid : pos_pids) p_pid.enabled = false;
+
+        yError() << "embObjMC BOARD " << _boardname << "position Pid is mandatory. It should be different from none for at least one joint.";
+        return false;
+    }
+
+    Bottle bot_ctrl = config.findGroup(_userNameControlPosition.c_str());
+    if(bot_ctrl.isNull())    
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable to find position control group " << _userNameControlPosition.c_str() << " in config file. Quitting.";
+        return false;
+    }
+
+    // 1. check the control law 
+    std::string strControlLaw;
+    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+    
+    if(strControlLaw != eomc::paramValues::ControlLawTrajectory)
+    {
+        yError() << "embObjMC BOARD " << _boardname << " Unable to use " << strControlLaw << " control law for position pid. Quitting.";
+        return false;
+    }
+
+    // 2. read pid units and output type
+    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+    yarp::dev::PidOutputUnitsEnum    out_unitstype;
+    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+
+    // 3. get output type
+    eOmc_ctrl_out_type_t out_type;
+    if(!getOutputType(bot_ctrl, out_type)) return false;
+
+    // 4. read all pid values for all joint 
+    bool parseOk = false;
+    switch (out_type)
+    {
+        case eomc_ctrl_out_type_pwm:
+        case eomc_ctrl_out_type_cur:
+            parseOk = parsePidsGroupRegulationParams(bot_ctrl, pos_pids);
+            break;
+        case eomc_ctrl_out_type_vel:
+            parseOk = parsePidsGroupMinimalParams(bot_ctrl, pos_pids);
+            break;
+    }
+    if(!parseOk)
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlPosition.c_str() <<". Quitting.";
+        return false;
+    }   
+    // 5. set all data in the pid for all joint
+    for(auto & p_pid : pos_pids)
+    {
+        p_pid.enabled = true;
+        p_pid.fbk_PidUnits = fbk_unitstype;
+        p_pid.out_PidUnits = out_unitstype;
+        p_pid.controlLaw = strControlLaw;
+        p_pid.usernamePidSelected = _userNameControlPosition;
+        p_pid.out_type = out_type;
+    }
+    
+    return true;   
+}
+
+bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &vel_pids)
+{
+    if(_userNameControlVelocity == eomc::paramValues::NONE_STR)
+    {
+        for (auto& v_pid : vel_pids)
+            v_pid.enabled = false;
+    
+        yWarning() << "embObjMC BOARD " << _boardname << "Velocity pid has been desabled";
+        return true;
+    }
+
+    Bottle bot_ctrl;
+    if (!GetGroupBottle(config, _userNameControlVelocity, bot_ctrl)) return false;
+
+    // 1. check the control law 
+    std::string strControlLaw;
+    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+    
+    if(strControlLaw != eomc::paramValues::ControlLawTrajectory)
+    {
+        yError() << "embObjMC BOARD " << _boardname << " Unable to use " << strControlLaw << " control law for velocity pid. Quitting.";
+        return false;
+    }
+
+    // 2. read pid units and output type
+    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+    yarp::dev::PidOutputUnitsEnum    out_unitstype;
+    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+
+    // 3. get output type
+    eOmc_ctrl_out_type_t out_type;
+    if(!getOutputType(bot_ctrl, out_type)) return false;
+
+
+    // 4. read all pid values of pid for all joint 
+    bool parseOk = false;
+    switch (out_type)
+    {
+        case eomc_ctrl_out_type_pwm:
+        case eomc_ctrl_out_type_cur:
+            parseOk = parsePidsGroupRegulationParams(bot_ctrl, vel_pids);
+            break;
+        case eomc_ctrl_out_type_vel:
+            parseOk = parsePidsGroupMinimalParams(bot_ctrl, vel_pids);
+            break;
+    }
+    if(!parseOk)
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlVelocity.c_str() <<". Quitting.";
+        return false;
+    }   
+    // 5. set all data in the pid for all joint
+    for(auto & v_pid : vel_pids)
+    {
+        v_pid.enabled = true;
+        v_pid.fbk_PidUnits = fbk_unitstype;
+        v_pid.out_PidUnits = out_unitstype;
+        v_pid.controlLaw = strControlLaw;
+        v_pid.usernamePidSelected = _userNameControlVelocity;
+        v_pid.out_type = out_type;
     }
     return true;
 
+}
+
+bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &mix_pids)
+{
+   if(_userNameControlMixed == eomc::paramValues::NONE_STR)
+    {
+        for (auto& m_pid : mix_pids)
+            m_pid.enabled = false;
+    
+        yInfo() << "embObjMC BOARD " << _boardname << "Mixed pid has been desabled";
+        return true;
+    }
+
+    //TODO: currently the fw  does't support different pid values from Position, so now the parser return error if the control law is different from trajectory, but we can decide to parse the pid values and then set them in the pid struct with the same control law of position control, in this way we can use mixed control with different pid values from position control. We should check with fw team if this is possible or if it can create problems.
+    if(_userNameControlMixed != _userNameControlPosition)
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Mixed control law has a different name than position control law. Currently fw doesn't support different pid values for mixed control from position control, so the control law name should be the same. Quitting.";
+        return false;
+    }
+
+    Bottle bot_ctrl;
+    if (!GetGroupBottle(config, _userNameControlMixed, bot_ctrl)) return false;
+
+    // 1. check the control law 
+    std::string strControlLaw;
+    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+    
+    if(strControlLaw != paramValues::ControlLawTrajectory)
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable to use " << strControlLaw << " control law for mixed pid. Quitting.";
+        return false;
+    }
+
+    // 2. read pid units and output type
+    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+    yarp::dev::PidOutputUnitsEnum    out_unitstype;
+    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+
+    // 3. get output type
+    eOmc_ctrl_out_type_t out_type;
+    if(!getOutputType(bot_ctrl, out_type)) return false;
+
+
+    // 4. read all pid values of pid for all joint 
+    bool parseOk = false;
+    switch (out_type)
+    {
+        case eomc_ctrl_out_type_pwm:
+        case eomc_ctrl_out_type_cur:
+            parseOk = parsePidsGroupRegulationParams(bot_ctrl, mix_pids);
+            break;
+        case eomc_ctrl_out_type_vel:
+            parseOk = parsePidsGroupMinimalParams(bot_ctrl, mix_pids);
+            break;
+    }
+    if(!parseOk)
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlMixed.c_str() <<". Quitting.";
+        return false;
+    }   
+    // 5. set all data in the pid for all joint
+    for(auto & m_pid : mix_pids)
+    {
+        m_pid.enabled = true;
+        m_pid.fbk_PidUnits = fbk_unitstype;
+        m_pid.out_PidUnits = out_unitstype;
+        m_pid.controlLaw = strControlLaw;
+        m_pid.usernamePidSelected = _userNameControlMixed;
+        m_pid.out_type = out_type;
+    }
+    return true;
+
+}
+
+bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &posdir_pids) 
+{
+    if(_userNameControlPositionDirect == paramValues::NONE_STR)
+    {
+        for (auto& pd_pid : posdir_pids) pd_pid.enabled = false;
+        
+        registerOptionalParameter("position direct pid", "0.0 for all pid values", false);
+        //yWarning() << "embObjMC BOARD " << _boardname << "position direct pid has been disabled";
+        return true;
+    }
+
+
+    Bottle bot_ctrl;
+    if (!GetGroupBottle(config, _userNameControlPositionDirect, bot_ctrl)) return false;
+
+    // 1. check the control law 
+    std::string strControlLaw;
+    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+    
+    if(strControlLaw != paramValues::ControlLawDirect)
+    {
+        yError() << "embObjMC BOARD " << _boardname  << " Unable to use " << strControlLaw << " control law for position direct pid. Quitting.";
+        return false;
+    }
+
+    // 2. read pid units and output type
+    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+    yarp::dev::PidOutputUnitsEnum    out_unitstype;
+    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+
+    // 3. get output type
+    eOmc_ctrl_out_type_t out_type;
+    if(!getOutputType(bot_ctrl, out_type)) return false;
+
+    // 4. read all pid values for all joint 
+    bool parseOk = false;
+    switch (out_type)
+    {
+        case eomc_ctrl_out_type_pwm:
+        case eomc_ctrl_out_type_cur:
+            parseOk = parsePidsGroupRegulationParams(bot_ctrl, posdir_pids);
+            break;
+        case eomc_ctrl_out_type_vel:
+            parseOk = parsePidsGroupMinimalParams(bot_ctrl, posdir_pids);
+            break;
+    }
+    if(!parseOk)
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlPositionDirect.c_str() <<". Quitting.";
+        return false;
+    }   
+    // 5. set all data in the pid for all joint
+    for(auto & pd_pid : posdir_pids)
+    {
+        pd_pid.enabled = true;
+        pd_pid.fbk_PidUnits = fbk_unitstype;
+        pd_pid.out_PidUnits = out_unitstype;
+        pd_pid.controlLaw = strControlLaw;
+        pd_pid.usernamePidSelected = _userNameControlPositionDirect;
+        pd_pid.out_type = out_type;
+    }
+    
+    return true;   
+}
+
+bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &veldir_pids) 
+{
+    if(_userNameControlVelocityDirect == paramValues::NONE_STR)
+    {
+        for (auto& vd_pid : veldir_pids) vd_pid.enabled = false;
+        
+        registerOptionalParameter("velocity direct pid", "0.0 for all pid values", false);
+        //yWarning() << "embObjMC BOARD " << _boardname << "velocity direct pid has been disabled";
+        return true;
+    }
+
+    Bottle bot_ctrl;
+    if (!GetGroupBottle(config, _userNameControlVelocityDirect, bot_ctrl)) return false;
+
+    // 1. check the control law 
+    std::string strControlLaw;
+    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+    
+    if(strControlLaw != paramValues::ControlLawDirect)
+    {
+        yError() << "embObjMC BOARD " << _boardname  << " Unable to use " << strControlLaw << " control law for velocity direct pid. Quitting.";
+        return false;
+    }
+
+    // 2. read pid units and output type
+    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+    yarp::dev::PidOutputUnitsEnum    out_unitstype;
+    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+
+    // 3. get output type
+    eOmc_ctrl_out_type_t out_type;
+    if(!getOutputType(bot_ctrl, out_type)) return false;
+    
+    //!! warning "Temporary workaround: map PWM to VEL and CUR to VEL+CUR for velocity direct control. Ask to Alessandro why."
+    if (out_type == eomc_ctrl_out_type_pwm)
+    {
+        out_type = eomc_ctrl_out_type_vel;
+    }
+    else if (out_type == eomc_ctrl_out_type_cur)
+    {
+        out_type = eomc_ctrl_out_type_vel_cur;
+    }
+
+    // 4. read all pid values for all joint 
+    if(!parsePidsGroup2FOC(bot_ctrl, veldir_pids))
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlVelocityDirect.c_str() <<". Quitting.";
+        return false;
+    }   
+
+    // 5. set all data in the pid for all joint
+    for(auto & vd_pid : veldir_pids)
+    {
+        vd_pid.enabled = true;
+        vd_pid.fbk_PidUnits = fbk_unitstype;
+        vd_pid.out_PidUnits = out_unitstype;
+        vd_pid.controlLaw = strControlLaw;
+        vd_pid.usernamePidSelected = _userNameControlVelocityDirect;
+        vd_pid.out_type = out_type;
+    }
+    
+    return true;
+}
+
+bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config,  std::vector<eomc::TrqPidInfo> &trq_pids)
+{
+
+    if(_userNameControlTorque == paramValues::NONE_STR)
+    {
+        for (auto& t_pid : trq_pids) t_pid.enabled = false;
+        return true;
+    }
+
+
+    Bottle bot_ctrl;
+    if (!GetGroupBottle(config, _userNameControlTorque, bot_ctrl)) return false;
+
+    // 1. check the control law 
+    std::string strControlLaw;
+    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+    
+    if(strControlLaw != paramValues::ControlLawTorque)
+    {
+        yError() << "embObjMC BOARD " << _boardname << " Unable to use " << strControlLaw << " control law for torque pid. Quitting.";
+        return false;
+    }
+
+    // 2. read pid units and output type
+    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+    yarp::dev::PidOutputUnitsEnum    out_unitstype;
+    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+
+    // 3. get output type
+    eOmc_ctrl_out_type_t out_type;
+    if(!getOutputType(bot_ctrl, out_type)) return false;
+
+    // 4. read all pid values for all joint 
+    bool parseOk = false;
+    switch (out_type)
+    {
+        case eomc_ctrl_out_type_pwm:
+        case eomc_ctrl_out_type_cur:
+            parseOk = parsePidsGroupTorqueCompensationParams(bot_ctrl, trq_pids);
+            break;
+        case eomc_ctrl_out_type_vel:
+            parseOk = parsePidsGroupRegulationParams(bot_ctrl, trq_pids);
+            break;
+    }
+    if(!parseOk)
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlTorque.c_str() <<". Quitting.";
+        return false;
+    }   
+
+    // 5. set all data in the pid for all joint
+    for(auto & t_pid : trq_pids)
+    {
+        t_pid.enabled = true;
+        t_pid.fbk_PidUnits = fbk_unitstype;
+        t_pid.out_PidUnits = out_unitstype;
+        t_pid.controlLaw = strControlLaw;
+        t_pid.usernamePidSelected = _userNameControlTorque;
+        t_pid.out_type = out_type;
+    }
+    
+    return true;   
 }
 
 
@@ -725,37 +985,36 @@ bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config) // OK
     </group>
 */
 
-bool Parser::parsePidsGroup2FOC(Bottle& pidsGroup, Pid myPid[])
+bool Parser::parsePidsGroup2FOC(yarp::os::Bottle& pidsGroup, std::vector<eomc::PidInfo> &curr_pids)
 {
-
     Bottle xtmp;
 
     if (!extractGroup(pidsGroup, xtmp, "kff", "kff parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kff = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) curr_pids[j].pid.kff = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "kp", "kp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kp = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) curr_pids[j].pid.kp = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "kd", "kd parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kd = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) curr_pids[j].pid.kd = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "maxOutput", "maxOutput parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) curr_pids[j].pid.max_output = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "ki", "ki parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].ki = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) curr_pids[j].pid.ki = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "maxInt", "maxInt parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) curr_pids[j].pid.max_int = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "shift", "shift parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].scale = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) curr_pids[j].pid.scale = xtmp.get(j + 1).asFloat64();
 
     return true;
 }
 
 
-bool Parser::parsePidsGroupSimple(Bottle& pidsGroup, Pid myPid[])
+bool Parser::parsePidsGroupMinimalParams(Bottle& pidsGroup, std::vector<eomc::PidInfo> &pids)
 {
     /*
     <param name = "kff">                        1           1         < / param>
@@ -767,21 +1026,21 @@ bool Parser::parsePidsGroupSimple(Bottle& pidsGroup, Pid myPid[])
     Bottle xtmp;
 
     if (!extractGroup(pidsGroup, xtmp, "kff", "kff parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kff = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) pids[j].pid.kff = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "kp", "kp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kp = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) pids[j].pid.kp = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "kd", "kd parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].kd = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) pids[j].pid.kd = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "maxOutput", "maxOutput parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) pids[j].pid.max_output = xtmp.get(j + 1).asFloat64();
 
     return true;
 }
 
-bool Parser::parsePidsGroupExtended(Bottle& pidsGroup, Pid myPid[])
+bool Parser::parsePidsGroupRegulationParams(Bottle& pidsGroup, std::vector<eomc::PidInfo> &pids)
 {
     /*
     <param name = "kff">                        1           1         < / param>
@@ -790,7 +1049,7 @@ bool Parser::parsePidsGroupExtended(Bottle& pidsGroup, Pid myPid[])
     <param name = "maxOutput">              32000       32000         < / param>
     */
 
-    if (!parsePidsGroupSimple(pidsGroup, myPid)) return false;
+    if (!parsePidsGroupMinimalParams(pidsGroup, pids)) return false;
 
     /*
     <param name = "ki">                     7111.0      1066.0        < / param>
@@ -802,21 +1061,32 @@ bool Parser::parsePidsGroupExtended(Bottle& pidsGroup, Pid myPid[])
     Bottle xtmp;
 
     if (!extractGroup(pidsGroup, xtmp, "ki", "ki parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].ki = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) pids[j].pid.ki = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "maxInt", "maxInt parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) pids[j].pid.max_int = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "stictionUp", "stictionUp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) pids[j].pid.stiction_up_val = xtmp.get(j + 1).asFloat64();
 
     if (!extractGroup(pidsGroup, xtmp, "stictionDown", "stictionDown parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) pids[j].pid.stiction_down_val = xtmp.get(j + 1).asFloat64();
 
     return true;
 }
 
-bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
+bool Parser::parsePidsGroupRegulationParams(Bottle& pidsGroup, std::vector<eomc::TrqPidInfo>& pids)
+{
+    std::vector<eomc::PidInfo> basePids(_njoints);
+    if (!parsePidsGroupRegulationParams(pidsGroup, basePids)) return false;
+    for (int j = 0; j < _njoints; j++)
+    {
+        static_cast<eomc::PidInfo&>(pids[j]) = basePids[j];
+    }
+    return true;
+}
+
+bool Parser::parsePidsGroupTorqueCompensationParams(Bottle& pidsGroup, std::vector<eomc::TrqPidInfo> &pids)
 {
     /*
     <param name = "kff">                        1           1         < / param>
@@ -829,543 +1099,81 @@ bool Parser::parsePidsGroupDeluxe(Bottle& pidsGroup, Pid myPid[])
     <param name = "stictionDwn">               0           0          < / param>
     */
 
-    if (!parsePidsGroupExtended(pidsGroup, myPid)) return false;
+    if (!parsePidsGroupRegulationParams(pidsGroup, pids)) return false;
 
     Bottle xtmp;
 
     if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints, false)) 
     {
-        yWarning() << "kbemf not found. Using fallback where kbemf is set to 0.";
-        for (int j = 0; j<_njoints; j++) _kbemf[j] = 0;
+        registerOptionalParameter("kbemf", std::to_string(_defaultSettings.torquePidDefaults.kbemf), true);
+        for (int j = 0; j<_njoints; j++) pids[j].kbemf = _defaultSettings.torquePidDefaults.kbemf;
     } 
     else
     {
-        for (int j = 0; j<_njoints; j++) _kbemf[j] = xtmp.get(j + 1).asFloat64();
+        for (int j = 0; j<_njoints; j++) pids[j].kbemf = xtmp.get(j + 1).asFloat64();
     }
     
     if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints)) return false; 
-    for (int j = 0; j<_njoints; j++) _ktau[j] = xtmp.get(j + 1).asFloat64();
+    for (int j = 0; j<_njoints; j++) pids[j].ktau = xtmp.get(j + 1).asFloat64();
     
     if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints)) return false; 
-    for (int j = 0; j<_njoints; j++) _filterType[j] = xtmp.get(j + 1).asInt32();
+    for (int j = 0; j<_njoints; j++) pids[j].filterType = xtmp.get(j + 1).asInt32();
 
     // Friction parameters
     if (!extractGroup(pidsGroup, xtmp, "viscousPos", "viscousPos parameter", _njoints, false)) 
     {
-        for (int j = 0; j<_njoints; j++) _viscousPos[j] = 0;
+        registerOptionalParameter("viscousPos", std::to_string(_defaultSettings.torquePidDefaults.viscousPos), true);
+        for (int j = 0; j<_njoints; j++) pids[j].viscousPos = _defaultSettings.torquePidDefaults.viscousPos;
     }
     else
     {
-        for (int j = 0; j<_njoints; j++) _viscousPos[j] = xtmp.get(j + 1).asFloat64();
+        for (int j = 0; j<_njoints; j++) pids[j].viscousPos = xtmp.get(j + 1).asFloat64();
     }
 
     if (!extractGroup(pidsGroup, xtmp, "viscousNeg", "viscousNeg parameter", _njoints, false)) 
     {
-        for (int j = 0; j<_njoints; j++) _viscousNeg[j] = 0;
+        registerOptionalParameter("viscousNeg", std::to_string(_defaultSettings.torquePidDefaults.viscousNeg), true);
+        for (int j = 0; j<_njoints; j++) pids[j].viscousNeg = _defaultSettings.torquePidDefaults.viscousNeg;
     }
     else
     {
-        for (int j = 0; j<_njoints; j++) _viscousNeg[j] = xtmp.get(j + 1).asFloat64();
+        for (int j = 0; j<_njoints; j++) pids[j].viscousNeg = xtmp.get(j + 1).asFloat64();
     }
 
     if (!extractGroup(pidsGroup, xtmp, "coulombPos", "coulombPos parameter", _njoints, false))
     {
-        for (int j = 0; j<_njoints; j++) _coulombPos[j] = 0;
+        registerOptionalParameter("coulombPos", std::to_string(_defaultSettings.torquePidDefaults.coulombPos), true);
+        for (int j = 0; j<_njoints; j++) pids[j].coulombPos = _defaultSettings.torquePidDefaults.coulombPos;
     }
     else
     {
-        for (int j = 0; j<_njoints; j++) _coulombPos[j] = xtmp.get(j + 1).asFloat64();
+        for (int j = 0; j<_njoints; j++) pids[j].coulombPos = xtmp.get(j + 1).asFloat64();
     }
 
     if (!extractGroup(pidsGroup, xtmp, "coulombNeg", "coulombNeg parameter", _njoints, false))
     {
-        for (int j = 0; j<_njoints; j++) _coulombNeg[j] = 0;
+        registerOptionalParameter("coulombNeg", std::to_string(_defaultSettings.torquePidDefaults.coulombNeg), true);
+        for (int j = 0; j<_njoints; j++) pids[j].coulombNeg = _defaultSettings.torquePidDefaults.coulombNeg;
     }
     else
     {
-        for (int j = 0; j<_njoints; j++) _coulombNeg[j] = xtmp.get(j + 1).asFloat64();
+        for (int j = 0; j<_njoints; j++) pids[j].coulombNeg = xtmp.get(j + 1).asFloat64();
     }
 
     if (!extractGroup(pidsGroup, xtmp, "velocityThres", "velocity threshold parameter for torque control", _njoints, false))
     {
-        for (int j = 0; j<_njoints; j++) _velocityThres[j] = 0;
+        registerOptionalParameter("velocityThres", std::to_string(_defaultSettings.torquePidDefaults.velocityThres), true);
+        for (int j = 0; j<_njoints; j++) pids[j].velocityThres = _defaultSettings.torquePidDefaults.velocityThres;
     }
     else
     {
-        for (int j = 0; j<_njoints; j++) _velocityThres[j] = xtmp.get(j + 1).asFloat64();
+        for (int j = 0; j<_njoints; j++) pids[j].velocityThres = xtmp.get(j + 1).asFloat64();
     }
 
 
     return true;
 }
 
-/*
-bool Parser::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
-{
-    int j=0;
-    Bottle xtmp;
-
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kp"), "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asFloat64();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kd"), "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asFloat64();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("ki"), "Pid ki parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asFloat64();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxInt"), "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asFloat64();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxOutput"), "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asFloat64();
-    
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("shift"), "Pid shift parameter", _njoints))
-        for (j = 0; j<_njoints; j++) myPid[j].scale = 0.0;
-    else
-        for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asFloat64();
-
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("ko"), "Pid ko parameter", _njoints))
-        for (j = 0; j<_njoints; j++) myPid[j].offset = 0.0;
-    else
-        for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asFloat64();
-
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionUp"), "Pid stictionUp", _njoints))
-        for (j = 0; j<_njoints; j++) myPid[j].stiction_up_val = 0.0;
-    else    
-        for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asFloat64();
-    
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionDwn"), "Pid stictionDwn", _njoints))
-        for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = 0.0;
-    else
-        for (j = 0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j + 1).asFloat64();
-
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kff"), "Pid kff parameter", _njoints))
-        for (j=0; j<_njoints; j++) myPid[j].kff = 0.0;
-    else
-        for (j = 0; j<_njoints; j++) myPid[j].kff = xtmp.get(j + 1).asFloat64();
-    
-    return true;
-}
-*/
-
-bool Parser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size, bool mandatory)
-{
-    size++;
-    Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
-    if (tmp.isNull())
-    {
-        std::string message = key1 + " parameter not found for board " + _boardname + " in bottle " + input.toString();
-        if(mandatory)
-            yError () << message.c_str();
-        else
-            yWarning() << message.c_str();
-        return false;
-    }
-
-    if(tmp.size()!=size)
-    {
-        yError () << key1.c_str() << " incorrect number of entries in BOARD " << _boardname;
-        return false;
-    }
-
-    out=tmp;
-    return true;
-}
-
-
-bool Parser::parsePidValues(yarp::os::Bottle &b_pid, std::string controlLaw, eOmc_ctrl_out_type_t outType, std::map<std::string, Pid_Algorithm*> &pidMap, pidParserType_t parserType)
-{
-    if (pidMap.find(controlLaw) != pidMap.end()) return true;
-
-    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, outType);
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
-    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
-
-    switch (parserType)
-    {
-    case pidParserType_t::Simple:
-        parsePidsGroupSimple(b_pid, pidAlgo_ptr->pid);
-        break;
-    
-    case pidParserType_t::Extended:
-        parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
-        break;
-
-    case pidParserType_t::Deluxe:
-        parsePidsGroupDeluxe(b_pid, pidAlgo_ptr->pid);
-        break;
-
-    case pidParserType_t::FOC2:
-        parsePidsGroup2FOC(b_pid, pidAlgo_ptr->pid);
-        break;
-        
-    default:
-        break;
-    };
-
-    pidMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
-
-    return true;
-}
-/* Commented because not used
-bool Parser::parsePid_minJerk_outPwm(Bottle &b_pid, string controlLaw)
-{    
-    if (minjerkAlgoMap.find(controlLaw) != minjerkAlgoMap.end()) return true;
-
-    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_pwm);
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
-    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
-
-    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
-
-    minjerkAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
-
-    return true;
-}
-
-bool Parser::parsePid_minJerk_outCur(Bottle &b_pid, string controlLaw)
-{
-    if (minjerkAlgoMap.find(controlLaw) != minjerkAlgoMap.end()) return true;
-
-    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_cur);
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
-    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
-
-    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
-
-    minjerkAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
-
-    return true;
-}
-
-bool Parser::parsePid_minJerk_outVel(Bottle &b_pid, string controlLaw)
-{
-    if (minjerkAlgoMap.find(controlLaw) != minjerkAlgoMap.end()) return true;
-
-    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_vel);
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
-    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
-
-    parsePidsGroupSimple(b_pid, pidAlgo_ptr->pid);
-
-    minjerkAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
-
-    return true;
-}
-
-bool Parser::parsePid_directPos_outPwm(Bottle &b_pid, string controlLaw)
-{
-    if (directPosAlgoMap.find(controlLaw) != directPosAlgoMap.end()) return true;
-
-    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_pwm);
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
-    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
-
-    parsePidsGroupSimple(b_pid, pidAlgo_ptr->pid); // X ANTO: extended is only for torque control because it has friction params
-
-    directPosAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
-
-    return true;
-}
-
-bool Parser::parsePid_direct_outCur(Bottle &b_pid, string controlLaw)
-{
-    if (directPosAlgoMap.find(controlLaw) != directPosAlgoMap.end()) return true;
-
-    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_cur);
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
-    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
-
-    parsePidsGroupSimple(b_pid, pidAlgo_ptr->pid); // X ANTO: extended is only for torque control because it has friction params
-
-    directPosAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
-
-    return true;
-}
-
-bool Parser::parsePid_direct_outVel(Bottle &b_pid, string controlLaw)
-{
-    if (directAlgoMap.find(controlLaw) != directAlgoMap.end()) return true;
-
-    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_vel);
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
-    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
-
-    parsePidsGroupSimple(b_pid, pidAlgo_ptr->pid);
-
-    directAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
-
-    return true;
-}
-
-bool Parser::parsePid_torque_outPwm(Bottle &b_pid, string controlLaw)
-{
-    if (torqueAlgoMap.find(controlLaw) != torqueAlgoMap.end()) return true;
-
-    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_pwm);
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    if(!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
-    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
-
-    parsePidsGroupDeluxe(b_pid, pidAlgo_ptr->pid);
-
-    torqueAlgoMap.insert( std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
-
-    return true;
-}
-
-bool Parser::parsePid_torque_outCur(Bottle &b_pid, string controlLaw)
-{
-    if (torqueAlgoMap.find(controlLaw) != torqueAlgoMap.end()) return true;
-
-    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_cur);
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    if (!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
-    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
-
-    parsePidsGroupDeluxe(b_pid, pidAlgo_ptr->pid);
-
-    torqueAlgoMap.insert(std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr));
-
-    return true;
-}
-
-bool Parser::parsePid_torque_outVel(Bottle &b_pid, string controlLaw)
-{
-    if (torqueAlgoMap.find(controlLaw) != torqueAlgoMap.end()) return true;
-
-    Pid_Algorithm_simple *pidAlgo_ptr = new Pid_Algorithm_simple(_njoints, eomc_ctrl_out_type_vel);
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    if(!parsePidUnitsType(b_pid, fbk_PidUnits, out_PidUnits)) return false;
-    pidAlgo_ptr->setUnits(fbk_PidUnits, out_PidUnits);
-
-    parsePidsGroupExtended(b_pid, pidAlgo_ptr->pid);
-
-    torqueAlgoMap.insert ( std::pair<std::string, Pid_Algorithm*>(controlLaw, pidAlgo_ptr) );
-
-    return true;
-}
-*/
-//TODO: fill also vpids
-bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, PidInfo *pDirpids, PidInfo *vDirpids,TrqPidInfo *tpids)
-{
-    Pid_Algorithm *minjerkAlgo_ptr = NULL;
-    Pid_Algorithm *directPosAlgo_ptr = NULL;
-    Pid_Algorithm *directVelAlgo_ptr = NULL;
-    Pid_Algorithm *torqueAlgo_ptr = NULL;
-
-    //since some joints could not have all pid configured, reset pid values to 0.
-    memset(ppids, 0, sizeof(PidInfo)*_njoints);
-    memset(vpids, 0, sizeof(PidInfo)*_njoints);
-    memset(pDirpids, 0, sizeof(PidInfo)*_njoints);
-    memset(vDirpids, 0, sizeof(PidInfo)*_njoints);
-    memset(tpids, 0, sizeof(TrqPidInfo)*_njoints);
-
-    map<string, Pid_Algorithm*>::iterator it;
-
-    for (int i = 0; i < _njoints; i++)
-    {
-        //get position pid
-        it = minjerkAlgoMap.find(_positionControlLaw[i]);
-        if (it == minjerkAlgoMap.end())
-        {
-            yError() << "embObjMC BOARD" << _boardname << "Cannot find" << _positionControlLaw[i].c_str() << "in parsed pos pid";
-            return false;
-        }
-
-        minjerkAlgo_ptr = minjerkAlgoMap[_positionControlLaw[i]];
-
-        ppids[i].pid = minjerkAlgo_ptr->getPID(i);
-        ppids[i].fbk_PidUnits = minjerkAlgo_ptr->fbk_PidUnits;
-        ppids[i].out_PidUnits = minjerkAlgo_ptr->out_PidUnits;
-        //ppids[i].controlLaw =  minjerkAlgo_ptr->type;
-        ppids[i].out_type = minjerkAlgo_ptr->out_type;
-        ppids[i].usernamePidSelected = _positionControlLaw[i];
-        ppids[i].enabled = true;
-
-        
-        //get position direct pid
-        if (_positionDirectControlLaw[i] != "none")
-        {
-            it = directPosAlgoMap.find(_positionDirectControlLaw[i]);
-            if (it == directPosAlgoMap.end())
-            {
-                yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _positionDirectControlLaw[i].c_str() << "in parsed posDirect pid";
-                return false;
-            }
-
-            directPosAlgo_ptr = directPosAlgoMap[_positionDirectControlLaw[i]];
-        }
-
-        if (directPosAlgo_ptr)
-        {
-            pDirpids[i].pid = directPosAlgo_ptr->getPID(i);
-            pDirpids[i].fbk_PidUnits = directPosAlgo_ptr->fbk_PidUnits;
-            pDirpids[i].out_PidUnits = directPosAlgo_ptr->out_PidUnits;
-            //pDirpids[i].controlLaw = directPosAlgo_ptr->type;
-            pDirpids[i].out_type = directPosAlgo_ptr->out_type;
-            pDirpids[i].usernamePidSelected = _positionDirectControlLaw[i];
-            pDirpids[i].enabled = true;
-        }
-        else
-        {
-            pDirpids[i].enabled = false;
-            pDirpids[i].usernamePidSelected = "none";
-        }
-        
-        //get velocity direct pid
-        if (_velocityDirectControlLaw[i] != "none")
-        {
-            it = directVelAlgoMap.find(_velocityDirectControlLaw[i]);
-            if (it == directVelAlgoMap.end())
-            {
-                yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _velocityDirectControlLaw[i].c_str() << "in parsed velDirect pid";
-                return false;
-            }
-
-            directVelAlgo_ptr = directVelAlgoMap[_velocityDirectControlLaw[i]];
-        }
-
-        if (directVelAlgo_ptr)
-        {
-            vDirpids[i].pid = directVelAlgo_ptr->getPID(i);
-            vDirpids[i].fbk_PidUnits = directVelAlgo_ptr->fbk_PidUnits;
-            vDirpids[i].out_PidUnits = directVelAlgo_ptr->out_PidUnits;
-            //vDirpids[i].controlLaw = directVelAlgo_ptr->type;
-            vDirpids[i].out_type = directVelAlgo_ptr->out_type;
-            vDirpids[i].usernamePidSelected = _velocityDirectControlLaw[i];
-            vDirpids[i].enabled = true;
-        }
-        else
-        {
-            vDirpids[i].enabled = false;
-            vDirpids[i].usernamePidSelected = "none";
-        }
-
-        //get torque pid
-        if (_torqueControlLaw[i] == "none")
-        {
-            torqueAlgo_ptr = NULL;
-        }
-        else
-        {
-            it = torqueAlgoMap.find(_torqueControlLaw[i]);
-            if (it == torqueAlgoMap.end())
-            {
-                yError() << "embObjMC BOARD " << _boardname << "Cannot find " << _torqueControlLaw[i].c_str() << "in parsed trq pid";
-                return false;
-            }
-
-            torqueAlgo_ptr = torqueAlgoMap[_torqueControlLaw[i]];
-        }
-
-        if (torqueAlgo_ptr)
-        {
-            tpids[i].pid = torqueAlgo_ptr->getPID(i);
-            tpids[i].fbk_PidUnits = torqueAlgo_ptr->fbk_PidUnits;
-            tpids[i].out_PidUnits = torqueAlgo_ptr->out_PidUnits;
-            //tpids[i].controlLaw = torqueAlgo_ptr->type;
-            tpids[i].out_type = torqueAlgo_ptr->out_type;
-            tpids[i].usernamePidSelected = _torqueControlLaw[i];
-            tpids[i].enabled = true;
-            tpids[i].kbemf = _kbemf[i];
-            tpids[i].ktau = _ktau[i];
-            tpids[i].viscousPos = _viscousPos[i];
-            tpids[i].viscousNeg = _viscousNeg[i];
-            tpids[i].coulombPos = _coulombPos[i];
-            tpids[i].coulombNeg = _coulombNeg[i];
-            tpids[i].velocityThres = _velocityThres[i];
-            tpids[i].filterType = _filterType[i];
-        }
-        else
-        {
-            tpids[i].enabled = false;
-            tpids[i].usernamePidSelected = "none";
-        }
-    }
-
-        //eomc_ctrl_out_type_n_a = 0,
-        //eomc_ctrl_out_type_pwm = 1,
-        //eomc_ctrl_out_type_vel = 2,
-        //eomc_ctrl_out_type_cur = 3
-
-    return checkJointTypes(tpids, "TORQUE") && checkJointTypes(ppids, "POSITION");
-}
-
-bool Parser::parsePidUnitsType(Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits)
-{
-
-    Value &fbkControlUnits=bPid.find("fbkControlUnits");
-    Value &outControlUnits = bPid.find("outputControlUnits");
-    if(fbkControlUnits.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname << " missing fbkControlUnits parameter";
-        return false;
-    }
-    if(!fbkControlUnits.isString())
-    {
-        yError() << "embObjMC BOARD " << _boardname << " fbkControlUnits parameter is not a string";
-        return false;
-    }
-    if (outControlUnits.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname << " missing outputControlUnits parameter";
-        return false;
-    }
-    if (!outControlUnits.isString())
-    {
-        yError() << "embObjMC BOARD " << _boardname << " outputControlUnits parameter is not a string";
-        return false;
-    }
-
-    if(fbkControlUnits.toString()==string("metric_units"))
-    {
-        fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::METRIC;
-    }
-    else if(fbkControlUnits.toString()==string("machine_units"))
-    {
-        fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
-    }
-    else
-    {
-        yError() << "embObjMC BOARD " << _boardname << "invalid fbkControlUnits value: " << fbkControlUnits.toString().c_str();
-        return false;
-    }
-
-    if (outControlUnits.toString() == string("dutycycle_percent"))
-    {
-        out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT;
-    }
-    else if (outControlUnits.toString() == string("machine_units"))
-    {
-        out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
-    }
-    else
-    {
-        yError() << "embObjMC BOARD " << _boardname << "invalid outputControlUnits value: " << outControlUnits.toString().c_str();
-        return false;
-    }
-    return true;
-}
 
 bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificInfo_t *foc_based_info, std::string groupName, std::vector<std::unique_ptr<eomc::ITemperatureSensor>>& temperatureSensorsVector)
 {
@@ -1378,67 +1186,62 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
 
     Bottle xtmp;
     unsigned int i;
-
+    // 1. HasHallSensor
     if (!extractGroup(focGroup, xtmp, "HasHallSensor", "HasHallSensor 0/1 ", _njoints))
-    {
         return false;
-    }
-    else
+    
+    for (i = 1; i < xtmp.size(); i++)
+        foc_based_info[i - 1].hasHallSensor = xtmp.get(i).asInt32() != 0;
+
+    // 2. HasTempSensor is depracated, use TemperatureSensorType
+    if (extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints, false))
     {
-        for (i = 1; i < xtmp.size(); i++)
-           foc_based_info[i - 1].hasHallSensor = xtmp.get(i).asInt32() != 0;
+        yError() << _boardname << "ATTENTION: HasTempSensor is deprecated. Use TemperatureSensorType (PT100, PT1000, NONE). If not specified, TemperatureSensorType defaults to NONE and the firmware does not check the motor temperature";
+        return false;
     }
 
     if (!extractGroup(focGroup, xtmp, "TemperatureSensorType", "TemperatureSensorType PT100/PT1000/NONE ", _njoints, false))
     {
-        // 1. check if I have old config
-        if (extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints, false)) 
-        {
-            for (i = 1; i < xtmp.size(); i++)
-            {
-                if (xtmp.get(i).asInt32() != 0)
-                {
-                    yError() << "In " << _boardname << "entry" << i << ": inconsistent configuration. HasTempSensor cannot be used alone. Will be soon deprecated. Use TemperatureSensorType in 2FOC group and set Temperature limits in LIMITS group." ;
-                    return false;
-                }
-            }
-        }
-
-        // if I'm here all joints have HasTempSensor =0
-        for (i = 0; i < _njoints; i++)
+        registerOptionalParameter("TemperatureSensorType", eomc::paramValues::TemperatureSensorType_NONE, false);
+        for (i = 0; i < (unsigned)_njoints; i++)
         {
             foc_based_info[i].hasTempSensor = 0;
             temperatureSensorsVector.at(i) = std::make_unique<eomc::TemperatureSensorNONE>();
-            yWarning()<< _boardname << "ATTENTION HasTempSensor will be soon DEPRECATED in favour of TemperatureSensorType (PT100, PT1000, NONE(=default)). Currently kept for backward compatibility but update your configuration files if using a Temperature Sensor";
-        } 
-
+        }
     }    
-    else
+    else //I have the TemperatureSensorType
     {
         for (i = 1; i < xtmp.size(); i++)
         {
             std::string s = xtmp.get(i).asString();
-            if(s == "PT100")
+            if(s == eomc::paramValues::TemperatureSensorType_PT100)
             {
                 foc_based_info[i - 1].hasTempSensor = 1;
                 temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorPT100>();
                 
             }
-            else if (s == "PT1000") 
+            else if (s == eomc::paramValues::TemperatureSensorType_PT1000) 
             {
                 
                 foc_based_info[i - 1].hasTempSensor = 1;
                 temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorPT1000>();
             }
-            else
+            else if (s == eomc::paramValues::TemperatureSensorType_NONE)
             {
-                if(s != "NONE")//if sis == NONE the warning is not correct
-                    yWarning("Not available or Not supported TemperatureSensorType: %s. Setting NONE as default", s.c_str());
                 foc_based_info[i - 1].hasTempSensor = 0;
                 temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorNONE>();
             }
+            else
+            {
+                yError() <<  _boardname << "Not supported TemperatureSensorType" << s << "Available TemperatureSensorType are: " << eomc::paramValues::TemperatureSensorType_PT100 << ", " << eomc::paramValues::TemperatureSensorType_PT1000 << " and " << eomc::paramValues::TemperatureSensorType_NONE;
+                foc_based_info[i - 1].hasTempSensor = 0;
+                temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorNONE>();
+                return false;
+            }
         }
     }
+
+    // 3. HasRotorEncoder
     if (!extractGroup(focGroup, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
     {
         return false;
@@ -1461,8 +1264,7 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
 
     if (!extractGroup(focGroup, xtmp, "Verbose", "Verbose 0/1 ", _njoints, false))
     {
-        //return false;
-        yWarning() << "In " << _boardname << " there isn't " << groupName << ". Verbose failed. By default it is disabled" ;
+        registerOptionalParameter("Verbose", "0 (disabled)", false);
         for (i = 0; i < (unsigned)_njoints; i++)
             foc_based_info[i].verbose = 0;
     }
@@ -1475,8 +1277,7 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
 	std::vector<int> AutoCalibration (_njoints);
     if (!extractGroup(focGroup, xtmp, "AutoCalibration", "AutoCalibration 0/1 ", _njoints, false))
     {
-        //return false;
-        yWarning() << "In " << _boardname << " there isn't " << groupName << ". AutoCalibration failed. By default it is disabled" ;
+        registerOptionalParameter("AutoCalibration", "0 (disabled)", false);
         for (i = 0; i < (unsigned)_njoints; i++)
             AutoCalibration[i] = 0;
     }
@@ -1489,8 +1290,7 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
     std::vector<float> Kbemf (_njoints);
     if (!extractGroup(focGroup, xtmp, "Kbemf", "Kbemf", _njoints, false))
     {
-        //return false;
-        yWarning() << "In " << _boardname << " there isn't " << groupName << ". Kbemf failed. By default Kbemf is set to 0" ;
+        registerOptionalParameter("Kbemf", "0.0f", false);
         for (i = 0; i < (unsigned)_njoints; i++)
             foc_based_info[i].kbemf = 0.0f;
     }
@@ -1563,33 +1363,30 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificI
 
 }
 
+
+
+//---------------------------------------------------
+// Parse JointSets functions in config file 
+// --------------------------------------------------
 bool Parser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &joint2set)
 {
-    Bottle jointsetcfg = config.findGroup("JOINTSET_CFG");
-    if (jointsetcfg.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Missing JOINTSET_CFG group";
-        return false;
-    }
+    Bottle jointsetcfg, xml;
+
+    if(!GetGroupBottle(config, "JOINTSET_CFG", jointsetcfg)) return false;
 
 
     Bottle xtmp;
     int numofsets = 0;
 
     if(!extractGroup(jointsetcfg, xtmp, "numberofsets", "number of sets ", 1))
-    {
         return  false;
-    }
-
+ 
     numofsets = xtmp.get(1).asInt32();
-
     if((0 == numofsets) || (numofsets > _njoints))
     {
         yError() << "embObjMC BOARD " << _boardname << "Number of jointsets is not correct. it should belong to (1, " << _njoints << ")";
         return false;
     }
-
-
 
     if(!checkAndSetVectorSize(jsets, numofsets, "parseJointsetCfgGroup"))
         return false;
@@ -1679,168 +1476,165 @@ bool Parser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<Joi
     return true;
 }
 
-bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts, int defaultTimeout)
+
+//---------------------------------------------------
+// Parse timeouts in config file 
+// --------------------------------------------------
+bool Parser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts)
 {
-    if(!checkAndSetVectorSize(timeouts, _njoints, "parseTimeoutsGroup"))
-        return false;
 
-    unsigned int i;
+    Bottle timeoutsGroup, xtmp; 
 
-    Bottle timeoutsGroup =config.findGroup("TIMEOUTS");
-    if(timeoutsGroup.isNull())
+    // for(auto i=0; i<_njoints; i++)
+    // {
+    //     yError() << "embObjMC BOARD " << _boardname << " joint " << i
+    //              << " _defaultSettings.timeoutsDefaults:"
+    //              << " velocity_ref=" << (double)_defaultSettings.timeoutsDefaults.velocity_ref << " (str: " << std::to_string(_defaultSettings.timeoutsDefaults.velocity_ref) << ")"
+    //              << " current_ref="  << (double)_defaultSettings.timeoutsDefaults.current_ref  << " (str: " << std::to_string(_defaultSettings.timeoutsDefaults.current_ref) << ")"
+    //              << " pwm_ref="      << (double)_defaultSettings.timeoutsDefaults.pwm_ref      << " (str: " << std::to_string(_defaultSettings.timeoutsDefaults.pwm_ref) << ")"
+    //              << " torque_ref="   << (double)_defaultSettings.timeoutsDefaults.torque_ref   << " (str: " << std::to_string(_defaultSettings.timeoutsDefaults.torque_ref) << ")"
+    //              << " torque_fbk="   << (double)_defaultSettings.timeoutsDefaults.torque_fbk   << " (str: " << std::to_string(_defaultSettings.timeoutsDefaults.torque_fbk) << ")";
+    // }
+
+    if(!GetGroupBottle(config, "TIMEOUTS", timeoutsGroup, false))
     {
-        yError() << "embObjMC BOARD " << _boardname << " no TIMEOUTS group found in config file.";
-        return false;
+        //yWarning() << "embObjMC BOARD " << _boardname << " TIMEOUTS group not found in configuration file. Using default values.";
+        for(auto i=0; i<_njoints; i++)
+        {
+            timeouts[i].velocity_ref = _defaultSettings.timeoutsDefaults.velocity_ref;
+            timeouts[i].current_ref  = _defaultSettings.timeoutsDefaults.current_ref;
+            timeouts[i].pwm_ref      = _defaultSettings.timeoutsDefaults.pwm_ref;
+            timeouts[i].torque_ref   = _defaultSettings.timeoutsDefaults.torque_ref;
+            timeouts[i].torque_fbk   = _defaultSettings.timeoutsDefaults.torque_fbk;
+        }
+        return true;
     }
 
-    Bottle xtmp;
-    xtmp.clear();
+
     if (!extractGroup(timeoutsGroup, xtmp, "velocity", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no velocity parameter found in TIMEOUTS group in motion control config file, using default = " << defaultTimeout << " ms.";
-        for(i=0; i<_njoints; i++)
-            timeouts[i].velocity_ref = defaultTimeout;
+        registerOptionalParameter("timeout.velocity", std::to_string(_defaultSettings.timeoutsDefaults.velocity_ref), true);
+        for(auto i=0; i<_njoints; i++) timeouts[i].velocity_ref = _defaultSettings.timeoutsDefaults.velocity_ref;
     }
     else
     {
-        for(i=1; i<xtmp.size(); i++)
-            timeouts[i-1].velocity_ref = xtmp.get(i).asInt32();
+        for(auto i=0; i<_njoints; i++) timeouts[i].velocity_ref = xtmp.get(i+1).asInt32();
     }
-    
-    xtmp.clear();
+
     if (!extractGroup(timeoutsGroup, xtmp, "current", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no current parameter found in TIMEOUTS group in motion control config file, using default = " << defaultTimeout << " ms.";
-        for(i=0; i<_njoints; i++)
-            timeouts[i].current_ref = defaultTimeout;        
+        registerOptionalParameter("timeout.current", std::to_string(_defaultSettings.timeoutsDefaults.current_ref), true);
+        for(auto i=0; i<_njoints; i++) timeouts[i].current_ref = _defaultSettings.timeoutsDefaults.current_ref;
     }
     else
     {
-        for(i=1; i<xtmp.size(); i++)
-            timeouts[i-1].current_ref = xtmp.get(i).asInt32();
+        for(auto i=0; i<_njoints; i++) timeouts[i].current_ref = xtmp.get(i+1).asInt32();
     }
 
-    xtmp.clear();
     if (!extractGroup(timeoutsGroup, xtmp, "pwm", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no pwm parameter found in TIMEOUTS group in motion control config file, using default = " << defaultTimeout << " ms.";
-        for(i=0; i<_njoints; i++)
-            timeouts[i].pwm_ref = defaultTimeout;
+        registerOptionalParameter("timeout.pwm", std::to_string(_defaultSettings.timeoutsDefaults.pwm_ref), true);
+        for(auto i=0; i<_njoints; i++) timeouts[i].pwm_ref = _defaultSettings.timeoutsDefaults.pwm_ref;
     }
     else
     {
-        for(i=1; i<xtmp.size(); i++)
-            timeouts[i-1].pwm_ref = xtmp.get(i).asInt32();
+        for(auto i=0; i<_njoints; i++) timeouts[i].pwm_ref = xtmp.get(i+1).asInt32();
     }
 
-    xtmp.clear();
     if (!extractGroup(timeoutsGroup, xtmp, "torque", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no torque parameter found in TIMEOUTS group in motion control config file, using default = " << defaultTimeout << " ms.";
-        for(i=0; i<_njoints; i++)
-            timeouts[i].torque_ref = defaultTimeout;
+        registerOptionalParameter("timeout.torque", std::to_string(_defaultSettings.timeoutsDefaults.torque_ref), true);
+        for(auto i=0; i<_njoints; i++) timeouts[i].torque_ref = _defaultSettings.timeoutsDefaults.torque_ref;
     }
     else
     {
-        for(i=1; i<xtmp.size(); i++)
-            timeouts[i-1].torque_ref = xtmp.get(i).asInt32();
+        for(auto i=0; i<_njoints; i++) timeouts[i].torque_ref = xtmp.get(i+1).asInt32();
     }
 
-    xtmp.clear();
     if (!extractGroup(timeoutsGroup, xtmp, "torque_measure", "a list of timeout to be used in the vmo control", _njoints, false))
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no torque_measure parameter found in TIMEOUTS group in motion control config file, using default = " << defaultTimeout << " ms.";
-        for(i=0; i<_njoints; i++)
-            timeouts[i].torque_fbk = defaultTimeout;
+        registerOptionalParameter("timeout.torque_measure", std::to_string(_defaultSettings.timeoutsDefaults.torque_fbk), true);
+        for(auto i=0; i<_njoints; i++) timeouts[i].torque_fbk = _defaultSettings.timeoutsDefaults.torque_fbk;
     }
     else
     {
-        for(i=1; i<xtmp.size(); i++)
-            timeouts[i-1].torque_fbk = xtmp.get(i).asInt32();
+        for(auto i=0; i<_njoints; i++) timeouts[i].torque_fbk = xtmp.get(i+1).asInt32();
     }
 
     return true;
-
 }
 
+//---------------------------------------------------
+// Parse current limits in config file 
+// --------------------------------------------------
 bool Parser::parseCurrentLimits(yarp::os::Searchable &config, std::vector<motorCurrentLimits_t> &currLimits)
 {
-    Bottle &limits=config.findGroup("LIMITS");
-    if (limits.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname << " detected that Group LIMITS is not found in configuration file";
-        return false;
-    }
-
-    currLimits.resize(_njoints);
-    unsigned int i;
-    Bottle xtmp;
+    Bottle limits, xtmp; 
+    if(!GetGroupBottle(config, "LIMITS", limits)) return false;
 
     // current limit
     if (!extractGroup(limits, xtmp, "motorOverloadCurrents","a list of current limits", _njoints))
         return false;
-    else
-        for(i=1; i<xtmp.size(); i++) currLimits[i-1].overloadCurrent=xtmp.get(i).asFloat64();
+
+    for(auto i=1; i<xtmp.size(); i++) currLimits[i-1].overloadCurrent=xtmp.get(i).asFloat64();
 
     // nominal current
     if (!extractGroup(limits, xtmp, "motorNominalCurrents","a list of nominal current limits", _njoints))
         return false;
-    else
-        for(i=1; i<xtmp.size(); i++) currLimits[i-1].nominalCurrent =xtmp.get(i).asFloat64();
+    for(auto i=1; i<xtmp.size(); i++) currLimits[i-1].nominalCurrent =xtmp.get(i).asFloat64();
 
     // peak current
     if (!extractGroup(limits, xtmp, "motorPeakCurrents","a list of peak current limits", _njoints))
         return false;
-    else
-        for(i=1; i<xtmp.size(); i++) currLimits[i-1].peakCurrent=xtmp.get(i).asFloat64();
+    for(auto i=1; i<xtmp.size(); i++) currLimits[i-1].peakCurrent=xtmp.get(i).asFloat64();
 
     return true;
 
 }
 
+//---------------------------------------------------
+// Parse temperature limits in config file 
+// --------------------------------------------------
 bool Parser::parseTemperatureLimits(yarp::os::Searchable &config, std::vector<temperatureLimits_t> &temperatureLimits)
 {
-    Bottle &limits = config.findGroup("LIMITS");
-    if (limits.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname << " detected that Group LIMITS is not found in configuration file";
-        return false;
-    }
+    Bottle limits, xtmp; 
+    if(!GetGroupBottle(config, "LIMITS", limits)) return false;
 
-    temperatureLimits.resize(_njoints);
-    unsigned int i;
-    Bottle xtmp;
 
     // hardware limit
     if(!extractGroup(limits, xtmp, "hardwareTemperatureLimits", "a list of temperature limits", _njoints, false))
-    {
-        yWarning("hardwareTemperatureLimits param not found in config file for board %s. Please update robot configuration files or contact https://github.com/robotology/icub-support if needed. Using default values.", _boardname.c_str());
-        for (i = 0; i < (unsigned)_njoints; i++)
+     {
+        registerOptionalParameter("hardwareTemperatureLimits", std::to_string(_defaultSettings.temperatureLimitsDefaults.hardware), false);
+        // yWarning("hardwareTemperatureLimits param not found in config file for board %s. Please update robot configuration files or contact https://github.com/robotology/icub-support if needed. Using default values.", _boardname.c_str());
+        for (auto i = 0; i < (unsigned)_njoints; i++)
         {
-            temperatureLimits[i].hardwareTemperatureLimit  = 0;
-            temperatureLimits[i].warningTemperatureLimit = 0;
+            temperatureLimits[i].hardware  = _defaultSettings.temperatureLimitsDefaults.hardware;
+            temperatureLimits[i].warning = _defaultSettings.temperatureLimitsDefaults.warning;
         }
     }
     else
     {
-        for (i = 1; i < xtmp.size(); i++) temperatureLimits[i - 1].hardwareTemperatureLimit = xtmp.get(i).asFloat64();
+        for (auto i = 1; i < xtmp.size(); i++) temperatureLimits[i - 1].hardware = xtmp.get(i).asFloat64();
         if (!extractGroup(limits, xtmp, "warningTemperatureLimits", "a list of warning temperature limits", _njoints, false))
         {
             // warning limit - parsing it only if hardwareTemperatureLimit available
-            yWarning("warningTemperatureLimits param not found in config file for board %s. Please update robot configuration files or contact https://github.com/robotology/icub-support if needed. Using default values.", _boardname.c_str());
+            registerOptionalParameter("warningTemperatureLimits", std::to_string(_defaultSettings.temperatureLimitsDefaults.warning), false);
+            //yWarning("warningTemperatureLimits param not found in config file for board %s. Please update robot configuration files or contact https://github.com/robotology/icub-support if needed. Using default values.", _boardname.c_str());
 
-            for (i = 0; i < (unsigned)_njoints; i++) temperatureLimits[i].warningTemperatureLimit = 0;
+            for (auto i = 0; i < (unsigned)_njoints; i++) temperatureLimits[i].warning = _defaultSettings.temperatureLimitsDefaults.warning;
         }
         else
         {
-            for (i = 1; i < xtmp.size(); i++) temperatureLimits[i - 1].warningTemperatureLimit = xtmp.get(i).asFloat64();
+            for (auto i = 1; i < xtmp.size(); i++) temperatureLimits[i - 1].warning = xtmp.get(i).asFloat64();
         }
     }
+        
+
     
     //Now I verify that warning temperature limits is < 85% of hardwareTemperatureLimit.
-    for (i = 0; i < (unsigned)_njoints; i++)
+    for (auto i = 0; i < (unsigned)_njoints; i++)
     {
-        if(temperatureLimits[i].warningTemperatureLimit > (0.85 * temperatureLimits[i].hardwareTemperatureLimit))
+        if(temperatureLimits[i].warning > (0.85 * temperatureLimits[i].hardware))
         {
             yError() << "In " << _boardname << "joint " << i << ": inconsistent temperature limits. warningTemperatureLimit must be smaller than 85% of hardwareTemperatureLimit" ;
             return false;
@@ -1849,40 +1643,35 @@ bool Parser::parseTemperatureLimits(yarp::os::Searchable &config, std::vector<te
     return true;
 }
 
+//---------------------------------------------------
+// Parse joint limits  in config file 
+// --------------------------------------------------
 bool Parser::parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLimits_t> &jointsLimits)
 {
-    Bottle &limits=config.findGroup("LIMITS");
-    if (limits.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname << " detected that Group LIMITS is not found in configuration file";
-        return false;
-    }
-
-    jointsLimits.resize(_njoints);
-    unsigned int i;
-    Bottle xtmp;
+    Bottle limits, xtmp; 
+    if(!GetGroupBottle(config, "LIMITS", limits)) return false;
 
     // max limit
     if (!extractGroup(limits, xtmp, "jntPosMax","a list of user maximum angles (in degrees)", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posMax = xtmp.get(i).asFloat64();
+        for(auto i=1; i<xtmp.size(); i++) jointsLimits[i-1].posMax = xtmp.get(i).asFloat64();
 
     // min limit
     if (!extractGroup(limits, xtmp, "jntPosMin","a list of user minimum angles (in degrees)", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posMin = xtmp.get(i).asFloat64();
+        for(auto i=1; i<xtmp.size(); i++) jointsLimits[i-1].posMin = xtmp.get(i).asFloat64();
 
     // max hardware limit
     if (!extractGroup(limits, xtmp, "hardwareJntPosMax","a list of hardware maximum angles (in degrees)", _njoints))
         return false;
     else
     {
-        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMax = xtmp.get(i).asFloat64();
+        for(auto i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMax = xtmp.get(i).asFloat64();
 
         //check hardware limits are bigger then user limits
-        for(i=0; i<(unsigned)_njoints; i++)
+        for(auto i=0; i<(unsigned)_njoints; i++)
         {
             if(jointsLimits[i].posMax > jointsLimits[i].posHwMax)
             {
@@ -1899,10 +1688,10 @@ bool Parser::parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLi
     }
     else
     {
-        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMin = xtmp.get(i).asFloat64();
+        for(auto i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMin = xtmp.get(i).asFloat64();
 
         //check hardware limits are bigger then user limits
-        for(i=0; i<(unsigned)_njoints; i++)
+        for(auto i=0; i<(unsigned)_njoints; i++)
         {
             if(jointsLimits[i].posMin < jointsLimits[i].posHwMin)
             {
@@ -1917,114 +1706,49 @@ bool Parser::parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLi
     if (!extractGroup(limits, xtmp, "jntVelMax", "a list of maximum velocities for the joints (in degrees/s)", _njoints))
         return false;
     else
-        for (i = 1; i<xtmp.size(); i++)     jointsLimits[i - 1].velMax = xtmp.get(i).asFloat64();
+        for (auto i = 1; i<xtmp.size(); i++)     jointsLimits[i - 1].velMax = xtmp.get(i).asFloat64();
 
     return true;
 }
 
+//---------------------------------------------------
+// Parse rotor limits in config file 
+// --------------------------------------------------
 bool Parser::parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLimits_t> &rotorsLimits)
 {
-    Bottle &limits=config.findGroup("LIMITS");
-    if (limits.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname << " detected that Group LIMITS is not found in configuration file";
-        return false;
-    }
-
-    if(!checkAndSetVectorSize(rotorsLimits, _njoints, "parseRotorsLimits"))
-        return false;
-
-    Bottle xtmp;
-    unsigned int i;
+    Bottle limits, xtmp; 
+    if(!GetGroupBottle(config, "LIMITS", limits)) return false;
 
     // Rotor max limit
     if (!extractGroup(limits, xtmp, "rotorPosMax","a list of maximum rotor angles (in degrees)", _njoints))
         return false;
-    else
-        for(i=1; i<xtmp.size(); i++) rotorsLimits[i-1].posMax = xtmp.get(i).asFloat64();
-
-
+    for(auto i=1; i<xtmp.size(); i++) rotorsLimits[i-1].posMax = xtmp.get(i).asFloat64();
 
     // Rotor min limit
     if (!extractGroup(limits, xtmp, "rotorPosMin","a list of minimum roto angles (in degrees)", _njoints))
         return false;
-    else
-        for(i=1; i<xtmp.size(); i++) rotorsLimits[i-1].posMin = xtmp.get(i).asFloat64();
+    for(auto i=1; i<xtmp.size(); i++) rotorsLimits[i-1].posMin = xtmp.get(i).asFloat64();
 
     // Motor pwm limit
     if (!extractGroup(limits, xtmp, "motorPwmLimit","a list of motor PWM limits", _njoints))
         return false;
-    else
-        for(i=1; i<xtmp.size(); i++)
+
+    for(auto i=1; i<xtmp.size(); i++)
+    {
+        rotorsLimits[i-1].pwmMax = xtmp.get(i).asFloat64();
+        if(rotorsLimits[i-1].pwmMax<0)
         {
-            rotorsLimits[i-1].pwmMax = xtmp.get(i).asFloat64();
-            if(rotorsLimits[i-1].pwmMax<0)
-            {
-                yError() << "motorPwmLimit should be a positive value";
-                return false;
-            }
+            yError() << "In board " << _boardname << " motorPwmLimit should be a positive value";
+            return false;
         }
-
-    return true;
-
-}
-
-bool Parser::parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &couplingInfo)
-{
-    Bottle coupling_bottle = config.findGroup("COUPLINGS");
-    if (coupling_bottle.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname <<  "Missing Coupling group";
-        return false;
     }
-    Bottle xtmp;
-    int  fixedMatrix4X4Size = 16;
-    int  fixedMatrix4X6Size = 24;
-    bool formaterror =false;
-
-    // matrix J2M
-    if (!extractGroup(coupling_bottle, xtmp, "matrixJ2M", "matrixJ2M ", fixedMatrix4X4Size))
-    {
-        return false;
-    }
-
-    if(false == convert(xtmp, couplingInfo.matrixJ2M, formaterror, fixedMatrix4X4Size))
-    {
-       yError() << "embObjMC BOARD " << _boardname << " has detected an illegal format for some of the values of CONTROLLER.matrixJ2M";
-       return false;
-    }
-
-
-    // matrix E2J
-    if (!extractGroup(coupling_bottle, xtmp, "matrixE2J", "matrixE2J ", fixedMatrix4X6Size))
-    {
-        return false;
-    }
-
-    formaterror = false;
-    if(false == convert(xtmp, couplingInfo.matrixE2J, formaterror, fixedMatrix4X6Size))
-    {
-        yError() << "embObjMC BOARD " << _boardname << " has detected an illegal format for some of the values of CONTROLLER.matrixE2J";
-        return false;
-    }
-
-
-    // matrix M2J
-    if (!extractGroup(coupling_bottle, xtmp, "matrixM2J", "matrixM2J ", fixedMatrix4X4Size))
-    {
-        return false;
-    }
-
-    formaterror = false;
-    if( false == convert(xtmp, couplingInfo.matrixM2J, formaterror, fixedMatrix4X4Size))
-    {
-        yError() << "embObjMC BOARD " << _boardname << " has detected an illegal format for some of the values of CONTROLLER.matrixM2J";
-        return false;
-    }
-
     return true;
 }
 
+
+//---------------------------------------------------
+// Parse behavioral flags in config file 
+// --------------------------------------------------
 bool Parser::parseMotioncontrolVersion(yarp::os::Searchable &config, int &version)
 {
     if (!config.findGroup("GENERAL").find("MotioncontrolVersion").isInt32())
@@ -2038,6 +1762,7 @@ bool Parser::parseMotioncontrolVersion(yarp::os::Searchable &config, int &versio
 
 }
 
+
 bool Parser::isVerboseEnabled(yarp::os::Searchable &config)
 {
     bool ret = false;
@@ -2050,7 +1775,6 @@ bool Parser::isVerboseEnabled(yarp::os::Searchable &config)
     {
        ret = config.findGroup("GENERAL").find("verbose").asBool();
     }
-    _verbosewhenok = ret;
     return ret;
 }
 
@@ -2105,528 +1829,6 @@ bool Parser::parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncod
     return true;
 }
 
-bool Parser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<axisInfo_t> &axisInfo)
-{
-
-    Bottle xtmp;
-    unsigned int i;
-    axisInfo.resize(_njoints);
-
-    Bottle general = config.findGroup("GENERAL");
-    if (general.isNull())
-    {
-       yError() << "embObjMC BOARD " << _boardname << "Missing General group" ;
-       return false;
-    }
-
-
-    if (!extractGroup(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _njoints))
-        return false;
-
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        int user_joint =  xtmp.get(i).asInt32();
-        if(user_joint>= _njoints)
-        {
-            yError() << "embObjMC BOARD " << _boardname << "In AxisMap param: joint " << i-1 << "has been mapped to not-existing joint ("<< user_joint <<"). Here there are only "<< _njoints <<"joints";
-            return false;
-        }
-        axisMap[i-1] = user_joint;
-    }
-    
-
-    if (!extractGroup(general, xtmp, "AxisName", "a list of strings representing the axes names", _njoints))
-        return false;
-
-    //beware: axis name has to be remapped here because they are not set using the toHw() helper function
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        int mappedto = axisInfo[i-1].mappedto;
-        axisInfo[axisMap[i - 1]].name = xtmp.get(i).asString();
-    }
-
-    if (!extractGroup(general, xtmp, "AxisType", "a list of strings representing the axes type (revolute/prismatic)", _njoints))
-        return false;
-
-    //beware: axis type has to be remapped here because they are not set using the toHw() helper function
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        string s = xtmp.get(i).asString();
-        int mappedto = axisInfo[i-1].mappedto;
-        if (s == "revolute")  axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_REVOLUTE;
-        else if (s == "prismatic")  axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_PRISMATIC;
-        else
-        {
-            yError("Unknown AxisType value %s!", s.c_str());
-            axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_UNKNOWN;
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool Parser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFactor[])
-{
-    Bottle general = config.findGroup("GENERAL");
-    if (general.isNull())
-    {
-       yError() << "embObjMC BOARD " << _boardname << "Missing General group" ;
-       return false;
-    }
-    Bottle xtmp;
-    unsigned int i;
-    double tmp_A2E;
-
-    // Encoder scales
-    if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints))
-    {
-        return false;
-    }
-
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        tmp_A2E = xtmp.get(i).asFloat64();
-        if (tmp_A2E<0)
-        {
-            yWarning() << "embObjMC BOARD " << _boardname << "Encoder parameter should be positive!";
-        }
-        encoderFactor[i - 1] = tmp_A2E;
-    }
-
-    return true;
-}
-
-bool Parser::parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToPWM[])
-{
-    Bottle general = config.findGroup("GENERAL");
-    if (general.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Missing General group";
-        return false;
-    }
-    Bottle xtmp;
-    unsigned int i;
-    double tmpval;
-
-    // fullscalePWM
-    if (!extractGroup(general, xtmp, "fullscalePWM", "a list of scales for the fullscalePWM conversion factor", _njoints))
-    {
-        yError("fullscalePWM param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
-        return false;
-    }
-
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        tmpval = xtmp.get(i).asFloat64();
-        if (tmpval<0)
-        {
-            yError() << "embObjMC BOARD " << _boardname << "fullscalePWM parameter should be positive!";
-            return false;
-        }
-        dutycycleToPWM[i - 1] = tmpval / 100.0;
-    }
-
-    return true;
-}
-
-bool Parser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor[])
-{
-    Bottle general = config.findGroup("GENERAL");
-    if (general.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Missing General group";
-        return false;
-    }
-    Bottle xtmp;
-    unsigned int i;
-    double tmpval;
-
-    // ampsToSensor
-    if (!extractGroup(general, xtmp, "ampsToSensor", "a list of scales for the ampsToSensor conversion factor", _njoints))
-    {
-        yError("ampsToSensor param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
-        return false;
-    }
-
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        tmpval = xtmp.get(i).asFloat64();
-        if (tmpval<0)
-        {
-            yError() << "embObjMC BOARD " << _boardname << "ampsToSensor parameter should be positive!";
-            return false;
-        }
-        ampsToSensor[i - 1] = tmpval;
-    }
-
-    return true;
-}
-
-bool Parser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[])
-{
-    Bottle general = config.findGroup("GENERAL");
-    if (general.isNull())
-    {
-       yError() << "embObjMC BOARD " << _boardname << "Missing General group" ;
-       return false;
-    }
-
-    Bottle xtmp;
-    unsigned int i;
-
-    // Gearbox_M2J
-    if (!extractGroup(general, xtmp, "Gearbox_M2J", "The gearbox reduction ratio", _njoints))
-    {
-        return false;
-    }
-
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        gearbox_M2J[i-1] = xtmp.get(i).asFloat64();
-        if (gearbox_M2J[i-1]==0)
-        {
-            yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
-            return false;
-        }
-    }
-
-
-    //Gearbox_E2J
-    if (!extractGroup(general, xtmp, "Gearbox_E2J", "The gearbox reduction ratio between encoder and joint", _njoints))
-    {
-        return false;
-    }
-
-    int test = xtmp.size();
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        gearbox_E2J[i-1] = xtmp.get(i).asFloat64();
-        if (gearbox_E2J[i-1]==0)
-        {
-            yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
-            return false;
-        }
-    }
-
-
-    return true;
-}
-
-bool Parser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found)
-{
-//     Bottle general = config.findGroup("GENERAL");
-//     if (general.isNull())
-//     {
-//         yError() << "embObjMC BOARD " << _boardname << "Missing General group" ;
-//         return false;
-//     }
-
-    Bottle general = config.findGroup("OTHER_CONTROL_PARAMETERS");
-    if (general.isNull())
-    {
-        yWarning() << "embObjMC BOARD " << _boardname << "Missing OTHER_CONTROL_PARAMETERS.DeadZone parameter. I'll use default value. (see documentation for more datails)";
-        *found = false;
-        return true;
-    }    
-    Bottle xtmp;
-    unsigned int i;
-    
-    // DeadZone
-    if (!extractGroup(general, xtmp, "deadZone", "The deadzone of joint", _njoints, false))
-    {
-        yWarning() << "embObjMC BOARD " << _boardname << "Missing OTHER_CONTROL_PARAMETERS group.DeadZone parameter. I'll use default value. (see documentation for more datails)";
-        *found = false;
-        return true;
-    }
- 
-    *found = true;
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        deadzone[i-1] = xtmp.get(i).asFloat64();
-    }
-    
-    return true;
-}
-
-bool Parser::parseKalmanFilterParams(yarp::os::Searchable &config, std::vector<kalmanFilterParams_t> &kalmanFilterParams)
-{
-    Bottle general = config.findGroup("KALMAN_FILTER");
-    if (general.isNull())
-    {
-        yWarning() << "embObjMC BOARD " << _boardname << "Missing KALMAN_FILTER group. Kalman Filter will be disabled by default.";
-
-        // if you don't specify the Kalman Filter group disable the kalmam filter for all the joints.
-        for(int j=0; j<_njoints; j++)
-        {
-            kalmanFilterParams[j].enabled = false;
-            kalmanFilterParams[j].x0.fill(0.0);
-            kalmanFilterParams[j].Q.fill(0.0);
-            kalmanFilterParams[j].R = 0.0;
-            kalmanFilterParams[j].P0 = 0.0;
-        }
-        return true;
-    }
-    else
-    {    
-        Bottle xtmp;
-        
-        // kalmanFilterEnabled
-        if (!extractGroup(general, xtmp, "kalmanFilterEnabled", "kalman filter of joint: ", _njoints, true))
-        {
-            yWarning() << "embObjMC BOARD " << _boardname << "Missing kalmanFilterEnabled parameter. It will be disabled by default.";
-            return false;
-        }
-        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].enabled = xtmp.get(j + 1).asBool();
-
-        // x0_0
-        if (!extractGroup(general, xtmp, "x0", "Initial state x0 of kalman filter of joint: ", _njoints, true))
-        {
-            yWarning() << "embObjMC BOARD " << _boardname << "Missing initial state x0 parameter. Kalman Filter will be disabled by default.";
-            return false;
-        }
-        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].x0.at(0) = xtmp.get(j + 1).asFloat32();
-
-        // x0_1
-        if (!extractGroup(general, xtmp, "x1", "Initial state x1 of kalman filter of joint: ", _njoints, true))
-        {
-            yWarning() << "embObjMC BOARD " << _boardname << "Missing initial state x1 parameter. Kalman Filter will be disabled by default.";
-            return false;
-        }
-        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].x0.at(1) = xtmp.get(j + 1).asFloat32();
-
-        // x0_2
-        if (!extractGroup(general, xtmp, "x2", "Initial state x2 of kalman filter of joint: ", _njoints, true))
-        {
-            yWarning() << "embObjMC BOARD " << _boardname << "Missing initial state x2 parameter. Kalman Filter will be disabled by default.";
-            return false;
-        }
-        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].x0.at(2) = xtmp.get(j + 1).asFloat32();
-
-        // Q0
-        if (!extractGroup(general, xtmp, "Q0", "Process Q0 noise covariance matrix of kalman filter of joint: ", _njoints, true))
-        {
-            yWarning() << "embObjMC BOARD " << _boardname << "Missing Q0 parameter. Kalman Filter will be disabled by default.";
-            return false;
-        }
-        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].Q.at(0) = xtmp.get(j + 1).asFloat32();
-
-        // Q1
-        if (!extractGroup(general, xtmp, "Q1", "Process Q1 noise covariance matrix of kalman filter of joint: ", _njoints, true))
-        {
-            yWarning() << "embObjMC BOARD " << _boardname << "Missing Q1 parameter. Kalman Filter will be disabled by default.";
-            return false;
-        }
-        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].Q.at(1) = xtmp.get(j + 1).asFloat32();
-
-        // Q2
-        if (!extractGroup(general, xtmp, "Q2", "Process Q2 noise covariance matrix of kalman filter of joint: ", _njoints, true))
-        {
-            yWarning() << "embObjMC BOARD " << _boardname << "Missing Q2 parameter. Kalman Filter will be disabled by default.";
-            return false;
-        }
-        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].Q.at(2) = xtmp.get(j + 1).asFloat32();
-
-        // R
-        if (!extractGroup(general, xtmp, "R", "Measurement noise covariance matrix of kalman filter for joint: ", _njoints, true))
-        {
-            yWarning() << "embObjMC BOARD " << _boardname << "Missing R scalar parameter. Kalman Filter will be disabled by default.";
-            return false;
-        }
-        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].R = xtmp.get(j + 1).asFloat32();
-
-        // P0
-        if (!extractGroup(general, xtmp, "P0", "Initial state estimation error covariance matrix of kalman filter of joint: ", _njoints, true))
-        {
-            yWarning() << "embObjMC BOARD " << _boardname << "Missing P0 scalar parameter. Kalman Filter will be disabled by default.";
-            return false;
-        }
-        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].P0 = xtmp.get(j + 1).asFloat32();
-    }
-    
-    return true;
-}
-
-
-bool Parser::parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[])
-{
-    Bottle general = config.findGroup("GENERAL");
-    if (general.isNull())
-    {
-       yError() << "embObjMC BOARD " << _boardname << "Missing General group" ;
-       return false;
-    }
-    Bottle xtmp;
-    unsigned int i;
-
-    if(!extractGroup(general, xtmp, "useMotorSpeedFbk", "Use motor speed feedback", _njoints))
-    {
-        return false;
-    }
-
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        useMotorSpeedFbk[i-1] = xtmp.get(i).asInt32();
-    }
-
-    return true;
-
-}
-
-bool Parser::parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impedanceParameters_t> &impedance)
-{
-    Bottle impedanceGroup;
-    impedanceGroup=config.findGroup("IMPEDANCE","IMPEDANCE parameters");
-
-    if(impedanceGroup.isNull())
-    {
-        yError() <<"embObjMC BOARD " << _boardname << "fromConfig(): Error: no IMPEDANCE group found in config file, returning";
-        return false;
-    }
-
-
-
-    if(_verbosewhenok)
-    {
-        yDebug()  << "embObjMC BOARD " << _boardname << ":fromConfig() detected that IMPEDANCE parameters section is found";
-    }
-
-    if(!checkAndSetVectorSize(impedance, _njoints, "parseImpedanceGroup"))
-        return false;
-
-
-    int j=0;
-    Bottle xtmp;
-    if (!extractGroup(impedanceGroup, xtmp, "stiffness", "stiffness parameter", _njoints))
-        return false;
-
-    for (j=0; j<_njoints; j++)
-        impedance[j].stiffness = xtmp.get(j+1).asFloat64();
-
-    if (!extractGroup(impedanceGroup, xtmp, "damping", "damping parameter", _njoints))
-        return false;
-
-    for (j=0; j<_njoints; j++)
-        impedance[j].damping = xtmp.get(j+1).asFloat64();
-
-    if(_verbosewhenok)
-    {
-        yInfo() << "embObjMC BOARD " << _boardname << "IMPEDANCE section: parameters successfully loaded";
-    }
-    return true;
-
-}
-
-/*
-typedef struct
-{
-    double Km;
-    double Kw;
-    double S0; 
-    double S1;
-    double Vth;
-    double Fc_pos;
-    double Fc_neg;
-    double Fs_pos;
-    double Fs_neg;
-    double tbd0;
-    double tbd1;
-    double tbd2;
-} lugreParameters_t;
-*/
-
-bool Parser::parseLugreGroup(yarp::os::Searchable &config,std::vector<lugreParameters_t> &lugre)
-{
-    Bottle lugreGroup;
-    lugreGroup=config.findGroup("LUGRE","LUGRE parameters");
-
-    if(lugreGroup.isNull())
-    {
-        for (int j = 0; j<_njoints; ++j)
-        {
-            lugre[j].Km = -1.0;
-        }
-        
-        yWarning() <<"embObjMC BOARD " << _boardname << "fromConfig(): Warning: no LUGRE group found in config file, returning";
-        return true;
-    }
-
-
-
-    if(_verbosewhenok)
-    {
-        yDebug()  << "embObjMC BOARD " << _boardname << ":fromConfig() detected that LUGRE parameters section is found";
-    }
-
-    if(!checkAndSetVectorSize(lugre, _njoints, "parseLugreGroup"))
-        return false;
-
-
-    int j=0;
-    Bottle xtmp;
-    if (!extractGroup(lugreGroup, xtmp, "Km", "torque constant parameter", _njoints))
-        return false;
-
-    for (j=0; j<_njoints; j++)
-        lugre[j].Km = xtmp.get(j+1).asFloat64();
-
-    if (!extractGroup(lugreGroup, xtmp, "Kw", "viscous friction parameter", _njoints))
-        return false;
-
-    for (j=0; j<_njoints; j++)
-        lugre[j].Kw = xtmp.get(j+1).asFloat64();
-
-    if (!extractGroup(lugreGroup, xtmp, "S0", "hysteresis position parameter", _njoints))
-        return false;
-
-    for (j=0; j<_njoints; j++)
-        lugre[j].S0 = xtmp.get(j+1).asFloat64();
-
-    if (!extractGroup(lugreGroup, xtmp, "S1", "hysteresis velocity parameter", _njoints))
-        return false;
-        
-    for (j=0; j<_njoints; j++)
-        lugre[j].S1 = xtmp.get(j+1).asFloat64();
-        
-    if (!extractGroup(lugreGroup, xtmp, "Vth", "velocity threshold parameter", _njoints))
-        return false;
-
-    for (j=0; j<_njoints; j++)
-        lugre[j].Vth = xtmp.get(j+1).asFloat64();
-
-    if (!extractGroup(lugreGroup, xtmp, "Fc_pos", "Coulomb force parameter (forward)", _njoints))
-        return false;
-                
-    for (j=0; j<_njoints; j++)
-        lugre[j].Fc_pos = xtmp.get(j+1).asFloat64();
-        
-    if (!extractGroup(lugreGroup, xtmp, "Fc_neg", "Coulomb force parameter (backward)", _njoints))
-        return false;
-                
-    for (j=0; j<_njoints; j++)
-        lugre[j].Fc_neg = xtmp.get(j+1).asFloat64();
-
-    if (!extractGroup(lugreGroup, xtmp, "Fs_pos", "Stribeck force parameter (forward)", _njoints))
-        return false;
-                
-    for (j=0; j<_njoints; j++)
-        lugre[j].Fs_pos = xtmp.get(j+1).asFloat64();
-        
-    if (!extractGroup(lugreGroup, xtmp, "Fs_neg", "Stribeck force parameter (backward)", _njoints))
-        return false;
-                
-    for (j=0; j<_njoints; j++)
-        lugre[j].Fs_neg = xtmp.get(j+1).asFloat64();
-
-    if(_verbosewhenok)
-    {
-        yInfo() << "embObjMC BOARD " << _boardname << "LUGRE section: parameters successfully loaded";
-    }
-    return true;
-
-}
-
-
 bool Parser::parseMaintenanceModeGroup(yarp::os::Searchable &config, bool &skipRecalibrationEnabled)
 {
     // Extract group MaintenanceModeGroup
@@ -2662,6 +1864,428 @@ bool Parser::parseMaintenanceModeGroup(yarp::os::Searchable &config, bool &skipR
     }
     return true;
 }
+
+//---------------------------------------------------
+// Parse mechanical info in config file 
+// --------------------------------------------------
+bool Parser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<axisInfo_t> &axisInfo)
+{
+    Bottle general, xtmp; 
+    if(!GetGroupBottle(config, "GENERAL", general)) return false;
+
+    if (!extractGroup(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _njoints))
+        return false;
+
+    for (auto i = 1; i < xtmp.size(); i++)
+    {
+        int user_joint =  xtmp.get(i).asInt32();
+        if(user_joint>= _njoints)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "In AxisMap param: joint " << i-1 << "has been mapped to not-existing joint ("<< user_joint <<"). Here there are only "<< _njoints <<"joints";
+            return false;
+        }
+        axisMap[i-1] = user_joint;
+    }
+    
+
+    if (!extractGroup(general, xtmp, "AxisName", "a list of strings representing the axes names", _njoints))
+        return false;
+
+    //beware: axis name has to be remapped here because they are not set using the toHw() helper function
+    for (auto i = 1; i < xtmp.size(); i++)
+    {
+        int mappedto = axisInfo[i-1].mappedto;
+        axisInfo[axisMap[i - 1]].name = xtmp.get(i).asString();
+    }
+
+    if (!extractGroup(general, xtmp, "AxisType", "a list of strings representing the axes type (revolute/prismatic)", _njoints))
+        return false;
+
+    //beware: axis type has to be remapped here because they are not set using the toHw() helper function
+    for (auto i = 1; i < xtmp.size(); i++)
+    {
+        string s = xtmp.get(i).asString();
+        int mappedto = axisInfo[i-1].mappedto;
+        if (s == eomc::paramValues::AxisType_revolute)  axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_REVOLUTE;
+        else if (s == eomc::paramValues::AxisType_prismatic)  axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_PRISMATIC;
+        else
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unknown AxisType value" << s.c_str() << "!";
+            axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_UNKNOWN;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Parser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFactor[])
+{
+    Bottle general, xtmp; 
+    if(!GetGroupBottle(config, "GENERAL", general)) return false;
+
+    double tmp_A2E;
+
+    // Encoder scales
+    if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints))
+        return false;
+
+    for (auto i = 1; i < xtmp.size(); i++)
+    {
+        tmp_A2E = xtmp.get(i).asFloat64();
+        if (tmp_A2E<0)
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Encoder parameter should be positive!";
+        }
+        encoderFactor[i - 1] = tmp_A2E;
+    }
+
+    return true;
+}
+
+bool Parser::parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToPWM[])
+{
+    Bottle general, xtmp; 
+    if(!GetGroupBottle(config, "GENERAL", general)) return false;
+
+    double tmpval;
+
+    // fullscalePWM
+    if (!extractGroup(general, xtmp, "fullscalePWM", "a list of scales for the fullscalePWM conversion factor", _njoints))
+        return false;
+
+    for (auto i = 1; i < xtmp.size(); i++)
+    {
+        tmpval = xtmp.get(i).asFloat64();
+        if (tmpval<0)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "fullscalePWM parameter should be positive!";
+            return false;
+        }
+        dutycycleToPWM[i - 1] = tmpval / 100.0;
+    }
+
+    return true;
+}
+
+bool Parser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor[])
+{
+    Bottle general, xtmp; 
+    if(!GetGroupBottle(config, "GENERAL", general)) return false;
+
+    // ampsToSensor
+    if (!extractGroup(general, xtmp, "ampsToSensor", "a list of scales for the ampsToSensor conversion factor", _njoints))
+        return false;
+
+    for (auto i = 1; i < xtmp.size(); i++)
+    {
+        double tmpval = xtmp.get(i).asFloat64();
+        if (tmpval<0)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "ampsToSensor parameter should be positive!";
+            return false;
+        }
+        ampsToSensor[i - 1] = tmpval;
+    }
+
+    return true;
+}
+
+bool Parser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[])
+{
+    Bottle general, xtmp; 
+    if(!GetGroupBottle(config, "GENERAL", general)) return false;
+
+    // Gearbox_M2J
+    if (!extractGroup(general, xtmp, "Gearbox_M2J", "The gearbox reduction ratio", _njoints))
+        return false;
+
+    for (auto i = 1; i < xtmp.size(); i++)
+    {
+        gearbox_M2J[i-1] = xtmp.get(i).asFloat64();
+        if (gearbox_M2J[i-1]==0)
+        {
+            yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
+            return false;
+        }
+    }
+
+
+    //Gearbox_E2J
+    if (!extractGroup(general, xtmp, "Gearbox_E2J", "The gearbox reduction ratio between encoder and joint", _njoints))
+        return false;
+
+    int test = xtmp.size();
+    for (auto i = 1; i < xtmp.size(); i++)
+    {
+        gearbox_E2J[i-1] = xtmp.get(i).asFloat64();
+        if (gearbox_E2J[i-1]==0)
+        {
+            yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
+            return false;
+        }
+    }
+
+
+    return true;
+}
+
+bool Parser::parseUseMotorSpeedFbkFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[])
+{
+    Bottle general, xtmp; 
+    if(!GetGroupBottle(config, "GENERAL", general)) return false;
+
+    if(!extractGroup(general, xtmp, "useMotorSpeedFbk", "Use motor speed feedback", _njoints))
+        return false;
+    for (auto i = 1; i < xtmp.size(); i++)
+    {
+        useMotorSpeedFbk[i-1] = xtmp.get(i).asInt32();
+    }
+
+    return true;
+}
+
+bool Parser::parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &couplingInfo)
+{
+    Bottle coupling_bottle, xtmp; 
+    if(!GetGroupBottle(config, "COUPLINGS", coupling_bottle)) return false;
+
+    int  fixedMatrix4X4Size = 16;
+    int  fixedMatrix4X6Size = 24;
+    bool formaterror =false;
+
+    // matrix J2M
+    if (!extractGroup(coupling_bottle, xtmp, "matrixJ2M", "matrixJ2M ", fixedMatrix4X4Size))
+       return false;
+
+    if(false == convert(xtmp, couplingInfo.matrixJ2M, formaterror, fixedMatrix4X4Size))
+    {
+       yError() << "embObjMC BOARD " << _boardname << " has detected an illegal format for some of the values of CONTROLLER.matrixJ2M";
+       return false;
+    }
+
+    // matrix E2J
+    if (!extractGroup(coupling_bottle, xtmp, "matrixE2J", "matrixE2J ", fixedMatrix4X6Size))
+        return false;
+
+    formaterror = false;
+    if(false == convert(xtmp, couplingInfo.matrixE2J, formaterror, fixedMatrix4X6Size))
+    {
+        yError() << "embObjMC BOARD " << _boardname << " has detected an illegal format for some of the values of CONTROLLER.matrixE2J";
+        return false;
+    }
+
+    // matrix M2J
+    if (!extractGroup(coupling_bottle, xtmp, "matrixM2J", "matrixM2J ", fixedMatrix4X4Size))
+        return false;
+
+    formaterror = false;
+    if( false == convert(xtmp, couplingInfo.matrixM2J, formaterror, fixedMatrix4X4Size))
+    {
+        yError() << "embObjMC BOARD " << _boardname << " has detected an illegal format for some of the values of CONTROLLER.matrixM2J";
+        return false;
+    }
+
+    return true;
+}
+
+//---------------------------------------------------
+// Parse other motion control info in config file 
+// --------------------------------------------------
+bool Parser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found)
+{
+    Bottle xtmp; 
+    
+    Bottle general = config.findGroup("OTHER_CONTROL_PARAMETERS");
+    if (general.isNull())
+    {
+        // yWarning() << "embObjMC BOARD " << _boardname << "Missing OTHER_CONTROL_PARAMETERS.DeadZone parameter. I'll use default value. (see documentation for more datails)";
+        *found = false;
+        return true;
+    }    
+
+    // DeadZone
+    if (!extractGroup(general, xtmp, "deadZone", "The deadzone of joint", _njoints, false))
+    {
+        *found = false;
+        return true;
+    }
+ 
+    *found = true;
+    for (auto i = 1; i < xtmp.size(); i++) deadzone[i-1] = xtmp.get(i).asFloat64();
+    
+    return true;
+}
+
+bool Parser::parseKalmanFilterParams(yarp::os::Searchable &config, std::vector<kalmanFilterParams_t> &kalmanFilterParams)
+{
+    
+    Bottle general; 
+    if(!GetGroupBottle(config, "KALMAN_FILTER", general, false/*Not mandatory*/))
+    {
+        registerOptionalParameter("kalmanFilter", "disabled", false);
+ 
+        // if you don't specify the Kalman Filter group disable the kalmam filter for all the joints.
+        // Get the default values structure from singleton
+        
+        for(int j=0; j<_njoints; j++)
+        {
+            kalmanFilterParams[j].enabled = _defaultSettings.controlParametersDefaults.kalmanFilterParams.enabled;
+            kalmanFilterParams[j].x0 = _defaultSettings.controlParametersDefaults.kalmanFilterParams.x0;
+            kalmanFilterParams[j].Q  = _defaultSettings.controlParametersDefaults.kalmanFilterParams.Q;
+            kalmanFilterParams[j].R = _defaultSettings.controlParametersDefaults.kalmanFilterParams.R;
+            kalmanFilterParams[j].P0 = _defaultSettings.controlParametersDefaults.kalmanFilterParams.P0;
+        }
+        return true;
+    }
+    else
+    {    
+        Bottle xtmp;
+        
+        // kalmanFilterEnabled
+        if (!extractGroup(general, xtmp, "kalmanFilterEnabled", "kalman filter of joint: ", _njoints, true))
+            return false;
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].enabled = xtmp.get(j + 1).asBool();
+
+        // x0_0
+        if (!extractGroup(general, xtmp, "x0", "Initial state x0 of kalman filter of joint: ", _njoints, true))
+            return false;
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].x0.at(0) = xtmp.get(j + 1).asFloat32();
+
+        // x0_1
+        if (!extractGroup(general, xtmp, "x1", "Initial state x1 of kalman filter of joint: ", _njoints, true))
+            return false;
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].x0.at(1) = xtmp.get(j + 1).asFloat32();
+
+        // x0_2
+        if (!extractGroup(general, xtmp, "x2", "Initial state x2 of kalman filter of joint: ", _njoints, true))
+            return false;
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].x0.at(2) = xtmp.get(j + 1).asFloat32();
+
+        // Q0
+        if (!extractGroup(general, xtmp, "Q0", "Process Q0 noise covariance matrix of kalman filter of joint: ", _njoints, true))
+            return false;
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].Q.at(0) = xtmp.get(j + 1).asFloat32();
+
+        // Q1
+        if (!extractGroup(general, xtmp, "Q1", "Process Q1 noise covariance matrix of kalman filter of joint: ", _njoints, true))
+            return false;
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].Q.at(1) = xtmp.get(j + 1).asFloat32();
+
+        // Q2
+        if (!extractGroup(general, xtmp, "Q2", "Process Q2 noise covariance matrix of kalman filter of joint: ", _njoints, true))
+            return false;
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].Q.at(2) = xtmp.get(j + 1).asFloat32();
+
+        // R
+        if (!extractGroup(general, xtmp, "R", "Measurement noise covariance matrix of kalman filter for joint: ", _njoints, true))
+            return false;
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].R = xtmp.get(j + 1).asFloat32();
+
+        // P0
+        if (!extractGroup(general, xtmp, "P0", "Initial state estimation error covariance matrix of kalman filter of joint: ", _njoints, true))
+            return false;
+        for (int j = 0; j<_njoints; j++) kalmanFilterParams[j].P0 = xtmp.get(j + 1).asFloat32();
+    }
+    
+    return true;
+}
+
+bool Parser::parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impedanceParameters_t> &impedance)
+{
+    Bottle impedanceGroup, xtmp; 
+    if(!GetGroupBottle(config, "IMPEDANCE", impedanceGroup)) return false;
+
+  
+    if (!extractGroup(impedanceGroup, xtmp, "stiffness", "stiffness parameter", _njoints))
+        return false;
+
+    for (auto j=0; j<_njoints; j++)
+        impedance[j].stiffness = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(impedanceGroup, xtmp, "damping", "damping parameter", _njoints))
+        return false;
+
+    for (auto j=0; j<_njoints; j++)
+        impedance[j].damping = xtmp.get(j+1).asFloat64();
+
+     return true;
+}
+
+bool Parser::parseLugreGroup(yarp::os::Searchable &config,std::vector<lugreParameters_t> &lugre)
+{
+    Bottle lugreGroup, xtmp; 
+    if(!GetGroupBottle(config, "LUGRE", lugreGroup, false/*Not mandatory*/)) 
+    {
+
+        for (int j = 0; j<_njoints; ++j)
+        {
+            lugre[j].Km = _defaultSettings.controlParametersDefaults.lugre.Km;
+        }
+        
+        return true;
+    }
+
+    if (!extractGroup(lugreGroup, xtmp, "Km", "torque constant parameter", _njoints))
+        return false;
+
+    for (auto j=0; j<_njoints; j++)
+        lugre[j].Km = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(lugreGroup, xtmp, "Kw", "viscous friction parameter", _njoints))
+        return false;
+
+    for (auto j=0; j<_njoints; j++)
+        lugre[j].Kw = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(lugreGroup, xtmp, "S0", "hysteresis position parameter", _njoints))
+        return false;
+
+    for (auto j=0; j<_njoints; j++)
+        lugre[j].S0 = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(lugreGroup, xtmp, "S1", "hysteresis velocity parameter", _njoints))
+        return false;
+        
+    for (auto j=0; j<_njoints; j++)
+        lugre[j].S1 = xtmp.get(j+1).asFloat64();
+        
+    if (!extractGroup(lugreGroup, xtmp, "Vth", "velocity threshold parameter", _njoints))
+        return false;
+
+    for (auto j=0; j<_njoints; j++)
+        lugre[j].Vth = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(lugreGroup, xtmp, "Fc_pos", "Coulomb force parameter (forward)", _njoints))
+        return false;
+                
+    for (auto j=0; j<_njoints; j++)
+        lugre[j].Fc_pos = xtmp.get(j+1).asFloat64();
+        
+    if (!extractGroup(lugreGroup, xtmp, "Fc_neg", "Coulomb force parameter (backward)", _njoints))
+        return false;
+                
+    for (auto j=0; j<_njoints; j++)
+        lugre[j].Fc_neg = xtmp.get(j+1).asFloat64();
+
+    if (!extractGroup(lugreGroup, xtmp, "Fs_pos", "Stribeck force parameter (forward)", _njoints))
+        return false;
+                
+    for (auto j=0; j<_njoints; j++)
+        lugre[j].Fs_pos = xtmp.get(j+1).asFloat64();
+        
+    if (!extractGroup(lugreGroup, xtmp, "Fs_neg", "Stribeck force parameter (backward)", _njoints))
+        return false;
+                
+    for (auto j=0; j<_njoints; j++)
+        lugre[j].Fs_neg = xtmp.get(j+1).asFloat64();
+
+        return true;
+
+}
+
+
+
 
 bool Parser::convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
 {
@@ -2715,37 +2339,39 @@ bool Parser::convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, 
     return true;
 }
 
+
+
 //////////////////////////////////////////////////////////////////////////////
 /////////////////// DEBUG FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////
-void Parser::debugUtil_printControlLaws(void)
-{
-    //////// debug prints
-    yError() << "position control law: ";
-    for(int x=0; x<_njoints; x++)
-    {
-        yError() << " - j " << x << _positionControlLaw[x].c_str();
-    }
+// void Parser::debugUtil_printControlLaws(void)
+// {
+//     //////// debug prints
+//     yError() << "position control law: ";
+//     for(int x=0; x<_njoints; x++)
+//     {
+//         yError() << " - j " << x << _positionControlLaw[x].c_str();
+//     }
 
-    yError() << "velocity control law: ";
-    for(int x=0; x<_njoints; x++)
-    {
-        yError() << "- j " << x << _velocityControlLaw[x].c_str();
-    }
+//     yError() << "velocity control law: ";
+//     for(int x=0; x<_njoints; x++)
+//     {
+//         yError() << "- j " << x << _velocityControlLaw[x].c_str();
+//     }
 
 
-    yError() << "torque control law: ";
-    for(int x=0; x<_njoints; x++)
-    {
-        yError() << " - j " << x << _torqueControlLaw[x].c_str();
-    }
-    //////end
+//     yError() << "torque control law: ";
+//     for(int x=0; x<_njoints; x++)
+//     {
+//         yError() << " - j " << x << _torqueControlLaw[x].c_str();
+//     }
+//     //////end
 
-}
+// }
 
 /*
 void PidInfo::dumpdata(void)
-{
+    if(!GetGroupBottle(config, "LUGRE", lugreGroup, false)) 
 
     cout <<  "Is enabled " << enabled;
     cout <<  ". Username pid selected is " << usernamePidSelected;
@@ -2795,68 +2421,131 @@ void JointsSet::dumpdata(void)
 
 }
 
-bool Parser::checkJointTypes(PidInfo *pids, const std::string &pid_type)
+// bool Parser::checkJointTypes(PidInfo *pids, const std::string &pid_type)
+// {
+//     //Here we check that all joints have same type units in order to create pid_type helper with correct factor.
+
+//     int firstjoint = -1;
+
+//     // verify if pid type is torque or some other
+//     if(pid_type == "TORQUE")
+//     {
+//         // since we are working with a torque pid, we first cast it as such
+//         // this allows the loop to correctly point to the corresponding memory
+//         TrqPidInfo* trq_pids = (TrqPidInfo*) pids;
+
+//         for(int i=0; i<_njoints; i++)
+//         {
+//             // if we already had an enabled PID, compare with current one
+//             if(firstjoint != -1 && !checkSinglePid(trq_pids[firstjoint], trq_pids[i], firstjoint, i, pid_type))
+//             {
+//                 return false;
+//             }
+//             // if we haven't found an enabled PID yet, and this one is enabled, save it
+//             if(firstjoint == -1 && trq_pids[i].enabled)
+//             {
+//                 firstjoint = i;
+//             }
+//         }
+//     }
+//     else
+//     {
+//         for(int i=0; i<_njoints; i++)
+//         {
+//             // if we already had an enabled PID, compare with current one
+//             if(firstjoint != -1 && !checkSinglePid(pids[firstjoint], pids[i], firstjoint, i, pid_type))
+//             {
+//                 return false;
+//             }
+//             // if we haven't found an enabled PID yet, and this one is enabled, save it
+//             if(firstjoint == -1 && pids[i].enabled)
+//             {
+//                 firstjoint = i;
+//             }
+//         }
+//     }
+
+//     return true;
+// }
+
+// bool Parser::checkSinglePid(PidInfo &firstPid, PidInfo &currentPid, const int &firstjoint, const int &currentjoint, const std::string &pid_type)
+// {
+//     // check if the PID we are checking is enabled
+//     if(currentPid.enabled)
+//     {
+//         // if it has different unit types from the previous enabled PIDs
+//         if(firstPid.fbk_PidUnits != currentPid.fbk_PidUnits ||
+//         firstPid.out_PidUnits != currentPid.out_PidUnits)
+//         {
+//             yError() << "embObjMC BOARD " << _boardname << "all joints with " << pid_type << " enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << currentjoint;
+//             return false;
+//         }
+//     }
+//     return true;
+// }
+
+void Parser::registerOptionalParameter(std::string_view paramName, std::string_view defaultValue, bool wasUsed)
 {
-    //Here we check that all joints have same type units in order to create pid_type helper with correct factor.
-
-    int firstjoint = -1;
-
-    // verify if pid type is torque or some other
-    if(pid_type == "TORQUE")
-    {
-        // since we are working with a torque pid, we first cast it as such
-        // this allows the loop to correctly point to the corresponding memory
-        TrqPidInfo* trq_pids = (TrqPidInfo*) pids;
-
-        for(int i=0; i<_njoints; i++)
-        {
-            // if we already had an enabled PID, compare with current one
-            if(firstjoint != -1 && !checkSinglePid(trq_pids[firstjoint], trq_pids[i], firstjoint, i, pid_type))
-            {
-                return false;
-            }
-            // if we haven't found an enabled PID yet, and this one is enabled, save it
-            if(firstjoint == -1 && trq_pids[i].enabled)
-            {
-                firstjoint = i;
-            }
-        }
-    }
-    else
-    {
-        for(int i=0; i<_njoints; i++)
-        {
-            // if we already had an enabled PID, compare with current one
-            if(firstjoint != -1 && !checkSinglePid(pids[firstjoint], pids[i], firstjoint, i, pid_type))
-            {
-                return false;
-            }
-            // if we haven't found an enabled PID yet, and this one is enabled, save it
-            if(firstjoint == -1 && pids[i].enabled)
-            {
-                firstjoint = i;
-            }
-        }
-    }
-
-    return true;
+    // Create a new entry for this optional parameter
+    OptionalParameterInfo_t param_info;
+    param_info.parameterName = paramName;
+    param_info.defaultValue = defaultValue;
+    param_info.wasUsed = wasUsed;
+    
+    // Add to tracking vector
+    _optionalParametersUsed.push_back(param_info);
 }
 
-bool Parser::checkSinglePid(PidInfo &firstPid, PidInfo &currentPid, const int &firstjoint, const int &currentjoint, const std::string &pid_type)
+void Parser::printOptionalParametersTable()
 {
-    // check if the PID we are checking is enabled
-    if(currentPid.enabled)
+    if(_optionalParametersUsed.empty())
     {
-        // if it has different unit types from the previous enabled PIDs
-        if(firstPid.fbk_PidUnits != currentPid.fbk_PidUnits ||
-        firstPid.out_PidUnits != currentPid.out_PidUnits)
-        {
-            yError() << "embObjMC BOARD " << _boardname << "all joints with " << pid_type << " enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << currentjoint;
-            return false;
-        }
+        return;
     }
-    return true;
+
+    // Build the table header
+    std::string line;
+    line = "\n";
+    line += "╔═══════════════════════════════════════════════════════════════════╗\n";
+    size_t pad = (_boardname.length() < 16) ? (16 - _boardname.length()) : 0;
+    line += "║     OPTIONAL PARAMETERS SUMMARY FOR BOARD: " + _boardname + std::string(pad, ' ') + "║\n";
+    line += "╠═══════════════════════════════════════════════════════════════════╣\n";
+    line += "║ Parameter Name                │ Used │ Default Value              │\n";
+    line += "╟───────────────────────────────┼──────┼────────────────────────────╢\n";
+    
+    // Add rows for each parameter
+    for(const auto &param : _optionalParametersUsed)
+    {
+        // Parameter name (max 31 chars)
+        std::string param_name = param.parameterName;
+        if(param_name.length() > 31) param_name = param_name.substr(0, 28) + "...";
+        std::string param_name_padded = param_name + std::string(31 - param_name.length(), ' ');
+        
+        // Used flag
+        std::string used_str = param.wasUsed ? "YES" : "NO";
+        std::string used_padded = used_str + std::string(4 - used_str.length(), ' ');
+        
+        // Default value (max 27 chars)
+        std::string default_val = param.defaultValue;
+        if(default_val.length() > 27) default_val = default_val.substr(0, 24) + "...";
+        std::string default_val_padded = default_val + std::string(27 - default_val.length(), ' ');
+        
+        line += "║ " + param_name_padded + "│ " + used_padded + " │ " + default_val_padded + "│\n";
+    }
+    
+    // Close the table
+    line += "╚═══════════════════════════════════════════════════════════════════╝\n";
+
+    // Print using yCWarning as requested
+    yWarning() << line.c_str();
+
 }
+
+void Parser::clearOptionalParametersTrack()
+{
+    _optionalParametersUsed.clear();
+}
+
 
 
 
