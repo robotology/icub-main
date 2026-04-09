@@ -23,14 +23,14 @@ using namespace yarp::dev;
 inline CFWCamera_DR2_2* RES(void *res) { return (CFWCamera_DR2_2*)res; }
 ////////////////////////////////////////////////////////////////////////
 
-bool DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image)
+ReturnValue DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image)
 {
-    return RES(system_resources)->CaptureImage(image);
+    return RES(system_resources)->CaptureImage(image) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
+ReturnValue DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
 {
-    return RES(system_resources)->CaptureImage(image);
+    return RES(system_resources)->CaptureImage(image) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
 int DragonflyDeviceDriver2Rgb::width () const
@@ -43,9 +43,9 @@ int DragonflyDeviceDriver2Rgb::height () const
 	return RES(system_resources)->height();
 }
 
-bool DragonflyDeviceDriver2Raw::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
+ReturnValue DragonflyDeviceDriver2Raw::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
 {
-    return RES(system_resources)->CaptureImage(image);
+    return RES(system_resources)->CaptureImage(image) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
 int DragonflyDeviceDriver2Raw::width () const
@@ -254,49 +254,49 @@ bool DragonflyDeviceDriver2::setOnePushDC1394(int feature)
 {
 	return RES(system_resources)->setOnePushDC1394(feature);
 }
-unsigned int DragonflyDeviceDriver2::getVideoModeMaskDC1394()
+yarp::dev::ReturnValue DragonflyDeviceDriver2::getVideoModeMaskDC1394(unsigned int& val)
 {
-	return RES(system_resources)->getVideoModeMaskDC1394();
+	return RES(system_resources)->getVideoModeMaskDC1394(val) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setVideoModeDC1394(int video_mode)
+ReturnValue DragonflyDeviceDriver2::setVideoModeDC1394(int video_mode)
 {
-	return RES(system_resources)->setVideoModeDC1394(video_mode);
+	return RES(system_resources)->setVideoModeDC1394(video_mode) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-unsigned int DragonflyDeviceDriver2::getVideoModeDC1394()
+ReturnValue DragonflyDeviceDriver2::getVideoModeDC1394(unsigned int& val)
 {
-	return RES(system_resources)->getVideoModeDC1394();
+	return RES(system_resources)->getVideoModeDC1394(val) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-unsigned int DragonflyDeviceDriver2::getFPSMaskDC1394()
+ReturnValue DragonflyDeviceDriver2::getFPSMaskDC1394(unsigned int& val)
 {
-	return RES(system_resources)->getFPSMaskDC1394();
+	return RES(system_resources)->getFPSMaskDC1394(val) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-unsigned int DragonflyDeviceDriver2::getFPSDC1394()
+ReturnValue DragonflyDeviceDriver2::getFPSDC1394(unsigned int& val)
 {
-	return RES(system_resources)->getFPSDC1394();
+	return RES(system_resources)->getFPSDC1394(val) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setFPSDC1394(int fps)
+ReturnValue DragonflyDeviceDriver2::setFPSDC1394(int fps)
 {
-	return RES(system_resources)->setFPSDC1394(fps);
+	return RES(system_resources)->setFPSDC1394(fps) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-unsigned int DragonflyDeviceDriver2::getISOSpeedDC1394()
+ReturnValue DragonflyDeviceDriver2::getISOSpeedDC1394(unsigned int& val)
 {
-	return RES(system_resources)->getISOSpeedDC1394();
+	return RES(system_resources)->getISOSpeedDC1394(val) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setISOSpeedDC1394(int speed)
+yarp::dev::ReturnValue DragonflyDeviceDriver2::setISOSpeedDC1394(int speed)
 {
-	return RES(system_resources)->setISOSpeedDC1394(speed);
+	return RES(system_resources)->setISOSpeedDC1394(speed) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-unsigned int DragonflyDeviceDriver2::getColorCodingMaskDC1394(unsigned int video_mode)
+ReturnValue DragonflyDeviceDriver2::getColorCodingMaskDC1394(unsigned int video_mode, unsigned int& val)
 {
-	return RES(system_resources)->getColorCodingMaskDC1394(video_mode);
+	return RES(system_resources)->getColorCodingMaskDC1394(video_mode, val) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-unsigned int DragonflyDeviceDriver2::getColorCodingDC1394()
+ReturnValue DragonflyDeviceDriver2::getColorCodingDC1394(unsigned int& val)
 {
-	return RES(system_resources)->getColorCodingDC1394();
+	return RES(system_resources)->getColorCodingDC1394(val) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setColorCodingDC1394(int coding)
+ReturnValue DragonflyDeviceDriver2::setColorCodingDC1394(int coding)
 {
-	return RES(system_resources)->setColorCodingDC1394(coding);
+	return RES(system_resources)->setColorCodingDC1394(coding) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 bool DragonflyDeviceDriver2::setWhiteBalanceDC1394(double b, double r)
 {
@@ -304,35 +304,37 @@ bool DragonflyDeviceDriver2::setWhiteBalanceDC1394(double b, double r)
 }
 bool DragonflyDeviceDriver2::getWhiteBalanceDC1394(double &b, double &r)
 {
-	return RES(system_resources)->getWhiteBalanceDC1394(b,r);
+	return RES(system_resources)->getWhiteBalanceDC1394(b, r);
 }
-bool DragonflyDeviceDriver2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep)
+ReturnValue DragonflyDeviceDriver2::getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep)
 {
-	return RES(system_resources)->getFormat7MaxWindowDC1394(xdim,ydim,xstep,ystep,xoffstep,yoffstep);
+	return RES(system_resources)->getFormat7MaxWindowDC1394(xdim, ydim, xstep, ystep, xoffstep, yoffstep) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0)
+ReturnValue DragonflyDeviceDriver2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0)
 {
-	return RES(system_resources)->setFormat7WindowDC1394(xdim,ydim,x0,y0);
+	return RES(system_resources)->setFormat7WindowDC1394(xdim,ydim,x0,y0) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0)
+ReturnValue DragonflyDeviceDriver2::getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0)
 {
-	return RES(system_resources)->getFormat7WindowDC1394(xdim,ydim,x0,y0);
+	return RES(system_resources)->getFormat7WindowDC1394(xdim,ydim,x0,y0) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setOperationModeDC1394(bool b1394b)
+ReturnValue DragonflyDeviceDriver2::setOperationModeDC1394(bool b1394b)
 {
-	return RES(system_resources)->setOperationModeDC1394(b1394b);
+	return RES(system_resources)->setOperationModeDC1394(b1394b) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::getOperationModeDC1394()
+ReturnValue DragonflyDeviceDriver2::getOperationModeDC1394(bool& b1394)
 {
-	return RES(system_resources)->getOperationModeDC1394();
+	b1394 = RES(system_resources)->getOperationModeDC1394(b1394);
+	return ReturnValue_ok;
 }
-bool DragonflyDeviceDriver2::setTransmissionDC1394(bool bTxON)
+ReturnValue DragonflyDeviceDriver2::setTransmissionDC1394(bool bTxON)
 {
-	return RES(system_resources)->setTransmissionDC1394(bTxON);
+	return RES(system_resources)->setTransmissionDC1394(bTxON) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::getTransmissionDC1394()
+ReturnValue DragonflyDeviceDriver2::getTransmissionDC1394(bool& bTxON)
 {
-	return RES(system_resources)->getTransmissionDC1394();
+	bTxON = RES(system_resources)->getTransmissionDC1394(bTxON);
+	return ReturnValue_ok;
 }
 /*
 bool DragonflyDeviceDriver2::setBayerDC1394(bool bON)
@@ -344,33 +346,34 @@ bool DragonflyDeviceDriver2::getBayerDC1394()
 	return RES(system_resources)->getBayerDC1394();
 }
 */
-bool DragonflyDeviceDriver2::setBroadcastDC1394(bool onoff)
+ReturnValue DragonflyDeviceDriver2::setBroadcastDC1394(bool onoff)
 {
-	return RES(system_resources)->setBroadcastDC1394(onoff);
+	return RES(system_resources)->setBroadcastDC1394(onoff) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setDefaultsDC1394()
+ReturnValue DragonflyDeviceDriver2::setDefaultsDC1394()
 {
-	return RES(system_resources)->setDefaultsDC1394();
+	return RES(system_resources)->setDefaultsDC1394() ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setResetDC1394()
+ReturnValue DragonflyDeviceDriver2::setResetDC1394()
 {
-	return RES(system_resources)->setResetDC1394();
+	return RES(system_resources)->setResetDC1394() ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setPowerDC1394(bool onoff)
+ReturnValue DragonflyDeviceDriver2::setPowerDC1394(bool onoff)
 {
-	return RES(system_resources)->setPowerDC1394(onoff);
+	return RES(system_resources)->setPowerDC1394(onoff) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setCaptureDC1394(bool bON)
+ReturnValue DragonflyDeviceDriver2::setCaptureDC1394(bool bON)
 {
-	return RES(system_resources)->setCaptureDC1394(bON);
+	return RES(system_resources)->setCaptureDC1394(bON) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-bool DragonflyDeviceDriver2::setBytesPerPacketDC1394(unsigned int bpp)
+ReturnValue DragonflyDeviceDriver2::setBytesPerPacketDC1394(unsigned int bpp)
 {
-	return RES(system_resources)->setBytesPerPacketDC1394(bpp);
+	return RES(system_resources)->setBytesPerPacketDC1394(bpp) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-unsigned int DragonflyDeviceDriver2::getBytesPerPacketDC1394()
+ReturnValue DragonflyDeviceDriver2::getBytesPerPacketDC1394(unsigned int& bpp)
 {
-	return RES(system_resources)->getBytesPerPacketDC1394();
+	bpp = RES(system_resources)->getBytesPerPacketDC1394(bpp);
+	return ReturnValue_ok;
 }
 
 //IVisualParams
@@ -383,137 +386,140 @@ int DragonflyDeviceDriver2::getRgbWidth(){
     return RES(system_resources)->getRgbWidth();
 }
 
-bool DragonflyDeviceDriver2::getRgbSupportedConfigurations(yarp::sig::VectorOf<CameraConfig> &configurations)
+ReturnValue DragonflyDeviceDriver2::getRgbSupportedConfigurations(std::vector<yarp::dev::CameraConfig> &configurations)
 {
-    return RES(system_resources)->getRgbSupportedConfigurations(configurations);
+    return RES(system_resources)->getRgbSupportedConfigurations(configurations) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::getRgbResolution(int &width, int &height)
+ReturnValue DragonflyDeviceDriver2::getRgbResolution(int &width, int &height)
 {
-    return RES(system_resources)->getRgbResolution(width,height);
+    return RES(system_resources)->getRgbResolution(width,height) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::setRgbResolution(int width, int height){
+ReturnValue DragonflyDeviceDriver2::setRgbResolution(int width, int height){
     if(width<=0 || height<=0){
         yError()<<"DragonflyDeviceDriver: invalid width or height";
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;;
     }
-    return RES(system_resources)->setRgbResolution(width,height);
+    return RES(system_resources)->setRgbResolution(width,height) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::getRgbFOV(double &horizontalFov, double &verticalFov){
-    return RES(system_resources)->getRgbFOV(horizontalFov, verticalFov);
+ReturnValue DragonflyDeviceDriver2::getRgbFOV(double &horizontalFov, double &verticalFov){
+    return RES(system_resources)->getRgbFOV(horizontalFov, verticalFov) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::setRgbFOV(double horizontalFov, double verticalFov){
-    return RES(system_resources)->setRgbFOV(horizontalFov, verticalFov);
+ReturnValue DragonflyDeviceDriver2::setRgbFOV(double horizontalFov, double verticalFov){
+    return RES(system_resources)->setRgbFOV(horizontalFov, verticalFov) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::getRgbIntrinsicParam(yarp::os::Property &intrinsic){
-    return RES(system_resources)->getRgbIntrinsicParam(intrinsic);
+ReturnValue DragonflyDeviceDriver2::getRgbIntrinsicParam(yarp::os::Property &intrinsic){
+    return RES(system_resources)->getRgbIntrinsicParam(intrinsic) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::getRgbMirroring(bool &mirror){
-    return RES(system_resources)->getRgbMirroring(mirror);
-
+ReturnValue DragonflyDeviceDriver2::getRgbMirroring(bool &mirror){
+    return RES(system_resources)->getRgbMirroring(mirror) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::setRgbMirroring(bool mirror){
-    return RES(system_resources)->setRgbMirroring(mirror);
+ReturnValue DragonflyDeviceDriver2::setRgbMirroring(bool mirror){
+    return RES(system_resources)->setRgbMirroring(mirror) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
 ///////////////////////////
 // IFrameGrabberControl2 //
 ///////////////////////////
 
-bool DragonflyDeviceDriver2::getCameraDescription(CameraDescriptor* camera)
+ReturnValue DragonflyDeviceDriver2::getCameraDescription(CameraDescriptor& camera)
 {
-    camera->busType = BUS_FIREWIRE;
-    camera->deviceDescription = "DragonFly2";
-    return true;
+    camera.busType = BusType::BUS_FIREWIRE;
+    camera.deviceDescription = "DragonFly2";
+    return ReturnValue_ok;
 }
 
-bool DragonflyDeviceDriver2::getActive(int feature, bool* isActive)
+ReturnValue DragonflyDeviceDriver2::getActive(cameraFeature_id_t feature, bool& isActive)
 {
-    *isActive = RES(system_resources)->getActiveDC1394(feature);
-    return true;
+    isActive = RES(system_resources)->getActiveDC1394(static_cast<int>(feature));
+    return ReturnValue_ok;
 }
 
-bool DragonflyDeviceDriver2::getFeature(int feature, double* values)
+ReturnValue DragonflyDeviceDriver2::getFeature(cameraFeature_id_t feature, double& value)
 {
-    *values = RES(system_resources)->getFeatureDC1394(feature);
-    return true;
+    value = RES(system_resources)->getFeatureDC1394(static_cast<int>(feature));
+    return ReturnValue_ok;
 }
 
-bool DragonflyDeviceDriver2::getMode(int feature, FeatureMode* mode)
+ReturnValue DragonflyDeviceDriver2::getMode(cameraFeature_id_t feature, FeatureMode& mode)
 {
-    *mode = TRANSL_MODE( RES(system_resources)->getModeDC1394(feature) );
-    return true;
+    mode = TRANSL_MODE( RES(system_resources)->getModeDC1394(static_cast<int>(feature)) );
+    return ReturnValue_ok;
 }
 
-bool DragonflyDeviceDriver2::hasAuto(int feature, bool* hasAuto)
+ReturnValue DragonflyDeviceDriver2::hasAuto(cameraFeature_id_t feature, bool& hasAuto)
 {
-    *hasAuto = RES(system_resources)->hasAutoDC1394(feature);
-    return true;
+    hasAuto = RES(system_resources)->hasAutoDC1394(static_cast<int>(feature));
+    return ReturnValue_ok;
 }
 
-bool DragonflyDeviceDriver2::hasFeature(int feature, bool* hasFeature)
+ReturnValue DragonflyDeviceDriver2::hasFeature(cameraFeature_id_t feature, bool& hasFeature)
 {
-    *hasFeature = RES(system_resources)->hasFeatureDC1394(feature);
-    return true;
+	hasFeature = RES(system_resources)->hasFeatureDC1394(static_cast<int>(feature));
+    return ReturnValue_ok;
 }
 
-bool DragonflyDeviceDriver2::hasManual(int feature, bool* hasManual)
+ReturnValue DragonflyDeviceDriver2::hasManual(cameraFeature_id_t feature,  bool& hasManual)
 {
-    *hasManual = RES(system_resources)->hasManualDC1394(feature);
-    return true;
+    hasManual = RES(system_resources)->hasManualDC1394(static_cast<int>(feature));
+    return ReturnValue_ok;
 }
 
-bool DragonflyDeviceDriver2::hasOnePush(int feature, bool* hasOnePush)
+ReturnValue DragonflyDeviceDriver2::hasOnePush(cameraFeature_id_t feature, bool& hasOnePush)
 {
-    *hasOnePush = RES(system_resources)->hasOnePushDC1394(feature);
-    return true;
+    hasOnePush = RES(system_resources)->hasOnePushDC1394(static_cast<int>(feature));
+    return ReturnValue_ok;
 }
 
-bool DragonflyDeviceDriver2::hasOnOff(int feature, bool* HasOnOff)
+ReturnValue DragonflyDeviceDriver2::hasOnOff(cameraFeature_id_t feature, bool& HasOnOff)
 {
-    *HasOnOff = RES(system_resources)->hasOnOffDC1394(feature);
-    return true;
+    HasOnOff = RES(system_resources)->hasOnOffDC1394(static_cast<int>(feature));
+    return ReturnValue_ok;
 }
 
-bool DragonflyDeviceDriver2::setActive(int feature, bool onoff)
+ReturnValue DragonflyDeviceDriver2::setActive(cameraFeature_id_t feature, bool onoff)
 {
-    return RES(system_resources)->setActiveDC1394(feature,onoff);
+    return RES(system_resources)->setActiveDC1394(static_cast<int>(feature), onoff) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::setFeature(int feature, double value)
+ReturnValue DragonflyDeviceDriver2::setFeature(cameraFeature_id_t feature, double value)
 {
-    return RES(system_resources)->setFeatureDC1394(feature, value);
+    return RES(system_resources)->setFeatureDC1394(static_cast<int>(feature), value) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::getFeature(int feature, double* value1, double* value2)
+ReturnValue DragonflyDeviceDriver2::getFeature(cameraFeature_id_t feature, double& value1, double& value2)
 {
-    if(feature == YARP_FEATURE_WHITE_BALANCE)
-        return RES(system_resources)->getWhiteBalanceDC1394(*value1, *value2);
-    else
-        return false;
+    if(feature == cameraFeature_id_t::YARP_FEATURE_WHITE_BALANCE)
+    
+		return RES(system_resources)->getWhiteBalanceDC1394(value1, value2) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
+    
+	else
+    
+		return ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::setFeature(int feature, double value1, double value2)
+ReturnValue DragonflyDeviceDriver2::setFeature(cameraFeature_id_t feature, double value1, double value2)
 {
-    if(feature == YARP_FEATURE_WHITE_BALANCE)
-        return RES(system_resources)->setWhiteBalanceDC1394(value1, value2);
-    else
-        return false;
+    if(feature == cameraFeature_id_t::YARP_FEATURE_WHITE_BALANCE)
+	
+        return RES(system_resources)->setWhiteBalanceDC1394(value1, value2) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
+	
+	else
+		return ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::setMode(int feature, FeatureMode mode)
+ReturnValue DragonflyDeviceDriver2::setMode(cameraFeature_id_t feature, FeatureMode mode)
 {
-    return RES(system_resources)->setModeDC1394(feature, TRANSL_MODE(mode));
+    return RES(system_resources)->setModeDC1394(static_cast<int>(feature), TRANSL_MODE(mode)) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool DragonflyDeviceDriver2::setOnePush(int feature)
+ReturnValue DragonflyDeviceDriver2::setOnePush(cameraFeature_id_t feature)
 {
-    return RES(system_resources)->setOnePushDC1394(feature);
+    return RES(system_resources)->setOnePushDC1394(static_cast<int>(feature)) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
-

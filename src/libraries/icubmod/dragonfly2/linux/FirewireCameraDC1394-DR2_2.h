@@ -129,7 +129,7 @@ protected:
     inline uint32_t NormToValue(double& dVal,int feature);
     inline double ValueToNorm(uint32_t iVal,int feature);
 
-    int TRANSL(int feature);
+    int TRANSL(yarp::dev::cameraFeature_id_t feature);
 
     bool manage(dc1394error_t error);
 
@@ -201,83 +201,83 @@ public:
     /////////////////////////
 
     // 12
-    virtual unsigned int getVideoModeMaskDC1394();
+    virtual yarp::dev::ReturnValue getVideoModeMaskDC1394(unsigned int& val);
 
     // 13
-    virtual bool setVideoModeDC1394(int video_mode);
+    virtual yarp::dev::ReturnValue setVideoModeDC1394(int video_mode);
 
     // 14
-    virtual unsigned int getVideoModeDC1394();
+    virtual yarp::dev::ReturnValue getVideoModeDC1394(unsigned int& val);
 
     // 15
-    virtual unsigned int getFPSMaskDC1394();
+    virtual yarp::dev::ReturnValue getFPSMaskDC1394(unsigned int& val);
 
     // 16
-    virtual unsigned int getFPSDC1394();
+    virtual yarp::dev::ReturnValue getFPSDC1394(unsigned int& val);
 
     // 17
-    virtual bool setFPSDC1394(int fps);
+    virtual yarp::dev::ReturnValue setFPSDC1394(int fps);
 
     // 18
-    virtual unsigned int getISOSpeedDC1394();
+    virtual yarp::dev::ReturnValue getISOSpeedDC1394(unsigned int& val);
 
     // 19
-    virtual bool setISOSpeedDC1394(int speed);
+    virtual yarp::dev::ReturnValue setISOSpeedDC1394(int speed);
 
     // 20
-    virtual unsigned int getColorCodingMaskDC1394(unsigned int video_mode);
+    virtual yarp::dev::ReturnValue getColorCodingMaskDC1394(unsigned int video_mode,unsigned int& val);
     virtual unsigned int getActualColorCodingMaskDC1394();
 
     // 21
-    virtual unsigned int getColorCodingDC1394();
+    virtual yarp::dev::ReturnValue getColorCodingDC1394(unsigned int& val);
 
     // 22
-    virtual bool setColorCodingDC1394(int coding);
+    virtual yarp::dev::ReturnValue setColorCodingDC1394(int coding);
 
     // 25
-    virtual bool getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep);
+    virtual yarp::dev::ReturnValue getFormat7MaxWindowDC1394(unsigned int &xdim,unsigned int &ydim,unsigned int &xstep,unsigned int &ystep,unsigned int &xoffstep,unsigned int &yoffstep);
 
     // 26
-    virtual bool setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0);
+    virtual yarp::dev::ReturnValue setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim,int x0,int y0);
 
     // 27
-    virtual bool getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);
+    virtual yarp::dev::ReturnValue getFormat7WindowDC1394(unsigned int &xdim,unsigned int &ydim,int &x0,int &y0);
 
     // 28
-    virtual bool setOperationModeDC1394(bool b1394b);
+    virtual yarp::dev::ReturnValue setOperationModeDC1394(bool b1394b);
 
     // 29
-    virtual bool getOperationModeDC1394();
+    virtual yarp::dev::ReturnValue getOperationModeDC1394(bool& b1394);
 
     // 30
-    virtual bool setTransmissionDC1394(bool bTxON);
+    virtual yarp::dev::ReturnValue setTransmissionDC1394(bool bTxON);
 
     // 31
-    virtual bool getTransmissionDC1394();
+    virtual yarp::dev::ReturnValue getTransmissionDC1394(bool& bTxON);
 
     // 32 setBayer
     // 33 getBayer
 
     // 34
-    virtual bool setBroadcastDC1394(bool onoff);
+    virtual yarp::dev::ReturnValue setBroadcastDC1394(bool onoff);
 
     // 35
-    virtual bool setDefaultsDC1394();
+    virtual yarp::dev::ReturnValue setDefaultsDC1394();
 
     // 36
-    virtual bool setResetDC1394();
+    virtual yarp::dev::ReturnValue setResetDC1394();
 
     // 37
-    virtual bool setPowerDC1394(bool onoff);
+    virtual yarp::dev::ReturnValue setPowerDC1394(bool onoff);
 
     // 38
-    virtual bool setCaptureDC1394(bool bON);
+    virtual yarp::dev::ReturnValue setCaptureDC1394(bool bON);
 
     // 39
-    virtual unsigned int getBytesPerPacketDC1394();
+    virtual yarp::dev::ReturnValue getBytesPerPacketDC1394(unsigned int& bpp);
 
     // 40
-    virtual bool setBytesPerPacketDC1394(unsigned int bpp);
+    virtual yarp::dev::ReturnValue setBytesPerPacketDC1394(unsigned int bpp);
 
     /////////////////////////
     // end format functions
@@ -316,14 +316,14 @@ public:
     /*Implementation of IRgbVisualParams interface*/
     virtual int getRgbHeight();
     virtual int getRgbWidth();
-    virtual bool getRgbSupportedConfigurations(yarp::sig::VectorOf<yarp::dev::CameraConfig> &configurations);
-    virtual bool getRgbResolution(int &width, int &height);
-    virtual bool setRgbResolution(int width, int height);
-    virtual bool getRgbFOV(double &horizontalFov, double &verticalFov);
-    virtual bool setRgbFOV(double horizontalFov, double verticalFov);
-    virtual bool getRgbIntrinsicParam(yarp::os::Property &intrinsic);
-    virtual bool getRgbMirroring(bool &mirror);
-    virtual bool setRgbMirroring(bool mirror);
+    virtual yarp::dev::ReturnValue getRgbSupportedConfigurations(std::vector<yarp::dev::CameraConfig>& configurations);
+    virtual yarp::dev::ReturnValue getRgbResolution(int &width, int &height);
+    virtual yarp::dev::ReturnValue setRgbResolution(int width, int height);
+    virtual yarp::dev::ReturnValue getRgbFOV(double &horizontalFov, double &verticalFov);
+    virtual yarp::dev::ReturnValue setRgbFOV(double horizontalFov, double verticalFov);
+    virtual yarp::dev::ReturnValue getRgbIntrinsicParam(yarp::os::Property &intrinsic);
+    virtual yarp::dev::ReturnValue getRgbMirroring(bool &mirror);
+    virtual yarp::dev::ReturnValue setRgbMirroring(bool mirror);
 
 };
 

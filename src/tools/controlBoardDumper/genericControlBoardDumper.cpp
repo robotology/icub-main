@@ -74,7 +74,7 @@ bool GetPidRefs::getData(double *e)
   //fprintf(stderr, "Entering getPosErrs\n");
   if (ipid)
     {
-      ipid->getPidReferences(VOCAB_PIDTYPE_POSITION, e);
+      ipid->getPidReferences(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, e);
       return 1;
     }
   else
@@ -125,7 +125,7 @@ bool GetPosErrs::getData(double *e)
   //fprintf(stderr, "Entering getPosErrs\n");
   if (ipid)
     {
-      ipid->getPidErrors(VOCAB_PIDTYPE_POSITION,e);
+      ipid->getPidErrors(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,e);
       return 1;
     }
   else
@@ -142,7 +142,7 @@ bool GetOuts::getData(double *e)
   //fprintf(stderr, "Entering getOuts\n");
   if (ipid)
     {
-      ipid->getPidOutputs(VOCAB_PIDTYPE_POSITION,e);
+      ipid->getPidOutputs(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,e);
       return 1;
     }
   else
@@ -248,7 +248,7 @@ bool GetTrqErrs::getData(double *e)
   //fprintf(stderr, "Entering getTrqErrs\n");
   if (ipid)
     {
-      ipid->getPidErrors(VOCAB_PIDTYPE_TORQUE,e);
+      ipid->getPidErrors(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE,e);
       return 1;
     }
   else

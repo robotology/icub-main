@@ -49,14 +49,14 @@ bool CouplingICubHandMk2::open(yarp::os::Searchable& config) {
     return true;
 }
 
-bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesPos(const yarp::sig::Vector& physJointsPos, yarp::sig::Vector& actAxesPos) {
+yarp::dev::ReturnValue CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesPos(const yarp::sig::Vector& physJointsPos, yarp::sig::Vector& actAxesPos) {
     size_t nrOfPhysicalJoints;
     size_t nrOfActuatedAxes;
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || physJointsPos.size() != nrOfPhysicalJoints || actAxesPos.size() != nrOfActuatedAxes) {
         yCError(COUPLINGICUBHANDMK2) << "convertFromPhysicalJointsToActuatedAxesPos: input or output vectors have wrong size";
-        return false;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     }
 
     // l/r_hand_finger
@@ -77,17 +77,17 @@ bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesPos(const yarp:
     actAxesPos[7] = physJointsPos[10] + physJointsPos[11];
     // l/r_pinky
     actAxesPos[8] = physJointsPos[13] + physJointsPos[14] + physJointsPos[15];
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
-bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesVel(const yarp::sig::Vector& physJointsPos, const yarp::sig::Vector& physJointsVel, yarp::sig::Vector& actAxesVel) {
+yarp::dev::ReturnValue CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesVel(const yarp::sig::Vector& physJointsPos, const yarp::sig::Vector& physJointsVel, yarp::sig::Vector& actAxesVel) {
     size_t nrOfPhysicalJoints;
     size_t nrOfActuatedAxes;
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || physJointsVel.size() != nrOfPhysicalJoints || actAxesVel.size() != nrOfActuatedAxes) {
         yCError(COUPLINGICUBHANDMK2) << "convertFromPhysicalJointsToActuatedAxesVel: input or output vectors have wrong size";
-        return false;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     }
     // l/r_hand_finger
     actAxesVel[0] = -physJointsVel[12]*3;
@@ -107,18 +107,18 @@ bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesVel(const yarp:
     actAxesVel[7] = physJointsVel[10] + physJointsVel[11];
     // l/r_pinky
     actAxesVel[8] = physJointsVel[13] + physJointsVel[14] + physJointsVel[15];
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
 
-bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesAcc(const yarp::sig::Vector& physJointsPos, const yarp::sig::Vector& physJointsVel, const yarp::sig::Vector& physJointsAcc, yarp::sig::Vector& actAxesAcc) {
+yarp::dev::ReturnValue CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesAcc(const yarp::sig::Vector& physJointsPos, const yarp::sig::Vector& physJointsVel, const yarp::sig::Vector& physJointsAcc, yarp::sig::Vector& actAxesAcc) {
     size_t nrOfPhysicalJoints;
     size_t nrOfActuatedAxes;
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || physJointsAcc.size() != nrOfPhysicalJoints || actAxesAcc.size() != nrOfActuatedAxes) {
         yCError(COUPLINGICUBHANDMK2) << "convertFromPhysicalJointsToActuatedAxesAcc: input or output vectors have wrong size";
-        return false;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     }
     // l/r_hand_finger
     actAxesAcc[0] = -physJointsAcc[12]*3;
@@ -138,22 +138,22 @@ bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesAcc(const yarp:
     actAxesAcc[7] = physJointsAcc[10] + physJointsAcc[11];
     // l/r_pinky
     actAxesAcc[8] = physJointsAcc[13] + physJointsAcc[14] + physJointsAcc[15];
-    return false;
+    return yarp::dev::ReturnValue::return_code::return_value_error_generic;
 }
 
-bool CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesTrq(const yarp::sig::Vector& physJointsPos, const yarp::sig::Vector& physJointsTrq, yarp::sig::Vector& actAxesTrq) {
-    return false;
+yarp::dev::ReturnValue CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesTrq(const yarp::sig::Vector& physJointsPos, const yarp::sig::Vector& physJointsTrq, yarp::sig::Vector& actAxesTrq) {
+    return yarp::dev::ReturnValue::return_code::return_value_error_generic;
 }
 
 
-bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsPos(const yarp::sig::Vector& actAxesPos, yarp::sig::Vector& physJointsPos) {
+yarp::dev::ReturnValue CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsPos(const yarp::sig::Vector& actAxesPos, yarp::sig::Vector& physJointsPos) {
     size_t nrOfPhysicalJoints;
     size_t nrOfActuatedAxes;
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || physJointsPos.size() != nrOfPhysicalJoints || actAxesPos.size() != nrOfActuatedAxes) {
         yCError(COUPLINGICUBHANDMK2) << "convertFromActuatedAxesToPhysicalJointsPos: input or output vectors have wrong size";
-        return false;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     }
 
     // l/r_hand_thumb_0
@@ -197,18 +197,18 @@ bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsPos(const yarp:
     // l/r_hand_little_3
     physJointsPos[19] = actAxesPos[8]/3;
     
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
 
-bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsVel(const yarp::sig::Vector& actAxesPos, const yarp::sig::Vector& actAxesVel, yarp::sig::Vector& physJointsVel) {
+yarp::dev::ReturnValue CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsVel(const yarp::sig::Vector& actAxesPos, const yarp::sig::Vector& actAxesVel, yarp::sig::Vector& physJointsVel) {
     size_t nrOfPhysicalJoints;
     size_t nrOfActuatedAxes;
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || actAxesPos.size() != nrOfActuatedAxes || physJointsVel.size() != nrOfPhysicalJoints || actAxesVel.size() != nrOfActuatedAxes) {
         yCError(COUPLINGICUBHANDMK2) << "convertFromPhysicalJointsToActuatedAxesVel: input or output vectors have wrong size";
-        return false;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     }
 
     // l/r_hand_thumb_0
@@ -252,17 +252,17 @@ bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsVel(const yarp:
     // l/r_hand_little_3
     physJointsVel[19] = actAxesVel[8]/3;
 
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
-bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsAcc(const yarp::sig::Vector& actAxesPos, const yarp::sig::Vector& actAxesVel, const yarp::sig::Vector& actAxesAcc, yarp::sig::Vector& physJointsAcc) {
+yarp::dev::ReturnValue CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsAcc(const yarp::sig::Vector& actAxesPos, const yarp::sig::Vector& actAxesVel, const yarp::sig::Vector& actAxesAcc, yarp::sig::Vector& physJointsAcc) {
     size_t nrOfPhysicalJoints;
     size_t nrOfActuatedAxes;
     auto ok = getNrOfPhysicalJoints(nrOfPhysicalJoints);
     ok = ok && getNrOfActuatedAxes(nrOfActuatedAxes);
     if (!ok || actAxesPos.size() != nrOfActuatedAxes || physJointsAcc.size() != nrOfPhysicalJoints || actAxesAcc.size() != nrOfActuatedAxes) {
         yCError(COUPLINGICUBHANDMK2) << "convertFromPhysicalJointsToActuatedAxesAcc: input or output vectors have wrong size";
-        return false;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     }
 
     // l/r_hand_thumb_0
@@ -306,8 +306,8 @@ bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsAcc(const yarp:
     // l/r_hand_little_3
     physJointsAcc[19] = actAxesAcc[8]/3;
     
-    return false;
+    return yarp::dev::ReturnValue::return_code::return_value_error_generic;
 }
-bool CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsTrq(const yarp::sig::Vector& actAxesPos, const yarp::sig::Vector& actAxesTrq, yarp::sig::Vector& physJointsTrq) {
-    return false;
+yarp::dev::ReturnValue CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsTrq(const yarp::sig::Vector& actAxesPos, const yarp::sig::Vector& actAxesTrq, yarp::sig::Vector& physJointsTrq) {
+    return yarp::dev::ReturnValue::return_code::return_value_error_generic;
 }

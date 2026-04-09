@@ -292,7 +292,7 @@ bool parametricCalibrator::close ()
     return true;
 }
 
-bool parametricCalibrator::calibrate(DeviceDriver *device)
+ReturnValue parametricCalibrator::calibrate(DeviceDriver *device)
 {
     yInfo() << deviceName << ": starting calibration";
     yTrace();
@@ -302,7 +302,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *device)
     if (device==0)
     {
         yError() << deviceName << ": invalid device driver";
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(device);
@@ -333,10 +333,10 @@ bool parametricCalibrator::calibrate(DeviceDriver *device)
 
     if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
         yError() << deviceName << ": interface not found" << iCalibrate << iPosition << iPids << iControlMode;
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
-    return calibrate();
+    return calibrate() ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
 bool parametricCalibrator::calibrate()
@@ -769,7 +769,7 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     return finished;
 }
 
-bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
+ReturnValue parametricCalibrator::park(DeviceDriver *dd, bool wait)
 {
     yTrace();
     bool ret=false;
@@ -780,14 +780,14 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     {
         yWarning() << deviceName << ": Calling park without calibration... skipping";
         calibMutex.unlock();
-        return true;
+        return ReturnValue_ok;
     }
     calibMutex.unlock();
 
     if(skipCalibration)
     {
         yWarning() << deviceName << ": skipCalibration flag is on!! Faking park!!";
-        return true;
+        return ReturnValue_ok;
     }
 
     int*  currentControlModes = new int  [n_joints];
@@ -884,21 +884,21 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
             }
         }
     }
-    return true;
+    return ReturnValue_ok;
 }
 
-bool parametricCalibrator::quitCalibrate()
+ReturnValue parametricCalibrator::quitCalibrate()
 {
     yDebug() << deviceName.c_str() << ": Quitting calibrate\n";
     abortCalib = true;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool parametricCalibrator::quitPark()
+ReturnValue parametricCalibrator::quitPark()
 {
     yDebug() << deviceName.c_str() << ": Quitting parking\n";
     abortParking=true;
-    return true;
+    return ReturnValue_ok;
 }
 
 yarp::dev::IRemoteCalibrator *parametricCalibrator::getCalibratorDevice()
@@ -906,33 +906,33 @@ yarp::dev::IRemoteCalibrator *parametricCalibrator::getCalibratorDevice()
     return this;
 }
 
-bool parametricCalibrator::calibrateSingleJoint(int j)
+ReturnValue parametricCalibrator::calibrateSingleJoint(int j)
 {
     if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
     {
         yError("%s cannot perform 'calibrate' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
-    return calibrateJoint(j);
+    return calibrateJoint(j) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool parametricCalibrator::calibrateWholePart()
+ReturnValue parametricCalibrator::calibrateWholePart()
 {
     yTrace();
-    return calibrate();
+    return calibrate() ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool parametricCalibrator::homingSingleJoint(int j)
+ReturnValue parametricCalibrator::homingSingleJoint(int j)
 {
     if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
     {
         yError("%s cannot perform 'homing' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
-    return goToZero(j);
+    return goToZero(j) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool parametricCalibrator::homingWholePart()
+ReturnValue parametricCalibrator::homingWholePart()
 {
     yTrace();
     bool ret = true;
@@ -941,15 +941,15 @@ bool parametricCalibrator::homingWholePart()
     {
         ret = homingSingleJoint(*lit) && ret;
     }
-    return ret;
+    return ret ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
-bool parametricCalibrator::parkSingleJoint(int j, bool _wait)
+ReturnValue parametricCalibrator::parkSingleJoint(int j, bool _wait)
 {
     if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
     {
         yError("%s cannot perform 'park' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     int nj=0;
@@ -960,14 +960,14 @@ bool parametricCalibrator::parkSingleJoint(int j, bool _wait)
     {
         yWarning() << deviceName << ": Calling park without calibration... skipping";
         calibMutex.unlock();
-        return true;
+        return ReturnValue_ok;
     }
     calibMutex.unlock();
 
     if(skipCalibration)
     {
         yWarning() << deviceName << ": skipCalibration flag is on!! Faking park!!";
-        return true;
+        return ReturnValue_ok;
     }
 
     int  currentControlMode;
@@ -1022,19 +1022,19 @@ bool parametricCalibrator::parkSingleJoint(int j, bool _wait)
 
     yDebug() << deviceName.c_str() << ": Park " << (abortParking ? "aborted" : "completed");
     iControlMode->setControlMode(j,VOCAB_CM_IDLE);
-    return true;
+    return ReturnValue_ok;
 }
 
-bool parametricCalibrator::parkWholePart()
+ReturnValue parametricCalibrator::parkWholePart()
 {
     yTrace();
     if(!isCalibrated)
     {
         yError() << "Device is not calibrated therefore cannot be parked";
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
-    return park(dev2calibrate);
+    return park(dev2calibrate) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_generic;
 }
 
 
