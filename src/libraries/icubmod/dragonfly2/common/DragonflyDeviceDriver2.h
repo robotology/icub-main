@@ -550,7 +550,7 @@ public:
     *
     * 	unsigned int mask;
     *
-    *	for (unsigned int m; m<modes.num; ++m)
+    *	for (unsigned int m=0; m<modes.num; ++m)
     *
     *			mask|=1<<(modes.modes[m]-DC1394_VIDEO_MODE_MIN);
     *
@@ -588,7 +588,7 @@ public:
     *
     *	unsigned int mask;
     *
-    *	for (unsigned int f; f<fps.num; ++f)
+    *	for (unsigned int f=0; f<fps.num; ++f)
     *
     *		mask|=1<<(fps.framerates[f]-DC1394_FRAMERATE_MIN);
     *
@@ -627,7 +627,7 @@ public:
     *
     *	unsigned int mask;
     *
-    *	for (unsigned int m; m<codings.num; ++m)
+    *	for (unsigned int m=0; m<codings.num; ++m)
     *
     *			mask|=1<<(codings.codings[m]-DC1394_COLOR_CODING_MIN);
     *

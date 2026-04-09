@@ -4981,7 +4981,7 @@ ReturnValue CanBusMotionControl::getTargetPositionsRaw(double *ref)
     }
     return ret;
 }
-/* 
+
 ReturnValue CanBusMotionControl::getTargetPositionsRaw(int nj, const int * jnts, double *refs)
 {
     ReturnValue ret = ReturnValue_ok;
@@ -4990,7 +4990,7 @@ ReturnValue CanBusMotionControl::getTargetPositionsRaw(int nj, const int * jnts,
         ret &= getTargetPositionRaw(jnts[j], &refs[j]);
     }
     return ret;
-} */ // TODO: Why multiple identical methods???
+}
 
 ReturnValue CanBusMotionControl::getTargetVelocityRaw(int axis, double *ref)
 {
@@ -5023,32 +5023,32 @@ ReturnValue CanBusMotionControl::getTargetVelocitiesRaw(int nj, const int * jnts
     return ret;
 }
 
-/*ReturnValue CanBusMotionControl::getTargetPositionRaw(int axis, double *ref)
+ReturnValue CanBusMotionControl::getRefPositionRaw(int axis, double *ref)
 {
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
         return ReturnValue::return_code::return_value_error_generic;
     *ref = _ref_positions[axis];
     return ReturnValue_ok;
-}*/ // TODO: Which will be used?
+}
 
-/*ReturnValue CanBusMotionControl::getTargetPositionsRaw(double *ref)
+ReturnValue CanBusMotionControl::getRefPositionsRaw(double *ref)
 {
     CanBusResources& r = RES(system_resources);
     ReturnValue ret = ReturnValue_ok;
     for (int j = 0; j < r.getJoints() && ret; j++)
     {
-        ret &= getTargetPositionRaw(j, &ref[j]);
+        ret &= getRefPositionRaw(j, &ref[j]);
     }
     return ret;
-}*/
+}
 
-ReturnValue CanBusMotionControl::getTargetPositionsRaw(int nj, const int * jnts, double *refs)
+ReturnValue CanBusMotionControl::getRefPositionsRaw(int nj, const int * jnts, double *refs)
 {
     ReturnValue ret = ReturnValue_ok;
     for (int j = 0; j < nj && ret; j++)
     {
-        ret &= getTargetPositionRaw(jnts[j], &refs[j]);
+        ret &= getRefPositionRaw(jnts[j], &refs[j]);
     }
     return ret;
 }
