@@ -20,660 +20,158 @@
 #ifndef __mcParserh__
 #define __mcParserh__
 
-
-
 #include <string>
+#include <string_view>
 #include <vector>
-#include <array>
-#include <map>
 #include <memory>
 
-//  Yarp stuff
 #include <yarp/os/Bottle.h>
-//#include <yarp/os/Time.h>
-#include <yarp/os/Bottle.h>
-#include <yarp/dev/ControlBoardPid.h>
-#include <yarp/dev/ControlBoardHelper.h>
-
-#include <yarp/dev/PidEnums.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 
-#include "EoMotionControl.h"
-#include <yarp/os/LogStream.h>
-
+#include "embObjMotionControlConfigTypes.h"
+#include "embObjMotionControlDefaults.h"
 
 // - public #define  --------------------------------------------------------------------------------------------------
-
 
 namespace yarp {
     namespace dev  {
         namespace eomc {
 
-
-//typedef enum
-//{
-//    PidAlgo_simple = 0,
-//    PIdAlgo_velocityInnerLoop = 1,
-//    PidAlgo_currentInnerLoop =2
-//} PidAlgorithmType_t;
-
-typedef enum
-{
-    motor_temperature_sensor_pt100       = 0,
-    motor_temperature_sensor_pt1000      = 1,
-    motor_temperature_sensor_none        = 255
-} motor_temperatureSensorTypeEnum_t;
-
-class ITemperatureSensor
-{
-
-public:
-
-    virtual double convertTempCelsiusToRaw(const double temperature) = 0;
-
-    virtual double convertRawToTempCelsius(const double temperature) = 0;
-
-    virtual motor_temperatureSensorTypeEnum_t getType() = 0;
-};
-
-class TemperatureSensorPT100 : public ITemperatureSensor
-{
-private:
-    // resistors of the voltage divider bridge
-    int _r_1;
-    int _r_2;
-    int _r_3;
-    
-
-    double _ptc_offset;    // offset of the temperature sensor line
-    double _ptc_gradient;  // slope/gradient of the temperature sensor line
-    double _pga_gain;      // ADC gain set for the tdb (temperature detection board)
-
-    int _vcc;               // vcc that enters the voltage divider bridge
-    double _resolution_pga; // resolution of the internal pga of the tdb
-    double _resolution_tdb; // resolution used for the raw value for the output of the tdb
-
-    double _half_bridge_resistor_coeff;
-    double _first_res_coeff;
-    double _second_res_coeff;
-
-public:
-
-    TemperatureSensorPT100()
-    {
-        _r_1 = 4700;
-        _r_2 = 4700;
-        _r_3 = 100; 
-
-        _ptc_offset = 100.0;
-        _ptc_gradient = 0.3851;
-        _pga_gain = 2;
-        _vcc = 5;
-        _resolution_pga = 2.048;
-        _resolution_tdb = 32767; 
-
-        // define here and calculate when the class object is built to speed up calculations
-        // since the value does not change in the sensor type class object
-        _half_bridge_resistor_coeff = (double)_r_3 / (double)(_r_2 + _r_3);
-        _first_res_coeff = _r_1*_r_2 + _r_1*_r_3 + _ptc_offset*_r_2 + _ptc_offset*_r_3;
-        _second_res_coeff = _r_3*_r_1 - _r_2*_ptc_offset;
-    }
-
-    TemperatureSensorPT100(const TemperatureSensorPT100& other) = default; // const copy constructor
-    TemperatureSensorPT100& operator=(const TemperatureSensorPT100& other) = default; // const copy assignment operator
-    TemperatureSensorPT100(TemperatureSensorPT100&& other) = default; // move constructor
-    TemperatureSensorPT100& operator=(TemperatureSensorPT100&& other) = default; // move assignment operator
-
-    ~TemperatureSensorPT100() = default; // destructor
-
-    virtual double convertTempCelsiusToRaw(const double temperature) override
-    {
-        double res = 0;
-       	
-        double tmp = (( (_ptc_offset + _ptc_gradient * temperature) / ((double)_r_1 + (_ptc_offset + _ptc_gradient * temperature))) - _half_bridge_resistor_coeff) * (double)_vcc;
-        res = (_resolution_tdb + 1) * ((_pga_gain * tmp) / _resolution_pga);
-        
-	    yDebug("Converted temperature limit to raw value:%f", res);
-        return res;
-    }
-
-    virtual double convertRawToTempCelsius(const double temperature) override
-    {
-        double res = 0;
-        
-        double tmp = temperature * ((_resolution_pga) / (_pga_gain * _vcc * (_resolution_tdb + 1)));
-        double den = _ptc_gradient * (_r_2 - _r_2*tmp - _r_3*tmp);
-
-        res = (tmp * (_first_res_coeff) / den) + ((_second_res_coeff) / den);
-        
-        return res;
-    }
-
-    virtual motor_temperatureSensorTypeEnum_t getType() override
-    {return motor_temperature_sensor_pt100;}
-};
-
-
-class TemperatureSensorPT1000 : public ITemperatureSensor
-{
-
-private:
-    // resistors of the voltage divider bridge
-    int _r_1;
-    int _r_2;
-    int _r_3;
-    
-    double _ptc_offset;    // offset of the temperature sensor line
-    double _ptc_gradient;  // slope/gradient of the temperature sensor line
-    double _pga_gain;      // ADC gain set for the tdb (temperature detection board)
-
-    int _vcc;               // vcc that enters the voltage divider bridge
-    double _resolution_pga; // resolution of the internal pga of the tdb
-    double _resolution_tdb; // resolution used for the raw value for the output of the tdb
-    
-    // define here and calculate when the class object is built to speed up calculations
-    // since the value does not change in the sensor type class object
-    double _half_bridge_resistor_coeff;
-    double _first_res_coeff;
-    double _second_res_coeff;
-    
-public:
-
-    TemperatureSensorPT1000()
-    {
-        _r_1 = 4700;
-        _r_2 = 4700;
-        _r_3 = 1000;
-
-        _ptc_offset = 1000;
-        _ptc_gradient = 3.851;
-        _pga_gain = 2;
-        _vcc = 5;
-        _resolution_pga = 2.048;
-        _resolution_tdb = 32767;
-        
-        _half_bridge_resistor_coeff = (double)_r_3 / (double)(_r_2 + _r_3);
-
-        _first_res_coeff = _r_1*_r_2 + _r_1*_r_3 + _ptc_offset*_r_2 + _ptc_offset*_r_3;
-        _second_res_coeff = _r_3*_r_1 - _r_2*_ptc_offset;
-    }
-
-    TemperatureSensorPT1000(const TemperatureSensorPT1000& other) = default; // const copy constructor
-    TemperatureSensorPT1000& operator=(const TemperatureSensorPT1000& other) = default; // const copy assignment operator
-    TemperatureSensorPT1000(TemperatureSensorPT1000&& other) = default; // move constructor
-    TemperatureSensorPT1000& operator=(TemperatureSensorPT1000&& other) = default; // move assignment operator
-
-    ~TemperatureSensorPT1000() = default; // destructor
-
-    virtual double convertTempCelsiusToRaw(const double temperature) override
-    {
-        double res = 0;
-        
-        double tmp = (( (_ptc_offset + _ptc_gradient * temperature) / ((double)_r_1 + (_ptc_offset + _ptc_gradient * temperature))) - _half_bridge_resistor_coeff) * (double)_vcc;
-        res = (_resolution_tdb + 1) * ((_pga_gain * tmp) / _resolution_pga);
-        
-	    yDebug("Converted temperature limit to raw value:%f", res);
-        return res;
-    }
-
-    virtual double convertRawToTempCelsius(const double temperature) override
-    {
-        double res = 0;
-        
-        double tmp = temperature * ((_resolution_pga) / (_pga_gain * _vcc * (_resolution_tdb + 1)));
-        double den = _ptc_gradient * (_r_2 - _r_2*tmp - _r_3*tmp);
-
-        res = (tmp * (_first_res_coeff) / den) + ((_second_res_coeff) / den);
-        
-	    return res;
-    }
-
-    virtual motor_temperatureSensorTypeEnum_t getType() override
-    {return motor_temperature_sensor_pt1000;}
-};
-
-
-class TemperatureSensorNONE : public ITemperatureSensor
-{
-
-public:
-
-    TemperatureSensorNONE()
-    {
-        yInfo("Private varibales NOT DEFINED for class TemperatureSensorNONE");
-    }
-
-    ~TemperatureSensorNONE() = default;
-    
-    virtual double convertTempCelsiusToRaw(const double temperature) override
-    {
-        yInfo("convertTempCelsiusToRaw METHOD, NOT IMPLEMENTED for class TemperatureSensorNONE");
-        return 0;
-    }
-
-    virtual double convertRawToTempCelsius(const double temperature) override
-    {
-        return 0;
-    }
-
-    virtual motor_temperatureSensorTypeEnum_t getType() override
-    {return motor_temperature_sensor_none;}
-};
-
-
-class Pid_Algorithm
-{
-public:
-    //PidAlgorithmType_t type;
-
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    eOmc_ctrl_out_type_t out_type;
-
-    virtual ~Pid_Algorithm(){}
-
-    eOmc_ctrl_out_type_t getOutputType() { return out_type; }
-
-    void setUnits(yarp::dev::PidFeedbackUnitsEnum fu, yarp::dev::PidOutputUnitsEnum ou)
-    {
-        fbk_PidUnits = fu;
-        out_PidUnits = ou;
-    }
-
-    virtual yarp::dev::Pid getPID(int joint) = 0;
-};
-
-
-class Pid_Algorithm_simple: public Pid_Algorithm
-{
-public:
-    yarp::dev::Pid *pid;
-    
-    Pid_Algorithm_simple(int nj, eOmc_ctrl_out_type_t ot)
-    {
-        out_type = ot;
-
-        pid = new yarp::dev::Pid[nj];
-    };
-
-    ~Pid_Algorithm_simple()
-    {
-        if (pid) delete[] pid;
-    };
-
-    yarp::dev::Pid getPID(int joint) override
-    {
-        return pid[joint];
-    }
-};
-
-/*
-class PidAlgorithm_VelocityInnerLoop: public Pid_Algorithm
-{
-public:
-    yarp::dev::Pid *extPid; //pos, trq, velocity
-    //yarp::dev::Pid *innerVelPid;
-    PidAlgorithm_VelocityInnerLoop(int nj)
-    {
-        extPid = new yarp::dev::Pid[nj];
-        //innerVelPid = new yarp::dev::Pid[nj];
-    };
-    ~PidAlgorithm_VelocityInnerLoop()
-    {
-        if(extPid)
-        {
-            delete[]extPid;
-        }
-        //if(innerVelPid)
-        //{
-        //    delete[]innerVelPid;
-        //}
-    }
-
-    eOmc_ctrl_out_type_t getOutputType() override
-    {
-        return eomc_ctrl_out_type_vel;
-    }
-};
-
-
-class PidAlgorithm_CurrentInnerLoop: public Pid_Algorithm
-{
-    public:
-    yarp::dev::Pid *extPid;
-    yarp::dev::Pid *innerCurrLoop;
-    PidAlgorithm_CurrentInnerLoop(int nj)
-    {
-        extPid = allocAndCheck<yarp::dev::Pid>(nj);
-        innerCurrLoop = allocAndCheck<yarp::dev::Pid>(nj);
-    };
-    ~PidAlgorithm_CurrentInnerLoop()
-    {
-        checkAndDestroy(extPid);
-        checkAndDestroy(innerCurrLoop);
-    }
-
-    eOmc_ctrl_out_type_t getOutputType() override
-    {
-        return eomc_ctrl_out_type_cur;
-    }
-};
-*/
-
-class PidInfo
-{
-public:
-
-    yarp::dev::Pid pid;
-    yarp::dev::PidFeedbackUnitsEnum fbk_PidUnits;
-    yarp::dev::PidOutputUnitsEnum   out_PidUnits;
-    eOmc_ctrl_out_type_t            out_type;
-
-    //PidAlgorithmType_t controlLaw;
-
-    std::string usernamePidSelected;
-    bool enabled;
-
-    PidInfo()//:usernamePidSelected("none")
-    {
-        enabled = false;
-        //controlLaw = PidAlgo_simple;
-        
-        out_type = eomc_ctrl_out_type_n_a;
-        fbk_PidUnits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
-        out_PidUnits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
-    }
-    ~PidInfo()
-    {
-        //delete (usernamePidSelected);
-    }
-    void print() const
-    {
-        yInfo("PidInfo:");
-        yInfo("  pid: [kp=%f, ki=%f, kd=%f, max_int=%f, max_output=%f, scale=%f, offset=%f, stiction_up_val=%f, stiction_down_val=%f, kff=%f]",
-              pid.kp, pid.ki, pid.kd, pid.max_int, pid.max_output, pid.scale, pid.offset, pid.stiction_up_val, pid.stiction_down_val, pid.kff);
-
-        // Convert enums to string
-        auto fbkUnitsToString = [](yarp::dev::PidFeedbackUnitsEnum e) -> std::string {
-            switch(e) {
-                case yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS : return "RAW_MACHINE_UNITS";
-                case yarp::dev::PidFeedbackUnitsEnum::METRIC : return "METRIC";
-                
-                default: return "UNKNOWN";
-            }
-        };
-        auto outUnitsToString = [](yarp::dev::PidOutputUnitsEnum e) -> std::string {
-            switch(e) {
-                case yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS: return "RAW_MACHINE_UNITS";
-                case yarp::dev::PidOutputUnitsEnum::POSITION_METRIC : return "POSITION METRIC";
-                case yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC : return "VELOCITY METRIC";
-                case yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT : return "PWM";
-                case yarp::dev::PidOutputUnitsEnum::TORQUE_METRIC : return "NEWTON_METERS";
-                case yarp::dev::PidOutputUnitsEnum::CURRENT_METRIC : return "CURRENT METRIC";
-                default: return "UNKNOWN";
-            }
-        };
-        auto outTypeToString = [](eOmc_ctrl_out_type_t e) -> std::string {
-            switch(e) {
-                case eomc_ctrl_out_type_n_a: return "n/a";
-                case eomc_ctrl_out_type_pwm: return "pwm";
-                case eomc_ctrl_out_type_cur: return "cur";
-                case eomc_ctrl_out_type_vel: return "vel_pwm";
-                case eomc_ctrl_out_type_vel_cur: return "vel_cur";
-                default: return "UNKNOWN";
-            }
-        };
-
-        yInfo("  fbk_PidUnits: %s", fbkUnitsToString(fbk_PidUnits).c_str());
-        yInfo("  out_PidUnits: %s", outUnitsToString(out_PidUnits).c_str());
-        yInfo("  out_type: %s", outTypeToString(out_type).c_str());
-        yInfo("  usernamePidSelected: %s", usernamePidSelected.c_str());
-        yInfo("  enabled: %s", enabled ? "true" : "false");
-    }
-    //void dumpdata(void);
-
-};
-
-class TrqPidInfo : public PidInfo
-{
-public:
-    double kbemf;                             /** back-emf compensation parameter */
-    double ktau;                              /** motor torque constant */
-    double viscousPos;
-    double viscousNeg;
-    double coulombPos;
-    double coulombNeg;
-    double velocityThres;
-    int    filterType;
-};
-
+// Structure to track optional parameters and their defaults
 typedef struct
 {
-    float kbemf; // optional
-    bool hasHallSensor;
-    bool hasTempSensor;
-    bool hasRotorEncoder;
-    bool hasRotorEncoderIndex;
-    int  rotorIndexOffset;
-    int  motorPoles;
-    bool hasSpeedEncoder ; //facoltativo
-    bool verbose;
-} focBasedSpecificInfo_t;
+    std::string parameterName;
+    std::string defaultValue;
+    bool wasUsed;
+} OptionalParameterInfo_t;
 
 
-class JointsSet
-{
-public:
-    int           id; //num of set. it can be between 0 and max number of joint (_njoints)
-    std::vector<int>   joints; //list of joints belongig to this set2joint
-
-    eOmc_jointset_configuration_t cfg;
-
-    JointsSet(int num=0)
-    {
-        id=num;
-        joints.resize(0);
-        cfg.candotorquecontrol=0;
-        cfg.usespeedfeedbackfrommotors=0;
-        cfg.pidoutputtype=eomc_pidoutputtype_unknown;
-        cfg.dummy=0;
-        cfg.constraints.type=eomc_jsetconstraint_unknown;
-        cfg.constraints.param1=0;
-        cfg.constraints.param2=0;
-    }
-public:
-    int getNumberofJoints(void) {return (joints.size());}
-    eOmc_jointset_configuration_t* getConfiguration(void) {return &cfg;}
-    void setUseSpeedFeedbackFromMotors(bool flag){cfg.usespeedfeedbackfrommotors = flag;}
-    void setPidOutputType(eOmc_pidoutputtype_t type){cfg.pidoutputtype = type;}
-    void setCanDoTorqueControl(bool flag) {cfg.candotorquecontrol = flag;}
-    void dumpdata();
-};
-
-typedef struct
-{
-    int velocity_ref;
-    int current_ref;
-    int pwm_ref;
-    int torque_ref;
-    int torque_fbk;
-} timeouts_t;
-
-typedef struct
-{
-    double nominalCurrent;
-    double peakCurrent;
-    double overloadCurrent;
-} motorCurrentLimits_t;
-
-
-typedef struct
-{
-    double posMin;                         /** user joint limits, max*/
-    double posMax;                         /** user joint limits, min*/
-    double posHwMax;                       /** hardaware joint limits, max */
-    double posHwMin;                       /** hardaware joint limits, min */
-    double velMax;
-} jointLimits_t;
-
-typedef struct
-{
-    double posMin;
-    double posMax;
-    double pwmMax;
-} rotorLimits_t;
-
-
-typedef struct
-{
-    std::vector<double>                  matrixJ2M;
-    std::vector<double>                  matrixM2J;
-    std::vector<double>                  matrixE2J;
-} couplingInfo_t;
-
-typedef struct
-{
-    int             mappedto;
-    std::string     name;
-    JointTypeEnum   type;
-} axisInfo_t;
-
-typedef struct
-{
-    double min_stiff;
-    double max_stiff;
-    double min_damp;
-    double max_damp;
-    double param_a;
-    double param_b;
-    double param_c;
-} impedanceLimits_t;
-
-
-typedef struct
-{
-    double stiffness;
-    double damping;
-    impedanceLimits_t limits;
-} impedanceParameters_t;
-
-
-// LuGre friction model parameters
-typedef struct
-{
-    double Km;     // Motor torque constant (not strictly LuGre) but required to compute the net torque [Nm/A]
-    double Kw;     // Viscous friction constant [Nm/(rad/s)]
-    double S0;     // LuGre bristle analogy eleastic constant [Nm/rad]
-    double S1;     // LuGre bristle analogy viscous constant [Nm/(rad/s)]
-    double Vth;    // Stribeck velocity threshold [rad/s]
-    double Fc_pos; // Coulomb friction constant (positive rotation) [Nm]
-    double Fc_neg; // Coulomb friction constant (negative rotation) [Nm]
-    double Fs_pos; // Stribeck friction constant (positive rotation) [Nm]
-    double Fs_neg; // Stribeck friction constant (negative rotation) [Nm]
-} lugreParameters_t;
-
-typedef struct
-{
-    bool enabled;
-    std::array<float32_t, 3> x0;
-    std::array<float32_t, 3> Q;
-    float32_t R;
-    float32_t P0;
-} kalmanFilterParams_t;
-
-
-typedef struct
-{
-    double         hardwareTemperatureLimit;
-    double         warningTemperatureLimit;
-} temperatureLimits_t; // limits expressed as raw values after conversion is applied
-
-
-enum class pidParserType_t
-{
-    Simple,    // parse only the param in parsePidsGroupSimple function
-    Extended, // parse the param in parsePidsGroupExtended function
-    Deluxe,    // parse the param in parsePidsGroupDeluxe function
-    FOC2
-};
+/**
+ * @class e0mcParser
+ * @brief Parser for Motion Control device configuration files.
+ *
+ * This class handles the parsing of all information stored in configuration files 
+ * related to the motion control device. It supports files with the following 
+ * suffixes: *_mc_xml, *_mc_service.xml, and *_mec.xml.
+ *
+ * The e0mcParser allows the embObjMotionControl device to read these 
+ * configurations and initialize itself correctly. To ensure robustness, the parser 
+ * utilizes a dedicated file containing default values and valid strings for 
+ * parameters that require specific string inputs.
+ * * Internally, the class features private utility functions designed to reduce 
+ * code duplication, such as helpers for reading "GROUP" parameters or 
+ * extracting one or more lines from a specific group.
+ */
 class Parser
 {
 
 private:
     int _njoints;
     std::string _boardname;
-    bool _verbosewhenok;
-
-    std::map<std::string, Pid_Algorithm*> minjerkAlgoMap;
-    std::map<std::string, Pid_Algorithm*> directPosAlgoMap;
-    std::map<std::string, Pid_Algorithm*> directVelAlgoMap;
-    std::map<std::string, Pid_Algorithm*> torqueAlgoMap;
-
-    //std::map<std::string, Pid_Algorithm*> currentAlgoMap;
-    //std::map<std::string, Pid_Algorithm*> speedAlgoMap;
-
-    std::vector<std::string> _positionControlLaw;
-    std::vector<std::string> _velocityControlLaw;
-    std::vector<std::string> _mixedControlLaw;
-    std::vector<std::string> _torqueControlLaw;
-    std::vector<std::string> _currentControlLaw;
-    std::vector<std::string> _positionDirectControlLaw;
-    std::vector<std::string> _velocityDirectControlLaw;
-
-    double *_kbemf;                             /** back-emf compensation parameter */
-    double *_ktau;                              /** motor torque constant */
-    int *_filterType;
-    double *_viscousPos;
-    double *_viscousNeg;
-    double *_coulombPos;
-    double *_coulombNeg;
-    double *_velocityThres;
+    
+    //these are the user selected control modes for each control type 
+    std::string _userNameControlPosition;
+    std::string _userNameControlVelocity;
+    std::string _userNameControlMixed;
+    std::string _userNameControlTorque;
+    std::string _userNameControlCurrent;
+    std::string _userNameControlPositionDirect;
+    std::string _userNameControlVelocityDirect;
 
 
+    // Track optional parameters and their defaults
+    std::vector<OptionalParameterInfo_t> _optionalParametersUsed;
 
+    const defaults::embObjMotionControlDefaults_t& _defaultSettings;
 
-
-    //PID parsing functions
-    bool parseControlsGroup(yarp::os::Searchable &config);
-    bool getOutputType(eOmc_ctrl_out_type_t &out_type, std::string outputtype_str);
-    bool parsePidValues(yarp::os::Bottle& b_pid, std::string controlLaw, eOmc_ctrl_out_type_t outType, std::map<std::string, Pid_Algorithm*> &pidMap, pidParserType_t parserType);
-    bool parseSelectedPositionControl(yarp::os::Searchable &config);
-    bool parseSelectedVelocityControl(yarp::os::Searchable &config);
-    bool parseSelectedMixedControl(yarp::os::Searchable &config);
-    bool parseSelectedTorqueControl(yarp::os::Searchable &config);
-    bool parseSelectedPositionDirectControl(yarp::os::Searchable &config);
-    bool parseSelectedVelocityDirectControl(yarp::os::Searchable &config);
-    bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, PidInfo *pids);
-
-    // bool parsePid_minJerk_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
-    // bool parsePid_minJerk_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
-    // bool parsePid_minJerk_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
-
-    // bool parsePid_direct_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
-    // bool parsePid_direct_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
-    // bool parsePid_direct_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
-
-    // bool parsePid_torque_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
-    // bool parsePid_torque_outCur(yarp::os::Bottle &b_pid, std::string controlLaw);
-    // bool parsePid_torque_outVel(yarp::os::Bottle &b_pid, std::string controlLaw);
-
-    bool parsePidsGroup2FOC(yarp::os::Bottle& pidsGroup, Pid myPid[]);
-    bool parsePidsGroupSimple(yarp::os::Bottle& pidsGroup, Pid myPid[]);
-    bool parsePidsGroupExtended(yarp::os::Bottle& pidsGroup, Pid myPid[]);
-    bool parsePidsGroupDeluxe(yarp::os::Bottle& pidsGroup, Pid myPid[]);
-
-    bool parsePidsGroup(yarp::os::Bottle& pidsGroup, yarp::dev::Pid myPid[], std::string prefix);
-    bool getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, PidInfo *pDirpids, PidInfo *vDirpids,TrqPidInfo *tpids);
-    bool parsePidUnitsType(yarp::os::Bottle &bPid, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
-
-    bool checkJointTypes(PidInfo *pids, const std::string &pid_type);
-    bool checkSinglePid(PidInfo &firstPid, PidInfo &currentPid, const int &firstjoint, const int &currentjoint, const std::string &pid_type);
-
-    bool convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
-    bool convert(yarp::os::Bottle &bottle, std::vector<double> &matrix, bool &formaterror, int targetsize);
 
     //general utils functions
     bool extractGroup(yarp::os::Bottle &input, yarp::os::Bottle &out, const std::string &key1, const std::string &txt, int size, bool mandatory=true);
+    bool GetGroupBottle(yarp::os::Searchable &config, const std::string &groupName, yarp::os::Bottle &outBottle, bool mandatory=true);
+
+
+    //PID parsing auxiliary functions
+
+    //auxiliary functions for parse the CONTROLS group in xml *_mc.xml
+    bool readUserNameControlsGroup(yarp::os::Searchable &config);
+    //from the pid group in xml file extracts the control law type
+    bool getOutputType(yarp::os::Bottle& pidsGroup, eOmc_ctrl_out_type_t &out_type);
+    //get from config file the values of the pids
+    bool readControlLaw(yarp::os::Bottle& pidsGroup, std::string &controlLaw_str);
+    //from the pid group in xml file extracts the pid units type (feedback and output)
+    bool parsePidUnitsType(yarp::os::Bottle& pidsGroup, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
+
+    bool parseSelectedPositionControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &pos_pids);
+    bool parseSelectedVelocityControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &vel_pids);
+    bool parseSelectedMixedControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &mix_pids);
+    bool parseSelectedTorqueControl(yarp::os::Searchable &config, std::vector<eomc::TrqPidInfo> &trq_pids);
+    bool parseSelectedPositionDirectControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &posDir_pids);
+    bool parseSelectedVelocityDirectControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &velDir_pids);
+    bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, std::vector<eomc::PidInfo> &curr_pids);
+
+    bool areControlPidGroupEqual(const std::vector<std::string> &controlGroup);
+
+    bool parsePidsGroup2FOC(yarp::os::Bottle& pidsGroup, std::vector<eomc::PidInfo> &curr_pids);
+    /**
+     * @brief Parse a minimal set of PID parameters for all joints.
+     *
+     * Reads from the given configuration group the basic PID fields needed by the simplest controllers:
+     * - kff, kp, kd, maxOutput
+     *
+     * This parser is intended for control modes where integral action, anti-windup and friction/stiction
+     * compensation are not required (or are handled elsewhere, e.g. in lower-level loops).
+     *
+     * @param pidsGroup Input YARP Bottle containing the PID group.
+     * @param myPid     Output array of size _njoints filled with parsed PID parameters.
+     * @return true on success, false if mandatory parameters are missing or the group has wrong size.
+     */
+    bool parsePidsGroupMinimalParams(yarp::os::Bottle& pidsGroup, std::vector<eomc::PidInfo> &pids);
+
+    /**
+     * @brief Parse an extended set of PID parameters for all joints (adds integral and stiction compensation).
+     *
+     * Extends the minimal PID parsing by adding:
+     * - ki, maxInt (integral term and anti-windup saturation)
+     * - stictionUp, stictionDown (static friction breakaway compensation, possibly direction-dependent)
+     *
+     * This parser is intended for controllers that need better steady-state accuracy (integral action)
+     * and/or require a small additional command to overcome static friction at motion start.
+     *
+     * @param pidsGroup Input YARP Bottle containing the PID group.
+     * @param myPid     Output array of size _njoints filled with parsed PID parameters.
+     * @return true on success, false if mandatory parameters are missing or the group has wrong size.
+     */
+    bool parsePidsGroupRegulationParams(yarp::os::Bottle& pidsGroup, std::vector<eomc::PidInfo> &pids);
+    bool parsePidsGroupRegulationParams(yarp::os::Bottle& pidsGroup, std::vector<eomc::TrqPidInfo> &pids);
+
+    /**
+     * @brief Parse a torque-oriented PID configuration including motor model, friction and filtering parameters.
+     *
+     * Extends the "regulation" PID parsing by reading additional parameters typically required by torque control:
+     * - ktau (torque constant) and optionally kbemf (back-EMF constant, if available)
+     * - filterType (selection of the filtering strategy used by the controller/firmware)
+     * - viscousPos/viscousNeg and coulombPos/coulombNeg (direction-dependent friction model terms)
+     * - velocityThres (velocity threshold used to apply/switch friction compensation near zero speed)
+     *
+     * Some fields may be optional in the configuration (depending on firmware/control implementation) and can
+     * fall back to 0 if not provided.
+     *
+     * @param pidsGroup Input YARP Bottle containing the PID group.
+     * @param myPid     Output array of size _njoints filled with parsed PID parameters.
+     * @return true on success, false if mandatory parameters are missing or the group has wrong size.
+     */
+    bool parsePidsGroupTorqueCompensationParams(yarp::os::Bottle& pidsGroup, std::vector<eomc::TrqPidInfo> &pids);    
+
+    //bool checkJointTypes(PidInfo *pids, const std::string &pid_type);
+    //bool checkSinglePid(PidInfo &firstPid, PidInfo &currentPid, const int &firstjoint, const int &currentjoint, const std::string &pid_type);
+
+    //jointset parsing auxiliary functions
+    bool convert(std::string const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
+    bool convert(yarp::os::Bottle &bottle, std::vector<double> &matrix, bool &formaterror, int targetsize);
+
+
+
+    
     template <class T>
     bool checkAndSetVectorSize(std::vector<T> &vec, int size, const std::string &funcName)
     {
@@ -687,22 +185,28 @@ private:
         return true;
     }
 
-    ///////// DEBUG FUNCTIONS
-    void debugUtil_printControlLaws(void);
+    // ///////// DEBUG FUNCTIONS
+    // void debugUtil_printControlLaws(void);
 
 
 public:
     Parser(int numofjoints, std::string boardname);
     ~Parser();
 
-    bool parsePids(yarp::os::Searchable &config, PidInfo *ppids, PidInfo *vpids, PidInfo *pDirpids, PidInfo *vDirpids, TrqPidInfo *tpids, PidInfo *cpids, bool lowLevPidisMandatory);
+    bool parsePids(yarp::os::Searchable &config, PidControllers_t &pids, bool lowLevPidisMandatory);
+    //TODO: use reference to std::Vector instaed of a raw pointer.
     bool parseFocGroup(yarp::os::Searchable &config, focBasedSpecificInfo_t *foc_based_info, std::string groupName, std::vector<std::unique_ptr<eomc::ITemperatureSensor>>& temperatureSensorsVector);
     //bool parseCurrentPid(yarp::os::Searchable &config, PidInfo *cpids);//deprecated
     bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &jointtoset);
-    bool parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts, int defaultTimeout);
+    bool parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts);
     bool parseCurrentLimits(yarp::os::Searchable &config, std::vector<motorCurrentLimits_t> &currLimits);
+
+    // temperatureLimits array has to be initialized correctly before calling this function
     bool parseTemperatureLimits(yarp::os::Searchable &config, std::vector<temperatureLimits_t> &temperatureLimits);
+
+    // temperatureLimits array has to be initialized correctly before calling this function
     bool parseJointsLimits(yarp::os::Searchable &config, std::vector<jointLimits_t> &jointsLimits);
+
     bool parseRotorsLimits(yarp::os::Searchable &config, std::vector<rotorLimits_t> &rotorsLimits);
     bool parseCouplingInfo(yarp::os::Searchable &config, couplingInfo_t &couplingInfo);
     bool parseMotioncontrolVersion(yarp::os::Searchable &config, int &version);
@@ -713,12 +217,18 @@ public:
     bool parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToPWM[]);
     bool parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor[]);
     bool parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[]);
-    bool parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[]);
+    bool parseUseMotorSpeedFbkFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[]);
     bool parseImpedanceGroup(yarp::os::Searchable &config,std::vector<impedanceParameters_t> &impedance);
     bool parseLugreGroup(yarp::os::Searchable &config,std::vector<lugreParameters_t> &lugre);
     bool parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found);
     bool parseKalmanFilterParams(yarp::os::Searchable &config, std::vector<kalmanFilterParams_t> &kalmanFilterParams);
     bool parseMaintenanceModeGroup(yarp::os::Searchable &config, bool &skipRecalibrationEnabled);
+
+    // Methods for tracking optional parameters
+    void registerOptionalParameter(std::string_view paramName, std::string_view defaultValue, bool wasUsed);
+    void printOptionalParametersTable();
+    void clearOptionalParametersTrack();
+
 };
 
 }}}; //close namespaces
