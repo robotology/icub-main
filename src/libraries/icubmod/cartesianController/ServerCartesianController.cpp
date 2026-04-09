@@ -1284,26 +1284,26 @@ bool ServerCartesianController::getNewTarget()
 /************************************************************************/
 bool ServerCartesianController::areJointsHealthyAndSet(vector<int> &jointsToSet)
 {    
-    vector<int> modes(maxPartJoints);
+    vector<yarp::dev::ControlModeEnum> modes(maxPartJoints);
     int chainCnt=0;
 
     jointsToSet.clear();
     for (int i=0; (i<numDrv) && ctrlModeAvailable; i++)
     {
-        lMod[i]->getControlModes(modes.data());
+        lMod[i]->getControlModes(modes);
         for (int j=0; j<lJnt[i]; j++)
         {
             if (!(*chainState)[chainCnt].isBlocked())
             {
-                int mode=modes[lRmp[i][j]];
-                if ((mode==VOCAB_CM_HW_FAULT) || (mode==VOCAB_CM_IDLE))
+                auto mode=modes[lRmp[i][j]];
+                if ((mode==yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT) || (mode==yarp::dev::ControlModeEnum::VOCAB_CM_IDLE))
                     return false;
                 else if (posDirectEnabled)
                 {
-                    if (mode!=VOCAB_CM_POSITION_DIRECT)
+                    if (mode!=yarp::dev::ControlModeEnum::VOCAB_CM_POSITION_DIRECT)
                         jointsToSet.push_back(chainCnt);
                 }
-                else if (mode!=VOCAB_CM_VELOCITY)
+                else if (mode!=yarp::dev::ControlModeEnum::VOCAB_CM_VELOCITY)
                     jointsToSet.push_back(chainCnt);
             }
 
@@ -1327,14 +1327,14 @@ void ServerCartesianController::setJointsCtrlMode(const vector<int> &jointsToSet
     for (int i=0; i<numDrv; i++)
     {
         vector<int> joints;
-        vector<int> modes;
+        vector<yarp::dev::SelectableControlModeEnum> modes;
         for (int j=0; j<lJnt[i]; j++)
         {
             if (chainCnt==jointsToSet[k])
             {
                 joints.push_back(lRmp[i][j]);
-                modes.push_back(posDirectEnabled?VOCAB_CM_POSITION_DIRECT:
-                                                 VOCAB_CM_VELOCITY);
+                modes.push_back(posDirectEnabled?yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION_DIRECT:
+                                                 yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY);
                 k++;
             }
 
@@ -1342,7 +1342,7 @@ void ServerCartesianController::setJointsCtrlMode(const vector<int> &jointsToSet
         }
 
         if (joints.size()>0)
-            lMod[i]->setControlModes((int)joints.size(),joints.data(),modes.data());
+            lMod[i]->setControlModes(joints, modes);
     }
 }
 

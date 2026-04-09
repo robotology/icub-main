@@ -2657,7 +2657,7 @@ bool CanBusMotionControl::open (Searchable &config)
     for (i = 0; i < p._njoints; i++)
     {
         yarp::os::Time::delay(0.001);
-        setControlMode(i, VOCAB_CM_IDLE);
+        setControlMode(i, yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE);
     }
     const Bottle &analogList=config.findGroup("analog").tail();
     //    if (analogList!=0)
@@ -2980,7 +2980,7 @@ bool CanBusMotionControl::close (void)
         int i;
         for (i = 0; i < res._njoints; i++)
         {
-            setControlMode(i, VOCAB_CM_IDLE);
+            setControlMode(i, yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE);
         }
 
         if (isRunning())
@@ -3830,17 +3830,16 @@ void CanBusMotionControl:: run()
 
 
     // ControlMode
-ReturnValue CanBusMotionControl::getControlModesRaw(int *v)
+ReturnValue CanBusMotionControl::getControlModesRaw(std::vector<yarp::dev::ControlModeEnum>& v)
 {
     DEBUG_FUNC("Calling GET_CONTROL_MODES\n");
     CanBusResources& r = RES(system_resources);
-    int i;
-    int temp;
+    v.resize(r.getJoints());
     std::lock_guard<std::recursive_mutex> lck(_mutex);
-    for (i = 0; i < r.getJoints(); i++)
+    for (int i = 0; i < r.getJoints(); i++)
     {
-        temp = int(r._bcastRecvBuffer[i]._controlmodeStatus);
-        v[i]=from_modeint_to_modevocab(temp);
+        int temp = int(r._bcastRecvBuffer[i]._controlmodeStatus);
+        v[i]=static_cast<yarp::dev::ControlModeEnum>(from_modeint_to_modevocab(temp));
     }
     return ReturnValue_ok;
 }
@@ -4016,12 +4015,26 @@ int CanBusMotionControl::from_modeint_to_modevocab (unsigned char modeint)
     }
 }
 
-ReturnValue CanBusMotionControl::getControlModeRaw(int j, int *v)
+ReturnValue CanBusMotionControl::getAvailableControlModesRaw(int j, std::vector<yarp::dev::SelectableControlModeEnum>& avail)
+{
+    avail.clear();
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION_DIRECT);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_TORQUE);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_MIXED);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_PWM);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_FORCE_IDLE);
+    return ReturnValue_ok;
+}
+
+ReturnValue CanBusMotionControl::getControlModeRaw(int j, yarp::dev::ControlModeEnum& mode)
 {
     CanBusResources& r = RES(system_resources);
     if (!(j>= 0 && j <= r.getJoints())) 
     {
-        *v=VOCAB_CM_UNKNOWN;
+        mode=yarp::dev::ControlModeEnum::VOCAB_CM_UNKNOWN;
         return ReturnValue::return_code::return_value_error_generic;
     }
 
@@ -4033,102 +4046,101 @@ ReturnValue CanBusMotionControl::getControlModeRaw(int j, int *v)
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     s = r._bcastRecvBuffer[j]._controlmodeStatus;
   
-    *v=from_modeint_to_modevocab(s);
+    mode=static_cast<yarp::dev::ControlModeEnum>(from_modeint_to_modevocab(s));
     return ReturnValue_ok;
 }
 
 // IControl Mode 2
-ReturnValue CanBusMotionControl::getControlModesRaw(const int n_joints, const int *joints, int *modes)
+ReturnValue CanBusMotionControl::getControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::ControlModeEnum>& modes)
 {
     DEBUG_FUNC("Calling GET_CONTROL_MODE MULTIPLE JOINTS \n");
-    if (joints==0) return ReturnValue::return_code::return_value_error_generic;
-    if (modes==0) return ReturnValue::return_code::return_value_error_generic;
 
     CanBusResources& r = RES(system_resources);
-    int i;
+    modes.resize(joints.size());
     std::lock_guard<std::recursive_mutex> lck(_mutex);
-    for (i = 0; i < n_joints; i++)
+    for (size_t i = 0; i < joints.size(); i++)
     {
-        getControlModeRaw(joints[i], &modes[i]);
+        getControlModeRaw(joints[i], modes[i]);
     }
     return ReturnValue_ok;
 }
 
-ReturnValue CanBusMotionControl::setControlModeRaw(const int j, const int mode)
+ReturnValue CanBusMotionControl::setControlModeRaw(int j, yarp::dev::SelectableControlModeEnum mode)
 {
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return ReturnValue::return_code::return_value_error_generic;
 
-    if (mode == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return ReturnValue::return_code::return_value_error_generic;}
+    int modeInt = static_cast<int>(mode);
+    if (modeInt == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return ReturnValue::return_code::return_value_error_generic;}
 
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
     ReturnValue ret = ReturnValue_ok;
 
-    icubCanProto_controlmode_t v = from_modevocab_to_modeint(mode);
+    icubCanProto_controlmode_t v = from_modevocab_to_modeint(modeInt);
     if (v==icubCanProto_controlmode_unknownError) return ReturnValue::return_code::return_value_error_generic;
     _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,v);
 
-    int current_mode = VOCAB_CM_UNKNOWN;
+    yarp::dev::ControlModeEnum current_mode = yarp::dev::ControlModeEnum::VOCAB_CM_UNKNOWN;
     int timeout = 0;
 
     do
     {
-        getControlModeRaw(j,&current_mode);
-        if (current_mode==mode) {ret = ReturnValue_ok; break;}
-        if (current_mode==VOCAB_CM_IDLE     && mode==VOCAB_CM_FORCE_IDLE) {ret = ReturnValue_ok; break;}
-        if (current_mode==VOCAB_CM_HW_FAULT)
+        getControlModeRaw(j, current_mode);
+        if (current_mode==static_cast<yarp::dev::ControlModeEnum>(modeInt)) {ret = ReturnValue_ok; break;}
+        if (current_mode==yarp::dev::ControlModeEnum::VOCAB_CM_IDLE && mode==yarp::dev::SelectableControlModeEnum::VOCAB_CM_FORCE_IDLE) {ret = ReturnValue_ok; break;}
+        if (current_mode==yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT)
         {
-            if (mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), j);}
+            if (mode!=yarp::dev::SelectableControlModeEnum::VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), j);}
             ret = ReturnValue_ok; break;
         }
         yarp::os::Time::delay(0.010);
-        if (timeout >0) yWarning ("setControlModeRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(mode).c_str());
+        if (timeout >0) yWarning ("setControlModeRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab32::decode(static_cast<int>(current_mode)).c_str(), yarp::os::Vocab32::decode(modeInt).c_str());
         timeout++;
     }
     while (timeout < 10);
     if (timeout>=10)
     {
         ret = ReturnValue::return_code::return_value_error_generic;
-        yError ("100ms Timeout occured in setControlModeRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(mode).c_str());
+        yError ("100ms Timeout occured in setControlModeRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab32::decode(static_cast<int>(current_mode)).c_str(), yarp::os::Vocab32::decode(modeInt).c_str());
     }
 
     return ret;
 }
 
-ReturnValue CanBusMotionControl::setControlModesRaw(const int n_joints, const int *joints, int *modes)
+ReturnValue CanBusMotionControl::setControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::SelectableControlModeEnum> modes)
 {
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW MULTIPLE JOINTS\n");
-    if (n_joints==0) return ReturnValue::return_code::return_value_error_generic;
-    if (joints==0) return ReturnValue::return_code::return_value_error_generic;
+    if (joints.empty()) return ReturnValue::return_code::return_value_error_generic;
     ReturnValue ret = ReturnValue_ok;
-    for (int i=0;i<n_joints; i++)
+    for (size_t i=0;i<joints.size(); i++)
     {
-        if (modes[i] == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+        int modeInt = static_cast<int>(modes[i]);
+        if (modeInt == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
-        icubCanProto_controlmode_t v = from_modevocab_to_modeint(modes[i]);
+        icubCanProto_controlmode_t v = from_modevocab_to_modeint(modeInt);
         if (v==icubCanProto_controlmode_unknownError) ret = ReturnValue::return_code::return_value_error_generic;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,joints[i],v);
 
-        int current_mode = VOCAB_CM_UNKNOWN;
+        yarp::dev::ControlModeEnum current_mode = yarp::dev::ControlModeEnum::VOCAB_CM_UNKNOWN;
         int timeout = 0;
         do
         {
-            getControlModeRaw(joints[i],&current_mode);
-            if (current_mode==modes[i]) {ret = ReturnValue_ok; break;}
-            if (current_mode==VOCAB_CM_IDLE)
+            getControlModeRaw(joints[i], current_mode);
+            if (current_mode==static_cast<yarp::dev::ControlModeEnum>(modeInt)) {ret = ReturnValue_ok; break;}
+            if (current_mode==yarp::dev::ControlModeEnum::VOCAB_CM_IDLE)
             {
-                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), joints[i]);}
+                if (modes[i]!=yarp::dev::SelectableControlModeEnum::VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), joints[i]);}
                 ret = ReturnValue_ok; break;
             }
             yarp::os::Time::delay(0.010);
-            if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
+            if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab32::decode(static_cast<int>(current_mode)).c_str(), yarp::os::Vocab32::decode(modeInt).c_str());
             timeout++;
         }
         while (timeout < 10);
         if (timeout>=10)
         {
             ret = ReturnValue::return_code::return_value_error_generic;
-            yError ("100ms Timeout occured in setControlModesRaw(M) (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
+            yError ("100ms Timeout occured in setControlModesRaw(M) (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab32::decode(static_cast<int>(current_mode)).c_str(), yarp::os::Vocab32::decode(modeInt).c_str());
         }
     }
 
@@ -4225,7 +4237,7 @@ ReturnValue CanBusMotionControl::getJointTypeRaw(int axis, yarp::dev::JointTypeE
     }
 }
 
-ReturnValue CanBusMotionControl::setControlModesRaw(int *modes)
+ReturnValue CanBusMotionControl::setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum> modes)
 {
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");
     CanBusResources& r = RES(system_resources);
@@ -4233,33 +4245,34 @@ ReturnValue CanBusMotionControl::setControlModesRaw(int *modes)
 
     for (int i = 0; i < r.getJoints(); i++)
     {
-        if (modes[i] == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+        int modeInt = static_cast<int>(modes[i]);
+        if (modeInt == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
-        icubCanProto_controlmode_t v = from_modevocab_to_modeint(modes[i]);
+        icubCanProto_controlmode_t v = from_modevocab_to_modeint(modeInt);
         if (v==icubCanProto_controlmode_unknownError) return ReturnValue::return_code::return_value_error_generic;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
 
-        int current_mode = VOCAB_CM_UNKNOWN;
+        yarp::dev::ControlModeEnum current_mode = yarp::dev::ControlModeEnum::VOCAB_CM_UNKNOWN;
         int timeout = 0;
         do
         {
-            getControlModeRaw(i,&current_mode);
-            if (current_mode==modes[i]) {ret = ReturnValue_ok; break;}
-            if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = ReturnValue_ok; break;}
-            if (current_mode==VOCAB_CM_HW_FAULT)
+            getControlModeRaw(i, current_mode);
+            if (current_mode==static_cast<yarp::dev::ControlModeEnum>(modeInt)) {ret = ReturnValue_ok; break;}
+            if (current_mode==yarp::dev::ControlModeEnum::VOCAB_CM_IDLE && modes[i]==yarp::dev::SelectableControlModeEnum::VOCAB_CM_FORCE_IDLE) {ret = ReturnValue_ok; break;}
+            if (current_mode==yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT)
             {
-                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), i);}
+                if (modes[i]!=yarp::dev::SelectableControlModeEnum::VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), i);}
                 ret = ReturnValue_ok; break;
             }
             yarp::os::Time::delay(0.010);
-            if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
+            if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab32::decode(static_cast<int>(current_mode)).c_str(), yarp::os::Vocab32::decode(modeInt).c_str());
             timeout++;
         }
         while (timeout < 10);
         if (timeout>=10)
         {
             ret = ReturnValue::return_code::return_value_error_generic;
-            yError ("100ms Timeout occured in setControlModesRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab32::decode(current_mode).c_str(), yarp::os::Vocab32::decode(modes[i]).c_str());
+            yError ("100ms Timeout occured in setControlModesRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab32::decode(static_cast<int>(current_mode)).c_str(), yarp::os::Vocab32::decode(modeInt).c_str());
         }
     }
 
@@ -4288,6 +4301,16 @@ bool CanBusMotionControl::helper_setPosPidRaw (int axis, const Pid &pid)
     _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_TLIM, axis, S_16(pid.max_output));
     _writeWord16Ex (ICUBCANPROTO_POL_MC_CMD__SET_POS_STICTION_PARAMS, axis, S_16(pid.stiction_up_val), S_16(pid.stiction_down_val), false);
     return true;
+}
+
+ReturnValue CanBusMotionControl::getAvailablePidsRaw(int j, std::vector<PidControlTypeEnum>& avail)
+{
+    avail.clear();
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION);
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY);
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE);
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT);
+    return ReturnValue_ok;
 }
 
 ReturnValue CanBusMotionControl::setPidRaw (const PidControlTypeEnum& pidtype, int axis, const Pid &pid)
@@ -4393,7 +4416,7 @@ ReturnValue CanBusMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_
     *max_stiff=_axisImpedanceHelper->getImpedanceLimits()->get_max_stiff(); 
     *min_damp= _axisImpedanceHelper->getImpedanceLimits()->get_min_damp(); 
     *max_damp= _axisImpedanceHelper->getImpedanceLimits()->get_max_damp(); 
-    int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
+    int k=castToMapper(yarp::dev::ImplementTorqueControl::m_helper)->toUser(j);
     return ReturnValue_ok;
 }
 
@@ -4855,7 +4878,7 @@ ReturnValue CanBusMotionControl::getTorqueRaw (int j, double *trq)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return ReturnValue::return_code::return_value_error_generic;
 
-    int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
+    int k=castToMapper(yarp::dev::ImplementTorqueControl::m_helper)->toUser(j);
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     *trq = double(r._bcastRecvBuffer[k]._torque);
     return ReturnValue_ok;
@@ -4900,7 +4923,7 @@ ReturnValue CanBusMotionControl::getTorqueRangeRaw (int j, double *min, double *
     // *** This method is implementented reading data without sending/receiving data from the Canbus ***
     *min=0; //set output to zero (default value)
     *max=0; //set output to zero (default value)
-    int k=castToMapper(yarp::dev::ImplementTorqueControl::helper)->toUser(j);
+    int k=castToMapper(yarp::dev::ImplementTorqueControl::m_helper)->toUser(j);
 
     std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
     while(it!=analogSensors.end())
@@ -5483,12 +5506,12 @@ ReturnValue CanBusMotionControl::positionMoveRaw(int axis, double ref)
     }
     _last_position_move_time[axis] = yarp::os::Time::now();
 
-    int mode = 0;
-    getControlModeRaw(axis, &mode);
-    if (mode != VOCAB_CM_POSITION &&
-        mode != VOCAB_CM_MIXED    &&
-        mode != VOCAB_CM_IMPEDANCE_POS &&
-        mode != VOCAB_CM_IDLE)
+    yarp::dev::ControlModeEnum mode{};
+    getControlModeRaw(axis, mode);
+    if (mode != yarp::dev::ControlModeEnum::VOCAB_CM_POSITION &&
+        mode != yarp::dev::ControlModeEnum::VOCAB_CM_MIXED    &&
+        mode != yarp::dev::ControlModeEnum::VOCAB_CM_IMPEDANCE_POS &&
+        mode != yarp::dev::ControlModeEnum::VOCAB_CM_IDLE)
     {
         yError() << "positionMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_POSITION mode";
         return ReturnValue_ok;
@@ -5953,12 +5976,12 @@ ReturnValue CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     /// prepare can message.
     CanBusResources& r = RES(system_resources);
 
-    int mode = 0;
-    getControlModeRaw(axis, &mode);
-    if (mode != VOCAB_CM_VELOCITY &&
-        mode != VOCAB_CM_MIXED    &&
-        mode != VOCAB_CM_IMPEDANCE_VEL && 
-        mode != VOCAB_CM_IDLE)
+    yarp::dev::ControlModeEnum mode{};
+    getControlModeRaw(axis, mode);
+    if (mode != yarp::dev::ControlModeEnum::VOCAB_CM_VELOCITY &&
+        mode != yarp::dev::ControlModeEnum::VOCAB_CM_MIXED    &&
+        mode != yarp::dev::ControlModeEnum::VOCAB_CM_IMPEDANCE_VEL && 
+        mode != yarp::dev::ControlModeEnum::VOCAB_CM_IDLE)
     {
         yError() << "velocityMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_VELOCITY mode";
         return ReturnValue_ok;
@@ -6695,10 +6718,10 @@ ReturnValue CanBusMotionControl::setPositionRaw(int j, double ref)
 
     if (1/*fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
     {
-        int mode = 0;
-        getControlModeRaw(j, &mode);
-        if (mode != VOCAB_CM_POSITION_DIRECT &&
-            mode != VOCAB_CM_IDLE)
+        yarp::dev::ControlModeEnum mode{};
+        getControlModeRaw(j, mode);
+        if (mode != yarp::dev::ControlModeEnum::VOCAB_CM_POSITION_DIRECT &&
+            mode != yarp::dev::ControlModeEnum::VOCAB_CM_IDLE)
         {
             yError() << "setPositionRaw: skipping command because " << networkName.c_str() << " joint " << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
             return ReturnValue_ok;

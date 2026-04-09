@@ -2728,8 +2728,8 @@ bool MotorThread::exploreTorso(Bottle &options)
     double step_time=2.0;
     double kp_pos_torso=0.6;
 
-    vector<int> modes(3,VOCAB_CM_VELOCITY);
-    ctrl_mode_torso->setControlModes(modes.data());
+    vector<yarp::dev::SelectableControlModeEnum> modes(3,yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY);
+    ctrl_mode_torso->setControlModes(modes);
 
     double init_walking_time=Time::now();
 
@@ -2796,8 +2796,8 @@ bool MotorThread::exploreTorso(Bottle &options)
     }
 
     //go back to torso initial position
-    modes[0]=modes[1]=modes[2]=VOCAB_CM_POSITION;
-    ctrl_mode_torso->setControlModes(modes.data());
+    modes[0]=modes[1]=modes[2]=yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION;
+    ctrl_mode_torso->setControlModes(modes);
     pos_torso->positionMove(torso_init_joints.data());
     bool done=false;
     while (isRunning() && !done)
@@ -2863,8 +2863,8 @@ bool MotorThread::exploreHand(Bottle &options)
     int nJnts;
     enc_arm[arm]->getAxes(&nJnts);
 
-    vector<int> modes(nJnts,VOCAB_CM_POSITION);
-    ctrl_mode_arm[arm]->setControlModes(modes.data());
+    vector<yarp::dev::SelectableControlModeEnum> modes(nJnts,yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
+    ctrl_mode_arm[arm]->setControlModes(modes);
 
     //start exploration
     Vector destination(nJnts);

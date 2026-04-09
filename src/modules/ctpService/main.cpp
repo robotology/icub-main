@@ -256,7 +256,7 @@ protected:
         // since we have to enforce the modes on the whole
         // prior to commanding the joints
         std::vector<int>    joints;
-        std::vector<int>    modes;
+        std::vector<yarp::dev::ControlModeEnum> modes;
         std::vector<double> speeds;
         std::vector<double> positions;
 
@@ -264,20 +264,21 @@ protected:
         {
             joints.push_back(offset+i);
             speeds.push_back(disp[i]/time);
-            modes.push_back(VOCAB_CM_POSITION);
+            modes.push_back(yarp::dev::ControlModeEnum::VOCAB_CM_POSITION);
             positions.push_back(x->getCmd()[i]);
         }
 
         if (autochange_control_mode_enable)
         {
-            mode->setControlModes(disp.length(), joints.data(), modes.data());
+            std::vector<yarp::dev::SelectableControlModeEnum> setModes(disp.length(), yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
+            mode->setControlModes(joints, setModes);
         }
 
         yarp::os::Time::delay(0.01);  // give time to update control modes value
-        mode->getControlModes(disp.length(), joints.data(), modes.data());
+        mode->getControlModes(joints, modes);
         for (size_t i=0; i<disp.length(); i++)
         {
-            if(modes[i] != VOCAB_CM_POSITION)
+            if(modes[i] != yarp::dev::ControlModeEnum::VOCAB_CM_POSITION)
             {
                 yError() << "Joint " << i << " not in position mode";
             }
