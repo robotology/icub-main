@@ -917,14 +917,15 @@ public:
     /////////////////////////////// END Impedance Control INTERFACE
 
     // ControlMode
-    virtual ReturnValue getControlModeRaw(int j, int *v) override;
-    virtual ReturnValue getControlModesRaw(int* v) override;
+    virtual ReturnValue getAvailableControlModesRaw(int j, std::vector<yarp::dev::SelectableControlModeEnum>& avail) override;
+    virtual ReturnValue getControlModeRaw(int j, yarp::dev::ControlModeEnum& mode) override;
+    virtual ReturnValue getControlModesRaw(std::vector<yarp::dev::ControlModeEnum>& mode) override;
 
     // ControlMode 2
-    virtual ReturnValue getControlModesRaw(const int n_joint, const int *joints, int *modes) override;
-    virtual ReturnValue setControlModeRaw(const int j, const int mode) override;
-    virtual ReturnValue setControlModesRaw(const int n_joint, const int *joints, int *modes) override;
-    virtual ReturnValue setControlModesRaw(int *modes) override;
+    virtual ReturnValue getControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::ControlModeEnum>& mode) override;
+    virtual ReturnValue setControlModeRaw(int j, yarp::dev::SelectableControlModeEnum mode) override;
+    virtual ReturnValue setControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::SelectableControlModeEnum> mode) override;
+    virtual ReturnValue setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum> mode) override;
 
     //////////////////////// BEGIN RemoteVariables Interface
     virtual ReturnValue getRemoteVariableRaw(std::string key, yarp::os::Bottle& val) override;

@@ -546,25 +546,25 @@ void Controller::resetCtrlEyes()
 /************************************************************************/
 bool Controller::areJointsHealthyAndSet()
 {
-    vector<int> modes(nJointsHead);
-    modHead->getControlModes(modes.data());
+    vector<yarp::dev::ControlModeEnum> modes(nJointsHead);
+    modHead->getControlModes(modes);
 
     jointsToSet.clear();
     for (int i=0; i<(int)modes.size(); i++)
     {
-        if ((modes[i]==VOCAB_CM_HW_FAULT) || (modes[i]==VOCAB_CM_IDLE))
+        if ((modes[i]==yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT) || (modes[i]==yarp::dev::ControlModeEnum::VOCAB_CM_IDLE))
             return false;
         else if (i<eyesJoints[0])
         {
             if (commData->neckPosCtrlOn)
             {
-                if (modes[i]!=VOCAB_CM_POSITION_DIRECT)
+                if (modes[i]!=yarp::dev::ControlModeEnum::VOCAB_CM_POSITION_DIRECT)
                     jointsToSet.push_back(i);
             }
-            else if (modes[i]!=VOCAB_CM_VELOCITY)
+            else if (modes[i]!=yarp::dev::ControlModeEnum::VOCAB_CM_VELOCITY)
                 jointsToSet.push_back(i);
         }
-        else if (modes[i]!=VOCAB_CM_MIXED)
+        else if (modes[i]!=yarp::dev::ControlModeEnum::VOCAB_CM_MIXED)
             jointsToSet.push_back(i);
     }
 
@@ -578,21 +578,21 @@ void Controller::setJointsCtrlMode()
     if (jointsToSet.empty())
         return;
 
-    vector<int> modes;
+    vector<yarp::dev::SelectableControlModeEnum> modes;
     for (auto i : jointsToSet)
     {
         if (i<eyesJoints[0])
         {
             if (commData->neckPosCtrlOn)
-                modes.push_back(VOCAB_CM_POSITION_DIRECT);
+                modes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION_DIRECT);
             else
-                modes.push_back(VOCAB_CM_VELOCITY);
+                modes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY);
         }
         else
-            modes.push_back(VOCAB_CM_MIXED);
+            modes.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_MIXED);
     }
 
-    modHead->setControlModes((int)jointsToSet.size(),jointsToSet.data(),modes.data());
+    modHead->setControlModes(jointsToSet, modes);
 }
 
 
