@@ -500,7 +500,7 @@ public:
             IPidControl *ipid;
             driver->view(ipid);
             Pid _pid;
-            ipid->getPid(VOCAB_PIDTYPE_POSITION,j,&_pid);
+            ipid->getPid(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,j,&_pid);
 
             PidData &pid=it->second;
             if (pid.status==download)
@@ -508,7 +508,7 @@ public:
             else
             {
                 pid.toRobot(_pid);
-                ipid->setPid(VOCAB_PIDTYPE_POSITION,j,_pid);
+                ipid->setPid(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,j,_pid);
             }
 
             pid.status=synced;
@@ -546,11 +546,11 @@ public:
                 IPidControl *ipid;
                 driver->view(ipid);
                 Pid _pid;
-                ipid->getPid(VOCAB_PIDTYPE_POSITION,j,&_pid);
+                ipid->getPid(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,j,&_pid);
 
                 PidData &pid=it->second;
                 pid.toRobot(_pid);
-                ipid->setPid(VOCAB_PIDTYPE_POSITION,j,_pid);
+                ipid->setPid(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,j,_pid);
                 pid.status=synced;
             }
 

@@ -499,7 +499,7 @@ bool parametricCalibratorEth::close ()
     return true;
 }
 
-bool parametricCalibratorEth::calibrate(DeviceDriver *device)
+ReturnValue parametricCalibratorEth::calibrate(DeviceDriver *device)
 {
     yInfo() << deviceName << ": starting calibration";
     yTrace();
@@ -508,7 +508,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *device)
     if (device==0)
     {
         yError() << deviceName << ": invalid device driver";
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(device);
@@ -539,10 +539,10 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *device)
 
     if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
         yError() << deviceName << ": interface not found" << iCalibrate << iPosition << iPids << iControlMode;
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
-    return calibrate();
+    return calibrate() ?  ReturnValue_ok : ReturnValue::return_code::return_value_error_method_failed;
 }
 
 bool parametricCalibratorEth::calibrate()
@@ -1017,7 +1017,7 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j, std::list<int> &fa
 }
 
 // called by robotinterface (during interrupt action??)  // done
-bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
+ReturnValue parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 {
     // parameter device driver is not used, because we already stored and got interfaces view
     // when function 'calibration' was called.
@@ -1041,7 +1041,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
             {
                 ret &= this->parkSingleJoint(*joint);
             }
-            return ret;
+            return ret ? ReturnValue_ok : ReturnValue::return_code::return_value_error_method_failed;
         }
     }
     abortParking=false;
@@ -1049,13 +1049,13 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     if(!isCalibrated)
     {
         yWarning() << deviceName << ": Calling park without calibration... skipping";
-        return true;
+        return ReturnValue_ok;
     }
 
     if(skipCalibration)
     {
         yWarning() << deviceName << ": skipCalibration flag is on!! Faking park!!";
-        return true;
+        return ReturnValue_ok;
     }
 
     int * currentControlModes = new int[n_joints];
@@ -1157,7 +1157,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
             }
         }
     }
-    return true;
+    return ReturnValue_ok;
 }
 
 bool parametricCalibratorEth::moveAndCheck(PositionSequence &data)
@@ -1223,18 +1223,18 @@ bool parametricCalibratorEth::moveAndCheck_legacy(PositionSequence &data, std::v
     return done;
 }
 
-bool parametricCalibratorEth::quitCalibrate()
+ReturnValue parametricCalibratorEth::quitCalibrate()
 {
     yDebug() << deviceName.c_str() << ": Quitting calibrate\n";
     abortCalib = true;
-    return true;
+    return ReturnValue_ok;
 }
 
-bool parametricCalibratorEth::quitPark()
+ReturnValue parametricCalibratorEth::quitPark()
 {
     yDebug() << deviceName.c_str() << ": Quitting parking\n";
     abortParking=true;
-    return true;
+    return ReturnValue_ok;
 }
 
 yarp::dev::IRemoteCalibrator *parametricCalibratorEth::getCalibratorDevice()
@@ -1242,40 +1242,40 @@ yarp::dev::IRemoteCalibrator *parametricCalibratorEth::getCalibratorDevice()
     return this;
 }
 
-bool parametricCalibratorEth::calibrateSingleJoint(int j)
+ReturnValue parametricCalibratorEth::calibrateSingleJoint(int j)
 {
     if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
     {
         yError("%s cannot perform 'calibration' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
-    return calibrateJoint(j);
+    return calibrateJoint(j) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_method_failed;
 }
 
-bool parametricCalibratorEth::calibrateWholePart()
+ReturnValue parametricCalibratorEth::calibrateWholePart()
 {
     yTrace();
-    return calibrate();
+    return calibrate() ? ReturnValue_ok : ReturnValue::return_code::return_value_error_method_failed;
 }
 
-bool parametricCalibratorEth::homingSingleJoint(int j)
+ReturnValue parametricCalibratorEth::homingSingleJoint(int j)
 {
     if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
     {
         yError("%s cannot perform 'homing' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     if (disableHomeAndPark[j])
     {
         yWarning() << deviceName << ": homingSingleJoint, joint " << j << " is disabled on user request";
-        return true;
+        return ReturnValue_ok;
     }
-    return goToStartupPosition(j);
+    return goToStartupPosition(j) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_method_failed;
 }
 
-bool parametricCalibratorEth::homingWholePart()
+ReturnValue parametricCalibratorEth::homingWholePart()
 {
     yTrace();
     bool ret = true;
@@ -1284,16 +1284,16 @@ bool parametricCalibratorEth::homingWholePart()
     {
         ret = homingSingleJoint(*lit) && ret;
     }
-    return ret;
+    return ret ? ReturnValue_ok : ReturnValue::return_code::return_value_error_method_failed;
 }
 
-bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
+ReturnValue parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
 {
     // check input joint number is valid
     if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
     {
         yError("%s cannot perform 'park' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
     if(useLegacyParking) // legacy version: can be removed when legacy will not be supported anymore
@@ -1301,7 +1301,7 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
         if (disableHomeAndPark[j])
         {
             yWarning() << deviceName << ": parkSingleJoint, joint " << j << " is disabled on user request";
-            return true;
+            return ReturnValue_ok;
         }
     }
 
@@ -1310,13 +1310,13 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
     if(!isCalibrated)
     {
         yWarning() << deviceName << ": Calling park without calibration... skipping";
-        return true;
+        return ReturnValue_ok;
     }
 
     if(skipCalibration)
     {
         yWarning() << deviceName << ": skipCalibration flag is on!! Faking park!!";
-        return true;
+        return ReturnValue_ok;
     }
 
     int  currentControlMode;
@@ -1379,21 +1379,21 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
 
     yDebug() << deviceName.c_str() << ": Park " << (abortParking ? "aborted" : "completed");
     iControlMode->setControlMode(j,VOCAB_CM_IDLE);
-    return true;
+    return ReturnValue_ok;
 }
 
 // called from motorgui or remote devices
-bool parametricCalibratorEth::parkWholePart()
+ReturnValue parametricCalibratorEth::parkWholePart()
 {
     yTrace();
 
     if(!isCalibrated)
     {
         yError() << "Device is not calibrated therefore cannot be parked";
-        return false;
+        return ReturnValue::return_code::return_value_error_generic;
     }
 
-    return park(dev2calibrate);
+    return park(dev2calibrate) ? ReturnValue_ok : ReturnValue::return_code::return_value_error_method_failed;
 }
 
 
