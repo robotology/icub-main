@@ -2,8 +2,8 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-# add_subdirectory(controlBoardDumper)
-# add_subdirectory(fingersTuner)
+add_subdirectory(controlBoardDumper)
+add_subdirectory(fingersTuner)
 add_subdirectory(imageSplitter)
 add_subdirectory(trajectoryPlayer)
 add_subdirectory(imageBlender)
