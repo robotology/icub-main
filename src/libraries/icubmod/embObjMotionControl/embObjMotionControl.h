@@ -41,25 +41,21 @@ using namespace std;
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardHelper.h>
-
 #include <yarp/dev/IVirtualAnalogSensor.h>
 #include <yarp/dev/IVelocityDirect.h>
-
-#include<yarp/dev/ImplementJointFault.h>
-
-#include <abstractEthResource.h>
+#include <yarp/dev/ImplementJointFault.h>
+#include <yarp/dev/IDeviceDriverParams.h>
 
 #include <iCub/IRawValuesPublisher.h>
 
 // local include
 #include "IethResource.h"
-#include"EoError.h"
-#include <ethManager.h>
-
+#include "abstractEthResource.h"
+#include "EoError.h"
+#include "ethManager.h"
 #include "serviceParser.h"
 #include "eomcParser.h"
 #include "measuresConverter.h"
-
 #include "mcEventDownsampler.h"
 #include "ethParser.h"
 
@@ -69,19 +65,6 @@ using namespace std;
 #endif
 
 // - public #define  --------------------------------------------------------------------------------------------------
-
-#undef  VERIFY_ROP_SETIMPEDANCE     // this macro let you send setimpedence rop with signature.
-                                    // if you want use this feature, you should compiled ems firmware with same macro.
-#undef  VERIFY_ROP_SETPOSITIONRAW   // this macro let you send setposition rop with signature.
-                                    // if you want use this feature, yuo should compiled ems firmware with same macro.
-
-// marco.accame:    we dont manage mais anymore from the embObjMotionControl class.
-//                  the mais is now initted by the ems board with default params (datarate = 10, mode = eoas_maismode_txdatacontinuously)
-//                  and never swicthed off.
-//                  only embObjAnalog can override its behaviour
-
-#define     EMBOBJMC_DONT_USE_MAIS
-
 //
 //   helper structures
 //
@@ -96,25 +79,6 @@ typedef struct
     int                                 numofjointsets;
     vector<eOmc_jointset_configuration_t> jointset_cfgs;
 } jointsetsInfo_t;
-
-typedef struct
-{
-    eOmc_encoder_t  type;                 /** joint encoder type*/
-    double          tolerance;              /** Num of error bits passable for joint encoder */
-    int             resolution;
-} encoder_t;
-
-typedef struct
-{
-    bool verbosewhenok;         /** its value depends on environment variable "ETH_VERBOSEWHENOK" */
-    bool useRawEncoderData;     /** if true than do not use calibration data */
-    bool pwmIsLimited;          /** set to true if pwm is limited */
-}behaviour_flags_t;
-
-typedef struct // this struct is used to store the configuration of flags and value for maintenance mode
-{
-    bool enableSkipRecalibration;   /** if true, the joint will not be recalibrated when the yri is restarted */
-} maintenanceModeCfg_t;
 
 class Watchdog
 {
@@ -228,6 +192,16 @@ using namespace iCub;
  * | `embObjMotionControl` |
  *
  */
+
+ /********************************************************************/
+ /********************************************************************/
+/*       IMPORTANT IMPLEMENTATION DETAILS */
+/* Each virtual method nimplemented in this device shoudl NOT check 
+if the provided joint is in the managed joint range or if the given vector ahs been allocated with the correct size. 
+This checks are performed by the higher-level interfaces.
+*/
+ /********************************************************************/
+ /********************************************************************/
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IPidControlRaw,
     public IControlCalibrationRaw,
@@ -271,116 +245,63 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementJointFault,
     public iCub::debugLibrary::IRawValuesPublisher,
     public IVelocityDirectRaw,
-    public ImplementVelocityDirect
+    public ImplementVelocityDirect,
+    public IDeviceDriverParams
     {
 private:
-    eth::TheEthManager*        ethManager;
-    eth::AbstractEthResource*  res;
-    ServiceParser*             parser;
+    eth::TheEthManager*        _ethManager;
+    eth::AbstractEthResource*  _ethRes;
+    ServiceParser*             _srvParser;
     eomc::Parser *             _mcparser;
     ControlBoardHelper*        _measureConverter;
     std::mutex                 _mutex;
     
-    bool opened; //internal state
+    //configuartion info (read from xml files)
+    int                        _njoints;       /** Number of joints handled by this device  */
+    eomc::ParsedConfigData     _parsedCfgData; /** Configuration data from parsed XML files */
 
-    MCdiagnostics mcdiagnostics;
+    //internal info about the board and state of the device
+    eth::parser::boardData    _bdata;
+     bool                     _opened; 
 
-     /////configuartion info (read from xml files)
-    int                                     _njoints;       /** Number of joints handled by this EMS */
-    eomc::behaviour_flags_t                  behFlags;       /** Contains all flags that define the behaviour of this device */
-    servConfigMC_t                          serviceConfig;  /** contains the needed data for configure motion control service, like i.e. board ports where joint are connected */ 
-    double *                                _gearbox_M2J;   /** the gearbox ratio motor to joint */
-    double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
-    double *                                _deadzone;
-    std::vector<eomc::kalmanFilterParams_t> _kalman_params;  /** Kalman filter parameters */
-    eomc::maintenanceModeCfg_t              _maintenanceModeCfg; /** contains the configuration for maintenance mode */
+    // in these vectors the device store some data that cannot be sent directly to the embedded firmware directly as is,
+    // because it needs other command befor to send them
+    std::vector<double>              _ref_command_positions; // used for position control.
+    std::vector<double>              _ref_speeds;           // used for position control.
+    std::vector<double>              _ref_command_speeds;   // used for velocity control.
+    std::vector<double>              _ref_positions;        // used for direct position control.
+    std::vector<double>              _ref_accs;             // for velocity control, in position min jerk eq is used.
+    std::vector<double>              _encodersStamp;        /** keep information about acquisition time for encoders read */
+    std::vector<double>              _last_position_move_time; /** time stamp for last received position move command*/    
+    std::vector<eOmc_impedance_t>    _cacheImpedance;       /* cache impedance value to split up the 2 sets */
 
-    std::vector<std::unique_ptr<eomc::ITemperatureSensor>> _temperatureSensorsVector;  
-    
-    eomc::focBasedSpecificInfo_t *           _foc_based_info;
-
-    std::vector<eomc::encoder_t>             _jointEncs;
-    std::vector<eomc::encoder_t>             _motorEncs;
-
-    std::vector<eomc::rotorLimits_t>         _rotorsLimits; /** contains limit about rotors such as position and pwm */
-    std::vector<eomc::jointLimits_t>         _jointsLimits; /** contains limit about joints such as position and velocity */
-    std::vector<eomc::motorCurrentLimits_t>  _currentLimits;
-    std::vector<eomc::temperatureLimits_t>   _temperatureLimits;
-    eomc::couplingInfo_t                     _couplingInfo; /** contains coupling matrix */
-    std::vector<eomc::JointsSet>             _jsets;
-    std::vector<int>                         _joint2set;   /** for each joint says the number of  set it belongs to */
-    std::vector<eomc::timeouts_t>            _timeouts;
-
-    std::vector<eomc::impedanceParameters_t> _impedance_params;   /** impedance parameters */ // TODO doubled!!! optimize using just one of the 2!!!
-    std::vector<eomc::lugreParameters_t>     _lugre_params;   /** LuGre friction model parameters */
-    eomc::impedanceLimits_t *                _impedance_limits;  /** impedance limits */
-
-
-    eomc::PidInfo    *                      _trj_pids;
-    eomc::PidInfo    *                      _dir_pos_pids;
-    eomc::PidInfo    *                      _dir_vel_pids;
-    eomc::TrqPidInfo *                      _trq_pids;
-    eomc::PidInfo    *                      _cur_pids;
-    eomc::PidInfo    *                      _vel_pids;
-
-    int *                                   _axisMap;   /** axies map*/
-    std::vector<eomc::axisInfo_t>           _axesInfo;
-    /////// end configuration info
-    
-    // event downsampler
-    mced::mcEventDownsampler* event_downsampler;
-
-    eth::parser::boardData bdata;
-
-#ifdef VERIFY_ROP_SETIMPEDANCE
-    uint32_t *impedanceSignature;
-#endif
-
-#ifdef VERIFY_ROP_SETPOSITIONRAW
-    uint32_t *refRawSignature;
-    bool        *sendingDirects;
-#endif
-
-
-
-    double  SAFETY_THRESHOLD;
-
-
-    // internal stuff
-    bool    *_enabledAmp;       // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
-    bool    *_enabledPid;       // Depends on enabledAmp. When both are set, the joint exits the idle mode and goes into position mode. If one of them is disabled, it falls to idle.
-    bool    *_calibrated;       // Flag to know if the calibrate function has been called for the joint
-    double  *_ref_command_positions;// used for position control.
-    double  *_ref_speeds;       // used for position control.
-    double  *_ref_command_speeds;   // used for velocity control.
-    double  *_ref_positions;    // used for direct position control.
-    double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
-    double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
-    bool    *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
-    #define MAX_POSITION_MOVE_INTERVAL 0.080
-    double *_last_position_move_time;           /** time stamp for last received position move command*/    
-    eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
-    std::vector<yarp::dev::eomc::Watchdog>    _temperatureSensorErrorWatchdog;  /* counter used to filter error coming from tdb reading fromm 2FOC board*/
-    std::vector<yarp::dev::eomc::Watchdog>    _temperatureExceededLimitWatchdog;  /* counter used to filter the print of the exeded limits*/
+    // watchdog and filter for the temperature sensor values read from the 2FOC board. Since we can have some error in reading these values, we use a watchdog to filter these errors and avoid to print continuously error messages in case of temporary problem in reading these values. Moreover, we use a filter to avoid to print exceeded limit messages in case of positive spikes in the temperature values.
+    std::vector<yarp::dev::eomc::Watchdog>          _temperatureSensorErrorWatchdog;  /* counter used to filter error coming from tdb reading fromm 2FOC board*/
+    std::vector<yarp::dev::eomc::Watchdog>          _temperatureExceededLimitWatchdog;  /* counter used to filter the print of the exeded limits*/
     std::vector<yarp::dev::eomc::TemperatureFilter> _temperatureSpikesFilter;
 
-    std::map<std::string, rawValuesKeyMetadata> _rawValuesMetadataMap;
-    std::vector<std::int32_t> _rawDataAuxVector;
+    // this map is used to store the metadata of the raw values that can be published by this device, like the size of the vector to be sent in case of vectorial data, or the type of the data (double, int32_t, ecc)
+    std::map<std::string, rawValuesKeyMetadata>   _rawValuesMetadataMap;
+    std::vector<std::int32_t>                     _rawDataAuxVector;
+
+    // diagnostics
+    MCdiagnostics _mcdiagnostics;
+        
+    // event downsampler
+    mced::mcEventDownsampler* _event_downsampler;
+
 
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
-    Tools:Emb_RensponseTimingVerifier m_responseTimingVerifier;
+    Tools:Emb_RensponseTimingVerifier _responseTimingVerifier;
 #endif
 
 private:
 
-    std::string getBoardInfo(void);
+    std::string getBoardInfo(void) const;
     bool askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size);
     template <class T> 
     bool askRemoteValues(eOprotEndpoint_t ep, eOprotEntity_t entity, eOprotTag_t tag, std::vector<T>& values);
     bool checkRemoteControlModeStatus(int joint, int target_mode);
-
-    bool dealloc();
-
 
     bool verifyUserControlLawConsistencyInJointSet(eomc::PidInfo *ipdInfo);
     bool verifyUserControlLawConsistencyInJointSet(eomc::TrqPidInfo *pidInfo);
@@ -402,13 +323,10 @@ private:
     bool getMotorEncTolerance(int axis, double *mEncTolerance_ptr);
     void updateDeadZoneWithDefaultValues(void);
     bool getJointDeadZoneRaw(int j, double &jntDeadZone);
-
-private:
     
     //functions used in init this object
     bool fromConfig(yarp::os::Searchable &config);
     int fromConfig_NumOfJoints(yarp::os::Searchable &config);
-    bool fromConfig_getGeneralInfo(yarp::os::Searchable &config); //get general info: useRawEncoderData, useLiitedPwm, etc....
     bool fromConfig_Step2(yarp::os::Searchable &config);
     bool fromConfig_readServiceCfg(yarp::os::Searchable &config);
     bool initializeInterfaces(measureConvFactors &f);
@@ -417,31 +335,12 @@ private:
     
     //function used in the closing this object
     void cleanup(void);
+
     
-    //used in pid interface
-    ReturnValue helper_setPosPidRaw( int j, const Pid &pid);
-    ReturnValue helper_getPosPidRaw(int j, Pid *pid);
-    ReturnValue helper_getPosPidsRaw(Pid *pid);
-    
-    //used in torque control interface
-    ReturnValue helper_setTrqPidRaw( int j, const Pid &pid);
-    ReturnValue helper_getTrqPidRaw(int j, Pid *pid);
-    ReturnValue helper_getTrqPidsRaw(Pid *pid);
-    
-    //used in velocity control interface
-    ReturnValue helper_setVelPidRaw( int j, const Pid &pid);
-    ReturnValue helper_getVelPidRaw(int j, Pid *pid);
-    ReturnValue helper_getVelPidsRaw(Pid *pid);
-    
-    //used in current control interface
-    ReturnValue helper_setCurPidRaw(int j, const Pid &pid);
-    ReturnValue helper_getCurPidRaw(int j, Pid *pid);
-    ReturnValue helper_getCurPidsRaw(Pid *pid);
-    
-    //used in low level speed control interface
-    ReturnValue helper_setSpdPidRaw(int j, const Pid &pid);
-    ReturnValue helper_getSpdPidRaw(int j, Pid *pid);
-    ReturnValue helper_getSpdPidsRaw(Pid *pid);
+    //Currently we need to use a specific function to retrive values of vel direct because they depend on thje output type
+    ReturnValue helper_getVelDirPidRaw(int j, Pid *pid);
+    ReturnValue helper_getVelDirPidsRaw(Pid *pid);
+    ReturnValue helper_setVelDirPidRaw(int j, const Pid &pid);
     
     bool checkCalib14RotationParam(int32_t calib_param4);
 
@@ -470,7 +369,7 @@ public:
     virtual ReturnValue setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid) override;
     virtual ReturnValue setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids) override;
     virtual ReturnValue setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref) override;
-    virtual ReturnValue setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs) override;
+    virtual ReturnValue setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs) override; // Qui non so se refs is null o contine la memoria dimensionata correttamente
     virtual ReturnValue setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit) override;
     virtual ReturnValue setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits) override;
     virtual ReturnValue getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err) override;
@@ -753,6 +652,45 @@ public:
     virtual ReturnValue getRefVelocityRaw(const int jnt, double& vel) override;
     virtual ReturnValue getRefVelocityRaw(std::vector<double>& vels) override;
     virtual ReturnValue getRefVelocityRaw(const std::vector<int>& jnts, std::vector<double>& vels) override;
+
+    //DeviceDriverParams
+    virtual bool parseParams(const yarp::os::Searchable& config)override;
+
+    /**
+     * Get the name of the DeviceDriver class.
+     * @return A string containing the name of the class.
+     */
+    virtual std::string   getDeviceClassName() const override;
+
+    /**
+     * Get the name of the device (i.e. the plugin name).
+     * @return A string containing the name of the device.
+     */
+    virtual std::string   getDeviceName() const override;
+
+    /**
+     * Get the documentation of the DeviceDriver's parameters.
+     * @return A string containing the documentation.
+     */
+    virtual std::string   getDocumentationOfDeviceParams() const override;
+
+    /**
+     * Return a list of all params used by the device.
+     * @return A vector containing the names of parameters used by the device.
+     */
+    virtual std::vector<std::string> getListOfParams() const override;
+
+    /**
+     * Return the value (represented as a string) of the requested parameter.
+     * @return True if the requested parameter was succesfully retrieved.
+     */
+    virtual bool getParamValue(const std::string& paramName, std::string& paramValue) const override;
+
+    /**
+     * Return the configuration of the device.
+     * @return The configuration of the device, represented in a string format.
+     */
+    virtual std::string getConfiguration() const override;
 };
 
 #endif // include guard
