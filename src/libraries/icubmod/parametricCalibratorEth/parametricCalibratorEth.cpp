@@ -713,7 +713,7 @@ bool parametricCalibratorEth::calibrate()
                 {
                     yError() << deviceName << ": joint # " << *lit << " failed the calibration. Idling it and keeping safe PWM limits";
                     // stop calibration for expired timeout
-                    iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE or NOT_CONFIGURED
+                    iControlMode->setControlMode((*it),yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE or NOT_CONFIGURED
                 }
             }
             Bit++;
@@ -777,7 +777,7 @@ bool parametricCalibratorEth::calibrate()
                 if (it != failedJoints.end()) 
                 {
                     yError() << deviceName << ": joint # " << *lit << " failed reaching zero position. Idling it and keeping safe PWM limits";
-                    iControlMode->setControlMode((*it),VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE
+                    iControlMode->setControlMode((*it),yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE); // eventually think to set FORCE_IDLE
                 }
                 else
                 {
@@ -796,7 +796,7 @@ bool parametricCalibratorEth::calibrate()
         yError() << deviceName << ": calibration has been aborted!I'm going to disable all joints..." ;
         for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
-            iControlMode->setControlMode(*lit, VOCAB_CM_IDLE);
+            iControlMode->setControlMode(*lit, yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE);
         }
         return false;
     }
@@ -864,22 +864,22 @@ bool parametricCalibratorEth::checkHwFault()
 {
     for(auto j : calibJoints)
     {
-        int mode=0;
-        iControlMode->getControlMode(j,&mode);
-        if (mode == VOCAB_CM_HW_FAULT)
+        yarp::dev::ControlModeEnum mode{};
+        iControlMode->getControlMode(j, mode);
+        if (mode == yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT)
         {
             if (clearHwFault)
             {
-                iControlMode->setControlMode(j,VOCAB_CM_FORCE_IDLE);
+                iControlMode->setControlMode(j,yarp::dev::SelectableControlModeEnum::VOCAB_CM_FORCE_IDLE);
                 yWarning() << deviceName <<": detected an hardware fault on joint " << j << ". An attempt will be made to clear it.";
                 Time::delay(0.02f);
-                iControlMode->getControlMode(j,&mode);
-                if (mode == VOCAB_CM_HW_FAULT)
+                iControlMode->getControlMode(j, mode);
+                if (mode == yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT)
                 {
                     yError() << deviceName <<": unable to clear the hardware fault detected on joint " << j << " before starting the calibration procedure!";
                     return false;
                 }
-                else if (mode == VOCAB_CM_IDLE)
+                else if (mode == yarp::dev::ControlModeEnum::VOCAB_CM_IDLE)
                 {
                     yWarning() << deviceName <<": hardware fault on joint " << j << " successfully cleared.";
                     return true;
@@ -910,7 +910,7 @@ bool parametricCalibratorEth::goToStartupPosition(int j)
     }
 
     bool ret = true;
-    int mode = 0;
+    yarp::dev::ControlModeEnum mode{};
     if (disableStartupPosCheck[j])
     {
         yWarning() << deviceName << ": goToZero, joint " << j << " is disabled on user request";
@@ -918,9 +918,9 @@ bool parametricCalibratorEth::goToStartupPosition(int j)
     }
 
     if (abortCalib) return true;
-    iControlMode->getControlMode(j, &mode);
+    iControlMode->getControlMode(j, mode);
 
-    if((mode == VOCAB_CM_IDLE) && (skipReCalibration))
+    if((mode == yarp::dev::ControlModeEnum::VOCAB_CM_IDLE) && (skipReCalibration))
     {
         yWarning() << deviceName << ": goToZero, joint " << j << " is idle and skipRecalibration is requested, skipping!";
         return true;
@@ -959,7 +959,7 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j, std::list<int> &fa
     double angj = 0;
     double output = 0;
     double delta=0;
-    int mode=0;
+    yarp::dev::ControlModeEnum mode{};
     bool done = false;
 
     double start_time = yarp::os::Time::now();
@@ -967,10 +967,10 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j, std::list<int> &fa
     {
         iEncoders->getEncoder(j, &angj);
         iPosition->checkMotionDone(j, &done);
-        iControlMode->getControlMode(j, &mode);
+        iControlMode->getControlMode(j, mode);
         iPids->getPidOutput(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,j, &output);
         
-        if((skipReCalibration) && (mode == VOCAB_CM_IDLE))
+        if((skipReCalibration) && (mode == yarp::dev::ControlModeEnum::VOCAB_CM_IDLE))
         {
             yDebug() << deviceName << ": checkGoneToZeroThreshold, joint " << j << " is IDLE and skipRecalibration is requested, return completed!";
             finished = true;
@@ -978,7 +978,7 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j, std::list<int> &fa
         }
         delta = fabs(angj-legacyStartupPosition.positions[j]);
         yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" , \
-               deviceName.c_str(), j, angj, legacyStartupPosition.positions[j], delta, startupPosThreshold[j], output, yarp::os::Vocab32::decode(mode).c_str());
+               deviceName.c_str(), j, angj, legacyStartupPosition.positions[j], delta, startupPosThreshold[j], output, yarp::os::Vocab32::decode(static_cast<int>(mode)).c_str());
 
         if (delta < startupPosThreshold[j] && done)
         {
@@ -991,12 +991,12 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j, std::list<int> &fa
             yError() <<  deviceName << ": checkGoneToZeroThreshold: joint " << j << " Timeout while going to zero!";
             break;
         }
-        if (mode == VOCAB_CM_IDLE)
+        if (mode == yarp::dev::ControlModeEnum::VOCAB_CM_IDLE)
         {
             yError() <<  deviceName << ": checkGoneToZeroThreshold: joint " << j << " is idle, skipping!";
             break;
         }
-        if (mode == VOCAB_CM_HW_FAULT)
+        if (mode == yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT)
         {
             yError() << deviceName <<": checkGoneToZeroThreshold: hardware fault on joint " << j << ", skipping!";
             break;
@@ -1058,7 +1058,7 @@ ReturnValue parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
         return ReturnValue_ok;
     }
 
-    int * currentControlModes = new int[n_joints];
+    std::vector<yarp::dev::ControlModeEnum> currentControlModes(n_joints);
     std::vector<bool> cannotPark(n_joints);
     bool res = iControlMode->getControlModes(currentControlModes);
     if(!res)
@@ -1070,28 +1070,28 @@ ReturnValue parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     {
         switch(currentControlModes[(*joint)])
         {
-            case VOCAB_CM_IDLE:
+            case yarp::dev::ControlModeEnum::VOCAB_CM_IDLE:
             {
                 yError() << deviceName << ": joint " << (*joint) << " is idle, skipping park";
                 cannotPark[(*joint)] = true;
             }
             break;
 
-            case VOCAB_CM_HW_FAULT:
+            case yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT:
             {
                 yError() << deviceName << ": joint " << (*joint) << " has an hardware fault, skipping park";
                 cannotPark[(*joint)] = true;
             }
             break;
 
-            case VOCAB_CM_NOT_CONFIGURED:
+            case yarp::dev::ControlModeEnum::VOCAB_CM_NOT_CONFIGURED:
             {
                 yError() << deviceName << ": joint " << (*joint) << " is not configured, skipping park";
                 cannotPark[(*joint)] = true;
             }
             break;
 
-            case VOCAB_CM_UNKNOWN:
+            case yarp::dev::ControlModeEnum::VOCAB_CM_UNKNOWN:
             {
                 yError() << deviceName << ": joint " << (*joint) << " is in unknown state, skipping park";
                 cannotPark[(*joint)] = true;
@@ -1099,7 +1099,7 @@ ReturnValue parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 
             default:
             {
-                iControlMode->setControlMode((*joint), VOCAB_CM_POSITION);
+                iControlMode->setControlMode((*joint), yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
                 cannotPark[(*joint)] = false;
             }
         }
@@ -1144,15 +1144,15 @@ ReturnValue parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
         {
             switch(currentControlModes[(*joint)])
             {
-                case VOCAB_CM_IDLE:
-                case VOCAB_CM_HW_FAULT:
-                case VOCAB_CM_NOT_CONFIGURED:
-                case VOCAB_CM_UNKNOWN:
+                case yarp::dev::ControlModeEnum::VOCAB_CM_IDLE:
+                case yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT:
+                case yarp::dev::ControlModeEnum::VOCAB_CM_NOT_CONFIGURED:
+                case yarp::dev::ControlModeEnum::VOCAB_CM_UNKNOWN:
                     // Do nothing.
                     break;
                 default:
                 {
-                    iControlMode->setControlMode((*joint), VOCAB_CM_IDLE);
+                    iControlMode->setControlMode((*joint), yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE);
                 }
             }
         }
@@ -1319,26 +1319,26 @@ ReturnValue parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
         return ReturnValue_ok;
     }
 
-    int  currentControlMode;
+    yarp::dev::ControlModeEnum currentControlMode{};
     bool cannotPark;
-    bool res = iControlMode->getControlMode(j, &currentControlMode);
+    bool res = iControlMode->getControlMode(j, currentControlMode);
     if(!res)
     {
         yError() << deviceName << ": error getting control mode during parking";
     }
 
-    if(currentControlMode != VOCAB_CM_IDLE &&
-       currentControlMode != VOCAB_CM_HW_FAULT)
+    if(currentControlMode != yarp::dev::ControlModeEnum::VOCAB_CM_IDLE &&
+       currentControlMode != yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT)
     {
-        iControlMode->setControlMode(j, VOCAB_CM_POSITION);
+        iControlMode->setControlMode(j, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
         cannotPark = false;
     }
-    else if (currentControlMode == VOCAB_CM_IDLE)
+    else if (currentControlMode == yarp::dev::ControlModeEnum::VOCAB_CM_IDLE)
     {
         yError() << deviceName << ": joint " << j << " is idle, skipping park";
         cannotPark = true;
     }
-    else if (currentControlMode == VOCAB_CM_HW_FAULT)
+    else if (currentControlMode == yarp::dev::ControlModeEnum::VOCAB_CM_HW_FAULT)
     {
         yError() << deviceName << ": joint " << j << " has an hardware fault, skipping park";
         cannotPark = true;
@@ -1378,7 +1378,7 @@ ReturnValue parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
     }
 
     yDebug() << deviceName.c_str() << ": Park " << (abortParking ? "aborted" : "completed");
-    iControlMode->setControlMode(j,VOCAB_CM_IDLE);
+    iControlMode->setControlMode(j,yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE);
     return ReturnValue_ok;
 }
 

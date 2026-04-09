@@ -1762,6 +1762,20 @@ bool embObjMotionControl::getEntityControlModeName(uint32_t entityId, eOenum08_t
 }
 
 ///////////// PID INTERFACE
+
+ReturnValue embObjMotionControl::getAvailablePidsRaw(int j, std::vector<PidControlTypeEnum>& avail)
+{
+    avail.clear();
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION);
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY);
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_MIXED);
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT);
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT);
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE);
+    avail.push_back(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT);
+    return ReturnValue_ok;
+}
+
 ReturnValue embObjMotionControl::setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid)
 {
 
@@ -2219,12 +2233,12 @@ ReturnValue embObjMotionControl::setPidOffsetRaw(const PidControlTypeEnum& pidty
 
 ReturnValue embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
-    int mode=0;
-    getControlModeRaw(j, &mode);
-    if( (mode != VOCAB_CM_VELOCITY) &&
-        (mode != VOCAB_CM_MIXED) &&
-        (mode != VOCAB_CM_IMPEDANCE_VEL) &&
-        (mode != VOCAB_CM_IDLE))
+    yarp::dev::ControlModeEnum mode{};
+    getControlModeRaw(j, mode);
+    if( (mode != yarp::dev::ControlModeEnum::VOCAB_CM_VELOCITY) &&
+        (mode != yarp::dev::ControlModeEnum::VOCAB_CM_MIXED) &&
+        (mode != yarp::dev::ControlModeEnum::VOCAB_CM_IMPEDANCE_VEL) &&
+        (mode != yarp::dev::ControlModeEnum::VOCAB_CM_IDLE))
     {
         if(_event_downsampler->canprint())
         {
@@ -2554,12 +2568,12 @@ ReturnValue embObjMotionControl::positionMoveRaw(int j, double ref)
     }
     _last_position_move_time[j] = yarp::os::Time::now();
 
-    int mode = 0;
-    getControlModeRaw(j, &mode);
-    if( (mode != VOCAB_CM_POSITION) &&
-        (mode != VOCAB_CM_MIXED) &&
-        (mode != VOCAB_CM_IMPEDANCE_POS) &&
-        (mode != VOCAB_CM_IDLE))
+    yarp::dev::ControlModeEnum mode{};
+    getControlModeRaw(j, mode);
+    if( (mode != yarp::dev::ControlModeEnum::VOCAB_CM_POSITION) &&
+        (mode != yarp::dev::ControlModeEnum::VOCAB_CM_MIXED) &&
+        (mode != yarp::dev::ControlModeEnum::VOCAB_CM_IMPEDANCE_POS) &&
+        (mode != yarp::dev::ControlModeEnum::VOCAB_CM_IDLE))
     {
         if (_event_downsampler->canprint())
         {
@@ -2860,7 +2874,23 @@ ReturnValue embObjMotionControl::stopRaw(const int n_joint, const int *joints)
 
 // ControlMode
 
-ReturnValue embObjMotionControl::getControlModeRaw(int j, int *v)
+ReturnValue embObjMotionControl::getAvailableControlModesRaw(int j, std::vector<yarp::dev::SelectableControlModeEnum>& avail)
+{
+    avail.clear();
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION_DIRECT);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY_DIRECT);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_VELOCITY);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_TORQUE);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_MIXED);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_PWM);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_IDLE);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_FORCE_IDLE);
+    avail.push_back(yarp::dev::SelectableControlModeEnum::VOCAB_CM_CURRENT);
+    return ReturnValue_ok;
+}
+
+ReturnValue embObjMotionControl::getControlModeRaw(int j, yarp::dev::ControlModeEnum& mode)
 {
     eOmc_joint_status_core_t jcore = {0};
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
@@ -2869,27 +2899,29 @@ ReturnValue embObjMotionControl::getControlModeRaw(int j, int *v)
 
     eOmc_controlmode_t type = (eOmc_controlmode_t) jcore.modes.controlmodestatus;
 
-    *v = controlModeStatusConvert_embObj2yarp(type);
+    mode = static_cast<yarp::dev::ControlModeEnum>(controlModeStatusConvert_embObj2yarp(type));
     return ReturnValue_ok;
 }
 
 // IControl Mode 2
-ReturnValue embObjMotionControl::getControlModesRaw(int* v)
+ReturnValue embObjMotionControl::getControlModesRaw(std::vector<yarp::dev::ControlModeEnum>& v)
 {
+    v.resize(_njoints);
     bool ret = true;
     for(int j=0; j< _njoints; j++)
     {
-        ret = ret && getControlModeRaw(j, &v[j]);
+        ret = ret && getControlModeRaw(j, v[j]);
     }
     return ret ? ReturnValue_ok : ReturnValue_error_generic;
 }
 
-ReturnValue embObjMotionControl::getControlModesRaw(const int n_joint, const int *joints, int *modes)
+ReturnValue embObjMotionControl::getControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::ControlModeEnum>& modes)
 {
+    modes.resize(joints.size()); //TODO: is this resize necessary?
     bool ret = true;
-    for(int j=0; j< n_joint; j++)
+    for(size_t j=0; j< joints.size(); j++)
     {
-        ret = ret && getControlModeRaw(joints[j], &modes[j]);
+        ret = ret && getControlModeRaw(joints[j], modes[j]);
     }
     return ret ? ReturnValue_ok : ReturnValue_error_generic;
 }
@@ -2899,33 +2931,34 @@ ReturnValue embObjMotionControl::getControlModesRaw(const int n_joint, const int
 // marco.accame: con alberto cardellino abbiamo parlato della correttezza di effettuare la verifica di quanto imposto (in setControlModeRaw() ed affini)
 // andando a rileggere il valore nella scheda eth fino a che esso non sia quello atteso. si deve fare oppure no?
 // con il control mode il can ora lo fa ma e' giusto? era cosi' anche in passato?
-ReturnValue embObjMotionControl::setControlModeRaw(const int j, const int _mode)
+ReturnValue embObjMotionControl::setControlModeRaw(int j, yarp::dev::SelectableControlModeEnum _mode)
 {
     bool ret = true;
     eOenum08_t controlmodecommand = 0;
+    int modeInt = static_cast<int>(_mode);
 
-    if((_mode == VOCAB_CM_TORQUE) && (_parsedCfgData.pidControllers.trq[j].enabled  == false))
+    if((modeInt == VOCAB_CM_TORQUE) && (_parsedCfgData.pidControllers.trq[j].enabled  == false))
     {
         yError()<<"Torque control is disabled for joint "<< j <<"in " << getBoardInfo() << ". Check your configuration parameters ";
         return ReturnValue_error_generic;
     }
 
-    if(!controlModeCommandConvert_yarp2embObj(_mode, controlmodecommand) )
+    if(!controlModeCommandConvert_yarp2embObj(modeInt, controlmodecommand) )
     {
-        yError() << "SetControlMode: received unknown control mode for " << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(_mode);
+        yError() << "SetControlMode: received unknown control mode for " << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(modeInt);
         return ReturnValue_error_generic;
     }
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
     if(false == _ethRes->setRemoteValue(protid, &controlmodecommand) )
     {
-        yError() << "setControlModeRaw failed for " << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(_mode);
+        yError() << "setControlModeRaw failed for " << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(modeInt);
         return ReturnValue_error_generic;
     }
 
-    if(!checkRemoteControlModeStatus(j, _mode))
+    if(!checkRemoteControlModeStatus(j, modeInt))
     {
-        yError() << "In embObjMotionControl::setControlModeRaw(j=" << j << ", mode=" << yarp::os::Vocab32::decode(_mode).c_str() << ") for " << getBoardInfo() << " has failed checkRemoteControlModeStatus()";
+        yError() << "In embObjMotionControl::setControlModeRaw(j=" << j << ", mode=" << yarp::os::Vocab32::decode(modeInt).c_str() << ") for " << getBoardInfo() << " has failed checkRemoteControlModeStatus()";
         return ReturnValue_error_generic;
     }
 
@@ -2933,20 +2966,20 @@ ReturnValue embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 }
 
 
-ReturnValue embObjMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
+ReturnValue embObjMotionControl::setControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::SelectableControlModeEnum> modes)
 {
     ReturnValue ret = ReturnValue_ok;
-    for (auto i = 0; i < n_joint; ++i)
+    for (size_t i = 0; i < joints.size(); ++i)
     {
         ret &= setControlModeRaw(joints[i], modes[i]);
     }
     return ret;
 }
 
-ReturnValue embObjMotionControl::setControlModesRaw(int *modes)
+ReturnValue embObjMotionControl::setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum> modes)
 {
     ReturnValue ret = ReturnValue_ok;
-    for (auto i = 0; i < _njoints; ++i)
+    for (int i = 0; i < _njoints; ++i)
     {
         ret &= setControlModeRaw(i, modes[i]);
     }
@@ -3283,11 +3316,11 @@ ReturnValue embObjMotionControl::getMaxCurrentRaw(int j, double *val)
 
 ReturnValue embObjMotionControl::getAmpStatusRaw(int j, int *st)
 {
-    int mode = 0;
-    if(!getControlModeRaw(j, &mode))
+    yarp::dev::ControlModeEnum mode{};
+    if(!getControlModeRaw(j, mode))
         return ReturnValue_error_method_failed;
 
-    switch (mode)
+    switch (static_cast<int>(mode))
     {   case VOCAB_CM_IDLE:
         case VOCAB_CM_HW_FAULT:
         case VOCAB_CM_NOT_CONFIGURED:
@@ -4340,10 +4373,10 @@ ReturnValue embObjMotionControl::velocityMoveRaw(const int n_joint, const int *j
 // PositionDirect Interface
 ReturnValue embObjMotionControl::setPositionRaw(int j, double ref)
 {
-    int mode = 0;
-    getControlModeRaw(j, &mode);
-    if (mode != VOCAB_CM_POSITION_DIRECT &&
-        mode != VOCAB_CM_IDLE)
+    yarp::dev::ControlModeEnum mode{};
+    getControlModeRaw(j, mode);
+    if (mode != yarp::dev::ControlModeEnum::VOCAB_CM_POSITION_DIRECT &&
+        mode != yarp::dev::ControlModeEnum::VOCAB_CM_IDLE)
     {
         if(_event_downsampler->canprint())
         {

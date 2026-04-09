@@ -366,6 +366,7 @@ public:
     virtual bool getEntityControlModeName(uint32_t entityId, eOenum08_t control_mode, std::string &controlModeName, eObool_t compact_string) override;
 
     /////////   PID INTERFACE   /////////
+    virtual ReturnValue getAvailablePidsRaw(int j, std::vector<PidControlTypeEnum>& avail) override;
     virtual ReturnValue setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid) override;
     virtual ReturnValue setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids) override;
     virtual ReturnValue setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref) override;
@@ -440,14 +441,15 @@ public:
     /////////////////////////////// END Position Control INTERFACE
 
     // ControlMode
-    virtual ReturnValue getControlModeRaw(int j, int *v) override;
-    virtual ReturnValue getControlModesRaw(int *v) override;
+    virtual ReturnValue getAvailableControlModesRaw(int j, std::vector<yarp::dev::SelectableControlModeEnum>& avail) override;
+    virtual ReturnValue getControlModeRaw(int j, yarp::dev::ControlModeEnum& mode) override;
+    virtual ReturnValue getControlModesRaw(std::vector<yarp::dev::ControlModeEnum>& mode) override;
 
     // ControlMode 2
-    virtual ReturnValue getControlModesRaw(const int n_joint, const int *joints, int *modes) override;
-    virtual ReturnValue setControlModeRaw(const int j, const int mode) override;
-    virtual ReturnValue setControlModesRaw(const int n_joint, const int *joints, int *modes) override;
-    virtual ReturnValue setControlModesRaw(int *modes) override;
+    virtual ReturnValue getControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::ControlModeEnum>& mode) override;
+    virtual ReturnValue setControlModeRaw(int j, yarp::dev::SelectableControlModeEnum mode) override;
+    virtual ReturnValue setControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::SelectableControlModeEnum> mode) override;
+    virtual ReturnValue setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum> mode) override;
 
     //////////////////////// BEGIN EncoderInterface
     virtual ReturnValue resetEncoderRaw(int j) override;
