@@ -45,7 +45,6 @@
         "ENABLE_icubmod_parametricCalibratorEth": "ON",
         "ENABLE_icubmod_rawValuesPublisherClient": "ON",
         "ENABLE_icubmod_rawValuesPublisherServer": "ON",
-        "ENABLE_icubmod_rawValuesPublisherRemapper": "ON",
         "ENABLE_icubmod_fineCalibrationChecker": "ON"
       }
     }
