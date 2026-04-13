@@ -138,7 +138,7 @@ yarp::dev::ReturnValue CouplingICubHandMk2::convertFromPhysicalJointsToActuatedA
     actAxesAcc[7] = physJointsAcc[10] + physJointsAcc[11];
     // l/r_pinky
     actAxesAcc[8] = physJointsAcc[13] + physJointsAcc[14] + physJointsAcc[15];
-    return yarp::dev::ReturnValue::return_code::return_value_error_generic;
+    return yarp::dev::ReturnValue::return_code::return_value_ok;
 }
 
 yarp::dev::ReturnValue CouplingICubHandMk2::convertFromPhysicalJointsToActuatedAxesTrq(const yarp::sig::Vector& physJointsPos, const yarp::sig::Vector& physJointsTrq, yarp::sig::Vector& actAxesTrq) {
@@ -306,7 +306,7 @@ yarp::dev::ReturnValue CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJoi
     // l/r_hand_little_3
     physJointsAcc[19] = actAxesAcc[8]/3;
     
-    return yarp::dev::ReturnValue::return_code::return_value_error_generic;
+    return yarp::dev::ReturnValue::return_code::return_value_ok;
 }
 yarp::dev::ReturnValue CouplingICubHandMk2::convertFromActuatedAxesToPhysicalJointsTrq(const yarp::sig::Vector& actAxesPos, const yarp::sig::Vector& actAxesTrq, yarp::sig::Vector& physJointsTrq) {
     return yarp::dev::ReturnValue::return_code::return_value_error_generic;
