@@ -1175,7 +1175,7 @@ bool Parser::parsePidsGroupTorqueCompensationParams(Bottle& pidsGroup, std::vect
 }
 
 
-bool Parser::parseFocGroup(yarp::os::Searchable &config, eomc::focBasedSpecificInfo_t *foc_based_info, std::string groupName, std::vector<std::unique_ptr<eomc::ITemperatureSensor>>& temperatureSensorsVector)
+bool Parser::parseFocGroup(yarp::os::Searchable &config, std::vector<focBasedSpecificInfo_t>& foc_based_info, std::string groupName, std::vector<std::unique_ptr<eomc::ITemperatureSensor>>& temperatureSensorsVector)
 {
     Bottle &focGroup=config.findGroup(groupName);
     if (focGroup.isNull() )

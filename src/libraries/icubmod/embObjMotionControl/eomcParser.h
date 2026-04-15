@@ -194,9 +194,7 @@ public:
     ~Parser();
 
     bool parsePids(yarp::os::Searchable &config, PidControllers_t &pids, bool lowLevPidisMandatory);
-    //TODO: use reference to std::Vector instaed of a raw pointer.
-    bool parseFocGroup(yarp::os::Searchable &config, focBasedSpecificInfo_t *foc_based_info, std::string groupName, std::vector<std::unique_ptr<eomc::ITemperatureSensor>>& temperatureSensorsVector);
-    //bool parseCurrentPid(yarp::os::Searchable &config, PidInfo *cpids);//deprecated
+    bool parseFocGroup(yarp::os::Searchable &config, std::vector<focBasedSpecificInfo_t>& foc_based_info, std::string groupName, std::vector<std::unique_ptr<eomc::ITemperatureSensor>>& temperatureSensorsVector);
     bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<JointsSet> &jsets, std::vector<int> &jointtoset);
     bool parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<timeouts_t> &timeouts);
     bool parseCurrentLimits(yarp::os::Searchable &config, std::vector<motorCurrentLimits_t> &currLimits);
