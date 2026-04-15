@@ -196,9 +196,10 @@ using namespace iCub;
  /********************************************************************/
  /********************************************************************/
 /*       IMPORTANT IMPLEMENTATION DETAILS */
-/* Each virtual method nimplemented in this device shoudl NOT check 
-if the provided joint is in the managed joint range or if the given vector ahs been allocated with the correct size. 
-This checks are performed by the higher-level interfaces.
+/* Virtual methods in this device are NOT responsible for validating their inputs.
+   Do not check whether joint indices are within the managed range or whether 
+   input vectors are properly allocated. These validations are performed by the 
+   higher-level interfaces that call these methods.
 */
  /********************************************************************/
  /********************************************************************/
@@ -370,7 +371,7 @@ public:
     virtual ReturnValue setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid) override;
     virtual ReturnValue setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids) override;
     virtual ReturnValue setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref) override;
-    virtual ReturnValue setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs) override; // Qui non so se refs is null o contine la memoria dimensionata correttamente
+    virtual ReturnValue setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs) override;
     virtual ReturnValue setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit) override;
     virtual ReturnValue setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits) override;
     virtual ReturnValue getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err) override;

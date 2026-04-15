@@ -875,7 +875,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             groupName = "ADVFOC";
         }
 
-        if(!_mcparser->parseFocGroup(config, _parsedCfgData.foc_based_info.data(), groupName, _parsedCfgData.temperatureSensorsVector))
+        if(!_mcparser->parseFocGroup(config, _parsedCfgData.foc_based_info, groupName, _parsedCfgData.temperatureSensorsVector))
             return false;
 
         for (j = 0; j < _njoints; j++)
