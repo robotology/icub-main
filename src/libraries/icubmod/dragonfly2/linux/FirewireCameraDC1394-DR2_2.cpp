@@ -1611,7 +1611,7 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::getVideoModeDC1394(unsigned int& val)
 // 15
 yarp::dev::ReturnValue CFWCamera_DR2_2::getFPSMaskDC1394(unsigned int& val)
 {
-    if (!m_pCamera) val = 0; return yarp::dev::ReturnValue::return_code::return_value_error_generic;
+    if (!m_pCamera) { val = 0; return yarp::dev::ReturnValue::return_code::return_value_error_generic; }
 
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
@@ -1693,7 +1693,7 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::setISOSpeedDC1394(int speed)
 // 20
 yarp::dev::ReturnValue CFWCamera_DR2_2::getColorCodingMaskDC1394(unsigned int video_mode,unsigned int& val)
 {
-    if (!m_pCamera) val = 0; return yarp::dev::ReturnValue::return_code::return_value_error_generic;
+    if (!m_pCamera) { val = 0; return yarp::dev::ReturnValue::return_code::return_value_error_generic; }
 
     if (mRawDriver) { val = 1<<(DC1394_COLOR_CODING_RAW8-DC1394_COLOR_CODING_MIN); return yarp::dev::ReturnValue_ok; }
 
@@ -2121,7 +2121,7 @@ yarp::dev::ReturnValue CFWCamera_DR2_2::setCaptureDC1394(bool bON)
 // 39
 yarp::dev::ReturnValue CFWCamera_DR2_2::getBytesPerPacketDC1394(unsigned int& bpp)
 {
-    if (!m_pCamera) bpp = 0; return yarp::dev::ReturnValue::return_code::return_value_error_generic;
+    if (!m_pCamera) { bpp = 0; return yarp::dev::ReturnValue::return_code::return_value_error_generic; }
     
     dc1394video_mode_t videoMode;
     dc1394error_t error=dc1394_video_get_mode(m_pCamera,&videoMode);
