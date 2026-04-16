@@ -293,7 +293,7 @@ private:
 
 
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
-    Tools:Emb_RensponseTimingVerifier _responseTimingVerifier;
+    Tools::Emb_RensponseTimingVerifier _responseTimingVerifier;
 #endif
 
 private:
