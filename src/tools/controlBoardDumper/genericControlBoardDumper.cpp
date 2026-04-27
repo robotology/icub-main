@@ -74,7 +74,7 @@ bool GetPidRefs::getData(double *e)
   //fprintf(stderr, "Entering getPosErrs\n");
   if (ipid)
     {
-      ipid->getPidReferences(VOCAB_PIDTYPE_POSITION, e);
+      ipid->getPidReferences(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, e);
       return 1;
     }
   else
@@ -125,7 +125,7 @@ bool GetPosErrs::getData(double *e)
   //fprintf(stderr, "Entering getPosErrs\n");
   if (ipid)
     {
-      ipid->getPidErrors(VOCAB_PIDTYPE_POSITION,e);
+      ipid->getPidErrors(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,e);
       return 1;
     }
   else
@@ -142,7 +142,7 @@ bool GetOuts::getData(double *e)
   //fprintf(stderr, "Entering getOuts\n");
   if (ipid)
     {
-      ipid->getPidOutputs(VOCAB_PIDTYPE_POSITION,e);
+      ipid->getPidOutputs(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,e);
       return 1;
     }
   else
@@ -192,19 +192,19 @@ void GetControlModes::setInterface(IControlMode *i, int n_joints)
 bool GetControlModes::getData(double *e)
 {
   //fprintf(stderr, "Entering getTrqs\n");
-  int tmp [50];
+  std::vector<yarp::dev::ControlModeEnum>tmp(nj);
   if (icmd)
     {
       icmd->getControlModes(tmp);
       for (int i=0; i<nj; i++)
       {
-          if      (tmp[i] == VOCAB_CM_POSITION)        e[i] = 0;
-          else if (tmp[i] == VOCAB_CM_POSITION_DIRECT) e[i] = 1;
-          else if (tmp[i] == VOCAB_CM_VELOCITY)        e[i] = 2;
-          else if (tmp[i] == VOCAB_CM_MIXED)           e[i] = 3;
-          else if (tmp[i] == VOCAB_CM_TORQUE)          e[i] = 4;
-          else if (tmp[i] == VOCAB_CM_PWM)             e[i] = 5;
-          else if (tmp[i] == VOCAB_CM_IDLE)            e[i] = 6;
+          if      (tmp[i] == yarp::dev::ControlModeEnum::VOCAB_CM_POSITION)        e[i] = 0;
+          else if (tmp[i] == yarp::dev::ControlModeEnum::VOCAB_CM_POSITION_DIRECT) e[i] = 1;
+          else if (tmp[i] == yarp::dev::ControlModeEnum::VOCAB_CM_VELOCITY)        e[i] = 2;
+          else if (tmp[i] == yarp::dev::ControlModeEnum::VOCAB_CM_MIXED)           e[i] = 3;
+          else if (tmp[i] == yarp::dev::ControlModeEnum::VOCAB_CM_TORQUE)          e[i] = 4;
+          else if (tmp[i] == yarp::dev::ControlModeEnum::VOCAB_CM_PWM)             e[i] = 5;
+          else if (tmp[i] == yarp::dev::ControlModeEnum::VOCAB_CM_IDLE)            e[i] = 6;
           else                                         e[i] =-1;
       }
       return 1;
@@ -248,7 +248,7 @@ bool GetTrqErrs::getData(double *e)
   //fprintf(stderr, "Entering getTrqErrs\n");
   if (ipid)
     {
-      ipid->getPidErrors(VOCAB_PIDTYPE_TORQUE,e);
+      ipid->getPidErrors(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE,e);
       return 1;
     }
   else

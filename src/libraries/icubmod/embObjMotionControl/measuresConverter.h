@@ -37,6 +37,7 @@
  */
 
 
+#include <vector>
 #include <yarp/dev/ControlBoardHelper.h>
 #include <yarp/dev/ControlBoardPid.h>
 
@@ -46,16 +47,14 @@
 class measureConvFactors
 {
 public:
-    double* angleToEncoder;
-    double* dutycycleToPWM;
-    double* ampsToSensor;
-    double* newtonsToSensor;
-    double* bemf2raw;
-    double* ktau2raw;
+    std::vector<double> angleToEncoder;
+    std::vector<double> dutycycleToPWM;
+    std::vector<double> ampsToSensor;
+    std::vector<double> newtonsToSensor;
+    std::vector<double> bemf2raw;
+    std::vector<double> ktau2raw;
 
     measureConvFactors(int numofjoints);
-
-    ~measureConvFactors();
 };
 
 #endif

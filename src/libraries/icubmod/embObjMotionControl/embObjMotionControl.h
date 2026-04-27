@@ -41,25 +41,21 @@ using namespace std;
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardHelper.h>
-
 #include <yarp/dev/IVirtualAnalogSensor.h>
 #include <yarp/dev/IVelocityDirect.h>
-
-#include<yarp/dev/ImplementJointFault.h>
-
-#include <abstractEthResource.h>
+#include <yarp/dev/ImplementJointFault.h>
+#include <yarp/dev/IDeviceDriverParams.h>
 
 #include <iCub/IRawValuesPublisher.h>
 
 // local include
 #include "IethResource.h"
-#include"EoError.h"
-#include <ethManager.h>
-
+#include "abstractEthResource.h"
+#include "EoError.h"
+#include "ethManager.h"
 #include "serviceParser.h"
 #include "eomcParser.h"
 #include "measuresConverter.h"
-
 #include "mcEventDownsampler.h"
 #include "ethParser.h"
 
@@ -69,19 +65,6 @@ using namespace std;
 #endif
 
 // - public #define  --------------------------------------------------------------------------------------------------
-
-#undef  VERIFY_ROP_SETIMPEDANCE     // this macro let you send setimpedence rop with signature.
-                                    // if you want use this feature, you should compiled ems firmware with same macro.
-#undef  VERIFY_ROP_SETPOSITIONRAW   // this macro let you send setposition rop with signature.
-                                    // if you want use this feature, yuo should compiled ems firmware with same macro.
-
-// marco.accame:    we dont manage mais anymore from the embObjMotionControl class.
-//                  the mais is now initted by the ems board with default params (datarate = 10, mode = eoas_maismode_txdatacontinuously)
-//                  and never swicthed off.
-//                  only embObjAnalog can override its behaviour
-
-#define     EMBOBJMC_DONT_USE_MAIS
-
 //
 //   helper structures
 //
@@ -96,25 +79,6 @@ typedef struct
     int                                 numofjointsets;
     vector<eOmc_jointset_configuration_t> jointset_cfgs;
 } jointsetsInfo_t;
-
-typedef struct
-{
-    eOmc_encoder_t  type;                 /** joint encoder type*/
-    double          tolerance;              /** Num of error bits passable for joint encoder */
-    int             resolution;
-} encoder_t;
-
-typedef struct
-{
-    bool verbosewhenok;         /** its value depends on environment variable "ETH_VERBOSEWHENOK" */
-    bool useRawEncoderData;     /** if true than do not use calibration data */
-    bool pwmIsLimited;          /** set to true if pwm is limited */
-}behaviour_flags_t;
-
-typedef struct // this struct is used to store the configuration of flags and value for maintenance mode
-{
-    bool enableSkipRecalibration;   /** if true, the joint will not be recalibrated when the yri is restarted */
-} maintenanceModeCfg_t;
 
 class Watchdog
 {
@@ -228,6 +192,17 @@ using namespace iCub;
  * | `embObjMotionControl` |
  *
  */
+
+ /********************************************************************/
+ /********************************************************************/
+/*       IMPORTANT IMPLEMENTATION DETAILS */
+/* Virtual methods in this device are NOT responsible for validating their inputs.
+   Do not check whether joint indices are within the managed range or whether 
+   input vectors are properly allocated. These validations are performed by the 
+   higher-level interfaces that call these methods.
+*/
+ /********************************************************************/
+ /********************************************************************/
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IPidControlRaw,
     public IControlCalibrationRaw,
@@ -271,116 +246,63 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementJointFault,
     public iCub::debugLibrary::IRawValuesPublisher,
     public IVelocityDirectRaw,
-    public ImplementVelocityDirect
+    public ImplementVelocityDirect,
+    public IDeviceDriverParams
     {
 private:
-    eth::TheEthManager*        ethManager;
-    eth::AbstractEthResource*  res;
-    ServiceParser*             parser;
+    eth::TheEthManager*        _ethManager;
+    eth::AbstractEthResource*  _ethRes;
+    ServiceParser*             _srvParser;
     eomc::Parser *             _mcparser;
     ControlBoardHelper*        _measureConverter;
     std::mutex                 _mutex;
     
-    bool opened; //internal state
+    //configuartion info (read from xml files)
+    int                        _njoints;       /** Number of joints handled by this device  */
+    eomc::ParsedConfigData     _parsedCfgData; /** Configuration data from parsed XML files */
 
-    MCdiagnostics mcdiagnostics;
+    //internal info about the board and state of the device
+    eth::parser::boardData    _bdata;
+     bool                     _opened; 
 
-     /////configuartion info (read from xml files)
-    int                                     _njoints;       /** Number of joints handled by this EMS */
-    eomc::behaviour_flags_t                  behFlags;       /** Contains all flags that define the behaviour of this device */
-    servConfigMC_t                          serviceConfig;  /** contains the needed data for configure motion control service, like i.e. board ports where joint are connected */ 
-    double *                                _gearbox_M2J;   /** the gearbox ratio motor to joint */
-    double *                                _gearbox_E2J;   /** the gearbox ratio encoder to joint */
-    double *                                _deadzone;
-    std::vector<eomc::kalmanFilterParams_t> _kalman_params;  /** Kalman filter parameters */
-    eomc::maintenanceModeCfg_t              _maintenanceModeCfg; /** contains the configuration for maintenance mode */
+    // in these vectors the device store some data that cannot be sent directly to the embedded firmware directly as is,
+    // because it needs other command befor to send them
+    std::vector<double>              _ref_command_positions; // used for position control.
+    std::vector<double>              _ref_speeds;           // used for position control.
+    std::vector<double>              _ref_command_speeds;   // used for velocity control.
+    std::vector<double>              _ref_positions;        // used for direct position control.
+    std::vector<double>              _ref_accs;             // for velocity control, in position min jerk eq is used.
+    std::vector<double>              _encodersStamp;        /** keep information about acquisition time for encoders read */
+    std::vector<double>              _last_position_move_time; /** time stamp for last received position move command*/    
+    std::vector<eOmc_impedance_t>    _cacheImpedance;       /* cache impedance value to split up the 2 sets */
 
-    std::vector<std::unique_ptr<eomc::ITemperatureSensor>> _temperatureSensorsVector;  
-    
-    eomc::focBasedSpecificInfo_t *           _foc_based_info;
-
-    std::vector<eomc::encoder_t>             _jointEncs;
-    std::vector<eomc::encoder_t>             _motorEncs;
-
-    std::vector<eomc::rotorLimits_t>         _rotorsLimits; /** contains limit about rotors such as position and pwm */
-    std::vector<eomc::jointLimits_t>         _jointsLimits; /** contains limit about joints such as position and velocity */
-    std::vector<eomc::motorCurrentLimits_t>  _currentLimits;
-    std::vector<eomc::temperatureLimits_t>   _temperatureLimits;
-    eomc::couplingInfo_t                     _couplingInfo; /** contains coupling matrix */
-    std::vector<eomc::JointsSet>             _jsets;
-    std::vector<int>                         _joint2set;   /** for each joint says the number of  set it belongs to */
-    std::vector<eomc::timeouts_t>            _timeouts;
-
-    std::vector<eomc::impedanceParameters_t> _impedance_params;   /** impedance parameters */ // TODO doubled!!! optimize using just one of the 2!!!
-    std::vector<eomc::lugreParameters_t>     _lugre_params;   /** LuGre friction model parameters */
-    eomc::impedanceLimits_t *                _impedance_limits;  /** impedance limits */
-
-
-    eomc::PidInfo    *                      _trj_pids;
-    eomc::PidInfo    *                      _dir_pos_pids;
-    eomc::PidInfo    *                      _dir_vel_pids;
-    eomc::TrqPidInfo *                      _trq_pids;
-    eomc::PidInfo    *                      _cur_pids;
-    eomc::PidInfo    *                      _vel_pids;
-
-    int *                                   _axisMap;   /** axies map*/
-    std::vector<eomc::axisInfo_t>           _axesInfo;
-    /////// end configuration info
-    
-    // event downsampler
-    mced::mcEventDownsampler* event_downsampler;
-
-    eth::parser::boardData bdata;
-
-#ifdef VERIFY_ROP_SETIMPEDANCE
-    uint32_t *impedanceSignature;
-#endif
-
-#ifdef VERIFY_ROP_SETPOSITIONRAW
-    uint32_t *refRawSignature;
-    bool        *sendingDirects;
-#endif
-
-
-
-    double  SAFETY_THRESHOLD;
-
-
-    // internal stuff
-    bool    *_enabledAmp;       // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
-    bool    *_enabledPid;       // Depends on enabledAmp. When both are set, the joint exits the idle mode and goes into position mode. If one of them is disabled, it falls to idle.
-    bool    *_calibrated;       // Flag to know if the calibrate function has been called for the joint
-    double  *_ref_command_positions;// used for position control.
-    double  *_ref_speeds;       // used for position control.
-    double  *_ref_command_speeds;   // used for velocity control.
-    double  *_ref_positions;    // used for direct position control.
-    double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
-    double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
-    bool    *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
-    #define MAX_POSITION_MOVE_INTERVAL 0.080
-    double *_last_position_move_time;           /** time stamp for last received position move command*/    
-    eOmc_impedance_t *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
-    std::vector<yarp::dev::eomc::Watchdog>    _temperatureSensorErrorWatchdog;  /* counter used to filter error coming from tdb reading fromm 2FOC board*/
-    std::vector<yarp::dev::eomc::Watchdog>    _temperatureExceededLimitWatchdog;  /* counter used to filter the print of the exeded limits*/
+    // watchdog and filter for the temperature sensor values read from the 2FOC board. Since we can have some error in reading these values, we use a watchdog to filter these errors and avoid to print continuously error messages in case of temporary problem in reading these values. Moreover, we use a filter to avoid to print exceeded limit messages in case of positive spikes in the temperature values.
+    std::vector<yarp::dev::eomc::Watchdog>          _temperatureSensorErrorWatchdog;  /* counter used to filter error coming from tdb reading fromm 2FOC board*/
+    std::vector<yarp::dev::eomc::Watchdog>          _temperatureExceededLimitWatchdog;  /* counter used to filter the print of the exeded limits*/
     std::vector<yarp::dev::eomc::TemperatureFilter> _temperatureSpikesFilter;
 
-    std::map<std::string, rawValuesKeyMetadata> _rawValuesMetadataMap;
-    std::vector<std::int32_t> _rawDataAuxVector;
+    // this map is used to store the metadata of the raw values that can be published by this device, like the size of the vector to be sent in case of vectorial data, or the type of the data (double, int32_t, ecc)
+    std::map<std::string, rawValuesKeyMetadata>   _rawValuesMetadataMap;
+    std::vector<std::int32_t>                     _rawDataAuxVector;
+
+    // diagnostics
+    MCdiagnostics _mcdiagnostics;
+        
+    // event downsampler
+    mced::mcEventDownsampler* _event_downsampler;
+
 
 #ifdef NETWORK_PERFORMANCE_BENCHMARK 
-    Tools:Emb_RensponseTimingVerifier m_responseTimingVerifier;
+    Tools::Emb_RensponseTimingVerifier _responseTimingVerifier;
 #endif
 
 private:
 
-    std::string getBoardInfo(void);
+    std::string getBoardInfo(void) const;
     bool askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size);
     template <class T> 
     bool askRemoteValues(eOprotEndpoint_t ep, eOprotEntity_t entity, eOprotTag_t tag, std::vector<T>& values);
     bool checkRemoteControlModeStatus(int joint, int target_mode);
-
-    bool dealloc();
-
 
     bool verifyUserControlLawConsistencyInJointSet(eomc::PidInfo *ipdInfo);
     bool verifyUserControlLawConsistencyInJointSet(eomc::TrqPidInfo *pidInfo);
@@ -402,13 +324,10 @@ private:
     bool getMotorEncTolerance(int axis, double *mEncTolerance_ptr);
     void updateDeadZoneWithDefaultValues(void);
     bool getJointDeadZoneRaw(int j, double &jntDeadZone);
-
-private:
     
     //functions used in init this object
     bool fromConfig(yarp::os::Searchable &config);
     int fromConfig_NumOfJoints(yarp::os::Searchable &config);
-    bool fromConfig_getGeneralInfo(yarp::os::Searchable &config); //get general info: useRawEncoderData, useLiitedPwm, etc....
     bool fromConfig_Step2(yarp::os::Searchable &config);
     bool fromConfig_readServiceCfg(yarp::os::Searchable &config);
     bool initializeInterfaces(measureConvFactors &f);
@@ -417,36 +336,18 @@ private:
     
     //function used in the closing this object
     void cleanup(void);
+
     
-    //used in pid interface
-    bool helper_setPosPidRaw( int j, const Pid &pid);
-    bool helper_getPosPidRaw(int j, Pid *pid);
-    bool helper_getPosPidsRaw(Pid *pid);
-    
-    //used in torque control interface
-    bool helper_setTrqPidRaw( int j, const Pid &pid);
-    bool helper_getTrqPidRaw(int j, Pid *pid);
-    bool helper_getTrqPidsRaw(Pid *pid);
-    
-    //used in velocity control interface
-    bool helper_setVelPidRaw( int j, const Pid &pid);
-    bool helper_getVelPidRaw(int j, Pid *pid);
-    bool helper_getVelPidsRaw(Pid *pid);
-    
-    //used in current control interface
-    bool helper_setCurPidRaw(int j, const Pid &pid);
-    bool helper_getCurPidRaw(int j, Pid *pid);
-    bool helper_getCurPidsRaw(Pid *pid);
-    
-    //used in low level speed control interface
-    bool helper_setSpdPidRaw(int j, const Pid &pid);
-    bool helper_getSpdPidRaw(int j, Pid *pid);
-    bool helper_getSpdPidsRaw(Pid *pid);
+    //Currently we need to use a specific function to retrive values of vel direct because they depend on thje output type
+    ReturnValue helper_getVelDirPidRaw(int j, Pid *pid);
+    ReturnValue helper_getVelDirPidsRaw(Pid *pid);
+    ReturnValue helper_setVelDirPidRaw(int j, const Pid &pid);
     
     bool checkCalib14RotationParam(int32_t calib_param4);
 
     // used in rawvaluespublisher interface
     bool getRawData_core(std::string key, std::vector<std::int32_t> &data);
+    std::string controlModeType2String(eOmc_controlmode_t type);
     
 public:
 
@@ -466,6 +367,7 @@ public:
     virtual bool getEntityControlModeName(uint32_t entityId, eOenum08_t control_mode, std::string &controlModeName, eObool_t compact_string) override;
 
     /////////   PID INTERFACE   /////////
+    virtual ReturnValue getAvailablePidsRaw(int j, std::vector<PidControlTypeEnum>& avail) override;
     virtual ReturnValue setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid) override;
     virtual ReturnValue setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids) override;
     virtual ReturnValue setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref) override;
@@ -527,71 +429,72 @@ public:
     virtual bool getTargetPositionsRaw(const int n_joint, const int *joints, double *refs) override;
 
     //  Velocity control interface raw
-    virtual bool velocityMoveRaw(int j, double sp) override;
-    virtual bool velocityMoveRaw(const double *sp) override;
+    virtual ReturnValue velocityMoveRaw(int j, double sp) override;
+    virtual ReturnValue velocityMoveRaw(const double *sp) override;
 
 
     // calibration2raw
-    virtual bool setCalibrationParametersRaw(int axis, const CalibrationParameters& params) override;
-    virtual bool calibrateAxisWithParamsRaw(int axis, unsigned int type, double p1, double p2, double p3) override;
-    virtual bool calibrationDoneRaw(int j) override;
+    virtual ReturnValue setCalibrationParametersRaw(int axis, const CalibrationParameters& params) override;
+    virtual ReturnValue calibrateAxisWithParamsRaw(int axis, unsigned int type, double p1, double p2, double p3) override;
+    virtual ReturnValue calibrationDoneRaw(int j) override;
 
 
     /////////////////////////////// END Position Control INTERFACE
 
     // ControlMode
-    virtual bool getControlModeRaw(int j, int *v) override;
-    virtual bool getControlModesRaw(int *v) override;
+    virtual ReturnValue getAvailableControlModesRaw(int j, std::vector<yarp::dev::SelectableControlModeEnum>& avail) override;
+    virtual ReturnValue getControlModeRaw(int j, yarp::dev::ControlModeEnum& mode) override;
+    virtual ReturnValue getControlModesRaw(std::vector<yarp::dev::ControlModeEnum>& mode) override;
 
     // ControlMode 2
-    virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes) override;
-    virtual bool setControlModeRaw(const int j, const int mode) override;
-    virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes) override;
-    virtual bool setControlModesRaw(int *modes) override;
+    virtual ReturnValue getControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::ControlModeEnum>& mode) override;
+    virtual ReturnValue setControlModeRaw(int j, yarp::dev::SelectableControlModeEnum mode) override;
+    virtual ReturnValue setControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::SelectableControlModeEnum> mode) override;
+    virtual ReturnValue setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum> mode) override;
 
     //////////////////////// BEGIN EncoderInterface
-    virtual bool resetEncoderRaw(int j) override;
-    virtual bool resetEncodersRaw() override;
-    virtual bool setEncoderRaw(int j, double val) override;
-    virtual bool setEncodersRaw(const double *vals) override;
-    virtual bool getEncoderRaw(int j, double *v) override;
-    virtual bool getEncodersRaw(double *encs) override;
-    virtual bool getEncoderSpeedRaw(int j, double *sp) override;
-    virtual bool getEncoderSpeedsRaw(double *spds) override;
-    virtual bool getEncoderAccelerationRaw(int j, double *spds) override;
-    virtual bool getEncoderAccelerationsRaw(double *accs) override;
+    virtual ReturnValue resetEncoderRaw(int j) override;
+    virtual ReturnValue resetEncodersRaw() override;
+    virtual ReturnValue setEncoderRaw(int j, double val) override;
+    virtual ReturnValue setEncodersRaw(const double *vals) override;
+    virtual ReturnValue getEncoderRaw(int j, double *v) override;
+    virtual ReturnValue getEncodersRaw(double *encs) override;
+    virtual ReturnValue getEncoderSpeedRaw(int j, double *sp) override;
+    virtual ReturnValue getEncoderSpeedsRaw(double *spds) override;
+    virtual ReturnValue getEncoderAccelerationRaw(int j, double *spds) override;
+    virtual ReturnValue getEncoderAccelerationsRaw(double *accs) override;
     ///////////////////////// END Encoder Interface
 
-    virtual bool getEncodersTimedRaw(double *encs, double *stamps) override;
-    virtual bool getEncoderTimedRaw(int j, double *encs, double *stamp) override;
+    virtual ReturnValue getEncodersTimedRaw(double *encs, double *stamps) override;
+    virtual ReturnValue getEncoderTimedRaw(int j, double *encs, double *stamp) override;
 
     //////////////////////// BEGIN MotorEncoderInterface
-    virtual bool getNumberOfMotorEncodersRaw(int * num) override;
-    virtual bool resetMotorEncoderRaw(int m) override;
-    virtual bool resetMotorEncodersRaw() override;
-    virtual bool setMotorEncoderRaw(int m, const double val) override;
-    virtual bool setMotorEncodersRaw(const double *vals) override;
-    virtual bool getMotorEncoderRaw(int m, double *v) override;
-    virtual bool getMotorEncodersRaw(double *encs) override;
-    virtual bool getMotorEncoderSpeedRaw(int m, double *sp) override;
-    virtual bool getMotorEncoderSpeedsRaw(double *spds) override;
-    virtual bool getMotorEncoderAccelerationRaw(int m, double *spds) override;
-    virtual bool getMotorEncoderAccelerationsRaw(double *accs) override;
-    virtual bool getMotorEncodersTimedRaw(double *encs, double *stamps) override;
-    virtual bool getMotorEncoderTimedRaw(int m, double *encs, double *stamp) override;
-    virtual bool getMotorEncoderCountsPerRevolutionRaw(int m, double *v) override;
-    virtual bool setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr) override;
+    virtual ReturnValue getNumberOfMotorEncodersRaw(int * num) override;
+    virtual ReturnValue resetMotorEncoderRaw(int m) override;
+    virtual ReturnValue resetMotorEncodersRaw() override;
+    virtual ReturnValue setMotorEncoderRaw(int m, const double val) override;
+    virtual ReturnValue setMotorEncodersRaw(const double *vals) override;
+    virtual ReturnValue getMotorEncoderRaw(int m, double *v) override;
+    virtual ReturnValue getMotorEncodersRaw(double *encs) override;
+    virtual ReturnValue getMotorEncoderSpeedRaw(int m, double *sp) override;
+    virtual ReturnValue getMotorEncoderSpeedsRaw(double *spds) override;
+    virtual ReturnValue getMotorEncoderAccelerationRaw(int m, double *spds) override;
+    virtual ReturnValue getMotorEncoderAccelerationsRaw(double *accs) override;
+    virtual ReturnValue getMotorEncodersTimedRaw(double *encs, double *stamps) override;
+    virtual ReturnValue getMotorEncoderTimedRaw(int m, double *encs, double *stamp) override;
+    virtual ReturnValue getMotorEncoderCountsPerRevolutionRaw(int m, double *v) override;
+    virtual ReturnValue setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr) override;
     ///////////////////////// END MotorEncoder Interface
 
     //////////////////////// BEGIN RemoteVariables Interface
-    virtual bool getRemoteVariableRaw(std::string key, yarp::os::Bottle& val) override;
-    virtual bool setRemoteVariableRaw(std::string key, const yarp::os::Bottle& val) override;
-    virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys) override;
+    virtual ReturnValue getRemoteVariableRaw(std::string key, yarp::os::Bottle& val) override;
+    virtual ReturnValue setRemoteVariableRaw(std::string key, const yarp::os::Bottle& val) override;
+    virtual ReturnValue getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys) override;
     ///////////////////////// END RemoteVariables Interface
 
     //////////////////////// BEGIN IAxisInfo Interface
-    virtual bool getAxisNameRaw(int axis, std::string& name) override;
-    virtual bool getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type) override;
+    virtual ReturnValue getAxisNameRaw(int axis, std::string& name) override;
+    virtual ReturnValue getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type) override;
     ///////////////////////// END IAxisInfo Interface
 
     //Internal use, not exposed by Yarp (yet)
@@ -612,18 +515,18 @@ public:
     bool getWholeImpedanceRaw(int j, eOmc_impedance_t &imped);
 
     ////// Amplifier interface
-    virtual bool enableAmpRaw(int j) override;
-    virtual bool disableAmpRaw(int j) override;
-    virtual bool getCurrentsRaw(double *vals) override;
-    virtual bool getCurrentRaw(int j, double *val) override;
-    virtual bool setMaxCurrentRaw(int j, double val) override;
-    virtual bool getMaxCurrentRaw(int j, double *val) override;
-    virtual bool getAmpStatusRaw(int *st) override;
-    virtual bool getAmpStatusRaw(int j, int *st) override;
-    virtual bool getPWMRaw(int j, double* val) override;
-    virtual bool getPWMLimitRaw(int j, double* val) override;
-    virtual bool setPWMLimitRaw(int j, const double val) override;
-    virtual bool getPowerSupplyVoltageRaw(int j, double* val) override;
+    virtual ReturnValue enableAmpRaw(int j) override;
+    virtual ReturnValue disableAmpRaw(int j) override;
+    virtual ReturnValue getCurrentsRaw(double *vals) override;
+    virtual ReturnValue getCurrentRaw(int j, double *val) override;
+    virtual ReturnValue setMaxCurrentRaw(int j, double val) override;
+    virtual ReturnValue getMaxCurrentRaw(int j, double *val) override;
+    virtual ReturnValue getAmpStatusRaw(int *st) override;
+    virtual ReturnValue getAmpStatusRaw(int j, int *st) override;
+    virtual ReturnValue getPWMRaw(int j, double* val) override;
+    virtual ReturnValue getPWMLimitRaw(int j, double* val) override;
+    virtual ReturnValue setPWMLimitRaw(int j, const double val) override;
+    virtual ReturnValue getPowerSupplyVoltageRaw(int j, double* val) override;
 
     /////////////// END AMPLIFIER INTERFACE
 
@@ -653,17 +556,17 @@ public:
     virtual ReturnValue getVelLimitsRaw(int axis, double *min, double *max) override;
 
     // Torque control
-    virtual bool getTorqueRaw(int j, double *t) override;
-    virtual bool getTorquesRaw(double *t) override;
-    virtual bool getTorqueRangeRaw(int j, double *min, double *max) override;
-    virtual bool getTorqueRangesRaw(double *min, double *max) override;
-    virtual bool setRefTorquesRaw(const double *t) override;
-    virtual bool setRefTorqueRaw(int j, double t) override;
-    virtual bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t) override;
-    virtual bool getRefTorquesRaw(double *t) override;
-    virtual bool getRefTorqueRaw(int j, double *t) override;
-    virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params) override;
-    virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params) override;
+    virtual ReturnValue getTorqueRaw(int j, double *t) override;
+    virtual ReturnValue getTorquesRaw(double *t) override;
+    virtual ReturnValue getTorqueRangeRaw(int j, double *min, double *max) override;
+    virtual ReturnValue getTorqueRangesRaw(double *min, double *max) override;
+    virtual ReturnValue setRefTorquesRaw(const double *t) override;
+    virtual ReturnValue setRefTorqueRaw(int j, double t) override;
+    virtual ReturnValue setRefTorquesRaw(const int n_joint, const int *joints, const double *t) override;
+    virtual ReturnValue getRefTorquesRaw(double *t) override;
+    virtual ReturnValue getRefTorqueRaw(int j, double *t) override;
+    virtual ReturnValue getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params) override;
+    virtual ReturnValue setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params) override;
 
 
     // IVelocityControl2
@@ -674,65 +577,66 @@ public:
 
 
     // Impedance interface
-    virtual bool getImpedanceRaw(int j, double *stiffness, double *damping) override;
-    virtual bool setImpedanceRaw(int j, double stiffness, double damping) override;
-    virtual bool setImpedanceOffsetRaw(int j, double offset) override;
-    virtual bool getImpedanceOffsetRaw(int j, double *offset) override;
-    virtual bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp) override;
+    virtual ReturnValue getImpedanceRaw(int j, double *stiffness, double *damping) override;
+    virtual ReturnValue setImpedanceRaw(int j, double stiffness, double damping) override;
+    virtual ReturnValue setImpedanceOffsetRaw(int j, double offset) override;
+    virtual ReturnValue getImpedanceOffsetRaw(int j, double *offset) override;
+    virtual ReturnValue getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp) override;
 
     // PositionDirect Interface
-    virtual bool setPositionRaw(int j, double ref) override;
-    virtual bool setPositionsRaw(const int n_joint, const int *joints, const double *refs) override;
-    virtual bool setPositionsRaw(const double *refs) override;
-    virtual bool getRefPositionRaw(const int joint, double *ref) override;
-    virtual bool getRefPositionsRaw(double *refs) override;
-    virtual bool getRefPositionsRaw(const int n_joint, const int *joints, double *refs) override;
+    virtual ReturnValue setPositionRaw(int j, double ref) override;
+    virtual ReturnValue setPositionsRaw(const int n_joint, const int *joints, const double *refs) override;
+    virtual ReturnValue setPositionsRaw(const double *refs) override;
+    virtual ReturnValue getRefPositionRaw(const int joint, double *ref) override;
+    virtual ReturnValue getRefPositionsRaw(double *refs) override;
+    virtual ReturnValue getRefPositionsRaw(const int n_joint, const int *joints, double *refs) override;
 
     // InteractionMode interface
-    virtual bool getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode) override;
-    virtual bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes) override;
-    virtual bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes) override;
-    virtual bool setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode) override;
-    virtual bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes) override;
-    virtual bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes) override;
+    virtual ReturnValue getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode) override;
+    virtual ReturnValue getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes) override;
+    virtual ReturnValue getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes) override;
+    virtual ReturnValue setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode) override;
+    virtual ReturnValue setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes) override;
+    virtual ReturnValue setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes) override;
 
     // IMotor interface
-    virtual bool getNumberOfMotorsRaw(int * num) override;
-    virtual bool getTemperatureRaw(int m, double* val) override;
-    virtual bool getTemperaturesRaw(double *vals) override;
-    virtual bool getTemperatureLimitRaw(int m, double *temp) override;
-    virtual bool setTemperatureLimitRaw(int m, const double temp) override;
-    virtual bool getPeakCurrentRaw(int m, double *val) override;
-    virtual bool setPeakCurrentRaw(int m, const double val) override;
-    virtual bool getNominalCurrentRaw(int m, double *val) override;
-    virtual bool setNominalCurrentRaw(int m, const double val) override;
-    virtual bool getGearboxRatioRaw(int m, double *gearbox) override;
+    virtual ReturnValue getNumberOfMotorsRaw(int * num) override;
+    virtual ReturnValue getTemperatureRaw(int m, double* val) override;
+    virtual ReturnValue getTemperaturesRaw(double *vals) override;
+    virtual ReturnValue getTemperatureLimitRaw(int m, double *temp) override;
+    virtual ReturnValue setTemperatureLimitRaw(int m, const double temp) override;
+    virtual ReturnValue getPeakCurrentRaw(int m, double *val) override;
+    virtual ReturnValue setPeakCurrentRaw(int m, const double val) override;
+    virtual ReturnValue getNominalCurrentRaw(int m, double *val) override;
+    virtual ReturnValue setNominalCurrentRaw(int m, const double val) override;
+    virtual ReturnValue getGearboxRatioRaw(int m, double *gearbox) override;
+    virtual ReturnValue setGearboxRatioRaw(int m, const double val) override;
 
     // PWMControl
-    virtual bool setRefDutyCycleRaw(int j, double v) override;
-    virtual bool setRefDutyCyclesRaw(const double *v) override;
-    virtual bool getRefDutyCycleRaw(int j, double *v) override;
-    virtual bool getRefDutyCyclesRaw(double *v) override;
-    virtual bool getDutyCycleRaw(int j, double *v) override;
-    virtual bool getDutyCyclesRaw(double *v) override;
+    virtual ReturnValue setRefDutyCycleRaw(int j, double v) override;
+    virtual ReturnValue setRefDutyCyclesRaw(const double *v) override;
+    virtual ReturnValue getRefDutyCycleRaw(int j, double *v) override;
+    virtual ReturnValue getRefDutyCyclesRaw(double *v) override;
+    virtual ReturnValue getDutyCycleRaw(int j, double *v) override;
+    virtual ReturnValue getDutyCyclesRaw(double *v) override;
 
     // CurrentControl
     // virtual bool getAxes(int *ax) override;
     //virtual bool getCurrentRaw(int j, double *t) override;
     //virtual bool getCurrentsRaw(double *t) override;
-    virtual bool getCurrentRangeRaw(int j, double *min, double *max) override;
-    virtual bool getCurrentRangesRaw(double *min, double *max) override;
-    virtual bool setRefCurrentsRaw(const double *t) override;
-    virtual bool setRefCurrentRaw(int j, double t) override;
-    virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t) override;
-    virtual bool getRefCurrentsRaw(double *t) override;
-    virtual bool getRefCurrentRaw(int j, double *t) override;
+    virtual ReturnValue getCurrentRangeRaw(int j, double *min, double *max) override;
+    virtual ReturnValue getCurrentRangesRaw(double *min, double *max) override;
+    virtual ReturnValue setRefCurrentsRaw(const double *t) override;
+    virtual ReturnValue setRefCurrentRaw(int j, double t) override;
+    virtual ReturnValue setRefCurrentsRaw(const int n_joint, const int *joints, const double *t) override;
+    virtual ReturnValue getRefCurrentsRaw(double *t) override;
+    virtual ReturnValue getRefCurrentRaw(int j, double *t) override;
 
     // Used in joint faults interface
     // Teturns true if it was successful and writes the fault code in the fault parameter 
     // with the associated string in message. If no fault is detected the fault parameters is set to -1.
     // Returns false and fault is set to -2 if retrieval was unsuccessful.
-    virtual bool getLastJointFaultRaw(int j, int& fault, std::string& message) override;
+    virtual ReturnValue getLastJointFaultRaw(int j, int& fault, std::string& message) override;
 
     // IRawValuesPublisher
     virtual bool getRawDataMap(std::map<std::string, std::vector<std::int32_t>> &map) override;
@@ -751,6 +655,45 @@ public:
     virtual ReturnValue getRefVelocityRaw(const int jnt, double& vel) override;
     virtual ReturnValue getRefVelocityRaw(std::vector<double>& vels) override;
     virtual ReturnValue getRefVelocityRaw(const std::vector<int>& jnts, std::vector<double>& vels) override;
+
+    //DeviceDriverParams
+    virtual bool parseParams(const yarp::os::Searchable& config)override;
+
+    /**
+     * Get the name of the DeviceDriver class.
+     * @return A string containing the name of the class.
+     */
+    virtual std::string   getDeviceClassName() const override;
+
+    /**
+     * Get the name of the device (i.e. the plugin name).
+     * @return A string containing the name of the device.
+     */
+    virtual std::string   getDeviceName() const override;
+
+    /**
+     * Get the documentation of the DeviceDriver's parameters.
+     * @return A string containing the documentation.
+     */
+    virtual std::string   getDocumentationOfDeviceParams() const override;
+
+    /**
+     * Return a list of all params used by the device.
+     * @return A vector containing the names of parameters used by the device.
+     */
+    virtual std::vector<std::string> getListOfParams() const override;
+
+    /**
+     * Return the value (represented as a string) of the requested parameter.
+     * @return True if the requested parameter was succesfully retrieved.
+     */
+    virtual bool getParamValue(const std::string& paramName, std::string& paramValue) const override;
+
+    /**
+     * Return the configuration of the device.
+     * @return The configuration of the device, represented in a string format.
+     */
+    virtual std::string getConfiguration() const override;
 };
 
 #endif // include guard
