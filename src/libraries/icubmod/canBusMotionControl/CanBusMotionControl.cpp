@@ -5652,7 +5652,7 @@ ReturnValue CanBusMotionControl::setCalibrationParametersRaw(int j, const Calibr
     return calibrateAxisWithParamsRaw(j, params.type, params.param1, params.param2, params.param3);
 }
 
-bool CanBusMotionControl::setTrajSpeedRaw(int axis, double sp)
+ReturnValue CanBusMotionControl::setTrajSpeedRaw(int axis, double sp)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return ReturnValue::return_code::return_value_error_generic;
@@ -5662,7 +5662,7 @@ bool CanBusMotionControl::setTrajSpeedRaw(int axis, double sp)
     return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::setTrajSpeedsRaw(const double *spds)
+ReturnValue CanBusMotionControl::setTrajSpeedsRaw(const double *spds)
 {
     CanBusResources& r = RES(system_resources);
     memcpy(_ref_speeds, spds, sizeof(double)* r.getJoints());
@@ -5673,7 +5673,7 @@ bool CanBusMotionControl::setTrajSpeedsRaw(const double *spds)
     return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::setTrajAccelerationRaw(int axis, double acc)
+ReturnValue CanBusMotionControl::setTrajAccelerationRaw(int axis, double acc)
 {
     ReturnValue ret = ReturnValue_ok;
 
@@ -5698,7 +5698,7 @@ bool CanBusMotionControl::setTrajAccelerationRaw(int axis, double acc)
     return ret;
 }
 
-bool CanBusMotionControl::setTrajAccelerationsRaw(const double *accs)
+ReturnValue CanBusMotionControl::setTrajAccelerationsRaw(const double *accs)
 {
     CanBusResources& r = RES(system_resources);
 
@@ -5723,7 +5723,7 @@ bool CanBusMotionControl::setTrajAccelerationsRaw(const double *accs)
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getTrajSpeedsRaw (double *spds)
+ReturnValue CanBusMotionControl::getTrajSpeedsRaw (double *spds)
 {
     CanBusResources& r = RES(system_resources);
 
@@ -5735,7 +5735,7 @@ bool CanBusMotionControl::getTrajSpeedsRaw (double *spds)
     return ReturnValue_ok;
 }
 
-bool CanBusMotionControl::getTrajSpeedRaw (int axis, double *spd)
+ReturnValue CanBusMotionControl::getTrajSpeedRaw (int axis, double *spd)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return ReturnValue::return_code::return_value_error_generic;
@@ -5745,7 +5745,7 @@ bool CanBusMotionControl::getTrajSpeedRaw (int axis, double *spd)
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getTrajAccelerationsRaw (double *accs)
+ReturnValue CanBusMotionControl::getTrajAccelerationsRaw (double *accs)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -5766,7 +5766,7 @@ bool CanBusMotionControl::getTrajAccelerationsRaw (double *accs)
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::getTrajAccelerationRaw (int axis, double *accs)
+ReturnValue CanBusMotionControl::getTrajAccelerationRaw (int axis, double *accs)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return ReturnValue::return_code::return_value_error_generic;
@@ -6542,7 +6542,7 @@ ReturnValue CanBusMotionControl::setPosLimitsRaw(int axis, double min, double ma
     return ret;
 }
 
-bool CanBusMotionControl::getPosLimitsRaw(int axis, double *min, double *max)
+ReturnValue CanBusMotionControl::getPosLimitsRaw(int axis, double *min, double *max)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return ReturnValue::return_code::return_value_error_generic;
@@ -6599,7 +6599,7 @@ ReturnValue CanBusMotionControl::checkMotionDoneRaw(const int n_joint, const int
     return ret;
 }
 
-bool CanBusMotionControl::setTrajSpeedsRaw(const int n_joint, const int *joints, const double *spds)
+ReturnValue CanBusMotionControl::setTrajSpeedsRaw(const int n_joint, const int *joints, const double *spds)
 {
     ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)
@@ -6609,7 +6609,7 @@ bool CanBusMotionControl::setTrajSpeedsRaw(const int n_joint, const int *joints,
     return ret;
 }
 
-bool CanBusMotionControl::setTrajAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
+ReturnValue CanBusMotionControl::setTrajAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
 {
     ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)
@@ -6619,7 +6619,7 @@ bool CanBusMotionControl::setTrajAccelerationsRaw(const int n_joint, const int *
     return ret;
 }
 
-bool CanBusMotionControl::getTrajSpeedsRaw(const int n_joint, const int *joints, double *spds)
+ReturnValue CanBusMotionControl::getTrajSpeedsRaw(const int n_joint, const int *joints, double *spds)
 {
     ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)
@@ -6629,7 +6629,7 @@ bool CanBusMotionControl::getTrajSpeedsRaw(const int n_joint, const int *joints,
     return ret;
 }
 
-bool CanBusMotionControl::getTrajAccelerationsRaw(const int n_joint, const int *joints, double *accs)
+ReturnValue CanBusMotionControl::getTrajAccelerationsRaw(const int n_joint, const int *joints, double *accs)
 {
     ReturnValue ret = ReturnValue_ok;
     for(int j=0; j<n_joint; j++)

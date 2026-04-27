@@ -312,9 +312,7 @@ private:
     bool saveCouplingsData(void);
     void debugUtil_printJointsetInfo(void);
 
-    //bool isTorqueControlEnabled(int joint); //commented out because not used
-   // bool isVelocityControlEnabled(int joint); //commented out because not used
-
+    
     bool iNeedCouplingsInfo(void); //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
 
     bool getJointConfiguration(int joint, eOmc_joint_config_t *jntCfg_ptr);
@@ -396,37 +394,37 @@ public:
     virtual ReturnValue getPidExtraInfosRaw(const PidControlTypeEnum& pidtype, std::vector<yarp::dev::PidExtraInfo>& units) override;
 
     // POSITION CONTROL INTERFACE RAW
-    virtual bool getAxes(int *ax) override;
-    virtual bool positionMoveRaw(int j, double ref) override;
-    virtual bool positionMoveRaw(const double *refs) override;
-    virtual bool relativeMoveRaw(int j, double delta) override;
-    virtual bool relativeMoveRaw(const double *deltas) override;
-    virtual bool checkMotionDoneRaw(bool *flag) override;
-    virtual bool checkMotionDoneRaw(int j, bool *flag) override;
-    virtual bool setTrajSpeedRaw(int j, double sp) override;
-    virtual bool setTrajSpeedsRaw(const double *spds) override;
-    virtual bool setTrajAccelerationRaw(int j, double acc) override;
-    virtual bool setTrajAccelerationsRaw(const double *accs) override;
-    virtual bool getTrajSpeedRaw(int j, double *ref) override;
-    virtual bool getTrajSpeedsRaw(double *spds) override;
-    virtual bool getTrajAccelerationRaw(int j, double *acc) override;
-    virtual bool getTrajAccelerationsRaw(double *accs) override;
-    virtual bool stopRaw(int j) override;
-    virtual bool stopRaw() override;
+    virtual ReturnValue getAxes(int *ax) override;
+    virtual ReturnValue positionMoveRaw(int j, double ref) override;
+    virtual ReturnValue positionMoveRaw(const double *refs) override;
+    virtual ReturnValue relativeMoveRaw(int j, double delta) override;
+    virtual ReturnValue relativeMoveRaw(const double *deltas) override;
+    virtual ReturnValue checkMotionDoneRaw(bool *flag) override;
+    virtual ReturnValue checkMotionDoneRaw(int j, bool *flag) override;
+    virtual ReturnValue setTrajSpeedRaw(int j, double sp) override;
+    virtual ReturnValue setTrajSpeedsRaw(const double *spds) override;
+    virtual ReturnValue setTrajAccelerationRaw(int j, double acc) override;
+    virtual ReturnValue setTrajAccelerationsRaw(const double *accs) override;
+    virtual ReturnValue getTrajSpeedRaw(int j, double *ref) override;
+    virtual ReturnValue getTrajSpeedsRaw(double *spds) override;
+    virtual ReturnValue getTrajAccelerationRaw(int j, double *acc) override;
+    virtual ReturnValue getTrajAccelerationsRaw(double *accs) override;
+    virtual ReturnValue stopRaw(int j) override;
+    virtual ReturnValue stopRaw() override;
 
 
     // Position Control2 Interface
-    virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs) override;
-    virtual bool relativeMoveRaw(const int n_joint, const int *joints, const double *deltas) override;
-    virtual bool checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags) override;
-    virtual bool setTrajSpeedsRaw(const int n_joint, const int *joints, const double *spds) override;
-    virtual bool setTrajAccelerationsRaw(const int n_joint, const int *joints, const double *accs) override;
-    virtual bool getTrajSpeedsRaw(const int n_joint, const int *joints, double *spds) override;
-    virtual bool getTrajAccelerationsRaw(const int n_joint, const int *joints, double *accs) override;
-    virtual bool stopRaw(const int n_joint, const int *joints) override;
-    virtual bool getTargetPositionRaw(const int joint, double *ref) override;
-    virtual bool getTargetPositionsRaw(double *refs) override;
-    virtual bool getTargetPositionsRaw(const int n_joint, const int *joints, double *refs) override;
+    virtual ReturnValue positionMoveRaw(const int n_joint, const int *joints, const double *refs) override;
+    virtual ReturnValue relativeMoveRaw(const int n_joint, const int *joints, const double *deltas) override;
+    virtual ReturnValue checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags) override;
+    virtual ReturnValue setTrajSpeedsRaw(const int n_joint, const int *joints, const double *spds) override;
+    virtual ReturnValue setTrajAccelerationsRaw(const int n_joint, const int *joints, const double *accs) override;
+    virtual ReturnValue getTrajSpeedsRaw(const int n_joint, const int *joints, double *spds) override;
+    virtual ReturnValue getTrajAccelerationsRaw(const int n_joint, const int *joints, double *accs) override;
+    virtual ReturnValue stopRaw(const int n_joint, const int *joints) override;
+    virtual ReturnValue getTargetPositionRaw(const int joint, double *ref) override;
+    virtual ReturnValue getTargetPositionsRaw(double *refs) override;
+    virtual ReturnValue getTargetPositionsRaw(const int n_joint, const int *joints, double *refs) override;
 
     //  Velocity control interface raw
     virtual ReturnValue velocityMoveRaw(int j, double sp) override;
@@ -570,10 +568,10 @@ public:
 
 
     // IVelocityControl2
-    virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds) override;
-    virtual bool  getTargetVelocityRaw(const int joint, double *ref) override;
-    virtual bool  getTargetVelocitiesRaw(double *refs) override;
-    virtual bool  getTargetVelocitiesRaw(const int n_joint, const int *joints, double *refs) override;
+    virtual ReturnValue velocityMoveRaw(const int n_joint, const int *joints, const double *spds) override;
+    virtual ReturnValue  getTargetVelocityRaw(const int joint, double *ref) override;
+    virtual ReturnValue  getTargetVelocitiesRaw(double *refs) override;
+    virtual ReturnValue  getTargetVelocitiesRaw(const int n_joint, const int *joints, double *refs) override;
 
 
     // Impedance interface
