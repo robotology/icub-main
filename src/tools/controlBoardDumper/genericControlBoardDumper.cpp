@@ -19,6 +19,7 @@
 */
 
 #include "genericControlBoardDumper.h"
+#include <vector>
 
 GetData::GetData()
 {
@@ -222,7 +223,8 @@ void GetInteractionModes::setInterface(IInteractionMode *i, int n_joints)
 bool GetInteractionModes::getData(double *e)
 {
   //fprintf(stderr, "Entering getTrqs\n");
-  yarp::dev::InteractionModeEnum tmp[50];
+  std::vector<yarp::dev::InteractionModeEnum> tmp;
+  tmp.resize(nj);
   if (iint)
     {
       iint->getInteractionModes(tmp);
