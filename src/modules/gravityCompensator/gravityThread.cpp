@@ -601,7 +601,7 @@ void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, const str
         int ctrl_mode=0;
         yarp::dev::InteractionModeEnum int_mode;
         iCtrlMode->getControlMode(i,&ctrl_mode);
-        iIntMode->getInteractionMode(i,&int_mode);
+        iIntMode->getInteractionMode(i,int_mode);
         switch(ctrl_mode)
         {
             //for all this control modes do nothing

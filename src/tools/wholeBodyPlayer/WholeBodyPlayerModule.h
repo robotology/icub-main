@@ -155,7 +155,7 @@ public:
             return ok;
         }
         bool done{false};
-        ok &= m_posControl->checkMotionDone(&done);
+        ok &= m_posControl->checkMotionDone(done);
 
         if (!ok) {
             m_state = state::fatal_error;
@@ -163,7 +163,7 @@ public:
         }
 
         while (!done) {
-            ok &= m_posControl->checkMotionDone(&done);
+            ok &= m_posControl->checkMotionDone(done);
             if (!ok) {
                 m_state = state::fatal_error;
                 return ok;
