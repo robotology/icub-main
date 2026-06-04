@@ -399,8 +399,8 @@ public:
     virtual ReturnValue positionMoveRaw(const double *refs) override;
     virtual ReturnValue relativeMoveRaw(int j, double delta) override;
     virtual ReturnValue relativeMoveRaw(const double *deltas) override;
-    virtual ReturnValue checkMotionDoneRaw(bool *flag) override;
-    virtual ReturnValue checkMotionDoneRaw(int j, bool *flag) override;
+    virtual ReturnValue checkMotionDoneRaw(bool &flag) override;
+    virtual ReturnValue checkMotionDoneRaw(int j, bool &flag) override;
     virtual ReturnValue setTrajSpeedRaw(int j, double sp) override;
     virtual ReturnValue setTrajSpeedsRaw(const double *spds) override;
     virtual ReturnValue setTrajAccelerationRaw(int j, double acc) override;
@@ -416,7 +416,7 @@ public:
     // Position Control2 Interface
     virtual ReturnValue positionMoveRaw(const int n_joint, const int *joints, const double *refs) override;
     virtual ReturnValue relativeMoveRaw(const int n_joint, const int *joints, const double *deltas) override;
-    virtual ReturnValue checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags) override;
+    virtual ReturnValue checkMotionDoneRaw(const std::vector<int>& joints, bool& flag) override;
     virtual ReturnValue setTrajSpeedsRaw(const int n_joint, const int *joints, const double *spds) override;
     virtual ReturnValue setTrajAccelerationsRaw(const int n_joint, const int *joints, const double *accs) override;
     virtual ReturnValue getTrajSpeedsRaw(const int n_joint, const int *joints, double *spds) override;
@@ -445,10 +445,10 @@ public:
     virtual ReturnValue getControlModesRaw(std::vector<yarp::dev::ControlModeEnum>& mode) override;
 
     // ControlMode 2
-    virtual ReturnValue getControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::ControlModeEnum>& mode) override;
+    virtual ReturnValue getControlModesRaw(const std::vector<int>& joints, std::vector<yarp::dev::ControlModeEnum>& mode) override;
     virtual ReturnValue setControlModeRaw(int j, yarp::dev::SelectableControlModeEnum mode) override;
-    virtual ReturnValue setControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::SelectableControlModeEnum> mode) override;
-    virtual ReturnValue setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum> mode) override;
+    virtual ReturnValue setControlModesRaw(const std::vector<int>& joints, const std::vector<yarp::dev::SelectableControlModeEnum>& modes) override;
+    virtual ReturnValue setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum>& modes) override;
 
     //////////////////////// BEGIN EncoderInterface
     virtual ReturnValue resetEncoderRaw(int j) override;
@@ -590,12 +590,12 @@ public:
     virtual ReturnValue getRefPositionsRaw(const int n_joint, const int *joints, double *refs) override;
 
     // InteractionMode interface
-    virtual ReturnValue getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode) override;
-    virtual ReturnValue getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes) override;
-    virtual ReturnValue getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes) override;
+    virtual ReturnValue getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum & _mode) override;
+    virtual ReturnValue getInteractionModesRaw(const std::vector<int>& joints,  std::vector<yarp::dev::InteractionModeEnum>& modes) override;
+    virtual ReturnValue getInteractionModesRaw(std::vector<yarp::dev::InteractionModeEnum>& modes) override;
     virtual ReturnValue setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode) override;
-    virtual ReturnValue setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes) override;
-    virtual ReturnValue setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes) override;
+    virtual ReturnValue setInteractionModesRaw(const std::vector<int>& joints, const std::vector<yarp::dev::InteractionModeEnum>& modes) override;
+    virtual ReturnValue setInteractionModesRaw(const std::vector<yarp::dev::InteractionModeEnum>& modes) override;
 
     // IMotor interface
     virtual ReturnValue getNumberOfMotorsRaw(int * num) override;

@@ -82,46 +82,46 @@ namespace yarp {
                     return int(x - .5);
     }
     
-    bool EncoderType_iCub2eo(const std::string* in, uint8_t *out)
-    {
-        if (*in == "NONE")
-        {
-            *out = 0;
-            return true;
-        }
-        else if (*in == "AEA")
-        {
-            *out = 1;
-            return true;
-        }
-        else if (*in == "ROIE")
-        {
-            *out = 2;
-            return true;
-        }
-        else if (*in == "HALL_ADC")
-        {
-            *out = 3;
-            return true;
-        }
-        else if (*in == "MAIS")
-        {
-            *out = 4;
-            return true;
-        }
-        else if (*in == "OPTICAL_QUAD")
-        {
-            *out = 5;
-            return true;
-        }
-        else if (*in == "HALL_MOTOR_SENS")
-        {
-            *out = 6;
-            return true;
-        }
-        *out = 0;
-        return false;
-    }
+    // bool EncoderType_iCub2eo(const std::string* in, uint8_t *out)
+    // {
+    //     if (*in == "NONE")
+    //     {
+    //         *out = 0;
+    //         return true;
+    //     }
+    //     else if (*in == "AEA")
+    //     {
+    //         *out = 1;
+    //         return true;
+    //     }
+    //     else if (*in == "ROIE")
+    //     {
+    //         *out = 2;
+    //         return true;
+    //     }
+    //     else if (*in == "HALL_ADC")
+    //     {
+    //         *out = 3;
+    //         return true;
+    //     }
+    //     else if (*in == "MAIS")
+    //     {
+    //         *out = 4;
+    //         return true;
+    //     }
+    //     else if (*in == "OPTICAL_QUAD")
+    //     {
+    //         *out = 5;
+    //         return true;
+    //     }
+    //     else if (*in == "HALL_MOTOR_SENS")
+    //     {
+    //         *out = 6;
+    //         return true;
+    //     }
+    //     *out = 0;
+    //     return false;
+    // }
     
     bool EncoderType_eo2iCub(const uint8_t *in, std::string* out)
     {

@@ -214,7 +214,7 @@ bool MotorThread::setImpedance(bool turn_on)
 
     if (int_mode_torso!=NULL)
     {
-        InteractionModeEnum modes[3]={VOCAB_IM_STIFF, VOCAB_IM_STIFF, VOCAB_IM_STIFF};
+        std::vector<InteractionModeEnum> modes(3, VOCAB_IM_STIFF);
         int_mode_torso->setInteractionModes(modes);
     }
 
@@ -2803,7 +2803,7 @@ bool MotorThread::exploreTorso(Bottle &options)
     while (isRunning() && !done)
     {
         Time::delay(0.1);
-        pos_torso->checkMotionDone(&done);
+        pos_torso->checkMotionDone(done);
     }
 
     this->avoidTable(false);
