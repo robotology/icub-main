@@ -2542,7 +2542,7 @@ ReturnValue embObjMotionControl::relativeMoveRaw(const double *deltas)
 }
 
 
-ReturnValue embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
+ReturnValue embObjMotionControl::checkMotionDoneRaw(int j, bool &flag)
 {
     eObool_t ismotiondone = eobool_false;
     uint16_t size = 0;
@@ -2555,12 +2555,12 @@ ReturnValue embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
     }
 
 
-    *flag = ismotiondone; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
+    flag = ismotiondone; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
 
     return ReturnValue_ok;
 }
 
-ReturnValue embObjMotionControl::checkMotionDoneRaw(bool *flag)
+ReturnValue embObjMotionControl::checkMotionDoneRaw(bool &flag)
 {
     std::vector <eObool_t> ismotiondoneList(_njoints);
     bool ret = askRemoteValues(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, eoprot_tag_mc_joint_status_core_modes_ismotiondone, ismotiondoneList);
@@ -2569,10 +2569,10 @@ ReturnValue embObjMotionControl::checkMotionDoneRaw(bool *flag)
         yError () << "Failure of askRemoteValues() inside embObjMotionControl::checkMotionDoneRaw for all joints of" << getBoardInfo();
         return ReturnValue_error_generic;
     }
-    *flag=true;
+    flag=true;
     for(int j=0; j<_njoints; j++)
     {
-        *flag &= ismotiondoneList[j]; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
+        flag &= ismotiondoneList[j]; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
     }
     return ReturnValue_ok;
 }
@@ -2712,13 +2712,13 @@ ReturnValue embObjMotionControl::relativeMoveRaw(const int n_joint, const int *j
     return ret;
 }
 
-ReturnValue embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
+ReturnValue embObjMotionControl::checkMotionDoneRaw(const std::vector<int>& joints, bool& flag)
 {
 
     //1) first of all, check if all joints number are ok
-    for(int j=0; j<n_joint; j++)
+    for(int j=0; j<joints.size(); j++)
     {
-        if(joints[j] >= _njoints)
+        if((joints[j] >= _njoints) || (joints[j] < 0))
         {
             yError() << getBoardInfo() << ":checkMotionDoneRaw required for not existing joint ( " << joints[j] << ")";
             return ReturnValue_error_generic;
@@ -2736,12 +2736,12 @@ ReturnValue embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int
 
     //3) verify only the given joints
     bool tot_val = true;
-    for(int j=0; j<n_joint; j++)
+    for(int j=0; j<joints.size(); j++)
     {
         tot_val &= ismotiondoneList[joints[j]];
     }
 
-    *flag = tot_val;
+    flag = tot_val;
     return ReturnValue_ok;
 
 }
@@ -2830,18 +2830,22 @@ ReturnValue embObjMotionControl::getControlModeRaw(int j, yarp::dev::ControlMode
 }
 
 // IControl Mode 2
-ReturnValue embObjMotionControl::getControlModesRaw(std::vector<yarp::dev::ControlModeEnum>& v)
+ReturnValue embObjMotionControl::getControlModesRaw(std::vector<yarp::dev::ControlModeEnum>& mode)
 {
-    v.resize(_njoints);
+    if(mode.size() != _njoints)
+    {
+        yError() << "getControlModesRaw: size of input vector does not match number of joints for " << getBoardInfo();
+        return ReturnValue_error_generic;
+    }
     bool ret = true;
     for(int j=0; j< _njoints; j++)
     {
-        ret = ret && getControlModeRaw(j, v[j]);
+        ret = ret && getControlModeRaw(j, mode[j]);
     }
     return ret ? ReturnValue_ok : ReturnValue_error_generic;
 }
 
-ReturnValue embObjMotionControl::getControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::ControlModeEnum>& modes)
+ReturnValue embObjMotionControl::getControlModesRaw(const std::vector<int>& joints, std::vector<yarp::dev::ControlModeEnum>& modes)
 {
     modes.resize(joints.size()); //TODO: is this resize necessary?
     bool ret = true;
@@ -2892,7 +2896,7 @@ ReturnValue embObjMotionControl::setControlModeRaw(int j, yarp::dev::SelectableC
 }
 
 
-ReturnValue embObjMotionControl::setControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::SelectableControlModeEnum> modes)
+ReturnValue embObjMotionControl::setControlModesRaw(const std::vector<int>& joints, const std::vector<yarp::dev::SelectableControlModeEnum>& modes)
 {
     ReturnValue ret = ReturnValue_ok;
     for (size_t i = 0; i < joints.size(); ++i)
@@ -2902,7 +2906,7 @@ ReturnValue embObjMotionControl::setControlModesRaw(std::vector<int> joints, std
     return ret;
 }
 
-ReturnValue embObjMotionControl::setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum> modes)
+ReturnValue embObjMotionControl::setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum> &modes)
 {
     ReturnValue ret = ReturnValue_ok;
     for (int i = 0; i < _njoints; ++i)
@@ -4510,7 +4514,7 @@ ReturnValue embObjMotionControl::getRefPositionsRaw(int nj, const int * jnts, do
 }
 
 // InteractionMode
-ReturnValue embObjMotionControl::getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode)
+ReturnValue embObjMotionControl::getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum & _mode)
 {
     eOenum08_t interactionmodestatus;
 //    std::cout << "eoMC getInteractionModeRaw SINGLE joint " << j << std::endl;
@@ -4519,31 +4523,41 @@ ReturnValue embObjMotionControl::getInteractionModeRaw(int j, yarp::dev::Interac
     if(! _ethRes->getLocalValue(protid, &interactionmodestatus)) // it is broadcasted toghether with the jointStatus full
         return ReturnValue_error_generic;
 
-    int tmp = (int) *_mode;
+    int tmp = (int)_mode;
     if(!interactionModeStatusConvert_embObj2yarp(interactionmodestatus, tmp) )
         return ReturnValue_error_generic;
 
-    *_mode = (yarp::dev::InteractionModeEnum) tmp;
+    _mode = (yarp::dev::InteractionModeEnum) tmp;
     return ReturnValue_ok;
 }
 
-ReturnValue embObjMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+ReturnValue embObjMotionControl::getInteractionModesRaw(const std::vector<int>& joints, std::vector<yarp::dev::InteractionModeEnum>& modes)
 {
 //    std::cout << "eoMC getInteractionModeRaw GROUP joints" << std::endl;
-    bool ret = true;
-    for(int idx=0; idx<n_joints; idx++)
+    if(joints.size() != modes.size())
     {
-        ret =  getInteractionModeRaw(joints[idx], &modes[idx]);
+        yError() << "getInteractionModesRaw: size of input vector " << modes.size() << " is different from size of joints vector " << joints.size();
+        return ReturnValue_error_generic;
+    }
+    bool ret = true;
+    for(int idx=0; idx<joints.size(); idx++)
+    {
+        ret =  getInteractionModeRaw(joints[idx], modes[idx]);
     }
     return ret ? ReturnValue_ok : ReturnValue_error_generic;
 }
 
-ReturnValue embObjMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+ReturnValue embObjMotionControl::getInteractionModesRaw(std::vector<yarp::dev::InteractionModeEnum>& modes)
 {
 //    std::cout << "eoMC getInteractionModeRaw ALL joints" << std::endl;
     bool ret = true;
+    if(modes.size() != _njoints)
+    {
+        yError() << "getInteractionModesRaw: size of input vector " << modes.size() << " is different from number of joints " << _njoints;
+        return ReturnValue_error_generic;
+    }
     for(int j=0; j<_njoints; j++)
-        ret = ret && getInteractionModeRaw(j, &modes[j]);
+        ret = ret && getInteractionModeRaw(j, modes[j]);
     return ret ? ReturnValue_ok : ReturnValue_error_generic;
 }
 
@@ -4591,20 +4605,30 @@ ReturnValue embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::Interac
 }
 
 
-ReturnValue embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+ReturnValue embObjMotionControl::setInteractionModesRaw(const std::vector<int>& joints, const std::vector<yarp::dev::InteractionModeEnum>& modes)
 {
     ReturnValue ret = ReturnValue_ok;
-    for (auto i = 0; i < n_joints; ++i)
+    if(joints.size() != modes.size())
+    {
+        yError() << "setInteractionModesRaw: size of input vector " << modes.size() << " is different from size of joints vector " << joints.size();
+        return ReturnValue_error_generic;
+    }
+    for (auto i = 0; i < joints.size(); ++i)
     {
         ret &= setInteractionModeRaw(joints[i], modes[i]);
     }
     return ret;
 }
 
-ReturnValue embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+ReturnValue embObjMotionControl::setInteractionModesRaw(const std::vector<yarp::dev::InteractionModeEnum>& modes)
 {
     ReturnValue ret = ReturnValue_ok;
-    for (auto i = 0; i < _njoints; ++i)
+    if(modes.size() != _njoints)
+    {
+        yError() << "setInteractionModesRaw: size of input vector " << modes.size() << " is different from number of joints " << _njoints;
+        return ReturnValue_error_generic;
+    }
+    for (auto i = 0; i < modes.size(); ++i)
     {
         ret &= setInteractionModeRaw(i, modes[i]);
     }

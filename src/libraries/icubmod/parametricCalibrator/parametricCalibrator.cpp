@@ -731,7 +731,7 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     while ( (!finished) && (!abortCalib))
     {
         iEncoders->getEncoder(j, &angj);
-        iPosition->checkMotionDone(j, &done);
+        iPosition->checkMotionDone(j, done);
         iControlMode->getControlMode(j, mode);
         iPids->getPidOutput(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, j, &output);
 
@@ -850,12 +850,12 @@ ReturnValue parametricCalibrator::park(DeviceDriver *dd, bool wait)
           {
              yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << (*lit);
              bool done=false;
-             iPosition->checkMotionDone((*lit), &done);
+             iPosition->checkMotionDone((*lit), done);
              while ( (!done) && (timeout<PARK_TIMEOUT) && (!abortParking) )
              {
                Time::delay(1);
                timeout++;
-               iPosition->checkMotionDone((*lit), &done);
+               iPosition->checkMotionDone((*lit), done);
              }
              if (!done)
              {
@@ -1005,12 +1005,12 @@ ReturnValue parametricCalibrator::parkSingleJoint(int j, bool _wait)
         {
             yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << j;
             bool done=false;
-            iPosition->checkMotionDone(j, &done);
+            iPosition->checkMotionDone(j, done);
             while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
             {
                 Time::delay(1);
                 timeout++;
-                iPosition->checkMotionDone(j, &done);
+                iPosition->checkMotionDone(j, done);
             }
             if(!done)
             {

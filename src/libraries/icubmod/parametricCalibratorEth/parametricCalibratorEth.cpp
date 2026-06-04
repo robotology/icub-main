@@ -966,7 +966,7 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j, std::list<int> &fa
     while ( (!finished) && (!abortCalib))
     {
         iEncoders->getEncoder(j, &angj);
-        iPosition->checkMotionDone(j, &done);
+        iPosition->checkMotionDone(j, done);
         iControlMode->getControlMode(j, mode);
         iPids->getPidOutput(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION,j, &output);
         
@@ -1171,7 +1171,7 @@ bool parametricCalibratorEth::moveAndCheck(PositionSequence &data)
     {
         Time::delay(1);
         timeout++;
-        iPosition->checkMotionDone(&done);
+        iPosition->checkMotionDone(done);
     }
     while((!done) && (timeout < PARK_TIMEOUT) && (!abortParking));
 
@@ -1206,12 +1206,12 @@ bool parametricCalibratorEth::moveAndCheck_legacy(PositionSequence &data, std::v
             {
                 yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << (*joint);
                 done=false;
-                iPosition->checkMotionDone((*joint), &done);
+                iPosition->checkMotionDone((*joint), done);
                 while ((!done) && (timeout < PARK_TIMEOUT) && (!abortParking))
                 {
                     Time::delay(1);
                     timeout++;
-                    iPosition->checkMotionDone((*joint), &done);
+                    iPosition->checkMotionDone((*joint), done);
                 }
                 if(!done)
                 {
@@ -1363,12 +1363,12 @@ ReturnValue parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
             int timeout = 0;
             yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << j;
             bool done=false;
-            iPosition->checkMotionDone(j, &done);
+            iPosition->checkMotionDone(j, done);
             while ((!done) && (timeout < PARK_TIMEOUT) && (!abortParking))
             {
                 Time::delay(1);
                 timeout++;
-                iPosition->checkMotionDone(j, &done);
+                iPosition->checkMotionDone(j, done);
             }
             if(!done)
             {

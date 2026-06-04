@@ -661,7 +661,7 @@ void Controller::run()
     if (commData->saccadeUnderway && (Time::now()-saccadeStartTime>=Ts))
     {
         bool done;
-        posHead->checkMotionDone((int)eyesJoints.size(),eyesJoints.data(),&done);
+        posHead->checkMotionDone(eyesJoints, done);
         commData->saccadeUnderway=!done;
 
         if (!commData->saccadeUnderway)
