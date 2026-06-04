@@ -4051,7 +4051,7 @@ ReturnValue CanBusMotionControl::getControlModeRaw(int j, yarp::dev::ControlMode
 }
 
 // IControl Mode 2
-ReturnValue CanBusMotionControl::getControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::ControlModeEnum>& modes)
+ReturnValue CanBusMotionControl::getControlModesRaw(const std::vector<int>& joints, std::vector<yarp::dev::ControlModeEnum>& modes)
 {
     DEBUG_FUNC("Calling GET_CONTROL_MODE MULTIPLE JOINTS \n");
 
@@ -4107,7 +4107,7 @@ ReturnValue CanBusMotionControl::setControlModeRaw(int j, yarp::dev::SelectableC
     return ret;
 }
 
-ReturnValue CanBusMotionControl::setControlModesRaw(std::vector<int> joints, std::vector<yarp::dev::SelectableControlModeEnum> modes)
+ReturnValue CanBusMotionControl::setControlModesRaw(const std::vector<int>& joints, const std::vector<yarp::dev::SelectableControlModeEnum>& modes)
 {
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW MULTIPLE JOINTS\n");
     if (joints.empty()) return ReturnValue::return_code::return_value_error_generic;
@@ -4228,7 +4228,7 @@ ReturnValue CanBusMotionControl::getJointTypeRaw(int axis, yarp::dev::JointTypeE
     if (axis >= 0 && axis < r.getJoints())
     {
         //type = joint_type[axis];
-        type = VOCAB_JOINTTYPE_REVOLUTE;
+        type = yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
         return ReturnValue_ok;
     }
     else
@@ -4237,7 +4237,7 @@ ReturnValue CanBusMotionControl::getJointTypeRaw(int axis, yarp::dev::JointTypeE
     }
 }
 
-ReturnValue CanBusMotionControl::setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum> modes)
+ReturnValue CanBusMotionControl::setControlModesRaw(const std::vector<yarp::dev::SelectableControlModeEnum> &modes)
 {
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");
     CanBusResources& r = RES(system_resources);
@@ -5556,7 +5556,7 @@ ReturnValue CanBusMotionControl::relativeMoveRaw(const double *deltas)
 }
 
 /// check motion done, single axis.
-ReturnValue CanBusMotionControl::checkMotionDoneRaw(int axis, bool *ret)
+ReturnValue CanBusMotionControl::checkMotionDoneRaw(int axis, bool &ret)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return ReturnValue::return_code::return_value_error_generic;
@@ -5565,17 +5565,17 @@ ReturnValue CanBusMotionControl::checkMotionDoneRaw(int axis, bool *ret)
 
     if (!_readWord16 (ICUBCANPROTO_POL_MC_CMD__MOTION_DONE, axis, value))
     {
-        *ret=false;
+        ret=false;
         return ReturnValue::return_code::return_value_error_generic;
     }
 
-    *ret= (value!=0);
+    ret= (value!=0);
 
     return ReturnValue_ok;
 }
 
 /// ret is a pointer to a bool
-ReturnValue CanBusMotionControl::checkMotionDoneRaw (bool *val)
+ReturnValue CanBusMotionControl::checkMotionDoneRaw (bool &val)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -5627,7 +5627,7 @@ ReturnValue CanBusMotionControl::checkMotionDoneRaw (bool *val)
                 value = *((short *)(m->getData()+1));
                 if (!value)
                 {
-                    *val=false;
+                    val=false;
                     return ReturnValue_ok;
                 }
             }
@@ -5637,7 +5637,7 @@ ReturnValue CanBusMotionControl::checkMotionDoneRaw (bool *val)
 
     t->clear();
 
-    *val=true;
+    val=true;
     return ReturnValue_ok;
 }
 
@@ -6585,17 +6585,17 @@ ReturnValue CanBusMotionControl::relativeMoveRaw(const int n_joint, const int *j
     return ret;
 }
 
-ReturnValue CanBusMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
+ReturnValue CanBusMotionControl::checkMotionDoneRaw(const std::vector<int>& joints, bool& flag)
 {
     ReturnValue ret = ReturnValue_ok;
     bool value = true;
     bool tot_value = true;
-    for(int j=0; j<n_joint; j++)
+    for(int j=0; j<joints.size(); j++)
     {
-        ret = ret && checkMotionDoneRaw(joints[j], &value);
+        ret = ret && checkMotionDoneRaw(joints[j], value);
         tot_value &= value;
     }
-    *flag = tot_value;
+    flag = tot_value;
     return ret;
 }
 
@@ -7403,7 +7403,7 @@ ReturnValue CanBusMotionControl::getEncoderTimedRaw(int axis, double *v, double 
 
 
 // IInteractionMode
-ReturnValue CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode)
+ReturnValue CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum &mode)
 {
     DEBUG_FUNC("Calling GET_INTERACTION_MODE SINGLE JOINT\n");
     CanBusResources& r = RES(system_resources);
@@ -7411,27 +7411,27 @@ ReturnValue CanBusMotionControl::getInteractionModeRaw(int axis, yarp::dev::Inte
 
     std::lock_guard<std::recursive_mutex> lck(_mutex);
     temp = int(r._bcastRecvBuffer[axis]._interactionmodeStatus);
-    *mode=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
+    mode=(yarp::dev::InteractionModeEnum)from_interactionint_to_interactionvocab(temp);
     return ReturnValue_ok;
 }
 
-ReturnValue CanBusMotionControl::getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+ReturnValue CanBusMotionControl::getInteractionModesRaw(const std::vector<int>& joints, std::vector<yarp::dev::InteractionModeEnum>& modes)
 {
     DEBUG_FUNC("Calling GET_INTERACTION_MODE MULTIPLE JOINTS \n");
-    if (joints==0) return ReturnValue::return_code::return_value_error_generic;
-    if (modes==0) return ReturnValue::return_code::return_value_error_generic;
+    if (joints.empty()) return ReturnValue::return_code::return_value_error_generic;
+    if (modes.empty()) return ReturnValue::return_code::return_value_error_generic;
 
     CanBusResources& r = RES(system_resources);
     int i;
     std::lock_guard<std::recursive_mutex> lck(_mutex);
-    for (i = 0; i < n_joints; i++)
+    for (i = 0; i < joints.size(); i++)
     {
-        getInteractionModeRaw(joints[i], &modes[i]);
+        getInteractionModeRaw(joints[i], modes[i]);
     }
     return ReturnValue_ok;
 }
 
-ReturnValue CanBusMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+ReturnValue CanBusMotionControl::getInteractionModesRaw(std::vector<yarp::dev::InteractionModeEnum>& modes)
 {
     DEBUG_FUNC("Calling GET_INTERACTION_MODE ALL JOINTS \n");
     CanBusResources& r = RES(system_resources);
@@ -7461,20 +7461,20 @@ ReturnValue CanBusMotionControl::setInteractionModeRaw(int j, yarp::dev::Interac
     return ReturnValue_ok;
 }
 
-ReturnValue CanBusMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
+ReturnValue CanBusMotionControl::setInteractionModesRaw(const std::vector<int>& joints, const std::vector<yarp::dev::InteractionModeEnum>& modes)
 {
     DEBUG_FUNC("Calling SET_INTERACTION_MODE_RAW MULTIPLE JOINTS\n");
-    if (n_joints==0) return ReturnValue::return_code::return_value_error_generic;
-    if (joints==0) return ReturnValue::return_code::return_value_error_generic;
+    if (joints.size() != modes.size()) return ReturnValue::return_code::return_value_error_generic;
+
     ReturnValue ret = ReturnValue_ok;
-    for (int i=0;i<n_joints; i++)
+    for (int i=0;i<joints.size(); i++)
     {
         ret = ret && setInteractionModeRaw(joints[i],modes[i]);
     }
     return ret;
 }
 
-ReturnValue CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+ReturnValue CanBusMotionControl::setInteractionModesRaw(const std::vector<yarp::dev::InteractionModeEnum>& modes)
 {
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");
     CanBusResources& r = RES(system_resources);

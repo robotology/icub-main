@@ -1906,12 +1906,12 @@ bool Parser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vec
     {
         string s = xtmp.get(i).asString();
         int mappedto = axisInfo[i-1].mappedto;
-        if (s == eomc::paramValues::AxisType_revolute)  axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_REVOLUTE;
-        else if (s == eomc::paramValues::AxisType_prismatic)  axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_PRISMATIC;
+        if (s == eomc::paramValues::AxisType_revolute)  axisInfo[axisMap[i - 1]].type = yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+        else if (s == eomc::paramValues::AxisType_prismatic)  axisInfo[axisMap[i - 1]].type = yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_PRISMATIC;
         else
         {
             yError() << "embObjMC BOARD " << _boardname << "Unknown AxisType value" << s.c_str() << "!";
-            axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_UNKNOWN;
+            axisInfo[axisMap[i - 1]].type = yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_UNKNOWN;
             return false;
         }
     }

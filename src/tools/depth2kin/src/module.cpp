@@ -544,7 +544,7 @@ void CalibModule::prepareRobot()
     while (!done && (Time::now()-t0<3.0))
     {
         Time::delay(1.0);
-        iposs->checkMotionDone(i0+4,&done);
+        iposs->checkMotionDone(i0+4,done);
     }    
 
     Vector encs(nEncs);
