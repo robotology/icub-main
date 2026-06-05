@@ -19,6 +19,7 @@
 #include <yarp/conf/environment.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/NetType.h>
+#include <yarp/os/Vocab32.h>
 #include <yarp/dev/ControlBoardHelper.h>
 #include <yarp/dev/ReturnValue.h>
 
@@ -49,6 +50,30 @@ static bool nv_not_found(void)
 {
     yError () << " nv_not_found!! This may mean that this variable is not handled by this EMS\n";
     return false;
+}
+
+static bool isUnsupportedPidAlias(PidControlTypeEnum pidtype)
+{
+    switch (pidtype)
+    {
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_2:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_3:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_2:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_3:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE_2:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE_3:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT_2:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT_3:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_2:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_POSITION_DIRECT_3:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_2:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT_3:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_2:
+        case PidControlTypeEnum::VOCAB_PIDTYPE_MIXED_3:
+            return true;
+        default:
+            return false;
+    }
 }
 
 std::string embObjMotionControl::getBoardInfo(void) const
@@ -1767,6 +1792,10 @@ ReturnValue embObjMotionControl::getAvailablePidsRaw(int j, std::vector<PidContr
 
 ReturnValue embObjMotionControl::setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
 
     eOprotTag_t tag;
     eOprot_entity_t ent = eoprot_entity_mc_joint; //by default I set the entity to joint, but for current pid it will be set to motor. I need to set the entity because in fw the pid parameters for joint and motor are stored in different structures and with different tags, thus I need to specify the correct entity and tag when I want to send the pid parameters to fw.
@@ -1777,7 +1806,7 @@ ReturnValue embObjMotionControl::setPidRaw(const PidControlTypeEnum& pidtype, in
             tag = eoprot_tag_mc_joint_config_pidtrajectory;
         break;
         case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
-            tag = eoprot_tag_mc_joint_config_pidvelocity;
+            tag = eoprot_tag_mc_joint_config_pidtrajectory;
         break;
         case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
             tag = eoprot_tag_mc_joint_config_pidtorque;
@@ -1799,7 +1828,8 @@ ReturnValue embObjMotionControl::setPidRaw(const PidControlTypeEnum& pidtype, in
             tag = eoprot_tag_mc_joint_config_pidtrajectory; 
         break;
         default:
-            yError() << getBoardInfo() << "Invalid pidtype:"<<static_cast<int>(pidtype) << "in "<< __YFUNCTION__;
+            const auto pidtypeVocab = static_cast<yarp::conf::vocab32_t>(pidtype);
+            yError() << getBoardInfo() << "Invalid pidtype:"<< yarp::os::Vocab32::decode(pidtypeVocab) << "in "<< __YFUNCTION__;
             return ReturnValue_error_method_failed;
     }
 
@@ -1820,6 +1850,11 @@ ReturnValue embObjMotionControl::setPidRaw(const PidControlTypeEnum& pidtype, in
 
 ReturnValue embObjMotionControl::getPidRaw(const PidControlTypeEnum& pidtype, int axis, Pid *pid)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        *pid = Pid();
+        return ReturnValue_ok;
+    }
 
     eOprotTag_t tag;
     eOprot_entity_t ent = eoprot_entity_mc_joint; //by default I set the entity to joint, but for current pid it will be set to motor. I need to set the entity because in fw the pid parameters for joint and motor are stored in different structures and with different tags, thus I need to specify the correct entity and tag when I want to send the pid parameters to fw.
@@ -1830,7 +1865,7 @@ ReturnValue embObjMotionControl::getPidRaw(const PidControlTypeEnum& pidtype, in
             tag = eoprot_tag_mc_joint_config_pidtrajectory;
         break;
         case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
-            tag = eoprot_tag_mc_joint_config_pidvelocity;
+            tag = eoprot_tag_mc_joint_config_pidtrajectory;
         break;
         case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
             tag = eoprot_tag_mc_joint_config_pidtorque;
@@ -1844,16 +1879,16 @@ ReturnValue embObjMotionControl::getPidRaw(const PidControlTypeEnum& pidtype, in
         break;
         case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT:
         {
-            helper_getVelDirPidRaw(axis, pid);
-            return ReturnValue_ok;
+            return helper_getVelDirPidRaw(axis, pid);
         }; 
         break;
         case PidControlTypeEnum::VOCAB_PIDTYPE_MIXED:
         tag = eoprot_tag_mc_joint_config_pidtrajectory; 
         break;
         default:
-            yError() << getBoardInfo() << "Invalid pidtype:"<<static_cast<int>(pidtype) << "in "<< __YFUNCTION__;
-        break;
+            const auto pidtypeVocab = static_cast<yarp::conf::vocab32_t>(pidtype);
+            yError() << getBoardInfo() << "Invalid pidtype:"<< yarp::os::Vocab32::decode(pidtypeVocab) << "in "<< __YFUNCTION__;
+            return ReturnValue_error_method_failed;
     }
 
 
@@ -1885,6 +1920,11 @@ ReturnValue embObjMotionControl::getPidRaw(const PidControlTypeEnum& pidtype, in
 
 ReturnValue embObjMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     ReturnValue ret = ReturnValue_ok;
     for(int j=0; j< _njoints; j++)
     {
@@ -1895,11 +1935,21 @@ ReturnValue embObjMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, c
 
 ReturnValue embObjMotionControl::setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     ReturnValue ret = ReturnValue_ok;
     for(int j=0, index=0; j< _njoints; j++, index++)
     {
@@ -1910,20 +1960,35 @@ ReturnValue embObjMotionControl::setPidReferencesRaw(const PidControlTypeEnum& p
 
 ReturnValue embObjMotionControl::setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err)
 {
+    *err = 0;
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     uint16_t size = 0;
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     eOmc_joint_status_core_t  jcore = {0};
-    *err = 0;
     if(!_ethRes->getLocalValue(id32, &jcore))
         return ReturnValue_error_method_failed;
 
@@ -1983,7 +2048,8 @@ ReturnValue embObjMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtyp
         
         default:
         {
-            yError()<< getBoardInfo() << "Invalid pidtype:"<<static_cast<int>(pidtype) << "in "<< __func__;
+            const auto pidtypeVocab = static_cast<yarp::conf::vocab32_t>(pidtype);
+            yError() << getBoardInfo() << "Invalid pidtype:"<< yarp::os::Vocab32::decode(pidtypeVocab) << "in "<< __YFUNCTION__;
         }
         break;
     }
@@ -1992,6 +2058,12 @@ ReturnValue embObjMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtyp
 
 ReturnValue embObjMotionControl::getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        std::fill_n(errs, _njoints, 0.0);
+        return ReturnValue_ok;
+    }
+
     ReturnValue ret = ReturnValue_ok;
     for(int j=0; j< _njoints; j++)
     {
@@ -2002,6 +2074,11 @@ ReturnValue embObjMotionControl::getPidErrorsRaw(const PidControlTypeEnum& pidty
 
 ReturnValue embObjMotionControl::getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        std::fill_n(pids, _njoints, Pid());
+        return ReturnValue_ok;
+    }
 
     eOprotTag_t tag;
     eOprot_entity_t ent = eoprot_entity_mc_joint; //by default I set the entity to joint, but for current pid it will be set to motor. I need to set the entity because in fw the pid parameters for joint and motor are stored in different structures and with different tags, thus I need to specify the correct entity and tag when I want to send the pid parameters to fw.
@@ -2012,7 +2089,7 @@ ReturnValue embObjMotionControl::getPidsRaw(const PidControlTypeEnum& pidtype, P
             tag = eoprot_tag_mc_joint_config_pidtrajectory;
         break;
         case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY:
-            tag = eoprot_tag_mc_joint_config_pidvelocity;
+            tag = eoprot_tag_mc_joint_config_pidtrajectory;
         break;
         case PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE:
             tag = eoprot_tag_mc_joint_config_pidtorque;
@@ -2026,16 +2103,16 @@ ReturnValue embObjMotionControl::getPidsRaw(const PidControlTypeEnum& pidtype, P
         break;
         case PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT:
         {
-            helper_getVelDirPidsRaw(pids);
-            return ReturnValue_ok;
+            return helper_getVelDirPidsRaw(pids);
         }; 
         break;
         case PidControlTypeEnum::VOCAB_PIDTYPE_MIXED:
         tag = eoprot_tag_mc_joint_config_pidtrajectory; 
         break;
         default:
-            yError() << getBoardInfo() << "Invalid pidtype:"<<static_cast<int>(pidtype) << "in "<< __YFUNCTION__;
-        break;
+            const auto pidtypeVocab = static_cast<yarp::conf::vocab32_t>(pidtype);
+            yError() << getBoardInfo() << "Invalid pidtype:"<< yarp::os::Vocab32::decode(pidtypeVocab) << "in "<< __YFUNCTION__;
+            return ReturnValue_error_method_failed;
     }
 
     std::vector<eOmc_PID_t> eoPIDList(_njoints);
@@ -2054,9 +2131,14 @@ ReturnValue embObjMotionControl::getPidsRaw(const PidControlTypeEnum& pidtype, P
 
 ReturnValue embObjMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref)
 {
+    *ref = 0;
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     eOmc_joint_status_core_t jcore = {0};
-    *ref = 0;
     if(!_ethRes->getLocalValue(id32, &jcore))
         return ReturnValue_error_method_failed;
 
@@ -2104,7 +2186,8 @@ ReturnValue embObjMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pi
         default:
         {
             *ref=0;
-            yError()<< getBoardInfo() << "Invalid pidtype:"<<static_cast<int>(pidtype) << "in "<< __func__;
+            const auto pidtypeVocab = static_cast<yarp::conf::vocab32_t>(pidtype);
+            yError() << getBoardInfo() << "Invalid pidtype:"<< yarp::os::Vocab32::decode(pidtypeVocab) << "in "<< __YFUNCTION__;
             return ReturnValue_error_generic;
         }
         break;
@@ -2114,6 +2197,12 @@ ReturnValue embObjMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pi
 
 ReturnValue embObjMotionControl::getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        std::fill_n(refs, _njoints, 0.0);
+        return ReturnValue_ok;
+    }
+
     ReturnValue ret = ReturnValue_ok;
 
     // just one joint at time, wait answer before getting to the next.
@@ -2127,31 +2216,63 @@ ReturnValue embObjMotionControl::getPidReferencesRaw(const PidControlTypeEnum& p
 
 ReturnValue embObjMotionControl::getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit)
 {
+    *limit = 0;
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        std::fill_n(limits, _njoints, 0.0);
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::resetPidRaw(const PidControlTypeEnum& pidtype, int j)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::disablePidRaw(const PidControlTypeEnum& pidtype, int j)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_DEPRECATED();
 }
 
 ReturnValue embObjMotionControl::enablePidRaw(const PidControlTypeEnum& pidtype, int j)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_DEPRECATED();
 }
 
 ReturnValue embObjMotionControl::setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
@@ -4640,9 +4761,14 @@ ReturnValue embObjMotionControl::setInteractionModesRaw(const std::vector<yarp::
 
 ReturnValue embObjMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out)
 {
+    *out = 0;
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     eOmc_joint_status_core_t jcore = {0};
-    *out = 0;
     if(!_ethRes->getLocalValue(protoId, &jcore) )
         return ReturnValue_error_method_failed;
 
@@ -4674,7 +4800,8 @@ ReturnValue embObjMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidty
             *out = jcore.ofpid.generic.output;
         break;
         default:
-            yError()<<"Invalid pidtype:"<<static_cast<int>(pidtype);
+            const auto pidtypeVocab = static_cast<yarp::conf::vocab32_t>(pidtype);
+            yError() << getBoardInfo() << "Invalid pidtype:"<< yarp::os::Vocab32::decode(pidtypeVocab) << "in "<< __YFUNCTION__;
         break;
     }
     return ReturnValue_ok;
@@ -4682,6 +4809,12 @@ ReturnValue embObjMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidty
 
 ReturnValue embObjMotionControl::getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        std::fill_n(outs, _njoints, 0.0);
+        return ReturnValue_ok;
+    }
+
     ReturnValue ret = ReturnValue_ok;
     for(int j=0; j< _njoints; j++)
     {
@@ -5195,11 +5328,11 @@ ReturnValue embObjMotionControl::helper_setVelDirPidRaw(int j, const Pid &pid)
             return ReturnValue_error_generic;
         }
 
-        if( _parsedCfgData.pidControllers.dir_vel[j].out_type == eomc_ctrl_out_type_pwm )
+        if( _parsedCfgData.pidControllers.dir_vel[j].out_type == eomc_ctrl_out_type_vel )
         {
            protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pidvelpwm);
         }
-        else if( _parsedCfgData.pidControllers.dir_vel[j].out_type == eomc_ctrl_out_type_cur )
+        else if( _parsedCfgData.pidControllers.dir_vel[j].out_type == eomc_ctrl_out_type_vel_cur )
         {
             protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pidvelcur);
         }
@@ -5236,7 +5369,7 @@ ReturnValue embObjMotionControl::helper_getVelDirPidRaw(int j, Pid *pid)
         case eomc_ctrl_out_type_vel:
             tmp = (eOmc_PID_t)motor_cfg.pidvelpwm;
             break;
-        case eomc_ctrl_out_type_cur:
+        case eomc_ctrl_out_type_vel_cur:
             tmp = (eOmc_PID_t)motor_cfg.pidvelcur;
             break;
         default:
@@ -5265,7 +5398,7 @@ ReturnValue embObjMotionControl::helper_getVelDirPidsRaw(Pid *pids)
             case eomc_ctrl_out_type_vel:
             tmp = (eOmc_PID_t)motor_cfg_list[j].pidvelpwm;
             break;
-            case eomc_ctrl_out_type_cur:
+            case eomc_ctrl_out_type_vel_cur:
             tmp = (eOmc_PID_t)motor_cfg_list[j].pidvelcur;
             break;
             default:
@@ -5595,31 +5728,66 @@ ReturnValue embObjMotionControl::getRefVelocityRaw(const std::vector<int>& jnts,
 
 ReturnValue embObjMotionControl::setPidFeedforwardRaw(const PidControlTypeEnum& pidtype,int j, double v)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::getPidOffsetRaw(const PidControlTypeEnum& pidtype,int j, double& v)
 {
+    v = 0;
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::getPidFeedforwardRaw(const PidControlTypeEnum& pidtype,int j, double& v)
 {
+    v = 0;
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool& enabled)
 {
+    enabled = false;
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::getPidExtraInfoRaw(const PidControlTypeEnum& pidtype, int j, yarp::dev::PidExtraInfo& units)
 {
+    units = yarp::dev::PidExtraInfo();
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 ReturnValue embObjMotionControl::getPidExtraInfosRaw(const PidControlTypeEnum& pidtype, std::vector<yarp::dev::PidExtraInfo>& units)
 {
+    if (isUnsupportedPidAlias(pidtype))
+    {
+        std::fill(units.begin(), units.end(), yarp::dev::PidExtraInfo());
+        return ReturnValue_ok;
+    }
+
     return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
