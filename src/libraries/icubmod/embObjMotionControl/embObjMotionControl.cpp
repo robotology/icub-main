@@ -4202,12 +4202,14 @@ ReturnValue embObjMotionControl::getTorquesRaw(double *t)
 
 ReturnValue embObjMotionControl::getTorqueRangeRaw(int j, double *min, double *max)
 {
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    //return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    return ReturnValue_ok;
 }
 
 ReturnValue embObjMotionControl::getTorqueRangesRaw(double *min, double *max)
 {
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    //return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    return ReturnValue_ok;
 }
 
 ReturnValue embObjMotionControl::setRefTorquesRaw(const double *t)
@@ -5765,8 +5767,8 @@ ReturnValue embObjMotionControl::isPidEnabledRaw(const PidControlTypeEnum& pidty
     {
         return ReturnValue_ok;
     }
-
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    //return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    return ReturnValue_ok;
 }
 
 ReturnValue embObjMotionControl::getPidExtraInfoRaw(const PidControlTypeEnum& pidtype, int j, yarp::dev::PidExtraInfo& units)
@@ -5776,8 +5778,8 @@ ReturnValue embObjMotionControl::getPidExtraInfoRaw(const PidControlTypeEnum& pi
     {
         return ReturnValue_ok;
     }
-
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    //return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    return ReturnValue_ok;
 }
 
 ReturnValue embObjMotionControl::getPidExtraInfosRaw(const PidControlTypeEnum& pidtype, std::vector<yarp::dev::PidExtraInfo>& units)
@@ -5788,7 +5790,9 @@ ReturnValue embObjMotionControl::getPidExtraInfosRaw(const PidControlTypeEnum& p
         return ReturnValue_ok;
     }
 
-    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    //return YARP_METHOD_NOT_YET_IMPLEMENTED();
+    return ReturnValue_ok;
+
 }
 
 // DeviceDriverParams
