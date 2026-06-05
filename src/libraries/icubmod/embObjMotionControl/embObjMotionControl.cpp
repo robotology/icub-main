@@ -135,6 +135,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementPWMControl(this),
     ImplementCurrentControl(this),
     ImplementJointFault(this),
+    ImplementJointBrake(this),
     _temperatureExceededLimitWatchdog(0),
     _temperatureSensorErrorWatchdog(0),
     _temperatureSpikesFilter(0),
@@ -228,7 +229,7 @@ bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
     ImplementCurrentControl::initialize(_njoints, _parsedCfgData.axisMap.data(), f.ampsToSensor.data());
     ImplementPWMControl::initialize(_njoints, _parsedCfgData.axisMap.data(), f.dutycycleToPWM.data());
     ImplementJointFault::initialize(_njoints, _parsedCfgData.axisMap.data());
-
+    ImplementJointBrake::initialize(_njoints, _parsedCfgData.axisMap.data());
     return true;
 
 }
@@ -1502,6 +1503,7 @@ bool embObjMotionControl::close()
     ImplementCurrentControl::uninitialize();
     ImplementPWMControl::uninitialize();
     ImplementJointFault::uninitialize();
+    ImplementJointBrake::uninitialize();
 
     if (_measureConverter)  {delete _measureConverter; _measureConverter=0;}
 
@@ -5655,6 +5657,25 @@ bool embObjMotionControl::getParamValue(const std::string& paramName, std::strin
 std::string embObjMotionControl::getConfiguration() const
 {
     return "No configuration available for" + getBoardInfo();
+}
+
+//IJointBrake
+yarp::dev::ReturnValue embObjMotionControl::isJointBrakedRaw(int j, bool& braked)  const
+{
+    braked=false;
+    return (ReturnValue_ok);
+}
+yarp::dev::ReturnValue embObjMotionControl::setManualBrakeActiveRaw(int j, bool active) 
+{
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+}
+yarp::dev::ReturnValue embObjMotionControl::setAutoBrakeEnabledRaw(int j, bool enabled) 
+{
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
+}
+yarp::dev::ReturnValue embObjMotionControl::getAutoBrakeEnabledRaw(int j, bool& enabled) const
+{
+    return YARP_METHOD_NOT_YET_IMPLEMENTED();
 }
 
 // eof

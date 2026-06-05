@@ -45,8 +45,11 @@ using namespace std;
 #include <yarp/dev/IVelocityDirect.h>
 #include <yarp/dev/ImplementJointFault.h>
 #include <yarp/dev/IDeviceDriverParams.h>
+#include <yarp/dev/IJointBrake.h>
+#include <yarp/dev/ImplementJointBrake.h>
 
 #include <iCub/IRawValuesPublisher.h>
+
 
 // local include
 #include "IethResource.h"
@@ -247,8 +250,10 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public iCub::debugLibrary::IRawValuesPublisher,
     public IVelocityDirectRaw,
     public ImplementVelocityDirect,
-    public IDeviceDriverParams
-    {
+    public IDeviceDriverParams,
+    public IJointBrakeRaw,
+    public ImplementJointBrake
+{
 private:
     eth::TheEthManager*        _ethManager;
     eth::AbstractEthResource*  _ethRes;
@@ -692,6 +697,13 @@ public:
      * @return The configuration of the device, represented in a string format.
      */
     virtual std::string getConfiguration() const override;
+
+    // IjointBrake
+    virtual yarp::dev::ReturnValue isJointBrakedRaw(int j, bool& braked) const override;
+    virtual yarp::dev::ReturnValue setManualBrakeActiveRaw(int j, bool active) override;
+    virtual yarp::dev::ReturnValue setAutoBrakeEnabledRaw(int j, bool enabled) override;
+    virtual yarp::dev::ReturnValue getAutoBrakeEnabledRaw(int j, bool& enabled) const override;
+
 };
 
 #endif // include guard
