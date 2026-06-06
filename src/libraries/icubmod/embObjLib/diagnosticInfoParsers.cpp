@@ -458,7 +458,7 @@ void ConfigParser::parseInfo()
                 auto secondary_error_code = 0;
                 if(primary_enc_with_error) 
                 {
-                    primary_error_code = ( (errorenc1 & (0xf <<i)) >> 4*i);
+                    primary_error_code = (errorenc1 >> (4*i)) & 0xf;
                     m_entityNameProvider.getAxisName(i, m_dnginfo.baseInfo.axisName);
                     snprintf(str, sizeof(str), " joint %d (%s) has error on primary encoder (code=%d). ", 
                             i, m_dnginfo.baseInfo.axisName.c_str(), primary_error_code); //TODO: get a string instead of a code
@@ -467,7 +467,7 @@ void ConfigParser::parseInfo()
 
                 if(secondary_enc_with_error) 
                 {
-                    secondary_error_code = ( (errorenc2 & (0xf <<i)) >> 4*i);
+                    secondary_error_code = (errorenc2 >> (4*i)) & 0xf;
                     m_entityNameProvider.getAxisName(i, m_dnginfo.baseInfo.axisName);
                     snprintf(str, sizeof(str), " joint %d (%s) has error on secodary encoder (code=%d)", 
                             i, m_dnginfo.baseInfo.axisName.c_str(), secondary_error_code); //TODO: get a string instead of a code
@@ -1021,6 +1021,8 @@ void HwErrorParser::parseInfo()
             uint8_t joint_num = m_dnginfo.param16 & 0x00ff;
             uint32_t nonius_track_errors = (m_dnginfo.param64 & 0xffffffff00000000) >> 32;
             uint32_t master_track_errors = m_dnginfo.param64 & 0x00000000ffffffff;
+            m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
+            
             snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) Number of poor-level or clipping errors in 10 seconds for nonius track is: %d and for master track is: %d)", 
                                         m_dnginfo.baseMessage.c_str(), 
                                         m_dnginfo.baseInfo.axisName.c_str(), 
@@ -1037,6 +1039,8 @@ void HwErrorParser::parseInfo()
             uint16_t i2c_comm_errors                         = (m_dnginfo.param64 & 0x0000ffff00000000) >> 32;
             uint16_t nonius_period_consistency_errors        = (m_dnginfo.param64 & 0x00000000ffff0000) >> 16;
             uint16_t eccessive_input_signal_frequency_errors = (m_dnginfo.param64 & 0x000000000000ffff);
+            m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
+
             snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) Number of error in 10 seconds as internal crc errors: %d, i2c communication errors: %d, nonius track period consistency errors: %d, eccessive input signal frequency errors: %d)", 
                                         m_dnginfo.baseMessage.c_str(), 
                                         m_dnginfo.baseInfo.axisName.c_str(), 
