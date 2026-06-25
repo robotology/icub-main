@@ -85,7 +85,7 @@ bool embObjBattery::open(yarp::os::Searchable &config)
         return false;
     }
 
-    yInfo() << device_->getBoardInfo() << " embObjBattery::open(): verify and activate the FT service";
+    yInfo() << device_->getBoardInfo() << " embObjBattery::open(): verify and activate the service";
     eOmn_serv_parameter_t canBatteryData;
     canBatteryData.configuration.type = eomn_serv_AS_battery;
     canBatteryData.configuration.diagnosticsmode = eomn_serv_diagn_mode_NONE;
@@ -98,7 +98,7 @@ bool embObjBattery::open(yarp::os::Searchable &config)
         return false;
     }
 
-    yInfo() << device_->getBoardInfo() << " embObjBattery::open(): configure the FT service";
+    yInfo() << device_->getBoardInfo() << " embObjBattery::open(): configure the service";
     if (false == sendConfig2boards(parser, device_->res))
     {
         yError() << device_->getBoardInfo() << " open() fails to sendConfig2boards... cannot continue";
@@ -114,7 +114,7 @@ bool embObjBattery::open(yarp::os::Searchable &config)
         return false;
     }
 
-    yInfo() << device_->getBoardInfo() << " embObjBattery::open(): start the FT service";
+    yInfo() << device_->getBoardInfo() << " embObjBattery::open(): start the service";
     if (!device_->res->serviceStart(eomn_serv_category_battery))
     {
         yError() << device_->getBoardInfo() << " open() fails to serviceStart... cannot continue";
@@ -129,7 +129,7 @@ bool embObjBattery::open(yarp::os::Searchable &config)
         }
     }
 
-    yInfo() << device_->getBoardInfo() << " embObjBattery::open(): start streaming of FT data";
+    yInfo() << device_->getBoardInfo() << " embObjBattery::open(): start streaming of data";
     if (!sendStart2boards(parser, device_->res))
     {
         yError() << device_->getBoardInfo() << " open() fails to sendStart2boards... cannot continue";
