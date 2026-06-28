@@ -458,6 +458,83 @@ void embObjMotionControl::debugUtil_printJointsetInfo(void)
 
 }
 
+void embObjMotionControl::debugUtil_printPidInfoByJointSet(void)
+{
+    auto outTypeToString = [](eOmc_ctrl_out_type_t e) -> std::string
+    {
+        switch(e)
+        {
+            case eomc_ctrl_out_type_n_a: return "n_a";
+            case eomc_ctrl_out_type_pwm: return "pwm";
+            case eomc_ctrl_out_type_vel: return "velocity";
+            case eomc_ctrl_out_type_cur: return "current";
+            case eomc_ctrl_out_type_vel_cur: return "vel_cur";
+            default: return "unknown";
+        }
+    };
+
+    auto printPidBase = [&](const std::string& tag, int joint, const eomc::PidInfo& p)
+    {
+        yInfo() << "embObjMC" << getBoardInfo() << "[PID DEBUG]" << tag.c_str()
+                << "joint" << joint
+                << "enabled" << p.enabled
+                << "group" << p.usernamePidSelected.c_str()
+                << "controlLaw" << p.controlLaw.c_str()
+                << "outType" << outTypeToString(p.out_type).c_str()
+                << "kp" << p.pid.kp
+                << "ki" << p.pid.ki
+                << "kd" << p.pid.kd
+                << "kff" << p.pid.kff
+                << "maxOut" << p.pid.max_output
+                << "maxInt" << p.pid.max_int
+                << "scale" << p.pid.scale
+                << "stUp" << p.pid.stiction_up_val
+                << "stDown" << p.pid.stiction_down_val;
+    };
+
+    auto printPidTorque = [&](int joint, const eomc::TrqPidInfo& p)
+    {
+        printPidBase("trq", joint, p);
+        yInfo() << "embObjMC" << getBoardInfo() << "[PID DEBUG]"
+                << "trq-extra"
+                << "joint" << joint
+                << "kbemf" << p.kbemf
+                << "ktau" << p.ktau
+                << "viscousPos" << p.viscousPos
+                << "viscousNeg" << p.viscousNeg
+                << "coulombPos" << p.coulombPos
+                << "coulombNeg" << p.coulombNeg
+                << "velThres" << p.velocityThres
+                << "filterType" << p.filterType;
+    };
+
+    yInfo() << "embObjMC" << getBoardInfo() << "[PID DEBUG] begin dump by jointset";
+    for(size_t s = 0; s < _parsedCfgData.jsets.size(); s++)
+    {
+        const int numofjoints = _parsedCfgData.jsets[s].getNumberofJoints();
+        yInfo() << "embObjMC" << getBoardInfo() << "[PID DEBUG] set" << s << "jointsInSet" << numofjoints;
+
+        for(int k = 0; k < numofjoints; k++)
+        {
+            const int joint = _parsedCfgData.jsets[s].joints[k];
+            if((joint < 0) || (joint >= _njoints))
+            {
+                yWarning() << "embObjMC" << getBoardInfo() << "[PID DEBUG] invalid joint index" << joint << "in set" << s;
+                continue;
+            }
+
+            printPidBase("trj", joint, _parsedCfgData.pidControllers.trj[joint]);
+            printPidBase("vel", joint, _parsedCfgData.pidControllers.vel[joint]);
+            printPidBase("mix", joint, _parsedCfgData.pidControllers.mix[joint]);
+            printPidBase("dir_pos", joint, _parsedCfgData.pidControllers.dir_pos[joint]);
+            printPidBase("dir_vel", joint, _parsedCfgData.pidControllers.dir_vel[joint]);
+            printPidBase("cur", joint, _parsedCfgData.pidControllers.cur[joint]);
+            printPidTorque(joint, _parsedCfgData.pidControllers.trq[joint]);
+        }
+    }
+    yInfo() << "embObjMC" << getBoardInfo() << "[PID DEBUG] end dump by jointset";
+}
+
 
 
 //TODO: shell we remove this function and the one below and put the verification of the consistency of the control law in the configuration phase, i.e. in fromConfig()?
@@ -792,6 +869,8 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
         if(!_mcparser->parsePids(config, _parsedCfgData.pidControllers, lowLevPidisMandatory))
             return false;
+
+        debugUtil_printPidInfoByJointSet();
 
         //2) since some joint sets configuration info is in control and ids group, get that info and save them in jointset data struct.
         updatedJointsetsCfgWithControlInfo();

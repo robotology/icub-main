@@ -316,6 +316,7 @@ private:
     bool updatedJointsetsCfgWithControlInfo(void);
     bool saveCouplingsData(void);
     void debugUtil_printJointsetInfo(void);
+    void debugUtil_printPidInfoByJointSet(void);
 
     
     bool iNeedCouplingsInfo(void); //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
