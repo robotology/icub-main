@@ -45,7 +45,7 @@ void CanBatteryData::decode(eOas_battery_timedvalue_t *data, double timestamp)
 
 embObjBattery::embObjBattery()
 {
-    yInfo() << "CanBatterySensors has been created";
+    yInfo() << "embObjBattery has been created";
     device_ = std::make_shared<yarp::dev::embObjDevPrivData>("embObjBattery");
 }
 
