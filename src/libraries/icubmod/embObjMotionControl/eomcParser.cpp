@@ -126,19 +126,49 @@ bool Parser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, c
     return true;
 }
 
-bool Parser::areControlPidGroupEqual(const std::vector<std::string> &controlGroup)
+bool Parser::areControlPidGroupEqualInJointSet(const std::vector<std::string> &controlGroup, const std::vector<int> &joint2set, const std::string &controlName)
 {
-    auto ret = std::all_of(controlGroup.begin() + 1, controlGroup.end(),
-                       [&](const std::string& s) { return s == controlGroup[0]; });
-    
-    if(!ret) yError() << "embObjMC BOARD " << _boardname << "Control Pid group entries are not all equal. Quitting.";
+    if(static_cast<int>(controlGroup.size()) != _njoints)
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Control group" << controlName.c_str() << "has" << controlGroup.size() << "entries but" << _njoints << "joints are expected. Quitting.";
+        return false;
+    }
 
-    // for(const auto& s : controlGroup)
-    // {
-    //     yError() << "*********** embObjMC BOARD " << _boardname << " CONTROL GROUP: " << s;
-    // }
-    
-    return ret;
+    if(static_cast<int>(joint2set.size()) != _njoints)
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Invalid joint2set size while checking" << controlName.c_str() << ". Quitting.";
+        return false;
+    }
+
+    std::vector<bool> setNameAssigned(_njoints, false);
+    std::vector<std::string> setName(_njoints);
+
+    for(int j = 0; j < _njoints; ++j)
+    {
+        const int setId = joint2set[j];
+        if((setId < 0) || (setId >= _njoints))
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Invalid set id" << setId << "for joint" << j << "while checking" << controlName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        if(!setNameAssigned[setId])
+        {
+            setNameAssigned[setId] = true;
+            setName[setId] = controlGroup[j];
+            continue;
+        }
+
+        if(setName[setId] != controlGroup[j])
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Joints belonging to set" << setId
+                     << "must have the same" << controlName.c_str() << "name. Joint" << j
+                     << "uses" << controlGroup[j].c_str() << "while expected" << setName[setId].c_str() << ". Quitting.";
+            return false;
+        }
+    }
+
+    return true;
 }
 
 inline bool Parser::GetGroupBottle(yarp::os::Searchable& config, const std::string& controlName, yarp::os::Bottle& outBottle, bool mandatory)
@@ -169,64 +199,81 @@ inline bool Parser::GetGroupBottle(yarp::os::Searchable& config, const std::stri
 // --------------------------------------------------
 bool Parser::readUserNameControlsGroup(yarp::os::Searchable &config) 
 {
-    Bottle controlsGroup, xtmp;
-    std::vector<std::string> userControlNames;
+    Bottle controlsGroup, xtmp, jointsetcfg;
+    std::vector<JointsSet> jsets(_njoints);
+    std::vector<int> joint2set(_njoints, -1);
+
+    auto readControlNames = [&](const std::string &paramName,
+                                const std::string &description,
+                                std::vector<std::string> &dest) -> bool
+    {
+        if (!extractGroup(controlsGroup, xtmp, paramName, description, _njoints))
+        {
+            return false;
+        }
+
+        loadStrings(dest, xtmp);
+        return areControlPidGroupEqualInJointSet(dest, joint2set, paramName);
+    };
 
     if(!GetGroupBottle(config, "CONTROLS", controlsGroup)) return false;
 
-    if (!extractGroup(controlsGroup, xtmp, "positionControl", "Position Control ", _njoints)) 
-        return false;
-    loadStrings(userControlNames, xtmp);
-    if(!areControlPidGroupEqual(userControlNames)) return false;
-    _userNameControlPosition = userControlNames[0];
-
-    if (!extractGroup(controlsGroup, xtmp, "velocityControl", "Velocity Control ", _njoints)) 
-        return false;
-    loadStrings(userControlNames, xtmp);
-    if(!areControlPidGroupEqual(userControlNames)) return false;
-    _userNameControlVelocity = userControlNames[0];
-    if(_userNameControlVelocity != paramValues::NONE_STR && _userNameControlVelocity != _userNameControlPosition)
+    if(GetGroupBottle(config, "JOINTSET_CFG", jointsetcfg, false))
     {
-        yError() << "embObjMC BOARD " << _boardname << ": velocityControl parameter (" << _userNameControlVelocity.c_str()
-                 << ") must be equal to positionControl parameter (" << _userNameControlPosition.c_str() << ") or set to " << paramValues::NONE_STR << "because embedded control uses the same pid parameters for both position and velocity control. Quitting.";
-        return false;
-    }   
-
-    if (!extractGroup(controlsGroup, xtmp, "mixedControl", "Mixed Control ", _njoints)) 
-        return false;
-    loadStrings(userControlNames, xtmp);
-    if(!areControlPidGroupEqual(userControlNames)) return false;
-    _userNameControlMixed = userControlNames[0];
-    if(_userNameControlMixed != paramValues::NONE_STR && _userNameControlMixed != _userNameControlPosition)
+        if(!parseJointsetCfgGroup(config, jsets, joint2set))
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse JOINTSET_CFG while checking control groups consistency. Quitting.";
+            return false;
+        }
+    }
+    else
     {
-        yError() << "embObjMC BOARD " << _boardname << ": mixedControl parameter (" << _userNameControlMixed.c_str()
-                 << ") must be equal to positionControl parameter (" << _userNameControlPosition.c_str() << ") or set to " << paramValues::NONE_STR << "because embedded control uses the same pid parameters for both position and velocity control. Quitting.";
-        return false;
+        // Backward compatibility: if JOINTSET_CFG is not present, keep the old global check behaviour.
+        std::fill(joint2set.begin(), joint2set.end(), 0);
     }
 
-    if (!extractGroup(controlsGroup, xtmp, "torqueControl", "Torque Control ", _njoints))
+    if (!readControlNames("positionControl", "Position Control ", _userNameControlPosition))
         return false;
-    loadStrings(userControlNames, xtmp);
-    if(!areControlPidGroupEqual(userControlNames)) return false;
-    _userNameControlTorque = userControlNames[0];
 
-    if (!extractGroup(controlsGroup, xtmp, "currentPid", "Current Pid ", _njoints))
+    if (!readControlNames("velocityControl", "Velocity Control ", _userNameControlVelocity))
         return false;
-    loadStrings(userControlNames, xtmp);
-    if(!areControlPidGroupEqual(userControlNames)) return false;
-    _userNameControlCurrent = userControlNames[0];
 
-    if (!extractGroup(controlsGroup, xtmp, "positionDirect", "Position Direct Control ", _njoints)) 
+    for(int j = 0; j < _njoints; ++j)
+    {
+        if((_userNameControlVelocity[j] != paramValues::NONE_STR) && (_userNameControlVelocity[j] != _userNameControlPosition[j]))
+        {
+            yError() << "embObjMC BOARD " << _boardname << ": velocityControl parameter for joint" << j << "(" << _userNameControlVelocity[j].c_str()
+                     << ") must be equal to positionControl parameter (" << _userNameControlPosition[j].c_str() << ") or set to " << paramValues::NONE_STR
+                     << " because embedded control uses the same pid parameters for both position and velocity control. Quitting.";
+            return false;
+        }
+    }
+
+    if (!readControlNames("mixedControl", "Mixed Control ", _userNameControlMixed))
         return false;
-    loadStrings(userControlNames, xtmp);
-    if(!areControlPidGroupEqual(userControlNames)) return false;
-    _userNameControlPositionDirect = userControlNames[0];
+
+    for(int j = 0; j < _njoints; ++j)
+    {
+        if((_userNameControlMixed[j] != paramValues::NONE_STR) && (_userNameControlMixed[j] != _userNameControlPosition[j]))
+        {
+            yError() << "embObjMC BOARD " << _boardname << ": mixedControl parameter for joint" << j << "(" << _userNameControlMixed[j].c_str()
+                     << ") must be equal to positionControl parameter (" << _userNameControlPosition[j].c_str() << ") or set to " << paramValues::NONE_STR
+                     << " because embedded control uses the same pid parameters for both position and velocity control. Quitting.";
+            return false;
+        }
+    }
+
+    if (!readControlNames("torqueControl", "Torque Control ", _userNameControlTorque))
+        return false;
+
+    if (!readControlNames("currentPid", "Current Pid ", _userNameControlCurrent))
+        return false;
+
+    if (!readControlNames("positionDirect", "Position Direct Control ", _userNameControlPositionDirect))
+        return false;
     
-    if (!extractGroup(controlsGroup, xtmp, "velocityDirect", "Velocity Direct Control ", _njoints)) 
+    if (!readControlNames("velocityDirect", "Velocity Direct Control ", _userNameControlVelocityDirect))
         return false;
-    loadStrings(userControlNames, xtmp);
-    if(!areControlPidGroupEqual(userControlNames)) return false;
-    _userNameControlVelocityDirect = userControlNames[0];
 
     return true;
 }
@@ -469,7 +516,7 @@ bool Parser::parsePidUnitsType(yarp::os::Bottle& pidsGroup, yarp::dev::PidFeedba
 bool Parser::parsePids(yarp::os::Searchable &config, PidControllers_t &pids, bool lowLevPidisMandatory)
 {
     // Read the CONTROLS group to get the user names of the control pids choosen by user.
-    // it also check that all joints have the same control name for each control type  
+    // It checks that all joints in the same set have the same control name for each control type.
 
     if(!readUserNameControlsGroup(config)) 
         return false;
@@ -500,53 +547,86 @@ bool Parser::parsePids(yarp::os::Searchable &config, PidControllers_t &pids, boo
 
 bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, std::vector<eomc::PidInfo> &curr_pids)
 {
-        //first of all verify current pid has been configured if it is mandatory
-    
-    if(_userNameControlCurrent == eomc::paramValues::NONE_STR)
+    // first of all verify current pid has been configured if it is mandatory
+    int enabledCurrentPids = 0;
+    for(int j = 0; j < _njoints; ++j)
+    {
+        if(_userNameControlCurrent[j] != eomc::paramValues::NONE_STR)
+        {
+            ++enabledCurrentPids;
+        }
+    }
+
+    if((enabledCurrentPids == 0) && pidisMandatory)
     {
         for (auto& current_pid : curr_pids)
         {
             current_pid.enabled = false;
         }
-    
-        if(pidisMandatory)
-        {
-            yError() << "embObjMC BOARD " << _boardname << "CurrentPid is mandatory. It should be different from none for at least one joint.";
-            return false;
-        }
-        else
-            return true;
-    }
-    
-    
-    Bottle bot_ctrl;
-    if (!GetGroupBottle(config, _userNameControlCurrent, bot_ctrl)) return false;
-
-
-    // check the control law defined in the PID group called by _currentControlLaw
-    std::string strControlLaw;
-    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
-    
-    if (strControlLaw != eomc::paramValues::ControlLawCurrent)
-    {
-        yError() << "embObjMC BOARD" << _boardname << "Unable to use" << strControlLaw <<  "control law for current pid. Quitting.";
+        yError() << "embObjMC BOARD " << _boardname << "CurrentPid is mandatory. It should be different from none for at least one joint.";
         return false;
     }
 
-    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-    yarp::dev::PidOutputUnitsEnum    out_unitstype;
-    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype))return false;
+    std::map<std::string, std::vector<eomc::PidInfo>> parsedGroups;
+    std::map<std::string, std::string> groupControlLaw;
+    std::map<std::string, yarp::dev::PidFeedbackUnitsEnum> groupFbkUnits;
+    std::map<std::string, yarp::dev::PidOutputUnitsEnum> groupOutUnits;
 
-    if(! parsePidsGroup2FOC(bot_ctrl, curr_pids)) return false;
-    
-    for(auto & c_pid : curr_pids)
+    for(int j = 0; j < _njoints; ++j)
     {
-        c_pid.enabled = true;
-        c_pid.fbk_PidUnits = fbk_unitstype;
-        c_pid.out_PidUnits = out_unitstype;
-        c_pid.controlLaw = strControlLaw;
-        c_pid.usernamePidSelected = _userNameControlCurrent;
-        c_pid.out_type = eomc_ctrl_out_type_cur; 
+        const std::string &groupName = _userNameControlCurrent[j];
+        if(groupName == eomc::paramValues::NONE_STR)
+        {
+            continue;
+        }
+
+        if(parsedGroups.find(groupName) != parsedGroups.end())
+        {
+            continue;
+        }
+
+        Bottle bot_ctrl;
+        if (!GetGroupBottle(config, groupName, bot_ctrl)) return false;
+
+        std::string strControlLaw;
+        if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+
+        if (strControlLaw != eomc::paramValues::ControlLawCurrent)
+        {
+            yError() << "embObjMC BOARD" << _boardname << "Unable to use" << strControlLaw << "control law for current pid group" << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+        std::vector<eomc::PidInfo> parsed(_njoints);
+        if(!parsePidsGroup2FOC(bot_ctrl, parsed)) return false;
+
+        parsedGroups[groupName] = parsed;
+        groupControlLaw[groupName] = strControlLaw;
+        groupFbkUnits[groupName] = fbk_unitstype;
+        groupOutUnits[groupName] = out_unitstype;
+    }
+
+    for(int j = 0; j < _njoints; ++j)
+    {
+        const std::string &groupName = _userNameControlCurrent[j];
+        if(groupName == eomc::paramValues::NONE_STR)
+        {
+            curr_pids[j].enabled = false;
+            curr_pids[j].usernamePidSelected = eomc::paramValues::NONE_STR;
+            continue;
+        }
+
+        curr_pids[j] = parsedGroups[groupName][j];
+        curr_pids[j].enabled = true;
+        curr_pids[j].fbk_PidUnits = groupFbkUnits[groupName];
+        curr_pids[j].out_PidUnits = groupOutUnits[groupName];
+        curr_pids[j].controlLaw = groupControlLaw[groupName];
+        curr_pids[j].usernamePidSelected = groupName;
+        curr_pids[j].out_type = eomc_ctrl_out_type_cur;
     }
 
     return true;
@@ -554,406 +634,659 @@ bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMan
 
 bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &pos_pids) 
 {
+    int enabledPositionPids = 0;
+    for(int j = 0; j < _njoints; ++j)
+    {
+        if(_userNameControlPosition[j] != eomc::paramValues::NONE_STR)
+        {
+            ++enabledPositionPids;
+        }
+    }
 
-    if(_userNameControlPosition == eomc::paramValues::NONE_STR)
+    if(enabledPositionPids == 0)
     {
         for (auto& p_pid : pos_pids) p_pid.enabled = false;
-
         yError() << "embObjMC BOARD " << _boardname << "position Pid is mandatory. It should be different from none for at least one joint.";
         return false;
     }
 
-    Bottle bot_ctrl = config.findGroup(_userNameControlPosition.c_str());
-    if(bot_ctrl.isNull())    
+    std::map<std::string, std::vector<eomc::PidInfo>> parsedGroups;
+    std::map<std::string, std::string> groupControlLaw;
+    std::map<std::string, yarp::dev::PidFeedbackUnitsEnum> groupFbkUnits;
+    std::map<std::string, yarp::dev::PidOutputUnitsEnum> groupOutUnits;
+    std::map<std::string, eOmc_ctrl_out_type_t> groupOutType;
+
+    for(int j = 0; j < _njoints; ++j)
     {
-        yError() << "embObjMC BOARD " << _boardname << "Unable to find position control group " << _userNameControlPosition.c_str() << " in config file. Quitting.";
-        return false;
+        const std::string &groupName = _userNameControlPosition[j];
+        if(groupName == eomc::paramValues::NONE_STR)
+        {
+            continue;
+        }
+
+        if(parsedGroups.find(groupName) != parsedGroups.end())
+        {
+            continue;
+        }
+
+        Bottle bot_ctrl = config.findGroup(groupName.c_str());
+        if(bot_ctrl.isNull())
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to find position control group " << groupName.c_str() << " in config file. Quitting.";
+            return false;
+        }
+
+        std::string strControlLaw;
+        if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+
+        if(strControlLaw != eomc::paramValues::ControlLawTrajectory)
+        {
+            yError() << "embObjMC BOARD " << _boardname << " Unable to use " << strControlLaw << " control law for position pid group " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+        eOmc_ctrl_out_type_t out_type;
+        if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        std::vector<eomc::PidInfo> parsed(_njoints);
+        bool parseOk = false;
+        switch (out_type)
+        {
+            case eomc_ctrl_out_type_pwm:
+            case eomc_ctrl_out_type_cur:
+                parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
+                break;
+            case eomc_ctrl_out_type_vel:
+                parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
+                break;
+        }
+        if(!parseOk)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        parsedGroups[groupName] = parsed;
+        groupControlLaw[groupName] = strControlLaw;
+        groupFbkUnits[groupName] = fbk_unitstype;
+        groupOutUnits[groupName] = out_unitstype;
+        groupOutType[groupName] = out_type;
     }
 
-    // 1. check the control law 
-    std::string strControlLaw;
-    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
-    
-    if(strControlLaw != eomc::paramValues::ControlLawTrajectory)
+    for(int j = 0; j < _njoints; ++j)
     {
-        yError() << "embObjMC BOARD " << _boardname << " Unable to use " << strControlLaw << " control law for position pid. Quitting.";
-        return false;
+        const std::string &groupName = _userNameControlPosition[j];
+        if(groupName == eomc::paramValues::NONE_STR)
+        {
+            pos_pids[j].enabled = false;
+            pos_pids[j].usernamePidSelected = eomc::paramValues::NONE_STR;
+            continue;
+        }
+
+        pos_pids[j] = parsedGroups[groupName][j];
+        pos_pids[j].enabled = true;
+        pos_pids[j].fbk_PidUnits = groupFbkUnits[groupName];
+        pos_pids[j].out_PidUnits = groupOutUnits[groupName];
+        pos_pids[j].controlLaw = groupControlLaw[groupName];
+        pos_pids[j].usernamePidSelected = groupName;
+        pos_pids[j].out_type = groupOutType[groupName];
     }
 
-    // 2. read pid units and output type
-    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-    yarp::dev::PidOutputUnitsEnum    out_unitstype;
-    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
-
-    // 3. get output type
-    eOmc_ctrl_out_type_t out_type;
-    if(!getOutputType(bot_ctrl, out_type)) return false;
-
-    // 4. read all pid values for all joint 
-    bool parseOk = false;
-    switch (out_type)
-    {
-        case eomc_ctrl_out_type_pwm:
-        case eomc_ctrl_out_type_cur:
-            parseOk = parsePidsGroupRegulationParams(bot_ctrl, pos_pids);
-            break;
-        case eomc_ctrl_out_type_vel:
-            parseOk = parsePidsGroupMinimalParams(bot_ctrl, pos_pids);
-            break;
-    }
-    if(!parseOk)
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlPosition.c_str() <<". Quitting.";
-        return false;
-    }   
-    // 5. set all data in the pid for all joint
-    for(auto & p_pid : pos_pids)
-    {
-        p_pid.enabled = true;
-        p_pid.fbk_PidUnits = fbk_unitstype;
-        p_pid.out_PidUnits = out_unitstype;
-        p_pid.controlLaw = strControlLaw;
-        p_pid.usernamePidSelected = _userNameControlPosition;
-        p_pid.out_type = out_type;
-    }
-    
-    return true;   
+    return true;
 }
 
 bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &vel_pids)
 {
-    if(_userNameControlVelocity == eomc::paramValues::NONE_STR)
+    int enabledVelocityPids = 0;
+    for(int j = 0; j < _njoints; ++j)
+    {
+        if(_userNameControlVelocity[j] != eomc::paramValues::NONE_STR)
+        {
+            ++enabledVelocityPids;
+        }
+    }
+
+    if(enabledVelocityPids == 0)
     {
         for (auto& v_pid : vel_pids)
+        {
             v_pid.enabled = false;
-    
+            v_pid.usernamePidSelected = eomc::paramValues::NONE_STR;
+        }
+
         yWarning() << "embObjMC BOARD " << _boardname << "Velocity pid has been desabled";
         return true;
     }
 
-    Bottle bot_ctrl;
-    if (!GetGroupBottle(config, _userNameControlVelocity, bot_ctrl)) return false;
+    std::map<std::string, std::vector<eomc::PidInfo>> parsedGroups;
+    std::map<std::string, std::string> groupControlLaw;
+    std::map<std::string, yarp::dev::PidFeedbackUnitsEnum> groupFbkUnits;
+    std::map<std::string, yarp::dev::PidOutputUnitsEnum> groupOutUnits;
+    std::map<std::string, eOmc_ctrl_out_type_t> groupOutType;
 
-    // 1. check the control law 
-    std::string strControlLaw;
-    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
-    
-    if(strControlLaw != eomc::paramValues::ControlLawTrajectory)
+    for(int j = 0; j < _njoints; ++j)
     {
-        yError() << "embObjMC BOARD " << _boardname << " Unable to use " << strControlLaw << " control law for velocity pid. Quitting.";
-        return false;
+        const std::string &groupName = _userNameControlVelocity[j];
+        if(groupName == eomc::paramValues::NONE_STR)
+        {
+            continue;
+        }
+
+        if(parsedGroups.find(groupName) != parsedGroups.end())
+        {
+            continue;
+        }
+
+        Bottle bot_ctrl;
+        if (!GetGroupBottle(config, groupName, bot_ctrl)) return false;
+
+        std::string strControlLaw;
+        if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+
+        if(strControlLaw != eomc::paramValues::ControlLawTrajectory)
+        {
+            yError() << "embObjMC BOARD " << _boardname << " Unable to use " << strControlLaw << " control law for velocity pid group " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+        eOmc_ctrl_out_type_t out_type;
+        if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        std::vector<eomc::PidInfo> parsed(_njoints);
+        bool parseOk = false;
+        switch (out_type)
+        {
+            case eomc_ctrl_out_type_pwm:
+            case eomc_ctrl_out_type_cur:
+                parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
+                break;
+            case eomc_ctrl_out_type_vel:
+                parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
+                break;
+        }
+        if(!parseOk)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        parsedGroups[groupName] = parsed;
+        groupControlLaw[groupName] = strControlLaw;
+        groupFbkUnits[groupName] = fbk_unitstype;
+        groupOutUnits[groupName] = out_unitstype;
+        groupOutType[groupName] = out_type;
     }
 
-    // 2. read pid units and output type
-    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-    yarp::dev::PidOutputUnitsEnum    out_unitstype;
-    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
-
-    // 3. get output type
-    eOmc_ctrl_out_type_t out_type;
-    if(!getOutputType(bot_ctrl, out_type)) return false;
-
-
-    // 4. read all pid values of pid for all joint 
-    bool parseOk = false;
-    switch (out_type)
+    for(int j = 0; j < _njoints; ++j)
     {
-        case eomc_ctrl_out_type_pwm:
-        case eomc_ctrl_out_type_cur:
-            parseOk = parsePidsGroupRegulationParams(bot_ctrl, vel_pids);
-            break;
-        case eomc_ctrl_out_type_vel:
-            parseOk = parsePidsGroupMinimalParams(bot_ctrl, vel_pids);
-            break;
+        const std::string &groupName = _userNameControlVelocity[j];
+        if(groupName == eomc::paramValues::NONE_STR)
+        {
+            vel_pids[j].enabled = false;
+            vel_pids[j].usernamePidSelected = eomc::paramValues::NONE_STR;
+            continue;
+        }
+
+        vel_pids[j] = parsedGroups[groupName][j];
+        vel_pids[j].enabled = true;
+        vel_pids[j].fbk_PidUnits = groupFbkUnits[groupName];
+        vel_pids[j].out_PidUnits = groupOutUnits[groupName];
+        vel_pids[j].controlLaw = groupControlLaw[groupName];
+        vel_pids[j].usernamePidSelected = groupName;
+        vel_pids[j].out_type = groupOutType[groupName];
     }
-    if(!parseOk)
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlVelocity.c_str() <<". Quitting.";
-        return false;
-    }   
-    // 5. set all data in the pid for all joint
-    for(auto & v_pid : vel_pids)
-    {
-        v_pid.enabled = true;
-        v_pid.fbk_PidUnits = fbk_unitstype;
-        v_pid.out_PidUnits = out_unitstype;
-        v_pid.controlLaw = strControlLaw;
-        v_pid.usernamePidSelected = _userNameControlVelocity;
-        v_pid.out_type = out_type;
-    }
+
     return true;
 
 }
 
 bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &mix_pids)
 {
-   if(_userNameControlMixed == eomc::paramValues::NONE_STR)
+    int enabledMixedPids = 0;
+    for(int j = 0; j < _njoints; ++j)
+    {
+        if(_userNameControlMixed[j] != eomc::paramValues::NONE_STR)
+        {
+            ++enabledMixedPids;
+        }
+    }
+
+    if(enabledMixedPids == 0)
     {
         for (auto& m_pid : mix_pids)
+        {
             m_pid.enabled = false;
-    
+            m_pid.usernamePidSelected = eomc::paramValues::NONE_STR;
+        }
+
         yInfo() << "embObjMC BOARD " << _boardname << "Mixed pid has been desabled";
         return true;
     }
 
-    //TODO: currently the fw  does't support different pid values from Position, so now the parser return error if the control law is different from trajectory, but we can decide to parse the pid values and then set them in the pid struct with the same control law of position control, in this way we can use mixed control with different pid values from position control. We should check with fw team if this is possible or if it can create problems.
-    if(_userNameControlMixed != _userNameControlPosition)
+    for(int j = 0; j < _njoints; ++j)
     {
-        yError() << "embObjMC BOARD " << _boardname << "Mixed control law has a different name than position control law. Currently fw doesn't support different pid values for mixed control from position control, so the control law name should be the same. Quitting.";
-        return false;
+        if((_userNameControlMixed[j] != paramValues::NONE_STR) && (_userNameControlMixed[j] != _userNameControlPosition[j]))
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Mixed control law has a different name than position control law for joint" << j << ". Currently fw doesn't support different pid values for mixed control from position control, so the control law name should be the same. Quitting.";
+            return false;
+        }
     }
 
-    Bottle bot_ctrl;
-    if (!GetGroupBottle(config, _userNameControlMixed, bot_ctrl)) return false;
+    std::map<std::string, std::vector<eomc::PidInfo>> parsedGroups;
+    std::map<std::string, std::string> groupControlLaw;
+    std::map<std::string, yarp::dev::PidFeedbackUnitsEnum> groupFbkUnits;
+    std::map<std::string, yarp::dev::PidOutputUnitsEnum> groupOutUnits;
+    std::map<std::string, eOmc_ctrl_out_type_t> groupOutType;
 
-    // 1. check the control law 
-    std::string strControlLaw;
-    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
-    
-    if(strControlLaw != paramValues::ControlLawTrajectory)
+    for(int j = 0; j < _njoints; ++j)
     {
-        yError() << "embObjMC BOARD " << _boardname << "Unable to use " << strControlLaw << " control law for mixed pid. Quitting.";
-        return false;
+        const std::string &groupName = _userNameControlMixed[j];
+        if(groupName == eomc::paramValues::NONE_STR)
+        {
+            continue;
+        }
+
+        if(parsedGroups.find(groupName) != parsedGroups.end())
+        {
+            continue;
+        }
+
+        Bottle bot_ctrl;
+        if (!GetGroupBottle(config, groupName, bot_ctrl)) return false;
+
+        std::string strControlLaw;
+        if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+
+        if(strControlLaw != paramValues::ControlLawTrajectory)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to use " << strControlLaw << " control law for mixed pid group " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+        eOmc_ctrl_out_type_t out_type;
+        if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        std::vector<eomc::PidInfo> parsed(_njoints);
+        bool parseOk = false;
+        switch (out_type)
+        {
+            case eomc_ctrl_out_type_pwm:
+            case eomc_ctrl_out_type_cur:
+                parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
+                break;
+            case eomc_ctrl_out_type_vel:
+                parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
+                break;
+        }
+        if(!parseOk)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        parsedGroups[groupName] = parsed;
+        groupControlLaw[groupName] = strControlLaw;
+        groupFbkUnits[groupName] = fbk_unitstype;
+        groupOutUnits[groupName] = out_unitstype;
+        groupOutType[groupName] = out_type;
     }
 
-    // 2. read pid units and output type
-    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-    yarp::dev::PidOutputUnitsEnum    out_unitstype;
-    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
-
-    // 3. get output type
-    eOmc_ctrl_out_type_t out_type;
-    if(!getOutputType(bot_ctrl, out_type)) return false;
-
-
-    // 4. read all pid values of pid for all joint 
-    bool parseOk = false;
-    switch (out_type)
+    for(int j = 0; j < _njoints; ++j)
     {
-        case eomc_ctrl_out_type_pwm:
-        case eomc_ctrl_out_type_cur:
-            parseOk = parsePidsGroupRegulationParams(bot_ctrl, mix_pids);
-            break;
-        case eomc_ctrl_out_type_vel:
-            parseOk = parsePidsGroupMinimalParams(bot_ctrl, mix_pids);
-            break;
+        const std::string &groupName = _userNameControlMixed[j];
+        if(groupName == eomc::paramValues::NONE_STR)
+        {
+            mix_pids[j].enabled = false;
+            mix_pids[j].usernamePidSelected = eomc::paramValues::NONE_STR;
+            continue;
+        }
+
+        mix_pids[j] = parsedGroups[groupName][j];
+        mix_pids[j].enabled = true;
+        mix_pids[j].fbk_PidUnits = groupFbkUnits[groupName];
+        mix_pids[j].out_PidUnits = groupOutUnits[groupName];
+        mix_pids[j].controlLaw = groupControlLaw[groupName];
+        mix_pids[j].usernamePidSelected = groupName;
+        mix_pids[j].out_type = groupOutType[groupName];
     }
-    if(!parseOk)
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlMixed.c_str() <<". Quitting.";
-        return false;
-    }   
-    // 5. set all data in the pid for all joint
-    for(auto & m_pid : mix_pids)
-    {
-        m_pid.enabled = true;
-        m_pid.fbk_PidUnits = fbk_unitstype;
-        m_pid.out_PidUnits = out_unitstype;
-        m_pid.controlLaw = strControlLaw;
-        m_pid.usernamePidSelected = _userNameControlMixed;
-        m_pid.out_type = out_type;
-    }
+
     return true;
 
 }
 
 bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &posdir_pids) 
 {
-    if(_userNameControlPositionDirect == paramValues::NONE_STR)
+    int enabledPosDirectPids = 0;
+    for(int j = 0; j < _njoints; ++j)
     {
-        for (auto& pd_pid : posdir_pids) pd_pid.enabled = false;
+        if(_userNameControlPositionDirect[j] != paramValues::NONE_STR)
+        {
+            ++enabledPosDirectPids;
+        }
+    }
+
+    if(enabledPosDirectPids == 0)
+    {
+        for (auto& pd_pid : posdir_pids)
+        {
+            pd_pid.enabled = false;
+            pd_pid.usernamePidSelected = paramValues::NONE_STR;
+        }
         
         registerOptionalParameter("position direct pid", "0.0 for all pid values", false);
         //yWarning() << "embObjMC BOARD " << _boardname << "position direct pid has been disabled";
         return true;
     }
 
+    std::map<std::string, std::vector<eomc::PidInfo>> parsedGroups;
+    std::map<std::string, std::string> groupControlLaw;
+    std::map<std::string, yarp::dev::PidFeedbackUnitsEnum> groupFbkUnits;
+    std::map<std::string, yarp::dev::PidOutputUnitsEnum> groupOutUnits;
+    std::map<std::string, eOmc_ctrl_out_type_t> groupOutType;
 
-    Bottle bot_ctrl;
-    if (!GetGroupBottle(config, _userNameControlPositionDirect, bot_ctrl)) return false;
-
-    // 1. check the control law 
-    std::string strControlLaw;
-    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
-    
-    if(strControlLaw != paramValues::ControlLawDirect)
+    for(int j = 0; j < _njoints; ++j)
     {
-        yError() << "embObjMC BOARD " << _boardname  << " Unable to use " << strControlLaw << " control law for position direct pid. Quitting.";
-        return false;
+        const std::string &groupName = _userNameControlPositionDirect[j];
+        if(groupName == paramValues::NONE_STR)
+        {
+            continue;
+        }
+
+        if(parsedGroups.find(groupName) != parsedGroups.end())
+        {
+            continue;
+        }
+
+        Bottle bot_ctrl;
+        if (!GetGroupBottle(config, groupName, bot_ctrl)) return false;
+
+        std::string strControlLaw;
+        if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+
+        if(strControlLaw != paramValues::ControlLawDirect)
+        {
+            yError() << "embObjMC BOARD " << _boardname  << " Unable to use " << strControlLaw << " control law for position direct pid group " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+        eOmc_ctrl_out_type_t out_type;
+        if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        std::vector<eomc::PidInfo> parsed(_njoints);
+        bool parseOk = false;
+        switch (out_type)
+        {
+            case eomc_ctrl_out_type_pwm:
+            case eomc_ctrl_out_type_cur:
+                parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
+                break;
+            case eomc_ctrl_out_type_vel:
+                parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
+                break;
+        }
+        if(!parseOk)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        parsedGroups[groupName] = parsed;
+        groupControlLaw[groupName] = strControlLaw;
+        groupFbkUnits[groupName] = fbk_unitstype;
+        groupOutUnits[groupName] = out_unitstype;
+        groupOutType[groupName] = out_type;
     }
 
-    // 2. read pid units and output type
-    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-    yarp::dev::PidOutputUnitsEnum    out_unitstype;
-    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
-
-    // 3. get output type
-    eOmc_ctrl_out_type_t out_type;
-    if(!getOutputType(bot_ctrl, out_type)) return false;
-
-    // 4. read all pid values for all joint 
-    bool parseOk = false;
-    switch (out_type)
+    for(int j = 0; j < _njoints; ++j)
     {
-        case eomc_ctrl_out_type_pwm:
-        case eomc_ctrl_out_type_cur:
-            parseOk = parsePidsGroupRegulationParams(bot_ctrl, posdir_pids);
-            break;
-        case eomc_ctrl_out_type_vel:
-            parseOk = parsePidsGroupMinimalParams(bot_ctrl, posdir_pids);
-            break;
+        const std::string &groupName = _userNameControlPositionDirect[j];
+        if(groupName == paramValues::NONE_STR)
+        {
+            posdir_pids[j].enabled = false;
+            posdir_pids[j].usernamePidSelected = paramValues::NONE_STR;
+            continue;
+        }
+
+        posdir_pids[j] = parsedGroups[groupName][j];
+        posdir_pids[j].enabled = true;
+        posdir_pids[j].fbk_PidUnits = groupFbkUnits[groupName];
+        posdir_pids[j].out_PidUnits = groupOutUnits[groupName];
+        posdir_pids[j].controlLaw = groupControlLaw[groupName];
+        posdir_pids[j].usernamePidSelected = groupName;
+        posdir_pids[j].out_type = groupOutType[groupName];
     }
-    if(!parseOk)
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlPositionDirect.c_str() <<". Quitting.";
-        return false;
-    }   
-    // 5. set all data in the pid for all joint
-    for(auto & pd_pid : posdir_pids)
-    {
-        pd_pid.enabled = true;
-        pd_pid.fbk_PidUnits = fbk_unitstype;
-        pd_pid.out_PidUnits = out_unitstype;
-        pd_pid.controlLaw = strControlLaw;
-        pd_pid.usernamePidSelected = _userNameControlPositionDirect;
-        pd_pid.out_type = out_type;
-    }
-    
-    return true;   
+
+    return true;
 }
 
 bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &veldir_pids) 
 {
-    if(_userNameControlVelocityDirect == paramValues::NONE_STR)
+    int enabledVelDirectPids = 0;
+    for(int j = 0; j < _njoints; ++j)
     {
-        for (auto& vd_pid : veldir_pids) vd_pid.enabled = false;
+        if(_userNameControlVelocityDirect[j] != paramValues::NONE_STR)
+        {
+            ++enabledVelDirectPids;
+        }
+    }
+
+    if(enabledVelDirectPids == 0)
+    {
+        for (auto& vd_pid : veldir_pids)
+        {
+            vd_pid.enabled = false;
+            vd_pid.usernamePidSelected = paramValues::NONE_STR;
+        }
         
         registerOptionalParameter("velocity direct pid", "0.0 for all pid values", false);
         //yWarning() << "embObjMC BOARD " << _boardname << "velocity direct pid has been disabled";
         return true;
     }
 
-    Bottle bot_ctrl;
-    if (!GetGroupBottle(config, _userNameControlVelocityDirect, bot_ctrl)) return false;
+    std::map<std::string, std::vector<eomc::PidInfo>> parsedGroups;
+    std::map<std::string, std::string> groupControlLaw;
+    std::map<std::string, yarp::dev::PidFeedbackUnitsEnum> groupFbkUnits;
+    std::map<std::string, yarp::dev::PidOutputUnitsEnum> groupOutUnits;
+    std::map<std::string, eOmc_ctrl_out_type_t> groupOutType;
 
-    // 1. check the control law 
-    std::string strControlLaw;
-    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
-    
-    if(strControlLaw != paramValues::ControlLawDirect)
+    for(int j = 0; j < _njoints; ++j)
     {
-        yError() << "embObjMC BOARD " << _boardname  << " Unable to use " << strControlLaw << " control law for velocity direct pid. Quitting.";
-        return false;
+        const std::string &groupName = _userNameControlVelocityDirect[j];
+        if(groupName == paramValues::NONE_STR)
+        {
+            continue;
+        }
+
+        if(parsedGroups.find(groupName) != parsedGroups.end())
+        {
+            continue;
+        }
+
+        Bottle bot_ctrl;
+        if (!GetGroupBottle(config, groupName, bot_ctrl)) return false;
+
+        std::string strControlLaw;
+        if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+
+        if(strControlLaw != paramValues::ControlLawDirect)
+        {
+            yError() << "embObjMC BOARD " << _boardname  << " Unable to use " << strControlLaw << " control law for velocity direct pid group " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+        eOmc_ctrl_out_type_t out_type;
+        if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        // Temporary workaround: map PWM to VEL and CUR to VEL+CUR for velocity direct control.
+        if (out_type == eomc_ctrl_out_type_pwm)
+        {
+            out_type = eomc_ctrl_out_type_vel;
+        }
+        else if (out_type == eomc_ctrl_out_type_cur)
+        {
+            out_type = eomc_ctrl_out_type_vel_cur;
+        }
+
+        std::vector<eomc::PidInfo> parsed(_njoints);
+        if(!parsePidsGroup2FOC(bot_ctrl, parsed))
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        parsedGroups[groupName] = parsed;
+        groupControlLaw[groupName] = strControlLaw;
+        groupFbkUnits[groupName] = fbk_unitstype;
+        groupOutUnits[groupName] = out_unitstype;
+        groupOutType[groupName] = out_type;
     }
 
-    // 2. read pid units and output type
-    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-    yarp::dev::PidOutputUnitsEnum    out_unitstype;
-    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
-
-    // 3. get output type
-    eOmc_ctrl_out_type_t out_type;
-    if(!getOutputType(bot_ctrl, out_type)) return false;
-    
-    //!! warning "Temporary workaround: map PWM to VEL and CUR to VEL+CUR for velocity direct control. Ask to Alessandro why."
-    if (out_type == eomc_ctrl_out_type_pwm)
+    for(int j = 0; j < _njoints; ++j)
     {
-        out_type = eomc_ctrl_out_type_vel;
+        const std::string &groupName = _userNameControlVelocityDirect[j];
+        if(groupName == paramValues::NONE_STR)
+        {
+            veldir_pids[j].enabled = false;
+            veldir_pids[j].usernamePidSelected = paramValues::NONE_STR;
+            continue;
+        }
+
+        veldir_pids[j] = parsedGroups[groupName][j];
+        veldir_pids[j].enabled = true;
+        veldir_pids[j].fbk_PidUnits = groupFbkUnits[groupName];
+        veldir_pids[j].out_PidUnits = groupOutUnits[groupName];
+        veldir_pids[j].controlLaw = groupControlLaw[groupName];
+        veldir_pids[j].usernamePidSelected = groupName;
+        veldir_pids[j].out_type = groupOutType[groupName];
     }
-    else if (out_type == eomc_ctrl_out_type_cur)
-    {
-        out_type = eomc_ctrl_out_type_vel_cur;
-    }
 
-    // 4. read all pid values for all joint 
-    if(!parsePidsGroup2FOC(bot_ctrl, veldir_pids))
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlVelocityDirect.c_str() <<". Quitting.";
-        return false;
-    }   
-
-    // 5. set all data in the pid for all joint
-    for(auto & vd_pid : veldir_pids)
-    {
-        vd_pid.enabled = true;
-        vd_pid.fbk_PidUnits = fbk_unitstype;
-        vd_pid.out_PidUnits = out_unitstype;
-        vd_pid.controlLaw = strControlLaw;
-        vd_pid.usernamePidSelected = _userNameControlVelocityDirect;
-        vd_pid.out_type = out_type;
-    }
-    
     return true;
 }
 
 bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config,  std::vector<eomc::TrqPidInfo> &trq_pids)
 {
-
-    if(_userNameControlTorque == paramValues::NONE_STR)
+    int enabledTorquePids = 0;
+    for(int j = 0; j < _njoints; ++j)
     {
-        for (auto& t_pid : trq_pids) t_pid.enabled = false;
+        if(_userNameControlTorque[j] != paramValues::NONE_STR)
+        {
+            ++enabledTorquePids;
+        }
+    }
+
+    if(enabledTorquePids == 0)
+    {
+        for (auto& t_pid : trq_pids)
+        {
+            t_pid.enabled = false;
+            t_pid.usernamePidSelected = paramValues::NONE_STR;
+        }
         return true;
     }
 
+    std::map<std::string, std::vector<eomc::TrqPidInfo>> parsedGroups;
+    std::map<std::string, std::string> groupControlLaw;
+    std::map<std::string, yarp::dev::PidFeedbackUnitsEnum> groupFbkUnits;
+    std::map<std::string, yarp::dev::PidOutputUnitsEnum> groupOutUnits;
+    std::map<std::string, eOmc_ctrl_out_type_t> groupOutType;
 
-    Bottle bot_ctrl;
-    if (!GetGroupBottle(config, _userNameControlTorque, bot_ctrl)) return false;
-
-    // 1. check the control law 
-    std::string strControlLaw;
-    if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
-    
-    if(strControlLaw != paramValues::ControlLawTorque)
+    for(int j = 0; j < _njoints; ++j)
     {
-        yError() << "embObjMC BOARD " << _boardname << " Unable to use " << strControlLaw << " control law for torque pid. Quitting.";
-        return false;
+        const std::string &groupName = _userNameControlTorque[j];
+        if(groupName == paramValues::NONE_STR)
+        {
+            continue;
+        }
+
+        if(parsedGroups.find(groupName) != parsedGroups.end())
+        {
+            continue;
+        }
+
+        Bottle bot_ctrl;
+        if (!GetGroupBottle(config, groupName, bot_ctrl)) return false;
+
+        std::string strControlLaw;
+        if(!readControlLaw(bot_ctrl, strControlLaw)) return false;
+
+        if(strControlLaw != paramValues::ControlLawTorque)
+        {
+            yError() << "embObjMC BOARD " << _boardname << " Unable to use " << strControlLaw << " control law for torque pid group " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+
+        eOmc_ctrl_out_type_t out_type;
+        if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        std::vector<eomc::TrqPidInfo> parsed(_njoints);
+        bool parseOk = false;
+        switch (out_type)
+        {
+            case eomc_ctrl_out_type_pwm:
+            case eomc_ctrl_out_type_cur:
+                parseOk = parsePidsGroupTorqueCompensationParams(bot_ctrl, parsed);
+                break;
+            case eomc_ctrl_out_type_vel:
+                parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
+                break;
+        }
+        if(!parseOk)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << groupName.c_str() << ". Quitting.";
+            return false;
+        }
+
+        parsedGroups[groupName] = parsed;
+        groupControlLaw[groupName] = strControlLaw;
+        groupFbkUnits[groupName] = fbk_unitstype;
+        groupOutUnits[groupName] = out_unitstype;
+        groupOutType[groupName] = out_type;
     }
 
-    // 2. read pid units and output type
-    yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-    yarp::dev::PidOutputUnitsEnum    out_unitstype;
-    if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
-
-    // 3. get output type
-    eOmc_ctrl_out_type_t out_type;
-    if(!getOutputType(bot_ctrl, out_type)) return false;
-
-    // 4. read all pid values for all joint 
-    bool parseOk = false;
-    switch (out_type)
+    for(int j = 0; j < _njoints; ++j)
     {
-        case eomc_ctrl_out_type_pwm:
-        case eomc_ctrl_out_type_cur:
-            parseOk = parsePidsGroupTorqueCompensationParams(bot_ctrl, trq_pids);
-            break;
-        case eomc_ctrl_out_type_vel:
-            parseOk = parsePidsGroupRegulationParams(bot_ctrl, trq_pids);
-            break;
+        const std::string &groupName = _userNameControlTorque[j];
+        if(groupName == paramValues::NONE_STR)
+        {
+            trq_pids[j].enabled = false;
+            trq_pids[j].usernamePidSelected = paramValues::NONE_STR;
+            continue;
+        }
+
+        trq_pids[j] = parsedGroups[groupName][j];
+        trq_pids[j].enabled = true;
+        trq_pids[j].fbk_PidUnits = groupFbkUnits[groupName];
+        trq_pids[j].out_PidUnits = groupOutUnits[groupName];
+        trq_pids[j].controlLaw = groupControlLaw[groupName];
+        trq_pids[j].usernamePidSelected = groupName;
+        trq_pids[j].out_type = groupOutType[groupName];
     }
-    if(!parseOk)
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Unable to parse pid values for " << _userNameControlTorque.c_str() <<". Quitting.";
-        return false;
-    }   
 
-    // 5. set all data in the pid for all joint
-    for(auto & t_pid : trq_pids)
-    {
-        t_pid.enabled = true;
-        t_pid.fbk_PidUnits = fbk_unitstype;
-        t_pid.out_PidUnits = out_unitstype;
-        t_pid.controlLaw = strControlLaw;
-        t_pid.usernamePidSelected = _userNameControlTorque;
-        t_pid.out_type = out_type;
-    }
-    
-    return true;   
+    return true;
 }
 
 

@@ -69,14 +69,14 @@ private:
     int _njoints;
     std::string _boardname;
     
-    //these are the user selected control modes for each control type 
-    std::string _userNameControlPosition;
-    std::string _userNameControlVelocity;
-    std::string _userNameControlMixed;
-    std::string _userNameControlTorque;
-    std::string _userNameControlCurrent;
-    std::string _userNameControlPositionDirect;
-    std::string _userNameControlVelocityDirect;
+    //these are the user selected control modes for each control type (one name per joint)
+    std::vector<std::string> _userNameControlPosition;
+    std::vector<std::string> _userNameControlVelocity;
+    std::vector<std::string> _userNameControlMixed;
+    std::vector<std::string> _userNameControlTorque;
+    std::vector<std::string> _userNameControlCurrent;
+    std::vector<std::string> _userNameControlPositionDirect;
+    std::vector<std::string> _userNameControlVelocityDirect;
 
 
     // Track optional parameters and their defaults
@@ -109,7 +109,7 @@ private:
     bool parseSelectedVelocityDirectControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &velDir_pids);
     bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMandatory, std::vector<eomc::PidInfo> &curr_pids);
 
-    bool areControlPidGroupEqual(const std::vector<std::string> &controlGroup);
+    bool areControlPidGroupEqualInJointSet(const std::vector<std::string> &controlGroup, const std::vector<int> &joint2set, const std::string &controlName);
 
     bool parsePidsGroup2FOC(yarp::os::Bottle& pidsGroup, std::vector<eomc::PidInfo> &curr_pids);
     /**
