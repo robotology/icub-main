@@ -830,9 +830,10 @@ void MotionControlParser::parseInfo()
             
             switch(timeout_type)
             {
-                case eoerror_value_MC_ref_timeout_torque:  timeout_type_str = "TORQUE";  break;
-                case eoerror_value_MC_ref_timeout_current: timeout_type_str = "CURRENT"; break;
-                case eoerror_value_MC_ref_timeout_pwm:     timeout_type_str = "PWM";     break;
+                case eoerror_value_MC_ref_timeout_torque:     timeout_type_str = "TORQUE";    break;
+                case eoerror_value_MC_ref_timeout_current:    timeout_type_str = "CURRENT";   break;
+                case eoerror_value_MC_ref_timeout_pwm:        timeout_type_str = "PWM";       break;
+                case eoerror_value_MC_ref_timeout_velocity:   timeout_type_str = "VELOCITY";  break;
                 default: timeout_type_str = "UNKNOWN"; break;
             }
 
