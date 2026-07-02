@@ -103,8 +103,14 @@ This file can be edited at /src/gui/iCubSkinGui/src/main.cpp.
 #include "qticubskinguiplugin.h"
 #include <QDebug>
 
+#include <yarp/os/LogComponent.h>
+#include <yarp/os/LogStream.h>
+
 using namespace yarp::os;
 
+namespace {
+YARP_LOG_COMPONENT(QTICUBSKINGUIPLUGIN, "yarp.tools.qticubskinguiplugin")
+}
 
 QtICubSkinGuiPlugin::QtICubSkinGuiPlugin(QQuickItem *parent):
     QQuickPaintedItem(parent)
@@ -128,7 +134,7 @@ QtICubSkinGuiPlugin::QtICubSkinGuiPlugin(QQuickItem *parent):
      gpActivationMap = NULL;
      gpImageBuff = NULL;
      gpSkinMeshThreadCan = NULL;
-     gpSkinMeshThreadPort = NULL;
+     gpSkinMeshClient = NULL;
 
      window_title = "QtICubSkinGui";
 
@@ -149,9 +155,9 @@ QtICubSkinGuiPlugin::~QtICubSkinGuiPlugin()
         gpSkinMeshThreadCan->stop();
         delete gpSkinMeshThreadCan;
     }
-    if(gpSkinMeshThreadPort){
-        gpSkinMeshThreadPort->stop();
-        delete gpSkinMeshThreadPort;
+    if(gpSkinMeshClient){
+        gpSkinMeshClient->stop();
+        delete gpSkinMeshClient;
     }
 
     mutex.unlock();
@@ -198,8 +204,8 @@ void QtICubSkinGuiPlugin::paint(QPainter *painter)
 
         if(TheadType == TYPE_CAN && gpSkinMeshThreadCan  && gWidth>=180 && gHeight>=180){
             gpSkinMeshThreadCan->resize(gWidth,gHeight);
-        } else if (TheadType == TYPE_PORT && gpSkinMeshThreadPort && gWidth>=180 && gHeight>=180){
-            gpSkinMeshThreadPort->resize(gWidth,gHeight);
+        } else if (TheadType == TYPE_PORT && gpSkinMeshClient && gWidth>=180 && gHeight>=180){
+            gpSkinMeshClient->resize(gWidth,gHeight);
         }
     }
 
@@ -217,13 +223,13 @@ void QtICubSkinGuiPlugin::paint(QPainter *painter)
         painter->drawImage(0,0,img);
         painter->endNativePainting();
 
-    }else if (TheadType == TYPE_PORT && gpSkinMeshThreadPort) {
+    }else if (TheadType == TYPE_PORT && gpSkinMeshClient) {
         memset(gpImageBuff,0,gImageSize);
 
         if (gWidth>=180 && gHeight>=180)
         {
-            gpSkinMeshThreadPort->eval(gpImageBuff);
-            gpSkinMeshThreadPort->draw(gpImageBuff);
+            gpSkinMeshClient->eval(gpImageBuff);
+            gpSkinMeshClient->draw(gpImageBuff);
         }
 
 
@@ -276,10 +282,10 @@ bool QtICubSkinGuiPlugin::parseParameters(QStringList params)
 
     bool useCan = rf.check("useCan");
     if (useCan==true){
-        yInfo("CAN version: Reading data directly from CAN");
+        yCInfo(QTICUBSKINGUIPLUGIN) << "CAN version: reading data directly from CAN";
         TheadType=TYPE_CAN;
     } else {
-        yInfo("YARP version: reading data from a Yarp port");
+        yCInfo(QTICUBSKINGUIPLUGIN) << "YARP version: reading data from a YARP client";
         TheadType=TYPE_PORT;
     }
 
@@ -291,7 +297,7 @@ bool QtICubSkinGuiPlugin::parseParameters(QStringList params)
     widthChanged();
     heightChanged();
 
-    yDebug("RF: %s",rf.toString().data());
+    yCDebug(QTICUBSKINGUIPLUGIN) << "RF:" << rf.toString();
 
     gRowStride=3*gWidth;
     gImageSize=gRowStride*gHeight;
@@ -339,8 +345,8 @@ void QtICubSkinGuiPlugin::onInit()
     }
     else if (TheadType==TYPE_PORT)
     {
-        gpSkinMeshThreadPort=new SkinMeshThreadPort(rf,period);
-        gpSkinMeshThreadPort->start();
+        gpSkinMeshClient=new SkinMeshClient(rf,period);
+        gpSkinMeshClient->start();
     }
 
     done();

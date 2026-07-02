@@ -350,7 +350,7 @@ void embObjPOS::helper_remapperFromSensorToDataIndex(const uint32_t sensorId, ui
 size_t embObjPOS::getNrOfEncoderArrays() const
 {
     // this should return the number of sensors we wanna have per control boards
-    // e.g. currently POS service can manage up to 4 position sensors (2 for open/close and 2 for abduction)
+    // e.g. currently POS service can manage up to 4 position sensors (4 for open/close and 2 for abduction)
     // so we are returning the number of enabled sensors, i.e. 2 or 4, depending on the device
     // differently, we can choose another approach, i.e. return 1, as the encoder array is a single entity, 
     // which is actually the control board associated with the opened serivice

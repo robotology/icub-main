@@ -72,7 +72,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     options.put("robot",  robotName.c_str());
     options.put("local",  localPortName.str().c_str());
     options.put("remote",  inputPortName.c_str());
-    options.put("device", "analogsensorclient");
+    options.put("device", "multipleanalogsensorsclient");
     tactileSensorDevice_inputPortName=inputPortName.c_str();
      
     // create a new device driver
@@ -101,15 +101,15 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     if( !Network::connect(inputPortName.c_str(), localPortName.str().c_str()))
     {
         stringstream msg;
-        msg<< "Problems trying to connect ports %s and %s."<< inputPortName.c_str()<< localPortName.str().c_str();
+        msg<< "Problems trying to connect ports %s and %s."<< inputPortName.c_str() << localPortName.str().c_str();
         sendInfoMsg(msg.str());
         return false;
     }
     
     int getChannelsCounter = 0;
-    skinDim = tactileSensor->getChannels();
+    skinDim = tactileSensor->getNrOfSkinPatches(); // this should return the total number of sensors per skin patch, i.e. 16*12*number of CARDS
     while(skinDim<=0){
-        // getChannels() returns 0 if it hasn't performed the first reading yet
+        // getNrOfSkinPatches() returns 0 if it hasn't performed the first reading yet
         // so wait for 1/50 sec, then try again        
         if(++getChannelsCounter==50){
             // after 50 failed trials give up and use the default value
@@ -118,7 +118,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
             break;
         }
         Time::delay(0.02);
-        skinDim = tactileSensor->getChannels();
+        skinDim = tactileSensor->getNrOfSkinPatches();
     }
     readErrorCounter = 0;
     rawData.resize(skinDim);
@@ -164,7 +164,7 @@ void Compensator::calibrationInit(){
 
     // send a command to the microcontroller for calibrating the skin sensors
     if(robotName!="icubSim"){    // this feature isn't implemented in the simulator and causes a runtime error
-        tactileSensor->calibrateSensor();
+        //tactileSensor->calibrateSensor();
     }
 
     // initialize

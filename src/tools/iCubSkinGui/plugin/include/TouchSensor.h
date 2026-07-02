@@ -28,6 +28,8 @@ protected:
         for (int n = 0; n < MAX_TAXELS; ++n)
         {
             connected[n] = true;
+            activation[n] = 0.0;
+            remapped_activation[n] = 0.0;
         }
     }
 
@@ -43,6 +45,15 @@ public:
     void setCalibrationFlag (bool use_calibrated_skin)
     {
         calibrated_skin=use_calibrated_skin;
+    }
+
+    void clearActivation()
+    {
+        for (int n = 0; n < MAX_TAXELS; ++n)
+        {
+            activation[n] = 0.0;
+            remapped_activation[n] = 0.0;
+        }
     }
 
     void resize(int width,int height,int margin)
