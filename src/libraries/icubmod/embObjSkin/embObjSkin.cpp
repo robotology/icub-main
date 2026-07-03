@@ -1,8 +1,8 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
- * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
- * Authors: Alberto Cardellino
+ * Copyright (C) 2026  Mesh Facility, Istituto Italiano di Tecnologia
+ * Authors: Alberto Cardellino, Jacopo Losi
  * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
  *
  */
@@ -13,9 +13,11 @@
 
 // Ace & Yarp includes
 #include <yarp/os/Time.h>
+#include <yarp/os/NetType.h>
+#include <yarp/conf/environment.h>
 
-#include <embObjSkin.h>
-
+// iCub includes
+#include "embObjSkin.h"
 #include "EoProtocol.h"
 #include "EoProtocolMN.h"
 #include "EoProtocolSK.h"
@@ -28,29 +30,42 @@
 #include "../embObjLib/hostTransceiver.hpp"
 
 #include "EOnv.h"
-
-#include <yarp/os/NetType.h>
-#include <yarp/conf/environment.h>
-
 #include "EoCommon.h"
 
 using namespace std;
 using namespace iCub::skin::diagnostics;
 
-bool isCANaddressValid(int adr)
-{
-    return ((adr>0) && (adr<15));
+namespace {
+    YARP_LOG_COMPONENT(EMBOBJSKIN, "yarp.dev.embObjSkin")
+    // this is the default value for no load condition for skin taxels, meaning 0% pressure, 
+    // and it is by definition equal to 240 in decimal. 
+    // It is used as initialization value since it is passed by configuration file too on the noLoad parameter, 
+    // but it is not necessarily the final no load value during runtime, since it can be changed by configuration file. 
+    // So this constant is mainly the pre-config/default initialization value, not necessarily the final runtime no-load value.
+    constexpr double defaultSkinNoLoadValue{0xf0}; 
+
+    bool isCANaddressValid(int adr)
+    {
+        return ((adr>0) && (adr<15));
+    }
+
+     // adding these constants under the same enum since they are all related to skin hardware characteristics.
+    enum { 
+        EMBSK_SIZE_INFO = 128,
+        SPECIAL_TRIANGLE_CFG_MAX_NUM = 20,
+        MAX_NUM_OF_PATCHES_PER_ETH_BOARD = 2, // this is the maximum number of patches that can be associated to a single eth board. This is a limit that we can set since it is not possible to have more than 2 patches per board (since each patch corresponds to a can port and each board has 2 can ports)
+        SKIN_TAXELS_PER_TRIANGLE = 12, // this is the number of taxels per triangle, it is a fixed value since it depends on the hardware design of the skin, and it is not expected to change in the future.
+        TRIANGLES_PER_CAN_BOARD = 16 // this is the number of triangles per can board, it is a fixed value since it depends on the hardware design of the skin, and it is not expected to change in the future. Each can board has 16 triangles, each triangle has 12 taxels, so each can board has 192 taxels.
+    };
 }
 
 
-int SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
+std::optional<size_t> SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
 {
-    for (size_t i = 0; i< cardAddrList.size(); i++)
-    {
-        if(cardAddrList[i] == cardAddr)
-            return i;
-    }
-    return -1;
+    auto it = std::find(cardAddrList.begin(), cardAddrList.end(), cardAddr);
+    if (it == cardAddrList.end())
+        return std::nullopt;
+    return static_cast<size_t>(std::distance(cardAddrList.begin(), it));
 }
 
 EmbObjSkin::EmbObjSkin() :  _isDiagnosticPresent(false)
@@ -59,6 +74,7 @@ EmbObjSkin::EmbObjSkin() :  _isDiagnosticPresent(false)
     ethManager  = NULL;
     opened     = false;
     sensorsNum  = 0;
+    _cumulativeTaxels = 0;
     _skCfg.numOfPatches = 0;
     _skCfg.totalCardsNum = 0;
 
@@ -88,15 +104,20 @@ EmbObjSkin::~EmbObjSkin()
     }
 }
 
+std::string EmbObjSkin::boardInfo() const
+{
+    if(nullptr == res)
+        return {"[res not yet available]"};
+    return std::string("BOARD ") + res->getProperties().boardnameString + " IP " + res->getProperties().ipv4addrString;
+}
+
 
 bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 {
-    Bottle          bNumOfset;
-    unsigned int    numOfSets;
     eOprotID32_t    protoid;
-    unsigned int    p, j;
-    SpecialSkinBoardCfgParam* boardCfgList = new SpecialSkinBoardCfgParam[_skCfg.totalCardsNum]; //please add cleanup!
+    std::vector<SpecialSkinBoardCfgParam> boardCfgList(_skCfg.totalCardsNum);
     unsigned int    numofcfg;
+    unsigned int    j = 0, p = 0;
 
     if(!_newCfg)
     {
@@ -108,7 +129,8 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
     numofcfg = _skCfg.totalCardsNum;//set size of my vector boardCfgList;
     //in output the function return number of special board cfg are in file xml
-    bool ret = _cfgReader.readSpecialBoardCfg(config, boardCfgList, &numofcfg);
+    // TODO: add documentation regarding usage of special configuration in xml file
+    bool ret = _cfgReader.readSpecialBoardCfg(config, boardCfgList.data(), &numofcfg);
 
     if(!ret)
         return false;
@@ -124,7 +146,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
         if(p>=_skCfg.patchInfoList.size())
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": patch " << boardCfgList[j].patch << "not exists";
+            yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": patch" << boardCfgList[j].patch << "not exists";
             return false;
         }
         //now p is the index of patch.
@@ -132,13 +154,13 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         eOcanport_t canport = _skCfg.patchInfoList[p].canport;
 
         //check if card address are in patch
-        int boardIdx = -1;
+        std::optional<size_t> boardIdx;
         for(int a=boardCfgList[j].boardAddrStart; a<=boardCfgList[j].boardAddrEnd; a++)
         {
             boardIdx = _skCfg.patchInfoList[p].checkCardAddrIsInList(a);
-            if(-1 == boardIdx)
+            if(!boardIdx)
             {
-                yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " card with address " << a << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
+                yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << "card with address" << a << "is not present in patch" << _skCfg.patchInfoList[p].idPatch;
                 return(false);
             }
         }
@@ -161,30 +183,28 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
         // Init the data vector with special config values from "noLoad" param in config file.
         // This is to have a correct initilization for the data sent through yarp port
-        for (size_t sensorId = 0; sensorId < 16; sensorId++)
+        for (size_t sensorId = 0; sensorId < TRIANGLES_PER_CAN_BOARD; sensorId++)
         {
-            size_t index = 16 * 12 * boardIdx + sensorId * 12;
+            size_t index = TRIANGLES_PER_CAN_BOARD * SKIN_TAXELS_PER_TRIANGLE * (*boardIdx) + sensorId * SKIN_TAXELS_PER_TRIANGLE;
+            yCTrace(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": index is" << index << "value is:" << boardCfgList[j].cfg.noLoad;
 
             // Message head
-            for(int k = 0; k < 12; k++)
+            for(int k = 0; k < SKIN_TAXELS_PER_TRIANGLE; k++)
             {
-//                yDebug() << "readNewSpecialConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << boardCfgList[j].cfg.noLoad;
+                yCTrace(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": size is:" << skindata.size() << "index is" << (index+k) << "value is:" << boardCfgList[j].cfg.noLoad;
                 if((index+k) >= skindata.size())
                 {
-                    yError() << "readNewSpecialConfiguration: index too big";
+                    yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": index too big";
                 }
                 skindata[index + k] = boardCfgList[j].cfg.noLoad;
             }
         }
-//        //uncomment for debug only
-//        yDebug() << "\n Special board cfg num " << j;
-//        boardCfgList[j].debugPrint();
 
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmmnds_boardscfg);
 
         if(false == res->setRemoteValue(protoid, &bcfg))
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send special board config for mtb with addr from"<< boardCfgList[j].boardAddrStart << " to addr " << boardCfgList[j].boardAddrEnd;
+            yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << "Error in send special board config for mtb with addr from" << boardCfgList[j].boardAddrStart << "to addr" << boardCfgList[j].boardAddrEnd;
             return false;
         }
 
@@ -194,10 +214,10 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
     //-----------------------------------------------------------------------------------------------------
     //------------ read special cfg triangle --------------------------------------------------------------
-    SpecialSkinTriangleCfgParam triangleCfg[SPECIAL_TRIANGLE_CFG_MAX_NUM];
-    numofcfg = SPECIAL_TRIANGLE_CFG_MAX_NUM;    //set size of my vector boardCfgList;
-                                                //in output the function return number of special board cfg are in file xml
-    ret =  _cfgReader.readSpecialTriangleCfg(config, triangleCfg, &numofcfg);
+    std::vector<SpecialSkinTriangleCfgParam> triangleCfg(SPECIAL_TRIANGLE_CFG_MAX_NUM);
+    numofcfg = SPECIAL_TRIANGLE_CFG_MAX_NUM;    //set size of my vector triangleCfg;
+                                                //in output the function return number of special triangle cfg are in file xml
+    ret =  _cfgReader.readSpecialTriangleCfg(config, triangleCfg.data(), &numofcfg);
     if(!ret)
         return false;
 
@@ -211,7 +231,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
         if(p >= _skCfg.patchInfoList.size())
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of bBOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": patch " << triangleCfg[j].patch << "not exists";
+            yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ":patch" << triangleCfg[j].patch << "not exists";
             return false;
         }
         //now p is index patch
@@ -219,9 +239,9 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         eOcanport_t canport = _skCfg.patchInfoList[p].canport;
 
         //check if bcfg.boardAddr is in my patches list
-        if(-1 == _skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
+        if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString <<  " card with address " << triangleCfg[j].boardAddr << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
+            yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << "card with address" << triangleCfg[j].boardAddr << "is not present in patch" << _skCfg.patchInfoList[p].idPatch;
             return(false);
         }
 
@@ -246,19 +266,11 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         tcfg.cfg.shift = triangleCfg[j].cfg.shift;
 
 
-//        //uncomment for debug only
-//        yDebug() << "\n Special triangle cfg num " << j;
-//        boardCfgList[j].debugPrint();
-
-        // allow the remote board to process one command at a time. 
-        // otherwise the board sends up a diagnostics message telling that it cannot send a message in can bus
-        // we do that by ... sic ... adding a small delay. 
-        // the above "yDebug() << "\n Special triangle cfg num " << j;" used to test was probably doing the same effect as a delay of a few ms
         SystemClock::delaySystem(0.010);
 
         if(false == res->setRemoteValue(protoid, &tcfg))
         {
-            yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send special triangle config for board CAN" << canport+1 << ":" << triangleCfg[j].boardAddr;
+            yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << "Error in send special triangle config for board CAN" << canport+1 << ":" << triangleCfg[j].boardAddr;
             return false;
         }
     }
@@ -272,8 +284,10 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 {
     Bottle bPatches, bPatchList, xtmp;
-    //reset total num of cards
+    //reset total num of cards 
+    // A card is the number of each entry skinCanAddrsPatchX inside the patches group --> i.e. the number of CAN addresses found in config file. We should change the name of this variable with something more meaningful.
     _skCfg.totalCardsNum = 0;
+    _cumulativeTaxels = 0;
 
 
     servConfigSkin_t skinconfig;
@@ -282,36 +296,35 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     bPatches = config.findGroup("patches", "skin patches connected to this device");
     if(bPatches.isNull())
     {
-        yError() << "EmbObjSkin::fromConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "patches group is missing";
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << "patches group is missing";
         return(false);
     }
 
     _skCfg.numOfPatches=0;
-    char tmp[80];
-    for (int i=1; i<=2; i++)
+    for (int i=1; i<=MAX_NUM_OF_PATCHES_PER_ETH_BOARD; i++)
     {
-        sprintf(tmp,"skinCanAddrsPatch%d",i);
-        if (bPatches.check(tmp))
+        std::string skinCanAddrsPatchx = "skinCanAddrsPatch";
+        skinCanAddrsPatchx.append(std::to_string(i));
+        if (bPatches.check(skinCanAddrsPatchx))
         {
-           _skCfg.numOfPatches++;
+           _skCfg.numOfPatches++; //we increase the number of patches per each instance of skinCanAddrsPatchX found in config file. 
            bPatchList.addInt32(i);
         }
     }
 
     _skCfg.patchInfoList.clear();
-    _skCfg. patchInfoList.resize(_skCfg.numOfPatches);
+    _skCfg.patchInfoList.resize(_skCfg.numOfPatches);
     for(int j=1; j<_skCfg.numOfPatches+1; j++)
     {
         int id = bPatchList.get(j-1).asInt32();
         if((id!=1) && (id!=2))
         {
-            yError() << "EmbObjSkin::fromConfig(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "expecting at most 2 patches";
+            yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << "expecting at most 2 patches";
             return false;
         }
         _skCfg.patchInfoList[j-1].idPatch = id;
         _skCfg.patchInfoList[j-1].indexNv = convertIdPatch2IndexNv(id);
         _skCfg.patchInfoList[j-1].canport = (1 == id) ? eOcanport1 : eOcanport2;
-        //yDebug("fromConfig: found CAN%d", _skCfg.patchInfoList[j-1].canport+1);
     }
 
 
@@ -324,12 +337,14 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         xtmp = bPatches.findGroup(tmp);
         if(xtmp.isNull())
         {
-            yError() << "EmbObjSkin::fromConfig(): skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << "doesn't find " << tmp << "in xml file";
+            yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << "does not find " << tmp << "in xml file";
             return false;
         }
 
         _skCfg.patchInfoList[i].cardAddrList.resize(xtmp.size()-1);
-
+        _skCfg.patchInfoList[i].taxelsSize = _skCfg.patchInfoList[i].cardAddrList.size() * TRIANGLES_PER_CAN_BOARD * SKIN_TAXELS_PER_TRIANGLE;
+        _skCfg.patchInfoList[i].taxelsOffset = _cumulativeTaxels;
+        _cumulativeTaxels += _skCfg.patchInfoList[i].taxelsSize;
         for(int j=1; j<xtmp.size(); j++)
         {
             int addr = xtmp.get(j).asInt32();
@@ -337,9 +352,9 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
             _skCfg.patchInfoList[i].cardAddrList[j-1] = addr;
         }
     }
-
     // impose the number of sensors (triangles found in config file)
-    sensorsNum = 16*12*_skCfg.totalCardsNum;     // max num of card
+    sensorsNum = _cumulativeTaxels;
+    // sensorsNum is the total number of taxels/sensors on this ETH board.
 
     // resize the skindata holder
     mtx.lock();
@@ -348,7 +363,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     int ttt = this->skindata.size();
     for (int i=0; i < ttt; i++)
     {
-        this->skindata[i]=(double)240;
+        this->skindata[i]=defaultSkinNoLoadValue; // skindata contains data for all the cards. 240 is the max value for a taxel, i.e. 0% pressure on it.
     }
 
     mtx.unlock();
@@ -371,7 +386,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     ethservice.configuration.data.sk.skin.numofpatches = _skCfg.numOfPatches;
     if(ethservice.configuration.data.sk.skin.numofpatches > eomn_serv_skin_maxpatches)
     {
-        yError() << "cannot have so many skin patches. detected" << ethservice.configuration.data.sk.skin.numofpatches << "max is" << eomn_serv_skin_maxpatches;
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": Cannot have so many skin patches. detected" << ethservice.configuration.data.sk.skin.numofpatches << "max is" << eomn_serv_skin_maxpatches;
         return false;
     }
     // tagliato e cucito per le schede eb2 eb4 eb10 ed eb11. da migliorare sia i file xml che il parser.
@@ -394,7 +409,6 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
             if(isCANaddressValid(adr))
             {
                 eo_common_hlfword_bitset(&ethservice.configuration.data.sk.skin.canmapskin[np][canport], adr);
-                //yDebug("config of service: initting mask for bdr @ CAN%d:%d", canport+1, adr);
             }
         }
     }
@@ -418,17 +432,15 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     // Fill the data vector with default values from "noLoad" param in config file.
     for (int board_idx = 0; board_idx < _skCfg.totalCardsNum; board_idx++)
     {
-        for (int triangleId = 0; triangleId < 16; triangleId++)
+        for (int triangleId = 0; triangleId < TRIANGLES_PER_CAN_BOARD; triangleId++)
         {
-            int index = 16*12*board_idx + triangleId*12;
+            int index = TRIANGLES_PER_CAN_BOARD * SKIN_TAXELS_PER_TRIANGLE * board_idx + triangleId * SKIN_TAXELS_PER_TRIANGLE;
 
             // Message head
-            for (size_t k = 0; k < 12; k++)
+            for (size_t k = 0; k < SKIN_TAXELS_PER_TRIANGLE; k++)
             {
-//                yDebug() << "EO readNewConfiguration (default) size is: " << data.size()
-//                         << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
                 if((index+k) >= skindata.size())
-                    yError() << "readNewConfiguration: index too big";
+                    yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": index too big";
                 skindata[index + k] = _brdCfg.noLoad;
             }
         }
@@ -450,18 +462,16 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
-        yFatal() << "EmbObjSkin::open() fails to instantiate ethManager";
+        yCFatal(EMBOBJSKIN) << __YFUNCTION__ << ": fails to instantiate ethManager";
         return false;
     }
 
     if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
-        yError() << "embObjSkin::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": object TheEthManager fails in parsing ETH properties from xml file";
         return false;
     }
     // add specific info about this device ...
-
-
 
     // - now all other things
 
@@ -473,7 +483,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     // read config file
     if(false == fromConfig(config))
     {
-        yError() << "embObjSkin::init() fails in function fromConfig() for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": CANNOT PROCEED ANY FURTHER";
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ": fails in fromConfig():" << boardInfo() << ": cannot proceed any further";
         cleanup();
         return false;
     }
@@ -485,7 +495,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
-        yError() << "embObjSkin::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << boardIPstring << " ... unable to continue";
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": fails because could not instantiate the ethResource for BOARD w/ IP =" << boardIPstring << "... unable to continue";
         return false;
     }
 
@@ -506,12 +516,10 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_skin, servparam, 5.0))
     {
-        yError() << "embObjSkin::open() has an error in call of ethResources::serviceVerifyActivate() for board" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ": error in ethResources::serviceVerifyActivate() for" << boardInfo();
         cleanup();
         return false;
     }
-
-
 
     if(!init())
         return false;
@@ -537,11 +545,9 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-
-
     if(false == res->serviceStart(eomn_serv_category_skin))
     {
-        yError() << "embObjSkin::open() fails to start skin service for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": cannot continue";
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ": fails to start skin service for" << boardInfo() << ": cannot continue";
         cleanup();
         return false;
     }
@@ -549,13 +555,12 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjSkin::open() correctly starts skin service of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString;
+            yCDebug(EMBOBJSKIN) << __YFUNCTION__ << ": correctly starts skin service of" << boardInfo();
         }
     }
 
     return true;
 }
-
 
 
 void EmbObjSkin::cleanup(void)
@@ -574,44 +579,63 @@ bool EmbObjSkin::close()
     return true;
 }
 
-
-
-int EmbObjSkin::read(yarp::sig::Vector &out)
+size_t EmbObjSkin::getNrOfSkinPatches() const
 {
-    std::lock_guard<std::mutex> lck(mtx);
-    out = this->skindata;  //old - this needs the running thread
-    return yarp::dev::IAnalogSensor::AS_OK;
+    yCDebug(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": n. of enabled skin patches" << _skCfg.numOfPatches;
+    return _skCfg.numOfPatches; //should return the number of patches defined as the parameter `skinCanAddrsPatch1` in the hw configuration file (thus for our boards 1 or 2)
 }
 
-int EmbObjSkin::getState(int ch)
+MAS_status EmbObjSkin::getSkinPatchStatus(size_t sens_index) const
 {
-    return yarp::dev::IAnalogSensor::AS_OK;;
+    if(sens_index >= _skCfg.numOfPatches)
+    {
+        return MAS_ERROR;
+    }
+
+    return MAS_OK;
 }
 
-int EmbObjSkin::getChannels()
+bool EmbObjSkin::getSkinPatchName(size_t sens_index, std::string &name) const
 {
-    return sensorsNum;
-}
+    if(sens_index >= _skCfg.numOfPatches)
+    {
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": index out of range. Requested:" << sens_index << "max:" << _skCfg.numOfPatches;
+        return false;
+    }
 
-int EmbObjSkin::calibrateSensor()
-{
+    name = "skin_patch_" + std::to_string(_skCfg.patchInfoList[sens_index].idPatch);
+    yCDebug(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << name;
     return true;
 }
 
-int EmbObjSkin::calibrateChannel(int ch, double v)
+bool EmbObjSkin::getSkinPatchMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
-    //NOT YET IMPLEMENTED
-    return calibrateSensor();
+    if(sens_index >= _skCfg.numOfPatches)
+    {
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": index out of range. Requested:" << sens_index << "max:" << _skCfg.numOfPatches;
+        return false;
+    }
+
+    const auto& patch = _skCfg.patchInfoList[sens_index];
+    out.resize(patch.taxelsSize);
+    std::lock_guard<std::mutex> lck(mtx);
+    for (size_t i = 0; i < patch.taxelsSize; i++)
+    {
+        out[i] = skindata[patch.taxelsOffset + i];
+    }
+    timestamp = yarp::os::Time::now();
+
+    return true;
 }
 
-int EmbObjSkin::calibrateSensor(const yarp::sig::Vector& v)
+size_t EmbObjSkin::getSkinPatchSize(size_t sens_index) const
 {
-    return 0;
-}
-
-int EmbObjSkin::calibrateChannel(int ch)
-{
-    return 0;
+    if(sens_index >= _skCfg.numOfPatches)
+    {
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": index out of range. Requested:" << sens_index << "max:" << _skCfg.numOfPatches;
+        return 0;
+    }
+    return _skCfg.patchInfoList[sens_index].taxelsSize; //should return the number of taxels, that is the number of triangles (16) per card, times the number of taxels per triangle (12), times the number of cards per patch found in config file.
 }
 
 bool EmbObjSkin::start()
@@ -636,7 +660,7 @@ bool EmbObjSkin::start()
         ret = res->setRemoteValue(protoid, &dat);
         if(!ret)
         {
-            yError() << "EmbObjSkin::start(): unable to start skin for BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " on port " <<  _skCfg.patchInfoList[i].idPatch;
+            yCError(EMBOBJSKIN) << __YFUNCTION__ << ": unable to start skin for" << boardInfo() << "on port" << _skCfg.patchInfoList[i].idPatch;
             return false;
         }
     }
@@ -651,8 +675,6 @@ bool EmbObjSkin::configPeriodicMessage(void)
     eOprotID32_t protoid = eo_prot_ID32dummy;
 
     // choose the variables and put them inside vector
-
-
     for(int i=0; i<_skCfg.numOfPatches; i++)
     {
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_status_arrayofcandata);
@@ -662,20 +684,20 @@ bool EmbObjSkin::configPeriodicMessage(void)
 
     if(false == res->serviceSetRegulars(eomn_serv_category_skin, id32v))
     {
-        yError() << "EmbObjSkin::configPeriodicMessage() fails to add its variables to regulars: cannot proceed any further";
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": fails to add its variables to regulars: cannot proceed any further";
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->getProperties().boardnameString << "with IP" << res->getProperties().ipv4addrString;
+                yCDebug(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": added" << id32v.size() << "regular rops";
             char nvinfo[128];
             for (size_t r = 0; r<id32v.size(); r++)
             {
                 uint32_t id32 = id32v.at(r);
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-                yDebug() << "\t it added regular rop for" << nvinfo;
+                yCDebug(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": added regular rop for" << nvinfo;
             }
         }
     }
@@ -731,15 +753,12 @@ bool EmbObjSkin::init()
                     maxAddr = _skCfg.patchInfoList[i].cardAddrList[k];
             }
         }
-
-
-
         // we send the config to the whole patch, hence 0xffff
         defBoardCfg.candestination[0] = defBoardCfg.candestination[1] = 0xffff;
 
         if(false == res->setRemoteValue(protoid, &defBoardCfg))
         {
-            yError() << "EmbObjSkin::init(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send default board config for patch #"<<  i;
+            yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << "Error in send default board config for patch #" << i;
             return false;
         }
 
@@ -756,7 +775,7 @@ bool EmbObjSkin::init()
 
         if(false == res->setRemoteValue(protoid, &defTriangleCfg))
         {
-            yError() << "EmbObjSkin::init(): in skin BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << " Error in send default triangle config for patch # "<<  i;
+            yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << "Error in send default triangle config for patch #" << i;
             return false;
         }
 
@@ -801,11 +820,9 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
     }
     if(p >= _skCfg.numOfPatches)
     {
-        yError() << "EmbObjSkin::update(): skin of BOARD" << res->getProperties().boardnameString << "IP" << res->getProperties().ipv4addrString << ": received data of patch with nvindex= " << indexpatch;
+        yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": received data of patch with nvindex=" << indexpatch;
         return false;
     }
-
-   // yDebug() << "received data from " << patchInfoList[p].idPatch << "port";
 
     errors.resize(sizeofarray);
 
@@ -822,7 +839,6 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
         uint8_t  canframesize = EOSK_CANDATA_INFO2SIZE(candata->info);
         uint8_t *canframedata = candata->data;
 
-        uint8_t mtbId = 255; // unknown mtb card addr
         uint8_t cardAddr = 0;
         uint8_t valid = 0;
         uint8_t skinClass;
@@ -839,29 +855,30 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
         if(valid)
         {
             cardAddr = (canframeid11 & 0x00f0) >> 4;
-            //get index of start of data of board with addr cardId.
+            size_t localBoardIndex = 0;
+            bool foundCardAddr = false;
             for (size_t cId_index = 0; cId_index< _skCfg.patchInfoList[p].cardAddrList.size(); cId_index++)
             {
                 if(_skCfg.patchInfoList[p].cardAddrList[cId_index] == cardAddr)
                 {
-                    mtbId = cId_index;
-                    if(_skCfg.numOfPatches==2 && p==0)
-                        mtbId +=  _skCfg.patchInfoList[1].cardAddrList.size(); //add max num of boards on patch number 2 because they are sorted in decreasing order by can addr
+                    localBoardIndex = cId_index;
+                    foundCardAddr = true;
                     break;
                 }
             }
 
-            if(mtbId == 255)
+            if(!foundCardAddr)
             {
-                //yError() << "Unknown cardId from skin\n";
+                yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << ": Unknown cardId from skin";
                 return false;
             }
 
-            //printf("mtbId=%d\n", mtbId);
             triangle = (canframeid11 & 0x000f);
             msgtype = (int) canframedata[0];
 
-            int index=16*12*mtbId + triangle*12;
+            const size_t patchBase = _skCfg.patchInfoList[p].taxelsOffset;
+            const size_t boardBase = localBoardIndex * TRIANGLES_PER_CAN_BOARD * SKIN_TAXELS_PER_TRIANGLE;
+            const size_t index = patchBase + boardBase + triangle * SKIN_TAXELS_PER_TRIANGLE;
 
             // marco.accame: added lock to avoid concurrent access to this->skindata. i lock at triangle resolution ...
             mtx.lock();
@@ -907,9 +924,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 
                         if (fullMsg != SkinErrorCode::StatusOK)
                         {
-                            yError() << "embObjSkin error code: " <<
-                                        "BOARD: " << res->getProperties().boardnameString  <<
-                                        "IP:"     << res->getProperties().ipv4addrString <<
+                            yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() <<
                                         "canDeviceNum: " << errors[i].net <<
                                         "board: " <<  errors[i].board <<
                                         "sensor: " << errors[i].sensor <<
@@ -932,7 +947,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
         else
         {
             if(error == 0)
-                yError() << "EMS: " << res->getProperties().ipv4addrString << " Unknown Message received from skin (" << i<<"/"<< sizeofarray <<"): frameID=" << canframeid11<< " len="<<canframesize << "canframe.data="<<canframedata[0] << " " <<canframedata[1] << " " <<canframedata[2] << " " <<canframedata[3] <<"\n" ;
+                yCError(EMBOBJSKIN) << __YFUNCTION__ << ":" << boardInfo() << "Unknown Message received from skin (" << i << "/" << sizeofarray << "): frameID=" << canframeid11 << " len=" << canframesize << "canframe.data=" << canframedata[0] << " " << canframedata[1] << " " << canframedata[2] << " " << canframedata[3];
             error++;
             if (error == 10000)
                 error = 0;
@@ -955,31 +970,5 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 
     return true;
 }
-
-/* *********************************************************************************************************************** */
-/* ******* Diagnose skin errors.                                            ********************************************** */
-//bool EmbObjSkin::diagnoseSkin(void) {
-//    using iCub::skin::diagnostics::DetectedError;   // FG: Skin diagnostics errors
-//    using yarp::sig::Vector;
-
-//    if (useDiagnostics) {
-//        // Write errors to port
-//        for (size_t i = 0; i < errors.size(); ++i) {
-//            Vector &out = portSkinDiagnosticsOut.prepare();
-//            out.clear();
-
-//            out.push_back(errors[i].net);
-//            out.push_back(errors[i].board);
-//            out.push_back(errors[i].sensor);
-//            out.push_back(errors[i].error);
-
-//            portSkinDiagnosticsOut.write(true);
-//        }
-//    }
-
-//    return true;
-//}
 /* *********************************************************************************************************************** */
 // eof
-
-

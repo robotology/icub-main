@@ -192,8 +192,8 @@ void stereoCalibThread::stereoCalibRun()
                 }
 
                 if(foundL && foundR) {
-                        cvtColor(Left,Left,CV_RGB2BGR);
-                        cvtColor(Right,Right,CV_RGB2BGR);
+                        cvtColor(Left,Left,COLOR_RGB2BGR);
+                        cvtColor(Right,Right,COLOR_RGB2BGR);
                         saveStereoImage(pathImg.c_str(),Left,Right,count);
 
                         imageListR.push_back(imr);
@@ -313,7 +313,7 @@ void stereoCalibThread::monoCalibRun()
                 }
 
                 if(foundL) {
-                        cvtColor(Left,Left,CV_RGB2BGR);
+                        cvtColor(Left,Left,COLOR_RGB2BGR);
                         saveImage(pathImg.c_str(),Left,count);
                         imageListL.push_back(iml);
                         Mat cL(pointbufL);
@@ -616,7 +616,7 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
          view = cv::imread(imageList[i], 1);
          imageSize = view.size();
          vector<Point2f> pointbuf;
-         cvtColor(view, viewGray, CV_BGR2GRAY);
+         cvtColor(view, viewGray, COLOR_BGR2GRAY);
 
          bool found = false;
          if(boardType == "CIRCLES_GRID") {

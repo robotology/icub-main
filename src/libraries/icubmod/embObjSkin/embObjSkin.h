@@ -1,9 +1,9 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 
-/* Copyright (C) 2012  iCub Facility, Istituto Italiano di Tecnologia
- * Author: Alberto Cardellino
- * email: alberto.cardellino@iit.it
+/* Copyright (C) 2026  Mesh Facility, Istituto Italiano di Tecnologia
+ * Author: Alberto Cardellino, Jacopo Losi
+ * email: alberto.cardellino@iit.it, jacopo.losi@iit.it
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -23,10 +23,11 @@
 
 #include <string>
 #include <mutex>
+#include <optional>
 
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/dev/IAnalogSensor.h>
+#include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 
 
@@ -53,7 +54,10 @@ public:
     eOcanport_t             canport; // so far a patch contains addresses of a unique canport
     eOprotIndex_t           indexNv;
     std::vector <int>       cardAddrList;
-    int checkCardAddrIsInList(int cardAddr);
+    size_t                  taxelsOffset{0};
+    size_t                  taxelsSize{0}; // number of taxels per patch
+    size_t                  boardsOffset{0};
+    std::optional<size_t>   checkCardAddrIsInList(int cardAddr);
 };
 
 class SkinConfig
@@ -67,18 +71,10 @@ class SkinConfig
 
 // -- class EmbObjSkin
 
-class EmbObjSkin :  public yarp::dev::IAnalogSensor,
+class EmbObjSkin :  public ISkinPatches,
                     public DeviceDriver,
                     public eth::IethResource
 {
-
-public:
-
-    enum { EMBSK_SIZE_INFO = 128 };
-    enum { SPECIAL_TRIANGLE_CFG_MAX_NUM = 20 };
-
-    bool            opened;
-
 protected:
 
     string boardIPstring;
@@ -88,18 +84,17 @@ protected:
     eth::TheEthManager *ethManager;
     eth::AbstractEthResource *res;
 
-    std::mutex        mtx;
-    //int             totalCardsNum;
-    //std::vector<SkinPatchInfo> patchInfoList;
-    size_t          sensorsNum;
-    Vector          skindata;
-    //uint8_t         numOfPatches; //currently one patch is made up by all skin boards connected to one can port of ems.
-    SkinBoardCfgParam _brdCfg;
+    mutable std::mutex   mtx;
+    size_t               sensorsNum;
+    size_t               _cumulativeTaxels;
+    Vector               skindata;
+    SkinBoardCfgParam    _brdCfg;
     SkinTriangleCfgParam _triangCfg;
-    bool            _newCfg;
-    SkinConfigReader  _cfgReader;
-    SkinConfig        _skCfg;
+    bool                 _newCfg;
+    SkinConfigReader     _cfgReader;
+    SkinConfig           _skCfg;
 
+    void            cleanup(void);
     bool            init();
     bool            fromConfig(yarp::os::Searchable& config);
     bool            initWithSpecialConfig(yarp::os::Searchable& config);
@@ -113,9 +108,12 @@ protected:
             return(0);
         else
             return(idPatch-1);
-    }
+    } 
+
 
 private:
+    bool opened;
+    std::string boardInfo() const;
 
     ServiceParser *parser;
     eOmn_serv_parameter_t ethservice;
@@ -134,20 +132,23 @@ public:
     EmbObjSkin();
     ~EmbObjSkin();
 
+    // DeviceDriver interface
     virtual bool    open(yarp::os::Searchable& config);
-
     virtual bool    close();
-    void            cleanup(void);
 
-    virtual int     read(yarp::sig::Vector &out);
-    virtual int     getState(int ch);
-    virtual int     getChannels();
-    virtual int     calibrateSensor();
-    virtual int     calibrateChannel(int ch, double v);
+    // ISkinPatches interface    
+    /** Get the number of skin patches exposed by THIS device */
+    virtual size_t  getNrOfSkinPatches() const override;
+    /** Get the status of the specified patch */
+    virtual MAS_status getSkinPatchStatus(size_t sens_index) const override;
+    /** Get the name of the specified patch */
+    virtual bool    getSkinPatchName(size_t sens_index, std::string &name) const override;
+    /** Get the last readings of the sensors related to the specified patch */
+    virtual bool    getSkinPatchMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+    /** Get the size of the specified skin patch, i.e., the number of taxels (sensors) it contains */
+    virtual size_t  getSkinPatchSize(size_t sens_index) const override;
 
-    virtual int     calibrateSensor(const yarp::sig::Vector& v);
-    virtual int     calibrateChannel(int ch);
-
+    // IethResource interface
     virtual bool initialised();
     virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
