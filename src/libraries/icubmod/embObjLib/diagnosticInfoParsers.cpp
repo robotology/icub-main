@@ -663,7 +663,7 @@ std::string MotionControlParser::motorStatusBitsToString(eOmc_motorFaultState_t 
         "CAN_IsWarnTX",
         "CAN_IsWarnRX",
         "OverHeatingFailure",
-        "",
+        "I2C_CommFailure",
         //B2 L
         "ADCCalFailure",
         "I2TFailure",
@@ -787,8 +787,8 @@ void MotionControlParser::parseInfo()
             motor_status.bitmask = m_dnginfo.param64 & 0xffffffff;
             m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
             std::string motorStatusString = motorStatusBitsToString(motor_status);
-            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) (Errors:%s)", 
-                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, motorStatusString.c_str()
+            snprintf(str, sizeof(str), " %s (Joint=%s (NIB=%d) (Err_bitmask=%x)(Errors:%s)", 
+                                        m_dnginfo.baseMessage.c_str(), m_dnginfo.baseInfo.axisName.c_str(), joint_num, motor_status.bitmask, motorStatusString.c_str()
                                         );
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
