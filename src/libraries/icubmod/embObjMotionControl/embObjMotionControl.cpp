@@ -896,6 +896,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     }
 
     ///////////////INIT INTERFACES
+    // Important Note. The feedback and control units must be the same for all joints of this board.
     _measureConverter = new ControlBoardHelper(_njoints, _parsedCfgData.axisMap.data(), measConvFactors.angleToEncoder.data(), NULL, measConvFactors.newtonsToSensor.data(), measConvFactors.ampsToSensor.data(), nullptr, measConvFactors.dutycycleToPWM.data(), measConvFactors.bemf2raw.data(), measConvFactors.ktau2raw.data());
     _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, _parsedCfgData.pidControllers.trj[0].fbk_PidUnits, _parsedCfgData.pidControllers.trj[0].out_PidUnits);
     _measureConverter->set_pid_conversion_units(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT, _parsedCfgData.pidControllers.dir_vel[0].fbk_PidUnits, _parsedCfgData.pidControllers.dir_vel[0].out_PidUnits);
@@ -1372,7 +1373,7 @@ bool embObjMotionControl::init()
         copyPid_iCub2eo(&tmp, &jconfig.piddirect);
         tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE, _parsedCfgData.pidControllers.trq[logico].pid, fisico);
         copyPid_iCub2eo(&tmp, &jconfig.pidtorque);
-        //Note: velocity and current pids are not sent to fw, because not used in current fw versions. the mixed control and velocity control use the position pid.
+        //Note: The mixed control and velocity control use the position pid. The velocity direct and current PID are sent in motor configuration. 
 
         //stiffness and damping read in xml file are in Nm/deg and Nm/(Deg/sec), so we need to convert before send to fw.
         jconfig.impedance.damping   = (eOmeas_damping_t) _measureConverter->impN2S(_parsedCfgData.impedance_params[logico].damping, fisico);
