@@ -351,13 +351,20 @@ bool Parser::parsePidUnitsType(yarp::os::Bottle& pidsGroup, yarp::dev::PidFeedba
     {
         out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT;
     }
-    else if (outControlUnits.toString() == string("machine_units"))
+    else if (outControlUnits.toString() == eomc::paramValues::FbkControlUnits_machine)
     {
         out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
     }
+    else if (outControlUnits.toString() == eomc::paramValues::OutControlUnit_metric)
+    {
+        out_pidunits = yarp::dev::PidOutputUnitsEnum::METRIC;
+    }
     else
     {
-        yError() << "embObjMC BOARD " << _boardname << "invalid outputControlUnits value: " << outControlUnits.toString().c_str();
+        yError() << "embObjMC BOARD " << _boardname << " invalid outputControlUnits value: \""
+                 << outControlUnits.toString().c_str()
+                 << "\". Valid values are: \"" << eomc::paramValues::OutControlUnit_dutycycle
+                 << "\" or \"" << eomc::paramValues::FbkControlUnits_machine << "\". Quitting.";
         return false;
     }
     return true;
