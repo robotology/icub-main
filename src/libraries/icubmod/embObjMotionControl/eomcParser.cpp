@@ -347,25 +347,47 @@ bool Parser::parsePidUnitsType(yarp::os::Bottle& pidsGroup, yarp::dev::PidFeedba
         return false;
     }
 
-    if (outControlUnits.toString() == eomc::paramValues::OutControlUnit_dutycycle)
+    // Map config string → PidOutputUnitsEnum. OutControlUnit_metric ("metric_units") is mapped to
+    // POSITION_METRIC as a representative value; all metric variants are rejected in the switch below.
+    static const std::map<std::string, yarp::dev::PidOutputUnitsEnum> s_outUnitsMap =
     {
-        out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT;
-    }
-    else if (outControlUnits.toString() == eomc::paramValues::FbkControlUnits_machine)
-    {
-        out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
-    }
-    else if (outControlUnits.toString() == eomc::paramValues::OutControlUnit_metric)
-    {
-        out_pidunits = yarp::dev::PidOutputUnitsEnum::METRIC;
-    }
-    else
+        {std::string(eomc::paramValues::OutControlUnit_dutycycle), yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT},
+        {std::string(eomc::paramValues::FbkControlUnits_machine),  yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS},
+        {std::string(eomc::paramValues::OutControlUnit_metric),    yarp::dev::PidOutputUnitsEnum::POSITION_METRIC},
+    };
+
+    const std::string outUnitsStr = outControlUnits.toString();
+    auto outIt = s_outUnitsMap.find(outUnitsStr);
+    if (outIt == s_outUnitsMap.end())
     {
         yError() << "embObjMC BOARD " << _boardname << " invalid outputControlUnits value: \""
-                 << outControlUnits.toString().c_str()
-                 << "\". Valid values are: \"" << eomc::paramValues::OutControlUnit_dutycycle
-                 << "\" or \"" << eomc::paramValues::FbkControlUnits_machine << "\". Quitting.";
+                 << outUnitsStr << "\". Valid values are: \""
+                 << eomc::paramValues::OutControlUnit_dutycycle << "\" or \""
+                 << eomc::paramValues::FbkControlUnits_machine << "\". Quitting.";
         return false;
+    }
+
+    switch (outIt->second)
+    {
+        case yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT:
+            out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT;
+            break;
+        case yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS:
+            out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
+            break;
+        case yarp::dev::PidOutputUnitsEnum::POSITION_METRIC:
+        case yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC:
+        case yarp::dev::PidOutputUnitsEnum::TORQUE_METRIC:
+        case yarp::dev::PidOutputUnitsEnum::CURRENT_METRIC:
+            yError() << "embObjMC BOARD " << _boardname
+                     << " outputControlUnits = \"" << outUnitsStr
+                     << "\" specifies a metric output unit which is not supported by embObjMotionControl."
+                     << " Supported values are: \"" << eomc::paramValues::OutControlUnit_dutycycle
+                     << "\" or \"" << eomc::paramValues::FbkControlUnits_machine << "\". Quitting.";
+            return false;
+        default:
+            yError() << "embObjMC BOARD " << _boardname << " unhandled outputControlUnits enum value. Quitting.";
+            return false;
     }
     return true;
 }
