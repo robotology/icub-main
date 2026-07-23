@@ -64,56 +64,56 @@ bool stereoCalibThread::threadInit()
     //mono calibration does not need the joint positions initialised below
     if(!stereo || standalone) return true;
 
-    Property optHead;
-    optHead.put("device","remote_controlboard");
-    optHead.put("remote",("/"+robotName+"/head").c_str());
-    optHead.put("local","/"+moduleName+"/client/head");
-    if (polyHead.open(optHead))
-        polyHead.view(posHead);
-    else
-    {
-        cout<<"Devices not available"<<endl;
-        return false;
-    }
+    // Property optHead;
+    // optHead.put("device","remote_controlboard");
+    // optHead.put("remote",("/"+robotName+"/head").c_str());
+    // optHead.put("local","/"+moduleName+"/client/head");
+    // if (polyHead.open(optHead))
+    //     polyHead.view(posHead);
+    // else
+    // {
+    //     cout<<"Devices not available"<<endl;
+    //     return false;
+    // }
 
-    Property optTorso;
-    optTorso.put("device","remote_controlboard");
-    optTorso.put("remote",("/"+robotName+"/torso").c_str());
-    optTorso.put("local","/"+moduleName+"/client/torso");
+    // Property optTorso;
+    // optTorso.put("device","remote_controlboard");
+    // optTorso.put("remote",("/"+robotName+"/torso").c_str());
+    // optTorso.put("local","/"+moduleName+"/client/torso");
 
-    bool useTorso=true;
-    if (polyTorso.open(optTorso))
-        polyTorso.view(posTorso);
-    else
-    {
-        yWarning("Unable to connect to torso! Continuing without...");
-        useTorso=false;
-    }
+    // bool useTorso=true;
+    // if (polyTorso.open(optTorso))
+    //     polyTorso.view(posTorso);
+    // else
+    // {
+    //     yWarning("Unable to connect to torso! Continuing without...");
+    //     useTorso=false;
+    // }
 
-    yarp::sig::Vector head_angles(6,0.0);
-    posHead->getEncoders(head_angles.data());
+    // yarp::sig::Vector head_angles(6,0.0);
+    // posHead->getEncoders(head_angles.data());
 
-    yarp::sig::Vector torso_angles(3,0.0);
-    if (useTorso)
-        posTorso->getEncoders(torso_angles.data());
+    // yarp::sig::Vector torso_angles(3,0.0);
+    // if (useTorso)
+    //     posTorso->getEncoders(torso_angles.data());
 
-    qL.resize(torso_angles.length()+head_angles.length()-1);
-    for(size_t i=0; i<torso_angles.length(); i++)
-        qL[i]=torso_angles[torso_angles.length()-i-1];
+    // qL.resize(torso_angles.length()+head_angles.length()-1);
+    // for(size_t i=0; i<torso_angles.length(); i++)
+    //     qL[i]=torso_angles[torso_angles.length()-i-1];
 
-    for(size_t i=0; i<head_angles.length()-2; i++)
-        qL[i+torso_angles.length()]=head_angles[i];
-    qL[7]=head_angles[4]+(0.5-(LEFT))*head_angles[5];
-    qL=iCub::ctrl::CTRL_DEG2RAD*qL;
+    // for(size_t i=0; i<head_angles.length()-2; i++)
+    //     qL[i+torso_angles.length()]=head_angles[i];
+    // qL[7]=head_angles[4]+(0.5-(LEFT))*head_angles[5];
+    // qL=iCub::ctrl::CTRL_DEG2RAD*qL;
 
-    qR.resize(torso_angles.length()+head_angles.length()-1);
-    for(size_t i=0; i<torso_angles.length(); i++)
-        qR[i]=torso_angles[torso_angles.length()-i-1];
+    // qR.resize(torso_angles.length()+head_angles.length()-1);
+    // for(size_t i=0; i<torso_angles.length(); i++)
+    //     qR[i]=torso_angles[torso_angles.length()-i-1];
 
-    for(size_t i=0; i<head_angles.length()-2; i++)
-        qR[i+torso_angles.length()]=head_angles[i];
-    qR[7]=head_angles[4]+(0.5-(RIGHT))*head_angles[5];
-    qR=iCub::ctrl::CTRL_DEG2RAD*qR;
+    // for(size_t i=0; i<head_angles.length()-2; i++)
+    //     qR[i+torso_angles.length()]=head_angles[i];
+    // qR[7]=head_angles[4]+(0.5-(RIGHT))*head_angles[5];
+    // qR=iCub::ctrl::CTRL_DEG2RAD*qR;
 
    return true;
 }
@@ -134,8 +134,8 @@ void stereoCalibThread::stereoCalibRun()
 {
     imageL=new ImageOf<PixelRgb>;
     imageR=new ImageOf<PixelRgb>;
-
-    Stamp TSLeft;
+                        foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                        foundR = findChessboardCorners(Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
     Stamp TSRight;
 
     bool initL=false;
@@ -163,7 +163,7 @@ void stereoCalibThread::stereoCalibRun()
             initR=true;
         }
 
-        if(initL && initR && checkTS(TSLeft.getTime(),TSRight.getTime())){
+        if(initL && initR && checkTS(TSLeft.getTime(),TSRight.getTime(), 0.03)){
 
             bool foundL=false;
             bool foundR=false;
@@ -187,8 +187,10 @@ void stereoCalibThread::stereoCalibRun()
                     foundL = findCirclesGrid(Left, boardSize, pointbufL, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                     foundR = findCirclesGrid(Right, boardSize, pointbufR, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                 } else {
-                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-                    foundR = findChessboardCorners(Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    // foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    // foundR = findChessboardCorners(Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    foundR = findChessboardCorners(Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
                 }
 
                 if(foundL && foundR) {
@@ -244,7 +246,8 @@ void stereoCalibThread::stereoCalibRun()
             outPortRight.write();
 
             if(foundL && foundR && startCalibration==1)
-                Time::delay(2.0);
+            Time::delay(2.0);
+
             initL=initR=false;
             cout.flush();
         }
@@ -309,7 +312,7 @@ void stereoCalibThread::monoCalibRun()
                 } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
                     foundL = findCirclesGrid(Left, boardSize, pointbufL, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                 } else {
-                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
                 }
 
                 if(foundL) {
@@ -345,8 +348,6 @@ void stereoCalibThread::monoCalibRun()
             outimR=*imageL;
             outPortRight.write();
 
-            if(foundL && startCalibration==1)
-                Time::delay(2.0);
             cout.flush();
 
         }
@@ -362,11 +363,11 @@ void stereoCalibThread::threadRelease()
     outPortRight.close();
     commandPort->close();
 
-    if (polyHead.isValid())
-        polyHead.close();
+    // if (polyHead.isValid())
+    //     polyHead.close();
 
-    if (polyTorso.isValid())
-        polyTorso.close();
+    // if (polyTorso.isValid())
+    //     polyTorso.close();
 }
 
 void stereoCalibThread::onStop() {
@@ -451,7 +452,7 @@ void stereoCalibThread::saveImage(const char * imageDir, const Mat& left, int nu
     imwrite(pathL,left);
 }
 
-bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double p1, double p2, const string& groupname){
+bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double k3, double k4, const string& groupname){
 
     std::vector<string> lines;
 
@@ -527,19 +528,18 @@ bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, doubl
                     ss << k2;
                     line = "k2 " + string(ss.str());
                 }
-                // replace p1 line
-                if (line.find("p1",0) != string::npos){
+                // replace k3 line
+                if (line.find("k3",0) != string::npos){
                     stringstream ss;
-                    ss << p1;
-                    line = "p1 " + string(ss.str());
+                    ss << k3;
+                    line = "k3 " + string(ss.str());
                 }
-                // replace p2 line
-                if (line.find("p2",0) != string::npos){
+                // replace k4 line
+                if (line.find("k4",0) != string::npos){
                     stringstream ss;
-                    ss << p2;
-                    line = "p2 " + string(ss.str());
+                    ss << k4;
+                    line = "k4 " + string(ss.str());
                 }
-
             }
             // buffer line
             lines.push_back(line);
@@ -585,8 +585,8 @@ bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, doubl
             out << "cy " << cy << endl;
             out << "k1 " << k1 << endl;
             out << "k2 " << k2 << endl;
-            out << "p1 " << p1 << endl;
-            out << "p2 " << p2 << endl;
+            out << "k3 " << k3 << endl;
+            out << "k4 " << k4 << endl;
             out << endl;
             out.close();
         }
@@ -625,7 +625,7 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
              found = findCirclesGrid(view, boardSize, pointbuf, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
          } else {
              found = findChessboardCorners( view, boardSize, pointbuf,
-                                            CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                                            CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
          }
 
          if(found)
@@ -649,8 +649,11 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
     calcChessboardCorners(boardSize, squareSize, objectPoints[0]);
     objectPoints.resize(imagePoints.size(),objectPoints[0]);
 
-    double rms = calibrateCamera(objectPoints, imagePoints, imageSize, K,
-                    Dist, rvecs, tvecs,CV_CALIB_FIX_K3);
+    // double rms = calibrateCamera(objectPoints, imagePoints, imageSize, K,
+    //                 Dist, rvecs, tvecs,CV_CALIB_FIX_K3);
+    double rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, K, Dist, rvecs, tvecs,
+                    fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW, TermCriteria(TermCriteria::EPS+TermCriteria::MAX_ITER, 100, 1e-5));
+
     yInfo("RMS error reported by calibrateCamera: %g\n", rms);
     cout.flush();
 }
@@ -711,7 +714,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                     found = findCirclesGrid(timg, boardSize, corners, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                 } else {
                     found = findChessboardCorners(timg, boardSize, corners,
-                                                  CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+                                                CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
                 }
 
                 if( found )
@@ -759,31 +762,31 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
             yError("Images have different sizes. Please make sure to compute intrinsic parameters before running stereo calibration. Quitting...");
             exit (-1);
         }
-        double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
+        double rms = fisheye::stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
                         this->Kleft, this->DistL,
                         this->Kright, this->DistR,
                         imageSize, this->R, this->T, E, F,
                     #ifdef OPENCV_GREATER_2
-                        CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_ZERO_TANGENT_DIST + CV_CALIB_SAME_FOCAL_LENGTH + CV_CALIB_FIX_K3,
+                        fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW,
                         TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5));
                     #else
                         TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5),
-                        CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_ZERO_TANGENT_DIST + CV_CALIB_SAME_FOCAL_LENGTH + CV_CALIB_FIX_K3);
+                        fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW);
                     #endif
         yInfo("done with RMS error= %f\n",rms);
     } else
     {
         yInfo("Using precomputed intrinsic parameters");
-        double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
+        double rms = fisheye::stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
                 this->Kleft, this->DistL,
                 this->Kright, this->DistR,
                 imageSize, this->R, this->T, E, F,
             #ifdef OPENCV_GREATER_2
-                 CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_FIX_INTRINSIC + CV_CALIB_FIX_K3);
-                 TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5),
+                 fisheye::CALIB_FIX_INTRINSIC | fisheye::CALIB_FIX_SKEW,
+                 TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5));
             #else
                  TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5),
-                 CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_FIX_INTRINSIC + CV_CALIB_FIX_K3);
+                 fisheye::CALIB_FIX_INTRINSIC | fisheye::CALIB_FIX_SKEW);
             #endif
         yInfo("done with RMS error= %f\n",rms);
     }

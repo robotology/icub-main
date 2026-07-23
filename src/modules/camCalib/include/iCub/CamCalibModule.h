@@ -21,6 +21,7 @@
 
 // iCub
 #include <iCub/PinholeCalibTool.h>
+#include <iCub/StereoRectifyTool.h>
 #include <iCub/SphericalCalibTool.h>
 #include <iCub/CalibToolFactory.h>
 #include <iCub/ICalibTool.h>
@@ -39,6 +40,7 @@ private:
     bool verbose;
     double t0;
     double currSat;
+    bool strictOutput;
 
     virtual void onRead(yarp::sig::ImageOf<yarp::sig::PixelRgb> &yrpImgIn);
 
@@ -46,6 +48,7 @@ public:
     CamCalibPort();
     
     void setSaturation(double satVal);
+    void setStrictOutput(bool enabled) { strictOutput = enabled; }
     void setPointers(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *_portImgOut, ICalibTool *_calibTool);
     void setVerbose(const bool sw) { verbose=sw; }
 };
