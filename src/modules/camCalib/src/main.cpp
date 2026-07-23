@@ -220,6 +220,7 @@
 #include <iCub/SphericalCalibTool.h>
 #include <iCub/FisheyeCalibTool.h>
 #include <iCub/CamCalibModule.h>
+#include <iCub/FisheyeCalibTool.h>
 
 // OpenCV
 #include <opencv2/core/core_c.h>

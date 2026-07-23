@@ -188,7 +188,6 @@ bool PinholeCalibTool::init(CvSize currImgSize, CvSize calibImgSize){
 }
 
 void PinholeCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & out){
-
     CvSize inSize = cvSize(in.width(),in.height());
 
     // check if reallocation required
@@ -197,11 +196,12 @@ void PinholeCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & o
         _needInit)
         init(inSize,_calibImgSize);
 
-    cv::Mat outMat;
-    cv::remap( toCvMat(const_cast<ImageOf<PixelRgb>&>(in)), outMat,
+    out.resize(in.width(), in.height());
+    cv::Mat inMat(in.height(), in.width(), CV_8UC3, in.getRawImage(), in.getRowSize());
+    cv::Mat outMat(out.height(), out.width(), CV_8UC3, out.getRawImage(), out.getRowSize());
+    cv::remap(inMat, outMat,
                cv::cvarrToMat(_mapUndistortX), cv::cvarrToMat(_mapUndistortY),
                cv::INTER_LINEAR );
-    out=fromCvMat<PixelRgb>(outMat);
 
     // painting crosshair at calibration center
     if (_drawCenterCross){
