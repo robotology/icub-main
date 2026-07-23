@@ -1,7 +1,10 @@
+#include <algorithm>
+#include <cmath>
 #include <utility>
 #include <yarp/cv/Cv.h>
 #include "stereoCalibThread.h"
 
+#include <chrono>
 
 stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const char *imageDir)
 {
@@ -134,8 +137,8 @@ void stereoCalibThread::stereoCalibRun()
 {
     imageL=new ImageOf<PixelRgb>;
     imageR=new ImageOf<PixelRgb>;
-                        foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-                        foundR = findChessboardCorners(Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+
+    Stamp TSLeft;
     Stamp TSRight;
 
     bool initL=false;
@@ -178,6 +181,11 @@ void stereoCalibThread::stereoCalibRun()
                 Left=yarp::cv::toCvMat(*imageL);
                 Right=yarp::cv::toCvMat(*imageR);
 
+                // Color adjust
+                Mat grayL, grayR;
+                cvtColor(Left,grayL,CV_RGB2GRAY);
+                cvtColor(Right,grayR,CV_RGB2GRAY);
+
                 std::vector<Point2f> pointbufL;
                 std::vector<Point2f> pointbufR;
                 if(boardType == "CIRCLES_GRID") {
@@ -187,35 +195,57 @@ void stereoCalibThread::stereoCalibRun()
                     foundL = findCirclesGrid(Left, boardSize, pointbufL, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                     foundR = findCirclesGrid(Right, boardSize, pointbufR, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                 } else {
-                    // foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-                    // foundR = findChessboardCorners(Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
-                    foundR = findChessboardCorners(Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    foundL = findChessboardCorners(grayL, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    foundR = findChessboardCorners(grayR, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    // foundL = findChessboardCornersSB(Left, boardSize, pointbufL);
+                    // foundR = findChessboardCornersSB(Right, boardSize, pointbufR);
                 }
 
                 if(foundL && foundR) {
+                        auto start = std::chrono::high_resolution_clock::now();
                         cvtColor(Left,Left,CV_RGB2BGR);
                         cvtColor(Right,Right,CV_RGB2BGR);
+
+                        // save pure image before adding corners
                         saveStereoImage(pathImg.c_str(),Left,Right,count);
 
                         imageListR.push_back(imr);
                         imageListL.push_back(iml);
                         imageListLR.push_back(iml);
                         imageListLR.push_back(imr);
-                        Mat cL(pointbufL);
-                        Mat cR(pointbufR);
+                        std::vector<Point2f> cL = pointbufL;
+                        std::vector<Point2f> cR = pointbufR;
+                        TermCriteria criteria = TermCriteria(TermCriteria::EPS+TermCriteria::COUNT, 30, 0.001);
+                        cornerSubPix(grayL, cL, Size(11,11), Size(-1,-1), criteria);
+                        cornerSubPix(grayR, cR, Size(11,11), Size(-1,-1), criteria);
                         drawChessboardCorners(Left, boardSize, cL, foundL);
                         drawChessboardCorners(Right, boardSize, cR, foundR);
+
+                        auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+                        for(auto &p : cL)
+                            yDebug() << "Left corners: " << p.x << " " << p.y;
+                        for(auto &p : cR)
+                            yDebug() << "Right corners: " << p.x << " " << p.y;
+
+                        yInfo("Image processing time: %ld ms\n", diff.count());
                         count++;
                 }
 
                 if(count>numOfPairs) {
                     yInfo(" Running Left Camera Calibration... \n");
-                    monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL);
+                    yDebug(" Number of images used for calibration: %ld \n",imageListL.size());
+                    double leftRms = monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL,"left");
 
+                    yDebug(" Number of images used for calibration: %ld \n",imageListR.size());
                     yInfo(" Running Right Camera Calibration... \n");
-                    monoCalibration(imageListR,this->boardWidth,this->boardHeight,this->Kright,this->DistR);
+                    double rightRms = monoCalibration(imageListR,this->boardWidth,this->boardHeight,this->Kright,this->DistR,"right");
+                    if (leftRms > 0.0 && rightRms > 0.0)
+                    {
+                        double rmsDelta = fabs(leftRms - rightRms);
+                        yInfo("Mono calibration RMS delta between left and right cameras: %g", rmsDelta);
+                    }
 
+                    yInfo(" Starting Stereo Calibration... \n");
                     stereoCalibration(imageListLR, this->boardWidth,this->boardHeight,this->squareSize);
 
                     yInfo(" Saving Calibration Results... \n");
@@ -326,7 +356,7 @@ void stereoCalibThread::monoCalibRun()
 
                 if(count>numOfPairs) {
                     yInfo(" Running %s Camera Calibration... \n", cameraName.c_str());
-                    monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL);
+                    monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL,cameraName.c_str());
 
                     yInfo(" Saving Calibration Results... \n");
                     updateIntrinsics(Left.cols,Left.rows,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),
@@ -437,7 +467,7 @@ void stereoCalibThread::saveStereoImage(const char * imageDir, const Mat& left, 
     char pathR[256];
     preparePath(imageDir, pathL,pathR,num);
 
-    yInfo("Saving images number %d \n",num);
+    yInfo("Saving stereo images number %d \n",num);
 
     imwrite(pathL,left);
     imwrite(pathR,right);
@@ -597,7 +627,7 @@ bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, doubl
     return true;
 }
 
-void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat &K, Mat &Dist)
+double stereoCalibThread::monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat &K, Mat &Dist, const char* cameraName)
 {
     vector<vector<Point2f> > imagePoints;
     Size boardSize, imageSize;
@@ -606,58 +636,183 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
     int flags=0;
     int i;
 
-    float squareSize = 1.f, aspectRatio = 1.f;
+    float squareSize = this->squareSize;
+    float aspectRatio = 1.f;
+    if (squareSize <= 0.0f)
+    {
+        yWarning("Mono calibration: invalid square size %f, using 1.0", squareSize);
+        squareSize = 1.0f;
+    }
 
-      Mat view, viewGray;
+    Mat view, viewGray;
 
     for(i = 0; i<(int)imageList.size();i++)
     {
+        view = cv::imread(imageList[i], IMREAD_COLOR);
+        if (view.empty())
+        {
+            yWarning("Mono calibration: could not read image %s", imageList[i].c_str());
+            continue;
+        }
 
-         view = cv::imread(imageList[i], 1);
-         imageSize = view.size();
-         vector<Point2f> pointbuf;
-         cvtColor(view, viewGray, CV_BGR2GRAY);
+        if (imageSize == Size())
+            imageSize = view.size();
+        else if (view.size() != imageSize)
+        {
+            yWarning("Mono calibration: image %s has size %dx%d while first image had %dx%d",
+                     imageList[i].c_str(), view.cols, view.rows, imageSize.width, imageSize.height);
+            continue;
+        }
 
-         bool found = false;
-         if(boardType == "CIRCLES_GRID") {
-             found = findCirclesGrid(view, boardSize, pointbuf, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
-         } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
-             found = findCirclesGrid(view, boardSize, pointbuf, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
-         } else {
-             found = findChessboardCorners( view, boardSize, pointbuf,
-                                            CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
-         }
+        vector<Point2f> pointbuf;
+        cvtColor(view, viewGray, CV_BGR2GRAY);
 
-         if(found)
-         {
-            drawChessboardCorners( view, boardSize, Mat(pointbuf), found );
+        bool found = false;
+        if(boardType == "CIRCLES_GRID") {
+            found = findCirclesGrid(view, boardSize, pointbuf, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
+        } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
+            found = findCirclesGrid(view, boardSize, pointbuf, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
+        } else {
+            found = findChessboardCorners(viewGray, boardSize, pointbuf,
+                                        CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+        }
+
+        if(found)
+        {
+            yInfo("Mono calibration: image %s found %zu corners", imageList[i].c_str(), pointbuf.size());
+            if (pointbuf.size() != static_cast<size_t>(boardWidth * boardHeight))
+            {
+                yWarning("Mono calibration: skipping image %s because %zu corners were detected, expected %d",
+                         imageList[i].c_str(), pointbuf.size(), boardWidth * boardHeight);
+                continue;
+            }
+
+            cv::Rect bbox = cv::boundingRect(pointbuf);
+            if (bbox.width < view.cols * 0.15 || bbox.height < view.rows * 0.15)
+            {
+                yWarning("Mono calibration: skipping image %s because the detected board is too small (bbox %dx%d)",
+                         imageList[i].c_str(), bbox.width, bbox.height);
+                continue;
+            }
+
+            TermCriteria subpixCriteria = TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 30, 0.001);
+            cornerSubPix(viewGray, pointbuf, Size(11, 11), Size(-1, -1), subpixCriteria);
+            drawChessboardCorners(view, boardSize, Mat(pointbuf), found);
             imagePoints.push_back(pointbuf);
-         }
-
+        }
+        else
+        {
+            yWarning("Mono calibration: no chessboard detected in %s", imageList[i].c_str());
+        }
     }
+
+    if (imagePoints.size() < 2)
+    {
+        yError("Mono calibration: only %zu valid image(s) remain after filtering; aborting", imagePoints.size());
+        return 0.0;
+    }
+
     std::vector<Mat> rvecs, tvecs;
     std::vector<float> reprojErrs;
     double totalAvgErr = 0;
 
+    std::vector<std::vector<Point3f> > objectPoints(1);
+    calcChessboardCorners(boardSize, squareSize, objectPoints[0]);
+    objectPoints.resize(imagePoints.size(), objectPoints[0]);
+
     K = Mat::eye(3, 3, CV_64F);
+    Dist = Mat::zeros(4, 1, CV_64F);
+
+    bool usedPinholeGuess = false;
+    try
+    {
+        Mat pinholeK = Mat::eye(3, 3, CV_64F);
+        Mat pinholeDist = Mat::zeros(5, 1, CV_64F);
+        std::vector<Mat> pinholeRvecs, pinholeTvecs;
+        int pinholeFlags = cv::CALIB_FIX_K3 | cv::CALIB_FIX_K4 | cv::CALIB_FIX_TANGENT_DIST;
+        double pinholeRms = cv::calibrateCamera(objectPoints, imagePoints, imageSize, pinholeK, pinholeDist,
+                                               pinholeRvecs, pinholeTvecs, pinholeFlags);
+        yInfo("Pinhole initial guess RMS for %s camera: %g", cameraName, pinholeRms);
+        if (pinholeK.rows == 3 && pinholeK.cols == 3)
+        {
+            K = pinholeK.clone();
+            usedPinholeGuess = true;
+        }
+    }
+    catch (const cv::Exception& e)
+    {
+        yWarning("Pinhole initial guess failed for %s camera: %s", cameraName, e.what());
+    }
+
+    if (!usedPinholeGuess)
+    {
+        double focal = std::max(imageSize.width, imageSize.height) * 0.8;
+        K = Mat::eye(3, 3, CV_64F);
+        K.at<double>(0,0) = focal;
+        K.at<double>(1,1) = focal;
+        K.at<double>(0,2) = imageSize.width * 0.5;
+        K.at<double>(1,2) = imageSize.height * 0.5;
+    }
     if( flags & CV_CALIB_FIX_ASPECT_RATIO )
         K.at<double>(0,0) = aspectRatio;
 
-    Dist = Mat::zeros(4, 1, CV_64F);
+    try
+    {
+        int calFlags = fisheye::CALIB_USE_INTRINSIC_GUESS | fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW;
+        double rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, K, Dist, rvecs, tvecs,
+                        calFlags,
+                        TermCriteria(TermCriteria::EPS+TermCriteria::MAX_ITER, 100, 1e-5));
 
-    std::vector<std::vector<Point3f> > objectPoints(1);
-    calcChessboardCorners(boardSize, squareSize, objectPoints[0]);
-    objectPoints.resize(imagePoints.size(),objectPoints[0]);
-
-    // double rms = calibrateCamera(objectPoints, imagePoints, imageSize, K,
-    //                 Dist, rvecs, tvecs,CV_CALIB_FIX_K3);
-    double rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, K, Dist, rvecs, tvecs,
-                    fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW, TermCriteria(TermCriteria::EPS+TermCriteria::MAX_ITER, 100, 1e-5));
-
-    yInfo("RMS error reported by calibrateCamera: %g\n", rms);
-    cout.flush();
+        yInfo("Mono calibration RMS for %s camera: %g", cameraName, rms);
+        yInfo("Mono calibration intrinsics for %s camera: fx=%g fy=%g cx=%g cy=%g",
+              cameraName, K.at<double>(0,0), K.at<double>(1,1), K.at<double>(0,2), K.at<double>(1,2));
+        yInfo("Mono calibration distortion for %s camera: k1=%g k2=%g k3=%g k4=%g",
+              cameraName, Dist.at<double>(0,0), Dist.at<double>(1,0), Dist.at<double>(2,0), Dist.at<double>(3,0));
+        cout.flush();
+        return rms;
+    }
+    catch (const cv::Exception& e)
+    {
+        yError("OpenCV mono calibration raised an exception: %s", e.what());
+        yError("Mono calibration failed with %zu valid images", imagePoints.size());
+        throw;
+    }
 }
 
+
+namespace {
+void logStereoCalibrationDebugInfo(const std::vector<std::vector<cv::Point2f> >& imagePointsLeft,
+                                  const std::vector<std::vector<cv::Point2f> >& imagePointsRight,
+                                  const std::vector<std::vector<cv::Point3f> >& objectPoints,
+                                  const std::vector<std::string>& imagelist,
+                                  const cv::Size& imageSize,
+                                  int boardWidth,
+                                  int boardHeight)
+{
+    yInfo("Stereo calibration debug: %zu image pairs, board %dx%d, image size %dx%d",
+          imagePointsLeft.size(), boardWidth, boardHeight, imageSize.width, imageSize.height);
+
+    for (size_t i = 0; i < imagePointsLeft.size(); ++i)
+    {
+        yInfo("pair[%zu]: left corners=%zu right corners=%zu object points=%zu", i,
+              imagePointsLeft[i].size(), imagePointsRight[i].size(), objectPoints[i].size());
+        if (imagePointsLeft[i].size() != imagePointsRight[i].size())
+        {
+            yError("pair[%zu] has mismatched corner counts: left=%zu right=%zu", i,
+                   imagePointsLeft[i].size(), imagePointsRight[i].size());
+        }
+        if (imagePointsLeft[i].size() != objectPoints[i].size())
+        {
+            yError("pair[%zu] has mismatched corners/object-points: corners=%zu object=%zu", i,
+                   imagePointsLeft[i].size(), objectPoints[i].size());
+        }
+        if (i < imagelist.size() / 2)
+        {
+            yInfo("pair[%zu] images: %s / %s", i, imagelist[2 * i].c_str(), imagelist[2 * i + 1].c_str());
+        }
+    }
+}
+}
 
 void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int boardWidth, int boardHeight,float sqsize)
 {
@@ -688,7 +843,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
         for( k = 0; k < 2; k++ )
         {
             const string& filename = imagelist[i*2+k];
-            Mat img = cv::imread(filename, 0);
+            Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
             if(img.empty())
                 break;
             if( imageSize == Size() )
@@ -754,41 +909,47 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
 
     yInfo("Running stereo calibration ...\n");
 
+    logStereoCalibrationDebugInfo(imagePoints[0], imagePoints[1], objectPoints, imagelist, imageSize, boardWidth, boardHeight);
+
     Mat cameraMatrix[2], distCoeffs[2];
     Mat E, F;
-    if(this->Kleft.empty() || this->Kright.empty())
+    int flags = fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW;
+    TermCriteria criteria = TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5);
+
+    yInfo("Stereo calibration intrinsics: left empty=%d right empty=%d", this->Kleft.empty(), this->Kright.empty());
+    yInfo("Stereo calibration distortion: left empty=%d right empty=%d", this->DistL.empty(), this->DistR.empty());
+
+    try
     {
-        if (differentSizes){
-            yError("Images have different sizes. Please make sure to compute intrinsic parameters before running stereo calibration. Quitting...");
-            exit (-1);
+        if(this->Kleft.empty() || this->Kright.empty())
+        {
+            if (differentSizes){
+                yError("Images have different sizes. Please make sure to compute intrinsic parameters before running stereo calibration. Quitting...");
+                exit (-1);
+            }
+            double rms = fisheye::stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
+                            this->Kleft, this->DistL,
+                            this->Kright, this->DistR,
+                            imageSize, this->R, this->T,
+                            flags, criteria);
+            yInfo("done with RMS error= %f\n",rms);
         }
-        double rms = fisheye::stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
-                        this->Kleft, this->DistL,
-                        this->Kright, this->DistR,
-                        imageSize, this->R, this->T, E, F,
-                    #ifdef OPENCV_GREATER_2
-                        fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW,
-                        TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5));
-                    #else
-                        TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5),
-                        fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW);
-                    #endif
-        yInfo("done with RMS error= %f\n",rms);
-    } else
+        else
+        {
+            yInfo("Using precomputed intrinsic parameters");
+            double rms = fisheye::stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
+                    this->Kleft, this->DistL,
+                    this->Kright, this->DistR,
+                    imageSize, this->R, this->T,
+                    flags, criteria);
+            yInfo("done with RMS error= %f\n",rms);
+        }
+    }
+    catch (const cv::Exception& e)
     {
-        yInfo("Using precomputed intrinsic parameters");
-        double rms = fisheye::stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
-                this->Kleft, this->DistL,
-                this->Kright, this->DistR,
-                imageSize, this->R, this->T, E, F,
-            #ifdef OPENCV_GREATER_2
-                 fisheye::CALIB_FIX_INTRINSIC | fisheye::CALIB_FIX_SKEW,
-                 TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5));
-            #else
-                 TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5),
-                 fisheye::CALIB_FIX_INTRINSIC | fisheye::CALIB_FIX_SKEW);
-            #endif
-        yInfo("done with RMS error= %f\n",rms);
+        yError("OpenCV stereo calibration raised an exception: %s", e.what());
+        yError("Stereo calibration failed with %zu left pairs and %zu right pairs", imagePoints[0].size(), imagePoints[1].size());
+        throw;
     }
 // CALIBRATION QUALITY CHECK
     cameraMatrix[0] = this->Kleft;

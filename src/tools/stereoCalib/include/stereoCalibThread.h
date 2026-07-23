@@ -94,7 +94,7 @@ private:
     bool checkTS(double TSLeft, double TSRight, double th=0.08);
     void preparePath(const char * imageDir, char* pathL, char* pathR, int num);
     void saveStereoImage(const char * imageDir, const Mat& left, const Mat& right, int num);
-    void monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat &K, Mat &Dist);
+    double monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat &K, Mat &Dist, const char* cameraName);
     void stereoCalibration(const vector<string>& imagelist, int boardWidth, int boardHeight,float sqsizee);
     void saveCalibration(const string& extrinsicFilePath, const string& intrinsicFilePath);
     void calcChessboardCorners(Size boardSize, float squareSize, vector<Point3f>& corners);
