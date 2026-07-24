@@ -66,6 +66,7 @@ private:
     Mat R;
     Mat T;
     Mat Q;
+    Size lastImageSize;
     string inputLeftPortName;
     string inputRightPortName;
     string outNameRight;

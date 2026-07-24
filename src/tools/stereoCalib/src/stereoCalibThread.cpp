@@ -679,7 +679,6 @@ double stereoCalibThread::monoCalibration(const vector<string>& imageList, int b
 
         if(found)
         {
-            yInfo("Mono calibration: image %s found %zu corners", imageList[i].c_str(), pointbuf.size());
             if (pointbuf.size() != static_cast<size_t>(boardWidth * boardHeight))
             {
                 yWarning("Mono calibration: skipping image %s because %zu corners were detected, expected %d",
@@ -909,41 +908,43 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
 
     yInfo("Running stereo calibration ...\n");
 
-    logStereoCalibrationDebugInfo(imagePoints[0], imagePoints[1], objectPoints, imagelist, imageSize, boardWidth, boardHeight);
+    //logStereoCalibrationDebugInfo(imagePoints[0], imagePoints[1], objectPoints, imagelist, imageSize, boardWidth, boardHeight);
 
     Mat cameraMatrix[2], distCoeffs[2];
     Mat E, F;
-    int flags = fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW;
+    int flags = fisheye::CALIB_FIX_INTRINSIC | fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW;
     TermCriteria criteria = TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5);
 
     yInfo("Stereo calibration intrinsics: left empty=%d right empty=%d", this->Kleft.empty(), this->Kright.empty());
     yInfo("Stereo calibration distortion: left empty=%d right empty=%d", this->DistL.empty(), this->DistR.empty());
 
+    if (this->Kleft.empty() || this->Kright.empty())
+    {
+        if (differentSizes){
+            yError("Images have different sizes. Please make sure to compute intrinsic parameters before running stereo calibration. Quitting...");
+            exit (-1);
+        }
+        yError("Stereo calibration: intrinsics are empty; cannot proceed with fixed-intrinsic stereo solve.");
+        return;
+    }
+
+    this->R = Mat::eye(3, 3, CV_64F);
+    this->T = Mat::zeros(3, 1, CV_64F);
+    this->T.at<double>(0, 0) = 0.06;
+    yInfo("Stereo calibration initial guess: R=identity, T=(%.4f, %.4f, %.4f)", this->T.at<double>(0,0), this->T.at<double>(1,0), this->T.at<double>(2,0));
+
+    // store image size for later saving of rectification matrices
+    this->lastImageSize = imageSize;
+
     try
     {
-        if(this->Kleft.empty() || this->Kright.empty())
-        {
-            if (differentSizes){
-                yError("Images have different sizes. Please make sure to compute intrinsic parameters before running stereo calibration. Quitting...");
-                exit (-1);
-            }
-            double rms = fisheye::stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
-                            this->Kleft, this->DistL,
-                            this->Kright, this->DistR,
-                            imageSize, this->R, this->T,
-                            flags, criteria);
-            yInfo("done with RMS error= %f\n",rms);
-        }
-        else
-        {
-            yInfo("Using precomputed intrinsic parameters");
-            double rms = fisheye::stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
-                    this->Kleft, this->DistL,
-                    this->Kright, this->DistR,
-                    imageSize, this->R, this->T,
-                    flags, criteria);
-            yInfo("done with RMS error= %f\n",rms);
-        }
+        yInfo("Using precomputed intrinsic parameters with fixed intrinsics and a baseline-based initial translation");
+        double rms = fisheye::stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
+                this->Kleft, this->DistL,
+                this->Kright, this->DistR,
+                imageSize, this->R, this->T,
+                flags, criteria);
+        yInfo("done with RMS error= %f\n",rms);
     }
     catch (const cv::Exception& e)
     {
@@ -951,14 +952,27 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
         yError("Stereo calibration failed with %zu left pairs and %zu right pairs", imagePoints[0].size(), imagePoints[1].size());
         throw;
     }
-// CALIBRATION QUALITY CHECK
+
+    // Compute the fundamental matrix for the undistorted stereo pair.
     cameraMatrix[0] = this->Kleft;
     cameraMatrix[1] = this->Kright;
-    distCoeffs[0]=this->DistL;
-    distCoeffs[1]=this->DistR;
+    distCoeffs[0] = this->DistL;
+    distCoeffs[1] = this->DistR;
+
     Mat R, T;
-    T=this->T;
-    R=this->R;
+    T = this->T;
+    R = this->R;
+    Mat Tx = Mat::zeros(3, 3, CV_64F);
+    Tx.at<double>(0, 1) = -T.at<double>(2, 0);
+    Tx.at<double>(0, 2) =  T.at<double>(1, 0);
+    Tx.at<double>(1, 0) =  T.at<double>(2, 0);
+    Tx.at<double>(1, 2) = -T.at<double>(0, 0);
+    Tx.at<double>(2, 0) = -T.at<double>(1, 0);
+    Tx.at<double>(2, 1) =  T.at<double>(0, 0);
+
+    F = cameraMatrix[1].inv().t() * Tx * R * cameraMatrix[0].inv();
+    yInfo("Computed fundamental matrix from stereo extrinsics.");
+
     double err = 0;
     int npoints = 0;
     std::vector<Vec3f> lines[2];
@@ -969,7 +983,8 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
         for( k = 0; k < 2; k++ )
         {
             imgpt[k] = Mat(imagePoints[k][i]);
-            undistortPoints(imgpt[k], imgpt[k], cameraMatrix[k], distCoeffs[k], Mat(), cameraMatrix[k]);
+            fisheye::undistortPoints(imgpt[k], imgpt[k], cameraMatrix[k], distCoeffs[k], Mat(), cameraMatrix[k]);
+            yDebug() << "Calculated undistorted points for image " << i << " camera " << k;
             computeCorrespondEpilines(imgpt[k], k+1, F, lines[k]);
         }
         for( j = 0; j < npt; j++ )
@@ -1006,7 +1021,17 @@ void stereoCalibThread::saveCalibration(const string& extrinsicFilePath, const s
     fs.open(extrinsicFilePath+".yml", cv::FileStorage::Mode::WRITE);
     if( fs.isOpened() )
     {
-        fs << "R" << R << "T" << T <<"Q" << Q;
+        // compute rectification and projection matrices for fisheye model
+        try {
+            Mat R1, R2, P1, P2, Qr;
+            int flags = 0; // consider fisheye::CALIB_ZERO_DISPARITY if desired
+            fisheye::stereoRectify(Kleft, DistL, Kright, DistR, this->lastImageSize, R, T, R1, R2, P1, P2, Qr, flags, Size());
+            fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Qr;
+        }
+        catch (const cv::Exception &e) {
+            yError("stereoRectify failed: %s", e.what());
+            fs << "R" << R << "T" << T << "Q" << Q;
+        }
         fs.release();
     }
     else
