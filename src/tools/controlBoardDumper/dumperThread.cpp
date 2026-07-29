@@ -54,8 +54,8 @@ void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int 
     else
     printf("Control board was accessed succesfully!\n");
 
-    pos->getAxes(&numberOfJoints);
-    fprintf(stderr, "Number of axes is: %d \n", numberOfJoints);
+    pos->getAxes(numberOfJoints);
+    fprintf(stderr, "Number of axes is: %ld \n", numberOfJoints);
 
     //initialize used variables
     data = new double [numberOfJoints];

@@ -351,7 +351,7 @@ bool parametricCalibrator::calibrate()
         return false;
     }
 
-    if ( !iEncoders->getAxes(&n_joints))
+    if ( !iEncoders->getAxes(n_joints))
     {
         yError() << deviceName << ": error getting number of axes" ;
         return false;

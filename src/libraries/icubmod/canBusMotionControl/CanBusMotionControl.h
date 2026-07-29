@@ -863,7 +863,6 @@ public:
 
     //
     /// POSITION CONTROL INTERFACE RAW
-    virtual ReturnValue getAxes(int *ax) override;
     virtual ReturnValue positionMoveRaw(int j, double ref) override;
     virtual ReturnValue positionMoveRaw(const double *refs) override;
     virtual ReturnValue relativeMoveRaw(int j, double delta) override;
@@ -889,7 +888,6 @@ public:
 
     //
     /// TORQUE CONTROL INTERFACE RAW
-//    virtual bool getAxes(int *ax) override;
     virtual ReturnValue getRefTorqueRaw(int j, double *ref_trq) override;
     virtual ReturnValue getRefTorquesRaw(double *ref_trqs) override;
     virtual ReturnValue setRefTorqueRaw(int j, double ref_trq) override;
@@ -1021,6 +1019,7 @@ public:
     virtual ReturnValue getGearboxRatioRaw(int m, double *val) override;
 
     /// IAxisInfo
+    virtual ReturnValue getAxes(size_t& axes) override;
     virtual ReturnValue getAxisNameRaw(int axis, std::string& name) override;
     virtual ReturnValue getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type) override;
 
@@ -1105,7 +1104,6 @@ public:
     virtual ReturnValue getDutyCyclesRaw(double *v) override;
 
     // CurrentControl
-    // virtual bool getAxes(int *ax) override;
     //virtual bool getCurrentRaw(int j, double *t) override;
     //virtual bool getCurrentsRaw(double *t) override;
     virtual ReturnValue getCurrentRangeRaw(int j, double *min, double *max) override;

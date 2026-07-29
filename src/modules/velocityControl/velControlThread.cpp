@@ -221,8 +221,8 @@ bool velControlThread::init(PolyDriver *d, std::string partName, std::string rob
     if ( (ivel==0)||(ienc==0) || (imod==0) || (ipid==0) || (ipos==0))
         return false;
 
-    ivel->getAxes(&nJoints);
-    yInfo("controlling %d DOFs\n",nJoints);
+    ivel->getAxes(nJoints);
+    yInfo("controlling %ld DOFs\n",nJoints);
 
     Vector accs;
     accs.resize(nJoints);
@@ -277,13 +277,13 @@ void velControlThread::go()
 {
     suspended=false;
     int mode=0;
-    for(int k = 0; k < nJoints; k++)
+    for(size_t k = 0; k < nJoints; k++)
     {
         imod->getControlMode(k, &mode);
         if (mode!=VOCAB_CM_MIXED && mode!=VOCAB_CM_VELOCITY)
         {
             std::string s = yarp::os::Vocab32::decode(mode);
-            yWarning("Joint (%d) is in mode (%s) and does not accepts velocty commands. You have first to set either VOCAB_CM_VELOCITY or VOCAB_CM_MIXED control mode\n", k, s.c_str());
+            yWarning("Joint (%ld) is in mode (%s) and does not accepts velocty commands. You have first to set either VOCAB_CM_VELOCITY or VOCAB_CM_MIXED control mode\n", k, s.c_str());
         }
     }
     yInfo("Run\n");
@@ -332,7 +332,7 @@ void velControlThread::setGain(int i, double gain)
 
 void velControlThread::limitSpeed(Vector &v)
 {
-    for(int k=0; k<nJoints;k++)
+    for(size_t k=0; k<nJoints;k++)
     {
         if(command(k)!=command(k))//check not Nan
         {

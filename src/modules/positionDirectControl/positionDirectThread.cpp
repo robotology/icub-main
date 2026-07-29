@@ -155,8 +155,8 @@ bool positionDirectControlThread::init(PolyDriver *d, std::string moduleName, st
         return false;
     }
 
-    int tmpj=0;
-    ipos->getAxes(&tmpj);
+    size_t tmpj=0;
+    ipos->getAxes(tmpj);
     part_joints=tmpj;
     control_joints= jointsList->size();
     if (control_joints>part_joints)
