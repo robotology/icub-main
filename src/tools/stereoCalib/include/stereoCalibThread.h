@@ -2,6 +2,9 @@
 #include <fstream>
 #include <string>
 #include <mutex>
+#include <atomic>
+#include <cstddef>
+#include <deque>
 
 #include <opencv2/calib3d/calib3d_c.h>
 #include <opencv2/calib3d.hpp>
@@ -30,9 +33,74 @@ using namespace iCub::iKin;
 #define LEFT    0
 #define RIGHT   1
 
+struct StampedFrame
+{
+    ImageOf<PixelRgb> image;
+    Stamp stamp;
+};
+
+struct SynchronizedPair
+{
+    ImageOf<PixelRgb> left;
+    ImageOf<PixelRgb> right;
+
+    Stamp leftStamp;
+    Stamp rightStamp;
+
+    double timeStampDelta{0.0};
+};
+
+struct SynchronizerStatistics
+{
+    std::size_t pairedFrames{0};
+    std::size_t dropppedLeftFrames{0};
+    std::size_t dropppedRightFrames{0};
+
+    double accumulatedTimeStampDelta{0.0};
+    double maxTimeStampDelta{0.0};
+};
+
+
+class StereoPairSynchronizer
+{
+private:
+    std::deque<StampedFrame> leftQueue;
+    std::deque<StampedFrame> rightQueue;
+
+    double _toleranceSeconds{0.020}; // 20 milliseconds
+    std::size_t _maxQueueSize{5};
+
+    SynchronizerStatistics stats;
+    void trimLeftQueue();
+    void trimRightQueue();
+
+public:
+
+    void configure(double tolerance, std::size_t maxQueueSize);
+    void reset();
+    void pushLeft(const ImageOf<PixelRgb>& leftFrame, const Stamp& timestamp);
+    void pushRight(const ImageOf<PixelRgb>& rightFrame, const Stamp& timestamp);
+    bool tryPopPair(SynchronizedPair& pair);
+    const SynchronizerStatistics& getStatistics() const { return stats; }
+};
+
 class stereoCalibThread : public Thread
 {
 private:
+
+    // States for stereoCalibrationThead
+    // defined inside the class since they are totally referred to this class
+    enum class CalibrationState
+    {
+        Idle = 0,
+        Collecting,
+        Calibrating,
+        Completed,
+        Error = 255
+    };
+
+    std::atomic<CalibrationState> calibrationState{CalibrationState::Idle};
+    std::atomic<bool> collectionResetRequested{false};
 
     ImageOf<PixelRgb> *imageL;
     ImageOf<PixelRgb> *imageR;
@@ -84,7 +152,6 @@ private:
 
     Port *commandPort;
     string imageDir;
-    int startCalibration;
     int boardWidth;
     int boardHeight;
     float squareSize;
@@ -104,7 +171,7 @@ private:
     void saveImage(const char * imageDir, const Mat& left, int num);
     void stereoCalibRun();
     void monoCalibRun();
-
+    void processSynchronizedPair(const SynchronizedPair& pair);
 public:
 
 
