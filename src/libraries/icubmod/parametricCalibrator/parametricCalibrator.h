@@ -115,7 +115,7 @@ private:
 
     std::list<std::list<int> > joints;
 
-    int n_joints;
+    size_t n_joints;
     unsigned char *type;
     double *param1;
     double *param2;

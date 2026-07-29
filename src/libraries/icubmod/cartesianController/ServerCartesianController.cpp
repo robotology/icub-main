@@ -2080,7 +2080,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             IVelocityControl *vel;
             IPositionDirect  *pos;
             IPositionControl *stp;
-            int               joints;
+            size_t            joints;
             
             drivers[j]->poly->view(enc);
             drivers[j]->poly->view(lim);
@@ -2093,7 +2093,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             posDirectAvailable&=drivers[j]->poly->view(pos);
             posDirectAvailable&=drivers[j]->poly->view(stp);
 
-            enc->getAxes(&joints);
+            enc->getAxes(joints);
 
             // this is for allocating vector
             // to read data from the interface

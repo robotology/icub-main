@@ -27,7 +27,7 @@ private:
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IControlMode     *imod;
     yarp::dev::IPidControl      *ipid;
-    int nJoints;
+    size_t nJoints;
     yarp::dev::PolyDriver *driver;
 
     yarp::sig::Vector encoders;

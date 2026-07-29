@@ -557,8 +557,8 @@ bool parametricCalibratorEth::calibrate()
         return false;
     }
 
-    int n_joints_board{0};
-    if ( !iEncoders->getAxes(&n_joints_board))
+    size_t n_joints_board{0};
+    if ( !iEncoders->getAxes(n_joints_board))
     {
         yError() << deviceName << ": error getting number of axes" ;
         return false;

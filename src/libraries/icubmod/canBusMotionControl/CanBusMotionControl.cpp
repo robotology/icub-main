@@ -4280,10 +4280,10 @@ ReturnValue CanBusMotionControl::setControlModesRaw(const std::vector<yarp::dev:
 }
 
 // return the number of controlled axes.
-ReturnValue CanBusMotionControl::getAxes(int *ax)
+ReturnValue CanBusMotionControl::getAxes(size_t& ax)
 {
     CanBusResources& r = RES(system_resources);
-    *ax = r.getJoints();
+    ax = r.getJoints();
 
     return ReturnValue_ok;
 }

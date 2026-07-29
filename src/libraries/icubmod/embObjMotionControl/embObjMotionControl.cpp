@@ -2680,13 +2680,6 @@ ReturnValue embObjMotionControl::calibrationDoneRaw(int axis)
 //     Position control interface     //
 ////////////////////////////////////////
 
-ReturnValue embObjMotionControl::getAxes(int *ax)
-{
-    *ax=_njoints;
-
-    return ReturnValue_ok;
-}
-
 ReturnValue embObjMotionControl::positionMoveRaw(int j, double ref)
 {
     defaults::DefaultsFactory& factory = defaults::DefaultsFactory::getInstance();
