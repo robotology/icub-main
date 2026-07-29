@@ -60,7 +60,7 @@ using namespace yarp::math;
 // ******************** ACTION CLASS
 class action_struct
 {
-    int         N_JOINTS;
+    size_t      N_JOINTS;
 public:
     int         counter;
     double      time;
@@ -68,7 +68,7 @@ public:
     string      tag;
 
 public:
-    int get_n_joints();
+    size_t get_n_joints();
     action_struct(int n);
     action_struct(const action_struct& as);
     action_struct & operator=(const action_struct & as);
@@ -87,9 +87,9 @@ public:
     void clear();
     action_class();
     void print();
-    bool openFile(string filename, int n_joints);
-    bool parseCommandLineFixTime(const char* command_line, int line, double fixTime, int n_joints);
-    bool parseCommandLine(const char* command_line, int line, int n_joints);
+    bool openFile(string filename, size_t n_joints);
+    bool parseCommandLineFixTime(const char* command_line, int line, double fixTime, size_t n_joints);
+    bool parseCommandLine(const char* command_line, int line, size_t n_joints);
 };
 
 // ******************** ROBOT DRIVER CLASS
@@ -109,7 +109,7 @@ private:
     IMotorEncoders   *imotenc_ll;
 
 public:
-    int              n_joints;
+    size_t              n_joints;
     std::map<int, int> joints_map;
 
 public:

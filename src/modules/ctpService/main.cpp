@@ -218,9 +218,9 @@ protected:
         int size=x->getCmd().size();
         int offset=x->getOffset();
         double time=x->getTime();
-        int nJoints=0;
+        size_t nJoints=0;
 
-        enc->getAxes(&nJoints);
+        enc->getAxes(nJoints);
         if ((offset+size)>nJoints)
         {
             cerr<<"Error: detected possible overflow, skipping"<<endl;

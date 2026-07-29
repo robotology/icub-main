@@ -400,7 +400,6 @@ public:
     virtual ReturnValue getPidExtraInfosRaw(const PidControlTypeEnum& pidtype, std::vector<yarp::dev::PidExtraInfo>& units) override;
 
     // POSITION CONTROL INTERFACE RAW
-    virtual ReturnValue getAxes(int *ax) override;
     virtual ReturnValue positionMoveRaw(int j, double ref) override;
     virtual ReturnValue positionMoveRaw(const double *refs) override;
     virtual ReturnValue relativeMoveRaw(int j, double delta) override;

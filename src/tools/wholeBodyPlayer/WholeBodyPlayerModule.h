@@ -85,7 +85,7 @@ public:
     {
         if (m_posDir && m_enc && m_CM && m_controlLimits) {
             // Get num of axes
-            m_posDir->getAxes(&m_numAxes);
+            m_posDir->getAxes(m_numAxes);
             // Set in position direct
             std::vector<yarp::dev::SelectableControlModeEnum> cms (m_numAxes, yarp::dev::SelectableControlModeEnum::VOCAB_CM_POSITION_DIRECT);
             m_CM->setControlModes(cms);
@@ -194,7 +194,7 @@ private:
 
 
     std::vector<double> m_currState, m_nextState;
-    int m_numAxes{0};
+    size_t m_numAxes{0};
     bool m_simulator;
     bool m_isArm{false};
 };

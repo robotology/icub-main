@@ -65,7 +65,7 @@ private:
   IInteractionMode *imod;
   IMotor          *imot;
 
-  int numberOfJoints;
+  size_t numberOfJoints;
   double *data;
 
   int numberOfJointsRead;

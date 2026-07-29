@@ -46,7 +46,7 @@ using namespace yarp::math;
 
 // ******************** ACTION CLASS
 
-int action_struct::get_n_joints()
+size_t action_struct::get_n_joints()
 { 
     return N_JOINTS;
 }
@@ -121,7 +121,7 @@ void action_class::print()
     }
 }
 
-bool action_class::openFile(string filename, int n_joints)
+bool action_class::openFile(string filename, size_t n_joints)
 {
     bool ret = true;
     FILE* data_file = 0;
@@ -156,7 +156,7 @@ bool action_class::openFile(string filename, int n_joints)
     return ret;
 }
 
-bool action_class::parseCommandLineFixTime(const char* command_line, int line, double fixTime, int n_joints)
+bool action_class::parseCommandLineFixTime(const char* command_line, int line, double fixTime, size_t n_joints)
 {
     static int count = 0;
     static double time =0.0;
@@ -200,7 +200,7 @@ bool action_class::parseCommandLineFixTime(const char* command_line, int line, d
     return true;
 }
 
-bool action_class::parseCommandLine(const char* command_line, int line, int n_joints)
+bool action_class::parseCommandLine(const char* command_line, int line, size_t n_joints)
 {
     action_struct tmp_action(n_joints);
     //use strtok for runtime-defined number of entries
@@ -298,11 +298,11 @@ bool robotDriver::init()
     }
 
     //get the number of the joints
-    ienc_ll->getAxes(&n_joints);
+    ienc_ll->getAxes(n_joints);
 
     //set the initial reference speeds
     double* speeds = new double [n_joints];
-    for (int i=0; i<n_joints; i++) speeds[i] = 20.0;
+    for (size_t i=0; i<n_joints; i++) speeds[i] = 20.0;
     ipos_ll->setTrajSpeeds(speeds);
 
     //dbg_connected is optional, so it has not to be returned
