@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -73,7 +73,7 @@ bool SpringyFinger::fromProperty(const Property &options)
         defaultCalibVel=60.0;
     }
     else
-        return false;    
+        return false;
 
     calibratingVelocity=options.check("calib_vel",Value(defaultCalibVel)).asFloat64();
     outputGain=options.check("output_gain",Value(1.0)).asFloat64();
@@ -236,7 +236,7 @@ bool SpringyFinger::calibrate(const Property &options)
     {
         Vector in,out;
         if (extractSensorsData(in,out))
-        {            
+        {
             in[0]=scaler.transform(in[0]);
             for (size_t i=0; i<out.length(); i++)
                 out[i]=scaler.transform(out[i]);
@@ -302,14 +302,14 @@ bool SpringyFingersModel::fromProperty(const Property &options)
         close();
         return false;
     }
-    
-    printMessage(log::info,1,"configuring joint encoders sensors ...");    
+
+    printMessage(log::info,1,"configuring joint encoders sensors ...");
     IEncoders *ienc; drvEncs.view(ienc);
-    int nAxes; ienc->getAxes(&nAxes);
+    size_t nAxes; ienc->getAxes(nAxes);
 
     Property propGen;
     propGen.put("name","In_0");
-    propGen.put("size",nAxes);
+    propGen.put("size",(int)nAxes);
 
     Property propThumb=propGen;  propThumb.put( "index",10);
     Property propIndex=propGen;  propIndex.put( "index",12);
@@ -518,18 +518,18 @@ bool SpringyFingersModel::calibrate(const Property &options)
         IEncoders        *ienc; drvEncs.view(ienc);
         IPositionControl *ipos; drvEncs.view(ipos);
 
-        int nAxes; ienc->getAxes(&nAxes);
+        size_t nAxes; ienc->getAxes(nAxes);
         Vector qmin(nAxes),qmax(nAxes),vel(nAxes),acc(nAxes);
 
         printMessage(log::info,1,"steering the hand to a suitable starting configuration");
-        for (int j=7; j<nAxes; j++)
+        for (size_t j=7; j<nAxes; j++)
         {
             imod->setControlMode(j,VOCAB_CM_POSITION);
-            ilim->getPosLimits(j,&qmin[j],&qmax[j]);            
+            ilim->getPosLimits(j,&qmin[j],&qmax[j]);
 
             ipos->getTrajAcceleration(j,&acc[j]);
             ipos->getTrajSpeed(j,&vel[j]);
-            
+
             ipos->setTrajAcceleration(j,std::numeric_limits<double>::max());
             ipos->setTrajSpeed(j,60.0);
             ipos->positionMove(j,(j==8)?qmax[j]:qmin[j]);   // thumb in opposition
@@ -598,7 +598,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
                 {
                     if (singletons.find(tag)==singletons.end())
                     {
-                        CalibThread *thr=new CalibThread; 
+                        CalibThread *thr=new CalibThread;
                         thr->setInfo(this,fingers[0],10,qmin[10],qmax[10]);
                         thr->start();
                         db.push_back(thr);
@@ -671,7 +671,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
             else
                 ok=false;
         }
-        
+
         if (!fng.isString() && !fng.isList())
             ok=false;
 
@@ -702,7 +702,7 @@ bool SpringyFingersModel::getOutput(Value &out) const
         fingers[2].getOutput(val[2]);
         fingers[3].getOutput(val[3]);
         fingers[4].getOutput(val[4]);
-        
+
         Bottle bOut; Bottle &ins=bOut.addList();
         ins.addFloat64(val[0].asFloat64());
         ins.addFloat64(val[1].asFloat64());
@@ -797,7 +797,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
         }
     }
 
-    printMessage(log::info,1,"training finger %s ...",finger.getName().c_str());    
+    printMessage(log::info,1,"training finger %s ...",finger.getName().c_str());
     finger.calibrate(train);
     printMessage(log::info,1,"finger %s trained!",finger.getName().c_str());
 }
