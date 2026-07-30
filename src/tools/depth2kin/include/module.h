@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -75,7 +75,7 @@ protected:
     IEncoderArrays    *iencarray;
     ICartesianControl *iarm;
     IGazeControl      *igaze;
-        
+
     mutex mtx;
     iCubFinger finger;
     Vector curExplorationCenter;
@@ -93,12 +93,12 @@ protected:
     double exploration_intargettol;
     double touch_intargettol;
     int    roi_side;
-    int    nEncs;
+    size_t    nEncs;
     int    test;
     bool   enabled;
     bool   calibrated;
     bool   isSaved;
-    bool   closing;    
+    bool   closing;
     bool   exp_depth2kin;
     bool   exp_aligneyes;
     bool   touchWithExperts;
