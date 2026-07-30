@@ -237,7 +237,7 @@ protected:
     double latchTimerReach;
     double latchTimerReachLog;
 
-    int jHandMin;
+    size_t jHandMin;
     size_t jHandMax;
 
     yarp::sig::Vector enableTorsoSw;

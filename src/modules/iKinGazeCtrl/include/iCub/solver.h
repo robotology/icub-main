@@ -75,8 +75,8 @@ protected:
     unsigned int period;
     bool   saccadeUnderWayOld;
     bool   genOn;
-    size_t    nJointsTorso;
-    size_t    nJointsHead;
+    size_t nJointsTorso;
+    size_t nJointsHead;
     int    saccadesRxTargets;
     double saccadesClock;
     double eyesHalfBaseline;
