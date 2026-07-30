@@ -93,7 +93,7 @@ protected:
     double exploration_intargettol;
     double touch_intargettol;
     int    roi_side;
-    size_t    nEncs;
+    size_t nEncs;
     int    test;
     bool   enabled;
     bool   calibrated;

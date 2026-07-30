@@ -1310,7 +1310,7 @@ bool CartesianSolver::open(Searchable &options)
         // create interfaces
         IControlLimits *pLim;
         IEncoders      *pEnc;
-        size_t             joints;
+        size_t          joints;
 
         if (!pDrv->view(pLim) || !pDrv->view(pEnc))
         {
