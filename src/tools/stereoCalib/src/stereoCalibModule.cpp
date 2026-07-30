@@ -57,10 +57,59 @@ bool stereoCalibModule::close()
 
 bool stereoCalibModule::respond(const Bottle& command, Bottle& reply) 
 {
-    if (command.get(0).asString()=="start") {
-        reply.addString("Starting Calibration...");
+    reply.clear();
+
+    if(command.size() == 0)
+    {
+        reply.addString("error");
+        reply.addString("empty command");
+        return true;
+    }
+
+    const std::string cmd = command.get(0).asString();
+
+    if (cmd == "start") {
         calibThread->startCalib();
-   }
+        reply.addString("ok");
+        reply.addString("calibration collection started");
+    }
+    else if(cmd == "stop")
+    {
+        calibThread->stopCalib();
+        reply.addString("ok");
+        reply.addString("calibration collection stopped");
+    }
+    else if(cmd == "status")
+    {
+        StereoCalibStatus status = calibThread->getStatus();
+        reply.addString("ok");
+        reply.addString("calibration collection statistics:");
+        reply.addString("pairedFrames");
+        reply.addInt64(status.pairedFrames);
+        reply.addString("droppedLeftFrames");
+        reply.addInt64(status.droppedLeftFrames);
+        reply.addString("droppedRightFrames");
+        reply.addInt64(status.droppedRightFrames);
+        reply.addString("meanTimestampDeltaMs");
+        reply.addInt64(status.meanTimestampDeltaMs);
+        reply.addString("maxTimestampDeltaMs");
+        reply.addInt64(status.maxTimestampDeltaMs);
+    }
+    else if(cmd == "help")
+    {
+        reply.addString("available commands: start stop status help quit");
+    }
+    else if(cmd == "quit")
+    {
+        reply.addString("quitting");
+        return false;
+    }
+    else
+    {
+        reply.addString("error");
+        reply.addString("unknown command");
+    }
+    
     return true;
 }
 

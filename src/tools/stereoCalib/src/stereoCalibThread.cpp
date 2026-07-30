@@ -5,12 +5,6 @@
 #include <yarp/cv/Cv.h>
 #include "stereoCalibThread.h"
 
-
-StereoPairSynchronizer synchronizer;
-
-double syncToleranceSeconds{0.020};
-std::size_t syncQueueSize{5};
-
 void StereoPairSynchronizer::configure(double tolerance, std::size_t maxQueueSize)
 {
     _toleranceSeconds = tolerance;
@@ -55,7 +49,7 @@ void StereoPairSynchronizer::trimLeftQueue()
     while(leftQueue.size() > _maxQueueSize) 
     {
         leftQueue.pop_front();
-        ++stats.dropppedLeftFrames;
+        ++stats.droppedLeftFrames;
     }
 }
 
@@ -64,13 +58,13 @@ void StereoPairSynchronizer::trimRightQueue()
     while(rightQueue.size() > _maxQueueSize) 
     {
         rightQueue.pop_front();
-        ++stats.dropppedRightFrames;
+        ++stats.droppedRightFrames;
     }
 }
 
 bool StereoPairSynchronizer::tryPopPair(SynchronizedPair& pair)
 {
-    if(!leftQueue.empty() && !rightQueue.empty()) 
+    while(!leftQueue.empty() && !rightQueue.empty()) 
     {
         const double leftStamp = leftQueue.front().stamp.getTime();
         const double rightStamp = rightQueue.front().stamp.getTime();
@@ -99,12 +93,12 @@ bool StereoPairSynchronizer::tryPopPair(SynchronizedPair& pair)
         {
             // the oldest left frame cannot be paired with this or any newer right frame, so drop it
             leftQueue.pop_front();
-            ++stats.dropppedLeftFrames;
+            ++stats.droppedLeftFrames;
         } 
         else 
         {
             rightQueue.pop_front();
-            ++stats.dropppedRightFrames;
+            ++stats.droppedRightFrames;
         }
     }
     return false;
@@ -136,17 +130,21 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->boardType=  stereoCalibOpts.check("boardType", Value("CHESSBOARD")).asString();
     const double syncToleranceMs = stereoCalibOpts.check("syncToleranceMs", Value(20.0)).asFloat64();
     syncToleranceSeconds = syncToleranceMs / 1000.0;
-    syncQueueSize = static_cast<std::size_t>(stereoCalibOpts.check("syncQueueSize", Value(5)).asInt32());
+    const int configuredQueueSize = stereoCalibOpts.check("syncQueueSize", Value(5)).asInt32();
+    if(configuredQueueSize <= 0)
+    {
+        yWarning() << "Invalid syncQueueSize; using 5";
+        syncQueueSize = 5;
+    }
+    else
+    {
+        syncQueueSize = static_cast<std::size_t>(configuredQueueSize);
+    }
+
     if(syncToleranceSeconds <= 0.0)
     {
         yWarning() << "Invalid syncToleranceMs; using 20 ms";
         syncToleranceSeconds = 0.020;
-    }
-    
-    if(syncQueueSize == 0)
-    {
-        yWarning() << "Invalid syncQueueSize; using 5";
-        syncQueueSize = 5;
     }
 
     synchronizer.configure(syncToleranceSeconds, syncQueueSize);
@@ -257,22 +255,146 @@ void stereoCalibThread::run(){
     }
 }
 
-void stereoCalibThread::processSynchronizedPair(const SynchronizedPair& pair)
+void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, int count, Size boardSize)
 {
     yDebug() << "Synchronized pair:" << pair.timeStampDelta * 1000.0 << "ms";
+
+    bool foundL=false;
+    bool foundR=false;
+
+    mtx.lock();
+    if(calibrationState.load() == CalibrationState::Calibrating) {
+
+        string pathImg=imageDir;
+        preparePath(pathImg.c_str(),pathL,pathR,count);
+        string iml(pathL);
+        string imr(pathR);
+        ImageOf<PixelRgb> imageLeft = pair.left;
+        ImageOf<PixelRgb> imageRight = pair.right;
+        Left=yarp::cv::toCvMat(imageLeft);
+        Right=yarp::cv::toCvMat(imageRight);
+
+        // Color adjust
+        Mat grayL, grayR;
+        cvtColor(Left,grayL,CV_RGB2GRAY);
+        cvtColor(Right,grayR,CV_RGB2GRAY);
+
+        std::vector<Point2f> pointbufL;
+        std::vector<Point2f> pointbufR;
+        if(boardType == "CIRCLES_GRID") {
+            foundL = findCirclesGrid(Left, boardSize, pointbufL, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
+            foundR = findCirclesGrid(Right, boardSize, pointbufR, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
+        } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
+            foundL = findCirclesGrid(Left, boardSize, pointbufL, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
+            foundR = findCirclesGrid(Right, boardSize, pointbufR, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
+        } else {
+            foundL = findChessboardCorners(grayL, boardSize, pointbufL, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE | CALIB_CB_FILTER_QUADS);
+            foundR = findChessboardCorners(grayR, boardSize, pointbufR, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE | CALIB_CB_FILTER_QUADS);
+            // foundL = findChessboardCornersSB(Left, boardSize, pointbufL);
+            // foundR = findChessboardCornersSB(Right, boardSize, pointbufR);
+        }
+
+        if(foundL && foundR) {
+                auto start = std::chrono::high_resolution_clock::now();
+                cvtColor(Left,Left,CV_RGB2BGR);
+                cvtColor(Right,Right,CV_RGB2BGR);
+
+                // save pure image before adding corners
+                saveStereoImage(pathImg.c_str(),Left,Right,count);
+
+                imageListR.push_back(imr);
+                imageListL.push_back(iml);
+                imageListLR.push_back(iml);
+                imageListLR.push_back(imr);
+                std::vector<Point2f> cL = pointbufL;
+                std::vector<Point2f> cR = pointbufR;
+                TermCriteria criteria = TermCriteria(TermCriteria::EPS+TermCriteria::COUNT, 30, 0.01);
+                cornerSubPix(grayL, cL, Size(5,5), Size(-1,-1), criteria);
+                cornerSubPix(grayR, cR, Size(5,5), Size(-1,-1), criteria);
+                drawChessboardCorners(Left, boardSize, cL, foundL);
+                drawChessboardCorners(Right, boardSize, cR, foundR);
+
+                auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+                for(auto &p : cL)
+                    yDebug() << "Left corners: " << p.x << " " << p.y;
+                for(auto &p : cR)
+                    yDebug() << "Right corners: " << p.x << " " << p.y;
+
+                yInfo("Image processing time: %ld ms\n", diff.count());
+                count++;
+        }
+
+        if(count>numOfPairs) {
+            yInfo(" Running Left Camera Calibration... \n");
+            yDebug(" Number of images used for calibration: %ld \n",imageListL.size());
+            double leftRms = monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL,"left");
+
+            yDebug(" Number of images used for calibration: %ld \n",imageListR.size());
+            yInfo(" Running Right Camera Calibration... \n");
+            double rightRms = monoCalibration(imageListR,this->boardWidth,this->boardHeight,this->Kright,this->DistR,"right");
+            if (leftRms > 0.0 && rightRms > 0.0)
+            {
+                double rmsDelta = fabs(leftRms - rightRms);
+                yInfo("Mono calibration RMS delta between left and right cameras: %g", rmsDelta);
+            }
+
+            yInfo(" Starting Stereo Calibration... \n");
+            stereoCalibration(imageListLR, this->boardWidth,this->boardHeight,this->squareSize);
+
+            yInfo(" Saving Calibration Results... \n");
+            updateIntrinsics(Right.cols,Right.rows,Kright.at<double>(0,0),Kright.at<double>(1,1),Kright.at<double>(0,2),Kright.at<double>(1,2),DistR.at<double>(0,0),DistR.at<double>(0,1),DistR.at<double>(0,2),DistR.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
+            updateIntrinsics(Left.cols,Left.rows,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_LEFT");
+
+            // Mat Rot=Mat::eye(3,3,CV_64FC1);
+            // Mat Tr=Mat::zeros(3,1,CV_64FC1);
+
+            updateExtrinsics(this->R,this->T,"STEREO_DISPARITY");
+
+            yInfo("Calibration Results Saved in %s \n", camCalibFile.c_str());
+
+            calibrationState.store(CalibrationState::Completed);
+            count=1;
+            imageListR.clear();
+            imageListL.clear();
+            imageListLR.clear();
+        }
+    }
+}
+
+StereoCalibStatus stereoCalibThread::getStatus() const
+{
+    StereoCalibStatus result;
+    const auto& syncStats = synchronizer.getStatistics();
+
+    result.pairedFrames = syncStats.pairedFrames;
+    result.droppedLeftFrames = syncStats.droppedLeftFrames;
+    result.droppedRightFrames = syncStats.droppedRightFrames;
+    
+    if(syncStats.pairedFrames > 0)
+    {
+        result.meanTimestampDeltaMs = 1000.0 * syncStats.accumulatedTimeStampDelta / static_cast<double>(syncStats.pairedFrames);
+    }
+
+    result.maxTimestampDeltaMs = 1000.0 * syncStats.maxTimeStampDelta;
+
+    return result;
 }
 
 void stereoCalibThread::stereoCalibRun()
 {
-    imageL=new ImageOf<PixelRgb>;
-    imageR=new ImageOf<PixelRgb>;
-
     Size boardSize, imageSize;
     boardSize.width=this->boardWidth;
     boardSize.height=this->boardHeight;
+    int count=1;
 
     while (!isStopping()) 
     {
+        
+        if(collectionResetRequested.exchange(false)) 
+        {
+            synchronizer.reset();
+        }
+
         bool areFramesReceived = false;
         ImageOf<PixelRgb> *tmpL = imagePortInLeft.read(false);
 
@@ -285,7 +407,7 @@ void stereoCalibThread::stereoCalibRun()
 
             // Always publish preview immediately
             ImageOf<PixelRgb>& outimL=outPortLeft.prepare();
-            outimL=*imageL;
+            outimL = *tmpL;
             outPortLeft.setEnvelope(TSLeft);
             outPortLeft.write();
 
@@ -297,7 +419,7 @@ void stereoCalibThread::stereoCalibRun()
         }
         
         ImageOf<PixelRgb> *tmpR = imagePortInRight.read(false);
-        if(tmpR!=NULL)
+        if(tmpR!=nullptr)
         {
             areFramesReceived = true;
 
@@ -306,7 +428,7 @@ void stereoCalibThread::stereoCalibRun()
 
             // Always publish preview immediately
             ImageOf<PixelRgb>& outimR=outPortRight.prepare();
-            *imageR=*tmpR;
+            outimR = *tmpR;
             outPortRight.setEnvelope(TSRight);
             outPortRight.write();
             
@@ -318,18 +440,13 @@ void stereoCalibThread::stereoCalibRun()
             }
         }
 
-        if(collectionResetRequested.exchange(false)) 
-        {
-            synchronizer.reset(); //TODO: understand what the reset operation should do
-        }
-
         if(calibrationState.load() == CalibrationState::Collecting) 
         {
             SynchronizedPair pair;
             while(synchronizer.tryPopPair(pair)) 
             {
                 // Process the synchronized pair
-                processSynchronizedPair(pair);
+                processSynchronizedPair(pair, count, boardSize);
 
                 if(calibrationState.load() != CalibrationState::Collecting) 
                 {
@@ -473,9 +590,6 @@ void stereoCalibThread::stereoCalibRun()
         }
         */
    }
-
-    delete imageL;
-    delete imageR;
 }
 
 
@@ -619,7 +733,7 @@ void stereoCalibThread::startCalib() {
 
 void stereoCalibThread::stopCalib() {
     calibrationState.store(CalibrationState::Idle);
-    collectionResetRequested.store(false);
+    collectionResetRequested.store(true);
    
     yInfo() << "Calibration collection stopped";
 }

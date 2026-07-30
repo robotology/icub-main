@@ -53,13 +53,24 @@ struct SynchronizedPair
 struct SynchronizerStatistics
 {
     std::size_t pairedFrames{0};
-    std::size_t dropppedLeftFrames{0};
-    std::size_t dropppedRightFrames{0};
+    std::size_t droppedLeftFrames{0};
+    std::size_t droppedRightFrames{0};
 
     double accumulatedTimeStampDelta{0.0};
     double maxTimeStampDelta{0.0};
 };
 
+struct StereoCalibStatus
+{
+    std::string state;
+
+    std::size_t pairedFrames{0};
+    std::size_t droppedLeftFrames{0};
+    std::size_t droppedRightFrames{0};
+
+    double meanTimestampDeltaMs{0.0};
+    double maxTimestampDeltaMs{0.0};
+};
 
 class StereoPairSynchronizer
 {
@@ -101,6 +112,11 @@ private:
 
     std::atomic<CalibrationState> calibrationState{CalibrationState::Idle};
     std::atomic<bool> collectionResetRequested{false};
+
+    StereoPairSynchronizer synchronizer;
+
+    double syncToleranceSeconds{0.020};
+    std::size_t syncQueueSize{5};
 
     ImageOf<PixelRgb> *imageL;
     ImageOf<PixelRgb> *imageR;
@@ -171,11 +187,12 @@ private:
     void saveImage(const char * imageDir, const Mat& left, int num);
     void stereoCalibRun();
     void monoCalibRun();
-    void processSynchronizedPair(const SynchronizedPair& pair);
+    void processSynchronizedPair(SynchronizedPair& pair, int count, Size boardSize);
+
 public:
 
-
     stereoCalibThread(ResourceFinder &rf, Port* commPort, const char *imageDir);
+    StereoCalibStatus getStatus() const;
     void startCalib();
     void stopCalib();
     bool threadInit();
