@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini, Alessandro Roncone
  * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
@@ -34,7 +34,7 @@ constexpr int32_t MUTEX_FPFRAME  = 7;
 
 /************************************************************************/
 xdPort::xdPort(void *_slv) : slv(_slv)
-{   
+{
     isNewDelayed=isNew=false;
     locked=false;
     closing=false;
@@ -67,7 +67,7 @@ void xdPort::onRead(Bottle &b)
     lock_guard<mutex> lg(mutex_0);
     if (locked)
         return;
-        
+
     size_t n=std::min(b.size(),xd.length());
     for (size_t i=0; i<n; i++)
         xd[i]=b.get(i).asFloat64();
@@ -143,7 +143,7 @@ ExchangeData::ExchangeData()
     ctrlActive=false;
     trackingModeOn=false;
     saccadeUnderway=false;
-    minAllowedVergence=0.0;    
+    minAllowedVergence=0.0;
     eyesBoundVer=-1.0;
     neckSolveCnt=0;
 
@@ -535,16 +535,16 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
     IControlLimits *lims;
 
     double min, max;
-    int nJointsTorso=3;    
+    size_t nJointsTorso=3;
 
     if (drvTorso!=nullptr)
     {
         drvTorso->view(encs);
-        drvTorso->view(lims);        
-        encs->getAxes(&nJointsTorso);
+        drvTorso->view(lims);
+        encs->getAxes(nJointsTorso);
 
         for (int i=0; i<nJointsTorso; i++)
-        {   
+        {
             if (lims->getPosLimits(i,&min,&max))
             {
                 if (commData->head_version<iKinLimbVersion("3.0"))
@@ -565,12 +565,12 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
 
     drvHead->view(encs);
     drvHead->view(lims);
-    int nJointsHead;
-    encs->getAxes(&nJointsHead);
+    size_t nJointsHead;
+    encs->getAxes(nJointsHead);
     Matrix lim(nJointsHead,2);
 
     for (int i=0; i<nJointsHead; i++)
-    {   
+    {
         if (lims->getPosLimits(i,&min,&max))
         {
             // limit eye's tilt due to eyelids
@@ -642,7 +642,7 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
     Vector fb(std::max(nJointsTorso,nJointsHead));
     Vector stamps(nJointsTorso+nJointsHead,0.0);
     bool ret=true;
-    
+
     if (drvTorso!=nullptr)
     {
         drvTorso->view(encs);
@@ -665,11 +665,11 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
     }
     else
         ret=false;
-    
+
     // impose vergence != 0.0
     if (commData!=nullptr)
         fbHead[nJointsHead-1]=std::max(fbHead[nJointsHead-1],commData->minAllowedVergence);
-    
+
     // retrieve the highest encoders time stamp
     if (timeStamp!=nullptr)
         *timeStamp=findMax(stamps);
