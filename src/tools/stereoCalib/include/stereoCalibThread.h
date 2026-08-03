@@ -20,6 +20,7 @@
 #include <yarp/math/Math.h>
 
 #include <iCub/iKin/iKinFwd.h>
+#include "CalibrationTypes.h"
 
 using namespace std;
 using namespace cv;
@@ -78,8 +79,8 @@ private:
     std::deque<StampedFrame> leftQueue;
     std::deque<StampedFrame> rightQueue;
 
-    double _toleranceSeconds{0.020}; // 20 milliseconds
-    std::size_t _maxQueueSize{5};
+    double toleranceSeconds{0.020}; // 20 milliseconds
+    std::size_t maxQueueSize{5};
 
     SynchronizerStatistics stats;
     void trimLeftQueue();
@@ -92,7 +93,7 @@ public:
     void pushLeft(const ImageOf<PixelRgb>& leftFrame, const Stamp& timestamp);
     void pushRight(const ImageOf<PixelRgb>& rightFrame, const Stamp& timestamp);
     bool tryPopPair(SynchronizedPair& pair);
-    const SynchronizerStatistics& getStatistics() const { return stats; }
+    const SynchronizerStatistics getStatistics() const { return stats; }
 };
 
 class stereoCalibThread : public Thread
@@ -115,13 +116,18 @@ private:
 
     StereoPairSynchronizer synchronizer;
 
-    double syncToleranceSeconds{0.020};
-    std::size_t syncQueueSize{5};
+    double _syncToleranceSeconds{0.020};
+    std::size_t _syncQueueSize{5};
+
+    double minCaptureIntervalSeconds{1.0};
+    double lastProcessedCandidateTime{-1.0};
+
+    Size _expectedImageSize{1080, 1920}; // Default expected image size, can be set via configuration
 
     ImageOf<PixelRgb> *imageL;
     ImageOf<PixelRgb> *imageR;
-    Mat Left;
-    Mat Right;
+    Mat LeftRgb;
+    Mat RightRgb;
 
     string moduleName;
     string robotName;
@@ -161,6 +167,12 @@ private:
     std::vector<string> imageListL;
     std::vector<string> imageListLR;
 
+    stereo_calib::ChessboardConfiguration _chessboardConfiguration;
+    std::vector<stereo_calib::StereoObservation> _observations;
+
+    bool _saveImages{false};
+
+
     BufferedPort<ImageOf<PixelRgb> > imagePortInLeft;
     BufferedPort<ImageOf<PixelRgb> > imagePortInRight;
     BufferedPort<ImageOf<PixelRgb> > outPortRight;
@@ -187,7 +199,8 @@ private:
     void saveImage(const char * imageDir, const Mat& left, int num);
     void stereoCalibRun();
     void monoCalibRun();
-    void processSynchronizedPair(SynchronizedPair& pair, int count, Size boardSize);
+    bool shouldQueueFrameForCollection(const Stamp& timestamp) const;
+    void processSynchronizedPair(SynchronizedPair& pair, Size boardSize);
 
 public:
 
@@ -201,5 +214,4 @@ public:
     void onStop();
 
 };
-
 
