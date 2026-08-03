@@ -20,6 +20,7 @@
 #include <yarp/math/Math.h>
 
 #include <iCub/iKin/iKinFwd.h>
+#include "CalibrationTypes.h"
 
 using namespace std;
 using namespace cv;
@@ -120,8 +121,8 @@ private:
 
     ImageOf<PixelRgb> *imageL;
     ImageOf<PixelRgb> *imageR;
-    Mat Left;
-    Mat Right;
+    Mat LeftRgb;
+    Mat RightRgb;
 
     string moduleName;
     string robotName;
@@ -160,6 +161,10 @@ private:
     std::vector<string> imageListR;
     std::vector<string> imageListL;
     std::vector<string> imageListLR;
+
+    stereo_calib::ChessboardConfiguration _chessboardConfiguration;
+    std::vector<stereo_calib::StereoObservation> _observations;
+
 
     BufferedPort<ImageOf<PixelRgb> > imagePortInLeft;
     BufferedPort<ImageOf<PixelRgb> > imagePortInRight;
