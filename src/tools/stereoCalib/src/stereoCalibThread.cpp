@@ -2,6 +2,7 @@
 #include <cmath>
 #include <utility>
 #include <chrono>
+#include <thread>
 #include <yarp/cv/Cv.h>
 #include "stereoCalibThread.h"
 
@@ -272,14 +273,18 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 {
     // Check minimum capture interval
     const double pairTime = 0.5 * (pair.leftStamp.getTime() + pair.rightStamp.getTime()); //average pair timestamp
-    if(lastProcessedCandidateTime >= 0.0 && (pairTime - lastProcessedCandidateTime) < minCaptureIntervalSeconds)
+    const double previousProcessedCandidateTime = lastProcessedCandidateTime;
+    if(previousProcessedCandidateTime >= 0.0 && (pairTime - previousProcessedCandidateTime) < minCaptureIntervalSeconds)
     {
         yDebug() << "Skipping candidate pair due to minimum capture interval";
         return;
     }
+    if(previousProcessedCandidateTime >= 0.0)
+    {
+        yDebug() << "Timestamp delta between processed pairs:" << (pairTime - previousProcessedCandidateTime) << "seconds";
+    }
     lastProcessedCandidateTime = pairTime;
 
-    yDebug() << "Synchronized pair:" << lastProcessedCandidateTime * 1000.0 << "ms";
     
     bool foundL=false;
     bool foundR=false;
@@ -331,10 +336,35 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 
     if(foundL && foundR) 
     {
-        
+        yDebug() << "Found chessboard corners in both left and right images";
         TermCriteria criteria = TermCriteria(TermCriteria::EPS+TermCriteria::COUNT, 30, 0.01);
         cornerSubPix(leftGray, leftCorners, Size(5,5), Size(-1,-1), criteria);
         cornerSubPix(rightGray, rightCorners, Size(5,5), Size(-1,-1), criteria);
+
+        // // save pure image before adding corners
+        // saveStereoImage(pathImg.c_str(),LeftRgb,RightRgb,count);
+
+        // imageListR.push_back(imr);
+        // imageListL.push_back(iml);
+        // imageListLR.push_back(iml);
+        // imageListLR.push_back(imr);
+        
+        drawChessboardCorners(LeftRgb, boardSize, leftCorners, foundL);
+        drawChessboardCorners(RightRgb, boardSize, rightCorners, foundR);
+
+        ImageOf<PixelRgb>& outimL = outPortLeft.prepare();
+        outimL = pair.left;
+        outPortLeft.setEnvelope(pair.leftStamp);
+        outPortLeft.write();
+
+        ImageOf<PixelRgb>& outimR = outPortRight.prepare();
+        outimR = pair.right;
+        outPortRight.setEnvelope(pair.rightStamp);
+        outPortRight.write();
+
+        //this is what is freezing the thread since visualization and streaming are synchronous
+        // auto wake_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(2000);
+        // std::this_thread::sleep_until(wake_time);
 
         stereo_calib::StereoObservation observation;
         observation.imageSize = Size(pair.left.width(), pair.left.height());
@@ -350,7 +380,6 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
         observation.leftSequenceNumber = pair.leftStamp.getCount();
         observation.rightSequenceNumber = pair.rightStamp.getCount();
 
-
         if(!observation.isValid())
         {
             yError() << "Generated invalid stereo observation";
@@ -361,24 +390,7 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
             std::lock_guard<std::mutex> lock(mtx);
             _observations.push_back(std::move(observation));
         }
-        // cvtColor(LeftRgb,LeftRgb,CV_RGB2BGR);
-        // cvtColor(RightRgb,RightRgb,CV_RGB2BGR);
 
-        // // save pure image before adding corners
-        // saveStereoImage(pathImg.c_str(),LeftRgb,RightRgb,count);
-
-        // imageListR.push_back(imr);
-        // imageListL.push_back(iml);
-        // imageListLR.push_back(iml);
-        // imageListLR.push_back(imr);
-        
-        // drawChessboardCorners(LeftRgb, boardSize, leftCorners, foundL);
-        // drawChessboardCorners(RightRgb, boardSize, rightCorners, foundR);
-
-        for(auto &p : leftCorners)
-            yDebug() << "Left corners: " << p.x << " " << p.y;
-        for(auto &p : rightCorners)
-            yDebug() << "Right corners: " << p.x << " " << p.y;
     }
     /**
     if(_observations.size() > numOfPairs) {
@@ -439,6 +451,12 @@ StereoCalibStatus stereoCalibThread::getStatus() const
     return result;
 }
 
+bool stereoCalibThread::shouldQueueFrameForCollection(const Stamp& timestamp) const
+{
+    return lastProcessedCandidateTime < 0.0 ||
+           (timestamp.getTime() - lastProcessedCandidateTime) >= minCaptureIntervalSeconds;
+}
+
 void stereoCalibThread::stereoCalibRun()
 {
     Size boardSize, imageSize;
@@ -451,6 +469,7 @@ void stereoCalibThread::stereoCalibRun()
         if(collectionResetRequested.exchange(false)) 
         {
             synchronizer.reset();
+            lastProcessedCandidateTime = -1.0;
             std::lock_guard<std::mutex> lock(mtx);
             _observations.clear();
         }
@@ -472,7 +491,8 @@ void stereoCalibThread::stereoCalibRun()
             outPortLeft.write();
 
             // Only enqueue a separate copy while collecting
-            if(calibrationState.load() == CalibrationState::Collecting) 
+            if(calibrationState.load() == CalibrationState::Collecting &&
+               shouldQueueFrameForCollection(TSLeft))
             {
                 synchronizer.pushLeft(*tmpL, TSLeft); // this is done for not consuming memory bandwidth for data that will never be used by the calibration
             }
@@ -494,7 +514,8 @@ void stereoCalibThread::stereoCalibRun()
             
 
             // Only enqueue a separate copy while collecting
-            if(calibrationState.load() == CalibrationState::Collecting) 
+            if(calibrationState.load() == CalibrationState::Collecting &&
+               shouldQueueFrameForCollection(TSRight))
             {
                 synchronizer.pushRight(*tmpR, TSRight);
             }

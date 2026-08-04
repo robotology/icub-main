@@ -199,6 +199,7 @@ private:
     void saveImage(const char * imageDir, const Mat& left, int num);
     void stereoCalibRun();
     void monoCalibRun();
+    bool shouldQueueFrameForCollection(const Stamp& timestamp) const;
     void processSynchronizedPair(SynchronizedPair& pair, Size boardSize);
 
 public:
@@ -213,5 +214,4 @@ public:
     void onStop();
 
 };
-
 
