@@ -87,8 +87,8 @@ namespace stereo_calib
         double rightTimestampSeconds {0.0};
         double timestampDeltaSeconds {0.0};
 
-        int64_t leftSequence {-1};
-        int64_t rightSequence {-1};
+        int64_t leftSequenceNumber {-1};
+        int64_t rightSequenceNumber {-1};
 
         bool isValid() const
         {
@@ -242,7 +242,7 @@ namespace stereo_calib
     {
         size_t synchronizedPairs{0};
         size_t acceptedObservations{0};
-        size_t rejectedDections{0};
+        size_t rejectedDetections{0};
 
         double meanTimestampDeltaMs {0.0};
         double maxTimestampDeltaMs {0.0};
