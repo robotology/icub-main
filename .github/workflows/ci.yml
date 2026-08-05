@@ -7,6 +7,9 @@ on:
     - devel
   pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
+    branches:
+    - master
+    - devel
   schedule:
   # * is a special character in YAML so you have to quote this string
   # Execute a "nightly" build at 2 AM UTC
