@@ -51,6 +51,7 @@ private:
         const std::vector<StereoObservation>& observations,
         const CameraCalibrationResult& leftCamera,
         const CameraCalibrationResult& rightCamera,
+        const StereoCalibrationResult& stereo,
         const RectificationResult& rectification,
         CalibrationQualityMetrics& quality,
         std::string& errorMessage) const;

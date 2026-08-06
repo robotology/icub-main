@@ -196,13 +196,12 @@ void PinholeCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & o
         _needInit)
         init(inSize,_calibImgSize);
 
-    out.resize(in.width(), in.height());
-    cv::Mat inMat(in.height(), in.width(), CV_8UC3, in.getRawImage(), in.getRowSize());
-    cv::Mat outMat(out.height(), out.width(), CV_8UC3, out.getRawImage(), out.getRowSize());
-    cv::remap(inMat, outMat,
-               cv::cvarrToMat(_mapUndistortX), cv::cvarrToMat(_mapUndistortY),
-               cv::INTER_LINEAR );
+    cv::Mat outMat;
+    cv::remap( toCvMat(const_cast<ImageOf<PixelRgb>&>(in)), outMat,
+        cv::cvarrToMat(_mapUndistortX), cv::cvarrToMat(_mapUndistortY),
+        cv::INTER_LINEAR );
 
+    out=fromCvMat<PixelRgb>(outMat);
     // painting crosshair at calibration center
     if (_drawCenterCross){
         yarp::sig::PixelRgb pix = yarp::sig::PixelRgb(255,255,255);
