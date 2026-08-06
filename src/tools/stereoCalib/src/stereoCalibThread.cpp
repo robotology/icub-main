@@ -354,6 +354,29 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
     if(foundL && foundR) 
     {
         yDebug() << "Found chessboard corners in both left and right images";
+
+        const Rect leftBoardBounds = boundingRect(leftCorners);
+        const Rect rightBoardBounds = boundingRect(rightCorners);
+        const double minimumBoardSpanRatio = 0.15;
+        const bool leftBoardTooSmall =
+            leftBoardBounds.width < leftSize.width * minimumBoardSpanRatio ||
+            leftBoardBounds.height < leftSize.height * minimumBoardSpanRatio;
+        const bool rightBoardTooSmall =
+            rightBoardBounds.width < rightSize.width * minimumBoardSpanRatio ||
+            rightBoardBounds.height < rightSize.height * minimumBoardSpanRatio;
+
+        if(leftBoardTooSmall || rightBoardTooSmall)
+        {
+            yWarning() << "Skipping stereo pair: chessboard is too small."
+                       << "Left board:" << leftBoardBounds.width << "x" << leftBoardBounds.height
+                       << "of" << leftSize.width << "x" << leftSize.height << ";"
+                       << "right board:" << rightBoardBounds.width << "x" << rightBoardBounds.height
+                       << "of" << rightSize.width << "x" << rightSize.height << "."
+                       << "Each board must span at least" << (minimumBoardSpanRatio * 100.0)
+                       << "% of both image dimensions.";
+            return;
+        }
+
         TermCriteria criteria = TermCriteria(TermCriteria::EPS+TermCriteria::COUNT, 30, 0.01);
         cornerSubPix(leftGray, leftCorners, Size(5,5), Size(-1,-1), criteria);
         cornerSubPix(rightGray, rightCorners, Size(5,5), Size(-1,-1), criteria);
@@ -547,6 +570,15 @@ void stereoCalibThread::stereoCalibRun()
 
     while (!isStopping()) 
     {
+        // Keep the worker alive for RPC status inspection after a calibration
+        // failure, but stop consuming/processing camera data until a new start
+        // request changes the state back to Collecting.
+        if(calibrationState.load() == CalibrationState::Error)
+        {
+            Time::delay(0.1);
+            continue;
+        }
+
         if(collectionResetRequested.exchange(false)) 
         {
             synchronizer.reset();
@@ -656,9 +688,20 @@ void stereoCalibThread::stereoCalibRun()
             {
                 std::lock_guard<std::mutex> lock(mtx);
                 _calibrationResults = std::move(calibrationResult);
-                _calibrationError = std::move(calibrationError);
+                _calibrationError = calibrationError;
             }
-            calibrationState.store(success ? CalibrationState::Completed : CalibrationState::Error);
+
+            if(!success)
+            {
+                // The engine converts OpenCV exceptions into a diagnostic.  Log
+                // it here, where YARP logging is allowed, and stop calibration
+                // processing while keeping the Error state and status available.
+                yError() << "Fisheye calibration failed:" << calibrationError;
+                calibrationState.store(CalibrationState::Error);
+                continue;
+            }
+
+            calibrationState.store(CalibrationState::Completed);
         }
 
         if(!areFramesReceived) 
