@@ -3,8 +3,84 @@
 #include <utility>
 #include <chrono>
 #include <thread>
+#include <sstream>
 #include <yarp/cv/Cv.h>
 #include "stereoCalibThread.h"
+
+namespace
+{
+ 
+std::string formatCalibrationMatrix(const cv::Mat& matrix)
+{
+    std::ostringstream stream;
+    stream << matrix;
+    return stream.str();
+}
+ 
+void logCameraCalibration(const char* cameraName,
+                          const stereo_calib::CameraCalibrationResult& camera)
+{
+    yInfo() << "[CAMERA_CALIBRATION_" << cameraName << "]";
+    yInfo() << "w" << camera.imageSize.width << "h" << camera.imageSize.height;
+    yInfo() << "fx" << camera.K.at<double>(0, 0)
+            << "fy" << camera.K.at<double>(1, 1)
+            << "cx" << camera.K.at<double>(0, 2)
+            << "cy" << camera.K.at<double>(1, 2);
+    yInfo() << "D = [k1 k2 k3 k4] =" << formatCalibrationMatrix(camera.D.t());
+    yInfo() << "K =" << formatCalibrationMatrix(camera.K);
+    yInfo() << "monocular RMS =" << camera.rms;
+}
+ 
+void logCalibrationResult(const stereo_calib::CalibrationResult& result)
+{
+    yInfo() << "========== Fisheye calibration result (not written to disk) ==========";
+ 
+    if(result.leftCamera.isValid())
+    {
+        logCameraCalibration("LEFT", result.leftCamera);
+    }
+    if(result.rightCamera.isValid())
+    {
+        logCameraCalibration("RIGHT", result.rightCamera);
+    }
+ 
+    if(result.stereo.isValid())
+    {
+        cv::Mat homogeneousTransform = cv::Mat::eye(4, 4, CV_64F);
+        result.stereo.R.copyTo(homogeneousTransform(cv::Rect(0, 0, 3, 3)));
+        result.stereo.T.reshape(1, 3).copyTo(homogeneousTransform(cv::Rect(3, 0, 1, 3)));
+ 
+        yInfo() << "[STEREO_DISPARITY]";
+        yInfo() << "Stereo RMS =" << result.stereo.rms
+                << "baseline norm =" << cv::norm(result.stereo.T);
+        yInfo() << "R =" << formatCalibrationMatrix(result.stereo.R);
+        yInfo() << "T =" << formatCalibrationMatrix(result.stereo.T.t());
+        // HN is the same homogeneous transform layout used by outputCalib.ini.
+        yInfo() << "HN =" << formatCalibrationMatrix(homogeneousTransform);
+    }
+ 
+    if(result.rectification.isValid())
+    {
+        yInfo() << "R1 =" << formatCalibrationMatrix(result.rectification.R1);
+        yInfo() << "R2 =" << formatCalibrationMatrix(result.rectification.R2);
+        yInfo() << "P1 =" << formatCalibrationMatrix(result.rectification.P1);
+        yInfo() << "P2 =" << formatCalibrationMatrix(result.rectification.P2);
+        yInfo() << "Q =" << formatCalibrationMatrix(result.rectification.Q);
+    }
+ 
+    if(result.mode == stereo_calib::CalibrationMode::StereoFull)
+    {
+        yInfo() << "Rectification vertical error [mean median RMS p95 max] ="
+                << result.quality.meanVerticalRectificationErrorPx
+                << result.quality.medianVerticalRectificationErrorPx
+                << result.quality.rmsVerticalRectificationErrorPx
+                << result.quality.p95VerticalRectificationErrorPx
+                << result.quality.maxVerticalRectificationErrorPx;
+    }
+    yInfo() << "======================================================================";
+}
+ 
+} // namespace
 
 void StereoPairSynchronizer::configure(double tolerance, std::size_t maxQueueSize)
 {
@@ -671,6 +747,7 @@ void stereoCalibThread::stereoCalibRun()
 
         if(calibrationState.load() == CalibrationState::Calibrating)
         {
+            yInfo() << "Starting the calibration process";
             if(observationSnapshot.empty())
             {
                 std::lock_guard<std::mutex> lock(mtx);
@@ -685,6 +762,10 @@ void stereoCalibThread::stereoCalibRun()
                 _calibrationOptions,
                 calibrationResult,
                 calibrationError);
+            if(success)
+            {
+                logCalibrationResult(calibrationResult);
+            }
             {
                 std::lock_guard<std::mutex> lock(mtx);
                 _calibrationResults = std::move(calibrationResult);
@@ -702,6 +783,7 @@ void stereoCalibThread::stereoCalibRun()
             }
 
             calibrationState.store(CalibrationState::Completed);
+            yInfo() << "Entire calibration process completed";
         }
 
         if(!areFramesReceived) 
