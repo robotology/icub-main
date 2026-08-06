@@ -21,6 +21,7 @@
 
 #include <iCub/iKin/iKinFwd.h>
 #include "CalibrationTypes.h"
+#include "FisheyeCalibrationEngine.h"
 
 using namespace std;
 using namespace cv;
@@ -71,6 +72,18 @@ struct StereoCalibStatus
 
     double meanTimestampDeltaMs{0.0};
     double maxTimestampDeltaMs{0.0};
+
+    // These fields are available only after a successful engine calibration.
+    bool calibrationAvailable{false};
+    std::string calibrationMode;
+    double leftMonocularRms{-1.0};
+    double rightMonocularRms{-1.0};
+    double stereoRms{-1.0};
+    double baselineNorm{-1.0};
+    double medianVerticalRectificationErrorPx{-1.0};
+    double p95VerticalRectificationErrorPx{-1.0};
+    double maxVerticalRectificationErrorPx{-1.0};
+    std::string lastCalibrationError;
 };
 
 class StereoPairSynchronizer
@@ -119,10 +132,10 @@ private:
     double _syncToleranceSeconds{0.020};
     std::size_t _syncQueueSize{5};
 
-    double minCaptureIntervalSeconds{1.0};
+    double minCaptureIntervalSeconds{2.0};
     double lastProcessedCandidateTime{-1.0};
 
-    Size _expectedImageSize{1080, 1920}; // Default expected image size, can be set via configuration
+    Size _expectedImageSize{};
 
     ImageOf<PixelRgb> *imageL;
     ImageOf<PixelRgb> *imageR;
@@ -134,7 +147,7 @@ private:
     yarp::sig::Vector qL;
     yarp::sig::Vector qR;
 
-    mutex mtx;
+    mutable mutex mtx;
 
     int numOfPairs;
     bool stereo;
@@ -169,6 +182,12 @@ private:
 
     stereo_calib::ChessboardConfiguration _chessboardConfiguration;
     std::vector<stereo_calib::StereoObservation> _observations;
+
+    stereo_calib::FisheyeCalibrationEngine _calibrationEngine;
+    stereo_calib::FisheyeCalibrationOptions _calibrationOptions;
+    stereo_calib::CalibrationResult _calibrationResults;
+
+    std::string _calibrationError;
 
     bool _saveImages{false};
 
@@ -214,4 +233,3 @@ public:
     void onStop();
 
 };
-

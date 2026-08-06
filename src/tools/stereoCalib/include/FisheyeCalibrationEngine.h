@@ -54,6 +54,14 @@ private:
         const RectificationResult& rectification,
         CalibrationQualityMetrics& quality,
         std::string& errorMessage) const;
+
+    bool extractCalibrationPoints(
+        const std::vector<StereoObservation>& observations,
+        std::vector<std::vector<cv::Point3f>>& objectPoints,
+        std::vector<std::vector<cv::Point2f>>& leftImagePoints,
+        std::vector<std::vector<cv::Point2f>>& rightImagePoints,
+        std::string& errorMessage) const;
+
 };
 
 } // namespace stereo_calib

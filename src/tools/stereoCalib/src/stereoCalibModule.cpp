@@ -83,7 +83,8 @@ bool stereoCalibModule::respond(const Bottle& command, Bottle& reply)
     {
         StereoCalibStatus status = calibThread->getStatus();
         reply.addString("ok");
-        reply.addString("calibration collection statistics:");
+        reply.addString("state");
+        reply.addString(status.state);
         reply.addString("pairedFrames");
         reply.addInt64(status.pairedFrames);
         reply.addString("droppedLeftFrames");
@@ -94,6 +95,52 @@ bool stereoCalibModule::respond(const Bottle& command, Bottle& reply)
         reply.addFloat64(status.meanTimestampDeltaMs);
         reply.addString("maxTimestampDeltaMs");
         reply.addFloat64(status.maxTimestampDeltaMs);
+
+        // Do not report unavailable calibration values as zero.  These fields
+        // appear only after the engine has completed successfully.
+        if(status.calibrationAvailable)
+        {
+            reply.addString("calibrationMode");
+            reply.addString(status.calibrationMode);
+            if(status.leftMonocularRms >= 0.0)
+            {
+                reply.addString("leftMonocularRms");
+                reply.addFloat64(status.leftMonocularRms);
+            }
+            if(status.rightMonocularRms >= 0.0)
+            {
+                reply.addString("rightMonocularRms");
+                reply.addFloat64(status.rightMonocularRms);
+            }
+            if(status.stereoRms >= 0.0)
+            {
+                reply.addString("stereoRms");
+                reply.addFloat64(status.stereoRms);
+            }
+            if(status.baselineNorm >= 0.0)
+            {
+                reply.addString("baselineNorm");
+                reply.addFloat64(status.baselineNorm);
+            }
+            if(status.medianVerticalRectificationErrorPx >= 0.0)
+            {
+                reply.addString("medianVerticalRectificationErrorPx");
+                reply.addFloat64(status.medianVerticalRectificationErrorPx);
+            }
+            if(status.p95VerticalRectificationErrorPx >= 0.0)
+            {
+                reply.addString("p95VerticalRectificationErrorPx");
+                reply.addFloat64(status.p95VerticalRectificationErrorPx);
+            }
+            if(status.maxVerticalRectificationErrorPx >= 0.0)
+            {
+                reply.addString("maxVerticalRectificationErrorPx");
+                reply.addFloat64(status.maxVerticalRectificationErrorPx);
+            }
+        }
+
+        reply.addString("lastCalibrationError");
+        reply.addString(status.lastCalibrationError.empty() ? "unavailable" : status.lastCalibrationError);
     }
     else if(cmd == "help")
     {
@@ -124,5 +171,3 @@ double stereoCalibModule::getPeriod()
 {    
    return 0.1;
 }
-
-

@@ -127,6 +127,11 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->boardWidth =  stereoCalibOpts.check("boardWidth", Value(8)).asInt32();
     this->boardHeight= stereoCalibOpts.check("boardHeight", Value(6)).asInt32();
     this->numOfPairs= stereoCalibOpts.check("numberOfPairs", Value(30)).asInt32();
+    if(this->numOfPairs < 3)
+    {
+        yWarning() << "numberOfPairs must be at least 3; using 3";
+        this->numOfPairs = 3;
+    }
     this->squareSize= (float)stereoCalibOpts.check("boardSize", Value(0.09241)).asFloat64();
     this->boardType=  stereoCalibOpts.check("boardType", Value("CHESSBOARD")).asString();
     const double syncToleranceMs = stereoCalibOpts.check("syncToleranceMs", Value(20.0)).asFloat64();
@@ -300,10 +305,22 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 
     if(leftSize != _expectedImageSize || rightSize != _expectedImageSize)
     {
+        if(_expectedImageSize.empty())
+        {
+            _expectedImageSize = leftSize;
+        }
+    }
+
+    if(leftSize != _expectedImageSize || rightSize != _expectedImageSize)
+    {
         yError() << "Left and right images have different sizes:" <<
             "Left:" << leftSize.width << "x" << leftSize.height <<
             "Right:" << rightSize.width << "x" << rightSize.height;
-                    
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            _calibrationError = "Input images do not match the expected calibration resolution.";
+            _calibrationResults = stereo_calib::CalibrationResult{};
+        }
         calibrationState.store(CalibrationState::Error);
 
         return;
@@ -342,6 +359,7 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
         cornerSubPix(rightGray, rightCorners, Size(5,5), Size(-1,-1), criteria);
 
         // // save pure image before adding corners
+        // this will be substitued by the new methods in CalibrationWriter class
         // saveStereoImage(pathImg.c_str(),LeftRgb,RightRgb,count);
 
         // imageListR.push_back(imr);
@@ -434,7 +452,25 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 StereoCalibStatus stereoCalibThread::getStatus() const
 {
     StereoCalibStatus result;
-    
+    switch(calibrationState.load())
+    {
+    case CalibrationState::Idle:
+        result.state = "Idle";
+        break;
+    case CalibrationState::Collecting:
+        result.state = "Collecting";
+        break;
+    case CalibrationState::Calibrating:
+        result.state = "Calibrating";
+        break;
+    case CalibrationState::Completed:
+        result.state = "Completed";
+        break;
+    case CalibrationState::Error:
+        result.state = "Error";
+        break;
+    }
+
     const auto syncStats = synchronizer.getStatistics();
 
     result.pairedFrames = syncStats.pairedFrames;
@@ -447,6 +483,51 @@ StereoCalibStatus stereoCalibThread::getStatus() const
     }
 
     result.maxTimestampDeltaMs = 1000.0 * syncStats.maxTimeStampDelta;
+
+    std::lock_guard<std::mutex> lock(mtx);
+    result.lastCalibrationError = _calibrationError;
+    if(calibrationState.load() == CalibrationState::Completed && _calibrationResults.isValid())
+    {
+        result.calibrationAvailable = true;
+        switch(_calibrationResults.mode)
+        {
+        case stereo_calib::CalibrationMode::MonocularLeft:
+            result.calibrationMode = "MonocularLeft";
+            break;
+        case stereo_calib::CalibrationMode::MonocularRight:
+            result.calibrationMode = "MonocularRight";
+            break;
+        case stereo_calib::CalibrationMode::MonocularBoth:
+            result.calibrationMode = "MonocularBoth";
+            break;
+        case stereo_calib::CalibrationMode::StereoFull:
+            result.calibrationMode = "StereoFull";
+            break;
+        }
+
+        if(_calibrationResults.leftCamera.isValid())
+        {
+            result.leftMonocularRms = _calibrationResults.leftCamera.rms;
+        }
+        if(_calibrationResults.rightCamera.isValid())
+        {
+            result.rightMonocularRms = _calibrationResults.rightCamera.rms;
+        }
+        if(_calibrationResults.stereo.isValid())
+        {
+            result.stereoRms = _calibrationResults.stereo.rms;
+            result.baselineNorm = cv::norm(_calibrationResults.stereo.T);
+        }
+        if(_calibrationResults.mode == stereo_calib::CalibrationMode::StereoFull)
+        {
+            result.medianVerticalRectificationErrorPx =
+                _calibrationResults.quality.medianVerticalRectificationErrorPx;
+            result.p95VerticalRectificationErrorPx =
+                _calibrationResults.quality.p95VerticalRectificationErrorPx;
+            result.maxVerticalRectificationErrorPx =
+                _calibrationResults.quality.maxVerticalRectificationErrorPx;
+        }
+    }
 
     return result;
 }
@@ -472,6 +553,8 @@ void stereoCalibThread::stereoCalibRun()
             lastProcessedCandidateTime = -1.0;
             std::lock_guard<std::mutex> lock(mtx);
             _observations.clear();
+            _calibrationResults = stereo_calib::CalibrationResult{};
+            _calibrationError.clear();
         }
 
         bool areFramesReceived = false;
@@ -521,6 +604,7 @@ void stereoCalibThread::stereoCalibRun()
             }
         }
 
+        std::vector<stereo_calib::StereoObservation> observationSnapshot;
         if(calibrationState.load() == CalibrationState::Collecting) 
         {
             SynchronizedPair pair;
@@ -529,22 +613,52 @@ void stereoCalibThread::stereoCalibRun()
                 // Process the synchronized pair
                 processSynchronizedPair(pair, boardSize);
 
-                if(_observations.size() >= numOfPairs) 
+                std::size_t observationsCount = 0;
                 {
-                    yInfo("Collected %zu valid stereo observations. Stopping collection.", _observations.size());
+                    std::lock_guard<std::mutex> lock(mtx);
+                    observationsCount = _observations.size();
+                    if(observationsCount >= static_cast<std::size_t>(numOfPairs))
+                    {
+                        observationSnapshot = _observations;
+                    }
+                }
+
+                if(observationsCount >= static_cast<std::size_t>(numOfPairs))
+                {
+                    yInfo("Collected %zu valid stereo observations. Stopping collection.", observationsCount);
                     if(_saveImages)
                     {
                         //saveAcceptedPair();
                     }
                     calibrationState.store(CalibrationState::Calibrating);
                     yInfo() << "Observation collection complete";
-                }
-
-                if(calibrationState.load() != CalibrationState::Collecting) 
-                {
-                    break; // Exit the loop if calibration state changes
+                    break;
                 }
             }
+        }
+
+        if(calibrationState.load() == CalibrationState::Calibrating)
+        {
+            if(observationSnapshot.empty())
+            {
+                std::lock_guard<std::mutex> lock(mtx);
+                observationSnapshot = _observations;
+            }
+            _calibrationOptions.imageSize = observationSnapshot.front().imageSize;
+
+            stereo_calib::CalibrationResult calibrationResult;
+            std::string calibrationError;
+            const bool success = _calibrationEngine.calibrate(
+                observationSnapshot,
+                _calibrationOptions,
+                calibrationResult,
+                calibrationError);
+            {
+                std::lock_guard<std::mutex> lock(mtx);
+                _calibrationResults = std::move(calibrationResult);
+                _calibrationError = std::move(calibrationError);
+            }
+            calibrationState.store(success ? CalibrationState::Completed : CalibrationState::Error);
         }
 
         if(!areFramesReceived) 
@@ -688,6 +802,11 @@ void stereoCalibThread::startCalib() {
         return;
     }
 
+    {
+        std::lock_guard<std::mutex> lock(mtx);
+        _calibrationResults = stereo_calib::CalibrationResult{};
+        _calibrationError.clear();
+    }
     collectionResetRequested.store(true);
     calibrationState.store(CalibrationState::Collecting);
 
