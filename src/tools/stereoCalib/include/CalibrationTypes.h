@@ -3,14 +3,12 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cmath>
 #include <string>
 #include <vector>
 
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
-
-using namespace cv;
-using namespace std;
 
 namespace stereo_calib
 {
@@ -21,6 +19,14 @@ namespace stereo_calib
         Right
     };
 
+    enum class CalibrationMode
+    {
+        MonocularLeft,  // validate obs -> calibrate left -> populate result.leftCamera -> no call to stereo calib nor rectification
+        MonocularRight, // validate obs -> calibrate right -> populate result.rightCamera -> no call to stereo calib nor rectification
+        MonocularBoth,  // validate obs -> calibrate left and right -> estimate intrinsics -> no estimation of R and T or rectification
+        StereoFull      // validate obs -> calibrate left and right -> stereo calib with fixed intrinsics -> stereo rectification -> evaluate rectification quality -> populate result with all fields
+    };
+
     struct ChessboardConfiguration
     {
         int cornersX{0};
@@ -29,18 +35,18 @@ namespace stereo_calib
         // Physical side length of one chessboard square
         double squareSizeMeters{0.0};
 
-        Size patternSize() const
+        cv::Size patternSize() const
         {
-            return Size(cornersX, cornersY);
+            return cv::Size(cornersX, cornersY);
         }
         
-        size_t cornersCount() const
+        std::size_t cornersCount() const
         {
             if(!isValid())
             {
                 return 0;
             }
-            return static_cast<size_t>(cornersX)*static_cast<size_t>(cornersY);
+            return static_cast<std::size_t>(cornersX)*static_cast<std::size_t>(cornersY);
         }
 
         bool isValid() const
@@ -48,9 +54,9 @@ namespace stereo_calib
             return (cornersX > 1 && cornersY > 1 && squareSizeMeters > 0.0);
         }
 
-        vector<Point3f> createObjectPoints() const
+        std::vector<cv::Point3f> createObjectPoints() const
         {
-            vector<Point3f> points;
+            std::vector<cv::Point3f> points;
 
             if(!isValid())
             {
@@ -77,11 +83,11 @@ namespace stereo_calib
 
     struct StereoObservation
     {
-        Size imageSize;
+        cv::Size imageSize;
 
-        vector<Point3f> objectPoints;
-        vector<Point2f> leftImagePoints;
-        vector<Point2f> rightImagePoints;
+        std::vector<cv::Point3f> objectPoints;
+        std::vector<cv::Point2f> leftImagePoints;
+        std::vector<cv::Point2f> rightImagePoints;
 
         double leftTimestampSeconds {0.0};
         double rightTimestampSeconds {0.0};
@@ -109,23 +115,25 @@ namespace stereo_calib
     
     struct FisheyeCalibrationOptions
     {
-        Size imageSize{1920, 1080};
+        CalibrationMode calibrationMode{CalibrationMode::StereoFull};
+
+        cv::Size imageSize{1920, 1080};
 
         int monocularFlags{
-            fisheye::CALIB_RECOMPUTE_EXTRINSIC |
-            fisheye::CALIB_CHECK_COND |
-            fisheye::CALIB_FIX_SKEW
+            cv::fisheye::CALIB_RECOMPUTE_EXTRINSIC |
+            cv::fisheye::CALIB_CHECK_COND |
+            cv::fisheye::CALIB_FIX_SKEW
         };
 
         int stereoFlags{
-            fisheye::CALIB_FIX_INTRINSIC |
-            fisheye::CALIB_CHECK_COND |
-            fisheye::CALIB_FIX_SKEW
+            cv::fisheye::CALIB_FIX_INTRINSIC |
+            cv::fisheye::CALIB_CHECK_COND |
+            cv::fisheye::CALIB_FIX_SKEW
         };
 
-        TermCriteria criteria{
-            TermCriteria::COUNT |
-            TermCriteria::EPS,
+        cv::TermCriteria criteria{
+            cv::TermCriteria::COUNT |
+            cv::TermCriteria::EPS,
             100,
             1e-5
         };
@@ -139,29 +147,34 @@ namespace stereo_calib
         {
             return (imageSize.width > 0 &&
                 imageSize.height > 0 &&
+                std::isfinite(rectificationBalance) &&
                 rectificationBalance >= 0.0 &&
                 rectificationBalance <= 1.0 &&
-                rectificationFovScale > 0.0);
+                std::isfinite(rectificationFovScale) &&
+                rectificationFovScale > 0.0 &&
+                (!(criteria.type & cv::TermCriteria::COUNT) || criteria.maxCount > 0) &&
+                (!(criteria.type & cv::TermCriteria::EPS) ||
+                 (std::isfinite(criteria.epsilon) && criteria.epsilon > 0.0)));
         }
     };
 
     struct CameraCalibrationResult
     {
-        Size imageSize;
+        cv::Size imageSize;
 
         // 3x3 intrinsic camera matrix
-        Mat K;
+        cv::Mat K;
 
         // Four fisheye coefficients: k1, k2, k3, k4.
         // Standardize internally on 4x1 CV_64F matrix
-        Mat D;
+        cv::Mat D;
 
         // Board pose for each accepted observation
-        vector<Mat> rotationVectors;
-        vector<Mat> translationVectors;
+        std::vector<cv::Mat> rotationVectors;
+        std::vector<cv::Mat> translationVectors;
 
         // Optional quality value calculated for each view
-        vector<double> perViewRms;
+        std::vector<double> perViewRms;
 
         double rms{-1.0};
 
@@ -184,11 +197,11 @@ namespace stereo_calib
         //
         // R: 3x3 rotation matrix
         // T: 3x1 translation vector.
-        Mat R;
-        Mat T;
+        cv::Mat R;
+        cv::Mat T;
 
         // Optional quality value calculated for each stereo observation
-        vector<double> perPairRms;
+        std::vector<double> perPairRms;
 
         double rms{-1.0};
 
@@ -203,18 +216,18 @@ namespace stereo_calib
 
     struct RectificationResult
     {
-        Size outputImageSize;
+        cv::Size outputImageSize;
 
         // Rectification rotations.
-        Mat R1;
-        Mat R2;
+        cv::Mat R1;
+        cv::Mat R2;
 
         // Rectified projection matrices
-        Mat P1;
-        Mat P2;
+        cv::Mat P1;
+        cv::Mat P2;
 
         // Disparity-to-depth mapping matrix
-        Mat Q;
+        cv::Mat Q;
 
         double balance{0.0};
         double fovScale{1.0};
@@ -240,9 +253,9 @@ namespace stereo_calib
 
     struct CalibrationQualityMetrics
     {
-        size_t synchronizedPairs{0};
-        size_t acceptedObservations{0};
-        size_t rejectedDetections{0};
+        std::size_t synchronizedPairs{0};
+        std::size_t acceptedObservations{0};
+        std::size_t rejectedDetections{0};
 
         double meanTimestampDeltaMs {0.0};
         double maxTimestampDeltaMs {0.0};
@@ -256,6 +269,8 @@ namespace stereo_calib
 
     struct CalibrationResult
     {
+        CalibrationMode mode{CalibrationMode::StereoFull};
+
         CameraCalibrationResult leftCamera;
         CameraCalibrationResult rightCamera;
 
@@ -266,10 +281,21 @@ namespace stereo_calib
 
         bool isValid() const
         {
-            return (leftCamera.isValid() &&
-                rightCamera.isValid() &&
-                stereo.isValid() &&
-                rectification.isValid());
+            switch (mode)
+            {
+                case CalibrationMode::MonocularLeft:
+                    return leftCamera.isValid();
+                case CalibrationMode::MonocularRight:
+                    return rightCamera.isValid();
+                case CalibrationMode::MonocularBoth:
+                    return (leftCamera.isValid() && rightCamera.isValid());
+                case CalibrationMode::StereoFull:
+                    return (leftCamera.isValid() &&
+                        rightCamera.isValid() &&
+                        stereo.isValid() &&
+                        rectification.isValid());
+            }
+            return false;
         }
     };
 
