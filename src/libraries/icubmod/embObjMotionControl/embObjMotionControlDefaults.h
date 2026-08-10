@@ -33,28 +33,62 @@ namespace yarp::dev::eomc {
  * user-provided settings (e.g., control law type, feedback units, sensor type, axis type).
  * These are NOT default values; for fallback defaults see the @ref defaults namespace.
  */
-namespace paramValues {
+namespace ParamValues {
 
-static constexpr std::string_view NONE_STR                    = "NONE";
-static constexpr std::string_view ControlLawCurrent           = "low_lev_current";
-static constexpr std::string_view ControlLawDirect            = "direct";
-static constexpr std::string_view ControlLawTrajectory        = "minjerk";
-static constexpr std::string_view ControlLawTorque            = "torque";
-static constexpr std::string_view FbkControlUnits_metric      = "metric_units";
-static constexpr std::string_view FbkControlUnits_machine     = "machine_units";
-static constexpr std::string_view OutControlUnit_pos_metric   = "position_metric";
-static constexpr std::string_view OutControlUnit_vel_metric   = "velocity_metric";
-static constexpr std::string_view OutControlUnit_trq_metric   = "torque_metric";
-static constexpr std::string_view OutControlUnit_cur_metric   = "current_metric";
-static constexpr std::string_view OutControlUnit_dutycycle    = "dutycycle_percent";
-static constexpr std::string_view OutControlUnit_machine      = "machine_units";
-static constexpr std::string_view TemperatureSensorType_NONE  = "NONE";
-static constexpr std::string_view TemperatureSensorType_PT100 = "PT100";
-static constexpr std::string_view TemperatureSensorType_PT1000 = "PT1000";
-static constexpr std::string_view AxisType_prismatic          = "prismatic";
-static constexpr std::string_view AxisType_revolute           = "revolute";
+static constexpr std::string_view NONE_STR = "NONE";
 
-} // namespace paramValues
+namespace controlLaw {
+static constexpr std::string_view current    = "low_lev_current";
+static constexpr std::string_view direct     = "direct";
+static constexpr std::string_view trajectory = "minjerk";
+static constexpr std::string_view torque     = "torque";
+} // namespace controlLaw
+
+namespace fbkUnits {
+static constexpr std::string_view metric  = "metric_units";
+static constexpr std::string_view machine = "machine_units";
+} // namespace fbkUnits
+
+namespace outUnits {
+static constexpr std::string_view pos_metric = "position_metric";
+static constexpr std::string_view vel_metric = "velocity_metric";
+static constexpr std::string_view trq_metric = "torque_metric";
+static constexpr std::string_view cur_metric = "current_metric";
+static constexpr std::string_view dutycycle  = "dutycycle_percent";
+static constexpr std::string_view machine    = "machine_units";
+} // namespace outUnits
+
+namespace temperatureSensor {
+static constexpr std::string_view none  = "NONE";
+static constexpr std::string_view PT100  = "PT100";
+static constexpr std::string_view PT1000 = "PT1000";
+} // namespace temperatureSensor
+
+namespace axisType {
+static constexpr std::string_view prismatic = "prismatic";
+static constexpr std::string_view revolute  = "revolute";
+} // namespace axisType
+
+// Keys used in the CONTROLS config group to select a PID group per control mode.
+namespace controlMode {
+static constexpr std::string_view position       = "positionControl";
+static constexpr std::string_view velocity       = "velocityControl";
+static constexpr std::string_view mixed          = "mixedControl";
+static constexpr std::string_view torque         = "torqueControl";
+static constexpr std::string_view current        = "currentPid";
+static constexpr std::string_view positionDirect = "positionDirect";
+static constexpr std::string_view velocityDirect = "velocityDirect";
+} // namespace controlMode
+
+// Strings used in config "outputType" field to select the physical output quantity.
+namespace outputType {
+static constexpr std::string_view n_a      = "n_a";
+static constexpr std::string_view pwm      = "pwm";
+static constexpr std::string_view velocity = "velocity";
+static constexpr std::string_view current  = "current";
+} // namespace outputType
+
+} // namespace ParamValues
 
 /**
  * @brief Default (fallback) values for embObjMotionControl configuration parameters.
