@@ -86,11 +86,11 @@ public:
         auto outUnitsToString = [](yarp::dev::PidOutputUnitsEnum e) -> std::string {
             switch(e) {
                 case yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS: return "RAW_MACHINE_UNITS";
-                case yarp::dev::PidOutputUnitsEnum::POSITION_METRIC : return "POSITION METRIC";
-                case yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC : return "VELOCITY METRIC";
-                case yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT : return "PWM";
-                case yarp::dev::PidOutputUnitsEnum::TORQUE_METRIC : return "NEWTON_METERS";
-                case yarp::dev::PidOutputUnitsEnum::CURRENT_METRIC : return "CURRENT METRIC";
+                case yarp::dev::PidOutputUnitsEnum::POSITION_METRIC : return "POSITION_METRIC";
+                case yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC : return "VELOCITY_METRIC";
+                case yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT : return "DUTYCYCLE_PWM_PERCENT";
+                case yarp::dev::PidOutputUnitsEnum::TORQUE_METRIC : return "TORQUE_METRIC";
+                case yarp::dev::PidOutputUnitsEnum::CURRENT_METRIC : return "CURRENT_METRIC";
                 default: return "UNKNOWN";
             }
         };
@@ -111,7 +111,6 @@ public:
         yInfo("  usernamePidSelected: %s", usernamePidSelected.c_str());
         yInfo("  enabled: %s", enabled ? "true" : "false");
     }
-    //void dumpdata(void);
 
 };
 
