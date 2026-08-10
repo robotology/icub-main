@@ -307,10 +307,11 @@ bool yarp::dev::eomc::Parser::getOutputType(yarp::os::Bottle& pidsGroup, eOmc_ct
     return true;
 }
 
-bool Parser::parsePidUnitsType(yarp::os::Bottle& pidsGroup, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits)
+bool Parser::parsePidUnitsType(yarp::os::Bottle& pidsGroup, eOmc_ctrl_out_type_t outType,
+                               yarp::dev::PidFeedbackUnitsEnum &fbk_pidunits,
+                               yarp::dev::PidOutputUnitsEnum& out_pidunits)
 {
-
-    Value &fbkControlUnits=pidsGroup.find("fbkControlUnits");
+    Value &fbkControlUnits = pidsGroup.find("fbkControlUnits");
     Value &outControlUnits = pidsGroup.find("outputControlUnits");
     if(fbkControlUnits.isNull())
     {
@@ -333,47 +334,46 @@ bool Parser::parsePidUnitsType(yarp::os::Bottle& pidsGroup, yarp::dev::PidFeedba
         return false;
     }
 
-    if(fbkControlUnits.toString()== eomc::ParamValues::fbkUnits::metric)
+    if(fbkControlUnits.toString() == eomc::ParamValues::fbkUnits::metric)
     {
         fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::METRIC;
     }
-    else if(fbkControlUnits.toString()==eomc::ParamValues::fbkUnits::machine)
+    else if(fbkControlUnits.toString() == eomc::ParamValues::fbkUnits::machine)
     {
         fbk_pidunits = yarp::dev::PidFeedbackUnitsEnum::RAW_MACHINE_UNITS;
     }
     else
     {
-        yError() << "embObjMC BOARD " << _boardname << "invalid fbkControlUnits value: " << fbkControlUnits.toString().c_str();
+        yError() << "embObjMC BOARD " << _boardname << " invalid fbkControlUnits value: " << fbkControlUnits.toString().c_str();
         return false;
     }
-
-    // Map config string → PidOutputUnitsEnum.
-    static const std::map<std::string, yarp::dev::PidOutputUnitsEnum> s_outUnitsMap =
-    {
-        {std::string(eomc::ParamValues::outUnits::dutycycle),  yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT},
-        {std::string(eomc::ParamValues::outUnits::machine),     yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS},
-        {std::string(eomc::ParamValues::outUnits::pos_metric),  yarp::dev::PidOutputUnitsEnum::POSITION_METRIC},
-        {std::string(eomc::ParamValues::outUnits::vel_metric),  yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC},
-        {std::string(eomc::ParamValues::outUnits::trq_metric),  yarp::dev::PidOutputUnitsEnum::TORQUE_METRIC},
-        {std::string(eomc::ParamValues::outUnits::cur_metric),  yarp::dev::PidOutputUnitsEnum::CURRENT_METRIC},
-    };
 
     const std::string outUnitsStr = outControlUnits.toString();
-    auto outIt = s_outUnitsMap.find(outUnitsStr);
-    if (outIt == s_outUnitsMap.end())
+    if (outUnitsStr == eomc::ParamValues::outUnits::machine)
     {
-        yError() << "embObjMC BOARD " << _boardname << " invalid outputControlUnits value: \""
-                 << outUnitsStr << "\". Valid values are: \""
-                 << eomc::ParamValues::outUnits::dutycycle << "\" or \""
-                 << eomc::ParamValues::outUnits::pos_metric << "\" or \""
-                 << eomc::ParamValues::outUnits::vel_metric << "\" or \""
-                 << eomc::ParamValues::outUnits::trq_metric << "\" or \""
-                 << eomc::ParamValues::outUnits::cur_metric << "\" or \""
-                 << eomc::ParamValues::outUnits::machine << "\". Quitting.";
+        out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
+    }
+    else if (outUnitsStr == eomc::ParamValues::outUnits::metric)
+    {
+        // PidOutputUnitsEnum depends on the physical output type declared in outputType.
+        switch (outType)
+        {
+            case eomc_ctrl_out_type_pwm: out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT; break;
+            case eomc_ctrl_out_type_vel: out_pidunits = yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC;       break;
+            case eomc_ctrl_out_type_cur: out_pidunits = yarp::dev::PidOutputUnitsEnum::CURRENT_METRIC;        break;
+            default:
+                yError() << "embObjMC BOARD " << _boardname
+                         << " outputControlUnits=metric_units is not supported for outputType " << (int)outType;
+                return false;
+        }
+    }
+    else
+    {
+        yError() << "embObjMC BOARD " << _boardname << " invalid outputControlUnits value: \"" << outUnitsStr
+                 << "\". Valid values are: \"" << eomc::ParamValues::outUnits::metric
+                 << "\" or \"" << eomc::ParamValues::outUnits::machine << "\". Quitting.";
         return false;
     }
-
-    out_pidunits = outIt->second;
 
     return true;
 }
@@ -467,7 +467,7 @@ bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMan
 
         yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
         yarp::dev::PidOutputUnitsEnum    out_unitstype;
-        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
+        if (!parsePidUnitsType(bot_ctrl, eomc_ctrl_out_type_cur, fbk_unitstype, out_unitstype)) return false;
 
         std::vector<eomc::PidInfo> parsed(_njoints);
         if(!parsePidsGroup2FOC(bot_ctrl, parsed)) return false;
@@ -553,12 +553,12 @@ bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config, std::vec
             return false;
         }
 
-        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-        yarp::dev::PidOutputUnitsEnum    out_unitstype;
-        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
         eOmc_ctrl_out_type_t out_type;
         if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, out_type, fbk_unitstype, out_unitstype)) return false;
 
         std::vector<eomc::PidInfo> parsed(_njoints);
         bool parseOk = false;
@@ -661,12 +661,12 @@ bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config, std::vec
             return false;
         }
 
-        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-        yarp::dev::PidOutputUnitsEnum    out_unitstype;
-        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
         eOmc_ctrl_out_type_t out_type;
         if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, out_type, fbk_unitstype, out_unitstype)) return false;
 
         std::vector<eomc::PidInfo> parsed(_njoints);
         bool parseOk = false;
@@ -779,12 +779,12 @@ bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config, std::vector
             return false;
         }
 
-        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-        yarp::dev::PidOutputUnitsEnum    out_unitstype;
-        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
         eOmc_ctrl_out_type_t out_type;
         if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, out_type, fbk_unitstype, out_unitstype)) return false;
 
         std::vector<eomc::PidInfo> parsed(_njoints);
         bool parseOk = false;
@@ -889,12 +889,12 @@ bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config, st
             return false;
         }
 
-        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-        yarp::dev::PidOutputUnitsEnum    out_unitstype;
-        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
         eOmc_ctrl_out_type_t out_type;
         if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, out_type, fbk_unitstype, out_unitstype)) return false;
 
         std::vector<eomc::PidInfo> parsed(_njoints);
         bool parseOk = false;
@@ -998,12 +998,12 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config, st
             return false;
         }
 
-        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-        yarp::dev::PidOutputUnitsEnum    out_unitstype;
-        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
         eOmc_ctrl_out_type_t out_type;
         if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, out_type, fbk_unitstype, out_unitstype)) return false;
 
         // Temporary workaround: map PWM to VEL and CUR to VEL+CUR for velocity direct control.
         if (out_type == eomc_ctrl_out_type_pwm)
@@ -1103,12 +1103,12 @@ bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config,  std::vect
             return false;
         }
 
-        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
-        yarp::dev::PidOutputUnitsEnum    out_unitstype;
-        if (!parsePidUnitsType(bot_ctrl, fbk_unitstype, out_unitstype)) return false;
-
         eOmc_ctrl_out_type_t out_type;
         if(!getOutputType(bot_ctrl, out_type)) return false;
+
+        yarp::dev::PidFeedbackUnitsEnum  fbk_unitstype;
+        yarp::dev::PidOutputUnitsEnum    out_unitstype;
+        if (!parsePidUnitsType(bot_ctrl, out_type, fbk_unitstype, out_unitstype)) return false;
 
         std::vector<eomc::TrqPidInfo> parsed(_njoints);
         bool parseOk = false;

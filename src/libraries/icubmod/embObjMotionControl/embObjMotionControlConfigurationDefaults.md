@@ -296,15 +296,6 @@ s
 Currently this vales aren't used by Embedded Motion Control
 
 
-## 6. Quick checklist for configuration authors
 
-- Always provide all mandatory groups first (`LIMITS`, `CONTROLS`, joint and motor definitions, PID mandatory parts).
-- If you omit optional fields, verify that defaults are compatible with your hardware.
-- For AMC advanced FOC boards, remember effective timeout minimum is 300 ms.
-- Explicitly set `TemperatureSensorType` and temperature limits if thermal protection is required.
-- If you use deadzone defaults, verify encoder type mapping is correct for each joint.
-- `velocityControl` and `mixedControl` must share the same PID group name as `positionControl` (or be `NONE`).
-- Do not use `HasTempSensor` — it is deprecated and will cause a startup failure.
-- Never set `Gearbox_M2J`, `Gearbox_E2J`, `fullscalePWM`, or `ampsToSensor` to zero.
 
 
