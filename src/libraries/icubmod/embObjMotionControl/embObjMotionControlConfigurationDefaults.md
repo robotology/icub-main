@@ -22,7 +22,10 @@ These are accepted values for specific string parameters:
 - `direct`
 - `minjerk`
 - `torque`
-- `metric_units`
+- `position_metric`
+- `velocity_metric`
+- `torque_metric`
+- `currnet_metric`
 - `machine_units`
 - `dutycycle_percent`
 - `PT100`

@@ -351,9 +351,12 @@ bool Parser::parsePidUnitsType(yarp::os::Bottle& pidsGroup, yarp::dev::PidFeedba
     // POSITION_METRIC as a representative value; all metric variants are rejected in the switch below.
     static const std::map<std::string, yarp::dev::PidOutputUnitsEnum> s_outUnitsMap =
     {
-        {std::string(eomc::paramValues::OutControlUnit_dutycycle), yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT},
-        {std::string(eomc::paramValues::FbkControlUnits_machine),  yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS},
-        {std::string(eomc::paramValues::OutControlUnit_metric),    yarp::dev::PidOutputUnitsEnum::POSITION_METRIC},
+        {std::string(eomc::paramValues::OutControlUnit_dutycycle),   yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT},
+        {std::string(eomc::paramValues::OutControlUnit_machine),     yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS},
+        {std::string(eomc::paramValues::OutControlUnit_pos_metric),  yarp::dev::PidOutputUnitsEnum::POSITION_METRIC},
+        {std::string(eomc::paramValues::OutControlUnit_vel_metric),  yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC},
+        {std::string(eomc::paramValues::OutControlUnit_trq_metric),  yarp::dev::PidOutputUnitsEnum::TORQUE_METRIC},
+        {std::string(eomc::paramValues::OutControlUnit_cur_metric),  yarp::dev::PidOutputUnitsEnum::CURRENT_METRIC},
     };
 
     const std::string outUnitsStr = outControlUnits.toString();
@@ -363,181 +366,18 @@ bool Parser::parsePidUnitsType(yarp::os::Bottle& pidsGroup, yarp::dev::PidFeedba
         yError() << "embObjMC BOARD " << _boardname << " invalid outputControlUnits value: \""
                  << outUnitsStr << "\". Valid values are: \""
                  << eomc::paramValues::OutControlUnit_dutycycle << "\" or \""
-                 << eomc::paramValues::FbkControlUnits_machine << "\". Quitting.";
+                 << eomc::paramValues::OutControlUnit_pos_metric << "\" or \""
+                 << eomc::paramValues::OutControlUnit_vel_metric << "\" or \""
+                 << eomc::paramValues::OutControlUnit_trq_metric << "\" or \""
+                 << eomc::paramValues::OutControlUnit_cur_metric << "\" or \""
+                 << eomc::paramValues::OutControlUnit_machine << "\". Quitting.";
         return false;
     }
 
-    switch (outIt->second)
-    {
-        case yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT:
-            out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT;
-            break;
-        case yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS:
-            out_pidunits = yarp::dev::PidOutputUnitsEnum::RAW_MACHINE_UNITS;
-            break;
-        case yarp::dev::PidOutputUnitsEnum::POSITION_METRIC:
-        case yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC:
-        case yarp::dev::PidOutputUnitsEnum::TORQUE_METRIC:
-        case yarp::dev::PidOutputUnitsEnum::CURRENT_METRIC:
-            yError() << "embObjMC BOARD " << _boardname
-                     << " outputControlUnits = \"" << outUnitsStr
-                     << "\" specifies a metric output unit which is not supported by embObjMotionControl."
-                     << " Supported values are: \"" << eomc::paramValues::OutControlUnit_dutycycle
-                     << "\" or \"" << eomc::paramValues::FbkControlUnits_machine << "\". Quitting.";
-            return false;
-        default:
-            yError() << "embObjMC BOARD " << _boardname << " unhandled outputControlUnits enum value. Quitting.";
-            return false;
-    }
+    out_pidunits = outIt->second;
+
     return true;
 }
-
-// //TODO: fill also vpids
-// bool Parser::getCorrectPidForEachJoint(PidInfo *ppids, PidInfo *vpids, PidInfo *pDirpids, PidInfo *vDirpids,TrqPidInfo *tpids)
-// {
-//     Pid_Algorithm *minjerkAlgo_ptr = NULL;
-//     Pid_Algorithm *directPosAlgo_ptr = NULL;
-//     Pid_Algorithm *directVelAlgo_ptr = NULL;
-//     Pid_Algorithm *torqueAlgo_ptr = NULL;
-
-//     //since some joints could not have all pid configured, reset pid values to 0.
-//     memset(ppids, 0, sizeof(PidInfo)*_njoints);
-//     memset(vpids, 0, sizeof(PidInfo)*_njoints);
-//     memset(pDirpids, 0, sizeof(PidInfo)*_njoints);
-//     memset(vDirpids, 0, sizeof(PidInfo)*_njoints);
-//     memset(tpids, 0, sizeof(TrqPidInfo)*_njoints);
-
-//     map<string, Pid_Algorithm*>::iterator it;
-
-//     for (int i = 0; i < _njoints; i++)
-//     {
-//         //get position pid
-//         it = minjerkAlgoMap.find(_userNameControlPosition);
-//         if (it == minjerkAlgoMap.end())
-//         {
-//             yError() << "embObjMC BOARD" << _boardname << "Cannot find" << _userNameControlPosition.c_str() << "in parsed pos pid";
-//             return false;
-//         }
-
-//         minjerkAlgo_ptr = minjerkAlgoMap[_userNameControlPosition];
-
-//         ppids[i].pid = minjerkAlgo_ptr->getPID(i);
-//         ppids[i].fbk_PidUnits = minjerkAlgo_ptr->fbk_PidUnits;
-//         ppids[i].out_PidUnits = minjerkAlgo_ptr->out_PidUnits;
-//         //ppids[i].controlLaw =  minjerkAlgo_ptr->type;
-//         ppids[i].out_type = minjerkAlgo_ptr->out_type;
-//         ppids[i].usernamePidSelected = _userNameControlPosition;
-//         ppids[i].enabled = true;
-
-        
-//         //get position direct pid
-//         if (_userNameControlPositionDirect != paramValues::NONE_STR)
-//         {
-//             it = directPosAlgoMap.find(_userNameControlPositionDirect);
-//             if (it == directPosAlgoMap.end())
-//             {
-//                 yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _userNameControlPositionDirect.c_str() << "in parsed posDirect pid";
-//                 return false;
-//             }
-
-//             directPosAlgo_ptr = directPosAlgoMap[_userNameControlPositionDirect];
-//         }
-
-//         if (directPosAlgo_ptr)
-//         {
-//             pDirpids[i].pid = directPosAlgo_ptr->getPID(i);
-//             pDirpids[i].fbk_PidUnits = directPosAlgo_ptr->fbk_PidUnits;
-//             pDirpids[i].out_PidUnits = directPosAlgo_ptr->out_PidUnits;
-//             //pDirpids[i].controlLaw = directPosAlgo_ptr->type;
-//             pDirpids[i].out_type = directPosAlgo_ptr->out_type;
-//             pDirpids[i].usernamePidSelected = _userNameControlPositionDirect;
-//             pDirpids[i].enabled = true;
-//         }
-//         else
-//         {
-//             pDirpids[i].enabled = false;
-//             pDirpids[i].usernamePidSelected = paramValues::NONE_STR;
-//         }
-        
-//         //get velocity direct pid
-//         if (_userNameControlVelocityDirect != paramValues::NONE_STR)
-//         {
-//             it = directVelAlgoMap.find(_userNameControlVelocityDirect);
-//             if (it == directVelAlgoMap.end())
-//             {
-//                 yError() << "embObjMC BOARD " << _boardname  << "Cannot find " << _userNameControlVelocityDirect.c_str() << "in parsed velDirect pid";
-//                 return false;
-//             }
-
-//             directVelAlgo_ptr = directVelAlgoMap[_userNameControlVelocityDirect];
-//         }
-
-//         if (directVelAlgo_ptr)
-//         {
-//             vDirpids[i].pid = directVelAlgo_ptr->getPID(i);
-//             vDirpids[i].fbk_PidUnits = directVelAlgo_ptr->fbk_PidUnits;
-//             vDirpids[i].out_PidUnits = directVelAlgo_ptr->out_PidUnits;
-//             //vDirpids[i].controlLaw = directVelAlgo_ptr->type;
-//             vDirpids[i].out_type = directVelAlgo_ptr->out_type;
-//             vDirpids[i].usernamePidSelected = _userNameControlVelocityDirect;
-//             vDirpids[i].enabled = true;
-//         }
-//         else
-//         {
-//             vDirpids[i].enabled = false;
-//             vDirpids[i].usernamePidSelected = paramValues::NONE_STR;
-//         }
-
-//         //get torque pid
-//         if (_userNameControlTorque == paramValues::NONE_STR)
-//         {
-//             torqueAlgo_ptr = NULL;
-//         }
-//         else
-//         {
-//             it = torqueAlgoMap.find(_userNameControlTorque);
-//             if (it == torqueAlgoMap.end())
-//             {
-//                 yError() << "embObjMC BOARD " << _boardname << "Cannot find " << _userNameControlTorque.c_str() << "in parsed trq pid";
-//                 return false;
-//             }
-
-//             torqueAlgo_ptr = torqueAlgoMap[_userNameControlTorque];
-//         }
-
-//         if (torqueAlgo_ptr)
-//         {
-//             tpids[i].pid = torqueAlgo_ptr->getPID(i);
-//             tpids[i].fbk_PidUnits = torqueAlgo_ptr->fbk_PidUnits;
-//             tpids[i].out_PidUnits = torqueAlgo_ptr->out_PidUnits;
-//             //tpids[i].controlLaw = torqueAlgo_ptr->type;
-//             tpids[i].out_type = torqueAlgo_ptr->out_type;
-//             tpids[i].usernamePidSelected = _userNameControlTorque;
-//             tpids[i].enabled = true;
-//             tpids[i].kbemf = _kbemf[i];
-//             tpids[i].ktau = _ktau[i];
-//             tpids[i].viscousPos = _viscousPos[i];
-//             tpids[i].viscousNeg = _viscousNeg[i];
-//             tpids[i].coulombPos = _coulombPos[i];
-//             tpids[i].coulombNeg = _coulombNeg[i];
-//             tpids[i].velocityThres = _velocityThres[i];
-//             tpids[i].filterType = _filterType[i];
-//         }
-//         else
-//         {
-//             tpids[i].enabled = false;
-//             tpids[i].usernamePidSelected = paramValues::NONE_STR;
-//         }
-//     }
-
-//         //eomc_ctrl_out_type_n_a = 0,
-//         //eomc_ctrl_out_type_pwm = 1,
-//         //eomc_ctrl_out_type_vel = 2,
-//         //eomc_ctrl_out_type_cur = 3
-
-//     return checkJointTypes(tpids, "TORQUE") && checkJointTypes(ppids, "POSITION");
-// }
-
 
 //---------------------------------------------------
 // Parse PIDs functions in config file 
