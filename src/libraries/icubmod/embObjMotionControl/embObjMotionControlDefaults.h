@@ -49,13 +49,10 @@ static constexpr std::string_view metric  = "metric_units";
 static constexpr std::string_view machine = "machine_units";
 } // namespace fbkUnits
 
+// Only scale matters; the physical quantity is already encoded in outputType.
 namespace outUnits {
-static constexpr std::string_view pos_metric = "position_metric";
-static constexpr std::string_view vel_metric = "velocity_metric";
-static constexpr std::string_view trq_metric = "torque_metric";
-static constexpr std::string_view cur_metric = "current_metric";
-static constexpr std::string_view dutycycle  = "dutycycle_percent";
-static constexpr std::string_view machine    = "machine_units";
+static constexpr std::string_view metric  = "metric_units";
+static constexpr std::string_view machine = "machine_units";
 } // namespace outUnits
 
 namespace temperatureSensor {

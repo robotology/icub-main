@@ -99,7 +99,7 @@ private:
     //get from config file the values of the pids
     bool readControlLaw(yarp::os::Bottle& pidsGroup, std::string &controlLaw_str);
     //from the pid group in xml file extracts the pid units type (feedback and output)
-    bool parsePidUnitsType(yarp::os::Bottle& pidsGroup, yarp::dev::PidFeedbackUnitsEnum  &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
+    bool parsePidUnitsType(yarp::os::Bottle& pidsGroup, eOmc_ctrl_out_type_t outType, yarp::dev::PidFeedbackUnitsEnum &fbk_pidunits, yarp::dev::PidOutputUnitsEnum& out_pidunits);
 
     bool parseSelectedPositionControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &pos_pids);
     bool parseSelectedVelocityControl(yarp::os::Searchable &config, std::vector<eomc::PidInfo> &vel_pids);
