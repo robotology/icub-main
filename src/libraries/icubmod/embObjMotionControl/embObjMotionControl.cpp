@@ -43,14 +43,7 @@ using namespace yarp::dev::eomc;
 
 // macros
 #define ASK_REFERENCE_TO_FIRMWARE 1
-#define PARSER_MOTION_CONTROL_VERSION   6
-#define NV_NOT_FOUND    return nv_not_found();
-
-static bool nv_not_found(void)
-{
-    yError () << " nv_not_found!! This may mean that this variable is not handled by this EMS\n";
-    return false;
-}
+constexpr int PARSER_MOTION_CONTROL_VERSION{7};
 
 static bool isUnsupportedPidAlias(PidControlTypeEnum pidtype)
 {
