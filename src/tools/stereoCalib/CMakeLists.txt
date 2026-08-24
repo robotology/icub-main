@@ -7,6 +7,7 @@ project(stereoCalib)
 find_package(YARP COMPONENTS os sig dev math cv)
 
 set(source_files
+  src/CalibrationWriter.cpp
   src/FisheyeCalibrationEngine.cpp
   src/main.cpp
   src/stereoCalibModule.cpp
@@ -28,4 +29,3 @@ if(OpenCV_VERSION_MAJOR GREATER 2)
 endif()
 target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ${OpenCV_LIBS} iKin)
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-

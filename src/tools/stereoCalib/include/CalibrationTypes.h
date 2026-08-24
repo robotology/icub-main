@@ -96,6 +96,13 @@ namespace stereo_calib
         int64_t leftSequenceNumber {-1};
         int64_t rightSequenceNumber {-1};
 
+        // Relative filenames of the raw images saved for this accepted
+        // observation.  They are intentionally part of the observation so
+        // that the point data and the dataset images can be joined without
+        // relying on directory iteration.
+        std::string leftImageFilename;
+        std::string rightImageFilename;
+
         bool isValid() const
         {
             if(imageSize.width <= 0 ||
@@ -259,6 +266,10 @@ namespace stereo_calib
 
         double meanTimestampDeltaMs {0.0};
         double maxTimestampDeltaMs {0.0};
+
+        // Baseline expressed in the same unit as StereoCalibrationResult::T.
+        // It is calculated by the calibration engine, not by persistence.
+        double baseline{-1.0};
 
         double meanVerticalRectificationErrorPx {-1.0};
         double medianVerticalRectificationErrorPx {-1.0};

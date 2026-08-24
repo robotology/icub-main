@@ -67,6 +67,7 @@ bool isValidRectificationResult(const stereo_calib::RectificationResult& result)
 bool isValidQuality(const stereo_calib::CalibrationQualityMetrics& quality)
 {
     return quality.acceptedObservations > 0 &&
+           std::isfinite(quality.baseline) && quality.baseline > 0.0 &&
            std::isfinite(quality.meanVerticalRectificationErrorPx) && quality.meanVerticalRectificationErrorPx >= 0.0 &&
            std::isfinite(quality.medianVerticalRectificationErrorPx) && quality.medianVerticalRectificationErrorPx >= 0.0 &&
            std::isfinite(quality.rmsVerticalRectificationErrorPx) && quality.rmsVerticalRectificationErrorPx >= 0.0 &&
@@ -142,7 +143,8 @@ bool FisheyeCalibrationEngine::calibrate(
                 !computeRectification(options, calculated.leftCamera, calculated.rightCamera,
                                       calculated.stereo, calculated.rectification, errorMessage) ||
                 !evaluateRectification(observations, calculated.leftCamera, calculated.rightCamera,
-                                       calculated.rectification, calculated.quality, errorMessage))
+                                       calculated.stereo, calculated.rectification,
+                                       calculated.quality, errorMessage))
             {
                 return false;
             }
@@ -403,6 +405,7 @@ bool FisheyeCalibrationEngine::evaluateRectification(
     const std::vector<StereoObservation>& observations,
     const CameraCalibrationResult& leftCamera,
     const CameraCalibrationResult& rightCamera,
+    const StereoCalibrationResult& stereo,
     const RectificationResult& rectification,
     CalibrationQualityMetrics& quality,
     std::string& errorMessage) const
@@ -456,6 +459,7 @@ bool FisheyeCalibrationEngine::evaluateRectification(
     quality.synchronizedPairs = observations.size();
     quality.acceptedObservations = observations.size();
     quality.rejectedDetections = 0;
+    quality.baseline = cv::norm(stereo.T);
     quality.meanTimestampDeltaMs = timestampDeltaSumMs / static_cast<double>(observations.size());
     quality.meanVerticalRectificationErrorPx = sum / static_cast<double>(verticalErrors.size());
     quality.rmsVerticalRectificationErrorPx = std::sqrt(sumSquares / static_cast<double>(verticalErrors.size()));

@@ -21,6 +21,7 @@
 
 #include <iCub/iKin/iKinFwd.h>
 #include "CalibrationTypes.h"
+#include "CalibrationWriter.h"
 #include "FisheyeCalibrationEngine.h"
 
 using namespace std;
@@ -182,14 +183,18 @@ private:
 
     stereo_calib::ChessboardConfiguration _chessboardConfiguration;
     std::vector<stereo_calib::StereoObservation> _observations;
+    std::size_t _rejectedDetections{0};
 
     stereo_calib::FisheyeCalibrationEngine _calibrationEngine;
+    stereo_calib::CalibrationWriter _calibrationWriter;
     stereo_calib::FisheyeCalibrationOptions _calibrationOptions;
     stereo_calib::CalibrationResult _calibrationResults;
 
     std::string _calibrationError;
 
     bool _saveImages{false};
+    bool _drawDiagnosticCorners{true};
+    std::string _observationsFile;
 
 
     BufferedPort<ImageOf<PixelRgb> > imagePortInLeft;
