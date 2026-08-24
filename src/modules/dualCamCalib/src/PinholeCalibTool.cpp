@@ -14,13 +14,10 @@ using namespace yarp::sig;
 using namespace yarp::cv;
 
 PinholeCalibTool::PinholeCalibTool(){
-    _mapUndistortX = NULL;
-    _mapUndistortY = NULL;
-    _intrinsic_matrix = cvCreateMat(3,3, CV_32F);
-    _intrinsic_matrix_scaled = cvCreateMat(3,3, CV_32F);
-    _distortion_coeffs = cvCreateMat(1, 4, CV_32F);
-    _oldImgSize.width = -1;
-    _oldImgSize.height = -1;
+    _intrinsic_matrix = cv::Mat::eye(3, 3, CV_32F);
+    _intrinsic_matrix_scaled = cv::Mat::eye(3, 3, CV_32F);
+    _distortion_coeffs = cv::Mat::zeros(1, 4, CV_32F);
+    _oldImgSize = cv::Size(-1, -1);
     _needInit = true;
 }
 
@@ -29,15 +26,11 @@ PinholeCalibTool::~PinholeCalibTool(){
 }
 
 bool PinholeCalibTool::close(){
-    if (_mapUndistortX != NULL)
-        cvReleaseImage(&_mapUndistortX);
-    _mapUndistortX = NULL;
-    if (_mapUndistortY != NULL)
-        cvReleaseImage(&_mapUndistortY);
-    _mapUndistortY = NULL;
-    cvReleaseMat(&_intrinsic_matrix);
-    cvReleaseMat(&_intrinsic_matrix_scaled);
-    cvReleaseMat(&_distortion_coeffs);
+    _mapUndistortX.release();
+    _mapUndistortY.release();
+    _intrinsic_matrix.release();
+    _intrinsic_matrix_scaled.release();
+    _distortion_coeffs.release();
     return true;
 }
 
@@ -65,24 +58,24 @@ bool PinholeCalibTool::configure (Searchable &config){
                                     "Draw a cross at calibration center (int [0|1]).").asInt32()!=0;
 
 
-    CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 0) = (float)config.check("fx",
+    _intrinsic_matrix.at<float>(0, 0) = (float)config.check("fx",
                                                         Value(320.0),
                                                         "Focal length x (double)").asFloat64();
 
-    CV_MAT_ELEM( *_intrinsic_matrix, float, 0, 1) = 0.0f;
-    CV_MAT_ELEM( *_intrinsic_matrix, float, 0, 2) = (float)config.check("cx",
+    _intrinsic_matrix.at<float>(0, 1) = 0.0f;
+    _intrinsic_matrix.at<float>(0, 2) = (float)config.check("cx",
                                                         Value(160.0),
                                                         "Principal point x (double)").asFloat64();
-    CV_MAT_ELEM( *_intrinsic_matrix, float, 1, 0) = 0.0f;
-    CV_MAT_ELEM( *_intrinsic_matrix, float, 1, 1) = (float)config.check("fy",
+    _intrinsic_matrix.at<float>(1, 0) = 0.0f;
+    _intrinsic_matrix.at<float>(1, 1) = (float)config.check("fy",
                                                         Value(320.0),
                                                         "Focal length y (double)").asFloat64();
-    CV_MAT_ELEM( *_intrinsic_matrix, float, 1, 2) = (float)config.check("cy",
+    _intrinsic_matrix.at<float>(1, 2) = (float)config.check("cy",
                                                         Value(120.0),
                                                         "Principal point y (double)").asFloat64();
-    CV_MAT_ELEM( *_intrinsic_matrix, float, 2, 0) = 0.0f;
-    CV_MAT_ELEM( *_intrinsic_matrix, float, 2, 1) = 0.0f;
-    CV_MAT_ELEM( *_intrinsic_matrix, float, 2, 2) = 1.0f;
+    _intrinsic_matrix.at<float>(2, 0) = 0.0f;
+    _intrinsic_matrix.at<float>(2, 1) = 0.0f;
+    _intrinsic_matrix.at<float>(2, 2) = 1.0f;
 
 
     //check to see if the value is read correctly without caring about the default values.
@@ -105,28 +98,19 @@ bool PinholeCalibTool::configure (Searchable &config){
     fprintf(stdout,"cy=%g\n",config.find("cy").asFloat64());
 
 
-    // copy to scaled matrix ;)
-    CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 0);
-    CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 1);
-    CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 2) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 2);
-    CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 1, 0);
-    CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 1, 1);
-    CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 2) = CV_MAT_ELEM( *_intrinsic_matrix , float, 1, 2);
-    CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 0);
-    CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 1);
-    CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 2) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 2);
+    _intrinsic_matrix.copyTo(_intrinsic_matrix_scaled);
 
      /* init the distortion coeffs */
-    CV_MAT_ELEM( *_distortion_coeffs, float, 0, 0) = (float)config.check("k1",
+    _distortion_coeffs.at<float>(0, 0) = (float)config.check("k1",
                                                         Value(0.0),
                                                         "Radial distortion 1(double)").asFloat64();
-    CV_MAT_ELEM( *_distortion_coeffs, float, 0, 1) = (float)config.check("k2",
+    _distortion_coeffs.at<float>(0, 1) = (float)config.check("k2",
                                                         Value(0.0),
                                                         "Radial distortion 2(double)").asFloat64();
-    CV_MAT_ELEM( *_distortion_coeffs, float, 0, 2) = (float)config.check("p1",
+    _distortion_coeffs.at<float>(0, 2) = (float)config.check("p1",
                                                         Value(0.0),
                                                         "Tangential distortion 1(double)").asFloat64();
-    CV_MAT_ELEM( *_distortion_coeffs, float, 0, 3) = (float)config.check("p2",
+    _distortion_coeffs.at<float>(0, 3) = (float)config.check("p2",
                                                         Value(0.0),
                                                         "Tangential distortion 2(double)").asFloat64();
     _needInit = true;
@@ -135,16 +119,7 @@ bool PinholeCalibTool::configure (Searchable &config){
 }
 
 
-bool PinholeCalibTool::init(CvSize currImgSize, CvSize calibImgSize){
-
-    if (_mapUndistortX != NULL)
-        cvReleaseImage(&_mapUndistortX);
-    _mapUndistortX = NULL;
-    if (_mapUndistortY != NULL)
-        cvReleaseImage(&_mapUndistortY);
-    _mapUndistortY = NULL;
-
-
+bool PinholeCalibTool::init(cv::Size currImgSize, cv::Size calibImgSize){
     // Scale the intrinsics if required:
     // if current image size is not the same as the size for
     // which calibration parameters are specified we need to
@@ -153,42 +128,27 @@ bool PinholeCalibTool::init(CvSize currImgSize, CvSize calibImgSize){
         currImgSize.height != calibImgSize.height){
         float scaleX = (float)currImgSize.width / (float)calibImgSize.width;
         float scaleY = (float)currImgSize.height / (float)calibImgSize.height;
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 0) * scaleX;
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 1);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 2) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 2) * scaleX;
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 1, 0);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 1, 1) * scaleY;
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 2) = CV_MAT_ELEM( *_intrinsic_matrix , float, 1, 2) * scaleY;
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 0);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 1);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 2) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 2);
+        _intrinsic_matrix.copyTo(_intrinsic_matrix_scaled);
+        _intrinsic_matrix_scaled.at<float>(0, 0) *= scaleX;
+        _intrinsic_matrix_scaled.at<float>(0, 2) *= scaleX;
+        _intrinsic_matrix_scaled.at<float>(1, 1) *= scaleY;
+        _intrinsic_matrix_scaled.at<float>(1, 2) *= scaleY;
     }
     else{
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 0);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 1);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 2) = CV_MAT_ELEM( *_intrinsic_matrix , float, 0, 2);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 1, 0);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 1, 1);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 2) = CV_MAT_ELEM( *_intrinsic_matrix , float, 1, 2);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 0) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 0);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 1);
-        CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 2) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 2);
+        _intrinsic_matrix.copyTo(_intrinsic_matrix_scaled);
     }
     
-    _mapUndistortX = cvCreateImage(currImgSize, IPL_DEPTH_32F, 1);
-    _mapUndistortY = cvCreateImage(currImgSize, IPL_DEPTH_32F, 1);
-
     /* init the undistortion matrices */
-    cv::initUndistortRectifyMap(cv::cvarrToMat(_intrinsic_matrix_scaled), cv::cvarrToMat(_distortion_coeffs), cv::Mat(),
-                                cv::cvarrToMat(_intrinsic_matrix_scaled), cv::Size(currImgSize.width, currImgSize.height),
-                                CV_32FC1,cv::cvarrToMat(_mapUndistortX), cv::cvarrToMat(_mapUndistortY));
+    cv::initUndistortRectifyMap(_intrinsic_matrix_scaled, _distortion_coeffs, cv::Mat(),
+                                _intrinsic_matrix_scaled, currImgSize,
+                                CV_32FC1, _mapUndistortX, _mapUndistortY);
     _needInit = false;
     return true;
 }
 
 void PinholeCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & out){
 
-    CvSize inSize = cvSize(in.width(),in.height());
+    cv::Size inSize(in.width(), in.height());
 
     // check if reallocation required
     if ( inSize.width  != _oldImgSize.width || 
@@ -198,15 +158,15 @@ void PinholeCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & o
 
     cv::Mat outMat;
     cv::remap( toCvMat(const_cast<ImageOf<PixelRgb>&>(in)), outMat,
-             cv::cvarrToMat(_mapUndistortX), cv::cvarrToMat(_mapUndistortY),
+             _mapUndistortX, _mapUndistortY,
              cv::INTER_LINEAR );
     out=fromCvMat<PixelRgb>(outMat);
 
     // painting crosshair at calibration center
     if (_drawCenterCross){
         yarp::sig::PixelRgb pix = yarp::sig::PixelRgb(255,255,255);
-        yarp::sig::draw::addCrossHair(out, pix, (int)CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 2),
-                                            (int)CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 2),
+        yarp::sig::draw::addCrossHair(out, pix, (int)_intrinsic_matrix_scaled.at<float>(0, 2),
+                                            (int)_intrinsic_matrix_scaled.at<float>(1, 2),
                                             10);
     }
 
@@ -214,4 +174,3 @@ void PinholeCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & o
     _oldImgSize.width  = inSize.width;
     _oldImgSize.height = inSize.height;
 }
-
