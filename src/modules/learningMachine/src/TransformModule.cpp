@@ -57,10 +57,10 @@ bool TransformPredictProcessor::read(yarp::os::ConnectionReader& connection) {
 }
 
 
-void TransformTrainProcessor::onRead(yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector>& input) {
+void TransformTrainProcessor::onRead(VectorPair& input) {
     if(this->getTransformerPortable().hasWrapped()) {
         try {
-            yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector>& output = this->getOutputPort().prepare();
+            VectorPair& output = this->getOutputPort().prepare();
             output.head = this->getTransformer().transform(input.head);
             output.body = input.body;
             this->getOutputPort().writeStrict();
