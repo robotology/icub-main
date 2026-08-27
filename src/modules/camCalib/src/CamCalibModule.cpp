@@ -109,8 +109,8 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     setName(str.c_str()); // modulePortName
 
     // pass configuration over to bottle
-    Bottle botConfig(rf.toString());
-    // Load from configuration group ([<group_name>]), if group option present
+    Bottle fullConfig(rf.toString());
+    Bottle botConfig(fullConfig);    // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
     if(botConfig.check("group", valGroup, "Configuration group to load module options from (string)."))
     {
@@ -137,7 +137,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     _calibTool = CalibToolFactories::getPool().get(calibToolName.c_str());
     if (_calibTool!=NULL) {
-        bool ok = _calibTool->open(botConfig);
+        bool ok = _calibTool->open(calibToolName == "fisheye" ? fullConfig : botConfig);
         if (!ok) {
             delete _calibTool;
             _calibTool = NULL;
