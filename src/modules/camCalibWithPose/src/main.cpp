@@ -132,9 +132,6 @@
 #include <iCub/SphericalCalibTool.h>
 #include <iCub/CamCalibModule.h>
 
-// OpenCV
-#include <opencv2/core/core_c.h>
-
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;

@@ -187,13 +187,13 @@ void stereoCalibThread::stereoCalibRun()
                     foundL = findCirclesGrid(Left, boardSize, pointbufL, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                     foundR = findCirclesGrid(Right, boardSize, pointbufR, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                 } else {
-                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-                    foundR = findChessboardCorners(Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK | CALIB_CB_NORMALIZE_IMAGE);
+                    foundR = findChessboardCorners(Right, boardSize, pointbufR, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK | CALIB_CB_NORMALIZE_IMAGE);
                 }
 
                 if(foundL && foundR) {
-                        cvtColor(Left,Left,CV_RGB2BGR);
-                        cvtColor(Right,Right,CV_RGB2BGR);
+                        cvtColor(Left,Left,COLOR_RGB2BGR);
+                        cvtColor(Right,Right,COLOR_RGB2BGR);
                         saveStereoImage(pathImg.c_str(),Left,Right,count);
 
                         imageListR.push_back(imr);
@@ -309,11 +309,11 @@ void stereoCalibThread::monoCalibRun()
                 } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
                     foundL = findCirclesGrid(Left, boardSize, pointbufL, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                 } else {
-                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK | CALIB_CB_NORMALIZE_IMAGE);
                 }
 
                 if(foundL) {
-                        cvtColor(Left,Left,CV_RGB2BGR);
+                        cvtColor(Left,Left,COLOR_RGB2BGR);
                         saveImage(pathImg.c_str(),Left,count);
                         imageListL.push_back(iml);
                         Mat cL(pointbufL);
@@ -616,7 +616,7 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
          view = cv::imread(imageList[i], 1);
          imageSize = view.size();
          vector<Point2f> pointbuf;
-         cvtColor(view, viewGray, CV_BGR2GRAY);
+         cvtColor(view, viewGray, COLOR_BGR2GRAY);
 
          bool found = false;
          if(boardType == "CIRCLES_GRID") {
@@ -625,7 +625,7 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
              found = findCirclesGrid(view, boardSize, pointbuf, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
          } else {
              found = findChessboardCorners( view, boardSize, pointbuf,
-                                            CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                                            CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK | CALIB_CB_NORMALIZE_IMAGE);
          }
 
          if(found)
@@ -640,7 +640,7 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
     double totalAvgErr = 0;
 
     K = Mat::eye(3, 3, CV_64F);
-    if( flags & CV_CALIB_FIX_ASPECT_RATIO )
+    if( flags & CALIB_FIX_ASPECT_RATIO )
         K.at<double>(0,0) = aspectRatio;
 
     Dist = Mat::zeros(4, 1, CV_64F);
@@ -650,7 +650,7 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
     objectPoints.resize(imagePoints.size(),objectPoints[0]);
 
     double rms = calibrateCamera(objectPoints, imagePoints, imageSize, K,
-                    Dist, rvecs, tvecs,CV_CALIB_FIX_K3);
+                    Dist, rvecs, tvecs, CALIB_FIX_K3);
     yInfo("RMS error reported by calibrateCamera: %g\n", rms);
     cout.flush();
 }
@@ -711,7 +711,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                     found = findCirclesGrid(timg, boardSize, corners, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
                 } else {
                     found = findChessboardCorners(timg, boardSize, corners,
-                                                  CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+                                                  CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE);
                 }
 
                 if( found )
@@ -764,11 +764,11 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                         this->Kright, this->DistR,
                         imageSize, this->R, this->T, E, F,
                     #ifdef OPENCV_GREATER_2
-                        CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_ZERO_TANGENT_DIST + CV_CALIB_SAME_FOCAL_LENGTH + CV_CALIB_FIX_K3,
+                        CALIB_FIX_ASPECT_RATIO + CALIB_ZERO_TANGENT_DIST + CALIB_SAME_FOCAL_LENGTH + CALIB_FIX_K3,
                         TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5));
                     #else
                         TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5),
-                        CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_ZERO_TANGENT_DIST + CV_CALIB_SAME_FOCAL_LENGTH + CV_CALIB_FIX_K3);
+                        CALIB_FIX_ASPECT_RATIO + CALIB_ZERO_TANGENT_DIST + CALIB_SAME_FOCAL_LENGTH + CALIB_FIX_K3);
                     #endif
         yInfo("done with RMS error= %f\n",rms);
     } else
@@ -779,11 +779,11 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                 this->Kright, this->DistR,
                 imageSize, this->R, this->T, E, F,
             #ifdef OPENCV_GREATER_2
-                 CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_FIX_INTRINSIC + CV_CALIB_FIX_K3);
-                 TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5),
+                 CALIB_FIX_ASPECT_RATIO + CALIB_FIX_INTRINSIC + CALIB_FIX_K3,
+                 TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5));
             #else
                  TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5),
-                 CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_FIX_INTRINSIC + CV_CALIB_FIX_K3);
+                 CALIB_FIX_ASPECT_RATIO + CALIB_FIX_INTRINSIC + CALIB_FIX_K3);
             #endif
         yInfo("done with RMS error= %f\n",rms);
     }

@@ -17,10 +17,7 @@ using namespace yarp::sig;
 using namespace yarp::cv;
 
 SphericalCalibTool::SphericalCalibTool(){
-    _mapX = NULL;
-    _mapY = NULL;
-    _oldImgSize.width = -1;
-    _oldImgSize.height = -1;
+    _oldImgSize = cv::Size(-1, -1);
     _needInit = true;
 }
 
@@ -33,12 +30,8 @@ bool SphericalCalibTool::open(Searchable &config){
 }
 
 bool SphericalCalibTool::close(){
-    if (_mapX != NULL)
-        cvReleaseImage(&_mapX);
-    _mapX = NULL;
-    if (_mapY != NULL)
-        cvReleaseImage(&_mapY);
-    _mapY = NULL;
+    _mapX.release();
+    _mapY.release();
     return true;
 }
 
@@ -93,15 +86,7 @@ bool SphericalCalibTool::configure (Searchable &config){
 }
 
 
-bool SphericalCalibTool::init(CvSize currImgSize, CvSize calibImgSize){
-
-     if (_mapX != NULL)
-        cvReleaseImage(&_mapX);
-    _mapX = NULL;
-    if (_mapY != NULL)
-        cvReleaseImage(&_mapY);
-    _mapY = NULL;
-
+bool SphericalCalibTool::init(cv::Size currImgSize, cv::Size calibImgSize){
     // Scale the intrinsics if required:
     // if current image size is not the same as the size for
     // which calibration parameters are specified we need to
@@ -122,8 +107,8 @@ bool SphericalCalibTool::init(CvSize currImgSize, CvSize calibImgSize){
         _cy_scaled = _cy;
     }
 
-    _mapX = cvCreateImage(currImgSize, IPL_DEPTH_32F, 1);
-    _mapY = cvCreateImage(currImgSize, IPL_DEPTH_32F, 1);
+    _mapX.create(currImgSize, CV_32FC1);
+    _mapY.create(currImgSize, CV_32FC1);
 
 
 
@@ -131,7 +116,7 @@ bool SphericalCalibTool::init(CvSize currImgSize, CvSize calibImgSize){
                        currImgSize.height, currImgSize.width,
                         _fx_scaled, _fy_scaled, _cx_scaled, _cy_scaled,
                         _k1, _k2, _p1, _p2,
-                        (float*)_mapX->imageData, (float*)_mapY->imageData))
+                        _mapX.ptr<float>(), _mapY.ptr<float>()))
         return false;
 
     _needInit = false;
@@ -140,7 +125,7 @@ bool SphericalCalibTool::init(CvSize currImgSize, CvSize calibImgSize){
 
 void SphericalCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & out){
 
-    CvSize inSize = cvSize(in.width(),in.height());
+    cv::Size inSize(in.width(), in.height());
 
     // check if reallocation required
     if ( inSize.width  != _oldImgSize.width ||
@@ -152,7 +137,7 @@ void SphericalCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> &
 
     cv::Mat outMat=toCvMat(out);
     cv::remap( toCvMat(const_cast<ImageOf<PixelRgb>&>(in)), outMat,
-               cv::cvarrToMat(_mapX), cv::cvarrToMat(_mapY),
+               _mapX, _mapY,
                cv::INTER_LINEAR );
     out=fromCvMat<PixelRgb>(outMat);
 

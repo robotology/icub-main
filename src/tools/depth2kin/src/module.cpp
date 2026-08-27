@@ -26,7 +26,7 @@
 #include <utility>
 
 #include <yarp/cv/Cv.h>
-#include <opencv2/imgproc/imgproc_c.h>
+#include <opencv2/imgproc.hpp>
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h>
 #include <yarp/math/NormRand.h>
@@ -180,7 +180,7 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     if ((c[0]<10.0) || (c[0]>imgIn.width()-10) ||
         (c[1]<10.0) || (c[1]>imgIn.height()-10))
     {
-        cv::cvtColor(imgInMat,imgOutMat,CV_GRAY2BGR);
+        cv::cvtColor(imgInMat,imgOutMat,cv::COLOR_GRAY2BGR);
         return cv::Rect();
     }
 
@@ -198,7 +198,7 @@ cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelB
     // run Otsu algorithm to segment out the finger    
     cv::Mat imgInMatRoi(imgInMat,rect);
     cv::threshold(imgInMatRoi,imgInMatRoi,0,255,cv::THRESH_BINARY|cv::THRESH_OTSU);
-    cv::cvtColor(imgInMat,imgOutMat,CV_GRAY2BGR);
+    cv::cvtColor(imgInMat,imgOutMat,cv::COLOR_GRAY2BGR);
 
     px.resize(2,0.0);
     bool ok=false;
@@ -1120,7 +1120,7 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
         }
 
         cv::Mat img=toCvMat(imgOut);
-        cv::putText(img,tag,cv::Point(rect.x+5,rect.y+15),CV_FONT_HERSHEY_SIMPLEX,0.5,color);
+        cv::putText(img,tag,cv::Point(rect.x+5,rect.y+15),cv::FONT_HERSHEY_SIMPLEX,0.5,color);
 
         motorExplorationState=motorExplorationStateTrigger;
         holdImg=true;
@@ -1825,5 +1825,4 @@ bool CalibModule::close()
     delete calibrator;
     return true;
 }
-
 
