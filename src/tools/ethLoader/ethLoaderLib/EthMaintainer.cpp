@@ -2146,7 +2146,7 @@ bool EthMaintainer::command_changeaddress(eOipv4addr_t ipv4, eOipv4addr_t ipv4ne
     }
 
     // 09/2020 davide.tome@iit.it - possible to give 10.X.X.X IP address
-    if(!((10 == command.address[0]) || (0 < command.address[1] < 255) || (0 < command.address[2] < 255) || (0 < command.address[3] < 255)))
+    if(!((10 == command.address[0]) || ((0 < command.address[1]) && (command.address[1] < 255)) || ((0 < command.address[2]) && (command.address[2] < 255)) || ((0 < command.address[3]) && (command.address[3] < 255))))
     {
         stopit =  true;
     }
