@@ -19,10 +19,9 @@
 #ifndef LM_TRANSFORMMODULE__
 #define LM_TRANSFORMMODULE__
 
-#include <yarp/os/PortablePair.h>
-
 #include "iCub/learningMachine/IMachineLearnerModule.h"
 #include "iCub/learningMachine/TransformerPortable.h"
+#include "iCub/learningMachine/VectorPair.h"
 
 
 namespace iCub {
@@ -126,12 +125,12 @@ public:
  *
  */
 class TransformTrainProcessor
-  : public ITransformProcessor, public yarp::os::TypedReaderCallback< yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector> > {
+  : public ITransformProcessor, public yarp::os::TypedReaderCallback<VectorPair> {
 private:
     /**
      * The relay port.
      */
-    yarp::os::BufferedPort<yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector> >& train_out;
+    yarp::os::BufferedPort<VectorPair>& train_out;
 
 public:
     /**
@@ -140,20 +139,20 @@ public:
      * @param tp a reference to a transformer.
      */
     TransformTrainProcessor(TransformerPortable& tp,
-                            yarp::os::BufferedPort< yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector> >& p)
+                            yarp::os::BufferedPort<VectorPair>& p)
       : ITransformProcessor(tp), train_out(p) { }
 
     /*
      * Inherited from TypedReaderCallback.
      */
-    virtual void onRead(yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector>& input);
+    virtual void onRead(VectorPair& input);
 
     /**
      * Retrieve the training output port.
      *
      * @return a reference to the output port.
      */
-    virtual yarp::os::BufferedPort<yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector> >& getOutputPort() {
+    virtual yarp::os::BufferedPort<VectorPair>& getOutputPort() {
         return this->train_out;
     }
 
@@ -183,12 +182,12 @@ private:
     /**
      * Buffered port for the incoming training samples (input and output).
      */
-    yarp::os::BufferedPort<yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector> > train_in;
+    yarp::os::BufferedPort<VectorPair> train_in;
 
     /**
      * Buffered port for the outgoing training samples (input and output).
      */
-    yarp::os::BufferedPort<yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector> > train_out;
+    yarp::os::BufferedPort<VectorPair> train_out;
 
     /**
      * Buffered port for the incoming prediction samples.

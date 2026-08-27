@@ -29,7 +29,7 @@
 namespace iCub {
 namespace learningmachine {
 
-void TrainProcessor::onRead(yarp::os::PortablePair<yarp::sig::Vector,yarp::sig::Vector>& sample) {
+void TrainProcessor::onRead(VectorPair& sample) {
     if(this->getMachinePortable().hasWrapped() && this->enabled) {
         try {
             // Event Code

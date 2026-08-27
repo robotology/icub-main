@@ -42,7 +42,8 @@ SET(LM_HEADER
     include/iCub/learningMachine/TrainEvent.h
     include/iCub/learningMachine/TrainEventListener.h
     include/iCub/learningMachine/TrainModule.h
-    include/iCub/learningMachine/TransformModule.h )
+    include/iCub/learningMachine/TransformModule.h
+    include/iCub/learningMachine/VectorPair.h )
 
 # Declare groups of source and header files -- makes things pretty in MSVC.
 SOURCE_GROUP("Source Files" FILES ${LM_MODULE_SRC} 
@@ -67,4 +68,3 @@ TARGET_LINK_LIBRARIES(${LM_MERGE_EXEC} ${YARP_LIBRARIES})
 
 
 INSTALL(TARGETS ${LM_TRAIN_EXEC} ${LM_PREDICT_EXEC} ${LM_TRANSFORM_EXEC} ${LM_TEST_EXEC} ${LM_MERGE_EXEC} DESTINATION bin)
-
