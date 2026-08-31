@@ -29,6 +29,7 @@
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/ReturnValue.h>
 
 
 #include "IethResource.h"
@@ -138,13 +139,13 @@ public:
 
     // ISkinPatches interface    
     /** Get the number of skin patches exposed by THIS device */
-    virtual size_t  getNrOfSkinPatches() const override;
+    virtual yarp::dev::ReturnValue  getNrOfSkinPatches(size_t &n) const override;
     /** Get the status of the specified patch */
     virtual MAS_status getSkinPatchStatus(size_t sens_index) const override;
     /** Get the name of the specified patch */
-    virtual bool    getSkinPatchName(size_t sens_index, std::string &name) const override;
+    virtual yarp::dev::ReturnValue    getSkinPatchName(size_t sens_index, std::string &name) const override;
     /** Get the last readings of the sensors related to the specified patch */
-    virtual bool    getSkinPatchMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+    virtual yarp::dev::ReturnValue    getSkinPatchMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
     /** Get the size of the specified skin patch, i.e., the number of taxels (sensors) it contains */
     virtual size_t  getSkinPatchSize(size_t sens_index) const override;
 
