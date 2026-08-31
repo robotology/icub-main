@@ -336,7 +336,12 @@ bool SkinMeshClient::configureSkinClient(yarp::os::Searchable& config, const std
     }
 
     yarp::os::Bottle skinPatchNames;
-    const size_t skinPatchCount = clientSkinPatches->getNrOfSkinPatches();
+    size_t skinPatchCount;
+    if (!clientSkinPatches->getNrOfSkinPatches(skinPatchCount))
+    {
+        yCError(SKINMESHCLIENT) << "SkinMeshClient: unable to retrieve the number of skin patches from the multipleanalogsensorsclient.";
+        return false;
+    }
     yCDebug(SKINMESHCLIENT) << "Number of skin patches available from the multipleanalogsensorsclient:" << skinPatchCount;
 
     if (skinPatchCount == 0)
@@ -409,7 +414,12 @@ bool SkinMeshClient::configureSkinClient(yarp::os::Searchable& config, const std
         return false;
     }
 
-    const size_t remappedSkinPatchCount = remappedMASInterfaces.iskinPatchesSensors->getNrOfSkinPatches();
+    size_t remappedSkinPatchCount;
+    if (!remappedMASInterfaces.iskinPatchesSensors->getNrOfSkinPatches(remappedSkinPatchCount))
+    {
+        yCError(SKINMESHCLIENT) << "SkinMeshClient: unable to retrieve the number of skin patches from the multipleanalogsensorsremapper.";
+        return false;
+    }
     if (remappedSkinPatchCount != skinPatchCount)
     {
         yCError(SKINMESHCLIENT) << "SkinMeshClient: MultipleAnalogSensorsRemapper exposes"
@@ -430,7 +440,12 @@ bool SkinMeshClient::readSkinPatches(yarp::sig::Vector& skinValue) const
         return false;
     }
 
-    const size_t skinPatchCount = remappedMASInterfaces.iskinPatchesSensors->getNrOfSkinPatches();
+    size_t skinPatchCount;
+    if (!remappedMASInterfaces.iskinPatchesSensors->getNrOfSkinPatches(skinPatchCount))
+    {
+        yCError(SKINMESHCLIENT) << "SkinMeshClient: unable to retrieve the number of skin patches from the multipleanalogsensorsclient.";
+        return false;
+    }
     if (skinPatchCount == 0)
     {
         const double now = yarp::os::Time::now();
