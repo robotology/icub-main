@@ -330,9 +330,10 @@ eth::iethresType_t embObjFTsensor::type()
 }
 
 // ---------------------- ITemperatureSensors --------------------------------------------------------
-size_t embObjFTsensor::getNrOfTemperatureSensors() const
+yarp::dev::ReturnValue embObjFTsensor::getNrOfTemperatureSensors(size_t &n) const
 {
-    return GET_privData(mPriv).useTemperature ? 1 : 0;
+    n = GET_privData(mPriv).useTemperature ? 1 : 0;
+    return yarp::dev::ReturnValue_ok;
 }
 
 yarp::dev::MAS_status embObjFTsensor::getTemperatureSensorStatus(size_t sens_index) const
@@ -340,40 +341,41 @@ yarp::dev::MAS_status embObjFTsensor::getTemperatureSensorStatus(size_t sens_ind
     return yarp::dev::MAS_OK;
 }
 
-bool embObjFTsensor::getTemperatureSensorName(size_t sens_index, std::string &name) const
+yarp::dev::ReturnValue embObjFTsensor::getTemperatureSensorName(size_t sens_index, std::string &name) const
 {
     name = GET_privData(mPriv).devicename;
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
-bool embObjFTsensor::getTemperatureSensorFrameName(size_t sens_index, std::string &frameName) const
+yarp::dev::ReturnValue embObjFTsensor::getTemperatureSensorFrameName(size_t sens_index, std::string &frameName) const
 {
     frameName = GET_privData(mPriv).frameName;
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
-bool embObjFTsensor::getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const
+yarp::dev::ReturnValue embObjFTsensor::getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const
 {
     std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
     out = GET_privData(mPriv).lastTemperature/10.0; //I need to convert from tenths of degree centigrade to degree centigrade
     timestamp =  GET_privData(mPriv).timestampTemperature;
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
-bool embObjFTsensor::getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+yarp::dev::ReturnValue embObjFTsensor::getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
     std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
     out.resize(1);
     out[0] = GET_privData(mPriv).lastTemperature/10.0; //I need to convert from tenths of degree centigrade to degree centigrade
     timestamp =  GET_privData(mPriv).timestampTemperature;
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
 //------------------------- ISixAxisForceTorqueSensors -------------------------
 
-size_t embObjFTsensor::getNrOfSixAxisForceTorqueSensors() const
+yarp::dev::ReturnValue embObjFTsensor::getNrOfSixAxisForceTorqueSensors(size_t &n) const
 {
-    return 1;
+    n = 1;
+    return yarp::dev::ReturnValue_ok;
 }
 
 yarp::dev::MAS_status embObjFTsensor::getSixAxisForceTorqueSensorStatus(size_t sens_index) const
@@ -381,23 +383,23 @@ yarp::dev::MAS_status embObjFTsensor::getSixAxisForceTorqueSensorStatus(size_t s
     return yarp::dev::MAS_OK;
 }
 
-bool embObjFTsensor::getSixAxisForceTorqueSensorName(size_t sens_index, std::string &name) const
+yarp::dev::ReturnValue embObjFTsensor::getSixAxisForceTorqueSensorName(size_t sens_index, std::string &name) const
 {
     name = GET_privData(mPriv).devicename;
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
-bool embObjFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string &frameName) const
+yarp::dev::ReturnValue embObjFTsensor::getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string &frameName) const
 {
     frameName = GET_privData(mPriv).frameName;
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
-bool embObjFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+yarp::dev::ReturnValue embObjFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
     if(false == GET_privData(mPriv).isOpen())
     {
-        return false;
+        return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     }
 
     std::lock_guard<std::mutex> lck(GET_privData(mPriv).mtx);
@@ -410,7 +412,7 @@ bool embObjFTsensor::getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp:
 
     timestamp =  GET_privData(mPriv).timestampAnalogdata;
 
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
 // eof
