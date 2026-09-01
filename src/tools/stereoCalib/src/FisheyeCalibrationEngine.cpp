@@ -8,8 +8,8 @@
 namespace
 {
 
-constexpr std::size_t minimumObservations = 3;
-constexpr std::size_t minimumPointsPerObservation = 4;
+constexpr std::size_t minimumObservations = 30;
+constexpr std::size_t minimumPointsPerObservation = 12;
 
 bool isFinite(const cv::Mat& matrix)
 {

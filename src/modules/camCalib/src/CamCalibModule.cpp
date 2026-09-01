@@ -19,8 +19,6 @@ CamCalibPort::CamCalibPort()
 
     verbose=false;
     t0=Time::now();
-    currSat = 1.0;
-    strictOutput = false;
 }
 
 void CamCalibPort::setPointers(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *_portImgOut, ICalibTool *_calibTool)
@@ -51,7 +49,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         {
             calibTool->apply(yrpImgIn,yrpImgOut);
 
-            if (currSat != 1.0) for (int r =0; r <yrpImgOut.height(); r++)
+            for (int r =0; r <yrpImgOut.height(); r++)
             {
                 for (int c=0; c<yrpImgOut.width(); c++)
                 {
@@ -90,7 +88,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         BufferedPort<ImageOf<PixelRgb> >::getEnvelope(stamp);
         portImgOut->setEnvelope(stamp);
 
-        strictOutput ? portImgOut->writeStrict() : portImgOut->write();
+        portImgOut->writeStrict();
     }
 
     t0=t;
@@ -135,35 +133,8 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     string calibToolName = botConfig.check("projection",
                                          Value("pinhole"),
-                                         "Projection/mapping applied to calibrated image [pinhole|spherical|fisheye] (string).").asString();
+                                         "Projection/mapping applied to calibrated image [pinhole|spherical] (string).").asString();
 
-    // bool stereoRectify = fullConfig.check("STEREO_DISPARITY")
-    //                      && fullConfig.findGroup("STEREO_DISPARITY").check("HN");
-    // if (rf.check("stereoRectify"))
-    // {
-    //     stereoRectify = rf.find("stereoRectify").asBool();
-    // }
-    // if (stereoRectify)
-    // {
-    //     _calibTool = new StereoRectifyTool;
-    //     if (!_calibTool->open(fullConfig))
-    //     {
-    //         delete _calibTool;
-    //         _calibTool = NULL;
-    //         return false;
-    //     }
-    // }
-    // else
-    // {
-    //     _calibTool = CalibToolFactories::getPool().get(calibToolName.c_str());
-    //     if (_calibTool!=NULL) {
-    //         bool ok = _calibTool->open(botConfig);
-    //         if (!ok) {
-    //             delete _calibTool;
-    //             _calibTool = NULL;
-    //             return false;
-    //         }
-        // }
     _calibTool = CalibToolFactories::getPool().get(calibToolName.c_str());
     if (_calibTool!=NULL) {
         bool ok = _calibTool->open(calibToolName == "fisheye" ? fullConfig : botConfig);
@@ -187,7 +158,6 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
         yWarning() << "port " << getName("/conf") << " already in use";
     }
     _prtImgIn.setSaturation(rf.check("saturation",Value(1.0)).asFloat64());
-    _prtImgIn.setStrictOutput(rf.check("strict-output", Value(false)).asBool());
     _prtImgIn.open(getName("/in"));
     _prtImgIn.setPointers(&_prtImgOut,_calibTool);
     _prtImgIn.setVerbose(rf.check("verbose"));

@@ -230,6 +230,9 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     }
 
     synchronizer.configure(_syncToleranceSeconds, _syncQueueSize);
+    
+    this->minCaptureIntervalSeconds = stereoCalibOpts.check("minCaptureIntervalSeconds", Value(2.0)).asFloat64();
+    this->minimumBoardSpanRatio = stereoCalibOpts.check("minimumBoardSpanRatio", Value(0.15)).asFloat64();
 
     this->commandPort=commPort;
     this->imageDir=imageDir;
@@ -456,7 +459,6 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 
         const Rect leftBoardBounds = boundingRect(leftCorners);
         const Rect rightBoardBounds = boundingRect(rightCorners);
-        const double minimumBoardSpanRatio = 0.15;
         const bool leftBoardTooSmall =
             leftBoardBounds.width < leftSize.width * minimumBoardSpanRatio ||
             leftBoardBounds.height < leftSize.height * minimumBoardSpanRatio;
@@ -626,6 +628,7 @@ StereoCalibStatus stereoCalibThread::getStatus() const
 
     const auto syncStats = synchronizer.getStatistics();
 
+    std::lock_guard<std::mutex> lock(mtx);
     result.pairedFrames = syncStats.pairedFrames;
     result.droppedLeftFrames = syncStats.droppedLeftFrames;
     result.droppedRightFrames = syncStats.droppedRightFrames;
@@ -637,7 +640,6 @@ StereoCalibStatus stereoCalibThread::getStatus() const
 
     result.maxTimestampDeltaMs = 1000.0 * syncStats.maxTimeStampDelta;
 
-    std::lock_guard<std::mutex> lock(mtx);
     result.lastCalibrationError = _calibrationError;
     if(calibrationState.load() == CalibrationState::Completed && _calibrationResults.isValid())
     {

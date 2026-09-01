@@ -135,6 +135,7 @@ private:
 
     double minCaptureIntervalSeconds{2.0};
     double lastProcessedCandidateTime{-1.0};
+    double minimumBoardSpanRatio{0.15};
 
     Size _expectedImageSize{};
 

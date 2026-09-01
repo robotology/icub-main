@@ -305,7 +305,7 @@ bool CalibrationWriter::writeObservations(const std::string& outputFile,
         for (std::size_t index = 0; index < observations.size(); ++index)
         {
             const StereoObservation& observation = observations[index];
-            storage << "{:";
+            storage << "{";
             storage << "index" << static_cast<int>(index);
             storage << "imageWidth" << observation.imageSize.width;
             storage << "imageHeight" << observation.imageSize.height;
