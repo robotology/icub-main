@@ -12,6 +12,7 @@
 
 #include <string>
 #include <yarp/dev/DeviceDriver.h>
+#include <yarp/dev/ReturnValue.h>
 
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
 
@@ -58,32 +59,32 @@ public:
     virtual bool close() override;
 
     /* IThreeAxisGyroscopes methods */
-    virtual size_t getNrOfThreeAxisGyroscopes() const override;
+    virtual yarp::dev::ReturnValue getNrOfThreeAxisGyroscopes(size_t &n) const override;
     virtual yarp::dev::MAS_status getThreeAxisGyroscopeStatus(size_t sens_index) const override;
-    virtual bool getThreeAxisGyroscopeName(size_t sens_index, std::string &name) const override;
-    virtual bool getThreeAxisGyroscopeFrameName(size_t sens_index, std::string &frameName) const override;
-    virtual bool getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+    virtual yarp::dev::ReturnValue getThreeAxisGyroscopeName(size_t sens_index, std::string &name) const override;
+    virtual yarp::dev::ReturnValue getThreeAxisGyroscopeFrameName(size_t sens_index, std::string &frameName) const override;
+    virtual yarp::dev::ReturnValue getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
 
     /* IThreeAxisLinearAccelerometers methods */
-    virtual size_t getNrOfThreeAxisLinearAccelerometers() const override;
+    virtual yarp::dev::ReturnValue getNrOfThreeAxisLinearAccelerometers(size_t &n) const override;
     virtual yarp::dev::MAS_status getThreeAxisLinearAccelerometerStatus(size_t sens_index) const override;
-    virtual bool getThreeAxisLinearAccelerometerName(size_t sens_index, std::string &name) const override;
-    virtual bool getThreeAxisLinearAccelerometerFrameName(size_t sens_index, std::string &frameName) const override;
-    virtual bool getThreeAxisLinearAccelerometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+    virtual yarp::dev::ReturnValue getThreeAxisLinearAccelerometerName(size_t sens_index, std::string &name) const override;
+    virtual yarp::dev::ReturnValue getThreeAxisLinearAccelerometerFrameName(size_t sens_index, std::string &frameName) const override;
+    virtual yarp::dev::ReturnValue getThreeAxisLinearAccelerometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
 
     /* IThreeAxisMagnetometers methods */
-    virtual size_t getNrOfThreeAxisMagnetometers() const override;
+    virtual yarp::dev::ReturnValue getNrOfThreeAxisMagnetometers(size_t &n) const override;
     virtual yarp::dev::MAS_status getThreeAxisMagnetometerStatus(size_t sens_index) const override;
-    virtual bool getThreeAxisMagnetometerName(size_t sens_index, std::string &name) const override;
-    virtual bool getThreeAxisMagnetometerFrameName(size_t sens_index, std::string &frameName) const override;
-    virtual bool getThreeAxisMagnetometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+    virtual yarp::dev::ReturnValue getThreeAxisMagnetometerName(size_t sens_index, std::string &name) const override;
+    virtual yarp::dev::ReturnValue getThreeAxisMagnetometerFrameName(size_t sens_index, std::string &frameName) const override;
+    virtual yarp::dev::ReturnValue getThreeAxisMagnetometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
 
     /* IOrientationSensors methods */
-    virtual size_t getNrOfOrientationSensors() const override;
+    virtual yarp::dev::ReturnValue getNrOfOrientationSensors(size_t &n) const override;
     virtual yarp::dev::MAS_status getOrientationSensorStatus(size_t sens_index) const override;
-    virtual bool getOrientationSensorName(size_t sens_index, std::string &name) const override;
-    virtual bool getOrientationSensorFrameName(size_t sens_index, std::string &frameName) const override;
-    virtual bool getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index, yarp::sig::Vector& rpy, double& timestamp) const override;
+    virtual yarp::dev::ReturnValue getOrientationSensorName(size_t sens_index, std::string &name) const override;
+    virtual yarp::dev::ReturnValue getOrientationSensorFrameName(size_t sens_index, std::string &frameName) const override;
+    virtual yarp::dev::ReturnValue getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index, yarp::sig::Vector& rpy, double& timestamp) const override;
 
 
     /* Iethresource methods */

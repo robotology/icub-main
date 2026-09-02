@@ -107,7 +107,9 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
     }
     
     int getChannelsCounter = 0;
-    skinDim = tactileSensor->getNrOfSkinPatches(); // this should return the total number of sensors per skin patch, i.e. 16*12*number of CARDS
+    if(!tactileSensor->getNrOfSkinPatches(skinDim)){ // this should return the total number of sensors per skin patch, i.e. 16*12*number of CARDS
+        sendInfoMsg("Error reading the number of channels of the port.");
+    }
     while(skinDim<=0){
         // getNrOfSkinPatches() returns 0 if it hasn't performed the first reading yet
         // so wait for 1/50 sec, then try again        
@@ -118,7 +120,9 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
             break;
         }
         Time::delay(0.02);
-        skinDim = tactileSensor->getNrOfSkinPatches();
+        if(!tactileSensor->getNrOfSkinPatches(skinDim)){
+            sendInfoMsg("Error reading the number of channels of the port.");
+        }
     }
     readErrorCounter = 0;
     rawData.resize(skinDim);
@@ -741,7 +745,7 @@ bool Compensator::setTaxelPosesFromFileOld(const char *filePath){
     posFile.seekg(0, std::ios::beg);//rewind iterator
     if(totalLines!=skinDim){
         char* temp = new char[200];
-        sprintf(temp, "Error while reading taxel position file %s: num of lines %d is not equal to num of taxels %d.\n", 
+        sprintf(temp, "Error while reading taxel position file %s: num of lines %d is not equal to num of taxels %ld.\n",
             filePath, totalLines, skinDim);
         sendInfoMsg(temp);
     }

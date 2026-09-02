@@ -61,9 +61,9 @@ private:
     static const int MIN_TOUCH_THR = 1;         // min value assigned to the touch thresholds (i.e. the 95% percentile)
     static const double BIN_TOUCH;              // output value of the binarization filter when touch is detected
     static const double BIN_NO_TOUCH;           // output value of the binarization filter when no touch is detected
-    
+
     // INIT
-    unsigned int skinDim;                       // number of taxels (for the hand it is 192)
+    size_t skinDim;                       // number of taxels (for the hand it is 192)
     string robotName;
     string name;                                // name of the compensator
     SkinPart skinPart;                          // id of the part of the skin (e.g. left_hand, right_forearm, left_upper_arm)
