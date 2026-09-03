@@ -109,8 +109,8 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     setName(str.c_str()); // modulePortName
 
     // pass configuration over to bottle
-    Bottle botConfig(rf.toString());
-    // Load from configuration group ([<group_name>]), if group option present
+    Bottle fullConfig(rf.toString());
+    Bottle botConfig(fullConfig);    // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
     if(botConfig.check("group", valGroup, "Configuration group to load module options from (string)."))
     {
@@ -133,11 +133,11 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     string calibToolName = botConfig.check("projection",
                                          Value("pinhole"),
-                                         "Projection/mapping applied to calibrated image [pinhole|spherical] (string).").asString();
+                                         "Projection/mapping applied to calibrated image [pinhole|spherical|fisheye] (string).").asString();
 
     _calibTool = CalibToolFactories::getPool().get(calibToolName.c_str());
     if (_calibTool!=NULL) {
-        bool ok = _calibTool->open(botConfig);
+        bool ok = _calibTool->open(calibToolName == "fisheye" ? fullConfig : botConfig);
         if (!ok) {
             delete _calibTool;
             _calibTool = NULL;
@@ -220,5 +220,4 @@ bool CamCalibModule::respond(const Bottle& command, Bottle& reply)
     }
     return true;
 }
-
 

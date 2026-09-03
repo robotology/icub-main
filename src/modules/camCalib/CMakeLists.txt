@@ -11,14 +11,16 @@ set(folder_source src/main.cpp
                   src/CamCalibModule.cpp
                   src/CalibToolFactory.cpp
                   src/PinholeCalibTool.cpp
-                  src/SphericalCalibTool.cpp)
+                  src/SphericalCalibTool.cpp
+                  src/FisheyeCalibTool.cpp)
                              
 set(folder_header include/iCub/spherical_projection.h
                   include/iCub/CamCalibModule.h
                   include/iCub/CalibToolFactory.h
                   include/iCub/ICalibTool.h
                   include/iCub/PinholeCalibTool.h
-                  include/iCub/SphericalCalibTool.h)
+                  include/iCub/SphericalCalibTool.h
+                  include/iCub/FisheyeCalibTool.h)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_executable(${PROJECT_NAME} ${folder_source} ${folder_header})
