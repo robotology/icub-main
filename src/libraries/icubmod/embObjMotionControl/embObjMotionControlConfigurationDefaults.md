@@ -78,7 +78,7 @@ These are the keys used in the `CONTROLS` config group to associate each control
 | Velocity control        | `velocityControl` | `ParamValues::controlMode::velocity`     |
 | Mixed control           | `mixedControl`    | `ParamValues::controlMode::mixed`        |
 | Torque control          | `torqueControl`   | `ParamValues::controlMode::torque`       |
-| Current PID             | `currentPid`      | `ParamValues::controlMode::current`      |
+| Current PID             | `currentControl   | `ParamValues::controlMode::current`      |
 | Position direct control | `positionDirect`  | `ParamValues::controlMode::positionDirect` |
 | Velocity direct control | `velocityDirect`  | `ParamValues::controlMode::velocityDirect` |
 

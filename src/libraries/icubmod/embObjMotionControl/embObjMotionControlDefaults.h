@@ -56,7 +56,7 @@ static constexpr std::string_view machine = "machine_units";
 } // namespace outUnits
 
 namespace temperatureSensor {
-static constexpr std::string_view none  = "NONE";
+static constexpr std::string_view NONE  = NONE_STR;
 static constexpr std::string_view PT100  = "PT100";
 static constexpr std::string_view PT1000 = "PT1000";
 } // namespace temperatureSensor
@@ -72,7 +72,7 @@ static constexpr std::string_view position       = "positionControl";
 static constexpr std::string_view velocity       = "velocityControl";
 static constexpr std::string_view mixed          = "mixedControl";
 static constexpr std::string_view torque         = "torqueControl";
-static constexpr std::string_view current        = "currentPid";
+static constexpr std::string_view current        = "currentControl";
 static constexpr std::string_view positionDirect = "positionDirect";
 static constexpr std::string_view velocityDirect = "velocityDirect";
 } // namespace controlMode

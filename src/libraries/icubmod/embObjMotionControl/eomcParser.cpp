@@ -173,7 +173,7 @@ bool Parser::areControlPidGroupEqualInJointSet(const std::vector<std::string> &c
 
 inline bool Parser::GetGroupBottle(yarp::os::Searchable& config, const std::string& controlName, yarp::os::Bottle& outBottle, bool mandatory)
 {
-    if(controlName == eomc::ParamValues::NONE_STR)
+    if(isEquals(controlName, eomc::ParamValues::NONE_STR))
     {
         outBottle.clear();
         return true;
@@ -240,7 +240,7 @@ bool Parser::readUserNameControlsGroup(yarp::os::Searchable &config)
 
     for(int j = 0; j < _njoints; ++j)
     {
-        if((_userNameControlVelocity[j] != ParamValues::NONE_STR) && (_userNameControlVelocity[j] != _userNameControlPosition[j]))
+        if(!isEquals(_userNameControlVelocity[j], _userNameControlPosition[j]))
         {
             yError() << "embObjMC BOARD " << _boardname << ": velocityControl parameter for joint" << j << "(" << _userNameControlVelocity[j].c_str()
                      << ") must be equal to positionControl parameter (" << _userNameControlPosition[j].c_str() << ") or set to " << ParamValues::NONE_STR
@@ -254,7 +254,7 @@ bool Parser::readUserNameControlsGroup(yarp::os::Searchable &config)
 
     for(int j = 0; j < _njoints; ++j)
     {
-            if((_userNameControlMixed[j] != ParamValues::NONE_STR) && (_userNameControlMixed[j] != _userNameControlPosition[j]))
+            if(!isEquals(_userNameControlMixed[j], _userNameControlPosition[j]))
         {
             yError() << "embObjMC BOARD " << _boardname << ": mixedControl parameter for joint" << j << "(" << _userNameControlMixed[j].c_str()
                      << ") must be equal to positionControl parameter (" << _userNameControlPosition[j].c_str() << ") or set to " << ParamValues::NONE_STR
@@ -419,7 +419,7 @@ bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMan
     int enabledCurrentPids = 0;
     for(int j = 0; j < _njoints; ++j)
     {
-        if(_userNameControlCurrent[j] != eomc::ParamValues::NONE_STR)
+        if(!isEquals(_userNameControlCurrent[j], eomc::ParamValues::NONE_STR))
         {
             ++enabledCurrentPids;
         }
@@ -443,7 +443,7 @@ bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMan
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlCurrent[j];
-        if(groupName == eomc::ParamValues::NONE_STR)
+        if(isEquals(groupName, eomc::ParamValues::NONE_STR))
         {
             continue;
         }
@@ -481,7 +481,7 @@ bool Parser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool pidisMan
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlCurrent[j];
-        if(groupName == eomc::ParamValues::NONE_STR)
+        if(isEquals(groupName, eomc::ParamValues::NONE_STR))
         {
             curr_pids[j].enabled = false;
             curr_pids[j].usernamePidSelected = eomc::ParamValues::NONE_STR;
@@ -505,7 +505,7 @@ bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config, std::vec
     int enabledPositionPids = 0;
     for(int j = 0; j < _njoints; ++j)
     {
-        if(_userNameControlPosition[j] != eomc::ParamValues::NONE_STR)
+        if(!isEquals(_userNameControlPosition[j], eomc::ParamValues::NONE_STR))
         {
             ++enabledPositionPids;
         }
@@ -527,7 +527,7 @@ bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config, std::vec
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlPosition[j];
-        if(groupName == eomc::ParamValues::NONE_STR)
+        if(isEquals(groupName, eomc::ParamValues::NONE_STR))
         {
             continue;
         }
@@ -588,7 +588,7 @@ bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config, std::vec
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlPosition[j];
-        if(groupName == eomc::ParamValues::NONE_STR)
+        if(isEquals(groupName, eomc::ParamValues::NONE_STR))
         {
             pos_pids[j].enabled = false;
             pos_pids[j].usernamePidSelected = eomc::ParamValues::NONE_STR;
@@ -612,7 +612,7 @@ bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config, std::vec
     int enabledVelocityPids = 0;
     for(int j = 0; j < _njoints; ++j)
     {
-        if(_userNameControlVelocity[j] != eomc::ParamValues::NONE_STR)
+        if(!isEquals(_userNameControlVelocity[j], eomc::ParamValues::NONE_STR))
         {
             ++enabledVelocityPids;
         }
@@ -639,7 +639,7 @@ bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config, std::vec
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlVelocity[j];
-        if(groupName == eomc::ParamValues::NONE_STR)
+        if(isEquals(groupName, eomc::ParamValues::NONE_STR))
         {
             continue;
         }
@@ -696,7 +696,7 @@ bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config, std::vec
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlVelocity[j];
-        if(groupName == eomc::ParamValues::NONE_STR)
+        if(isEquals(groupName, eomc::ParamValues::NONE_STR))
         {
             vel_pids[j].enabled = false;
             vel_pids[j].usernamePidSelected = eomc::ParamValues::NONE_STR;
@@ -721,7 +721,7 @@ bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config, std::vector
     int enabledMixedPids = 0;
     for(int j = 0; j < _njoints; ++j)
     {
-        if(_userNameControlMixed[j] != eomc::ParamValues::NONE_STR)
+        if(!isEquals(_userNameControlMixed[j], eomc::ParamValues::NONE_STR))
         {
             ++enabledMixedPids;
         }
@@ -741,7 +741,7 @@ bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config, std::vector
 
     for(int j = 0; j < _njoints; ++j)
     {
-        if((_userNameControlMixed[j] != ParamValues::NONE_STR) && (_userNameControlMixed[j] != _userNameControlPosition[j]))
+        if(!isEquals(_userNameControlMixed[j], _userNameControlPosition[j]))
         {
             yError() << "embObjMC BOARD " << _boardname << "Mixed control law has a different name than position control law for joint" << j << ". Currently fw doesn't support different pid values for mixed control from position control, so the control law name should be the same. Quitting.";
             return false;
@@ -757,7 +757,7 @@ bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config, std::vector
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlMixed[j];
-        if(groupName == eomc::ParamValues::NONE_STR)
+        if(isEquals(groupName, eomc::ParamValues::NONE_STR))
         {
             continue;
         }
@@ -814,7 +814,7 @@ bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config, std::vector
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlMixed[j];
-        if(groupName == eomc::ParamValues::NONE_STR)
+        if(isEquals(groupName, eomc::ParamValues::NONE_STR))
         {
             mix_pids[j].enabled = false;
             mix_pids[j].usernamePidSelected = eomc::ParamValues::NONE_STR;
@@ -839,7 +839,7 @@ bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config, st
     int enabledPosDirectPids = 0;
     for(int j = 0; j < _njoints; ++j)
     {
-        if(_userNameControlPositionDirect[j] != ParamValues::NONE_STR)
+        if(!isEquals(_userNameControlPositionDirect[j], ParamValues::NONE_STR))
         {
             ++enabledPosDirectPids;
         }
@@ -867,7 +867,7 @@ bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config, st
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlPositionDirect[j];
-        if(groupName == ParamValues::NONE_STR)
+        if(isEquals(groupName, eomc::ParamValues::NONE_STR))
         {
             continue;
         }
@@ -924,7 +924,7 @@ bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config, st
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlPositionDirect[j];
-        if(groupName == ParamValues::NONE_STR)
+        if(isEquals(groupName, eomc::ParamValues::NONE_STR))
         {
             posdir_pids[j].enabled = false;
             posdir_pids[j].usernamePidSelected = ParamValues::NONE_STR;
@@ -948,7 +948,7 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config, st
     int enabledVelDirectPids = 0;
     for(int j = 0; j < _njoints; ++j)
     {
-        if(_userNameControlVelocityDirect[j] != ParamValues::NONE_STR)
+        if(!isEquals(_userNameControlVelocityDirect[j], ParamValues::NONE_STR))
         {
             ++enabledVelDirectPids;
         }
@@ -976,7 +976,7 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config, st
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlVelocityDirect[j];
-        if(groupName == ParamValues::NONE_STR)
+        if(isEquals(groupName, ParamValues::NONE_STR))
         {
             continue;
         }
@@ -1032,7 +1032,7 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config, st
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlVelocityDirect[j];
-        if(groupName == ParamValues::NONE_STR)
+        if(isEquals(groupName, ParamValues::NONE_STR))
         {
             veldir_pids[j].enabled = false;
             veldir_pids[j].usernamePidSelected = ParamValues::NONE_STR;
@@ -1056,7 +1056,7 @@ bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config,  std::vect
     int enabledTorquePids = 0;
     for(int j = 0; j < _njoints; ++j)
     {
-        if(_userNameControlTorque[j] != ParamValues::NONE_STR)
+        if(!isEquals(_userNameControlTorque[j], ParamValues::NONE_STR))
         {
             ++enabledTorquePids;
         }
@@ -1081,7 +1081,7 @@ bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config,  std::vect
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlTorque[j];
-        if(groupName == ParamValues::NONE_STR)
+        if(isEquals(groupName, ParamValues::NONE_STR))
         {
             continue;
         }
@@ -1138,7 +1138,7 @@ bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config,  std::vect
     for(int j = 0; j < _njoints; ++j)
     {
         const std::string &groupName = _userNameControlTorque[j];
-        if(groupName == ParamValues::NONE_STR)
+        if(isEquals(groupName, ParamValues::NONE_STR))
         {
             trq_pids[j].enabled = false;
             trq_pids[j].usernamePidSelected = ParamValues::NONE_STR;
@@ -1403,7 +1403,7 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, std::vector<focBasedSpe
 
     if (!extractGroup(focGroup, xtmp, "TemperatureSensorType", "TemperatureSensorType PT100/PT1000/NONE ", _njoints, false))
     {
-        registerOptionalParameter("TemperatureSensorType", eomc::ParamValues::temperatureSensor::none, false);
+        registerOptionalParameter("TemperatureSensorType", eomc::ParamValues::temperatureSensor::NONE, false);
         for (i = 0; i < (unsigned)_njoints; i++)
         {
             foc_based_info[i].hasTempSensor = 0;
@@ -1427,14 +1427,14 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, std::vector<focBasedSpe
                 foc_based_info[i - 1].hasTempSensor = 1;
                 temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorPT1000>();
             }
-            else if (s == eomc::ParamValues::temperatureSensor::none)
+            else if (isEquals(s, eomc::ParamValues::temperatureSensor::NONE))
             {
                 foc_based_info[i - 1].hasTempSensor = 0;
                 temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorNONE>();
             }
             else
             {
-                yError() <<  _boardname << "Not supported TemperatureSensorType" << s << "Available TemperatureSensorType are: " << eomc::ParamValues::temperatureSensor::PT100 << ", " << eomc::ParamValues::temperatureSensor::PT1000 << " and " << eomc::ParamValues::temperatureSensor::none;
+                yError() <<  _boardname << "Not supported TemperatureSensorType" << s << "Available TemperatureSensorType are: " << eomc::ParamValues::temperatureSensor::PT100 << ", " << eomc::ParamValues::temperatureSensor::PT1000 << " and " << eomc::ParamValues::temperatureSensor::NONE;
                 foc_based_info[i - 1].hasTempSensor = 0;
                 temperatureSensorsVector.at(i-1) = std::make_unique<eomc::TemperatureSensorNONE>();
                 return false;
