@@ -58,14 +58,28 @@
  *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
  * - \c --name \c camcalib \n 
- *   specifies the name of the module (used to form the stem of module port names)  
- * For calibration configuration options see: PinholeCalibTool::configure
- * 
+ *   specifies the name of the module (used to form the stem of module port names)
  *
- * Configuration File Parameters
+ * - \c --group \c CAMERA_CALIBRATION_LEFT \n
+ *   selects the configuration group to load and, for fisheye rectification, the camera stream
+ *   to rectify (\c CAMERA_CALIBRATION_LEFT or \c CAMERA_CALIBRATION_RIGHT)
  *
- * The following key-value pairs can be specified as parameters in the configuration file 
- * The value part can be changed to suit your needs; the default values are shown below. 
+ * \section pinhole_sec Pinhole Lens Calibration
+ *
+ * Set \c projection \c pinhole in the selected camera calibration group to undistort a
+ * standard pinhole camera image. The following parameters are required in that group:
+ *
+ * - \c drawCenterCross: \c 0 to disable or \c 1 to draw a cross at the principal point
+ * - \c w, \c h: image size used when deriving the calibration
+ * - \c fx, \c fy: focal lengths
+ * - \c cx, \c cy: principal point
+ * - \c k1, \c k2: radial distortion coefficients
+ * - \c p1, \c p2: tangential distortion coefficients
+ *
+ * The intrinsic matrix is automatically rescaled when the runtime image size differs from
+ * \c w and \c h. The distortion coefficients remain unchanged.
+ *
+ * Example pinhole configuration:
  *
  * <pre>
  * projection pinhole
@@ -82,6 +96,80 @@
  * p2 0.000456613
  *
  * </pre>
+ *
+ * \section fisheye_sec Fisheye Lens Stereo Rectification
+ *
+ * The module also supports \c projection \c fisheye for stereo fisheye lenses. In this mode,
+ * \c camCalib rectifies one camera stream at a time using the calibration of both cameras plus
+ * the stereo extrinsic transform stored in the same configuration file.
+ *
+ * Fisheye requirements:
+ *
+ * - \c projection \c fisheye in the selected camera group
+ * - \c --group set to either \c CAMERA_CALIBRATION_LEFT or \c CAMERA_CALIBRATION_RIGHT
+ * - both \c [CAMERA_CALIBRATION_LEFT] and \c [CAMERA_CALIBRATION_RIGHT] groups available
+ * - a \c [STEREO_DISPARITY] group containing \c HN as a 4x4 homogeneous transform
+ *
+ * Each fisheye camera group must contain:
+ *
+ * - \c w, \c h
+ * - \c fx, \c fy, \c cx, \c cy
+ * - \c k1, \c k2, \c k3, \c k4
+ *
+ * Fisheye rectification settings:
+ *
+ * - \c balance: value in [0,1] controlling the crop level after rectification. It can be
+ *   specified globally or in the selected camera group; the global value takes precedence.
+ * - \c fovScale: value greater than 0 that scales the output field of view. It can be
+ *   specified globally or in the selected camera group; the global value takes precedence.
+ * - \c rectifyAlpha: global fallback value for \c balance when \c balance is not set.
+ * - \c drawEpipolars: global boolean that overlays horizontal epipolar lines on the
+ *   rectified image.
+ * - \c epipolarLineStep: global pixel spacing between epipolar lines; values less than
+ *   one are treated as one.
+ *
+ * Fisheye rectification automatically rescales the intrinsic matrices if the runtime image size
+ * differs from the calibration size.
+ *
+ * Example fisheye configuration:
+ *
+ * <pre>
+ * [CAMERA_CALIBRATION_LEFT]
+ * projection fisheye
+ * w 640
+ * h 480
+ * fx 320.0
+ * fy 320.0
+ * cx 320.0
+ * cy 240.0
+ * k1 -0.01
+ * k2 0.001
+ * k3 0.0
+ * k4 0.0
+ * balance 0.0
+ * fovScale 1.0
+ *
+ * [CAMERA_CALIBRATION_RIGHT]
+ * projection fisheye
+ * w 640
+ * h 480
+ * fx 320.0
+ * fy 320.0
+ * cx 320.0
+ * cy 240.0
+ * k1 -0.01
+ * k2 0.001
+ * k3 0.0
+ * k4 0.0
+ *
+ * [STEREO_DISPARITY]
+ * HN (-1 0 0 0 0 -1 0 0 0 0 1 0 0.05 0 0 1)
+ * </pre>
+ *
+ * Example invocation:
+ *
+ * <tt>camCalib --name /icub/camcalib/left --context cameraCalibration --from icubEyes.ini --group CAMERA_CALIBRATION_LEFT</tt>
+ *
  * \section portsc_sec Ports Created
  *
  * Input port 
