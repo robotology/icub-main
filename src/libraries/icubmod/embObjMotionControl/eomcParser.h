@@ -88,7 +88,18 @@ private:
     //general utils functions
     bool extractGroup(yarp::os::Bottle &input, yarp::os::Bottle &out, const std::string &key1, const std::string &txt, int size, bool mandatory=true);
     bool GetGroupBottle(yarp::os::Searchable &config, const std::string &groupName, yarp::os::Bottle &outBottle, bool mandatory=true);
-
+    inline bool isEquals(std::string_view s1, std::string_view s2) 
+    {
+    if (s1.size() != s2.size()) 
+    {
+        return false;
+    }
+    return std::equal(s1.begin(), s1.end(),
+                      s2.begin(), s2.end(),
+                      [](unsigned char a, unsigned char b) {
+                          return std::tolower(a) == std::tolower(b);
+                      });
+   }
 
     //PID parsing auxiliary functions
 
