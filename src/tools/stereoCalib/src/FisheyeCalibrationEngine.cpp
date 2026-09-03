@@ -285,6 +285,10 @@ bool FisheyeCalibrationEngine::calibrateMonocular(
     const std::vector<std::vector<cv::Point2f>>& imagePoints =
         cameraSide == CameraSide::Left ? leftImagePoints : rightImagePoints;
     cv::Mat intrinsic = cv::Mat::eye(3, 3, CV_64F);
+    intrinsic.at<double>(0, 0) = options.cameraFocalLengthGuess;
+    intrinsic.at<double>(1, 1) = options.cameraFocalLengthGuess;
+    intrinsic.at<double>(0, 2) = options.imageSize.width * 0.5;
+    intrinsic.at<double>(1, 2) = options.imageSize.height * 0.5;
     cv::Mat distortion = cv::Mat::zeros(4, 1, CV_64F);
     std::vector<cv::Mat> rotationVectors;
     std::vector<cv::Mat> translationVectors;

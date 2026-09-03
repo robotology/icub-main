@@ -125,8 +125,10 @@ namespace stereo_calib
         CalibrationMode calibrationMode{CalibrationMode::StereoFull};
 
         cv::Size imageSize{1920, 1080};
+        double cameraFocalLengthGuess{625.0};
 
         int monocularFlags{
+            cv::fisheye::CALIB_USE_INTRINSIC_GUESS |
             cv::fisheye::CALIB_RECOMPUTE_EXTRINSIC |
             cv::fisheye::CALIB_CHECK_COND |
             cv::fisheye::CALIB_FIX_SKEW
