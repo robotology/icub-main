@@ -263,7 +263,7 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
 
     _chessboardConfiguration.squareSizeMeters = this->squareSize;
 
-    _saveImages = stereoCalibOpts.check("saveImages", Value(0)).asInt32() != 0;
+    _saveImages = stereoCalibOpts.check("saveImages", Value(1)).asInt32() != 0;
     _drawDiagnosticCorners = stereoCalibOpts.check("drawDiagnosticCorners", Value(1)).asInt32() != 0;
 
     const std::string configuredMode = stereoCalibOpts.check("calibrationMode", Value("")).asString();
@@ -325,56 +325,56 @@ bool stereoCalibThread::threadInit()
     //mono calibration does not need the joint positions initialised below
     if(!stereo || standalone) return true;
 
-    // Property optHead;
-    // optHead.put("device","remote_controlboard");
-    // optHead.put("remote",("/"+robotName+"/head").c_str());
-    // optHead.put("local","/"+moduleName+"/client/head");
-    // if (polyHead.open(optHead))
-    //     polyHead.view(posHead);
-    // else
-    // {
-    //     cout<<"Devices not available"<<endl;
-    //     return false;
-    // }
+    Property optHead;
+    optHead.put("device","remote_controlboard");
+    optHead.put("remote",("/"+robotName+"/head").c_str());
+    optHead.put("local","/"+moduleName+"/client/head");
+    if (polyHead.open(optHead))
+        polyHead.view(posHead);
+    else
+    {
+        cout<<"Devices not available"<<endl;
+        return false;
+    }
 
-    // Property optTorso;
-    // optTorso.put("device","remote_controlboard");
-    // optTorso.put("remote",("/"+robotName+"/torso").c_str());
-    // optTorso.put("local","/"+moduleName+"/client/torso");
+    Property optTorso;
+    optTorso.put("device","remote_controlboard");
+    optTorso.put("remote",("/"+robotName+"/torso").c_str());
+    optTorso.put("local","/"+moduleName+"/client/torso");
 
-    // bool useTorso=true;
-    // if (polyTorso.open(optTorso))
-    //     polyTorso.view(posTorso);
-    // else
-    // {
-    //     yWarning("Unable to connect to torso! Continuing without...");
-    //     useTorso=false;
-    // }
+    bool useTorso=true;
+    if (polyTorso.open(optTorso))
+        polyTorso.view(posTorso);
+    else
+    {
+        yWarning("Unable to connect to torso! Continuing without...");
+        useTorso=false;
+    }
 
-    // yarp::sig::Vector head_angles(6,0.0);
-    // posHead->getEncoders(head_angles.data());
+    yarp::sig::Vector head_angles(6,0.0);
+    posHead->getEncoders(head_angles.data());
 
-    // yarp::sig::Vector torso_angles(3,0.0);
-    // if (useTorso)
-    //     posTorso->getEncoders(torso_angles.data());
+    yarp::sig::Vector torso_angles(3,0.0);
+    if (useTorso)
+        posTorso->getEncoders(torso_angles.data());
 
-    // qL.resize(torso_angles.length()+head_angles.length()-1);
-    // for(size_t i=0; i<torso_angles.length(); i++)
-    //     qL[i]=torso_angles[torso_angles.length()-i-1];
+    qL.resize(torso_angles.length()+head_angles.length()-1);
+    for(size_t i=0; i<torso_angles.length(); i++)
+        qL[i]=torso_angles[torso_angles.length()-i-1];
 
-    // for(size_t i=0; i<head_angles.length()-2; i++)
-    //     qL[i+torso_angles.length()]=head_angles[i];
-    // qL[7]=head_angles[4]+(0.5-(LEFT))*head_angles[5];
-    // qL=iCub::ctrl::CTRL_DEG2RAD*qL;
+    for(size_t i=0; i<head_angles.length()-2; i++)
+        qL[i+torso_angles.length()]=head_angles[i];
+    qL[7]=head_angles[4]+(0.5-(LEFT))*head_angles[5];
+    qL=iCub::ctrl::CTRL_DEG2RAD*qL;
 
-    // qR.resize(torso_angles.length()+head_angles.length()-1);
-    // for(size_t i=0; i<torso_angles.length(); i++)
-    //     qR[i]=torso_angles[torso_angles.length()-i-1];
+    qR.resize(torso_angles.length()+head_angles.length()-1);
+    for(size_t i=0; i<torso_angles.length(); i++)
+        qR[i]=torso_angles[torso_angles.length()-i-1];
 
-    // for(size_t i=0; i<head_angles.length()-2; i++)
-    //     qR[i+torso_angles.length()]=head_angles[i];
-    // qR[7]=head_angles[4]+(0.5-(RIGHT))*head_angles[5];
-    // qR=iCub::ctrl::CTRL_DEG2RAD*qR;
+    for(size_t i=0; i<head_angles.length()-2; i++)
+        qR[i+torso_angles.length()]=head_angles[i];
+    qR[7]=head_angles[4]+(0.5-(RIGHT))*head_angles[5];
+    qR=iCub::ctrl::CTRL_DEG2RAD*qR;
 
     return true;
 }
@@ -565,42 +565,7 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
         std::lock_guard<std::mutex> lock(mtx);
         ++_rejectedDetections;
     }
-    /**
-    if(_observations.size() > numOfPairs) {
-        yInfo(" Running Left Camera Calibration... \n");
-        yDebug(" Number of images used for calibration: %ld \n",imageListL.size());
-        double leftRms = monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL,"left");
 
-        yDebug(" Number of images used for calibration: %ld \n",imageListR.size());
-        yInfo(" Running Right Camera Calibration... \n");
-        double rightRms = monoCalibration(imageListR,this->boardWidth,this->boardHeight,this->Kright,this->DistR,"right");
-        if (leftRms > 0.0 && rightRms > 0.0)
-        {
-            double rmsDelta = fabs(leftRms - rightRms);
-            yInfo("Mono calibration RMS delta between left and right cameras: %g", rmsDelta);
-        }
-
-        yInfo(" Starting Stereo Calibration... \n");
-        stereoCalibration(imageListLR, this->boardWidth,this->boardHeight,this->squareSize);
-
-        yInfo(" Saving Calibration Results... \n");
-        updateIntrinsics(RightRgb.cols,RightRgb.rows,Kright.at<double>(0,0),Kright.at<double>(1,1),Kright.at<double>(0,2),Kright.at<double>(1,2),DistR.at<double>(0,0),DistR.at<double>(0,1),DistR.at<double>(0,2),DistR.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
-        updateIntrinsics(LeftRgb.cols,LeftRgb.rows,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_LEFT");
-
-        // Mat Rot=Mat::eye(3,3,CV_64FC1);
-        // Mat Tr=Mat::zeros(3,1,CV_64FC1);
-
-        updateExtrinsics(this->R,this->T,"STEREO_DISPARITY");
-
-        yInfo("Calibration Results Saved in %s \n", camCalibFile.c_str());
-
-        calibrationState.store(CalibrationState::Completed);
-        count=1;
-        imageListR.clear();
-        imageListL.clear();
-        imageListLR.clear();
-    }
-    */
    return;
 }
 
@@ -791,10 +756,6 @@ void stereoCalibThread::stereoCalibRun()
                 if(observationsCount >= static_cast<std::size_t>(numOfPairs))
                 {
                     yInfo("Collected %zu valid stereo observations. Stopping collection.", observationsCount);
-                    if(_saveImages)
-                    {
-                        //saveAcceptedPair();
-                    }
                     calibrationState.store(CalibrationState::Calibrating);
                     yInfo() << "Observation collection complete";
                     break;
@@ -811,6 +772,7 @@ void stereoCalibThread::stereoCalibRun()
                 observationSnapshot = _observations;
             }
             _calibrationOptions.imageSize = observationSnapshot.front().imageSize;
+            _calibrationOptions.cameraFocalLengthGuess = 625.0;
 
             stereo_calib::CalibrationResult calibrationResult;
             std::string calibrationError;
@@ -990,11 +952,11 @@ void stereoCalibThread::threadRelease()
     outPortRight.close();
     commandPort->close();
 
-    // if (polyHead.isValid())
-    //     polyHead.close();
+    if (polyHead.isValid())
+        polyHead.close();
 
-    // if (polyTorso.isValid())
-    //     polyTorso.close();
+    if (polyTorso.isValid())
+        polyTorso.close();
 }
 
 void stereoCalibThread::onStop() {
