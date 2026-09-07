@@ -96,6 +96,7 @@ private:
     double toleranceSeconds{0.020}; // 20 milliseconds
     std::size_t maxQueueSize{5};
 
+    mutable std::mutex _mutex;
     SynchronizerStatistics stats;
     void trimLeftQueue();
     void trimRightQueue();
@@ -107,7 +108,7 @@ public:
     void pushLeft(const ImageOf<PixelRgb>& leftFrame, const Stamp& timestamp);
     void pushRight(const ImageOf<PixelRgb>& rightFrame, const Stamp& timestamp);
     bool tryPopPair(SynchronizedPair& pair);
-    const SynchronizerStatistics getStatistics() const { return stats; }
+    SynchronizerStatistics getStatistics() const { std::lock_guard<std::mutex> lock(_mutex); return stats; }
 };
 
 class stereoCalibThread : public Thread
@@ -149,7 +150,7 @@ private:
     yarp::sig::Vector qL;
     yarp::sig::Vector qR;
 
-    mutable mutex mtx;
+    mutable std::mutex mtx;
 
     int numOfPairs;
     bool stereo;

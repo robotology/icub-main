@@ -93,6 +93,7 @@ void StereoPairSynchronizer::reset()
     leftQueue.clear();
     rightQueue.clear();
 
+    std::lock_guard<std::mutex> lock(_mutex);
     stats = SynchronizerStatistics{};
 }
 
@@ -126,6 +127,7 @@ void StereoPairSynchronizer::trimLeftQueue()
     while(leftQueue.size() > maxQueueSize) 
     {
         leftQueue.pop_front();
+        std::lock_guard<std::mutex> lock(_mutex);
         ++stats.droppedLeftFrames;
     }
 }
@@ -135,6 +137,7 @@ void StereoPairSynchronizer::trimRightQueue()
     while(rightQueue.size() > maxQueueSize) 
     {
         rightQueue.pop_front();
+        std::lock_guard<std::mutex> lock(_mutex);
         ++stats.droppedRightFrames;
     }
 }
@@ -159,6 +162,7 @@ bool StereoPairSynchronizer::tryPopPair(SynchronizedPair& pair)
             leftQueue.pop_front();
             rightQueue.pop_front();
 
+            std::lock_guard<std::mutex> lock(_mutex);
             ++stats.pairedFrames;
             stats.accumulatedTimeStampDelta += absoluteDelta;
             stats.maxTimeStampDelta = std::max(stats.maxTimeStampDelta, absoluteDelta);
@@ -170,11 +174,13 @@ bool StereoPairSynchronizer::tryPopPair(SynchronizedPair& pair)
         {
             // the oldest left frame cannot be paired with this or any newer right frame, so drop it
             leftQueue.pop_front();
+            std::lock_guard<std::mutex> lock(_mutex);
             ++stats.droppedLeftFrames;
         } 
         else 
         {
             rightQueue.pop_front();
+            std::lock_guard<std::mutex> lock(_mutex);
             ++stats.droppedRightFrames;
         }
     }
@@ -475,7 +481,7 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
                        << "of" << rightSize.width << "x" << rightSize.height << "."
                        << "Each board must span at least" << (minimumBoardSpanRatio * 100.0)
                        << "% of both image dimensions.";
-            std::lock_guard<std::mutex> lock(mtx);
+            
             ++_rejectedDetections;
             return;
         }
@@ -503,16 +509,12 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
         if(!observation.isValid())
         {
             yError() << "Generated invalid stereo observation";
-            std::lock_guard<std::mutex> lock(mtx);
             ++_rejectedDetections;
             return;
         }
 
         std::size_t observationIndex = 0;
-        {
-            std::lock_guard<std::mutex> lock(mtx);
-            observationIndex = _observations.size();
-        }
+        observationIndex = _observations.size(); //TODO: check this
 
         // Raw images are saved before drawing any optional diagnostics and
         // only after the pair has become an accepted observation candidate.
@@ -536,11 +538,8 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
             }
         }
 
-        {
-            std::lock_guard<std::mutex> lock(mtx);
-            _observations.push_back(std::move(observation));
-        }
-
+        _observations.push_back(std::move(observation));
+        
         // Diagnostic overlays are deliberately the final step: they never
         // affect the persisted raw dataset or the stored corner coordinates.
         if(_drawDiagnosticCorners)
@@ -562,7 +561,6 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
     }
     else
     {
-        std::lock_guard<std::mutex> lock(mtx);
         ++_rejectedDetections;
     }
 
@@ -572,6 +570,9 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 StereoCalibStatus stereoCalibThread::getStatus() const
 {
     StereoCalibStatus result;
+
+    std::lock_guard<std::mutex> lock(mtx);
+    
     switch(calibrationState.load())
     {
     case CalibrationState::Idle:
@@ -593,7 +594,6 @@ StereoCalibStatus stereoCalibThread::getStatus() const
 
     const auto syncStats = synchronizer.getStatistics();
 
-    std::lock_guard<std::mutex> lock(mtx);
     result.pairedFrames = syncStats.pairedFrames;
     result.droppedLeftFrames = syncStats.droppedLeftFrames;
     result.droppedRightFrames = syncStats.droppedRightFrames;
@@ -680,11 +680,13 @@ void stereoCalibThread::stereoCalibRun()
         {
             synchronizer.reset();
             lastProcessedCandidateTime = -1.0;
-            std::lock_guard<std::mutex> lock(mtx);
             _observations.clear();
             _rejectedDetections = 0;
-            _calibrationResults = stereo_calib::CalibrationResult{};
-            _calibrationError.clear();
+            {
+                std::lock_guard<std::mutex> lock(mtx);
+                _calibrationResults = stereo_calib::CalibrationResult{};
+                _calibrationError.clear();
+            }
         }
 
         bool areFramesReceived = false;
@@ -735,30 +737,24 @@ void stereoCalibThread::stereoCalibRun()
         }
 
         std::vector<stereo_calib::StereoObservation> observationSnapshot;
-        if(calibrationState.load() == CalibrationState::Collecting) 
         {
-            SynchronizedPair pair;
-            while(synchronizer.tryPopPair(pair)) 
+            std::lock_guard<std::mutex> lock(mtx);
+            if(calibrationState.load() == CalibrationState::Collecting) 
             {
-                // Process the synchronized pair
-                processSynchronizedPair(pair, boardSize);
-
-                std::size_t observationsCount = 0;
+                SynchronizedPair pair;
+                while(synchronizer.tryPopPair(pair)) 
                 {
-                    std::lock_guard<std::mutex> lock(mtx);
-                    observationsCount = _observations.size();
-                    if(observationsCount >= static_cast<std::size_t>(numOfPairs))
+                    // Process the synchronized pair
+                    processSynchronizedPair(pair, boardSize);
+
+                    if(_observations.size() >= static_cast<std::size_t>(numOfPairs))
                     {
+                        yInfo("Collected %zu valid stereo observations. Stopping collection.", _observations.size());
                         observationSnapshot = _observations;
+                        calibrationState.store(CalibrationState::Calibrating);
+                        yInfo() << "Observation collection complete";
+                        break;
                     }
-                }
-
-                if(observationsCount >= static_cast<std::size_t>(numOfPairs))
-                {
-                    yInfo("Collected %zu valid stereo observations. Stopping collection.", observationsCount);
-                    calibrationState.store(CalibrationState::Calibrating);
-                    yInfo() << "Observation collection complete";
-                    break;
                 }
             }
         }
@@ -768,7 +764,6 @@ void stereoCalibThread::stereoCalibRun()
             yInfo() << "Starting the calibration process";
             if(observationSnapshot.empty())
             {
-                std::lock_guard<std::mutex> lock(mtx);
                 observationSnapshot = _observations;
             }
             _calibrationOptions.imageSize = observationSnapshot.front().imageSize;
@@ -798,10 +793,7 @@ void stereoCalibThread::stereoCalibRun()
                 continue;
             }
 
-            {
-                std::lock_guard<std::mutex> lock(mtx);
-                calibrationResult.quality.rejectedDetections = _rejectedDetections;
-            }
+            calibrationResult.quality.rejectedDetections = _rejectedDetections;
 
             std::string persistenceError;
             if(!_calibrationWriter.write(camCalibFile, calibrationResult, persistenceError))
@@ -971,19 +963,19 @@ void stereoCalibThread::onStop() {
 
 }
 void stereoCalibThread::startCalib() {
+
+    std::lock_guard<std::mutex> lock(mtx);
+    
     const CalibrationState currentState = calibrationState.load();
 
-    if(currentState == CalibrationState::Calibrating)
+    if(currentState == CalibrationState::Collecting || currentState == CalibrationState::Calibrating)
     {
         yWarning() << "Cannot start a new calibration while calibration is already running";
         return;
     }
 
-    {
-        std::lock_guard<std::mutex> lock(mtx);
-        _calibrationResults = stereo_calib::CalibrationResult{};
-        _calibrationError.clear();
-    }
+    _calibrationResults = stereo_calib::CalibrationResult{};
+    _calibrationError.clear();
     collectionResetRequested.store(true);
     calibrationState.store(CalibrationState::Collecting);
 
@@ -991,8 +983,15 @@ void stereoCalibThread::startCalib() {
 }
 
 void stereoCalibThread::stopCalib() {
-    collectionResetRequested.store(true);
+    std::lock_guard<std::mutex> lock(mtx);
+
+    if(calibrationState.load() != CalibrationState::Collecting)
+    {
+        yWarning() << "Cannot stop calibration collection when it is not running";
+        return;
+    }
     calibrationState.store(CalibrationState::Idle);
+    collectionResetRequested.store(true);
 
     yInfo() << "Calibration collection stopped";
 }
