@@ -133,7 +133,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     string calibToolName = botConfig.check("projection",
                                          Value("pinhole"),
-                                         "Projection/mapping applied to calibrated image [pinhole|spherical] (string).").asString();
+                                         "Projection/mapping applied to calibrated image [pinhole|spherical|fisheye] (string).").asString();
 
     _calibTool = CalibToolFactories::getPool().get(calibToolName.c_str());
     if (_calibTool!=NULL) {
