@@ -460,7 +460,7 @@ bool FisheyeCalibrationEngine::evaluateRectification(
                                                   verticalErrors.begin(), 0.0);
     std::sort(verticalErrors.begin(), verticalErrors.end());
 
-    quality.synchronizedPairs = observations.size();
+    quality.synchronizedPairs = 0;
     quality.acceptedObservations = observations.size();
     quality.rejectedDetections = 0;
     quality.baseline = cv::norm(stereo.T);

@@ -260,7 +260,7 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
         "observationsFile", Value("calibrationObservations.yml")).asString();
     if(!_observationsFile.empty() && _observationsFile.front() != '/')
     {
-        _observationsFile = currentPathDir + "/" + _observationsFile;
+        _observationsFile = this->imageDir + "/" + _observationsFile;
     }
 
 
@@ -794,6 +794,7 @@ void stereoCalibThread::stereoCalibRun()
             }
 
             calibrationResult.quality.rejectedDetections = _rejectedDetections;
+            calibrationResult.quality.synchronizedPairs = synchronizer.getStatistics().pairedFrames;
 
             std::string persistenceError;
             if(!_calibrationWriter.write(camCalibFile, calibrationResult, persistenceError))
