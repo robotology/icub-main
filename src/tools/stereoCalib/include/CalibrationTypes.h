@@ -21,10 +21,18 @@ namespace stereo_calib
 
     enum class CalibrationMode
     {
-        MonocularLeft,  // validate obs -> calibrate left -> populate result.leftCamera -> no call to stereo calib nor rectification
-        MonocularRight, // validate obs -> calibrate right -> populate result.rightCamera -> no call to stereo calib nor rectification
-        MonocularBoth,  // validate obs -> calibrate left and right -> estimate intrinsics -> no estimation of R and T or rectification
-        StereoFull      // validate obs -> calibrate left and right -> stereo calib with fixed intrinsics -> stereo rectification -> evaluate rectification quality -> populate result with all fields
+        MonocularLeft,  // validate obs -> calibrate left -> populate result.leftCamera -> no call to stereo calib
+        MonocularRight, // validate obs -> calibrate right -> populate result.rightCamera -> no call to stereo calib
+        MonocularBoth,  // validate obs -> calibrate left and right -> estimate intrinsics -> no estimation of R and T
+        StereoFull,      // validate obs -> calibrate left and right -> stereo calib with fixed intrinsics -> evaluate stereo quality -> populate result with all fields
+        Invalid = 255
+    };
+
+    enum class CameraModel
+    {
+        Pinhole,
+        Fisheye,
+        Invalid = 255
     };
 
     struct ChessboardConfiguration
@@ -119,12 +127,53 @@ namespace stereo_calib
                 timestampDeltaSeconds >=0.0);
         }
     };
+
+    struct CommonCalibrationOptions
+    {
+        CalibrationMode calibrationMode{CalibrationMode::StereoFull};
+        cv::Size imageSize{1920, 1080};
+    };
+    
+    struct PinholeCalibrationOptions
+    {
+        CommonCalibrationOptions common;
+        double cameraFocalLengthGuess{625.0};
+
+        int monocularFlags{
+            // cv::CALIB_USE_INTRINSIC_GUESS | to be added later if performance is not good enough
+            // cv::CALIB_FIX_PRINCIPAL_POINT |
+            // cv::CALIB_FIX_TANGENT_DIST |
+            // camCalib uses the legacy four-coefficient pinhole model, so the
+            // OpenCV-only fifth coefficient must remain fixed at zero.
+            cv::CALIB_FIX_K3 
+        };
+
+        int stereoFlags{
+            cv::CALIB_FIX_ASPECT_RATIO |
+            cv::CALIB_FIX_INTRINSIC |
+            cv::CALIB_FIX_K3
+        };
+
+        cv::TermCriteria criteria{
+            cv::TermCriteria::COUNT |
+            cv::TermCriteria::EPS,
+            100,
+            1e-5
+        };
+
+        bool isValid() const
+        {
+            return (common.imageSize.width > 0 &&
+                common.imageSize.height > 0 &&
+                (!(criteria.type & cv::TermCriteria::COUNT) || criteria.maxCount > 0) &&
+                (!(criteria.type & cv::TermCriteria::EPS) ||
+                 (std::isfinite(criteria.epsilon) && criteria.epsilon > 0.0)));
+        }
+    };
     
     struct FisheyeCalibrationOptions
     {
-        CalibrationMode calibrationMode{CalibrationMode::StereoFull};
-
-        cv::Size imageSize{1920, 1080};
+        CommonCalibrationOptions common;
         double cameraFocalLengthGuess{625.0};
 
         int monocularFlags{
@@ -147,20 +196,10 @@ namespace stereo_calib
             1e-5
         };
 
-        double rectificationBalance {0.0};
-        double rectificationFovScale{1.0};
-
-        bool zeroDisparity{true};
-
         bool isValid() const
         {
-            return (imageSize.width > 0 &&
-                imageSize.height > 0 &&
-                std::isfinite(rectificationBalance) &&
-                rectificationBalance >= 0.0 &&
-                rectificationBalance <= 1.0 &&
-                std::isfinite(rectificationFovScale) &&
-                rectificationFovScale > 0.0 &&
+            return (common.imageSize.width > 0 &&
+                common.imageSize.height > 0 &&
                 (!(criteria.type & cv::TermCriteria::COUNT) || criteria.maxCount > 0) &&
                 (!(criteria.type & cv::TermCriteria::EPS) ||
                  (std::isfinite(criteria.epsilon) && criteria.epsilon > 0.0)));
@@ -169,32 +208,81 @@ namespace stereo_calib
 
     struct CameraCalibrationResult
     {
+        CameraModel model{CameraModel::Pinhole};
         cv::Size imageSize;
 
         // 3x3 intrinsic camera matrix
         cv::Mat K;
 
-        // Four fisheye coefficients: k1, k2, k3, k4.
-        // Standardize internally on 4x1 CV_64F matrix
+        // Pinhole distortion coefficients: [k1, k2, p1, p2]
+        // Fisheye distortion coefficients: [k1, k2, k3, k4]
         cv::Mat D;
 
         // Board pose for each accepted observation
         std::vector<cv::Mat> rotationVectors;
         std::vector<cv::Mat> translationVectors;
 
-        // Optional quality value calculated for each view
+        // Reprojection RMS for every accepted calibration observation.
         std::vector<double> perViewRms;
 
         double rms{-1.0};
-
+        
         bool isValid() const
         {
-            return (imageSize.width > 0 &&
-                imageSize.height > 0 &&
-                K.rows == 3 &&
-                K.cols == 3 &&
-                D.total() == 4 &&
-                rms >= 0.0);
+            if(model != CameraModel::Pinhole &&
+                model != CameraModel::Fisheye)
+                return false;
+
+            if(imageSize.width <=0 || imageSize.height <= 0)
+                return false;
+            
+            if(K.empty() ||
+                K.rows != 3 ||
+                K.cols != 3 ||
+                K.type() != CV_64F ||
+                !cv::checkRange(K, true))
+                return false;
+            
+            if(D.empty() ||
+                D.total() != 4 ||
+                D.type() != CV_64F ||
+                !cv::checkRange(D, true))
+                return false;
+            
+            if(K.at<double>(0, 0) <= 0.0 ||
+                K.at<double>(1,1) <= 0.0)
+                return false;
+
+            if(!std::isfinite(rms) || rms < 0.0)
+                return false;
+            
+            if(rotationVectors.size() != translationVectors.size() ||
+                rotationVectors.size() != perViewRms.size())
+                return false;
+            
+            for (size_t i = 0; i < rotationVectors.size(); i++)
+            {
+                const cv::Mat& rotation = rotationVectors[i];
+                const cv::Mat& translation = translationVectors[i];
+
+                if(rotation.empty() ||
+                    rotation.total() != 3 ||
+                    rotation.type() != CV_64F ||
+                    !cv::checkRange(rotation, true))
+                    return false;
+
+                if(translation.empty() ||
+                    translation.total() != 3 ||
+                    translation.type() != CV_64F ||
+                    !cv::checkRange(translation, true))
+                    return false;
+
+                if(!std::isfinite(perViewRms[i]) ||
+                    perViewRms[i] < 0.0)
+                    return false;
+            }
+            
+            return true;
         }
     };
 
@@ -209,54 +297,35 @@ namespace stereo_calib
         cv::Mat R;
         cv::Mat T;
 
-        // Optional quality value calculated for each stereo observation
-        std::vector<double> perPairRms;
-
         double rms{-1.0};
 
         bool isValid() const
         {
-            return (R.rows == 3 &&
-                R.cols == 3 &&
-                T.total() == 3 &&
-                rms >= 0.0);
-        }
-    };
+            if(R.empty() ||
+                R.rows != 3 || 
+                R.cols != 3 ||
+                R.type() != CV_64F ||
+                !cv::checkRange(R, true)
+                )
+                return false;
 
-    struct RectificationResult
-    {
-        cv::Size outputImageSize;
+            if(T.empty() ||
+                T.total() != 3 ||
+                T.type() != CV_64F ||
+                !cv::checkRange(T, true))
+                return false;
 
-        // Rectification rotations.
-        cv::Mat R1;
-        cv::Mat R2;
-
-        // Rectified projection matrices
-        cv::Mat P1;
-        cv::Mat P2;
-
-        // Disparity-to-depth mapping matrix
-        cv::Mat Q;
-
-        double balance{0.0};
-        double fovScale{1.0};
-
-        bool zeroDisparity{true};
-
-        bool isValid() const
-        {
-            return (outputImageSize.width > 0 &&
-                outputImageSize.height > 0 &&
-                R1.rows == 3 &&
-                R1.cols == 3 &&
-                R2.rows == 3 &&
-                R2.cols == 3 &&
-                P1.rows == 3 &&
-                P1.cols == 4 &&
-                P2.rows == 3 &&
-                P2.cols == 4 &&
-                Q.rows == 4 &&
-                Q.cols == 4);
+            if(!std::isfinite(rms) ||
+                rms < 0.0 )
+                return false;
+            
+            const cv::Mat identity = cv::Mat::eye(3,3,CV_64F);
+            if(std::abs(cv::determinant(R) - 1.0) >= 1e-3 ||
+                cv::norm(R.t() * R - identity, cv::NORM_INF) >= 1e-3 ||
+                cv::norm(T) <= 1e-9)
+                return false;
+            
+            return true;
         }
     };
 
@@ -272,41 +341,41 @@ namespace stereo_calib
         // Baseline expressed in the same unit as StereoCalibrationResult::T.
         // It is calculated by the calibration engine, not by persistence.
         double baseline{-1.0};
-
-        double meanVerticalRectificationErrorPx {-1.0};
-        double medianVerticalRectificationErrorPx {-1.0};
-        double rmsVerticalRectificationErrorPx {-1.0};
-        double p95VerticalRectificationErrorPx {-1.0};
-        double maxVerticalRectificationErrorPx {-1.0};
     };
 
     struct CalibrationResult
     {
+        CameraModel model{CameraModel::Pinhole};
         CalibrationMode mode{CalibrationMode::StereoFull};
 
         CameraCalibrationResult leftCamera;
         CameraCalibrationResult rightCamera;
 
         StereoCalibrationResult stereo;
-        RectificationResult rectification;
 
         CalibrationQualityMetrics quality;
 
         bool isValid() const
         {
+            const auto validCamera = 
+                [this](const CameraCalibrationResult& camera)
+                {
+                    return camera.model == model &&
+                        camera.isValid();
+                };
+
             switch (mode)
             {
                 case CalibrationMode::MonocularLeft:
-                    return leftCamera.isValid();
+                    return validCamera(leftCamera);
                 case CalibrationMode::MonocularRight:
-                    return rightCamera.isValid();
+                    return validCamera(rightCamera);
                 case CalibrationMode::MonocularBoth:
-                    return (leftCamera.isValid() && rightCamera.isValid());
+                    return (validCamera(leftCamera) && validCamera(rightCamera));
                 case CalibrationMode::StereoFull:
-                    return (leftCamera.isValid() &&
-                        rightCamera.isValid() &&
-                        stereo.isValid() &&
-                        rectification.isValid());
+                    return (validCamera(leftCamera) &&
+                        validCamera(rightCamera) &&
+                        stereo.isValid());
             }
             return false;
         }

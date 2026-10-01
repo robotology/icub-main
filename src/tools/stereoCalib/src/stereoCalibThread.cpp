@@ -1,85 +1,124 @@
 #include <algorithm>
 #include <cmath>
 #include <utility>
-#include <chrono>
-#include <thread>
 #include <sstream>
 #include <yarp/cv/Cv.h>
+#include <yarp/os/LogStream.h>
 #include "stereoCalibThread.h"
+
+
+YARP_LOG_COMPONENT(STEREOCALIBRATIONTHREAD, "yarp.tools.stereoCalibThread")
 
 namespace
 {
  
-std::string formatCalibrationMatrix(const cv::Mat& matrix)
-{
-    std::ostringstream stream;
-    stream << matrix;
-    return stream.str();
-}
- 
-void logCameraCalibration(const char* cameraName,
-                          const stereo_calib::CameraCalibrationResult& camera)
-{
-    yInfo() << "[CAMERA_CALIBRATION_" << cameraName << "]";
-    yInfo() << "w" << camera.imageSize.width << "h" << camera.imageSize.height;
-    yInfo() << "fx" << camera.K.at<double>(0, 0)
-            << "fy" << camera.K.at<double>(1, 1)
-            << "cx" << camera.K.at<double>(0, 2)
-            << "cy" << camera.K.at<double>(1, 2);
-    yInfo() << "D = [k1 k2 k3 k4] =" << formatCalibrationMatrix(camera.D.t());
-    yInfo() << "K =" << formatCalibrationMatrix(camera.K);
-    yInfo() << "monocular RMS =" << camera.rms;
-}
- 
-void logCalibrationResult(const stereo_calib::CalibrationResult& result)
-{
-    yInfo() << "========== Fisheye calibration result (not written to disk) ==========";
- 
-    if(result.leftCamera.isValid())
+    std::string formatCalibrationMatrix(const cv::Mat& matrix)
     {
-        logCameraCalibration("LEFT", result.leftCamera);
-    }
-    if(result.rightCamera.isValid())
-    {
-        logCameraCalibration("RIGHT", result.rightCamera);
+        std::ostringstream stream;
+        stream << matrix;
+        return stream.str();
     }
  
-    if(result.stereo.isValid())
+    void logCameraCalibration(const char* cameraName,
+                            const stereo_calib::CameraCalibrationResult& camera)
     {
-        cv::Mat homogeneousTransform = cv::Mat::eye(4, 4, CV_64F);
-        result.stereo.R.copyTo(homogeneousTransform(cv::Rect(0, 0, 3, 3)));
-        result.stereo.T.reshape(1, 3).copyTo(homogeneousTransform(cv::Rect(3, 0, 1, 3)));
- 
-        yInfo() << "[STEREO_DISPARITY]";
-        yInfo() << "Stereo RMS =" << result.stereo.rms
-                << "baseline norm =" << cv::norm(result.stereo.T);
-        yInfo() << "R =" << formatCalibrationMatrix(result.stereo.R);
-        yInfo() << "T =" << formatCalibrationMatrix(result.stereo.T.t());
-        // HN is the same homogeneous transform layout used by outputCalib.ini.
-        yInfo() << "HN =" << formatCalibrationMatrix(homogeneousTransform);
+        yCInfo(STEREOCALIBRATIONTHREAD) << "[CAMERA_CALIBRATION_" << cameraName << "]";
+        yCInfo(STEREOCALIBRATIONTHREAD) << "w" << camera.imageSize.width << "h" << camera.imageSize.height;
+        yCInfo(STEREOCALIBRATIONTHREAD) << "fx" << camera.K.at<double>(0, 0)
+                << "fy" << camera.K.at<double>(1, 1)
+                << "cx" << camera.K.at<double>(0, 2)
+                << "cy" << camera.K.at<double>(1, 2);
+        if(camera.model == stereo_calib::CameraModel::Fisheye)
+        {
+            yCInfo(STEREOCALIBRATIONTHREAD) << "k1" << camera.D.at<double>(0, 0)
+                    << "k2" << camera.D.at<double>(1, 0)
+                    << "k3" << camera.D.at<double>(2, 0)
+                    << "k4" << camera.D.at<double>(3, 0);
+        }
+        else if(camera.model == stereo_calib::CameraModel::Pinhole)
+        {
+            yCInfo(STEREOCALIBRATIONTHREAD) << "k1" << camera.D.at<double>(0, 0)
+                    << "k2" << camera.D.at<double>(1, 0)
+                    << "p1" << camera.D.at<double>(2, 0)
+                    << "p2" << camera.D.at<double>(3, 0);
+        }
+        yCInfo(STEREOCALIBRATIONTHREAD) << "K =" << formatCalibrationMatrix(camera.K);
+        yCInfo(STEREOCALIBRATIONTHREAD) << "monocular RMS =" << camera.rms;
     }
  
-    if(result.rectification.isValid())
+    void logCalibrationResult(const stereo_calib::CalibrationResult& result)
     {
-        yInfo() << "R1 =" << formatCalibrationMatrix(result.rectification.R1);
-        yInfo() << "R2 =" << formatCalibrationMatrix(result.rectification.R2);
-        yInfo() << "P1 =" << formatCalibrationMatrix(result.rectification.P1);
-        yInfo() << "P2 =" << formatCalibrationMatrix(result.rectification.P2);
-        yInfo() << "Q =" << formatCalibrationMatrix(result.rectification.Q);
+        yCInfo(STEREOCALIBRATIONTHREAD) << "========== Calibration result (not written to disk) ==========";
+    
+        if(result.leftCamera.isValid())
+        {
+            logCameraCalibration("LEFT", result.leftCamera);
+        }
+        if(result.rightCamera.isValid())
+        {
+            logCameraCalibration("RIGHT", result.rightCamera);
+        }
+    
+        if(result.stereo.isValid())
+        {
+            cv::Mat homogeneousTransform = cv::Mat::eye(4, 4, CV_64F);
+            result.stereo.R.copyTo(homogeneousTransform(cv::Rect(0, 0, 3, 3)));
+            result.stereo.T.reshape(1, 3).copyTo(homogeneousTransform(cv::Rect(3, 0, 1, 3)));
+    
+            yCInfo(STEREOCALIBRATIONTHREAD) << "[STEREO_DISPARITY]";
+            yCInfo(STEREOCALIBRATIONTHREAD) << "Stereo RMS =" << result.stereo.rms
+                    << "baseline norm =" << cv::norm(result.stereo.T);
+            yCInfo(STEREOCALIBRATIONTHREAD) << "R =" << formatCalibrationMatrix(result.stereo.R);
+            yCInfo(STEREOCALIBRATIONTHREAD) << "T =" << formatCalibrationMatrix(result.stereo.T.t());
+            // HN is the same homogeneous transform layout used by outputCalib.ini.
+            yCInfo(STEREOCALIBRATIONTHREAD) << "HN =" << formatCalibrationMatrix(homogeneousTransform);
+        }
+        yCInfo(STEREOCALIBRATIONTHREAD) << "======================================================================";
     }
- 
-    if(result.mode == stereo_calib::CalibrationMode::StereoFull)
+    
+    stereo_calib::CameraModel parseCameraModel(const std::string& modelString)
     {
-        yInfo() << "Rectification vertical error [mean median RMS p95 max] ="
-                << result.quality.meanVerticalRectificationErrorPx
-                << result.quality.medianVerticalRectificationErrorPx
-                << result.quality.rmsVerticalRectificationErrorPx
-                << result.quality.p95VerticalRectificationErrorPx
-                << result.quality.maxVerticalRectificationErrorPx;
+        if(modelString == "pinhole")
+        {
+            return stereo_calib::CameraModel::Pinhole;
+        }
+        else if(modelString == "fisheye")
+        {
+            return stereo_calib::CameraModel::Fisheye;
+        }
+        else
+        {
+            yCError(STEREOCALIBRATIONTHREAD) << "Invalid camera model string:" << modelString
+                    << ". Setting to Invalid.";
+            return stereo_calib::CameraModel::Invalid;
+        }
     }
-    yInfo() << "======================================================================";
-}
- 
+
+    stereo_calib::CalibrationMode parseCalibrationMode(const std::string& modeString)
+    {
+        if(modeString == "MonocularLeft")
+        {
+            return stereo_calib::CalibrationMode::MonocularLeft;
+        }
+        else if(modeString == "MonocularRight")
+        {
+            return stereo_calib::CalibrationMode::MonocularRight;
+        }
+        else if(modeString == "MonocularBoth")
+        {
+            return stereo_calib::CalibrationMode::MonocularBoth;
+        }
+        else if(modeString == "StereoFull")
+        {
+            return stereo_calib::CalibrationMode::StereoFull;
+        }
+        else
+        {
+            yCError(STEREOCALIBRATIONTHREAD) << "Invalid calibration mode string:" << modeString
+                    << ". Using default StereoFull.";
+            return stereo_calib::CalibrationMode::StereoFull;
+        }
+    }
 } // namespace
 
 void StereoPairSynchronizer::configure(double tolerance, std::size_t maxQueueSize)
@@ -206,22 +245,22 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->outNameLeft +=rf.check("outLeft",Value("/cam/left:o"),"Output image port (string)").asString().c_str();
 
     Bottle stereoCalibOpts=rf.findGroup("STEREO_CALIBRATION_CONFIGURATION");
-    this->boardWidth =  stereoCalibOpts.check("boardWidth", Value(8)).asInt32();
-    this->boardHeight= stereoCalibOpts.check("boardHeight", Value(6)).asInt32();
-    this->numOfPairs= stereoCalibOpts.check("numberOfPairs", Value(30)).asInt32();
-    if(this->numOfPairs < 3)
+    this->boardWidth = stereoCalibOpts.check("boardWidth", Value(8)).asInt32();
+    this->boardHeight = stereoCalibOpts.check("boardHeight", Value(6)).asInt32();
+    this->numOfPairs = stereoCalibOpts.check("numberOfPairs", Value(30)).asInt32();
+    if(this->numOfPairs < 30)
     {
-        yWarning() << "numberOfPairs must be at least 3; using 3";
-        this->numOfPairs = 3;
+        yCWarning(STEREOCALIBRATIONTHREAD) << "numberOfPairs must be at least 30; using 30";
+        this->numOfPairs = 30;
     }
-    this->squareSize= (float)stereoCalibOpts.check("boardSize", Value(0.09241)).asFloat64();
-    this->boardType=  stereoCalibOpts.check("boardType", Value("CHESSBOARD")).asString();
+    this->squareSize = (float)stereoCalibOpts.check("boardSize", Value(0.09241)).asFloat64();
+    this->boardType =  stereoCalibOpts.check("boardType", Value("CHESSBOARD")).asString();
     const double syncToleranceMs = stereoCalibOpts.check("syncToleranceMs", Value(20.0)).asFloat64();
     _syncToleranceSeconds = syncToleranceMs / 1000.0;
     const int configuredQueueSize = stereoCalibOpts.check("syncQueueSize", Value(5)).asInt32();
     if(configuredQueueSize <= 0)
     {
-        yWarning() << "Invalid syncQueueSize; using 5";
+        yCWarning(STEREOCALIBRATIONTHREAD) << "Invalid syncQueueSize; using 5";
         _syncQueueSize = 5;
     }
     else
@@ -231,7 +270,7 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
 
     if(_syncToleranceSeconds <= 0.0)
     {
-        yWarning() << "Invalid syncToleranceMs; using 20 ms";
+        yCWarning(STEREOCALIBRATIONTHREAD) << "Invalid syncToleranceMs; using 20 ms";
         _syncToleranceSeconds = 0.020;
     }
 
@@ -239,20 +278,15 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     
     this->minCaptureIntervalSeconds = stereoCalibOpts.check("minCaptureIntervalSeconds", Value(2.0)).asFloat64();
     this->minimumBoardSpanRatio = stereoCalibOpts.check("minimumBoardSpanRatio", Value(0.15)).asFloat64();
-
     this->commandPort=commPort;
     this->imageDir=imageDir;
     this->collectionResetRequested.store(false);
     this->calibrationState.store(CalibrationState::Idle);
-    this->currentPathDir=rf.getHomeContextPath().c_str();
-    const bool legacyMonoRequested =
-        stereoCalibOpts.check("MonoCalib", Value(0)).asInt32() != 0;
     // All new calibration modes use the synchronized-observation pipeline.
     // In particular, completion must never bypass CalibrationWriter.
-    this->stereo = true;
     this->camCalibFile=rf.getHomeContextPath().c_str();
-    this->standalone = rf.check("standalone");
-    string fileName= "outputCalib.ini"; //rf.find("from").asString().c_str();
+    this->standalone = rf.check("standalone", Value(false)).asBool();
+    string fileName= "outputCalib.ini";
 
     this->camCalibFile=this->camCalibFile+"/"+fileName.c_str();
 
@@ -263,46 +297,21 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
         _observationsFile = this->imageDir + "/" + _observationsFile;
     }
 
-
+    // TODO: remove. This is a duplication. Enough to set: _chessboardConfiguration.cornersX stereoCalibOpts.check("boardWidth", Value(8)).asInt32();
     _chessboardConfiguration.cornersX = this->boardWidth;
     _chessboardConfiguration.cornersY = this->boardHeight;
 
+    // TODO: remove as well --> duplication
     _chessboardConfiguration.squareSizeMeters = this->squareSize;
 
     _saveImages = stereoCalibOpts.check("saveImages", Value(1)).asInt32() != 0;
     _drawDiagnosticCorners = stereoCalibOpts.check("drawDiagnosticCorners", Value(1)).asInt32() != 0;
-
-    const std::string configuredMode = stereoCalibOpts.check("calibrationMode", Value("")).asString();
-    if(configuredMode == "MonocularLeft")
-    {
-        _calibrationOptions.calibrationMode = stereo_calib::CalibrationMode::MonocularLeft;
-    }
-    else if(configuredMode == "MonocularRight")
-    {
-        _calibrationOptions.calibrationMode = stereo_calib::CalibrationMode::MonocularRight;
-    }
-    else if(configuredMode == "MonocularBoth")
-    {
-        _calibrationOptions.calibrationMode = stereo_calib::CalibrationMode::MonocularBoth;
-    }
-    else if(configuredMode.empty() && legacyMonoRequested)
-    {
-        yWarning() << "MonoCalib is deprecated; using MonocularLeft with the synchronized observation pipeline.";
-        _calibrationOptions.calibrationMode = stereo_calib::CalibrationMode::MonocularLeft;
-    }
-    else if(configuredMode.empty() || configuredMode == "StereoFull")
-    {
-        _calibrationOptions.calibrationMode = stereo_calib::CalibrationMode::StereoFull;
-    }
-    else
-    {
-        yWarning() << "Unknown calibrationMode; using StereoFull:" << configuredMode;
-        _calibrationOptions.calibrationMode = stereo_calib::CalibrationMode::StereoFull;
-    }
+    _cameraModel = parseCameraModel(stereoCalibOpts.check("cameraModel", Value("pinhole")).asString());
+    _calibrationMode = parseCalibrationMode(stereoCalibOpts.check("calibrationMode", Value("StereoFull")).asString());
 
     if(!_chessboardConfiguration.isValid())
     {
-        yError() << "Invalid chessboard configuration";
+        yCError(STEREOCALIBRATIONTHREAD) << "Invalid chessboard configuration";
     }
 }
 
@@ -328,18 +337,21 @@ bool stereoCalibThread::threadInit()
       return false;
    }
 
-    //mono calibration does not need the joint positions initialised below
-    if(!stereo || standalone) return true;
+    //when in standalone mode we won't open the remote control board devices
+    if(standalone) return true;
 
+    //TODO: develop what to do with the control boards for head and torso
+    // in the legacy implementation the kinematic chain was calculated and joint position added to the output file
+    // now why we need that? is it uselful? do we need to change it to a check on steadiness for the calibration procedure
     Property optHead;
     optHead.put("device","remote_controlboard");
     optHead.put("remote",("/"+robotName+"/head").c_str());
     optHead.put("local","/"+moduleName+"/client/head");
-    if (polyHead.open(optHead))
-        polyHead.view(posHead);
-    else
+    if (!polyHead.open(optHead) ||
+        !polyHead.view(posHead) ||
+        posHead == nullptr)
     {
-        cout<<"Devices not available"<<endl;
+        yCError(STEREOCALIBRATIONTHREAD) << "Unable to acquire the head encoder interface";
         return false;
     }
 
@@ -349,11 +361,11 @@ bool stereoCalibThread::threadInit()
     optTorso.put("local","/"+moduleName+"/client/torso");
 
     bool useTorso=true;
-    if (polyTorso.open(optTorso))
-        polyTorso.view(posTorso);
-    else
+    if (!polyTorso.open(optTorso) ||
+        !polyTorso.view(posTorso) ||
+        posTorso == nullptr)
     {
-        yWarning("Unable to connect to torso! Continuing without...");
+        yCWarning(STEREOCALIBRATIONTHREAD, "Unable to connect to torso! Continuing without...");
         useTorso=false;
     }
 
@@ -385,7 +397,7 @@ bool stereoCalibThread::threadInit()
     return true;
 }
 void stereoCalibThread::run(){
-    yInfo("Running synchronized fisheye calibration pipeline... \n");
+    yCInfo(STEREOCALIBRATIONTHREAD, "Running synchronized fisheye calibration pipeline... \n");
     stereoCalibRun();
 }
 
@@ -396,12 +408,12 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
     const double previousProcessedCandidateTime = lastProcessedCandidateTime;
     if(previousProcessedCandidateTime >= 0.0 && (pairTime - previousProcessedCandidateTime) < minCaptureIntervalSeconds)
     {
-        yDebug() << "Skipping candidate pair due to minimum capture interval";
+        yCDebug(STEREOCALIBRATIONTHREAD) << "Skipping candidate pair due to minimum capture interval";
         return;
     }
     if(previousProcessedCandidateTime >= 0.0)
     {
-        yDebug() << "Timestamp delta between processed pairs:" << (pairTime - previousProcessedCandidateTime) << "seconds";
+        yCDebug(STEREOCALIBRATIONTHREAD) << "Timestamp delta between processed pairs:" << (pairTime - previousProcessedCandidateTime) << "seconds";
     }
     lastProcessedCandidateTime = pairTime;
 
@@ -421,7 +433,7 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 
     if(leftSize != _expectedImageSize || rightSize != _expectedImageSize)
     {
-        yError() << "Left and right images have different sizes:" <<
+        yCError(STEREOCALIBRATIONTHREAD) << "Left and right images have different sizes:" <<
             "Left:" << leftSize.width << "x" << leftSize.height <<
             "Right:" << rightSize.width << "x" << rightSize.height;
         {
@@ -445,15 +457,19 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
     std::vector<Point2f> leftCorners;
     std::vector<Point2f> rightCorners;
 
+    //TODO: for now we are only using CHESSBOARD GRID. For circle grid and so on we will add an update in the future.
     if(boardType == "CIRCLES_GRID") {
         foundL = findCirclesGrid(LeftRgb, boardSize, leftCorners, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
         foundR = findCirclesGrid(RightRgb, boardSize, rightCorners, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
+        yCWarning(STEREOCALIBRATIONTHREAD) << "Board type:" << boardType << "not yet implemented.";
     } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
         foundL = findCirclesGrid(LeftRgb, boardSize, leftCorners, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
         foundR = findCirclesGrid(RightRgb, boardSize, rightCorners, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
+        yCWarning(STEREOCALIBRATIONTHREAD) << "Board type:" << boardType << "not yet implemented.";
     } else if(boardType == "CHESSBOARD_SECTOR_BASED") {
         foundL = findChessboardCornersSB(leftGray, boardSize, leftCorners);
         foundR = findChessboardCornersSB(rightGray, boardSize, rightCorners);
+        yCWarning(STEREOCALIBRATIONTHREAD) << "Board type:" << boardType << "not yet implemented.";
     } else {
         foundL = findChessboardCorners(leftGray, boardSize, leftCorners, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE | CALIB_CB_FILTER_QUADS);
         foundR = findChessboardCorners(rightGray, boardSize, rightCorners, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE | CALIB_CB_FILTER_QUADS);
@@ -461,7 +477,7 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 
     if(foundL && foundR) 
     {
-        yDebug() << "Found chessboard corners in both left and right images";
+        yCDebug(STEREOCALIBRATIONTHREAD) << "Found calibration board corners in both left and right images";
 
         const Rect leftBoardBounds = boundingRect(leftCorners);
         const Rect rightBoardBounds = boundingRect(rightCorners);
@@ -474,7 +490,7 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 
         if(leftBoardTooSmall || rightBoardTooSmall)
         {
-            yWarning() << "Skipping stereo pair: chessboard is too small."
+            yCWarning(STEREOCALIBRATIONTHREAD) << "Skipping stereo pair: chessboard is too small."
                        << "Left board:" << leftBoardBounds.width << "x" << leftBoardBounds.height
                        << "of" << leftSize.width << "x" << leftSize.height << ";"
                        << "right board:" << rightBoardBounds.width << "x" << rightBoardBounds.height
@@ -508,13 +524,13 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 
         if(!observation.isValid())
         {
-            yError() << "Generated invalid stereo observation";
+            yCError(STEREOCALIBRATIONTHREAD) << "Generated invalid stereo observation";
             ++_rejectedDetections;
             return;
         }
 
         std::size_t observationIndex = 0;
-        observationIndex = _observations.size(); //TODO: check this
+        observationIndex = _observations.size();
 
         // Raw images are saved before drawing any optional diagnostics and
         // only after the pair has become an accepted observation candidate.
@@ -527,19 +543,32 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
                                                   observation.rightImageFilename,
                                                   imageError))
             {
-                yError() << "Could not save accepted calibration image pair:" << imageError;
+                yCError(STEREOCALIBRATIONTHREAD) << "Could not save accepted calibration image pair:" << imageError;
                 {
                     std::lock_guard<std::mutex> lock(mtx);
+                    if (calibrationState.load() != CalibrationState::Collecting)
+                    {
+                        return;
+                    }
+                    
                     _calibrationError = imageError;
                     _calibrationResults = stereo_calib::CalibrationResult{};
+                    calibrationState.store(CalibrationState::Error);
                 }
-                calibrationState.store(CalibrationState::Error);
                 return;
             }
         }
 
-        _observations.push_back(std::move(observation));
-        
+        // Detection and validation have completed.
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            if (calibrationState.load() != CalibrationState::Collecting)
+            {
+                return;
+            }
+            _observations.push_back(std::move(observation));
+        }
+
         // Diagnostic overlays are deliberately the final step: they never
         // affect the persisted raw dataset or the stored corner coordinates.
         if(_drawDiagnosticCorners)
@@ -638,15 +667,6 @@ StereoCalibStatus stereoCalibThread::getStatus() const
             result.stereoRms = _calibrationResults.stereo.rms;
             result.baselineNorm = _calibrationResults.quality.baseline;
         }
-        if(_calibrationResults.mode == stereo_calib::CalibrationMode::StereoFull)
-        {
-            result.medianVerticalRectificationErrorPx =
-                _calibrationResults.quality.medianVerticalRectificationErrorPx;
-            result.p95VerticalRectificationErrorPx =
-                _calibrationResults.quality.p95VerticalRectificationErrorPx;
-            result.maxVerticalRectificationErrorPx =
-                _calibrationResults.quality.maxVerticalRectificationErrorPx;
-        }
     }
 
     return result;
@@ -660,10 +680,9 @@ bool stereoCalibThread::shouldQueueFrameForCollection(const Stamp& timestamp) co
 
 void stereoCalibThread::stereoCalibRun()
 {
-    Size boardSize, imageSize;
+    Size boardSize;
     boardSize.width=this->boardWidth;
     boardSize.height=this->boardHeight;
-    int count=1;
 
     while (!isStopping()) 
     {
@@ -680,6 +699,7 @@ void stereoCalibThread::stereoCalibRun()
         {
             synchronizer.reset();
             lastProcessedCandidateTime = -1.0;
+            _expectedImageSize = {};
             _observations.clear();
             _rejectedDetections = 0;
             {
@@ -737,69 +757,106 @@ void stereoCalibThread::stereoCalibRun()
         }
 
         std::vector<stereo_calib::StereoObservation> observationSnapshot;
+        
+        if(calibrationState.load() == CalibrationState::Collecting) 
         {
-            std::lock_guard<std::mutex> lock(mtx);
-            if(calibrationState.load() == CalibrationState::Collecting) 
+            SynchronizedPair pair;
+            while(calibrationState.load() == CalibrationState::Collecting &&
+                synchronizer.tryPopPair(pair)) 
             {
-                SynchronizedPair pair;
-                while(synchronizer.tryPopPair(pair)) 
-                {
-                    // Process the synchronized pair
-                    processSynchronizedPair(pair, boardSize);
+                // Process the synchronized pair
+                processSynchronizedPair(pair, boardSize);
 
-                    if(_observations.size() >= static_cast<std::size_t>(numOfPairs))
-                    {
-                        yInfo("Collected %zu valid stereo observations. Stopping collection.", _observations.size());
-                        observationSnapshot = _observations;
-                        calibrationState.store(CalibrationState::Calibrating);
-                        yInfo() << "Observation collection complete";
-                        break;
-                    }
+                if(calibrationState.load() != CalibrationState::Collecting)
+                {
+                    break;
+                }
+                if(_observations.size() >= static_cast<std::size_t>(numOfPairs))
+                {
+                    yCInfo(STEREOCALIBRATIONTHREAD, "Collected %zu valid stereo observations. Stopping collection.", _observations.size());
+                    observationSnapshot = _observations;
+                    calibrationState.store(CalibrationState::Calibrating);
+                    yCInfo(STEREOCALIBRATIONTHREAD) << "Observation collection complete";
+                    break;
                 }
             }
         }
 
         if(calibrationState.load() == CalibrationState::Calibrating)
         {
-            yInfo() << "Starting the calibration process";
+            yCInfo(STEREOCALIBRATIONTHREAD) << "Starting the calibration process";
             if(observationSnapshot.empty())
             {
                 observationSnapshot = _observations;
             }
-            _calibrationOptions.imageSize = observationSnapshot.front().imageSize;
-            _calibrationOptions.cameraFocalLengthGuess = 625.0;
 
             stereo_calib::CalibrationResult calibrationResult;
             std::string calibrationError;
-            const bool success = _calibrationEngine.calibrate(
-                observationSnapshot,
-                _calibrationOptions,
-                calibrationResult,
-                calibrationError);
+            bool success = false;
+            if (_cameraModel == stereo_calib::CameraModel::Pinhole)
+            {
+                stereo_calib::PinholeCalibrationOptions options = _pinholeCalibrationOptions;
+                options.common.calibrationMode = _calibrationMode;
+                options.common.imageSize = observationSnapshot.front().imageSize; 
+                success = _pinholeCalibrationEngine.calibrate(
+                    observationSnapshot,
+                    options,
+                    calibrationResult,
+                    calibrationError
+                );
+            }
+            else if(_cameraModel == stereo_calib::CameraModel::Fisheye)
+            {
+                stereo_calib::FisheyeCalibrationOptions options = _fisheyeCalibrationOptions;
+                options.common.calibrationMode = _calibrationMode;
+                options.common.imageSize = observationSnapshot.front().imageSize;
+                options.cameraFocalLengthGuess = 625.0;
+                success = _fisheyeCalibrationEngine.calibrate(
+                    observationSnapshot,
+                    options,
+                    calibrationResult,
+                    calibrationError
+                );
+            }
+            else
+            {
+                calibrationError = "Unsupported camera model.";
+                success = false;
+            }
+            
+            // success and writer should be common between fisheye and pinhole engines, so this block can be shared
             if(!success)
             {
                 // The engine converts OpenCV exceptions into a diagnostic.  Log
                 // it here, where YARP logging is allowed, and stop calibration
                 // processing while keeping the Error state and status available.
-                yError() << "Fisheye calibration failed:" << calibrationError;
+                yCError(STEREOCALIBRATIONTHREAD) << "Calibration failed:" << calibrationError;
                 {
                     std::lock_guard<std::mutex> lock(mtx);
                     _calibrationResults = stereo_calib::CalibrationResult{};
                     _calibrationError = calibrationError.empty()
-                        ? "Fisheye calibration failed without an error message."
+                        ? "Calibration failed without an error message."
                         : calibrationError;
                 }
                 calibrationState.store(CalibrationState::Error);
                 continue;
             }
 
+            const auto syncStats = synchronizer.getStatistics();
             calibrationResult.quality.rejectedDetections = _rejectedDetections;
-            calibrationResult.quality.synchronizedPairs = synchronizer.getStatistics().pairedFrames;
+            calibrationResult.quality.acceptedObservations = observationSnapshot.size();
+            calibrationResult.quality.synchronizedPairs = syncStats.pairedFrames;
+            if(syncStats.pairedFrames > 0)
+            {
+                calibrationResult.quality.meanTimestampDeltaMs = 1000.0 * syncStats.accumulatedTimeStampDelta / static_cast<double>(syncStats.pairedFrames);
+            }
+            calibrationResult.quality.maxTimestampDeltaMs = syncStats.maxTimeStampDelta;
+            calibrationResult.quality.baseline = cv::norm(calibrationResult.stereo.T);
 
             std::string persistenceError;
             if(!_calibrationWriter.write(camCalibFile, calibrationResult, persistenceError))
             {
-                yError() << "Could not save calibration results:" << persistenceError;
+                yCError(STEREOCALIBRATIONTHREAD) << "Could not save calibration results:" << persistenceError;
                 {
                     std::lock_guard<std::mutex> lock(mtx);
                     _calibrationResults = std::move(calibrationResult);
@@ -810,7 +867,7 @@ void stereoCalibThread::stereoCalibRun()
             }
             if(!_calibrationWriter.writeObservations(_observationsFile, observationSnapshot, persistenceError))
             {
-                yError() << "Could not save calibration observations:" << persistenceError;
+                yCError(STEREOCALIBRATIONTHREAD) << "Could not save calibration observations:" << persistenceError;
                 {
                     std::lock_guard<std::mutex> lock(mtx);
                     _calibrationResults = std::move(calibrationResult);
@@ -828,7 +885,7 @@ void stereoCalibThread::stereoCalibRun()
             }
 
             calibrationState.store(CalibrationState::Completed);
-            yInfo() << "Entire calibration process completed";
+            yCInfo(STEREOCALIBRATIONTHREAD) << "Entire calibration process completed";
         }
 
         if(!areFramesReceived) 
@@ -839,104 +896,6 @@ void stereoCalibThread::stereoCalibRun()
    }
 }
 
-
-
-void stereoCalibThread::monoCalibRun()
-{
-    while(imagePortInLeft.getInputCount()==0 && imagePortInRight.getInputCount()==0)
-    {
-        yInfo("Connect one camera.. \n");
-        Time::delay(1.0);
-
-        if(isStopping())
-            return;
-
-    }
-
-    bool left= imagePortInLeft.getInputCount()>0?true:false;
-
-    string cameraName;
-
-    if(left)
-        cameraName="LEFT";
-    else
-        cameraName="RIGHT";
-
-    yInfo("CALIBRATING %s CAMERA \n",cameraName.c_str());
-
-
-    int count=1;
-    Size boardSize, imageSize;
-    boardSize.width=this->boardWidth;
-    boardSize.height=this->boardHeight;
-
-
-
-    while (!isStopping()) {
-       if(left)
-            imageL = std::move(imagePortInLeft.read(false));
-       else
-            imageL = std::move(imagePortInRight.read(false));
-
-       if(imageL!=NULL){
-            bool foundL=false;
-            mtx.lock();
-            if(calibrationState.load() == CalibrationState::Calibrating) {
-
-                string pathImg=imageDir;
-                preparePath(pathImg.c_str(),pathL,pathR,count);
-                string iml(pathL);
-                LeftRgb=yarp::cv::toCvMat(*imageL);
-                std::vector<Point2f> pointbufL;
-
-                if(boardType == "CIRCLES_GRID") {
-                    foundL = findCirclesGrid(LeftRgb, boardSize, pointbufL, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
-                } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
-                    foundL = findCirclesGrid(LeftRgb, boardSize, pointbufL, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
-                } else {
-                    foundL = findChessboardCorners(LeftRgb, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
-                }
-
-                if(foundL) {
-                        cvtColor(LeftRgb,LeftRgb,CV_RGB2BGR);
-                        saveImage(pathImg.c_str(),LeftRgb,count);
-                        imageListL.push_back(iml);
-                        Mat cL(pointbufL);
-                        drawChessboardCorners(LeftRgb, boardSize, cL, foundL);
-                        count++;
-                }
-
-                if(count>numOfPairs) {
-                    yInfo(" Running %s Camera Calibration... \n", cameraName.c_str());
-                    monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL,cameraName.c_str());
-
-                    yInfo(" Saving Calibration Results... \n");
-                    updateIntrinsics(LeftRgb.cols,LeftRgb.rows,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),
-                                     Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),
-                                     DistL.at<double>(0,3),left?"CAMERA_CALIBRATION_LEFT":"CAMERA_CALIBRATION_RIGHT");
-                    yInfo("Calibration Results Saved in %s \n", camCalibFile.c_str());
-
-                    calibrationState.store(CalibrationState::Completed);
-                    count=1;
-                    imageListL.clear();
-                }
-            }
-            mtx.unlock();
-            ImageOf<PixelRgb>& outimL=outPortLeft.prepare();
-            outimL=*imageL;
-            outPortLeft.write();
-
-            ImageOf<PixelRgb>& outimR=outPortRight.prepare();
-            outimR=*imageL;
-            outPortRight.write();
-
-            cout.flush();
-
-        }
-   }
-
-
- }
 void stereoCalibThread::threadRelease()
 {
     imagePortInRight.close();
@@ -971,16 +930,16 @@ void stereoCalibThread::startCalib() {
 
     if(currentState == CalibrationState::Collecting || currentState == CalibrationState::Calibrating)
     {
-        yWarning() << "Cannot start a new calibration while calibration is already running";
+        yCWarning(STEREOCALIBRATIONTHREAD) << "Cannot start a new calibration while calibration is already running";
         return;
     }
 
     _calibrationResults = stereo_calib::CalibrationResult{};
     _calibrationError.clear();
-    collectionResetRequested.store(true);
     calibrationState.store(CalibrationState::Collecting);
+    collectionResetRequested.store(true);
 
-    yInfo() << "Calibration collection started";
+    yCInfo(STEREOCALIBRATIONTHREAD) << "Calibration collection started";
 }
 
 void stereoCalibThread::stopCalib() {
@@ -988,745 +947,11 @@ void stereoCalibThread::stopCalib() {
 
     if(calibrationState.load() != CalibrationState::Collecting)
     {
-        yWarning() << "Cannot stop calibration collection when it is not running";
+        yCWarning(STEREOCALIBRATIONTHREAD) << "Cannot stop calibration collection when it is not running";
         return;
     }
     calibrationState.store(CalibrationState::Idle);
     collectionResetRequested.store(true);
 
-    yInfo() << "Calibration collection stopped";
-}
-
-void stereoCalibThread::printMatrix(Mat &matrix) {
-    int row = matrix.rows;
-    int col = matrix.cols;
-        cout << endl;
-    for(int i = 0; i < matrix.rows; i++)
-    {
-        const double* Mi = matrix.ptr<double>(i);
-        for(int j = 0; j < matrix.cols; j++)
-            cout << Mi[j] << " ";
-        cout << endl;
-    }
-        cout << endl;
-}
-
-
-bool stereoCalibThread::checkTS(double TSLeft, double TSRight, double th) {
-    double diff = fabs(TSLeft-TSRight);
-    if(diff <th)
-        return true;
-    else return false;
-
-}
-
-void stereoCalibThread::preparePath(const char * imageDir, char* pathL, char* pathR, int count) {
-    char num[5];
-    sprintf(num, "%i", count);
-
-
-    strncpy(pathL,imageDir, strlen(imageDir));
-    pathL[strlen(imageDir)]='\0';
-    strcat(pathL,"left");
-    strcat(pathL,num);
-    strcat(pathL,".png");
-
-    strncpy(pathR,imageDir, strlen(imageDir));
-    pathR[strlen(imageDir)]='\0';
-    strcat(pathR,"right");
-    strcat(pathR,num);
-    strcat(pathR,".png");
-
-}
-
-
-void stereoCalibThread::saveStereoImage(const char * imageDir, const Mat& left, const Mat& right, int num) {
-    char pathL[256];
-    char pathR[256];
-    preparePath(imageDir, pathL,pathR,num);
-
-    yInfo("Saving stereo images number %d \n",num);
-
-    imwrite(pathL,left);
-    imwrite(pathR,right);
-}
-
-void stereoCalibThread::saveImage(const char * imageDir, const Mat& left, int num) {
-    char pathL[256];
-    preparePath(imageDir, pathL,pathR,num);
-
-    yInfo("Saving images number %d \n",num);
-
-    imwrite(pathL,left);
-}
-
-bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, double fy,double cx, double cy, double k1, double k2, double k3, double k4, const string& groupname){
-
-    std::vector<string> lines;
-
-    bool append = false;
-
-    ifstream in;
-    in.open(camCalibFile.c_str()); //camCalibFile.c_str());
-
-    if(in.is_open()){
-        // file exists
-        string line;
-        bool sectionFound = false;
-        bool sectionClosed = false;
-
-        // process lines
-        while(std::getline(in, line)){
-            // check if we left calibration section
-            if (sectionFound == true && line.find("[", 0) != string::npos)
-                sectionClosed = true;   // also valid if no groupname specified
-            // check if we enter calibration section
-            if (line.find(string("[") + groupname + string("]"), 0) != string::npos)
-                sectionFound = true;
-            // if no groupname specified
-            if (groupname == "")
-                sectionFound = true;
-            // if we are in calibration section (or no section/group specified)
-            if (sectionFound == true && sectionClosed == false){
-                // replace w line
-                if (line.find("w",0) ==0){
-                    stringstream ss;
-                    ss << width;
-                    line = "w " + string(ss.str());
-                }
-                // replace h line
-                if (line.find("h",0) ==0){
-                    stringstream ss;
-                    ss << height;
-                    line = "h " + string(ss.str());
-                }
-                // replace fx line
-                if (line.find("fx",0) != string::npos){
-                    stringstream ss;
-                    ss << fx;
-                    line = "fx " + string(ss.str());
-                }
-                // replace fy line
-                if (line.find("fy",0) != string::npos){
-                    stringstream ss;
-                    ss << fy;
-                    line = "fy " + string(ss.str());
-                }
-                // replace cx line
-                if (line.find("cx",0) != string::npos){
-                    stringstream ss;
-                    ss << cx;
-                    line = "cx " + string(ss.str());
-                }
-                // replace cy line
-                if (line.find("cy",0) != string::npos){
-                    stringstream ss;
-                    ss << cy;
-                    line = "cy " + string(ss.str());
-                }
-                // replace k1 line
-                if (line.find("k1",0) != string::npos){
-                    stringstream ss;
-                    ss << k1;
-                    line = "k1 " + string(ss.str());
-                }
-                // replace k2 line
-                if (line.find("k2",0) != string::npos){
-                    stringstream ss;
-                    ss << k2;
-                    line = "k2 " + string(ss.str());
-                }
-                // replace k3 line
-                if (line.find("k3",0) != string::npos){
-                    stringstream ss;
-                    ss << k3;
-                    line = "k3 " + string(ss.str());
-                }
-                // replace k4 line
-                if (line.find("k4",0) != string::npos){
-                    stringstream ss;
-                    ss << k4;
-                    line = "k4 " + string(ss.str());
-                }
-            }
-            // buffer line
-            lines.push_back(line);
-        }
-
-        in.close();
-
-        // rewrite file
-        if (!sectionFound){
-            append = true;
-            cout << "Camera calibration parameter section " + string("[") + groupname + string("]") + " not found in file " << camCalibFile << ". Adding group..." << endl;
-        }
-        else{
-            // rewrite file
-            ofstream out;
-            out.open(camCalibFile.c_str(), ios::trunc);
-            if (out.is_open()){
-                for (int i = 0; i < (int)lines.size(); i++)
-                    out << lines[i] << endl;
-                out.close();
-            }
-            else
-                return false;
-        }
-
-    }
-    else{
-        append = true;
-    }
-
-    if (append){
-        // file doesn't exist or section is appended
-        ofstream out;
-        out.open(camCalibFile.c_str(), ios::app);
-        if (out.is_open()){
-            out << string("[") + groupname + string("]") << endl;
-            out << endl;
-            out << "w  " << width << endl;
-            out << "h  " << height << endl;
-            out << "fx " << fx << endl;
-            out << "fy " << fy << endl;
-            out << "cx " << cx << endl;
-            out << "cy " << cy << endl;
-            out << "k1 " << k1 << endl;
-            out << "k2 " << k2 << endl;
-            out << "k3 " << k3 << endl;
-            out << "k4 " << k4 << endl;
-            out << endl;
-            out.close();
-        }
-        else
-            return false;
-    }
-
-    return true;
-}
-
-double stereoCalibThread::monoCalibration(const vector<string>& imageList, int boardWidth, int boardHeight, Mat &K, Mat &Dist, const char* cameraName)
-{
-    vector<vector<Point2f> > imagePoints;
-    Size boardSize, imageSize;
-    boardSize.width=boardWidth;
-    boardSize.height=boardHeight;
-    int flags=0;
-    int i;
-
-    float squareSize = this->squareSize;
-    float aspectRatio = 1.f;
-    if (squareSize <= 0.0f)
-    {
-        yWarning("Mono calibration: invalid square size %f, using 1.0", squareSize);
-        squareSize = 1.0f;
-    }
-
-    Mat view, viewGray;
-
-    for(i = 0; i<(int)imageList.size();i++)
-    {
-        view = cv::imread(imageList[i], IMREAD_COLOR);
-        if (view.empty())
-        {
-            yWarning("Mono calibration: could not read image %s", imageList[i].c_str());
-            continue;
-        }
-
-        if (imageSize == Size())
-            imageSize = view.size();
-        else if (view.size() != imageSize)
-        {
-            yWarning("Mono calibration: image %s has size %dx%d while first image had %dx%d",
-                     imageList[i].c_str(), view.cols, view.rows, imageSize.width, imageSize.height);
-            continue;
-        }
-
-        vector<Point2f> pointbuf;
-        cvtColor(view, viewGray, CV_BGR2GRAY);
-
-        bool found = false;
-        if(boardType == "CIRCLES_GRID") {
-            found = findCirclesGrid(view, boardSize, pointbuf, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
-        } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
-            found = findCirclesGrid(view, boardSize, pointbuf, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
-        } else {
-            found = findChessboardCorners(viewGray, boardSize, pointbuf,
-                                        CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
-        }
-
-        if(found)
-        {
-            if (pointbuf.size() != static_cast<size_t>(boardWidth * boardHeight))
-            {
-                yWarning("Mono calibration: skipping image %s because %zu corners were detected, expected %d",
-                         imageList[i].c_str(), pointbuf.size(), boardWidth * boardHeight);
-                continue;
-            }
-
-            Rect bbox = boundingRect(pointbuf);
-            if (bbox.width < view.cols * 0.15 || bbox.height < view.rows * 0.15)
-            {
-                yWarning("Mono calibration: skipping image %s because the detected board is too small (bbox %dx%d) with respect to the image size (%dx%d)",
-                         imageList[i].c_str(), bbox.width, bbox.height, view.cols, view.rows);
-                continue;
-            }
-
-            TermCriteria subpixCriteria = TermCriteria(TermCriteria::EPS + TermCriteria::COUNT, 30, 0.001);
-            cornerSubPix(viewGray, pointbuf, Size(7, 7), Size(-1, -1), subpixCriteria);
-            drawChessboardCorners(view, boardSize, Mat(pointbuf), found);
-            imagePoints.push_back(pointbuf);
-        }
-        else
-        {
-            yWarning("Mono calibration: no chessboard detected in %s", imageList[i].c_str());
-        }
-    }
-
-    if (imagePoints.size() < 2)
-    {
-        yError("Mono calibration: only %zu valid image(s) remain after filtering; aborting", imagePoints.size());
-        return 0.0;
-    }
-
-    std::vector<Mat> rvecs, tvecs;
-    std::vector<float> reprojErrs;
-    double totalAvgErr = 0;
-
-    std::vector<std::vector<Point3f> > objectPoints(1);
-    calcChessboardCorners(boardSize, squareSize, objectPoints[0]);
-    objectPoints.resize(imagePoints.size(), objectPoints[0]);
-
-    K = Mat::eye(3, 3, CV_64F);
-    Dist = Mat::zeros(4, 1, CV_64F);
-
-    bool usedPinholeGuess = false;
-    try
-    {
-        Mat pinholeK = Mat::eye(3, 3, CV_64F);
-        Mat pinholeDist = Mat::zeros(5, 1, CV_64F);
-        std::vector<Mat> pinholeRvecs, pinholeTvecs;
-        int pinholeFlags = cv::CALIB_FIX_K3 | cv::CALIB_FIX_K4 | cv::CALIB_FIX_TANGENT_DIST;
-        double pinholeRms = cv::calibrateCamera(objectPoints, imagePoints, imageSize, pinholeK, pinholeDist,
-                                               pinholeRvecs, pinholeTvecs, pinholeFlags);
-        yInfo("Pinhole initial guess RMS for %s camera: %g", cameraName, pinholeRms);
-        if (pinholeK.rows == 3 && pinholeK.cols == 3)
-        {
-            K = pinholeK.clone();
-            usedPinholeGuess = true;
-        }
-    }
-    catch (const cv::Exception& e)
-    {
-        yWarning("Pinhole initial guess failed for %s camera: %s", cameraName, e.what());
-    }
-
-    if (!usedPinholeGuess)
-    {
-        double focal = std::max(imageSize.width, imageSize.height) * 0.8;
-        K = Mat::eye(3, 3, CV_64F);
-        K.at<double>(0,0) = focal;
-        K.at<double>(1,1) = focal;
-        K.at<double>(0,2) = imageSize.width * 0.5;
-        K.at<double>(1,2) = imageSize.height * 0.5;
-    }
-    if( flags & CV_CALIB_FIX_ASPECT_RATIO )
-        K.at<double>(0,0) = aspectRatio;
-
-    try
-    {
-        int calFlags = fisheye::CALIB_USE_INTRINSIC_GUESS | fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW;
-        double rms = fisheye::calibrate(objectPoints, imagePoints, imageSize, K, Dist, rvecs, tvecs,
-                        calFlags,
-                        TermCriteria(TermCriteria::EPS+TermCriteria::MAX_ITER, 100, 1e-5));
-
-        yInfo("Mono calibration RMS for %s camera: %g", cameraName, rms);
-        yInfo("Mono calibration intrinsics for %s camera: fx=%g fy=%g cx=%g cy=%g",
-              cameraName, K.at<double>(0,0), K.at<double>(1,1), K.at<double>(0,2), K.at<double>(1,2));
-        yInfo("Mono calibration distortion for %s camera: k1=%g k2=%g k3=%g k4=%g",
-              cameraName, Dist.at<double>(0,0), Dist.at<double>(1,0), Dist.at<double>(2,0), Dist.at<double>(3,0));
-        cout.flush();
-        return rms;
-    }
-    catch (const cv::Exception& e)
-    {
-        yError("OpenCV mono calibration raised an exception: %s", e.what());
-        yError("Mono calibration failed with %zu valid images", imagePoints.size());
-        throw;
-    }
-}
-
-
-namespace {
-void logStereoCalibrationDebugInfo(const std::vector<std::vector<cv::Point2f> >& imagePointsLeft,
-                                  const std::vector<std::vector<cv::Point2f> >& imagePointsRight,
-                                  const std::vector<std::vector<cv::Point3f> >& objectPoints,
-                                  const std::vector<std::string>& imagelist,
-                                  const cv::Size& imageSize,
-                                  int boardWidth,
-                                  int boardHeight)
-{
-    yInfo("Stereo calibration debug: %zu image pairs, board %dx%d, image size %dx%d",
-          imagePointsLeft.size(), boardWidth, boardHeight, imageSize.width, imageSize.height);
-
-    for (size_t i = 0; i < imagePointsLeft.size(); ++i)
-    {
-        yInfo("pair[%zu]: left corners=%zu right corners=%zu object points=%zu", i,
-              imagePointsLeft[i].size(), imagePointsRight[i].size(), objectPoints[i].size());
-        if (imagePointsLeft[i].size() != imagePointsRight[i].size())
-        {
-            yError("pair[%zu] has mismatched corner counts: left=%zu right=%zu", i,
-                   imagePointsLeft[i].size(), imagePointsRight[i].size());
-        }
-        if (imagePointsLeft[i].size() != objectPoints[i].size())
-        {
-            yError("pair[%zu] has mismatched corners/object-points: corners=%zu object=%zu", i,
-                   imagePointsLeft[i].size(), objectPoints[i].size());
-        }
-        if (i < imagelist.size() / 2)
-        {
-            yInfo("pair[%zu] images: %s / %s", i, imagelist[2 * i].c_str(), imagelist[2 * i + 1].c_str());
-        }
-    }
-}
-}
-
-void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int boardWidth, int boardHeight,float sqsize)
-{
-    Size boardSize;
-    boardSize.width=boardWidth;
-    boardSize.height=boardHeight;
-    if( imagelist.size() % 2 != 0 )
-    {
-        cout << "Error: the image list contains odd (non-even) number of elements\n";
-        return;
-    }
-
-    const int maxScale = 2;
-    // ARRAY AND VECTOR STORAGE:
-
-    std::vector<std::vector<Point2f> > imagePoints[2];
-    Size imageSize;
-
-    int i, j, k, nimages = (int)imagelist.size()/2;
-
-    imagePoints[0].resize(nimages);
-    imagePoints[1].resize(nimages);
-    std::vector<string> goodImageList;
-    bool differentSizes = false;
-
-    for( i = j = 0; i < nimages; i++ )
-    {
-        for( k = 0; k < 2; k++ )
-        {
-            const string& filename = imagelist[i*2+k];
-            Mat img = cv::imread(filename, IMREAD_GRAYSCALE);
-            if(img.empty())
-                break;
-            if( imageSize == Size() )
-                imageSize = img.size();
-            else if( img.size() != imageSize )
-            {
-                yWarning() <<"The image " << filename << " has the size different from the first image size.\n";
-                differentSizes = true;
-            }
-            bool found = false;
-            std::vector<Point2f>& corners = imagePoints[k][j];
-            for( int scale = 1; scale <= maxScale; scale++ )
-            {
-                Mat timg;
-                if( scale == 1 )
-                    timg = img;
-                else
-                    resize(img, timg, Size(), scale, scale);
-
-                if(boardType == "CIRCLES_GRID") {
-                    found = findCirclesGrid(timg, boardSize, corners, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
-                } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
-                    found = findCirclesGrid(timg, boardSize, corners, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
-                } else {
-                    found = findChessboardCorners(timg, boardSize, corners,
-                                                CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
-                }
-
-                if( found )
-                {
-                    if( scale > 1 )
-                    {
-                        Mat cornersMat(corners);
-                        cornersMat *= 1./scale;
-                    }
-                    break;
-                }
-            }
-            if( !found )
-                break;
-        }
-        if( k == 2 )
-        {
-            goodImageList.push_back(imagelist[i*2]);
-            goodImageList.push_back(imagelist[i*2+1]);
-            j++;
-        }
-    }
-    yInfo("%i pairs have been successfully detected.\n",j);
-    nimages = j;
-    if( nimages < 2 )
-    {
-        yError("Error: too few pairs detected \n");
-        return;
-    }
-
-    imagePoints[0].resize(nimages);
-    imagePoints[1].resize(nimages);
-
-    std::vector<std::vector<Point3f> > objectPoints(1);
-    calcChessboardCorners(boardSize, squareSize, objectPoints[0]);
-    objectPoints.resize(nimages, objectPoints[0]);
-
-    yInfo("Running stereo calibration ...\n");
-
-    //logStereoCalibrationDebugInfo(imagePoints[0], imagePoints[1], objectPoints, imagelist, imageSize, boardWidth, boardHeight);
-
-    Mat cameraMatrix[2], distCoeffs[2];
-    Mat E, F;
-    int flags = fisheye::CALIB_FIX_INTRINSIC | fisheye::CALIB_RECOMPUTE_EXTRINSIC | fisheye::CALIB_FIX_SKEW;
-    TermCriteria criteria = TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5);
-
-    yInfo("Stereo calibration intrinsics: left empty=%d right empty=%d", this->Kleft.empty(), this->Kright.empty());
-    yInfo("Stereo calibration distortion: left empty=%d right empty=%d", this->DistL.empty(), this->DistR.empty());
-
-    if (this->Kleft.empty() || this->Kright.empty())
-    {
-        if (differentSizes){
-            yError("Images have different sizes. Please make sure to compute intrinsic parameters before running stereo calibration. Quitting...");
-            exit (-1);
-        }
-        yError("Stereo calibration: intrinsics are empty; cannot proceed with fixed-intrinsic stereo solve.");
-        return;
-    }
-
-    this->R = Mat::eye(3, 3, CV_64F);
-    this->T = Mat::zeros(3, 1, CV_64F);
-    this->T.at<double>(0, 0) = 0.06;
-    yInfo("Stereo calibration initial guess: R=identity, T=(%.4f, %.4f, %.4f)", this->T.at<double>(0,0), this->T.at<double>(1,0), this->T.at<double>(2,0));
-
-    // store image size for later saving of rectification matrices
-    this->lastImageSize = imageSize;
-
-    try
-    {
-        yInfo("Using precomputed intrinsic parameters with fixed intrinsics and a baseline-based initial translation");
-        double rms = fisheye::stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
-                this->Kleft, this->DistL,
-                this->Kright, this->DistR,
-                imageSize, this->R, this->T,
-                flags, criteria);
-        yInfo("done with RMS error= %f\n",rms);
-    }
-    catch (const cv::Exception& e)
-    {
-        yError("OpenCV stereo calibration raised an exception: %s", e.what());
-        yError("Stereo calibration failed with %zu left pairs and %zu right pairs", imagePoints[0].size(), imagePoints[1].size());
-        throw;
-    }
-
-    // Compute the fundamental matrix for the undistorted stereo pair.
-    cameraMatrix[0] = this->Kleft;
-    cameraMatrix[1] = this->Kright;
-    distCoeffs[0] = this->DistL;
-    distCoeffs[1] = this->DistR;
-
-    Mat R, T;
-    T = this->T;
-    R = this->R;
-    Mat Tx = Mat::zeros(3, 3, CV_64F);
-    Tx.at<double>(0, 1) = -T.at<double>(2, 0);
-    Tx.at<double>(0, 2) =  T.at<double>(1, 0);
-    Tx.at<double>(1, 0) =  T.at<double>(2, 0);
-    Tx.at<double>(1, 2) = -T.at<double>(0, 0);
-    Tx.at<double>(2, 0) = -T.at<double>(1, 0);
-    Tx.at<double>(2, 1) =  T.at<double>(0, 0);
-
-    F = cameraMatrix[1].inv().t() * Tx * R * cameraMatrix[0].inv();
-    yInfo("Computed fundamental matrix from stereo extrinsics.");
-
-    double err = 0;
-    int npoints = 0;
-    std::vector<Vec3f> lines[2];
-    for( i = 0; i < nimages; i++ )
-    {
-        int npt = (int)imagePoints[0][i].size();
-        Mat imgpt[2];
-        for( k = 0; k < 2; k++ )
-        {
-            imgpt[k] = Mat(imagePoints[k][i]);
-            fisheye::undistortPoints(imgpt[k], imgpt[k], cameraMatrix[k], distCoeffs[k], Mat(), cameraMatrix[k]);
-            yDebug() << "Calculated undistorted points for image " << i << " camera " << k;
-            computeCorrespondEpilines(imgpt[k], k+1, F, lines[k]);
-        }
-        for( j = 0; j < npt; j++ )
-        {
-            double errij = fabs(imagePoints[0][i][j].x*lines[1][j][0] +
-                                imagePoints[0][i][j].y*lines[1][j][1] + lines[1][j][2]) +
-                           fabs(imagePoints[1][i][j].x*lines[0][j][0] +
-                                imagePoints[1][i][j].y*lines[0][j][1] + lines[0][j][2]);
-            err += errij;
-        }
-        npoints += npt;
-    }
-    yInfo("average reprojection err = %f\n",err/npoints);
-    cout.flush();
-}
-
-
-void stereoCalibThread::saveCalibration(const string& extrinsicFilePath, const string& intrinsicFilePath){
-
-    if( Kleft.empty() || Kright.empty() || DistL.empty() || DistR.empty() || R.empty() || T.empty()) {
-            cout << "Error: cameras are not calibrated! Run the calibration or set intrinsic and extrinsic parameters \n";
-            return;
-    }
-
-    FileStorage fs(intrinsicFilePath+".yml", cv::FileStorage::Mode::WRITE);
-    if( fs.isOpened() )
-    {
-        fs << "M1" << Kleft << "D1" << DistL << "M2" << Kright << "D2" << DistR;
-        fs.release();
-    }
-    else
-        cout << "Error: can not save the intrinsic parameters\n";
-
-    fs.open(extrinsicFilePath+".yml", cv::FileStorage::Mode::WRITE);
-    if( fs.isOpened() )
-    {
-        // compute rectification and projection matrices for fisheye model
-        try {
-            Mat R1, R2, P1, P2, Qr;
-            int flags = 0; // consider fisheye::CALIB_ZERO_DISPARITY if desired
-            fisheye::stereoRectify(Kleft, DistL, Kright, DistR, this->lastImageSize, R, T, R1, R2, P1, P2, Qr, flags, Size());
-            fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Qr;
-        }
-        catch (const cv::Exception &e) {
-            yError("stereoRectify failed: %s", e.what());
-            fs << "R" << R << "T" << T << "Q" << Q;
-        }
-        fs.release();
-    }
-    else
-        cout << "Error: can not save the intrinsic parameters\n";
-
-}
-
-void stereoCalibThread::calcChessboardCorners(Size boardSize, float squareSize, vector<Point3f>& corners)
-{
-    corners.resize(0);
-
-    if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
-        for( int i = 0; i < boardSize.height; i++ )
-            for( int j = 0; j < boardSize.width; j++ )
-                corners.push_back(Point3f(float((2*j + i % 2)*squareSize), float(i*squareSize), 0));
-    } else {
-        for( int i = 0; i < boardSize.height; i++ )
-            for( int j = 0; j < boardSize.width; j++ )
-                corners.push_back(Point3f(float(j*squareSize),
-                                          float(i*squareSize), 0));
-    }
-}
-
-bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupname)
-{
-    std::vector<string> lines;
-    bool append = false;
-
-    ifstream in;
-    in.open(camCalibFile.c_str()); //camCalibFile.c_str());
-
-    if(in.is_open()){
-        // file exists
-        string line;
-        bool sectionFound = false;
-        bool sectionClosed = false;
-
-        // process lines
-        while(std::getline(in, line)){
-            // check if we left calibration section
-            if (sectionFound == true && line.find("[", 0) != string::npos)
-                sectionClosed = true;   // also valid if no groupname specified
-            // check if we enter calibration section
-            if (line.find(string("[") + groupname + string("]"), 0) != string::npos)
-                sectionFound = true;
-            // if no groupname specified
-            if (groupname == "")
-                sectionFound = true;
-            // if we are in calibration section (or no section/group specified)
-            if (sectionFound == true && sectionClosed == false){
-                // replace w line
-                if (line.find("HN",0) != string::npos){
-                    stringstream ss;
-                    ss << " (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << Tr.at<double>(0,0) << " "
-                               << Rot.at<double>(1,0) << " " << Rot.at<double>(1,1) << " " << Rot.at<double>(1,2) << " " << Tr.at<double>(1,0) << " "
-                               << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
-                               << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
-                    line = "HN" + string(ss.str());
-                }
-
-                if (!standalone) {
-                    if (line.find("QL", 0) != string::npos) {
-                        line = "QL (" + string(qL.toString().c_str()) + ")";
-                    }
-                    if (line.find("QR", 0) != string::npos) {
-                        line = "QR (" + string(qR.toString().c_str()) + ")";
-                    }
-                }
-            }
-            // buffer line
-            lines.push_back(line);
-        }
-
-        in.close();
-
-        // rewrite file
-        if (!sectionFound){
-            append = true;
-            cout << "Camera calibration parameter section " + string("[") + groupname + string("]") + " not found in file " << camCalibFile << ". Adding group..." << endl;
-        }
-        else{
-            // rewrite file
-            ofstream out;
-            out.open(camCalibFile.c_str(), ios::trunc);
-            if (out.is_open()){
-                for (int i = 0; i < (int)lines.size(); i++)
-                    out << lines[i] << endl;
-                out.close();
-            }
-            else
-                return false;
-        }
-
-    }
-    else{
-        append = true;
-    }
-
-    if (append){
-        // file doesn't exist or section is appended
-        ofstream out;
-        out.open(camCalibFile.c_str(), ios::app);
-        if (out.is_open()){
-            out << endl;
-            out << string("[") + groupname + string("]") << endl;
-            out << "HN (" << Rot.at<double>(0,0) << " " << Rot.at<double>(0,1) << " " << Rot.at<double>(0,2) << " " << Tr.at<double>(0,0) << " "
-                          << Rot.at<double>(1,0) << " " << Rot.at<double>(1,1) << " " << Rot.at<double>(1,2) << " " << Tr.at<double>(1,0) << " "
-                          << Rot.at<double>(2,0) << " " << Rot.at<double>(2,1) << " " << Rot.at<double>(2,2) << " " << Tr.at<double>(2,0) << " "
-                          << 0.0                 << " " << 0.0                 << " " << 0.0                 << " " << 1.0                << ")";
-            out << endl;
-            out << "QL (" << qL.toString().c_str() << ")" << endl;
-            out << "QR (" << qR.toString().c_str() << ")" << endl;
-            out.close();
-        }
-        else
-            return false;
-    }
-
-    return true;
+    yCInfo(STEREOCALIBRATIONTHREAD) << "Calibration collection stopped";
 }

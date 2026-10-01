@@ -17,16 +17,9 @@ class stereoCalibModule:public RFModule
     string moduleName;
     string inputLeftPortName;
     string inputRightPortName;
-    string outputPortNameRight;
-    string outputPortNameLeft;  
     string handlerPortName;
     string outputCalibPath;
-
-    int thresholdValue;
-
-
-
-    BufferedPort<ImageOf<PixelBgr> > imageOut;
+    
     Port handlerPort;
 
 

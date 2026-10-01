@@ -9,6 +9,7 @@ find_package(YARP COMPONENTS os sig dev math cv)
 set(source_files
   src/CalibrationWriter.cpp
   src/FisheyeCalibrationEngine.cpp
+  src/PinholeCalibrationEngine.cpp
   src/main.cpp
   src/stereoCalibModule.cpp
   src/stereoCalibThread.cpp
@@ -18,6 +19,7 @@ set(header_files
   include/CalibrationTypes.h
   include/CalibrationWriter.h
   include/FisheyeCalibrationEngine.h
+  include/PinholeCalibrationEngine.h
   include/stereoCalibModule.h
   include/stereoCalibThread.h
 )

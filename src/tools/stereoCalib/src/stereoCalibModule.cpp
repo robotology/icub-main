@@ -122,21 +122,6 @@ bool stereoCalibModule::respond(const Bottle& command, Bottle& reply)
                 reply.addString("baselineNorm");
                 reply.addFloat64(status.baselineNorm);
             }
-            if(status.medianVerticalRectificationErrorPx >= 0.0)
-            {
-                reply.addString("medianVerticalRectificationErrorPx");
-                reply.addFloat64(status.medianVerticalRectificationErrorPx);
-            }
-            if(status.p95VerticalRectificationErrorPx >= 0.0)
-            {
-                reply.addString("p95VerticalRectificationErrorPx");
-                reply.addFloat64(status.p95VerticalRectificationErrorPx);
-            }
-            if(status.maxVerticalRectificationErrorPx >= 0.0)
-            {
-                reply.addString("maxVerticalRectificationErrorPx");
-                reply.addFloat64(status.maxVerticalRectificationErrorPx);
-            }
         }
 
         reply.addString("lastCalibrationError");

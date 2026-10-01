@@ -11,11 +11,6 @@ namespace
 constexpr std::size_t minimumObservations = 30;
 constexpr std::size_t minimumPointsPerObservation = 12;
 
-bool isFinite(const cv::Mat& matrix)
-{
-    return !matrix.empty() && cv::checkRange(matrix, true, nullptr);
-}
-
 bool isFinite(const cv::Point2f& point)
 {
     return std::isfinite(point.x) && std::isfinite(point.y);
@@ -24,55 +19,6 @@ bool isFinite(const cv::Point2f& point)
 bool isFinite(const cv::Point3f& point)
 {
     return std::isfinite(point.x) && std::isfinite(point.y) && std::isfinite(point.z);
-}
-
-bool isValidCameraResult(const stereo_calib::CameraCalibrationResult& result)
-{
-    return result.imageSize.width > 0 && result.imageSize.height > 0 &&
-           result.K.rows == 3 && result.K.cols == 3 && result.K.type() == CV_64F &&
-           result.D.total() == 4 && result.D.type() == CV_64F &&
-           std::isfinite(result.rms) && result.rms >= 0.0 &&
-           result.K.at<double>(0, 0) > 0.0 && result.K.at<double>(1, 1) > 0.0 &&
-           isFinite(result.K) && isFinite(result.D) &&
-           result.rotationVectors.size() == result.translationVectors.size() &&
-           result.rotationVectors.size() == result.perViewRms.size() &&
-           std::all_of(result.perViewRms.begin(), result.perViewRms.end(),
-                       [](double value) { return std::isfinite(value) && value >= 0.0; });
-}
-
-bool isValidStereoResult(const stereo_calib::StereoCalibrationResult& result)
-{
-    if (result.R.rows != 3 || result.R.cols != 3 || result.R.type() != CV_64F ||
-        result.T.total() != 3 || result.T.type() != CV_64F ||
-        !std::isfinite(result.rms) || result.rms < 0.0 ||
-        !isFinite(result.R) || !isFinite(result.T))
-    {
-        return false;
-    }
-
-    return std::abs(cv::determinant(result.R) - 1.0) < 1e-3 && cv::norm(result.T) > 1e-9;
-}
-
-bool isValidRectificationResult(const stereo_calib::RectificationResult& result)
-{
-    return result.R1.rows == 3 && result.R1.cols == 3 && result.R1.type() == CV_64F &&
-           result.R2.rows == 3 && result.R2.cols == 3 && result.R2.type() == CV_64F &&
-           result.P1.rows == 3 && result.P1.cols == 4 && result.P1.type() == CV_64F &&
-           result.P2.rows == 3 && result.P2.cols == 4 && result.P2.type() == CV_64F &&
-           result.Q.rows == 4 && result.Q.cols == 4 && result.Q.type() == CV_64F &&
-           isFinite(result.R1) && isFinite(result.R2) && isFinite(result.P1) &&
-           isFinite(result.P2) && isFinite(result.Q);
-}
-
-bool isValidQuality(const stereo_calib::CalibrationQualityMetrics& quality)
-{
-    return quality.acceptedObservations > 0 &&
-           std::isfinite(quality.baseline) && quality.baseline > 0.0 &&
-           std::isfinite(quality.meanVerticalRectificationErrorPx) && quality.meanVerticalRectificationErrorPx >= 0.0 &&
-           std::isfinite(quality.medianVerticalRectificationErrorPx) && quality.medianVerticalRectificationErrorPx >= 0.0 &&
-           std::isfinite(quality.rmsVerticalRectificationErrorPx) && quality.rmsVerticalRectificationErrorPx >= 0.0 &&
-           std::isfinite(quality.p95VerticalRectificationErrorPx) && quality.p95VerticalRectificationErrorPx >= 0.0 &&
-           std::isfinite(quality.maxVerticalRectificationErrorPx) && quality.maxVerticalRectificationErrorPx >= 0.0;
 }
 
 } // namespace
@@ -90,7 +36,10 @@ bool FisheyeCalibrationEngine::calibrate(
     errorMessage.clear();
 
     CalibrationResult calculated;
-    calculated.mode = options.calibrationMode;
+    calculated.model = CameraModel::Fisheye;
+    calculated.leftCamera.model = CameraModel::Fisheye;
+    calculated.rightCamera.model = CameraModel::Fisheye;
+    calculated.mode = options.common.calibrationMode;
 
     try
     {
@@ -100,12 +49,12 @@ bool FisheyeCalibrationEngine::calibrate(
             return false;
         }
 
-        if (!validateObservations(observations, options.imageSize, errorMessage))
+        if (!validateObservations(observations, options.common.imageSize, errorMessage))
         {
             return false;
         }
 
-        switch (options.calibrationMode)
+        switch (options.common.calibrationMode)
         {
         case CalibrationMode::MonocularLeft:
             if (!calibrateMonocular(observations, CameraSide::Left, options,
@@ -139,12 +88,7 @@ bool FisheyeCalibrationEngine::calibrate(
                 !calibrateMonocular(observations, CameraSide::Right, options,
                                     calculated.rightCamera, errorMessage) ||
                 !calibrateStereo(observations, options, calculated.leftCamera,
-                                 calculated.rightCamera, calculated.stereo, errorMessage) ||
-                !computeRectification(options, calculated.leftCamera, calculated.rightCamera,
-                                      calculated.stereo, calculated.rectification, errorMessage) ||
-                !evaluateRectification(observations, calculated.leftCamera, calculated.rightCamera,
-                                       calculated.stereo, calculated.rectification,
-                                       calculated.quality, errorMessage))
+                                 calculated.rightCamera, calculated.stereo, errorMessage))
             {
                 return false;
             }
@@ -155,8 +99,7 @@ bool FisheyeCalibrationEngine::calibrate(
             return false;
         }
 
-        if (!calculated.isValid() ||
-            (calculated.mode == CalibrationMode::StereoFull && !isValidQuality(calculated.quality)))
+        if (!calculated.isValid())
         {
             errorMessage = "Calibration produced an invalid result.";
             return false;
@@ -287,19 +230,20 @@ bool FisheyeCalibrationEngine::calibrateMonocular(
     cv::Mat intrinsic = cv::Mat::eye(3, 3, CV_64F);
     intrinsic.at<double>(0, 0) = options.cameraFocalLengthGuess;
     intrinsic.at<double>(1, 1) = options.cameraFocalLengthGuess;
-    intrinsic.at<double>(0, 2) = options.imageSize.width * 0.5;
-    intrinsic.at<double>(1, 2) = options.imageSize.height * 0.5;
+    intrinsic.at<double>(0, 2) = options.common.imageSize.width * 0.5;
+    intrinsic.at<double>(1, 2) = options.common.imageSize.height * 0.5;
     cv::Mat distortion = cv::Mat::zeros(4, 1, CV_64F);
     std::vector<cv::Mat> rotationVectors;
     std::vector<cv::Mat> translationVectors;
 
-    const double rms = cv::fisheye::calibrate(objectPoints, imagePoints, options.imageSize,
+    const double rms = cv::fisheye::calibrate(objectPoints, imagePoints, options.common.imageSize,
                                                 intrinsic, distortion, rotationVectors,
                                                 translationVectors, options.monocularFlags,
                                                 options.criteria);
-
+    
     result = CameraCalibrationResult{};
-    result.imageSize = options.imageSize;
+    result.model = CameraModel::Fisheye;
+    result.imageSize = options.common.imageSize;
     result.K = intrinsic.clone();
     result.D = distortion.reshape(1, 4).clone();
     result.rotationVectors = std::move(rotationVectors);
@@ -330,9 +274,15 @@ bool FisheyeCalibrationEngine::calibrateMonocular(
         result.perViewRms.push_back(viewRms);
     }
 
-    if (!isValidCameraResult(result))
+    if(!result.isValid())
     {
         errorMessage = "Monocular calibration produced invalid camera parameters.";
+        return false;
+    }
+
+    if(result.rotationVectors.size() != observations.size())
+    {
+        errorMessage = "Monocular calibration did not produce one pose per observation.";
         return false;
     }
     return true;
@@ -361,7 +311,7 @@ bool FisheyeCalibrationEngine::calibrateStereo(
     cv::Mat rotation;
     cv::Mat translation;
     const double rms = cv::fisheye::stereoCalibrate(objectPoints, leftImagePoints, rightImagePoints,
-                                                      leftK, leftD, rightK, rightD, options.imageSize,
+                                                      leftK, leftD, rightK, rightD, options.common.imageSize,
                                                       rotation, translation, options.stereoFlags,
                                                       options.criteria);
 
@@ -369,115 +319,9 @@ bool FisheyeCalibrationEngine::calibrateStereo(
     result.R = rotation.clone();
     result.T = translation.reshape(1, 3).clone();
     result.rms = rms;
-    if (!isValidStereoResult(result))
+    if (!result.isValid())
     {
         errorMessage = "Stereo calibration produced invalid extrinsic parameters.";
-        return false;
-    }
-    return true;
-}
-
-bool FisheyeCalibrationEngine::computeRectification(
-    const FisheyeCalibrationOptions& options,
-    const CameraCalibrationResult& leftCamera,
-    const CameraCalibrationResult& rightCamera,
-    const StereoCalibrationResult& stereo,
-    RectificationResult& result,
-    std::string& errorMessage) const
-{
-    result = RectificationResult{};
-    cv::fisheye::stereoRectify(leftCamera.K, leftCamera.D, rightCamera.K, rightCamera.D,
-                               options.imageSize, stereo.R, stereo.T, result.R1, result.R2,
-                               result.P1, result.P2, result.Q,
-                               options.zeroDisparity ? cv::CALIB_ZERO_DISPARITY : 0,
-                               options.imageSize, options.rectificationBalance,
-                               options.rectificationFovScale);
-    result.outputImageSize = options.imageSize;
-    result.balance = options.rectificationBalance;
-    result.fovScale = options.rectificationFovScale;
-    result.zeroDisparity = options.zeroDisparity;
-
-    if (!isValidRectificationResult(result))
-    {
-        errorMessage = "Stereo rectification produced invalid matrices.";
-        return false;
-    }
-    return true;
-}
-
-bool FisheyeCalibrationEngine::evaluateRectification(
-    const std::vector<StereoObservation>& observations,
-    const CameraCalibrationResult& leftCamera,
-    const CameraCalibrationResult& rightCamera,
-    const StereoCalibrationResult& stereo,
-    const RectificationResult& rectification,
-    CalibrationQualityMetrics& quality,
-    std::string& errorMessage) const
-{
-    std::vector<double> verticalErrors;
-    verticalErrors.reserve(observations.size() * observations.front().objectPoints.size());
-    double timestampDeltaSumMs = 0.0;
-
-    for (const StereoObservation& observation : observations)
-    {
-        std::vector<cv::Point2f> rectifiedLeftPoints;
-        std::vector<cv::Point2f> rectifiedRightPoints;
-        cv::fisheye::undistortPoints(observation.leftImagePoints, rectifiedLeftPoints,
-                                     leftCamera.K, leftCamera.D, rectification.R1, rectification.P1);
-        cv::fisheye::undistortPoints(observation.rightImagePoints, rectifiedRightPoints,
-                                     rightCamera.K, rightCamera.D, rectification.R2, rectification.P2);
-        if (rectifiedLeftPoints.size() != rectifiedRightPoints.size() || rectifiedLeftPoints.empty())
-        {
-            errorMessage = "Rectification returned inconsistent point sets.";
-            return false;
-        }
-
-        for (std::size_t pointIndex = 0; pointIndex < rectifiedLeftPoints.size(); ++pointIndex)
-        {
-            const double error = std::abs(static_cast<double>(rectifiedLeftPoints[pointIndex].y) -
-                                          static_cast<double>(rectifiedRightPoints[pointIndex].y));
-            if (!std::isfinite(error))
-            {
-                errorMessage = "Rectification produced a non-finite vertical error.";
-                return false;
-            }
-            verticalErrors.push_back(error);
-        }
-
-        timestampDeltaSumMs += observation.timestampDeltaSeconds * 1000.0;
-        quality.maxTimestampDeltaMs = std::max(quality.maxTimestampDeltaMs,
-                                               observation.timestampDeltaSeconds * 1000.0);
-    }
-
-    if (verticalErrors.empty())
-    {
-        errorMessage = "No rectified correspondences are available for quality evaluation.";
-        return false;
-    }
-
-    const double sum = std::accumulate(verticalErrors.begin(), verticalErrors.end(), 0.0);
-    const double sumSquares = std::inner_product(verticalErrors.begin(), verticalErrors.end(),
-                                                  verticalErrors.begin(), 0.0);
-    std::sort(verticalErrors.begin(), verticalErrors.end());
-
-    quality.synchronizedPairs = 0;
-    quality.acceptedObservations = observations.size();
-    quality.rejectedDetections = 0;
-    quality.baseline = cv::norm(stereo.T);
-    quality.meanTimestampDeltaMs = timestampDeltaSumMs / static_cast<double>(observations.size());
-    quality.meanVerticalRectificationErrorPx = sum / static_cast<double>(verticalErrors.size());
-    quality.rmsVerticalRectificationErrorPx = std::sqrt(sumSquares / static_cast<double>(verticalErrors.size()));
-    const std::size_t middle = verticalErrors.size() / 2;
-    quality.medianVerticalRectificationErrorPx = verticalErrors.size() % 2 == 0
-        ? 0.5 * (verticalErrors[middle - 1] + verticalErrors[middle])
-        : verticalErrors[middle];
-    const std::size_t p95Index = static_cast<std::size_t>(std::ceil(0.95 * verticalErrors.size())) - 1;
-    quality.p95VerticalRectificationErrorPx = verticalErrors[p95Index];
-    quality.maxVerticalRectificationErrorPx = verticalErrors.back();
-
-    if (!isValidQuality(quality))
-    {
-        errorMessage = "Rectification quality metrics are invalid.";
         return false;
     }
     return true;

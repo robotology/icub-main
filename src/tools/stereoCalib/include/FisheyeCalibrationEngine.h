@@ -39,23 +39,6 @@ private:
         StereoCalibrationResult& result,
         std::string& errorMessage) const;
 
-    bool computeRectification(
-        const FisheyeCalibrationOptions& options,
-        const CameraCalibrationResult& leftCamera,
-        const CameraCalibrationResult& rightCamera,
-        const StereoCalibrationResult& stereo,
-        RectificationResult& result,
-        std::string& errorMessage) const;
-
-    bool evaluateRectification(
-        const std::vector<StereoObservation>& observations,
-        const CameraCalibrationResult& leftCamera,
-        const CameraCalibrationResult& rightCamera,
-        const StereoCalibrationResult& stereo,
-        const RectificationResult& rectification,
-        CalibrationQualityMetrics& quality,
-        std::string& errorMessage) const;
-
     bool extractCalibrationPoints(
         const std::vector<StereoObservation>& observations,
         std::vector<std::vector<cv::Point3f>>& objectPoints,
