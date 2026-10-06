@@ -177,6 +177,7 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 bool EthResource::close()
 {
     yTrace();
+    posServiceConfiguration.clearOnStop(eomn_serv_category_all);
     return false;
 }
 
@@ -918,7 +919,20 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
 
 bool EthResource::serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout)
 {
-    return(serviceCommand(eomn_serv_operation_verifyactivate, category, param, timeout, 3));
+    eOmn_serv_parameter_t prepared {};
+    if(!posServiceConfiguration.prepare(category, param, prepared))
+    {
+        yError() << "EthResource::serviceVerifyActivate(): MC without PROPERTIES.POS requires"
+                 << "standalone POS to be activated first on BOARD" << getProperties().boardnameString;
+        return false;
+    }
+    const auto* request = param ? &prepared : nullptr;
+    const bool result = serviceCommand(eomn_serv_operation_verifyactivate, category, request, timeout, 3);
+    if(result)
+    {
+        posServiceConfiguration.rememberActivated(category, request);
+    }
+    return result;
 }
 
 
@@ -955,6 +969,11 @@ bool EthResource::serviceStart(eOmn_serv_category_t category, double timeout)
 bool EthResource::serviceStop(eOmn_serv_category_t category, double timeout)
 {
     bool ret = serviceCommand(eomn_serv_operation_stop, category, NULL, timeout, 3);
+
+    if(ret)
+    {
+        posServiceConfiguration.clearOnStop(category);
+    }
 
     if(ret && (category == eomn_serv_category_all))
     {
