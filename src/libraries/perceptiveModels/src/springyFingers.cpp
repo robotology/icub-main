@@ -329,7 +329,14 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     IEncoderArrays *iencarray; drvMAIS.view(iencarray);
 
     propGen.clear();
-    propGen.put("num_arrays",(int)iencarray->getNrOfEncoderArrays());
+    size_t nrOfArrays;
+    if (!iencarray->getNrOfEncoderArrays(nrOfArrays))
+    {
+        printMessage(log::error,1,"unable to get number of encoder arrays");
+        close();
+        return false;
+    }
+    propGen.put("num_arrays",(int)nrOfArrays);
     propGen.put("index_array",0);
 
     Property thumb_mp=propGen;   thumb_mp.put(  "name","Out_0");   thumb_mp.put("index_element","1");
