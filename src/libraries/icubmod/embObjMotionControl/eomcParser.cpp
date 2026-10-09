@@ -59,9 +59,10 @@ static const std::map<std::string, CtrlOutTypeInfo> ctrlOutTypeConfigMap =
 {
     {std::string(eomc::ParamValues::outputType::n_a),      {eomc_ctrl_out_type_n_a,  "Not applicable / Not set"}},
     {std::string(eomc::ParamValues::outputType::pwm),      {eomc_ctrl_out_type_pwm,  "PWM (Pulse Width Modulation)"}},
-    {std::string(eomc::ParamValues::outputType::velocity), {eomc_ctrl_out_type_vel,  "Velocity control output"}},
+    {std::string(eomc::ParamValues::outputType::velocity), {eomc_ctrl_out_type_vel_pwm,  "Velocity control output"}},
     {std::string(eomc::ParamValues::outputType::current),  {eomc_ctrl_out_type_cur,  "Current control output"}}
 };
+#warning VALE
 
 // Helper function to get control output type from configuration string
 bool getCtrlOutTypeFromConfig(const std::string &configName, eOmc_ctrl_out_type_t &outType, std::string &description)
@@ -359,7 +360,10 @@ bool Parser::parsePidUnitsType(yarp::os::Bottle& pidsGroup, eOmc_ctrl_out_type_t
         switch (outType)
         {
             case eomc_ctrl_out_type_pwm: out_pidunits = yarp::dev::PidOutputUnitsEnum::DUTYCYCLE_PWM_PERCENT; break;
-            case eomc_ctrl_out_type_vel: out_pidunits = yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC;       break;
+            case eomc_ctrl_out_type_vel_pwm: 
+            case eomc_ctrl_out_type_vel_cur:
+                out_pidunits = yarp::dev::PidOutputUnitsEnum::VELOCITY_METRIC;       
+                break;
             case eomc_ctrl_out_type_cur: out_pidunits = yarp::dev::PidOutputUnitsEnum::CURRENT_METRIC;        break;
             default:
                 yError() << "embObjMC BOARD " << _boardname
@@ -568,9 +572,11 @@ bool Parser::parseSelectedPositionControl(yarp::os::Searchable &config, std::vec
             case eomc_ctrl_out_type_cur:
                 parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
                 break;
-            case eomc_ctrl_out_type_vel:
+            case eomc_ctrl_out_type_vel_pwm:
+            case eomc_ctrl_out_type_vel_cur:
                 parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
                 break;
+                #warning VALE2
         }
         if(!parseOk)
         {
@@ -676,7 +682,8 @@ bool Parser::parseSelectedVelocityControl(yarp::os::Searchable &config, std::vec
             case eomc_ctrl_out_type_cur:
                 parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
                 break;
-            case eomc_ctrl_out_type_vel:
+            case eomc_ctrl_out_type_vel_pwm:
+            case eomc_ctrl_out_type_vel_cur:
                 parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
                 break;
         }
@@ -794,7 +801,8 @@ bool Parser::parseSelectedMixedControl(yarp::os::Searchable &config, std::vector
             case eomc_ctrl_out_type_cur:
                 parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
                 break;
-            case eomc_ctrl_out_type_vel:
+            case eomc_ctrl_out_type_vel_pwm:
+            case eomc_ctrl_out_type_vel_cur :
                 parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
                 break;
         }
@@ -904,7 +912,8 @@ bool Parser::parseSelectedPositionDirectControl(yarp::os::Searchable &config, st
             case eomc_ctrl_out_type_cur:
                 parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
                 break;
-            case eomc_ctrl_out_type_vel:
+            case eomc_ctrl_out_type_vel_pwm:
+            case eomc_ctrl_out_type_vel_cur:
                 parseOk = parsePidsGroupMinimalParams(bot_ctrl, parsed);
                 break;
         }
@@ -1008,7 +1017,7 @@ bool Parser::parseSelectedVelocityDirectControl(yarp::os::Searchable &config, st
         // Temporary workaround: map PWM to VEL and CUR to VEL+CUR for velocity direct control.
         if (out_type == eomc_ctrl_out_type_pwm)
         {
-            out_type = eomc_ctrl_out_type_vel;
+            out_type = eomc_ctrl_out_type_vel_pwm;
         }
         else if (out_type == eomc_ctrl_out_type_cur)
         {
@@ -1118,7 +1127,8 @@ bool Parser::parseSelectedTorqueControl(yarp::os::Searchable &config,  std::vect
             case eomc_ctrl_out_type_cur:
                 parseOk = parsePidsGroupTorqueCompensationParams(bot_ctrl, parsed);
                 break;
-            case eomc_ctrl_out_type_vel:
+            case eomc_ctrl_out_type_vel_cur:
+            case eomc_ctrl_out_type_vel_pwm:
                 parseOk = parsePidsGroupRegulationParams(bot_ctrl, parsed);
                 break;
         }
