@@ -459,9 +459,9 @@ void embObjMotionControl::debugUtil_printPidInfoByJointSet(void)
         {
             case eomc_ctrl_out_type_n_a: return "n_a";
             case eomc_ctrl_out_type_pwm: return "pwm";
-            case eomc_ctrl_out_type_vel: return "velocity";
             case eomc_ctrl_out_type_cur: return "current";
             case eomc_ctrl_out_type_vel_cur: return "vel_cur";
+            case eomc_ctrl_out_type_vel_pwm: return "vel_pwm";
             default: return "unknown";
         }
     };
@@ -1491,7 +1491,7 @@ bool embObjMotionControl::init()
             tmp = _measureConverter->convert_pid_to_machine(yarp::dev::PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY_DIRECT, _parsedCfgData.pidControllers.dir_vel[logico].pid, fisico);
         
 
-            if(eomc_ctrl_out_type_vel == _parsedCfgData.pidControllers.dir_vel[logico].out_type)
+            if(eomc_ctrl_out_type_vel_pwm == _parsedCfgData.pidControllers.dir_vel[logico].out_type)
             {
                 copyPid_iCub2eo(&tmp, &motor_cfg.pidvelpwm);
             }
@@ -4425,62 +4425,62 @@ ReturnValue embObjMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_
     return ReturnValue_ok;
 }
 
-ReturnValue embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params)
-{
-    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
+// ReturnValue embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params)
+// {
+//     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
 
-    uint16_t size;
-    eOmc_motor_params_t eo_params = {0};
-    if(! askRemoteValue(protoid, &eo_params, size))
-        return ReturnValue_error_generic;
+//     uint16_t size;
+//     eOmc_motor_params_t eo_params = {0};
+//     if(! askRemoteValue(protoid, &eo_params, size))
+//         return ReturnValue_error_generic;
 
-    params->bemf =       eo_params.bemf_value;
-    params->bemf_scale = eo_params.bemf_scale;
-    params->ktau       = eo_params.ktau_value;
-    params->ktau_scale = eo_params.ktau_scale;
-    params->viscousPos = eo_params.friction.viscous_pos_val;
-    params->viscousNeg = eo_params.friction.viscous_neg_val ;
-    params->coulombPos = eo_params.friction.coulomb_pos_val;
-    params->coulombNeg = eo_params.friction.coulomb_neg_val;
-    params->velocityThres  = eo_params.friction.velocityThres_val;
+//     params->bemf =       eo_params.bemf_value;
+//     params->bemf_scale = eo_params.bemf_scale;
+//     params->ktau       = eo_params.ktau_value;
+//     params->ktau_scale = eo_params.ktau_scale;
+//     params->viscousPos = eo_params.friction.viscous_pos_val;
+//     params->viscousNeg = eo_params.friction.viscous_neg_val ;
+//     params->coulombPos = eo_params.friction.coulomb_pos_val;
+//     params->coulombNeg = eo_params.friction.coulomb_neg_val;
+//     params->velocityThres  = eo_params.friction.velocityThres_val;
 
-    //printf("debug getMotorTorqueParamsRaw %f %f %f %f %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale, params->viscousPos, params->viscousNeg, params->coulombPos, params->coulombNeg, params->threshold);
+//     //printf("debug getMotorTorqueParamsRaw %f %f %f %f %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale, params->viscousPos, params->viscousNeg, params->coulombPos, params->coulombNeg, params->threshold);
 
-    return ReturnValue_ok;
-}
+//     return ReturnValue_ok;
+// }
 
-ReturnValue embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params)
-{
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
-    eOmc_motor_params_t eo_params = {0};
+// ReturnValue embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params)
+// {
+//     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
+//     eOmc_motor_params_t eo_params = {0};
 
-    //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f viscousPos=%f viscousNeg=%f coulombPos=%f coulombNeg=%f\n",j, params.bemf, params.ktau, params.viscousPos, params.viscousNeg, params.coulombPos, params.coulombNeg, params.threshold);
+//     //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f viscousPos=%f viscousNeg=%f coulombPos=%f coulombNeg=%f\n",j, params.bemf, params.ktau, params.viscousPos, params.viscousNeg, params.coulombPos, params.coulombNeg, params.threshold);
 
-    eo_params.bemf_value  = (float)   params.bemf;
-    eo_params.bemf_scale  = (uint8_t) params.bemf_scale;
-    eo_params.ktau_value  = (float)   params.ktau;
-    eo_params.ktau_scale  = (uint8_t) params.ktau_scale;
-    eo_params.friction.viscous_pos_val = static_cast<float32_t>(params.viscousPos);
-    eo_params.friction.viscous_neg_val = static_cast<float32_t>(params.viscousNeg);
-    eo_params.friction.coulomb_pos_val = static_cast<float32_t>(params.coulombPos);
-    eo_params.friction.coulomb_neg_val = static_cast<float32_t>(params.coulombNeg);
-    eo_params.friction.velocityThres_val = static_cast<float32_t>(params.velocityThres);
+//     eo_params.bemf_value  = (float)   params.bemf;
+//     eo_params.bemf_scale  = (uint8_t) params.bemf_scale;
+//     eo_params.ktau_value  = (float)   params.ktau;
+//     eo_params.ktau_scale  = (uint8_t) params.ktau_scale;
+//     eo_params.friction.viscous_pos_val = static_cast<float32_t>(params.viscousPos);
+//     eo_params.friction.viscous_neg_val = static_cast<float32_t>(params.viscousNeg);
+//     eo_params.friction.coulomb_pos_val = static_cast<float32_t>(params.coulombPos);
+//     eo_params.friction.coulomb_neg_val = static_cast<float32_t>(params.coulombNeg);
+//     eo_params.friction.velocityThres_val = static_cast<float32_t>(params.velocityThres);
 
-    //save these values in the trqPid structure because the motor torque parameters are used inside the torque PID controller in the parser so they are alway consisten
-    _parsedCfgData.pidControllers.trq[j].viscousPos = params.viscousPos;
-    _parsedCfgData.pidControllers.trq[j].viscousNeg = params.viscousNeg;
-    _parsedCfgData.pidControllers.trq[j].coulombPos = params.coulombPos;
-    _parsedCfgData.pidControllers.trq[j].coulombNeg = params.coulombNeg;
-    _parsedCfgData.pidControllers.trq[j].velocityThres = params.velocityThres;
+//     //save these values in the trqPid structure because the motor torque parameters are used inside the torque PID controller in the parser so they are alway consisten
+//     _parsedCfgData.pidControllers.trq[j].viscousPos = params.viscousPos;
+//     _parsedCfgData.pidControllers.trq[j].viscousNeg = params.viscousNeg;
+//     _parsedCfgData.pidControllers.trq[j].coulombPos = params.coulombPos;
+//     _parsedCfgData.pidControllers.trq[j].coulombNeg = params.coulombNeg;
+//     _parsedCfgData.pidControllers.trq[j].velocityThres = params.velocityThres;
 
-    if(false == _ethRes->setRemoteValue(id32, &eo_params))
-    {
-        yError() << "embObjMotionControl::setMotorTorqueParamsRaw() could not send set message for" << getBoardInfo() << "joint " << j;
-        return ReturnValue_error_generic;
-    }
+//     if(false == _ethRes->setRemoteValue(id32, &eo_params))
+//     {
+//         yError() << "embObjMotionControl::setMotorTorqueParamsRaw() could not send set message for" << getBoardInfo() << "joint " << j;
+//         return ReturnValue_error_generic;
+//     }
 
-    return ReturnValue_ok;
-}
+//     return ReturnValue_ok;
+// }
 
 // IVelocityControl2
 ReturnValue embObjMotionControl::velocityMoveRaw(const int n_joint, const int *joints, const double *spds)
@@ -5396,7 +5396,7 @@ ReturnValue embObjMotionControl::helper_setVelDirPidRaw(int j, const Pid &pid)
             return ReturnValue_error_generic;
         }
 
-        if( _parsedCfgData.pidControllers.dir_vel[j].out_type == eomc_ctrl_out_type_vel )
+        if( _parsedCfgData.pidControllers.dir_vel[j].out_type == eomc_ctrl_out_type_vel_pwm )
         {
            protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pidvelpwm);
         }
@@ -5434,7 +5434,7 @@ ReturnValue embObjMotionControl::helper_getVelDirPidRaw(int j, Pid *pid)
     eOmc_PID_t tmp;
     switch(_parsedCfgData.pidControllers.dir_vel[j].out_type)
     {
-        case eomc_ctrl_out_type_vel:
+        case eomc_ctrl_out_type_vel_pwm:
             tmp = (eOmc_PID_t)motor_cfg.pidvelpwm;
             break;
         case eomc_ctrl_out_type_vel_cur:
@@ -5463,7 +5463,7 @@ ReturnValue embObjMotionControl::helper_getVelDirPidsRaw(Pid *pids)
         eOmc_PID_t tmp;
         switch(_parsedCfgData.pidControllers.dir_vel[j].out_type)
         {
-            case eomc_ctrl_out_type_vel:
+            case eomc_ctrl_out_type_vel_pwm:
             tmp = (eOmc_PID_t)motor_cfg_list[j].pidvelpwm;
             break;
             case eomc_ctrl_out_type_vel_cur:
