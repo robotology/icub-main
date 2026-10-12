@@ -69,7 +69,7 @@ void checkLegacy(const servConfigMC_t& result)
 
 } // namespace
 
-int main()
+int main(int argc, char* argv[])
 {
     try
     {
