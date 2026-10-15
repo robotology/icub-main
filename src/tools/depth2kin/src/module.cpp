@@ -67,7 +67,7 @@ bool CalibModule::attach(RpcServer &source)
 /************************************************************************/
 bool CalibModule::createTargets(const Vector &c, const Vector &size)
 {
-    if ((c.length()<3) || (size.length()<2))
+    if ((c.size()<3) || (size.size()<2))
         return false;
 
     double a=std::max(fabs(size[0]),0.04);
@@ -347,7 +347,7 @@ void CalibModule::openHand(IControlMode *imod, IPositionControl *ipos)
     poss[8]=0.0;  vels[8]=100.0;
 
     yInfo("opening hand");
-    int i0=nEncs-(int)poss.length();
+    int i0=nEncs-(int)poss.size();
     for (int i=i0; i<nEncs; i++)
         imod->setControlMode(i,VOCAB_CM_POSITION);
 
@@ -528,7 +528,7 @@ void CalibModule::prepareRobot()
     poss[8]=200.0; vels[8]=100.0;
 
     yInfo("configuring hand... ");
-    int i0=nEncs-(int)poss.length();
+    int i0=nEncs-(int)poss.size();
     for (int i=i0; i<nEncs; i++)
         imods->setControlMode(i,VOCAB_CM_POSITION);
 

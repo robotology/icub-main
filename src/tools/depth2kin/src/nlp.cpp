@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -50,7 +50,7 @@ Matrix computeH(const Vector &x)
 Matrix computeH(const Ipopt::Number *x)
 {
     Vector _x(6);
-    for (size_t i=0; i<_x.length(); i++)
+    for (size_t i=0; i<_x.size(); i++)
         _x[i]=x[i];
 
     return computeH(_x);
@@ -66,7 +66,7 @@ protected:
     const Matrix        &Prj;
 
     Vector min;
-    Vector max;    
+    Vector max;
     Vector x0;
     Vector x;
 
@@ -86,7 +86,7 @@ public:
     /****************************************************************/
     void set_x0(const Vector &x0)
     {
-        size_t len=std::min(this->x0.length(),x0.length());
+        size_t len=std::min(this->x0.size(),x0.size());
         for (size_t i=0; i<len; i++)
             this->x0[i]=x0[i];
     }
@@ -120,7 +120,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number *x,
                             bool init_z, Ipopt::Number *z_L, Ipopt::Number *z_U,
@@ -131,7 +131,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_f(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
                 Ipopt::Number &obj_value)
@@ -155,7 +155,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
@@ -192,7 +192,7 @@ public:
         Matrix dHdx3=dRx.transposed()*invRy*invRz; dHdx3.setCol(3,dHdx3*p);
         Matrix dHdx4=invRx*dRy.transposed()*invRz; dHdx4.setCol(3,dHdx4*p);
         Matrix dHdx5=invRx*invRy*dRz.transposed(); dHdx5.setCol(3,dHdx5*p);
-        
+
         Matrix dPrjHdx0=Prj*dHdx0;
         Matrix dPrjHdx1=Prj*dHdx1;
         Matrix dPrjHdx2=Prj*dHdx2;
@@ -289,7 +289,7 @@ public:
     {
         return true;
     }
-    
+
 
     /****************************************************************/
     void finalize_solution(Ipopt::SolverReturn status, Ipopt::Index n,
@@ -370,8 +370,8 @@ Matrix EyeAligner::getProjection() const
 /****************************************************************/
 void EyeAligner::setBounds(const Vector &min, const Vector &max)
 {
-    size_t len_min=std::min(this->min.length(),min.length());
-    size_t len_max=std::min(this->max.length(),max.length());
+    size_t len_min=std::min(this->min.size(),min.size());
+    size_t len_max=std::min(this->max.size(),max.size());
 
     for (size_t i=0; i<len_min; i++)
         this->min[i]=min[i];
@@ -384,7 +384,7 @@ void EyeAligner::setBounds(const Vector &min, const Vector &max)
 /****************************************************************/
 bool EyeAligner::addPoints(const Vector &p2di, const Vector &p3di)
 {
-    if ((p2di.length()>=2) && (p3di.length()>=4))
+    if ((p2di.size()>=2) && (p3di.size()>=4))
     {
         p2d.push_back(p2di.subVector(0,1));
         p3d.push_back(p3di.subVector(0,3));
@@ -420,7 +420,7 @@ bool EyeAligner::setInitialGuess(const Matrix &H)
         x0[0]=H(0,3); x0[1]=H(1,3); x0[2]=H(2,3);
         x0[3]=rpy[0]; x0[4]=rpy[1]; x0[5]=rpy[2];
 
-        for (size_t i=0; i<min.length(); i++)
+        for (size_t i=0; i<min.size(); i++)
             x0[i]=std::min(std::max(x0[i],min[i]),max[i]);
 
         return true;

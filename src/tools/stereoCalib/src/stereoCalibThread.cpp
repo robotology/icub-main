@@ -97,21 +97,21 @@ bool stereoCalibThread::threadInit()
     if (useTorso)
         posTorso->getEncoders(torso_angles.data());
 
-    qL.resize(torso_angles.length()+head_angles.length()-1);
-    for(size_t i=0; i<torso_angles.length(); i++)
-        qL[i]=torso_angles[torso_angles.length()-i-1];
+    qL.resize(torso_angles.size()+head_angles.size()-1);
+    for(size_t i=0; i<torso_angles.size(); i++)
+        qL[i]=torso_angles[torso_angles.size()-i-1];
 
-    for(size_t i=0; i<head_angles.length()-2; i++)
-        qL[i+torso_angles.length()]=head_angles[i];
+    for(size_t i=0; i<head_angles.size()-2; i++)
+        qL[i+torso_angles.size()]=head_angles[i];
     qL[7]=head_angles[4]+(0.5-(LEFT))*head_angles[5];
     qL=iCub::ctrl::CTRL_DEG2RAD*qL;
 
-    qR.resize(torso_angles.length()+head_angles.length()-1);
-    for(size_t i=0; i<torso_angles.length(); i++)
-        qR[i]=torso_angles[torso_angles.length()-i-1];
+    qR.resize(torso_angles.size()+head_angles.size()-1);
+    for(size_t i=0; i<torso_angles.size(); i++)
+        qR[i]=torso_angles[torso_angles.size()-i-1];
 
-    for(size_t i=0; i<head_angles.length()-2; i++)
-        qR[i+torso_angles.length()]=head_angles[i];
+    for(size_t i=0; i<head_angles.size()-2; i++)
+        qR[i+torso_angles.size()]=head_angles[i];
     qR[7]=head_angles[4]+(0.5-(RIGHT))*head_angles[5];
     qR=iCub::ctrl::CTRL_DEG2RAD*qR;
 
