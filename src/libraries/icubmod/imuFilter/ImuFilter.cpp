@@ -52,7 +52,7 @@ void ImuFilter::run() {
         return;
     }
     ok &= PassThroughInertial::proxyIGyro->getThreeAxisGyroscopeStatus(0) == MAS_OK;
-    ok &= PassThroughInertial::proxyIGyro->getThreeAxisGyroscopeMeasure(0, gyro, gyroTs);
+    ok &= static_cast<bool>(PassThroughInertial::proxyIGyro->getThreeAxisGyroscopeMeasure(0, gyro, gyroTs));
 
     if (!ok){
         yError()<<"imuFilter: unable to get gyro";
@@ -64,7 +64,7 @@ void ImuFilter::run() {
     }
 
     ok &= PassThroughInertial::proxyIMagn->getThreeAxisMagnetometerStatus(0) == MAS_OK;
-    ok &= PassThroughInertial::proxyIMagn->getThreeAxisMagnetometerMeasure(0, magn, ts);
+    ok &= static_cast<bool>(PassThroughInertial::proxyIMagn->getThreeAxisMagnetometerMeasure(0, magn, ts));
 
     if (!ok){
         yError()<<"imuFilter: unable to get magnetometer measures";
@@ -174,19 +174,19 @@ bool ImuFilter::detachAll() {
     return PassThroughInertial::detachAll();
 }
 
-bool ImuFilter::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+yarp::dev::ReturnValue ImuFilter::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
     if (sens_index != 0)
     {
         yError() << "imuFilter: sens_index must be equal to 0 as there exists only one sensor";
-        return false;
+        return ReturnValue_error_input_out_of_bounds;
     }
 
     m_mutex.lock();
     out = gyro;
     timestamp = gyroTs;
     m_mutex.unlock();
-    return true;
+    return ReturnValue_ok;
 }
 
 } // namespace dev
