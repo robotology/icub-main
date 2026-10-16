@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <sstream>
 
+#include <iCub/ctrl/vectorUtils.h>
 #include <iCub/solver.h>
 #include <iCub/controller.h>
 
@@ -884,8 +885,8 @@ void Controller::run()
         vEyes=0.0;
     }
 
-    v.setSubvector(0,vNeck);
-    v.setSubvector(3,vEyes);
+    iCub::ctrl::setSubVector(v, 0, vNeck);
+    iCub::ctrl::setSubVector(v, 3, vEyes);
 
     // apply bang-bang just in case to compensate
     // for unachievable low velocities

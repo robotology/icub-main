@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <cmath>
 
+#include <iCub/ctrl/vectorUtils.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>
 
@@ -2895,7 +2896,7 @@ bool iCubWholeBody::EXPERIMENTAL_getCOMjacobian(BodyPart which_part, Matrix &jac
         #ifdef DEBUG_FOOT_COM
         //Now we can finally add all the matricial terms that compose fJw
             jac = fJr + fLr + fRr*jac;
-            temp_com.setSubvector(0,whole_COM);     //CHECKED
+            iCub::ctrl::setSubVector(temp_com, 0, whole_COM);     //CHECKED
             temp_com(3)=1;                          //CHECKED
             if (sw_getcom)
             {

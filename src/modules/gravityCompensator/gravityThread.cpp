@@ -301,7 +301,7 @@ bool gravityCompensatorThread::readAndUpdate(bool waitMeasure)
         inertial = port_inertial->read(waitMeasure);
         if(inertial!=nullptr)
         {
-            sz = inertial->length();
+            sz = inertial->size();
             inertial_measurements.resize(sz) ;
             inertial_measurements= *inertial;
             d2p0[0] = inertial_measurements[0];
