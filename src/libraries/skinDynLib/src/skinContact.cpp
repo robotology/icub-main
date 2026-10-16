@@ -264,7 +264,7 @@ bool skinContact::fromVector(const Vector &v){
 string skinContact::toString(int precision) const{
     stringstream res;
     res<< dynContact::toString(precision)<< ", Skin part: "<< SkinPart_s[skinPart]<< ", geometric center: "<< 
-        geoCenter.toString(precision)<< ", normal direction: "<< normalDir.toString(precision)<< 
+        geoCenter.toFormattedString(precision)<< ", normal direction: "<< normalDir.toFormattedString(precision)<<
         ", active taxels: "<< activeTaxels<< ", pressure: "<< pressure;
     return res.str();
 }

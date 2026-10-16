@@ -263,7 +263,7 @@ bool dynContact::read(ConnectionReader& connection){
 string dynContact::toString(int precision) const{
     stringstream res;
     res<< "Contact id: "<< contactId<< ", Body part: "<< BodyPart_s[bodyPart]<< ", link: "<< linkNumber<< ", CoP: "<<
-        CoP.toString(precision)<< ", F: "<< F.toString(precision)<< ", M: "<< Mu.toString(precision);
+        CoP.toFormattedString(precision)<< ", F: "<< F.toFormattedString(precision)<< ", M: "<< Mu.toFormattedString(precision);
     return res.str();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

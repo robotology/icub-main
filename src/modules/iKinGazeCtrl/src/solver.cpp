@@ -229,7 +229,7 @@ void EyePinvRefGen::setCounterRotGain(const Vector &gain)
     size_t len=std::min(counterRotGain.size(),gain.size());
     for (size_t i=0; i<len; i++)
         counterRotGain[i]=gain[i];
-    yInfo("counter-rotation gains set to (%s)",counterRotGain.toString(3,3).c_str());
+    yInfo("counter-rotation gains set to (%s)",counterRotGain.toFormattedString(3,3).c_str());
 }
 
 

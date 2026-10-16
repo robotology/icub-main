@@ -96,7 +96,7 @@ bool CalibModule::createTargets(const Vector &c, const Vector &size)
             x=H*x;
             x.pop_back();
             targets.push_back(x);
-            yInfo("created point #%d=(%s)",(int)targets.size(),x.toString(3,3).c_str());
+            yInfo("created point #%d=(%s)",(int)targets.size(),x.toFormattedString(3,3).c_str());
         }
 
         Vector ax2(4,0.0);
@@ -671,7 +671,7 @@ void CalibModule::doMotorExploration()
 
         Vector od=dcm2axis(axis2dcm(rot_y)*Hd);
         yInfo("moving to xd=(%s); od=(%s); #%d remaining points",
-              xd.toString(3,3).c_str(),od.toString(3,3).c_str(),(int)targetsConsumed.size());
+              xd.toFormattedString(3,3).c_str(),od.toFormattedString(3,3).c_str(),(int)targetsConsumed.size());
 
         iarm->goToPoseSync(xd,od);
         igaze->lookAtFixationPoint(xd);
@@ -714,18 +714,18 @@ void CalibModule::doTouch(const Vector &xd)
     igaze->lookAtFixationPoint(xd);
 
     Vector x=xd; x[2]+=0.05;
-    yInfo("moving to xd=(%s); od=(%s)",x.toString(3,3).c_str(),od.toString(3,3).c_str());
+    yInfo("moving to xd=(%s); od=(%s)",x.toFormattedString(3,3).c_str(),od.toFormattedString(3,3).c_str());
     iarm->goToPoseSync(x,od);
     iarm->waitMotionDone();
 
-    yInfo("moving to xd=(%s); od=(%s)",xd.toString(3,3).c_str(),od.toString(3,3).c_str());
+    yInfo("moving to xd=(%s); od=(%s)",xd.toFormattedString(3,3).c_str(),od.toFormattedString(3,3).c_str());
     iarm->setInTargetTol(touch_intargettol);
     iarm->goToPoseSync(xd,od);
     iarm->waitMotionDone(0.1,5.0);
 
     Time::delay(2.0);
 
-    yInfo("moving to xd=(%s); od=(%s)",x.toString(3,3).c_str(),od.toString(3,3).c_str());
+    yInfo("moving to xd=(%s); od=(%s)",x.toFormattedString(3,3).c_str(),od.toFormattedString(3,3).c_str());
     iarm->setInTargetTol(exploration_intargettol);
     iarm->goToPoseSync(x,od);
     iarm->waitMotionDone();
@@ -733,7 +733,7 @@ void CalibModule::doTouch(const Vector &xd)
     x[0]=-0.35;
     x[1]=(arm=="left"?-0.2:0.2);
     x[2]=0.1;
-    yInfo("moving to xd=(%s); od=(%s)",x.toString(3,3).c_str(),od.toString(3,3).c_str());
+    yInfo("moving to xd=(%s); od=(%s)",x.toFormattedString(3,3).c_str(),od.toFormattedString(3,3).c_str());
     iarm->setLimits(0,0.0,0.0);
     iarm->setLimits(2,0.0,0.0);
     iarm->goToPoseSync(x,od);
@@ -814,9 +814,9 @@ void CalibModule::doTest()
             Vector x1=cat(H1.getCol(3).subVector(0,2),
                           CTRL_RAD2DEG*dcm2rpy(H1));
 
-            yInfo("x=(%s)",x_deg.toString(5,5).c_str());
+            yInfo("x=(%s)",x_deg.toFormattedString(5,5).c_str());
             yInfo("H\n%s",H.toString(5,5).c_str());
-            yInfo("solution_x=(%s)",x1.toString(5,5).c_str());
+            yInfo("solution_x=(%s)",x1.toFormattedString(5,5).c_str());
             yInfo("solution_H\n%s",H1.toString(5,5).c_str());
             yInfo("error=%g",error);
 
@@ -869,9 +869,9 @@ void CalibModule::doTest()
             Vector pred;
             ok&=experts->retrieve(in,pred);
             yInfo("in=(%s); out=H*in=(%s); pred=(%s)",
-                  in.subVector(0,2).toString(3,3).c_str(),
-                  out.subVector(0,2).toString(3,3).c_str(),
-                  pred.toString(3,3).c_str());
+                  in.subVector(0,2).toFormattedString(3,3).c_str(),
+                  out.subVector(0,2).toFormattedString(3,3).c_str(),
+                  pred.toFormattedString(3,3).c_str());
 
             yInfo("#3c \"check logging data\"");
             ok&=log("experts");
@@ -1082,7 +1082,7 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
                     {
                         calibrator->addPoints(depthPoint,kinPoint);
                         yInfo("collecting calibration points: p_depth=(%s); p_kin=(%s);",
-                              depthPoint.toString(3,3).c_str(),kinPoint.toString(3,3).c_str());
+                              depthPoint.toFormattedString(3,3).c_str(),kinPoint.toFormattedString(3,3).c_str());
 
                         tag="acquired";
                     }
@@ -1103,14 +1103,14 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
 
                         aligner.addPoints(tipl,kinPoint_e);
                         yInfo("collecting points for aligning eye: tip=(%s); p_kin=(%s);",
-                              tipl.toString(3,3).c_str(),kinPoint_e.toString(3,3).c_str());
+                              tipl.toFormattedString(3,3).c_str(),kinPoint_e.toFormattedString(3,3).c_str());
 
                         tag="acquired";
                     }
                 }
                 else
                     yInfo("discarding calibration points: p_depth=(%s); p_kin=(%s); (|p_depth-p_kin|=%g)>%g",
-                          depthPoint.toString(3,3).c_str(),kinPoint.toString(3,3).c_str(),dist,max_dist);
+                          depthPoint.toFormattedString(3,3).c_str(),kinPoint.toFormattedString(3,3).c_str(),dist,max_dist);
             }
             else
             {
@@ -1251,11 +1251,11 @@ bool CalibModule::log(const string &type)
                              calibrator->retrieve(p_depth[i],x)))
                 break;
 
-            fout<<p_depth[i].toString(3,3);
+            fout<<p_depth[i].toFormattedString(3,3);
             fout<<" ";
-            fout<<p_kin[i].toString(3,3);
+            fout<<p_kin[i].toFormattedString(3,3);
             fout<<" ";
-            fout<<x.toString(3,3);
+            fout<<x.toFormattedString(3,3);
             fout<<" ";
             fout<<norm(p_kin[i]-x);
             fout<<endl;
@@ -1504,7 +1504,7 @@ bool CalibModule::touch(const int u, const int v)
     Vector in,pxr;
     if (getDepthAveraged(px,in,pxr))
     {
-        yInfo("=> p_depth=(%s);",in.toString(3,3).c_str());
+        yInfo("=> p_depth=(%s);",in.toFormattedString(3,3).c_str());
 
         Vector out=in;
         if (touchWithExperts)
@@ -1514,7 +1514,7 @@ bool CalibModule::touch(const int u, const int v)
                 yWarning("no experts available!");
         }
 
-        yInfo("=> p_kin=(%s);",out.toString(3,3).c_str());
+        yInfo("=> p_kin=(%s);",out.toFormattedString(3,3).c_str());
         doTouch(out);
 
         return true;

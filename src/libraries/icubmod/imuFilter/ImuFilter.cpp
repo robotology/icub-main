@@ -98,8 +98,8 @@ void ImuFilter::run() {
     if (verbose)
     {
         yInfo("imuFilter: magVel   = %g => [%s]",magVel,adaptGyroBias?"adapt-gyroBias":"no-adaption");
-        yInfo("imuFilter: gyro     = %s",gyro.toString(3,3).c_str());
-        yInfo("imuFilter: gyroBias = %s",gyroBias.toString(3,3).c_str());
+        yInfo("imuFilter: gyro     = %s",gyro.toFormattedString(3,3).c_str());
+        yInfo("imuFilter: gyroBias = %s",gyroBias.toFormattedString(3,3).c_str());
         yInfo("imuFilter: dt       = %.0f [us]",dt*1e6);
         yInfo("\n");
     }

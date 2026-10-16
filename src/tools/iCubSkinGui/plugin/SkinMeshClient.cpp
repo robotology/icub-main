@@ -572,7 +572,7 @@ bool SkinMeshClient::updateModule()
                 skin_color_virtual.push_back(color_virtual->get(i).asInt32());
             }
 
-            yCTrace(SKINMESHCLIENT) << "Virtual contacts:" << skin_value_virtual.toString(3,3);
+            yCTrace(SKINMESHCLIENT) << "Virtual contacts:" << skin_value_virtual.toFormattedString(3,3);
             yCTrace(SKINMESHCLIENT) << "Virtual contacts color:" << skin_color_virtual[0] << skin_color_virtual[1] << skin_color_virtual[2];
         }
     }

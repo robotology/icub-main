@@ -102,11 +102,11 @@ class ArmWayPoints : public PeriodicThread
     {
         if (wayPoints[i].oEnabled)
             action->printMessage(log::no_info,"reaching waypoint(%d): x=[%s]; o=[%s]",i,
-                                 wayPoints[i].x.toString(3,3).c_str(),
-                                 wayPoints[i].o.toString(3,3).c_str());
+                                 wayPoints[i].x.toFormattedString(3,3).c_str(),
+                                 wayPoints[i].o.toFormattedString(3,3).c_str());
         else
             action->printMessage(log::no_info,"reaching waypoint(%d): x=[%s]",i,
-                                 wayPoints[i].x.toString(3,3).c_str());
+                                 wayPoints[i].x.toFormattedString(3,3).c_str());
     }
 
     /************************************************************************/
@@ -1160,8 +1160,8 @@ bool ActionPrimitives::reachPose(const Vector &x, const Vector &o,
         cartCtrl->goToPose(x,o,t);
 
         printMessage(log::no_info,"reach at %g [s] for [%s], [%s]",t,
-                     x.toString(3,3).c_str(),
-                     o.toString(3,3).c_str());
+                     x.toFormattedString(3,3).c_str(),
+                     o.toFormattedString(3,3).c_str());
 
         postReachCallback();
 
@@ -1189,7 +1189,7 @@ bool ActionPrimitives::reachPosition(const Vector &x, const double execTime)
 
 
         printMessage(log::no_info,"reach at %g [s] for [%s]",t,
-                     x.toString(3,3).c_str());
+                     x.toFormattedString(3,3).c_str());
 
         postReachCallback();
 
@@ -1282,8 +1282,8 @@ void ActionPrimitives::run()
         if ((t-latchTimerReachLog)>ACTIONPRIM_DUMP_PERIOD)
         {
             printMessage(log::no_info,"reaching... xdhat=[%s] |e|=%.3f [m]; odhat=[%s] |e|=%.3f",
-                         xdhat.toString(3,3).c_str(),norm(xdhat-x),
-                         odhat.toString(3,3).c_str(),norm(odhat-o));
+                         xdhat.toFormattedString(3,3).c_str(),norm(xdhat-x),
+                         odhat.toFormattedString(3,3).c_str(),norm(odhat-o));
 
             latchTimerReachLog=t;
         }
@@ -1438,8 +1438,8 @@ bool ActionPrimitives::cmdArm(const Action &action)
             }
 
             printMessage(log::no_info,"reach at %g [s] for [%s], [%s]",t,
-                         x.toString(3,3).c_str(),
-                         o.toString(3,3).c_str());
+                         x.toFormattedString(3,3).c_str(),
+                         o.toFormattedString(3,3).c_str());
         }
         else
         {
@@ -1450,7 +1450,7 @@ bool ActionPrimitives::cmdArm(const Action &action)
             }
 
             printMessage(log::no_info,"reach at %g [s] for [%s]",t,
-                         x.toString(3,3).c_str());
+                         x.toFormattedString(3,3).c_str());
         }
 
         postReachCallback();
@@ -1518,8 +1518,8 @@ bool ActionPrimitives::cmdHand(const Action &action)
         fingerInPosition.clear();
         fingerInPosition.insert(fingerInPosition.begin(),5,true);
         printMessage(log::no_info,"\"%s\" WP: [%s] (thres = [%s]) (tmo = %g)",
-                     tag.c_str(),poss.toString(3,3).c_str(),
-                     thres.toString(3,3).c_str(),tmo);
+                     tag.c_str(),poss.toFormattedString(3,3).c_str(),
+                     thres.toFormattedString(3,3).c_str(),tmo);
 
         latchTimerHand=Time::now();
 
@@ -1944,7 +1944,7 @@ bool ActionPrimitives::enableArmWaving(const Vector &restPos)
     {
         RES_WAVER(armWaver)->setRestPosition(restPos);
         printMessage(log::no_info,"setting waving position to %s",
-                     restPos.toString(3,3).c_str());
+                     restPos.toFormattedString(3,3).c_str());
 
         if (RES_WAVER(armWaver)->enable())
             printMessage(log::no_info,"arm waving enabled");
@@ -2133,7 +2133,7 @@ void liftAndGraspCallback::exec()
         Vector x,o;
         action->cartCtrl->getPose(x,o);
         action->printMessage(log::no_info,"logged 3-d pos: [%s]",
-                             x.toString(3,3).c_str());
+                             x.toFormattedString(3,3).c_str());
 
         action->pushAction(x+action->grasp_d2,action->grasp_o);
     }
@@ -2225,7 +2225,7 @@ void ActionPrimitivesLayer2::run()
         cartCtrl->stopControl();
 
         printMessage(log::warning,"contact detected on arm: external force [%s], (%g>%g) => stopping arm",
-                     forceExternal.toString(3,3).c_str(),forceExternalAbs,ext_force_thres);
+                     forceExternal.toFormattedString(3,3).c_str(),forceExternalAbs,ext_force_thres);
 
         disableTorsoDof();
 
