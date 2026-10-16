@@ -1148,7 +1148,7 @@ void inverseDynamics::writeTorque(Vector _values, int _address, BufferedPort<Bot
 {
     Bottle a;
     a.addInt32(_address);
-    for(size_t i=0;i<_values.length();i++)
+    for(size_t i=0;i<_values.size();i++)
         a.addFloat64(_values(i));
     _port->prepare() = a;
     _port->write();

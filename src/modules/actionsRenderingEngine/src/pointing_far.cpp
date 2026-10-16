@@ -133,7 +133,7 @@ public:
     void getResult(Vector &q, Vector &x) const
     {
         q.resize(finger_tip->getN());
-        for (unsigned int i=0; i<q.length(); i++)
+        for (unsigned int i=0; i<q.size(); i++)
             q[i]=RAD2DEG*finger_tip->getAng(i);
         x=finger_tip->EndEffPose();
     }
@@ -183,7 +183,7 @@ public:
     void setAng(const Ipopt::Number* x)
     {
         Vector q(finger_tip->getDOF());
-        for (size_t i=0; i<q.length(); i++)
+        for (size_t i=0; i<q.size(); i++)
            q[i]=x[i];
         finger_tip->setAng(q);
         elbow->asChain()->setAng(q);
@@ -339,7 +339,7 @@ bool PointingFar::compute(ICartesianControl *iarm, const Property& requirements,
     if (Bottle *bFingerJoints=requirements.find("finger-joints").asList())
     {
         Vector finger_joints(bFingerJoints->size());
-        for (size_t i=0; i<finger_joints.length(); i++)
+        for (size_t i=0; i<finger_joints.size(); i++)
             finger_joints[i]=bFingerJoints->get(i).asFloat64();
         nlp->setFingerJoints(finger_joints);
     }
@@ -353,7 +353,7 @@ bool PointingFar::compute(ICartesianControl *iarm, const Property& requirements,
 /*************************************************************************/
 bool PointingFar::point(ICartesianControl *iarm, const Vector& q, const Vector& x)
 {
-    if ((q.length()>=10) && (x.length()>=7))
+    if ((q.size()>=10) && (x.size()>=7))
     {
         int context;
         iarm->storeContext(&context);        
@@ -361,7 +361,7 @@ bool PointingFar::point(ICartesianControl *iarm, const Vector& q, const Vector& 
         // specify all joints
         Vector dof(10,1.0);
         iarm->setDOF(dof,dof);
-        for (unsigned int i=0; i<q.length(); i++)
+        for (unsigned int i=0; i<q.size(); i++)
             iarm->setLimits(i,q[i],q[i]);
 
         double traj;

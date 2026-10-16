@@ -672,7 +672,7 @@ bool MotorThread::getGeneralOptions(Bottle &b)
         }
 
         homeFix.resize(pB->size()-offs);
-        for (size_t i=0; i<homeFix.length(); i++)
+        for (size_t i=0; i<homeFix.size(); i++)
             homeFix[i]=pB->get(offs+i).asFloat64();
     }
     else
@@ -1686,7 +1686,7 @@ bool MotorThread::powerGrasp(Bottle &options)
     Vector xd;
     if (!targetToCartesian(bTarget,xd))
         return false;
-    if (xd.length()<7)
+    if (xd.size()<7)
         return false;
 
     arm=checkArm(arm,xd,false);
@@ -1869,7 +1869,7 @@ bool MotorThread::point_far(Bottle &options)
         ostringstream wp; wp<<"wp_"<<numWayPoints-1;
         Bottle *poss=pointing_sequence.find(wp.str()).asList()->find("poss").asList();
         Vector joints(poss->size());
-        for (size_t i=0; i<joints.length(); i++)
+        for (size_t i=0; i<joints.size(); i++)
             joints[i]=poss->get(i).asFloat64();
 
         Bottle finger_joints; finger_joints.addList().read(joints);
@@ -2382,7 +2382,7 @@ bool MotorThread::deploy(Bottle &options)
 
     Vector tmpOrient=(grasp_state==GRASP_STATE_SIDE?reachSideOrient[arm]:deployOrient[arm]);
 
-    Vector deployOffs(deployZone.length(),0.0);
+    Vector deployOffs(deployZone.size(),0.0);
     deployOffs[2]=reachAboveDisp[2];
 
     restoreContext(arm);
@@ -3114,7 +3114,7 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     {
         if (Bottle *b1=b0->find("cartesian").asList())
         {
-            size_t n=std::min(x.length(),(size_t)b1->size());
+            size_t n=std::min(x.size(),(size_t)b1->size());
             for (size_t i=0; i<n; i++)
                 x[i]=b1->get(i).asFloat64();
             specifiedTarget=true;
@@ -3131,7 +3131,7 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     dragger.t0=Time::now();
     yInfo("Learning kinematic offset against %s target (%s)",
           specifiedTarget?"specified":"retrieved",
-          dragger.x0.toString(3,3).c_str());
+          dragger.x0.toFormattedString(3,3).c_str());
 
     arm_mode=ARM_MODE_LEARN_KINOFF;
 

@@ -334,7 +334,7 @@ bool ClientGazeController::getAngles(Vector &ang, Stamp *stamp)
 /************************************************************************/
 bool ClientGazeController::lookAtFixationPoint(const Vector &fp)
 {
-    if (!connected || (fp.length()<3))
+    if (!connected || (fp.size()<3))
         return false;
 
     Bottle &cmd=portCmdFp.prepare();
@@ -352,7 +352,7 @@ bool ClientGazeController::lookAtFixationPoint(const Vector &fp)
 /************************************************************************/
 bool ClientGazeController::lookAtAbsAngles(const Vector &ang)
 {
-    if (!connected || (ang.length()<3))
+    if (!connected || (ang.size()<3))
         return false;
 
     Bottle &cmd=portCmdAng.prepare();
@@ -371,7 +371,7 @@ bool ClientGazeController::lookAtAbsAngles(const Vector &ang)
 /************************************************************************/
 bool ClientGazeController::lookAtRelAngles(const Vector &ang)
 {
-    if (!connected || (ang.length()<3))
+    if (!connected || (ang.size()<3))
         return false;
 
     Bottle &cmd=portCmdAng.prepare();
@@ -391,7 +391,7 @@ bool ClientGazeController::lookAtRelAngles(const Vector &ang)
 bool ClientGazeController::lookAtMonoPixel(const int camSel, const Vector &px,
                                            const double z)
 {
-    if (!connected || (px.length()<2))
+    if (!connected || (px.size()<2))
         return false;
 
     Bottle &cmd=portCmdMono.prepare();
@@ -412,7 +412,7 @@ bool ClientGazeController::lookAtMonoPixelWithVergence(const int camSel,
                                                        const Vector &px,
                                                        const double ver)
 {
-    if (!connected || (px.length()<2))
+    if (!connected || (px.size()<2))
         return false;
 
     Bottle &cmd=portCmdMono.prepare();
@@ -432,7 +432,7 @@ bool ClientGazeController::lookAtMonoPixelWithVergence(const int camSel,
 /************************************************************************/
 bool ClientGazeController::lookAtStereoPixels(const Vector &pxl, const Vector &pxr)
 {
-    if (!connected || (pxl.length()<2) || (pxr.length()<2))
+    if (!connected || (pxl.size()<2) || (pxr.size()<2))
         return false;
 
     Bottle &cmd=portCmdStereo.prepare();
@@ -451,7 +451,7 @@ bool ClientGazeController::lookAtStereoPixels(const Vector &pxl, const Vector &p
 /************************************************************************/
 bool ClientGazeController::lookAtFixationPointSync(const Vector &fp)
 {
-    if (!connected || (fp.length()<3))
+    if (!connected || (fp.size()<3))
         return false;
 
     Bottle command, reply;
@@ -475,7 +475,7 @@ bool ClientGazeController::lookAtFixationPointSync(const Vector &fp)
 /************************************************************************/
 bool ClientGazeController::lookAtAbsAnglesSync(const Vector &ang)
 {
-    if (!connected || (ang.length()<3))
+    if (!connected || (ang.size()<3))
         return false;
 
     Bottle command, reply;
@@ -483,7 +483,7 @@ bool ClientGazeController::lookAtAbsAnglesSync(const Vector &ang)
     command.addString("ang");
     Bottle &payLoad=command.addList();
     payLoad.addString("abs");
-    for (size_t i=0; i<ang.length(); i++)
+    for (size_t i=0; i<ang.size(); i++)
         payLoad.addFloat64(ang[i]);
 
     if (!portRpc.write(command,reply))
@@ -499,7 +499,7 @@ bool ClientGazeController::lookAtAbsAnglesSync(const Vector &ang)
 /************************************************************************/
 bool ClientGazeController::lookAtRelAnglesSync(const Vector &ang)
 {
-    if (!connected || (ang.length()<3))
+    if (!connected || (ang.size()<3))
         return false;
 
     Bottle command, reply;
@@ -507,7 +507,7 @@ bool ClientGazeController::lookAtRelAnglesSync(const Vector &ang)
     command.addString("ang");
     Bottle &payLoad=command.addList();
     payLoad.addString("rel");
-    for (size_t i=0; i<ang.length(); i++)
+    for (size_t i=0; i<ang.size(); i++)
         payLoad.addFloat64(ang[i]);
 
     if (!portRpc.write(command,reply))
@@ -525,7 +525,7 @@ bool ClientGazeController::lookAtMonoPixelSync(const int camSel,
                                                const Vector &px,
                                                const double z)
 {
-    if (!connected || (px.length()<2))
+    if (!connected || (px.size()<2))
         return false;
 
     Bottle command, reply;
@@ -552,7 +552,7 @@ bool ClientGazeController::lookAtMonoPixelWithVergenceSync(const int camSel,
                                                            const Vector &px,
                                                            const double ver)
 {
-    if (!connected || (px.length()<2))
+    if (!connected || (px.size()<2))
         return false;
 
     Bottle command, reply;
@@ -579,7 +579,7 @@ bool ClientGazeController::lookAtMonoPixelWithVergenceSync(const int camSel,
 bool ClientGazeController::lookAtStereoPixelsSync(const Vector &pxl,
                                                   const Vector &pxr)
 {
-    if (!connected || (pxl.length()<2) || (pxr.length()<2))
+    if (!connected || (pxl.size()<2) || (pxr.size()<2))
         return false;
 
     Bottle command, reply;
@@ -808,13 +808,13 @@ bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o,
             if (bPose->size()>=7)
             {
                 x.resize(3);
-                o.resize(bPose->size()-x.length());
+                o.resize(bPose->size()-x.size());
         
-                for (size_t i=0; i<x.length(); i++)
+                for (size_t i=0; i<x.size(); i++)
                     x[i]=bPose->get(i).asFloat64();
         
-                for (size_t i=0; i<o.length(); i++)
-                    o[i]=bPose->get(x.length()+i).asFloat64();
+                for (size_t i=0; i<o.size(); i++)
+                    o[i]=bPose->get(x.size()+i).asFloat64();
         
                 if ((reply.size()>2) && (stamp!=NULL))
                 {
@@ -861,7 +861,7 @@ bool ClientGazeController::getHeadPose(Vector &x, Vector &o, Stamp *stamp)
 bool ClientGazeController::get2DPixel(const int camSel, const Vector &x,
                                       Vector &px)
 {
-    if (!connected || (x.length()<3))
+    if (!connected || (x.size()<3))
         return false;
 
     Bottle command, reply;
@@ -884,7 +884,7 @@ bool ClientGazeController::get2DPixel(const int camSel, const Vector &x,
         if (Bottle *bPixel=reply.get(1).asList())
         {
             px.resize(bPixel->size());
-            for (size_t i=0; i<px.length(); i++)
+            for (size_t i=0; i<px.size(); i++)
                 px[i]=bPixel->get(i).asFloat64();
 
             return true;
@@ -899,7 +899,7 @@ bool ClientGazeController::get2DPixel(const int camSel, const Vector &x,
 bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
                                       const double z, Vector &x)
 {
-    if (!connected || (px.length()<2))
+    if (!connected || (px.size()<2))
         return false;
 
     Bottle command, reply;
@@ -923,7 +923,7 @@ bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
-            for (size_t i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.size(); i++)
                 x[i]=bPoint->get(i).asFloat64();
 
             return true;
@@ -938,7 +938,7 @@ bool ClientGazeController::get3DPoint(const int camSel, const Vector &px,
 bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
                                              const Vector &plane, Vector &x)
 {
-    if (!connected || (px.length()<2) || (plane.length()<4))
+    if (!connected || (px.size()<2) || (plane.size()<4))
         return false;
 
     Bottle command, reply;
@@ -965,7 +965,7 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
-            for (size_t i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.size(); i++)
                 x[i]=bPoint->get(i).asFloat64();
 
             return true;
@@ -980,7 +980,7 @@ bool ClientGazeController::get3DPointOnPlane(const int camSel, const Vector &px,
 bool ClientGazeController::get3DPointFromAngles(const int mode, const Vector &ang,
                                                 Vector &x)
 {
-    if (!connected || (ang.length()<3))
+    if (!connected || (ang.size()<3))
         return false;
 
     Bottle command, reply;
@@ -1004,7 +1004,7 @@ bool ClientGazeController::get3DPointFromAngles(const int mode, const Vector &an
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
-            for (size_t i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.size(); i++)
                 x[i]=bPoint->get(i).asFloat64();
 
             return true;
@@ -1018,7 +1018,7 @@ bool ClientGazeController::get3DPointFromAngles(const int mode, const Vector &an
 /************************************************************************/
 bool ClientGazeController::getAnglesFrom3DPoint(const Vector &x, Vector &ang)
 {
-    if (!connected || (x.length()<3))
+    if (!connected || (x.size()<3))
         return false;
 
     Bottle command, reply;
@@ -1040,7 +1040,7 @@ bool ClientGazeController::getAnglesFrom3DPoint(const Vector &x, Vector &ang)
         if (Bottle *bAng=reply.get(1).asList())
         {
             ang.resize(bAng->size());
-            for (size_t i=0; i<ang.length(); i++)
+            for (size_t i=0; i<ang.size(); i++)
                 ang[i]=bAng->get(i).asFloat64();
 
             return true;
@@ -1055,7 +1055,7 @@ bool ClientGazeController::getAnglesFrom3DPoint(const Vector &x, Vector &ang)
 bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &pxr,
                                               Vector &x)
 {
-    if (!connected || ((pxl.length()<2) && (pxr.length()<2)))
+    if (!connected || ((pxl.size()<2) && (pxr.size()<2)))
         return false;
 
     Bottle command, reply;
@@ -1079,7 +1079,7 @@ bool ClientGazeController::triangulate3DPoint(const Vector &pxl, const Vector &p
         if (Bottle *bPoint=reply.get(1).asList())
         {
             x.resize(bPoint->size());
-            for (size_t i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.size(); i++)
                 x[i]=bPoint->get(i).asFloat64();
 
             return true;
@@ -1111,7 +1111,7 @@ bool ClientGazeController::getJointsDesired(Vector &qdes)
         if (Bottle *bDes=reply.get(1).asList())
         {
             qdes.resize(bDes->size());
-            for (size_t i=0; i<qdes.length(); i++)
+            for (size_t i=0; i<qdes.size(); i++)
                 qdes[i]=bDes->get(i).asFloat64();
 
             return true;
@@ -1143,7 +1143,7 @@ bool ClientGazeController::getJointsVelocities(Vector &qdot)
         if (Bottle *bVel=reply.get(1).asList())
         {
             qdot.resize(bVel->size());
-            for (size_t i=0; i<qdot.length(); i++)
+            for (size_t i=0; i<qdot.size(); i++)
                 qdot[i]=bVel->get(i).asFloat64();
 
             return true;
