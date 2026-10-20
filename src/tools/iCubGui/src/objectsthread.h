@@ -43,11 +43,9 @@ public:
     ObjectsManager(const char *objPortName,const char *texPortName,const char *forcePortName)
     {
         mObjPort.open((GUI_NAME+objPortName).c_str());
-        mTexPort.open((GUI_NAME+texPortName).c_str());
         mForcePort.open((GUI_NAME+forcePortName).c_str());
 
         mObjPort.setStrict();
-        mTexPort.setStrict();
         mForcePort.setStrict();
 
         /*
@@ -63,9 +61,6 @@ public:
     {
         mObjPort.interrupt();
         mObjPort.close();
-
-        mTexPort.interrupt();
-        mTexPort.close();
 
         mForcePort.interrupt();
         mForcePort.close();
@@ -97,7 +92,6 @@ public:
     }
 
     inline void manage(yarp::os::Bottle *msg);
-    inline void manage(yarp::sig::VectorOf<unsigned char> *img);
     inline void manage(iCub::skinDynLib::skinContactList &forces);
 
     /*
@@ -136,10 +130,7 @@ public:
         }
 
         // textures
-        for (yarp::sig::VectorOf<unsigned char> *imgTex; imgTex=mTexPort.read(false);)
-        {
-            manage(imgTex);
-        }
+        // NOT MANAGED FOR NOW
 
         for (iCub::skinDynLib::skinContactList *forces; forces=mForcePort.read(false);)
         {
@@ -186,7 +177,6 @@ protected:
     BVHNode ***mAB;
 
     yarp::os::BufferedPort<yarp::os::Bottle> mObjPort;
-    yarp::os::BufferedPort<yarp::sig::VectorOf<unsigned char> > mTexPort;
     yarp::os::BufferedPort<iCub::skinDynLib::skinContactList> mForcePort;
 };
 
@@ -401,93 +391,6 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         }
 
         return;
-    }
-}
-
-void ObjectsManager::manage(yarp::sig::VectorOf<unsigned char> *img)
-{
-    yarp::sig::VectorOf<unsigned char> &texture=*img;
-
-    int xdim=texture[0];
-    int ydim=texture[1];
-    std::string objName;
-
-    int c;
-    for (c=2; texture[c]; ++c)
-    {
-        objName+=texture[c];
-    }
-
-    int xdim2,ydim2;
-    for (xdim2=1; xdim2<xdim; xdim2*=2);
-    for (ydim2=1; ydim2<ydim; ydim2*=2);
-
-    unsigned char *buffer=new unsigned char[3*xdim2*ydim2];
-    int index=0;
-
-    for (int y=0; y<ydim2; ++y)
-    {
-        double v=double(y)/double(ydim2);
-        double oy=v*double(ydim);
-
-        int y0=int(oy);
-        double b1=oy-double(y0);
-        double b0=1.0-b1;
-
-        for (int x=0; x<xdim2; ++x)
-        {
-            double u=double(x)/double(xdim2);
-            double ox=u*double(xdim);
-
-            int x0=int(ox);
-            double a1=ox-double(x0);
-            double a0=1.0-a1;
-
-            int p00=c+x0+y0*xdim;
-            int p10=p00+1;
-
-            if (x0==xdim-1) p10=p00;
-
-            int p01=p00+xdim;
-            int p11=p10+xdim;
-
-            if (y0==ydim-1)
-            {
-                p01=p00;
-                p11=p10;
-            }
-
-            double grey=a0*b0*double(texture[p00])+a0*b1*double(texture[p01])+a1*b0*double(texture[p10])+a1*b1*double(texture[p11]);
-            if (grey<0.0) grey=0.0; else if (grey>255.0) grey=255.0;
-
-            unsigned char G=(unsigned char)grey;
-
-            buffer[index++]=G;
-            buffer[index++]=G;
-            buffer[index++]=G;
-        }
-    }
-
-    for (int i=0; i<(int)mObjectsRoot.size(); ++i)
-    {
-        if (mObjectsRoot[i] && *mObjectsRoot[i]==objName)
-        {
-            mObjectsRoot[i]->mW=xdim2;
-            mObjectsRoot[i]->mH=ydim2;
-            mObjectsRoot[i]->mTextureBuffer=buffer;
-            return;
-        }
-    }
-
-    for (int i=0; i<(int)mObjectsWorld.size(); ++i)
-    {
-        if (mObjectsWorld[i] && *mObjectsWorld[i]==objName)
-        {
-            mObjectsWorld[i]->mW=xdim2;
-            mObjectsWorld[i]->mH=ydim2;
-            mObjectsWorld[i]->mTextureBuffer=buffer;
-            return;
-        }
     }
 }
 
