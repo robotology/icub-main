@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -210,7 +210,7 @@ class CtrlThread : public PeriodicThread {
     iarm->getDOF(curDof);
     newDof = curDof;
 
-    if (curDof.length() > 7) {  // consider only robots w/ torso
+    if (curDof.size() > 7) {  // consider only robots w/ torso
       if (rf.check("DOF10")) {
         // torso joints completely enabled
         newDof[torsoJointsRemap["pitch"]] = 1;

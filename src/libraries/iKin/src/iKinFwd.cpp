@@ -599,7 +599,7 @@ Vector iKinChain::setAng(const Vector &q)
 {
     yAssert(DOF>0);
 
-    size_t sz=std::min(q.length(),(size_t)DOF);
+    size_t sz=std::min(q.size(),(size_t)DOF);
     for (size_t i=0; i<sz; i++)
         curr_q[i]=quickList[hash_dof[i]]->setAng(q[i]);
 
@@ -2239,10 +2239,10 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
 bool iCubFinger::getChainJoints(const Vector &motorEncoders,
                                 Vector &chainJoints)
 {
-    if ((motorEncoders.length()!=9) && (motorEncoders.length()!=16))
+    if ((motorEncoders.size()!=9) && (motorEncoders.size()!=16))
         return false;
 
-    int offs=(motorEncoders.length()==16?7:0);
+    int offs=(motorEncoders.size()==16?7:0);
 
     if (finger=="thumb")
     {
@@ -2287,17 +2287,17 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
                                 Vector &chainJoints,
                                 const Matrix &jointEncodersBounds)
 {
-    if (((motorEncoders.length()!=9) && (motorEncoders.length()!=16)) ||
-        (jointEncoders.length()<15) || (jointEncodersBounds.cols()<2))
+    if (((motorEncoders.size()!=9) && (motorEncoders.size()!=16)) ||
+        (jointEncoders.size()<15) || (jointEncodersBounds.cols()<2))
         return false;
 
-    int offs=(motorEncoders.length()==16?7:0);
+    int offs=(motorEncoders.size()==16?7:0);
 
     Matrix bounds=jointEncodersBounds;
-    if (bounds.rows()!=jointEncoders.length())
+    if (bounds.rows()!=jointEncoders.size())
     {
-        bounds=zeros((unsigned int)jointEncoders.length(),2);
-        for (size_t r=0; r<jointEncoders.length(); r++)
+        bounds=zeros((unsigned int)jointEncoders.size(),2);
+        for (size_t r=0; r<jointEncoders.size(); r++)
             bounds(r,0)=255.0;
     }
 
@@ -2305,7 +2305,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     {
         chainJoints.resize(4);
         chainJoints[0]=motorEncoders[offs+1];
-        for (unsigned int i=1; i<chainJoints.length(); i++)
+        for (unsigned int i=1; i<chainJoints.size(); i++)
         {
             double c=0.0;
             double span=bounds(i-1,1)-bounds(i-1,0);
@@ -2320,7 +2320,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     {
         chainJoints.resize(4);
         chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
-        for (unsigned int i=1; i<chainJoints.length(); i++)
+        for (unsigned int i=1; i<chainJoints.size(); i++)
         {
             double c=0.0;
             double span=bounds(i+2,1)-bounds(i+2,0);
@@ -2334,7 +2334,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     else if (finger=="middle")
     {
         chainJoints.resize(3);
-        for (unsigned int i=0; i<chainJoints.length(); i++)
+        for (unsigned int i=0; i<chainJoints.size(); i++)
         {
             double c=0.0;
             double span=bounds(i+6,1)-bounds(i+6,0);
@@ -2349,7 +2349,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     {
         chainJoints.resize(4);
         chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
-        for (unsigned int i=1; i<chainJoints.length(); i++)
+        for (unsigned int i=1; i<chainJoints.size(); i++)
         {
             double c=0.0;
             double span=bounds(i+8,1)-bounds(i+8,0);
@@ -2364,7 +2364,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
     {
         chainJoints.resize(4);
         chainJoints[0]=(fingers_abduction_max-motorEncoders[offs+0])/3.0;
-        for (unsigned int i=1; i<chainJoints.length(); i++)
+        for (unsigned int i=1; i<chainJoints.size(); i++)
         {
             double c=0.0;
             double span=bounds(i+11,1)-bounds(i+11,0);

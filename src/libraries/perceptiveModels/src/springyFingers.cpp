@@ -188,14 +188,14 @@ bool SpringyFinger::extractSensorsData(Vector &in, Vector &out) const
             if (Bottle *b2=b1->find("in").asList())
             {
                 in.resize(b2->size());
-                for (size_t i=0; i<in.length(); i++)
+                for (size_t i=0; i<in.size(); i++)
                     in[i]=b2->get(i).asFloat64();
             }
 
             if (Bottle *b2=b1->find("out").asList())
             {
                 out.resize(b2->size());
-                for (size_t i=0; i<out.length(); i++)
+                for (size_t i=0; i<out.size(); i++)
                     out[i]=b2->get(i).asFloat64();
 
                 ret=true;
@@ -217,7 +217,7 @@ bool SpringyFinger::getOutput(Value &out) const
     i[0]=scaler.transform(i[0]);
     Vector pred=lssvm.predict(i).getPrediction();
 
-    for (size_t j=0; j<pred.length(); j++)
+    for (size_t j=0; j<pred.size(); j++)
         pred[j]=scaler.unTransform(pred[j]);
 
     out=Value(outputGain*norm(o-pred));
@@ -238,7 +238,7 @@ bool SpringyFinger::calibrate(const Property &options)
         if (extractSensorsData(in,out))
         {
             in[0]=scaler.transform(in[0]);
-            for (size_t i=0; i<out.length(); i++)
+            for (size_t i=0; i<out.size(); i++)
                 out[i]=scaler.transform(out[i]);
 
             lssvm.feedSample(in,out);
@@ -329,7 +329,14 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     IEncoderArrays *iencarray; drvMAIS.view(iencarray);
 
     propGen.clear();
-    propGen.put("num_arrays",(int)iencarray->getNrOfEncoderArrays());
+    size_t nrOfArrays;
+    if (!iencarray->getNrOfEncoderArrays(nrOfArrays))
+    {
+        printMessage(log::error,1,"unable to get number of encoder arrays");
+        close();
+        return false;
+    }
+    propGen.put("num_arrays",(int)nrOfArrays);
     propGen.put("index_array",0);
 
     Property thumb_mp=propGen;   thumb_mp.put(  "name","Out_0");   thumb_mp.put("index_element","1");

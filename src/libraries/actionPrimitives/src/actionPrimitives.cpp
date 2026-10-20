@@ -102,11 +102,11 @@ class ArmWayPoints : public PeriodicThread
     {
         if (wayPoints[i].oEnabled)
             action->printMessage(log::no_info,"reaching waypoint(%d): x=[%s]; o=[%s]",i,
-                                 wayPoints[i].x.toString(3,3).c_str(),
-                                 wayPoints[i].o.toString(3,3).c_str());
+                                 wayPoints[i].x.toFormattedString(3,3).c_str(),
+                                 wayPoints[i].o.toFormattedString(3,3).c_str());
         else
             action->printMessage(log::no_info,"reaching waypoint(%d): x=[%s]",i,
-                                 wayPoints[i].x.toString(3,3).c_str());
+                                 wayPoints[i].x.toFormattedString(3,3).c_str());
     }
 
     /************************************************************************/
@@ -268,7 +268,7 @@ public:
     /************************************************************************/
     void run()
     {
-        size_t len=restPos.length();
+        size_t len=restPos.size();
         if ((cartCtrl!=NULL) && (len>=3))
         {
             Vector halves(len,0.5);
@@ -1160,8 +1160,8 @@ bool ActionPrimitives::reachPose(const Vector &x, const Vector &o,
         cartCtrl->goToPose(x,o,t);
 
         printMessage(log::no_info,"reach at %g [s] for [%s], [%s]",t,
-                     x.toString(3,3).c_str(),
-                     o.toString(3,3).c_str());
+                     x.toFormattedString(3,3).c_str(),
+                     o.toFormattedString(3,3).c_str());
 
         postReachCallback();
 
@@ -1189,7 +1189,7 @@ bool ActionPrimitives::reachPosition(const Vector &x, const double execTime)
 
 
         printMessage(log::no_info,"reach at %g [s] for [%s]",t,
-                     x.toString(3,3).c_str());
+                     x.toFormattedString(3,3).c_str());
 
         postReachCallback();
 
@@ -1282,8 +1282,8 @@ void ActionPrimitives::run()
         if ((t-latchTimerReachLog)>ACTIONPRIM_DUMP_PERIOD)
         {
             printMessage(log::no_info,"reaching... xdhat=[%s] |e|=%.3f [m]; odhat=[%s] |e|=%.3f",
-                         xdhat.toString(3,3).c_str(),norm(xdhat-x),
-                         odhat.toString(3,3).c_str(),norm(odhat-o));
+                         xdhat.toFormattedString(3,3).c_str(),norm(xdhat-x),
+                         odhat.toFormattedString(3,3).c_str(),norm(odhat-o));
 
             latchTimerReachLog=t;
         }
@@ -1438,8 +1438,8 @@ bool ActionPrimitives::cmdArm(const Action &action)
             }
 
             printMessage(log::no_info,"reach at %g [s] for [%s], [%s]",t,
-                         x.toString(3,3).c_str(),
-                         o.toString(3,3).c_str());
+                         x.toFormattedString(3,3).c_str(),
+                         o.toFormattedString(3,3).c_str());
         }
         else
         {
@@ -1450,7 +1450,7 @@ bool ActionPrimitives::cmdArm(const Action &action)
             }
 
             printMessage(log::no_info,"reach at %g [s] for [%s]",t,
-                         x.toString(3,3).c_str());
+                         x.toFormattedString(3,3).c_str());
         }
 
         postReachCallback();
@@ -1502,7 +1502,7 @@ bool ActionPrimitives::cmdHand(const Action &action)
         curGraspDetectionThres=thres;
         curHandTmo=tmo;
 
-        size_t sz=std::min(fingersJnts.size(),std::min(poss.length(),vels.length()));
+        size_t sz=std::min(fingersJnts.size(),std::min(poss.size(),vels.size()));
         for (size_t i=0; i<sz; i++)
         {
             int j=fingersJnts[i];
@@ -1518,8 +1518,8 @@ bool ActionPrimitives::cmdHand(const Action &action)
         fingerInPosition.clear();
         fingerInPosition.insert(fingerInPosition.begin(),5,true);
         printMessage(log::no_info,"\"%s\" WP: [%s] (thres = [%s]) (tmo = %g)",
-                     tag.c_str(),poss.toString(3,3).c_str(),
-                     thres.toString(3,3).c_str(),tmo);
+                     tag.c_str(),poss.toFormattedString(3,3).c_str(),
+                     thres.toFormattedString(3,3).c_str(),tmo);
 
         latchTimerHand=Time::now();
 
@@ -1535,7 +1535,7 @@ bool ActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &poss
                                     const Vector &vels, const Vector &tols, const Vector &thres,
                                     const double tmo)
 {
-    if ((poss.length()==9) && (vels.length()==9) && (tols.length()==9) && (thres.length()==5))
+    if ((poss.size()==9) && (vels.size()==9) && (tols.size()==9) && (thres.size()==5))
     {
         HandWayPoint handWP;
 
@@ -1612,25 +1612,25 @@ bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &s
         Bottle *bPoss=bWP.find("poss").asList();
         Vector poss(bPoss->size());
 
-        for (size_t k=0; k<poss.length(); k++)
+        for (size_t k=0; k<poss.size(); k++)
             poss[k]=bPoss->get(k).asFloat64();
 
         Bottle *bVels=bWP.find("vels").asList();
         Vector vels(bVels->size());
 
-        for (size_t k=0; k<vels.length(); k++)
+        for (size_t k=0; k<vels.size(); k++)
             vels[k]=bVels->get(k).asFloat64();
 
         Bottle *bTols=bWP.find("tols").asList();
         Vector tols(bTols->size());
 
-        for (size_t k=0; k<tols.length(); k++)
+        for (size_t k=0; k<tols.size(); k++)
             tols[k]=bTols->get(k).asFloat64();
 
         Bottle *bThres=bWP.find("thres").asList();
         Vector thres(bThres->size());
 
-        for (size_t k=0; k<thres.length(); k++)
+        for (size_t k=0; k<thres.size(); k++)
             thres[k]=bThres->get(k).asFloat64();
 
         double tmo=bWP.find("tmo").asFloat64();
@@ -1712,28 +1712,28 @@ bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequenc
             Bottle &bPoss=bWP.addList();
             bPoss.addString("poss");
             Bottle &bPossVects=bPoss.addList();
-            for (size_t j=0; j<handWP[i].poss.length(); j++)
+            for (size_t j=0; j<handWP[i].poss.size(); j++)
                 bPossVects.addFloat64(handWP[i].poss[j]);
 
             // vels part
             Bottle &bVels=bWP.addList();
             bVels.addString("vels");
             Bottle &bVelsVects=bVels.addList();
-            for (size_t j=0; j<handWP[i].vels.length(); j++)
+            for (size_t j=0; j<handWP[i].vels.size(); j++)
                 bVelsVects.addFloat64(handWP[i].vels[j]);
 
             // tols part
             Bottle &bTols=bWP.addList();
             bTols.addString("tols");
             Bottle &bTolsVects=bTols.addList();
-            for (size_t j=0; j<handWP[i].tols.length(); j++)
+            for (size_t j=0; j<handWP[i].tols.size(); j++)
                 bTolsVects.addFloat64(handWP[i].tols[j]);
 
             // thres part
             Bottle &bThres=bWP.addList();
             bThres.addString("thres");
             Bottle &bThresVects=bThres.addList();
-            for (size_t j=0; j<handWP[i].thres.length(); j++)
+            for (size_t j=0; j<handWP[i].thres.size(); j++)
                 bThresVects.addFloat64(handWP[i].thres[j]);
 
             // tmo part
@@ -1835,7 +1835,7 @@ bool ActionPrimitives::setTorsoJoints(const Vector &torso)
 {
     if (configured)
     {
-        size_t len=std::min(torso.length(),size_t(3));
+        size_t len=std::min(torso.size(),size_t(3));
         for (size_t i=0; i<len; i++)
             enableTorsoSw[i]=torso[i];
 
@@ -1944,7 +1944,7 @@ bool ActionPrimitives::enableArmWaving(const Vector &restPos)
     {
         RES_WAVER(armWaver)->setRestPosition(restPos);
         printMessage(log::no_info,"setting waving position to %s",
-                     restPos.toString(3,3).c_str());
+                     restPos.toFormattedString(3,3).c_str());
 
         if (RES_WAVER(armWaver)->enable())
             printMessage(log::no_info,"arm waving enabled");
@@ -2133,7 +2133,7 @@ void liftAndGraspCallback::exec()
         Vector x,o;
         action->cartCtrl->getPose(x,o);
         action->printMessage(log::no_info,"logged 3-d pos: [%s]",
-                             x.toString(3,3).c_str());
+                             x.toFormattedString(3,3).c_str());
 
         action->pushAction(x+action->grasp_d2,action->grasp_o);
     }
@@ -2202,7 +2202,7 @@ void ActionPrimitivesLayer2::run()
     // get the input from WBDYN
     if (Vector *wbdynWrench=wbdynPortIn.read(false))
     {
-        size_t len=std::min(wbdynWrench->length(),wrenchExternal.length());
+        size_t len=std::min(wbdynWrench->size(),wrenchExternal.size());
         for (size_t i=0; i<len; i++)
             wrenchExternal[i]=(*wbdynWrench)[i];
     }
@@ -2225,7 +2225,7 @@ void ActionPrimitivesLayer2::run()
         cartCtrl->stopControl();
 
         printMessage(log::warning,"contact detected on arm: external force [%s], (%g>%g) => stopping arm",
-                     forceExternal.toString(3,3).c_str(),forceExternalAbs,ext_force_thres);
+                     forceExternal.toFormattedString(3,3).c_str(),forceExternalAbs,ext_force_thres);
 
         disableTorsoDof();
 

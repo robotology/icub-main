@@ -58,7 +58,7 @@ Kalman::Kalman(const Matrix &_A, const Matrix &_B, const Matrix &_H,
 /**********************************************************************/
 bool Kalman::init(const Vector &_x0, const Matrix &_P0)
 {
-    if ((_x0.length()==x.length()) && (_P0.rows()==P.rows()) && (_P0.cols()==P.cols()))
+    if ((_x0.size()==x.size()) && (_P0.rows()==P.rows()) && (_P0.cols()==P.cols()))
     {
         x=_x0;
         P=_P0;

@@ -24,6 +24,7 @@
 #define __embObjFTsensor_h__
 
 #include <yarp/dev/DeviceDriver.h>
+#include <yarp/dev/ReturnValue.h>
 #include "IethResource.h"
 
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
@@ -60,19 +61,19 @@ public:
     virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 
     // ITemperatureSensors
-    virtual size_t getNrOfTemperatureSensors() const override;
+    virtual yarp::dev::ReturnValue getNrOfTemperatureSensors(size_t &n) const override;
     virtual yarp::dev::MAS_status getTemperatureSensorStatus(size_t sens_index) const override;
-    virtual bool getTemperatureSensorName(size_t sens_index, std::string &name) const override;
-    virtual bool getTemperatureSensorFrameName(size_t sens_index, std::string &frameName) const override;
-    virtual bool getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const override;
-    virtual bool getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+    virtual yarp::dev::ReturnValue getTemperatureSensorName(size_t sens_index, std::string &name) const override;
+    virtual yarp::dev::ReturnValue getTemperatureSensorFrameName(size_t sens_index, std::string &frameName) const override;
+    virtual yarp::dev::ReturnValue getTemperatureSensorMeasure(size_t sens_index, double& out, double& timestamp) const override;
+    virtual yarp::dev::ReturnValue getTemperatureSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
 
     // ISixAxisForceTorqueSensors
-    virtual size_t getNrOfSixAxisForceTorqueSensors() const override;
+    virtual yarp::dev::ReturnValue getNrOfSixAxisForceTorqueSensors(size_t &n) const override;
     virtual yarp::dev::MAS_status getSixAxisForceTorqueSensorStatus(size_t sens_index) const override;
-    virtual bool getSixAxisForceTorqueSensorName(size_t sens_index, std::string &name) const override;
-    virtual bool getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string &frameName) const override;
-    virtual bool getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+    virtual yarp::dev::ReturnValue getSixAxisForceTorqueSensorName(size_t sens_index, std::string &name) const override;
+    virtual yarp::dev::ReturnValue getSixAxisForceTorqueSensorFrameName(size_t sens_index, std::string &frameName) const override;
+    virtual yarp::dev::ReturnValue getSixAxisForceTorqueSensorMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
 
 
 private:

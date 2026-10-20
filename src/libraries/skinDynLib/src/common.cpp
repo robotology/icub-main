@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <iCub/ctrl/vectorUtils.h>
 #include "iCub/skinDynLib/common.h"
 
 using namespace std;
@@ -80,7 +81,7 @@ yarp::sig::Vector iCub::skinDynLib::toVector(yarp::sig::Matrix m)
 
     for (int r = 0; r < m.rows(); r++)
     {
-        res.setSubvector(r*m.cols(),m.getRow(r));
+        iCub::ctrl::setSubVector(res, r*m.cols(), m.getRow(r));
     }
 
     return res;
