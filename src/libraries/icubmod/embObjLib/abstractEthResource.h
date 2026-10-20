@@ -30,6 +30,7 @@
 
 
 #include "hostTransceiver.hpp"
+#include "posServiceConfiguration.h"
 
 
 using namespace std;
@@ -101,6 +102,9 @@ namespace eth {
         virtual bool isFake() = 0;
 
         virtual HostTransceiver * getTransceiver() = 0;
+
+    protected:
+        POSServiceConfiguration posServiceConfiguration;
 
     };
 

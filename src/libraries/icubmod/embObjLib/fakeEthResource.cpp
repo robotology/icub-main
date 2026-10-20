@@ -151,6 +151,7 @@ bool FakeEthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 bool FakeEthResource::close()
 {
     yTrace();
+    posServiceConfiguration.clearOnStop(eomn_serv_category_all);
     return false;
 }
 
@@ -260,6 +261,14 @@ bool FakeEthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
 
 bool FakeEthResource::serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout)
 {
+    eOmn_serv_parameter_t prepared {};
+    if(!posServiceConfiguration.prepare(category, param, prepared))
+    {
+        yError() << "FakeEthResource::serviceVerifyActivate(): MC without PROPERTIES.POS requires"
+                 << "standalone POS to be activated first on BOARD" << getProperties().boardnameString;
+        return false;
+    }
+    posServiceConfiguration.rememberActivated(category, param ? &prepared : nullptr);
     return true;
 }
 
@@ -278,6 +287,7 @@ bool FakeEthResource::serviceStart(eOmn_serv_category_t category, double timeout
 
 bool FakeEthResource::serviceStop(eOmn_serv_category_t category, double timeout)
 {
+    posServiceConfiguration.clearOnStop(category);
     return true; 
 }
 
