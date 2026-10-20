@@ -15,6 +15,7 @@
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 * Public License for more details
 */
+#include <cmath>
 #include <utility>
 #include <yarp/os/Time.h>
 #include <yarp/cv/Cv.h>
@@ -147,13 +148,13 @@ void VisuoThread::startTracker(const Vector &stereo, const int &side)
         tpl.resize(side,side);
         cv::Mat tplMat=yarp::cv::toCvMat(tpl);
 
-        int x=stereo[2*eye_in_use]-0.5*side<0?0:cvRound(stereo[2*eye_in_use]-0.5*side);
-        int y=stereo[2*eye_in_use+1]-0.5*side<0?0:cvRound(stereo[2*eye_in_use+1]-0.5*side);
+        int x=stereo[2*eye_in_use]-0.5*side<0?0:static_cast<int>(std::lround(stereo[2*eye_in_use]-0.5*side));
+        int y=stereo[2*eye_in_use+1]-0.5*side<0?0:static_cast<int>(std::lround(stereo[2*eye_in_use+1]-0.5*side));
         int width=stereo[2*eye_in_use]+0.5*side>=imgMat.cols?imgMat.cols-x:side;
         int height=stereo[2*eye_in_use+1]+0.5*side>=imgMat.rows?imgMat.rows-y:side;
         
         imgMat(cv::Rect(x,y,width,height)).copyTo(tplMat);
-        cv::cvtColor(tplMat,tplMat,CV_BGR2RGB);
+        cv::cvtColor(tplMat,tplMat,cv::COLOR_BGR2RGB);
 
         pftOutPort.write(tpl);
     }
@@ -212,7 +213,7 @@ void VisuoThread::updateLocationsMIL()
         for(int i=0; i<bLocations->get(0).asList()->size(); i++)
         {
             Bottle *b=bLocations->get(0).asList()->get(i).asList();
-            locations[b->get(0).asString()]=cvPoint(b->get(1).asInt32(),b->get(2).asInt32());
+            locations[b->get(0).asString()]=cv::Point(b->get(1).asInt32(),b->get(2).asInt32());
         }
     }
 }
@@ -245,7 +246,7 @@ void VisuoThread::updateMotionCUT()
             Item item;
             item.t=Time::now();
             item.size=bMotion[cam]->get(0).asList()->get(2).asFloat64();
-            item.p=cvPoint(bMotion[cam]->get(0).asList()->get(0).asInt32(),bMotion[cam]->get(0).asList()->get(1).asInt32());
+            item.p=cv::Point(bMotion[cam]->get(0).asList()->get(0).asInt32(),bMotion[cam]->get(0).asList()->get(1).asInt32());
             buffer[cam].push_back(item);
 
             stereo[2*cam]=bMotion[cam]->get(0).asList()->get(0).asFloat64();
@@ -304,24 +305,24 @@ void VisuoThread::updatePFTracker()
         if(stereoTracker.vec.size()==12)
         {
             cv::Mat tmpL=yarp::cv::toCvMat(drawImg[LEFT]);
-            cv::circle(tmpL,cv::Point(cvRound(stereoTracker.vec[0]),cvRound(stereoTracker.vec[1])),3,cv::Scalar(0,255),3);
-            cv::rectangle(tmpL,cv::Point(cvRound(stereoTracker.vec[2]),cvRound(stereoTracker.vec[3])),
-                          cv::Point(cvRound(stereoTracker.vec[4]),cvRound(stereoTracker.vec[5])),cv::Scalar(0,255),3);
+            cv::circle(tmpL,cv::Point(static_cast<int>(std::lround(stereoTracker.vec[0])),static_cast<int>(std::lround(stereoTracker.vec[1]))),3,cv::Scalar(0,255),3);
+            cv::rectangle(tmpL,cv::Point(static_cast<int>(std::lround(stereoTracker.vec[2])),static_cast<int>(std::lround(stereoTracker.vec[3]))),
+                          cv::Point(static_cast<int>(std::lround(stereoTracker.vec[4])),static_cast<int>(std::lround(stereoTracker.vec[5]))),cv::Scalar(0,255),3);
 
             cv::Mat tmpR=yarp::cv::toCvMat(drawImg[RIGHT]);
-            cv::circle(tmpR,cv::Point(cvRound(stereoTracker.vec[6]),cvRound(stereoTracker.vec[7])),3,cv::Scalar(0,255),3);
-            cv::rectangle(tmpR,cv::Point(cvRound(stereoTracker.vec[8]),cvRound(stereoTracker.vec[9])),
-                          cv::Point(cvRound(stereoTracker.vec[10]),cvRound(stereoTracker.vec[11])),cv::Scalar(0,255),3);
+            cv::circle(tmpR,cv::Point(static_cast<int>(std::lround(stereoTracker.vec[6])),static_cast<int>(std::lround(stereoTracker.vec[7]))),3,cv::Scalar(0,255),3);
+            cv::rectangle(tmpR,cv::Point(static_cast<int>(std::lround(stereoTracker.vec[8])),static_cast<int>(std::lround(stereoTracker.vec[9]))),
+                          cv::Point(static_cast<int>(std::lround(stereoTracker.vec[10])),static_cast<int>(std::lround(stereoTracker.vec[11]))),cv::Scalar(0,255),3);
 
             Bottle v;
             v.clear();
             Bottle &vl=v.addList();
-            vl.addInt32(cvRound(stereoTracker.vec[0]));
-            vl.addInt32(cvRound(stereoTracker.vec[1]));
+            vl.addInt32(static_cast<int>(std::lround(stereoTracker.vec[0])));
+            vl.addInt32(static_cast<int>(std::lround(stereoTracker.vec[1])));
             vl.addInt32(stereoTracker.side);
             Bottle &vr=v.addList();
-            vr.addInt32(cvRound(stereoTracker.vec[6]));
-            vr.addInt32(cvRound(stereoTracker.vec[7]));
+            vr.addInt32(static_cast<int>(std::lround(stereoTracker.vec[6])));
+            vr.addInt32(static_cast<int>(std::lround(stereoTracker.vec[7])));
             vr.addInt32(stereoTracker.side);
 
             boundMILPort.write(v);
@@ -617,7 +618,7 @@ bool VisuoThread::getMotion(Bottle &bStereo)
                 size+=size_cam;
             }
 
-            int side=cvRound(2*sqrt(size/3.1415)*2);
+            int side=static_cast<int>(std::lround(2*sqrt(size/3.1415)*2));
 
             if (p[LEFT].size()==2 && p[RIGHT].size()==2)
             {
@@ -627,7 +628,7 @@ bool VisuoThread::getMotion(Bottle &bStereo)
                 stereo[2]=p[RIGHT][0];
                 stereo[3]=p[RIGHT][1];
                 
-                startTracker(stereo,cvRound(side));
+                startTracker(stereo,side);
 
                 ok=true;
             }
@@ -864,5 +865,3 @@ void VisuoThread::reinstate()
 
     interrupted=false;
 }
-
-

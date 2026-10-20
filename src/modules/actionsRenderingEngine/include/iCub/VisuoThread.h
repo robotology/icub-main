@@ -28,7 +28,7 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Image.h>
 
-#include <opencv2/core/core_c.h>
+#include <opencv2/core.hpp>
 
 #include <mutex>
 #include <string>
@@ -124,12 +124,12 @@ private:
     {
         double  t;
         double  size;
-        CvPoint p;
+        cv::Point p;
     };
 
     deque<Item>                 buffer[2];
-    //map<string,CvPoint>         locations[2];
-    map<string,CvPoint>         locations;
+    //map<string,cv::Point>       locations[2];
+    map<string,cv::Point>       locations;
 
 
     bool getFixation(Bottle &bStereo);
@@ -199,5 +199,3 @@ public:
 };
 
 #endif
-
-
