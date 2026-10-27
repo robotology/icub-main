@@ -7,10 +7,26 @@
 
 #include <yarp/os/Property.h>
 
+#include <cstddef>
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+
+// Keep the host packet compatible with the shared firmware ABI, including fillers.
+static_assert(sizeof(eoas_pos_SensorConfig_t) == 4);
+static_assert(sizeof(eoas_pos_BoardConfig_t) == 24);
+static_assert(sizeof(eOmn_serv_config_data_as_pos_t) == 24);
+static_assert(sizeof(eOmn_serv_config_data_mc_mc4plusfaps_t) == 340);
+static_assert(sizeof(eOmn_serv_configuration_t) == 344);
+static_assert(sizeof(eOmn_serv_parameter_t) == 344);
+static_assert(sizeof(eOmn_service_cmmnds_command_t) == 348);
+static_assert(offsetof(eoas_pos_BoardConfig_t, sensors) == 8);
+static_assert(offsetof(eOmn_serv_config_data_mc_mc4plusfaps_t, pos) == 0);
+static_assert(offsetof(eOmn_serv_config_data_mc_mc4plusfaps_t, arrayofjomodescriptors) == 24);
+static_assert(offsetof(eOmn_serv_config_data_mc_mc4plusfaps_t, jomocoupling) == 48);
+static_assert(offsetof(eOmn_serv_configuration_t, data) == 4);
+static_assert(offsetof(eOmn_service_cmmnds_command_t, parameter) == 4);
 
 namespace {
 
@@ -52,21 +68,6 @@ bool parse(ServiceParser& parser, const std::string& pos, servConfigMC_t& result
     return parser.parseService(config, result);
 }
 
-void checkLegacy(const servConfigMC_t& result)
-{
-    const auto& board = result.ethservice.configuration.data.mc.mc4plusfaps.pos.config.boardconfig[0];
-    check(board.boardinfo.type == eobrd_cantype_mtb4c && board.boardinfo.protocol.major == 2 &&
-          board.canloc.port == 0 && board.canloc.addr == 1, "Legacy board metadata and location preserved");
-    for (size_t s = 0; s < eOas_pos_sensorsinboard_maxnumber; ++s)
-    {
-        const auto& sensor = board.sensors[s];
-        check(sensor.connector == s && sensor.port == s && sensor.enabled == 1 &&
-              sensor.type == eoas_pos_TYPE_decideg && sensor.invertdirection == 0 &&
-              sensor.rotation == eoas_pos_ROT_zero && sensor.offset == 0,
-              "Legacy embedded sensor defaults preserved");
-    }
-}
-
 } // namespace
 
 int main(int argc, char* argv[])
@@ -74,14 +75,12 @@ int main(int argc, char* argv[])
     try
     {
         ServiceParser parser;
-        servConfigMC_t legacy {}, omitted {}, empty {}, restored {};
-        check(parse(parser, "(POS (location CAN1:1))", legacy), "Legacy POS group parses");
-        checkLegacy(legacy);
+        servConfigMC_t omitted {}, empty {};
 
-        // Poison the output to detect fields left uninitialized by the parser.
-        std::memset(&omitted.ethservice.configuration, 0xa5, sizeof(omitted.ethservice.configuration));
+        // Poison POS data to detect fields left uninitialized by the parser.
+        auto& dependency = omitted.ethservice.configuration.data.mc.mc4plusfaps.pos;
+        std::memset(&dependency, 0xa5, sizeof(dependency));
         check(parse(parser, "", omitted), "Entire MC POS group can be omitted");
-        check(parser.mc_service.properties.poslocations.empty(), "Omitted POS clears the previous dependency location");
         check(parse(parser, "(POS)", empty), "Empty MC POS group is equivalent to omission");
         const auto& omittedData = omitted.ethservice.configuration.data.mc.mc4plusfaps;
         const auto& emptyData = empty.ethservice.configuration.data.mc.mc4plusfaps;
@@ -91,51 +90,33 @@ int main(int argc, char* argv[])
         expected.config.boardconfig[0].boardinfo.type = eobrd_cantype_none;
         check(std::memcmp(&omittedData.pos, &expected, sizeof(expected)) == 0,
               "Absent POS dependency is explicitly marked and otherwise zero-initialized");
-        const auto& legacyData = legacy.ethservice.configuration.data.mc.mc4plusfaps;
-        check(std::memcmp(&omittedData.arrayofjomodescriptors, &legacyData.arrayofjomodescriptors,
-                          sizeof(legacyData.arrayofjomodescriptors)) == 0,
-              "Actuator and encoder descriptors are unchanged when POS is omitted");
         check(parser.mc_service.properties.numofjoints == 4 &&
               parser.getEncoderAtJoint(0)->resolution == 65535 &&
               parser.getEncoderAtJoint(0)->tolerance == 5 &&
               parser.getEncoderAtMotor(0)->resolution == 1600,
               "Encoder placement, resolution and tolerance remain available");
-        check(parse(parser, "(POS (location CAN1:1))", restored), "Legacy parsing still works after omission");
-        check(std::memcmp(&legacy.ethservice.configuration, &restored.ethservice.configuration,
-                          sizeof(legacy.ethservice.configuration)) == 0,
-              "Reusing a parser does not alter the legacy packet");
-
+        // Obsolete MC POS fields must not be interpreted, even if malformed.
         servConfigMC_t ignored {};
-        check(parse(parser, "(POS (location CAN1:1) (SENSORS (connector ignored)) (SETTINGS (acquisitionRate 99)))", ignored),
-              "Legacy duplicated sensor and settings fields remain ignored");
-        check(std::memcmp(&legacy.ethservice.configuration, &ignored.ethservice.configuration,
-                          sizeof(legacy.ethservice.configuration)) == 0, "Ignored fields do not change the legacy packet");
-
-        check(!parse(parser, "(POS (location CAN1:1 CAN1:2))", ignored), "Multiple POS locations remain invalid");
-        check(!parse(parser, "(POS (location invalid))", ignored), "Invalid POS location remains rejected");
-        check(!parse(parser, "(POS (SENSORS (id sensor)))", ignored), "Nonempty legacy POS without location is rejected");
-        auto noBoards = motionConfig("(POS (location CAN1:1))", "");
-        check(!parser.parseService(noBoards, ignored), "Legacy MC still requires CANBOARDS");
-        auto emptyBoards = motionConfig("(POS (location CAN1:1))",
-            "(CANBOARDS (type) (PROTOCOL (major) (minor)) (FIRMWARE (major) (minor) (build)))");
-        check(!parser.parseService(emptyBoards, ignored), "Empty CANBOARDS cannot cause unchecked vector access");
-        auto multipleBoards = motionConfig("(POS (location CAN1:1))",
-            "(CANBOARDS (type mtb4c mtb4c) (PROTOCOL (major 2 2) (minor 0 0))"
-            " (FIRMWARE (major 0 0) (minor 0 0) (build 0 0)))");
-        check(!parser.parseService(multipleBoards, ignored), "Legacy POS rejects an inconsistent CANBOARDS count");
+        for (const std::string pos : {"(POS (location CAN1:1))",
+             "(POS (location invalid))", "(POS (location CAN1:1 CAN1:2))",
+             "(POS (SENSORS (connector ignored)) (SETTINGS (acquisitionRate invalid)))"})
+        {
+            check(parse(parser, pos, ignored), "Obsolete MC POS group is ignored");
+            check(std::memcmp(&omitted.ethservice.configuration, &ignored.ethservice.configuration,
+                              sizeof(omitted.ethservice.configuration)) == 0,
+                  "Obsolete POS fields cannot change MC configuration");
+        }
         auto basicMC = motionConfig("", "", "eomn_serv_MC_mc4plus");
         check(parser.parseService(basicMC, ignored), "Plain mc4plus service remains supported");
-        auto independentMC = motionConfig("", "");
-        servConfigMC_t independent {};
-        check(parser.parseService(independentMC, independent), "MC can omit both POS and its duplicated CANBOARDS");
-        check(std::memcmp(&independent.ethservice.configuration, &empty.ethservice.configuration,
-                          sizeof(independent.ethservice.configuration)) == 0,
-              "Removing unused CANBOARDS does not alter the unresolved MC packet");
-        check(!parse(parser, "(POS (location CAN1:1:0))", ignored), "POS dependency must use a local CAN bus");
+        auto noBoards = motionConfig("", "");
+        check(!parser.parseService(noBoards, ignored), "MC still requires CANBOARDS when POS is omitted");
+        auto malformedBoards = motionConfig("", "(CANBOARDS (type mtb4c))");
+        check(!parser.parseService(malformedBoards, ignored), "MC still validates CANBOARDS protocol and firmware fields");
         yarp::os::Property noMapping;
-        noMapping.fromString("(SERVICE (type eomn_serv_MC_mc4plusfaps) (PROPERTIES (ETHBOARD (type mc4plus))))");
+        noMapping.fromString("(SERVICE (type eomn_serv_MC_mc4plusfaps) (PROPERTIES "
+            "(ETHBOARD (type mc4plus)) " + canboards + "))");
         check(!parser.parseService(noMapping, ignored), "Omitting POS does not bypass mandatory JOINTMAPPING validation");
-        auto badEncoderText = independentMC.toString();
+        auto badEncoderText = motionConfig("").toString();
         const auto port = badEncoderText.find("POS:hand_thumb_oc");
         check(port != std::string::npos, "Encoder test fixture contains the expected POS port");
         badEncoderText.replace(port, std::string("POS:hand_thumb_oc").size(), "POS:invalid");
@@ -165,7 +146,7 @@ int main(int argc, char* argv[])
         eOmn_serv_parameter_t prepared {};
         check(!cache.prepare(eomn_serv_category_mc, &omitted.ethservice, prepared),
               "MC dependency cannot be resolved before standalone POS activation");
-        cache.rememberActivated(eomn_serv_category_mc, &legacy.ethservice);
+        cache.rememberActivated(eomn_serv_category_mc, &omitted.ethservice);
         check(!cache.prepare(eomn_serv_category_mc, &omitted.ethservice, prepared),
               "An MC request cannot masquerade as standalone POS activation");
         cache.rememberActivated(eomn_serv_category_pos, &standalone.ethservice);
@@ -187,9 +168,14 @@ int main(int argc, char* argv[])
         eth::POSServiceConfiguration otherBoard;
         check(!otherBoard.prepare(eomn_serv_category_mc, &omitted.ethservice, prepared),
               "POS configuration cannot leak into a different Ethernet resource");
-        check(cache.prepare(eomn_serv_category_mc, &legacy.ethservice, prepared) &&
-              std::memcmp(&prepared, &legacy.ethservice, sizeof(prepared)) == 0,
-              "Explicit legacy MC configuration passes through unchanged");
+        auto embedded = omitted.ethservice;
+        embedded.configuration.data.mc.mc4plusfaps.pos.config.boardconfig[0].boardinfo.type = eobrd_cantype_mtb4c;
+        check(!otherBoard.prepare(eomn_serv_category_mc, &embedded, prepared),
+              "Prepopulated embedded POS cannot bypass standalone POS activation");
+        check(cache.prepare(eomn_serv_category_mc, &embedded, prepared) &&
+              std::memcmp(&prepared.configuration.data.mc.mc4plusfaps.pos,
+                          &standalone.ethservice.configuration.data.as.pos, sizeof(resolved.pos)) == 0,
+              "Activated standalone POS always replaces embedded MC POS data");
         auto alternative = standalone.ethservice;
         alternative.configuration.data.as.pos.config.boardconfig[0].sensors[0].connector = 0;
         cache.rememberActivated(eomn_serv_category_pos, &alternative);
@@ -223,8 +209,8 @@ int main(int argc, char* argv[])
         check(fake.serviceStop(eomn_serv_category_pos) &&
               !fake.serviceVerifyActivate(eomn_serv_category_mc, &omitted.ethservice),
               "Fake resource does not reuse a stopped POS service");
-        check(fake.serviceVerifyActivate(eomn_serv_category_mc, &legacy.ethservice),
-              "Fake resource preserves explicit legacy MC activation");
+        check(!fake.serviceVerifyActivate(eomn_serv_category_mc, &embedded),
+              "Fake resource rejects prepopulated MC POS without standalone activation");
     }
     catch (const std::exception& error)
     {

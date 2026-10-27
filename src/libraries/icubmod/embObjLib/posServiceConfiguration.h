@@ -28,11 +28,6 @@ public:
         }
 
         auto& dependency = prepared.configuration.data.mc.mc4plusfaps.pos;
-        if(dependency.config.boardconfig[0].boardinfo.type != eobrd_cantype_none)
-        {
-            return true; // An explicit legacy POS dependency remains unchanged.
-        }
-
         std::lock_guard<std::mutex> lock(mutex);
         if(!available)
         {

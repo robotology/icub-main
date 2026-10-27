@@ -922,7 +922,7 @@ bool EthResource::serviceVerifyActivate(eOmn_serv_category_t category, const eOm
     eOmn_serv_parameter_t prepared {};
     if(!posServiceConfiguration.prepare(category, param, prepared))
     {
-        yError() << "EthResource::serviceVerifyActivate(): MC without PROPERTIES.POS requires"
+        yError() << "EthResource::serviceVerifyActivate(): MC requires"
                  << "standalone POS to be activated first on BOARD" << getProperties().boardnameString;
         return false;
     }

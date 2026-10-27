@@ -2771,10 +2771,6 @@ bool ServiceParser::convert(std::string const &fromstring, eOmc_encoder_t &toenc
 bool ServiceParser::check_motion(Searchable &config)
 {
     bool formaterror = false;
-    // A parser can be reused for multiple configurations. An omitted POS
-    // dependency must never retain the location from an earlier MC service.
-    mc_service.properties.poslocations.clear();
-
     // complete format is SERVICE{ type, PROPERTIES{ ETHBOARD, CANBOARDS, MC4, MAIS, CONTROLLER, JOINTMAPPING, JOINTSETS } }
     // so far, there is no SETTINGS{}.
     // then, some groups are not present for some kind of SERVICE.type
@@ -2853,9 +2849,6 @@ bool ServiceParser::check_motion(Searchable &config)
 
     Bottle b_PROPERTIES_PSC = Bottle(b_PROPERTIES.findGroup("PSC"));
     bool has_PROPERTIES_PSC = !b_PROPERTIES_PSC.isNull();
-
-    Bottle b_PROPERTIES_POS = Bottle(b_PROPERTIES.findGroup("POS"));
-    bool has_PROPERTIES_POS = !b_PROPERTIES_POS.isNull();
 
     Bottle b_PROPERTIES_MC4 = Bottle(b_PROPERTIES.findGroup("MC4"));
     bool has_PROPERTIES_MC4 = !b_PROPERTIES_MC4.isNull();
@@ -3024,8 +3017,8 @@ bool ServiceParser::check_motion(Searchable &config)
 
         case eomn_serv_MC_mc4plusfaps:
         {
-            // must have: ETHBOARD, JOINTMAPPING. A nonempty legacy POS group
-            // also requires CANBOARDS; otherwise reuse standalone POS at activation.
+            // ETHBOARD, CANBOARDS and JOINTMAPPING are required. The Ethernet resource
+            // supplies POS configuration from the activated standalone service.
 
             itisoksofar = true;
 
@@ -3035,7 +3028,7 @@ bool ServiceParser::check_motion(Searchable &config)
                 itisoksofar = false;
             }
 
-            if(has_PROPERTIES_POS && (b_PROPERTIES_POS.size() > 1) && !has_PROPERTIES_CANBOARDS)
+            if(false == has_PROPERTIES_CANBOARDS)
             {
                 yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
                 itisoksofar = false;
@@ -3505,63 +3498,6 @@ bool ServiceParser::check_motion(Searchable &config)
         }
 
     } // has_PROPERTIES_PSC
-
-
-    if(has_PROPERTIES_POS && (b_PROPERTIES_POS.size() > 1))
-    {
-        // Preserve the legacy dependency location when supplied. Missing or
-        // empty POS groups are resolved from standalone AS_pos at activation.
-        // Legacy POS.SENSORS and POS.SETTINGS groups are intentionally ignored.
-
-        Bottle b_PROPERTIES_POS_location = b_PROPERTIES_POS.findGroup("location");
-        if(b_PROPERTIES_POS_location.isNull())
-        {
-            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.POS.location";
-            return false;
-        }
-
-        int tmp = b_PROPERTIES_POS_location.size();
-        int numboards = tmp - 1;    // first position of bottle contains the tag "location"
-
-        // check if numboards is 1.
-        constexpr uint8_t wantedboards = 1;
-        if(wantedboards != numboards)
-        {
-            yError() << "ServiceParser::check_motion() in PROPERTIES.POS.location must contain " << wantedboards << " items and it has:" << numboards;
-            return false;
-        }
-
-        mc_service.properties.poslocations.resize(wantedboards);
-        for(int i=0; i<wantedboards; i++)
-        {
-            eObrd_location_t loc;
-            formaterror = false;
-            if(false == convert(b_PROPERTIES_POS_location.get(1+i).asString(), loc, formaterror))
-            {
-                yError() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.POS.location";
-                return false;
-            }
-
-            if(eobrd_place_can == loc.any.place)
-            {
-                mc_service.properties.poslocations[i].port = loc.can.port;
-                mc_service.properties.poslocations[i].addr = loc.can.addr;
-                mc_service.properties.poslocations[i].insideindex = eobrd_caninsideindex_none;
-
-            }
-            else if(eobrd_place_extcan == loc.any.place)
-            {   // for pos service we should not have such a format
-                yError() << "ServiceParser::check_motion() has detected an incorrect format for SERVICE.PROPERTIES.POS.location. it must be either can, not extcan";
-                return false;
-            }
-            else
-            {
-                yError() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.POS.location. it must be can";
-                return false;
-            }
-        }
-
-    } // has_PROPERTIES_POS
 
     if(true == has_PROPERTIES_JOINTMAPPING)
     {
@@ -4314,47 +4250,14 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
         {
             eOmn_serv_config_data_mc_mc4plusfaps_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plusfaps);
 
-            // The firmware still requires an embedded POS dependency. Mark an
-            // omitted dependency explicitly so the Ethernet resource can reuse
+            // The firmware still requires an embedded POS dependency. Initialize
+            // it explicitly so the Ethernet resource can supply
             // the standalone POS configuration before sending the MC request.
             eOmn_serv_config_data_as_pos_t *pos = &data_mc->pos;
             *pos = {};
             for(auto &board : pos->config.boardconfig)
             {
                 board.boardinfo.type = eobrd_cantype_none;
-            }
-
-            if(!mc_service.properties.poslocations.empty() &&
-               (mc_service.properties.canboards.size() != eOas_pos_boards_maxnumber))
-            {
-                yError() << "ServiceParser::parseService(MC): legacy POS requires exactly"
-                         << eOas_pos_boards_maxnumber << "CANBOARDS entry";
-                return false;
-            }
-
-            // Preserve the legacy packet when POS.location is explicitly supplied.
-            for(size_t b=0; b<mc_service.properties.poslocations.size(); b++)
-            {
-                pos->config.boardconfig[b].boardinfo.type = mc_service.properties.canboards[b].type;
-                pos->config.boardconfig[b].boardinfo.firmware.major = mc_service.properties.canboards[b].firmware.major;
-                pos->config.boardconfig[b].boardinfo.firmware.minor = mc_service.properties.canboards[b].firmware.minor;
-                pos->config.boardconfig[b].boardinfo.firmware.build = mc_service.properties.canboards[b].firmware.build;
-                pos->config.boardconfig[b].boardinfo.protocol.major = mc_service.properties.canboards[b].protocol.major;
-                pos->config.boardconfig[b].boardinfo.protocol.minor = mc_service.properties.canboards[b].protocol.minor;
-
-                pos->config.boardconfig[b].canloc.addr = mc_service.properties.poslocations[b].addr;
-                pos->config.boardconfig[b].canloc.port = mc_service.properties.poslocations[b].port;
-                
-                for(size_t s=0; s<eOas_pos_sensorsinboard_maxnumber; s++)
-                {
-                    pos->config.boardconfig[b].sensors[s].connector = s;
-                    pos->config.boardconfig[b].sensors[s].type = eoas_pos_TYPE_decideg;
-                    pos->config.boardconfig[b].sensors[s].port = static_cast<eObrd_portpos_t>(s);
-                    pos->config.boardconfig[b].sensors[s].enabled = 1;
-                    pos->config.boardconfig[b].sensors[s].invertdirection = 0;
-                    pos->config.boardconfig[b].sensors[s].rotation = eoas_pos_ROT_zero;
-                    pos->config.boardconfig[b].sensors[s].offset = 0;
-                }
             }
 
             // 2. ->arrayofjomodescriptors

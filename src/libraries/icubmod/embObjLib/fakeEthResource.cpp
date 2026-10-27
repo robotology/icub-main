@@ -264,7 +264,7 @@ bool FakeEthResource::serviceVerifyActivate(eOmn_serv_category_t category, const
     eOmn_serv_parameter_t prepared {};
     if(!posServiceConfiguration.prepare(category, param, prepared))
     {
-        yError() << "FakeEthResource::serviceVerifyActivate(): MC without PROPERTIES.POS requires"
+        yError() << "FakeEthResource::serviceVerifyActivate(): MC requires"
                  << "standalone POS to be activated first on BOARD" << getProperties().boardnameString;
         return false;
     }
