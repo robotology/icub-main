@@ -2799,6 +2799,12 @@ bool ServiceParser::check_motion(Searchable &config)
         }
     }
 
+    if(!b_SERVICE.findGroup("PROPERTIES").findGroup("POS").isNull())
+    {
+        yError() << "ServiceParser::check_motion() does not accept PROPERTIES.POS; configure POS through the standalone eomn_serv_AS_pos service";
+        return false;
+    }
+
     // check whether we have the proper type
 
     if(false == b_SERVICE.check("type"))

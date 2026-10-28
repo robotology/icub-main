@@ -75,17 +75,13 @@ int main(int argc, char* argv[])
     try
     {
         ServiceParser parser;
-        servConfigMC_t omitted {}, empty {};
+        servConfigMC_t omitted {};
 
         // Poison POS data to detect fields left uninitialized by the parser.
         auto& dependency = omitted.ethservice.configuration.data.mc.mc4plusfaps.pos;
         std::memset(&dependency, 0xa5, sizeof(dependency));
         check(parse(parser, "", omitted), "Entire MC POS group can be omitted");
-        check(parse(parser, "(POS)", empty), "Empty MC POS group is equivalent to omission");
         const auto& omittedData = omitted.ethservice.configuration.data.mc.mc4plusfaps;
-        const auto& emptyData = empty.ethservice.configuration.data.mc.mc4plusfaps;
-        check(std::memcmp(&omittedData.pos, &emptyData.pos, sizeof(omittedData.pos)) == 0,
-              "Missing and empty POS produce identical dependency data");
         eOmn_serv_config_data_as_pos_t expected {};
         expected.config.boardconfig[0].boardinfo.type = eobrd_cantype_none;
         check(std::memcmp(&omittedData.pos, &expected, sizeof(expected)) == 0,
@@ -95,19 +91,20 @@ int main(int argc, char* argv[])
               parser.getEncoderAtJoint(0)->tolerance == 5 &&
               parser.getEncoderAtMotor(0)->resolution == 1600,
               "Encoder placement, resolution and tolerance remain available");
-        // Obsolete MC POS fields must not be interpreted, even if malformed.
+        // POS belongs to the standalone service, including an empty group.
         servConfigMC_t ignored {};
-        for (const std::string pos : {"(POS (location CAN1:1))",
+        for (const std::string pos : {"(POS)", "(POS (location CAN1:1))",
              "(POS (location invalid))", "(POS (location CAN1:1 CAN1:2))",
              "(POS (SENSORS (connector ignored)) (SETTINGS (acquisitionRate invalid)))"})
         {
-            check(parse(parser, pos, ignored), "Obsolete MC POS group is ignored");
-            check(std::memcmp(&omitted.ethservice.configuration, &ignored.ethservice.configuration,
-                              sizeof(omitted.ethservice.configuration)) == 0,
-                  "Obsolete POS fields cannot change MC configuration");
+            check(!parse(parser, pos, ignored), "MC POS group is rejected");
         }
         auto basicMC = motionConfig("", "", "eomn_serv_MC_mc4plus");
         check(parser.parseService(basicMC, ignored), "Plain mc4plus service remains supported");
+        auto basicMCWithPOS = motionConfig("(POS)", "", "eomn_serv_MC_mc4plus");
+        check(!parser.parseService(basicMCWithPOS, ignored), "Plain mc4plus also rejects a POS group");
+        auto genericMCWithPOS = motionConfig("(POS)", "", "eomn_serv_MC_generic");
+        check(!parser.parseService(genericMCWithPOS, ignored), "Generic MC cannot bypass POS group rejection");
         auto noBoards = motionConfig("", "");
         check(!parser.parseService(noBoards, ignored), "MC still requires CANBOARDS when POS is omitted");
         auto malformedBoards = motionConfig("", "(CANBOARDS (type mtb4c))");
