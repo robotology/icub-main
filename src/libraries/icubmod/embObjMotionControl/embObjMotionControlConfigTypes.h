@@ -242,7 +242,6 @@ public:
         double res = 0;
         double tmp = (((_ptc_offset + _ptc_gradient * temperature) / ((double)_r_1 + (_ptc_offset + _ptc_gradient * temperature))) - _half_bridge_resistor_coeff) * (double)_vcc;
         res = (_resolution_tdb + 1) * ((_pga_gain * tmp) / _resolution_pga);
-        yDebug("Converted temperature limit to raw value:%f", res);
         return res;
     }
 
@@ -307,7 +306,6 @@ public:
         double res = 0;
         double tmp = (((_ptc_offset + _ptc_gradient * temperature) / ((double)_r_1 + (_ptc_offset + _ptc_gradient * temperature))) - _half_bridge_resistor_coeff) * (double)_vcc;
         res = (_resolution_tdb + 1) * ((_pga_gain * tmp) / _resolution_pga);
-        yDebug("Converted temperature limit to raw value:%f", res);
         return res;
     }
 

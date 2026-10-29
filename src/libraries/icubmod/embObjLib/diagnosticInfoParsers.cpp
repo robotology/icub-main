@@ -793,11 +793,12 @@ void MotionControlParser::parseInfo()
             m_dnginfo.baseInfo.finalMessage.append(str);
         } break;
         
-        case eoerror_value_MC_motor_wrong_state: //TBD: check states
+        case eoerror_value_MC_motor_wrong_state: //TBD: create a function to convert state to string
         {
+            #warning TODO: create a function to convert state to string
             uint16_t joint_num = m_dnginfo.param16;
-            uint16_t req_state = (m_dnginfo.param64 & 0xf0)>>4;
-            uint16_t cur_state = m_dnginfo.param64 & 0x0f;
+            uint16_t req_state = (m_dnginfo.param64 & 0xff00)>>8;
+            uint16_t cur_state = m_dnginfo.param64 & 0xff;
 
             m_entityNameProvider.getAxisName(joint_num, m_dnginfo.baseInfo.axisName);
 
