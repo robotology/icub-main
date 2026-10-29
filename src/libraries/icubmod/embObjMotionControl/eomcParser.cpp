@@ -1499,11 +1499,9 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, std::vector<focBasedSpe
     }
 
     std::vector<float> Kbemf (_njoints);
-    if (!extractGroup(focGroup, xtmp, "Kbemf", "Kbemf", _njoints, false))
+    if (!extractGroup(focGroup, xtmp, "Kbemf", "Kbemf", _njoints, true))
     {
-        registerOptionalParameter("Kbemf", "0.0f", false);
-        for (i = 0; i < (unsigned)_njoints; i++)
-            foc_based_info[i].kbemf = 0.0f;
+        return false;
     }
     else
     {
