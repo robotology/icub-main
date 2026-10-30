@@ -47,7 +47,7 @@ bool ff2LayNN::isValid() const
 void ff2LayNN::setItem(Property &options, const string &tag, const Vector &item) const
 {
     Bottle b; Bottle &v=b.addList();
-    for (size_t i=0; i<item.length(); i++)
+    for (size_t i=0; i<item.size(); i++)
         v.addFloat64(item[i]);
 
     options.put(tag,b.get(0));
@@ -60,7 +60,7 @@ bool ff2LayNN::getItem(const Property &options, const string &tag, Vector &item)
     if (Bottle *b=options.find(tag).asList())
     {
         item.resize(b->size());
-        for (size_t i=0; i<item.length(); i++)
+        for (size_t i=0; i<item.size(); i++)
             item[i]=b->get(i).asFloat64();
 
         return true;
@@ -77,7 +77,7 @@ void ff2LayNN::prepare()
     inMinY.resize(inMinMaxX.size());
     inRatio.resize(inMinMaxX.size());
 
-    for (size_t i=0; i<inMinX.length(); i++)
+    for (size_t i=0; i<inMinX.size(); i++)
     {
         inMinX[i]=inMinMaxX[i].min;
         inMinY[i]=inMinMaxY[i].min;
@@ -88,7 +88,7 @@ void ff2LayNN::prepare()
     outMinY.resize(outMinMaxX.size());
     outRatio.resize(outMinMaxX.size());
 
-    for (size_t i=0; i<outMinX.length(); i++)
+    for (size_t i=0; i<outMinX.size(); i++)
     {
         outMinX[i]=outMinMaxX[i].min;
         outMinY[i]=outMinMaxY[i].min;
@@ -105,14 +105,14 @@ bool ff2LayNN::configure(const Property &options)
 
     inMinMaxX.clear();
     inMinMaxY.clear();
-   
+
     outMinMaxX.clear();
     outMinMaxY.clear();
 
     configured=false;
 
     // acquire options
-    if (!options.check("numInputNodes") || !options.check("numHiddenNodes") || 
+    if (!options.check("numInputNodes") || !options.check("numHiddenNodes") ||
         !options.check("numOutputNodes"))
         return false;
 
@@ -128,7 +128,7 @@ bool ff2LayNN::configure(const Property &options)
         else
             return false;
     }
-    
+
     if (!getItem(options,"b1",b1))
         return false;
 
@@ -238,16 +238,16 @@ Vector ff2LayNN::predict(const Vector &x) const
 
         // compute the output a1 of hidden layer
         Vector n1(IW.size());
-        for (size_t i=0; i<n1.length(); i++)
+        for (size_t i=0; i<n1.size(); i++)
             n1[i]=yarp::math::dot(IW[i],x1)+b1[i];
         Vector a1=hiddenLayerFcn(n1);
 
         // compute the output a2 of the network
         Vector n2(LW.size());
-        for (size_t i=0; i<n2.length(); i++)
+        for (size_t i=0; i<n2.size(); i++)
             n2[i]=yarp::math::dot(LW[i],a1)+b2[i];
         Vector a2=outputLayerFcn(n2);
-    
+
         // output postprocessing
         return scaleOutputFromNetFormat(a2);
     }
@@ -335,17 +335,17 @@ bool ff2LayNN::printStructure(ostream &stream) const
 
     stream<<"***** Hidden Layer Weights *****"<<endl;
     for (size_t i=0; i<IW.size(); i++)
-        stream<<"IW_"<<i<<": ["<<IW[i].toString(16,1)<<"]"<<endl;
+        stream<<"IW_"<<i<<": ["<<IW[i].toFormattedString(16,1)<<"]"<<endl;
 
     stream<<"***** Hidden Layer Bias *****"<<endl;
-    stream<<"b1: ["<<b1.toString(16,1)<<"]"<<endl;
+    stream<<"b1: ["<<b1.toFormattedString(16,1)<<"]"<<endl;
 
     stream<<"***** Output Layer Weights *****"<<endl;
     for (size_t i=0; i<LW.size(); i++)
-        stream<<"LW_"<<i<<": ["<<LW[i].toString(16,1)<<"]"<<endl;
+        stream<<"LW_"<<i<<": ["<<LW[i].toFormattedString(16,1)<<"]"<<endl;
 
     stream<<"***** Output Layer Bias *****"<<endl;
-    stream<<"b2: ["<<b2.toString(16,1)<<"]"<<endl;
+    stream<<"b2: ["<<b2.toFormattedString(16,1)<<"]"<<endl;
 
     stream<<"***** Output Layer Range *****"<<endl;
     for (size_t i=0; i<outMinMaxX.size(); i++)
@@ -373,8 +373,8 @@ ff2LayNN_tansig_purelin::ff2LayNN_tansig_purelin(const Property &options) :
 /***************************************************************************/
 Vector ff2LayNN_tansig_purelin::hiddenLayerFcn(const Vector &x) const
 {
-    Vector y(x.length());
-    for (size_t i=0; i<x.length(); i++)
+    Vector y(x.size());
+    for (size_t i=0; i<x.size(); i++)
         y[i]=2.0/(1.0+exp(-2.0*x[i]))-1.0;
 
     return y;
@@ -391,8 +391,8 @@ Vector ff2LayNN_tansig_purelin::outputLayerFcn(const Vector &x) const
 /***************************************************************************/
 Vector ff2LayNN_tansig_purelin::hiddenLayerGrad(const Vector &x) const
 {
-    Vector y(x.length());
-    for (size_t i=0; i<x.length(); i++)
+    Vector y(x.size());
+    for (size_t i=0; i<x.size(); i++)
     {
         double tmp1=exp(-2.0*x[i]);
         double tmp2=1.0+tmp1;
@@ -406,7 +406,7 @@ Vector ff2LayNN_tansig_purelin::hiddenLayerGrad(const Vector &x) const
 /***************************************************************************/
 Vector ff2LayNN_tansig_purelin::outputLayerGrad(const Vector &x) const
 {
-    return Vector(x.length(),1.0);
+    return Vector(x.size(),1.0);
 }
 
 
