@@ -3058,6 +3058,18 @@ ReturnValue embObjMotionControl::setControlModeRaw(int j, yarp::dev::SelectableC
         return ReturnValue_error_generic;
     }
 
+    if((modeInt == VOCAB_CM_VELOCITY_DIRECT) && (_parsedCfgData.pidControllers.dir_vel[j].enabled  == false))
+    {
+        yError()<<"Velocity direct control is disabled for joint "<< j <<"in " << getBoardInfo() << ". Check your configuration parameters ";
+        return ReturnValue_error_generic;
+    }
+
+    if((modeInt == VOCAB_CM_POSITION_DIRECT) && (_parsedCfgData.pidControllers.dir_pos[j].enabled  == false))
+    {
+        yError()<<"Position direct control is disabled for joint "<< j <<"in " << getBoardInfo() << ". Check your configuration parameters ";
+        return ReturnValue_error_generic;
+    }
+
     if(!controlModeCommandConvert_yarp2embObj(modeInt, controlmodecommand) )
     {
         yError() << "SetControlMode: received unknown control mode for " << getBoardInfo() << " joint " << j << " mode " << Vocab32::decode(modeInt);
