@@ -71,8 +71,8 @@ public:
     void print() const
     {
         yInfo("PidInfo:");
-        yInfo("  pid: [kp=%f, ki=%f, kd=%f, max_int=%f, max_output=%f, scale=%f, offset=%f, stiction_up_val=%f, stiction_down_val=%f, kff=%f]",
-              pid.kp, pid.ki, pid.kd, pid.max_int, pid.max_output, pid.scale, pid.offset, pid.stiction_up_val, pid.stiction_down_val, pid.kff);
+        yInfo("  pid: [kp=%f, ki=%f, kd=%f, max_int=%f, max_output=%f, scale=%f, offset=%f, kff=%f]",
+              pid.kp, pid.ki, pid.kd, pid.max_int, pid.max_output, pid.scale, pid.offset, pid.kff);
 
         // Convert enums to string
         auto fbkUnitsToString = [](yarp::dev::PidFeedbackUnitsEnum e) -> std::string {
@@ -117,7 +117,6 @@ public:
 class TrqPidInfo : public PidInfo
 {
 public:
-    double kbemf;                             /** back-emf compensation parameter */
     double ktau;                              /** motor torque constant */
     double viscousPos;
     double viscousNeg;

@@ -180,8 +180,6 @@ namespace yarp {
         out->offset = (float) (in->offset);
         out->scale = (int8_t) (in->scale);
         out->kff = (float) (in->kff);
-        out->stiction_down_val = (float)(in->stiction_down_val);
-        out->stiction_up_val = (float)(in->stiction_up_val);
     }
     
     void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
@@ -194,7 +192,7 @@ namespace yarp {
         out->max_output = (double) in->limitonoutput;
         out->offset = (double) in->offset;
         out->scale = (double) in->scale;
-        out->setStictionValues(in->stiction_up_val, in->stiction_down_val);
+        out->setStictionValues(0.0, 0.0);
         out->setKff(in->kff);
     }
         
