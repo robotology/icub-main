@@ -451,8 +451,8 @@ void stereoCalibThread::processSynchronizedPair(SynchronizedPair& pair, Size boa
 
     // Color adjust
     Mat leftGray, rightGray;
-    cvtColor(LeftRgb,leftGray,CV_RGB2GRAY);
-    cvtColor(RightRgb,rightGray,CV_RGB2GRAY);
+    cvtColor(LeftRgb,leftGray,cv::COLOR_RGB2GRAY);
+    cvtColor(RightRgb,rightGray,cv::COLOR_RGB2GRAY);
 
     std::vector<Point2f> leftCorners;
     std::vector<Point2f> rightCorners;
