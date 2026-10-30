@@ -1265,8 +1265,6 @@ bool Parser::parsePidsGroupRegulationParams(Bottle& pidsGroup, std::vector<eomc:
     /*
     <param name = "ki">                     7111.0      1066.0        < / param>
     <param name = "maxInt">                  750        1000          < / param>
-    <param name = "stictionUp">                0           0          < / param>
-    <param name = "stictionDwn">               0           0          < / param>
     */
 
     Bottle xtmp;
@@ -1276,12 +1274,6 @@ bool Parser::parsePidsGroupRegulationParams(Bottle& pidsGroup, std::vector<eomc:
 
     if (!extractGroup(pidsGroup, xtmp, "maxInt", "maxInt parameter", _njoints)) return false;
     for (int j = 0; j<_njoints; j++) pids[j].pid.max_int = xtmp.get(j + 1).asFloat64();
-
-    if (!extractGroup(pidsGroup, xtmp, "stictionUp", "stictionUp parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) pids[j].pid.stiction_up_val = xtmp.get(j + 1).asFloat64();
-
-    if (!extractGroup(pidsGroup, xtmp, "stictionDown", "stictionDown parameter", _njoints)) return false;
-    for (int j = 0; j<_njoints; j++) pids[j].pid.stiction_down_val = xtmp.get(j + 1).asFloat64();
 
     return true;
 }
@@ -1306,23 +1298,11 @@ bool Parser::parsePidsGroupTorqueCompensationParams(Bottle& pidsGroup, std::vect
     <param name = "maxOutput">              32000       32000         < / param>
     <param name = "ki">                     7111.0      1066.0        < / param>
     <param name = "maxInt">                  750        1000          < / param>
-    <param name = "stictionUp">                0           0          < / param>
-    <param name = "stictionDwn">               0           0          < / param>
     */
 
     if (!parsePidsGroupRegulationParams(pidsGroup, pids)) return false;
 
     Bottle xtmp;
-
-    if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints, false)) 
-    {
-        registerOptionalParameter("kbemf", std::to_string(_defaultSettings.torquePidDefaults.kbemf), true);
-        for (int j = 0; j<_njoints; j++) pids[j].kbemf = _defaultSettings.torquePidDefaults.kbemf;
-    } 
-    else
-    {
-        for (int j = 0; j<_njoints; j++) pids[j].kbemf = xtmp.get(j + 1).asFloat64();
-    }
     
     if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints)) return false; 
     for (int j = 0; j<_njoints; j++) pids[j].ktau = xtmp.get(j + 1).asFloat64();
@@ -1501,6 +1481,7 @@ bool Parser::parseFocGroup(yarp::os::Searchable &config, std::vector<focBasedSpe
     std::vector<float> Kbemf (_njoints);
     if (!extractGroup(focGroup, xtmp, "Kbemf", "Kbemf", _njoints, true))
     {
+        yError() << "In " << _boardname << " missing param Kbemf";
         return false;
     }
     else
@@ -2754,7 +2735,6 @@ void Parser::clearOptionalParametersTrack()
 {
     _optionalParametersUsed.clear();
 }
-
 
 
 

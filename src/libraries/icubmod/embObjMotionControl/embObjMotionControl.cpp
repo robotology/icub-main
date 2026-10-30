@@ -480,9 +480,7 @@ void embObjMotionControl::debugUtil_printPidInfoByJointSet(void)
                 << "kff" << p.pid.kff
                 << "maxOut" << p.pid.max_output
                 << "maxInt" << p.pid.max_int
-                << "scale" << p.pid.scale
-                << "stUp" << p.pid.stiction_up_val
-                << "stDown" << p.pid.stiction_down_val;
+                << "scale" << p.pid.scale;
     };
 
     auto printPidTorque = [&](int joint, const eomc::TrqPidInfo& p)
@@ -491,7 +489,6 @@ void embObjMotionControl::debugUtil_printPidInfoByJointSet(void)
         yInfo() << "embObjMC" << getBoardInfo() << "[PID DEBUG]"
                 << "trq-extra"
                 << "joint" << joint
-                << "kbemf" << p.kbemf
                 << "ktau" << p.ktau
                 << "viscousPos" << p.viscousPos
                 << "viscousNeg" << p.viscousNeg
@@ -1395,7 +1392,6 @@ bool embObjMotionControl::init()
         jconfig.jntEncoderType = _parsedCfgData.jointEncs[logico].type;
         jconfig.jntEncTolerance = _parsedCfgData.jointEncs[logico].tolerance;
 
-        jconfig.motor_params.bemf_value = _measureConverter->bemf_user2raw(_parsedCfgData.pidControllers.trq[logico].kbemf, fisico);
         jconfig.motor_params.bemf_scale = 0;
         jconfig.motor_params.ktau_value = _measureConverter->ktau_user2raw(_parsedCfgData.pidControllers.trq[logico].ktau, fisico);
         jconfig.motor_params.ktau_scale = 0;
@@ -4017,7 +4013,7 @@ ReturnValue embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os:
         { Pid p;
           getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_POSITION, i, &p);
           char buff[1000];
-          snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+          snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.kff);
           r.addString(buff);
         }
         return ReturnValue_ok;
@@ -4028,7 +4024,7 @@ ReturnValue embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os:
         for (int i = 0; i < _njoints; i++)
         { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, i, &p);
           char buff[1000];
-          snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+          snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.kff);
           r.addString(buff);
         }
         return ReturnValue_ok;
@@ -4039,7 +4035,7 @@ ReturnValue embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os:
         for (int i = 0; i < _njoints; i++)
         { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_TORQUE, i, &p);
          char buff[1000];
-         snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+         snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.kff);
          r.addString(buff);
         }
         return ReturnValue_ok;
@@ -4050,7 +4046,7 @@ ReturnValue embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os:
         for (int i = 0; i < _njoints; i++)
         { Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_CURRENT, i, &p);
          char buff[1000];
-         snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+         snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.kff);
          r.addString(buff);
         }
         return ReturnValue_ok;
@@ -4062,7 +4058,7 @@ ReturnValue embObjMotionControl::getRemoteVariableRaw(std::string key, yarp::os:
         {
             Pid p; getPidRaw(PidControlTypeEnum::VOCAB_PIDTYPE_VELOCITY, i, &p);
             char buff[1000];
-            snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f up %+3.3f dwn %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.stiction_up_val, p.stiction_down_val, p.kff);
+            snprintf(buff, 1000, "J %d : kp %+3.3f ki %+3.3f kd %+3.3f maxint %+3.3f maxout %+3.3f off %+3.3f scale %+3.3f kff %+3.3f", i, p.kp, p.ki, p.kd, p.max_int, p.max_output, p.offset, p.scale, p.kff);
             r.addString(buff);
         }
         return ReturnValue_ok;
@@ -4434,8 +4430,8 @@ ReturnValue embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParam
     if(! askRemoteValue(protoid, &eo_params, size))
         return ReturnValue_error_generic;
 
-    params->bemf =       eo_params.bemf_value;
-    params->bemf_scale = eo_params.bemf_scale;
+    params->bemf =       0.0;
+    params->bemf_scale = 0;
     params->ktau       = eo_params.ktau_value;
     params->ktau_scale = eo_params.ktau_scale;
     params->viscousPos = eo_params.friction.viscous_pos_val;
@@ -4451,13 +4447,18 @@ ReturnValue embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParam
 
 ReturnValue embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params)
 {
+    if((params.bemf != 0.0) || (params.bemf_scale != 0))
+    {
+        yError() << "embObjMotionControl::setMotorTorqueParamsRaw() torque back-EMF parameters are not supported by this firmware protocol";
+        return ReturnValue_error_method_failed;
+    }
+
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
     eOmc_motor_params_t eo_params = {0};
 
     //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f viscousPos=%f viscousNeg=%f coulombPos=%f coulombNeg=%f\n",j, params.bemf, params.ktau, params.viscousPos, params.viscousNeg, params.coulombPos, params.coulombNeg, params.threshold);
 
-    eo_params.bemf_value  = (float)   params.bemf;
-    eo_params.bemf_scale  = (uint8_t) params.bemf_scale;
+    eo_params.bemf_scale  = 0;
     eo_params.ktau_value  = (float)   params.ktau;
     eo_params.ktau_scale  = (uint8_t) params.ktau_scale;
     eo_params.friction.viscous_pos_val = static_cast<float32_t>(params.viscousPos);

@@ -143,10 +143,9 @@ private:
      *
      * Extends the minimal PID parsing by adding:
      * - ki, maxInt (integral term and anti-windup saturation)
-     * - stictionUp, stictionDown (static friction breakaway compensation, possibly direction-dependent)
      *
      * This parser is intended for controllers that need better steady-state accuracy (integral action)
-     * and/or require a small additional command to overcome static friction at motion start.
+     * through integral action.
      *
      * @param pidsGroup Input YARP Bottle containing the PID group.
      * @param myPid     Output array of size _njoints filled with parsed PID parameters.
@@ -159,7 +158,7 @@ private:
      * @brief Parse a torque-oriented PID configuration including motor model, friction and filtering parameters.
      *
      * Extends the "regulation" PID parsing by reading additional parameters typically required by torque control:
-     * - ktau (torque constant) and optionally kbemf (back-EMF constant, if available)
+     * - ktau (torque constant)
      * - filterType (selection of the filtering strategy used by the controller/firmware)
      * - viscousPos/viscousNeg and coulombPos/coulombNeg (direction-dependent friction model terms)
      * - velocityThres (velocity threshold used to apply/switch friction compensation near zero speed)

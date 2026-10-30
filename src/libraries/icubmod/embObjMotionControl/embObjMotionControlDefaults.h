@@ -135,9 +135,6 @@ typedef struct
         double deadZone;            // dead zone value - default: not specified
         double pidScale;            // PID scale - default: 0.0
         double pidOffset;           // PID offset - default: 0.0
-        double stictionUpVal;       // stiction up value - default: 0.0
-        double stictionDownVal;     // stiction down value - default: 0.0
-        
         // Deadzone parameters for different encoder types
         struct
         {
@@ -209,7 +206,6 @@ public:
     void initializeDefaults()
     {
         // Torque PID defaults
-        defaults.torquePidDefaults.kbemf = 0.0;
         defaults.torquePidDefaults.viscousPos = 0.0;
         defaults.torquePidDefaults.viscousNeg = 0.0;
         defaults.torquePidDefaults.coulombPos = 0.0;
@@ -243,8 +239,6 @@ public:
         defaults.controlParametersDefaults.deadZone = 0.0;
         defaults.controlParametersDefaults.pidScale = 0.0;
         defaults.controlParametersDefaults.pidOffset = 0.0;
-        defaults.controlParametersDefaults.stictionUpVal = 0.0;
-        defaults.controlParametersDefaults.stictionDownVal = 0.0;
         defaults.controlParametersDefaults.deadzone.jointWithAEA = 0.0494;
         defaults.controlParametersDefaults.deadzone.jointWithAEA3 = 0.0;
         defaults.controlParametersDefaults.deadzone.jointWithAMO = 0.0055;
