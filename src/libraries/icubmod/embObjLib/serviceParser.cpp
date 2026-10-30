@@ -2771,7 +2771,6 @@ bool ServiceParser::convert(std::string const &fromstring, eOmc_encoder_t &toenc
 bool ServiceParser::check_motion(Searchable &config)
 {
     bool formaterror = false;
-
     // complete format is SERVICE{ type, PROPERTIES{ ETHBOARD, CANBOARDS, MC4, MAIS, CONTROLLER, JOINTMAPPING, JOINTSETS } }
     // so far, there is no SETTINGS{}.
     // then, some groups are not present for some kind of SERVICE.type
@@ -2798,6 +2797,12 @@ bool ServiceParser::check_motion(Searchable &config)
             mc_service.type = eomn_serv_MC_generic;
             return true;
         }
+    }
+
+    if(!b_SERVICE.findGroup("PROPERTIES").findGroup("POS").isNull())
+    {
+        yError() << "ServiceParser::check_motion() does not accept PROPERTIES.POS; configure POS through the standalone eomn_serv_AS_pos service";
+        return false;
     }
 
     // check whether we have the proper type
@@ -2850,9 +2855,6 @@ bool ServiceParser::check_motion(Searchable &config)
 
     Bottle b_PROPERTIES_PSC = Bottle(b_PROPERTIES.findGroup("PSC"));
     bool has_PROPERTIES_PSC = !b_PROPERTIES_PSC.isNull();
-
-    Bottle b_PROPERTIES_POS = Bottle(b_PROPERTIES.findGroup("POS"));
-    bool has_PROPERTIES_POS = !b_PROPERTIES_POS.isNull();
 
     Bottle b_PROPERTIES_MC4 = Bottle(b_PROPERTIES.findGroup("MC4"));
     bool has_PROPERTIES_MC4 = !b_PROPERTIES_MC4.isNull();
@@ -3021,7 +3023,8 @@ bool ServiceParser::check_motion(Searchable &config)
 
         case eomn_serv_MC_mc4plusfaps:
         {
-            // must have: ETHBOARD, CANBOARDS, POS, JOINTMAPPING
+            // ETHBOARD, CANBOARDS and JOINTMAPPING are required. The Ethernet resource
+            // supplies POS configuration from the activated standalone service.
 
             itisoksofar = true;
 
@@ -3034,12 +3037,6 @@ bool ServiceParser::check_motion(Searchable &config)
             if(false == has_PROPERTIES_CANBOARDS)
             {
                 yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
-                itisoksofar = false;
-            }
-
-            if(false == has_PROPERTIES_POS)
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.POS for type" << eomn_servicetype2string(mc_service.type);
                 itisoksofar = false;
             }
 
@@ -3507,63 +3504,6 @@ bool ServiceParser::check_motion(Searchable &config)
         }
 
     } // has_PROPERTIES_PSC
-
-
-    if(true == has_PROPERTIES_POS)
-    {
-        // i get .location and nothing else
-
-        Bottle b_PROPERTIES_POS_location = b_PROPERTIES_POS.findGroup("location");
-        if(b_PROPERTIES_POS_location.isNull())
-        {
-            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.POS.location";
-            return false;
-        }
-
-        int tmp = b_PROPERTIES_POS_location.size();
-        int numboards = tmp - 1;    // first position of bottle contains the tag "location"
-
-        // check if numboards is 1.
-        constexpr uint8_t wantedboards = 1;
-        if(wantedboards != numboards)
-        {
-            yError() << "ServiceParser::check_motion() in PROPERTIES.POS.location must contain " << wantedboards << " items and it has:" << numboards;
-            return false;
-        }
-
-        mc_service.properties.poslocations.resize(wantedboards);
-        for(int i=0; i<wantedboards; i++)
-        {
-            eObrd_location_t loc;
-            formaterror = false;
-            if(false == convert(b_PROPERTIES_POS_location.get(1+i).asString(), loc, formaterror))
-            {
-                yError() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.POS.location";
-                return false;
-            }
-
-            if(eobrd_place_can == loc.any.place)
-            {
-                mc_service.properties.poslocations[i].port = loc.can.port;
-                mc_service.properties.poslocations[i].addr = loc.can.addr;
-                mc_service.properties.poslocations[i].insideindex = eobrd_caninsideindex_none;
-
-            }
-            else if(eobrd_place_extcan == loc.any.place)
-            {   // for pos service we should not have such a format
-                yError() << "ServiceParser::check_motion() has detected an incorrect format for SERVICE.PROPERTIES.POS.location. it must be either can, not extcan";
-                mc_service.properties.poslocations[i].port = loc.extcan.port;
-                mc_service.properties.poslocations[i].addr = loc.extcan.addr;
-                mc_service.properties.poslocations[i].insideindex = eobrd_caninsideindex_none;
-            }
-            else
-            {
-                yError() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.POS.location. it must be can";
-                return false;
-            }
-        }
-
-    } // has_PROPERTIES_POS
 
     if(true == has_PROPERTIES_JOINTMAPPING)
     {
@@ -4316,49 +4256,16 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
         {
             eOmn_serv_config_data_mc_mc4plusfaps_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plusfaps);
 
-            // 1. ->pos
+            // The firmware still requires an embedded POS dependency. Initialize
+            // it explicitly so the Ethernet resource can supply
+            // the standalone POS configuration before sending the MC request.
             eOmn_serv_config_data_as_pos_t *pos = &data_mc->pos;
-
-            // get firmware and protocol info
-            for(size_t b=0; b<eOas_pos_boards_maxnumber; b++)
+            *pos = {};
+            for(auto &board : pos->config.boardconfig)
             {
-                pos->config.boardconfig[b].boardinfo.type = mc_service.properties.canboards[b].type;
-                pos->config.boardconfig[b].boardinfo.firmware.major = mc_service.properties.canboards[b].firmware.major;
-                pos->config.boardconfig[b].boardinfo.firmware.minor = mc_service.properties.canboards[b].firmware.minor;
-                pos->config.boardconfig[b].boardinfo.firmware.build = mc_service.properties.canboards[b].firmware.build;
-                pos->config.boardconfig[b].boardinfo.protocol.major = mc_service.properties.canboards[b].protocol.major;
-                pos->config.boardconfig[b].boardinfo.protocol.minor = mc_service.properties.canboards[b].protocol.minor;
-
-                pos->config.boardconfig[b].canloc.addr = mc_service.properties.poslocations[b].addr;
-                pos->config.boardconfig[b].canloc.port = mc_service.properties.poslocations[b].port;
-                
-                for(size_t s=0; s<eOas_pos_sensorsinboard_maxnumber; s++)
-                {
-                    pos->config.boardconfig[b].sensors[s].connector = s;
-                    pos->config.boardconfig[b].sensors[s].type = eoas_pos_TYPE_decideg;
-                    pos->config.boardconfig[b].sensors[s].port = static_cast<eObrd_portpos_t>(s);
-                    pos->config.boardconfig[b].sensors[s].enabled = 1;
-                    pos->config.boardconfig[b].sensors[s].invertdirection = 0;
-                    pos->config.boardconfig[b].sensors[s].rotation = eoas_pos_ROT_zero;
-                    pos->config.boardconfig[b].sensors[s].offset = 0;
-                }
+                board.boardinfo.type = eobrd_cantype_none;
             }
 
-#if 0
-            for(size_t i=0; i<mc_service.properties.poslocations.size(); i++)
-            {
-                pos->config.boardconfig[0].canloc.port = mc_service.properties.poslocations[i].port;
-                pos->config.boardconfig[0].canloc.addr = mc_service.properties.poslocations[i].addr;
-                pos->config.boardconfig[0].canloc.insideindex = mc_service.properties.poslocations[i].insideindex;
-            }
-
-
-            pos->config.boardconfig[0].boardinfo.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
-            pos->config.boardconfig[0].boardinfo.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
-            pos->config.boardconfig[0].boardinfo.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
-            pos->config.boardconfig[0].boardinfo.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
-            pos->config.boardconfig[0].boardinfo.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
-#endif
             // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
             size_t numofjomos = mc_service.properties.numofjoints;

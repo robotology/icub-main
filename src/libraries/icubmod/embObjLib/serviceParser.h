@@ -238,7 +238,6 @@ typedef struct
 
     eObrd_canlocation_t                 maislocation;
     std::vector<eObrd_canlocation_t>    psclocations;
-    std::vector<eObrd_canlocation_t>    poslocations;
 
     eOmc_mc4shifts_t                    mc4shifts;
     std::vector<eOmc_mc4broadcast_t>    mc4broadcasts;
