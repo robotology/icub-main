@@ -71,11 +71,11 @@ bool PassThroughInertial::close()
 }
 
 
-size_t PassThroughInertial::getNrOfThreeAxisGyroscopes() const
+yarp::dev::ReturnValue PassThroughInertial::getNrOfThreeAxisGyroscopes(size_t& num) const
 {
     if (!proxyIGyro)
-        return false;
-    return proxyIGyro->getNrOfThreeAxisGyroscopes();
+        return ReturnValue_error_not_ready;
+    return proxyIGyro->getNrOfThreeAxisGyroscopes(num);
 }
 
 
@@ -86,33 +86,33 @@ yarp::dev::MAS_status PassThroughInertial::getThreeAxisGyroscopeStatus(size_t se
     return proxyIGyro->getThreeAxisGyroscopeStatus(sens_index);
 }
 
-bool PassThroughInertial::getThreeAxisGyroscopeName(size_t sens_index, std::string& name) const
+yarp::dev::ReturnValue PassThroughInertial::getThreeAxisGyroscopeName(size_t sens_index, std::string& name) const
 {
     if (!proxyIGyro)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIGyro->getThreeAxisGyroscopeName(sens_index, name);
 }
 
-bool PassThroughInertial::getThreeAxisGyroscopeFrameName(size_t sens_index, std::string& frameName) const
+yarp::dev::ReturnValue PassThroughInertial::getThreeAxisGyroscopeFrameName(size_t sens_index, std::string& frameName) const
 {
     if (!proxyIGyro)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIGyro->getThreeAxisGyroscopeFrameName(sens_index, frameName);
 }
 
-bool PassThroughInertial::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+yarp::dev::ReturnValue PassThroughInertial::getThreeAxisGyroscopeMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
     if (!proxyIGyro)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIGyro->getThreeAxisGyroscopeMeasure(sens_index, out, timestamp);
 }
 
 
-size_t PassThroughInertial::getNrOfThreeAxisLinearAccelerometers() const
+yarp::dev::ReturnValue PassThroughInertial::getNrOfThreeAxisLinearAccelerometers(size_t& num) const
 {
     if (!proxyIAccel)
-        return false;
-    return proxyIAccel->getNrOfThreeAxisLinearAccelerometers();
+        return ReturnValue_error_not_ready;
+    return proxyIAccel->getNrOfThreeAxisLinearAccelerometers(num);
 }
 
 
@@ -123,33 +123,33 @@ yarp::dev::MAS_status PassThroughInertial::getThreeAxisLinearAccelerometerStatus
     return proxyIAccel->getThreeAxisLinearAccelerometerStatus(sens_index);
 }
 
-bool PassThroughInertial::getThreeAxisLinearAccelerometerName(size_t sens_index, std::string& name) const
+yarp::dev::ReturnValue PassThroughInertial::getThreeAxisLinearAccelerometerName(size_t sens_index, std::string& name) const
 {
     if (!proxyIAccel)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIAccel->getThreeAxisLinearAccelerometerName(sens_index, name);
 }
 
-bool PassThroughInertial::getThreeAxisLinearAccelerometerFrameName(size_t sens_index, std::string& frameName) const
+yarp::dev::ReturnValue PassThroughInertial::getThreeAxisLinearAccelerometerFrameName(size_t sens_index, std::string& frameName) const
 {
     if (!proxyIAccel)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIAccel->getThreeAxisLinearAccelerometerFrameName(sens_index, frameName);
 }
 
-bool PassThroughInertial::getThreeAxisLinearAccelerometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+yarp::dev::ReturnValue PassThroughInertial::getThreeAxisLinearAccelerometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
     if (!proxyIAccel)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIAccel->getThreeAxisLinearAccelerometerMeasure(sens_index, out, timestamp);
 }
 
 
-size_t PassThroughInertial::getNrOfOrientationSensors() const
+yarp::dev::ReturnValue PassThroughInertial::getNrOfOrientationSensors(size_t& num) const
 {
     if (!proxyIOrient)
-        return false;
-    return proxyIOrient->getNrOfOrientationSensors();
+        return ReturnValue_error_not_ready;
+    return proxyIOrient->getNrOfOrientationSensors(num);
 }
 
 yarp::dev::MAS_status PassThroughInertial::getOrientationSensorStatus(size_t sens_index) const
@@ -159,32 +159,32 @@ yarp::dev::MAS_status PassThroughInertial::getOrientationSensorStatus(size_t sen
     return proxyIOrient->getOrientationSensorStatus(sens_index);
 }
 
-bool PassThroughInertial::getOrientationSensorName(size_t sens_index, std::string& name) const
+yarp::dev::ReturnValue PassThroughInertial::getOrientationSensorName(size_t sens_index, std::string& name) const
 {
     if (!proxyIOrient)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIOrient->getOrientationSensorName(sens_index, name);
 }
 
-bool PassThroughInertial::getOrientationSensorFrameName(size_t sens_index, std::string& frameName) const
+yarp::dev::ReturnValue PassThroughInertial::getOrientationSensorFrameName(size_t sens_index, std::string& frameName) const
 {
     if (!proxyIOrient)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIOrient->getOrientationSensorFrameName(sens_index, frameName);
 }
 
-bool PassThroughInertial::getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index, yarp::sig::Vector& rpy, double& timestamp) const
+yarp::dev::ReturnValue PassThroughInertial::getOrientationSensorMeasureAsRollPitchYaw(size_t sens_index, yarp::sig::Vector& rpy, double& timestamp) const
 {
     if (!proxyIOrient)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIOrient->getOrientationSensorMeasureAsRollPitchYaw(sens_index, rpy, timestamp);
 }
 
-size_t PassThroughInertial::getNrOfThreeAxisMagnetometers() const
+yarp::dev::ReturnValue PassThroughInertial::getNrOfThreeAxisMagnetometers(size_t& num) const
 {
     if (!proxyIMagn)
-        return false;
-    return proxyIMagn->getNrOfThreeAxisMagnetometers();
+        return ReturnValue_error_not_ready;
+    return proxyIMagn->getNrOfThreeAxisMagnetometers(num);
 }
 
 yarp::dev::MAS_status PassThroughInertial::getThreeAxisMagnetometerStatus(size_t sens_index) const
@@ -194,24 +194,24 @@ yarp::dev::MAS_status PassThroughInertial::getThreeAxisMagnetometerStatus(size_t
     return proxyIMagn->getThreeAxisMagnetometerStatus(sens_index);
 }
 
-bool PassThroughInertial::getThreeAxisMagnetometerName(size_t sens_index, std::string& name) const
+yarp::dev::ReturnValue PassThroughInertial::getThreeAxisMagnetometerName(size_t sens_index, std::string& name) const
 {
     if (!proxyIMagn)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIMagn->getThreeAxisMagnetometerName(sens_index, name);
 }
 
-bool PassThroughInertial::getThreeAxisMagnetometerFrameName(size_t sens_index, std::string& frameName) const
+yarp::dev::ReturnValue PassThroughInertial::getThreeAxisMagnetometerFrameName(size_t sens_index, std::string& frameName) const
 {
     if (!proxyIMagn)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIMagn->getThreeAxisMagnetometerFrameName(sens_index, frameName);
 }
 
-bool PassThroughInertial::getThreeAxisMagnetometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
+yarp::dev::ReturnValue PassThroughInertial::getThreeAxisMagnetometerMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const
 {
     if (!proxyIMagn)
-        return false;
+        return ReturnValue_error_not_ready;
     return proxyIMagn->getThreeAxisMagnetometerMeasure(sens_index, out, timestamp);
 }
 
