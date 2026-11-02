@@ -7,6 +7,7 @@
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/os/PeriodicThread.h>
 #include <yarp/dev/MultipleAnalogSensorsInterfaces.h>
+#include <yarp/dev/ReturnValue.h>
 #include <string>
 #include <list>
 #include <mutex>
@@ -55,10 +56,10 @@ public:
     bool close();
 
     // IEncoderArrays interface
-    virtual size_t getNrOfEncoderArrays() const override;
+    virtual yarp::dev::ReturnValue getNrOfEncoderArrays(size_t &n) const override;
     virtual yarp::dev::MAS_status getEncoderArrayStatus(size_t sens_index) const override;
-    virtual bool getEncoderArrayName(size_t sens_index, std::string &name) const override;
-    virtual bool getEncoderArrayMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
+    virtual yarp::dev::ReturnValue getEncoderArrayName(size_t sens_index, std::string &name) const override;
+    virtual yarp::dev::ReturnValue getEncoderArrayMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const override;
     virtual size_t getEncoderArraySize(size_t sens_index) const override;
 
     // IethResource interface
