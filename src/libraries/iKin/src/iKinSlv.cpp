@@ -637,11 +637,11 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             payLoad.addInt32(slv->get2ndTaskChain().getN());
 
                             Bottle &posPart=payLoad.addList();
-                            for (size_t i=0; i<xd_2ndTask.length(); i++)
+                            for (size_t i=0; i<xd_2ndTask.size(); i++)
                                 posPart.addFloat64(xd_2ndTask[i]);
 
                             Bottle &weightsPart=payLoad.addList();
-                            for (size_t i=0; i<w_2ndTask.length(); i++)
+                            for (size_t i=0; i<w_2ndTask.size(); i++)
                                 weightsPart.addFloat64(w_2ndTask[i]);
 
                             break;
@@ -832,12 +832,12 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                 if (tipPart->size()>=7)
                                 {
                                     Vector x(3);
-                                    for (size_t i=0; i<x.length(); i++)
+                                    for (size_t i=0; i<x.size(); i++)
                                         x[i]=tipPart->get(i).asFloat64();
 
                                     Vector o(4);
-                                    for (size_t i=0; i<o.length(); i++)
-                                        o[i]=tipPart->get(i+x.length()).asFloat64();
+                                    for (size_t i=0; i<o.size(); i++)
+                                        o[i]=tipPart->get(i+x.size()).asFloat64();
 
                                     Matrix HN=axis2dcm(o);
                                     HN.setSubcol(x,0,3);
@@ -870,10 +870,10 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                     {
                                         if ((posPart->size()>=3) && (weightsPart->size()>=3))
                                         {
-                                            for (size_t i=0; i<xd_2ndTask.length(); i++)
+                                            for (size_t i=0; i<xd_2ndTask.size(); i++)
                                                 xd_2ndTask[i]=posPart->get(i).asFloat64();
 
-                                            for (size_t i=0; i<w_2ndTask.length(); i++)
+                                            for (size_t i=0; i<w_2ndTask.size(); i++)
                                                 w_2ndTask[i]=weightsPart->get(i).asFloat64();
 
                                             if (n>=0)
@@ -957,7 +957,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
 
                 // get the target
                 Vector xd(b_xd->size());
-                for (size_t i=0; i<xd.length(); i++)
+                for (size_t i=0; i<xd.size(); i++)
                     xd[i]=b_xd->get(i).asFloat64();
 
                 // accounts for the starting DOF
@@ -1146,7 +1146,7 @@ void CartesianSolver::printInfo(const string &typ, const Vector &xd,
                                 const double t)
 {
     // ensure same length of vectors
-    Vector x_=x.subVector(0,(unsigned int)xd.length()-1);
+    Vector x_=x.subVector(0,(unsigned int)xd.size()-1);
 
     printf("   Request type       = %s\n",typ.c_str());
     printf("  Target rxPose   [m] = %s\n",xd.toString().c_str());
@@ -1174,7 +1174,7 @@ Vector &CartesianSolver::encodeDOF()
 /************************************************************************/
 bool CartesianSolver::decodeDOF(const Vector &_dof)
 {
-    unsigned int len=std::min(prt->chn->getN(),(unsigned int)_dof.length());
+    unsigned int len=std::min(prt->chn->getN(),(unsigned int)_dof.size());
     for (unsigned int i=0; i<len; i++)
     {
         if (_dof[i]>1.0)
@@ -1198,7 +1198,7 @@ bool CartesianSolver::handleJointsRestPosition(const Bottle *options, Bottle *re
 
     if (options!=NULL)
     {
-        size_t len=std::min((size_t)options->size(),restJntPos.length());
+        size_t len=std::min((size_t)options->size(),restJntPos.size());
         for (unsigned int i=0; i<len; i++)
         {
             double val=CTRL_DEG2RAD*options->get(i).asFloat64();
@@ -1214,7 +1214,7 @@ bool CartesianSolver::handleJointsRestPosition(const Bottle *options, Bottle *re
     if (reply!=NULL)
     {
         Bottle &b=reply->addList();
-        for (size_t i=0; i<restJntPos.length(); i++)
+        for (size_t i=0; i<restJntPos.size(); i++)
             b.addFloat64(CTRL_RAD2DEG*restJntPos[i]);
     }
 
@@ -1229,7 +1229,7 @@ bool CartesianSolver::handleJointsRestWeights(const Bottle *options, Bottle *rep
 
     if (options!=NULL)
     {
-        size_t len=std::min((size_t)options->size(),restWeights.length());
+        size_t len=std::min((size_t)options->size(),restWeights.size());
         for (size_t i=0; i<len; i++)
         {
             double val=options->get(i).asInt32();
@@ -1242,7 +1242,7 @@ bool CartesianSolver::handleJointsRestWeights(const Bottle *options, Bottle *rep
     if (reply!=NULL)
     {
         Bottle &b=reply->addList();
-        for (size_t i=0; i<restWeights.length(); i++)
+        for (size_t i=0; i<restWeights.size(); i++)
             b.addFloat64(restWeights[i]);
     }
 
@@ -1253,7 +1253,7 @@ bool CartesianSolver::handleJointsRestWeights(const Bottle *options, Bottle *rep
 /************************************************************************/
 bool CartesianSolver::isNewDOF(const Vector &_dof)
 {
-    size_t len=std::min((size_t)prt->chn->getN(),_dof.length());
+    size_t len=std::min((size_t)prt->chn->getN(),_dof.size());
     for (size_t i=0; i<len; i++)
     {
         if (_dof[i]>1.0)
@@ -1358,7 +1358,7 @@ bool CartesianSolver::open(Searchable &options)
     if (Bottle *v=options.find("dof").asList())
     {
         Vector _dof(v->size());
-        for (size_t i=0; i<_dof.length(); i++)
+        for (size_t i=0; i<_dof.size(); i++)
             _dof[i]=v->get(i).asInt32();
 
         decodeDOF(_dof);
@@ -1834,7 +1834,7 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
     Vector newDOF=dof;
 
     // update desired status
-    size_t len=std::min((size_t)prt->chn->getN(),_dof.length());
+    size_t len=std::min((size_t)prt->chn->getN(),_dof.size());
     for (size_t i=0; i<len; i++)
         newDOF[i]=_dof[i];
 
