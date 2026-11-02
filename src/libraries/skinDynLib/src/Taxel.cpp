@@ -175,25 +175,25 @@ using namespace iCub::skinDynLib;
         if (verbosity)
         {
             yDebug("ID %i \tPosition %s \tNormal %s \tWRFPosition %s \tpx %s", ID,
-                    Position.toString(3,3).c_str(), Normal.toString(3,3).c_str(),
-                    WRFPosition.toString(3,3).c_str(),px.toString(3,3).c_str());
+                    Position.toFormattedString(3,3).c_str(), Normal.toFormattedString(3,3).c_str(),
+                    WRFPosition.toFormattedString(3,3).c_str(),px.toFormattedString(3,3).c_str());
             yDebug("\tFrame of Reference \n%s",FoR.toString(3,3).c_str());
         }
         else 
             yDebug("ID %i \tPosition %s \tNormal %s\n", ID,
-                    Position.toString(3,3).c_str(), Normal.toString(3,3).c_str());
+            Position.toFormattedString(3,3).c_str(), Normal.toFormattedString(3,3).c_str());
     }
 
     std::string Taxel::toString(int verbosity)
     {
         std::stringstream res;
-        res << "ID: " << ID << "\tPosition: "<< Position.toString(3,3) <<
-            "\tNormal: "<< Normal.toString(3,3);
+        res << "ID: " << ID << "\tPosition: "<< Position.toFormattedString(3,3) <<
+            "\tNormal: "<< Normal.toFormattedString(3,3);
 
         if (verbosity)
         {
-            res << "\tWRFPosition: " << WRFPosition.toString(3,3) <<
-                   "\tPx: " << px.toString(3,3) <<
+            res << "\tWRFPosition: " << WRFPosition.toFormattedString(3,3) <<
+                   "\tPx: " << px.toFormattedString(3,3) <<
                    "\tFrame of Reference: \n" << FoR.toString(3,3) << std::endl;
         }
         return res.str();
