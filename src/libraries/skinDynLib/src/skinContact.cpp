@@ -11,6 +11,7 @@
 #include <yarp/os/ConnectionReader.h>
 #include <yarp/os/ConnectionWriter.h>
 #include <yarp/math/Math.h>
+#include <iCub/ctrl/vectorUtils.h>
 #include "iCub/skinDynLib/skinContact.h"
 
 using namespace iCub::skinDynLib;
@@ -224,11 +225,11 @@ Vector skinContact::toVector() const{
     v[index++] = bodyPart;
     v[index++] = linkNumber;
     v[index++] = skinPart;
-    v.setSubvector(index, CoP);         index+=3;
-    v.setSubvector(index, F);           index+=3;
-    v.setSubvector(index, Mu);          index+=3;
-    v.setSubvector(index, geoCenter);   index+=3;
-    v.setSubvector(index, normalDir);   index+=3;
+    iCub::ctrl::setSubVector(v, index, CoP);         index+=3;
+    iCub::ctrl::setSubVector(v, index, F);           index+=3;
+    iCub::ctrl::setSubVector(v, index, Mu);          index+=3;
+    iCub::ctrl::setSubVector(v, index, geoCenter);   index+=3;
+    iCub::ctrl::setSubVector(v, index, normalDir);   index+=3;
     v[index++] = activeTaxels;
     for(unsigned int i=0;i<activeTaxels;i++)
         v[index++] = taxelList[i];
@@ -264,7 +265,7 @@ bool skinContact::fromVector(const Vector &v){
 string skinContact::toString(int precision) const{
     stringstream res;
     res<< dynContact::toString(precision)<< ", Skin part: "<< SkinPart_s[skinPart]<< ", geometric center: "<< 
-        geoCenter.toString(precision)<< ", normal direction: "<< normalDir.toString(precision)<< 
+        geoCenter.toFormattedString(precision)<< ", normal direction: "<< normalDir.toFormattedString(precision)<<
         ", active taxels: "<< activeTaxels<< ", pressure: "<< pressure;
     return res.str();
 }
