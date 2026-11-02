@@ -86,7 +86,7 @@ namespace iCub {
                 for (size_t i=0; i<augData->points.size(); i++)
                 {
                     double d=0.0;
-                    for (size_t j=0; j<augData->points[index].length(); j++)
+                    for (size_t j=0; j<augData->points[index].size(); j++)
                     {
                         d+=pow(augData->points[index][j]-augData->points[i][j],2.0);
                     }

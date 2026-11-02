@@ -30,6 +30,7 @@ set(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/optimalControl.h
                   include/iCub/ctrl/neuralNetworks.h
                   include/iCub/ctrl/outliersDetection.h
+                  include/iCub/ctrl/vectorUtils.h
                   include/iCub/ctrl/clustering.h)
 
 if(ICUB_USE_GSL)
