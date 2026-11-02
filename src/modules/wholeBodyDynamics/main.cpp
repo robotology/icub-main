@@ -106,6 +106,7 @@ This file can be edited at src/wholeBodyDynamics/main.cpp.
 #include <yarp/dev/all.h>
 #include <iCub/ctrl/math.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
+#include <iCub/ctrl/vectorUtils.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>
 
@@ -163,8 +164,8 @@ public:
         static Stamp info;
         info.update(gyro_ts);
         Vector temp(6,0.0);
-        temp.setSubvector(0,acc);
-        temp.setSubvector(3,gyro);
+        iCub::ctrl::setSubVector(temp, 0, acc);
+        iCub::ctrl::setSubVector(temp, 3, gyro);
         for(size_t i=0;i<temp.size();i++)
         {
             temp(i)  = lpf_ord1_3hz(temp(i), i);

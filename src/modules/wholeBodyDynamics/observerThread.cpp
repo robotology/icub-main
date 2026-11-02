@@ -26,6 +26,7 @@
 #include <yarp/dev/all.h>
 #include <iCub/ctrl/math.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
+#include <iCub/ctrl/vectorUtils.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>
 #include <iCub/skinDynLib/skinContact.h>
@@ -755,7 +756,7 @@ void inverseDynamics::run()
         }
 
         #ifdef MEASURE_FROM_FOOT
-        com_all_foot.setSubvector(0,com_all.subVector(0,2));
+        iCub::ctrl::setSubVector(com_all_foot, 0, com_all.subVector(0,2));
         com_all_foot.push_back(1);
         com_all_foot = fTr*com_all_foot;
         #endif
@@ -1148,7 +1149,7 @@ void inverseDynamics::writeTorque(Vector _values, int _address, BufferedPort<Bot
 {
     Bottle a;
     a.addInt32(_address);
-    for(size_t i=0;i<_values.length();i++)
+    for(size_t i=0;i<_values.size();i++)
         a.addFloat64(_values(i));
     _port->prepare() = a;
     _port->write();
