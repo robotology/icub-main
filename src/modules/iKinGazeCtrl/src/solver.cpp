@@ -226,10 +226,10 @@ Vector EyePinvRefGen::getCounterRotGain()
 void EyePinvRefGen::setCounterRotGain(const Vector &gain)
 {
     lock_guard<mutex> lck(mtx);
-    size_t len=std::min(counterRotGain.length(),gain.length());
+    size_t len=std::min(counterRotGain.size(),gain.size());
     for (size_t i=0; i<len; i++)
         counterRotGain[i]=gain[i];
-    yInfo("counter-rotation gains set to (%s)",counterRotGain.toString(3,3).c_str());
+    yInfo("counter-rotation gains set to (%s)",counterRotGain.toFormattedString(3,3).c_str());
 }
 
 
@@ -401,7 +401,7 @@ void EyePinvRefGen::run()
 
             // compensate neck rotation at eyes level
             if ((commData->eyesBoundVer>=0.0) || !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
-                commData->set_counterv(zeros((int)qd.length()));
+                commData->set_counterv(zeros((int)qd.size()));
             else
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
 
@@ -420,7 +420,7 @@ void EyePinvRefGen::run()
             qd=I->integrate(v+commData->get_counterv());
         }
         else
-            commData->set_counterv(zeros((int)qd.length()));
+            commData->set_counterv(zeros((int)qd.size()));
 
         // set a new target position
         commData->set_xd(xd);
@@ -741,7 +741,7 @@ bool Solver::threadInit()
     commData->set_x(fp);
     commData->set_q(fbHead);
     commData->set_torso(fbTorso);
-    commData->resize_v((int)fbHead.length(),0.0);
+    commData->resize_v((int)fbHead.size(),0.0);
     commData->resize_counterv(3,0.0);
     commData->set_fpFrame(chainNeck->getH());
 
