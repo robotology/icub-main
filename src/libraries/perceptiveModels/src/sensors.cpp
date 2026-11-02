@@ -93,8 +93,12 @@ bool SensorEncoderArrays::getOutput(Value &in) const
     auto* iencarray=static_cast<IEncoderArrays*>(source);
     if (!configured)
         return false;
-    
-    if ((index_array<0) || (index_array>=iencarray->getNrOfEncoderArrays()))
+
+    size_t encArrays;
+    if (!iencarray->getNrOfEncoderArrays(encArrays))
+        return false;
+
+    if ((index_array<0) || (index_array>=encArrays))
         return false;
 
     if ((index_element<0) || (index_element>=iencarray->getEncoderArraySize(index_array)))
