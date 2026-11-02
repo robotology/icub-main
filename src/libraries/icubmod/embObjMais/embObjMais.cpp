@@ -440,8 +440,9 @@ void embObjMais::getCounters(unsigned int &sat, unsigned int &err, unsigned int 
     to=counterTimeout;
 }
 
-size_t embObjMais::getNrOfEncoderArrays() const {
-    return 1;
+yarp::dev::ReturnValue embObjMais::getNrOfEncoderArrays(size_t &n) const {
+    n = 1;
+    return yarp::dev::ReturnValue_ok;
 }
 
 yarp::dev::MAS_status embObjMais::getEncoderArrayStatus(size_t sens_index) const {
@@ -449,18 +450,18 @@ if (sens_index >= 1) return yarp::dev::MAS_UNKNOWN;
     return yarp::dev::MAS_OK;
 }
 
-bool embObjMais::getEncoderArrayName(size_t sens_index, std::string &name) const {
-    if (sens_index >= 1) return false;
+yarp::dev::ReturnValue embObjMais::getEncoderArrayName(size_t sens_index, std::string &name) const {
+    if (sens_index >= 1) return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     name = serviceConfig.nameOfMais;
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
-bool embObjMais::getEncoderArrayMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const {
-    if (sens_index >= 1) return false;
+yarp::dev::ReturnValue embObjMais::getEncoderArrayMeasure(size_t sens_index, yarp::sig::Vector& out, double& timestamp) const {
+    if (sens_index >= 1) return yarp::dev::ReturnValue::return_code::return_value_error_generic;
     timestamp = this->timeStamp;
     out.resize(analogdata.size());
     out = analogdata;
-    return true;
+    return yarp::dev::ReturnValue_ok;
 }
 
 size_t embObjMais::getEncoderArraySize(size_t sens_index) const {
