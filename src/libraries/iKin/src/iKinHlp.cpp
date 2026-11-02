@@ -29,7 +29,7 @@ void CartesianHelper::addVectorOption(Bottle &b, const int vcb, const Vector &v)
     part.addVocab32(vcb);
     Bottle &vect=part.addList();
 
-    for (size_t i=0; i<v.length(); i++)
+    for (size_t i=0; i<v.size(); i++)
         vect.addFloat64(v[i]);
 }
 
@@ -51,12 +51,12 @@ bool CartesianHelper::getDesiredOption(const Bottle &reply, Vector &xdhat,
                 return false;
 
             xdhat.resize(3);
-            for (size_t i=0; i<xdhat.length(); i++)
+            for (size_t i=0; i<xdhat.size(); i++)
                 xdhat[i]=xData->get(i).asFloat64();
 
             odhat.resize(4);
-            for (size_t i=0; i<odhat.length(); i++)
-                odhat[i]=xData->get(xdhat.length()+i).asFloat64();
+            for (size_t i=0; i<odhat.size(); i++)
+                odhat[i]=xData->get(xdhat.size()+i).asFloat64();
         }
         else
             return false;
@@ -69,7 +69,7 @@ bool CartesianHelper::getDesiredOption(const Bottle &reply, Vector &xdhat,
                 return false;
 
             qdhat.resize(qData->size());
-            for (size_t i=0; i<qdhat.length(); i++)
+            for (size_t i=0; i<qdhat.size(); i++)
                 qdhat[i]=qData->get(i).asFloat64();
         }
         else
@@ -202,7 +202,7 @@ bool CartesianHelper::computeFixationPointData(iKinChain &eyeL,
     double tL=qty2L/qty3;
     double tR=qty2R/qty3;
 
-    if (fp.length()!=3)
+    if (fp.size()!=3)
         fp.resize(3);
 
     for (int i=0; i<3; i++)
@@ -311,7 +311,7 @@ bool CartesianHelper::computeFixationPointData(iKinChain &eyeL,
         dfpR2=M.getCol(j)+Hz*((dqty2R-2.0*qty1*qty2R*dqty1R/qty3)/qty3);
     }
 
-    if (fp.length()!=3)
+    if (fp.size()!=3)
         fp.resize(3);
 
     if ((J.rows()!=3) || (J.cols()!=3))
