@@ -125,7 +125,7 @@ ModifiedThompsonTau::ModifiedThompsonTau()
     tauLUP[99]  =1.9457;
     tauLUP[100] =1.9458;
     tauLUP[150] =1.9506;
-    tauLUP[200] =1.9530;      
+    tauLUP[200] =1.9530;
     tauLUP[500] =1.9572;
     tauLUP[1000]=1.9586;
     tauLUP[5000]=1.9597;
@@ -137,12 +137,12 @@ ModifiedThompsonTau::ModifiedThompsonTau()
 set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &options)
 {
     set<size_t> res;
-    if (data.length()<3)
+    if (data.size()<3)
         return res;
 
     double mean=0.0;
     double stdev=0.0;
-    size_t N=data.length()-recurIdx.size();
+    size_t N=data.size()-recurIdx.size();
 
     if (options.check("mean") && options.check("std"))
     {
@@ -152,7 +152,7 @@ set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &opti
     else if (N>0)
     {
         // find mean and standard deviation
-        for (size_t i=0; i<data.length(); i++)
+        for (size_t i=0; i<data.size(); i++)
         {
             // don't account for recursive outliers
             if (recurIdx.find(i)==recurIdx.end())
@@ -173,7 +173,7 @@ set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &opti
         // don't account for recursive outliers
         size_t i_1,i_n;
         for (i_1=0; recurIdx.find(i_1)!=recurIdx.end(); i_1++);
-        for (i_n=data.length()-1; recurIdx.find(i_n)!=recurIdx.end(); i_n--);
+        for (i_n=data.size()-1; recurIdx.find(i_n)!=recurIdx.end(); i_n--);
 
         double delta_1=fabs(data[i_1]-mean);
         double delta_n=fabs(data[i_n]-mean);
@@ -189,7 +189,7 @@ set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &opti
             i_check=i_n;
         }
     }
-    else for (size_t i=0; i<data.length(); i++)
+    else for (size_t i=0; i<data.size(); i++)
     {
         // don't account for recursive outliers
         if (recurIdx.find(i)==recurIdx.end())
