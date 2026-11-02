@@ -378,13 +378,13 @@ bool ClientCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
     }
 
     x.resize(3);
-    o.resize(pose.length()-x.length());
+    o.resize(pose.size()-x.size());
 
-    for (size_t i=0; i<x.length(); i++)
+    for (size_t i=0; i<x.size(); i++)
         x[i]=pose[i];
 
-    for (size_t i=0; i<o.length(); i++)
-        o[i]=pose[x.length()+i];
+    for (size_t i=0; i<o.size(); i++)
+        o[i]=pose[x.size()+i];
 
     if (stamp!=NULL)
         *stamp=poseStamp;
@@ -416,13 +416,13 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o,
         if (Bottle *posePart=reply.get(1).asList())
         {
             x.resize(3);
-            o.resize(posePart->size()-x.length());
+            o.resize(posePart->size()-x.size());
 
-            for (size_t i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.size(); i++)
                 x[i]=posePart->get(i).asFloat64();
 
-            for (size_t i=0; i<o.length(); i++)
-                o[i]=posePart->get(x.length()+i).asFloat64();
+            for (size_t i=0; i<o.size(); i++)
+                o[i]=posePart->get(x.size()+i).asFloat64();
 
             if ((reply.size()>2) && (stamp!=NULL))
             {
@@ -447,7 +447,7 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o,
 bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od,
                                          const double t)
 {
-    if (!connected || (xd.length()<3) || (od.length()<4))
+    if (!connected || (xd.size()<3) || (od.size()<4))
         return false;
 
     Bottle &command=portCmd.prepare();
@@ -473,7 +473,7 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od,
 /************************************************************************/
 bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
 {
-    if (!connected || (xd.length()<3))
+    if (!connected || (xd.size()<3))
         return false;
 
     Bottle &command=portCmd.prepare();
@@ -497,7 +497,7 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
 bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
                                              const double t)
 {
-    if (!connected || (xd.length()<3) || (od.length()<4))
+    if (!connected || (xd.size()<3) || (od.size()<4))
         return false;
 
     Bottle command, reply;
@@ -525,7 +525,7 @@ bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
 /************************************************************************/
 bool ClientCartesianController::goToPositionSync(const Vector &xd, const double t)
 {
-    if (!connected || (xd.length()<3))
+    if (!connected || (xd.size()<3))
         return false;
 
     Bottle command, reply;
@@ -577,13 +577,13 @@ bool ClientCartesianController::askForPose(const Vector &xd, const Vector &od,
         return false;
 
     Bottle command, reply;
-    Vector tg(xd.length()+od.length());
-    for (size_t i=0; i<xd.length(); i++)
+    Vector tg(xd.size()+od.size());
+    for (size_t i=0; i<xd.size(); i++)
         tg[i]=xd[i];
 
-    for (size_t i=0; i<od.length(); i++)
-        tg[xd.length()+i]=od[i];
-    
+    for (size_t i=0; i<od.size(); i++)
+        tg[xd.size()+i]=od[i];
+
     command.addVocab32(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
     addPoseOption(command,IKINCTRL_POSE_FULL);
@@ -607,12 +607,12 @@ bool ClientCartesianController::askForPose(const Vector &q0, const Vector &xd,
         return false;
 
     Bottle command, reply;
-    Vector tg(xd.length()+od.length());
-    for (size_t i=0; i<xd.length(); i++)
+    Vector tg(xd.size()+od.size());
+    for (size_t i=0; i<xd.size(); i++)
         tg[i]=xd[i];
 
-    for (size_t i=0; i<od.length(); i++)
-        tg[xd.length()+i]=od[i];
+    for (size_t i=0; i<od.size(); i++)
+        tg[xd.size()+i]=od[i];
 
     command.addVocab32(IKINCARTCTRL_VOCAB_CMD_ASK);
     addVectorOption(command,IKINCARTCTRL_VOCAB_OPT_XD,tg);
@@ -696,8 +696,8 @@ bool ClientCartesianController::getDOF(Vector &curDof)
         if (Bottle *dofPart=reply.get(1).asList())
         {
             curDof.resize(dofPart->size());
-            
-            for (size_t i=0; i<curDof.length(); i++)
+
+            for (size_t i=0; i<curDof.size(); i++)
                 curDof[i]=dofPart->get(i).asFloat64();
 
             return true;
@@ -719,7 +719,7 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
     command.addVocab32(IKINCARTCTRL_VOCAB_OPT_DOF);
     Bottle &dofPart=command.addList();
 
-    for (size_t i=0; i<newDof.length(); i++)
+    for (size_t i=0; i<newDof.size(); i++)
         dofPart.addInt32((int)newDof[i]);
 
     if (!portRpc.write(command,reply))
@@ -734,7 +734,7 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         {                        
             curDof.resize(dofPart->size());
 
-            for (size_t i=0; i<curDof.length(); i++)
+            for (size_t i=0; i<curDof.size(); i++)
                 curDof[i]=dofPart->get(i).asFloat64();
 
             return true;
@@ -766,8 +766,8 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
         if (Bottle *restPart=reply.get(1).asList())
         {
             curRestPos.resize(restPart->size());
-            
-            for (size_t i=0; i<curRestPos.length(); i++)
+
+            for (size_t i=0; i<curRestPos.size(); i++)
                 curRestPos[i]=restPart->get(i).asFloat64();
 
             return true;
@@ -801,7 +801,7 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos,
         if (Bottle *restPart=reply.get(1).asList())
         {                        
             curRestPos.resize(restPart->size());
-            for (size_t i=0; i<curRestPos.length(); i++)
+            for (size_t i=0; i<curRestPos.size(); i++)
                 curRestPos[i]=restPart->get(i).asFloat64();
             return true;
         }
@@ -832,8 +832,8 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
         if (Bottle *restPart=reply.get(1).asList())
         {
             curRestWeights.resize(restPart->size());
-            
-            for (size_t i=0; i<curRestWeights.length(); i++)
+
+            for (size_t i=0; i<curRestWeights.size(); i++)
                 curRestWeights[i]=restPart->get(i).asFloat64();
 
             return true;
@@ -867,7 +867,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
         if (Bottle *restPart=reply.get(1).asList())
         {                        
             curRestWeights.resize(restPart->size());
-            for (size_t i=0; i<curRestWeights.length(); i++)
+            for (size_t i=0; i<curRestWeights.size(); i++)
                 curRestWeights[i]=restPart->get(i).asFloat64();
             return true;
         }
@@ -1055,7 +1055,7 @@ bool ClientCartesianController::getJointsVelocities(Vector &qdot)
         {
             qdot.resize(qdotPart->size());
 
-            for (size_t i=0; i<qdot.length(); i++)
+            for (size_t i=0; i<qdot.size(); i++)
                 qdot[i]=qdotPart->get(i).asFloat64();
 
             return true;
@@ -1087,13 +1087,13 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         if (Bottle *xdotPart=reply.get(1).asList())
         {
             xdot.resize(3);
-            odot.resize(xdotPart->size()-xdot.length());
+            odot.resize(xdotPart->size()-xdot.size());
 
-            for (size_t i=0; i<xdot.length(); i++)
+            for (size_t i=0; i<xdot.size(); i++)
                 xdot[i]=xdotPart->get(i).asFloat64();
 
-            for (size_t i=0; i<odot.length(); i++)
-                odot[i]=xdotPart->get(xdot.length()+i).asFloat64();
+            for (size_t i=0; i<odot.size(); i++)
+                odot[i]=xdotPart->get(xdot.size()+i).asFloat64();
 
             return true;
         }
@@ -1107,7 +1107,7 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 bool ClientCartesianController::setTaskVelocities(const Vector &xdot,
                                                   const Vector &odot)
 {
-    if (!connected || (xdot.length()<3) || (odot.length()<4))
+    if (!connected || (xdot.size()<3) || (odot.size()<4))
         return false;
 
     Bottle &command=portCmd.prepare();
@@ -1131,7 +1131,7 @@ bool ClientCartesianController::setTaskVelocities(const Vector &xdot,
 /************************************************************************/
 bool ClientCartesianController::attachTipFrame(const Vector &x, const Vector &o)
 {
-    if (!connected || (x.length()<3) || (o.length()<4))
+    if (!connected || (x.size()<3) || (o.size()<4))
         return false;
 
     Bottle command, reply;
@@ -1189,13 +1189,13 @@ bool ClientCartesianController::getTipFrame(Vector &x, Vector &o)
         if (Bottle *tipPart=reply.get(1).asList())
         {
             x.resize(3);
-            o.resize(tipPart->size()-x.length());
+            o.resize(tipPart->size()-x.size());
 
-            for (size_t i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.size(); i++)
                 x[i]=tipPart->get(i).asFloat64();
 
-            for (size_t i=0; i<o.length(); i++)
-                o[i]=tipPart->get(x.length()+i).asFloat64();
+            for (size_t i=0; i<o.size(); i++)
+                o[i]=tipPart->get(x.size()+i).asFloat64();
 
             return true;
         }

@@ -92,13 +92,13 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
             if (pose==IKINCARTCTRL_VOCAB_VAL_POSE_FULL)
             {
                 Vector xd(3);
-                Vector od(v->size()-xd.length());
+                Vector od(v->size()-xd.size());
 
-                for (size_t i=0; i<xd.length(); i++)
+                for (size_t i=0; i<xd.size(); i++)
                     xd[i]=v->get(i).asFloat64();
 
-                for (size_t i=0; i<od.length(); i++)
-                    od[i]=v->get(xd.length()+i).asFloat64();
+                for (size_t i=0; i<od.size(); i++)
+                    od[i]=v->get(xd.size()+i).asFloat64();
 
                 server->goToPose(xd,od,t);
             }
@@ -117,13 +117,13 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
             Bottle *v=command.get(1).asList();
 
             Vector xdot(3);
-            Vector odot(v->size()-xdot.length());
+            Vector odot(v->size()-xdot.size());
 
-            for (size_t i=0; i<xdot.length(); i++)
+            for (size_t i=0; i<xdot.size(); i++)
                 xdot[i]=v->get(i).asFloat64();
 
-            for (size_t i=0; i<odot.length(); i++)
-                odot[i]=v->get(xdot.length()+i).asFloat64();
+            for (size_t i=0; i<odot.size(); i++)
+                odot[i]=v->get(xdot.size()+i).asFloat64();
 
             server->setTaskVelocities(xdot,odot);
         }
@@ -135,7 +135,7 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
 TaskRefVelTargetGenerator::TaskRefVelTargetGenerator(const double Ts,
                                                      const Vector &x0)
 {
-    yAssert(x0.length()>=7);
+    yAssert(x0.size()>=7);
     I=new Integrator(Ts,x0.subVector(0,2));
     R=axis2dcm(x0.subVector(3,6));
 }
@@ -144,7 +144,7 @@ TaskRefVelTargetGenerator::TaskRefVelTargetGenerator(const double Ts,
 /************************************************************************/
 void TaskRefVelTargetGenerator::reset(const Vector &x0)
 {
-    yAssert(x0.length()>=7);
+    yAssert(x0.size()>=7);
     I->reset(x0.subVector(0,2));
     R=axis2dcm(x0.subVector(3,6));
 }
@@ -153,7 +153,7 @@ void TaskRefVelTargetGenerator::reset(const Vector &x0)
 /************************************************************************/
 Vector TaskRefVelTargetGenerator::integrate(const Vector &vel)
 {
-    yAssert(vel.length()>=7);
+    yAssert(vel.size()>=7);
     Vector w=vel.subVector(3,6);
     w[3]*=I->getTs();
     R=axis2dcm(w)*R;
@@ -558,8 +558,8 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             {
                                 reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &dofPart=reply.addList();
-                                    
-                                for (size_t i=0; i<curDof.length(); i++)
+
+                                for (size_t i=0; i<curDof.size(); i++)
                                     dofPart.addInt32((int)curDof[i]);
                             }
                             else
@@ -643,11 +643,11 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             {
                                 reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &xdotPart=reply.addList();
-    
-                                for (size_t i=0; i<xdot.length(); i++)
+
+                                for (size_t i=0; i<xdot.size(); i++)
                                     xdotPart.addFloat64(xdot[i]);
-    
-                                for (size_t i=0; i<odot.length(); i++)
+
+                                for (size_t i=0; i<odot.size(); i++)
                                     xdotPart.addFloat64(odot[i]);
                             }
                             else
@@ -670,10 +670,10 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                     reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                     Bottle &posePart=reply.addList();
 
-                                    for (size_t i=0; i<x.length(); i++)
+                                    for (size_t i=0; i<x.size(); i++)
                                         posePart.addFloat64(x[i]);
 
-                                    for (size_t i=0; i<o.length(); i++)
+                                    for (size_t i=0; i<o.size(); i++)
                                         posePart.addFloat64(o[i]);
 
                                     Bottle &stampPart=reply.addList();
@@ -698,10 +698,10 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                 Bottle &tipPart=reply.addList();
 
-                                for (size_t i=0; i<x.length(); i++)
+                                for (size_t i=0; i<x.size(); i++)
                                     tipPart.addFloat64(x[i]);
 
-                                for (size_t i=0; i<o.length(); i++)
+                                for (size_t i=0; i<o.size(); i++)
                                     tipPart.addFloat64(o[i]);
                             }
                             else
@@ -864,7 +864,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                     reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
                                     Bottle &dofPart=reply.addList();
 
-                                    for (size_t i=0; i<curDof.length(); i++)
+                                    for (size_t i=0; i<curDof.size(); i++)
                                         dofPart.addInt32((int)curDof[i]);
                                 }
                                 else
@@ -934,13 +934,13 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 if (b->size()>=7)
                                 {
                                     Vector x(3);
-                                    Vector o(b->size()-x.length());
+                                    Vector o(b->size()-x.size());
 
-                                    for (size_t i=0; i<x.length(); i++)
+                                    for (size_t i=0; i<x.size(); i++)
                                         x[i]=b->get(i).asFloat64();
 
-                                    for (size_t i=0; i<o.length(); i++)
-                                        o[i]=b->get(i+x.length()).asFloat64();
+                                    for (size_t i=0; i<o.size(); i++)
+                                        o[i]=b->get(i+x.size()).asFloat64();
 
                                     if (attachTipFrame(x,o))
                                         reply.addVocab32(IKINCARTCTRL_VOCAB_REP_ACK);
@@ -1249,10 +1249,10 @@ bool ServerCartesianController::getNewTarget()
             for (int i=0; i<len; i++)
                 _qdes[i]=CTRL_DEG2RAD*b2->get(i).asFloat64();
 
-            if (_qdes.length()!=ctrl->get_dim())
-            {    
+            if (_qdes.size()!=ctrl->get_dim())
+            {
                 yWarning("%s: skipped message from solver since does not match the controller dimension (qdes=%d)!=(ctrl=%d)",
-                         ctrlName.c_str(),(int)_qdes.length(),ctrl->get_dim());
+                         ctrlName.c_str(),(int)_qdes.size(),ctrl->get_dim());
 
                 return false;
             }
@@ -2113,12 +2113,12 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             // prepare references for minimum achievable absolute velocities
             if (lDsc[i].useDefaultMinAbsVel)
                 lDsc[i].minAbsVels.resize(joints,0.0);
-            else if (lDsc[i].minAbsVels.length()<(size_t)joints)
+            else if (lDsc[i].minAbsVels.size()<(size_t)joints)
             {
                 Vector tmp=lDsc[i].minAbsVels;
                 lDsc[i].minAbsVels.resize(joints,0.0);
 
-                for (size_t k=0; k<tmp.length(); k++)
+                for (size_t k=0; k<tmp.size(); k++)
                     lDsc[i].minAbsVels[k]=tmp[k];
             }
 
@@ -2499,13 +2499,13 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
         Vector pose=chainState->EndEffPose();
     
         x.resize(3);
-        o.resize(pose.length()-x.length());
-    
-        for (size_t i=0; i<x.length(); i++)
+        o.resize(pose.size()-x.size());
+
+        for (size_t i=0; i<x.size(); i++)
             x[i]=pose[i];
-    
-        for (size_t i=0; i<o.length(); i++)
-            o[i]=pose[x.length()+i];
+
+        for (size_t i=0; i<o.size(); i++)
+            o[i]=pose[x.size()+i];
 
         if (stamp!=NULL)
             *stamp=txInfo;
@@ -2531,7 +2531,7 @@ bool ServerCartesianController::getPose(const int axis, Vector &x,
             Matrix H=chainState->getH(axis,true);
     
             x.resize(3);
-            for (size_t i=0; i<x.length(); i++)
+            for (size_t i=0; i<x.size(); i++)
                 x[i]=H(i,3);
     
             o=dcm2axis(H);
@@ -2558,12 +2558,12 @@ bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od,
     {
         lock_guard<mutex> lck(mtx);
 
-        Vector _xd(xd.length()+od.length());
-        for (size_t i=0; i<xd.length(); i++)
+        Vector _xd(xd.size()+od.size());
+        for (size_t i=0; i<xd.size(); i++)
             _xd[i]=xd[i];
-    
-        for (size_t i=0; i<od.length(); i++)
-            _xd[xd.length()+i]=od[i];
+
+        for (size_t i=0; i<od.size(); i++)
+            _xd[xd.size()+i]=od[i];
 
         taskVelModeOn=false;
         return goTo(IKINCTRL_POSE_FULL,_xd,t);
@@ -2612,13 +2612,13 @@ bool ServerCartesianController::getDesired(Vector &xdhat, Vector &odhat,
         lock_guard<mutex> lck(mtx);
 
         xdhat.resize(3);
-        odhat.resize(xdes.length()-3);
+        odhat.resize(xdes.size()-3);
 
-        for (size_t i=0; i<xdhat.length(); i++)
+        for (size_t i=0; i<xdhat.size(); i++)
             xdhat[i]=xdes[i];
 
-        for (size_t i=0; i<odhat.length(); i++)
-            odhat[i]=xdes[xdhat.length()+i];
+        for (size_t i=0; i<odhat.size(); i++)
+            odhat[i]=xdes[xdhat.size()+i];
 
         qdhat.resize(chainState->getN());
         int cnt=0;
@@ -2649,13 +2649,13 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     lock_guard<mutex> lck(mtx);
 
     Bottle command, reply;
-    Vector tg(xd.length()+od.length());
-    for (size_t i=0; i<xd.length(); i++)
+    Vector tg(xd.size()+od.size());
+    for (size_t i=0; i<xd.size(); i++)
         tg[i]=xd[i];
 
-    for (size_t i=0; i<od.length(); i++)
-        tg[xd.length()+i]=od[i];
-    
+    for (size_t i=0; i<od.size(); i++)
+        tg[xd.size()+i]=od[i];
+
     command.addVocab32(IKINSLV_VOCAB_CMD_ASK);
     addVectorOption(command,IKINSLV_VOCAB_OPT_XD,tg);
     addPoseOption(command,IKINCTRL_POSE_FULL);
@@ -2682,12 +2682,12 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     lock_guard<mutex> lck(mtx);
 
     Bottle command, reply;
-    Vector tg(xd.length()+od.length());
-    for (size_t i=0; i<xd.length(); i++)
+    Vector tg(xd.size()+od.size());
+    for (size_t i=0; i<xd.size(); i++)
         tg[i]=xd[i];
 
-    for (size_t i=0; i<od.length(); i++)
-        tg[xd.length()+i]=od[i];
+    for (size_t i=0; i<od.size(); i++)
+        tg[xd.size()+i]=od[i];
 
     command.addVocab32(IKINSLV_VOCAB_CMD_ASK);
     addVectorOption(command,IKINSLV_VOCAB_OPT_XD,tg);
@@ -2786,7 +2786,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         command.addVocab32(IKINSLV_VOCAB_CMD_SET);
         command.addVocab32(IKINSLV_VOCAB_OPT_DOF);
         Bottle &txDofPart=command.addList();
-        for (size_t i=0; i<newDof.length(); i++)
+        for (size_t i=0; i<newDof.size(); i++)
             txDofPart.addInt32((int)newDof[i]);
     
         // send command to solver and wait for reply
@@ -3135,11 +3135,11 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         Matrix J=ctrl->get_J();
         Vector taskVel(7,0.0);
 
-        if ((J.rows()>0) && (J.cols()==velCmd.length()))
+        if ((J.rows()>0) && (J.cols()==velCmd.size()))
         {
             taskVel=J*(CTRL_DEG2RAD*velCmd);
 
-            Vector _odot=taskVel.subVector(3,(unsigned int)taskVel.length()-1);
+            Vector _odot=taskVel.subVector(3,(unsigned int)taskVel.size()-1);
             double thetadot=norm(_odot);
             if (thetadot>0.0)
                 _odot/=thetadot;
@@ -3151,13 +3151,13 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         }
 
         xdot.resize(3);
-        odot.resize(taskVel.length()-xdot.length());
-    
-        for (size_t i=0; i<xdot.length(); i++)
+        odot.resize(taskVel.size()-xdot.size());
+
+        for (size_t i=0; i<xdot.size(); i++)
             xdot[i]=taskVel[i];
-    
-        for (size_t i=0; i<odot.length(); i++)
-            odot[i]=taskVel[xdot.length()+i];
+
+        for (size_t i=0; i<odot.size(); i++)
+            odot[i]=taskVel[xdot.size()+i];
 
         return true;
     }
@@ -3177,7 +3177,7 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot,
         for (int i=0; i<3; i++)
             xdot_set[i]=xdot[i];
 
-        for (size_t i=3; i<xdot_set.length(); i++)
+        for (size_t i=3; i<xdot_set.size(); i++)
             xdot_set[i]=odot[i-3];
 
         if (norm(xdot_set)>0.0)
@@ -3203,7 +3203,7 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot,
 /************************************************************************/
 bool ServerCartesianController::attachTipFrame(const Vector &x, const Vector &o)
 {
-    if (connected && (x.length()>=3) || (o.length()>=4))
+    if (connected && (x.size()>=3) || (o.size()>=4))
     {
         lock_guard<mutex> lck(mtx);
 
