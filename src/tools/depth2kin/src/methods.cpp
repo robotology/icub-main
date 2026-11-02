@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -89,7 +89,7 @@ void Calibrator::copySuperClassData(const Calibrator &src)
 /************************************************************************/
 double Calibrator::getSpatialCompetence(const Vector &point)
 {
-    if (point.length()<3)
+    if (point.size()<3)
         return 0.0;
 
     Vector x=(point.subVector(0,2)-spatialCompetence.c)/spatialCompetence.scale;
@@ -172,7 +172,7 @@ bool Calibrator::fromProperty(const Property &info)
                 if (++r>=spatialCompetence.A.rows())
                     break;
             }
-        }        
+        }
     }
 
     computeSpatialTransformation();
@@ -223,7 +223,7 @@ MatrixCalibrator::~MatrixCalibrator()
 /************************************************************************/
 bool MatrixCalibrator::addPoints(const Vector &in, const Vector &out)
 {
-    if ((in.length()>=3) && (out.length()>=3))
+    if ((in.size()>=3) && (out.size()>=3))
     {
         Vector _in=in.subVector(0,2);
         Vector _out=out.subVector(0,2);
@@ -242,7 +242,7 @@ bool MatrixCalibrator::clearPoints()
 {
     impl->clearPoints();
     in.clear();
-    out.clear();    
+    out.clear();
     return true;
 }
 
@@ -252,7 +252,7 @@ bool MatrixCalibrator::getPoints(deque<Vector> &in, deque<Vector> &out) const
 {
     in=this->in;
     out=this->out;
-    return true; 
+    return true;
 }
 
 
@@ -275,7 +275,7 @@ bool MatrixCalibrator::calibrate(double &error)
 /************************************************************************/
 bool MatrixCalibrator::retrieve(const Vector &in, Vector &out)
 {
-    if (in.length()>=3)
+    if (in.size()>=3)
     {
         Vector _in=in.subVector(0,2);
         _in.push_back(1.0);
@@ -332,7 +332,7 @@ bool MatrixCalibrator::fromProperty(const Property &info)
     {
         scale=values->get(0).asFloat64();
 
-        int r=0; int c=0;        
+        int r=0; int c=0;
         for (int i=1; i<values->size(); i++)
         {
             H(r,c)=values->get(i).asFloat64();
@@ -374,7 +374,7 @@ LSSVMCalibrator::LSSVMCalibrator(const LSSVMCalibrator &calibrator)
 /************************************************************************/
 bool LSSVMCalibrator::addPoints(const Vector &in, const Vector &out)
 {
-    if ((in.length()>=3) && (out.length()>=3))
+    if ((in.size()>=3) && (out.size()>=3))
     {
         Vector _in=in.subVector(0,2);
         Vector _out=out.subVector(0,2);
@@ -438,7 +438,7 @@ bool LSSVMCalibrator::calibrate(double &error)
 /************************************************************************/
 bool LSSVMCalibrator::retrieve(const Vector &in, Vector &out)
 {
-    if (in.length()>=3)
+    if (in.size()>=3)
     {
         Prediction prediction=impl->predict(in.subVector(0,2));
         out=prediction.getPrediction();
@@ -480,7 +480,7 @@ bool LSSVMCalibrator::fromProperty(const Property &info)
         if (values->size()>=1)
             ret=impl->fromString(values->toString());
 
-    ret&=Calibrator::fromProperty(info); 
+    ret&=Calibrator::fromProperty(info);
     return ret;
 }
 
@@ -521,12 +521,12 @@ LocallyWeightedExperts &LocallyWeightedExperts::operator<<(Calibrator &c)
 /************************************************************************/
 bool LocallyWeightedExperts::retrieve(const Vector &in, Vector &out)
 {
-    if (in.length()<3)
+    if (in.size()<3)
         return false;
 
     Vector _in=in.subVector(0,2);
-    Vector outExperts(_in.length(),0.0);
-    Vector outExtrapolators(_in.length(),0.0);
+    Vector outExperts(_in.size(),0.0);
+    Vector outExtrapolators(_in.size(),0.0);
     double sumExperts=0.0;
     double sumExtrapolators=0.0;
 
@@ -542,7 +542,7 @@ bool LocallyWeightedExperts::retrieve(const Vector &in, Vector &out)
             outExtrapolators+=competence*pred;
             sumExtrapolators+=competence;
             if (competence>=1.0)
-            {                
+            {
                 outExperts+=competence*pred;
                 sumExperts+=competence;
             }
@@ -563,7 +563,7 @@ bool LocallyWeightedExperts::retrieve(const Vector &in, Vector &out)
     }
     // no models found
     else
-        return false; 
+        return false;
 }
 
 
