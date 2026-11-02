@@ -53,7 +53,7 @@ inline Matrix computeH(const Vector &x)
 inline Matrix computeH(const Ipopt::Number *x)
 {
     Vector _x(6);
-    for (size_t i=0; i<_x.length(); i++)
+    for (size_t i=0; i<_x.size(); i++)
         _x[i]=x[i];
 
     return computeH(_x);
@@ -87,7 +87,7 @@ public:
     /****************************************************************/
     virtual void set_x0(const Vector &x0)
     {
-        size_t len=std::min(this->x0.length(),x0.length());
+        size_t len=std::min(this->x0.size(),x0.size());
         for (size_t i=0; i<len; i++)
             this->x0[i]=x0[i];
     }
@@ -121,7 +121,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool get_starting_point(Ipopt::Index n, bool init_x, Ipopt::Number *x,
                             bool init_z, Ipopt::Number *z_L, Ipopt::Number *z_U,
@@ -132,7 +132,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_f(Ipopt::Index n, const Ipopt::Number *x, bool new_x,
                 Ipopt::Number &obj_value)
@@ -150,7 +150,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
@@ -227,7 +227,7 @@ public:
     {
         return true;
     }
-    
+
     /****************************************************************/
     void finalize_solution(Ipopt::SolverReturn status, Ipopt::Index n,
                            const Ipopt::Number *x, const Ipopt::Number *z_L,
@@ -285,7 +285,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
@@ -395,7 +395,7 @@ public:
 
         return true;
     }
-    
+
     /****************************************************************/
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number *grad_f)
@@ -498,7 +498,7 @@ void CalibReferenceWithMatchedPoints::setBounds(const Matrix &min,
         (max.rows()<3) || (max.cols()<3))
         return;
 
-    this->min[0]=min(0,3); this->max[0]=max(0,3); 
+    this->min[0]=min(0,3); this->max[0]=max(0,3);
     this->min[1]=min(1,3); this->max[1]=max(1,3);
     this->min[2]=min(2,3); this->max[2]=max(2,3);
 
@@ -512,8 +512,8 @@ void CalibReferenceWithMatchedPoints::setBounds(const Matrix &min,
 void CalibReferenceWithMatchedPoints::setBounds(const Vector &min,
                                                 const Vector &max)
 {
-    size_t len_min=std::min(this->min.length(),min.length());
-    size_t len_max=std::min(this->max.length(),max.length());
+    size_t len_min=std::min(this->min.size(),min.size());
+    size_t len_max=std::min(this->max.size(),max.size());
 
     for (size_t i=0; i<len_min; i++)
         this->min[i]=min[i];
@@ -527,8 +527,8 @@ void CalibReferenceWithMatchedPoints::setBounds(const Vector &min,
 void CalibReferenceWithMatchedPoints::setScalingBounds(const Vector &min,
                                                        const Vector &max)
 {
-    size_t len_min=std::min(this->min_s.length(),min.length());
-    size_t len_max=std::min(this->max_s.length(),max.length());
+    size_t len_min=std::min(this->min_s.size(),min.size());
+    size_t len_max=std::min(this->max_s.size(),max.size());
 
     for (size_t i=0; i<len_min; i++)
         this->min_s[i]=min[i];
@@ -567,7 +567,7 @@ double CalibReferenceWithMatchedPoints::evalError(const Matrix &H)
 bool CalibReferenceWithMatchedPoints::addPoints(const Vector &p0,
                                                 const Vector &p1)
 {
-    if ((p0.length()>=3) && (p1.length()>=3))
+    if ((p0.size()>=3) && (p1.size()>=3))
     {
         Vector _p0=p0.subVector(0,2); _p0.push_back(1.0);
         Vector _p1=p1.subVector(0,2); _p1.push_back(1.0);
@@ -618,9 +618,9 @@ bool CalibReferenceWithMatchedPoints::setInitialGuess(const Matrix &H)
 /****************************************************************/
 bool CalibReferenceWithMatchedPoints::setScalingInitialGuess(const Vector &s)
 {
-    if (s.length()>=s0.length())
+    if (s.size()>=s0.size())
     {
-        s0=s.subVector(0,(unsigned int)s0.length()-1);
+        s0=s.subVector(0,(unsigned int)s0.size()-1);
         return true;
     }
     else
