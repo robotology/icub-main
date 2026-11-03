@@ -159,17 +159,18 @@ bool SpringyFinger::getSensorsData(Value &data) const
         out[2]=val_out[2].asFloat64();
     }
 
-    Property prop;
     Bottle b;
+    Bottle &d=b.addList();
 
-    b.addList().read(in);
-    prop.put("in",b.get(0));
+    Bottle &d_in=d.addList();
+    d_in.addString("in");
+    d_in.addList().read(in);
 
-    b.addList().read(out);
-    prop.put("out",b.get(1));
+    Bottle &d_out=d.addList();
+    d_out.addString("out");
+    d_out.addList().read(out);
 
-    b.addList().read(prop);
-    data=b.get(2);
+    data=b.get(0);
 
     return true;
 }

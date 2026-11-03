@@ -109,14 +109,14 @@ bool TactileFinger::getSensorsData(Value &data) const
         in[j]=val_in.asFloat64();
     }
 
-    Property prop;
     Bottle b;
+    Bottle &d=b.addList();
 
-    b.addList().read(in);
-    prop.put("in",b.get(0));
+    Bottle &d_in=d.addList();
+    d_in.addString("in");
+    d_in.addList().read(in);
 
-    b.addList().read(prop);
-    data=b.get(1);
+    data=b.get(0);
 
     return true;
 }
