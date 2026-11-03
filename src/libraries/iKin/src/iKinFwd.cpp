@@ -1482,7 +1482,8 @@ bool iKinLimb::toLinksProperties(Property &options)
         }
     }
 
-    links.write(options);
+    // merge the link groups into options without clearing what is already there
+    options.fromString(links.toString(),false);
 
     options.put("type",getType());
     options.put("numLinks",(int)N);
