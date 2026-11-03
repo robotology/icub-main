@@ -27,8 +27,8 @@ using namespace iCub::ctrl;
 /************************************************************************/
 Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
 {
-    yAssert(_lim.rows()==y0.length());
-    dim=(unsigned int)y0.length();
+    yAssert(_lim.rows()==y0.size());
+    dim=(unsigned int)y0.size();
     x_old.resize(dim,0.0);
     applySat=true;
 
@@ -41,7 +41,7 @@ Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
 /************************************************************************/
 Integrator::Integrator(const double _Ts, const Vector &y0)
 {
-    dim=(unsigned int)y0.length();
+    dim=(unsigned int)y0.size();
     x_old.resize(dim,0.0);
     applySat=false;
 
@@ -65,17 +65,17 @@ void Integrator::allocate(const Integrator &I)
 
 /************************************************************************/
 Vector Integrator::saturate(const Vector &v)
-{    
+{
     if (applySat)
     {
         Vector res=v;
-    
+
         for (unsigned int i=0; i<dim; i++)
             if (res[i]<lim(i,0))
                 res[i]=lim(i,0);
             else if (res[i]>lim(i,1))
                 res[i]=lim(i,1);
-    
+
         return res;
     }
     else
@@ -114,7 +114,7 @@ void Integrator::setLim(const Matrix &_lim)
 /************************************************************************/
 const Vector& Integrator::integrate(const Vector &x)
 {
-    yAssert(x.length()==dim);
+    yAssert(x.size()==dim);
 
     // implements the Tustin formula
     y=saturate(y+(x+x_old)*(Ts/2));
@@ -127,7 +127,7 @@ const Vector& Integrator::integrate(const Vector &x)
 /************************************************************************/
 void Integrator::reset(const Vector &y0)
 {
-    yAssert(y0.length()==dim);
+    yAssert(y0.size()==dim);
     y=saturate(y0);
     x_old=0.0;
 }
@@ -139,7 +139,7 @@ void helperPID::addVectorToOption(Bottle &option, const char *key, const Vector 
     Bottle &bKey=option.addList();
     bKey.addString(key);
     Bottle &bKeyContent=bKey.addList();
-    for (size_t i=0; i<val.length(); i++)
+    for (size_t i=0; i<val.size(); i++)
         bKeyContent.addFloat64(val[i]);
 }
 
@@ -152,7 +152,7 @@ bool helperPID::getVectorFromOption(const Bottle &options, const char *key,
     {
         if (Bottle *b=options.find(key).asList())
         {
-            int len=(int)val.length();
+            int len=(int)val.size();
             int bSize=(int)b->size();
 
             size=bSize<len?bSize:len;
@@ -171,11 +171,11 @@ bool helperPID::getVectorFromOption(const Bottle &options, const char *key,
 parallelPID::parallelPID(const double _Ts,
                          const Vector &_Kp, const Vector &_Ki, const Vector &_Kd,
                          const Vector &_Wp, const Vector &_Wi, const Vector &_Wd,
-                         const Vector &_N,  const Vector &_Tt, const Matrix &_satLim) : 
+                         const Vector &_N,  const Vector &_Tt, const Matrix &_satLim) :
                          Ts(_Ts), Kp(_Kp), Ki(_Ki), Kd(_Kd), Wp(_Wp), Wi(_Wi), Wd(_Wd),
                          N(_N), Tt(_Tt), satLim(_satLim)
 {
-    dim=(unsigned int)N.length();
+    dim=(unsigned int)N.size();
     u.resize(dim,0.0);
 
     uSat.resize(dim,0.0);
@@ -199,7 +199,7 @@ parallelPID::parallelPID(const double _Ts,
             num[0]=num[1]=den[1]=0.0;
             den[0]=1.0;
         }
-        
+
         Der.push_back(new Filter(num,den,u0));
     }
 
@@ -246,7 +246,7 @@ const Vector& parallelPID::compute(const Vector &ref, const Vector &fb)
 /************************************************************************/
 void parallelPID::reset(const Vector &u0)
 {
-    size_t len=u0.length()>(size_t)dim?(size_t)dim:u0.length();
+    size_t len=u0.size()>(size_t)dim?(size_t)dim:u0.size();
 
     Vector y=Int->get();
     Vector z1(1,0.0);
@@ -278,7 +278,7 @@ void parallelPID::getOptions(Bottle &options)
     addVectorToOption(options,"N",N);
     addVectorToOption(options,"Tt",Tt);
     addVectorToOption(options,"satLim",satLimVect);
-        
+
     Bottle &bTs=options.addList();
     bTs.addString("Ts");
     bTs.addFloat64(Ts);
@@ -302,10 +302,10 @@ void parallelPID::setOptions(const Bottle &options)
     getVectorFromOption(options,"Tt",Tt,size);
 
     if (getVectorFromOption(options,"Kp",Kp,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"Kd",Kd,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"N",N,size))
         recomputeQuantities=true;
@@ -318,7 +318,7 @@ void parallelPID::setOptions(const Bottle &options)
 
         recomputeQuantities=true;
     }
-    
+
     if (options.check("Ts"))
     {
         double _Ts=options.find("Ts").asFloat64();
@@ -333,7 +333,7 @@ void parallelPID::setOptions(const Bottle &options)
     {
         for (unsigned int i=0; i<dim; i++)
             uSat[i]=PID_SAT(uSat[i],satLim(i,0),satLim(i,1));
-    
+
         Vector u0(1,0.0);
         Vector num(2),den(2);
         for (unsigned int i=0; i<dim; i++)
@@ -373,7 +373,7 @@ void parallelPID::setOptions(const Bottle &options)
 parallelPID::~parallelPID()
 {
     delete Int;
-    
+
     for (unsigned int i=0; i<dim; i++)
         delete Der[i];
 
@@ -387,7 +387,7 @@ seriesPID::seriesPID(const double _Ts,
                      const Vector &_N,  const Matrix &_satLim) :
                      Ts(_Ts), Kp(_Kp), Ti(_Ti), Kd(_Kd), N(_N), satLim(_satLim)
 {
-    dim=(unsigned int)N.length();
+    dim=(unsigned int)N.size();
     u.resize(dim,0.0);
 
     uSat.resize(dim,0.0);
@@ -446,7 +446,7 @@ const Vector& seriesPID::compute(const Vector &ref, const Vector &fb)
     {
         Vector inputIi(1);
         Vector outputIi(1);
-        
+
         inputIi[0]=uSat[i];
         outputIi=Int[i]->filt(inputIi);
 
@@ -470,7 +470,7 @@ void seriesPID::reset()
     Vector u0(1,0.0);
     for (unsigned int i=0; i<dim; i++)
     {
-        Int[i]->init(u0);    
+        Int[i]->init(u0);
         Der[i]->init(u0);
     }
 }
@@ -490,7 +490,7 @@ void seriesPID::getOptions(Bottle &options)
     addVectorToOption(options,"Kd",Kd);
     addVectorToOption(options,"N",N);
     addVectorToOption(options,"satLim",satLimVect);
-        
+
     Bottle &bTs=options.addList();
     bTs.addString("Ts");
     bTs.addFloat64(Ts);
@@ -508,16 +508,16 @@ void seriesPID::setOptions(const Bottle &options)
     bool recomputeQuantities=false;
     int size;
     if (getVectorFromOption(options,"Kp",Kp,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"Ti",Ti,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"Kd",Kd,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"N",N,size))
-        recomputeQuantities=true;    
+        recomputeQuantities=true;
 
     if (getVectorFromOption(options,"satLim",satLimVect,size))
     {
@@ -542,7 +542,7 @@ void seriesPID::setOptions(const Bottle &options)
     {
         for (unsigned int i=0; i<dim; i++)
             uSat[i]=PID_SAT(uSat[i],satLim(i,0),satLim(i,1));
-    
+
         Vector u0(1,0.0);
         Vector num(2),den(2);
         for (unsigned int i=0; i<dim; i++)
@@ -578,8 +578,8 @@ void seriesPID::setOptions(const Bottle &options)
 seriesPID::~seriesPID()
 {
     for (unsigned int i=0; i<dim; i++)
-    {   
-        delete Int[i]; 
+    {
+        delete Int[i];
         delete Der[i];
     }
 

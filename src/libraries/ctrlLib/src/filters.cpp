@@ -27,14 +27,14 @@ Filter::Filter(const Vector &num, const Vector &den, const Vector &y0)
 {
     b=num;
     a=den;
-    
-    m=b.length(); n=a.length();
+
+    m=b.size(); n=a.size();
     yAssert((m>0)&&(n>0));
 
-    uold.insert(uold.begin(),m-1,zeros((int)y0.length()));
-    yold.insert(yold.begin(),n-1,zeros((int)y0.length()));
+    uold.insert(uold.begin(),m-1,zeros((int)y0.size()));
+    yold.insert(yold.begin(),n-1,zeros((int)y0.size()));
 
-    init(y0);    
+    init(y0);
 }
 
 
@@ -46,25 +46,25 @@ void Filter::init(const Vector &y0)
     if (uold.size()>0)
         init(y0,uold[0]);
     else    // otherwise use zero
-        init(y0,zeros((int)y0.length()));    
+        init(y0,zeros((int)y0.size()));
 }
 
 
 /***************************************************************************/
 void Filter::init(const Vector &y0, const Vector &u0)
 {
-    Vector u_init(y0.length(),0.0);
+    Vector u_init(y0.size(),0.0);
     Vector y_init=y0;
     y=y0;
 
     double sum_b=0.0;
-    for (size_t i=0; i<b.length(); i++)
+    for (size_t i=0; i<b.size(); i++)
         sum_b+=b[i];
 
     double sum_a=0.0;
-    for (size_t i=0; i<a.length(); i++)
+    for (size_t i=0; i<a.size(); i++)
         sum_a+=a[i];
-    
+
     // if filter DC gain is not zero
     if (fabs(sum_b)>std::numeric_limits<double>::epsilon())
         u_init=(sum_a/sum_b)*y0;
@@ -78,10 +78,10 @@ void Filter::init(const Vector &y0, const Vector &u0)
             y_init=a[0]/(a[0]-sum_a)*y;
         // if sum_a==a[0] then the filter can only be initialized to zero
     }
-    
+
     for (size_t i=0; i<yold.size(); i++)
         yold[i]=y_init;
-    
+
     for (size_t i=0; i<uold.size(); i++)
         uold[i]=u_init;
 }
@@ -104,11 +104,11 @@ void Filter::setCoeffs(const Vector &num, const Vector &den)
     uold.clear();
     yold.clear();
 
-    m=b.length(); n=a.length();
+    m=b.size(); n=a.size();
     yAssert((m>0)&&(n>0));
 
-    uold.insert(uold.begin(),m-1,zeros((int)y.length()));
-    yold.insert(yold.begin(),n-1,zeros((int)y.length()));
+    uold.insert(uold.begin(),m-1,zeros((int)y.size()));
+    yold.insert(yold.begin(),n-1,zeros((int)y.size()));
 
     init(y);
 }
@@ -117,7 +117,7 @@ void Filter::setCoeffs(const Vector &num, const Vector &den)
 /***************************************************************************/
 bool Filter::adjustCoeffs(const Vector &num, const Vector &den)
 {
-    if ((num.length()==b.length()) && (den.length()==a.length()))
+    if ((num.size()==b.size()) && (den.size()==a.size()))
     {
         b=num;
         a=den;
@@ -139,27 +139,27 @@ void Filter::getStates(deque<Vector> &u, deque<Vector> &y)
 /***************************************************************************/
 const Vector& Filter::filt(const Vector &u)
 {
-    yAssert(y.length()==u.length());
-    for (size_t j=0; j<y.length(); j++)
+    yAssert(y.size()==u.size());
+    for (size_t j=0; j<y.size(); j++)
         y[j]=b[0]*u[j];
-    
+
     for (size_t i=1; i<m; i++)
-        for (size_t j=0; j<y.length(); j++)
+        for (size_t j=0; j<y.size(); j++)
             y[j]+=b[i]*uold[i-1][j];
-    
+
     for (size_t i=1; i<n; i++)
-        for (size_t j=0; j<y.length(); j++)
+        for (size_t j=0; j<y.size(); j++)
             y[j]-=a[i]*yold[i-1][j];
-    
-    for (size_t j=0; j<y.length(); j++)
+
+    for (size_t j=0; j<y.size(); j++)
         y[j]/=a[0];
-    
+
     uold.push_front(u);
     uold.pop_back();
-    
+
     yold.push_front(y);
     yold.pop_back();
-    
+
     return y;
 }
 
@@ -168,15 +168,15 @@ const Vector& Filter::filt(const Vector &u)
 RateLimiter::RateLimiter(const Vector &rL, const Vector &rU) :
                          rateLowerLim(rL), rateUpperLim(rU)
 {
-    size_t nL=rateLowerLim.length();
-    size_t nU=rateUpperLim.length();
+    size_t nL=rateLowerLim.size();
+    size_t nU=rateUpperLim.size();
     n=std::min(nL,nU);
 }
 
 
 /**********************************************************************/
 void RateLimiter::init(const Vector &u0)
-{ 
+{
     uLim=u0;
 }
 
@@ -303,9 +303,9 @@ MedianFilter::MedianFilter(const size_t n, const Vector &y0)
 /***************************************************************************/
 void MedianFilter::init(const Vector &y0)
 {
-    yAssert(y0.length()>0);
+    yAssert(y0.size()>0);
     y=y0;
-    m=y.length();
+    m=y.size();
     uold.assign(m,deque<double>());
 }
 
@@ -337,7 +337,7 @@ double MedianFilter::median(deque<double>& v)
 /***************************************************************************/
 const Vector& MedianFilter::filt(const Vector &u)
 {
-    yAssert(y.length()==u.length());
+    yAssert(y.size()==u.size());
     for (size_t i=0; i<m; i++)
         uold[i].push_front(u[i]);
 

@@ -126,7 +126,7 @@ void OneLinkNewtonEuler::setMode(const NewEulMode _mode)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setZM(const Vector &_zm)
 {
-    if(_zm.length()==3)
+    if(_zm.size()==3)
     {
         zm = _zm;
         return true;
@@ -136,7 +136,7 @@ bool OneLinkNewtonEuler::setZM(const Vector &_zm)
         if(verbose)
         {
             fprintf(stderr,"OneLinkNewtonEuler error: could not set Zm due to wrong size vector: ");
-            fprintf(stderr,"%d instead of 3. \n",(int)_zm.length());
+            fprintf(stderr,"%d instead of 3. \n",(int)_zm.size());
 
         }
         return false;
@@ -145,14 +145,14 @@ bool OneLinkNewtonEuler::setZM(const Vector &_zm)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setForce(const Vector &_F)
 {
-    if(_F.length()==3)
+    if(_F.size()==3)
     {
         link->F = _F;
         return true;
     }
     else
     {
-        if(verbose) fprintf(stderr,"OneLink error, could not set force due to wrong size: %d instead of 3.\n",(int)_F.length());
+        if(verbose) fprintf(stderr,"OneLink error, could not set force due to wrong size: %d instead of 3.\n",(int)_F.size());
 
         return false;       
     }
@@ -160,14 +160,14 @@ bool OneLinkNewtonEuler::setForce(const Vector &_F)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setMoment(const Vector &_Mu)
 {
-    if(_Mu.length()==3)
+    if(_Mu.size()==3)
     {
         link->Mu = _Mu;
         return true;
     }
     else
     {
-        if(verbose) fprintf(stderr,"OneLink error, could not set moment due to wrong size: %d instead of 3.\n",(int)_Mu.length());
+        if(verbose) fprintf(stderr,"OneLink error, could not set moment due to wrong size: %d instead of 3.\n",(int)_Mu.size());
 
         return false;       
     }
@@ -180,14 +180,14 @@ void OneLinkNewtonEuler::setTorque(const double _Tau)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setAngVel(const Vector &_w)
 {
-    if(_w.length()==3)
+    if(_w.size()==3)
     {
         link->w = _w; 
         return true;
     }
     else
     {
-        if(verbose) fprintf(stderr,"OneLink error, could not set w due to wrong size: %d instead of 3. \n",(int)_w.length());
+        if(verbose) fprintf(stderr,"OneLink error, could not set w due to wrong size: %d instead of 3. \n",(int)_w.size());
 
         return false;
     }
@@ -195,14 +195,14 @@ bool OneLinkNewtonEuler::setAngVel(const Vector &_w)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setAngAcc(const Vector &_dw)
 {
-    if(_dw.length()==3)
+    if(_dw.size()==3)
     {
         link->dw = _dw; 
         return true;
     }
     else
     {
-        if(verbose) fprintf(stderr,"OneLink error, could not set dw due to wrong size: %d instead of 3. \n",(int)_dw.length());
+        if(verbose) fprintf(stderr,"OneLink error, could not set dw due to wrong size: %d instead of 3. \n",(int)_dw.size());
 
         return false;
     }
@@ -210,14 +210,14 @@ bool OneLinkNewtonEuler::setAngAcc(const Vector &_dw)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 {
-    if(_ddp.length()==3)
+    if(_ddp.size()==3)
     {
         link->ddp = _ddp; 
         return true;
     }
     else
     {
-        if(verbose) fprintf(stderr,"OneLink error, could not set ddp due to wrong size: %d instead of 3. \n",(int)_ddp.length());
+        if(verbose) fprintf(stderr,"OneLink error, could not set ddp due to wrong size: %d instead of 3. \n",(int)_ddp.size());
 
         return false;
     }
@@ -225,14 +225,14 @@ bool OneLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setLinAccC(const Vector &_ddpC)
 {
-    if(_ddpC.length()==3)
+    if(_ddpC.size()==3)
     {
         link->ddpC = _ddpC; 
         return true;
     }
     else
     {
-        if(verbose) fprintf(stderr,"OneLink error, could not set ddpC due to wrong size: %d instead of 3. \n",(int)_ddpC.length());
+        if(verbose) fprintf(stderr,"OneLink error, could not set ddpC due to wrong size: %d instead of 3. \n",(int)_ddpC.size());
 
         return false;
     }
@@ -240,14 +240,14 @@ bool OneLinkNewtonEuler::setLinAccC(const Vector &_ddpC)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool OneLinkNewtonEuler::setAngAccM(const Vector &_dwM)
 {
-    if(_dwM.length()==3)
+    if(_dwM.size()==3)
     {
         link->dwM = _dwM; 
         return true;
     }
     else
     {
-        if(verbose) fprintf(stderr,"OneLink error, could not set dwM due to wrong size: %d instead of 3. \n",(int)_dwM.length());
+        if(verbose) fprintf(stderr,"OneLink error, could not set dwM due to wrong size: %d instead of 3. \n",(int)_dwM.size());
 
         return false;
     }
@@ -262,14 +262,14 @@ bool OneLinkNewtonEuler::setMeasuredFMu(const Vector &_F, const Vector &_Mu)
 {   
     if(link != NULL) 
     {
-        if((_F.length()==3)&&(_Mu.length()==3))
+        if((_F.size()==3)&&(_Mu.size()==3))
         {
             link->setForceMoment(_F,_Mu);
             return true;
         }
         else
         {
-            if(verbose) fprintf(stderr,"OneLinkNewtonEuler error: could not set forces/moments due to wrong dimensions: (%d,%d) instead of (3,3). \n",(int)_F.length(),(int)_Mu.length());
+            if(verbose) fprintf(stderr,"OneLinkNewtonEuler error: could not set forces/moments due to wrong dimensions: (%d,%d) instead of (3,3). \n",(int)_F.size(),(int)_Mu.size());
 
             return false;
         }       
@@ -803,7 +803,7 @@ BaseLinkNewtonEuler::BaseLinkNewtonEuler(const Matrix &_H0, const Vector &_w, co
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool BaseLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const Vector &_ddp)
 {
-    if((_w.length()==3)&&(_dw.length()==3)&&(_ddp.length()==3))
+    if((_w.size()==3)&&(_dw.size()==3)&&(_ddp.size()==3))
     {
         this->setAngVel(_w);
         this->setAngAcc(_dw);
@@ -818,7 +818,7 @@ bool BaseLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const V
     
         if(verbose)
         {
-            fprintf(stderr,"BaseLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: (%d,%d,%d) instead of (3,3,3). ",(int)_w.length(),(int)_dw.length(),(int)_ddp.length());
+            fprintf(stderr,"BaseLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: (%d,%d,%d) instead of (3,3,3). ",(int)_w.size(),(int)_dw.size(),(int)_ddp.size());
 
             fprintf(stderr," Default is set. \n");
         }
@@ -828,7 +828,7 @@ bool BaseLinkNewtonEuler::setAsBase(const Vector &_w, const Vector &_dw, const V
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool BaseLinkNewtonEuler::setAsBase(const Vector &_F, const Vector &_Mu)
 {
-    if((_F.length()==3)&&(_Mu.length()==3))
+    if((_F.size()==3)&&(_Mu.size()==3))
     {
         F = _F;
         Mu = _Mu;
@@ -841,7 +841,7 @@ bool BaseLinkNewtonEuler::setAsBase(const Vector &_F, const Vector &_Mu)
     
         if(verbose)
         {
-            fprintf(stderr,"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3).",(int)_F.length(),(int)_Mu.length());
+            fprintf(stderr,"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3).",(int)_F.size(),(int)_Mu.size());
 
             fprintf(stderr," Default is set. \n");
         }
@@ -903,7 +903,7 @@ const Vector&   BaseLinkNewtonEuler::getrC(bool proj){return zeros3;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool BaseLinkNewtonEuler::setForce(const Vector &_F)    
 {
-    if(_F.length()==3)
+    if(_F.size()==3)
     {
         F=H0.submatrix(0,2,0,2)*_F;
         return true;
@@ -911,7 +911,7 @@ bool BaseLinkNewtonEuler::setForce(const Vector &_F)
     else
     {
         if(verbose)
-            fprintf(stderr,"BaseLink error, could not set force due to wrong dimension: %d instead of 3.\n",(int)_F.length());
+            fprintf(stderr,"BaseLink error, could not set force due to wrong dimension: %d instead of 3.\n",(int)_F.size());
 
         return false;
     }
@@ -919,7 +919,7 @@ bool BaseLinkNewtonEuler::setForce(const Vector &_F)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool BaseLinkNewtonEuler::setMoment(const Vector &_Mu)  
 {
-    if(_Mu.length()==3)
+    if(_Mu.size()==3)
     {
         Mu = H0.submatrix(0,2,0,2)*_Mu;
         Mu0 = _Mu;
@@ -928,7 +928,7 @@ bool BaseLinkNewtonEuler::setMoment(const Vector &_Mu)
     else
     {
         if(verbose)
-            fprintf(stderr,"BaseLink error, could not set moment due to wrong dimension: %d instead of 3.\n",(int)_Mu.length());
+            fprintf(stderr,"BaseLink error, could not set moment due to wrong dimension: %d instead of 3.\n",(int)_Mu.size());
 
         return false;
     }
@@ -938,7 +938,7 @@ void BaseLinkNewtonEuler::setTorque(const double _Tau)      {Tau=_Tau;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool BaseLinkNewtonEuler::setAngVel(const Vector &_w)
 {
-    if(_w.length()==3)
+    if(_w.size()==3)
     {
         w = H0.submatrix(0,2,0,2).transposed()*_w; 
         return true;
@@ -946,7 +946,7 @@ bool BaseLinkNewtonEuler::setAngVel(const Vector &_w)
     else
     {
         if(verbose)
-            fprintf(stderr,"BaseLink error, could not set w due to wrong size: %d instead of 3. \n",(int)_w.length());
+            fprintf(stderr,"BaseLink error, could not set w due to wrong size: %d instead of 3. \n",(int)_w.size());
 
         return false;
     }
@@ -954,7 +954,7 @@ bool BaseLinkNewtonEuler::setAngVel(const Vector &_w)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool BaseLinkNewtonEuler::setAngAcc(const Vector &_dw)
 {
-    if(_dw.length()==3)
+    if(_dw.size()==3)
     {
         dw = H0.submatrix(0,2,0,2).transposed()*_dw; 
         return true;
@@ -962,7 +962,7 @@ bool BaseLinkNewtonEuler::setAngAcc(const Vector &_dw)
     else
     {
         if(verbose)
-            fprintf(stderr,"BaseLink error, could not set dw due to wrong size: %d instead of 3. \n",(int)_dw.length());
+            fprintf(stderr,"BaseLink error, could not set dw due to wrong size: %d instead of 3. \n",(int)_dw.size());
 
         return false;
     }
@@ -970,7 +970,7 @@ bool BaseLinkNewtonEuler::setAngAcc(const Vector &_dw)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool BaseLinkNewtonEuler::setLinAcc(const Vector &_ddp)
 {
-    if(_ddp.length()==3)
+    if(_ddp.size()==3)
     {
         ddp = H0.submatrix(0,2,0,2).transposed()*_ddp; 
         return true;
@@ -978,7 +978,7 @@ bool BaseLinkNewtonEuler::setLinAcc(const Vector &_ddp)
     else
     {
         if(verbose)
-            fprintf(stderr,"BaseLink error, could not set ddp due to wrong size: %d instead of 3. \n",(int)_ddp.length());
+            fprintf(stderr,"BaseLink error, could not set ddp due to wrong size: %d instead of 3. \n",(int)_ddp.size());
 
         return false;
     }
@@ -1053,7 +1053,7 @@ FinalLinkNewtonEuler::FinalLinkNewtonEuler(const yarp::sig::Matrix &_HN, const V
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const Vector &_ddp)
 {
-    if((_w.length()==3)&&(_dw.length()==3)&&(_ddp.length()==3))
+    if((_w.size()==3)&&(_dw.size()==3)&&(_ddp.size()==3))
     {
         w = _w;
         dw = _dw;
@@ -1068,7 +1068,7 @@ bool FinalLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const
     
         if(verbose)
         {
-            fprintf(stderr,"FinalLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: (%d,%d,%d) instead of (3,3,3).",(int)_w.length(),(int)_dw.length(),(int)_ddp.length());
+            fprintf(stderr,"FinalLinkNewtonEuler error: could not set w/dw/ddp due to wrong dimensions: (%d,%d,%d) instead of (3,3,3).",(int)_w.size(),(int)_dw.size(),(int)_ddp.size());
 
             fprintf(stderr," Default is set. \n");
         }
@@ -1079,7 +1079,7 @@ bool FinalLinkNewtonEuler::setAsFinal(const Vector &_w, const Vector &_dw, const
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setAsFinal(const Vector &_F, const Vector &_Mu)
 {
-    if((_F.length()==3)&&(_Mu.length()==3))
+    if((_F.size()==3)&&(_Mu.size()==3))
     {
         F = _F;
         Mu = _Mu;
@@ -1092,7 +1092,7 @@ bool FinalLinkNewtonEuler::setAsFinal(const Vector &_F, const Vector &_Mu)
     
         if(verbose)
         {
-            fprintf(stderr,"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3).",(int)_F.length(),(int)_Mu.length());
+            fprintf(stderr,"FinalLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3).",(int)_F.size(),(int)_Mu.size());
 
             fprintf(stderr," Default is set. \n");
         }
@@ -1146,7 +1146,7 @@ const Vector&   FinalLinkNewtonEuler::getrC(bool proj)      {return zeros3;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setForce(const Vector &_F)
 {
-    if(_F.length()==3)
+    if(_F.size()==3)
     {
         F=_F;
         return true;
@@ -1154,7 +1154,7 @@ bool FinalLinkNewtonEuler::setForce(const Vector &_F)
     else
     {
         if(verbose)
-            fprintf(stderr,"FinalLink error, could not set force due to wrong dimension: %d instead of 3.\n",(int)_F.length());
+            fprintf(stderr,"FinalLink error, could not set force due to wrong dimension: %d instead of 3.\n",(int)_F.size());
 
         return false;
     }
@@ -1162,7 +1162,7 @@ bool FinalLinkNewtonEuler::setForce(const Vector &_F)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool FinalLinkNewtonEuler::setMoment(const Vector &_Mu)
 {
-    if(_Mu.length()==3)
+    if(_Mu.size()==3)
     {
         Mu=_Mu;
         return true;
@@ -1170,7 +1170,7 @@ bool FinalLinkNewtonEuler::setMoment(const Vector &_Mu)
     else
     {
         if(verbose)
-            fprintf(stderr,"FinalLink error, could not set moment due to wrong dimension: %d instead of 3.\n",(int)_Mu.length());
+            fprintf(stderr,"FinalLink error, could not set moment due to wrong dimension: %d instead of 3.\n",(int)_Mu.size());
 
         return false;
     }
@@ -1259,7 +1259,7 @@ SensorLinkNewtonEuler::SensorLinkNewtonEuler(const Matrix &_H, const Matrix &_CO
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool SensorLinkNewtonEuler::setMeasuredFMu(const Vector &_F, const Vector &_Mu)
 {
-    if((_F.length()==3)&&(_Mu.length()==3))
+    if((_F.size()==3)&&(_Mu.size()==3))
     {
         F = _F;
         Mu = _Mu;
@@ -1271,7 +1271,7 @@ bool SensorLinkNewtonEuler::setMeasuredFMu(const Vector &_F, const Vector &_Mu)
         Mu.resize(3);   Mu.zero();
     
         if(verbose)
-            fprintf(stderr,"SensorLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3). Default zero is set.\n",(int)_F.length(),(int)_Mu.length());
+            fprintf(stderr,"SensorLinkNewtonEuler error: could not set F/Mu due to wrong dimensions: (%d,%d) instead of (3,3). Default zero is set.\n",(int)_F.size(),(int)_Mu.size());
 
         return false;
     }
@@ -1395,7 +1395,7 @@ const Matrix&   SensorLinkNewtonEuler::getH()       const   {return H;}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool    SensorLinkNewtonEuler::setForce     (const Vector &_F)
 {
-    if(_F.length()==3)
+    if(_F.size()==3)
     {
         F=_F;
         return true;
@@ -1403,7 +1403,7 @@ bool    SensorLinkNewtonEuler::setForce     (const Vector &_F)
     else
     {
         if(verbose)
-            fprintf(stderr,"SensorLink error, could not set force due to wrong dimension: %d instead of 3.\n",(int)_F.length());
+            fprintf(stderr,"SensorLink error, could not set force due to wrong dimension: %d instead of 3.\n",(int)_F.size());
 
         return false;
     }
@@ -1411,7 +1411,7 @@ bool    SensorLinkNewtonEuler::setForce     (const Vector &_F)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool    SensorLinkNewtonEuler::setMoment    (const Vector &_Mu)
 {
-    if(_Mu.length()==3)
+    if(_Mu.size()==3)
     {
         Mu=_Mu;
         return true;
@@ -1419,7 +1419,7 @@ bool    SensorLinkNewtonEuler::setMoment    (const Vector &_Mu)
     else
     {
         if(verbose)
-            fprintf(stderr,"SensorLink error, could not set moment due to wrong dimension: %d instead of 3.\n",(int)_Mu.length());
+            fprintf(stderr,"SensorLink error, could not set moment due to wrong dimension: %d instead of 3.\n",(int)_Mu.size());
 
         return false;
     }
@@ -1429,7 +1429,7 @@ void    SensorLinkNewtonEuler::setTorque    (const double _Tau)     {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool    SensorLinkNewtonEuler::setAngVel    (const Vector &_w)
 {
-    if(_w.length()==3)
+    if(_w.size()==3)
     {
         w = _w; 
         return true;
@@ -1437,7 +1437,7 @@ bool    SensorLinkNewtonEuler::setAngVel    (const Vector &_w)
     else
     {
         if(verbose)
-            fprintf(stderr,"SensorLink error, could not set w due to wrong size: %d instead of 3.\n",(int)_w.length());
+            fprintf(stderr,"SensorLink error, could not set w due to wrong size: %d instead of 3.\n",(int)_w.size());
 
         return false;
     }
@@ -1445,7 +1445,7 @@ bool    SensorLinkNewtonEuler::setAngVel    (const Vector &_w)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool    SensorLinkNewtonEuler::setAngAcc    (const Vector &_dw)
 {
-    if(_dw.length()==3)
+    if(_dw.size()==3)
     {
         dw = _dw; 
         return true;
@@ -1453,7 +1453,7 @@ bool    SensorLinkNewtonEuler::setAngAcc    (const Vector &_dw)
     else
     {
         if(verbose)
-            fprintf(stderr,"SensorLink error, could not set dw due to wrong size: %d instead of 3. \n",(int)_dw.length());
+            fprintf(stderr,"SensorLink error, could not set dw due to wrong size: %d instead of 3. \n",(int)_dw.size());
 
         return false;
     }
@@ -1461,7 +1461,7 @@ bool    SensorLinkNewtonEuler::setAngAcc    (const Vector &_dw)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool    SensorLinkNewtonEuler::setLinAcc    (const Vector &_ddp)
 {
-    if(_ddp.length()==3)
+    if(_ddp.size()==3)
     {
         ddp = _ddp; 
         return true;
@@ -1469,7 +1469,7 @@ bool    SensorLinkNewtonEuler::setLinAcc    (const Vector &_ddp)
     else
     {
         if(verbose)
-            fprintf(stderr,"SensorLink error, could not set ddp due to wrong size: %d instead of 3.\n",(int)_ddp.length());
+            fprintf(stderr,"SensorLink error, could not set ddp due to wrong size: %d instead of 3.\n",(int)_ddp.size());
 
         return false;
     }
@@ -1477,7 +1477,7 @@ bool    SensorLinkNewtonEuler::setLinAcc    (const Vector &_ddp)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool    SensorLinkNewtonEuler::setLinAccC   (const Vector &_ddpC)
 {
-    if(_ddpC.length()==3)
+    if(_ddpC.size()==3)
     {
         ddpC = _ddpC; 
         return true;
@@ -1485,7 +1485,7 @@ bool    SensorLinkNewtonEuler::setLinAccC   (const Vector &_ddpC)
     else
     {
         if(verbose)
-            fprintf(stderr,"SensorLink error, could not set ddp due to wrong size: %d instead of 3.\n",(int)_ddpC.length());
+            fprintf(stderr,"SensorLink error, could not set ddp due to wrong size: %d instead of 3.\n",(int)_ddpC.size());
 
         return false;
     }
@@ -2586,7 +2586,7 @@ bool iDynSensor::setSensorMeasures(const Vector &F, const Vector &Mu)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool iDynSensor::setSensorMeasures(const Vector &FM)
 {
-    if(FM.length()==6)
+    if(FM.size()==6)
     { 
         Vector f(3); f[0]=FM[0];f[1]=FM[1];f[2]=FM[2];
         Vector m(3); m[0]=FM[3];m[1]=FM[4];m[2]=FM[5];
@@ -2596,7 +2596,7 @@ bool iDynSensor::setSensorMeasures(const Vector &FM)
     {
         if(verbose)
         {
-            fprintf(stderr,"iDynSensor error: could not set sensor measures due to wrong sized vector: %d instead of 6 (3+3).\n",(int)FM.length());
+            fprintf(stderr,"iDynSensor error: could not set sensor measures due to wrong sized vector: %d instead of 6 (3+3).\n",(int)FM.size());
         }
         return false;
     }

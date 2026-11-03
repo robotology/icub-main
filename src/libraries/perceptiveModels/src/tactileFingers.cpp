@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -94,7 +94,7 @@ bool TactileFinger::isCalibrated() const
 
 /************************************************************************/
 bool TactileFinger::getSensorsData(Value &data) const
-{    
+{
     Vector in(12);
     for (int j=0; j<12; j++)
     {
@@ -134,8 +134,8 @@ bool TactileFinger::extractSensorsData(Vector &in) const
         {
             if (Bottle *b2=b1->find("in").asList())
             {
-                in.resize(b2->size()); 
-                for (size_t i=0; i<in.length(); i++)
+                in.resize(b2->size());
+                for (size_t i=0; i<in.size(); i++)
                     in[i]=b2->get(i).asFloat64();
 
                 ret=true;
@@ -155,7 +155,7 @@ bool TactileFinger::getOutput(Value &out) const
         return false;
 
     double ret=0.0;
-    for (size_t j=0; j<i.length(); j++)
+    for (size_t j=0; j<i.size(); j++)
         ret=std::max(ret,directLogic?(255.0-i[j]):i[j]);
 
     out=Value(outputGain*ret);
@@ -373,7 +373,7 @@ bool TactileFingersModel::getOutput(Value &out) const
         fingers[2].getOutput(val[2]);
         fingers[3].getOutput(val[3]);
         fingers[4].getOutput(val[4]);
-        
+
         Bottle bOut; Bottle &ins=bOut.addList();
         ins.addFloat64(val[0].asFloat64());
         ins.addFloat64(val[1].asFloat64());

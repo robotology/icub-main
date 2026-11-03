@@ -68,7 +68,7 @@ void xdPort::onRead(Bottle &b)
     if (locked)
         return;
 
-    size_t n=std::min(b.size(),xd.length());
+    size_t n=std::min(b.size(),xd.size());
     for (size_t i=0; i<n; i++)
         xd[i]=b.get(i).asFloat64();
 
@@ -616,7 +616,7 @@ void copyJointsBounds(iKinChain *ch1, iKinChain *ch2)
 /************************************************************************/
 void updateTorsoBlockedJoints(iKinChain *chain, const Vector &fbTorso)
 {
-    for (unsigned int i=0; i<(unsigned int)fbTorso.length(); i++)
+    for (unsigned int i=0; i<(unsigned int)fbTorso.size(); i++)
          chain->setBlockingValue(i,fbTorso[i]);
 }
 
@@ -636,8 +636,8 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
 {
     IEncodersTimed *encs;
 
-    int nJointsTorso=(int)fbTorso.length();
-    int nJointsHead=(int)fbHead.length();
+    int nJointsTorso=(int)fbTorso.size();
+    int nJointsHead=(int)fbHead.size();
 
     Vector fb(std::max(nJointsTorso,nJointsHead));
     Vector stamps(nJointsTorso+nJointsHead,0.0);
